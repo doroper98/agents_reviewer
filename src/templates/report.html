@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event Analysis Report — {{ result.event_profile.what[:60] }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ── CSS Variables (Reference Design Inspired) ── */
+:root {
+  --bg: #FAFAF7;
+  --card: #FFF;
+  --accent: #FFF9EB;
+  --t1: #111;
+  --t2: #444;
+  --tm: #999;
+  --brd: #E4E0D8;
+  --red: #BD3227;
+  --org: #C76B1E;
+  --blu: #1D6FA5;
+  --grn: #1A7B3E;
+  --gld: #9E8A15;
+  --nvy: #151D26;
+  --sh: 0 1px 4px rgba(0,0,0,.05);
+  --r: 6px;
+  --rl2: 10px;
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ── Layout ── */
+.w { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+.g2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.g3 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(min-width:540px) { .g2 { grid-template-columns: 1fr 1fr; } }
+@media(min-width:700px) { .g3 { grid-template-columns: 1fr 1fr 1fr; } }
+@media(min-width:700px) { .g4 { grid-template-columns: repeat(4, 1fr); } }
+
+/* ── Hero Header ── */
+.hero {
+  background: var(--nvy);
+  color: #fff;
+  padding: 48px 0 40px;
+  text-align: center;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(22px, 5.5vw, 38px);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+.hero .sub {
+  font-size: 14px;
+  color: rgba(255,255,255,.6);
+  font-family: 'JetBrains Mono', monospace;
+}
+.hero .badge-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.hero .badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.badge.confidence-A { background: rgba(26,123,62,.25); color: #6fcf97; }
+.badge.confidence-B { background: rgba(158,138,21,.25); color: #d4c84a; }
+.badge.confidence-C { background: rgba(199,107,30,.25); color: #f0a050; }
+.badge.confidence-D { background: rgba(189,50,39,.25); color: #ef6f6f; }
+.badge.verdict-pass { background: rgba(26,123,62,.25); color: #6fcf97; }
+.badge.verdict-revise { background: rgba(199,107,30,.25); color: #f0a050; }
+.badge.verdict-reject { background: rgba(189,50,39,.25); color: #ef6f6f; }
+
+/* ── Sticky Nav ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250,250,247,.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--brd);
+}
+.nav-in {
+  display: flex;
+  white-space: nowrap;
+  overflow-x: auto;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.nav a {
+  display: block;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--t2);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+}
+.nav a:hover, .nav a.on { color: var(--nvy); border-bottom-color: var(--nvy); }
+
+/* ── Sections ── */
+section { padding: 40px 0; }
+.tt {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 4vw, 26px);
+  font-weight: 700;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tt .icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Cards ── */
+.cd {
+  background: var(--card);
+  border: 1px solid var(--brd);
+  border-radius: var(--r);
+  box-shadow: var(--sh);
+  padding: 20px;
+  transition: transform .2s, box-shadow .2s;
+}
+.cd:hover { transform: translateY(-1px); box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+.cd-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--tm);
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cd-body { font-size: 14px; color: var(--t2); line-height: 1.7; }
+
+/* ── Player Cards (Analysis Panels) ── */
+.pl {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--brd);
+  border-radius: var(--r);
+  box-shadow: var(--sh);
+  padding: 20px;
+  overflow: hidden;
+}
+.pl::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+.pl.macro::before { background: var(--blu); }
+.pl.geo::before { background: var(--red); }
+.pl.micro::before { background: var(--grn); }
+.pl.invest::before { background: var(--gld); }
+.pl.history::before { background: var(--org); }
+.pl.audit::before { background: var(--nvy); }
+
+.pl-h {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.pl-h .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Call-out Box ── */
+.co {
+  background: var(--accent);
+  border-left: 3px solid var(--gld);
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 14px;
+  color: var(--t2);
+}
+.co.danger { background: rgba(189,50,39,.06); border-left-color: var(--red); }
+.co.info { background: rgba(29,111,165,.06); border-left-color: var(--blu); }
+.co.success { background: rgba(26,123,62,.06); border-left-color: var(--grn); }
+
+/* ── Impact Bar ── */
+.impact-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.impact-bar .bar-track {
+  flex: 1;
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.impact-bar .bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .6s ease;
+}
+.bar-fill.level-1 { width: 20%; background: var(--grn); }
+.bar-fill.level-2 { width: 40%; background: var(--blu); }
+.bar-fill.level-3 { width: 60%; background: var(--gld); }
+.bar-fill.level-4 { width: 80%; background: var(--org); }
+.bar-fill.level-5 { width: 100%; background: var(--red); }
+.impact-bar .level-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 24px;
+}
+
+/* ── 4-Quadrant Matrix ── */
+.quadrant {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--brd);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin: 20px 0;
+}
+.quadrant .q-cell {
+  background: var(--card);
+  padding: 20px;
+  text-align: center;
+}
+.q-cell .q-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--tm);
+  margin-bottom: 8px;
+}
+.q-cell .q-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.q-cell .q-desc {
+  font-size: 12px;
+  color: var(--t2);
+  margin-top: 4px;
+}
+
+/* ── Historical Timeline ── */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--brd);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--brd);
+  border-radius: var(--r);
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--org);
+  border: 2px solid var(--bg);
+}
+.timeline-year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--org);
+}
+.timeline-title {
+  font-weight: 700;
+  margin: 4px 0 8px;
+}
+
+/* ── Ethics Framework ── */
+.ethics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:540px) { .ethics-grid { grid-template-columns: 1fr; } }
+.ethics-card {
+  padding: 16px;
+  border-radius: var(--r);
+  border: 1px solid var(--brd);
+}
+.ethics-card .framework {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.ec-util { border-top: 3px solid var(--blu); }
+.ec-util .framework { color: var(--blu); }
+.ec-deont { border-top: 3px solid var(--grn); }
+.ec-deont .framework { color: var(--grn); }
+.ec-virtue { border-top: 3px solid var(--gld); }
+.ec-virtue .framework { color: var(--gld); }
+.ec-justice { border-top: 3px solid var(--red); }
+.ec-justice .framework { color: var(--red); }
+
+/* ── Audit Section ── */
+.audit-checklist {
+  list-style: none;
+  padding: 0;
+}
+.audit-checklist li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--brd);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+}
+.audit-checklist .check {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.check.pass { background: rgba(26,123,62,.12); color: var(--grn); }
+.check.warn { background: rgba(199,107,30,.12); color: var(--org); }
+.check.fail { background: rgba(189,50,39,.12); color: var(--red); }
+
+/* ── Outlook Cards ── */
+.outlook-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media(max-width:600px) { .outlook-grid { grid-template-columns: 1fr; } }
+.outlook-card {
+  padding: 20px;
+  border-radius: var(--r);
+  background: var(--card);
+  border: 1px solid var(--brd);
+  text-align: center;
+}
+.outlook-card .period {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--tm);
+  margin-bottom: 8px;
+}
+.outlook-card .range {
+  font-size: 13px;
+  color: var(--t2);
+  margin-bottom: 12px;
+}
+
+/* ── Footer ── */
+.ft {
+  background: var(--nvy);
+  color: rgba(255,255,255,.5);
+  padding: 32px 0;
+  text-align: center;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Fade-in Animation ── */
+.fi { opacity: 0; transform: translateY(16px); transition: opacity .5s, transform .5s; }
+.fi.vis { opacity: 1; transform: none; }
+
+/* ── Chart Container ── */
+.chart-wrap {
+  background: var(--card);
+  border: 1px solid var(--brd);
+  border-radius: var(--r);
+  padding: 20px;
+  margin: 20px 0;
+}
+.chart-wrap canvas { width: 100% !important; height: auto !important; }
+
+/* ── Executive Summary ── */
+.exec-summary {
+  background: var(--accent);
+  border: 1px solid #e8e0c8;
+  border-radius: var(--rl2);
+  padding: 28px;
+  margin: 24px 0;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+/* ── Source Tag ── */
+.src-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f0f0ec;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--tm);
+  margin: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+  <div class="w">
+    <h1>{{ result.event_profile.what }}</h1>
+    <p class="sub">{{ generated_at }} | Event Analysis Report</p>
+    <div class="badge-row">
+      <span class="badge confidence-{{ result.overall_confidence.value }}">
+        CONFIDENCE: {{ result.overall_confidence.value }}
+      </span>
+      <span class="badge verdict-{{ result.audit.verdict.value }}">
+        AUDIT: {{ result.audit.verdict.value | upper }}
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-in">
+    <a href="#s1">Executive Summary</a>
+    <a href="#s2">Event Profile</a>
+    <a href="#s3">Impact Matrix</a>
+    <a href="#s4">Macro</a>
+    <a href="#s5">Geopolitical</a>
+    <a href="#s6">Micro</a>
+    <a href="#s7">Investment</a>
+    <a href="#s8">History & Ethics</a>
+    <a href="#s9">Audit</a>
+    <a href="#s10">Outlook</a>
+  </div>
+</nav>
+
+<main class="w">
+
+<!-- ═══ S1: Executive Summary ═══ -->
+<section id="s1" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:var(--accent);color:var(--gld);">&#9733;</span>
+    Executive Summary
+  </h2>
+  <div class="exec-summary">
+    {{ result.executive_summary }}
+  </div>
+</section>
+
+<!-- ═══ S2: Event Profile (5W1H) ═══ -->
+<section id="s2" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(29,111,165,.1);color:var(--blu);">&#128269;</span>
+    Event Profile
+  </h2>
+  <div class="g2">
+    <div class="cd">
+      <div class="cd-title">WHO</div>
+      <div class="cd-body">{{ result.event_profile.who }}</div>
+    </div>
+    <div class="cd">
+      <div class="cd-title">WHAT</div>
+      <div class="cd-body">{{ result.event_profile.what }}</div>
+    </div>
+    <div class="cd">
+      <div class="cd-title">WHEN</div>
+      <div class="cd-body">{{ result.event_profile.when }}</div>
+    </div>
+    <div class="cd">
+      <div class="cd-title">WHERE</div>
+      <div class="cd-body">{{ result.event_profile.where }}</div>
+    </div>
+    <div class="cd">
+      <div class="cd-title">WHY</div>
+      <div class="cd-body">{{ result.event_profile.why }}</div>
+    </div>
+    <div class="cd">
+      <div class="cd-title">HOW</div>
+      <div class="cd-body">{{ result.event_profile.how }}</div>
+    </div>
+  </div>
+
+  {% if result.event_profile.key_data_points %}
+  <div class="co info" style="margin-top:20px;">
+    <strong>Key Data Points</strong><br>
+    {% for dp in result.event_profile.key_data_points %}
+    &bull; {{ dp }}<br>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if result.event_profile.sources %}
+  <div style="margin-top:12px;">
+    {% for src in result.event_profile.sources %}
+    <span class="src-tag">{{ src }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+<!-- ═══ S3: 4-Quadrant Impact Matrix ═══ -->
+<section id="s3" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(158,138,21,.1);color:var(--gld);">&#9632;</span>
+    Impact Matrix
+  </h2>
+  <div class="quadrant">
+    <div class="q-cell">
+      <div class="q-title">Macro Economy</div>
+      <div class="q-value" style="color:var(--blu);">{{ impact_levels.macro.value }}/5</div>
+      <div class="impact-bar"><div class="bar-track"><div class="bar-fill level-{{ impact_levels.macro.value }}"></div></div></div>
+      <div class="q-desc">{{ result.macro.summary[:80] }}...</div>
+    </div>
+    <div class="q-cell">
+      <div class="q-title">Geopolitical</div>
+      <div class="q-value" style="color:var(--red);">{{ impact_levels.geopolitical.value }}/5</div>
+      <div class="impact-bar"><div class="bar-track"><div class="bar-fill level-{{ impact_levels.geopolitical.value }}"></div></div></div>
+      <div class="q-desc">{{ result.geopolitical.summary[:80] }}...</div>
+    </div>
+    <div class="q-cell">
+      <div class="q-title">Micro Economy</div>
+      <div class="q-value" style="color:var(--grn);">{{ impact_levels.micro.value }}/5</div>
+      <div class="impact-bar"><div class="bar-track"><div class="bar-fill level-{{ impact_levels.micro.value }}"></div></div></div>
+      <div class="q-desc">{{ result.micro.summary[:80] }}...</div>
+    </div>
+    <div class="q-cell">
+      <div class="q-title">Investment</div>
+      <div class="q-value" style="color:var(--gld);">{{ impact_levels.investment.value }}/5</div>
+      <div class="impact-bar"><div class="bar-track"><div class="bar-fill level-{{ impact_levels.investment.value }}"></div></div></div>
+      <div class="q-desc">{{ result.investment.summary[:80] }}...</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S4: Macro Analysis ═══ -->
+<section id="s4" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(29,111,165,.1);color:var(--blu);">&#128200;</span>
+    Macro Economic Analysis
+  </h2>
+  <div class="pl macro">
+    <div class="pl-h">
+      <span class="label" style="color:var(--blu);">MACRO ANALYST</span>
+      <span class="badge confidence-{{ 'A' if impact_levels.macro.value >= 4 else 'B' if impact_levels.macro.value >= 3 else 'C' }}">
+        Impact: {{ impact_levels.macro.value }}/5
+      </span>
+    </div>
+    <div class="g2">
+      <div class="cd"><div class="cd-title">GDP Impact</div><div class="cd-body">{{ result.macro.gdp_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Monetary Policy</div><div class="cd-body">{{ result.macro.monetary_policy_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Inflation</div><div class="cd-body">{{ result.macro.inflation_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Trade & FX</div><div class="cd-body">{{ result.macro.trade_fx_impact }}</div></div>
+    </div>
+    <div class="co info" style="margin-top:16px;">
+      <strong>Fiscal Policy Impact</strong><br>
+      {{ result.macro.fiscal_policy_impact }}
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S5: Geopolitical Analysis ═══ -->
+<section id="s5" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(189,50,39,.1);color:var(--red);">&#127758;</span>
+    Geopolitical Analysis
+  </h2>
+  <div class="pl geo">
+    <div class="pl-h">
+      <span class="label" style="color:var(--red);">GEOPOLITICAL ANALYST</span>
+      <span class="badge confidence-{{ 'A' if impact_levels.geopolitical.value >= 4 else 'B' if impact_levels.geopolitical.value >= 3 else 'C' }}">
+        Impact: {{ impact_levels.geopolitical.value }}/5
+      </span>
+    </div>
+    <div class="g2">
+      <div class="cd"><div class="cd-title">Relations Impact</div><div class="cd-body">{{ result.geopolitical.relations_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Sanctions & Trade Risk</div><div class="cd-body">{{ result.geopolitical.sanctions_trade_risk }}</div></div>
+      <div class="cd"><div class="cd-title">Military & Security</div><div class="cd-body">{{ result.geopolitical.military_security_risk }}</div></div>
+      <div class="cd"><div class="cd-title">Energy & Supply Chain</div><div class="cd-body">{{ result.geopolitical.energy_supply_chain_impact }}</div></div>
+    </div>
+    <div class="co danger" style="margin-top:16px;">
+      <strong>Regional Stability</strong><br>
+      {{ result.geopolitical.regional_stability }}
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S6: Micro Analysis ═══ -->
+<section id="s6" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(26,123,62,.1);color:var(--grn);">&#128202;</span>
+    Micro Economic Analysis
+  </h2>
+  <div class="pl micro">
+    <div class="pl-h">
+      <span class="label" style="color:var(--grn);">MICRO ANALYST</span>
+      <span class="badge confidence-{{ 'A' if impact_levels.micro.value >= 4 else 'B' if impact_levels.micro.value >= 3 else 'C' }}">
+        Impact: {{ impact_levels.micro.value }}/5
+      </span>
+    </div>
+
+    {% if result.micro.affected_sectors %}
+    <div style="margin-bottom:16px;">
+      {% for sector in result.micro.affected_sectors %}
+      <span class="src-tag" style="background:rgba(26,123,62,.08);color:var(--grn);border:1px solid rgba(26,123,62,.2);">{{ sector }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="g2">
+      <div class="cd"><div class="cd-title">Company Impact</div><div class="cd-body">{{ result.micro.company_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Consumer Behavior</div><div class="cd-body">{{ result.micro.consumer_behavior }}</div></div>
+      <div class="cd"><div class="cd-title">Supply Chain & Pricing</div><div class="cd-body">{{ result.micro.supply_chain_pricing }}</div></div>
+      <div class="cd"><div class="cd-title">Competitive Landscape</div><div class="cd-body">{{ result.micro.competitive_landscape }}</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S7: Investment Analysis ═══ -->
+<section id="s7" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(158,138,21,.1);color:var(--gld);">&#128176;</span>
+    Investment Analysis
+  </h2>
+  <div class="pl invest">
+    <div class="pl-h">
+      <span class="label" style="color:var(--gld);">INVESTMENT ANALYST</span>
+      <span class="badge confidence-{{ 'A' if impact_levels.investment.value >= 4 else 'B' if impact_levels.investment.value >= 3 else 'C' }}">
+        Impact: {{ impact_levels.investment.value }}/5
+      </span>
+    </div>
+    <div class="g3">
+      <div class="cd"><div class="cd-title">Equities</div><div class="cd-body">{{ result.investment.equities_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Fixed Income</div><div class="cd-body">{{ result.investment.bonds_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Commodities</div><div class="cd-body">{{ result.investment.commodities_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Crypto</div><div class="cd-body">{{ result.investment.crypto_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Real Estate</div><div class="cd-body">{{ result.investment.real_estate_impact }}</div></div>
+      <div class="cd"><div class="cd-title">Sector Rotation</div><div class="cd-body">{{ result.investment.sector_rotation }}</div></div>
+    </div>
+    <div class="co" style="margin-top:16px;">
+      <strong>Hedge Strategy</strong><br>
+      {{ result.investment.hedge_strategy }}
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S8: History & Ethics ═══ -->
+<section id="s8" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(199,107,30,.1);color:var(--org);">&#128220;</span>
+    Historical Context & Ethical Analysis
+  </h2>
+
+  <!-- Historical Timeline -->
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">Historical Parallels</h3>
+  <div class="timeline">
+    {% for case in result.history_ethics.historical_cases %}
+    <div class="timeline-item">
+      <div class="timeline-year">{{ case.year }}</div>
+      <div class="timeline-title">{{ case.event_name }}</div>
+      <div class="g2" style="margin-top:8px;">
+        <div><strong style="font-size:12px;color:var(--grn);">SIMILARITIES</strong><br><span style="font-size:13px;color:var(--t2);">{{ case.similarities }}</span></div>
+        <div><strong style="font-size:12px;color:var(--red);">DIFFERENCES</strong><br><span style="font-size:13px;color:var(--t2);">{{ case.differences }}</span></div>
+      </div>
+      <div class="co" style="margin-top:8px;padding:10px 14px;font-size:13px;">
+        <strong>Outcome:</strong> {{ case.outcome }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if result.history_ethics.pattern_analysis %}
+  <div class="co info" style="margin-top:20px;">
+    <strong>Pattern Analysis</strong><br>
+    {{ result.history_ethics.pattern_analysis }}
+  </div>
+  {% endif %}
+
+  <!-- Ethical Frameworks -->
+  <h3 style="font-size:16px;font-weight:700;margin:28px 0 16px;">Ethical Framework Analysis</h3>
+  <div class="ethics-grid">
+    <div class="ethics-card ec-util">
+      <div class="framework">Utilitarian (공리주의)</div>
+      <div class="cd-body">{{ result.history_ethics.ethical_analysis.utilitarian_view }}</div>
+    </div>
+    <div class="ethics-card ec-deont">
+      <div class="framework">Deontological (의무론)</div>
+      <div class="cd-body">{{ result.history_ethics.ethical_analysis.deontological_view }}</div>
+    </div>
+    <div class="ethics-card ec-virtue">
+      <div class="framework">Virtue Ethics (덕윤리)</div>
+      <div class="cd-body">{{ result.history_ethics.ethical_analysis.virtue_ethics_view }}</div>
+    </div>
+    <div class="ethics-card ec-justice">
+      <div class="framework">Social Justice (사회정의)</div>
+      <div class="cd-body">{{ result.history_ethics.ethical_analysis.social_justice_view }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S9: Audit (Devil's Advocate) ═══ -->
+<section id="s9" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(21,29,38,.1);color:var(--nvy);">&#128270;</span>
+    Audit — Devil's Advocate
+  </h2>
+  <div class="pl audit">
+    <div class="pl-h">
+      <span class="label" style="color:var(--nvy);">DEVIL'S ADVOCATE</span>
+      <span class="badge verdict-{{ result.audit.verdict.value }}">
+        {{ result.audit.verdict.value | upper }}
+      </span>
+      <span class="badge confidence-{{ result.audit.data_quality_grade.value }}">
+        Data Quality: {{ result.audit.data_quality_grade.value }}
+      </span>
+    </div>
+
+    <div class="cd" style="margin-bottom:16px;">
+      <div class="cd-title">Logical Consistency</div>
+      <div class="cd-body">{{ result.audit.logical_consistency }}</div>
+    </div>
+
+    {% if result.audit.biases_detected %}
+    <h4 style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--org);">Biases Detected</h4>
+    <ul class="audit-checklist">
+      {% for bias in result.audit.biases_detected %}
+      <li>
+        <span class="check warn">!</span>
+        <span>{{ bias }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if result.audit.counter_scenarios %}
+    <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px;color:var(--blu);">Counter-factual Scenarios</h4>
+    {% for scenario in result.audit.counter_scenarios %}
+    <div class="co info" style="margin-bottom:8px;">{{ scenario }}</div>
+    {% endfor %}
+    {% endif %}
+
+    {% if result.audit.cross_validation_issues %}
+    <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px;color:var(--red);">Cross-validation Issues</h4>
+    {% for issue in result.audit.cross_validation_issues %}
+    <div class="co danger" style="margin-bottom:8px;">{{ issue }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="co" style="margin-top:16px;">
+      <strong>Audit Summary</strong><br>
+      {{ result.audit.summary }}
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S10: Outlook ═══ -->
+<section id="s10" class="fi">
+  <h2 class="tt">
+    <span class="icon" style="background:rgba(26,123,62,.1);color:var(--grn);">&#128640;</span>
+    Outlook & Recommendations
+  </h2>
+  <div class="outlook-grid">
+    <div class="outlook-card" style="border-top:3px solid var(--grn);">
+      <div class="period">Short-term</div>
+      <div class="range">1 — 4 weeks</div>
+      <div class="cd-body">{{ result.investment.short_term_outlook }}</div>
+    </div>
+    <div class="outlook-card" style="border-top:3px solid var(--gld);">
+      <div class="period">Mid-term</div>
+      <div class="range">1 — 6 months</div>
+      <div class="cd-body">{{ result.investment.mid_term_outlook }}</div>
+    </div>
+    <div class="outlook-card" style="border-top:3px solid var(--blu);">
+      <div class="period">Long-term</div>
+      <div class="range">6+ months</div>
+      <div class="cd-body">{{ result.investment.long_term_outlook }}</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="ft">
+  <div class="w">
+    Event Analysis Team &mdash; AI Agent System<br>
+    Generated: {{ generated_at }}<br>
+    Confidence: {{ result.overall_confidence.value }} | Audit: {{ result.audit.verdict.value | upper }}
+  </div>
+</footer>
+
+<!-- ═══ Scroll Animation ═══ -->
+<script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+
+// Active nav tracking
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('on', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+
+</body>
+</html>
