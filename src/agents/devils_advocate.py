@@ -1,71 +1,46 @@
-"""Devil's Advocate Agent — 비판적 검증 및 감사."""
+"""Devil's Advocate Agent -- 비판적 검증 및 감사."""
 
 from __future__ import annotations
 
 from src.agents.base import BaseAgent
+from src.config import Config
 from src.models import AuditResult
+
+SYSTEM_PROMPT = (
+    "당신은 비판적 감사관(Devil's Advocate)입니다. "
+    "다른 에이전트들의 분석 결과를 검증하고 비판적으로 평가합니다. "
+    "편향성, 논리적 오류, 누락된 관점, 과도한 확신을 찾아냅니다. "
+    "PASS/REVISE/REJECT 판정을 내리며, "
+    "REVISE의 경우 어떤 에이전트가 재분석해야 하는지 명시합니다.\n\n"
+    "## Output Schema\n"
+    "Respond ONLY with valid JSON matching this schema:\n"
+    "```json\n"
+    "{\n"
+    '  "overall_verdict": "PASS|REVISE|REJECT",\n'
+    '  "issues_found": [{"agent": "string", "issue": "string", "severity": "string"}],\n'
+    '  "agents_to_revise": ["string"],\n'
+    '  "credibility_score": 0.0-1.0,\n'
+    '  "bias_detected": ["string"],\n'
+    '  "logical_fallacies": ["string"],\n'
+    '  "missing_perspectives": ["string"],\n'
+    '  "summary": "string"\n'
+    "}\n"
+    "```"
+)
 
 
 class DevilsAdvocateAgent(BaseAgent):
-    name = "devils_advocate"
-    role = "Devil's Advocate (비판적 검증자)"
-    system_prompt = """You are the Devil's Advocate / Auditor agent in an analysis team.
+    """Critically audits all other agents' analyses."""
 
-Your role is to critically review ALL analyses produced by other agents and ensure
-quality, consistency, and absence of bias.
-
-## Audit Checklist
-
-### 1. Logical Consistency
-- Are conclusions logically supported by the evidence?
-- Any circular reasoning?
-- Any non-sequiturs or logical fallacies?
-
-### 2. Cognitive Bias Detection
-Look for and flag:
-- Confirmation Bias (확증편향) — cherry-picking supporting evidence
-- Survivorship Bias (생존자편향) — ignoring failed cases
-- Recency Bias (최신편향) — overweighting recent events
-- Anchoring Effect (앵커링) — over-relying on first piece of information
-- Groupthink — all analyses converging without independent reasoning
-
-### 3. Data Quality
-- Grade source reliability: A (verified primary), B (reputable secondary),
-  C (unverified), D (potentially unreliable)
-- Is the data current enough?
-- Are sample sizes/datasets representative?
-
-### 4. Counter-factual Scenarios
-- Propose at least 2 alternative scenarios ("What if...?")
-- Challenge the dominant narrative
-
-### 5. Cross-Validation
-- Do the different analyses contradict each other?
-- Are there conflicting predictions? If so, which is more defensible?
-
-## Verdict
-- **PASS** — Analysis is sound, proceed to report
-- **REVISE** — Specific parts need correction (list which agents/sections)
-- **REJECT** — Fundamental flaws, full re-analysis needed
-
-## Output Schema
-```json
-{
-  "logical_consistency": "string — assessment",
-  "biases_detected": ["string — name and description of each bias found"],
-  "data_quality_grade": "A|B|C|D",
-  "counter_scenarios": ["string — alternative scenario descriptions"],
-  "cross_validation_issues": ["string — contradictions between analyses"],
-  "verdict": "pass|revise|reject",
-  "revision_requests": ["string — specific revision instructions if verdict is revise"],
-  "summary": "string — 2-3 sentence audit summary"
-}
-```
-
-Respond ONLY with valid JSON."""
-
-    async def audit(self, event_text: str, all_analyses: str) -> AuditResult:
-        message = self.build_context_message(
-            event_text, AllAnalysesResults=all_analyses
+    def __init__(self, config: Config) -> None:
+        super().__init__(
+            name="devils_advocate",
+            role="Devil's Advocate (비판적 검증자)",
+            system_prompt=SYSTEM_PROMPT,
+            config=config,
         )
-        return await self.run(message, AuditResult)
+
+    async def analyze(self, all_analyses: dict) -> AuditResult:
+        """Audit all analyses and return verdict."""
+        raw_text = await super().analyze(all_analyses)
+        return self._parse_json_response(raw_text, AuditResult)

@@ -14,147 +14,148 @@ from telegram.ext import (
     filters,
 )
 
-from src.config import TELEGRAM_BOT_TOKEN, ALLOWED_CHAT_IDS
-from src.models import AnalysisRequest
+from src.config import Config
 from src.orchestrator import Orchestrator
 
 logger = logging.getLogger(__name__)
 
 
-def is_authorized(chat_id: int) -> bool:
-    """Check if chat is authorized. Empty list = allow all."""
-    if not ALLOWED_CHAT_IDS:
-        return True
-    return chat_id in ALLOWED_CHAT_IDS
+class TelegramBot:
+    """Telegram bot that receives analysis commands and sends reports."""
 
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        self.orchestrator = Orchestrator(config)
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /start command."""
-    await update.message.reply_text(
-        "Event Analysis Team\n\n"
-        "Send me any event or situation to analyze.\n"
-        "I will coordinate 9 AI agents to produce a comprehensive report.\n\n"
-        "Commands:\n"
-        "/analyze <event> — Start analysis\n"
-        "/status — Check system status\n"
-        "/help — Show this message"
-    )
+    def _is_authorized(self, chat_id: int) -> bool:
+        """Check if chat is authorized. Empty list = allow all."""
+        if not self.config.allowed_chat_ids:
+            return True
+        return chat_id in self.config.allowed_chat_ids
 
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /help command."""
-    await update.message.reply_text(
-        "Usage:\n\n"
-        "1. Simply send a message describing an event:\n"
-        '   "미국 관세 인상 분석해줘"\n'
-        '   "Analyze the impact of Fed rate hike"\n\n'
-        "2. Or use /analyze command:\n"
-        '   /analyze 호르무즈 해협 봉쇄 위기\n\n'
-        "The system will:\n"
-        "  Phase 1: Parse & route your request\n"
-        "  Phase 2: Identify event (5W1H)\n"
-        "  Phase 3: Run 5 parallel analyses\n"
-        "  Phase 4: Audit via Devil's Advocate\n"
-        "  Phase 5: Generate visual report\n\n"
-        "Report includes: Macro, Geopolitical, Micro,\n"
-        "Investment, Historical, Ethical analysis"
-    )
-
-
-async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /status command."""
-    await update.message.reply_text(
-        "System Status: ONLINE\n"
-        "Agents: 9/9 ready\n"
-        "Model: Claude (via Max subscription)\n"
-        "Pipeline: 5-phase sequential/parallel"
-    )
-
-
-async def analyze_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle /analyze command."""
-    if not is_authorized(update.effective_chat.id):
-        await update.message.reply_text("Unauthorized.")
-        return
-
-    text = " ".join(context.args) if context.args else ""
-    if not text:
-        await update.message.reply_text("Usage: /analyze <event description>")
-        return
-
-    await _run_analysis(update, text)
-
-
-async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle plain text messages as analysis requests."""
-    if not is_authorized(update.effective_chat.id):
-        return
-
-    text = update.message.text.strip()
-    if not text:
-        return
-
-    # Check for analysis keywords
-    analysis_keywords = ["분석", "analyze", "analysis", "검토", "평가", "리뷰"]
-    if any(kw in text.lower() for kw in analysis_keywords):
-        await _run_analysis(update, text)
-    else:
+    async def _start_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /start command."""
+        if update.message is None:
+            return
         await update.message.reply_text(
-            "Send an analysis request.\n"
-            'Example: "미국 관세 인상 영향 분석해줘"\n'
-            "Or use /analyze <event>"
+            "Event Analysis Team\n\n"
+            "Send me any event or situation to analyze.\n"
+            "I will coordinate 9 AI agents to produce a comprehensive report.\n\n"
+            "Commands:\n"
+            "/analyze <event> -- Start analysis\n"
+            "/start -- Show this message"
         )
 
+    async def _analyze_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /analyze command."""
+        if update.message is None or update.effective_chat is None:
+            return
 
-async def _run_analysis(update: Update, event_text: str) -> None:
-    """Execute the analysis pipeline and send report."""
-    chat_id = update.effective_chat.id
-    msg = await update.message.reply_text("Analysis started...\nPhase 1/5: Parsing command...")
+        if not self._is_authorized(update.effective_chat.id):
+            await update.message.reply_text("Unauthorized.")
+            return
 
-    async def status_callback(status: str) -> None:
+        text = " ".join(context.args) if context.args else ""
+        if not text:
+            await update.message.reply_text(
+                "Usage: /analyze <event description>"
+            )
+            return
+
+        await self._run_analysis(update, text)
+
+    async def _message_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle plain text messages as analysis requests."""
+        if update.message is None or update.effective_chat is None:
+            return
+
+        if not self._is_authorized(update.effective_chat.id):
+            return
+
+        text = update.message.text
+        if not text or not text.strip():
+            return
+
+        await self._run_analysis(update, text.strip())
+
+    async def _run_analysis(self, update: Update, event_text: str) -> None:
+        """Execute the analysis pipeline and send report."""
+        if update.message is None or update.effective_chat is None:
+            return
+
+        chat_id = update.effective_chat.id
+        msg = await update.message.reply_text(
+            "Analysis started...\nPhase 1/5: Parsing command..."
+        )
+
+        async def status_callback(status: str) -> None:
+            try:
+                await msg.edit_text(f"Analysis in progress...\n{status}")
+            except Exception:
+                pass
+
         try:
-            await msg.edit_text(f"Analysis in progress...\n{status}")
-        except Exception:
-            pass
-
-    orchestrator = Orchestrator(status_callback=status_callback)
-    request = AnalysisRequest(
-        raw_text=event_text,
-        chat_id=chat_id,
-        message_id=update.message.message_id,
-    )
-
-    try:
-        result, report_path = await orchestrator.run(request)
-
-        # Send report file
-        with open(report_path, "rb") as f:
-            await update.message.reply_document(
-                document=f,
-                filename=os.path.basename(report_path),
-                caption=(
-                    f"Event Analysis Complete\n\n"
-                    f"Confidence: {result.overall_confidence.value}\n"
-                    f"Audit: {result.audit.verdict.value.upper()}\n\n"
-                    f"{result.executive_summary[:500]}"
-                ),
+            result = await self.orchestrator.run_analysis(
+                event_description=event_text,
+                chat_id=chat_id,
+                status_callback=status_callback,
             )
 
-        await msg.edit_text("Analysis complete! Report sent.")
+            # Send executive summary as text message
+            summary_text = (
+                f"Analysis Complete\n\n"
+                f"Verdict: {result.audit_result.overall_verdict}\n"
+                f"Duration: {result.total_duration_seconds:.1f}s\n\n"
+                f"{result.executive_summary[:3000]}"
+            )
+            await update.message.reply_text(summary_text)
 
-    except Exception as e:
-        logger.exception("Analysis failed")
-        await msg.edit_text(f"Analysis failed: {str(e)[:200]}")
+            # Send final report as HTML file
+            report_dir = self.config.report_output_dir
+            if os.path.isdir(report_dir):
+                # Find the latest report
+                reports = sorted(
+                    [
+                        f
+                        for f in os.listdir(report_dir)
+                        if f.endswith(".html")
+                    ]
+                )
+                if reports:
+                    report_path = os.path.join(report_dir, reports[-1])
+                    with open(report_path, "rb") as f:
+                        await update.message.reply_document(
+                            document=f,
+                            filename=os.path.basename(report_path),
+                            caption="Full Analysis Report",
+                        )
 
+            await msg.edit_text("Analysis complete! Report sent.")
 
-def create_bot() -> Application:
-    """Create and configure the Telegram bot application."""
-    app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+        except Exception as e:
+            logger.exception("Analysis failed")
+            await msg.edit_text(f"Analysis failed: {str(e)[:200]}")
 
-    app.add_handler(CommandHandler("start", start_command))
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("status", status_command))
-    app.add_handler(CommandHandler("analyze", analyze_command))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+    def create_app(self) -> Application:
+        """Create and configure the Telegram bot application."""
+        app = (
+            Application.builder()
+            .token(self.config.telegram_bot_token)
+            .build()
+        )
 
-    return app
+        app.add_handler(CommandHandler("start", self._start_command))
+        app.add_handler(CommandHandler("analyze", self._analyze_command))
+        app.add_handler(
+            MessageHandler(
+                filters.TEXT & ~filters.COMMAND, self._message_handler
+            )
+        )
+
+        return app

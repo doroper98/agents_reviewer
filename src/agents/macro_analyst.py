@@ -1,49 +1,48 @@
-"""Macro Analyst Agent — 거시경제적 파급력 분석."""
+"""Macro Analyst Agent -- 거시경제적 파급력 분석."""
 
 from __future__ import annotations
 
 from src.agents.base import BaseAgent
-from src.models import MacroAnalysis
+from src.config import Config
+from src.models import EventProfile, MacroAnalysis
+
+SYSTEM_PROMPT = (
+    "당신은 거시경제 분석 전문가입니다. "
+    "사건이 GDP, 인플레이션, 무역, 통화정책, 노동시장에 미치는 영향을 분석합니다. "
+    "정량적 지표와 정성적 평가를 모두 제공하며, "
+    "단기(1-3개월), 중기(3-12개월), 장기(1년+) 영향을 구분합니다.\n\n"
+    "## Output Schema\n"
+    "Respond ONLY with valid JSON matching this schema:\n"
+    "```json\n"
+    "{\n"
+    '  "gdp_impact": "string",\n'
+    '  "inflation_impact": "string",\n'
+    '  "trade_impact": "string",\n'
+    '  "monetary_policy_impact": "string",\n'
+    '  "labor_market_impact": "string",\n'
+    '  "key_indicators": [{"name": "string", "direction": "string", "magnitude": "string"}],\n'
+    '  "summary": "string",\n'
+    '  "confidence_score": 0.0-1.0\n'
+    "}\n"
+    "```"
+)
 
 
-class MacroAnalystAgent(BaseAgent):
-    name = "macro_analyst"
-    role = "Macro Analyst (거시경제 분석가)"
-    system_prompt = """You are the Macro Analyst agent in an analysis team.
+class MacroAnalyst(BaseAgent):
+    """Analyzes macroeconomic impact of events."""
 
-Your role is to analyze the macroeconomic impact of an event.
-
-## Analysis Dimensions
-1. **GDP/Growth Impact** — How does this affect economic growth (domestic and global)?
-2. **Monetary Policy** — Implications for interest rates, central bank actions
-3. **Inflation/Deflation** — Price level pressures
-4. **Trade & FX** — International trade flows, currency movements
-5. **Fiscal Policy** — Government spending, taxation changes
-
-## Rules
-- Provide both short-term and long-term perspectives
-- Reference relevant economic theories when applicable
-- Quantify impact where possible (percentage changes, basis points)
-- Consider both direct and indirect (second-order) effects
-- Rate overall impact level: 1=minimal, 2=low, 3=moderate, 4=high, 5=critical
-
-## Output Schema
-```json
-{
-  "gdp_impact": "string",
-  "monetary_policy_impact": "string",
-  "inflation_impact": "string",
-  "trade_fx_impact": "string",
-  "fiscal_policy_impact": "string",
-  "impact_level": 1-5,
-  "summary": "string — 2-3 sentence executive summary"
-}
-```
-
-Respond ONLY with valid JSON."""
-
-    async def analyze(self, event_text: str, event_profile: str) -> MacroAnalysis:
-        message = self.build_context_message(
-            event_text, EventProfile=event_profile
+    def __init__(self, config: Config) -> None:
+        super().__init__(
+            name="macro_analyst",
+            role="Macro Analyst (거시경제 분석가)",
+            system_prompt=SYSTEM_PROMPT,
+            config=config,
         )
-        return await self.run(message, MacroAnalysis)
+
+    async def analyze(self, event_profile: EventProfile) -> MacroAnalysis:
+        """Analyze macroeconomic impact based on event profile."""
+        context = {
+            "event_profile": event_profile.model_dump(),
+        }
+        raw_text = await super().analyze(context)
+        return self._parse_json_response(raw_text, MacroAnalysis)

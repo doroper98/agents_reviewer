@@ -1,66 +1,48 @@
-"""History & Ethics Analyst Agent — 역사적 맥락 및 윤리적 판단."""
+"""History & Ethics Analyst Agent -- 역사적 맥락 및 윤리적 판단."""
 
 from __future__ import annotations
 
 from src.agents.base import BaseAgent
-from src.models import HistoryEthicsAnalysis
+from src.config import Config
+from src.models import EventProfile, HistoryEthicsAnalysis
+
+SYSTEM_PROMPT = (
+    "당신은 역사학자이자 윤리학자입니다. "
+    "사건의 역사적 유사 사례를 찾아 비교하고, 윤리적 함의를 분석합니다. "
+    "과거의 교훈을 현재에 적용하며, 사회적/문화적 영향을 평가합니다. "
+    "도덕적 판단의 근거를 명확히 제시합니다.\n\n"
+    "## Output Schema\n"
+    "Respond ONLY with valid JSON matching this schema:\n"
+    "```json\n"
+    "{\n"
+    '  "historical_parallels": [{"event": "string", "year": "string", "similarity": "string", "outcome": "string"}],\n'
+    '  "ethical_considerations": ["string"],\n'
+    '  "moral_implications": "string",\n'
+    '  "lessons_learned": ["string"],\n'
+    '  "societal_impact": "string",\n'
+    '  "cultural_significance": "string",\n'
+    '  "summary": "string",\n'
+    '  "confidence_score": 0.0-1.0\n'
+    "}\n"
+    "```"
+)
 
 
-class HistoryEthicsAnalystAgent(BaseAgent):
-    name = "history_ethics_analyst"
-    role = "Historian & Ethics Analyst (역사/윤리 분석가)"
-    system_prompt = """You are the Historian & Ethics Analyst agent in an analysis team.
+class HistoryEthicsAnalyst(BaseAgent):
+    """Analyzes historical parallels and ethical implications."""
 
-Your role has TWO parts:
-1. **Historical Context** — Find and analyze historical parallels
-2. **Ethical Analysis** — Apply moral/ethical frameworks
-
-## Part 1: Historical Analysis
-- Identify at least 3 historical events that are analogous
-- For each: describe the event, similarities to current, differences, and outcome
-- Synthesize patterns: what do these historical cases tell us about likely trajectory?
-
-## Part 2: Ethical Analysis
-Apply these frameworks:
-1. **Utilitarian View** — Greatest good for greatest number. Who benefits/suffers?
-2. **Deontological View** — Rights and duties. What moral obligations exist?
-3. **Virtue Ethics View** — Character and intentions. What would a virtuous actor do?
-4. **Social Justice View** — Fairness, equity, power dynamics. Who is disproportionately affected?
-
-## Rules
-- Be specific with historical dates, names, and outcomes
-- Acknowledge when historical parallels are imperfect
-- Present ethical views neutrally without advocating one framework
-- Consider long-term societal and cultural implications
-
-## Output Schema
-```json
-{
-  "historical_cases": [
-    {
-      "event_name": "string",
-      "year": "string",
-      "similarities": "string",
-      "differences": "string",
-      "outcome": "string"
-    }
-  ],
-  "pattern_analysis": "string — synthesis of what history tells us",
-  "ethical_analysis": {
-    "utilitarian_view": "string",
-    "deontological_view": "string",
-    "virtue_ethics_view": "string",
-    "social_justice_view": "string",
-    "summary": "string"
-  },
-  "summary": "string — 2-3 sentence overall summary"
-}
-```
-
-Respond ONLY with valid JSON."""
-
-    async def analyze(self, event_text: str, event_profile: str) -> HistoryEthicsAnalysis:
-        message = self.build_context_message(
-            event_text, EventProfile=event_profile
+    def __init__(self, config: Config) -> None:
+        super().__init__(
+            name="history_ethics_analyst",
+            role="History & Ethics Analyst (역사/윤리 분석가)",
+            system_prompt=SYSTEM_PROMPT,
+            config=config,
         )
-        return await self.run(message, HistoryEthicsAnalysis)
+
+    async def analyze(self, event_profile: EventProfile) -> HistoryEthicsAnalysis:
+        """Analyze historical parallels and ethical implications."""
+        context = {
+            "event_profile": event_profile.model_dump(),
+        }
+        raw_text = await super().analyze(context)
+        return self._parse_json_response(raw_text, HistoryEthicsAnalysis)

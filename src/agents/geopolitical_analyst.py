@@ -1,49 +1,47 @@
-"""Geopolitical Analyst Agent — 지정학적 파급력 분석."""
+"""Geopolitical Analyst Agent -- 지정학적 파급력 분석."""
 
 from __future__ import annotations
 
 from src.agents.base import BaseAgent
-from src.models import GeopoliticalAnalysis
+from src.config import Config
+from src.models import EventProfile, GeopoliticalAnalysis
+
+SYSTEM_PROMPT = (
+    "당신은 지정학 분석 전문가입니다. "
+    "사건이 국제 관계, 동맹 구조, 권력 역학, 분쟁 위험, 외교적 함의에 미치는 영향을 분석합니다. "
+    "지역별 파급력을 평가하고 제재/규제 변화 가능성을 예측합니다.\n\n"
+    "## Output Schema\n"
+    "Respond ONLY with valid JSON matching this schema:\n"
+    "```json\n"
+    "{\n"
+    '  "affected_regions": ["string"],\n'
+    '  "alliance_shifts": "string",\n'
+    '  "power_dynamics": "string",\n'
+    '  "conflict_risk_assessment": "string",\n'
+    '  "diplomatic_implications": "string",\n'
+    '  "sanctions_impact": "string",\n'
+    '  "summary": "string",\n'
+    '  "confidence_score": 0.0-1.0\n'
+    "}\n"
+    "```"
+)
 
 
-class GeopoliticalAnalystAgent(BaseAgent):
-    name = "geopolitical_analyst"
-    role = "Geopolitical Analyst (지정학 분석가)"
-    system_prompt = """You are the Geopolitical Analyst agent in an analysis team.
+class GeopoliticalAnalyst(BaseAgent):
+    """Analyzes geopolitical impact of events."""
 
-Your role is to analyze the geopolitical impact and implications of an event.
-
-## Analysis Dimensions
-1. **International Relations** — How does this affect relationships between nations/blocs?
-2. **Sanctions & Trade Restrictions** — Potential for new sanctions, trade barriers
-3. **Military & Security** — Defense posture changes, security implications
-4. **Energy & Supply Chain** — Impact on energy markets, critical resource supply chains
-5. **Regional Stability** — Effect on regional power balance and stability
-
-## Rules
-- Consider the interests of all major stakeholders (nations, alliances, organizations)
-- Analyze through multiple geopolitical frameworks (realism, liberalism, constructivism)
-- Assess escalation/de-escalation dynamics
-- Identify potential flashpoints and pressure points
-- Rate overall impact level: 1=minimal, 2=low, 3=moderate, 4=high, 5=critical
-
-## Output Schema
-```json
-{
-  "relations_impact": "string",
-  "sanctions_trade_risk": "string",
-  "military_security_risk": "string",
-  "energy_supply_chain_impact": "string",
-  "regional_stability": "string",
-  "impact_level": 1-5,
-  "summary": "string — 2-3 sentence executive summary"
-}
-```
-
-Respond ONLY with valid JSON."""
-
-    async def analyze(self, event_text: str, event_profile: str) -> GeopoliticalAnalysis:
-        message = self.build_context_message(
-            event_text, EventProfile=event_profile
+    def __init__(self, config: Config) -> None:
+        super().__init__(
+            name="geopolitical_analyst",
+            role="Geopolitical Analyst (지정학 분석가)",
+            system_prompt=SYSTEM_PROMPT,
+            config=config,
         )
-        return await self.run(message, GeopoliticalAnalysis)
+
+    async def analyze(self, event_profile: EventProfile) -> GeopoliticalAnalysis:
+        """Analyze geopolitical impact based on event profile."""
+        context = {
+            "event_profile": event_profile.model_dump(),
+        }
+        raw_text = await super().analyze(context)
+        return self._parse_json_response(raw_text, GeopoliticalAnalysis)

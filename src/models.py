@@ -2,148 +2,135 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Optional
+from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
-class AnalysisPhase(str, Enum):
-    IDENTIFICATION = "identification"
-    PARALLEL_ANALYSIS = "parallel_analysis"
-    AUDIT = "audit"
-    SYNTHESIS = "synthesis"
+class AnalysisRequest(BaseModel):
+    """User's analysis request."""
 
-
-class AuditVerdict(str, Enum):
-    PASS = "pass"
-    REVISE = "revise"
-    REJECT = "reject"
-
-
-class ConfidenceGrade(str, Enum):
-    A = "A"  # High confidence
-    B = "B"  # Moderate confidence
-    C = "C"  # Low confidence
-    D = "D"  # Very low confidence
-
-
-class ImpactLevel(int, Enum):
-    MINIMAL = 1
-    LOW = 2
-    MODERATE = 3
-    HIGH = 4
-    CRITICAL = 5
+    event_description: str
+    request_type: str = "full_analysis"
+    requested_by: str = ""
+    chat_id: int = 0
 
 
 class EventProfile(BaseModel):
     """5W1H structured event profile."""
+
+    event_name: str = ""
+    date: str = ""
+    location: str = ""
+    category: str = ""
     who: str = ""
     what: str = ""
     when: str = ""
     where: str = ""
     why: str = ""
     how: str = ""
-    key_data_points: list[str] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)
-    confidence: ConfidenceGrade = ConfidenceGrade.C
+    confidence_score: float = 0.5
 
 
 class MacroAnalysis(BaseModel):
+    """Macroeconomic impact analysis."""
+
     gdp_impact: str = ""
-    monetary_policy_impact: str = ""
     inflation_impact: str = ""
-    trade_fx_impact: str = ""
-    fiscal_policy_impact: str = ""
-    impact_level: ImpactLevel = ImpactLevel.MODERATE
+    trade_impact: str = ""
+    monetary_policy_impact: str = ""
+    labor_market_impact: str = ""
+    key_indicators: list[dict] = Field(default_factory=list)
     summary: str = ""
+    confidence_score: float = 0.5
 
 
 class GeopoliticalAnalysis(BaseModel):
-    relations_impact: str = ""
-    sanctions_trade_risk: str = ""
-    military_security_risk: str = ""
-    energy_supply_chain_impact: str = ""
-    regional_stability: str = ""
-    impact_level: ImpactLevel = ImpactLevel.MODERATE
+    """Geopolitical impact analysis."""
+
+    affected_regions: list[str] = Field(default_factory=list)
+    alliance_shifts: str = ""
+    power_dynamics: str = ""
+    conflict_risk_assessment: str = ""
+    diplomatic_implications: str = ""
+    sanctions_impact: str = ""
     summary: str = ""
+    confidence_score: float = 0.5
 
 
 class MicroAnalysis(BaseModel):
-    affected_sectors: list[str] = Field(default_factory=list)
-    company_impact: str = ""
-    consumer_behavior: str = ""
-    supply_chain_pricing: str = ""
-    competitive_landscape: str = ""
-    impact_level: ImpactLevel = ImpactLevel.MODERATE
+    """Microeconomic impact analysis."""
+
+    affected_industries: list[str] = Field(default_factory=list)
+    supply_chain_impact: str = ""
+    consumer_behavior_impact: str = ""
+    company_level_impacts: list[dict] = Field(default_factory=list)
+    market_structure_changes: str = ""
     summary: str = ""
+    confidence_score: float = 0.5
 
 
 class InvestmentAnalysis(BaseModel):
-    equities_impact: str = ""
-    bonds_impact: str = ""
-    commodities_impact: str = ""
-    crypto_impact: str = ""
-    real_estate_impact: str = ""
-    sector_rotation: str = ""
-    hedge_strategy: str = ""
+    """Investment impact analysis."""
+
+    asset_classes_affected: list[dict] = Field(default_factory=list)
+    risk_assessment: str = ""
     short_term_outlook: str = ""
-    mid_term_outlook: str = ""
+    medium_term_outlook: str = ""
     long_term_outlook: str = ""
-    impact_level: ImpactLevel = ImpactLevel.MODERATE
+    recommended_actions: list[str] = Field(default_factory=list)
+    portfolio_impact: str = ""
     summary: str = ""
-
-
-class HistoricalCase(BaseModel):
-    event_name: str = ""
-    year: str = ""
-    similarities: str = ""
-    differences: str = ""
-    outcome: str = ""
-
-
-class EthicalAnalysis(BaseModel):
-    utilitarian_view: str = ""
-    deontological_view: str = ""
-    virtue_ethics_view: str = ""
-    social_justice_view: str = ""
-    summary: str = ""
+    confidence_score: float = 0.5
 
 
 class HistoryEthicsAnalysis(BaseModel):
-    historical_cases: list[HistoricalCase] = Field(default_factory=list)
-    pattern_analysis: str = ""
-    ethical_analysis: EthicalAnalysis = Field(default_factory=EthicalAnalysis)
+    """Historical parallels and ethical analysis."""
+
+    historical_parallels: list[dict] = Field(default_factory=list)
+    ethical_considerations: list[str] = Field(default_factory=list)
+    moral_implications: str = ""
+    lessons_learned: list[str] = Field(default_factory=list)
+    societal_impact: str = ""
+    cultural_significance: str = ""
     summary: str = ""
+    confidence_score: float = 0.5
 
 
 class AuditResult(BaseModel):
-    logical_consistency: str = ""
-    biases_detected: list[str] = Field(default_factory=list)
-    data_quality_grade: ConfidenceGrade = ConfidenceGrade.C
-    counter_scenarios: list[str] = Field(default_factory=list)
-    cross_validation_issues: list[str] = Field(default_factory=list)
-    verdict: AuditVerdict = AuditVerdict.PASS
-    revision_requests: list[str] = Field(default_factory=list)
+    """Devil's advocate audit result."""
+
+    overall_verdict: Literal["PASS", "REVISE", "REJECT"] = "PASS"
+    issues_found: list[dict] = Field(default_factory=list)
+    agents_to_revise: list[str] = Field(default_factory=list)
+    credibility_score: float = 0.5
+    bias_detected: list[str] = Field(default_factory=list)
+    logical_fallacies: list[str] = Field(default_factory=list)
+    missing_perspectives: list[str] = Field(default_factory=list)
     summary: str = ""
-
-
-class AnalysisRequest(BaseModel):
-    """User's analysis request."""
-    raw_text: str
-    chat_id: int
-    message_id: int
 
 
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
+
     request: AnalysisRequest
     event_profile: EventProfile = Field(default_factory=EventProfile)
-    macro: MacroAnalysis = Field(default_factory=MacroAnalysis)
-    geopolitical: GeopoliticalAnalysis = Field(default_factory=GeopoliticalAnalysis)
-    micro: MicroAnalysis = Field(default_factory=MicroAnalysis)
-    investment: InvestmentAnalysis = Field(default_factory=InvestmentAnalysis)
-    history_ethics: HistoryEthicsAnalysis = Field(default_factory=HistoryEthicsAnalysis)
-    audit: AuditResult = Field(default_factory=AuditResult)
-    overall_confidence: ConfidenceGrade = ConfidenceGrade.C
+    macro_analysis: MacroAnalysis = Field(default_factory=MacroAnalysis)
+    geopolitical_analysis: GeopoliticalAnalysis = Field(
+        default_factory=GeopoliticalAnalysis
+    )
+    micro_analysis: MicroAnalysis = Field(default_factory=MicroAnalysis)
+    investment_analysis: InvestmentAnalysis = Field(
+        default_factory=InvestmentAnalysis
+    )
+    history_ethics_analysis: HistoryEthicsAnalysis = Field(
+        default_factory=HistoryEthicsAnalysis
+    )
+    audit_result: AuditResult = Field(default_factory=AuditResult)
     executive_summary: str = ""
+    analysis_timestamp: str = Field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
+    total_duration_seconds: float = 0.0

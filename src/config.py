@@ -1,25 +1,38 @@
-"""Configuration for the Event Analysis Team system."""
+"""Configuration for the Event Analysis Team system using Pydantic BaseSettings."""
 
 from __future__ import annotations
 
-import os
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
-from dotenv import load_dotenv
 
-load_dotenv()
+class Config(BaseSettings):
+    """Application configuration loaded from environment variables."""
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-ALLOWED_CHAT_IDS: list[int] = [
-    int(x) for x in os.getenv("ALLOWED_CHAT_IDS", "").split(",") if x.strip()
-]
+    anthropic_api_key: str = ""
+    telegram_bot_token: str = ""
+    allowed_chat_ids: list[int] = Field(default_factory=list)
+    cloudflare_account_id: str = ""
+    cloudflare_api_token: str = ""
+    cloudflare_project_name: str = "analysis-reports"
+    report_output_dir: str = "reports"
+    model_name: str = "claude-sonnet-4-6"
 
-CLAUDE_CODE_PATH = os.getenv("CLAUDE_CODE_PATH", "claude")
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "env_nested_delimiter": "__",
+    }
 
-# Model: claude-sonnet-4-6 for agents, can override per-agent
-MODEL = "claude-sonnet-4-6"
-MAX_TOKENS = 4096
-REPORT_OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
+    @classmethod
+    def _parse_allowed_chat_ids(cls, v: str | list[int]) -> list[int]:
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str) and v.strip():
+            return [int(x.strip()) for x in v.split(",") if x.strip()]
+        return []
 
-# Execution mode: "api" if ANTHROPIC_API_KEY is set, otherwise "claude_code"
-EXECUTION_MODE = "api" if ANTHROPIC_API_KEY else "claude_code"
+
+def get_config() -> Config:
+    """Create and return a Config instance."""
+    return Config()
