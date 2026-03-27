@@ -33,8 +33,16 @@ class ReportSynthesizer:
     async def _generate_executive_summary(self, result: FullAnalysisResult) -> str:
         """Generate executive summary by calling Claude."""
         summary_prompt = (
-            "다음 분석 결과를 바탕으로 3문장 이내의 핵심 요약(Executive Summary)을 "
-            "한국어로 작성하세요. 사건 개요, 핵심 영향, 리스크 수준을 포함하세요.\n\n"
+            "다음 분석 결과를 바탕으로 핵심 요약(Executive Summary)을 작성.\n\n"
+            "출력 규칙:\n"
+            "- 음슴체 사용 (미사여구 금지, 짧고 직관적인 문장만)\n"
+            "- 불릿 포인트(*) 형태로 핵심 사실만 나열\n"
+            "- 줄글 금지, 문장형 서술 금지\n"
+            "- 3줄 이내\n\n"
+            "출력 형식:\n"
+            "* 사건 개요 : {핵심 내용}\n"
+            "* 핵심 영향 : {주요 파급효과}\n"
+            "* 리스크 수준 : {상/중/하 + 근거}\n\n"
             "분석 결과:\n"
         )
         analyses_data = {

@@ -388,6 +388,36 @@ section + section {
   font-size: 0.95rem;
   line-height: 1.8;
   color: var(--yk-text);
+  white-space: pre-line;
+}
+
+/* Bullet-point analysis content */
+.analysis-content {
+  white-space: pre-line;
+  font-size: 0.82rem;
+  color: var(--yk-text-secondary);
+  line-height: 1.6;
+}
+.analysis-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.analysis-content ul li {
+  font-size: 0.82rem;
+  color: var(--yk-text-secondary);
+  padding: 0.35rem 0;
+  border-bottom: var(--yk-border-sm);
+  line-height: 1.5;
+}
+.analysis-content ul li:last-child {
+  border-bottom: none;
+}
+.analysis-content ul li::before {
+  content: "\2022 ";
+  color: var(--yk-primary);
+  font-weight: 700;
+  margin-right: 0.4rem;
 }
 
 /* Responsive */
@@ -539,10 +569,15 @@ section + section {
         </div>
         <div class="card-body">
           <ul>
-            <li>GDP: {{ result.macro_analysis.gdp_impact[:80] if result.macro_analysis.gdp_impact else 'N/A' }}</li>
-            <li>Inflation: {{ result.macro_analysis.inflation_impact[:80] if result.macro_analysis.inflation_impact else 'N/A' }}</li>
-            <li>Trade: {{ result.macro_analysis.trade_impact[:80] if result.macro_analysis.trade_impact else 'N/A' }}</li>
+            <li>GDP : {{ result.macro_analysis.gdp_impact if result.macro_analysis.gdp_impact else 'N/A' }}</li>
+            <li>Inflation : {{ result.macro_analysis.inflation_impact if result.macro_analysis.inflation_impact else 'N/A' }}</li>
+            <li>Trade : {{ result.macro_analysis.trade_impact if result.macro_analysis.trade_impact else 'N/A' }}</li>
+            <li>Monetary : {{ result.macro_analysis.monetary_policy_impact if result.macro_analysis.monetary_policy_impact else 'N/A' }}</li>
+            <li>Labor : {{ result.macro_analysis.labor_market_impact if result.macro_analysis.labor_market_impact else 'N/A' }}</li>
           </ul>
+          {% if result.macro_analysis.summary %}
+          <div class="analysis-content" style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">{{ result.macro_analysis.summary }}</div>
+          {% endif %}
         </div>
       </div>
 
@@ -555,9 +590,11 @@ section + section {
         </div>
         <div class="card-body">
           <ul>
-            <li>Conflict Risk: {{ result.geopolitical_analysis.conflict_risk_assessment[:80] if result.geopolitical_analysis.conflict_risk_assessment else 'N/A' }}</li>
-            <li>Diplomacy: {{ result.geopolitical_analysis.diplomatic_implications[:80] if result.geopolitical_analysis.diplomatic_implications else 'N/A' }}</li>
-            <li>Sanctions: {{ result.geopolitical_analysis.sanctions_impact[:80] if result.geopolitical_analysis.sanctions_impact else 'N/A' }}</li>
+            <li>Alliance : {{ result.geopolitical_analysis.alliance_shifts if result.geopolitical_analysis.alliance_shifts else 'N/A' }}</li>
+            <li>Power : {{ result.geopolitical_analysis.power_dynamics if result.geopolitical_analysis.power_dynamics else 'N/A' }}</li>
+            <li>Conflict : {{ result.geopolitical_analysis.conflict_risk_assessment if result.geopolitical_analysis.conflict_risk_assessment else 'N/A' }}</li>
+            <li>Diplomacy : {{ result.geopolitical_analysis.diplomatic_implications if result.geopolitical_analysis.diplomatic_implications else 'N/A' }}</li>
+            <li>Sanctions : {{ result.geopolitical_analysis.sanctions_impact if result.geopolitical_analysis.sanctions_impact else 'N/A' }}</li>
           </ul>
           {% if result.geopolitical_analysis.affected_regions %}
           <div class="tag-list" style="margin-top:0.5rem">
@@ -565,6 +602,9 @@ section + section {
             <span class="tag">{{ region }}</span>
             {% endfor %}
           </div>
+          {% endif %}
+          {% if result.geopolitical_analysis.summary %}
+          <div class="analysis-content" style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">{{ result.geopolitical_analysis.summary }}</div>
           {% endif %}
         </div>
       </div>
@@ -578,9 +618,9 @@ section + section {
         </div>
         <div class="card-body">
           <ul>
-            <li>Supply Chain: {{ result.micro_analysis.supply_chain_impact[:80] if result.micro_analysis.supply_chain_impact else 'N/A' }}</li>
-            <li>Consumer: {{ result.micro_analysis.consumer_behavior_impact[:80] if result.micro_analysis.consumer_behavior_impact else 'N/A' }}</li>
-            <li>Market: {{ result.micro_analysis.market_structure_changes[:80] if result.micro_analysis.market_structure_changes else 'N/A' }}</li>
+            <li>Supply Chain : {{ result.micro_analysis.supply_chain_impact if result.micro_analysis.supply_chain_impact else 'N/A' }}</li>
+            <li>Consumer : {{ result.micro_analysis.consumer_behavior_impact if result.micro_analysis.consumer_behavior_impact else 'N/A' }}</li>
+            <li>Market : {{ result.micro_analysis.market_structure_changes if result.micro_analysis.market_structure_changes else 'N/A' }}</li>
           </ul>
           {% if result.micro_analysis.affected_industries %}
           <div class="tag-list" style="margin-top:0.5rem">
@@ -588,6 +628,18 @@ section + section {
             <span class="tag">{{ industry }}</span>
             {% endfor %}
           </div>
+          {% endif %}
+          {% if result.micro_analysis.company_level_impacts %}
+          <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">
+            <ul>
+              {% for ci in result.micro_analysis.company_level_impacts %}
+              <li>{{ ci.company }} : {{ ci.impact }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% if result.micro_analysis.summary %}
+          <div class="analysis-content" style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">{{ result.micro_analysis.summary }}</div>
           {% endif %}
         </div>
       </div>
