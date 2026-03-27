@@ -1,13 +1,14 @@
-"""Report Synthesizer -- visual HTML report with Plotly charts."""
+"""Report Synthesizer -- valentino-boop style HTML report with Canvas 2D charts."""
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
+import shutil
 from datetime import datetime
 
-import anthropic
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
@@ -19,19 +20,23 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 
 
 class ReportSynthesizer:
-    """Generates HTML reports from analysis results.
+    """Generates valentino-boop style HTML reports from analysis results.
 
-    Does NOT extend BaseAgent. Uses Jinja2 for HTML rendering
-    and optionally calls Claude for executive summary generation.
-    Generates Plotly chart data from analysis results.
+    Does NOT extend BaseAgent. Uses Jinja2 for HTML rendering,
+    calls Claude CLI for executive summary generation,
+    builds Canvas 2D chart data, and uploads to Cloudflare Pages.
     """
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
+        self._api_client: object | None = None
+
+        if not config.use_cli_mode:
+            import anthropic
+            self._api_client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
 
     async def _generate_executive_summary(self, result: FullAnalysisResult) -> str:
-        """Generate executive summary by calling Claude."""
+        """Generate executive summary via Claude CLI or API."""
         summary_prompt = (
             "다음 분석 결과를 바탕으로 핵심 요약(Executive Summary)을 작성.\n\n"
             "출력 규칙:\n"
@@ -45,125 +50,155 @@ class ReportSynthesizer:
             "* 리스크 수준 : {상/중/하 + 근거}\n\n"
             "분석 결과:\n"
         )
-        analyses_data = {
-            "event_profile": result.event_profile.model_dump(),
-            "macro_analysis": result.macro_analysis.model_dump(),
-            "geopolitical_analysis": result.geopolitical_analysis.model_dump(),
-            "micro_analysis": result.micro_analysis.model_dump(),
-            "audit_result": result.audit_result.model_dump(),
-        }
+
+        analyses_data: dict = {}
+        if result.context:
+            analyses_data["context"] = result.context.model_dump()
+        if result.players:
+            analyses_data["players"] = result.players.model_dump()
+        if result.dynamics:
+            analyses_data["dynamics"] = result.dynamics.model_dump()
+        if result.chain_reaction:
+            analyses_data["chain_reaction"] = result.chain_reaction.model_dump()
+        if result.scenarios:
+            analyses_data["scenarios"] = result.scenarios.model_dump()
+
         user_message = summary_prompt + json.dumps(
             analyses_data, ensure_ascii=False, indent=2
         )
 
+        if self.config.use_cli_mode:
+            return await self._call_cli(user_message)
+        return await self._call_api(user_message)
+
+    async def _call_cli(self, prompt: str) -> str:
+        """Call Claude CLI for text generation."""
+        claude_bin = shutil.which("claude")
+        if claude_bin is None:
+            raise RuntimeError(
+                "claude CLI not found on PATH. "
+                "Install it with: npm install -g @anthropic-ai/claude-code && claude login"
+            )
+
+        cmd = [
+            claude_bin,
+            "-p", prompt,
+            "--output-format", "text",
+            "--model", self.config.model_name,
+            "--dangerously-skip-permissions",
+        ]
+
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+
+        if proc.returncode != 0:
+            err_msg = stderr.decode().strip() if stderr else "unknown error"
+            raise RuntimeError(f"[report_synthesizer] CLI failed: {err_msg}")
+
+        return stdout.decode().strip()
+
+    async def _call_api(self, prompt: str) -> str:
+        """Call Anthropic API for text generation."""
+        assert self._api_client is not None, "API client not initialised"
         try:
-            response = await self.client.messages.create(
+            response = await self._api_client.messages.create(  # type: ignore[union-attr]
                 model=self.config.model_name,
                 max_tokens=1024,
-                messages=[{"role": "user", "content": user_message}],
+                messages=[{"role": "user", "content": prompt}],
             )
-            return response.content[0].text
+            return response.content[0].text  # type: ignore[index]
         except Exception as e:
             logger.error(f"[report_synthesizer] Summary generation failed: {e}")
-            return result.macro_analysis.summary or "Executive summary unavailable."
+            return "Executive summary unavailable."
 
     def _build_chart_data(self, result: FullAnalysisResult) -> dict:
-        """Build JSON-serializable chart data for Plotly templates."""
-        # Confidence scores for bar chart and radar
-        confidence_scores = {
-            "Event Identifier": result.event_profile.confidence_score,
-            "Macro Analyst": result.macro_analysis.confidence_score,
-            "Geopolitical Analyst": result.geopolitical_analysis.confidence_score,
-            "Micro Analyst": result.micro_analysis.confidence_score,
-            "Audit Credibility": result.audit_result.credibility_score,
-        }
-
-        # Impact radar data (3 domains)
-        impact_radar = {
-            "categories": [
-                "\uac70\uc2dc\uacbd\uc81c",
-                "\uc9c0\uc815\ud559",
-                "\ubbf8\uc2dc\uacbd\uc81c",
-            ],
-            "values": [
-                result.macro_analysis.confidence_score,
-                result.geopolitical_analysis.confidence_score,
-                result.micro_analysis.confidence_score,
-            ],
-        }
-
-        # Risk gauge (average confidence inverted = risk)
-        avg_confidence = (
-            result.macro_analysis.confidence_score
-            + result.geopolitical_analysis.confidence_score
-            + result.micro_analysis.confidence_score
-        ) / 3.0
-        risk_level = round((1.0 - avg_confidence) * 100, 1)
-
-        # Impact matrix scatter data
-        impact_matrix = {
-            "labels": [
-                "\uac70\uc2dc\uacbd\uc81c",
-                "\uc9c0\uc815\ud559",
-                "\ubbf8\uc2dc\uacbd\uc81c",
-            ],
-            "probability": [
-                result.macro_analysis.confidence_score,
-                result.geopolitical_analysis.confidence_score,
-                result.micro_analysis.confidence_score,
-            ],
-            "severity": [
-                round(result.macro_analysis.confidence_score * 0.9, 2),
-                round(result.geopolitical_analysis.confidence_score * 0.85, 2),
-                round(result.micro_analysis.confidence_score * 0.8, 2),
-            ],
-            "colors": ["#8fb4c9", "#d4776b", "#6baa7c"],
-        }
-
-        # Sector impact heatmap
-        sectors = result.micro_analysis.affected_industries[:6] or [
-            "Technology", "Finance", "Energy", "Healthcare", "Manufacturing"
-        ]
-        regions = result.geopolitical_analysis.affected_regions[:5] or [
-            "North America", "Europe", "Asia"
-        ]
-        # Build a simple heatmap grid
-        heatmap_z: list[list[float]] = []
-        for i, _sector in enumerate(sectors):
-            row: list[float] = []
-            for j, _region in enumerate(regions):
-                # Deterministic pseudo-value based on indices and confidence
-                base = (result.macro_analysis.confidence_score + i * 0.1 + j * 0.15) % 1.0
-                row.append(round(base, 2))
-            heatmap_z.append(row)
+        """Build JSON-serializable chart data for Canvas 2D radar chart."""
+        confidence_scores: dict[str, float] = {}
+        if result.context:
+            confidence_scores["Context"] = result.context.confidence_score
+        if result.players:
+            confidence_scores["Players"] = result.players.confidence_score
+        if result.dynamics:
+            confidence_scores["Dynamics"] = result.dynamics.confidence_score
+        if result.chain_reaction:
+            confidence_scores["Chain Reaction"] = result.chain_reaction.confidence_score
+        if result.scenarios:
+            confidence_scores["Scenarios"] = result.scenarios.confidence_score
 
         return {
-            "confidence_scores": confidence_scores,
-            "impact_radar": impact_radar,
-            "risk_level": risk_level,
-            "impact_matrix": impact_matrix,
-            "heatmap": {
-                "sectors": sectors,
-                "regions": regions,
-                "z": heatmap_z,
-            },
+            "labels": list(confidence_scores.keys()),
+            "values": list(confidence_scores.values()),
         }
 
+    async def _upload_to_cloudflare(self, filepath: str) -> str:
+        """Upload HTML report to Cloudflare Pages and return the URL."""
+        account_id = self.config.cloudflare_account_id
+        api_token = self.config.cloudflare_api_token
+        project_name = self.config.cloudflare_project_name
+
+        if not account_id or not api_token:
+            logger.warning("[report_synthesizer] Cloudflare credentials not set, skipping upload")
+            return ""
+
+        try:
+            curl_bin = shutil.which("curl")
+            if curl_bin is None:
+                logger.warning("[report_synthesizer] curl not found, skipping upload")
+                return ""
+
+            filename = os.path.basename(filepath)
+
+            cmd = [
+                curl_bin, "-s",
+                "-X", "POST",
+                f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
+                f"/pages/projects/{project_name}/deployments",
+                "-H", f"Authorization: Bearer {api_token}",
+                "-F", f"/{filename}=@{filepath}",
+            ]
+
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                logger.error(f"[report_synthesizer] Cloudflare upload failed: {stderr.decode()}")
+                return ""
+
+            response_data = json.loads(stdout.decode())
+            if response_data.get("success"):
+                url = response_data.get("result", {}).get("url", "")
+                logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {url}")
+                return url
+
+            logger.error(f"[report_synthesizer] Cloudflare API error: {response_data}")
+            return ""
+
+        except Exception as e:
+            logger.error(f"[report_synthesizer] Cloudflare upload exception: {e}")
+            return ""
+
     async def synthesize(self, result: FullAnalysisResult) -> str:
-        """Render the full HTML report and return the file path."""
-        # Generate executive summary if not already set
+        """Render HTML report, upload to Cloudflare, return URL or filepath."""
+        # Generate executive summary
         if not result.executive_summary:
             result.executive_summary = await self._generate_executive_summary(result)
 
         # Build chart data
         chart_data = self._build_chart_data(result)
 
-        env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=True)
+        env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
         template = env.get_template("report.html")
 
         html = template.render(
             result=result,
-            chart_data=chart_data,
             chart_data_json=json.dumps(chart_data, ensure_ascii=False),
             generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
@@ -180,4 +215,12 @@ class ReportSynthesizer:
             f.write(html)
 
         logger.info(f"[report_synthesizer] Report saved: {filepath}")
+        result.report_path = filepath
+
+        # Upload to Cloudflare Pages
+        report_url = await self._upload_to_cloudflare(filepath)
+        if report_url:
+            result.report_url = report_url
+            return report_url
+
         return filepath

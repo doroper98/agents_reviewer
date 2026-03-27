@@ -3,863 +3,540 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Event Analysis Report — {{ result.event_profile.event_name[:60] }}</title>
+<title>{{ result.context.event_name_en or result.context.event_name or 'Event Analysis' }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* YK_ Soft-Brutalism CSS (inline) */
-:root {
-  --yk-bg: #f5f0e8;
-  --yk-surface: #fff;
-  --yk-surface-hover: #f5f0e8;
-  --yk-shadow-raised: 3px 3px 0 #c8c0b0;
-  --yk-shadow-sm: 2px 2px 0 #c8c0b0;
-  --yk-border: 2px solid #c8c0b0;
-  --yk-border-sm: 1px solid #d9d2c5;
-  --yk-font: 'Rubik', 'Noto Sans KR', sans-serif;
-  --yk-text: #3d3929;
-  --yk-text-secondary: #7a7262;
-  --yk-text-muted: #b5ad9e;
-  --yk-primary: #7eb77f;
-  --yk-primary-soft: rgba(126,183,127,0.12);
-  --yk-secondary: #c9a96e;
-  --yk-secondary-soft: rgba(201,169,110,0.12);
-  --yk-danger: #d4776b;
-  --yk-danger-soft: rgba(212,119,107,0.1);
-  --yk-success: #6baa7c;
-  --yk-success-soft: rgba(107,170,124,0.12);
-  --yk-warning: #8fb4c9;
-  --yk-warning-soft: rgba(143,180,201,0.12);
-  --yk-radius: 6px;
-  --yk-radius-sm: 4px;
-  --yk-gap: 1rem;
-  --yk-transition: all 0.2s ease;
+/* === valentino-boop design system === */
+:root{
+  --bg:#FAFAF7;--card:#FFF;--border:#E4E0D8;
+  --red:#BD3227;--org:#C76B1E;--blu:#1D6FA5;--grn:#1A7B3E;--gld:#9E8A15;
+  --nvy:#151D26;--txt:#2C2C2C;--sub:#6B6B6B;--mute:#A0A0A0;
+  --amber:#D4A017;--teal:#0E7C6B;--purple:#6B4C9A;
+  --r:6px;--r2:10px;--sh:0 1px 4px rgba(0,0,0,.05);
+  --serif:'Noto Serif KR',serif;--sans:'Noto Sans KR',sans-serif;--mono:'JetBrains Mono',monospace;
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);line-height:1.7;font-size:15px}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* --- Hero --- */
+.hero{background:var(--nvy);color:#fff;padding:3.5rem 0 2.5rem;text-align:center}
+.hero h1{font-family:var(--serif);font-size:clamp(1.5rem,4.5vw,2.6rem);font-weight:900;line-height:1.25;margin-bottom:.5rem}
+.hero .sub{color:#9CA3AF;font-size:.9rem;margin-bottom:1rem}
+.hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.hero .tag{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(255,255,255,.1);color:#D1D5DB;letter-spacing:.03em}
 
-.yk-body {
-  font-family: var(--yk-font);
-  background: var(--yk-bg);
-  color: var(--yk-text);
-  line-height: 1.65;
-  padding: 0;
-  margin: 0;
-}
+/* --- Sticky Nav --- */
+nav{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);box-shadow:var(--sh)}
+nav .wrap{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav a{flex-shrink:0;padding:10px 16px;font-size:.78rem;font-weight:600;color:var(--sub);text-decoration:none;border-bottom:2px solid transparent;transition:all .2s}
+nav a:hover,nav a.active{color:var(--nvy);border-bottom-color:var(--blu)}
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
+/* --- Sections --- */
+section{padding:2.5rem 0 1.5rem}
+.act-label{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--blu);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+section h2{font-family:var(--serif);font-size:1.35rem;font-weight:700;margin-bottom:1.2rem;color:var(--nvy)}
 
-/* Header */
-.report-header {
-  background: var(--yk-text);
-  color: #fff;
-  padding: 3rem 0 2.5rem;
-  text-align: center;
-}
-.report-header h1 {
-  font-size: clamp(1.4rem, 4vw, 2.4rem);
-  font-weight: 800;
-  margin-bottom: 0.75rem;
-  line-height: 1.3;
-}
-.report-header .meta {
-  font-size: 0.85rem;
-  color: var(--yk-text-muted);
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
+/* --- Cards --- */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh);padding:1.5rem;margin-bottom:1rem;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.card.show{opacity:1;transform:translateY(0)}
 
-/* Cards */
-.yk-card {
-  background: var(--yk-surface);
-  border-radius: var(--yk-radius);
-  border: var(--yk-border);
-  box-shadow: var(--yk-shadow-raised);
-  padding: 1.5rem;
-  transition: var(--yk-transition);
-  margin-bottom: var(--yk-gap);
-}
-.yk-card:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #c8c0b0;
-}
-.yk-card h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--yk-text);
-}
+/* --- Key Figures grid --- */
+.kf{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:1rem}
+.kf-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center}
+.kf-item .kf-v{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--nvy)}
+.kf-item .kf-l{font-size:.72rem;color:var(--sub);margin-top:2px}
+.kf-item .kf-c{font-size:.65rem;color:var(--mute);margin-top:2px}
 
-/* Badges */
-.yk-badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 4px;
-  background: var(--yk-primary-soft);
-  color: var(--yk-primary);
-  border: 1px solid var(--yk-primary);
-}
-.yk-badge-danger {
-  background: var(--yk-danger-soft);
-  color: var(--yk-danger);
-  border-color: var(--yk-danger);
-}
-.yk-badge-success {
-  background: var(--yk-success-soft);
-  color: var(--yk-success);
-  border-color: var(--yk-success);
-}
-.yk-badge-warning {
-  background: var(--yk-warning-soft);
-  color: var(--yk-warning);
-  border-color: var(--yk-warning);
-}
+/* --- Timeline --- */
+.tl{position:relative;padding-left:24px;margin-bottom:1rem}
+.tl::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:12px;padding-left:16px}
+.tl-item::before{content:'';position:absolute;left:-21px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--blu);border:2px solid var(--card)}
+.tl-date{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blu)}
+.tl-event{font-size:.85rem;color:var(--txt)}
+.tl-impact{font-size:.75rem;color:var(--sub);font-style:italic}
 
-/* Panels */
-.yk-panel {
-  background: var(--yk-surface);
-  border-radius: var(--yk-radius);
-  border: var(--yk-border);
-  box-shadow: var(--yk-shadow-raised);
-  padding: 1.5rem;
-}
+/* --- Player Cards --- */
+.pl{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;margin-bottom:10px;border-left:4px solid var(--mute);opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.pl.show{opacity:1;transform:translateY(0)}
+.pl.ex{border-left-color:var(--red)}.pl.hi{border-left-color:var(--org)}.pl.md{border-left-color:var(--gld)}.pl.lo{border-left-color:var(--grn)}
+.pl-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pl-f{font-size:1.4rem}
+.pl-n{font-family:var(--serif);font-weight:700;font-size:1rem}
+.bg{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:4px;color:#fff;margin-left:auto}
+.bg.ex{background:var(--red)}.bg.hi{background:var(--org)}.bg.md{background:var(--gld)}.bg.lo{background:var(--grn)}
+.pl-role{font-family:var(--mono);font-size:.65rem;color:var(--blu);font-weight:700;letter-spacing:.04em;margin-bottom:6px}
+.pl-s{font-size:.82rem;color:var(--txt);margin-bottom:6px;line-height:1.6}
+.pl-t{font-size:.78rem;color:var(--sub);line-height:1.6}
+.pl-v{font-size:.75rem;color:var(--red);margin-top:6px}
 
-/* Metrics */
-.yk-metric {
-  background: var(--yk-surface);
-  border-radius: var(--yk-radius);
-  border: var(--yk-border);
-  box-shadow: var(--yk-shadow-raised);
-  padding: 1.25rem;
-  text-align: center;
-}
-.yk-metric-label {
-  font-size: 0.72rem;
-  color: var(--yk-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
-}
-.yk-metric-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-}
+/* --- Asymmetries & Tipping Points --- */
+.asym{display:grid;gap:10px;margin-bottom:1rem}
+.asym-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.asym-type{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--org);margin-bottom:4px}
+.asym-desc{font-size:.82rem;color:var(--txt)}
+.asym-adv{font-size:.72rem;color:var(--grn);margin-top:4px}
 
-/* Alerts */
-.yk-alert {
-  padding: 1rem 1.25rem;
-  border-radius: var(--yk-radius-sm);
-  border: var(--yk-border-sm);
-  border-left: 4px solid var(--yk-primary);
-  background: var(--yk-primary-soft);
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
-}
-.yk-alert-danger {
-  border-left-color: var(--yk-danger);
-  background: var(--yk-danger-soft);
-}
-.yk-alert-success {
-  border-left-color: var(--yk-success);
-  background: var(--yk-success-soft);
-}
-.yk-alert-warning {
-  border-left-color: var(--yk-warning);
-  background: var(--yk-warning-soft);
-}
-.yk-alert-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.yk-alert-desc {
-  color: var(--yk-text-secondary);
-  font-size: 0.78rem;
-  line-height: 1.5;
-}
+.tp{display:grid;gap:10px;margin-bottom:1rem}
+.tp-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;border-left:3px solid var(--red)}
+.tp-cond{font-size:.85rem;font-weight:600;color:var(--txt)}
+.tp-time{font-family:var(--mono);font-size:.72rem;color:var(--blu);margin-top:2px}
+.tp-cons{font-size:.78rem;color:var(--sub);margin-top:4px}
 
-/* Grids */
-.yk-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--yk-gap);
-}
-.yk-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--yk-gap);
-}
-.yk-grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--yk-gap);
-}
+/* --- Flow Chart (Chain Reaction) --- */
+.fl{display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:1rem}
+.fn{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;width:100%;max-width:520px;text-align:center;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.fn.show{opacity:1;transform:translateY(0)}
+.fn strong{font-family:var(--mono);font-size:.82rem;display:block;color:var(--nvy)}
+.fn span{font-size:.78rem;color:var(--sub)}
+.fn .fn-aff{font-size:.68rem;color:var(--org);margin-top:4px}
+.fn .fn-sev{font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:3px;display:inline-block;margin-top:4px}
+.fn .fn-sev.h{background:rgba(189,50,39,.1);color:var(--red)}.fn .fn-sev.m{background:rgba(199,107,30,.1);color:var(--org)}.fn .fn-sev.l{background:rgba(26,123,62,.1);color:var(--grn)}
+.fa{width:2px;height:24px;background:var(--border);position:relative}
+.fa::after{content:'';position:absolute;bottom:-4px;left:-4px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--border)}
 
-/* Section spacing */
-section {
-  padding: 2rem 0;
-}
-section + section {
-  border-top: var(--yk-border-sm);
-}
-.section-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 1.25rem;
-  color: var(--yk-text);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+/* --- Break Points --- */
+.bp{background:rgba(26,123,62,.05);border:1px solid var(--grn);border-radius:var(--r);padding:10px 14px;margin-bottom:8px;font-size:.82rem}
+.bp-step{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--grn)}
 
-/* 5W1H Grid */
-.wh-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--yk-gap);
-}
-.wh-item {
-  padding: 1rem;
-  background: var(--yk-surface);
-  border: var(--yk-border-sm);
-  border-radius: var(--yk-radius-sm);
-}
-.wh-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--yk-primary);
-  margin-bottom: 0.25rem;
-}
+/* --- Scenario Matrix Table --- */
+.mx{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:1rem}
+.mx th{background:var(--nvy);color:#fff;padding:10px 12px;text-align:left;font-size:.75rem;font-weight:600}
+.mx td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.mx tr:nth-child(even){background:rgba(0,0,0,.015)}
+.mx .sc-tag{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:3px;display:inline-block}
+.sc-best{background:rgba(26,123,62,.1);color:var(--grn)}.sc-base{background:rgba(29,111,165,.1);color:var(--blu)}
+.sc-worse{background:rgba(199,107,30,.1);color:var(--org)}.sc-worst{background:rgba(189,50,39,.1);color:var(--red)}
+.mx .sc-prob{font-family:var(--mono);font-weight:700;font-size:.85rem}
 
-/* Analysis cards */
-.analysis-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--yk-gap);
-}
-.analysis-card {
-  background: var(--yk-surface);
-  border-radius: var(--yk-radius);
-  border: var(--yk-border);
-  box-shadow: var(--yk-shadow-raised);
-  padding: 1.5rem;
-  transition: var(--yk-transition);
-}
-.analysis-card:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #c8c0b0;
-}
-.analysis-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-.analysis-card .card-icon {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
-}
-.analysis-card .card-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-.analysis-card .card-body ul {
-  list-style: none;
-  padding: 0;
-}
-.analysis-card .card-body ul li {
-  font-size: 0.82rem;
-  color: var(--yk-text-secondary);
-  padding: 0.35rem 0;
-  border-bottom: var(--yk-border-sm);
-  line-height: 1.5;
-}
-.analysis-card .card-body ul li:last-child {
-  border-bottom: none;
-}
-.analysis-card .card-body ul li::before {
-  content: "\2022 ";
-  color: var(--yk-primary);
-  font-weight: 700;
-  margin-right: 0.4rem;
-}
+/* --- Watch Signals --- */
+.wg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1rem}
+.wi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:10px;align-items:flex-start;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.wi.show{opacity:1;transform:translateY(0)}
+.wi-i{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.wi h4{font-size:.82rem;font-weight:600;color:var(--nvy);margin-bottom:2px}
+.wi p{font-size:.72rem;color:var(--sub);line-height:1.5}
+.wi .wi-ind{font-family:var(--mono);font-size:.6rem;color:var(--blu);margin-top:4px}
 
-/* Tag list */
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-}
-.tag {
-  font-size: 0.72rem;
-  padding: 2px 8px;
-  border-radius: 3px;
-  background: var(--yk-warning-soft);
-  color: var(--yk-text-secondary);
-  border: 1px solid rgba(143,180,201,0.3);
-}
+/* --- Confidence Radar (Canvas) --- */
+.radar-wrap{display:flex;justify-content:center;margin:1.5rem 0}
+#radarCanvas{max-width:100%}
 
-/* Verdict badge */
-.verdict-badge {
-  display: inline-block;
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 10px 28px;
-  border-radius: var(--yk-radius);
-  border: 2px solid;
-  letter-spacing: 0.05em;
-}
-.verdict-pass {
-  background: var(--yk-success-soft);
-  color: var(--yk-success);
-  border-color: var(--yk-success);
-}
-.verdict-revise {
-  background: var(--yk-warning-soft);
-  color: #b08d2e;
-  border-color: #c9a96e;
-}
-.verdict-reject {
-  background: var(--yk-danger-soft);
-  color: var(--yk-danger);
-  border-color: var(--yk-danger);
-}
+/* --- Executive Summary --- */
+.exec{background:var(--nvy);color:#fff;border-radius:var(--r2);padding:1.5rem;margin-bottom:1.5rem;font-size:.88rem;line-height:1.8;white-space:pre-line}
 
-/* Timeline flow */
-.flow-timeline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 1rem 0;
-  flex-wrap: wrap;
-}
-.flow-step {
-  background: var(--yk-surface);
-  border: var(--yk-border);
-  border-radius: var(--yk-radius);
-  box-shadow: var(--yk-shadow-sm);
-  padding: 0.75rem 1.25rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: center;
-  min-width: 120px;
-}
-.flow-arrow {
-  font-size: 1.4rem;
-  color: var(--yk-text-muted);
-  padding: 0 0.3rem;
-}
+/* --- Footer --- */
+footer{background:var(--nvy);color:#9CA3AF;padding:2rem 0;font-size:.75rem;text-align:center;margin-top:2rem}
+footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
 
-/* Chart container */
-.chart-container {
-  margin: 0.5rem 0;
+/* --- Responsive --- */
+@media(max-width:700px){
+  .kf{grid-template-columns:repeat(2,1fr)}
+  .wg{grid-template-columns:1fr}
+  nav a{padding:8px 12px;font-size:.72rem}
+  .hero h1{font-size:1.4rem}
+  .mx{font-size:.72rem}.mx th,.mx td{padding:7px 8px}
 }
-
-/* Footer */
-.report-footer {
-  text-align: center;
-  padding: 2rem 0;
-  font-size: 0.75rem;
-  color: var(--yk-text-muted);
-  border-top: var(--yk-border-sm);
-}
-
-/* Executive summary highlight */
-.exec-summary {
-  background: linear-gradient(135deg, var(--yk-primary-soft), var(--yk-warning-soft));
-  border: var(--yk-border);
-  border-left: 5px solid var(--yk-primary);
-  border-radius: var(--yk-radius);
-  box-shadow: var(--yk-shadow-raised);
-  padding: 1.5rem 2rem;
-  font-size: 0.95rem;
-  line-height: 1.8;
-  color: var(--yk-text);
-  white-space: pre-line;
-}
-
-/* Bullet-point analysis content */
-.analysis-content {
-  white-space: pre-line;
-  font-size: 0.82rem;
-  color: var(--yk-text-secondary);
-  line-height: 1.6;
-}
-.analysis-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.analysis-content ul li {
-  font-size: 0.82rem;
-  color: var(--yk-text-secondary);
-  padding: 0.35rem 0;
-  border-bottom: var(--yk-border-sm);
-  line-height: 1.5;
-}
-.analysis-content ul li:last-child {
-  border-bottom: none;
-}
-.analysis-content ul li::before {
-  content: "\2022 ";
-  color: var(--yk-primary);
-  font-weight: 700;
-  margin-right: 0.4rem;
-}
-
-/* Responsive */
-@media (max-width: 800px) {
-  .yk-grid-2, .yk-grid-3, .yk-grid-4, .analysis-grid {
-    grid-template-columns: 1fr;
-  }
-  .flow-timeline {
-    flex-direction: column;
-  }
-  .flow-arrow {
-    transform: rotate(90deg);
-  }
-  .report-header .meta {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-@media (max-width: 500px) {
-  .container { padding: 0 1rem; }
+@media(max-width:540px){
+  .kf{grid-template-columns:1fr 1fr}
+  .hero{padding:2.5rem 0 1.5rem}
+  section{padding:1.5rem 0 1rem}
+  .card,.pl{padding:1rem}
 }
 </style>
 </head>
-<body class="yk-body">
+<body>
 
-<!-- Header -->
-<header class="report-header">
-  <div class="container">
-    <h1>{{ result.event_profile.event_name or result.request.event_description[:80] }}</h1>
-    <div class="meta">
-      <span>{{ result.event_profile.date or 'N/A' }}</span>
-      <span>{{ result.event_profile.location or 'N/A' }}</span>
-      <span class="yk-badge{% if result.audit_result.overall_verdict == 'PASS' %}-success{% elif result.audit_result.overall_verdict == 'REJECT' %}-danger{% else %}-warning{% endif %}">
-        {{ result.audit_result.overall_verdict }}
-      </span>
-      {% if result.event_profile.category %}
-      <span class="yk-badge">{{ result.event_profile.category }}</span>
-      {% endif %}
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="wrap">
+    <h1>{{ result.context.event_name_en or result.context.event_name or 'Event Analysis' }}</h1>
+    <div class="sub">{{ result.context.event_name if result.context.event_name_en else '' }}</div>
+    <div class="tags">
+      {% if result.context.category %}<span class="tag">{{ result.context.category }}</span>{% endif %}
+      {% if result.context.date %}<span class="tag">{{ result.context.date }}</span>{% endif %}
+      <span class="tag">{{ generated_at }}</span>
     </div>
   </div>
 </header>
 
-<main class="container">
+<!-- ===== NAV ===== -->
+<nav>
+  <div class="wrap">
+    <a href="#s1">I. 상황판</a>
+    <a href="#s2">II. 플레이어</a>
+    <a href="#s3">III. 역학</a>
+    <a href="#s4">IV. 연쇄반응</a>
+    <a href="#s5">V. 시나리오</a>
+    <a href="#s6">VI. 신호</a>
+  </div>
+</nav>
 
-  <!-- Executive Summary -->
-  <section>
-    <h2 class="section-title">Executive Summary</h2>
-    <div class="exec-summary">
-      {{ result.executive_summary }}
+<main class="wrap">
+
+<!-- ===== Executive Summary ===== -->
+{% if result.executive_summary %}
+<div class="exec card" style="opacity:1;transform:none;margin-top:2rem">{{ result.executive_summary }}</div>
+{% endif %}
+
+<!-- ===== ACT I — THE BOARD ===== -->
+<section id="s1">
+  <div class="act-label">ACT I</div>
+  <h2>상황판 &mdash; THE BOARD</h2>
+
+  {% if result.context.background %}
+  <div class="card">
+    <p style="font-size:.88rem;color:var(--txt);line-height:1.8">{{ result.context.background }}</p>
+  </div>
+  {% endif %}
+
+  {% if result.context.key_figures %}
+  <div class="kf">
+    {% for fig in result.context.key_figures %}
+    <div class="kf-item card" style="padding:12px">
+      <div class="kf-v">{{ fig.value }}</div>
+      <div class="kf-l">{{ fig.label }}</div>
+      {% if fig.context %}<div class="kf-c">{{ fig.context }}</div>{% endif %}
     </div>
-  </section>
+    {% endfor %}
+  </div>
+  {% endif %}
 
-  <!-- Key Metrics Row -->
-  <section>
-    <h2 class="section-title">Key Metrics</h2>
-    <div class="yk-grid-4">
-      <div class="yk-metric">
-        <div class="yk-metric-label">Overall Risk</div>
-        <div class="yk-metric-value" style="color:var(--yk-danger)">{{ chart_data.risk_level }}%</div>
+  {% if result.context.timeline %}
+  <div class="card">
+    <h3 style="font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--nvy)">Timeline</h3>
+    <div class="tl">
+      {% for item in result.context.timeline %}
+      <div class="tl-item">
+        <div class="tl-date">{{ item.date }}</div>
+        <div class="tl-event">{{ item.event }}</div>
+        {% if item.impact %}<div class="tl-impact">{{ item.impact }}</div>{% endif %}
       </div>
-      <div class="yk-metric">
-        <div class="yk-metric-label">Audit Credibility</div>
-        <div class="yk-metric-value" style="color:var(--yk-primary)">{{ "%.0f"|format(result.audit_result.credibility_score * 100) }}%</div>
-      </div>
-      <div class="yk-metric">
-        <div class="yk-metric-label">Macro Confidence</div>
-        <div class="yk-metric-value" style="color:var(--yk-warning)">{{ "%.0f"|format(result.macro_analysis.confidence_score * 100) }}%</div>
-      </div>
-      <div class="yk-metric">
-        <div class="yk-metric-label">Geo Confidence</div>
-        <div class="yk-metric-value" style="color:#d4776b">{{ "%.0f"|format(result.geopolitical_analysis.confidence_score * 100) }}%</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ===== ACT II — THE PLAYERS ===== -->
+<section id="s2">
+  <div class="act-label">ACT II</div>
+  <h2>플레이어 &mdash; THE PLAYERS</h2>
+
+  {% if result.players.power_dynamics %}
+  <div class="card">
+    <p style="font-size:.85rem;color:var(--sub);line-height:1.7">{{ result.players.power_dynamics }}</p>
+  </div>
+  {% endif %}
+
+  {% if result.players.players %}
+  {% for p in result.players.players %}
+  {% set rl = p.risk_level|default('LOW') %}
+  {% set rc = 'ex' if rl == 'EXTREME' else ('hi' if rl == 'HIGH' else ('md' if rl == 'MODERATE' else 'lo')) %}
+  <div class="pl {{ rc }}">
+    <div class="pl-h">
+      <span class="pl-f">{{ p.emoji|default('') }}</span>
+      <span class="pl-n">{{ p.name }}</span>
+      <span class="bg {{ rc }}">{{ rl }}</span>
+    </div>
+    {% if p.role_tag %}<div class="pl-role">{{ p.role_tag }}</div>{% endif %}
+    <div class="pl-s">
+      {% if p.position %}<strong>Position:</strong> {{ p.position }}<br>{% endif %}
+      {% if p.resources %}<strong>Resources:</strong> {{ p.resources }}{% endif %}
+    </div>
+    <div class="pl-t">
+      {% if p.strategy %}<strong>Strategy:</strong> {{ p.strategy }}<br>{% endif %}
+      {% if p.timeline_pressure %}<strong>Time Pressure:</strong> {{ p.timeline_pressure }}{% endif %}
+    </div>
+    {% if p.vulnerability %}<div class="pl-v">Vulnerability: {{ p.vulnerability }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if result.players.alliances %}
+  <div class="card">
+    <h3 style="font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--nvy)">Alliances &amp; Rivalries</h3>
+    {% for a in result.players.alliances %}
+    <div style="font-size:.82rem;margin-bottom:6px">
+      <span style="font-weight:600">{{ a.group|join(' &harr; ') }}</span>
+      <span style="color:var(--sub);margin-left:8px">{{ a.nature }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+<!-- ===== ACT III — THE DYNAMICS ===== -->
+<section id="s3">
+  <div class="act-label">ACT III</div>
+  <h2>역학 &mdash; THE DYNAMICS</h2>
+
+  {% if result.dynamics %}
+  <div class="card">
+    {% if result.dynamics.framework %}
+    <div style="font-family:var(--mono);font-size:.72rem;color:var(--blu);font-weight:700;margin-bottom:8px">FRAMEWORK: {{ result.dynamics.framework }}</div>
+    {% endif %}
+    {% if result.dynamics.core_tension %}
+    <p style="font-size:.88rem;font-weight:600;color:var(--nvy);margin-bottom:8px">{{ result.dynamics.core_tension }}</p>
+    {% endif %}
+    {% if result.dynamics.why_unresolved %}
+    <p style="font-size:.82rem;color:var(--sub);line-height:1.7">{{ result.dynamics.why_unresolved }}</p>
+    {% endif %}
+  </div>
+
+  {% if result.dynamics.asymmetries %}
+  <div class="asym">
+    {% for a in result.dynamics.asymmetries %}
+    <div class="asym-item">
+      <div class="asym-type">{{ a.type }}</div>
+      <div class="asym-desc">{{ a.description }}</div>
+      {% if a.advantage_to %}<div class="asym-adv">Advantage: {{ a.advantage_to }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if result.dynamics.tipping_points %}
+  <div class="tp">
+    {% for tp in result.dynamics.tipping_points %}
+    <div class="tp-item">
+      <div class="tp-cond">{{ tp.condition }}</div>
+      {% if tp.timeline %}<div class="tp-time">{{ tp.timeline }}</div>{% endif %}
+      {% if tp.consequence %}<div class="tp-cons">{{ tp.consequence }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if result.dynamics.key_insight %}
+  <div class="card" style="border-left:4px solid var(--gld)">
+    <div style="font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--gld);margin-bottom:4px">KEY INSIGHT</div>
+    <p style="font-size:.88rem;font-weight:600;color:var(--nvy)">{{ result.dynamics.key_insight }}</p>
+  </div>
+  {% endif %}
+  {% endif %}
+</section>
+
+<!-- ===== ACT IV — CHAIN REACTION ===== -->
+<section id="s4">
+  <div class="act-label">ACT IV</div>
+  <h2>연쇄반응 &mdash; CHAIN REACTION</h2>
+
+  {% if result.chain_reaction %}
+  {% if result.chain_reaction.chain %}
+  <div class="fl">
+    {% for step in result.chain_reaction.chain %}
+    {% set sev = step.severity|default('MEDIUM') %}
+    {% set sc = 'h' if sev == 'HIGH' else ('m' if sev == 'MEDIUM' else 'l') %}
+    <div class="fn">
+      <strong>&#{{ 9311 + step.step|default(loop.index) }} {{ step.title }}</strong>
+      <span>{{ step.description }}</span>
+      {% if step.affected %}<div class="fn-aff">{{ step.affected|join(', ') }}</div>{% endif %}
+      <div class="fn-sev {{ sc }}">{{ sev }}</div>
+    </div>
+    {% if not loop.last %}<div class="fa"></div>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if result.chain_reaction.break_points %}
+  <h3 style="font-size:.9rem;font-weight:700;margin:1rem 0 .5rem;color:var(--grn)">Break Points</h3>
+  {% for bp in result.chain_reaction.break_points %}
+  <div class="bp">
+    <div class="bp-step">AT STEP {{ bp.at_step }}</div>
+    {{ bp.condition }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if result.chain_reaction.worst_case %}
+  <div class="card" style="border-left:4px solid var(--red)">
+    <div style="font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--red);margin-bottom:4px">WORST CASE</div>
+    <p style="font-size:.85rem;color:var(--txt)">{{ result.chain_reaction.worst_case }}</p>
+  </div>
+  {% endif %}
+  {% endif %}
+</section>
+
+<!-- ===== ACT V — SCENARIOS ===== -->
+<section id="s5">
+  <div class="act-label">ACT V</div>
+  <h2>시나리오 &mdash; SCENARIOS</h2>
+
+  {% if result.scenarios and result.scenarios.scenarios %}
+  <table class="mx">
+    <thead>
+      <tr><th>시나리오</th><th>전개</th><th>확률</th><th>트리거</th></tr>
+    </thead>
+    <tbody>
+      {% for sc in result.scenarios.scenarios %}
+      {% set tag = sc.tag|default('') %}
+      {% set tc = 'sc-best' if '최선' in tag else ('sc-base' if '기본' in tag else ('sc-worst' if '최악' in tag else 'sc-worse')) %}
+      <tr>
+        <td>
+          <span class="sc-tag {{ tc }}">{{ tag }}</span><br>
+          <strong>{{ sc.name }}</strong>
+        </td>
+        <td style="font-size:.78rem;color:var(--sub)">{{ sc.description }}</td>
+        <td class="sc-prob">{{ sc.probability }}</td>
+        <td style="font-size:.78rem">{{ sc.trigger }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if result.scenarios.base_case_summary %}
+  <div class="card" style="border-left:4px solid var(--blu)">
+    <div style="font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--blu);margin-bottom:4px">BASE CASE</div>
+    <p style="font-size:.85rem;color:var(--txt)">{{ result.scenarios.base_case_summary }}</p>
+  </div>
+  {% endif %}
+  {% endif %}
+</section>
+
+<!-- ===== ACT VI — SIGNALS ===== -->
+<section id="s6">
+  <div class="act-label">ACT VI</div>
+  <h2>감시 신호 &mdash; WATCH SIGNALS</h2>
+
+  {% if result.scenarios and result.scenarios.watch_signals %}
+  <div class="wg">
+    {% for ws in result.scenarios.watch_signals %}
+    {% set colors = ['rgba(29,111,165,.1)', 'rgba(189,50,39,.1)', 'rgba(199,107,30,.1)', 'rgba(26,123,62,.1)', 'rgba(158,138,21,.1)', 'rgba(107,76,154,.1)'] %}
+    <div class="wi">
+      <div class="wi-i" style="background:{{ colors[loop.index0 % 6] }}">{{ ws.icon|default('') }}</div>
+      <div>
+        <h4>{{ ws.signal }}</h4>
+        <p>{{ ws.description }}</p>
+        {% if ws.indicates %}<div class="wi-ind">{{ ws.indicates }}</div>{% endif %}
       </div>
     </div>
-  </section>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
 
-  <!-- Impact Matrix & Confidence Radar (side by side) -->
-  <section>
-    <h2 class="section-title">Impact Analysis</h2>
-    <div class="yk-grid-2">
-      <div class="yk-panel">
-        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Impact Matrix (Probability vs Severity)</h3>
-        <div id="impact-matrix-chart" class="chart-container" style="height:320px"></div>
-      </div>
-      <div class="yk-panel">
-        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Confidence Radar</h3>
-        <div id="confidence-radar-chart" class="chart-container" style="height:320px"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Risk Gauge & Confidence Bar Chart -->
-  <section>
-    <h2 class="section-title">Risk & Confidence</h2>
-    <div class="yk-grid-2">
-      <div class="yk-panel">
-        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Overall Risk Level</h3>
-        <div id="risk-gauge-chart" class="chart-container" style="height:280px"></div>
-      </div>
-      <div class="yk-panel">
-        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Agent Confidence Scores</h3>
-        <div id="confidence-bar-chart" class="chart-container" style="height:280px"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Sector Impact Heatmap -->
-  <section>
-    <h2 class="section-title">Sector Impact Heatmap</h2>
-    <div class="yk-panel">
-      <div id="heatmap-chart" class="chart-container" style="height:360px"></div>
-    </div>
-  </section>
-
-  <!-- Timeline / Flow Diagram -->
-  <section>
-    <h2 class="section-title">Cause-Effect Flow</h2>
-    <div class="yk-panel">
-      <div class="flow-timeline">
-        <div class="flow-step" style="border-left:3px solid var(--yk-primary)">
-          {{ result.event_profile.what[:40] if result.event_profile.what else 'Event' }}
-        </div>
-        <span class="flow-arrow">&rarr;</span>
-        <div class="flow-step" style="border-left:3px solid var(--yk-warning)">
-          {{ result.macro_analysis.gdp_impact[:40] if result.macro_analysis.gdp_impact else 'Macro Impact' }}
-        </div>
-        <span class="flow-arrow">&rarr;</span>
-        <div class="flow-step" style="border-left:3px solid var(--yk-danger)">
-          {{ result.geopolitical_analysis.power_dynamics[:40] if result.geopolitical_analysis.power_dynamics else 'Geo Shift' }}
-        </div>
-        <span class="flow-arrow">&rarr;</span>
-        <div class="flow-step" style="border-left:3px solid var(--yk-success)">
-          {{ result.micro_analysis.supply_chain_impact[:40] if result.micro_analysis.supply_chain_impact else 'Micro Effect' }}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Agent Analysis Cards Grid -->
-  <section>
-    <h2 class="section-title">Agent Analysis</h2>
-    <div class="analysis-grid">
-
-      <!-- Macro Analysis Card -->
-      <div class="analysis-card">
-        <div class="card-icon">📊</div>
-        <div class="card-header">
-          <span class="card-title">Macro Analyst</span>
-          <span class="yk-badge">{{ "%.0f"|format(result.macro_analysis.confidence_score * 100) }}%</span>
-        </div>
-        <div class="card-body">
-          <ul>
-            <li>GDP : {{ result.macro_analysis.gdp_impact if result.macro_analysis.gdp_impact else 'N/A' }}</li>
-            <li>Inflation : {{ result.macro_analysis.inflation_impact if result.macro_analysis.inflation_impact else 'N/A' }}</li>
-            <li>Trade : {{ result.macro_analysis.trade_impact if result.macro_analysis.trade_impact else 'N/A' }}</li>
-            <li>Monetary : {{ result.macro_analysis.monetary_policy_impact if result.macro_analysis.monetary_policy_impact else 'N/A' }}</li>
-            <li>Labor : {{ result.macro_analysis.labor_market_impact if result.macro_analysis.labor_market_impact else 'N/A' }}</li>
-          </ul>
-          {% if result.macro_analysis.summary %}
-          <div class="analysis-content" style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">{{ result.macro_analysis.summary }}</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Geopolitical Analysis Card -->
-      <div class="analysis-card">
-        <div class="card-icon">🌍</div>
-        <div class="card-header">
-          <span class="card-title">Geopolitical Analyst</span>
-          <span class="yk-badge">{{ "%.0f"|format(result.geopolitical_analysis.confidence_score * 100) }}%</span>
-        </div>
-        <div class="card-body">
-          <ul>
-            <li>Alliance : {{ result.geopolitical_analysis.alliance_shifts if result.geopolitical_analysis.alliance_shifts else 'N/A' }}</li>
-            <li>Power : {{ result.geopolitical_analysis.power_dynamics if result.geopolitical_analysis.power_dynamics else 'N/A' }}</li>
-            <li>Conflict : {{ result.geopolitical_analysis.conflict_risk_assessment if result.geopolitical_analysis.conflict_risk_assessment else 'N/A' }}</li>
-            <li>Diplomacy : {{ result.geopolitical_analysis.diplomatic_implications if result.geopolitical_analysis.diplomatic_implications else 'N/A' }}</li>
-            <li>Sanctions : {{ result.geopolitical_analysis.sanctions_impact if result.geopolitical_analysis.sanctions_impact else 'N/A' }}</li>
-          </ul>
-          {% if result.geopolitical_analysis.affected_regions %}
-          <div class="tag-list" style="margin-top:0.5rem">
-            {% for region in result.geopolitical_analysis.affected_regions %}
-            <span class="tag">{{ region }}</span>
-            {% endfor %}
-          </div>
-          {% endif %}
-          {% if result.geopolitical_analysis.summary %}
-          <div class="analysis-content" style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">{{ result.geopolitical_analysis.summary }}</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Micro Analysis Card -->
-      <div class="analysis-card">
-        <div class="card-icon">🏭</div>
-        <div class="card-header">
-          <span class="card-title">Micro Analyst</span>
-          <span class="yk-badge">{{ "%.0f"|format(result.micro_analysis.confidence_score * 100) }}%</span>
-        </div>
-        <div class="card-body">
-          <ul>
-            <li>Supply Chain : {{ result.micro_analysis.supply_chain_impact if result.micro_analysis.supply_chain_impact else 'N/A' }}</li>
-            <li>Consumer : {{ result.micro_analysis.consumer_behavior_impact if result.micro_analysis.consumer_behavior_impact else 'N/A' }}</li>
-            <li>Market : {{ result.micro_analysis.market_structure_changes if result.micro_analysis.market_structure_changes else 'N/A' }}</li>
-          </ul>
-          {% if result.micro_analysis.affected_industries %}
-          <div class="tag-list" style="margin-top:0.5rem">
-            {% for industry in result.micro_analysis.affected_industries %}
-            <span class="tag">{{ industry }}</span>
-            {% endfor %}
-          </div>
-          {% endif %}
-          {% if result.micro_analysis.company_level_impacts %}
-          <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">
-            <ul>
-              {% for ci in result.micro_analysis.company_level_impacts %}
-              <li>{{ ci.company }} : {{ ci.impact }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-          {% if result.micro_analysis.summary %}
-          <div class="analysis-content" style="margin-top:0.5rem;padding-top:0.5rem;border-top:var(--yk-border-sm)">{{ result.micro_analysis.summary }}</div>
-          {% endif %}
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Devil's Advocate Section -->
-  <section>
-    <h2 class="section-title">Devil's Advocate Audit</h2>
-    <div class="yk-card">
-      <div style="text-align:center;margin-bottom:1.5rem">
-        <span class="verdict-badge verdict-{{ result.audit_result.overall_verdict|lower }}">
-          {{ result.audit_result.overall_verdict }}
-        </span>
-        <div style="margin-top:0.75rem">
-          <span class="yk-badge">Credibility: {{ "%.0f"|format(result.audit_result.credibility_score * 100) }}%</span>
-        </div>
-      </div>
-
-      {% if result.audit_result.issues_found %}
-      <div class="yk-alert yk-alert-danger">
-        <div class="yk-alert-title">Issues Found</div>
-        <div class="yk-alert-desc">
-          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
-            {% for issue in result.audit_result.issues_found %}
-            <li>{{ issue.get('description', issue) if issue is mapping else issue }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      {% endif %}
-
-      {% if result.audit_result.bias_detected %}
-      <div class="yk-alert yk-alert-danger">
-        <div class="yk-alert-title">Bias Detected</div>
-        <div class="yk-alert-desc">
-          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
-            {% for bias in result.audit_result.bias_detected %}
-            <li>{{ bias }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      {% endif %}
-
-      {% if result.audit_result.logical_fallacies %}
-      <div class="yk-alert yk-alert-warning">
-        <div class="yk-alert-title">Logical Fallacies</div>
-        <div class="yk-alert-desc">
-          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
-            {% for fallacy in result.audit_result.logical_fallacies %}
-            <li>{{ fallacy }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      {% endif %}
-
-      {% if result.audit_result.missing_perspectives %}
-      <div class="yk-alert">
-        <div class="yk-alert-title">Missing Perspectives</div>
-        <div class="yk-alert-desc">
-          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
-            {% for perspective in result.audit_result.missing_perspectives %}
-            <li>{{ perspective }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      {% endif %}
-    </div>
-  </section>
+<!-- ===== Confidence Radar ===== -->
+<section id="s7">
+  <div class="act-label">CONFIDENCE</div>
+  <h2>신뢰도 레이더</h2>
+  <div class="radar-wrap">
+    <canvas id="radarCanvas" width="340" height="340"></canvas>
+  </div>
+</section>
 
 </main>
 
-<!-- Footer -->
-<footer class="report-footer">
-  <div class="container">
-    <p>Event Analysis Report | Generated: {{ generated_at }}</p>
-    <p>Analysis Duration: {{ "%.1f"|format(result.total_duration_seconds) }}s</p>
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    {% if result.context and result.context.sources %}
+    <div class="sources">Sources: {{ result.context.sources|join(' | ') }}</div>
+    {% endif %}
+    <div>Generated {{ generated_at }} | Analysis Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
   </div>
 </footer>
 
-<!-- Plotly Charts Script -->
 <script>
-(function() {
-  var chartData = {{ chart_data_json }};
-  var ykFont = "'Rubik', 'Noto Sans KR', sans-serif";
-  var baseLayout = {
-    font: { family: ykFont, color: '#3d3929', size: 12 },
-    paper_bgcolor: 'rgba(0,0,0,0)',
-    plot_bgcolor: 'rgba(0,0,0,0)',
-    margin: { l: 40, r: 30, t: 10, b: 40 }
-  };
-  var plotConfig = { responsive: true, displayModeBar: false };
+/* === Scroll Animations via IntersectionObserver === */
+(function(){
+  var targets=document.querySelectorAll('.card,.pl,.fn,.wi');
+  if(!('IntersectionObserver' in window)){
+    targets.forEach(function(t){t.classList.add('show')});
+    return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target)}
+    });
+  },{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  targets.forEach(function(t){io.observe(t)});
+})();
 
-  // 1) Impact Matrix Scatter
-  var im = chartData.impact_matrix;
-  Plotly.newPlot('impact-matrix-chart', [{
-    type: 'scatter',
-    mode: 'markers+text',
-    x: im.probability,
-    y: im.severity,
-    text: im.labels,
-    textposition: 'top center',
-    textfont: { size: 11, family: ykFont },
-    marker: {
-      size: 30,
-      color: im.colors,
-      line: { color: '#c8c0b0', width: 2 },
-      opacity: 0.85
+/* === Sticky Nav Active Highlighting === */
+(function(){
+  var links=document.querySelectorAll('nav a');
+  var sections=[];
+  links.forEach(function(a){
+    var id=a.getAttribute('href');
+    if(id&&id.startsWith('#')){var s=document.querySelector(id);if(s)sections.push({el:s,link:a})}
+  });
+  if(!sections.length)return;
+  var io2=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var m=sections.find(function(s){return s.el===e.target});
+      if(m){if(e.isIntersecting)m.link.classList.add('active');else m.link.classList.remove('active')}
+    });
+  },{threshold:0.2});
+  sections.forEach(function(s){io2.observe(s.el)});
+})();
+
+/* === Canvas 2D Radar Chart === */
+(function(){
+  var chartData={{ chart_data_json }};
+  var canvas=document.getElementById('radarCanvas');
+  if(!canvas||!chartData.labels||!chartData.labels.length)return;
+  var ctx=canvas.getContext('2d');
+  var W=canvas.width,H=canvas.height;
+  var cx=W/2,cy=H/2,R=Math.min(cx,cy)-50;
+  var labels=chartData.labels,values=chartData.values;
+  var n=labels.length;
+  var step=2*Math.PI/n;
+  var offset=-Math.PI/2;
+
+  function drawPoly(r,stroke,fill){
+    ctx.beginPath();
+    for(var i=0;i<n;i++){
+      var a=offset+i*step;
+      var x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
     }
-  }], Object.assign({}, baseLayout, {
-    xaxis: { title: { text: 'Probability', font: { size: 11 } }, range: [0, 1.1], gridcolor: '#e5e0d6', zeroline: false },
-    yaxis: { title: { text: 'Severity', font: { size: 11 } }, range: [0, 1.1], gridcolor: '#e5e0d6', zeroline: false },
-    margin: { l: 55, r: 20, t: 15, b: 50 }
-  }), plotConfig);
+    ctx.closePath();
+    if(fill){ctx.fillStyle=fill;ctx.fill()}
+    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}
+  }
 
-  // 2) Confidence Radar
-  var radar = chartData.impact_radar;
-  var radarCats = radar.categories.concat([radar.categories[0]]);
-  var radarVals = radar.values.concat([radar.values[0]]);
-  Plotly.newPlot('confidence-radar-chart', [{
-    type: 'scatterpolar',
-    r: radarVals,
-    theta: radarCats,
-    fill: 'toself',
-    fillcolor: 'rgba(126,183,127,0.2)',
-    line: { color: '#7eb77f', width: 2 },
-    marker: { size: 6, color: '#7eb77f' }
-  }], Object.assign({}, baseLayout, {
-    polar: {
-      bgcolor: 'rgba(0,0,0,0)',
-      radialaxis: { visible: true, range: [0, 1], gridcolor: '#e5e0d6', tickfont: { size: 10 } },
-      angularaxis: { tickfont: { size: 11, family: ykFont } }
-    },
-    margin: { l: 50, r: 50, t: 30, b: 30 }
-  }), plotConfig);
+  /* Grid */
+  for(var g=1;g<=5;g++){drawPoly(R*g/5,'#E4E0D8',null)}
 
-  // 3) Risk Gauge
-  Plotly.newPlot('risk-gauge-chart', [{
-    type: 'indicator',
-    mode: 'gauge+number',
-    value: chartData.risk_level,
-    number: { suffix: '%', font: { size: 36, family: ykFont, color: '#3d3929' } },
-    gauge: {
-      axis: { range: [0, 100], tickwidth: 1, tickcolor: '#c8c0b0', tickfont: { size: 10 } },
-      bar: { color: chartData.risk_level > 60 ? '#d4776b' : chartData.risk_level > 35 ? '#c9a96e' : '#6baa7c', thickness: 0.3 },
-      bgcolor: 'rgba(0,0,0,0)',
-      borderwidth: 2,
-      bordercolor: '#c8c0b0',
-      steps: [
-        { range: [0, 33], color: 'rgba(107,170,124,0.15)' },
-        { range: [33, 66], color: 'rgba(201,169,110,0.15)' },
-        { range: [66, 100], color: 'rgba(212,119,107,0.15)' }
-      ],
-      threshold: {
-        line: { color: '#3d3929', width: 3 },
-        thickness: 0.8,
-        value: chartData.risk_level
-      }
-    }
-  }], Object.assign({}, baseLayout, {
-    margin: { l: 30, r: 30, t: 20, b: 10 }
-  }), plotConfig);
+  /* Axes + Labels */
+  ctx.font='500 11px "Noto Sans KR",sans-serif';
+  ctx.fillStyle='#6B6B6B';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(var i=0;i<n;i++){
+    var a=offset+i*step;
+    var ex=cx+R*Math.cos(a),ey=cy+R*Math.sin(a);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.strokeStyle='#E4E0D8';ctx.lineWidth=1;ctx.stroke();
+    var lx=cx+(R+28)*Math.cos(a),ly=cy+(R+28)*Math.sin(a);
+    ctx.fillText(labels[i],lx,ly);
+  }
 
-  // 4) Confidence Bar Chart
-  var cs = chartData.confidence_scores;
-  var barLabels = Object.keys(cs);
-  var barValues = Object.values(cs);
-  var barColors = ['#7eb77f', '#8fb4c9', '#d4776b', '#6baa7c', '#3d3929'];
-  Plotly.newPlot('confidence-bar-chart', [{
-    type: 'bar',
-    x: barValues,
-    y: barLabels,
-    orientation: 'h',
-    marker: {
-      color: barColors.slice(0, barLabels.length),
-      line: { color: '#c8c0b0', width: 1 }
-    },
-    text: barValues.map(function(v) { return (v * 100).toFixed(0) + '%'; }),
-    textposition: 'auto',
-    textfont: { size: 11 }
-  }], Object.assign({}, baseLayout, {
-    xaxis: { range: [0, 1], tickformat: '.0%', gridcolor: '#e5e0d6', zeroline: false },
-    yaxis: { automargin: true },
-    margin: { l: 140, r: 30, t: 10, b: 35 }
-  }), plotConfig);
+  /* Data polygon */
+  ctx.beginPath();
+  for(var i=0;i<n;i++){
+    var a=offset+i*step;
+    var v=Math.max(0,Math.min(1,values[i]));
+    var x=cx+R*v*Math.cos(a),y=cy+R*v*Math.sin(a);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle='rgba(29,111,165,.18)';ctx.fill();
+  ctx.strokeStyle='#1D6FA5';ctx.lineWidth=2;ctx.stroke();
 
-  // 5) Sector Impact Heatmap
-  var hm = chartData.heatmap;
-  Plotly.newPlot('heatmap-chart', [{
-    type: 'heatmap',
-    z: hm.z,
-    x: hm.regions,
-    y: hm.sectors,
-    colorscale: [
-      [0, 'rgba(107,170,124,0.2)'],
-      [0.5, 'rgba(201,169,110,0.5)'],
-      [1, 'rgba(212,119,107,0.8)']
-    ],
-    showscale: true,
-    colorbar: {
-      title: { text: 'Impact', font: { size: 11 } },
-      tickfont: { size: 10 },
-      thickness: 15,
-      len: 0.8
-    },
-    hoverongaps: false,
-    xgap: 2,
-    ygap: 2
-  }], Object.assign({}, baseLayout, {
-    xaxis: { side: 'bottom', tickfont: { size: 11 } },
-    yaxis: { automargin: true, tickfont: { size: 11 } },
-    margin: { l: 120, r: 80, t: 15, b: 50 }
-  }), plotConfig);
-
+  /* Data points + value text */
+  ctx.font='700 11px "JetBrains Mono",monospace';
+  for(var i=0;i<n;i++){
+    var a=offset+i*step;
+    var v=Math.max(0,Math.min(1,values[i]));
+    var x=cx+R*v*Math.cos(a),y=cy+R*v*Math.sin(a);
+    ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fillStyle='#1D6FA5';ctx.fill();
+    ctx.fillStyle='#151D26';
+    ctx.fillText((v*100).toFixed(0)+'%',x,y-12);
+  }
 })();
 </script>
-
 </body>
 </html>

@@ -42,7 +42,7 @@ class TelegramBot:
         await update.message.reply_text(
             "Event Analysis Team\n\n"
             "Send me any event or situation to analyze.\n"
-            "I will coordinate 7 AI agents to produce a comprehensive report.\n\n"
+            "I will coordinate 6 AI agents to produce a comprehensive report.\n\n"
             "Commands:\n"
             "/analyze <event> -- Start analysis\n"
             "/start -- Show this message"
@@ -107,36 +107,34 @@ class TelegramBot:
                 status_callback=status_callback,
             )
 
-            # Send executive summary as text message
+            # Send text report as code block
+            text_report = self.orchestrator._build_text_report(result)
             summary_text = (
                 f"\u2705 \ubd84\uc11d \uc644\ub8cc\n\n"
-                f"\ud310\uc815: {result.audit_result.overall_verdict}\n"
                 f"\uc18c\uc694\uc2dc\uac04: {result.total_duration_seconds:.1f}s\n\n"
-                f"{result.executive_summary[:3000]}"
+                f"```\n{text_report}\n```"
             )
             await update.message.reply_text(summary_text)
 
-            # Send final report as HTML file
-            report_dir = self.config.report_output_dir
-            if os.path.isdir(report_dir):
-                # Find the latest report
-                reports = sorted(
-                    [
-                        f
-                        for f in os.listdir(report_dir)
-                        if f.endswith(".html")
-                    ]
+            # Send report URL as clickable link
+            if result.report_url and result.report_url.startswith("http"):
+                await update.message.reply_text(
+                    f"\U0001f4ca \ubcf4\uace0\uc11c: {result.report_url}"
                 )
-                if reports:
-                    report_path = os.path.join(report_dir, reports[-1])
-                    with open(report_path, "rb") as f:
-                        await update.message.reply_document(
-                            document=f,
-                            filename=os.path.basename(report_path),
-                            caption="\U0001f4ca Full Analysis Report",
-                        )
 
-            await msg.edit_text("\u2705 \uc644\ub8cc! \ubcf4\uace0\uc11c\uac00 \uc804\uc1a1\ub418\uc5c8\uc2b5\ub2c8\ub2e4.")
+            # Also send HTML file if available
+            report_path = result.report_path
+            if report_path and os.path.isfile(report_path):
+                with open(report_path, "rb") as f:
+                    await update.message.reply_document(
+                        document=f,
+                        filename=os.path.basename(report_path),
+                        caption="\U0001f4ca Full Analysis Report",
+                    )
+
+            await msg.edit_text(
+                "\u2705 \uc644\ub8cc! \ubcf4\uace0\uc11c\uac00 \uc804\uc1a1\ub418\uc5c8\uc2b5\ub2c8\ub2e4."
+            )
 
         except Exception as e:
             logger.exception("Analysis failed")

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -17,86 +16,76 @@ class AnalysisRequest(BaseModel):
     chat_id: int = 0
 
 
-class EventProfile(BaseModel):
-    """5W1H structured event profile."""
+class ContextAnalysis(BaseModel):
+    """ACT I: Context / situation board analysis."""
 
     event_name: str = ""
+    event_name_en: str = ""
     date: str = ""
-    location: str = ""
     category: str = ""
-    who: str = ""
-    what: str = ""
-    when: str = ""
-    where: str = ""
-    why: str = ""
-    how: str = ""
+    summary: str = ""
+    timeline: list[dict] = Field(default_factory=list)
+    key_figures: list[dict] = Field(default_factory=list)
+    background: str = ""
     sources: list[str] = Field(default_factory=list)
-    confidence_score: float = 0.5
+    confidence_score: float = 0.0
 
 
-class MacroAnalysis(BaseModel):
-    """Macroeconomic impact analysis."""
+class PlayerAnalysis(BaseModel):
+    """ACT II: Player identification and strategy analysis."""
 
-    gdp_impact: str = ""
-    inflation_impact: str = ""
-    trade_impact: str = ""
-    monetary_policy_impact: str = ""
-    labor_market_impact: str = ""
-    key_indicators: list[dict] = Field(default_factory=list)
-    summary: str = ""
-    confidence_score: float = 0.5
-
-
-class GeopoliticalAnalysis(BaseModel):
-    """Geopolitical impact analysis."""
-
-    affected_regions: list[str] = Field(default_factory=list)
-    alliance_shifts: str = ""
+    players: list[dict] = Field(default_factory=list)
+    alliances: list[dict] = Field(default_factory=list)
     power_dynamics: str = ""
-    conflict_risk_assessment: str = ""
-    diplomatic_implications: str = ""
-    sanctions_impact: str = ""
     summary: str = ""
-    confidence_score: float = 0.5
+    confidence_score: float = 0.0
 
 
-class MicroAnalysis(BaseModel):
-    """Microeconomic impact analysis."""
+class DynamicsAnalysis(BaseModel):
+    """ACT III: Structural dynamics and game theory analysis."""
 
-    affected_industries: list[str] = Field(default_factory=list)
-    supply_chain_impact: str = ""
-    consumer_behavior_impact: str = ""
-    company_level_impacts: list[dict] = Field(default_factory=list)
-    market_structure_changes: str = ""
+    framework: str = ""
+    core_tension: str = ""
+    asymmetries: list[dict] = Field(default_factory=list)
+    why_unresolved: str = ""
+    tipping_points: list[dict] = Field(default_factory=list)
+    key_insight: str = ""
     summary: str = ""
-    confidence_score: float = 0.5
+    confidence_score: float = 0.0
 
 
-class AuditResult(BaseModel):
-    """Devil's advocate audit result."""
+class ChainReactionAnalysis(BaseModel):
+    """ACT IV: Cause-effect chain and domino effect analysis."""
 
-    overall_verdict: Literal["PASS", "REVISE", "REJECT"] = "PASS"
-    issues_found: list[dict] = Field(default_factory=list)
-    agents_to_revise: list[str] = Field(default_factory=list)
-    credibility_score: float = 0.5
-    bias_detected: list[str] = Field(default_factory=list)
-    logical_fallacies: list[str] = Field(default_factory=list)
-    missing_perspectives: list[str] = Field(default_factory=list)
+    chain: list[dict] = Field(default_factory=list)
+    break_points: list[dict] = Field(default_factory=list)
+    worst_case: str = ""
     summary: str = ""
+    confidence_score: float = 0.0
+
+
+class ScenarioAnalysis(BaseModel):
+    """ACT V+VI: Scenario design and watch signal identification."""
+
+    scenarios: list[dict] = Field(default_factory=list)
+    watch_signals: list[dict] = Field(default_factory=list)
+    base_case_summary: str = ""
+    summary: str = ""
+    confidence_score: float = 0.0
 
 
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
     request: AnalysisRequest
-    event_profile: EventProfile = Field(default_factory=EventProfile)
-    macro_analysis: MacroAnalysis = Field(default_factory=MacroAnalysis)
-    geopolitical_analysis: GeopoliticalAnalysis = Field(
-        default_factory=GeopoliticalAnalysis
-    )
-    micro_analysis: MicroAnalysis = Field(default_factory=MicroAnalysis)
-    audit_result: AuditResult = Field(default_factory=AuditResult)
+    context: ContextAnalysis | None = None
+    players: PlayerAnalysis | None = None
+    dynamics: DynamicsAnalysis | None = None
+    chain_reaction: ChainReactionAnalysis | None = None
+    scenarios: ScenarioAnalysis | None = None
     executive_summary: str = ""
+    report_url: str = ""
+    report_path: str = ""
     analysis_timestamp: str = Field(
         default_factory=lambda: datetime.now().isoformat()
     )
