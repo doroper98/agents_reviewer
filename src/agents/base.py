@@ -62,12 +62,14 @@ class BaseAgent:
                 "Install it with: npm install -g @anthropic-ai/claude-code && claude login"
             )
 
+        full_prompt = f"{self.system_prompt}\n\n---\n\n{user_message}"
+
         cmd = [
             claude_bin,
-            "-p", user_message,
-            "-s", self.system_prompt,
+            "-p", full_prompt,
             "--output-format", "text",
             "--model", self.config.model_name,
+            "--dangerously-skip-permissions",
         ]
 
         logger.info(f"[{self.name}] Starting CLI analysis...")
