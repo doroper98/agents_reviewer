@@ -72,33 +72,6 @@ class MicroAnalysis(BaseModel):
     confidence_score: float = 0.5
 
 
-class InvestmentAnalysis(BaseModel):
-    """Investment impact analysis."""
-
-    asset_classes_affected: list[dict] = Field(default_factory=list)
-    risk_assessment: str = ""
-    short_term_outlook: str = ""
-    medium_term_outlook: str = ""
-    long_term_outlook: str = ""
-    recommended_actions: list[str] = Field(default_factory=list)
-    portfolio_impact: str = ""
-    summary: str = ""
-    confidence_score: float = 0.5
-
-
-class HistoryEthicsAnalysis(BaseModel):
-    """Historical parallels and ethical analysis."""
-
-    historical_parallels: list[dict] = Field(default_factory=list)
-    ethical_considerations: list[str] = Field(default_factory=list)
-    moral_implications: str = ""
-    lessons_learned: list[str] = Field(default_factory=list)
-    societal_impact: str = ""
-    cultural_significance: str = ""
-    summary: str = ""
-    confidence_score: float = 0.5
-
-
 class AuditResult(BaseModel):
     """Devil's advocate audit result."""
 
@@ -122,12 +95,6 @@ class FullAnalysisResult(BaseModel):
         default_factory=GeopoliticalAnalysis
     )
     micro_analysis: MicroAnalysis = Field(default_factory=MicroAnalysis)
-    investment_analysis: InvestmentAnalysis = Field(
-        default_factory=InvestmentAnalysis
-    )
-    history_ethics_analysis: HistoryEthicsAnalysis = Field(
-        default_factory=HistoryEthicsAnalysis
-    )
     audit_result: AuditResult = Field(default_factory=AuditResult)
     executive_summary: str = ""
     analysis_timestamp: str = Field(

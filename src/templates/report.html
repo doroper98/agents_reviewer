@@ -49,7 +49,7 @@
 }
 
 .container {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -58,12 +58,12 @@
 .report-header {
   background: var(--yk-text);
   color: #fff;
-  padding: 3rem 0;
+  padding: 3rem 0 2.5rem;
   text-align: center;
 }
 .report-header h1 {
-  font-size: clamp(1.4rem, 4vw, 2.2rem);
-  font-weight: 700;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  font-weight: 800;
   margin-bottom: 0.75rem;
   line-height: 1.3;
 }
@@ -74,6 +74,7 @@
   justify-content: center;
   gap: 1.5rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* Cards */
@@ -95,12 +96,6 @@
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--yk-text);
-}
-.yk-card h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0.75rem 0 0.5rem;
-  color: var(--yk-text-secondary);
 }
 
 /* Badges */
@@ -162,13 +157,13 @@
 
 /* Alerts */
 .yk-alert {
-  padding: 1.25rem;
+  padding: 1rem 1.25rem;
   border-radius: var(--yk-radius-sm);
   border: var(--yk-border-sm);
   border-left: 4px solid var(--yk-primary);
   background: var(--yk-primary-soft);
   font-size: 0.85rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 .yk-alert-danger {
   border-left-color: var(--yk-danger);
@@ -177,6 +172,10 @@
 .yk-alert-success {
   border-left-color: var(--yk-success);
   background: var(--yk-success-soft);
+}
+.yk-alert-warning {
+  border-left-color: var(--yk-warning);
+  background: var(--yk-warning-soft);
 }
 .yk-alert-title {
   font-weight: 600;
@@ -199,20 +198,10 @@
   grid-template-columns: repeat(3, 1fr);
   gap: var(--yk-gap);
 }
-
-/* Buttons */
-.yk-btn {
-  font-family: var(--yk-font);
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 10px 22px;
-  border: var(--yk-border-sm);
-  border-radius: var(--yk-radius-sm);
-  background: var(--yk-surface);
-  color: var(--yk-text);
-  box-shadow: var(--yk-shadow-sm);
-  cursor: pointer;
-  transition: var(--yk-transition);
+.yk-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--yk-gap);
 }
 
 /* Section spacing */
@@ -223,10 +212,13 @@ section + section {
   border-top: var(--yk-border-sm);
 }
 .section-title {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 1.25rem;
   color: var(--yk-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* 5W1H Grid */
@@ -253,7 +245,7 @@ section + section {
 /* Analysis cards */
 .analysis-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--yk-gap);
 }
 .analysis-card {
@@ -274,21 +266,36 @@ section + section {
   align-items: center;
   margin-bottom: 1rem;
 }
+.analysis-card .card-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
 .analysis-card .card-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
-.analysis-card .card-body p {
-  font-size: 0.85rem;
-  color: var(--yk-text-secondary);
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+.analysis-card .card-body ul {
+  list-style: none;
+  padding: 0;
 }
-.analysis-card .card-body strong {
-  color: var(--yk-text);
+.analysis-card .card-body ul li {
+  font-size: 0.82rem;
+  color: var(--yk-text-secondary);
+  padding: 0.35rem 0;
+  border-bottom: var(--yk-border-sm);
+  line-height: 1.5;
+}
+.analysis-card .card-body ul li:last-child {
+  border-bottom: none;
+}
+.analysis-card .card-body ul li::before {
+  content: "\2022 ";
+  color: var(--yk-primary);
+  font-weight: 700;
+  margin-right: 0.4rem;
 }
 
-/* List styling */
+/* Tag list */
 .tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -307,11 +314,12 @@ section + section {
 /* Verdict badge */
 .verdict-badge {
   display: inline-block;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  padding: 8px 20px;
+  padding: 10px 28px;
   border-radius: var(--yk-radius);
   border: 2px solid;
+  letter-spacing: 0.05em;
 }
 .verdict-pass {
   background: var(--yk-success-soft);
@@ -320,8 +328,8 @@ section + section {
 }
 .verdict-revise {
   background: var(--yk-warning-soft);
-  color: var(--yk-warning);
-  border-color: var(--yk-warning);
+  color: #b08d2e;
+  border-color: #c9a96e;
 }
 .verdict-reject {
   background: var(--yk-danger-soft);
@@ -329,9 +337,35 @@ section + section {
   border-color: var(--yk-danger);
 }
 
+/* Timeline flow */
+.flow-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 1rem 0;
+  flex-wrap: wrap;
+}
+.flow-step {
+  background: var(--yk-surface);
+  border: var(--yk-border);
+  border-radius: var(--yk-radius);
+  box-shadow: var(--yk-shadow-sm);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 120px;
+}
+.flow-arrow {
+  font-size: 1.4rem;
+  color: var(--yk-text-muted);
+  padding: 0 0.3rem;
+}
+
 /* Chart container */
 .chart-container {
-  margin: 1.5rem 0;
+  margin: 0.5rem 0;
 }
 
 /* Footer */
@@ -343,15 +377,37 @@ section + section {
   border-top: var(--yk-border-sm);
 }
 
+/* Executive summary highlight */
+.exec-summary {
+  background: linear-gradient(135deg, var(--yk-primary-soft), var(--yk-warning-soft));
+  border: var(--yk-border);
+  border-left: 5px solid var(--yk-primary);
+  border-radius: var(--yk-radius);
+  box-shadow: var(--yk-shadow-raised);
+  padding: 1.5rem 2rem;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--yk-text);
+}
+
 /* Responsive */
-@media (max-width: 700px) {
-  .yk-grid-2, .yk-grid-3, .analysis-grid {
+@media (max-width: 800px) {
+  .yk-grid-2, .yk-grid-3, .yk-grid-4, .analysis-grid {
     grid-template-columns: 1fr;
+  }
+  .flow-timeline {
+    flex-direction: column;
+  }
+  .flow-arrow {
+    transform: rotate(90deg);
   }
   .report-header .meta {
     flex-direction: column;
     gap: 0.5rem;
   }
+}
+@media (max-width: 500px) {
+  .container { padding: 0 1rem; }
 }
 </style>
 </head>
@@ -379,212 +435,167 @@ section + section {
   <!-- Executive Summary -->
   <section>
     <h2 class="section-title">Executive Summary</h2>
+    <div class="exec-summary">
+      {{ result.executive_summary }}
+    </div>
+  </section>
+
+  <!-- Key Metrics Row -->
+  <section>
+    <h2 class="section-title">Key Metrics</h2>
+    <div class="yk-grid-4">
+      <div class="yk-metric">
+        <div class="yk-metric-label">Overall Risk</div>
+        <div class="yk-metric-value" style="color:var(--yk-danger)">{{ chart_data.risk_level }}%</div>
+      </div>
+      <div class="yk-metric">
+        <div class="yk-metric-label">Audit Credibility</div>
+        <div class="yk-metric-value" style="color:var(--yk-primary)">{{ "%.0f"|format(result.audit_result.credibility_score * 100) }}%</div>
+      </div>
+      <div class="yk-metric">
+        <div class="yk-metric-label">Macro Confidence</div>
+        <div class="yk-metric-value" style="color:var(--yk-warning)">{{ "%.0f"|format(result.macro_analysis.confidence_score * 100) }}%</div>
+      </div>
+      <div class="yk-metric">
+        <div class="yk-metric-label">Geo Confidence</div>
+        <div class="yk-metric-value" style="color:#d4776b">{{ "%.0f"|format(result.geopolitical_analysis.confidence_score * 100) }}%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact Matrix & Confidence Radar (side by side) -->
+  <section>
+    <h2 class="section-title">Impact Analysis</h2>
+    <div class="yk-grid-2">
+      <div class="yk-panel">
+        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Impact Matrix (Probability vs Severity)</h3>
+        <div id="impact-matrix-chart" class="chart-container" style="height:320px"></div>
+      </div>
+      <div class="yk-panel">
+        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Confidence Radar</h3>
+        <div id="confidence-radar-chart" class="chart-container" style="height:320px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Risk Gauge & Confidence Bar Chart -->
+  <section>
+    <h2 class="section-title">Risk & Confidence</h2>
+    <div class="yk-grid-2">
+      <div class="yk-panel">
+        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Overall Risk Level</h3>
+        <div id="risk-gauge-chart" class="chart-container" style="height:280px"></div>
+      </div>
+      <div class="yk-panel">
+        <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:var(--yk-text-secondary)">Agent Confidence Scores</h3>
+        <div id="confidence-bar-chart" class="chart-container" style="height:280px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sector Impact Heatmap -->
+  <section>
+    <h2 class="section-title">Sector Impact Heatmap</h2>
     <div class="yk-panel">
-      <p style="font-size:0.9rem;line-height:1.8;color:var(--yk-text-secondary)">
-        {{ result.executive_summary }}
-      </p>
+      <div id="heatmap-chart" class="chart-container" style="height:360px"></div>
     </div>
   </section>
 
-  <!-- Event Profile (5W1H) -->
+  <!-- Timeline / Flow Diagram -->
   <section>
-    <h2 class="section-title">Event Profile (5W1H)</h2>
-    <div class="wh-grid">
-      <div class="wh-item">
-        <div class="wh-label">Who</div>
-        <p>{{ result.event_profile.who }}</p>
-      </div>
-      <div class="wh-item">
-        <div class="wh-label">What</div>
-        <p>{{ result.event_profile.what }}</p>
-      </div>
-      <div class="wh-item">
-        <div class="wh-label">When</div>
-        <p>{{ result.event_profile.when }}</p>
-      </div>
-      <div class="wh-item">
-        <div class="wh-label">Where</div>
-        <p>{{ result.event_profile.where }}</p>
-      </div>
-      <div class="wh-item">
-        <div class="wh-label">Why</div>
-        <p>{{ result.event_profile.why }}</p>
-      </div>
-      <div class="wh-item">
-        <div class="wh-label">How</div>
-        <p>{{ result.event_profile.how }}</p>
+    <h2 class="section-title">Cause-Effect Flow</h2>
+    <div class="yk-panel">
+      <div class="flow-timeline">
+        <div class="flow-step" style="border-left:3px solid var(--yk-primary)">
+          {{ result.event_profile.what[:40] if result.event_profile.what else 'Event' }}
+        </div>
+        <span class="flow-arrow">&rarr;</span>
+        <div class="flow-step" style="border-left:3px solid var(--yk-warning)">
+          {{ result.macro_analysis.gdp_impact[:40] if result.macro_analysis.gdp_impact else 'Macro Impact' }}
+        </div>
+        <span class="flow-arrow">&rarr;</span>
+        <div class="flow-step" style="border-left:3px solid var(--yk-danger)">
+          {{ result.geopolitical_analysis.power_dynamics[:40] if result.geopolitical_analysis.power_dynamics else 'Geo Shift' }}
+        </div>
+        <span class="flow-arrow">&rarr;</span>
+        <div class="flow-step" style="border-left:3px solid var(--yk-success)">
+          {{ result.micro_analysis.supply_chain_impact[:40] if result.micro_analysis.supply_chain_impact else 'Micro Effect' }}
+        </div>
       </div>
     </div>
-    {% if result.event_profile.sources %}
-    <div style="margin-top:1rem">
-      <strong style="font-size:0.8rem;color:var(--yk-text-muted)">Sources:</strong>
-      <div class="tag-list">
-        {% for source in result.event_profile.sources %}
-        <span class="tag">{{ source }}</span>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
   </section>
 
-  <!-- Analysis Cards Grid -->
+  <!-- Agent Analysis Cards Grid -->
   <section>
-    <h2 class="section-title">Multi-Perspective Analysis</h2>
+    <h2 class="section-title">Agent Analysis</h2>
     <div class="analysis-grid">
 
-      <!-- Macro Analysis -->
+      <!-- Macro Analysis Card -->
       <div class="analysis-card">
+        <div class="card-icon">📊</div>
         <div class="card-header">
-          <span class="card-title">Macro Analysis</span>
+          <span class="card-title">Macro Analyst</span>
           <span class="yk-badge">{{ "%.0f"|format(result.macro_analysis.confidence_score * 100) }}%</span>
         </div>
         <div class="card-body">
-          <h3>GDP Impact</h3>
-          <p>{{ result.macro_analysis.gdp_impact }}</p>
-          <h3>Inflation Impact</h3>
-          <p>{{ result.macro_analysis.inflation_impact }}</p>
-          <h3>Trade Impact</h3>
-          <p>{{ result.macro_analysis.trade_impact }}</p>
-          <h3>Monetary Policy</h3>
-          <p>{{ result.macro_analysis.monetary_policy_impact }}</p>
-          <h3>Labor Market</h3>
-          <p>{{ result.macro_analysis.labor_market_impact }}</p>
-          <p><strong>Summary:</strong> {{ result.macro_analysis.summary }}</p>
+          <ul>
+            <li>GDP: {{ result.macro_analysis.gdp_impact[:80] if result.macro_analysis.gdp_impact else 'N/A' }}</li>
+            <li>Inflation: {{ result.macro_analysis.inflation_impact[:80] if result.macro_analysis.inflation_impact else 'N/A' }}</li>
+            <li>Trade: {{ result.macro_analysis.trade_impact[:80] if result.macro_analysis.trade_impact else 'N/A' }}</li>
+          </ul>
         </div>
       </div>
 
-      <!-- Geopolitical Analysis -->
+      <!-- Geopolitical Analysis Card -->
       <div class="analysis-card">
+        <div class="card-icon">🌍</div>
         <div class="card-header">
-          <span class="card-title">Geopolitical Analysis</span>
+          <span class="card-title">Geopolitical Analyst</span>
           <span class="yk-badge">{{ "%.0f"|format(result.geopolitical_analysis.confidence_score * 100) }}%</span>
         </div>
         <div class="card-body">
+          <ul>
+            <li>Conflict Risk: {{ result.geopolitical_analysis.conflict_risk_assessment[:80] if result.geopolitical_analysis.conflict_risk_assessment else 'N/A' }}</li>
+            <li>Diplomacy: {{ result.geopolitical_analysis.diplomatic_implications[:80] if result.geopolitical_analysis.diplomatic_implications else 'N/A' }}</li>
+            <li>Sanctions: {{ result.geopolitical_analysis.sanctions_impact[:80] if result.geopolitical_analysis.sanctions_impact else 'N/A' }}</li>
+          </ul>
           {% if result.geopolitical_analysis.affected_regions %}
-          <h3>Affected Regions</h3>
-          <div class="tag-list">
+          <div class="tag-list" style="margin-top:0.5rem">
             {% for region in result.geopolitical_analysis.affected_regions %}
             <span class="tag">{{ region }}</span>
             {% endfor %}
           </div>
           {% endif %}
-          <h3>Alliance Shifts</h3>
-          <p>{{ result.geopolitical_analysis.alliance_shifts }}</p>
-          <h3>Power Dynamics</h3>
-          <p>{{ result.geopolitical_analysis.power_dynamics }}</p>
-          <h3>Conflict Risk</h3>
-          <p>{{ result.geopolitical_analysis.conflict_risk_assessment }}</p>
-          <h3>Diplomatic Implications</h3>
-          <p>{{ result.geopolitical_analysis.diplomatic_implications }}</p>
-          <h3>Sanctions Impact</h3>
-          <p>{{ result.geopolitical_analysis.sanctions_impact }}</p>
-          <p><strong>Summary:</strong> {{ result.geopolitical_analysis.summary }}</p>
         </div>
       </div>
 
-      <!-- Micro Analysis -->
+      <!-- Micro Analysis Card -->
       <div class="analysis-card">
+        <div class="card-icon">🏭</div>
         <div class="card-header">
-          <span class="card-title">Micro Analysis</span>
+          <span class="card-title">Micro Analyst</span>
           <span class="yk-badge">{{ "%.0f"|format(result.micro_analysis.confidence_score * 100) }}%</span>
         </div>
         <div class="card-body">
+          <ul>
+            <li>Supply Chain: {{ result.micro_analysis.supply_chain_impact[:80] if result.micro_analysis.supply_chain_impact else 'N/A' }}</li>
+            <li>Consumer: {{ result.micro_analysis.consumer_behavior_impact[:80] if result.micro_analysis.consumer_behavior_impact else 'N/A' }}</li>
+            <li>Market: {{ result.micro_analysis.market_structure_changes[:80] if result.micro_analysis.market_structure_changes else 'N/A' }}</li>
+          </ul>
           {% if result.micro_analysis.affected_industries %}
-          <h3>Affected Industries</h3>
-          <div class="tag-list">
+          <div class="tag-list" style="margin-top:0.5rem">
             {% for industry in result.micro_analysis.affected_industries %}
             <span class="tag">{{ industry }}</span>
             {% endfor %}
           </div>
           {% endif %}
-          <h3>Supply Chain Impact</h3>
-          <p>{{ result.micro_analysis.supply_chain_impact }}</p>
-          <h3>Consumer Behavior</h3>
-          <p>{{ result.micro_analysis.consumer_behavior_impact }}</p>
-          <h3>Market Structure Changes</h3>
-          <p>{{ result.micro_analysis.market_structure_changes }}</p>
-          <p><strong>Summary:</strong> {{ result.micro_analysis.summary }}</p>
-        </div>
-      </div>
-
-      <!-- Investment Analysis -->
-      <div class="analysis-card">
-        <div class="card-header">
-          <span class="card-title">Investment Analysis</span>
-          <span class="yk-badge">{{ "%.0f"|format(result.investment_analysis.confidence_score * 100) }}%</span>
-        </div>
-        <div class="card-body">
-          <h3>Risk Assessment</h3>
-          <p>{{ result.investment_analysis.risk_assessment }}</p>
-          <h3>Short-term Outlook</h3>
-          <p>{{ result.investment_analysis.short_term_outlook }}</p>
-          <h3>Medium-term Outlook</h3>
-          <p>{{ result.investment_analysis.medium_term_outlook }}</p>
-          <h3>Long-term Outlook</h3>
-          <p>{{ result.investment_analysis.long_term_outlook }}</p>
-          <h3>Portfolio Impact</h3>
-          <p>{{ result.investment_analysis.portfolio_impact }}</p>
-          {% if result.investment_analysis.recommended_actions %}
-          <h3>Recommended Actions</h3>
-          <ul style="font-size:0.85rem;color:var(--yk-text-secondary);padding-left:1.2rem">
-            {% for action in result.investment_analysis.recommended_actions %}
-            <li>{{ action }}</li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-          <p><strong>Summary:</strong> {{ result.investment_analysis.summary }}</p>
         </div>
       </div>
 
     </div>
   </section>
 
-  <!-- History & Ethics -->
-  <section>
-    <h2 class="section-title">History & Ethics Analysis</h2>
-    <div class="yk-card">
-      {% if result.history_ethics_analysis.historical_parallels %}
-      <h3 style="margin-bottom:0.75rem">Historical Parallels</h3>
-      {% for parallel in result.history_ethics_analysis.historical_parallels %}
-      <div class="yk-alert" style="margin-bottom:0.75rem">
-        <div class="yk-alert-title">{{ parallel.get('event', parallel.get('event_name', 'Historical Event')) }} ({{ parallel.get('year', 'N/A') }})</div>
-        <div class="yk-alert-desc">{{ parallel.get('similarity', parallel.get('similarities', '')) }} {{ parallel.get('outcome', '') }}</div>
-      </div>
-      {% endfor %}
-      {% endif %}
-
-      {% if result.history_ethics_analysis.ethical_considerations %}
-      <h3 style="margin:1rem 0 0.5rem">Ethical Considerations</h3>
-      <ul style="font-size:0.85rem;color:var(--yk-text-secondary);padding-left:1.2rem">
-        {% for consideration in result.history_ethics_analysis.ethical_considerations %}
-        <li>{{ consideration }}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-
-      <h3 style="margin:1rem 0 0.5rem">Moral Implications</h3>
-      <p style="font-size:0.85rem;color:var(--yk-text-secondary)">{{ result.history_ethics_analysis.moral_implications }}</p>
-
-      {% if result.history_ethics_analysis.lessons_learned %}
-      <h3 style="margin:1rem 0 0.5rem">Lessons Learned</h3>
-      <ul style="font-size:0.85rem;color:var(--yk-text-secondary);padding-left:1.2rem">
-        {% for lesson in result.history_ethics_analysis.lessons_learned %}
-        <li>{{ lesson }}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-
-      <h3 style="margin:1rem 0 0.5rem">Societal Impact</h3>
-      <p style="font-size:0.85rem;color:var(--yk-text-secondary)">{{ result.history_ethics_analysis.societal_impact }}</p>
-
-      <h3 style="margin:1rem 0 0.5rem">Cultural Significance</h3>
-      <p style="font-size:0.85rem;color:var(--yk-text-secondary)">{{ result.history_ethics_analysis.cultural_significance }}</p>
-
-      <p style="margin-top:1rem"><strong>Summary:</strong> <span style="color:var(--yk-text-secondary)">{{ result.history_ethics_analysis.summary }}</span></p>
-    </div>
-  </section>
-
-  <!-- Devil's Advocate Audit -->
+  <!-- Devil's Advocate Section -->
   <section>
     <h2 class="section-title">Devil's Advocate Audit</h2>
     <div class="yk-card">
@@ -597,48 +608,57 @@ section + section {
         </div>
       </div>
 
-      <p style="font-size:0.9rem;color:var(--yk-text-secondary);margin-bottom:1rem">{{ result.audit_result.summary }}</p>
+      {% if result.audit_result.issues_found %}
+      <div class="yk-alert yk-alert-danger">
+        <div class="yk-alert-title">Issues Found</div>
+        <div class="yk-alert-desc">
+          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
+            {% for issue in result.audit_result.issues_found %}
+            <li>{{ issue.get('description', issue) if issue is mapping else issue }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
 
       {% if result.audit_result.bias_detected %}
-      <div class="yk-alert-danger yk-alert" style="margin-bottom:0.75rem">
+      <div class="yk-alert yk-alert-danger">
         <div class="yk-alert-title">Bias Detected</div>
         <div class="yk-alert-desc">
-          {% for bias in result.audit_result.bias_detected %}
-          <div>{{ bias }}</div>
-          {% endfor %}
+          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
+            {% for bias in result.audit_result.bias_detected %}
+            <li>{{ bias }}</li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
       {% endif %}
 
       {% if result.audit_result.logical_fallacies %}
-      <div class="yk-alert-danger yk-alert" style="margin-bottom:0.75rem">
+      <div class="yk-alert yk-alert-warning">
         <div class="yk-alert-title">Logical Fallacies</div>
         <div class="yk-alert-desc">
-          {% for fallacy in result.audit_result.logical_fallacies %}
-          <div>{{ fallacy }}</div>
-          {% endfor %}
+          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
+            {% for fallacy in result.audit_result.logical_fallacies %}
+            <li>{{ fallacy }}</li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
       {% endif %}
 
       {% if result.audit_result.missing_perspectives %}
-      <div class="yk-alert" style="margin-bottom:0.75rem">
+      <div class="yk-alert">
         <div class="yk-alert-title">Missing Perspectives</div>
         <div class="yk-alert-desc">
-          {% for perspective in result.audit_result.missing_perspectives %}
-          <div>{{ perspective }}</div>
-          {% endfor %}
+          <ul style="list-style:disc;padding-left:1.2rem;margin:0">
+            {% for perspective in result.audit_result.missing_perspectives %}
+            <li>{{ perspective }}</li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
       {% endif %}
-    </div>
-  </section>
-
-  <!-- Confidence Score Chart (Plotly) -->
-  <section>
-    <h2 class="section-title">Confidence Scores</h2>
-    <div class="yk-panel">
-      <div id="confidence-chart" class="chart-container" style="height:350px"></div>
     </div>
   </section>
 
@@ -652,69 +672,140 @@ section + section {
   </div>
 </footer>
 
-<!-- Plotly Chart Script -->
+<!-- Plotly Charts Script -->
 <script>
 (function() {
-  var data = [{
-    type: 'bar',
-    x: [
-      {{ result.event_profile.confidence_score }},
-      {{ result.macro_analysis.confidence_score }},
-      {{ result.geopolitical_analysis.confidence_score }},
-      {{ result.micro_analysis.confidence_score }},
-      {{ result.investment_analysis.confidence_score }},
-      {{ result.history_ethics_analysis.confidence_score }},
-      {{ result.audit_result.credibility_score }}
-    ],
-    y: [
-      'Event Profile',
-      'Macro Analysis',
-      'Geopolitical',
-      'Micro Analysis',
-      'Investment',
-      'History & Ethics',
-      'Audit Credibility'
-    ],
-    orientation: 'h',
-    marker: {
-      color: [
-        '#7eb77f', '#8fb4c9', '#d4776b', '#6baa7c',
-        '#c9a96e', '#7eb77f', '#3d3929'
-      ],
-      line: { color: '#c8c0b0', width: 1 }
-    },
-    text: [
-      {{ result.event_profile.confidence_score }},
-      {{ result.macro_analysis.confidence_score }},
-      {{ result.geopolitical_analysis.confidence_score }},
-      {{ result.micro_analysis.confidence_score }},
-      {{ result.investment_analysis.confidence_score }},
-      {{ result.history_ethics_analysis.confidence_score }},
-      {{ result.audit_result.credibility_score }}
-    ].map(function(v) { return (v * 100).toFixed(0) + '%'; }),
-    textposition: 'auto'
-  }];
-
-  var layout = {
-    font: { family: "'Rubik', 'Noto Sans KR', sans-serif", color: '#3d3929' },
+  var chartData = {{ chart_data_json }};
+  var ykFont = "'Rubik', 'Noto Sans KR', sans-serif";
+  var baseLayout = {
+    font: { family: ykFont, color: '#3d3929', size: 12 },
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: 'rgba(0,0,0,0)',
-    margin: { l: 130, r: 30, t: 10, b: 30 },
-    xaxis: {
-      range: [0, 1],
-      tickformat: '.0%',
-      gridcolor: '#d9d2c5',
-      zeroline: false
-    },
-    yaxis: {
-      automargin: true
-    }
+    margin: { l: 40, r: 30, t: 10, b: 40 }
   };
+  var plotConfig = { responsive: true, displayModeBar: false };
 
-  Plotly.newPlot('confidence-chart', data, layout, {
-    responsive: true,
-    displayModeBar: false
-  });
+  // 1) Impact Matrix Scatter
+  var im = chartData.impact_matrix;
+  Plotly.newPlot('impact-matrix-chart', [{
+    type: 'scatter',
+    mode: 'markers+text',
+    x: im.probability,
+    y: im.severity,
+    text: im.labels,
+    textposition: 'top center',
+    textfont: { size: 11, family: ykFont },
+    marker: {
+      size: 30,
+      color: im.colors,
+      line: { color: '#c8c0b0', width: 2 },
+      opacity: 0.85
+    }
+  }], Object.assign({}, baseLayout, {
+    xaxis: { title: { text: 'Probability', font: { size: 11 } }, range: [0, 1.1], gridcolor: '#e5e0d6', zeroline: false },
+    yaxis: { title: { text: 'Severity', font: { size: 11 } }, range: [0, 1.1], gridcolor: '#e5e0d6', zeroline: false },
+    margin: { l: 55, r: 20, t: 15, b: 50 }
+  }), plotConfig);
+
+  // 2) Confidence Radar
+  var radar = chartData.impact_radar;
+  var radarCats = radar.categories.concat([radar.categories[0]]);
+  var radarVals = radar.values.concat([radar.values[0]]);
+  Plotly.newPlot('confidence-radar-chart', [{
+    type: 'scatterpolar',
+    r: radarVals,
+    theta: radarCats,
+    fill: 'toself',
+    fillcolor: 'rgba(126,183,127,0.2)',
+    line: { color: '#7eb77f', width: 2 },
+    marker: { size: 6, color: '#7eb77f' }
+  }], Object.assign({}, baseLayout, {
+    polar: {
+      bgcolor: 'rgba(0,0,0,0)',
+      radialaxis: { visible: true, range: [0, 1], gridcolor: '#e5e0d6', tickfont: { size: 10 } },
+      angularaxis: { tickfont: { size: 11, family: ykFont } }
+    },
+    margin: { l: 50, r: 50, t: 30, b: 30 }
+  }), plotConfig);
+
+  // 3) Risk Gauge
+  Plotly.newPlot('risk-gauge-chart', [{
+    type: 'indicator',
+    mode: 'gauge+number',
+    value: chartData.risk_level,
+    number: { suffix: '%', font: { size: 36, family: ykFont, color: '#3d3929' } },
+    gauge: {
+      axis: { range: [0, 100], tickwidth: 1, tickcolor: '#c8c0b0', tickfont: { size: 10 } },
+      bar: { color: chartData.risk_level > 60 ? '#d4776b' : chartData.risk_level > 35 ? '#c9a96e' : '#6baa7c', thickness: 0.3 },
+      bgcolor: 'rgba(0,0,0,0)',
+      borderwidth: 2,
+      bordercolor: '#c8c0b0',
+      steps: [
+        { range: [0, 33], color: 'rgba(107,170,124,0.15)' },
+        { range: [33, 66], color: 'rgba(201,169,110,0.15)' },
+        { range: [66, 100], color: 'rgba(212,119,107,0.15)' }
+      ],
+      threshold: {
+        line: { color: '#3d3929', width: 3 },
+        thickness: 0.8,
+        value: chartData.risk_level
+      }
+    }
+  }], Object.assign({}, baseLayout, {
+    margin: { l: 30, r: 30, t: 20, b: 10 }
+  }), plotConfig);
+
+  // 4) Confidence Bar Chart
+  var cs = chartData.confidence_scores;
+  var barLabels = Object.keys(cs);
+  var barValues = Object.values(cs);
+  var barColors = ['#7eb77f', '#8fb4c9', '#d4776b', '#6baa7c', '#3d3929'];
+  Plotly.newPlot('confidence-bar-chart', [{
+    type: 'bar',
+    x: barValues,
+    y: barLabels,
+    orientation: 'h',
+    marker: {
+      color: barColors.slice(0, barLabels.length),
+      line: { color: '#c8c0b0', width: 1 }
+    },
+    text: barValues.map(function(v) { return (v * 100).toFixed(0) + '%'; }),
+    textposition: 'auto',
+    textfont: { size: 11 }
+  }], Object.assign({}, baseLayout, {
+    xaxis: { range: [0, 1], tickformat: '.0%', gridcolor: '#e5e0d6', zeroline: false },
+    yaxis: { automargin: true },
+    margin: { l: 140, r: 30, t: 10, b: 35 }
+  }), plotConfig);
+
+  // 5) Sector Impact Heatmap
+  var hm = chartData.heatmap;
+  Plotly.newPlot('heatmap-chart', [{
+    type: 'heatmap',
+    z: hm.z,
+    x: hm.regions,
+    y: hm.sectors,
+    colorscale: [
+      [0, 'rgba(107,170,124,0.2)'],
+      [0.5, 'rgba(201,169,110,0.5)'],
+      [1, 'rgba(212,119,107,0.8)']
+    ],
+    showscale: true,
+    colorbar: {
+      title: { text: 'Impact', font: { size: 11 } },
+      tickfont: { size: 10 },
+      thickness: 15,
+      len: 0.8
+    },
+    hoverongaps: false,
+    xgap: 2,
+    ygap: 2
+  }], Object.assign({}, baseLayout, {
+    xaxis: { side: 'bottom', tickfont: { size: 11 } },
+    yaxis: { automargin: true, tickfont: { size: 11 } },
+    margin: { l: 120, r: 80, t: 15, b: 50 }
+  }), plotConfig);
+
 })();
 </script>
 

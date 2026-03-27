@@ -1,4 +1,4 @@
-"""Orchestrator -- 5-Phase analysis pipeline coordinator."""
+"""Orchestrator -- 4-Phase analysis pipeline coordinator."""
 
 from __future__ import annotations
 
@@ -13,8 +13,6 @@ from src.agents.event_identifier import EventIdentifierAgent
 from src.agents.macro_analyst import MacroAnalyst
 from src.agents.geopolitical_analyst import GeopoliticalAnalyst
 from src.agents.micro_analyst import MicroAnalyst
-from src.agents.investment_analyst import InvestmentAnalyst
-from src.agents.history_ethics_analyst import HistoryEthicsAnalyst
 from src.agents.devils_advocate import DevilsAdvocateAgent
 from src.agents.report_synthesizer import ReportSynthesizer
 
@@ -26,13 +24,12 @@ StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
 
 class Orchestrator:
-    """Coordinates the 5-phase analysis pipeline.
+    """Coordinates the 4-phase analysis pipeline.
 
     Phase 1: Parse command -> AnalysisRequest
-    Phase 2: Event Identifier -> EventProfile
-    Phase 3: Parallel analysis (Macro + Geo + Micro + History/Ethics)
-    Phase 4: Investment Analyst + Devil's Advocate audit
-    Phase 5: Report Synthesizer -> HTML report
+    Phase 2: Event Identifier -> EventProfile (5W1H)
+    Phase 3: Sequential analysis (Macro -> Geo -> Micro)
+    Phase 4: Devil's Advocate audit + Report generation
     """
 
     def __init__(self, config: Config) -> None:
@@ -41,8 +38,6 @@ class Orchestrator:
         self.macro_analyst = MacroAnalyst(config)
         self.geopolitical_analyst = GeopoliticalAnalyst(config)
         self.micro_analyst = MicroAnalyst(config)
-        self.investment_analyst = InvestmentAnalyst(config)
-        self.history_ethics_analyst = HistoryEthicsAnalyst(config)
         self.devils_advocate = DevilsAdvocateAgent(config)
         self.report_synthesizer = ReportSynthesizer(config)
 
@@ -60,7 +55,7 @@ class Orchestrator:
         chat_id: int,
         status_callback: StatusCallback = None,
     ) -> FullAnalysisResult:
-        """Execute the full 5-phase analysis pipeline."""
+        """Execute the full 4-phase analysis pipeline."""
         start_time = time.time()
 
         request = AnalysisRequest(
@@ -71,68 +66,69 @@ class Orchestrator:
 
         # -- Phase 1: Parse command --
         await self._notify(
-            "Phase 1/5: Parsing command...", status_callback
+            f"\U0001f50d Orchestrator: \ubd84\uc11d \uc2dc\uc791 \u2014 \"{event_description}\"",
+            status_callback,
         )
 
-        # -- Phase 2: Event Identification --
+        # -- Phase 2: Event Identification (5W1H) --
         await self._notify(
-            "Phase 2/5: Identifying event (5W1H)...", status_callback
+            "\U0001f4cb Event Identifier: \uc0ac\uac74 \uc2dd\ubcc4 \uc911...",
+            status_callback,
         )
         result.event_profile = await self.event_identifier.analyze(request)
+        ep = result.event_profile
         await self._notify(
-            f"Phase 2 complete -- Confidence: {result.event_profile.confidence_score}",
+            f"\U0001f4cb Event Identifier:\n"
+            f"\u2192 \ubd84\ub958: {ep.category}\n"
+            f"\u2192 \uc8fc\uccb4: {ep.who}\n"
+            f"\u2192 \uc2e0\ub8b0\ub3c4: {ep.confidence_score}",
             status_callback,
         )
 
-        # -- Phase 3: Sequential Analysis (Macro + Geo + Micro + History/Ethics) --
+        # -- Phase 3: Sequential Analysis (Macro -> Geo -> Micro) --
         await self._notify(
-            "Phase 3/5: Running analysis (4 agents sequentially)...",
+            "\U0001f4ca Macro Analyst: \uac70\uc2dc\uacbd\uc81c \ubd84\uc11d \uc911...",
             status_callback,
         )
-
-        await self._notify("  → Macro Analyst 분석 중...", status_callback)
         result.macro_analysis = await self.macro_analyst.analyze(result.event_profile)
+        macro_summary = result.macro_analysis.summary[:100] if result.macro_analysis.summary else ""
         await self._notify(
-            f"  ✓ Macro 완료 (신뢰도: {result.macro_analysis.confidence_score})",
+            f"\U0001f4ca Macro Analyst:\n"
+            f"\u2192 {macro_summary}\n"
+            f"\u2192 \uc2e0\ub8b0\ub3c4: {result.macro_analysis.confidence_score}",
             status_callback,
         )
 
-        await self._notify("  → Geopolitical Analyst 분석 중...", status_callback)
+        await self._notify(
+            "\U0001f30d Geopolitical Analyst: \uc9c0\uc815\ud559 \ubd84\uc11d \uc911...",
+            status_callback,
+        )
         result.geopolitical_analysis = await self.geopolitical_analyst.analyze(result.event_profile)
+        geo_summary = result.geopolitical_analysis.summary[:100] if result.geopolitical_analysis.summary else ""
         await self._notify(
-            f"  ✓ Geopolitical 완료 (신뢰도: {result.geopolitical_analysis.confidence_score})",
+            f"\U0001f30d Geopolitical Analyst:\n"
+            f"\u2192 {geo_summary}\n"
+            f"\u2192 \uc2e0\ub8b0\ub3c4: {result.geopolitical_analysis.confidence_score}",
             status_callback,
         )
 
-        await self._notify("  → Micro Analyst 분석 중...", status_callback)
+        await self._notify(
+            "\U0001f3ed Micro Analyst: \ubbf8\uc2dc\uacbd\uc81c \ubd84\uc11d \uc911...",
+            status_callback,
+        )
         result.micro_analysis = await self.micro_analyst.analyze(result.event_profile)
+        micro_summary = result.micro_analysis.summary[:100] if result.micro_analysis.summary else ""
         await self._notify(
-            f"  ✓ Micro 완료 (신뢰도: {result.micro_analysis.confidence_score})",
+            f"\U0001f3ed Micro Analyst:\n"
+            f"\u2192 {micro_summary}\n"
+            f"\u2192 \uc2e0\ub8b0\ub3c4: {result.micro_analysis.confidence_score}",
             status_callback,
         )
 
-        await self._notify("  → History & Ethics Analyst 분석 중...", status_callback)
-        result.history_ethics_analysis = await self.history_ethics_analyst.analyze(result.event_profile)
+        # -- Phase 4: Devil's Advocate audit + Report generation --
         await self._notify(
-            f"  ✓ History & Ethics 완료 (신뢰도: {result.history_ethics_analysis.confidence_score})",
+            "\U0001f50e Devil's Advocate: \uac10\uc0ac \uc911...",
             status_callback,
-        )
-
-        await self._notify(
-            "Phase 3 complete -- All analyses received",
-            status_callback,
-        )
-
-        # -- Phase 4: Investment Analyst + Devil's Advocate --
-        await self._notify(
-            "Phase 4/5: Investment analysis + Devil's Advocate audit...",
-            status_callback,
-        )
-        result.investment_analysis = await self.investment_analyst.analyze(
-            result.event_profile,
-            result.macro_analysis,
-            result.geopolitical_analysis,
-            result.micro_analysis,
         )
 
         all_analyses = {
@@ -140,12 +136,14 @@ class Orchestrator:
             "macro_analysis": result.macro_analysis.model_dump(),
             "geopolitical_analysis": result.geopolitical_analysis.model_dump(),
             "micro_analysis": result.micro_analysis.model_dump(),
-            "investment_analysis": result.investment_analysis.model_dump(),
-            "history_ethics_analysis": result.history_ethics_analysis.model_dump(),
         }
         result.audit_result = await self.devils_advocate.analyze(all_analyses)
+        audit_summary = result.audit_result.summary[:100] if result.audit_result.summary else ""
         await self._notify(
-            f"Phase 4 complete -- Verdict: {result.audit_result.overall_verdict}",
+            f"\U0001f50e Devil's Advocate:\n"
+            f"\u2192 \ud310\uc815: {result.audit_result.overall_verdict} "
+            f"(\uc2e0\ub8b0\ub3c4: {result.audit_result.credibility_score})\n"
+            f"\u2192 {audit_summary}",
             status_callback,
         )
 
@@ -157,7 +155,7 @@ class Orchestrator:
         ):
             revision_round += 1
             await self._notify(
-                f"Revision round {revision_round}: Re-running flagged agents...",
+                f"\U0001f504 Revision round {revision_round}: Re-running flagged agents...",
                 status_callback,
             )
             agents_to_revise = result.audit_result.agents_to_revise
@@ -176,25 +174,11 @@ class Orchestrator:
             if "micro_analyst" in agents_to_revise:
                 tasks.append(self.micro_analyst.analyze(result.event_profile))
                 task_names.append("micro_analysis")
-            if "history_ethics_analyst" in agents_to_revise:
-                tasks.append(
-                    self.history_ethics_analyst.analyze(result.event_profile)
-                )
-                task_names.append("history_ethics_analysis")
 
             if tasks:
                 revised_results = await asyncio.gather(*tasks)
                 for name, revised in zip(task_names, revised_results):
                     setattr(result, name, revised)
-
-            # Re-run investment analyst if needed
-            if "investment_analyst" in agents_to_revise:
-                result.investment_analysis = await self.investment_analyst.analyze(
-                    result.event_profile,
-                    result.macro_analysis,
-                    result.geopolitical_analysis,
-                    result.micro_analysis,
-                )
 
             # Re-audit
             all_analyses = {
@@ -202,27 +186,28 @@ class Orchestrator:
                 "macro_analysis": result.macro_analysis.model_dump(),
                 "geopolitical_analysis": result.geopolitical_analysis.model_dump(),
                 "micro_analysis": result.micro_analysis.model_dump(),
-                "investment_analysis": result.investment_analysis.model_dump(),
-                "history_ethics_analysis": result.history_ethics_analysis.model_dump(),
             }
             result.audit_result = await self.devils_advocate.analyze(
                 all_analyses
             )
             await self._notify(
-                f"Revision {revision_round} -- Verdict: {result.audit_result.overall_verdict}",
+                f"\U0001f504 Revision {revision_round} \u2014 \ud310\uc815: "
+                f"{result.audit_result.overall_verdict}",
                 status_callback,
             )
 
-        # -- Phase 5: Report Synthesis --
+        # Report generation
         await self._notify(
-            "Phase 5/5: Generating report...", status_callback
+            "\U0001f4dd Report Synthesizer: \ubcf4\uace0\uc11c \uc0dd\uc131 \uc911...",
+            status_callback,
         )
 
         result.total_duration_seconds = time.time() - start_time
 
         report_path = await self.report_synthesizer.synthesize(result)
         await self._notify(
-            f"Analysis complete! Report: {report_path}", status_callback
+            f"\u2705 \uc644\ub8cc! \ubcf4\uace0\uc11c: {report_path}",
+            status_callback,
         )
 
         return result
