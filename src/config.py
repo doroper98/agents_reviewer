@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import Field, field_validator, model_validator
+import os
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -11,16 +13,6 @@ class Config(BaseSettings):
 
     anthropic_api_key: str = ""
     telegram_bot_token: str = ""
-    allowed_chat_ids: list[int] = Field(default_factory=list)
-
-    @field_validator("allowed_chat_ids", mode="before")
-    @classmethod
-    def parse_chat_ids(cls, v: str | list[int]) -> list[int]:
-        if isinstance(v, list):
-            return v
-        if isinstance(v, str) and v.strip():
-            return [int(x.strip()) for x in v.split(",") if x.strip()]
-        return []
     cloudflare_account_id: str = ""
     cloudflare_api_token: str = ""
     cloudflare_project_name: str = "analysis-reports"
@@ -31,8 +23,15 @@ class Config(BaseSettings):
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
-        "env_nested_delimiter": "__",
     }
+
+    @property
+    def allowed_chat_ids(self) -> list[int]:
+        """Parse allowed chat IDs from ALLOWED_CHAT_IDS env var."""
+        raw = os.getenv("ALLOWED_CHAT_IDS", "")
+        if raw.strip():
+            return [int(x.strip()) for x in raw.split(",") if x.strip()]
+        return []
 
     @model_validator(mode="after")
     def _select_mode(self) -> "Config":
@@ -40,14 +39,6 @@ class Config(BaseSettings):
         if self.anthropic_api_key:
             self.use_cli_mode = False
         return self
-
-    @classmethod
-    def _parse_allowed_chat_ids(cls, v: str | list[int]) -> list[int]:
-        if isinstance(v, list):
-            return v
-        if isinstance(v, str) and v.strip():
-            return [int(x.strip()) for x in v.split(",") if x.strip()]
-        return []
 
 
 def get_config() -> Config:
