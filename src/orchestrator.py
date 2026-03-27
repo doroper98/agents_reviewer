@@ -84,24 +84,42 @@ class Orchestrator:
             status_callback,
         )
 
-        # -- Phase 3: Parallel Analysis (Macro + Geo + Micro + History/Ethics) --
+        # -- Phase 3: Sequential Analysis (Macro + Geo + Micro + History/Ethics) --
         await self._notify(
-            "Phase 3/5: Running parallel analysis (4 agents)...",
+            "Phase 3/5: Running analysis (4 agents sequentially)...",
             status_callback,
         )
-        (
-            result.macro_analysis,
-            result.geopolitical_analysis,
-            result.micro_analysis,
-            result.history_ethics_analysis,
-        ) = await asyncio.gather(
-            self.macro_analyst.analyze(result.event_profile),
-            self.geopolitical_analyst.analyze(result.event_profile),
-            self.micro_analyst.analyze(result.event_profile),
-            self.history_ethics_analyst.analyze(result.event_profile),
-        )
+
+        await self._notify("  → Macro Analyst 분석 중...", status_callback)
+        result.macro_analysis = await self.macro_analyst.analyze(result.event_profile)
         await self._notify(
-            "Phase 3 complete -- All parallel analyses received",
+            f"  ✓ Macro 완료 (신뢰도: {result.macro_analysis.confidence_score})",
+            status_callback,
+        )
+
+        await self._notify("  → Geopolitical Analyst 분석 중...", status_callback)
+        result.geopolitical_analysis = await self.geopolitical_analyst.analyze(result.event_profile)
+        await self._notify(
+            f"  ✓ Geopolitical 완료 (신뢰도: {result.geopolitical_analysis.confidence_score})",
+            status_callback,
+        )
+
+        await self._notify("  → Micro Analyst 분석 중...", status_callback)
+        result.micro_analysis = await self.micro_analyst.analyze(result.event_profile)
+        await self._notify(
+            f"  ✓ Micro 완료 (신뢰도: {result.micro_analysis.confidence_score})",
+            status_callback,
+        )
+
+        await self._notify("  → History & Ethics Analyst 분석 중...", status_callback)
+        result.history_ethics_analysis = await self.history_ethics_analyst.analyze(result.event_profile)
+        await self._notify(
+            f"  ✓ History & Ethics 완료 (신뢰도: {result.history_ethics_analysis.confidence_score})",
+            status_callback,
+        )
+
+        await self._notify(
+            "Phase 3 complete -- All analyses received",
             status_callback,
         )
 
