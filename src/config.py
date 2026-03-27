@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -17,12 +17,20 @@ class Config(BaseSettings):
     cloudflare_project_name: str = "analysis-reports"
     report_output_dir: str = "reports"
     model_name: str = "claude-sonnet-4-6"
+    use_cli_mode: bool = True
 
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "env_nested_delimiter": "__",
     }
+
+    @model_validator(mode="after")
+    def _select_mode(self) -> "Config":
+        """Auto-select API mode when an API key is provided."""
+        if self.anthropic_api_key:
+            self.use_cli_mode = False
+        return self
 
     @classmethod
     def _parse_allowed_chat_ids(cls, v: str | list[int]) -> list[int]:
