@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -12,6 +12,15 @@ class Config(BaseSettings):
     anthropic_api_key: str = ""
     telegram_bot_token: str = ""
     allowed_chat_ids: list[int] = Field(default_factory=list)
+
+    @field_validator("allowed_chat_ids", mode="before")
+    @classmethod
+    def parse_chat_ids(cls, v: str | list[int]) -> list[int]:
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str) and v.strip():
+            return [int(x.strip()) for x in v.split(",") if x.strip()]
+        return []
     cloudflare_account_id: str = ""
     cloudflare_api_token: str = ""
     cloudflare_project_name: str = "analysis-reports"
