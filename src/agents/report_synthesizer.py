@@ -135,7 +135,7 @@ class ReportSynthesizer:
         }
 
     async def _upload_to_cloudflare(self, filepath: str) -> str:
-        """Upload HTML report to Cloudflare Pages and return the URL."""
+        """Upload HTML report to Cloudflare Pages using wrangler CLI."""
         account_id = self.config.cloudflare_account_id
         api_token = self.config.cloudflare_api_token
         project_name = self.config.cloudflare_project_name
@@ -145,41 +145,61 @@ class ReportSynthesizer:
             return ""
 
         try:
-            curl_bin = shutil.which("curl")
-            if curl_bin is None:
-                logger.warning("[report_synthesizer] curl not found, skipping upload")
-                return ""
+            wrangler_bin = shutil.which("wrangler")
+            if wrangler_bin is None:
+                npx_bin = shutil.which("npx")
+                if npx_bin is None:
+                    logger.warning("[report_synthesizer] wrangler/npx not found, skipping upload")
+                    return ""
+                wrangler_cmd = [npx_bin, "wrangler"]
+            else:
+                wrangler_cmd = [wrangler_bin]
 
-            filename = os.path.basename(filepath)
+            # Create a temp directory with the report file
+            import tempfile
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_file = os.path.join(tmpdir, os.path.basename(filepath))
+                shutil.copy2(filepath, tmp_file)
 
-            cmd = [
-                curl_bin, "-s",
-                "-X", "POST",
-                f"https://api.cloudflare.com/client/v4/accounts/{account_id}"
-                f"/pages/projects/{project_name}/deployments",
-                "-H", f"Authorization: Bearer {api_token}",
-                "-F", f"/{filename}=@{filepath}",
-            ]
+                cmd = wrangler_cmd + [
+                    "pages", "deploy", tmpdir,
+                    "--project-name", project_name,
+                    "--commit-dirty=true",
+                ]
 
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await proc.communicate()
+                env = os.environ.copy()
+                env["CLOUDFLARE_ACCOUNT_ID"] = account_id
+                env["CLOUDFLARE_API_TOKEN"] = api_token
 
-            if proc.returncode != 0:
-                logger.error(f"[report_synthesizer] Cloudflare upload failed: {stderr.decode()}")
-                return ""
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=env,
+                )
+                stdout, stderr = await proc.communicate()
 
-            response_data = json.loads(stdout.decode())
-            if response_data.get("success"):
-                url = response_data.get("result", {}).get("url", "")
-                logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {url}")
-                return url
+                output = stdout.decode() + stderr.decode()
 
-            logger.error(f"[report_synthesizer] Cloudflare API error: {response_data}")
-            return ""
+                if proc.returncode != 0:
+                    logger.error(f"[report_synthesizer] Cloudflare upload failed: {output}")
+                    return ""
+
+                # Extract URL from wrangler output
+                for line in output.split("\n"):
+                    line = line.strip()
+                    if "https://" in line and ".pages.dev" in line:
+                        url = line.split("https://")[1].split()[0] if "https://" in line else ""
+                        if url:
+                            full_url = f"https://{url}"
+                            logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {full_url}")
+                            return full_url
+
+                # Fallback: construct URL
+                filename = os.path.basename(filepath)
+                fallback_url = f"https://{project_name}.pages.dev/{filename}"
+                logger.info(f"[report_synthesizer] Using fallback URL: {fallback_url}")
+                return fallback_url
 
         except Exception as e:
             logger.error(f"[report_synthesizer] Cloudflare upload exception: {e}")
