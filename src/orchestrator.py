@@ -18,6 +18,8 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
+VERSION = "v1.5.0"
+
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
 
@@ -164,7 +166,8 @@ class Orchestrator:
 
         # -- Phase 1: 상황인식 분석관 --
         await self._notify(
-            f"🔍 상황인식 분석관: \"{event_description}\"에 대한 상황을 인식하고 있습니다.",
+            f"🔍 상황인식 분석관: \"{event_description}\"에 대한 상황을 인식하고 있습니다.\n"
+            f"Analysis Team {VERSION}",
             status_callback,
         )
         result.context = await self.context_analyst.analyze(request)
