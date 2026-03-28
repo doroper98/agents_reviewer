@@ -126,11 +126,14 @@ class TelegramBot:
             # Also send HTML file if available
             report_path = result.report_path
             if report_path and os.path.isfile(report_path):
+                caption = "📊 Full Analysis Report"
+                if result.report_url and result.report_url.startswith("http"):
+                    caption += f"\n\n공유 링크: {result.report_url}"
                 with open(report_path, "rb") as f:
                     await update.message.reply_document(
                         document=f,
                         filename=os.path.basename(report_path),
-                        caption="📊 Full Analysis Report",
+                        caption=caption,
                     )
 
             duration = f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
