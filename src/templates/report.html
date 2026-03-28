@@ -146,8 +146,20 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
     </div>
     {% endif %}
 
-    <!-- Canvas Chart -->
-    {% if result.visuals.chart_config and result.visuals.chart_config.enabled %}
+    <!-- TradingView Charts -->
+    {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type == 'tradingview' and result.visuals.chart_config.tradingview_symbols %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:14px">
+      {% for tv in result.visuals.chart_config.tradingview_symbols %}
+      <div class="cd" style="padding:10px;overflow:hidden">
+        <div style="font-weight:700;font-size:11px;margin-bottom:6px">{{ tv.label or tv.symbol }}</div>
+        <div id="tv-chart-{{ loop.index }}" style="height:300px"></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Canvas Chart (non-TradingView) -->
+    {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type != 'tradingview' %}
     <div class="cd" style="margin-bottom:14px;padding:14px">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px">{{ result.visuals.chart_config.title or '차트' }}</div>
       <canvas id="visual-chart" style="width:100%;height:220px"></canvas>
@@ -559,7 +571,40 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
 </script>
 {% endif %}
 
-{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled %}
+<!-- TradingView Widget Script -->
+{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type == 'tradingview' and result.visuals.chart_config.tradingview_symbols %}
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+(function(){
+  var symbols = {{ result.visuals.chart_config.tradingview_symbols | tojson }};
+  symbols.forEach(function(tv, i){
+    var containerId = 'tv-chart-' + (i+1);
+    var el = document.getElementById(containerId);
+    if(!el) return;
+    new TradingView.widget({
+      container_id: containerId,
+      symbol: tv.symbol,
+      interval: tv.interval || 'D',
+      timezone: 'Asia/Seoul',
+      theme: 'light',
+      style: '2',
+      locale: 'kr',
+      toolbar_bg: '#FAFAF7',
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      save_image: false,
+      width: '100%',
+      height: 300,
+      hide_volume: true
+    });
+  });
+})();
+</script>
+{% endif %}
+
+<!-- Canvas Chart (non-TradingView) -->
+{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type != 'tradingview' %}
 <script>
 (function(){
   var cfg = {{ result.visuals.chart_config | tojson }};

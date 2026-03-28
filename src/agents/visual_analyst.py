@@ -97,8 +97,12 @@ Mermaid는 사용하지 않음. 모든 다이어그램을 SVG로 직접 생성.
   },
   "chart_config": {
     "enabled": true/false,
-    "type": "bar|line|radar",
+    "type": "tradingview|bar|line|radar",
     "title": "차트 제목",
+    "tradingview_symbols": [
+      {"symbol": "NYMEX:BZ1!", "label": "브렌트유", "interval": "D"},
+      {"symbol": "FX:USDKRW", "label": "달러/원", "interval": "D"}
+    ],
     "labels": ["항목1", "항목2"],
     "values": [10, 20],
     "colors": ["#BD3227", "#1D6FA5"]
@@ -110,10 +114,26 @@ Mermaid는 사용하지 않음. 모든 다이어그램을 SVG로 직접 생성.
   "confidence_score": 0.0
 }
 
+차트 선택 규칙 (매우 중요):
+- TradingView로 표현 가능한 데이터는 반드시 TradingView 사용. Canvas 금지.
+- TradingView 가능: 주식, 원자재, 환율, 암호화폐, 지수, 채권 금리
+- TradingView 불가: 커스텀 데이터, 비교 차트, 비금융 수치 → Canvas 사용
+- TradingView 기본 차트 유형: 라인 차트 (3)
+- tradingview_symbols에 관련 심볼을 최대 3개까지 포함
+- 주요 TradingView 심볼:
+  * 원유: NYMEX:BZ1! (브렌트), NYMEX:CL1! (WTI)
+  * 환율: FX:USDKRW, FX:USDJPY, FX:USDCNY, FX:EURUSD
+  * 지수: KRX:KOSPI, TVC:NI225, SSE:000001, NASDAQ:NDX, SP:SPX
+  * 금: COMEX:GC1!, 은: COMEX:SI1!
+  * 천연가스: NYMEX:NG1!, LNG: 없음(Canvas 사용)
+  * 비트코인: BINANCE:BTCUSDT
+  * 금리: TVC:US10Y, TVC:US02Y
+  * VIX: CBOE:VIX
+
 주제별 시각화 선택:
-- 지정학/군사: leaflet_config enabled + SVG 관계도
-- 경제/금융: chart_config enabled + SVG 구조도
-- 기술/산업: SVG 플로우차트
+- 지정학/군사: leaflet_config enabled + SVG 관계도 + TradingView(유가, 해당국 환율)
+- 경제/금융: TradingView(관련 자산) + SVG 구조도
+- 기술/산업: SVG 플로우차트 + TradingView(관련 주가지수)
 - 복합: 위 조합
 
 key_metrics는 최대 6개. 가장 중요한 숫자만."""
