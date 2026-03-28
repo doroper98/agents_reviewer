@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from src.config import Config
 from src.models import (
     ContextAnalysis,
@@ -135,6 +137,8 @@ class VisualAnalyst(BaseAgent):
             analysis_context["chain_reaction"] = chain_reaction.model_dump()
         if scenarios:
             analysis_context["scenarios"] = scenarios.model_dump()
+        analysis_context["current_date"] = datetime.now().strftime("%Y-%m-%d")
+        analysis_context["instruction"] = f"오늘은 {analysis_context['current_date']}. 최신 정보 기준으로 분석할 것."
 
         raw_text = await super().analyze(analysis_context)
         return self._parse_json_response(raw_text, VisualAnalysis)

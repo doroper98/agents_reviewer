@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from src.agents.base import BaseAgent
 from src.config import Config
 from src.models import ContextAnalysis, DynamicsAnalysis, PlayerAnalysis
@@ -56,5 +58,7 @@ class DynamicsAnalyst(BaseAgent):
             "context_analysis": context_analysis.model_dump(),
             "player_analysis": player_analysis.model_dump(),
         }
+        context["current_date"] = datetime.now().strftime("%Y-%m-%d")
+        context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, DynamicsAnalysis)

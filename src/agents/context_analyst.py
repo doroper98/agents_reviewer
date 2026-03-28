@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from src.agents.base import BaseAgent
 from src.config import Config
 from src.models import AnalysisRequest, ContextAnalysis
 
 SYSTEM_PROMPT = (
     "당신은 상황판 분석관. 사건의 팩트, 타임라인, 핵심 수치를 정리함.\n\n"
+    "중요: 오늘 날짜는 {current_date}.\n"
+    "반드시 최신 정보를 기반으로 분석할 것.\n"
+    "웹 검색을 통해 최신 뉴스, 데이터, 현황을 확인한 후 분석.\n"
+    "학습 데이터에만 의존하지 말 것.\n"
+    "과거 정보를 현재로 혼동하지 말 것 (예: 이전 정부를 현 정부로 착각 금지).\n\n"
     "규칙:\n"
     "- 음슴체. 미사여구 금지\n"
     "- 검증된 팩트만. 추측 시 명시\n"
@@ -50,5 +57,8 @@ class ContextAnalyst(BaseAgent):
             "event_description": request.event_description,
             "request_type": request.request_type,
         }
+        context["current_date"] = datetime.now().strftime("%Y-%m-%d")
+        context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
+        self.system_prompt = SYSTEM_PROMPT.format(current_date=context["current_date"])
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, ContextAnalysis)

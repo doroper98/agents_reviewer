@@ -222,11 +222,11 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 
   <div class="g2">
     {% for player in result.players.players %}
-    <div class="pl {% if player.risk_level == 'EXTREME' %}ex{% elif player.risk_level == 'HIGH' %}hi{% elif player.risk_level == 'MODERATE' %}md{% else %}lo{% endif %}">
+    <div class="pl {% if player.risk_level == '극심' %}ex{% elif player.risk_level == '높음' %}hi{% elif player.risk_level == '보통' %}md{% else %}lo{% endif %}">
       <div class="pl-h">
         <span class="pl-f">{{ player.emoji or '🔹' }}</span>
         <span class="pl-n">{{ player.name }}</span>
-        <span class="bg {% if player.risk_level == 'EXTREME' %}ex{% elif player.risk_level == 'HIGH' %}hi{% elif player.risk_level == 'MODERATE' %}md{% else %}lo{% endif %}">{{ player.role_tag or player.risk_level }}</span>
+        <span class="bg {% if player.risk_level == '극심' %}ex{% elif player.risk_level == '높음' %}hi{% elif player.risk_level == '보통' %}md{% else %}lo{% endif %}">{{ player.role_tag or player.risk_level }}</span>
       </div>
       {% if player.position %}
       <div class="pl-s">{{ player.position }}</div>
@@ -249,7 +249,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   {% endif %}
 
   <div class="terms">
-    <b>용어:</b> EXTREME = 극심 · HIGH = 높음 · MODERATE = 보통 · LOW = 낮음
+    <b>용어:</b> 극심 = 가장 높은 위험 · 높음 = 높은 위험 · 보통 = 보통 위험 · 낮음 = 낮은 위험
   </div>
 
   <p class="cue">행위자들의 패를 확인했다. 이들 사이의 구조적 상호작용은 어떤 형태인가.</p>

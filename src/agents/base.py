@@ -70,6 +70,7 @@ class BaseAgent:
             "--output-format", "text",
             "--model", self.config.model_name,
             "--dangerously-skip-permissions",
+            "--allowedTools", "WebFetch,WebSearch",
         ]
 
         logger.info(f"[{self.name}] Starting CLI analysis...")
