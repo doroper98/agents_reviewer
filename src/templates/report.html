@@ -192,9 +192,9 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
     <div style="font-weight:700;font-size:12px;margin-bottom:10px">타임라인</div>
     <div class="tc">
       {% for item in result.context.timeline %}
-      <div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
-        <span style="color:var(--blu);font-weight:600;min-width:90px;flex-shrink:0">{{ item.date }}</span>
-        <span>{{ item.event }}{% if item.impact %} — <b style="color:var(--red)">{{ item.impact }}</b>{% endif %}</span>
+      <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;min-height:44px;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
+        <span style="color:var(--blu);font-weight:600;min-width:90px;flex-shrink:0;line-height:1.7">{{ item.date }}</span>
+        <span style="line-height:1.7">{{ item.event }}{% if item.impact %}<br><span style="color:var(--red);font-weight:600">→ {{ item.impact }}</span>{% endif %}</span>
       </div>
       {% endfor %}
     </div>
