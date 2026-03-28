@@ -2,441 +2,373 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ result.context.event_name_en or result.context.event_name or 'Event Analysis' }}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* === valentino-boop design system === */
 :root{
-  --bg:#FAFAF7;--card:#FFF;--border:#E4E0D8;
-  --red:#BD3227;--org:#C76B1E;--blu:#1D6FA5;--grn:#1A7B3E;--gld:#9E8A15;
-  --nvy:#151D26;--txt:#2C2C2C;--sub:#6B6B6B;--mute:#A0A0A0;
-  --amber:#D4A017;--teal:#0E7C6B;--purple:#6B4C9A;
-  --r:6px;--r2:10px;--sh:0 1px 4px rgba(0,0,0,.05);
-  --serif:'Noto Serif KR',serif;--sans:'Noto Sans KR',sans-serif;--mono:'JetBrains Mono',monospace;
+  --bg:#FAFAF7;--card:#FFF;--accent:#FFF9EB;
+  --t1:#111;--t2:#444;--tm:#999;--brd:#E4E0D8;--brl:#EFECE5;
+  --red:#BD3227;--rl:#FDF0EE;--org:#C76B1E;--ol:#FEF4E8;
+  --blu:#1D6FA5;--bl:#EDF5FB;--grn:#1A7B3E;--gl:#EEF8F1;
+  --gld:#9E8A15;--gdl:#FEFBE8;--nvy:#151D26;--cr:#7A2018;--ub:#14527A;
+  --sh:0 1px 4px rgba(0,0,0,.05);--r:6px;--rl2:10px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--bg);color:var(--txt);line-height:1.7;font-size:15px}
-.wrap{max-width:820px;margin:0 auto;padding:0 20px}
-
-/* --- Hero --- */
-.hero{background:var(--nvy);color:#fff;padding:3.5rem 0 2.5rem;text-align:center}
-.hero h1{font-family:var(--serif);font-size:clamp(1.5rem,4.5vw,2.6rem);font-weight:900;line-height:1.25;margin-bottom:.5rem}
-.hero .sub{color:#9CA3AF;font-size:.9rem;margin-bottom:1rem}
-.hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.hero .tag{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:4px;background:rgba(255,255,255,.1);color:#D1D5DB;letter-spacing:.03em}
-
-/* --- Sticky Nav --- */
-nav{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);box-shadow:var(--sh)}
-nav .wrap{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
-nav a{flex-shrink:0;padding:10px 16px;font-size:.78rem;font-weight:600;color:var(--sub);text-decoration:none;border-bottom:2px solid transparent;transition:all .2s}
-nav a:hover,nav a.active{color:var(--nvy);border-bottom-color:var(--blu)}
-
-/* --- Sections --- */
-section{padding:2.5rem 0 1.5rem}
-.act-label{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--blu);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
-section h2{font-family:var(--serif);font-size:1.35rem;font-weight:700;margin-bottom:1.2rem;color:var(--nvy)}
-
-/* --- Cards --- */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh);padding:1.5rem;margin-bottom:1rem;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
-.card.show{opacity:1;transform:translateY(0)}
-
-/* --- Key Figures grid --- */
-.kf{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:1rem}
-.kf-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center}
-.kf-item .kf-v{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--nvy)}
-.kf-item .kf-l{font-size:.72rem;color:var(--sub);margin-top:2px}
-.kf-item .kf-c{font-size:.65rem;color:var(--mute);margin-top:2px}
-
-/* --- Timeline --- */
-.tl{position:relative;padding-left:24px;margin-bottom:1rem}
-.tl::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--border)}
-.tl-item{position:relative;margin-bottom:12px;padding-left:16px}
-.tl-item::before{content:'';position:absolute;left:-21px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--blu);border:2px solid var(--card)}
-.tl-date{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blu)}
-.tl-event{font-size:.85rem;color:var(--txt)}
-.tl-impact{font-size:.75rem;color:var(--sub);font-style:italic}
-
-/* --- Player Cards --- */
-.pl{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;margin-bottom:10px;border-left:4px solid var(--mute);opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
-.pl.show{opacity:1;transform:translateY(0)}
-.pl.ex{border-left-color:var(--red)}.pl.hi{border-left-color:var(--org)}.pl.md{border-left-color:var(--gld)}.pl.lo{border-left-color:var(--grn)}
-.pl-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.pl-f{font-size:1.4rem}
-.pl-n{font-family:var(--serif);font-weight:700;font-size:1rem}
-.bg{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:4px;color:#fff;margin-left:auto}
-.bg.ex{background:var(--red)}.bg.hi{background:var(--org)}.bg.md{background:var(--gld)}.bg.lo{background:var(--grn)}
-.pl-role{font-family:var(--mono);font-size:.65rem;color:var(--blu);font-weight:700;letter-spacing:.04em;margin-bottom:6px}
-.pl-s{font-size:.82rem;color:var(--txt);margin-bottom:6px;line-height:1.6}
-.pl-t{font-size:.78rem;color:var(--sub);line-height:1.6}
-.pl-v{font-size:.75rem;color:var(--red);margin-top:6px}
-
-/* --- Asymmetries & Tipping Points --- */
-.asym{display:grid;gap:10px;margin-bottom:1rem}
-.asym-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px}
-.asym-type{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--org);margin-bottom:4px}
-.asym-desc{font-size:.82rem;color:var(--txt)}
-.asym-adv{font-size:.72rem;color:var(--grn);margin-top:4px}
-
-.tp{display:grid;gap:10px;margin-bottom:1rem}
-.tp-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;border-left:3px solid var(--red)}
-.tp-cond{font-size:.85rem;font-weight:600;color:var(--txt)}
-.tp-time{font-family:var(--mono);font-size:.72rem;color:var(--blu);margin-top:2px}
-.tp-cons{font-size:.78rem;color:var(--sub);margin-top:4px}
-
-/* --- Flow Chart (Chain Reaction) --- */
-.fl{display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:1rem}
-.fn{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;width:100%;max-width:520px;text-align:center;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
-.fn.show{opacity:1;transform:translateY(0)}
-.fn strong{font-family:var(--mono);font-size:.82rem;display:block;color:var(--nvy)}
-.fn span{font-size:.78rem;color:var(--sub)}
-.fn .fn-aff{font-size:.68rem;color:var(--org);margin-top:4px}
-.fn .fn-sev{font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:3px;display:inline-block;margin-top:4px}
-.fn .fn-sev.h{background:rgba(189,50,39,.1);color:var(--red)}.fn .fn-sev.m{background:rgba(199,107,30,.1);color:var(--org)}.fn .fn-sev.l{background:rgba(26,123,62,.1);color:var(--grn)}
-.fa{width:2px;height:24px;background:var(--border);position:relative}
-.fa::after{content:'';position:absolute;bottom:-4px;left:-4px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--border)}
-
-/* --- Break Points --- */
-.bp{background:rgba(26,123,62,.05);border:1px solid var(--grn);border-radius:var(--r);padding:10px 14px;margin-bottom:8px;font-size:.82rem}
-.bp-step{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--grn)}
-
-/* --- Scenario Matrix Table --- */
-.mx{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:1rem}
-.mx th{background:var(--nvy);color:#fff;padding:10px 12px;text-align:left;font-size:.75rem;font-weight:600}
-.mx td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
-.mx tr:nth-child(even){background:rgba(0,0,0,.015)}
-.mx .sc-tag{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:3px;display:inline-block}
-.sc-best{background:rgba(26,123,62,.1);color:var(--grn)}.sc-base{background:rgba(29,111,165,.1);color:var(--blu)}
-.sc-worse{background:rgba(199,107,30,.1);color:var(--org)}.sc-worst{background:rgba(189,50,39,.1);color:var(--red)}
-.mx .sc-prob{font-family:var(--mono);font-weight:700;font-size:.85rem}
-
-/* --- Watch Signals --- */
-.wg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1rem}
-.wi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:10px;align-items:flex-start;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
-.wi.show{opacity:1;transform:translateY(0)}
-.wi-i{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.wi h4{font-size:.82rem;font-weight:600;color:var(--nvy);margin-bottom:2px}
-.wi p{font-size:.72rem;color:var(--sub);line-height:1.5}
-.wi .wi-ind{font-family:var(--mono);font-size:.6rem;color:var(--blu);margin-top:4px}
-
-/* --- Confidence Radar (Canvas) --- */
-.radar-wrap{display:flex;justify-content:center;margin:1.5rem 0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;line-height:1.75}
+.hero{background:var(--nvy);color:#fff;padding:48px 16px 32px;text-align:center}
+.hero h1{font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,38px);font-weight:900;line-height:1.3;margin-bottom:6px}
+.hero-sub{font-size:12px;color:rgba(255,255,255,.55);max-width:540px;margin:0 auto 12px;line-height:1.75}
+.hero-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:10px}
+.hero-tags span{background:rgba(255,255,255,.08);padding:3px 10px;border-radius:20px;color:rgba(255,255,255,.5)}
+.nav{position:sticky;top:0;z-index:100;background:rgba(250,250,247,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--brd);overflow-x:auto}
+.nav-in{display:flex;white-space:nowrap;padding:0 4px}
+.nav a{display:block;padding:10px 11px;font-size:10px;font-weight:500;color:var(--tm);text-decoration:none;border-bottom:2px solid transparent}
+.nav a.on{color:var(--t1);border-bottom-color:var(--nvy)}
+.w{max-width:960px;margin:0 auto;padding:0 14px}
+section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
+.lb{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:4px}
+.tt{font-family:'Noto Serif KR',serif;font-size:clamp(18px,4vw,26px);font-weight:900;line-height:1.35;margin-bottom:4px}
+.ds{font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.8;max-width:640px}
+.cd{background:var(--card);border:1px solid var(--brl);border-radius:var(--rl2);padding:16px;box-shadow:var(--sh)}
+.co{background:var(--accent);border-left:3px solid var(--gld);border-radius:0 var(--r) var(--r) 0;padding:12px 14px;margin:16px 0}
+.co b{font-size:12px;display:block;margin-bottom:2px}
+.co p{font-size:11px;color:var(--t2);line-height:1.75}
+.mono{font-family:'JetBrains Mono',monospace}
+.g2{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:540px){.g2{grid-template-columns:1fr 1fr}}
+.cue{text-align:center;padding:20px 0 0;font-family:'Noto Serif KR',serif;font-size:13px;color:var(--t2);font-style:italic}
+.pl{background:var(--card);border:1px solid var(--brl);border-radius:var(--rl2);padding:14px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.pl::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.pl.ex::before{background:var(--red)}.pl.hi::before{background:var(--org)}.pl.md::before{background:var(--gld)}.pl.lo::before{background:var(--grn)}
+.pl-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pl-f{font-size:20px}.pl-n{font-weight:700;font-size:14px}
+.bg{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:3px}
+.bg.ex{background:#FADBD8;color:var(--red)}.bg.hi{background:#FDEBD0;color:var(--org)}.bg.md{background:#FEF9E7;color:var(--gld)}.bg.lo{background:#E8F8F0;color:var(--grn)}
+.pl-s{font-size:10px;color:var(--t2);line-height:1.6;margin-bottom:6px}
+.pl-t{font-size:10px;padding:8px;background:var(--bg);border-radius:var(--r);line-height:1.6}
+.fl{display:flex;flex-direction:column;align-items:center;gap:0}
+.fn{background:var(--card);border:2px solid var(--brd);border-radius:var(--r);padding:10px 14px;text-align:center;width:100%;max-width:440px}
+.fn strong{font-size:12px}.fn span{font-size:10px;color:var(--t2);display:block;margin-top:1px}
+.fa{width:2px;height:14px;background:var(--brd);position:relative}.fa::after{content:'▼';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:7px;color:var(--tm)}
+.mx{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;border-radius:var(--rl2);overflow:hidden;border:1px solid var(--brl);background:var(--card)}
+.mx th{background:var(--nvy);color:#fff;padding:10px 8px;font-size:10px;font-weight:600;text-align:left}
+.mx td{padding:10px 8px;border-bottom:1px solid var(--brl);vertical-align:top;line-height:1.6}
+.mx tr:last-child td{border-bottom:none}
+.wg{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:540px){.wg{grid-template-columns:1fr 1fr}}
+.wi{display:flex;gap:8px;padding:10px 12px;background:var(--card);border:1px solid var(--brl);border-radius:var(--r);box-shadow:var(--sh)}
+.wi-i{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.wi h4{font-size:11px;font-weight:700;margin-bottom:1px}.wi p{font-size:10px;color:var(--t2);line-height:1.5}
+.tc{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.85}
+.gb{margin-bottom:8px}
+.gb-l{font-size:11px;display:flex;justify-content:space-between;margin-bottom:3px}
+.gb-t{height:20px;background:#F0EDE6;border-radius:3px;overflow:hidden}
+.gb-f{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:600;color:#fff;font-family:'JetBrains Mono',monospace}
+.ft{background:var(--nvy);color:rgba(255,255,255,.4);padding:20px 14px;text-align:center;font-size:10px;line-height:1.8}
+.ft a{color:rgba(255,255,255,.6);text-decoration:underline}
+.fi{opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}.fi.v{opacity:1;transform:none}
+.terms{margin-top:16px;padding:12px 14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--brl);font-size:10px;line-height:1.7;color:var(--t2)}
+.terms b{color:var(--t1);font-size:10px}
+.radar-wrap{display:flex;justify-content:center;margin:20px 0}
 #radarCanvas{max-width:100%}
-
-/* --- Executive Summary --- */
-.exec{background:var(--nvy);color:#fff;border-radius:var(--r2);padding:1.5rem;margin-bottom:1.5rem;font-size:.88rem;line-height:1.8;white-space:pre-line}
-
-/* --- Footer --- */
-footer{background:var(--nvy);color:#9CA3AF;padding:2rem 0;font-size:.75rem;text-align:center;margin-top:2rem}
-footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
-
-/* --- Responsive --- */
-@media(max-width:700px){
-  .kf{grid-template-columns:repeat(2,1fr)}
-  .wg{grid-template-columns:1fr}
-  nav a{padding:8px 12px;font-size:.72rem}
-  .hero h1{font-size:1.4rem}
-  .mx{font-size:.72rem}.mx th,.mx td{padding:7px 8px}
-  body{font-size:14px}
-  .wrap{padding:0 14px}
-}
-@media(max-width:540px){
-  .kf{grid-template-columns:1fr 1fr}
-  .hero{padding:2.5rem 0 1.5rem}
-  section{padding:1.5rem 0 1rem}
-  .card,.pl{padding:1rem}
-  body{font-size:13px;line-height:1.65}
-  .wrap{padding:0 10px}
-  .hero h1{font-size:1.2rem}
-  .hero .sub{font-size:.8rem}
-  .sec-title{font-size:1.1rem}
-  .kf{grid-template-columns:1fr}
-  .mx{display:block}
-  .mx thead{display:none}
-  .mx tr{display:block;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);padding:10px}
-  .mx td{display:block;padding:4px 0;border:none;font-size:.8rem}
-  .mx td::before{content:attr(data-label);font-weight:700;display:block;font-size:.7rem;color:var(--mute);margin-bottom:2px}
-  canvas{height:200px!important}
-}
+@media(max-width:700px){.g2{grid-template-columns:1fr}.hero h1{font-size:22px}.mx{font-size:10px}}
+@media(max-width:540px){.hero{padding:32px 12px 24px}section{padding:28px 0 20px}.pl,.cd{padding:12px}}
 </style>
 </head>
 <body>
 
-<!-- ===== HERO ===== -->
+<!-- HERO -->
 <header class="hero">
-  <div class="wrap">
-    <h1>{{ result.context.event_name_en or result.context.event_name or 'Event Analysis' }}</h1>
-    <div class="sub">{{ result.context.event_name if result.context.event_name_en else '' }}</div>
-    <div class="tags">
-      {% if result.context.category %}<span class="tag">{{ result.context.category }}</span>{% endif %}
-      {% if result.context.date %}<span class="tag">{{ result.context.date }}</span>{% endif %}
-      <span class="tag">{{ generated_at }}</span>
+  <div class="w">
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:8px">Event Analysis Report</div>
+    <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
+    <p class="hero-sub">{{ result.executive_summary[:200] if result.executive_summary else '' }}</p>
+    <div class="hero-tags">
+      {% if result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
+      {% if result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
+      <span>{{ generated_at }}</span>
     </div>
   </div>
 </header>
 
-<!-- ===== NAV ===== -->
-<nav>
-  <div class="wrap">
-    <a href="#s1">I. 상황판</a>
-    <a href="#s2">II. 플레이어</a>
-    <a href="#s3">III. 역학</a>
-    <a href="#s4">IV. 연쇄반응</a>
-    <a href="#s5">V. 시나리오</a>
-    <a href="#s6">VI. 신호</a>
-  </div>
-</nav>
+<!-- NAV -->
+<nav class="nav"><div class="nav-in">
+  <a href="#s1">상황판</a><a href="#s2">이해관계자</a><a href="#s3">역학관계</a><a href="#s4">파급효과</a><a href="#s5">시나리오</a><a href="#s6">신호</a>
+</div></nav>
 
-<main class="wrap">
+<main class="w">
 
-<!-- ===== Executive Summary ===== -->
-{% if result.executive_summary %}
-<div class="exec card" style="opacity:1;transform:none;margin-top:2rem">{{ result.executive_summary }}</div>
-{% endif %}
-
-<!-- ===== ACT I — THE BOARD ===== -->
-<section id="s1">
-  <div class="act-label">ACT I</div>
-  <h2>상황판 &mdash; THE BOARD</h2>
+<!-- ACT I -->
+{% if result.context %}
+<section id="s1" class="fi">
+  <div class="lb">ACT I — THE BOARD</div>
+  <h2 class="tt">상황판</h2>
+  {% if result.context.summary %}
+  <p class="ds">{{ result.context.summary }}</p>
+  {% endif %}
 
   {% if result.context.background %}
-  <div class="card">
-    <p style="font-size:.88rem;color:var(--txt);line-height:1.8">{{ result.context.background }}</p>
+  <div class="cd" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:8px">배경</div>
+    <div style="font-size:11px;color:var(--t2);line-height:1.7">{{ result.context.background }}</div>
   </div>
   {% endif %}
 
   {% if result.context.key_figures %}
-  <div class="kf">
+  <div style="margin-bottom:14px">
     {% for fig in result.context.key_figures %}
-    <div class="kf-item card" style="padding:12px">
-      <div class="kf-v">{{ fig.value }}</div>
-      <div class="kf-l">{{ fig.label }}</div>
-      {% if fig.context %}<div class="kf-c">{{ fig.context }}</div>{% endif %}
+    <div class="gb">
+      <div class="gb-l"><span>{{ fig.label }}</span><span class="mono">{{ fig.value }}</span></div>
+      {% if fig.context %}<div style="font-size:9px;color:var(--tm)">{{ fig.context }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
   {% if result.context.timeline %}
-  <div class="card">
-    <h3 style="font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--nvy)">Timeline</h3>
-    <div class="tl">
+  <div class="cd">
+    <div style="font-weight:700;font-size:12px;margin-bottom:10px">타임라인</div>
+    <div class="tc">
       {% for item in result.context.timeline %}
-      <div class="tl-item">
-        <div class="tl-date">{{ item.date }}</div>
-        <div class="tl-event">{{ item.event }}</div>
-        {% if item.impact %}<div class="tl-impact">{{ item.impact }}</div>{% endif %}
+      <div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
+        <span style="color:var(--blu);font-weight:600;min-width:90px;flex-shrink:0">{{ item.date }}</span>
+        <span>{{ item.event }}{% if item.impact %} — <b style="color:var(--red)">{{ item.impact }}</b>{% endif %}</span>
       </div>
       {% endfor %}
     </div>
   </div>
   {% endif %}
+
+  {% if result.context.sources %}
+  <div class="terms" style="margin-top:14px">
+    <b>출처:</b> {{ result.context.sources|join(' · ') }}
+  </div>
+  {% endif %}
+
+  <p class="cue">상황판을 확인했다. 이 사건에 관여하는 핵심 행위자들은 누구인가.</p>
 </section>
+{% endif %}
 
-<!-- ===== ACT II — THE PLAYERS ===== -->
-<section id="s2">
-  <div class="act-label">ACT II</div>
-  <h2>플레이어 &mdash; THE PLAYERS</h2>
-
+<!-- ACT II -->
+{% if result.players and result.players.players %}
+<section id="s2" class="fi">
+  <div class="lb">ACT II — THE PLAYERS</div>
+  <h2 class="tt">이해관계자</h2>
   {% if result.players.power_dynamics %}
-  <div class="card">
-    <p style="font-size:.85rem;color:var(--sub);line-height:1.7">{{ result.players.power_dynamics }}</p>
-  </div>
+  <p class="ds">{{ result.players.power_dynamics }}</p>
   {% endif %}
 
-  {% if result.players.players %}
-  {% for p in result.players.players %}
-  {% set rl = p.risk_level|default('LOW') %}
-  {% set rc = 'ex' if rl == 'EXTREME' else ('hi' if rl == 'HIGH' else ('md' if rl == 'MODERATE' else 'lo')) %}
-  <div class="pl {{ rc }}">
-    <div class="pl-h">
-      <span class="pl-f">{{ p.emoji|default('') }}</span>
-      <span class="pl-n">{{ p.name }}</span>
-      <span class="bg {{ rc }}">{{ rl }}</span>
-    </div>
-    {% if p.role_tag %}<div class="pl-role">{{ p.role_tag }}</div>{% endif %}
-    <div class="pl-s">
-      {% if p.position %}<strong>Position:</strong> {{ p.position }}<br>{% endif %}
-      {% if p.resources %}<strong>Resources:</strong> {{ p.resources }}{% endif %}
-    </div>
-    <div class="pl-t">
-      {% if p.strategy %}<strong>Strategy:</strong> {{ p.strategy }}<br>{% endif %}
-      {% if p.timeline_pressure %}<strong>Time Pressure:</strong> {{ p.timeline_pressure }}{% endif %}
-    </div>
-    {% if p.vulnerability %}<div class="pl-v">Vulnerability: {{ p.vulnerability }}</div>{% endif %}
-  </div>
-  {% endfor %}
-  {% endif %}
-
-  {% if result.players.alliances %}
-  <div class="card">
-    <h3 style="font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--nvy)">Alliances &amp; Rivalries</h3>
-    {% for a in result.players.alliances %}
-    <div style="font-size:.82rem;margin-bottom:6px">
-      <span style="font-weight:600">{{ a.group|join(' &harr; ') }}</span>
-      <span style="color:var(--sub);margin-left:8px">{{ a.nature }}</span>
+  <div class="g2">
+    {% for player in result.players.players %}
+    <div class="pl {% if player.risk_level == 'EXTREME' %}ex{% elif player.risk_level == 'HIGH' %}hi{% elif player.risk_level == 'MODERATE' %}md{% else %}lo{% endif %}">
+      <div class="pl-h">
+        <span class="pl-f">{{ player.emoji or '🔹' }}</span>
+        <span class="pl-n">{{ player.name }}</span>
+        <span class="bg {% if player.risk_level == 'EXTREME' %}ex{% elif player.risk_level == 'HIGH' %}hi{% elif player.risk_level == 'MODERATE' %}md{% else %}lo{% endif %}">{{ player.role_tag or player.risk_level }}</span>
+      </div>
+      {% if player.position %}
+      <div class="pl-s">{{ player.position }}</div>
+      {% endif %}
+      <div class="pl-t">
+        {% if player.strategy %}<strong>전략:</strong> {{ player.strategy }}<br>{% endif %}
+        {% if player.vulnerability %}<strong>취약점:</strong> {{ player.vulnerability }}{% endif %}
+      </div>
     </div>
     {% endfor %}
   </div>
+
+  {% if result.players.alliances %}
+  <div class="cd" style="margin-top:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px">관계 구도</div>
+    {% for a in result.players.alliances %}
+    <div style="font-size:10px;line-height:1.7;padding:3px 0">{{ a.group|join(' — ') }}: <span style="color:var(--t2)">{{ a.nature }}</span></div>
+    {% endfor %}
+  </div>
   {% endif %}
-</section>
 
-<!-- ===== ACT III — THE DYNAMICS ===== -->
-<section id="s3">
-  <div class="act-label">ACT III</div>
-  <h2>역학 &mdash; THE DYNAMICS</h2>
-
-  {% if result.dynamics %}
-  <div class="card">
-    {% if result.dynamics.framework %}
-    <div style="font-family:var(--mono);font-size:.72rem;color:var(--blu);font-weight:700;margin-bottom:8px">FRAMEWORK: {{ result.dynamics.framework }}</div>
-    {% endif %}
-    {% if result.dynamics.core_tension %}
-    <p style="font-size:.88rem;font-weight:600;color:var(--nvy);margin-bottom:8px">{{ result.dynamics.core_tension }}</p>
-    {% endif %}
-    {% if result.dynamics.why_unresolved %}
-    <p style="font-size:.82rem;color:var(--sub);line-height:1.7">{{ result.dynamics.why_unresolved }}</p>
-    {% endif %}
+  <div class="terms">
+    <b>용어:</b> EXTREME = 극심 · HIGH = 높음 · MODERATE = 보통 · LOW = 낮음
   </div>
 
+  <p class="cue">행위자들의 패를 확인했다. 이들 사이의 구조적 역학은 어떤 형태인가.</p>
+</section>
+{% endif %}
+
+<!-- ACT III -->
+{% if result.dynamics %}
+<section id="s3" class="fi">
+  <div class="lb">ACT III — THE DYNAMICS</div>
+  <h2 class="tt">구조 및 역학관계</h2>
+  {% if result.dynamics.summary %}
+  <p class="ds">{{ result.dynamics.summary }}</p>
+  {% endif %}
+
+  {% if result.dynamics.framework %}
+  <div class="cd" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:8px">분석 프레임워크: {{ result.dynamics.framework }}</div>
+    {% if result.dynamics.core_tension %}
+    <div style="font-size:11px;color:var(--t2);line-height:1.7">{{ result.dynamics.core_tension }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {% if result.dynamics.asymmetries %}
-  <div class="asym">
-    {% for a in result.dynamics.asymmetries %}
-    <div class="asym-item">
-      <div class="asym-type">{{ a.type }}</div>
-      <div class="asym-desc">{{ a.description }}</div>
-      {% if a.advantage_to %}<div class="asym-adv">Advantage: {{ a.advantage_to }}</div>{% endif %}
+  <div class="cd" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:8px">비대칭 구조</div>
+    {% for asym in result.dynamics.asymmetries %}
+    <div style="font-size:10px;line-height:1.7;padding:6px 0;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
+      <strong>{{ asym.type }}</strong>: {{ asym.description }}
+      {% if asym.advantage_to %}<br><span style="color:var(--blu)">유리: {{ asym.advantage_to }}</span>{% endif %}
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
   {% if result.dynamics.tipping_points %}
-  <div class="tp">
-    {% for tp in result.dynamics.tipping_points %}
-    <div class="tp-item">
-      <div class="tp-cond">{{ tp.condition }}</div>
-      {% if tp.timeline %}<div class="tp-time">{{ tp.timeline }}</div>{% endif %}
-      {% if tp.consequence %}<div class="tp-cons">{{ tp.consequence }}</div>{% endif %}
+  <div class="cd" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:8px">전환점</div>
+    <div class="tc">
+      {% for tp in result.dynamics.tipping_points %}
+      <div style="display:flex;gap:8px;padding:4px 0;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
+        <span style="color:var(--red);font-weight:600;min-width:80px">{{ tp.timeline }}</span>
+        <span>{{ tp.condition }} → {{ tp.consequence }}</span>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if result.dynamics.why_unresolved %}
+  <div class="cd" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px">왜 해소되지 않는가</div>
+    <div style="font-size:11px;color:var(--t2);line-height:1.7">{{ result.dynamics.why_unresolved }}</div>
   </div>
   {% endif %}
 
   {% if result.dynamics.key_insight %}
-  <div class="card" style="border-left:4px solid var(--gld)">
-    <div style="font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--gld);margin-bottom:4px">KEY INSIGHT</div>
-    <p style="font-size:.88rem;font-weight:600;color:var(--nvy)">{{ result.dynamics.key_insight }}</p>
+  <div class="co">
+    <b>핵심 통찰</b>
+    <p>{{ result.dynamics.key_insight }}</p>
   </div>
   {% endif %}
-  {% endif %}
+
+  <div class="terms">
+    <b>용어:</b> 비대칭 구조 = Asymmetry · 전환점 = Tipping Point · 역학관계 = Power Dynamics
+  </div>
+
+  <p class="cue">구조적 역학을 파악했다. 이 역학이 만들어내는 연쇄반응은 어디까지 이어지는가.</p>
 </section>
+{% endif %}
 
-<!-- ===== ACT IV — CHAIN REACTION ===== -->
-<section id="s4">
-  <div class="act-label">ACT IV</div>
-  <h2>연쇄반응 &mdash; CHAIN REACTION</h2>
+<!-- ACT IV -->
+{% if result.chain_reaction and result.chain_reaction.chain %}
+<section id="s4" class="fi">
+  <div class="lb">ACT IV — THE CHAIN REACTION</div>
+  <h2 class="tt">파급효과</h2>
+  {% if result.chain_reaction.summary %}
+  <p class="ds">{{ result.chain_reaction.summary }}</p>
+  {% endif %}
 
-  {% if result.chain_reaction %}
-  {% if result.chain_reaction.chain %}
   <div class="fl">
     {% for step in result.chain_reaction.chain %}
-    {% set sev = step.severity|default('MEDIUM') %}
-    {% set sc = 'h' if sev == 'HIGH' else ('m' if sev == 'MEDIUM' else 'l') %}
-    <div class="fn">
-      <strong>&#{{ 9311 + step.step|default(loop.index) }} {{ step.title }}</strong>
+    <div class="fn" style="border-color:{% if step.severity == 'HIGH' %}var(--red){% elif step.severity == 'MEDIUM' %}var(--org){% else %}var(--gld){% endif %}">
+      <strong>{{ loop.index }}. {{ step.title }}</strong>
       <span>{{ step.description }}</span>
-      {% if step.affected %}<div class="fn-aff">{{ step.affected|join(', ') }}</div>{% endif %}
-      <div class="fn-sev {{ sc }}">{{ sev }}</div>
+      {% if step.affected %}<span style="font-size:9px;color:var(--tm);margin-top:2px">영향: {{ step.affected|join(', ') }}</span>{% endif %}
     </div>
     {% if not loop.last %}<div class="fa"></div>{% endif %}
     {% endfor %}
   </div>
-  {% endif %}
 
   {% if result.chain_reaction.break_points %}
-  <h3 style="font-size:.9rem;font-weight:700;margin:1rem 0 .5rem;color:var(--grn)">Break Points</h3>
-  {% for bp in result.chain_reaction.break_points %}
-  <div class="bp">
-    <div class="bp-step">AT STEP {{ bp.at_step }}</div>
-    {{ bp.condition }}
+  <div class="cd" style="margin-top:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--grn)">차단 가능 지점</div>
+    {% for bp in result.chain_reaction.break_points %}
+    <div style="font-size:10px;line-height:1.7;padding:4px 0">단계 {{ bp.at_step }}: {{ bp.condition }}</div>
+    {% endfor %}
   </div>
-  {% endfor %}
   {% endif %}
 
   {% if result.chain_reaction.worst_case %}
-  <div class="card" style="border-left:4px solid var(--red)">
-    <div style="font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--red);margin-bottom:4px">WORST CASE</div>
-    <p style="font-size:.85rem;color:var(--txt)">{{ result.chain_reaction.worst_case }}</p>
+  <div class="co">
+    <b>최악의 경우</b>
+    <p>{{ result.chain_reaction.worst_case }}</p>
   </div>
   {% endif %}
-  {% endif %}
+
+  <p class="cue">연쇄반응의 경로를 추적했다. 이 상황이 어떤 결말로 향하는가.</p>
 </section>
+{% endif %}
 
-<!-- ===== ACT V — SCENARIOS ===== -->
-<section id="s5">
-  <div class="act-label">ACT V</div>
-  <h2>시나리오 &mdash; SCENARIOS</h2>
+<!-- ACT V -->
+{% if result.scenarios and result.scenarios.scenarios %}
+<section id="s5" class="fi">
+  <div class="lb">ACT V — THE SCENARIOS</div>
+  <h2 class="tt">시나리오</h2>
+  {% if result.scenarios.base_case_summary %}
+  <p class="ds">{{ result.scenarios.base_case_summary }}</p>
+  {% elif result.scenarios.summary %}
+  <p class="ds">{{ result.scenarios.summary }}</p>
+  {% endif %}
 
-  {% if result.scenarios and result.scenarios.scenarios %}
+  <div style="overflow-x:auto">
   <table class="mx">
-    <thead>
-      <tr><th>시나리오</th><th>전개</th><th>확률</th><th>트리거</th></tr>
-    </thead>
+    <thead><tr><th style="width:20%">시나리오</th><th style="width:35%">전개 경로</th><th style="width:10%">확률</th><th style="width:35%">영향</th></tr></thead>
     <tbody>
-      {% for sc in result.scenarios.scenarios %}
-      {% set tag = sc.tag|default('') %}
-      {% set tc = 'sc-best' if '최선' in tag else ('sc-base' if '기본' in tag else ('sc-worst' if '최악' in tag else 'sc-worse')) %}
-      <tr>
-        <td>
-          <span class="sc-tag {{ tc }}">{{ tag }}</span><br>
-          <strong>{{ sc.name }}</strong>
-        </td>
-        <td style="font-size:.78rem;color:var(--sub)">{{ sc.description }}</td>
-        <td class="sc-prob">{{ sc.probability }}</td>
-        <td style="font-size:.78rem">{{ sc.trigger }}</td>
-      </tr>
-      {% endfor %}
+    {% for sc in result.scenarios.scenarios %}
+    <tr>
+      <td><strong>{{ loop.index }}. {{ sc.name }}</strong><br>{% if sc.tag %}<span style="font-size:9px;color:{% if sc.tag == '최선' %}var(--grn){% elif sc.tag == '기본선' or sc.tag == '기본' %}var(--gld){% elif sc.tag == '악화' %}var(--org){% else %}var(--red){% endif %}">{{ sc.tag }}</span>{% endif %}</td>
+      <td style="font-size:10px">{{ sc.description }}</td>
+      <td class="mono" style="font-size:11px;font-weight:600">{{ sc.probability }}</td>
+      <td style="font-size:10px">
+        {% if sc.impact_by_player %}
+          {% for imp in sc.impact_by_player %}
+          <span style="color:{% if imp.sentiment == 'positive' %}var(--grn){% elif imp.sentiment == 'negative' %}var(--red){% else %}var(--gld){% endif %}">{{ imp.player }}: {{ imp.impact }}</span><br>
+          {% endfor %}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
     </tbody>
   </table>
+  </div>
 
-  {% if result.scenarios.base_case_summary %}
-  <div class="card" style="border-left:4px solid var(--blu)">
-    <div style="font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--blu);margin-bottom:4px">BASE CASE</div>
-    <p style="font-size:.85rem;color:var(--txt)">{{ result.scenarios.base_case_summary }}</p>
+  {% if result.scenarios.summary %}
+  <div class="co" style="margin-top:14px">
+    <b>균형 분석</b>
+    <p>{{ result.scenarios.summary }}</p>
   </div>
   {% endif %}
-  {% endif %}
 </section>
+{% endif %}
 
-<!-- ===== ACT VI — SIGNALS ===== -->
-<section id="s6">
-  <div class="act-label">ACT VI</div>
-  <h2>감시 신호 &mdash; WATCH SIGNALS</h2>
+<!-- ACT VI -->
+{% if result.scenarios and result.scenarios.watch_signals %}
+<section id="s6" class="fi">
+  <div class="lb">ACT VI — THE SIGNALS</div>
+  <h2 class="tt">감시 신호</h2>
+  <p class="ds">현재의 기본 전제를 무효화하는 조건과, 게임이 어떤 시나리오로 이동하는지를 판별하는 핵심 신호.</p>
 
-  {% if result.scenarios and result.scenarios.watch_signals %}
   <div class="wg">
     {% for ws in result.scenarios.watch_signals %}
-    {% set colors = ['rgba(29,111,165,.1)', 'rgba(189,50,39,.1)', 'rgba(199,107,30,.1)', 'rgba(26,123,62,.1)', 'rgba(158,138,21,.1)', 'rgba(107,76,154,.1)'] %}
     <div class="wi">
-      <div class="wi-i" style="background:{{ colors[loop.index0 % 6] }}">{{ ws.icon|default('') }}</div>
+      <div class="wi-i" style="background:var(--ol)">{{ ws.icon or '📊' }}</div>
       <div>
         <h4>{{ ws.signal }}</h4>
-        <p>{{ ws.description }}</p>
-        {% if ws.indicates %}<div class="wi-ind">{{ ws.indicates }}</div>{% endif %}
+        <p>{{ ws.description }}{% if ws.indicates %} → {{ ws.indicates }}{% endif %}</p>
       </div>
     </div>
     {% endfor %}
   </div>
-  {% endif %}
 </section>
+{% endif %}
 
-<!-- ===== Confidence Radar ===== -->
-<section id="s7">
-  <div class="act-label">CONFIDENCE</div>
-  <h2>신뢰도 레이더</h2>
+<!-- CONFIDENCE RADAR -->
+<section class="fi">
+  <div class="lb">CONFIDENCE</div>
+  <h2 class="tt">신뢰도 레이더</h2>
   <div class="radar-wrap">
     <canvas id="radarCanvas" width="340" height="340"></canvas>
   </div>
@@ -444,57 +376,32 @@ footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
 
 </main>
 
-<!-- ===== FOOTER ===== -->
-<footer>
-  <div class="wrap">
-    {% if result.report_url and result.report_url.startswith('http') %}
-    <div style="margin-bottom:1rem">
-      <div style="font-size:.65rem;color:#6B7280;margin-bottom:6px">이 보고서를 공유하려면 아래 링크를 복사하세요</div>
-      <a href="{{ result.report_url }}" style="color:#60A5FA;text-decoration:underline;font-family:var(--mono);font-size:.8rem;word-break:break-all">{{ result.report_url }}</a>
-    </div>
-    {% endif %}
-    {% if result.context and result.context.sources %}
-    <div class="sources">Sources: {{ result.context.sources|join(' | ') }}</div>
-    {% endif %}
-    <div>Generated {{ generated_at }} | Analysis Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
+<!-- FOOTER -->
+<footer class="ft">
+  {% if result.context and result.context.sources %}
+  <div style="max-width:600px;margin:0 auto 8px">{{ result.context.sources|join(' · ') }}</div>
+  {% endif %}
+  <div>Generated {{ generated_at }} | Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
+  {% if result.report_url and result.report_url.startswith('http') %}
+  <div style="margin-top:10px;font-size:11px">
+    <span style="color:rgba(255,255,255,.5)">공유 링크:</span> <a href="{{ result.report_url }}">{{ result.report_url }}</a>
   </div>
+  {% endif %}
 </footer>
 
+<!-- SCRIPTS -->
 <script>
-/* === Scroll Animations via IntersectionObserver === */
-(function(){
-  var targets=document.querySelectorAll('.card,.pl,.fn,.wi');
-  if(!('IntersectionObserver' in window)){
-    targets.forEach(function(t){t.classList.add('show')});
-    return;
-  }
-  var io=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target)}
-    });
-  },{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
-  targets.forEach(function(t){io.observe(t)});
-})();
+/* IntersectionObserver for fade-in */
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('v')})},{threshold:.06});
+document.querySelectorAll('.fi').forEach(function(el){obs.observe(el)});
 
-/* === Sticky Nav Active Highlighting === */
-(function(){
-  var links=document.querySelectorAll('nav a');
-  var sections=[];
-  links.forEach(function(a){
-    var id=a.getAttribute('href');
-    if(id&&id.startsWith('#')){var s=document.querySelector(id);if(s)sections.push({el:s,link:a})}
-  });
-  if(!sections.length)return;
-  var io2=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      var m=sections.find(function(s){return s.el===e.target});
-      if(m){if(e.isIntersecting)m.link.classList.add('active');else m.link.classList.remove('active')}
-    });
-  },{threshold:0.2});
-  sections.forEach(function(s){io2.observe(s.el)});
-})();
+/* Scroll-synced nav */
+var ss=document.querySelectorAll('section[id]'),ns=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(scrollY>=s.offsetTop-60)c=s.id});ns.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+c)})});
+</script>
 
-/* === Canvas 2D Radar Chart === */
+<!-- Canvas confidence radar -->
+<script>
 (function(){
   var chartData={{ chart_data_json }};
   var canvas=document.getElementById('radarCanvas');
@@ -524,13 +431,14 @@ footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
 
   /* Axes + Labels */
   ctx.font='500 11px "Noto Sans KR",sans-serif';
-  ctx.fillStyle='#6B6B6B';
+  ctx.fillStyle='var(--t2)';
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(var i=0;i<n;i++){
     var a=offset+i*step;
     var ex=cx+R*Math.cos(a),ey=cy+R*Math.sin(a);
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.strokeStyle='#E4E0D8';ctx.lineWidth=1;ctx.stroke();
     var lx=cx+(R+28)*Math.cos(a),ly=cy+(R+28)*Math.sin(a);
+    ctx.fillStyle='#444';
     ctx.fillText(labels[i],lx,ly);
   }
 
@@ -547,7 +455,7 @@ footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
   ctx.strokeStyle='#1D6FA5';ctx.lineWidth=2;ctx.stroke();
 
   /* Data points + value text */
-  ctx.font='700 11px "JetBrains Mono",monospace';
+  ctx.font='600 10px "JetBrains Mono",monospace';
   for(var i=0;i<n;i++){
     var a=offset+i*step;
     var v=Math.max(0,Math.min(1,values[i]));
