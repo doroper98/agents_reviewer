@@ -59,6 +59,6 @@ class ContextAnalyst(BaseAgent):
         }
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
-        self.system_prompt = SYSTEM_PROMPT.format(current_date=context["current_date"])
+        self.system_prompt = SYSTEM_PROMPT.replace("{current_date}", context["current_date"])
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, ContextAnalysis)
