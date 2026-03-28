@@ -114,12 +114,12 @@ class TelegramBot:
             f"✅ 봇 실행 중\n\n"
             f"  가동시간: {uptime_str}\n"
             f"  생성된 보고서: {report_count}건\n"
+            f"  이번 세션 분석: {_analysis_count}건\n"
             f"  모델: {self.config.model_name}\n"
             f"  서버 메모리: {mem_str}\n"
+            f"\n토큰 사용량 확인:\n"
+            f"  claude.ai → 설정 → 사용량"
         )
-
-        if token_info:
-            status_msg += f"\n[토큰 사용량]\n{token_info}"
 
         await update.message.reply_text(status_msg)
 
