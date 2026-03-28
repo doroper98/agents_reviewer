@@ -34,6 +34,14 @@ class Orchestrator:
         self.visual_analyst = VisualAnalyst(config)
         self.report_synthesizer = ReportSynthesizer(config)
 
+    @staticmethod
+    def _progress_bar(step: int, total: int = 7) -> str:
+        """Generate a text progress bar."""
+        pct = int(step / total * 100)
+        filled = int(step / total * 20)
+        bar = "▓" * filled + "░" * (20 - filled)
+        return f"{bar} {pct}%"
+
     async def _notify(
         self, message: str, status_callback: StatusCallback
     ) -> None:
@@ -76,8 +84,8 @@ class Orchestrator:
         if result.dynamics:
             lines.append("[구조 및 상호작용]")
             lines.append(f"  프레임: {result.dynamics.framework}")
-            lines.append(f"  긴장: {result.dynamics.core_tension[:80]}")
-            lines.append(f"  통찰: {result.dynamics.key_insight[:80]}")
+            lines.append(f"  긴장: {result.dynamics.core_tension}")
+            lines.append(f"  통찰: {result.dynamics.key_insight}")
             lines.append("")
 
         if result.chain_reaction:
@@ -162,7 +170,8 @@ class Orchestrator:
             f"📋 상황인식 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
             f"  · 사건 분류: {result.context.category}\n"
             f"  · 타임라인 {timeline_count}건, 핵심 지표 {figures_count}건 수집\n"
-            f"  · 신뢰도: {result.context.confidence_score * 100:.0f}%",
+            f"  · 신뢰도: {result.context.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(1)}",
             status_callback,
         )
 
@@ -179,8 +188,9 @@ class Orchestrator:
         )
         await self._notify(
             f"👥 이해관계자 분석관: {player_names} 등 {len(result.players.players)}개 행위자의 입장과 전략을 분석하였습니다.\n"
-            f"  · {result.players.power_dynamics[:100]}\n"
-            f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%",
+            f"  · {result.players.power_dynamics[:150]}\n"
+            f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(2)}",
             status_callback,
         )
 
@@ -193,8 +203,9 @@ class Orchestrator:
         )
         await self._notify(
             f"⚡ 구조 및 상호작용 분석관: {result.dynamics.framework} 프레임워크를 적용하여 분석하였습니다.\n"
-            f"  · 핵심 통찰: {result.dynamics.key_insight[:120]}\n"
-            f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%",
+            f"  · 핵심 통찰: {result.dynamics.key_insight[:200]}\n"
+            f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(3)}",
             status_callback,
         )
 
@@ -213,7 +224,8 @@ class Orchestrator:
             f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬을 분석하였습니다.\n"
             f"  · {chain_summary}\n"
             f"  · 차단점 {len(result.chain_reaction.break_points)}건 식별\n"
-            f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%",
+            f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(4)}",
             status_callback,
         )
 
@@ -231,7 +243,8 @@ class Orchestrator:
             f"🎲 향후 시나리오 분석관: {len(result.scenarios.scenarios)}개 시나리오를 설계하였습니다.\n"
             f"  · {scenario_names}\n"
             f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
-            f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%",
+            f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(5)}",
             status_callback,
         )
 
@@ -256,13 +269,15 @@ class Orchestrator:
         await self._notify(
             f"🎨 시각화 분석관: {', '.join(visual_types) or '인포그래픽'} 생성 완료.\n"
             f"  · 핵심 지표 {len(result.visuals.key_metrics)}건\n"
-            f"  · 신뢰도: {result.visuals.confidence_score * 100:.0f}%",
+            f"  · 신뢰도: {result.visuals.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(6)}",
             status_callback,
         )
 
         # -- Phase 4: 보고서 생성 --
         await self._notify(
-            "📝 보고서를 생성하고 있습니다.",
+            f"📝 보고서를 생성하고 있습니다.\n"
+            f"{self._progress_bar(6)}",
             status_callback,
         )
 
