@@ -186,14 +186,15 @@ class ReportSynthesizer:
                     return ""
 
                 # Extract URL from wrangler output
+                filename = os.path.basename(filepath)
                 for line in output.split("\n"):
                     line = line.strip()
                     if "https://" in line and ".pages.dev" in line:
-                        url = line.split("https://")[1].split()[0] if "https://" in line else ""
-                        if url:
-                            full_url = f"https://{url}"
-                            logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {full_url}")
-                            return full_url
+                        base_url = "https://" + line.split("https://")[1].split()[0]
+                        base_url = base_url.rstrip("/")
+                        full_url = f"{base_url}/{filename}"
+                        logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {full_url}")
+                        return full_url
 
                 # Fallback: construct URL
                 filename = os.path.basename(filepath)
