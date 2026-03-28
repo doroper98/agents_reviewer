@@ -56,6 +56,7 @@ class TelegramBot:
             "명령어:\n"
             "/analyze <주제> — 분석 시작\n"
             "/status — 서버 상태 확인\n"
+            "/reports — 전체 보고서 목록\n"
             "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
@@ -122,6 +123,17 @@ class TelegramBot:
         )
 
         await update.message.reply_text(status_msg)
+
+    async def _reports_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /reports command — send link to report index page."""
+        if update.message is None:
+            return
+        project = self.config.cloudflare_project_name
+        await update.message.reply_text(
+            f"📁 전체 보고서 목록:\nhttps://{project}.pages.dev/"
+        )
 
     async def _analyze_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -289,6 +301,7 @@ class TelegramBot:
 
         app.add_handler(CommandHandler("start", self._start_command))
         app.add_handler(CommandHandler("status", self._status_command))
+        app.add_handler(CommandHandler("reports", self._reports_command))
         app.add_handler(CommandHandler("analyze", self._analyze_command))
         app.add_handler(
             MessageHandler(
