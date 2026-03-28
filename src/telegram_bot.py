@@ -190,6 +190,14 @@ class TelegramBot:
                 f"✅ 분석 완료 (소요시간: {duration}초)"
             )
 
+            # Send index page link as separate message
+            if result.report_url and result.report_url.startswith("http"):
+                base_url = result.report_url.rsplit("/", 1)[0]
+                index_url = f"{base_url}/"
+                await update.message.reply_text(
+                    f"📁 전체 보고서 목록: {index_url}"
+                )
+
         except Exception as e:
             logger.exception("Analysis failed")
             await update.message.reply_text(f"❌ 분석 실패: {str(e)[:200]}")
