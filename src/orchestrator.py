@@ -13,6 +13,7 @@ from src.agents.player_analyst import PlayerAnalyst
 from src.agents.dynamics_analyst import DynamicsAnalyst
 from src.agents.chain_reaction_analyst import ChainReactionAnalyst
 from src.agents.scenario_architect import ScenarioArchitect
+from src.agents.visual_analyst import VisualAnalyst
 from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class Orchestrator:
         self.dynamics_analyst = DynamicsAnalyst(config)
         self.chain_reaction_analyst = ChainReactionAnalyst(config)
         self.scenario_architect = ScenarioArchitect(config)
+        self.visual_analyst = VisualAnalyst(config)
         self.report_synthesizer = ReportSynthesizer(config)
 
     async def _notify(
@@ -230,6 +232,31 @@ class Orchestrator:
             f"  · {scenario_names}\n"
             f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
             f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%",
+            status_callback,
+        )
+
+        # -- Visual Analyst: 시각화 생성 --
+        await self._notify(
+            "🎨 시각화 분석관: 분석 결과를 시각적 요소로 변환하고 있습니다.",
+            status_callback,
+        )
+        result.visuals = await self.visual_analyst.analyze(
+            result.context, result.players, result.dynamics,
+            result.chain_reaction, result.scenarios,
+        )
+        visual_types: list[str] = []
+        if result.visuals.svg_content:
+            visual_types.append("관계도")
+        if result.visuals.mermaid_code:
+            visual_types.append("플로우차트")
+        if result.visuals.leaflet_config.get("enabled"):
+            visual_types.append("지도")
+        if result.visuals.chart_config.get("enabled"):
+            visual_types.append("차트")
+        await self._notify(
+            f"🎨 시각화 분석관: {', '.join(visual_types) or '인포그래픽'} 생성 완료.\n"
+            f"  · 핵심 지표 {len(result.visuals.key_metrics)}건\n"
+            f"  · 신뢰도: {result.visuals.confidence_score * 100:.0f}%",
             status_callback,
         )
 

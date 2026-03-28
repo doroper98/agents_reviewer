@@ -6,6 +6,7 @@ from .player_analyst import PlayerAnalyst
 from .dynamics_analyst import DynamicsAnalyst
 from .chain_reaction_analyst import ChainReactionAnalyst
 from .scenario_architect import ScenarioArchitect
+from .visual_analyst import VisualAnalyst
 from .report_synthesizer import ReportSynthesizer
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "DynamicsAnalyst",
     "ChainReactionAnalyst",
     "ScenarioArchitect",
+    "VisualAnalyst",
     "ReportSynthesizer",
 ]

@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+{% if result.visuals and result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+{% endif %}
 <style>
 :root{
   --bg:#FAFAF7;--card:#FFF;--accent:#FFF9EB;
@@ -97,6 +101,62 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 <nav class="nav"><div class="nav-in">
   <a href="#s1">상황판</a><a href="#s2">이해관계자</a><a href="#s3">역학관계</a><a href="#s4">파급효과</a><a href="#s5">시나리오</a><a href="#s6">신호</a>
 </div></nav>
+
+<!-- ===== VISUAL SUMMARY ===== -->
+{% if result.visuals %}
+<section style="padding:32px 0 24px;border-bottom:1px solid var(--brl)">
+  <div class="w">
+    {% if result.visuals.hero_title %}
+    <div class="lb">VISUAL SUMMARY</div>
+    <h2 class="tt">{{ result.visuals.hero_title }}</h2>
+    {% endif %}
+
+    <!-- Key Metrics Row -->
+    {% if result.visuals.key_metrics %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:20px">
+      {% for m in result.visuals.key_metrics %}
+      <div style="background:var(--card);border:1px solid var(--brl);border-radius:var(--r);padding:12px;text-align:center;box-shadow:var(--sh)">
+        <div style="font-size:16px;margin-bottom:4px">{{ m.icon or '📊' }}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:{{ m.color or 'var(--t1)' }}">{{ m.value }}</div>
+        <div style="font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-top:2px">{{ m.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- SVG Relationship Map / Diagram -->
+    {% if result.visuals.svg_content %}
+    <div class="cd" style="margin-bottom:14px;padding:14px;overflow-x:auto">
+      {{ result.visuals.svg_content | safe }}
+    </div>
+    {% endif %}
+
+    <!-- Leaflet Map -->
+    {% if result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
+    <div class="cd" style="margin-bottom:14px;padding:12px">
+      <div style="font-weight:700;font-size:12px;margin-bottom:8px">전구도</div>
+      <div id="visual-map" style="width:100%;height:380px;border-radius:8px"></div>
+    </div>
+    {% endif %}
+
+    <!-- Mermaid Diagram -->
+    {% if result.visuals.mermaid_code %}
+    <div class="cd" style="margin-bottom:14px;padding:14px">
+      <div class="mermaid">{{ result.visuals.mermaid_code }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Canvas Chart -->
+    {% if result.visuals.chart_config and result.visuals.chart_config.enabled %}
+    <div class="cd" style="margin-bottom:14px;padding:14px">
+      <div style="font-weight:700;font-size:12px;margin-bottom:8px">{{ result.visuals.chart_config.title or '차트' }}</div>
+      <canvas id="visual-chart" style="width:100%;height:220px"></canvas>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endif %}
 
 <main class="w">
 
@@ -466,5 +526,94 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
   }
 })();
 </script>
+
+{% if result.visuals and result.visuals.mermaid_code %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:'neutral',fontFamily:'Noto Sans KR'});</script>
+{% endif %}
+
+{% if result.visuals and result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
+<script>
+(function(){
+  var cfg = {{ result.visuals.leaflet_config | tojson }};
+  var map = L.map('visual-map',{zoomControl:true,scrollWheelZoom:false}).setView(cfg.center || [30,52], cfg.zoom || 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:8,minZoom:2}).addTo(map);
+
+  (cfg.markers||[]).forEach(function(m){
+    L.marker([m.lat,m.lng],{icon:L.divIcon({className:'',html:'<div style="text-align:center;font-size:14px;line-height:1.2">'+m.emoji+'<br><span style="font-size:8px;font-weight:700;color:'+(m.color||'#333')+'">'+m.label+'</span></div>',iconSize:[60,30],iconAnchor:[30,15]})}).addTo(map);
+  });
+
+  (cfg.lines||[]).forEach(function(l){
+    L.polyline([l.from,l.to],{color:l.color||'#BD3227',weight:2,opacity:0.8}).addTo(map);
+    // Arrowhead
+    var dx=l.to[1]-l.from[1],dy=l.to[0]-l.from[0],ang=Math.atan2(dx,dy),sz=0.5;
+    var t=l.to,l1=[t[0]-sz*Math.cos(ang-0.4),t[1]-sz*Math.sin(ang-0.4)],l2=[t[0]-sz*Math.cos(ang+0.4),t[1]-sz*Math.sin(ang+0.4)];
+    L.polygon([t,l1,l2],{color:l.color||'#BD3227',fillColor:l.color||'#BD3227',fillOpacity:0.8,weight:1}).addTo(map);
+  });
+
+  (cfg.circles||[]).forEach(function(c){
+    L.circle([c.lat,c.lng],{radius:c.radius||300000,color:c.color||'#BD3227',fillColor:c.color||'#BD3227',fillOpacity:0.1,weight:2}).addTo(map);
+    if(c.label) L.marker([c.lat,c.lng],{icon:L.divIcon({className:'',html:'<div style="font-size:9px;font-weight:700;color:'+(c.color||'#333')+'">'+c.label+'</div>',iconSize:[80,16],iconAnchor:[40,8]})}).addTo(map);
+  });
+})();
+</script>
+{% endif %}
+
+{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled %}
+<script>
+(function(){
+  var cfg = {{ result.visuals.chart_config | tojson }};
+  var cv = document.getElementById('visual-chart');
+  if(!cv) return;
+  var ctx = cv.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+
+  function draw(){
+    var W = cv.parentElement.clientWidth - 28, H = 220;
+    cv.width = W*dpr; cv.height = H*dpr;
+    cv.style.width = W+'px'; cv.style.height = H+'px';
+    ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
+    ctx.clearRect(0,0,W,H);
+
+    var labels = cfg.labels || [];
+    var values = cfg.values || [];
+    var colors = cfg.colors || ['#1D6FA5','#BD3227','#1A7B3E','#C76B1E','#9E8A15'];
+    var maxVal = Math.max.apply(null, values) * 1.2 || 100;
+    var p = {t:24,r:16,b:32,l:48};
+    var cw = W-p.l-p.r, ch = H-p.t-p.b;
+    var barW = Math.min(40, cw/labels.length - 8);
+
+    // Y grid
+    for(var i=0;i<=4;i++){
+      var yv = maxVal*i/4;
+      var y = p.t + ch - (yv/maxVal)*ch;
+      ctx.strokeStyle='#EFECE5';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(p.l+cw,y);ctx.stroke();
+      ctx.fillStyle='#999';ctx.font='10px "JetBrains Mono"';ctx.textAlign='right';
+      ctx.fillText(Math.round(yv),p.l-6,y+3);
+    }
+
+    // Bars
+    labels.forEach(function(label,i){
+      var x = p.l + (i+0.5)*(cw/labels.length) - barW/2;
+      var h = (values[i]/maxVal)*ch;
+      var y = p.t + ch - h;
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.beginPath();
+      ctx.roundRect(x,y,barW,h,3);
+      ctx.fill();
+      // Label
+      ctx.fillStyle='#444';ctx.font='10px "Noto Sans KR"';ctx.textAlign='center';
+      ctx.fillText(label, x+barW/2, p.t+ch+14);
+      // Value
+      ctx.fillStyle='#111';ctx.font='bold 10px "JetBrains Mono"';
+      ctx.fillText(values[i], x+barW/2, y-6);
+    });
+  }
+  draw();
+  window.addEventListener('resize',draw);
+})();
+</script>
+{% endif %}
 </body>
 </html>
