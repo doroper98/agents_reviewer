@@ -155,52 +155,48 @@ class ReportSynthesizer:
             else:
                 wrangler_cmd = [wrangler_bin]
 
-            # Create a temp directory with the report file
-            import tempfile
-            with tempfile.TemporaryDirectory() as tmpdir:
-                tmp_file = os.path.join(tmpdir, os.path.basename(filepath))
-                shutil.copy2(filepath, tmp_file)
+            # Deploy the entire reports directory (includes index.html)
+            deploy_dir = os.path.dirname(filepath)
 
-                cmd = wrangler_cmd + [
-                    "pages", "deploy", tmpdir,
-                    "--project-name", project_name,
-                    "--commit-dirty=true",
-                ]
+            cmd = wrangler_cmd + [
+                "pages", "deploy", deploy_dir,
+                "--project-name", project_name,
+                "--commit-dirty=true",
+            ]
 
-                env = os.environ.copy()
-                env["CLOUDFLARE_ACCOUNT_ID"] = account_id
-                env["CLOUDFLARE_API_TOKEN"] = api_token
+            env = os.environ.copy()
+            env["CLOUDFLARE_ACCOUNT_ID"] = account_id
+            env["CLOUDFLARE_API_TOKEN"] = api_token
 
-                proc = await asyncio.create_subprocess_exec(
-                    *cmd,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    env=env,
-                )
-                stdout, stderr = await proc.communicate()
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
+            )
+            stdout, stderr = await proc.communicate()
 
-                output = stdout.decode() + stderr.decode()
+            output = stdout.decode() + stderr.decode()
 
-                if proc.returncode != 0:
-                    logger.error(f"[report_synthesizer] Cloudflare upload failed: {output}")
-                    return ""
+            if proc.returncode != 0:
+                logger.error(f"[report_synthesizer] Cloudflare upload failed: {output}")
+                return ""
 
-                # Extract URL from wrangler output
-                filename = os.path.basename(filepath)
-                for line in output.split("\n"):
-                    line = line.strip()
-                    if "https://" in line and ".pages.dev" in line:
-                        base_url = "https://" + line.split("https://")[1].split()[0]
-                        base_url = base_url.rstrip("/")
-                        full_url = f"{base_url}/{filename}"
-                        logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {full_url}")
-                        return full_url
+            # Extract URL from wrangler output
+            filename = os.path.basename(filepath)
+            for line in output.split("\n"):
+                line = line.strip()
+                if "https://" in line and ".pages.dev" in line:
+                    base_url = "https://" + line.split("https://")[1].split()[0]
+                    base_url = base_url.rstrip("/")
+                    full_url = f"{base_url}/{filename}"
+                    logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {full_url}")
+                    return full_url
 
-                # Fallback: construct URL
-                filename = os.path.basename(filepath)
-                fallback_url = f"https://{project_name}.pages.dev/{filename}"
-                logger.info(f"[report_synthesizer] Using fallback URL: {fallback_url}")
-                return fallback_url
+            # Fallback: construct URL
+            fallback_url = f"https://{project_name}.pages.dev/{filename}"
+            logger.info(f"[report_synthesizer] Using fallback URL: {fallback_url}")
+            return fallback_url
 
         except Exception as e:
             logger.error(f"[report_synthesizer] Cloudflare upload exception: {e}")
@@ -238,10 +234,83 @@ class ReportSynthesizer:
         logger.info(f"[report_synthesizer] Report saved: {filepath}")
         result.report_path = filepath
 
-        # Upload to Cloudflare Pages
+        # Generate index.html (report listing page)
+        self._generate_index(output_dir)
+
+        # Upload entire reports directory to Cloudflare Pages
         report_url = await self._upload_to_cloudflare(filepath)
         if report_url:
             result.report_url = report_url
             return report_url
 
         return filepath
+
+    def _generate_index(self, output_dir: str) -> None:
+        """Generate index.html listing all reports."""
+        import glob
+        reports = sorted(glob.glob(os.path.join(output_dir, "analysis_*.html")), reverse=True)
+
+        rows = []
+        for rpath in reports[:50]:
+            fname = os.path.basename(rpath)
+            # Extract date from filename: analysis_20260328_041426.html
+            parts = fname.replace("analysis_", "").replace(".html", "").split("_")
+            if len(parts) >= 2:
+                date_str = parts[0]
+                time_str = parts[1]
+                display_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]} {time_str[:2]}:{time_str[2:4]}"
+            else:
+                display_date = fname
+
+            # Try to extract title from HTML
+            title = fname
+            try:
+                with open(rpath, "r", encoding="utf-8") as f:
+                    content = f.read(3000)
+                    if "<title>" in content and "</title>" in content:
+                        title = content.split("<title>")[1].split("</title>")[0].strip()
+                        if not title or title == "Analysis":
+                            title = fname
+            except Exception:
+                pass
+
+            rows.append(f'<tr><td style="padding:10px 12px;border-bottom:1px solid #E4E0D8">'
+                        f'<a href="{fname}" style="color:#1D6FA5;text-decoration:none;font-weight:600">{title}</a>'
+                        f'</td><td style="padding:10px 12px;border-bottom:1px solid #E4E0D8;color:#6B6B6B;'
+                        f'font-family:JetBrains Mono,monospace;font-size:12px">{display_date}</td></tr>')
+
+        index_html = f'''<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analysis Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{{font-family:'Noto Sans KR',sans-serif;background:#FAFAF7;color:#111;margin:0;padding:0}}
+.wrap{{max-width:800px;margin:0 auto;padding:20px 14px}}
+h1{{font-size:20px;font-weight:700;margin-bottom:4px}}
+.sub{{font-size:12px;color:#6B6B6B;margin-bottom:20px}}
+table{{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E4E0D8;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}}
+th{{background:#151D26;color:#fff;padding:10px 12px;text-align:left;font-size:12px;font-weight:600}}
+tr:hover{{background:#F5F0E8}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Analysis Reports</h1>
+<div class="sub">총 {len(reports)}건의 보고서</div>
+<table>
+<thead><tr><th>보고서</th><th style="width:160px">생성일시</th></tr></thead>
+<tbody>
+{"".join(rows) if rows else '<tr><td colspan="2" style="padding:20px;text-align:center;color:#999">보고서가 없습니다</td></tr>'}
+</tbody>
+</table>
+</div>
+</body>
+</html>'''
+
+        index_path = os.path.join(output_dir, "index.html")
+        with open(index_path, "w", encoding="utf-8") as f:
+            f.write(index_html)
+        logger.info(f"[report_synthesizer] Index page updated: {index_path}")
