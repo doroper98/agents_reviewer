@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D3 Force-Directed Relationship Map Prototype</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; background: #FAFAF7; font-family: 'Noto Sans KR', sans-serif; }
+.container { max-width: 960px; margin: 20px auto; }
+h2 { font-size: 14px; text-align: center; color: #151D26; margin-bottom: 10px; }
+svg { width: 100%; border: 1px solid #E4E0D8; border-radius: 10px; background: #FAFAF7; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+.link-label { font-size: 9px; fill: #6B6B6B; pointer-events: none; }
+.node-label { font-size: 11px; font-weight: 700; fill: #151D26; pointer-events: none; }
+.node-sub { font-size: 9px; fill: #6B6B6B; pointer-events: none; }
+.legend { font-size: 9px; fill: #6B6B6B; }
+.legend-title { font-size: 10px; font-weight: 700; fill: #151D26; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>⚔ 후티 참전과 이중 해협 봉쇄 위기 — 행위자 관계도 (2026-03-28)</h2>
+<div id="chart"></div>
+</div>
+
+<script>
+const width = 900, height = 560;
+
+// --- DATA ---
+const nodes = [
+  { id: "crisis", label: "이중 해협\n봉쇄 위기", emoji: "⚠", sub: "호르무즈 + 바브엘만데브\n글로벌 원유 30%+ 차단", risk: "crisis", fx: width/2, fy: height/2 },
+  { id: "us", label: "미국", emoji: "🇺🇸", sub: "공격 주도 · 게임 설정자", risk: "극심" },
+  { id: "israel", label: "이스라엘", emoji: "🇮🇱", sub: "공격 파트너 · 다전선 피격", risk: "높음" },
+  { id: "iran", label: "이란", emoji: "🇮🇷", sub: "축 중심 · 호르무즈 봉쇄", risk: "극심" },
+  { id: "houthi", label: "후티 반군", emoji: "⚔", sub: "도발자 · 최종 참전자", risk: "극심" },
+  { id: "hezbollah", label: "헤즈볼라", emoji: "🟡", sub: "축 선봉대 · 이스라엘 견제", risk: "높음" },
+  { id: "saudi", label: "사우디", emoji: "🇸🇦", sub: "불안한 중립 · 유가 수혜", risk: "보통" },
+  { id: "china_russia", label: "중국·러시아", emoji: "🌐", sub: "전략적 무임승차", risk: "보통" },
+  { id: "energy", label: "글로벌 에너지", emoji: "🛢", sub: "$107/bbl · 스태그플레이션 위기", risk: "높음" },
+  { id: "tipping", label: "핵심 전환점", emoji: "🔮", sub: "4/6 에너지 유예 만료\n바브엘만데브 봉쇄?", risk: "tipping" },
+];
+
+const links = [
+  { source: "us", target: "crisis", type: "attack", label: "공격 주도" },
+  { source: "israel", target: "crisis", type: "attack", label: "공격 파트너" },
+  { source: "iran", target: "crisis", type: "block", label: "호르무즈 봉쇄" },
+  { source: "houthi", target: "crisis", type: "block", label: "바브엘만데브 위협" },
+  { source: "us", target: "israel", type: "ally", label: "군사 동맹" },
+  { source: "iran", target: "houthi", type: "ally", label: "무기·자금" },
+  { source: "iran", target: "hezbollah", type: "ally", label: "축 연대" },
+  { source: "hezbollah", target: "israel", type: "conflict", label: "북부 전선" },
+  { source: "crisis", target: "energy", type: "impact", label: "공급 충격" },
+  { source: "crisis", target: "saudi", type: "impact", label: "유가 수혜/불안" },
+  { source: "china_russia", target: "iran", type: "strategic", label: "전략적 협력" },
+  { source: "crisis", target: "tipping", type: "impact", label: "전환점 접근" },
+  { source: "us", target: "iran", type: "conflict", label: "기지 제공" },
+];
+
+const riskColor = {
+  "극심": "#BD3227",
+  "높음": "#C76B1E",
+  "보통": "#1D6FA5",
+  "낮음": "#1A7B3E",
+  "crisis": "#151D26",
+  "tipping": "#9E8A15",
+};
+
+const linkStyle = {
+  "ally":      { color: "#1D6FA5", dash: "", width: 2.5 },
+  "conflict":  { color: "#BD3227", dash: "6,3", width: 2 },
+  "block":     { color: "#BD3227", dash: "", width: 2.5 },
+  "attack":    { color: "#1D6FA5", dash: "", width: 2 },
+  "impact":    { color: "#9E8A15", dash: "4,4", width: 1.5 },
+  "strategic": { color: "#6B6B6B", dash: "3,3", width: 1.5 },
+};
+
+// --- SVG ---
+const svg = d3.select("#chart").append("svg")
+  .attr("viewBox", `0 0 ${width} ${height}`)
+  .attr("preserveAspectRatio", "xMidYMid meet");
+
+// Arrow markers
+const defs = svg.append("defs");
+Object.keys(linkStyle).forEach(type => {
+  defs.append("marker")
+    .attr("id", `arrow-${type}`)
+    .attr("viewBox", "0 0 10 6")
+    .attr("refX", 10)
+    .attr("refY", 3)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,0 L10,3 L0,6 Z")
+    .attr("fill", linkStyle[type].color);
+});
+
+// Drop shadow filter
+const filter = defs.append("filter").attr("id", "shadow").attr("x", "-20%").attr("y", "-20%").attr("width", "140%").attr("height", "140%");
+filter.append("feDropShadow").attr("dx", 0).attr("dy", 2).attr("stdDeviation", 3).attr("flood-opacity", 0.12);
+
+// --- SIMULATION ---
+const simulation = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(links).id(d => d.id).distance(d => {
+    if (d.source.id === "crisis" || d.target.id === "crisis") return 160;
+    return 120;
+  }))
+  .force("charge", d3.forceManyBody().strength(-800))
+  .force("center", d3.forceCenter(width / 2, height / 2))
+  .force("collision", d3.forceCollide().radius(65))
+  .force("x", d3.forceX(width / 2).strength(0.05))
+  .force("y", d3.forceY(height / 2).strength(0.05));
+
+// --- LINKS ---
+const link = svg.append("g").selectAll("line")
+  .data(links)
+  .join("line")
+  .attr("stroke", d => linkStyle[d.type].color)
+  .attr("stroke-width", d => linkStyle[d.type].width)
+  .attr("stroke-dasharray", d => linkStyle[d.type].dash)
+  .attr("marker-end", d => `url(#arrow-${d.type})`)
+  .attr("opacity", 0.7);
+
+// Link labels
+const linkLabel = svg.append("g").selectAll("text")
+  .data(links)
+  .join("text")
+  .attr("class", "link-label")
+  .attr("text-anchor", "middle")
+  .attr("dy", -4)
+  .text(d => d.label);
+
+// --- NODES ---
+const nodeG = svg.append("g").selectAll("g")
+  .data(nodes)
+  .join("g")
+  .call(d3.drag()
+    .on("start", (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on("end", (e, d) => { if (!e.active) simulation.alphaTarget(0); if (d.id !== "crisis") { d.fx = null; d.fy = null; } })
+  );
+
+// Node backgrounds
+nodeG.each(function(d) {
+  const g = d3.select(this);
+  const color = riskColor[d.risk] || "#999";
+
+  if (d.risk === "crisis") {
+    // Central crisis node — dark rounded rect
+    g.append("rect")
+      .attr("width", 180).attr("height", 70)
+      .attr("x", -90).attr("y", -35)
+      .attr("rx", 12)
+      .attr("fill", "#151D26")
+      .attr("filter", "url(#shadow)");
+    g.append("text").attr("text-anchor", "middle").attr("y", -10)
+      .attr("fill", "#F59E0B").attr("font-size", "16px").text(d.emoji);
+    d.label.split("\n").forEach((line, i) => {
+      g.append("text").attr("text-anchor", "middle").attr("y", 8 + i * 14)
+        .attr("fill", "#fff").attr("font-size", "12px").attr("font-weight", "700").text(line);
+    });
+    d.sub.split("\n").forEach((line, i) => {
+      g.append("text").attr("text-anchor", "middle").attr("y", 38 + i * 11)
+        .attr("fill", "#F59E0B").attr("font-size", "9px").text(line);
+    });
+  } else if (d.risk === "tipping") {
+    // Tipping point — gold dashed border
+    g.append("rect")
+      .attr("width", 140).attr("height", 60)
+      .attr("x", -70).attr("y", -30)
+      .attr("rx", 8)
+      .attr("fill", "#FEFBE8")
+      .attr("stroke", "#9E8A15")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "4,3")
+      .attr("filter", "url(#shadow)");
+    g.append("text").attr("text-anchor", "middle").attr("y", -10)
+      .attr("fill", "#9E8A15").attr("font-size", "13px").text(`${d.emoji} ${d.label}`);
+    d.sub.split("\n").forEach((line, i) => {
+      g.append("text").attr("text-anchor", "middle").attr("y", 6 + i * 11)
+        .attr("fill", "#6B6B6B").attr("font-size", "9px").text(line);
+    });
+  } else {
+    // Regular nodes — white card with colored left border
+    const w = 130, h = 52;
+    g.append("rect")
+      .attr("width", w).attr("height", h)
+      .attr("x", -w/2).attr("y", -h/2)
+      .attr("rx", 8)
+      .attr("fill", "#FFFFFF")
+      .attr("stroke", "#E4E0D8")
+      .attr("stroke-width", 1)
+      .attr("filter", "url(#shadow)");
+    // Colored top bar
+    g.append("rect")
+      .attr("width", w).attr("height", 3)
+      .attr("x", -w/2).attr("y", -h/2)
+      .attr("rx", 2)
+      .attr("fill", color);
+    // Risk dot
+    g.append("circle")
+      .attr("cx", -w/2 + 12).attr("cy", -h/2 + 16)
+      .attr("r", 4).attr("fill", color);
+    // Emoji + Name
+    g.append("text")
+      .attr("x", -w/2 + 20).attr("y", -h/2 + 19)
+      .attr("font-size", "11px").attr("font-weight", "700").attr("fill", "#151D26")
+      .text(`${d.emoji} ${d.label}`);
+    // Sub text
+    g.append("text")
+      .attr("x", -w/2 + 12).attr("y", -h/2 + 36)
+      .attr("font-size", "9px").attr("fill", "#6B6B6B")
+      .text(d.sub);
+  }
+});
+
+// --- LEGEND ---
+const legend = svg.append("g").attr("transform", `translate(20, ${height - 60})`);
+legend.append("text").attr("class", "legend-title").attr("y", 0).text("범례");
+
+const legendItems = [
+  { label: "동맹/협력", color: "#1D6FA5", dash: "" },
+  { label: "대립/봉쇄", color: "#BD3227", dash: "6,3" },
+  { label: "영향/충격", color: "#9E8A15", dash: "4,4" },
+  { label: "전략적", color: "#6B6B6B", dash: "3,3" },
+];
+
+legendItems.forEach((item, i) => {
+  const x = i * 120;
+  legend.append("line")
+    .attr("x1", x).attr("y1", 16).attr("x2", x + 24).attr("y2", 16)
+    .attr("stroke", item.color).attr("stroke-width", 2)
+    .attr("stroke-dasharray", item.dash);
+  legend.append("text")
+    .attr("x", x + 28).attr("y", 20)
+    .attr("class", "legend").text(item.label);
+});
+
+const riskLegend = [
+  { label: "극심", color: "#BD3227" },
+  { label: "높음", color: "#C76B1E" },
+  { label: "보통", color: "#1D6FA5" },
+];
+legend.append("text").attr("x", 520).attr("y", 0).attr("class", "legend-title").text("위험도:");
+riskLegend.forEach((item, i) => {
+  const x = 570 + i * 60;
+  legend.append("circle").attr("cx", x).attr("cy", 16).attr("r", 4).attr("fill", item.color);
+  legend.append("text").attr("x", x + 8).attr("y", 20).attr("class", "legend").text(item.label);
+});
+
+// --- TICK ---
+simulation.on("tick", () => {
+  // Keep nodes within bounds
+  nodes.forEach(d => {
+    d.x = Math.max(80, Math.min(width - 80, d.x));
+    d.y = Math.max(40, Math.min(height - 80, d.y));
+  });
+
+  link
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => {
+      const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      return d.target.x - (dx/dist) * 35;
+    })
+    .attr("y2", d => {
+      const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      return d.target.y - (dy/dist) * 35;
+    });
+
+  linkLabel
+    .attr("x", d => (d.source.x + d.target.x) / 2)
+    .attr("y", d => (d.source.y + d.target.y) / 2);
+
+  nodeG.attr("transform", d => `translate(${d.x},${d.y})`);
+});
+</script>
+</body>
+</html>
