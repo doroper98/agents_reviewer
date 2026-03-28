@@ -19,7 +19,8 @@ SYSTEM_PROMPT = """당신은 최고 수준의 시각화 분석관. McKinsey, BCG
 
 절대 규칙:
 - 텍스트가 겹치거나 잘리면 안 됨. 이것이 가장 중요한 규칙.
-- 연결선 위에 라벨을 절대 넣지 마. 관계 정보는 노드 안에 넣어.
+- 제목(타이틀)과 노드/라벨이 겹치지 않게 제목 영역에 충분한 상단 여백 확보 (최소 y=60 이후부터 노드 배치)
+- 연결선 위에 라벨은 최소화. 꼭 필요한 경우만 배경색(흰색 rect) 위에 표시.
 - 모든 요소에 충분한 여백 확보
 
 색상 팔레트:
@@ -34,29 +35,36 @@ SYSTEM_PROMPT = """당신은 최고 수준의 시각화 분석관. McKinsey, BCG
 - 보조텍스트: #6B6B6B
 - 테두리: #E4E0D8
 
-관계도 SVG 규칙 (가장 중요):
-- viewBox="0 0 800 520"
-- 격자 배치(grid layout) 사용. 절대 force-directed 같은 자유 배치 금지.
-- 배치 구조: 3행 3열 격자.
-  - 1행: 왼쪽 상단, 중앙 상단, 오른쪽 상단
-  - 2행: 왼쪽 중앙, [중앙 = 핵심 사건 노드], 오른쪽 중앙
-  - 3행: 왼쪽 하단, 중앙 하단, 오른쪽 하단
-- 노드 크기: width 160px, height 65px, rx="8"
-- 중앙 핵심 노드: width 200px, height 80px, 네이비 배경(#151D26), 흰 텍스트
-- 노드 내부 구성:
-  - 1줄: 이모지 + 이름 (font-size 12px, bold)
-  - 2줄: 역할/포지션 (font-size 9px, 회색)
-  - 3줄: 핵심 행동 (font-size 9px)
+관계도 SVG 규칙:
+- viewBox="0 0 800 560"
+- 상단 여백: 제목은 y=30에 배치, 노드는 y=80 이후부터 시작
+- 중앙에 핵심 사건 노드 (큰 rounded rect, 네이비 배경, 흰 텍스트)
+- 주변에 행위자 노드를 자유롭게 배치하되, 서로 겹치지 않게 충분한 간격 유지 (최소 40px)
+- 노드 크기: width 140~160px, height 55~65px, rx="8"
 - 노드 상단에 3px 색상 바 (위험도 표시)
-- 연결선: 직선 또는 직각선, stroke-width 1.5~2
-- 연결선에 텍스트 라벨 절대 금지. 선 색상과 스타일로만 관계 표현:
-  - 동맹: 파란 실선 (#1D6FA5)
-  - 대립: 빨간 점선 (#BD3227, stroke-dasharray="6,3")
-  - 지원: 초록 실선 (#1A7B3E)
-  - 영향: 금색 점선 (#9E8A15, stroke-dasharray="4,4")
-- 화살표: marker-end 삼각형
-- 범례: SVG 하단에 선 스타일별 의미 표시
-- 그림자: filter="drop-shadow(0 1px 3px rgba(0,0,0,0.08))"
+- 노드 내부: 이모지 + 이름(12px bold) + 역할(9px 회색)
+
+화살표 규칙 (매우 중요):
+- marker를 정의할 때 refX를 충분히 설정하여 화살표 삼각형이 노드 외곽선 바로 앞에서 끝나게
+- 연결선은 노드의 가장 가까운 변(상/하/좌/우)의 중앙점에서 출발/도착
+- 화살표 머리는 정삼각형 (path d="M0,0 L8,4 L0,8 Z")
+- 연결선이 노드를 관통하지 않게, 노드 경계에서 시작/끝나게 좌표 계산
+
+연결선 스타일:
+- 동맹: 파란 실선 (#1D6FA5, stroke-width 2)
+- 대립/봉쇄: 빨간 실선 (#BD3227, stroke-width 2)
+- 위협/견제: 빨간 점선 (#BD3227, stroke-dasharray="6,3")
+- 지원: 초록 실선 (#1A7B3E, stroke-width 1.5)
+- 영향: 금색 점선 (#9E8A15, stroke-dasharray="4,4")
+- 봉쇄 나비: 네이비 점선 (#151D26, stroke-dasharray="3,3")
+
+연결선 라벨:
+- 꼭 필요한 라벨만 표시 (전체 연결선의 절반 이하)
+- 라벨은 반드시 흰색 배경 rect 위에 표시 (겹침 방지)
+- 라벨 폰트: 9px, 해당 선과 같은 색상
+
+범례: SVG 하단(y=520 부근)에 선 스타일별 의미 + 위험도 색상 표시
+그림자: filter="drop-shadow(0 1px 3px rgba(0,0,0,0.08))"
 
 플로우차트 SVG 규칙:
 - viewBox="0 0 500 (높이는 단계수*100+100)"
@@ -66,7 +74,6 @@ SYSTEM_PROMPT = """당신은 최고 수준의 시각화 분석관. McKinsey, BCG
 - 심각도별 배경색: HIGH=#BD3227(흰텍스트), MEDIUM=#C76B1E(흰텍스트), LOW=#FEFBE8(진한텍스트)
 - 화살표: 세로 직선, 길이 30px, stroke-width 2
 - 분기: 오른쪽으로 점선 + 초록 노드(차단점)
-- 노드 간 간격 일정하게 유지
 
 Mermaid는 사용하지 않음. 모든 다이어그램을 SVG로 직접 생성.
 
@@ -74,7 +81,7 @@ Mermaid는 사용하지 않음. 모든 다이어그램을 SVG로 직접 생성.
 {
   "hero_visual_type": "relationship_map|flow_diagram|infographic|combined",
   "hero_title": "시각화 제목",
-  "svg_content": "<svg viewBox='0 0 800 520' xmlns='http://www.w3.org/2000/svg'>...</svg>",
+  "svg_content": "<svg viewBox='0 0 800 560' xmlns='http://www.w3.org/2000/svg'>...</svg>",
   "mermaid_code": "",
   "leaflet_config": {
     "enabled": true/false,
