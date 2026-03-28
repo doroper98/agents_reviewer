@@ -8,6 +8,8 @@ import time
 import glob
 import asyncio
 import shutil
+from collections import deque
+from dataclasses import dataclass, field
 
 from telegram import Update
 from telegram.ext import (
@@ -28,12 +30,23 @@ _bot_start_time: float = 0.0
 _analysis_count: int = 0
 
 
+@dataclass
+class QueueItem:
+    """A queued analysis request."""
+    event_text: str
+    update: Update
+    position: int = 0
+
+
 class TelegramBot:
     """Telegram bot that receives analysis commands and sends reports."""
 
     def __init__(self, config: Config) -> None:
         self.config = config
         self.orchestrator = Orchestrator(config)
+        self._queue: deque[QueueItem] = deque()
+        self._is_analyzing: bool = False
+        self._current_topic: str = ""
         global _bot_start_time
         _bot_start_time = time.time()
 
@@ -57,6 +70,7 @@ class TelegramBot:
             "/analyze <주제> — 분석 시작\n"
             "/status — 서버 상태 확인\n"
             "/reports — 전체 보고서 목록\n"
+            "/queue — 대기열 확인\n"
             "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
@@ -64,24 +78,21 @@ class TelegramBot:
     async def _status_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """Handle /status command — show bot health, uptime, token usage."""
+        """Handle /status command."""
         if update.message is None:
             return
 
         global _bot_start_time, _analysis_count
 
-        # Uptime
         uptime_sec = time.time() - _bot_start_time if _bot_start_time else 0
         hours = int(uptime_sec // 3600)
         minutes = int((uptime_sec % 3600) // 60)
         uptime_str = f"{hours}시간 {minutes}분"
 
-        # Report count
         report_dir = self.config.report_output_dir
         report_files = glob.glob(os.path.join(report_dir, "analysis_*.html")) if os.path.isdir(report_dir) else []
         report_count = len(report_files)
 
-        # Memory usage
         try:
             with open("/proc/meminfo", "r") as f:
                 meminfo = f.read()
@@ -92,24 +103,8 @@ class TelegramBot:
         except Exception:
             mem_str = "확인 불가"
 
-        # Token usage via claude CLI
-        token_info = ""
-        try:
-            claude_bin = shutil.which("claude")
-            if claude_bin:
-                proc = await asyncio.create_subprocess_exec(
-                    claude_bin, "-p", "현재 토큰 사용량을 알려줘. 주간 한도 대비 몇% 사용했는지, 리셋 날짜가 언제인지 간결하게 답변.",
-                    "--output-format", "text",
-                    "--model", self.config.model_name,
-                    "--dangerously-skip-permissions",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=30)
-                if proc.returncode == 0:
-                    token_info = stdout.decode().strip().replace("**", "")
-        except Exception:
-            token_info = "토큰 정보 조회 실패"
+        analyzing_str = f"분석 중: {self._current_topic[:30]}" if self._is_analyzing else "대기 중"
+        queue_str = f"{len(self._queue)}건 대기" if self._queue else "없음"
 
         status_msg = (
             f"✅ 봇 실행 중\n\n"
@@ -118,16 +113,40 @@ class TelegramBot:
             f"  이번 세션 분석: {_analysis_count}건\n"
             f"  모델: {self.config.model_name}\n"
             f"  서버 메모리: {mem_str}\n"
+            f"  현재 상태: {analyzing_str}\n"
+            f"  대기열: {queue_str}\n"
             f"\n토큰 사용량 확인:\n"
             f"  claude.ai → 설정 → 사용량"
         )
 
         await update.message.reply_text(status_msg)
 
+    async def _queue_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /queue command — show current queue status."""
+        if update.message is None:
+            return
+
+        lines = []
+        if self._is_analyzing:
+            lines.append(f"🔄 분석 중: {self._current_topic[:50]}")
+        else:
+            lines.append("⏸ 분석 대기 중")
+
+        if self._queue:
+            lines.append(f"\n📋 대기열 ({len(self._queue)}건):")
+            for i, item in enumerate(self._queue, 1):
+                lines.append(f"  {i}. {item.event_text[:40]}")
+        else:
+            lines.append("\n대기열 비어있음")
+
+        await update.message.reply_text("\n".join(lines))
+
     async def _reports_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """Handle /reports command — send link to report index page."""
+        """Handle /reports command."""
         if update.message is None:
             return
         project = self.config.cloudflare_project_name
@@ -153,12 +172,12 @@ class TelegramBot:
             )
             return
 
-        await self._run_analysis(update, text)
+        await self._enqueue_analysis(update, text)
 
     async def _message_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """Handle plain text messages. ? prefix = quick question, otherwise = analysis."""
+        """Handle plain text messages."""
         if update.message is None or update.effective_chat is None:
             return
 
@@ -171,14 +190,40 @@ class TelegramBot:
 
         text = text.strip()
 
-        # ? prefix = quick question mode
         if text.startswith("?"):
             question = text[1:].strip()
             if question:
                 await self._quick_question(update, question)
                 return
 
-        await self._run_analysis(update, text)
+        await self._enqueue_analysis(update, text)
+
+    async def _enqueue_analysis(self, update: Update, event_text: str) -> None:
+        """Add analysis to queue and process if not already running."""
+        if self._is_analyzing:
+            position = len(self._queue) + 1
+            self._queue.append(QueueItem(event_text=event_text, update=update, position=position))
+            await update.message.reply_text(
+                f"📋 대기열에 추가됨 ({position}번째)\n"
+                f"  주제: {event_text[:50]}\n"
+                f"  현재 분석 중: {self._current_topic[:40]}\n\n"
+                f"완료되면 순서대로 시작됩니다."
+            )
+            return
+
+        await self._run_analysis(update, event_text)
+
+    async def _process_queue(self) -> None:
+        """Process next item in queue if available."""
+        if not self._queue:
+            return
+
+        next_item = self._queue.popleft()
+        # Notify remaining queue items of updated position
+        for i, item in enumerate(self._queue):
+            item.position = i + 1
+
+        await self._run_analysis(next_item.update, next_item.event_text)
 
     async def _quick_question(self, update: Update, question: str) -> None:
         """Answer a quick question directly via Claude CLI/API."""
@@ -188,9 +233,6 @@ class TelegramBot:
         msg = await update.message.reply_text("💬 답변 준비 중...")
 
         try:
-            import asyncio
-            import shutil
-
             claude_bin = shutil.which("claude")
             if claude_bin is None:
                 await msg.edit_text("claude CLI를 찾을 수 없습니다.")
@@ -229,6 +271,8 @@ class TelegramBot:
         if update.message is None or update.effective_chat is None:
             return
 
+        self._is_analyzing = True
+        self._current_topic = event_text
         chat_id = update.effective_chat.id
 
         async def status_callback(status: str) -> None:
@@ -275,8 +319,10 @@ class TelegramBot:
             global _analysis_count
             _analysis_count += 1
             duration = f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
+
+            queue_info = f"\n📋 대기열: {len(self._queue)}건 남음" if self._queue else ""
             await update.message.reply_text(
-                f"✅ 분석 완료 (소요시간: {duration}초)"
+                f"✅ 분석 완료 (소요시간: {duration}초){queue_info}"
             )
 
             # Send index page link as separate message
@@ -291,6 +337,12 @@ class TelegramBot:
             logger.exception("Analysis failed")
             await update.message.reply_text(f"❌ 분석 실패: {str(e)[:200]}")
 
+        finally:
+            self._is_analyzing = False
+            self._current_topic = ""
+            # Process next in queue
+            await self._process_queue()
+
     def create_app(self) -> Application:
         """Create and configure the Telegram bot application."""
         app = (
@@ -301,6 +353,7 @@ class TelegramBot:
 
         app.add_handler(CommandHandler("start", self._start_command))
         app.add_handler(CommandHandler("status", self._status_command))
+        app.add_handler(CommandHandler("queue", self._queue_command))
         app.add_handler(CommandHandler("reports", self._reports_command))
         app.add_handler(CommandHandler("analyze", self._analyze_command))
         app.add_handler(
