@@ -51,54 +51,60 @@ class Orchestrator:
             await status_callback(message)
 
     def _build_text_report(self, result: FullAnalysisResult) -> str:
-        """Build a clean code-block text summary for Telegram."""
+        """Build a clean text summary for Telegram (without glossary)."""
         lines: list[str] = []
-        sep = "\u2501" * 30
 
         event_name = ""
         if result.context:
             event_name = result.context.event_name or result.context.event_name_en
-        lines.append(sep)
-        lines.append(event_name or "Event Analysis")
-        lines.append(sep)
+        lines.append(f"<{event_name or 'Event Analysis'}>")
         lines.append("")
 
         if result.context:
             lines.append("[상황인식]")
+            lines.append("")
             lines.append(result.context.summary)
-            for fig in result.context.key_figures[:5]:
+            lines.append("")
+            for fig in result.context.key_figures[:6]:
                 label = fig.get("label", "")
                 value = fig.get("value", "")
-                lines.append(f"  {label}: {value}")
+                context = fig.get("context", "")
+                ctx_str = f" ({context})" if context else ""
+                lines.append(f" -> {label}: {value}{ctx_str}")
             lines.append("")
 
         if result.players:
             lines.append("[이해관계자]")
-            for p in result.players.players[:6]:
+            lines.append("")
+            for i, p in enumerate(result.players.players[:8], 1):
                 name = p.get("name", "")
-                risk = p.get("risk_level", "")
                 role = p.get("role_tag", "")
-                lines.append(f"  {name} [{risk}] {role}")
+                lines.append(f"{i}) {name} : {role}")
             lines.append("")
 
         if result.dynamics:
             lines.append("[구조 및 상호작용]")
-            lines.append(f"  프레임: {result.dynamics.framework}")
-            lines.append(f"  긴장: {result.dynamics.core_tension}")
-            lines.append(f"  통찰: {result.dynamics.key_insight}")
+            lines.append("")
+            lines.append(f"a. 프레임: {result.dynamics.framework}")
+            lines.append(f"b. 긴장: {result.dynamics.core_tension}")
+            lines.append(f"c. 통찰: {result.dynamics.key_insight}")
             lines.append("")
 
         if result.chain_reaction:
             lines.append("[연쇄반응]")
-            chain_parts: list[str] = []
-            for step in result.chain_reaction.chain[:6]:
+            lines.append("")
+            for step in result.chain_reaction.chain[:12]:
                 title = step.get("title", "")
-                chain_parts.append(title)
-            lines.append(" → ".join(chain_parts))
+                desc = step.get("description", "")
+                if desc:
+                    lines.append(f"→ {title}")
+                else:
+                    lines.append(f"→ {title}")
             lines.append("")
 
         if result.scenarios:
-            lines.append("[시나리오]")
+            lines.append("[향후 시나리오]")
+            lines.append("")
             circled = ["①", "②", "③", "④"]
             for i, sc in enumerate(result.scenarios.scenarios[:4]):
                 c = circled[i] if i < len(circled) else f"{i+1}."
@@ -109,22 +115,24 @@ class Orchestrator:
 
         if result.scenarios and result.scenarios.watch_signals:
             lines.append("[지켜봐야 할 시그널]")
+            lines.append("")
             for ws in result.scenarios.watch_signals[:5]:
                 icon = ws.get("icon", "●")
                 signal = ws.get("signal", "")
-                lines.append(f"  {icon} {signal}")
+                lines.append(f"{icon} {signal}")
             lines.append("")
 
         if result.context and result.context.sources:
-            lines.append(f"출처: {', '.join(result.context.sources[:5])}")
-            lines.append("")
+            lines.append(f"출처: {', '.join(result.context.sources[:8])}")
 
-        # Glossary - collect from all agents
+        return "\n".join(lines)
+
+    def _build_glossary_text(self, result: FullAnalysisResult) -> str:
+        """Build glossary as a separate text for Telegram."""
         all_terms: list[dict] = []
         for section in [result.context, result.players, result.dynamics, result.chain_reaction, result.scenarios]:
             if section and hasattr(section, "glossary") and section.glossary:
                 all_terms.extend(section.glossary)
-        # Deduplicate by term
         seen: set[str] = set()
         unique_terms: list[dict] = []
         for t in all_terms:
@@ -132,13 +140,11 @@ class Orchestrator:
             if term and term not in seen:
                 seen.add(term)
                 unique_terms.append(t)
-        if unique_terms:
-            lines.append("[용어 정의]")
-            for t in unique_terms:
-                lines.append(f"  {t.get('term', '')} : {t.get('definition', '')}")
-            lines.append("")
-
-        lines.append(sep)
+        if not unique_terms:
+            return ""
+        lines: list[str] = ["[용어 정의]", ""]
+        for t in unique_terms:
+            lines.append(f"  {t.get('term', '')} : {t.get('definition', '')}")
         return "\n".join(lines)
 
     async def run_analysis(

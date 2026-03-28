@@ -158,17 +158,19 @@ class TelegramBot:
                 status_callback=status_callback,
             )
 
-            # Send text report as code block
+            # Send text report (without glossary, for easy x.com sharing)
             text_report = self.orchestrator._build_text_report(result)
-            # Split if too long for Telegram (4096 char limit)
-            report_msg = f"```\n{text_report}\n```"
-            if len(report_msg) > 4000:
-                # Split into chunks
+            if len(text_report) > 4000:
                 chunks = [text_report[i:i+3900] for i in range(0, len(text_report), 3900)]
                 for chunk in chunks:
-                    await update.message.reply_text(f"```\n{chunk}\n```", parse_mode="Markdown")
+                    await update.message.reply_text(chunk)
             else:
-                await update.message.reply_text(report_msg, parse_mode="Markdown")
+                await update.message.reply_text(text_report)
+
+            # Send glossary as a SEPARATE message
+            glossary_text = self.orchestrator._build_glossary_text(result)
+            if glossary_text:
+                await update.message.reply_text(glossary_text)
 
             # Send HTML file with share link in caption
             report_path = result.report_path
