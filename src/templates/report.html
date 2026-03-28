@@ -139,12 +139,26 @@ footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
   nav a{padding:8px 12px;font-size:.72rem}
   .hero h1{font-size:1.4rem}
   .mx{font-size:.72rem}.mx th,.mx td{padding:7px 8px}
+  body{font-size:14px}
+  .wrap{padding:0 14px}
 }
 @media(max-width:540px){
   .kf{grid-template-columns:1fr 1fr}
   .hero{padding:2.5rem 0 1.5rem}
   section{padding:1.5rem 0 1rem}
   .card,.pl{padding:1rem}
+  body{font-size:13px;line-height:1.65}
+  .wrap{padding:0 10px}
+  .hero h1{font-size:1.2rem}
+  .hero .sub{font-size:.8rem}
+  .sec-title{font-size:1.1rem}
+  .kf{grid-template-columns:1fr}
+  .mx{display:block}
+  .mx thead{display:none}
+  .mx tr{display:block;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);padding:10px}
+  .mx td{display:block;padding:4px 0;border:none;font-size:.8rem}
+  .mx td::before{content:attr(data-label);font-weight:700;display:block;font-size:.7rem;color:var(--mute);margin-bottom:2px}
+  canvas{height:200px!important}
 }
 </style>
 </head>
@@ -433,6 +447,12 @@ footer .sources{max-width:600px;margin:0 auto .5rem;line-height:1.7}
 <!-- ===== FOOTER ===== -->
 <footer>
   <div class="wrap">
+    {% if result.report_url and result.report_url.startswith('http') %}
+    <div style="margin-bottom:1rem">
+      <div style="font-size:.65rem;color:#6B7280;margin-bottom:6px">이 보고서를 공유하려면 아래 링크를 복사하세요</div>
+      <a href="{{ result.report_url }}" style="color:#60A5FA;text-decoration:underline;font-family:var(--mono);font-size:.8rem;word-break:break-all">{{ result.report_url }}</a>
+    </div>
+    {% endif %}
     {% if result.context and result.context.sources %}
     <div class="sources">Sources: {{ result.context.sources|join(' | ') }}</div>
     {% endif %}
