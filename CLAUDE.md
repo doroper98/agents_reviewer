@@ -1,23 +1,37 @@
 # CLAUDE.md — Event Analysis Team Agent System
 
 ## Project Overview
-텔레그램을 통해 이벤트/사건 분석 명령을 수신하고, 9개의 전문 AI 에이전트가
-협업하여 거시경제, 지정학, 미시경제, 투자, 역사/윤리적 관점에서 종합 분석 후
-비주얼 HTML 보고서를 생성하는 시스템.
+텔레그램을 통해 이벤트/사건 분석 명령을 수신하고, 7개의 전문 AI 에이전트가
+협업하여 상황인식, 이해관계자, 구조분석, 연쇄반응, 시나리오, 시각화 관점에서
+종합 분석 후 valentino-boop 스타일 HTML 보고서를 생성하는 시스템.
 
 ## Tech Stack
 - Language: Python 3.11+
-- AI: Anthropic Claude API (claude-sonnet-4-6)
+- AI: Claude Code CLI (claude-opus-4-6, Max 플랜 무료 모드) + 웹 검색
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
-- Report: Jinja2 HTML + YK_ soft-brutalism CSS
-- Visualization: Plotly (interactive charts)
+- Report: Jinja2 HTML + valentino-boop CSS (6막 극장 구조)
+- Visualization: SVG 직접 생성, Leaflet 지도, Canvas 2D 차트
+- Hosting: Cloudflare Pages (wrangler CLI 배포)
+- Infra: Oracle Cloud VM (무료 티어)
+
+## Agents (7개)
+| 에이전트 | 파일 | 역할 |
+|---------|------|------|
+| 상황인식 분석관 | `context_analyst.py` | ACT I: 팩트, 타임라인, 웹 검색 |
+| 이해관계자 분석관 | `player_analyst.py` | ACT II: 행위자, 전략, 위험도 |
+| 구조 및 상호작용 분석관 | `dynamics_analyst.py` | ACT III: 게임이론, 전환점 |
+| 연쇄반응 분석관 | `chain_reaction_analyst.py` | ACT IV: 인과 사슬, 도미노 |
+| 향후 시나리오 분석관 | `scenario_architect.py` | ACT V+VI: 시나리오 + 감시 신호 |
+| 시각화 분석관 | `visual_analyst.py` | SVG 관계도, 지도, 차트 |
+| 보고서 합성관 | `report_synthesizer.py` | HTML 생성, Cloudflare 업로드 |
 
 ## Canonical Documents
 - `docs_canonical/ARCHITECTURE.md` — 시스템 아키텍처
 - `docs_canonical/STYLEGUIDE.md` — 코드 컨벤션
 - `docs_canonical/TESTING.md` — 테스트 전략
 - `docs_canonical/REPO_MAP.md` — 파일/폴더 구조 설명
+- `DEVLOG.md` — 전체 개발 로그 (인프라, 트러블슈팅 포함)
 
 ## Execution Rules
 1. 모든 코드 변경 후 `python -m py_compile` 검증
@@ -25,9 +39,12 @@
 3. Pydantic 모델 사용 (dict 금지)
 4. Agent system prompt는 한국어 + 영어 혼용 가능
 5. 커밋 메시지: `v{VER}: {변경 요약}`
+6. CLI 모드: `--dangerously-skip-permissions --allowedTools "WebFetch,WebSearch"`
+7. 시스템 프롬프트에 `.format()` 사용 금지 → `.replace()` 사용 (JSON `{}` 충돌 방지)
 
 ## Key Directories
-- `src/agents/` — 9개 전문 에이전트 정의
-- `src/templates/` — HTML 보고서 템플릿
-- `src/style_guide/` — YK_ CSS 테마
+- `src/agents/` — 7개 전문 에이전트 정의
+- `src/templates/` — HTML 보고서 템플릿 (valentino-boop 스타일)
+- `src/style_guide/` — CSS 테마
 - `docs_canonical/` — 정규 문서 4종
+- `reports/` — 생성된 HTML 보고서 출력 디렉토리
