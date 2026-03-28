@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import logging
 import os
+import time
+import glob
+import asyncio
+import shutil
 
 from telegram import Update
 from telegram.ext import (
@@ -19,6 +23,10 @@ from src.orchestrator import Orchestrator
 
 logger = logging.getLogger(__name__)
 
+# Track bot start time and analysis count
+_bot_start_time: float = 0.0
+_analysis_count: int = 0
+
 
 class TelegramBot:
     """Telegram bot that receives analysis commands and sends reports."""
@@ -26,6 +34,8 @@ class TelegramBot:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.orchestrator = Orchestrator(config)
+        global _bot_start_time
+        _bot_start_time = time.time()
 
     def _is_authorized(self, chat_id: int) -> bool:
         """Check if chat is authorized. Empty list = allow all."""
@@ -42,11 +52,76 @@ class TelegramBot:
         await update.message.reply_text(
             "📊 Event Analysis Team\n\n"
             "분석할 사건이나 상황을 메시지로 보내주세요.\n"
-            "5명의 AI 분석관이 종합 보고서를 작성합니다.\n\n"
+            "6명의 AI 분석관이 종합 보고서를 작성합니다.\n\n"
             "명령어:\n"
             "/analyze <주제> — 분석 시작\n"
+            "/status — 서버 상태 확인\n"
+            "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
+
+    async def _status_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /status command — show bot health, uptime, token usage."""
+        if update.message is None:
+            return
+
+        global _bot_start_time, _analysis_count
+
+        # Uptime
+        uptime_sec = time.time() - _bot_start_time if _bot_start_time else 0
+        hours = int(uptime_sec // 3600)
+        minutes = int((uptime_sec % 3600) // 60)
+        uptime_str = f"{hours}시간 {minutes}분"
+
+        # Report count
+        report_dir = self.config.report_output_dir
+        report_files = glob.glob(os.path.join(report_dir, "analysis_*.html")) if os.path.isdir(report_dir) else []
+        report_count = len(report_files)
+
+        # Memory usage
+        try:
+            with open("/proc/meminfo", "r") as f:
+                meminfo = f.read()
+            total = int([l for l in meminfo.split("\n") if "MemTotal" in l][0].split()[1])
+            available = int([l for l in meminfo.split("\n") if "MemAvailable" in l][0].split()[1])
+            mem_pct = int((1 - available / total) * 100)
+            mem_str = f"{mem_pct}% 사용"
+        except Exception:
+            mem_str = "확인 불가"
+
+        # Token usage via claude CLI
+        token_info = ""
+        try:
+            claude_bin = shutil.which("claude")
+            if claude_bin:
+                proc = await asyncio.create_subprocess_exec(
+                    claude_bin, "-p", "현재 토큰 사용량을 알려줘. 주간 한도 대비 몇% 사용했는지, 리셋 날짜가 언제인지 간결하게 답변.",
+                    "--output-format", "text",
+                    "--model", self.config.model_name,
+                    "--dangerously-skip-permissions",
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=30)
+                if proc.returncode == 0:
+                    token_info = stdout.decode().strip().replace("**", "")
+        except Exception:
+            token_info = "토큰 정보 조회 실패"
+
+        status_msg = (
+            f"✅ 봇 실행 중\n\n"
+            f"  가동시간: {uptime_str}\n"
+            f"  생성된 보고서: {report_count}건\n"
+            f"  모델: {self.config.model_name}\n"
+            f"  서버 메모리: {mem_str}\n"
+        )
+
+        if token_info:
+            status_msg += f"\n[토큰 사용량]\n{token_info}"
+
+        await update.message.reply_text(status_msg)
 
     async def _analyze_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -185,6 +260,8 @@ class TelegramBot:
                         caption=caption,
                     )
 
+            global _analysis_count
+            _analysis_count += 1
             duration = f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
             await update.message.reply_text(
                 f"✅ 분석 완료 (소요시간: {duration}초)"
@@ -211,6 +288,7 @@ class TelegramBot:
         )
 
         app.add_handler(CommandHandler("start", self._start_command))
+        app.add_handler(CommandHandler("status", self._status_command))
         app.add_handler(CommandHandler("analyze", self._analyze_command))
         app.add_handler(
             MessageHandler(
