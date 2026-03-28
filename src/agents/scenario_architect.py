@@ -48,6 +48,7 @@ SYSTEM_PROMPT = (
     "  ],\n"
     '  "base_case_summary": "기본 시나리오 요약 (2줄)",\n'
     '  "summary": "핵심 요약",\n'
+    '  "glossary": [{"term": "용어", "definition": "정의"}],\n'
     '  "confidence_score": 0.0\n'
     "}\n"
     "```"

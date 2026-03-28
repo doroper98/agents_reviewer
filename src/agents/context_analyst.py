@@ -26,6 +26,7 @@ SYSTEM_PROMPT = (
     '  "key_figures": [{"label": "지표명", "value": "수치", "context": "맥락"}],\n'
     '  "background": "배경 설명 (5줄 이내)",\n'
     '  "sources": ["출처1", "출처2"],\n'
+    '  "glossary": [{"term": "용어", "definition": "정의"}],\n'
     '  "confidence_score": 0.0\n'
     "}\n"
     "```"

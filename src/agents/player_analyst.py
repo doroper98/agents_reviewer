@@ -33,6 +33,7 @@ SYSTEM_PROMPT = (
     '  "alliances": [{"group": ["A", "B"], "nature": "동맹|대립|경쟁|협력"}],\n'
     '  "power_dynamics": "전체 권력 역학 요약 (3줄)",\n'
     '  "summary": "핵심 요약",\n'
+    '  "glossary": [{"term": "용어", "definition": "정의"}],\n'
     '  "confidence_score": 0.0\n'
     "}\n"
     "```"

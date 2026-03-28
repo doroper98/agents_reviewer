@@ -37,6 +37,7 @@ SYSTEM_PROMPT = (
     "  ],\n"
     '  "worst_case": "모든 사슬이 연결될 경우 최종 결과 (2줄)",\n'
     '  "summary": "핵심 요약",\n'
+    '  "glossary": [{"term": "용어", "definition": "정의"}],\n'
     '  "confidence_score": 0.0\n'
     "}\n"
     "```"

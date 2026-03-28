@@ -28,6 +28,7 @@ SYSTEM_PROMPT = (
     "  ],\n"
     '  "key_insight": "가장 중요한 통찰 1가지 (2줄)",\n'
     '  "summary": "핵심 요약",\n'
+    '  "glossary": [{"term": "용어", "definition": "정의"}],\n'
     '  "confidence_score": 0.0\n'
     "}\n"
     "```"

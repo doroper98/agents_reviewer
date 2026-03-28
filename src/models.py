@@ -28,6 +28,7 @@ class ContextAnalysis(BaseModel):
     key_figures: list[dict] = Field(default_factory=list)
     background: str = ""
     sources: list[str] = Field(default_factory=list)
+    glossary: list[dict] = Field(default_factory=list)
     confidence_score: float = 0.0
 
 
@@ -38,6 +39,7 @@ class PlayerAnalysis(BaseModel):
     alliances: list[dict] = Field(default_factory=list)
     power_dynamics: str = ""
     summary: str = ""
+    glossary: list[dict] = Field(default_factory=list)
     confidence_score: float = 0.0
 
 
@@ -51,6 +53,7 @@ class DynamicsAnalysis(BaseModel):
     tipping_points: list[dict] = Field(default_factory=list)
     key_insight: str = ""
     summary: str = ""
+    glossary: list[dict] = Field(default_factory=list)
     confidence_score: float = 0.0
 
 
@@ -61,6 +64,7 @@ class ChainReactionAnalysis(BaseModel):
     break_points: list[dict] = Field(default_factory=list)
     worst_case: str = ""
     summary: str = ""
+    glossary: list[dict] = Field(default_factory=list)
     confidence_score: float = 0.0
 
 
@@ -71,6 +75,7 @@ class ScenarioAnalysis(BaseModel):
     watch_signals: list[dict] = Field(default_factory=list)
     base_case_summary: str = ""
     summary: str = ""
+    glossary: list[dict] = Field(default_factory=list)
     confidence_score: float = 0.0
 
 

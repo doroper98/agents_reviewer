@@ -107,6 +107,26 @@ class Orchestrator:
 
         if result.context and result.context.sources:
             lines.append(f"출처: {', '.join(result.context.sources[:5])}")
+            lines.append("")
+
+        # Glossary - collect from all agents
+        all_terms: list[dict] = []
+        for section in [result.context, result.players, result.dynamics, result.chain_reaction, result.scenarios]:
+            if section and hasattr(section, "glossary") and section.glossary:
+                all_terms.extend(section.glossary)
+        # Deduplicate by term
+        seen: set[str] = set()
+        unique_terms: list[dict] = []
+        for t in all_terms:
+            term = t.get("term", "")
+            if term and term not in seen:
+                seen.add(term)
+                unique_terms.append(t)
+        if unique_terms:
+            lines.append("[용어 정의]")
+            for t in unique_terms:
+                lines.append(f"  {t.get('term', '')} : {t.get('definition', '')}")
+            lines.append("")
 
         lines.append(sep)
         return "\n".join(lines)

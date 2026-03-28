@@ -87,6 +87,7 @@ class BaseAgent:
             )
 
         raw_text = stdout.decode().strip()
+        raw_text = raw_text.replace("**", "")
         logger.info(f"[{self.name}] Received CLI response ({len(raw_text)} chars)")
         return raw_text
 
@@ -107,6 +108,7 @@ class BaseAgent:
         )
 
         raw_text = response.content[0].text  # type: ignore[index]
+        raw_text = raw_text.replace("**", "")
         logger.info(f"[{self.name}] Received API response ({len(raw_text)} chars)")
         return raw_text
 
