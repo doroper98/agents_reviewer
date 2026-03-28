@@ -117,13 +117,7 @@ class TelegramBot:
             else:
                 await update.message.reply_text(report_msg, parse_mode="Markdown")
 
-            # Send report URL as clickable link
-            if result.report_url and result.report_url.startswith("http"):
-                await update.message.reply_text(
-                    f"📊 보고서 링크: {result.report_url}"
-                )
-
-            # Also send HTML file if available
+            # Send HTML file with share link in caption
             report_path = result.report_path
             if report_path and os.path.isfile(report_path):
                 caption = "📊 Full Analysis Report"
