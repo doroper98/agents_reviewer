@@ -71,7 +71,7 @@ class TelegramBot:
     async def _message_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """Handle plain text messages as analysis requests."""
+        """Handle plain text messages. ? prefix = quick question, otherwise = analysis."""
         if update.message is None or update.effective_chat is None:
             return
 
@@ -82,7 +82,60 @@ class TelegramBot:
         if not text or not text.strip():
             return
 
-        await self._run_analysis(update, text.strip())
+        text = text.strip()
+
+        # ? prefix = quick question mode
+        if text.startswith("?"):
+            question = text[1:].strip()
+            if question:
+                await self._quick_question(update, question)
+                return
+
+        await self._run_analysis(update, text)
+
+    async def _quick_question(self, update: Update, question: str) -> None:
+        """Answer a quick question directly via Claude CLI/API."""
+        if update.message is None:
+            return
+
+        msg = await update.message.reply_text("💬 답변 준비 중...")
+
+        try:
+            import asyncio
+            import shutil
+
+            claude_bin = shutil.which("claude")
+            if claude_bin is None:
+                await msg.edit_text("claude CLI를 찾을 수 없습니다.")
+                return
+
+            cmd = [
+                claude_bin,
+                "-p", f"간결하게 답변. 음슴체. 핵심만.\n\n질문: {question}",
+                "--output-format", "text",
+                "--model", self.config.model_name,
+                "--dangerously-skip-permissions",
+            ]
+
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                await msg.edit_text(f"답변 실패: {stderr.decode()[:200]}")
+                return
+
+            answer = stdout.decode().strip().replace("**", "")
+            if len(answer) > 4000:
+                answer = answer[:4000] + "..."
+
+            await msg.edit_text(answer)
+
+        except Exception as e:
+            await msg.edit_text(f"답변 실패: {str(e)[:200]}")
 
     async def _run_analysis(self, update: Update, event_text: str) -> None:
         """Execute the analysis pipeline and send report."""
