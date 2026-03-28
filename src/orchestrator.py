@@ -56,7 +56,7 @@ class Orchestrator:
         lines.append("")
 
         if result.context:
-            lines.append("[상황판]")
+            lines.append("[상황인식]")
             lines.append(result.context.summary)
             for fig in result.context.key_figures[:5]:
                 label = fig.get("label", "")
@@ -74,14 +74,14 @@ class Orchestrator:
             lines.append("")
 
         if result.dynamics:
-            lines.append("[구조 및 역학관계]")
+            lines.append("[구조 및 상호작용]")
             lines.append(f"  프레임: {result.dynamics.framework}")
             lines.append(f"  긴장: {result.dynamics.core_tension[:80]}")
             lines.append(f"  통찰: {result.dynamics.key_insight[:80]}")
             lines.append("")
 
         if result.chain_reaction:
-            lines.append("[파급효과]")
+            lines.append("[연쇄반응]")
             chain_parts: list[str] = []
             for step in result.chain_reaction.chain[:6]:
                 title = step.get("title", "")
@@ -100,7 +100,7 @@ class Orchestrator:
             lines.append("")
 
         if result.scenarios and result.scenarios.watch_signals:
-            lines.append("[감시 신호]")
+            lines.append("[지켜봐야 할 시그널]")
             for ws in result.scenarios.watch_signals[:5]:
                 icon = ws.get("icon", "●")
                 signal = ws.get("signal", "")
@@ -148,9 +148,9 @@ class Orchestrator:
         )
         result = FullAnalysisResult(request=request)
 
-        # -- Phase 1: 맥락 분석관 --
+        # -- Phase 1: 상황인식 분석관 --
         await self._notify(
-            f"🔍 맥락 분석관: \"{event_description}\"에 대한 상황판을 구성하고 있습니다.",
+            f"🔍 상황인식 분석관: \"{event_description}\"에 대한 상황을 인식하고 있습니다.",
             status_callback,
         )
         result.context = await self.context_analyst.analyze(request)
@@ -159,14 +159,14 @@ class Orchestrator:
         timeline_count = len(result.context.timeline)
         figures_count = len(result.context.key_figures)
         await self._notify(
-            f"📋 맥락 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
+            f"📋 상황인식 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
             f"  · 사건 분류: {result.context.category}\n"
             f"  · 타임라인 {timeline_count}건, 핵심 지표 {figures_count}건 수집\n"
             f"  · 신뢰도: {result.context.confidence_score * 100:.0f}%",
             status_callback,
         )
 
-        # -- Phase 2: 이해관계자 분석관 + 구조 및 역학관계 분석관 --
+        # -- Phase 2: 이해관계자 분석관 + 구조 및 상호작용 분석관 --
         player_context = result.context.summary[:50] if result.context.summary else event_name
         await self._notify(
             f"👥 이해관계자 분석관: \"{player_context}\"와 관련된 핵심 행위자들을 식별하고 있습니다.",
@@ -185,22 +185,22 @@ class Orchestrator:
         )
 
         await self._notify(
-            f"⚡ 구조 및 역학관계 분석관: {player_names} 간의 구조적 역학관계에 대해 분석하고 있습니다.",
+            f"⚡ 구조 및 상호작용 분석관: {player_names} 간의 구조적 상호작용에 대해 분석하고 있습니다.",
             status_callback,
         )
         result.dynamics = await self.dynamics_analyst.analyze(
             result.context, result.players
         )
         await self._notify(
-            f"⚡ 구조 및 역학관계 분석관: {result.dynamics.framework} 프레임워크를 적용하여 분석하였습니다.\n"
+            f"⚡ 구조 및 상호작용 분석관: {result.dynamics.framework} 프레임워크를 적용하여 분석하였습니다.\n"
             f"  · 핵심 통찰: {result.dynamics.key_insight[:120]}\n"
             f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%",
             status_callback,
         )
 
-        # -- Phase 3: 파급효과 분석관 + 시나리오 구조 분석관 --
+        # -- Phase 3: 연쇄반응 분석관 + 향후 시나리오 분석관 --
         await self._notify(
-            f"🔗 파급효과 분석관: \"{event_name}\"에서 비롯되는 연쇄반응과 도미노 효과를 추적하고 있습니다.",
+            f"🔗 연쇄반응 분석관: \"{event_name}\"에서 비롯되는 연쇄반응과 파급효과를 추적하고 있습니다.",
             status_callback,
         )
         result.chain_reaction = await self.chain_reaction_analyst.analyze(
@@ -210,7 +210,7 @@ class Orchestrator:
             [s.get("title", "") for s in result.chain_reaction.chain[:4]]
         )
         await self._notify(
-            f"🔗 파급효과 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬을 분석하였습니다.\n"
+            f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬을 분석하였습니다.\n"
             f"  · {chain_summary}\n"
             f"  · 차단점 {len(result.chain_reaction.break_points)}건 식별\n"
             f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%",
@@ -218,7 +218,7 @@ class Orchestrator:
         )
 
         await self._notify(
-            f"🎲 시나리오 구조 분석관: 향후 전개 가능한 시나리오를 설계하고 있습니다.",
+            f"🎲 향후 시나리오 분석관: 향후 전개 가능한 시나리오를 설계하고 있습니다.",
             status_callback,
         )
         result.scenarios = await self.scenario_architect.analyze(
@@ -228,7 +228,7 @@ class Orchestrator:
             [s.get("name", "") for s in result.scenarios.scenarios]
         )
         await self._notify(
-            f"🎲 시나리오 구조 분석관: {len(result.scenarios.scenarios)}개 시나리오를 설계하였습니다.\n"
+            f"🎲 향후 시나리오 분석관: {len(result.scenarios.scenarios)}개 시나리오를 설계하였습니다.\n"
             f"  · {scenario_names}\n"
             f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
             f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%",

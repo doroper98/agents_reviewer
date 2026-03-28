@@ -99,7 +99,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 
 <!-- NAV -->
 <nav class="nav"><div class="nav-in">
-  <a href="#s1">상황판</a><a href="#s2">이해관계자</a><a href="#s3">역학관계</a><a href="#s4">파급효과</a><a href="#s5">시나리오</a><a href="#s6">신호</a>
+  <a href="#s1">상황인식</a><a href="#s2">이해관계자</a><a href="#s3">상호작용</a><a href="#s4">연쇄반응</a><a href="#s5">향후 시나리오</a><a href="#s6">시그널</a>
 </div></nav>
 
 <!-- ===== VISUAL SUMMARY ===== -->
@@ -164,7 +164,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 {% if result.context %}
 <section id="s1" class="fi">
   <div class="lb">ACT I — THE BOARD</div>
-  <h2 class="tt">상황판</h2>
+  <h2 class="tt">상황인식</h2>
   {% if result.context.summary %}
   <p class="ds">{{ result.context.summary }}</p>
   {% endif %}
@@ -207,7 +207,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   </div>
   {% endif %}
 
-  <p class="cue">상황판을 확인했다. 이 사건에 관여하는 핵심 행위자들은 누구인가.</p>
+  <p class="cue">상황인식을 확인했다. 이 사건에 관여하는 핵심 행위자들은 누구인가.</p>
 </section>
 {% endif %}
 
@@ -252,7 +252,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
     <b>용어:</b> EXTREME = 극심 · HIGH = 높음 · MODERATE = 보통 · LOW = 낮음
   </div>
 
-  <p class="cue">행위자들의 패를 확인했다. 이들 사이의 구조적 역학은 어떤 형태인가.</p>
+  <p class="cue">행위자들의 패를 확인했다. 이들 사이의 구조적 상호작용은 어떤 형태인가.</p>
 </section>
 {% endif %}
 
@@ -260,7 +260,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 {% if result.dynamics %}
 <section id="s3" class="fi">
   <div class="lb">ACT III — THE DYNAMICS</div>
-  <h2 class="tt">구조 및 역학관계</h2>
+  <h2 class="tt">구조 및 상호작용</h2>
   {% if result.dynamics.summary %}
   <p class="ds">{{ result.dynamics.summary }}</p>
   {% endif %}
@@ -315,10 +315,10 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   {% endif %}
 
   <div class="terms">
-    <b>용어:</b> 비대칭 구조 = Asymmetry · 전환점 = Tipping Point · 역학관계 = Power Dynamics
+    <b>용어:</b> 비대칭 구조 = Asymmetry · 전환점 = Tipping Point · 상호작용 = Power Dynamics
   </div>
 
-  <p class="cue">구조적 역학을 파악했다. 이 역학이 만들어내는 연쇄반응은 어디까지 이어지는가.</p>
+  <p class="cue">구조적 상호작용을 파악했다. 이 상호작용이 만들어내는 연쇄반응은 어디까지 이어지는가.</p>
 </section>
 {% endif %}
 
@@ -326,7 +326,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 {% if result.chain_reaction and result.chain_reaction.chain %}
 <section id="s4" class="fi">
   <div class="lb">ACT IV — THE CHAIN REACTION</div>
-  <h2 class="tt">파급효과</h2>
+  <h2 class="tt">연쇄반응</h2>
   {% if result.chain_reaction.summary %}
   <p class="ds">{{ result.chain_reaction.summary }}</p>
   {% endif %}
@@ -366,7 +366,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 {% if result.scenarios and result.scenarios.scenarios %}
 <section id="s5" class="fi">
   <div class="lb">ACT V — THE SCENARIOS</div>
-  <h2 class="tt">시나리오</h2>
+  <h2 class="tt">향후 시나리오</h2>
   {% if result.scenarios.base_case_summary %}
   <p class="ds">{{ result.scenarios.base_case_summary }}</p>
   {% elif result.scenarios.summary %}
@@ -408,8 +408,8 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 {% if result.scenarios and result.scenarios.watch_signals %}
 <section id="s6" class="fi">
   <div class="lb">ACT VI — THE SIGNALS</div>
-  <h2 class="tt">감시 신호</h2>
-  <p class="ds">현재의 기본 전제를 무효화하는 조건과, 게임이 어떤 시나리오로 이동하는지를 판별하는 핵심 신호.</p>
+  <h2 class="tt">지켜봐야 할 시그널</h2>
+  <p class="ds">현재의 기본 전제를 무효화하는 조건과, 어떤 시나리오로 이동하는지를 판별하는 핵심 시그널.</p>
 
   <div class="wg">
     {% for ws in result.scenarios.watch_signals %}
