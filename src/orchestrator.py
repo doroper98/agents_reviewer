@@ -21,13 +21,7 @@ StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
 
 class Orchestrator:
-    """Coordinates the 4-phase analysis pipeline.
-
-    Phase 1: Context Analyst (situation board)
-    Phase 2: Player Analyst + Dynamics Analyst (sequential)
-    Phase 3: Chain Reaction Analyst + Scenario Architect (sequential)
-    Phase 4: Report Synthesizer (report generation + Cloudflare upload)
-    """
+    """Coordinates the 4-phase analysis pipeline."""
 
     def __init__(self, config: Config) -> None:
         self.config = config
@@ -59,7 +53,6 @@ class Orchestrator:
         lines.append(sep)
         lines.append("")
 
-        # Context
         if result.context:
             lines.append("[상황판]")
             lines.append(result.context.summary)
@@ -69,38 +62,34 @@ class Orchestrator:
                 lines.append(f"  {label}: {value}")
             lines.append("")
 
-        # Players
         if result.players:
-            lines.append("[플레이어]")
+            lines.append("[이해관계자]")
             for p in result.players.players[:6]:
                 name = p.get("name", "")
                 risk = p.get("risk_level", "")
-                lines.append(f"  {name} [{risk}]")
+                role = p.get("role_tag", "")
+                lines.append(f"  {name} [{risk}] {role}")
             lines.append("")
 
-        # Dynamics
         if result.dynamics:
-            lines.append("[역학]")
+            lines.append("[구조 및 역학관계]")
             lines.append(f"  프레임: {result.dynamics.framework}")
             lines.append(f"  긴장: {result.dynamics.core_tension[:80]}")
             lines.append(f"  통찰: {result.dynamics.key_insight[:80]}")
             lines.append("")
 
-        # Chain Reaction
         if result.chain_reaction:
-            lines.append("[연쇄반응]")
+            lines.append("[파급효과]")
             chain_parts: list[str] = []
             for step in result.chain_reaction.chain[:6]:
-                num = step.get("step", "")
                 title = step.get("title", "")
-                chain_parts.append(f"\u2460{title}" if num == 1 else f"{title}")
-            lines.append(" \u2192 ".join(chain_parts))
+                chain_parts.append(title)
+            lines.append(" → ".join(chain_parts))
             lines.append("")
 
-        # Scenarios
         if result.scenarios:
             lines.append("[시나리오]")
-            circled = ["\u2460", "\u2461", "\u2462", "\u2463"]
+            circled = ["①", "②", "③", "④"]
             for i, sc in enumerate(result.scenarios.scenarios[:4]):
                 c = circled[i] if i < len(circled) else f"{i+1}."
                 name = sc.get("name", "")
@@ -108,18 +97,16 @@ class Orchestrator:
                 lines.append(f"{c} {name} ({prob})")
             lines.append("")
 
-        # Watch Signals
         if result.scenarios and result.scenarios.watch_signals:
             lines.append("[감시 신호]")
             for ws in result.scenarios.watch_signals[:5]:
-                icon = ws.get("icon", "\u25cf")
+                icon = ws.get("icon", "●")
                 signal = ws.get("signal", "")
                 lines.append(f"  {icon} {signal}")
             lines.append("")
 
-        # Sources
         if result.context and result.context.sources:
-            lines.append(f"\ucd9c\ucc98: {', '.join(result.context.sources[:5])}")
+            lines.append(f"출처: {', '.join(result.context.sources[:5])}")
 
         lines.append(sep)
         return "\n".join(lines)
@@ -139,71 +126,77 @@ class Orchestrator:
         )
         result = FullAnalysisResult(request=request)
 
-        # -- Phase 1: Context Analyst --
+        # -- Phase 1: 맥락 분석관 --
         await self._notify(
-            "\U0001f50d Context Analyst: \uc0c1\ud669\ud310 \uad6c\uc131 \uc911...",
+            f"🔍 맥락 분석관: \"{event_description}\"에 대한 상황판을 구성하고 있습니다.",
             status_callback,
         )
         result.context = await self.context_analyst.analyze(request)
+
+        event_name = result.context.event_name or event_description[:30]
+        timeline_count = len(result.context.timeline)
+        figures_count = len(result.context.key_figures)
         await self._notify(
-            f"\U0001f4cb Context Analyst:\n"
-            f"  \uc0ac\uac74: {result.context.event_name}\n"
-            f"  \ubd84\ub958: {result.context.category}\n"
-            f"  \ud0c0\uc784\ub77c\uc778 {len(result.context.timeline)}\uac74 \uc218\uc9d1\n"
-            f"  \uc2e0\ub8b0\ub3c4: {result.context.confidence_score}",
+            f"📋 맥락 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
+            f"  · 사건 분류: {result.context.category}\n"
+            f"  · 타임라인 {timeline_count}건, 핵심 지표 {figures_count}건 수집\n"
+            f"  · 신뢰도: {result.context.confidence_score * 100:.0f}%",
             status_callback,
         )
 
-        # -- Phase 2: Player Analyst + Dynamics Analyst (sequential) --
+        # -- Phase 2: 이해관계자 분석관 + 구조 및 역학관계 분석관 --
+        player_context = result.context.summary[:50] if result.context.summary else event_name
         await self._notify(
-            "\U0001f465 Player Analyst: \ud50c\ub808\uc774\uc5b4 \uc2dd\ubcc4 \uc911...",
+            f"👥 이해관계자 분석관: \"{player_context}\"와 관련된 핵심 행위자들을 식별하고 있습니다.",
             status_callback,
         )
         result.players = await self.player_analyst.analyze(result.context)
+
         player_names = ", ".join(
             [p.get("name", "") for p in result.players.players[:5]]
         )
         await self._notify(
-            f"\U0001f465 Player Analyst:\n"
-            f"  \uc2dd\ubcc4\ub41c \ud50c\ub808\uc774\uc5b4: {player_names}\n"
-            f"  {result.players.power_dynamics[:80]}\n"
-            f"  \uc2e0\ub8b0\ub3c4: {result.players.confidence_score}",
+            f"👥 이해관계자 분석관: {player_names} 등 {len(result.players.players)}개 행위자의 입장과 전략을 분석하였습니다.\n"
+            f"  · {result.players.power_dynamics[:100]}\n"
+            f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%",
             status_callback,
         )
 
         await self._notify(
-            "\u26a1 Dynamics Analyst: \uad6c\uc870 \uc5ed\ud559 \ubd84\uc11d \uc911...",
+            f"⚡ 구조 및 역학관계 분석관: {player_names} 간의 구조적 역학관계에 대해 분석하고 있습니다.",
             status_callback,
         )
         result.dynamics = await self.dynamics_analyst.analyze(
             result.context, result.players
         )
         await self._notify(
-            f"\u26a1 Dynamics Analyst:\n"
-            f"  \ud504\ub808\uc784: {result.dynamics.framework}\n"
-            f"  \ud575\uc2ec: {result.dynamics.key_insight[:80]}\n"
-            f"  \uc2e0\ub8b0\ub3c4: {result.dynamics.confidence_score}",
+            f"⚡ 구조 및 역학관계 분석관: {result.dynamics.framework} 프레임워크를 적용하여 분석하였습니다.\n"
+            f"  · 핵심 통찰: {result.dynamics.key_insight[:120]}\n"
+            f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%",
             status_callback,
         )
 
-        # -- Phase 3: Chain Reaction Analyst + Scenario Architect (sequential) --
+        # -- Phase 3: 파급효과 분석관 + 시나리오 구조 분석관 --
         await self._notify(
-            "\U0001f517 Chain Reaction Analyst: \uc5f0\uc1c4\ubc18\uc751 \ucd94\uc801 \uc911...",
+            f"🔗 파급효과 분석관: \"{event_name}\"에서 비롯되는 연쇄반응과 도미노 효과를 추적하고 있습니다.",
             status_callback,
         )
         result.chain_reaction = await self.chain_reaction_analyst.analyze(
             result.context, result.players, result.dynamics
         )
+        chain_summary = " → ".join(
+            [s.get("title", "") for s in result.chain_reaction.chain[:4]]
+        )
         await self._notify(
-            f"\U0001f517 Chain Reaction Analyst:\n"
-            f"  \uc778\uacfc \uc0ac\uc2ac {len(result.chain_reaction.chain)}\ub2e8\uacc4\n"
-            f"  \ucc28\ub2e8\uc810 {len(result.chain_reaction.break_points)}\uac74\n"
-            f"  \uc2e0\ub8b0\ub3c4: {result.chain_reaction.confidence_score}",
+            f"🔗 파급효과 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬을 분석하였습니다.\n"
+            f"  · {chain_summary}\n"
+            f"  · 차단점 {len(result.chain_reaction.break_points)}건 식별\n"
+            f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%",
             status_callback,
         )
 
         await self._notify(
-            "\U0001f3b2 Scenario Architect: \uc2dc\ub098\ub9ac\uc624 \uc124\uacc4 \uc911...",
+            f"🎲 시나리오 구조 분석관: 향후 전개 가능한 시나리오를 설계하고 있습니다.",
             status_callback,
         )
         result.scenarios = await self.scenario_architect.analyze(
@@ -213,16 +206,16 @@ class Orchestrator:
             [s.get("name", "") for s in result.scenarios.scenarios]
         )
         await self._notify(
-            f"\U0001f3b2 Scenario Architect:\n"
-            f"  \uc2dc\ub098\ub9ac\uc624: {scenario_names}\n"
-            f"  \uac10\uc2dc \uc2e0\ud638 {len(result.scenarios.watch_signals)}\uac74\n"
-            f"  \uc2e0\ub8b0\ub3c4: {result.scenarios.confidence_score}",
+            f"🎲 시나리오 구조 분석관: {len(result.scenarios.scenarios)}개 시나리오를 설계하였습니다.\n"
+            f"  · {scenario_names}\n"
+            f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
+            f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%",
             status_callback,
         )
 
-        # -- Phase 4: Report Synthesizer --
+        # -- Phase 4: 보고서 생성 --
         await self._notify(
-            "\U0001f4dd Report Synthesizer: \ubcf4\uace0\uc11c \uc0dd\uc131 \uc911...",
+            "📝 보고서를 생성하고 있습니다.",
             status_callback,
         )
 
@@ -230,12 +223,5 @@ class Orchestrator:
 
         report_url = await self.report_synthesizer.synthesize(result)
         result.report_url = report_url
-
-        # Build text report for Telegram
-        text_report = self._build_text_report(result)
-        await self._notify(
-            f"\u2705 \ubd84\uc11d \uc644\ub8cc!\n\n\ubcf4\uace0\uc11c: {report_url}\n\n```\n{text_report}\n```",
-            status_callback,
-        )
 
         return result

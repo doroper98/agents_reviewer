@@ -40,12 +40,12 @@ class TelegramBot:
         if update.message is None:
             return
         await update.message.reply_text(
-            "Event Analysis Team\n\n"
-            "Send me any event or situation to analyze.\n"
-            "I will coordinate 6 AI agents to produce a comprehensive report.\n\n"
-            "Commands:\n"
-            "/analyze <event> -- Start analysis\n"
-            "/start -- Show this message"
+            "📊 Event Analysis Team\n\n"
+            "분석할 사건이나 상황을 메시지로 보내주세요.\n"
+            "5명의 AI 분석관이 종합 보고서를 작성합니다.\n\n"
+            "명령어:\n"
+            "/analyze <주제> — 분석 시작\n"
+            "/start — 이 메시지 표시"
         )
 
     async def _analyze_command(
@@ -62,7 +62,7 @@ class TelegramBot:
         text = " ".join(context.args) if context.args else ""
         if not text:
             await update.message.reply_text(
-                "Usage: /analyze <event description>"
+                "사용법: /analyze <분석할 사건 또는 주제>"
             )
             return
 
@@ -90,13 +90,11 @@ class TelegramBot:
             return
 
         chat_id = update.effective_chat.id
-        msg = await update.message.reply_text(
-            "\U0001f50d \ubd84\uc11d \uc2dc\uc791 \uc911..."
-        )
 
         async def status_callback(status: str) -> None:
+            """Send each status as a NEW message (not edit)."""
             try:
-                await msg.edit_text(status)
+                await update.message.reply_text(status)
             except Exception:
                 pass
 
@@ -109,17 +107,20 @@ class TelegramBot:
 
             # Send text report as code block
             text_report = self.orchestrator._build_text_report(result)
-            summary_text = (
-                f"\u2705 \ubd84\uc11d \uc644\ub8cc\n\n"
-                f"\uc18c\uc694\uc2dc\uac04: {result.total_duration_seconds:.1f}s\n\n"
-                f"```\n{text_report}\n```"
-            )
-            await update.message.reply_text(summary_text)
+            # Split if too long for Telegram (4096 char limit)
+            report_msg = f"```\n{text_report}\n```"
+            if len(report_msg) > 4000:
+                # Split into chunks
+                chunks = [text_report[i:i+3900] for i in range(0, len(text_report), 3900)]
+                for chunk in chunks:
+                    await update.message.reply_text(f"```\n{chunk}\n```", parse_mode="Markdown")
+            else:
+                await update.message.reply_text(report_msg, parse_mode="Markdown")
 
             # Send report URL as clickable link
             if result.report_url and result.report_url.startswith("http"):
                 await update.message.reply_text(
-                    f"\U0001f4ca \ubcf4\uace0\uc11c: {result.report_url}"
+                    f"📊 보고서 링크: {result.report_url}"
                 )
 
             # Also send HTML file if available
@@ -129,16 +130,17 @@ class TelegramBot:
                     await update.message.reply_document(
                         document=f,
                         filename=os.path.basename(report_path),
-                        caption="\U0001f4ca Full Analysis Report",
+                        caption="📊 Full Analysis Report",
                     )
 
-            await msg.edit_text(
-                "\u2705 \uc644\ub8cc! \ubcf4\uace0\uc11c\uac00 \uc804\uc1a1\ub418\uc5c8\uc2b5\ub2c8\ub2e4."
+            duration = f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
+            await update.message.reply_text(
+                f"✅ 분석 완료 (소요시간: {duration}초)"
             )
 
         except Exception as e:
             logger.exception("Analysis failed")
-            await msg.edit_text(f"\u274c \ubd84\uc11d \uc2e4\ud328: {str(e)[:200]}")
+            await update.message.reply_text(f"❌ 분석 실패: {str(e)[:200]}")
 
     def create_app(self) -> Application:
         """Create and configure the Telegram bot application."""
