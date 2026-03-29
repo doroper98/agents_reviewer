@@ -18,7 +18,7 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v1.5.0"
+VERSION = "v1.9.2"
 
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
