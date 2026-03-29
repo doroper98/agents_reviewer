@@ -8,7 +8,7 @@ import logging
 import os
 import re
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 CSS_PATH = os.path.join(TEMPLATE_DIR, "report.css")
+KST = timezone(timedelta(hours=9))
 
 
 class ReportSynthesizer:
@@ -450,7 +451,7 @@ class ReportSynthesizer:
             result=result,
             css_content=css_content,
             chart_data_json=json.dumps(chart_data, ensure_ascii=False),
-            generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            generated_at=datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
             key_summary_items=key_summary_items,
             confidence_text=confidence_text,
             sections=narrative_plan.sections,
@@ -461,7 +462,7 @@ class ReportSynthesizer:
         output_dir = self.config.report_output_dir
         os.makedirs(output_dir, exist_ok=True)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(KST).strftime("%Y%m%d_%H%M%S")
         filename = f"analysis_{timestamp}.html"
         filepath = os.path.join(output_dir, filename)
 
