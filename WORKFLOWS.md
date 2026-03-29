@@ -18,7 +18,7 @@ Phase 3: [연쇄반응 분석관] 인과 사슬, 도미노 효과
 Phase 3.5: [시각화 분석관] SVG 관계도, Leaflet 지도, Canvas 차트
     ↓
 Phase 4: [보고서 합성관] Executive Summary 생성
-         → Jinja2 HTML 렌더링 (valentino-boop 6막 구조)
+         → Jinja2 HTML 렌더링 (6막 극장 6막 구조)
          → Cloudflare Pages 배포 (wrangler CLI)
     ↓
 [사용자] 텔레그램 수신:

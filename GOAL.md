@@ -2,7 +2,7 @@
 
 ## 1. Objective (목적)
 텔레그램 메시지로 사건/이벤트 분석을 지시하면, 7개 AI 에이전트 팀이 자동으로
-다각도 분석을 수행하고 valentino-boop 스타일 HTML 보고서로 결과를 반환하는 시스템.
+다각도 분석을 수행하고 6막 극장 스타일 HTML 보고서로 결과를 반환하는 시스템.
 
 ## 2. Requirements (요구사항)
 
@@ -22,7 +22,7 @@
 | REQ-AGT-005 | Agent | 향후 시나리오 분석관 — 4개 시나리오 + 감시 신호 | P0 | ✅ |
 | REQ-AGT-006 | Agent | 시각화 분석관 — SVG 관계도, Leaflet 지도, Canvas 차트 | P0 | ✅ |
 | REQ-AGT-007 | Agent | 보고서 합성관 — HTML 생성, Cloudflare 배포 | P0 | ✅ |
-| REQ-RPT-001 | Report | valentino-boop 6막 극장 구조 테마 | P0 | ✅ |
+| REQ-RPT-001 | Report | 6막 극장 6막 극장 구조 테마 | P0 | ✅ |
 | REQ-RPT-002 | Report | SVG/Canvas 시각화 (Plotly 제거) | P0 | ✅ |
 | REQ-RPT-003 | Report | Executive Summary 자동 생성 | P0 | ✅ |
 | REQ-RPT-004 | Report | 용어 정의(glossary) 포함 | P1 | ✅ |
@@ -44,7 +44,7 @@
 |----|------|-----------|------|
 | SC-01 | 텔레그램 메시지로 분석 시작 가능 | 수동 테스트 | ✅ |
 | SC-02 | 7개 에이전트 순차 실행 완료 | 로그 확인 | ✅ |
-| SC-03 | valentino-boop HTML 보고서 정상 생성 | 브라우저 확인 | ✅ |
+| SC-03 | 6막 극장 HTML 보고서 정상 생성 | 브라우저 확인 | ✅ |
 | SC-04 | 6막 구조 분석 내용 포함 | 내용 확인 | ✅ |
 | SC-05 | SVG/Canvas 시각화 정상 렌더링 | 브라우저 확인 | ✅ |
 | SC-06 | Cloudflare 배포 + 공유 링크 동작 | URL 접속 확인 | ✅ |
@@ -59,7 +59,7 @@
 - 오케스트레이터 파이프라인, 텔레그램 봇 연동, HTML 템플릿
 
 ### Phase 3: Refinement ✅
-- 9→7 에이전트 재구성, valentino-boop 스타일, CLI 모드 전환
+- 9→7 에이전트 재구성, 6막 극장 스타일, CLI 모드 전환
 - SVG 직접 생성, Canvas 차트, Leaflet 지도
 - 음슴체 프롬프트, 용어 정의, 모바일 반응형
 

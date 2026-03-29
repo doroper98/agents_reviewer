@@ -10,7 +10,7 @@
 - 텔레그램으로 분석 명령 수신 → 7개 AI 에이전트가 순차 분석 → HTML 보고서 생성 → Cloudflare Pages 배포
 - Claude Max 플랜 기반 (API 비용 없음, CLI 모드로 호출)
 - Oracle Cloud 무료 VM에서 24시간 운영
-- 보고서 스타일: valentino-boop 6막 극장 구조
+- 보고서 스타일: 6막 극장 6막 극장 구조
 
 ---
 
@@ -132,10 +132,10 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 
 ---
 
-## 7. 보고서 구조 (valentino-boop 스타일)
+## 7. 보고서 구조 (6막 극장 구조)
 
 - 6막 극장 구조 (ACT I ~ VI)
-- CSS: valentino-boop 디자인 시스템 (14px body, 960px 컨테이너, 11색상)
+- CSS: 6막 극장 디자인 시스템 (14px body, 960px 컨테이너, 11색상)
 - 폰트: Noto Serif KR (제목), Noto Sans KR (본문), JetBrains Mono (데이터)
 - 시각화: SVG 관계도/플로우차트, Leaflet 지도, Canvas 차트
 - Cloudflare 공유 링크 포함 (footer)
@@ -176,7 +176,7 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v0.2.1~4 | 2026-03-27 | config 파싱 버그 수정, CLI 옵션 수정, 순차 실행 전환 |
 | v0.3.0 | 2026-03-28 | 투자/윤리 에이전트 삭제, Plotly 차트, 이모지 상태 |
 | v0.3.1 | 2026-03-28 | 음슴체 프롬프트 전면 적용 |
-| v1.0.0 | 2026-03-28 | 완전 재구축 — 6막 valentino-boop 스타일, 5개 새 에이전트 |
+| v1.0.0 | 2026-03-28 | 완전 재구축 — 6막 6막 극장 구조, 5개 새 에이전트 |
 | v1.0.1 | 2026-03-28 | 에이전트 국문 이름, 메시지 추가 형태, % 신뢰도 |
 | v1.0.2 | 2026-03-28 | 보고서 footer 공유 링크, 모바일 최적화 |
 | v1.1.0 | 2026-03-28 | Opus 모델, AI 패턴 제거, 용어 정의(glossary) |
@@ -233,7 +233,7 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 
 ### 보고서
 
-- Plotly.js → Canvas 2D + SVG 직접 생성으로 변경 (valentino-boop 스타일)
+- Plotly.js → Canvas 2D + SVG 직접 생성으로 변경 (6막 극장 구조)
 - Mermaid.js → SVG 직접 생성으로 변경 (품질 향상)
 - `**` 마크다운 볼드 → 에이전트 출력에서 자동 strip
 - 섹션 명칭은 사용자 피드백으로 여러 번 변경됨 (상황판 → 상황인식 등)

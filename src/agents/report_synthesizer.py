@@ -1,4 +1,4 @@
-"""Report Synthesizer -- valentino-boop style HTML report with Canvas 2D charts."""
+"""Report Synthesizer -- HTML report generation with Canvas 2D charts."""
 
 from __future__ import annotations
 
@@ -17,10 +17,11 @@ from src.models import FullAnalysisResult
 logger = logging.getLogger(__name__)
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
+CSS_PATH = os.path.join(TEMPLATE_DIR, "report.css")
 
 
 class ReportSynthesizer:
-    """Generates valentino-boop style HTML reports from analysis results.
+    """Generates HTML reports from analysis results.
 
     Does NOT extend BaseAgent. Uses Jinja2 for HTML rendering,
     calls Claude CLI for executive summary generation,
@@ -211,11 +212,18 @@ class ReportSynthesizer:
         # Build chart data
         chart_data = self._build_chart_data(result)
 
+        # Load CSS content to inline into HTML
+        css_content = ""
+        if os.path.exists(CSS_PATH):
+            with open(CSS_PATH, "r", encoding="utf-8") as f:
+                css_content = f.read()
+
         env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
         template = env.get_template("report.html")
 
         html = template.render(
             result=result,
+            css_content=css_content,
             chart_data_json=json.dumps(chart_data, ensure_ascii=False),
             generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
@@ -277,7 +285,7 @@ class ReportSynthesizer:
             rows.append(f'<tr><td style="padding:10px 12px;border-bottom:1px solid #E4E0D8">'
                         f'<a href="{fname}" style="color:#1D6FA5;text-decoration:none;font-weight:600">{title}</a>'
                         f'</td><td style="padding:10px 12px;border-bottom:1px solid #E4E0D8;color:#6B6B6B;'
-                        f'font-family:JetBrains Mono,monospace;font-size:12px">{display_date}</td></tr>')
+                        f'font-size:12px">{display_date}</td></tr>')
 
         index_html = f'''<!DOCTYPE html>
 <html lang="ko">
@@ -285,7 +293,7 @@ class ReportSynthesizer:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Analysis Reports</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 body{{font-family:'Noto Sans KR',sans-serif;background:#FAFAF7;color:#111;margin:0;padding:0}}
 .wrap{{max-width:800px;margin:0 auto;padding:20px 14px}}

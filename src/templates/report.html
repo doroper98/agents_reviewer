@@ -4,88 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 {% if result.visuals and result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 {% endif %}
-<style>
-:root{
-  --bg:#FAFAF7;--card:#FFF;--accent:#FFF9EB;
-  --t1:#111;--t2:#444;--tm:#999;--brd:#E4E0D8;--brl:#EFECE5;
-  --red:#BD3227;--rl:#FDF0EE;--org:#C76B1E;--ol:#FEF4E8;
-  --blu:#1D6FA5;--bl:#EDF5FB;--grn:#1A7B3E;--gl:#EEF8F1;
-  --gld:#9E8A15;--gdl:#FEFBE8;--nvy:#151D26;--cr:#7A2018;--ub:#14527A;
-  --sh:0 1px 4px rgba(0,0,0,.05);--r:6px;--rl2:10px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;line-height:1.75}
-.hero{background:var(--nvy);color:#fff;padding:48px 16px 32px;text-align:center}
-.hero h1{font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,38px);font-weight:900;line-height:1.3;margin-bottom:6px}
-.hero-sub{font-size:11px;color:rgba(255,255,255,.55);max-width:540px;margin:0 auto 12px;line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
-.hero-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:10px}
-.hero-tags span{background:rgba(255,255,255,.08);padding:3px 10px;border-radius:20px;color:rgba(255,255,255,.5)}
-.nav{position:sticky;top:0;z-index:100;background:rgba(250,250,247,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--brd);overflow-x:auto}
-.nav-in{display:flex;white-space:nowrap;padding:0 4px}
-.nav a{display:block;padding:10px 11px;font-size:10px;font-weight:500;color:var(--tm);text-decoration:none;border-bottom:2px solid transparent}
-.nav a.on{color:var(--t1);border-bottom-color:var(--nvy)}
-.w{max-width:960px;margin:0 auto;padding:0 14px}
-section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
-.lb{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:4px}
-.tt{font-family:'Noto Serif KR',serif;font-size:clamp(18px,4vw,26px);font-weight:900;line-height:1.35;margin-bottom:4px}
-.ds{font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.8;max-width:640px}
-.cd{background:var(--card);border:1px solid var(--brl);border-radius:var(--rl2);padding:16px;box-shadow:var(--sh)}
-.co{background:var(--accent);border-left:3px solid var(--gld);border-radius:0 var(--r) var(--r) 0;padding:12px 14px;margin:16px 0}
-.co b{font-size:12px;display:block;margin-bottom:2px}
-.co p{font-size:11px;color:var(--t2);line-height:1.75}
-.mono{font-family:'JetBrains Mono',monospace}
-.g2{display:grid;grid-template-columns:1fr;gap:10px}
-@media(min-width:540px){.g2{grid-template-columns:1fr 1fr}}
-.cue{text-align:center;padding:20px 0 0;font-family:'Noto Serif KR',serif;font-size:13px;color:var(--t2);font-style:italic}
-.pl{background:var(--card);border:1px solid var(--brl);border-radius:var(--rl2);padding:14px;box-shadow:var(--sh);position:relative;overflow:hidden}
-.pl::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.pl.ex::before{background:var(--red)}.pl.hi::before{background:var(--org)}.pl.md::before{background:var(--gld)}.pl.lo::before{background:var(--grn)}
-.pl-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.pl-f{font-size:20px}.pl-n{font-weight:700;font-size:14px}
-.bg{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:3px}
-.bg.ex{background:#FADBD8;color:var(--red)}.bg.hi{background:#FDEBD0;color:var(--org)}.bg.md{background:#FEF9E7;color:var(--gld)}.bg.lo{background:#E8F8F0;color:var(--grn)}
-.pl-s{font-size:10px;color:var(--t2);line-height:1.6;margin-bottom:6px}
-.pl-t{font-size:10px;padding:8px;background:var(--bg);border-radius:var(--r);line-height:1.6}
-.fl{display:flex;flex-direction:column;align-items:center;gap:0}
-.fn{background:var(--card);border:2px solid var(--brd);border-radius:var(--r);padding:10px 14px;text-align:center;width:100%;max-width:440px}
-.fn strong{font-size:12px}.fn span{font-size:10px;color:var(--t2);display:block;margin-top:1px}
-.fa{width:2px;height:14px;background:var(--brd);position:relative}.fa::after{content:'▼';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:7px;color:var(--tm)}
-.mx{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;border-radius:var(--rl2);overflow:hidden;border:1px solid var(--brl);background:var(--card)}
-.mx th{background:var(--nvy);color:#fff;padding:10px 8px;font-size:10px;font-weight:600;text-align:left}
-.mx td{padding:10px 8px;border-bottom:1px solid var(--brl);vertical-align:top;line-height:1.6}
-.mx tr:last-child td{border-bottom:none}
-.wg{display:grid;grid-template-columns:1fr;gap:8px}
-@media(min-width:540px){.wg{grid-template-columns:1fr 1fr}}
-.wi{display:flex;gap:8px;padding:10px 12px;background:var(--card);border:1px solid var(--brl);border-radius:var(--r);box-shadow:var(--sh)}
-.wi-i{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.wi h4{font-size:11px;font-weight:700;margin-bottom:1px}.wi p{font-size:10px;color:var(--t2);line-height:1.5}
-.tc{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.85}
-.gb{margin-bottom:8px}
-.gb-l{font-size:11px;display:flex;justify-content:space-between;margin-bottom:3px}
-.gb-t{height:20px;background:#F0EDE6;border-radius:3px;overflow:hidden}
-.gb-f{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:600;color:#fff;font-family:'JetBrains Mono',monospace}
-.ft{background:var(--nvy);color:rgba(255,255,255,.4);padding:20px 14px;text-align:center;font-size:10px;line-height:1.8}
-.ft a{color:rgba(255,255,255,.6);text-decoration:underline}
-.fi{opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}.fi.v{opacity:1;transform:none}
-.terms{margin-top:16px;padding:12px 14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--brl);font-size:10px;line-height:1.7;color:var(--t2)}
-.terms b{color:var(--t1);font-size:10px}
-.radar-wrap{display:flex;justify-content:center;margin:20px 0}
-#radarCanvas{max-width:100%}
-@media(max-width:700px){.g2{grid-template-columns:1fr}.hero h1{font-size:22px}.mx{font-size:10px}}
-@media(max-width:540px){.hero{padding:32px 12px 24px}section{padding:28px 0 20px}.pl,.cd{padding:12px}}
-</style>
+<style>{{ css_content }}</style>
 </head>
 <body>
 
 <!-- HERO -->
 <header class="hero">
-  <div class="w">
+  <div class="container">
     <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:8px">Event Analysis Report</div>
     <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
     <p class="hero-sub">{{ result.executive_summary[:150] if result.executive_summary else '' }}</p>
@@ -98,27 +28,27 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 </header>
 
 <!-- NAV -->
-<nav class="nav"><div class="nav-in">
+<nav class="nav"><div class="nav-inner">
   <a href="#s1">상황인식</a><a href="#s2">이해관계자</a><a href="#s3">상호작용</a><a href="#s4">연쇄반응</a><a href="#s5">향후 시나리오</a><a href="#s6">시그널</a>
 </div></nav>
 
 <!-- ===== VISUAL SUMMARY ===== -->
 {% if result.visuals %}
-<section style="padding:32px 0 24px;border-bottom:1px solid var(--brl)">
-  <div class="w">
+<section style="padding:32px 0 24px;border-bottom:1px solid var(--border-light)">
+  <div class="container">
     {% if result.visuals.hero_title %}
-    <div class="lb">VISUAL SUMMARY</div>
-    <h2 class="tt">{{ result.visuals.hero_title }}</h2>
+    <div class="section-label">VISUAL SUMMARY</div>
+    <h2 class="section-title">{{ result.visuals.hero_title }}</h2>
     {% endif %}
 
     <!-- Key Metrics Row -->
     {% if result.visuals.key_metrics %}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:20px">
       {% for m in result.visuals.key_metrics %}
-      <div style="background:var(--card);border:1px solid var(--brl);border-radius:var(--r);padding:12px;text-align:center;box-shadow:var(--sh)">
+      <div style="background:var(--card);border:1px solid var(--border-light);border-radius:var(--radius);padding:12px;text-align:center;box-shadow:var(--shadow)">
         <div style="font-size:16px;margin-bottom:4px">{{ m.icon or '📊' }}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:{{ m.color or 'var(--t1)' }}">{{ m.value }}</div>
-        <div style="font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-top:2px">{{ m.label }}</div>
+        <div style="font-size:16px;font-weight:700;color:{{ m.color or 'var(--text-primary)' }}">{{ m.value }}</div>
+        <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px">{{ m.label }}</div>
       </div>
       {% endfor %}
     </div>
@@ -126,14 +56,14 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 
     <!-- SVG Relationship Map / Diagram -->
     {% if result.visuals.svg_content %}
-    <div class="cd" style="margin-bottom:14px;padding:14px;overflow-x:auto">
+    <div class="card" style="margin-bottom:14px;padding:14px;overflow-x:auto">
       {{ result.visuals.svg_content | safe }}
     </div>
     {% endif %}
 
     <!-- Leaflet Map -->
     {% if result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
-    <div class="cd" style="margin-bottom:14px;padding:12px">
+    <div class="card" style="margin-bottom:14px;padding:12px">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px">전구도</div>
       <div id="visual-map" style="width:100%;height:380px;border-radius:8px"></div>
     </div>
@@ -141,7 +71,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 
     <!-- Mermaid Diagram -->
     {% if result.visuals.mermaid_code %}
-    <div class="cd" style="margin-bottom:14px;padding:14px">
+    <div class="card" style="margin-bottom:14px;padding:14px">
       <div class="mermaid">{{ result.visuals.mermaid_code }}</div>
     </div>
     {% endif %}
@@ -150,7 +80,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
     {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type == 'tradingview' and result.visuals.chart_config.tradingview_symbols %}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:14px">
       {% for tv in result.visuals.chart_config.tradingview_symbols %}
-      <div class="cd" style="padding:10px;overflow:hidden">
+      <div class="card" style="padding:10px;overflow:hidden">
         <div style="font-weight:700;font-size:11px;margin-bottom:6px">{{ tv.label or tv.symbol }}</div>
         <div id="tv-chart-{{ loop.index }}" style="height:300px"></div>
       </div>
@@ -160,7 +90,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 
     <!-- Canvas Chart (non-TradingView) -->
     {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type != 'tradingview' %}
-    <div class="cd" style="margin-bottom:14px;padding:14px">
+    <div class="card" style="margin-bottom:14px;padding:14px">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px">{{ result.visuals.chart_config.title or '차트' }}</div>
       <canvas id="visual-chart" style="width:100%;height:220px"></canvas>
     </div>
@@ -170,42 +100,42 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 </section>
 {% endif %}
 
-<main class="w">
+<main class="container">
 
 <!-- ACT I -->
 {% if result.context %}
-<section id="s1" class="fi">
-  <div class="lb">ACT I — THE BOARD</div>
-  <h2 class="tt">상황인식</h2>
+<section id="s1" class="fade-in">
+  <div class="section-label">ACT I — THE BOARD</div>
+  <h2 class="section-title">상황인식</h2>
   {% if result.context.summary %}
-  <p class="ds">{{ result.context.summary }}</p>
+  <p class="section-desc">{{ result.context.summary }}</p>
   {% endif %}
 
   {% if result.context.background %}
-  <div class="cd" style="margin-bottom:14px">
+  <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">배경</div>
-    <div style="font-size:11px;color:var(--t2);line-height:1.7">{{ result.context.background }}</div>
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.context.background }}</div>
   </div>
   {% endif %}
 
   {% if result.context.key_figures %}
   <div style="margin-bottom:14px">
     {% for fig in result.context.key_figures %}
-    <div class="gb">
-      <div class="gb-l"><span>{{ fig.label }}</span><span class="mono">{{ fig.value }}</span></div>
-      {% if fig.context %}<div style="font-size:9px;color:var(--tm)">{{ fig.context }}</div>{% endif %}
+    <div class="gauge-bar">
+      <div class="gauge-label"><span>{{ fig.label }}</span><span>{{ fig.value }}</span></div>
+      {% if fig.context %}<div style="font-size:9px;color:var(--text-muted)">{{ fig.context }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
   {% if result.context.timeline %}
-  <div class="cd">
+  <div class="card">
     <div style="font-weight:700;font-size:12px;margin-bottom:10px">타임라인</div>
-    <div class="tc">
+    <div class="timeline-content">
       {% for item in result.context.timeline %}
-      <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;min-height:44px;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
-        <span style="color:var(--blu);font-weight:600;min-width:90px;flex-shrink:0;line-height:1.7">{{ item.date }}</span>
+      <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;min-height:44px;{% if not loop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
+        <span style="color:var(--blue);font-weight:600;min-width:90px;flex-shrink:0;line-height:1.7">{{ item.date }}</span>
         <span style="line-height:1.7">{{ item.event }}{% if item.impact %}<br><span style="color:var(--red);font-weight:600">→ {{ item.impact }}</span>{% endif %}</span>
       </div>
       {% endfor %}
@@ -219,31 +149,31 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   </div>
   {% endif %}
 
-  <p class="cue">상황인식을 확인했다. 이 사건에 관여하는 핵심 행위자들은 누구인가.</p>
+  <p class="act-cue">상황인식을 확인했다. 이 사건에 관여하는 핵심 행위자들은 누구인가.</p>
 </section>
 {% endif %}
 
 <!-- ACT II -->
 {% if result.players and result.players.players %}
-<section id="s2" class="fi">
-  <div class="lb">ACT II — THE PLAYERS</div>
-  <h2 class="tt">이해관계자</h2>
+<section id="s2" class="fade-in">
+  <div class="section-label">ACT II — THE PLAYERS</div>
+  <h2 class="section-title">이해관계자</h2>
   {% if result.players.power_dynamics %}
-  <p class="ds">{{ result.players.power_dynamics }}</p>
+  <p class="section-desc">{{ result.players.power_dynamics }}</p>
   {% endif %}
 
-  <div class="g2">
+  <div class="grid-2">
     {% for player in result.players.players %}
-    <div class="pl {% if player.risk_level == '극심' %}ex{% elif player.risk_level == '높음' %}hi{% elif player.risk_level == '보통' %}md{% else %}lo{% endif %}">
-      <div class="pl-h">
-        <span class="pl-f">{{ player.emoji or '🔹' }}</span>
-        <span class="pl-n">{{ player.name }}</span>
-        <span class="bg {% if player.risk_level == '극심' %}ex{% elif player.risk_level == '높음' %}hi{% elif player.risk_level == '보통' %}md{% else %}lo{% endif %}">{{ player.role_tag or player.risk_level }}</span>
+    <div class="player-card {% if player.risk_level == '극심' %}extreme{% elif player.risk_level == '높음' %}high{% elif player.risk_level == '보통' %}medium{% else %}low{% endif %}">
+      <div class="player-header">
+        <span class="player-emoji">{{ player.emoji or '🔹' }}</span>
+        <span class="player-name">{{ player.name }}</span>
+        <span class="badge {% if player.risk_level == '극심' %}extreme{% elif player.risk_level == '높음' %}high{% elif player.risk_level == '보통' %}medium{% else %}low{% endif %}">{{ player.role_tag or player.risk_level }}</span>
       </div>
       {% if player.position %}
-      <div class="pl-s">{{ player.position }}</div>
+      <div class="player-summary">{{ player.position }}</div>
       {% endif %}
-      <div class="pl-t">
+      <div class="player-detail">
         {% if player.strategy %}<strong>전략:</strong> {{ player.strategy }}<br>{% endif %}
         {% if player.vulnerability %}<strong>취약점:</strong> {{ player.vulnerability }}{% endif %}
       </div>
@@ -252,10 +182,10 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   </div>
 
   {% if result.players.alliances %}
-  <div class="cd" style="margin-top:14px">
+  <div class="card" style="margin-top:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:6px">관계 구도</div>
     {% for a in result.players.alliances %}
-    <div style="font-size:10px;line-height:1.7;padding:3px 0">{{ a.group|join(' — ') }}: <span style="color:var(--t2)">{{ a.nature }}</span></div>
+    <div style="font-size:10px;line-height:1.7;padding:3px 0">{{ a.group|join(' — ') }}: <span style="color:var(--text-secondary)">{{ a.nature }}</span></div>
     {% endfor %}
   </div>
   {% endif %}
@@ -264,46 +194,46 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
     <b>용어:</b> 극심 = 가장 높은 위험 · 높음 = 높은 위험 · 보통 = 보통 위험 · 낮음 = 낮은 위험
   </div>
 
-  <p class="cue">행위자들의 패를 확인했다. 이들 사이의 구조적 상호작용은 어떤 형태인가.</p>
+  <p class="act-cue">행위자들의 패를 확인했다. 이들 사이의 구조적 상호작용은 어떤 형태인가.</p>
 </section>
 {% endif %}
 
 <!-- ACT III -->
 {% if result.dynamics %}
-<section id="s3" class="fi">
-  <div class="lb">ACT III — THE DYNAMICS</div>
-  <h2 class="tt">구조 및 상호작용</h2>
+<section id="s3" class="fade-in">
+  <div class="section-label">ACT III — THE DYNAMICS</div>
+  <h2 class="section-title">구조 및 상호작용</h2>
   {% if result.dynamics.summary %}
-  <p class="ds">{{ result.dynamics.summary }}</p>
+  <p class="section-desc">{{ result.dynamics.summary }}</p>
   {% endif %}
 
   {% if result.dynamics.framework %}
-  <div class="cd" style="margin-bottom:14px">
+  <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">분석 프레임워크: {{ result.dynamics.framework }}</div>
     {% if result.dynamics.core_tension %}
-    <div style="font-size:11px;color:var(--t2);line-height:1.7">{{ result.dynamics.core_tension }}</div>
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.dynamics.core_tension }}</div>
     {% endif %}
   </div>
   {% endif %}
 
   {% if result.dynamics.asymmetries %}
-  <div class="cd" style="margin-bottom:14px">
+  <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">비대칭 구조</div>
     {% for asym in result.dynamics.asymmetries %}
-    <div style="font-size:10px;line-height:1.7;padding:6px 0;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
+    <div style="font-size:10px;line-height:1.7;padding:6px 0;{% if not loop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
       <strong>{{ asym.type }}</strong>: {{ asym.description }}
-      {% if asym.advantage_to %}<br><span style="color:var(--blu)">유리: {{ asym.advantage_to }}</span>{% endif %}
+      {% if asym.advantage_to %}<br><span style="color:var(--blue)">유리: {{ asym.advantage_to }}</span>{% endif %}
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
   {% if result.dynamics.tipping_points %}
-  <div class="cd" style="margin-bottom:14px">
+  <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">전환점</div>
-    <div class="tc">
+    <div class="timeline-content">
       {% for tp in result.dynamics.tipping_points %}
-      <div style="display:flex;gap:8px;padding:4px 0;{% if not loop.last %}border-bottom:1px solid var(--brl);{% endif %}">
+      <div style="display:flex;gap:8px;padding:4px 0;{% if not loop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
         <span style="color:var(--red);font-weight:600;min-width:80px">{{ tp.timeline }}</span>
         <span>{{ tp.condition }} → {{ tp.consequence }}</span>
       </div>
@@ -313,14 +243,14 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   {% endif %}
 
   {% if result.dynamics.why_unresolved %}
-  <div class="cd" style="margin-bottom:14px">
+  <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:6px">왜 해소되지 않는가</div>
-    <div style="font-size:11px;color:var(--t2);line-height:1.7">{{ result.dynamics.why_unresolved }}</div>
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.dynamics.why_unresolved }}</div>
   </div>
   {% endif %}
 
   {% if result.dynamics.key_insight %}
-  <div class="co">
+  <div class="callout">
     <b>핵심 통찰</b>
     <p>{{ result.dynamics.key_insight }}</p>
   </div>
@@ -330,33 +260,33 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
     <b>용어:</b> 비대칭 구조 = Asymmetry · 전환점 = Tipping Point · 상호작용 = Power Dynamics
   </div>
 
-  <p class="cue">구조적 상호작용을 파악했다. 이 상호작용이 만들어내는 연쇄반응은 어디까지 이어지는가.</p>
+  <p class="act-cue">구조적 상호작용을 파악했다. 이 상호작용이 만들어내는 연쇄반응은 어디까지 이어지는가.</p>
 </section>
 {% endif %}
 
 <!-- ACT IV -->
 {% if result.chain_reaction and result.chain_reaction.chain %}
-<section id="s4" class="fi">
-  <div class="lb">ACT IV — THE CHAIN REACTION</div>
-  <h2 class="tt">연쇄반응</h2>
+<section id="s4" class="fade-in">
+  <div class="section-label">ACT IV — THE CHAIN REACTION</div>
+  <h2 class="section-title">연쇄반응</h2>
   {% if result.chain_reaction.summary %}
-  <p class="ds">{{ result.chain_reaction.summary }}</p>
+  <p class="section-desc">{{ result.chain_reaction.summary }}</p>
   {% endif %}
 
-  <div class="fl">
+  <div class="flow-list">
     {% for step in result.chain_reaction.chain %}
-    <div class="fn" style="border-color:{% if step.severity == 'HIGH' %}var(--red){% elif step.severity == 'MEDIUM' %}var(--org){% else %}var(--gld){% endif %}">
+    <div class="flow-node" style="border-color:{% if step.severity == 'HIGH' %}var(--red){% elif step.severity == 'MEDIUM' %}var(--orange){% else %}var(--gold){% endif %}">
       <strong>{{ loop.index }}. {{ step.title }}</strong>
       <span>{{ step.description }}</span>
-      {% if step.affected %}<span style="font-size:9px;color:var(--tm);margin-top:2px">영향: {{ step.affected|join(', ') }}</span>{% endif %}
+      {% if step.affected %}<span style="font-size:9px;color:var(--text-muted);margin-top:2px">영향: {{ step.affected|join(', ') }}</span>{% endif %}
     </div>
-    {% if not loop.last %}<div class="fa"></div>{% endif %}
+    {% if not loop.last %}<div class="flow-arrow"></div>{% endif %}
     {% endfor %}
   </div>
 
   {% if result.chain_reaction.break_points %}
-  <div class="cd" style="margin-top:14px">
-    <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--grn)">차단 가능 지점</div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--green)">차단 가능 지점</div>
     {% for bp in result.chain_reaction.break_points %}
     <div style="font-size:10px;line-height:1.7;padding:4px 0">단계 {{ bp.at_step }}: {{ bp.condition }}</div>
     {% endfor %}
@@ -364,40 +294,40 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   {% endif %}
 
   {% if result.chain_reaction.worst_case %}
-  <div class="co">
+  <div class="callout">
     <b>최악의 경우</b>
     <p>{{ result.chain_reaction.worst_case }}</p>
   </div>
   {% endif %}
 
-  <p class="cue">연쇄반응의 경로를 추적했다. 이 상황이 어떤 결말로 향하는가.</p>
+  <p class="act-cue">연쇄반응의 경로를 추적했다. 이 상황이 어떤 결말로 향하는가.</p>
 </section>
 {% endif %}
 
 <!-- ACT V -->
 {% if result.scenarios and result.scenarios.scenarios %}
-<section id="s5" class="fi">
-  <div class="lb">ACT V — THE SCENARIOS</div>
-  <h2 class="tt">향후 시나리오</h2>
+<section id="s5" class="fade-in">
+  <div class="section-label">ACT V — THE SCENARIOS</div>
+  <h2 class="section-title">향후 시나리오</h2>
   {% if result.scenarios.base_case_summary %}
-  <p class="ds">{{ result.scenarios.base_case_summary }}</p>
+  <p class="section-desc">{{ result.scenarios.base_case_summary }}</p>
   {% elif result.scenarios.summary %}
-  <p class="ds">{{ result.scenarios.summary }}</p>
+  <p class="section-desc">{{ result.scenarios.summary }}</p>
   {% endif %}
 
   <div style="overflow-x:auto">
-  <table class="mx">
+  <table class="data-table">
     <thead><tr><th style="width:20%">시나리오</th><th style="width:35%">전개 경로</th><th style="width:10%">확률</th><th style="width:35%">영향</th></tr></thead>
     <tbody>
     {% for sc in result.scenarios.scenarios %}
     <tr>
-      <td><strong>{{ loop.index }}. {{ sc.name }}</strong><br>{% if sc.tag %}<span style="font-size:9px;color:{% if sc.tag == '최선' %}var(--grn){% elif sc.tag == '기본선' or sc.tag == '기본' %}var(--gld){% elif sc.tag == '악화' %}var(--org){% else %}var(--red){% endif %}">{{ sc.tag }}</span>{% endif %}</td>
+      <td><strong>{{ loop.index }}. {{ sc.name }}</strong><br>{% if sc.tag %}<span style="font-size:9px;color:{% if sc.tag == '최선' %}var(--green){% elif sc.tag == '기본선' or sc.tag == '기본' %}var(--gold){% elif sc.tag == '악화' %}var(--orange){% else %}var(--red){% endif %}">{{ sc.tag }}</span>{% endif %}</td>
       <td style="font-size:10px">{{ sc.description }}</td>
-      <td class="mono" style="font-size:11px;font-weight:600">{{ sc.probability }}</td>
+      <td style="font-size:11px;font-weight:600">{{ sc.probability }}</td>
       <td style="font-size:10px">
         {% if sc.impact_by_player %}
           {% for imp in sc.impact_by_player %}
-          <span style="color:{% if imp.sentiment == 'positive' %}var(--grn){% elif imp.sentiment == 'negative' %}var(--red){% else %}var(--gld){% endif %}">{{ imp.player }}: {{ imp.impact }}</span><br>
+          <span style="color:{% if imp.sentiment == 'positive' %}var(--green){% elif imp.sentiment == 'negative' %}var(--red){% else %}var(--gold){% endif %}">{{ imp.player }}: {{ imp.impact }}</span><br>
           {% endfor %}
         {% endif %}
       </td>
@@ -408,7 +338,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
   </div>
 
   {% if result.scenarios.summary %}
-  <div class="co" style="margin-top:14px">
+  <div class="callout" style="margin-top:14px">
     <b>균형 분석</b>
     <p>{{ result.scenarios.summary }}</p>
   </div>
@@ -418,15 +348,15 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 
 <!-- ACT VI -->
 {% if result.scenarios and result.scenarios.watch_signals %}
-<section id="s6" class="fi">
-  <div class="lb">ACT VI — THE SIGNALS</div>
-  <h2 class="tt">지켜봐야 할 시그널</h2>
-  <p class="ds">현재의 기본 전제를 무효화하는 조건과, 어떤 시나리오로 이동하는지를 판별하는 핵심 시그널.</p>
+<section id="s6" class="fade-in">
+  <div class="section-label">ACT VI — THE SIGNALS</div>
+  <h2 class="section-title">지켜봐야 할 시그널</h2>
+  <p class="section-desc">현재의 기본 전제를 무효화하는 조건과, 어떤 시나리오로 이동하는지를 판별하는 핵심 시그널.</p>
 
-  <div class="wg">
+  <div class="signal-grid">
     {% for ws in result.scenarios.watch_signals %}
-    <div class="wi">
-      <div class="wi-i" style="background:var(--ol)">{{ ws.icon or '📊' }}</div>
+    <div class="signal-item">
+      <div class="signal-icon" style="background:var(--orange-light)">{{ ws.icon or '📊' }}</div>
       <div>
         <h4>{{ ws.signal }}</h4>
         <p>{{ ws.description }}{% if ws.indicates %} → {{ ws.indicates }}{% endif %}</p>
@@ -438,9 +368,9 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 {% endif %}
 
 <!-- CONFIDENCE RADAR -->
-<section class="fi">
-  <div class="lb">CONFIDENCE</div>
-  <h2 class="tt">신뢰도 레이더</h2>
+<section class="fade-in">
+  <div class="section-label">CONFIDENCE</div>
+  <h2 class="section-title">신뢰도 레이더</h2>
   <div class="radar-wrap">
     <canvas id="radarCanvas" width="340" height="340"></canvas>
   </div>
@@ -449,7 +379,7 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 </main>
 
 <!-- FOOTER -->
-<footer class="ft">
+<footer class="footer">
   {% if result.context and result.context.sources %}
   <div style="max-width:600px;margin:0 auto 8px">{{ result.context.sources|join(' · ') }}</div>
   {% endif %}
@@ -464,8 +394,8 @@ section{padding:40px 0 32px;border-bottom:1px solid var(--brl)}
 <!-- SCRIPTS -->
 <script>
 /* IntersectionObserver for fade-in */
-var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('v')})},{threshold:.06});
-document.querySelectorAll('.fi').forEach(function(el){obs.observe(el)});
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.06});
+document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 
 /* Scroll-synced nav */
 var ss=document.querySelectorAll('section[id]'),ns=document.querySelectorAll('.nav a');
@@ -503,7 +433,7 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
 
   /* Axes + Labels */
   ctx.font='500 11px "Noto Sans KR",sans-serif';
-  ctx.fillStyle='var(--t2)';
+  ctx.fillStyle='#444';
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(var i=0;i<n;i++){
     var a=offset+i*step;
@@ -527,7 +457,7 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
   ctx.strokeStyle='#1D6FA5';ctx.lineWidth=2;ctx.stroke();
 
   /* Data points + value text */
-  ctx.font='600 10px "JetBrains Mono",monospace';
+  ctx.font='600 10px "Noto Sans KR",sans-serif';
   for(var i=0;i<n;i++){
     var a=offset+i*step;
     var v=Math.max(0,Math.min(1,values[i]));
@@ -557,7 +487,6 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
 
   (cfg.lines||[]).forEach(function(l){
     L.polyline([l.from,l.to],{color:l.color||'#BD3227',weight:2,opacity:0.8}).addTo(map);
-    // Arrowhead
     var dx=l.to[1]-l.from[1],dy=l.to[0]-l.from[0],ang=Math.atan2(dx,dy),sz=0.5;
     var t=l.to,l1=[t[0]-sz*Math.cos(ang-0.4),t[1]-sz*Math.sin(ang-0.4)],l2=[t[0]-sz*Math.cos(ang+0.4),t[1]-sz*Math.sin(ang+0.4)];
     L.polygon([t,l1,l2],{color:l.color||'#BD3227',fillColor:l.color||'#BD3227',fillOpacity:0.8,weight:1}).addTo(map);
@@ -634,7 +563,7 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
       var y = p.t + ch - (yv/maxVal)*ch;
       ctx.strokeStyle='#EFECE5';ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(p.l+cw,y);ctx.stroke();
-      ctx.fillStyle='#999';ctx.font='10px "JetBrains Mono"';ctx.textAlign='right';
+      ctx.fillStyle='#999';ctx.font='10px "Noto Sans KR"';ctx.textAlign='right';
       ctx.fillText(Math.round(yv),p.l-6,y+3);
     }
 
@@ -651,7 +580,7 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
       ctx.fillStyle='#444';ctx.font='10px "Noto Sans KR"';ctx.textAlign='center';
       ctx.fillText(label, x+barW/2, p.t+ch+14);
       // Value
-      ctx.fillStyle='#111';ctx.font='bold 10px "JetBrains Mono"';
+      ctx.fillStyle='#111';ctx.font='bold 10px "Noto Sans KR"';
       ctx.fillText(values[i], x+barW/2, y-6);
     });
   }

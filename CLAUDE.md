@@ -3,14 +3,14 @@
 ## Project Overview
 텔레그램을 통해 이벤트/사건 분석 명령을 수신하고, 7개의 전문 AI 에이전트가
 협업하여 상황인식, 이해관계자, 구조분석, 연쇄반응, 시나리오, 시각화 관점에서
-종합 분석 후 valentino-boop 스타일 HTML 보고서를 생성하는 시스템.
+종합 분석 후 6막 극장 구조 HTML 보고서를 생성하는 시스템.
 
 ## Tech Stack
 - Language: Python 3.11+
 - AI: Claude Code CLI (claude-opus-4-6, Max 플랜 무료 모드) + 웹 검색
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
-- Report: Jinja2 HTML + valentino-boop CSS (6막 극장 구조)
+- Report: Jinja2 HTML + 별도 CSS (6막 극장 구조)
 - Visualization: SVG 직접 생성, Leaflet 지도, Canvas 2D 차트
 - Hosting: Cloudflare Pages (wrangler CLI 배포)
 - Infra: Oracle Cloud VM (무료 티어)
@@ -36,16 +36,10 @@
 ## Canvas 차트 제작 기준
 - 참조 구현: `prototype_gold_chart.html`
 - 해상도: 최소 3x DPR
-- 폰트 규칙 (JetBrains Mono 사용 금지):
-  - 가격/숫자: Noto Serif KR bold (예: $4,460)
-  - 라벨/설명: Noto Sans KR (예: 현재가, Jan, 이란 전쟁 개시)
-  - 제목: Noto Serif KR 900
+- 폰트: Noto Serif KR (가격/숫자), Noto Sans KR (라벨/설명/제목)
 - 가격 라벨: 스팟 위 20px, 겹침 시 자동 상향 조정
-- 이벤트 라벨: 차트 하단, -45도 좌하향, 오른쪽 정렬, 6글자 줄바꿈
+- 이벤트 라벨: 차트 하단, -45도 좌하향, 6글자 줄바꿈
 - 곡선: quadratic bezier, 구간별 색상 분리
-- 호버: 크로스헤어 + 네이비 툴팁
-- 여백: right 70px+, bottom 80px+
-- 범례: HTML footer 가운데 정렬, canvas 내부 중복 금지
 
 ## Execution Rules
 1. 모든 코드 변경 후 `python -m py_compile` 검증
@@ -59,6 +53,6 @@
 ## Key Directories
 - `src/agents/` — 7개 전문 에이전트 정의
 - `src/templates/` — HTML 보고서 템플릿 (valentino-boop 스타일)
-- `src/style_guide/` — CSS 테마
+- `src/templates/report.css` — 보고서 CSS
 - `docs_canonical/` — 정규 문서 4종
 - `reports/` — 생성된 HTML 보고서 출력 디렉토리

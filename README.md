@@ -2,7 +2,7 @@
 
 텔레그램을 통해 이벤트/사건 분석 명령을 수신하고, 7개의 전문 AI 에이전트가
 협업하여 **상황인식, 이해관계자, 구조분석, 연쇄반응, 시나리오, 시각화** 관점에서
-종합 분석 후 valentino-boop 스타일 HTML 보고서를 생성하는 시스템.
+종합 분석 후 6막 극장 구조 HTML 보고서를 생성하는 시스템.
 
 ## Architecture
 
@@ -83,10 +83,10 @@ python -m src.main
 - 분석 중 에이전트별 실시간 상태 메시지
 - 최종: 코드블록 텍스트 보고서 + HTML 파일 + Cloudflare 공유 링크
 
-## Report Design (valentino-boop 스타일)
+## Report Design (6막 극장 구조)
 
 - 6막 극장 구조 (ACT I ~ VI)
-- CSS: valentino-boop 디자인 시스템 (14px body, 960px 컨테이너)
+- CSS: 6막 극장 디자인 시스템 (14px body, 960px 컨테이너)
 - 폰트: Noto Serif KR (제목/가격), Noto Sans KR (본문/라벨)
 - 시각화: SVG 관계도/플로우차트, Leaflet 지도, Canvas 2D 차트
 - 모바일 반응형 (540px, 700px breakpoints)
@@ -120,10 +120,9 @@ agents_reviewer/
 │   │   ├── scenario_architect.py
 │   │   ├── visual_analyst.py
 │   │   └── report_synthesizer.py
-│   ├── templates/         # HTML 보고서 템플릿
-│   │   └── report.html
-│   └── style_guide/       # CSS 테마
-│       └── soft-brutalism.css
+│   └── templates/         # HTML 보고서 템플릿
+│       ├── report.html
+│       └── report.css
 ├── reports/               # 생성된 보고서 (git ignored)
 └── prototype_gold_chart.html  # Canvas 차트 참조 구현
 ```
