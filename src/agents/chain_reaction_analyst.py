@@ -55,6 +55,7 @@ class ChainReactionAnalyst(BaseAgent):
             role="Chain Reaction Analyst (연쇄반응 분석관)",
             system_prompt=SYSTEM_PROMPT,
             config=config,
+            use_light_model=True,
         )
 
     async def analyze(

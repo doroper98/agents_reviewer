@@ -51,6 +51,7 @@ class PlayerAnalyst(BaseAgent):
             role="Player Analyst (플레이어 분석관)",
             system_prompt=SYSTEM_PROMPT,
             config=config,
+            use_light_model=True,
         )
 
     async def analyze(self, context_analysis: ContextAnalysis) -> PlayerAnalysis:

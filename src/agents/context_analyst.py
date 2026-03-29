@@ -49,6 +49,7 @@ class ContextAnalyst(BaseAgent):
             role="Context Analyst (상황판 분석관)",
             system_prompt=SYSTEM_PROMPT,
             config=config,
+            use_light_model=True,
         )
 
     async def analyze(self, request: AnalysisRequest) -> ContextAnalysis:

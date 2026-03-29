@@ -85,7 +85,7 @@ class ReportSynthesizer:
             claude_bin,
             "-p", prompt,
             "--output-format", "text",
-            "--model", self.config.model_name,
+            "--model", self.config.model_name_light,
             "--dangerously-skip-permissions",
         ]
 
@@ -107,7 +107,7 @@ class ReportSynthesizer:
         assert self._api_client is not None, "API client not initialised"
         try:
             response = await self._api_client.messages.create(  # type: ignore[union-attr]
-                model=self.config.model_name,
+                model=self.config.model_name_light,
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}],
             )

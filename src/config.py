@@ -18,6 +18,7 @@ class Config(BaseSettings):
     cloudflare_project_name: str = "analysis-reports"
     report_output_dir: str = "reports"
     model_name: str = "claude-opus-4-6"
+    model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True
 
     model_config = {

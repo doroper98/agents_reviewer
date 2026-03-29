@@ -23,11 +23,19 @@ class BaseAgent:
     - API mode: uses ``anthropic`` SDK when ``ANTHROPIC_API_KEY`` is set
     """
 
-    def __init__(self, name: str, role: str, system_prompt: str, config: Config) -> None:
+    def __init__(
+        self,
+        name: str,
+        role: str,
+        system_prompt: str,
+        config: Config,
+        use_light_model: bool = False,
+    ) -> None:
         self.name = name
         self.role = role
         self.system_prompt = system_prompt
         self.config = config
+        self.model_name = config.model_name_light if use_light_model else config.model_name
         self._api_client: object | None = None
 
         if not config.use_cli_mode:
@@ -68,12 +76,12 @@ class BaseAgent:
             claude_bin,
             "-p", full_prompt,
             "--output-format", "text",
-            "--model", self.config.model_name,
+            "--model", self.model_name,
             "--dangerously-skip-permissions",
             "--allowedTools", "WebFetch,WebSearch",
         ]
 
-        logger.info(f"[{self.name}] Starting CLI analysis...")
+        logger.info(f"[{self.name}] Starting CLI analysis ({self.model_name})...")
         proc = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -100,9 +108,9 @@ class BaseAgent:
         assert self._api_client is not None, "API client not initialised"
         user_message = json.dumps(context, ensure_ascii=False, indent=2)
 
-        logger.info(f"[{self.name}] Starting API analysis...")
+        logger.info(f"[{self.name}] Starting API analysis ({self.model_name})...")
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
-            model=self.config.model_name,
+            model=self.model_name,
             max_tokens=4096,
             system=self.system_prompt,
             messages=[{"role": "user", "content": user_message}],
