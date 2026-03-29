@@ -36,6 +36,10 @@
 ## Canvas 차트 제작 기준
 - 참조 구현: `prototype_gold_chart.html`
 - 해상도: 최소 3x DPR
+- 폰트 규칙 (JetBrains Mono 사용 금지):
+  - 가격/숫자: Noto Serif KR bold (예: $4,460)
+  - 라벨/설명: Noto Sans KR (예: 현재가, Jan, 이란 전쟁 개시)
+  - 제목: Noto Serif KR 900
 - 가격 라벨: 스팟 위 20px, 겹침 시 자동 상향 조정
 - 이벤트 라벨: 차트 하단, -45도 좌하향, 오른쪽 정렬, 6글자 줄바꿈
 - 곡선: quadratic bezier, 구간별 색상 분리
