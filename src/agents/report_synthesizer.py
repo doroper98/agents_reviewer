@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import shutil
 from datetime import datetime
 
@@ -36,19 +37,32 @@ class ReportSynthesizer:
             import anthropic
             self._api_client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
 
-    async def _generate_executive_summary(self, result: FullAnalysisResult) -> str:
-        """Generate executive summary via Claude CLI or API."""
+    async def _generate_executive_summary(
+        self, result: FullAnalysisResult
+    ) -> tuple[str, list[str]]:
+        """Generate governance text + key summary items via Claude CLI or API.
+
+        Returns:
+            (governance_text, key_summary_items) tuple.
+        """
         summary_prompt = (
-            "다음 분석 결과를 바탕으로 핵심 요약(Executive Summary)을 작성.\n\n"
-            "출력 규칙:\n"
-            "- 음슴체 사용 (미사여구 금지, 짧고 직관적인 문장만)\n"
-            "- 불릿 포인트(*) 형태로 핵심 사실만 나열\n"
-            "- 줄글 금지, 문장형 서술 금지\n"
-            "- 3줄 이내\n\n"
-            "출력 형식:\n"
-            "* 사건 개요 : {핵심 내용}\n"
-            "* 핵심 영향 : {주요 파급효과}\n"
-            "* 리스크 수준 : {상/중/하 + 근거}\n\n"
+            "다음 분석 결과를 바탕으로 두 가지를 작성.\n\n"
+            "=== 1. 거버넌스 메시지 ===\n"
+            "- 보고서 상단에 들어갈 사건 개요 한 문장\n"
+            "- 음슴체 사용, 반드시 완결된 문장으로 끝낼 것 (중간에 끊기면 안 됨)\n"
+            "- 사건의 핵심 팩트와 수치를 포함\n"
+            "- 200자 내외\n\n"
+            "=== 2. 핵심 요약 ===\n"
+            "- 보고서 전체 내용을 번호로 요약\n"
+            "- 각 항목은 한 문장, 음슴체\n"
+            "- 3~5개 항목\n\n"
+            "출력 형식 (반드시 이 형식 준수):\n"
+            "[GOVERNANCE]\n"
+            "사건 요약 문장\n\n"
+            "[KEY_SUMMARY]\n"
+            "1) 첫 번째 핵심\n"
+            "2) 두 번째 핵심\n"
+            "3) 세 번째 핵심\n\n"
             "분석 결과:\n"
         )
 
@@ -69,8 +83,44 @@ class ReportSynthesizer:
         )
 
         if self.config.use_cli_mode:
-            return await self._call_cli(user_message)
-        return await self._call_api(user_message)
+            raw = await self._call_cli(user_message)
+        else:
+            raw = await self._call_api(user_message)
+
+        return self._parse_summary(raw)
+
+    @staticmethod
+    def _parse_summary(raw: str) -> tuple[str, list[str]]:
+        """Parse raw text into (governance, key_summary_items)."""
+        governance = ""
+        key_items: list[str] = []
+        if "[GOVERNANCE]" in raw and "[KEY_SUMMARY]" in raw:
+            parts = raw.split("[KEY_SUMMARY]")
+            governance = parts[0].replace("[GOVERNANCE]", "").strip()
+            for line in parts[1].strip().split("\n"):
+                line = line.strip()
+                if line and re.match(r"^\d+\)", line):
+                    # Strip the "N) " prefix — template adds its own numbering
+                    key_items.append(re.sub(r"^\d+\)\s*", "", line))
+        else:
+            # Fallback: use entire text as governance
+            governance = raw.strip()
+        return governance, key_items
+
+    @staticmethod
+    def _format_structured_text(text: str) -> str:
+        """Convert numbered patterns (첫째/둘째/N층 etc.) into <br> separated lines."""
+        # N층: patterns
+        text = re.sub(r"(?<=[.。])\s*(\d+층\s*[:：])", r"<br><br><strong>\1</strong>", text)
+        # 첫째/둘째/셋째/넷째/다섯째 patterns
+        text = re.sub(
+            r"(?<=[.。,])\s*(첫째|둘째|셋째|넷째|다섯째|여섯째)\s*[,，]",
+            r"<br><br><strong>\1,</strong>",
+            text,
+        )
+        # ①②③ patterns
+        text = re.sub(r"(?<=[.。])\s*([①②③④⑤⑥])", r"<br><br>\1", text)
+        return text
 
     async def _call_cli(self, prompt: str) -> str:
         """Call Claude CLI for text generation."""
@@ -205,12 +255,18 @@ class ReportSynthesizer:
 
     async def synthesize(self, result: FullAnalysisResult) -> str:
         """Render HTML report, upload to Cloudflare, return URL or filepath."""
-        # Generate executive summary
+        # Generate executive summary + key summary
+        key_summary_items: list[str] = []
         if not result.executive_summary:
-            result.executive_summary = await self._generate_executive_summary(result)
+            governance, key_summary_items = await self._generate_executive_summary(result)
+            result.executive_summary = governance
 
-        # Build chart data
+        # Build chart data & confidence text
         chart_data = self._build_chart_data(result)
+        confidence_parts: list[str] = []
+        for label, val in zip(chart_data["labels"], chart_data["values"]):
+            confidence_parts.append(f"{label} {val*100:.0f}%")
+        confidence_text = "Confidence: " + " · ".join(confidence_parts) if confidence_parts else ""
 
         # Load CSS content to inline into HTML
         css_content = ""
@@ -219,6 +275,7 @@ class ReportSynthesizer:
                 css_content = f.read()
 
         env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
+        env.filters["structured"] = self._format_structured_text
         template = env.get_template("report.html")
 
         html = template.render(
@@ -226,6 +283,8 @@ class ReportSynthesizer:
             css_content=css_content,
             chart_data_json=json.dumps(chart_data, ensure_ascii=False),
             generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            key_summary_items=key_summary_items,
+            confidence_text=confidence_text,
         )
 
         # Save HTML to file

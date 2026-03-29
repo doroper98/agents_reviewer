@@ -46,9 +46,21 @@ SVG 관계도:
     "circles": [{"lat":0,"lng":0,"radius":500000,"color":"","label":""}]
   },
   "chart_config": {
-    "enabled": true/false, "type": "tradingview|bar|line|radar", "title": "",
-    "tradingview_symbols": [{"symbol":"","label":"","interval":"D"}],
-    "labels": [], "values": [], "colors": []
+    "enabled": true/false,
+    "charts": [
+      {
+        "type": "line",
+        "title": "차트 제목",
+        "points": [{"label":"날짜","value":수치}, ...],
+        "events": [{"index":0,"label":"이벤트명"}]
+      },
+      {
+        "type": "bar",
+        "title": "차트 제목",
+        "labels": ["항목1","항목2"],
+        "values": [100, 200]
+      }
+    ]
   },
   "key_metrics": [{"label":"","value":"","color":"","icon":""}],
   "glossary": [{"term":"","definition":""}],
@@ -56,9 +68,12 @@ SVG 관계도:
 }
 
 차트 규칙:
-- 금융 데이터(주식/원자재/환율/지수)는 TradingView 사용
-- 비금융/커스텀 데이터는 Canvas 사용
-- TradingView 심볼: 원유=NYMEX:BZ1!/CL1!, 환율=FX:USDKRW/USDJPY, 지수=KRX:KOSPI/SP:SPX, 금=COMEX:GC1!, 금리=TVC:US10Y, VIX=CBOE:VIX, BTC=BINANCE:BTCUSDT
+- TradingView 사용 금지. 모든 차트는 Canvas 2D로 직접 그림
+- 차트 색상: 2가지 색상만 사용 (크림 #D4C4AA 기본선, 골드 #C9A84C 강조점)
+- 배경은 버건디 카드 배경 #3D2828
+- line 차트: points 배열에 label(날짜)과 value(수치) 제공, events로 주요 이벤트 마킹
+- bar 차트: labels와 values 배열 제공
+- 금융 데이터도 웹 검색으로 수치를 직접 수집해서 points 배열로 제공
 - key_metrics 최대 6개"""
 
 

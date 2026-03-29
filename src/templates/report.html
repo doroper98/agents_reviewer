@@ -18,7 +18,7 @@
   <div class="container">
     <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faded);margin-bottom:8px;font-family:'Noto Serif KR',serif;font-style:italic">Event Analysis Report</div>
     <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
-    <p class="hero-sub">{{ result.executive_summary[:150] if result.executive_summary else '' }}</p>
+    <p class="hero-sub">{{ result.executive_summary if result.executive_summary else '' }}</p>
     <div class="hero-tags">
       {% if result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
       {% if result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
@@ -32,6 +32,22 @@
   <a href="#s1">상황인식</a><a href="#s2">이해관계자</a><a href="#s3">상호작용</a><a href="#s4">연쇄반응</a><a href="#s5">향후 시나리오</a><a href="#s6">시그널</a>
 </div></nav>
 
+<!-- ===== KEY SUMMARY (핵심 요약) ===== -->
+{% if key_summary_items %}
+<section style="padding:28px 0 24px;border-bottom:1px solid var(--border-light)">
+  <div class="container">
+    <div class="key-summary">
+      <div class="key-summary-title">핵심 요약</div>
+      <ol>
+        {% for item in key_summary_items %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- ===== VISUAL SUMMARY ===== -->
 {% if result.visuals %}
 <section style="padding:32px 0 24px;border-bottom:1px solid var(--border-light)">
@@ -43,12 +59,12 @@
 
     <!-- Key Metrics Row -->
     {% if result.visuals.key_metrics %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:20px">
+    <div class="key-metrics-grid">
       {% for m in result.visuals.key_metrics %}
-      <div style="background:var(--card);border:1px solid var(--border-light);border-radius:var(--radius);padding:12px;text-align:center;box-shadow:var(--shadow)">
-        <div style="font-size:16px;margin-bottom:4px">{{ m.icon or '📊' }}</div>
-        <div style="font-size:16px;font-weight:700;color:{{ m.color or 'var(--text-primary)' }}">{{ m.value }}</div>
-        <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px">{{ m.label }}</div>
+      <div class="key-metric-card">
+        <div class="key-metric-icon">{{ m.icon or '📊' }}</div>
+        <div class="key-metric-value" style="color:{{ m.color or 'var(--text-primary)' }}">{{ m.value }}</div>
+        <div class="key-metric-label">{{ m.label }}</div>
       </div>
       {% endfor %}
     </div>
@@ -76,24 +92,23 @@
     </div>
     {% endif %}
 
-    <!-- TradingView Charts -->
-    {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type == 'tradingview' and result.visuals.chart_config.tradingview_symbols %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:14px">
-      {% for tv in result.visuals.chart_config.tradingview_symbols %}
-      <div class="card" style="padding:10px;overflow:hidden">
-        <div style="font-weight:700;font-size:11px;margin-bottom:6px">{{ tv.label or tv.symbol }}</div>
-        <div id="tv-chart-{{ loop.index }}" style="height:300px"></div>
+    <!-- Canvas Charts -->
+    {% if result.visuals.chart_config and result.visuals.chart_config.enabled %}
+    {% if result.visuals.chart_config.charts %}
+    <div class="chart-grid">
+      {% for ch in result.visuals.chart_config.charts %}
+      <div class="card" style="padding:14px;overflow:hidden">
+        <div style="font-weight:700;font-size:11px;margin-bottom:8px;color:var(--text-primary)">{{ ch.title or '차트' }}</div>
+        <canvas id="canvas-chart-{{ loop.index }}" style="width:100%;height:240px"></canvas>
       </div>
       {% endfor %}
     </div>
-    {% endif %}
-
-    <!-- Canvas Chart (non-TradingView) -->
-    {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type != 'tradingview' %}
+    {% else %}
     <div class="card" style="margin-bottom:14px;padding:14px">
       <div style="font-weight:700;font-size:12px;margin-bottom:8px">{{ result.visuals.chart_config.title or '차트' }}</div>
       <canvas id="visual-chart" style="width:100%;height:220px"></canvas>
     </div>
+    {% endif %}
     {% endif %}
 
   </div>
@@ -108,13 +123,13 @@
   <div class="section-label">ACT I — THE BOARD</div>
   <h2 class="section-title">상황인식</h2>
   {% if result.context.summary %}
-  <p class="section-desc">{{ result.context.summary }}</p>
+  <div class="section-desc">{{ result.context.summary | structured }}</div>
   {% endif %}
 
   {% if result.context.background %}
   <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">배경</div>
-    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.context.background }}</div>
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.context.background | structured }}</div>
   </div>
   {% endif %}
 
@@ -132,14 +147,12 @@
   {% if result.context.timeline %}
   <div class="card">
     <div style="font-weight:700;font-size:12px;margin-bottom:10px">타임라인</div>
-    <div class="timeline-content">
-      {% for item in result.context.timeline %}
-      <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;min-height:44px;{% if not loop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
-        <span style="color:var(--blue);font-weight:600;min-width:90px;flex-shrink:0;line-height:1.7">{{ item.date }}</span>
-        <span style="line-height:1.7">{{ item.event }}{% if item.impact %}<br><span style="color:var(--red);font-weight:600">→ {{ item.impact }}</span>{% endif %}</span>
-      </div>
-      {% endfor %}
+    {% for item in result.context.timeline %}
+    <div style="display:flex;gap:12px;align-items:baseline;padding:10px 0;{% if not loop.last %}border-bottom:1px solid rgba(90,74,58,0.4);{% endif %}">
+      <span style="color:var(--blue);font-weight:600;min-width:110px;flex-shrink:0;font-size:11px;white-space:nowrap;line-height:1.7">{{ item.date }}</span>
+      <span style="font-size:11px;line-height:1.7;color:var(--text-secondary)">{{ item.event }}{% if item.impact %}<br><span style="color:var(--red);font-weight:600">→ {{ item.impact }}</span>{% endif %}</span>
     </div>
+    {% endfor %}
   </div>
   {% endif %}
 
@@ -149,7 +162,6 @@
   </div>
   {% endif %}
 
-  <p class="act-cue">상황인식을 확인했다. 이 사건에 관여하는 핵심 행위자들은 누구인가.</p>
 </section>
 {% endif %}
 
@@ -159,7 +171,7 @@
   <div class="section-label">ACT II — THE PLAYERS</div>
   <h2 class="section-title">이해관계자</h2>
   {% if result.players.power_dynamics %}
-  <p class="section-desc">{{ result.players.power_dynamics }}</p>
+  <div class="section-desc">{{ result.players.power_dynamics | structured }}</div>
   {% endif %}
 
   <div class="grid-2">
@@ -190,11 +202,6 @@
   </div>
   {% endif %}
 
-  <div class="terms">
-    <b>용어:</b> 극심 = 가장 높은 위험 · 높음 = 높은 위험 · 보통 = 보통 위험 · 낮음 = 낮은 위험
-  </div>
-
-  <p class="act-cue">행위자들의 패를 확인했다. 이들 사이의 구조적 상호작용은 어떤 형태인가.</p>
 </section>
 {% endif %}
 
@@ -230,22 +237,20 @@
 
   {% if result.dynamics.tipping_points %}
   <div class="card" style="margin-bottom:14px">
-    <div style="font-weight:700;font-size:12px;margin-bottom:8px">전환점</div>
-    <div class="timeline-content">
-      {% for tp in result.dynamics.tipping_points %}
-      <div style="display:flex;gap:8px;padding:4px 0;{% if not loop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
-        <span style="color:var(--red);font-weight:600;min-width:80px">{{ tp.timeline }}</span>
-        <span>{{ tp.condition }} → {{ tp.consequence }}</span>
-      </div>
-      {% endfor %}
+    <div style="font-weight:700;font-size:12px;margin-bottom:10px">전환점</div>
+    {% for tp in result.dynamics.tipping_points %}
+    <div style="display:flex;gap:12px;align-items:baseline;padding:10px 0;{% if not loop.last %}border-bottom:1px solid rgba(90,74,58,0.4);{% endif %}">
+      <span style="color:var(--red);font-weight:600;min-width:140px;flex-shrink:0;font-size:11px;white-space:nowrap">{{ tp.timeline }}</span>
+      <span style="font-size:11px;line-height:1.7;color:var(--text-secondary)">{{ tp.condition }} → {{ tp.consequence }}</span>
     </div>
+    {% endfor %}
   </div>
   {% endif %}
 
   {% if result.dynamics.why_unresolved %}
   <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:6px">왜 해소되지 않는가</div>
-    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.dynamics.why_unresolved }}</div>
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.dynamics.why_unresolved | structured }}</div>
   </div>
   {% endif %}
 
@@ -256,11 +261,6 @@
   </div>
   {% endif %}
 
-  <div class="terms">
-    <b>용어:</b> 비대칭 구조 = Asymmetry · 전환점 = Tipping Point · 상호작용 = Power Dynamics
-  </div>
-
-  <p class="act-cue">구조적 상호작용을 파악했다. 이 상호작용이 만들어내는 연쇄반응은 어디까지 이어지는가.</p>
 </section>
 {% endif %}
 
@@ -300,7 +300,6 @@
   </div>
   {% endif %}
 
-  <p class="act-cue">연쇄반응의 경로를 추적했다. 이 상황이 어떤 결말로 향하는가.</p>
 </section>
 {% endif %}
 
@@ -367,19 +366,14 @@
 </section>
 {% endif %}
 
-<!-- CONFIDENCE RADAR -->
-<section class="fade-in">
-  <div class="section-label">CONFIDENCE</div>
-  <h2 class="section-title">신뢰도 레이더</h2>
-  <div class="radar-wrap">
-    <canvas id="radarCanvas" width="340" height="340"></canvas>
-  </div>
-</section>
 
 </main>
 
 <!-- FOOTER -->
 <footer class="footer">
+  {% if confidence_text %}
+  <div style="max-width:600px;margin:0 auto 10px;color:var(--text-faded);font-size:10px">{{ confidence_text }}</div>
+  {% endif %}
   {% if result.context and result.context.sources %}
   <div style="max-width:600px;margin:0 auto 8px">{{ result.context.sources|join(' · ') }}</div>
   {% endif %}
@@ -402,72 +396,6 @@ var ss=document.querySelectorAll('section[id]'),ns=document.querySelectorAll('.n
 window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(scrollY>=s.offsetTop-60)c=s.id});ns.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+c)})});
 </script>
 
-<!-- Canvas confidence radar -->
-<script>
-(function(){
-  var chartData={{ chart_data_json }};
-  var canvas=document.getElementById('radarCanvas');
-  if(!canvas||!chartData.labels||!chartData.labels.length)return;
-  var ctx=canvas.getContext('2d');
-  var W=canvas.width,H=canvas.height;
-  var cx=W/2,cy=H/2,R=Math.min(cx,cy)-50;
-  var labels=chartData.labels,values=chartData.values;
-  var n=labels.length;
-  var step=2*Math.PI/n;
-  var offset=-Math.PI/2;
-
-  function drawPoly(r,stroke,fill){
-    ctx.beginPath();
-    for(var i=0;i<n;i++){
-      var a=offset+i*step;
-      var x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
-      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-    }
-    ctx.closePath();
-    if(fill){ctx.fillStyle=fill;ctx.fill()}
-    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}
-  }
-
-  /* Grid */
-  for(var g=1;g<=5;g++){drawPoly(R*g/5,'#5A4A3A',null)}
-
-  /* Axes + Labels */
-  ctx.font='500 11px "Noto Sans KR",sans-serif';
-  ctx.fillStyle='#D4C4AA';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  for(var i=0;i<n;i++){
-    var a=offset+i*step;
-    var ex=cx+R*Math.cos(a),ey=cy+R*Math.sin(a);
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.strokeStyle='#5A4A3A';ctx.lineWidth=1;ctx.stroke();
-    var lx=cx+(R+28)*Math.cos(a),ly=cy+(R+28)*Math.sin(a);
-    ctx.fillStyle='#D4C4AA';
-    ctx.fillText(labels[i],lx,ly);
-  }
-
-  /* Data polygon */
-  ctx.beginPath();
-  for(var i=0;i<n;i++){
-    var a=offset+i*step;
-    var v=Math.max(0,Math.min(1,values[i]));
-    var x=cx+R*v*Math.cos(a),y=cy+R*v*Math.sin(a);
-    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-  }
-  ctx.closePath();
-  ctx.fillStyle='rgba(29,111,165,.18)';ctx.fill();
-  ctx.strokeStyle='#C9A84C';ctx.lineWidth=2;ctx.stroke();
-
-  /* Data points + value text */
-  ctx.font='600 10px "Noto Sans KR",sans-serif';
-  for(var i=0;i<n;i++){
-    var a=offset+i*step;
-    var v=Math.max(0,Math.min(1,values[i]));
-    var x=cx+R*v*Math.cos(a),y=cy+R*v*Math.sin(a);
-    ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fillStyle='#C9A84C';ctx.fill();
-    ctx.fillStyle='#F0E2CC';
-    ctx.fillText((v*100).toFixed(0)+'%',x,y-12);
-  }
-})();
-</script>
 
 {% if result.visuals and result.visuals.mermaid_code %}
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -500,92 +428,136 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
 </script>
 {% endif %}
 
-<!-- TradingView Widget Script -->
-{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type == 'tradingview' and result.visuals.chart_config.tradingview_symbols %}
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-<script>
-(function(){
-  var symbols = {{ result.visuals.chart_config.tradingview_symbols | tojson }};
-  symbols.forEach(function(tv, i){
-    var containerId = 'tv-chart-' + (i+1);
-    var el = document.getElementById(containerId);
-    if(!el) return;
-    new TradingView.widget({
-      container_id: containerId,
-      symbol: tv.symbol,
-      interval: tv.interval || 'D',
-      timezone: 'Asia/Seoul',
-      theme: 'dark',
-      style: '2',
-      locale: 'kr',
-      toolbar_bg: '#2B1A1A',
-      enable_publishing: false,
-      hide_top_toolbar: false,
-      hide_legend: false,
-      save_image: false,
-      width: '100%',
-      height: 300,
-      hide_volume: true
-    });
-  });
-})();
-</script>
-{% endif %}
-
-<!-- Canvas Chart (non-TradingView) -->
-{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.type != 'tradingview' %}
+<!-- Canvas Charts (Burgundy Theme) -->
+{% if result.visuals and result.visuals.chart_config and result.visuals.chart_config.enabled %}
 <script>
 (function(){
   var cfg = {{ result.visuals.chart_config | tojson }};
-  var cv = document.getElementById('visual-chart');
-  if(!cv) return;
-  var ctx = cv.getContext('2d');
-  var dpr = window.devicePixelRatio || 1;
+  var CLR = { bg:'#3D2828', line:'#D4C4AA', accent:'#C9A84C', grid:'rgba(90,74,58,0.4)', text:'#A89880', textLight:'#F0E2CC', red:'#C45C4C' };
 
-  function draw(){
-    var W = cv.parentElement.clientWidth - 28, H = 220;
-    cv.width = W*dpr; cv.height = H*dpr;
-    cv.style.width = W+'px'; cv.style.height = H+'px';
+  function drawLineChart(cv, data){
+    if(!cv||!data||!data.points||!data.points.length) return;
+    var ctx=cv.getContext('2d'), dpr=Math.max(window.devicePixelRatio||1,3);
+    var W=cv.parentElement.clientWidth-28, H=240;
+    cv.width=W*dpr; cv.height=H*dpr;
+    cv.style.width=W+'px'; cv.style.height=H+'px';
     ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
     ctx.clearRect(0,0,W,H);
 
-    var labels = cfg.labels || [];
-    var values = cfg.values || [];
-    var colors = cfg.colors || ['#C9A84C','#C45C4C','#6B8A5C','#C4884C','#D4B45C'];
-    var maxVal = Math.max.apply(null, values) * 1.2 || 100;
-    var p = {t:24,r:16,b:32,l:48};
-    var cw = W-p.l-p.r, ch = H-p.t-p.b;
-    var barW = Math.min(40, cw/labels.length - 8);
+    var pts=data.points, vals=pts.map(function(p){return p.value});
+    var minV=Math.min.apply(null,vals), maxV=Math.max.apply(null,vals);
+    var range=maxV-minV||1; minV-=range*0.08; maxV+=range*0.08; range=maxV-minV;
+    var pad={t:28,r:20,b:36,l:52}, cw=W-pad.l-pad.r, ch=H-pad.t-pad.b;
 
     // Y grid
+    ctx.font='10px "Noto Sans KR"'; ctx.textAlign='right';
     for(var i=0;i<=4;i++){
-      var yv = maxVal*i/4;
-      var y = p.t + ch - (yv/maxVal)*ch;
-      ctx.strokeStyle='#3D2828';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(p.l+cw,y);ctx.stroke();
-      ctx.fillStyle='#A89880';ctx.font='10px "Noto Sans KR"';ctx.textAlign='right';
-      ctx.fillText(Math.round(yv),p.l-6,y+3);
+      var yv=minV+range*i/4, y=pad.t+ch-(i/4)*ch;
+      ctx.strokeStyle=CLR.grid; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cw,y); ctx.stroke();
+      ctx.fillStyle=CLR.text; ctx.fillText(yv>=1000?Math.round(yv).toLocaleString():yv.toFixed(1),pad.l-6,y+3);
     }
 
-    // Bars
-    labels.forEach(function(label,i){
-      var x = p.l + (i+0.5)*(cw/labels.length) - barW/2;
-      var h = (values[i]/maxVal)*ch;
-      var y = p.t + ch - h;
-      ctx.fillStyle = colors[i % colors.length];
-      ctx.beginPath();
-      ctx.roundRect(x,y,barW,h,3);
-      ctx.fill();
-      // Label
-      ctx.fillStyle='#D4C4AA';ctx.font='10px "Noto Sans KR"';ctx.textAlign='center';
-      ctx.fillText(label, x+barW/2, p.t+ch+14);
-      // Value
-      ctx.fillStyle='#F0E2CC';ctx.font='bold 10px "Noto Sans KR"';
-      ctx.fillText(values[i], x+barW/2, y-6);
+    // X labels
+    ctx.textAlign='center'; ctx.fillStyle=CLR.text; ctx.font='9px "Noto Sans KR"';
+    var step=Math.max(1,Math.floor(pts.length/6));
+    for(var i=0;i<pts.length;i+=step){
+      var x=pad.l+(i/(pts.length-1||1))*cw;
+      ctx.fillText(pts[i].label||'',x,pad.t+ch+16);
+    }
+
+    // Line
+    ctx.beginPath(); ctx.strokeStyle=CLR.line; ctx.lineWidth=2;
+    for(var i=0;i<pts.length;i++){
+      var x=pad.l+(i/(pts.length-1||1))*cw, y=pad.t+ch-((pts[i].value-minV)/range)*ch;
+      if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // Fill under line
+    var lastX=pad.l+((pts.length-1)/(pts.length-1||1))*cw, lastY=pad.t+ch-((pts[pts.length-1].value-minV)/range)*ch;
+    ctx.lineTo(lastX,pad.t+ch); ctx.lineTo(pad.l,pad.t+ch); ctx.closePath();
+    ctx.fillStyle='rgba(212,196,170,0.06)'; ctx.fill();
+
+    // End dot
+    ctx.beginPath(); ctx.arc(lastX,lastY,4,0,Math.PI*2); ctx.fillStyle=CLR.accent; ctx.fill();
+    ctx.font='bold 11px "Noto Sans KR"'; ctx.fillStyle=CLR.textLight; ctx.textAlign='left';
+    ctx.fillText(pts[pts.length-1].value.toLocaleString(),lastX+8,lastY+4);
+
+    // Event markers
+    (data.events||[]).forEach(function(ev){
+      var idx=ev.index!=null?ev.index:Math.round((ev.position||0)*(pts.length-1));
+      if(idx<0||idx>=pts.length)return;
+      var x=pad.l+(idx/(pts.length-1||1))*cw, y=pad.t+ch-((pts[idx].value-minV)/range)*ch;
+      ctx.beginPath(); ctx.setLineDash([3,3]); ctx.strokeStyle=CLR.red; ctx.lineWidth=1;
+      ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+ch); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle=CLR.red; ctx.fill();
+      ctx.save(); ctx.translate(x,pad.t+ch+12); ctx.rotate(-Math.PI/4);
+      ctx.font='8px "Noto Sans KR"'; ctx.fillStyle=CLR.text; ctx.textAlign='left';
+      ctx.fillText(ev.label||'',0,0); ctx.restore();
     });
   }
-  draw();
-  window.addEventListener('resize',draw);
+
+  function drawBarChart(cv, data){
+    if(!cv||!data) return;
+    var ctx=cv.getContext('2d'), dpr=Math.max(window.devicePixelRatio||1,3);
+    var labels=data.labels||[], values=data.values||[];
+    var W=cv.parentElement.clientWidth-28, H=240;
+    cv.width=W*dpr; cv.height=H*dpr;
+    cv.style.width=W+'px'; cv.style.height=H+'px';
+    ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
+    ctx.clearRect(0,0,W,H);
+
+    var maxVal=Math.max.apply(null,values)*1.2||100;
+    var pad={t:24,r:16,b:36,l:52}, cw=W-pad.l-pad.r, ch=H-pad.t-pad.b;
+    var barW=Math.min(36,cw/labels.length-12);
+
+    for(var i=0;i<=4;i++){
+      var yv=maxVal*i/4, y=pad.t+ch-(yv/maxVal)*ch;
+      ctx.strokeStyle=CLR.grid; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cw,y); ctx.stroke();
+      ctx.fillStyle=CLR.text; ctx.font='10px "Noto Sans KR"'; ctx.textAlign='right';
+      ctx.fillText(Math.round(yv),pad.l-6,y+3);
+    }
+
+    labels.forEach(function(label,i){
+      var x=pad.l+(i+0.5)*(cw/labels.length)-barW/2;
+      var h=(values[i]/maxVal)*ch, y=pad.t+ch-h;
+      ctx.fillStyle=(i%2===0)?CLR.line:CLR.accent;
+      if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,barW,h,3);ctx.fill();}
+      else{ctx.fillRect(x,y,barW,h);}
+      ctx.fillStyle=CLR.text; ctx.font='9px "Noto Sans KR"'; ctx.textAlign='center';
+      ctx.fillText(label,x+barW/2,pad.t+ch+14);
+      ctx.fillStyle=CLR.textLight; ctx.font='bold 10px "Noto Sans KR"';
+      ctx.fillText(values[i],x+barW/2,y-6);
+    });
+  }
+
+  /* Render individual charts from charts array */
+  var charts = cfg.charts || [];
+  if(charts.length){
+    charts.forEach(function(ch, i){
+      var cv = document.getElementById('canvas-chart-'+(i+1));
+      if(!cv) return;
+      if(ch.type==='line') drawLineChart(cv, ch);
+      else drawBarChart(cv, ch);
+    });
+  } else {
+    /* Fallback: single chart from flat config */
+    var cv = document.getElementById('visual-chart');
+    if(cv) drawBarChart(cv, cfg);
+  }
+
+  /* Redraw on resize */
+  window.addEventListener('resize',function(){
+    charts.forEach(function(ch,i){
+      var cv=document.getElementById('canvas-chart-'+(i+1));
+      if(!cv)return;
+      if(ch.type==='line')drawLineChart(cv,ch); else drawBarChart(cv,ch);
+    });
+    var cv0=document.getElementById('visual-chart');
+    if(cv0)drawBarChart(cv0,cfg);
+  });
 })();
 </script>
 {% endif %}
