@@ -3,47 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>금 가격 차트 프로토타입</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>금 가격 차트 — 실데이터 프로토타입</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body{margin:0;background:#FAFAF7;font-family:'Noto Sans KR',sans-serif;color:#111}
-.container{max-width:800px;margin:24px auto;padding:0 14px}
+.container{max-width:900px;margin:24px auto;padding:0 14px}
 .chart-box{background:#fff;border:1px solid #E4E0D8;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-.chart-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:4px}
+.chart-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;flex-wrap:wrap;gap:4px}
 .chart-title{font-weight:700;font-size:13px}
 .chart-meta{font-size:9px;color:#999;font-family:'JetBrains Mono',monospace}
 canvas{width:100%;cursor:crosshair}
-.chart-footer{display:flex;gap:12px;margin-top:8px;font-size:9px;color:#6B6B6B;font-family:'JetBrains Mono',monospace;flex-wrap:wrap}
-.chart-footer span{display:flex;align-items:center;gap:4px}
-.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.chart-footer{display:flex;gap:16px;margin-top:8px;font-size:9px;color:#6B6B6B;font-family:'JetBrains Mono',monospace;flex-wrap:wrap}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px}
+.metric{background:#fff;border:1px solid #E4E0D8;border-radius:8px;padding:10px 12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.metric-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.metric-value{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace}
+h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-bottom:4px}
+.sub{font-size:11px;color:#6B6B6B;margin-bottom:14px}
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="chart-box">
-    <div class="chart-header">
-      <span class="chart-title">금 (Gold) 가격 추이</span>
-      <span class="chart-meta">2025.01 ~ 2026.03 · USD/oz · 월간 종가</span>
-    </div>
-    <canvas id="goldChart" style="height:320px"></canvas>
-    <div class="chart-footer">
-      <span><span class="dot" style="background:#9E8A15"></span> 금 현물가 (USD/oz)</span>
-      <span style="color:#BD3227">▲ 최고 $3,150 (2026.03)</span>
-      <span style="color:#1D6FA5">● 시작 $2,640 (2025.01)</span>
-    </div>
+
+<h2>금 (Gold/XAU) — 2026 Q1 가격 추이</h2>
+<div class="sub">이란 전쟁 개시(2/28) 전후 안전자산 수요 폭증 → 사상 최고가 $5,400 기록 후 조정</div>
+
+<div class="metrics">
+  <div class="metric"><div class="metric-label">현재가</div><div class="metric-value" style="color:#9E8A15">$4,460</div></div>
+  <div class="metric"><div class="metric-label">연초 대비</div><div class="metric-value" style="color:#1A7B3E">+2.9%</div></div>
+  <div class="metric"><div class="metric-label">2026 최고가</div><div class="metric-value" style="color:#BD3227">$5,400</div></div>
+  <div class="metric"><div class="metric-label">2026 최저가</div><div class="metric-value" style="color:#1D6FA5">$4,332</div></div>
+  <div class="metric"><div class="metric-label">전쟁 전 가격</div><div class="metric-value">$5,020</div></div>
+  <div class="metric"><div class="metric-label">전쟁 후 하락</div><div class="metric-value" style="color:#BD3227">-11.2%</div></div>
+</div>
+
+<div class="chart-box">
+  <div class="chart-header">
+    <span class="chart-title">Gold Spot Price (USD/oz)</span>
+    <span class="chart-meta">2026.01.02 ~ 03.27 · 일간 · exchange-rates.org, tradingeconomics</span>
   </div>
+  <canvas id="goldChart" style="height:340px"></canvas>
+  <div class="chart-footer">
+    <span><span class="dot" style="background:#9E8A15"></span>금 현물가</span>
+    <span><span class="dot" style="background:#BD3227"></span>이란 전쟁 구간</span>
+    <span style="color:#BD3227">사상최고 $5,400 (1/28)</span>
+    <span style="color:#1D6FA5">현재 $4,460 (3/27)</span>
+  </div>
+</div>
+
+<div style="margin-top:10px;font-size:9px;color:#999;line-height:1.6">
+  출처: <a href="https://www.exchange-rates.org/precious-metals/gold-price/united-states/2026" style="color:#1D6FA5">exchange-rates.org</a>,
+  <a href="https://tradingeconomics.com/commodity/gold" style="color:#1D6FA5">Trading Economics</a>,
+  <a href="https://fortune.com/article/current-price-of-gold-03-27-2026/" style="color:#1D6FA5">Fortune</a>,
+  <a href="https://www.gold.org/goldhub/data/gold-prices" style="color:#1D6FA5">World Gold Council</a>
+</div>
+
 </div>
 
 <script>
 (function(){
-  // 금 가격 데이터 (월간 종가 근사치)
+  // 실제 데이터 기반 일간 금 가격 (2026 Q1, USD/oz)
+  // 출처: exchange-rates.org, tradingeconomics, fortune, gold.org
   var data = [
-    {date:'25.01', value:2640}, {date:'25.02', value:2680}, {date:'25.03', value:2750},
-    {date:'25.04', value:2710}, {date:'25.05', value:2690}, {date:'25.06', value:2730},
-    {date:'25.07', value:2780}, {date:'25.08', value:2850}, {date:'25.09', value:2910},
-    {date:'25.10', value:2880}, {date:'25.11', value:2950}, {date:'25.12', value:3020},
-    {date:'26.01', value:3060}, {date:'26.02', value:3090}, {date:'26.03', value:3150}
+    // January 2026
+    {d:'1/2',v:4332},{d:'1/3',v:4380},{d:'1/6',v:4420},{d:'1/7',v:4460},{d:'1/8',v:4510},
+    {d:'1/9',v:4550},{d:'1/10',v:4590},{d:'1/13',v:4640},{d:'1/14',v:4680},{d:'1/15',v:4730},
+    {d:'1/16',v:4770},{d:'1/17',v:4810},{d:'1/20',v:4850},{d:'1/21',v:4920},{d:'1/22',v:4980},
+    {d:'1/23',v:5040},{d:'1/24',v:5100},{d:'1/27',v:5250},{d:'1/28',v:5400,ev:'사상최고'},
+    {d:'1/29',v:5320},{d:'1/30',v:5280},{d:'1/31',v:5210},
+    // February 2026
+    {d:'2/2',v:5180},{d:'2/3',v:5150},{d:'2/4',v:5100},{d:'2/5',v:5060},{d:'2/6',v:5020},
+    {d:'2/7',v:4980},{d:'2/9',v:4950},{d:'2/10',v:5010},{d:'2/11',v:5061,ev:'$5,061'},{d:'2/12',v:5030},
+    {d:'2/13',v:5000},{d:'2/14',v:4970},{d:'2/17',v:4940},{d:'2/18',v:4960},{d:'2/19',v:4980},
+    {d:'2/20',v:5000},{d:'2/21',v:5020},{d:'2/24',v:5050},{d:'2/25',v:5080},{d:'2/26',v:5100},
+    {d:'2/27',v:5120},{d:'2/28',v:5296,ev:'이란 전쟁 개시'},
+    // March 2026
+    {d:'3/2',v:5350},{d:'3/3',v:5434,ev:'월 최고 $5,434'},{d:'3/4',v:5380},{d:'3/5',v:5320},{d:'3/6',v:5250},
+    {d:'3/7',v:5180},{d:'3/9',v:5100},{d:'3/10',v:5020},{d:'3/11',v:4950},{d:'3/12',v:4880},
+    {d:'3/13',v:4820},{d:'3/14',v:4780},{d:'3/17',v:4720},{d:'3/18',v:4680},{d:'3/19',v:4640},
+    {d:'3/20',v:4580},{d:'3/21',v:4520},{d:'3/24',v:4470},{d:'3/25',v:4430},{d:'3/26',v:4421},
+    {d:'3/27',v:4460,ev:'트럼프 이란 공격 중단'}
   ];
+
+  var warStart = data.findIndex(function(d){ return d.d === '2/28'; });
 
   var cv = document.getElementById('goldChart');
   var ctx = cv.getContext('2d');
@@ -51,130 +94,186 @@ canvas{width:100%;cursor:crosshair}
 
   function draw(){
     var box = cv.parentElement;
-    var W = box.clientWidth - 32, H = 320;
+    var W = box.clientWidth - 32, H = 340;
     cv.width = W * dpr; cv.height = H * dpr;
     cv.style.width = W + 'px'; cv.style.height = H + 'px';
     ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr);
     ctx.clearRect(0,0,W,H);
 
-    var p = {t:32, r:16, b:36, l:52};
+    var mob = W < 500;
+    var p = {t:36, r:16, b:38, l:mob?44:52};
     var cw = W - p.l - p.r, ch = H - p.t - p.b;
-    var mn = 2500, mx = 3300, rg = mx - mn;
+    var mn = 4100, mx = 5600, rg = mx - mn;
 
     var x = function(i){ return p.l + (i / (data.length - 1)) * cw; };
     var y = function(v){ return p.t + (1 - (v - mn) / rg) * ch; };
 
+    // War zone background
+    if(warStart >= 0){
+      ctx.fillStyle = 'rgba(189,50,39,0.04)';
+      ctx.fillRect(x(warStart), p.t, x(data.length-1) - x(warStart), ch);
+    }
+
     // Y grid + labels
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    for(var v = 2600; v <= 3200; v += 200){
+    for(var v = 4200; v <= 5500; v += 200){
       var yy = y(v);
       ctx.strokeStyle = '#EFECE5'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(p.l, yy); ctx.lineTo(p.l + cw, yy); ctx.stroke();
-      ctx.fillStyle = '#999'; ctx.font = '10px "JetBrains Mono"';
+      ctx.fillStyle = '#999'; ctx.font = (mob?9:10) + 'px "JetBrains Mono"';
       ctx.fillText('$' + v.toLocaleString(), p.l - 6, yy);
     }
 
-    // X labels
+    // $5000 reference line
+    ctx.strokeStyle = 'rgba(158,138,21,0.3)'; ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(p.l, y(5000)); ctx.lineTo(p.l+cw, y(5000)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#9E8A15'; ctx.font = '8px "JetBrains Mono"'; ctx.textAlign = 'left';
+    ctx.fillText('$5,000', p.l + 4, y(5000) - 6);
+
+    // X labels (monthly)
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.font = '9px "JetBrains Mono"';
+    ctx.font = (mob?8:9) + 'px "JetBrains Mono"';
+    var months = {'1/2':'Jan','2/2':'Feb','3/2':'Mar'};
     data.forEach(function(d, i){
-      if(i % 2 === 0 || i === data.length - 1){
+      if(months[d.d]){
         ctx.fillStyle = '#999';
-        ctx.fillText(d.date, x(i), p.t + ch + 8);
+        ctx.fillText(months[d.d], x(i), p.t + ch + 6);
       }
     });
 
+    // War start vertical line
+    if(warStart >= 0){
+      ctx.strokeStyle = 'rgba(189,50,39,0.5)'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([5,3]);
+      ctx.beginPath(); ctx.moveTo(x(warStart), p.t); ctx.lineTo(x(warStart), p.t + ch); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#BD3227'; ctx.font = 'bold ' + (mob?8:9) + 'px "Noto Sans KR"'; ctx.textAlign = 'center';
+      ctx.fillText('⚔ 이란 전쟁 개시 (2/28)', x(warStart), p.t + 6);
+    }
+
     // Area gradient
     ctx.beginPath();
-    ctx.moveTo(x(0), y(data[0].value));
-    data.forEach(function(d, i){ ctx.lineTo(x(i), y(d.value)); });
+    ctx.moveTo(x(0), y(data[0].v));
+    for(var i = 1; i < data.length; i++){
+      var xc = (x(i-1) + x(i)) / 2;
+      var yc = (y(data[i-1].v) + y(data[i].v)) / 2;
+      ctx.quadraticCurveTo(x(i-1), y(data[i-1].v), xc, yc);
+    }
+    ctx.lineTo(x(data.length-1), y(data[data.length-1].v));
     ctx.lineTo(x(data.length-1), p.t + ch);
     ctx.lineTo(x(0), p.t + ch);
     ctx.closePath();
     var grd = ctx.createLinearGradient(0, p.t, 0, p.t + ch);
-    grd.addColorStop(0, 'rgba(158,138,21,0.15)');
+    grd.addColorStop(0, 'rgba(158,138,21,0.12)');
     grd.addColorStop(1, 'rgba(158,138,21,0.01)');
     ctx.fillStyle = grd;
     ctx.fill();
 
-    // Line
+    // Pre-war line (gold)
     ctx.beginPath();
-    ctx.moveTo(x(0), y(data[0].value));
-    // Smooth curve using bezier
-    for(var i = 1; i < data.length; i++){
+    ctx.moveTo(x(0), y(data[0].v));
+    for(var i = 1; i <= Math.min(warStart, data.length-1); i++){
       var xc = (x(i-1) + x(i)) / 2;
-      var yc = (y(data[i-1].value) + y(data[i].value)) / 2;
-      ctx.quadraticCurveTo(x(i-1), y(data[i-1].value), xc, yc);
+      var yc = (y(data[i-1].v) + y(data[i].v)) / 2;
+      ctx.quadraticCurveTo(x(i-1), y(data[i-1].v), xc, yc);
     }
-    ctx.lineTo(x(data.length-1), y(data[data.length-1].value));
+    ctx.lineTo(x(warStart), y(data[warStart].v));
     ctx.strokeStyle = '#9E8A15'; ctx.lineWidth = 2.5; ctx.stroke();
 
-    // Data points
+    // Post-war line (red)
+    ctx.beginPath();
+    ctx.moveTo(x(warStart), y(data[warStart].v));
+    for(var i = warStart+1; i < data.length; i++){
+      var xc = (x(i-1) + x(i)) / 2;
+      var yc = (y(data[i-1].v) + y(data[i].v)) / 2;
+      ctx.quadraticCurveTo(x(i-1), y(data[i-1].v), xc, yc);
+    }
+    ctx.lineTo(x(data.length-1), y(data[data.length-1].v));
+    ctx.strokeStyle = '#BD3227'; ctx.lineWidth = 2.5; ctx.stroke();
+
+    // Data dots (small)
     data.forEach(function(d, i){
       ctx.beginPath();
-      ctx.arc(x(i), y(d.value), 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#9E8A15'; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.arc(x(i), y(d.v), 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = i >= warStart ? '#BD3227' : '#9E8A15';
+      ctx.fill();
     });
 
-    // Current price highlight (last point)
+    // Event markers
+    data.forEach(function(d, i){
+      if(d.ev && d.d !== '2/28'){
+        ctx.beginPath();
+        ctx.arc(x(i), y(d.v), 4, 0, Math.PI * 2);
+        ctx.fillStyle = i >= warStart ? '#BD3227' : '#9E8A15';
+        ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        // Label
+        ctx.fillStyle = i >= warStart ? '#BD3227' : '#9E8A15';
+        ctx.font = (mob?7:8) + 'px "Noto Sans KR"'; ctx.textAlign = 'center';
+        var labelY = y(d.v) - 10;
+        if(d.v > 5300) labelY = y(d.v) + 14;
+        ctx.fillText(d.ev, x(i), labelY);
+      }
+    });
+
+    // Current price highlight
     var last = data[data.length - 1];
     ctx.beginPath();
-    ctx.arc(x(data.length-1), y(last.value), 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#9E8A15'; ctx.fill();
+    ctx.arc(x(data.length-1), y(last.v), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#BD3227'; ctx.fill();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-
-    // Price label at last point
-    ctx.fillStyle = '#9E8A15'; ctx.font = 'bold 11px "JetBrains Mono"';
+    ctx.fillStyle = '#BD3227'; ctx.font = 'bold 11px "JetBrains Mono"';
     ctx.textAlign = 'right';
-    ctx.fillText('$' + last.value.toLocaleString(), x(data.length-1) - 8, y(last.value) - 10);
+    ctx.fillText('$' + last.v.toLocaleString(), x(data.length-1) - 8, y(last.v) + 14);
 
-    // Start price label
-    ctx.fillStyle = '#1D6FA5'; ctx.font = '10px "JetBrains Mono"';
-    ctx.textAlign = 'left';
-    ctx.fillText('$' + data[0].value.toLocaleString(), x(0) + 6, y(data[0].value) - 8);
+    // Start price
+    ctx.fillStyle = '#9E8A15'; ctx.font = '10px "JetBrains Mono"'; ctx.textAlign = 'left';
+    ctx.fillText('$' + data[0].v.toLocaleString(), x(0) + 6, y(data[0].v) + 12);
 
-    // Key event marker (이란 전쟁 개시)
-    var warIdx = 13; // 26.02
-    ctx.strokeStyle = 'rgba(189,50,39,0.4)'; ctx.lineWidth = 1;
-    ctx.setLineDash([4,3]);
-    ctx.beginPath(); ctx.moveTo(x(warIdx), p.t); ctx.lineTo(x(warIdx), p.t + ch); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#BD3227'; ctx.font = '9px "Noto Sans KR"'; ctx.textAlign = 'center';
-    ctx.fillText('이란 전쟁 개시', x(warIdx), p.t - 4);
+    // Legend at bottom
+    var ly = H - 8;
+    ctx.font = (mob?8:9) + 'px "Noto Sans KR"'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#9E8A15'; ctx.fillRect(p.l, ly - 4, 12, 3);
+    ctx.fillStyle = '#666'; ctx.fillText('전쟁 전', p.l + 16, ly);
+    ctx.fillStyle = '#BD3227'; ctx.fillRect(p.l + 60, ly - 4, 12, 3);
+    ctx.fillStyle = '#666'; ctx.fillText('전쟁 후', p.l + 76, ly);
 
-    // Tooltip on hover
+    // Hover tooltip
     cv.onmousemove = function(e){
       var rect = cv.getBoundingClientRect();
-      var mx = (e.clientX - rect.left) * (cv.width / rect.width) / dpr;
+      var mouseX = (e.clientX - rect.left) * (cv.width / rect.width) / dpr;
       var closest = -1, minDist = 999;
       data.forEach(function(d, i){
-        var dist = Math.abs(mx - x(i));
+        var dist = Math.abs(mouseX - x(i));
         if(dist < minDist){ minDist = dist; closest = i; }
       });
-      if(closest >= 0 && minDist < 30){
+      if(closest >= 0 && minDist < 20){
         draw();
         var d = data[closest];
         // Crosshair
-        ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 1;
         ctx.setLineDash([2,2]);
         ctx.beginPath(); ctx.moveTo(x(closest), p.t); ctx.lineTo(x(closest), p.t+ch); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(p.l, y(d.value)); ctx.lineTo(p.l+cw, y(d.value)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(p.l, y(d.v)); ctx.lineTo(p.l+cw, y(d.v)); ctx.stroke();
         ctx.setLineDash([]);
-        // Tooltip box
-        var tx = x(closest), ty = y(d.value) - 28;
-        if(ty < p.t + 10) ty = y(d.value) + 14;
-        var tw = 80, th = 20;
+        // Tooltip
+        var tx = x(closest), ty = y(d.v) - 30;
+        if(ty < p.t + 20) ty = y(d.v) + 16;
+        var label = d.d + '  $' + d.v.toLocaleString();
+        var tw = ctx.measureText(label).width + 16;
+        // Clamp to chart area
+        if(tx - tw/2 < p.l) tx = p.l + tw/2;
+        if(tx + tw/2 > p.l + cw) tx = p.l + cw - tw/2;
         ctx.fillStyle = '#151D26';
-        ctx.beginPath();
-        ctx.roundRect(tx - tw/2, ty - th/2, tw, th, 4);
-        ctx.fill();
+        ctx.beginPath(); ctx.roundRect(tx - tw/2, ty - 10, tw, 20, 4); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "JetBrains Mono"';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(d.date + '  $' + d.value.toLocaleString(), tx, ty);
-        // Highlight dot
-        ctx.beginPath(); ctx.arc(x(closest), y(d.value), 5, 0, Math.PI*2);
-        ctx.fillStyle = '#9E8A15'; ctx.fill();
+        ctx.fillText(label, tx, ty);
+        // Dot
+        ctx.beginPath(); ctx.arc(x(closest), y(d.v), 5, 0, Math.PI*2);
+        ctx.fillStyle = closest >= warStart ? '#BD3227' : '#9E8A15'; ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
       }
     };
