@@ -52,7 +52,7 @@
 
 ## Key Directories
 - `src/agents/` — 7개 전문 에이전트 정의
-- `src/templates/` — HTML 보고서 템플릿 (valentino-boop 스타일)
+- `src/templates/` — HTML 보고서 템플릿 (버건디 테마)
 - `src/templates/report.css` — 보고서 CSS
 - `docs_canonical/` — 정규 문서 4종
 - `reports/` — 생성된 HTML 보고서 출력 디렉토리

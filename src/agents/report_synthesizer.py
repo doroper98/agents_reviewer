@@ -282,9 +282,9 @@ class ReportSynthesizer:
             except Exception:
                 pass
 
-            rows.append(f'<tr><td style="padding:10px 12px;border-bottom:1px solid #E4E0D8">'
-                        f'<a href="{fname}" style="color:#1D6FA5;text-decoration:none;font-weight:600">{title}</a>'
-                        f'</td><td style="padding:10px 12px;border-bottom:1px solid #E4E0D8;color:#6B6B6B;'
+            rows.append(f'<tr><td style="padding:10px 12px;border-bottom:1px solid #3D2828">'
+                        f'<a href="{fname}" style="color:#C9A84C;text-decoration:none;font-weight:600">{title}</a>'
+                        f'</td><td style="padding:10px 12px;border-bottom:1px solid #3D2828;color:#A89880;'
                         f'font-size:12px">{display_date}</td></tr>')
 
         index_html = f'''<!DOCTYPE html>
@@ -293,15 +293,15 @@ class ReportSynthesizer:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Analysis Reports</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
 <style>
-body{{font-family:'Noto Sans KR',sans-serif;background:#FAFAF7;color:#111;margin:0;padding:0}}
+body{{font-family:'Noto Sans KR',sans-serif;background:#2B1A1A;color:#D4C4AA;margin:0;padding:0}}
 .wrap{{max-width:800px;margin:0 auto;padding:20px 14px}}
-h1{{font-size:20px;font-weight:700;margin-bottom:4px}}
-.sub{{font-size:12px;color:#6B6B6B;margin-bottom:20px}}
-table{{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E4E0D8;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}}
-th{{background:#151D26;color:#fff;padding:10px 12px;text-align:left;font-size:12px;font-weight:600}}
-tr:hover{{background:#F5F0E8}}
+h1{{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:900;margin-bottom:4px;color:#F0E2CC}}
+.sub{{font-size:12px;color:#A89880;margin-bottom:20px}}
+table{{width:100%;border-collapse:collapse;background:#3D2828;border:1px solid #5A4A3A;border-radius:8px;overflow:hidden}}
+th{{background:#2B1A1A;color:#A89880;padding:10px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}}
+tr:hover{{background:#4A3232}}
 </style>
 </head>
 <body>
@@ -311,7 +311,7 @@ tr:hover{{background:#F5F0E8}}
 <table>
 <thead><tr><th>보고서</th><th style="width:160px">생성일시</th></tr></thead>
 <tbody>
-{"".join(rows) if rows else '<tr><td colspan="2" style="padding:20px;text-align:center;color:#999">보고서가 없습니다</td></tr>'}
+{"".join(rows) if rows else '<tr><td colspan="2" style="padding:20px;text-align:center;color:#7A6E5E">보고서가 없습니다</td></tr>'}
 </tbody>
 </table>
 </div>

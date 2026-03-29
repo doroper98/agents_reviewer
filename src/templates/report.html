@@ -16,7 +16,7 @@
 <!-- HERO -->
 <header class="hero">
   <div class="container">
-    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:8px">Event Analysis Report</div>
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faded);margin-bottom:8px;font-family:'Noto Serif KR',serif;font-style:italic">Event Analysis Report</div>
     <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
     <p class="hero-sub">{{ result.executive_summary[:150] if result.executive_summary else '' }}</p>
     <div class="hero-tags">
@@ -429,18 +429,18 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
   }
 
   /* Grid */
-  for(var g=1;g<=5;g++){drawPoly(R*g/5,'#E4E0D8',null)}
+  for(var g=1;g<=5;g++){drawPoly(R*g/5,'#5A4A3A',null)}
 
   /* Axes + Labels */
   ctx.font='500 11px "Noto Sans KR",sans-serif';
-  ctx.fillStyle='#444';
+  ctx.fillStyle='#D4C4AA';
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(var i=0;i<n;i++){
     var a=offset+i*step;
     var ex=cx+R*Math.cos(a),ey=cy+R*Math.sin(a);
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.strokeStyle='#E4E0D8';ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.strokeStyle='#5A4A3A';ctx.lineWidth=1;ctx.stroke();
     var lx=cx+(R+28)*Math.cos(a),ly=cy+(R+28)*Math.sin(a);
-    ctx.fillStyle='#444';
+    ctx.fillStyle='#D4C4AA';
     ctx.fillText(labels[i],lx,ly);
   }
 
@@ -454,7 +454,7 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
   }
   ctx.closePath();
   ctx.fillStyle='rgba(29,111,165,.18)';ctx.fill();
-  ctx.strokeStyle='#1D6FA5';ctx.lineWidth=2;ctx.stroke();
+  ctx.strokeStyle='#C9A84C';ctx.lineWidth=2;ctx.stroke();
 
   /* Data points + value text */
   ctx.font='600 10px "Noto Sans KR",sans-serif';
@@ -462,8 +462,8 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
     var a=offset+i*step;
     var v=Math.max(0,Math.min(1,values[i]));
     var x=cx+R*v*Math.cos(a),y=cy+R*v*Math.sin(a);
-    ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fillStyle='#1D6FA5';ctx.fill();
-    ctx.fillStyle='#151D26';
+    ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fillStyle='#C9A84C';ctx.fill();
+    ctx.fillStyle='#F0E2CC';
     ctx.fillText((v*100).toFixed(0)+'%',x,y-12);
   }
 })();
@@ -515,10 +515,10 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
       symbol: tv.symbol,
       interval: tv.interval || 'D',
       timezone: 'Asia/Seoul',
-      theme: 'light',
+      theme: 'dark',
       style: '2',
       locale: 'kr',
-      toolbar_bg: '#FAFAF7',
+      toolbar_bg: '#2B1A1A',
       enable_publishing: false,
       hide_top_toolbar: false,
       hide_legend: false,
@@ -551,7 +551,7 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
 
     var labels = cfg.labels || [];
     var values = cfg.values || [];
-    var colors = cfg.colors || ['#1D6FA5','#BD3227','#1A7B3E','#C76B1E','#9E8A15'];
+    var colors = cfg.colors || ['#C9A84C','#C45C4C','#6B8A5C','#C4884C','#D4B45C'];
     var maxVal = Math.max.apply(null, values) * 1.2 || 100;
     var p = {t:24,r:16,b:32,l:48};
     var cw = W-p.l-p.r, ch = H-p.t-p.b;
@@ -561,9 +561,9 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
     for(var i=0;i<=4;i++){
       var yv = maxVal*i/4;
       var y = p.t + ch - (yv/maxVal)*ch;
-      ctx.strokeStyle='#EFECE5';ctx.lineWidth=1;
+      ctx.strokeStyle='#3D2828';ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(p.l+cw,y);ctx.stroke();
-      ctx.fillStyle='#999';ctx.font='10px "Noto Sans KR"';ctx.textAlign='right';
+      ctx.fillStyle='#A89880';ctx.font='10px "Noto Sans KR"';ctx.textAlign='right';
       ctx.fillText(Math.round(yv),p.l-6,y+3);
     }
 
@@ -577,10 +577,10 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
       ctx.roundRect(x,y,barW,h,3);
       ctx.fill();
       // Label
-      ctx.fillStyle='#444';ctx.font='10px "Noto Sans KR"';ctx.textAlign='center';
+      ctx.fillStyle='#D4C4AA';ctx.font='10px "Noto Sans KR"';ctx.textAlign='center';
       ctx.fillText(label, x+barW/2, p.t+ch+14);
       // Value
-      ctx.fillStyle='#111';ctx.font='bold 10px "Noto Sans KR"';
+      ctx.fillStyle='#F0E2CC';ctx.font='bold 10px "Noto Sans KR"';
       ctx.fillText(values[i], x+barW/2, y-6);
     });
   }
