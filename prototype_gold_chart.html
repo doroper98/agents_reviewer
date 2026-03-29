@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>금 가격 차트 프로토타입</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FAFAF7;font-family:'Noto Sans KR',sans-serif;color:#111}
+.container{max-width:800px;margin:24px auto;padding:0 14px}
+.chart-box{background:#fff;border:1px solid #E4E0D8;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.chart-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:4px}
+.chart-title{font-weight:700;font-size:13px}
+.chart-meta{font-size:9px;color:#999;font-family:'JetBrains Mono',monospace}
+canvas{width:100%;cursor:crosshair}
+.chart-footer{display:flex;gap:12px;margin-top:8px;font-size:9px;color:#6B6B6B;font-family:'JetBrains Mono',monospace;flex-wrap:wrap}
+.chart-footer span{display:flex;align-items:center;gap:4px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="chart-box">
+    <div class="chart-header">
+      <span class="chart-title">금 (Gold) 가격 추이</span>
+      <span class="chart-meta">2025.01 ~ 2026.03 · USD/oz · 월간 종가</span>
+    </div>
+    <canvas id="goldChart" style="height:320px"></canvas>
+    <div class="chart-footer">
+      <span><span class="dot" style="background:#9E8A15"></span> 금 현물가 (USD/oz)</span>
+      <span style="color:#BD3227">▲ 최고 $3,150 (2026.03)</span>
+      <span style="color:#1D6FA5">● 시작 $2,640 (2025.01)</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // 금 가격 데이터 (월간 종가 근사치)
+  var data = [
+    {date:'25.01', value:2640}, {date:'25.02', value:2680}, {date:'25.03', value:2750},
+    {date:'25.04', value:2710}, {date:'25.05', value:2690}, {date:'25.06', value:2730},
+    {date:'25.07', value:2780}, {date:'25.08', value:2850}, {date:'25.09', value:2910},
+    {date:'25.10', value:2880}, {date:'25.11', value:2950}, {date:'25.12', value:3020},
+    {date:'26.01', value:3060}, {date:'26.02', value:3090}, {date:'26.03', value:3150}
+  ];
+
+  var cv = document.getElementById('goldChart');
+  var ctx = cv.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+
+  function draw(){
+    var box = cv.parentElement;
+    var W = box.clientWidth - 32, H = 320;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr);
+    ctx.clearRect(0,0,W,H);
+
+    var p = {t:32, r:16, b:36, l:52};
+    var cw = W - p.l - p.r, ch = H - p.t - p.b;
+    var mn = 2500, mx = 3300, rg = mx - mn;
+
+    var x = function(i){ return p.l + (i / (data.length - 1)) * cw; };
+    var y = function(v){ return p.t + (1 - (v - mn) / rg) * ch; };
+
+    // Y grid + labels
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for(var v = 2600; v <= 3200; v += 200){
+      var yy = y(v);
+      ctx.strokeStyle = '#EFECE5'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(p.l, yy); ctx.lineTo(p.l + cw, yy); ctx.stroke();
+      ctx.fillStyle = '#999'; ctx.font = '10px "JetBrains Mono"';
+      ctx.fillText('$' + v.toLocaleString(), p.l - 6, yy);
+    }
+
+    // X labels
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.font = '9px "JetBrains Mono"';
+    data.forEach(function(d, i){
+      if(i % 2 === 0 || i === data.length - 1){
+        ctx.fillStyle = '#999';
+        ctx.fillText(d.date, x(i), p.t + ch + 8);
+      }
+    });
+
+    // Area gradient
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(data[0].value));
+    data.forEach(function(d, i){ ctx.lineTo(x(i), y(d.value)); });
+    ctx.lineTo(x(data.length-1), p.t + ch);
+    ctx.lineTo(x(0), p.t + ch);
+    ctx.closePath();
+    var grd = ctx.createLinearGradient(0, p.t, 0, p.t + ch);
+    grd.addColorStop(0, 'rgba(158,138,21,0.15)');
+    grd.addColorStop(1, 'rgba(158,138,21,0.01)');
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(data[0].value));
+    // Smooth curve using bezier
+    for(var i = 1; i < data.length; i++){
+      var xc = (x(i-1) + x(i)) / 2;
+      var yc = (y(data[i-1].value) + y(data[i].value)) / 2;
+      ctx.quadraticCurveTo(x(i-1), y(data[i-1].value), xc, yc);
+    }
+    ctx.lineTo(x(data.length-1), y(data[data.length-1].value));
+    ctx.strokeStyle = '#9E8A15'; ctx.lineWidth = 2.5; ctx.stroke();
+
+    // Data points
+    data.forEach(function(d, i){
+      ctx.beginPath();
+      ctx.arc(x(i), y(d.value), 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#9E8A15'; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+
+    // Current price highlight (last point)
+    var last = data[data.length - 1];
+    ctx.beginPath();
+    ctx.arc(x(data.length-1), y(last.value), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#9E8A15'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Price label at last point
+    ctx.fillStyle = '#9E8A15'; ctx.font = 'bold 11px "JetBrains Mono"';
+    ctx.textAlign = 'right';
+    ctx.fillText('$' + last.value.toLocaleString(), x(data.length-1) - 8, y(last.value) - 10);
+
+    // Start price label
+    ctx.fillStyle = '#1D6FA5'; ctx.font = '10px "JetBrains Mono"';
+    ctx.textAlign = 'left';
+    ctx.fillText('$' + data[0].value.toLocaleString(), x(0) + 6, y(data[0].value) - 8);
+
+    // Key event marker (이란 전쟁 개시)
+    var warIdx = 13; // 26.02
+    ctx.strokeStyle = 'rgba(189,50,39,0.4)'; ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x(warIdx), p.t); ctx.lineTo(x(warIdx), p.t + ch); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#BD3227'; ctx.font = '9px "Noto Sans KR"'; ctx.textAlign = 'center';
+    ctx.fillText('이란 전쟁 개시', x(warIdx), p.t - 4);
+
+    // Tooltip on hover
+    cv.onmousemove = function(e){
+      var rect = cv.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) * (cv.width / rect.width) / dpr;
+      var closest = -1, minDist = 999;
+      data.forEach(function(d, i){
+        var dist = Math.abs(mx - x(i));
+        if(dist < minDist){ minDist = dist; closest = i; }
+      });
+      if(closest >= 0 && minDist < 30){
+        draw();
+        var d = data[closest];
+        // Crosshair
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+        ctx.setLineDash([2,2]);
+        ctx.beginPath(); ctx.moveTo(x(closest), p.t); ctx.lineTo(x(closest), p.t+ch); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(p.l, y(d.value)); ctx.lineTo(p.l+cw, y(d.value)); ctx.stroke();
+        ctx.setLineDash([]);
+        // Tooltip box
+        var tx = x(closest), ty = y(d.value) - 28;
+        if(ty < p.t + 10) ty = y(d.value) + 14;
+        var tw = 80, th = 20;
+        ctx.fillStyle = '#151D26';
+        ctx.beginPath();
+        ctx.roundRect(tx - tw/2, ty - th/2, tw, th, 4);
+        ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "JetBrains Mono"';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(d.date + '  $' + d.value.toLocaleString(), tx, ty);
+        // Highlight dot
+        ctx.beginPath(); ctx.arc(x(closest), y(d.value), 5, 0, Math.PI*2);
+        ctx.fillStyle = '#9E8A15'; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+      }
+    };
+    cv.onmouseleave = function(){ draw(); };
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+</body>
+</html>
