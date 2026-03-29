@@ -12,7 +12,7 @@ body{margin:0;background:#FAFAF7;font-family:'Noto Sans KR',sans-serif;color:#11
 .chart-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px}
 .chart-title{font-weight:700;font-size:14px}
 .chart-meta{font-size:9px;color:#999;font-family:'JetBrains Mono',monospace}
-.chart-footer{display:flex;gap:16px;margin-top:10px;font-size:9px;color:#6B6B6B;font-family:'JetBrains Mono',monospace;flex-wrap:wrap}
+.chart-footer{display:flex;gap:16px;margin-top:6px;font-size:9px;color:#6B6B6B;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;justify-content:center}
 .dot{width:8px;height:3px;border-radius:1px;display:inline-block;margin-right:4px}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px}
 .metric{background:#fff;border:1px solid #E4E0D8;border-radius:8px;padding:10px 12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
@@ -43,7 +43,7 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
     <span class="chart-meta">2026.01.02 ~ 03.27 · 일간 · exchange-rates.org, tradingeconomics</span>
   </div>
   <canvas id="goldChart"></canvas>
-  <div class="chart-footer" style="justify-content:center">
+  <div class="chart-footer">
     <span><span class="dot" style="background:#9E8A15"></span>전쟁 전</span>
     <span><span class="dot" style="background:#BD3227"></span>전쟁 후</span>
   </div>
@@ -70,35 +70,50 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
     {d:'2/7',v:4980},{d:'2/9',v:4950},{d:'2/10',v:5010},{d:'2/11',v:5061,ev:'반등 $5,061'},
     {d:'2/12',v:5030},{d:'2/13',v:5000},{d:'2/14',v:4970},{d:'2/17',v:4940},{d:'2/18',v:4960},
     {d:'2/19',v:4980},{d:'2/20',v:5000},{d:'2/21',v:5020},{d:'2/24',v:5050},{d:'2/25',v:5080},
-    {d:'2/26',v:5100},{d:'2/27',v:5120},{d:'2/28',v:5296,ev:'이란 전쟁 개시'},
-    {d:'3/2',v:5350},{d:'3/3',v:5434,ev:'전쟁 후 최고'},{d:'3/4',v:5380},{d:'3/5',v:5320},
-    {d:'3/6',v:5250},{d:'3/7',v:5180},{d:'3/9',v:5100},{d:'3/10',v:5020},{d:'3/11',v:4950},
-    {d:'3/12',v:4880},{d:'3/13',v:4820},{d:'3/14',v:4780},{d:'3/17',v:4720},{d:'3/18',v:4680},
-    {d:'3/19',v:4640},{d:'3/20',v:4580},{d:'3/21',v:4520},{d:'3/24',v:4470},{d:'3/25',v:4430},
-    {d:'3/26',v:4421},{d:'3/27',v:4460,ev:'트럼프 이란 공격 중단'}
+    {d:'2/26',v:5100},{d:'2/27',v:5120},{d:'2/28',v:5296,ev:'이란 전쟁\n개시'},
+    {d:'3/2',v:5350},{d:'3/3',v:5434,ev:'전쟁 후\n최고'},
+    {d:'3/4',v:5380},{d:'3/5',v:5320},{d:'3/6',v:5250},{d:'3/7',v:5180},{d:'3/9',v:5100},
+    {d:'3/10',v:5020},{d:'3/11',v:4950},{d:'3/12',v:4880},{d:'3/13',v:4820},{d:'3/14',v:4780},
+    {d:'3/17',v:4720},{d:'3/18',v:4680},{d:'3/19',v:4640},{d:'3/20',v:4580},{d:'3/21',v:4520},
+    {d:'3/24',v:4470},{d:'3/25',v:4430},{d:'3/26',v:4421},
+    {d:'3/27',v:4460,ev:'트럼프 이란\n공격 중단'}
   ];
 
   var warStart = data.findIndex(function(d){ return d.d === '2/28'; });
   var cv = document.getElementById('goldChart');
   var ctx = cv.getContext('2d');
 
+  // Split text into lines of max 6 chars
+  function wrapText(text, maxChars){
+    if(text.indexOf('\n') >= 0) return text.split('\n');
+    var words = text.split(' '), lines = [], cur = '';
+    for(var i = 0; i < words.length; i++){
+      var test = cur ? cur + ' ' + words[i] : words[i];
+      if(test.length > maxChars && cur){
+        lines.push(cur);
+        cur = words[i];
+      } else {
+        cur = test;
+      }
+    }
+    if(cur) lines.push(cur);
+    return lines;
+  }
+
   function draw(){
-    // HIGH RESOLUTION: use 3x pixel ratio minimum
     var dpr = Math.max(window.devicePixelRatio || 1, 3);
     var box = cv.parentElement;
     var W = box.clientWidth - 40;
-    var H = 440;
+    var H = 460;
     cv.width = W * dpr; cv.height = H * dpr;
     cv.style.width = W + 'px'; cv.style.height = H + 'px';
     ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr);
     ctx.clearRect(0,0,W,H);
-
-    // Anti-aliasing hint
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
     var mob = W < 500;
-    var p = {t:30, r:70, b:100, l:mob?44:54};
+    var p = {t:30, r:70, b:80, l:mob?44:54};
     var cw = W - p.l - p.r, ch = H - p.t - p.b;
     var mn = 4100, mx = 5600, rg = mx - mn;
 
@@ -110,6 +125,15 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.fillStyle = 'rgba(189,50,39,0.03)';
       ctx.fillRect(x(warStart), p.t, x(data.length-1) - x(warStart), ch);
     }
+
+    // Monthly vertical grid lines (same style as horizontal grid)
+    var monthStarts = {'1/2':true,'2/2':true,'3/2':true};
+    data.forEach(function(d, i){
+      if(monthStarts[d.d]){
+        ctx.strokeStyle = '#F0EDE6'; ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(x(i), p.t); ctx.lineTo(x(i), p.t + ch); ctx.stroke();
+      }
+    });
 
     // Y grid + labels
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
@@ -135,7 +159,7 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       if(months[d.d]) ctx.fillText(months[d.d], x(i), p.t + ch + 6);
     });
 
-    // War start vertical line
+    // War start vertical line (dashed red, distinct from grid)
     if(warStart >= 0){
       ctx.strokeStyle = 'rgba(189,50,39,0.35)'; ctx.lineWidth = 1;
       ctx.setLineDash([5,4]);
@@ -192,10 +216,10 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.fill();
     });
 
-    // Collect price labels to prevent overlap
+    // Collect price label positions for overlap prevention
     var priceLabels = [];
 
-    // Event markers + prices
+    // Event markers + prices + multi-line labels at bottom
     data.forEach(function(d, i){
       if(!d.ev) return;
       var color = i >= warStart ? '#BD3227' : '#9E8A15';
@@ -206,56 +230,66 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.fillStyle = color; ctx.fill();
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
-      // Vertical dotted line from dot down to label area
-      ctx.strokeStyle = color.replace(')', ',0.2)').replace('rgb', 'rgba');
-      ctx.lineWidth = 1; ctx.setLineDash([2,3]);
-      ctx.beginPath(); ctx.moveTo(x(i), y(d.v) + 8); ctx.lineTo(x(i), p.t + ch + 2); ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Price label ABOVE dot (with 16px gap)
-      var priceY = y(d.v) - 16;
-      // Check for overlap with existing labels
+      // Price label ABOVE dot (20px gap)
+      var priceY = y(d.v) - 20;
       for(var j = 0; j < priceLabels.length; j++){
-        var existing = priceLabels[j];
-        if(Math.abs(x(i) - existing.x) < 50 && Math.abs(priceY - existing.y) < 14){
-          priceY = existing.y - 14; // push up
+        if(Math.abs(x(i) - priceLabels[j].x) < 55 && Math.abs(priceY - priceLabels[j].y) < 14){
+          priceY = priceLabels[j].y - 14;
         }
       }
       priceLabels.push({x: x(i), y: priceY});
-
       ctx.fillStyle = color;
       ctx.font = 'bold 10px "JetBrains Mono"'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.fillText('$' + d.v.toLocaleString(), x(i), priceY);
 
-      // Event label at BOTTOM — 45 degree tilted, text END touches the event point
+      // Event label at BOTTOM — multi-line, right-aligned, -45 degrees
+      // Vertical dotted line from dot to label area
+      ctx.strokeStyle = color.replace(')', ',0.2)').replace('rgb', 'rgba').replace('#BD3227','rgba(189,50,39,0.2)').replace('#9E8A15','rgba(158,138,21,0.2)');
+      ctx.strokeStyle = i >= warStart ? 'rgba(189,50,39,0.2)' : 'rgba(158,138,21,0.2)';
+      ctx.lineWidth = 1; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(x(i), y(d.v) + 8); ctx.lineTo(x(i), p.t + ch + 2); ctx.stroke();
+      ctx.setLineDash([]);
+
+      var lines = wrapText(d.ev, 6);
       ctx.save();
       ctx.translate(x(i), p.t + ch + 22);
-      ctx.rotate(-Math.PI / 4); // -45 degrees (left-leaning)
+      ctx.rotate(-Math.PI / 4);
       ctx.fillStyle = '#555';
       ctx.font = '9px "Noto Sans KR"'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-      ctx.fillText(d.ev, 0, 0);
+      for(var li = 0; li < lines.length; li++){
+        ctx.fillText(lines[li], 0, li * 12);
+      }
       ctx.restore();
     });
 
-    // Start price (no event marker)
+    // Start price — ABOVE dot, offset right to avoid line overlap
+    var startPriceY = y(data[0].v) - 20;
+    for(var j = 0; j < priceLabels.length; j++){
+      if(Math.abs(x(0) - priceLabels[j].x) < 55 && Math.abs(startPriceY - priceLabels[j].y) < 14){
+        startPriceY = priceLabels[j].y - 14;
+      }
+    }
     ctx.fillStyle = '#9E8A15';
-    ctx.font = '10px "JetBrains Mono"'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-    ctx.fillText('$' + data[0].v.toLocaleString(), x(0) + 8, y(data[0].v) - 6);
+    ctx.font = 'bold 10px "JetBrains Mono"'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('$' + data[0].v.toLocaleString(), x(0) + 8, startPriceY);
 
-    // Current price (last point, larger)
+    // Current price — ABOVE dot, offset right
     var last = data[data.length - 1];
-    // Only add if not already an event marker
     if(!last.ev){
       ctx.beginPath();
       ctx.arc(x(data.length-1), y(last.v), 4, 0, Math.PI * 2);
       ctx.fillStyle = '#BD3227'; ctx.fill();
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = '#BD3227'; ctx.font = 'bold 11px "JetBrains Mono"';
-      ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-      ctx.fillText('$' + last.v.toLocaleString(), x(data.length-1) + 50, y(last.v) - 10);
     }
-
-    // (legend is in HTML footer, not drawn on canvas)
+    var endPriceY = y(last.v) - 20;
+    for(var j = 0; j < priceLabels.length; j++){
+      if(Math.abs(x(data.length-1) - priceLabels[j].x) < 55 && Math.abs(endPriceY - priceLabels[j].y) < 14){
+        endPriceY = priceLabels[j].y - 14;
+      }
+    }
+    ctx.fillStyle = '#BD3227';
+    ctx.font = 'bold 10px "JetBrains Mono"'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText('$' + last.v.toLocaleString(), x(data.length-1) + 50, endPriceY);
 
     // Hover tooltip
     cv.onmousemove = function(e){
@@ -269,13 +303,11 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       if(closest >= 0 && minDist < 16){
         draw();
         var d = data[closest];
-        // Crosshair
         ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 0.5;
         ctx.setLineDash([2,2]);
         ctx.beginPath(); ctx.moveTo(x(closest), p.t); ctx.lineTo(x(closest), p.t+ch); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(p.l, y(d.v)); ctx.lineTo(p.l+cw, y(d.v)); ctx.stroke();
         ctx.setLineDash([]);
-        // Tooltip
         var label = d.d + '  $' + d.v.toLocaleString();
         ctx.font = 'bold 10px "JetBrains Mono"';
         var tw = ctx.measureText(label).width + 18;
@@ -283,14 +315,12 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
         if(ty < p.t + 10) ty = y(d.v) + 18;
         if(tx - tw/2 < p.l) tx = p.l + tw/2 + 2;
         if(tx + tw/2 > p.l + cw) tx = p.l + cw - tw/2 - 2;
-        // Shadow
         ctx.shadowColor = 'rgba(0,0,0,0.12)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
         ctx.fillStyle = '#151D26';
         ctx.beginPath(); ctx.roundRect(tx - tw/2, ty - 11, tw, 22, 5); ctx.fill();
         ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(label, tx, ty);
-        // Dot
         ctx.beginPath(); ctx.arc(x(closest), y(d.v), 5, 0, Math.PI*2);
         ctx.fillStyle = closest >= warStart ? '#BD3227' : '#9E8A15'; ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
