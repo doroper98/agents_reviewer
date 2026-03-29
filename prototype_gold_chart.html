@@ -43,11 +43,9 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
     <span class="chart-meta">2026.01.02 ~ 03.27 · 일간 · exchange-rates.org, tradingeconomics</span>
   </div>
   <canvas id="goldChart"></canvas>
-  <div class="chart-footer">
+  <div class="chart-footer" style="justify-content:center">
     <span><span class="dot" style="background:#9E8A15"></span>전쟁 전</span>
     <span><span class="dot" style="background:#BD3227"></span>전쟁 후</span>
-    <span style="color:#BD3227">최고 $5,400 (1/28)</span>
-    <span style="color:#1D6FA5">현재 $4,460 (3/27)</span>
   </div>
 </div>
 
@@ -257,13 +255,7 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.fillText('$' + last.v.toLocaleString(), x(data.length-1) + 50, y(last.v) - 10);
     }
 
-    // Bottom legend
-    ctx.font = '9px "Noto Sans KR"'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    var legendY = H - 14;
-    ctx.fillStyle = '#9E8A15'; ctx.fillRect(p.l, legendY, 14, 3);
-    ctx.fillStyle = '#888'; ctx.fillText('전쟁 전', p.l + 18, legendY - 4);
-    ctx.fillStyle = '#BD3227'; ctx.fillRect(p.l + 64, legendY, 14, 3);
-    ctx.fillStyle = '#888'; ctx.fillText('전쟁 후', p.l + 82, legendY - 4);
+    // (legend is in HTML footer, not drawn on canvas)
 
     // Hover tooltip
     cv.onmousemove = function(e){
