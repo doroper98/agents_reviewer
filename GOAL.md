@@ -1,58 +1,74 @@
 # Event Analysis Team — Project Goal
 
 ## 1. Objective (목적)
-텔레그램 메시지로 사건/이벤트 분석을 지시하면, AI 에이전트 팀이 자동으로
-다각도 분석을 수행하고 비주얼 보고서로 결과를 반환하는 시스템 구축.
+텔레그램 메시지로 사건/이벤트 분석을 지시하면, 7개 AI 에이전트 팀이 자동으로
+다각도 분석을 수행하고 valentino-boop 스타일 HTML 보고서로 결과를 반환하는 시스템.
 
 ## 2. Requirements (요구사항)
 
 ### 기능 요구사항 (Functional)
 
-| ID | 분류 | 설명 | 우선순위 |
-|----|------|------|----------|
-| REQ-TG-001 | Telegram | 텔레그램 봇으로 분석 명령 수신 | P0 |
-| REQ-TG-002 | Telegram | 분석 진행 상태 실시간 알림 | P1 |
-| REQ-TG-003 | Telegram | 최종 보고서 HTML 링크 전송 | P0 |
-| REQ-ORC-001 | Orchestrator | 명령 파싱 및 분석 유형 자동 결정 | P0 |
-| REQ-ORC-002 | Orchestrator | 5단계 파이프라인 순차/병렬 실행 | P0 |
-| REQ-AGT-001 | Agent | Event Identifier — 사건 5W1H 프로필 생성 | P0 |
-| REQ-AGT-002 | Agent | Macro Analyst — 거시경제 파급력 분석 | P0 |
-| REQ-AGT-003 | Agent | Geopolitical Analyst — 지정학 파급력 분석 | P0 |
-| REQ-AGT-004 | Agent | Micro Analyst — 미시경제 파급력 분석 | P0 |
-| REQ-AGT-005 | Agent | Investment Analyst — 투자 영향 분석 | P0 |
-| REQ-AGT-006 | Agent | Historian & Ethics — 역사/윤리 맥락 분석 | P0 |
-| REQ-AGT-007 | Agent | Devil's Advocate — 비판적 검증/감사 | P0 |
-| REQ-AGT-008 | Agent | Report Synthesizer — HTML 보고서 생성 | P0 |
-| REQ-RPT-001 | Report | YK_ soft-brutalism 테마 적용 | P0 |
-| REQ-RPT-002 | Report | 4-Quadrant 영향도 시각화 | P1 |
-| REQ-RPT-003 | Report | Executive Summary 자동 생성 | P0 |
+| ID | 분류 | 설명 | 우선순위 | 상태 |
+|----|------|------|----------|------|
+| REQ-TG-001 | Telegram | 텔레그램 봇으로 분석 명령 수신 | P0 | ✅ |
+| REQ-TG-002 | Telegram | 분석 진행 상태 실시간 메시지 | P1 | ✅ |
+| REQ-TG-003 | Telegram | HTML 파일 + Cloudflare 공유 링크 전송 | P0 | ✅ |
+| REQ-TG-004 | Telegram | `?` 접두어 간단 질답 기능 | P1 | ✅ |
+| REQ-ORC-001 | Orchestrator | 4단계 파이프라인 순차 실행 | P0 | ✅ |
+| REQ-AGT-001 | Agent | 상황인식 분석관 — 팩트, 타임라인, 웹 검색 | P0 | ✅ |
+| REQ-AGT-002 | Agent | 이해관계자 분석관 — 행위자, 전략, 위험도 | P0 | ✅ |
+| REQ-AGT-003 | Agent | 구조/상호작용 분석관 — 게임이론, 전환점 | P0 | ✅ |
+| REQ-AGT-004 | Agent | 연쇄반응 분석관 — 인과 사슬, 도미노 효과 | P0 | ✅ |
+| REQ-AGT-005 | Agent | 향후 시나리오 분석관 — 4개 시나리오 + 감시 신호 | P0 | ✅ |
+| REQ-AGT-006 | Agent | 시각화 분석관 — SVG 관계도, Leaflet 지도, Canvas 차트 | P0 | ✅ |
+| REQ-AGT-007 | Agent | 보고서 합성관 — HTML 생성, Cloudflare 배포 | P0 | ✅ |
+| REQ-RPT-001 | Report | valentino-boop 6막 극장 구조 테마 | P0 | ✅ |
+| REQ-RPT-002 | Report | SVG/Canvas 시각화 (Plotly 제거) | P0 | ✅ |
+| REQ-RPT-003 | Report | Executive Summary 자동 생성 | P0 | ✅ |
+| REQ-RPT-004 | Report | 용어 정의(glossary) 포함 | P1 | ✅ |
+| REQ-RPT-005 | Report | 모바일 반응형 | P1 | ✅ |
 
 ### 비기능 요구사항 (Non-Functional)
 
-| ID | 설명 |
-|----|------|
-| NFR-001 | 전체 분석 완료 ≤ 3분 |
-| NFR-002 | 병렬 분석으로 처리 시간 최적화 |
-| NFR-003 | API 키 환경변수 관리 (.env) |
+| ID | 설명 | 상태 |
+|----|------|------|
+| NFR-001 | 전체 분석 완료 (순차 실행 기준) | ✅ |
+| NFR-002 | API 키 환경변수 관리 (.env) | ✅ |
+| NFR-003 | Max 플랜 CLI 모드 (추가 비용 없음) | ✅ |
+| NFR-004 | Oracle Cloud 무료 VM 운영 | ✅ |
+| NFR-005 | Cloudflare Pages 무료 호스팅 | ✅ |
 
 ## 3. Success Criteria (성공 기준)
 
-| SC | 설명 | 검증 방법 | REQ |
-|----|------|-----------|-----|
-| SC-01 | 텔레그램 메시지로 분석 시작 가능 | 수동 테스트 | REQ-TG-001 |
-| SC-02 | 9개 에이전트 순차/병렬 실행 완료 | 로그 확인 | REQ-ORC-002 |
-| SC-03 | HTML 보고서 정상 생성 | 브라우저 확인 | REQ-RPT-001 |
-| SC-04 | 보고서에 4대 분석 + 역사/윤리 포함 | 내용 확인 | REQ-AGT-002~006 |
-| SC-05 | Devil's Advocate 감사 결과 포함 | 내용 확인 | REQ-AGT-007 |
+| SC | 설명 | 검증 방법 | 상태 |
+|----|------|-----------|------|
+| SC-01 | 텔레그램 메시지로 분석 시작 가능 | 수동 테스트 | ✅ |
+| SC-02 | 7개 에이전트 순차 실행 완료 | 로그 확인 | ✅ |
+| SC-03 | valentino-boop HTML 보고서 정상 생성 | 브라우저 확인 | ✅ |
+| SC-04 | 6막 구조 분석 내용 포함 | 내용 확인 | ✅ |
+| SC-05 | SVG/Canvas 시각화 정상 렌더링 | 브라우저 확인 | ✅ |
+| SC-06 | Cloudflare 배포 + 공유 링크 동작 | URL 접속 확인 | ✅ |
+| SC-07 | `?` 간단 질답 동작 | 수동 테스트 | ✅ |
 
-## 4. Phases
+## 4. Completed Phases
 
-### Phase 1: Core Infrastructure
-- S1.1: 프로젝트 구조 수립 → SC-01
-- S1.2: 데이터 모델 정의 → SC-02
-- S1.3: 에이전트 기본 클래스 + 9개 에이전트 정의 → SC-04, SC-05
+### Phase 1: Core Infrastructure ✅
+- 프로젝트 구조 수립, Pydantic 모델 정의, 에이전트 기본 클래스
 
-### Phase 2: Pipeline & Integration
-- S2.1: 오케스트레이터 파이프라인 구현 → SC-02
-- S2.2: 텔레그램 봇 연동 → SC-01
-- S2.3: HTML 보고서 템플릿 → SC-03
+### Phase 2: Pipeline & Integration ✅
+- 오케스트레이터 파이프라인, 텔레그램 봇 연동, HTML 템플릿
+
+### Phase 3: Refinement ✅
+- 9→7 에이전트 재구성, valentino-boop 스타일, CLI 모드 전환
+- SVG 직접 생성, Canvas 차트, Leaflet 지도
+- 음슴체 프롬프트, 용어 정의, 모바일 반응형
+
+## 5. Future Improvements (향후 개선)
+
+| ID | 설명 | 우선순위 |
+|----|------|----------|
+| FUT-001 | Mac Mini 이전 시 병렬 실행 복원 | P2 |
+| FUT-002 | 분석 중 사용자 추가 요청 반영 (중간 피드백) | P2 |
+| FUT-003 | 분석 대기열 (여러 분석 동시 요청) | P3 |
+| FUT-004 | Figma MCP를 활용한 고급 시각화 | P3 |
+| FUT-005 | 보고서 에필로그 (예측 검증 스코어카드) | P3 |
