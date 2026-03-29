@@ -4,56 +4,55 @@
 | Area | Technology | Rationale |
 |------|-----------|-----------|
 | Language | Python 3.11+ | async/await, type hints, AI ecosystem |
-| AI Engine | Anthropic Claude API | Structured output, tool use, reasoning |
-| Messaging | python-telegram-bot | Async, webhook support |
+| AI Engine | Claude Code CLI (Opus) | Max 플랜 subprocess 호출, 웹 검색 |
+| Messaging | python-telegram-bot | Async 텔레그램 봇 |
 | Data Models | Pydantic v2 | Validation, serialization |
-| Report Template | Jinja2 | HTML templating |
-| CSS Theme | YK_ soft-brutalism | Professional, readable |
-| Charts | Plotly.js (CDN) | Interactive, no server needed |
+| Report Template | Jinja2 | HTML 렌더링 |
+| CSS | report.css | 별도 파일, 6막 극장 구조 |
+| Visualization | SVG 직접 생성 | 관계도, 플로우차트 |
+| Maps | Leaflet.js (CDN) | 지정학 분석 시 |
+| Charts | Canvas 2D / TradingView | 금융=TradingView, 기타=Canvas |
+| Hosting | Cloudflare Pages | wrangler CLI 배포 |
+| Server | Oracle Cloud VM | 무료 티어, Ubuntu 22.04 |
 
 ## System Architecture
 
 ```
 ┌──────────────┐     ┌──────────────────────────────────────┐
 │  Telegram     │────▶│  Telegram Bot (telegram_bot.py)      │
-│  User         │◀────│  - Command parsing                   │
+│  User         │◀────│  - Message handling                  │
 └──────────────┘     │  - Status updates                    │
                      │  - Report delivery                   │
                      └──────────┬───────────────────────────┘
                                 │
                      ┌──────────▼───────────────────────────┐
                      │  Orchestrator (orchestrator.py)       │
-                     │  - Task decomposition                │
-                     │  - Agent coordination                │
-                     │  - Pipeline management               │
+                     │  - 4-phase pipeline                  │
+                     │  - Sequential agent execution        │
+                     │  - FullAnalysisResult accumulation    │
                      └──────────┬───────────────────────────┘
                                 │
-              ┌─────────────────┼─────────────────┐
-              ▼                 ▼                  ▼
-     ┌────────────┐   ┌────────────────┐  ┌──────────────┐
-     │ Phase 2:    │   │ Phase 3:       │  │ Phase 4:     │
-     │ Event ID    │   │ Parallel       │  │ Audit        │
-     │             │   │ Analysis (5x)  │  │ (Devil's     │
-     │             │   │                │  │  Advocate)   │
-     └─────────────┘   └────────────────┘  └──────────────┘
-                                │
-                     ┌──────────▼───────────────────────────┐
-                     │  Report Synthesizer                   │
-                     │  - Jinja2 template rendering         │
-                     │  - Plotly chart generation            │
-                     │  - HTML file output                  │
-                     └──────────────────────────────────────┘
+         Phase 1: ① 상황인식 분석관 (웹 검색)
+                  ▼
+         Phase 2: ② 이해관계자 → ③ 구조/상호작용
+                  ▼
+         Phase 3: ④ 연쇄반응 → ⑤ 시나리오
+                  ▼
+         Phase 3.5: ⑥ 시각화 (SVG/지도/차트)
+                  ▼
+         Phase 4: ⑦ 보고서 합성 → Cloudflare 배포
+
 ```
 
 ## Data Flow
-1. User sends Telegram message → Bot parses AnalysisRequest
-2. Orchestrator creates pipeline → Event Identifier runs first
-3. EventProfile shared with 5 parallel analysts
-4. All results sent to Devil's Advocate for audit
-5. If REVISE → specific agents re-run with feedback
-6. Report Synthesizer generates HTML → sent via Telegram
+1. User sends Telegram message → Bot creates AnalysisRequest
+2. Orchestrator runs 7 agents sequentially (context cascading)
+3. Each agent: system prompt + accumulated context → Claude CLI → JSON → Pydantic model
+4. Report Synthesizer: Jinja2 render → HTML save → wrangler deploy → Cloudflare URL
+5. Bot sends: text summary + HTML file + share link
 
 ## Agent Communication
 - All agents communicate via Pydantic models (no raw dicts)
 - Orchestrator holds the FullAnalysisResult state
-- Each agent receives relevant context and returns typed output
+- Each agent receives all previous results and returns typed output
+- Claude CLI called via subprocess with `--dangerously-skip-permissions`
