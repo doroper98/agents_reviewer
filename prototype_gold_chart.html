@@ -101,7 +101,7 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
     ctx.clearRect(0,0,W,H);
 
     var mob = W < 500;
-    var p = {t:36, r:16, b:38, l:mob?44:52};
+    var p = {t:36, r:80, b:56, l:mob?44:52};
     var cw = W - p.l - p.r, ch = H - p.t - p.b;
     var mn = 4100, mx = 5600, rg = mx - mn;
 
@@ -150,7 +150,7 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.beginPath(); ctx.moveTo(x(warStart), p.t); ctx.lineTo(x(warStart), p.t + ch); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = '#BD3227'; ctx.font = 'bold ' + (mob?8:9) + 'px "Noto Sans KR"'; ctx.textAlign = 'center';
-      ctx.fillText('⚔ 이란 전쟁 개시 (2/28)', x(warStart), p.t + 6);
+      ctx.fillText('⚔ 이란 전쟁 개시 (2/28)', x(warStart), p.t + ch + 20);
     }
 
     // Area gradient
@@ -201,24 +201,32 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.fill();
     });
 
-    // Event markers
+    // Event markers — vertical line down + label at bottom, price above dot
     data.forEach(function(d, i){
       if(d.ev && d.d !== '2/28'){
+        // Dot on data point
         ctx.beginPath();
         ctx.arc(x(i), y(d.v), 4, 0, Math.PI * 2);
         ctx.fillStyle = i >= warStart ? '#BD3227' : '#9E8A15';
         ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-        // Label
+        // Vertical line from dot to bottom
+        ctx.strokeStyle = i >= warStart ? 'rgba(189,50,39,0.25)' : 'rgba(158,138,21,0.25)';
+        ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(x(i), y(d.v) + 6); ctx.lineTo(x(i), p.t + ch); ctx.stroke();
+        ctx.setLineDash([]);
+        // Price label ABOVE dot
+        ctx.fillStyle = i >= warStart ? '#BD3227' : '#9E8A15';
+        ctx.font = 'bold ' + (mob?8:9) + 'px "JetBrains Mono"'; ctx.textAlign = 'center';
+        ctx.fillText('$' + d.v.toLocaleString(), x(i), y(d.v) - 10);
+        // Event label at BOTTOM of vertical line
         ctx.fillStyle = i >= warStart ? '#BD3227' : '#9E8A15';
         ctx.font = (mob?7:8) + 'px "Noto Sans KR"'; ctx.textAlign = 'center';
-        var labelY = y(d.v) - 10;
-        if(d.v > 5300) labelY = y(d.v) + 14;
-        ctx.fillText(d.ev, x(i), labelY);
+        ctx.fillText(d.ev, x(i), p.t + ch + 20);
       }
     });
 
-    // Current price highlight
+    // Current price highlight — price ABOVE
     var last = data[data.length - 1];
     ctx.beginPath();
     ctx.arc(x(data.length-1), y(last.v), 5, 0, Math.PI * 2);
@@ -226,11 +234,11 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = '#BD3227'; ctx.font = 'bold 11px "JetBrains Mono"';
     ctx.textAlign = 'right';
-    ctx.fillText('$' + last.v.toLocaleString(), x(data.length-1) - 8, y(last.v) + 14);
+    ctx.fillText('$' + last.v.toLocaleString(), x(data.length-1) + 40, y(last.v) - 8);
 
-    // Start price
+    // Start price — ABOVE
     ctx.fillStyle = '#9E8A15'; ctx.font = '10px "JetBrains Mono"'; ctx.textAlign = 'left';
-    ctx.fillText('$' + data[0].v.toLocaleString(), x(0) + 6, y(data[0].v) + 12);
+    ctx.fillText('$' + data[0].v.toLocaleString(), x(0) + 6, y(data[0].v) - 10);
 
     // Legend at bottom
     var ly = H - 8;
