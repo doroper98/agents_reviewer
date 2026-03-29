@@ -395,21 +395,13 @@ class ReportSynthesizer:
                 logger.error(f"[report_synthesizer] Cloudflare upload failed: {output}")
                 return ""
 
-            # Extract URL from wrangler output
+            # Always use production URL (not deployment-specific snapshot URL)
+            # Deployment URLs (e.g. abc123.project.pages.dev) are frozen snapshots
+            # Production URL (project.pages.dev) always reflects the latest deployment
             filename = os.path.basename(filepath)
-            for line in output.split("\n"):
-                line = line.strip()
-                if "https://" in line and ".pages.dev" in line:
-                    base_url = "https://" + line.split("https://")[1].split()[0]
-                    base_url = base_url.rstrip("/")
-                    full_url = f"{base_url}/{filename}"
-                    logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {full_url}")
-                    return full_url
-
-            # Fallback: construct URL
-            fallback_url = f"https://{project_name}.pages.dev/{filename}"
-            logger.info(f"[report_synthesizer] Using fallback URL: {fallback_url}")
-            return fallback_url
+            production_url = f"https://{project_name}.pages.dev/{filename}"
+            logger.info(f"[report_synthesizer] Uploaded to Cloudflare: {production_url}")
+            return production_url
 
         except Exception as e:
             logger.error(f"[report_synthesizer] Cloudflare upload exception: {e}")
