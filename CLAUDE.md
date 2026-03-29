@@ -33,6 +33,16 @@
 - `docs_canonical/REPO_MAP.md` — 파일/폴더 구조 설명
 - `DEVLOG.md` — 전체 개발 로그 (인프라, 트러블슈팅 포함)
 
+## Canvas 차트 제작 기준
+- 참조 구현: `prototype_gold_chart.html`
+- 해상도: 최소 3x DPR
+- 가격 라벨: 스팟 위 20px, 겹침 시 자동 상향 조정
+- 이벤트 라벨: 차트 하단, -45도 좌하향, 오른쪽 정렬, 6글자 줄바꿈
+- 곡선: quadratic bezier, 구간별 색상 분리
+- 호버: 크로스헤어 + 네이비 툴팁
+- 여백: right 70px+, bottom 80px+
+- 범례: HTML footer 가운데 정렬, canvas 내부 중복 금지
+
 ## Execution Rules
 1. 모든 코드 변경 후 `python -m py_compile` 검증
 2. Type hints 필수
