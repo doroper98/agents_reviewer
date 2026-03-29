@@ -106,15 +106,29 @@ class TelegramBot:
         analyzing_str = f"분석 중: {self._current_topic[:30]}" if self._is_analyzing else "대기 중"
         queue_str = f"{len(self._queue)}건 대기" if self._queue else "없음"
 
+        opus = self.config.model_name
+        sonnet = self.config.model_name_light
+
+        agents_info = (
+            f"📋 에이전트 구성 (7명)\n"
+            f"  ① 상황판 분석관 ····· {sonnet}\n"
+            f"  ② 플레이어 분석관 ··· {sonnet}\n"
+            f"  ③ 구조/역학 분석관 ·· {opus}\n"
+            f"  ④ 연쇄반응 분석관 ··· {sonnet}\n"
+            f"  ⑤ 시나리오 설계관 ··· {opus}\n"
+            f"  ⑥ 시각화 분석관 ····· {opus}\n"
+            f"  ⑦ 보고서 합성관 ····· {sonnet}\n"
+        )
+
         status_msg = (
             f"✅ 봇 실행 중\n\n"
             f"  가동시간: {uptime_str}\n"
             f"  생성된 보고서: {report_count}건\n"
             f"  이번 세션 분석: {_analysis_count}건\n"
-            f"  모델: {self.config.model_name}\n"
             f"  서버 메모리: {mem_str}\n"
             f"  현재 상태: {analyzing_str}\n"
             f"  대기열: {queue_str}\n"
+            f"\n{agents_info}"
             f"\n토큰 사용량 확인:\n"
             f"  claude.ai → 설정 → 사용량"
         )
