@@ -93,6 +93,24 @@ class VisualAnalysis(BaseModel):
     confidence_score: float = 0.0
 
 
+class NarrativeSection(BaseModel):
+    """A single section in the dynamic report narrative."""
+
+    section_id: str = ""
+    act_label: str = ""
+    title: str = ""
+    data_source: str = ""
+    narrative_bridge: str = ""
+    subsections: list[str] = Field(default_factory=list)
+
+
+class NarrativePlan(BaseModel):
+    """Claude-generated plan for report section ordering."""
+
+    report_theme: str = ""
+    sections: list[NarrativeSection] = Field(default_factory=list)
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 

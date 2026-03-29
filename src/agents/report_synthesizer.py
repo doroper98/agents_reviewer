@@ -13,7 +13,7 @@ from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
-from src.models import FullAnalysisResult
+from src.models import FullAnalysisResult, NarrativePlan, NarrativeSection
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +166,168 @@ class ReportSynthesizer:
             logger.error(f"[report_synthesizer] Summary generation failed: {e}")
             return "Executive summary unavailable."
 
+    # ------------------------------------------------------------------
+    # Narrative Plan generation
+    # ------------------------------------------------------------------
+
+    _DATA_SOURCE_CHECKS: dict[str, str] = {
+        "context": "context",
+        "players": "players",
+        "dynamics": "dynamics",
+        "chain_reaction": "chain_reaction",
+        "scenarios": "scenarios",
+        "watch_signals": "scenarios",
+    }
+
+    def _has_data(self, result: FullAnalysisResult, source: str) -> bool:
+        """Check if a data_source has meaningful data."""
+        field = self._DATA_SOURCE_CHECKS.get(source)
+        if not field:
+            return False
+        obj = getattr(result, field, None)
+        if obj is None:
+            return False
+        if source == "players":
+            return bool(obj.players)
+        if source == "chain_reaction":
+            return bool(obj.chain)
+        if source == "scenarios":
+            return bool(obj.scenarios)
+        if source == "watch_signals":
+            return bool(getattr(obj, "watch_signals", None))
+        return True
+
+    def _get_available_sources(self, result: FullAnalysisResult) -> list[str]:
+        """Return list of data_sources that have actual data."""
+        return [s for s in self._DATA_SOURCE_CHECKS if self._has_data(result, s)]
+
+    @staticmethod
+    def _default_narrative_plan(result: FullAnalysisResult) -> NarrativePlan:
+        """Fallback: traditional 6-act structure."""
+        defaults = [
+            ("context", "PART I", "상황인식"),
+            ("players", "PART II", "이해관계자"),
+            ("dynamics", "PART III", "구조 및 상호작용"),
+            ("chain_reaction", "PART IV", "연쇄반응"),
+            ("scenarios", "PART V", "향후 시나리오"),
+            ("watch_signals", "PART VI", "시그널"),
+        ]
+        sections: list[NarrativeSection] = []
+        for i, (src, act, title) in enumerate(defaults):
+            field = "scenarios" if src == "watch_signals" else src
+            obj = getattr(result, field, None)
+            if obj is None:
+                continue
+            if src == "players" and not obj.players:
+                continue
+            if src == "chain_reaction" and not obj.chain:
+                continue
+            if src == "scenarios" and not obj.scenarios:
+                continue
+            if src == "watch_signals" and not getattr(obj, "watch_signals", None):
+                continue
+            sections.append(NarrativeSection(
+                section_id=f"s{i + 1}",
+                act_label=act,
+                title=title,
+                data_source=src,
+            ))
+        return NarrativePlan(sections=sections)
+
+    async def _generate_narrative_plan(
+        self, result: FullAnalysisResult
+    ) -> NarrativePlan:
+        """Ask Claude for the optimal section ordering for this event."""
+        available = self._get_available_sources(result)
+        if not available:
+            return self._default_narrative_plan(result)
+
+        # Build condensed summaries for the prompt
+        summaries: dict[str, str] = {}
+        if result.context:
+            summaries["context"] = (
+                f"사건: {result.context.event_name}. "
+                f"요약: {result.context.summary[:200]}"
+            )
+        if result.players and result.players.players:
+            names = [p.get("name", "") for p in result.players.players[:6]]
+            summaries["players"] = f"주요 행위자: {', '.join(names)}"
+        if result.dynamics:
+            summaries["dynamics"] = (
+                f"프레임워크: {result.dynamics.framework}. "
+                f"{result.dynamics.summary[:150]}"
+            )
+        if result.chain_reaction and result.chain_reaction.chain:
+            titles = [s.get("title", "") for s in result.chain_reaction.chain[:5]]
+            summaries["chain_reaction"] = f"연쇄단계: {' → '.join(titles)}"
+        if result.scenarios and result.scenarios.scenarios:
+            names = [s.get("name", "") for s in result.scenarios.scenarios[:4]]
+            summaries["scenarios"] = f"시나리오: {', '.join(names)}"
+        if result.scenarios and result.scenarios.watch_signals:
+            sigs = [s.get("signal", "") for s in result.scenarios.watch_signals[:4]]
+            summaries["watch_signals"] = f"감시 시그널: {', '.join(sigs)}"
+
+        prompt = (
+            "당신은 사건 분석 보고서의 내러티브 구조를 설계하는 편집장.\n\n"
+            "아래 분석 결과를 검토하고, 이 사건에 가장 적합한 보고서 섹션 순서를 결정.\n\n"
+            "사용 가능한 데이터 소스:\n"
+        )
+        for src in available:
+            desc = summaries.get(src, src)
+            prompt += f"- {src}: {desc}\n"
+
+        prompt += (
+            "\n규칙:\n"
+            "1. 4~7개 섹션, 각 data_source 최대 1회 사용\n"
+            "2. 사건 성격에 맞게 순서와 제목 자유 결정\n"
+            "3. act_label은 영어 (예: PART I — THE TRIGGER), title은 한국어\n"
+            "4. narrative_bridge: 이전 섹션→이 섹션 전환 1문장, 한국어, 음슴체\n"
+            "5. 첫 섹션의 narrative_bridge는 빈 문자열\n\n"
+            "반드시 아래 JSON만 출력 (다른 텍스트 없이):\n"
+            '{"report_theme":"핵심 서사 한 문장","sections":['
+            '{"section_id":"s1","act_label":"PART I — ...","title":"...",'
+            '"data_source":"context","narrative_bridge":"","subsections":[]},'
+            "...]}\n"
+        )
+
+        try:
+            if self.config.use_cli_mode:
+                raw = await self._call_cli(prompt)
+            else:
+                raw = await self._call_api(prompt)
+
+            # Extract JSON from response
+            match = re.search(r"\{[\s\S]*\}", raw)
+            if not match:
+                logger.warning("[report_synthesizer] No JSON in narrative plan response")
+                return self._default_narrative_plan(result)
+
+            plan = NarrativePlan.model_validate_json(match.group())
+
+            # Validate: filter invalid/duplicate sources
+            seen: set[str] = set()
+            valid: list[NarrativeSection] = []
+            for i, sec in enumerate(plan.sections):
+                if sec.data_source not in available or sec.data_source in seen:
+                    continue
+                seen.add(sec.data_source)
+                sec.section_id = f"s{i + 1}"
+                valid.append(sec)
+
+            plan.sections = valid
+            if not plan.sections:
+                return self._default_narrative_plan(result)
+
+            logger.info(
+                f"[report_synthesizer] Narrative plan: "
+                f"{[s.data_source for s in plan.sections]}"
+            )
+            return plan
+
+        except Exception as e:
+            logger.warning(f"[report_synthesizer] Narrative plan failed: {e}")
+            return self._default_narrative_plan(result)
+
     def _build_chart_data(self, result: FullAnalysisResult) -> dict:
         """Build JSON-serializable chart data for Canvas 2D radar chart."""
         confidence_scores: dict[str, float] = {}
@@ -255,11 +417,25 @@ class ReportSynthesizer:
 
     async def synthesize(self, result: FullAnalysisResult) -> str:
         """Render HTML report, upload to Cloudflare, return URL or filepath."""
-        # Generate executive summary + key summary
+        # Generate executive summary + narrative plan in parallel
         key_summary_items: list[str] = []
+        narrative_plan: NarrativePlan | None = None
+
+        async def _gen_summary() -> tuple[str, list[str]]:
+            if result.executive_summary:
+                return result.executive_summary, []
+            return await self._generate_executive_summary(result)
+
+        async def _gen_plan() -> NarrativePlan:
+            return await self._generate_narrative_plan(result)
+
+        (governance, key_items), plan = await asyncio.gather(
+            _gen_summary(), _gen_plan()
+        )
         if not result.executive_summary:
-            governance, key_summary_items = await self._generate_executive_summary(result)
             result.executive_summary = governance
+            key_summary_items = key_items
+        narrative_plan = plan
 
         # Build chart data & confidence text
         chart_data = self._build_chart_data(result)
@@ -285,6 +461,8 @@ class ReportSynthesizer:
             generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             key_summary_items=key_summary_items,
             confidence_text=confidence_text,
+            sections=narrative_plan.sections,
+            report_theme=narrative_plan.report_theme,
         )
 
         # Save HTML to file

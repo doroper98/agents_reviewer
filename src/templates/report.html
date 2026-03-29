@@ -27,9 +27,9 @@
   </div>
 </header>
 
-<!-- NAV -->
+<!-- NAV (dynamic) -->
 <nav class="nav"><div class="nav-inner">
-  <a href="#s1">상황인식</a><a href="#s2">이해관계자</a><a href="#s3">상호작용</a><a href="#s4">연쇄반응</a><a href="#s5">향후 시나리오</a><a href="#s6">시그널</a>
+  {% for sec in sections %}<a href="#{{ sec.section_id }}">{{ sec.title }}</a>{% endfor %}
 </div></nav>
 
 <!-- ===== KEY SUMMARY (핵심 요약) ===== -->
@@ -115,17 +115,9 @@
 </section>
 {% endif %}
 
-<main class="container">
+<!-- ===== CONTENT MACROS ===== -->
 
-<!-- ACT I -->
-{% if result.context %}
-<section id="s1" class="fade-in">
-  <div class="section-label">ACT I — THE BOARD</div>
-  <h2 class="section-title">상황인식</h2>
-  {% if result.context.summary %}
-  <div class="section-desc">{{ result.context.summary | structured }}</div>
-  {% endif %}
-
+{% macro render_context(result) %}
   {% if result.context.background %}
   <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">배경</div>
@@ -157,23 +149,13 @@
   {% endif %}
 
   {% if result.context.sources %}
-  <div class="terms" style="margin-top:14px">
-    <b>출처:</b> {{ result.context.sources|join(' · ') }}
+  <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);font-size:10px;line-height:1.7;color:var(--text-muted)">
+    <b style="color:var(--text-secondary)">출처:</b> {{ result.context.sources|join(' · ') }}
   </div>
   {% endif %}
+{% endmacro %}
 
-</section>
-{% endif %}
-
-<!-- ACT II -->
-{% if result.players and result.players.players %}
-<section id="s2" class="fade-in">
-  <div class="section-label">ACT II — THE PLAYERS</div>
-  <h2 class="section-title">이해관계자</h2>
-  {% if result.players.power_dynamics %}
-  <div class="section-desc">{{ result.players.power_dynamics | structured }}</div>
-  {% endif %}
-
+{% macro render_players(result) %}
   <div class="grid-2">
     {% for player in result.players.players %}
     <div class="player-card {% if player.risk_level == '극심' %}extreme{% elif player.risk_level == '높음' %}high{% elif player.risk_level == '보통' %}medium{% else %}low{% endif %}">
@@ -201,19 +183,9 @@
     {% endfor %}
   </div>
   {% endif %}
+{% endmacro %}
 
-</section>
-{% endif %}
-
-<!-- ACT III -->
-{% if result.dynamics %}
-<section id="s3" class="fade-in">
-  <div class="section-label">ACT III — THE DYNAMICS</div>
-  <h2 class="section-title">구조 및 상호작용</h2>
-  {% if result.dynamics.summary %}
-  <p class="section-desc">{{ result.dynamics.summary }}</p>
-  {% endif %}
-
+{% macro render_dynamics(result) %}
   {% if result.dynamics.framework %}
   <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:8px">분석 프레임워크: {{ result.dynamics.framework }}</div>
@@ -260,19 +232,9 @@
     <p>{{ result.dynamics.key_insight }}</p>
   </div>
   {% endif %}
+{% endmacro %}
 
-</section>
-{% endif %}
-
-<!-- ACT IV -->
-{% if result.chain_reaction and result.chain_reaction.chain %}
-<section id="s4" class="fade-in">
-  <div class="section-label">ACT IV — THE CHAIN REACTION</div>
-  <h2 class="section-title">연쇄반응</h2>
-  {% if result.chain_reaction.summary %}
-  <p class="section-desc">{{ result.chain_reaction.summary }}</p>
-  {% endif %}
-
+{% macro render_chain_reaction(result) %}
   <div class="flow-list">
     {% for step in result.chain_reaction.chain %}
     <div class="flow-node" style="border-color:{% if step.severity == 'HIGH' %}var(--red){% elif step.severity == 'MEDIUM' %}var(--orange){% else %}var(--gold){% endif %}">
@@ -299,21 +261,9 @@
     <p>{{ result.chain_reaction.worst_case }}</p>
   </div>
   {% endif %}
+{% endmacro %}
 
-</section>
-{% endif %}
-
-<!-- ACT V -->
-{% if result.scenarios and result.scenarios.scenarios %}
-<section id="s5" class="fade-in">
-  <div class="section-label">ACT V — THE SCENARIOS</div>
-  <h2 class="section-title">향후 시나리오</h2>
-  {% if result.scenarios.base_case_summary %}
-  <p class="section-desc">{{ result.scenarios.base_case_summary }}</p>
-  {% elif result.scenarios.summary %}
-  <p class="section-desc">{{ result.scenarios.summary }}</p>
-  {% endif %}
-
+{% macro render_scenarios(result) %}
   <div style="overflow-x:auto">
   <table class="data-table">
     <thead><tr><th style="width:20%">시나리오</th><th style="width:35%">전개 경로</th><th style="width:10%">확률</th><th style="width:35%">영향</th></tr></thead>
@@ -342,16 +292,9 @@
     <p>{{ result.scenarios.summary }}</p>
   </div>
   {% endif %}
-</section>
-{% endif %}
+{% endmacro %}
 
-<!-- ACT VI -->
-{% if result.scenarios and result.scenarios.watch_signals %}
-<section id="s6" class="fade-in">
-  <div class="section-label">ACT VI — THE SIGNALS</div>
-  <h2 class="section-title">지켜봐야 할 시그널</h2>
-  <p class="section-desc">현재의 기본 전제를 무효화하는 조건과, 어떤 시나리오로 이동하는지를 판별하는 핵심 시그널.</p>
-
+{% macro render_watch_signals(result) %}
   <div class="signal-grid">
     {% for ws in result.scenarios.watch_signals %}
     <div class="signal-item">
@@ -363,9 +306,34 @@
     </div>
     {% endfor %}
   </div>
-</section>
-{% endif %}
+{% endmacro %}
 
+<!-- ===== DYNAMIC SECTIONS ===== -->
+<main class="container">
+
+{% for sec in sections %}
+<section id="{{ sec.section_id }}" class="fade-in">
+  <div class="section-label">{{ sec.act_label }}</div>
+  <h2 class="section-title">{{ sec.title }}</h2>
+  {% if sec.narrative_bridge %}
+  <div class="section-desc">{{ sec.narrative_bridge }}</div>
+  {% endif %}
+
+  {% if sec.data_source == 'context' and result.context %}
+    {{ render_context(result) }}
+  {% elif sec.data_source == 'players' and result.players and result.players.players %}
+    {{ render_players(result) }}
+  {% elif sec.data_source == 'dynamics' and result.dynamics %}
+    {{ render_dynamics(result) }}
+  {% elif sec.data_source == 'chain_reaction' and result.chain_reaction and result.chain_reaction.chain %}
+    {{ render_chain_reaction(result) }}
+  {% elif sec.data_source == 'scenarios' and result.scenarios and result.scenarios.scenarios %}
+    {{ render_scenarios(result) }}
+  {% elif sec.data_source == 'watch_signals' and result.scenarios and result.scenarios.watch_signals %}
+    {{ render_watch_signals(result) }}
+  {% endif %}
+</section>
+{% endfor %}
 
 </main>
 
