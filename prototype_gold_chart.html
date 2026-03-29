@@ -229,12 +229,12 @@ h2{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;margin-botto
       ctx.font = 'bold 10px "JetBrains Mono"'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.fillText('$' + d.v.toLocaleString(), x(i), priceY);
 
-      // Event label at BOTTOM — 45 degree rotation
+      // Event label at BOTTOM — 45 degree tilted, text END touches the event point
       ctx.save();
       ctx.translate(x(i), p.t + ch + 22);
-      ctx.rotate(Math.PI / 4); // 45 degrees
+      ctx.rotate(-Math.PI / 4); // -45 degrees (left-leaning)
       ctx.fillStyle = '#555';
-      ctx.font = '9px "Noto Sans KR"'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.font = '9px "Noto Sans KR"'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.fillText(d.ev, 0, 0);
       ctx.restore();
     });
