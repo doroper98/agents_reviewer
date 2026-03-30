@@ -120,8 +120,10 @@ class TelegramBot:
             f"  ⑦ 보고서 합성관 ····· {sonnet}\n"
         )
 
+        from src.orchestrator import VERSION
+
         status_msg = (
-            f"✅ 봇 실행 중\n\n"
+            f"✅ 봇 실행 중 — {VERSION}\n\n"
             f"  가동시간: {uptime_str}\n"
             f"  생성된 보고서: {report_count}건\n"
             f"  이번 세션 분석: {_analysis_count}건\n"
@@ -129,8 +131,6 @@ class TelegramBot:
             f"  현재 상태: {analyzing_str}\n"
             f"  대기열: {queue_str}\n"
             f"\n{agents_info}"
-            f"\n토큰 사용량 확인:\n"
-            f"  claude.ai → 설정 → 사용량"
         )
 
         await update.message.reply_text(status_msg)
