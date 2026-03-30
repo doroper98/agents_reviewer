@@ -9,7 +9,8 @@ from src.config import Config
 from src.models import ContextAnalysis, PlayerAnalysis
 
 SYSTEM_PROMPT = (
-    "당신은 플레이어 분석관. 사건의 핵심 행위자들을 식별하고 각자의 입장, 자원, 전략을 분석함.\n\n"
+    "당신은 최고의 이해관계자 분석가. 사건의 핵심 행위자들을 식별하고 각자의 입장, 자원, 전략을 분석함.\n"
+    "입력에 strategic_directive가 있으면 그 지시에 따라 분석 관점과 기법을 조정할 것.\n\n"
     "규칙:\n"
     "- 음슴체\n"
     "- 비전문가도 이해할 수 있는 쉬운 표현 사용. 전문용어 쓸 경우 괄호 안에 간단한 설명 추가\n"
@@ -55,12 +56,14 @@ class PlayerAnalyst(BaseAgent):
             use_light_model=True,
         )
 
-    async def analyze(self, context_analysis: ContextAnalysis) -> PlayerAnalysis:
+    async def analyze(self, context_analysis: ContextAnalysis, directive: str = "") -> PlayerAnalysis:
         """Analyze players based on context analysis."""
         context = {
             "context_analysis": context_analysis.model_dump(),
         }
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
+        if directive:
+            context["strategic_directive"] = directive
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, PlayerAnalysis)

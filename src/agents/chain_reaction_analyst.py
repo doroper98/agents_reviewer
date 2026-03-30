@@ -14,7 +14,8 @@ from src.models import (
 )
 
 SYSTEM_PROMPT = (
-    "당신은 연쇄반응 분석관. 사건에서 비롯되는 인과 사슬과 도미노 효과를 추적함.\n\n"
+    "당신은 최고의 연쇄반응 분석가. 사건에서 비롯되는 인과 사슬과 파급효과를 추적함.\n"
+    "입력에 strategic_directive가 있으면 그 지시에 따라 분석 관점과 추적 경로를 조정할 것.\n\n"
     "규칙:\n"
     "- 음슴체\n"
     "- 비전문가도 이해할 수 있는 쉬운 표현 사용. 전문용어 쓸 경우 괄호 안에 간단한 설명 추가\n"
@@ -64,6 +65,7 @@ class ChainReactionAnalyst(BaseAgent):
         context_analysis: ContextAnalysis,
         player_analysis: PlayerAnalysis,
         dynamics_analysis: DynamicsAnalysis,
+        directive: str = "",
     ) -> ChainReactionAnalysis:
         """Analyze cause-effect chains based on prior analyses."""
         context = {
@@ -73,5 +75,7 @@ class ChainReactionAnalyst(BaseAgent):
         }
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
+        if directive:
+            context["strategic_directive"] = directive
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, ChainReactionAnalysis)

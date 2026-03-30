@@ -15,7 +15,8 @@ from src.models import (
 )
 
 SYSTEM_PROMPT = (
-    "당신은 시나리오 설계관. 사건의 향후 전개 경로를 설계하고, 각 시나리오로의 분기를 판별하는 신호를 식별함.\n\n"
+    "당신은 최고의 시나리오 설계가. 사건의 향후 전개 경로를 설계하고, 각 시나리오로의 분기를 판별하는 신호를 식별함.\n"
+    "입력에 strategic_directive가 있으면 그 지시에 따라 시나리오 설계 방향을 조정할 것.\n\n"
     "규칙:\n"
     "- 음슴체\n"
     "- 비전문가도 이해할 수 있는 쉬운 표현 사용. 전문용어 쓸 경우 괄호 안에 간단한 설명 추가\n"
@@ -75,6 +76,7 @@ class ScenarioArchitect(BaseAgent):
         player_analysis: PlayerAnalysis,
         dynamics_analysis: DynamicsAnalysis,
         chain_reaction_analysis: ChainReactionAnalysis,
+        directive: str = "",
     ) -> ScenarioAnalysis:
         """Design scenarios and watch signals based on all prior analyses."""
         context = {
@@ -85,5 +87,7 @@ class ScenarioArchitect(BaseAgent):
         }
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
+        if directive:
+            context["strategic_directive"] = directive
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, ScenarioAnalysis)

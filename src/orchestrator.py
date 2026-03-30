@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+import shutil
 import time
 from typing import Any, Callable, Coroutine, Optional
 
@@ -18,7 +21,7 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v1.9.2"
+VERSION = "v1.9.8"
 
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
@@ -43,6 +46,73 @@ class Orchestrator:
         filled = int(step / total * 20)
         bar = "▓" * filled + "░" * (20 - filled)
         return f"{bar} {pct}%"
+
+    async def _generate_analysis_strategy(
+        self, event_name: str, category: str, summary: str
+    ) -> dict[str, str]:
+        """Generate per-agent analysis directives based on the event context.
+
+        Returns a dict mapping agent names to their strategic directives.
+        Uses the light model for speed.
+        """
+        prompt = (
+            "당신은 분석 전략 기획자. 아래 사건을 보고, 5개 분석 에이전트에게 "
+            "각각 어떤 관점과 기법으로 분석하면 이 사건을 가장 깊이 있게 발골할 수 있는지 지시를 작성.\n\n"
+            f"사건명: {event_name}\n"
+            f"분류: {category}\n"
+            f"요약: {summary[:500]}\n\n"
+            "5개 에이전트:\n"
+            "1. players: 이해관계자 식별, 입장·전략 분석\n"
+            "2. dynamics: 구조적 원인, 힘의 역학 분석\n"
+            "3. chain_reaction: 인과 사슬, 파급효과 추적\n"
+            "4. scenarios: 향후 전개 경로 설계\n"
+            "5. visuals: 시각화 (SVG 관계도, 지도, 차트)\n\n"
+            "각 에이전트에게 지시할 내용:\n"
+            "- 이 사건에 최적화된 분석 관점/접근법 (1~2문장)\n"
+            "- 집중해야 할 핵심 포인트\n"
+            "- 이 사건에 맞지 않아 피해야 할 분석 함정\n\n"
+            "반드시 아래 JSON만 출력:\n"
+            '{"players":"...","dynamics":"...","chain_reaction":"...","scenarios":"...","visuals":"..."}\n'
+        )
+
+        try:
+            claude_bin = shutil.which("claude")
+            if claude_bin is None:
+                return {}
+
+            cmd = [
+                claude_bin,
+                "-p", prompt,
+                "--output-format", "text",
+                "--model", self.config.model_name_light,
+                "--dangerously-skip-permissions",
+            ]
+
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                logger.warning("[orchestrator] Strategy generation failed")
+                return {}
+
+            raw = stdout.decode().strip()
+            # Extract JSON
+            import re
+            match = re.search(r"\{[\s\S]*\}", raw)
+            if not match:
+                return {}
+
+            strategy = json.loads(match.group())
+            logger.info(f"[orchestrator] Analysis strategy generated for: {event_name}")
+            return strategy
+
+        except Exception as e:
+            logger.warning(f"[orchestrator] Strategy generation error: {e}")
+            return {}
 
     async def _notify(
         self, message: str, status_callback: StatusCallback
@@ -184,13 +254,26 @@ class Orchestrator:
             status_callback,
         )
 
+        # -- Strategic Planning: 분석 전략 기획 --
+        await self._notify(
+            f"🧭 전략 기획: \"{event_name}\"에 최적화된 분석 전략을 수립하고 있습니다.",
+            status_callback,
+        )
+        strategy = await self._generate_analysis_strategy(
+            event_name,
+            result.context.category,
+            result.context.summary,
+        )
+
         # -- Phase 2: 이해관계자 분석관 + 구조 및 상호작용 분석관 --
         player_context = result.context.summary[:50] if result.context.summary else event_name
         await self._notify(
             f"👥 이해관계자 분석관: \"{player_context}\"와 관련된 핵심 행위자들을 식별하고 있습니다.",
             status_callback,
         )
-        result.players = await self.player_analyst.analyze(result.context)
+        result.players = await self.player_analyst.analyze(
+            result.context, directive=strategy.get("players", "")
+        )
 
         player_names = ", ".join(
             [p.get("name", "") for p in result.players.players[:5]]
@@ -208,7 +291,7 @@ class Orchestrator:
             status_callback,
         )
         result.dynamics = await self.dynamics_analyst.analyze(
-            result.context, result.players
+            result.context, result.players, directive=strategy.get("dynamics", "")
         )
         await self._notify(
             f"⚡ 구조 및 상호작용 분석관: {result.dynamics.framework} 프레임워크를 적용하여 분석하였습니다.\n"
@@ -224,7 +307,8 @@ class Orchestrator:
             status_callback,
         )
         result.chain_reaction = await self.chain_reaction_analyst.analyze(
-            result.context, result.players, result.dynamics
+            result.context, result.players, result.dynamics,
+            directive=strategy.get("chain_reaction", ""),
         )
         chain_summary = " → ".join(
             [s.get("title", "") for s in result.chain_reaction.chain[:4]]
@@ -243,7 +327,8 @@ class Orchestrator:
             status_callback,
         )
         result.scenarios = await self.scenario_architect.analyze(
-            result.context, result.players, result.dynamics, result.chain_reaction
+            result.context, result.players, result.dynamics, result.chain_reaction,
+            directive=strategy.get("scenarios", ""),
         )
         scenario_names = " / ".join(
             [s.get("name", "") for s in result.scenarios.scenarios]
