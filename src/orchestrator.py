@@ -280,23 +280,32 @@ class Orchestrator:
         )
 
         # -- Strategic Planning: 분석 전략 기획 --
-        if not quick_mode:
+        if quick_mode:
+            # Quick mode: 전략기획 스킵, 핵심 에이전트만 실행
+            strategy = {}
+            skip_agents = {"players", "dynamics", "chain_reaction"}
+            logger.info("[orchestrator] Quick mode: skipping players, dynamics, chain_reaction")
+            await self._notify(
+                f"⚡ 빠른분석: 상황분석 → 시나리오 → 시각화 → 보고서",
+                status_callback,
+            )
+        else:
             await self._notify(
                 f"🧭 전략 기획: \"{event_name}\"에 최적화된 분석 전략을 수립하고 있습니다.",
                 status_callback,
             )
-        strategy = await self._generate_analysis_strategy(
-            event_name,
-            result.context.category,
-            result.context.summary,
-        )
-        skip_agents: set[str] = set(strategy.get("skip", []))
-        if skip_agents:
-            logger.info(f"[orchestrator] Skipping agents: {skip_agents}")
-            await self._notify(
-                f"🧭 전략 기획 완료. 스킵: {', '.join(skip_agents) or '없음'}",
-                status_callback,
+            strategy = await self._generate_analysis_strategy(
+                event_name,
+                result.context.category,
+                result.context.summary,
             )
+            skip_agents = set(strategy.get("skip", []))
+            if skip_agents:
+                logger.info(f"[orchestrator] Skipping agents: {skip_agents}")
+                await self._notify(
+                    f"🧭 전략 기획 완료. 스킵: {', '.join(skip_agents) or '없음'}",
+                    status_callback,
+                )
 
         step = 1
 
