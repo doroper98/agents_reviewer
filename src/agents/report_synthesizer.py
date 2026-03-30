@@ -375,6 +375,7 @@ class ReportSynthesizer:
             cmd = wrangler_cmd + [
                 "pages", "deploy", deploy_dir,
                 "--project-name", project_name,
+                "--branch", "production",
                 "--commit-dirty=true",
             ]
 
