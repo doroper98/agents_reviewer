@@ -84,7 +84,7 @@ class Orchestrator:
                 claude_bin,
                 "-p", prompt,
                 "--output-format", "text",
-                "--model", self.config.model_name_light,
+                "--model", self.config.model_name,
                 "--dangerously-skip-permissions",
             ]
 
