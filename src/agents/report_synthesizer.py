@@ -411,7 +411,7 @@ class ReportSynthesizer:
             logger.error(f"[report_synthesizer] Cloudflare upload exception: {e}")
             return ""
 
-    async def synthesize(self, result: FullAnalysisResult) -> str:
+    async def synthesize(self, result: FullAnalysisResult, theme: str = "burgundy") -> str:
         """Render HTML report, upload to Cloudflare, return URL or filepath."""
         # Generate executive summary + narrative plan in parallel
         key_summary_items: list[str] = []
@@ -458,7 +458,8 @@ class ReportSynthesizer:
             key_summary_items=key_summary_items,
             confidence_text=confidence_text,
             sections=narrative_plan.sections,
-            report_theme=narrative_plan.report_theme,
+            narrative_theme=narrative_plan.report_theme,
+            report_theme=theme,
         )
 
         # Save HTML to file

@@ -1,41 +1,64 @@
-/* ===== Burgundy Report Theme ===== */
-/* Based on @abhinavbwj "the distinction" design system */
+/* ===== Report Theme System ===== */
 
-/* --- Variables --- */
-:root {
-  /* Backgrounds */
-  --bg: #2B1A1A;
-  --card: #3D2828;
-  --card-hover: #4A3232;
-  --accent: #4A3232;
+/* --- Default: Burgundy (범용) --- */
+:root, [data-theme="burgundy"] {
+  --bg: #2B1A1A; --card: #3D2828; --card-hover: #4A3232; --accent: #4A3232;
+  --text-primary: #F0E2CC; --text-secondary: #D4C4AA; --text-muted: #A89880; --text-faded: #7A6E5E;
+  --gold: #C9A84C; --gold-light: #D4B45C;
+  --red: #C45C4C; --red-light: #4A2828;
+  --orange: #C4884C; --orange-light: #4A3828;
+  --green: #6B8A5C; --green-light: #2A3828;
+  --blue: #5C7A8A; --blue-light: #283A4A;
+  --border: #5A4A3A; --border-light: #3D2828; --divider: #6B5F50;
+  --shadow: none; --radius: 6px; --radius-lg: 8px;
+}
 
-  /* Text */
-  --text-primary: #F0E2CC;
-  --text-secondary: #D4C4AA;
-  --text-muted: #A89880;
-  --text-faded: #7A6E5E;
+/* --- Geopolitical: 지정학/안보/군사 --- */
+[data-theme="geopolitical"] {
+  --bg: #0F1923; --card: #1A2836; --card-hover: #243342; --accent: #1E2D3D;
+  --text-primary: #E8EDF2; --text-secondary: #B8C8D8; --text-muted: #7A8FA0; --text-faded: #4E6070;
+  --gold: #D4A854; --gold-light: #E0B860;
+  --red: #DC4444; --red-light: #2A1A1A;
+  --orange: #E08040; --orange-light: #2A2018;
+  --green: #48A868; --green-light: #1A2A1E;
+  --blue: #4488CC; --blue-light: #1A2840;
+  --border: #2A3A4A; --border-light: #1A2836; --divider: #3A4A5A;
+}
 
-  /* Functional */
-  --gold: #C9A84C;
-  --gold-light: #D4B45C;
-  --red: #C45C4C;
-  --red-light: #4A2828;
-  --orange: #C4884C;
-  --orange-light: #4A3828;
-  --green: #6B8A5C;
-  --green-light: #2A3828;
-  --blue: #5C7A8A;
-  --blue-light: #283A4A;
+/* --- Financial: 금융/경제/시장 --- */
+[data-theme="financial"] {
+  --bg: #0A1628; --card: #142236; --card-hover: #1E2E44; --accent: #182A3E;
+  --text-primary: #E4ECF4; --text-secondary: #B0C4D8; --text-muted: #6E8AA0; --text-faded: #4A6478;
+  --gold: #F0C040; --gold-light: #F4CC58;
+  --red: #E85454; --red-light: #2A1418;
+  --orange: #E89040; --orange-light: #2A2014;
+  --green: #38B878; --green-light: #142A1E;
+  --blue: #3498DB; --blue-light: #142844;
+  --border: #1E3048; --border-light: #142236; --divider: #2E4058;
+}
 
-  /* Lines */
-  --border: #5A4A3A;
-  --border-light: #3D2828;
-  --divider: #6B5F50;
+/* --- Tech: 기술/AI/IT --- */
+[data-theme="tech"] {
+  --bg: #0E1117; --card: #1A1E26; --card-hover: #242A34; --accent: #1E242E;
+  --text-primary: #E6EDF3; --text-secondary: #B0BEC8; --text-muted: #7A8A98; --text-faded: #4E5A66;
+  --gold: #F0C040; --gold-light: #F4CC58;
+  --red: #F07070; --red-light: #2A1818;
+  --orange: #E09050; --orange-light: #2A2018;
+  --green: #40D8A0; --green-light: #142A22;
+  --blue: #58A6FF; --blue-light: #142844;
+  --border: #2A3040; --border-light: #1A1E26; --divider: #3A4250;
+}
 
-  /* Layout */
-  --shadow: none;
-  --radius: 6px;
-  --radius-lg: 8px;
+/* --- Nature: 환경/에너지/기후 --- */
+[data-theme="nature"] {
+  --bg: #121A14; --card: #1E2A20; --card-hover: #28362A; --accent: #223024;
+  --text-primary: #E4EDE6; --text-secondary: #B8CCB8; --text-muted: #7A9A7E; --text-faded: #506854;
+  --gold: #D4A040; --gold-light: #E0B050;
+  --red: #CC5040; --red-light: #2A1A16;
+  --orange: #D89040; --orange-light: #2A2414;
+  --green: #4CAF50; --green-light: #1A2E1A;
+  --blue: #4A90A4; --blue-light: #162A30;
+  --border: #2A3A2C; --border-light: #1E2A20; --divider: #3A4E3C;
 }
 
 /* --- Reset --- */

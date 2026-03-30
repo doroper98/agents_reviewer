@@ -59,30 +59,40 @@ class Orchestrator:
         - "skip" key with list of agents to skip
         """
         prompt = (
-            "당신은 분석 전략 기획자. 아래 사건을 보고 두 가지를 결정:\n"
-            "1) 각 에이전트에게 최적의 분석 관점/기법 지시\n"
-            "2) 이 사건에 불필요한 에이전트는 스킵 지정\n\n"
+            "당신은 세계 최고 수준의 분석 전략 기획자. 아래 사건을 보고 세 가지를 결정:\n"
+            "1) 각 에이전트에게 이 사건을 발골할 최적의 분석 기법 지시\n"
+            "2) 이 사건에 불필요한 에이전트는 스킵 지정\n"
+            "3) 보고서 테마 선택\n\n"
             f"사건명: {event_name}\n"
             f"분류: {category}\n"
             f"요약: {summary[:500]}\n\n"
-            "5개 에이전트:\n"
+            "=== 분석 기법 레퍼런스 ===\n"
+            "[인텔리전스] ACH(경쟁가설분석), Red Team, Key Assumptions Check, I&W(징후경보)\n"
+            "[지정학/전략] DIME(외교·정보·군사·경제), PMESII(6차원환경), Escalation Ladder, Center of Gravity\n"
+            "[경제/금융] Transmission Channel(전이경로), Stress Test, Input-Output(산업연관), Flow of Funds\n"
+            "[구조/시스템] Systems Dynamics(피드백루프), Network Analysis, Fault Tree, Bow-Tie\n"
+            "[의사결정/전망] Decision Tree, Cone of Plausibility, Pre-mortem, Bayesian Updating\n\n"
+            "=== 보고서 테마 ===\n"
+            "burgundy: 기본 버건디 (범용)\n"
+            "geopolitical: 다크 네이비+레드 (지정학, 안보, 군사, 전쟁)\n"
+            "financial: 딥 블루+그린/레드 (금융, 경제, 시장, 투자)\n"
+            "tech: 다크 슬레이트+시안 (기술, AI, IT, 사이버)\n"
+            "nature: 다크 그린+앰버 (환경, 에너지, 기후, 농업)\n\n"
+            "=== 5개 에이전트 ===\n"
             "1. players: 이해관계자 식별, 입장·전략 분석\n"
             "2. dynamics: 구조적 원인, 힘의 역학 분석\n"
             "3. chain_reaction: 인과 사슬, 파급효과 추적\n"
             "4. scenarios: 향후 전개 경로 설계\n"
             "5. visuals: 시각화 (SVG 관계도, 지도, 차트)\n\n"
             "각 에이전트 지시사항:\n"
-            "- 이 사건에 최적화된 분석 관점/접근법 (1~2문장)\n"
-            "- 집중해야 할 핵심 포인트\n"
-            "- 이 사건에 맞지 않아 피해야 할 분석 함정\n\n"
-            "스킵 판단 기준:\n"
-            "- 해당 에이전트의 분석이 이 사건에 의미 있는 가치를 더하지 못하면 skip\n"
-            "- context(상황분석)와 visuals(시각화)는 스킵 불가\n"
-            "- 확신이 없으면 스킵하지 말 것\n\n"
+            "- 위 레퍼런스에서 이 사건에 최적인 기법을 골라 구체적으로 지시 (1~2문장)\n"
+            "- 레퍼런스에 없는 기법도 적합하면 자유롭게 사용 가능\n"
+            "- 이 사건에 맞지 않는 분석 함정도 명시\n\n"
+            "스킵 판단: 가치를 못 더하면 skip. context/visuals는 스킵 불가.\n\n"
             "반드시 아래 JSON만 출력:\n"
-            '{"players":"지시 또는 빈문자열","dynamics":"지시 또는 빈문자열",'
-            '"chain_reaction":"지시 또는 빈문자열","scenarios":"지시 또는 빈문자열",'
-            '"visuals":"지시 또는 빈문자열","skip":["스킵할 에이전트명"]}\n'
+            '{"players":"지시","dynamics":"지시","chain_reaction":"지시",'
+            '"scenarios":"지시","visuals":"지시",'
+            '"skip":["스킵할 에이전트명"],"theme":"burgundy|geopolitical|financial|tech|nature"}\n'
         )
 
         try:
@@ -426,7 +436,8 @@ class Orchestrator:
 
         result.total_duration_seconds = time.time() - start_time
 
-        report_url = await self.report_synthesizer.synthesize(result)
+        report_theme = strategy.get("theme", "burgundy") if strategy else "burgundy"
+        report_url = await self.report_synthesizer.synthesize(result, theme=report_theme)
         result.report_url = report_url
 
         # Restore original model assignments after quick mode
