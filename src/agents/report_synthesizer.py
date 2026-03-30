@@ -377,7 +377,7 @@ class ReportSynthesizer:
                 "pages", "deploy", deploy_dir,
                 "--project-name", project_name,
                 "--branch", "main",
-                "--commit-dirty=true",
+                "--commit-message", "deploy report",
             ]
 
             env = os.environ.copy()
