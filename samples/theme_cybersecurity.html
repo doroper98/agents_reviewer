@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme: Cybersecurity (from ui-ux-pro-max)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Source: ui-ux-pro-max/data/colors.csv Row 80 (Cybersecurity Platform)
+   + styles.csv Row 7 (Dark Mode OLED) */
+:root {
+  --bg: #000000;
+  --card: #0C130E;
+  --card-hover: #142018;
+  --text-primary: #E0E0E0;
+  --text-secondary: #A0B0A0;
+  --text-muted: #607060;
+  --text-faded: #3A4A3A;
+  --gold: #FFD700;
+  --red: #FF3333;
+  --red-light: #1A0A0A;
+  --orange: #FF8C00;
+  --green: #00FF41;
+  --green-light: #0A1A0E;
+  --blue: #00BFFF;
+  --blue-light: #0A1520;
+  --border: #1F2F1F;
+  --border-light: #141E14;
+  --divider: #2A3A2A;
+  --radius: 4px;
+  --radius-lg: 6px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-secondary); font-size: 14px; line-height: 1.8; word-break: keep-all; }
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+.theme-badge { position: fixed; top: 12px; right: 12px; background: var(--green); color: #000; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; z-index: 100; font-family: monospace; }
+
+.hero { background: var(--bg); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; border-bottom: 1px solid var(--green); }
+.hero-eyebrow { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--green); margin-bottom:8px; font-family:monospace; }
+.hero h1 { font-family: 'Noto Serif KR', serif; font-size: clamp(22px, 5vw, 36px); font-weight: 900; line-height: 1.3; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0,255,65,0.1); }
+.hero-sub { font-size: 12px; color: var(--text-muted); max-width: 700px; margin: 0 auto 14px; line-height: 1.7; }
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span { background: var(--card); padding: 3px 12px; border-radius: 3px; color: var(--green); border: 1px solid rgba(0,255,65,0.2); font-family: monospace; }
+
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 24px 0; }
+.metric { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 8px; text-align: center; }
+.metric-value { font-size: 16px; font-weight: 700; font-family: monospace; }
+.metric-label { font-size: 8px; color: var(--text-faded); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; font-family: monospace; }
+
+section { padding: 36px 0 30px; border-bottom: 1px solid var(--border-light); }
+.section-label { font-size: 10px; letter-spacing: 2px; color: var(--green); margin-bottom: 4px; font-family: monospace; text-transform: uppercase; }
+.section-title { font-family: 'Noto Serif KR', serif; font-size: clamp(18px, 4vw, 26px); font-weight: 900; line-height: 1.3; margin-bottom: 6px; color: var(--text-primary); }
+.section-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.8; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; }
+.card-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--green); }
+.card-text { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+
+.callout { background: var(--card); border-left: 3px solid var(--red); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 16px 0; }
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--red); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+.callout.info { border-left-color: var(--blue); }
+.callout.info b { color: var(--blue); }
+
+.tl-item { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid rgba(31,47,31,0.6); }
+.tl-date { color: var(--green); font-weight: 600; min-width: 110px; font-size: 11px; font-family: monospace; }
+.tl-text { font-size: 11px; line-height: 1.7; }
+
+.signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.signal-item { display: flex; gap: 8px; padding: 10px 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.signal-icon { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: rgba(0,255,65,0.08); }
+.signal-item h4 { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+.footer { background: var(--bg); border-top: 1px solid var(--green); color: var(--text-faded); padding: 24px 14px; text-align: center; font-size: 10px; font-family: monospace; }
+@media (max-width: 700px) { .signal-grid { grid-template-columns: 1fr; } .metrics { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="theme-badge">// CYBERSECURITY</div>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">[THREAT ANALYSIS REPORT]</div>
+    <h1>북한 라자루스 그룹의 글로벌 암호화폐 거래소 연쇄 해킹 분석</h1>
+    <p class="hero-sub">* 2026-03-15 Bybit, Kraken, OKX 동시 침투 시도 탐지. 총 피해 추정 $14억. 제로데이 취약점(CVE-2026-XXXX)과 소셜 엔지니어링 복합 공격 벡터 확인</p>
+    <div class="hero-tags">
+      <span>APT-LAZARUS</span>
+      <span>CRYPTO-EXCHANGE</span>
+      <span>2026-03-15</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="metrics">
+    <div class="metric"><div class="metric-value" style="color:var(--red)">$14억</div><div class="metric-label">총 피해 추정</div></div>
+    <div class="metric"><div class="metric-value" style="color:var(--orange)">3개</div><div class="metric-label">침투 거래소</div></div>
+    <div class="metric"><div class="metric-value" style="color:var(--green)">CVE-2026</div><div class="metric-label">제로데이</div></div>
+    <div class="metric"><div class="metric-value" style="color:var(--blue)">47일</div><div class="metric-label">잠복 기간</div></div>
+  </div>
+</div>
+
+<main class="container">
+  <section>
+    <div class="section-label">[01] ATTACK VECTOR</div>
+    <h2 class="section-title">공격 경로</h2>
+    <div class="section-desc">라자루스 그룹이 사용한 다단계 침투 기법과 공격 인프라 분석</div>
+    <div class="card">
+      <div class="card-title">공격 타임라인</div>
+      <div class="tl-item"><span class="tl-date">2026-01-28</span><span class="tl-text">LinkedIn 가짜 채용 공고를 통한 초기 접촉 (소셜 엔지니어링)</span></div>
+      <div class="tl-item"><span class="tl-date">2026-02-10</span><span class="tl-text">악성 코드 삽입된 코딩 테스트 파일 전달 → 내부망 초기 침투</span></div>
+      <div class="tl-item"><span class="tl-date">2026-03-01</span><span class="tl-text">핫월렛 서명키 접근 권한 획득 (47일 잠복 후 횡적 이동 완료)</span></div>
+      <div class="tl-item" style="border:none"><span class="tl-date">2026-03-15</span><span class="tl-text">3개 거래소 동시 출금 시도. Bybit $8.2억, Kraken $3.1억, OKX $2.7억</span></div>
+    </div>
+    <div class="callout">
+      <b>CRITICAL</b>
+      <p>핵심 취약점은 기술이 아닌 인간. 3개 거래소 모두 보안 엔지니어 대상 소셜 엔지니어링으로 초기 침투 성공. 기술적 제로데이는 횡적 이동 단계에서만 사용됨.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">[02] IMPACT ASSESSMENT</div>
+    <h2 class="section-title">피해 영향</h2>
+    <div class="callout info">
+      <b>INTELLIGENCE</b>
+      <p>라자루스의 탈취 자금은 평균 72시간 내에 Tornado Cash 및 크로스체인 브릿지를 통해 세탁됨. 이번 건에서는 Bybit만 출금 차단 성공, Kraken은 $1.8억 유출 확인.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">[03] WATCH SIGNALS</div>
+    <h2 class="section-title">감시 시그널</h2>
+    <div class="signal-grid">
+      <div class="signal-item"><div class="signal-icon">🔴</div><div><h4>Tornado Cash 대량 입금</h4><p>탈취 자금 세탁 시작 → 72시간 내 추적 필요</p></div></div>
+      <div class="signal-item"><div class="signal-icon">🟡</div><div><h4>동일 CVE 변종 출현</h4><p>다른 거래소 대상 2차 공격 가능성</p></div></div>
+      <div class="signal-item"><div class="signal-icon">🟢</div><div><h4>UN 대북제재 강화 논의</h4><p>외교적 압박 경로 → 자금 동결 가능성</p></div></div>
+      <div class="signal-item"><div class="signal-icon">🔵</div><div><h4>거래소 보험 청구 동향</h4><p>업계 전반 보안 기준 상향 트리거</p></div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  [CONFIDENCE] Context 88% · Players 82% · Chain 85% · Scenarios 78%<br>
+  [GENERATED] 2026-03-15 09:42:11 | [THEME] Cybersecurity (ui-ux-pro-max #80)
+</footer>
+</body>
+</html>

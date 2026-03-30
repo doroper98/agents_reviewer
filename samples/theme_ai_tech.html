@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme: AI/Tech (from ui-ux-pro-max)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Source: ui-ux-pro-max/data/colors.csv Row 18 (AI/Chatbot Platform)
+   + styles.csv Row 1 (Minimalism) + Row 3 (Glassmorphism hints) */
+:root {
+  --bg: #0F0B1E;
+  --card: #1A1432;
+  --card-hover: #241E3E;
+  --text-primary: #F0ECF8;
+  --text-secondary: #C8BDE0;
+  --text-muted: #8878A8;
+  --text-faded: #5A4E70;
+  --gold: #E8B84C;
+  --red: #F06060;
+  --red-light: #1E1020;
+  --orange: #E89040;
+  --green: #60D0A0;
+  --green-light: #101E1A;
+  --blue: #60A0F0;
+  --purple: #A070F0;
+  --purple-light: #1E1440;
+  --cyan: #40D0D0;
+  --border: #2E2448;
+  --border-light: #1E1838;
+  --divider: #3E3458;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-secondary); font-size: 14px; line-height: 1.8; word-break: keep-all; }
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+.theme-badge { position: fixed; top: 12px; right: 12px; background: linear-gradient(135deg, var(--purple), var(--cyan)); color: white; padding: 4px 14px; border-radius: 6px; font-size: 11px; font-weight: 700; z-index: 100; }
+
+.hero { background: linear-gradient(180deg, #130E24 0%, var(--bg) 100%); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; }
+.hero-eyebrow { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--purple); margin-bottom:8px; font-family:'Noto Serif KR',serif; font-style:italic; }
+.hero h1 { font-family: 'Noto Serif KR', serif; font-size: clamp(24px, 5.5vw, 38px); font-weight: 900; line-height: 1.3; margin-bottom: 10px; background: linear-gradient(135deg, var(--text-primary), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 12px; color: var(--text-muted); max-width: 700px; margin: 0 auto 14px; line-height: 1.7; }
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span { background: rgba(160,112,240,0.1); padding: 3px 12px; border-radius: 20px; color: var(--purple); border: 1px solid rgba(160,112,240,0.2); }
+
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 24px 0; }
+.metric { background: rgba(26,20,50,0.8); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 10px; text-align: center; }
+.metric-value { font-size: 16px; font-weight: 700; }
+.metric-label { font-size: 8px; color: var(--text-faded); text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+
+section { padding: 36px 0 30px; border-bottom: 1px solid var(--border-light); }
+.section-label { font-family: 'Noto Serif KR', serif; font-size: 10px; font-style: italic; letter-spacing: 1px; color: var(--purple); margin-bottom: 4px; }
+.section-title { font-family: 'Noto Serif KR', serif; font-size: clamp(18px, 4vw, 26px); font-weight: 900; line-height: 1.3; margin-bottom: 6px; color: var(--text-primary); }
+.section-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.8; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; }
+.card-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+
+.callout { background: var(--card); border-left: 3px solid var(--purple); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 16px 0; }
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--text-primary); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.player-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; position: relative; overflow: hidden; }
+.player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--purple), var(--cyan)); }
+.player-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.player-emoji { font-size: 18px; }
+.player-name { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+.player-tag { font-size: 8px; font-weight: 600; padding: 2px 8px; border-radius: 3px; background: var(--purple-light); color: var(--purple); border: 1px solid rgba(160,112,240,0.3); }
+.player-detail { font-size: 10px; padding: 8px; background: var(--bg); border-radius: var(--radius); line-height: 1.6; color: var(--text-secondary); margin-top: 6px; }
+
+.signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.signal-item { display: flex; gap: 8px; padding: 10px 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.signal-icon { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: rgba(160,112,240,0.1); }
+.signal-item h4 { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+.footer { background: var(--bg); border-top: 1px solid var(--divider); color: var(--text-faded); padding: 24px 14px; text-align: center; font-size: 10px; }
+@media (max-width: 700px) { .grid-2, .signal-grid { grid-template-columns: 1fr; } .metrics { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="theme-badge">AI / TECH</div>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Event Analysis Report</div>
+    <h1>오라클의 엔터프라이즈 AI 시장 공략과 클라우드 3강 구도 변동 분석</h1>
+    <p class="hero-sub">* 오라클이 Exadata X11M + AI Database 26ai를 무기로 엔터프라이즈 AI 시장에 본격 진출. AWS-Azure-GCP 3강 체제에 균열이 생기며, 기업용 AI 인프라 시장의 판도가 재편될 가능성</p>
+    <div class="hero-tags">
+      <span>AI-클라우드</span>
+      <span>엔터프라이즈</span>
+      <span>2026-03-30</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="metrics">
+    <div class="metric"><div class="metric-value" style="color:var(--purple)">$2,140억</div><div class="metric-label">엔터프라이즈 AI 시장</div></div>
+    <div class="metric"><div class="metric-value" style="color:var(--cyan)">26ai</div><div class="metric-label">오라클 AI DB</div></div>
+    <div class="metric"><div class="metric-value" style="color:var(--green)">+340%</div><div class="metric-label">오라클 클라우드 성장</div></div>
+    <div class="metric"><div class="metric-value" style="color:var(--orange)">68%</div><div class="metric-label">AWS+Azure 점유율</div></div>
+  </div>
+</div>
+
+<main class="container">
+  <section>
+    <div class="section-label">PART I — LANDSCAPE</div>
+    <h2 class="section-title">시장 지형</h2>
+    <div class="section-desc">엔터프라이즈 AI 인프라 시장은 2026년 $2,140억 규모로 성장. 클라우드 3강(AWS, Azure, GCP)이 지배하나, 오라클의 데이터베이스 기반 접근이 새로운 변수로 부상</div>
+    <div class="card">
+      <div class="card-title">핵심 배경</div>
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">기존 클라우드 3강은 범용 AI 인프라를 제공하지만, 기업 고객의 실제 니즈인 "자사 데이터를 활용한 AI"에서는 데이터 이동 비용과 보안 우려라는 구조적 한계가 존재. 오라클은 "AI를 데이터 쪽으로 가져온다"는 역발상으로 이 틈새를 공략 중.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">PART II — KEY PLAYERS</div>
+    <h2 class="section-title">핵심 행위자</h2>
+    <div class="grid-2">
+      <div class="player-card">
+        <div class="player-header">
+          <span class="player-emoji">🔴</span>
+          <span class="player-name">오라클</span>
+          <span class="player-tag">게임 체인저</span>
+        </div>
+        <div class="player-detail"><strong>전략:</strong> DB 안에 AI를 내장. 데이터 이동 없이 AI 추론 가능. 기존 오라클 고객 40만 사를 락인.<br><strong>취약점:</strong> 클라우드 후발 주자, 개발자 생태계 약세</div>
+      </div>
+      <div class="player-card">
+        <div class="player-header">
+          <span class="player-emoji">🟠</span>
+          <span class="player-name">AWS</span>
+          <span class="player-tag">현재 1위</span>
+        </div>
+        <div class="player-detail"><strong>전략:</strong> Bedrock + SageMaker로 풀스택 AI 플랫폼. 시장점유율 32%로 선두.<br><strong>취약점:</strong> 범용 접근 → 엔터프라이즈 특화 부족, 데이터 이동 비용 높음</div>
+      </div>
+      <div class="player-card">
+        <div class="player-header">
+          <span class="player-emoji">🔵</span>
+          <span class="player-name">마이크로소프트</span>
+          <span class="player-tag">AI 통합</span>
+        </div>
+        <div class="player-detail"><strong>전략:</strong> OpenAI 독점 파트너십 + Copilot 생태계로 B2B AI 점령.<br><strong>취약점:</strong> OpenAI 의존도, 오피스 외 영역 확장 한계</div>
+      </div>
+      <div class="player-card">
+        <div class="player-header">
+          <span class="player-emoji">🟢</span>
+          <span class="player-name">구글</span>
+          <span class="player-tag">기술 선도</span>
+        </div>
+        <div class="player-detail"><strong>전략:</strong> Gemini + TPU로 AI 기술 우위. BigQuery ML로 데이터 분석 통합.<br><strong>취약점:</strong> 엔터프라이즈 영업력 약세, B2C 이미지 고착</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">PART III — INSIGHT</div>
+    <h2 class="section-title">핵심 통찰</h2>
+    <div class="callout">
+      <b>구조적 전환점</b>
+      <p>엔터프라이즈 AI의 병목은 모델 성능이 아니라 "데이터 접근성". 오라클의 "AI를 데이터로 가져가는" 접근은 기존 클라우드 3강의 "데이터를 클라우드로 올려라" 모델에 대한 근본적 도전. Fortune 500 기업의 70%가 오라클 DB를 사용한다는 점에서 전환비용(switching cost) 우위가 핵심.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">PART IV — WATCH SIGNALS</div>
+    <h2 class="section-title">감시 시그널</h2>
+    <div class="signal-grid">
+      <div class="signal-item"><div class="signal-icon">🔮</div><div><h4>오라클 클라우드 매출 성장률</h4><p>분기별 40%+ 유지 시 → 3강 체제 균열 가속</p></div></div>
+      <div class="signal-item"><div class="signal-icon">🤖</div><div><h4>AWS/Azure의 DB 내장 AI 대응</h4><p>유사 기능 출시 시 → 오라클 차별화 약화</p></div></div>
+      <div class="signal-item"><div class="signal-icon">📊</div><div><h4>Fortune 500 오라클→클라우드 전환율</h4><p>20% 초과 시 → 오라클 락인 전략 실패 신호</p></div></div>
+      <div class="signal-item"><div class="signal-icon">💰</div><div><h4>엔터프라이즈 AI 인프라 투자 규모</h4><p>시장 $3,000억 돌파 시 → 신규 진입자 가속</p></div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  Confidence: Context 80% · Players 78% · Dynamics 82% · Scenarios 76%<br>
+  Generated 2026-03-30 08:02:33 | Theme: AI/Tech (ui-ux-pro-max #18)
+</footer>
+</body>
+</html>
