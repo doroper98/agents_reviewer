@@ -111,7 +111,7 @@ class TelegramBot:
 
         agents_info = (
             f"📋 에이전트 구성 (7명)\n"
-            f"  ① 상황판 분석관 ····· {sonnet}\n"
+            f"  ① 상황 분석관 ······· {sonnet}\n"
             f"  ② 플레이어 분석관 ··· {sonnet}\n"
             f"  ③ 구조/역학 분석관 ·· {opus}\n"
             f"  ④ 연쇄반응 분석관 ··· {sonnet}\n"

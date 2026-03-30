@@ -21,7 +21,9 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v1.9.8"
+VERSION = "v2.0.0"
+
+QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
@@ -49,15 +51,17 @@ class Orchestrator:
 
     async def _generate_analysis_strategy(
         self, event_name: str, category: str, summary: str
-    ) -> dict[str, str]:
+    ) -> dict:
         """Generate per-agent analysis directives based on the event context.
 
-        Returns a dict mapping agent names to their strategic directives.
-        Uses the light model for speed.
+        Returns a dict with:
+        - Agent name keys with directive strings
+        - "skip" key with list of agents to skip
         """
         prompt = (
-            "당신은 분석 전략 기획자. 아래 사건을 보고, 5개 분석 에이전트에게 "
-            "각각 어떤 관점과 기법으로 분석하면 이 사건을 가장 깊이 있게 발골할 수 있는지 지시를 작성.\n\n"
+            "당신은 분석 전략 기획자. 아래 사건을 보고 두 가지를 결정:\n"
+            "1) 각 에이전트에게 최적의 분석 관점/기법 지시\n"
+            "2) 이 사건에 불필요한 에이전트는 스킵 지정\n\n"
             f"사건명: {event_name}\n"
             f"분류: {category}\n"
             f"요약: {summary[:500]}\n\n"
@@ -67,12 +71,18 @@ class Orchestrator:
             "3. chain_reaction: 인과 사슬, 파급효과 추적\n"
             "4. scenarios: 향후 전개 경로 설계\n"
             "5. visuals: 시각화 (SVG 관계도, 지도, 차트)\n\n"
-            "각 에이전트에게 지시할 내용:\n"
+            "각 에이전트 지시사항:\n"
             "- 이 사건에 최적화된 분석 관점/접근법 (1~2문장)\n"
             "- 집중해야 할 핵심 포인트\n"
             "- 이 사건에 맞지 않아 피해야 할 분석 함정\n\n"
+            "스킵 판단 기준:\n"
+            "- 해당 에이전트의 분석이 이 사건에 의미 있는 가치를 더하지 못하면 skip\n"
+            "- context(상황분석)와 visuals(시각화)는 스킵 불가\n"
+            "- 확신이 없으면 스킵하지 말 것\n\n"
             "반드시 아래 JSON만 출력:\n"
-            '{"players":"...","dynamics":"...","chain_reaction":"...","scenarios":"...","visuals":"..."}\n'
+            '{"players":"지시 또는 빈문자열","dynamics":"지시 또는 빈문자열",'
+            '"chain_reaction":"지시 또는 빈문자열","scenarios":"지시 또는 빈문자열",'
+            '"visuals":"지시 또는 빈문자열","skip":["스킵할 에이전트명"]}\n'
         )
 
         try:
@@ -225,8 +235,20 @@ class Orchestrator:
         chat_id: int,
         status_callback: StatusCallback = None,
     ) -> FullAnalysisResult:
-        """Execute the full 4-phase analysis pipeline."""
+        """Execute the full analysis pipeline."""
         start_time = time.time()
+
+        # Detect quick mode from keywords
+        quick_mode = any(kw in event_description for kw in QUICK_MODE_KEYWORDS)
+        if quick_mode:
+            # Switch all agents to Sonnet for speed
+            for agent in [
+                self.context_analyst, self.player_analyst,
+                self.dynamics_analyst, self.chain_reaction_analyst,
+                self.scenario_architect, self.visual_analyst,
+            ]:
+                agent.model_name = self.config.model_name_light
+            logger.info("[orchestrator] Quick mode enabled — all agents using Sonnet")
 
         request = AnalysisRequest(
             event_description=event_description,
@@ -234,10 +256,12 @@ class Orchestrator:
         )
         result = FullAnalysisResult(request=request)
 
-        # -- Phase 1: 상황인식 분석관 --
+        mode_label = " ⚡빠른분석" if quick_mode else ""
+
+        # -- Phase 1: 상황 분석관 --
         await self._notify(
-            f"🔍 상황인식 분석관: \"{event_description}\"에 대한 상황을 인식하고 있습니다.\n"
-            f"Analysis Team {VERSION}",
+            f"🔍 상황 분석관: \"{event_description}\"에 대한 상황을 인식하고 있습니다.\n"
+            f"Analysis Team {VERSION}{mode_label}",
             status_callback,
         )
         result.context = await self.context_analyst.analyze(request)
@@ -246,7 +270,7 @@ class Orchestrator:
         timeline_count = len(result.context.timeline)
         figures_count = len(result.context.key_figures)
         await self._notify(
-            f"📋 상황인식 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
+            f"📋 상황 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
             f"  · 사건 분류: {result.context.category}\n"
             f"  · 타임라인 {timeline_count}건, 핵심 지표 {figures_count}건 수집\n"
             f"  · 신뢰도: {result.context.confidence_score * 100:.0f}%\n"
@@ -255,92 +279,107 @@ class Orchestrator:
         )
 
         # -- Strategic Planning: 분석 전략 기획 --
-        await self._notify(
-            f"🧭 전략 기획: \"{event_name}\"에 최적화된 분석 전략을 수립하고 있습니다.",
-            status_callback,
-        )
+        if not quick_mode:
+            await self._notify(
+                f"🧭 전략 기획: \"{event_name}\"에 최적화된 분석 전략을 수립하고 있습니다.",
+                status_callback,
+            )
         strategy = await self._generate_analysis_strategy(
             event_name,
             result.context.category,
             result.context.summary,
         )
+        skip_agents: set[str] = set(strategy.get("skip", []))
+        if skip_agents:
+            logger.info(f"[orchestrator] Skipping agents: {skip_agents}")
+            await self._notify(
+                f"🧭 전략 기획 완료. 스킵: {', '.join(skip_agents) or '없음'}",
+                status_callback,
+            )
 
-        # -- Phase 2: 이해관계자 분석관 + 구조 및 상호작용 분석관 --
-        player_context = result.context.summary[:50] if result.context.summary else event_name
-        await self._notify(
-            f"👥 이해관계자 분석관: \"{player_context}\"와 관련된 핵심 행위자들을 식별하고 있습니다.",
-            status_callback,
-        )
-        result.players = await self.player_analyst.analyze(
-            result.context, directive=strategy.get("players", "")
-        )
+        step = 1
 
-        player_names = ", ".join(
-            [p.get("name", "") for p in result.players.players[:5]]
-        )
-        await self._notify(
-            f"👥 이해관계자 분석관: {player_names} 등 {len(result.players.players)}개 행위자의 입장과 전략을 분석하였습니다.\n"
-            f"  · {result.players.power_dynamics[:150]}\n"
-            f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%\n"
-            f"{self._progress_bar(2)}",
-            status_callback,
-        )
+        # -- Phase 2: 이해관계자 분석관 + 구조 분석관 --
+        if "players" not in skip_agents:
+            player_context = result.context.summary[:50] if result.context.summary else event_name
+            await self._notify(
+                f"👥 이해관계자 분석관: \"{player_context}\"와 관련된 핵심 행위자들을 식별하고 있습니다.",
+                status_callback,
+            )
+            result.players = await self.player_analyst.analyze(
+                result.context, directive=strategy.get("players", "")
+            )
+            player_names = ", ".join(
+                [p.get("name", "") for p in result.players.players[:5]]
+            )
+            step += 1
+            await self._notify(
+                f"👥 이해관계자 분석관: {player_names} 등 {len(result.players.players)}개 행위자 분석 완료.\n"
+                f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%\n"
+                f"{self._progress_bar(step)}",
+                status_callback,
+            )
 
-        await self._notify(
-            f"⚡ 구조 및 상호작용 분석관: {player_names} 간의 구조적 상호작용에 대해 분석하고 있습니다.",
-            status_callback,
-        )
-        result.dynamics = await self.dynamics_analyst.analyze(
-            result.context, result.players, directive=strategy.get("dynamics", "")
-        )
-        await self._notify(
-            f"⚡ 구조 및 상호작용 분석관: {result.dynamics.framework} 프레임워크를 적용하여 분석하였습니다.\n"
-            f"  · 핵심 통찰: {result.dynamics.key_insight[:200]}\n"
-            f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%\n"
-            f"{self._progress_bar(3)}",
-            status_callback,
-        )
+        if "dynamics" not in skip_agents:
+            await self._notify(
+                f"⚡ 구조 분석관: 구조적 원인과 힘의 역학을 분석하고 있습니다.",
+                status_callback,
+            )
+            result.dynamics = await self.dynamics_analyst.analyze(
+                result.context, result.players, directive=strategy.get("dynamics", "")
+            )
+            step += 1
+            await self._notify(
+                f"⚡ 구조 분석관: {result.dynamics.framework} 관점으로 분석 완료.\n"
+                f"  · 핵심 통찰: {result.dynamics.key_insight[:200]}\n"
+                f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%\n"
+                f"{self._progress_bar(step)}",
+                status_callback,
+            )
 
         # -- Phase 3: 연쇄반응 분석관 + 향후 시나리오 분석관 --
-        await self._notify(
-            f"🔗 연쇄반응 분석관: \"{event_name}\"에서 비롯되는 연쇄반응과 파급효과를 추적하고 있습니다.",
-            status_callback,
-        )
-        result.chain_reaction = await self.chain_reaction_analyst.analyze(
-            result.context, result.players, result.dynamics,
-            directive=strategy.get("chain_reaction", ""),
-        )
-        chain_summary = " → ".join(
-            [s.get("title", "") for s in result.chain_reaction.chain[:4]]
-        )
-        await self._notify(
-            f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬을 분석하였습니다.\n"
-            f"  · {chain_summary}\n"
-            f"  · 차단점 {len(result.chain_reaction.break_points)}건 식별\n"
-            f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%\n"
-            f"{self._progress_bar(4)}",
-            status_callback,
-        )
+        if "chain_reaction" not in skip_agents:
+            await self._notify(
+                f"🔗 연쇄반응 분석관: \"{event_name}\"에서 비롯되는 파급효과를 추적하고 있습니다.",
+                status_callback,
+            )
+            result.chain_reaction = await self.chain_reaction_analyst.analyze(
+                result.context, result.players, result.dynamics,
+                directive=strategy.get("chain_reaction", ""),
+            )
+            chain_summary = " → ".join(
+                [s.get("title", "") for s in result.chain_reaction.chain[:4]]
+            )
+            step += 1
+            await self._notify(
+                f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬 분석 완료.\n"
+                f"  · {chain_summary}\n"
+                f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%\n"
+                f"{self._progress_bar(step)}",
+                status_callback,
+            )
 
-        await self._notify(
-            f"🎲 향후 시나리오 분석관: 향후 전개 가능한 시나리오를 설계하고 있습니다.",
-            status_callback,
-        )
-        result.scenarios = await self.scenario_architect.analyze(
-            result.context, result.players, result.dynamics, result.chain_reaction,
-            directive=strategy.get("scenarios", ""),
-        )
-        scenario_names = " / ".join(
-            [s.get("name", "") for s in result.scenarios.scenarios]
-        )
-        await self._notify(
-            f"🎲 향후 시나리오 분석관: {len(result.scenarios.scenarios)}개 시나리오를 설계하였습니다.\n"
-            f"  · {scenario_names}\n"
-            f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
-            f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%\n"
-            f"{self._progress_bar(5)}",
-            status_callback,
-        )
+        if "scenarios" not in skip_agents:
+            await self._notify(
+                f"🎲 시나리오 설계관: 향후 전개 가능한 시나리오를 설계하고 있습니다.",
+                status_callback,
+            )
+            result.scenarios = await self.scenario_architect.analyze(
+                result.context, result.players, result.dynamics, result.chain_reaction,
+                directive=strategy.get("scenarios", ""),
+            )
+            scenario_names = " / ".join(
+                [s.get("name", "") for s in result.scenarios.scenarios]
+            )
+            step += 1
+            await self._notify(
+                f"🎲 시나리오 설계관: {len(result.scenarios.scenarios)}개 시나리오 설계 완료.\n"
+                f"  · {scenario_names}\n"
+                f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
+                f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%\n"
+                f"{self._progress_bar(step)}",
+                status_callback,
+            )
 
         # -- Visual Analyst: 시각화 생성 --
         await self._notify(
@@ -379,5 +418,14 @@ class Orchestrator:
 
         report_url = await self.report_synthesizer.synthesize(result)
         result.report_url = report_url
+
+        # Restore original model assignments after quick mode
+        if quick_mode:
+            self.context_analyst.model_name = self.config.model_name_light
+            self.player_analyst.model_name = self.config.model_name_light
+            self.dynamics_analyst.model_name = self.config.model_name
+            self.chain_reaction_analyst.model_name = self.config.model_name_light
+            self.scenario_architect.model_name = self.config.model_name
+            self.visual_analyst.model_name = self.config.model_name
 
         return result

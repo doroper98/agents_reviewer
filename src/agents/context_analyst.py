@@ -9,7 +9,7 @@ from src.config import Config
 from src.models import AnalysisRequest, ContextAnalysis
 
 SYSTEM_PROMPT = (
-    "당신은 상황판 분석관. 사건의 팩트, 타임라인, 핵심 수치를 정리함.\n\n"
+    "당신은 상황 분석관. 사건의 팩트, 타임라인, 핵심 수치를 정리함.\n\n"
     "중요: 오늘 날짜는 {current_date}.\n"
     "반드시 최신 정보를 기반으로 분석할 것.\n"
     "웹 검색을 통해 최신 뉴스, 데이터, 현황을 확인한 후 분석.\n"
@@ -47,7 +47,7 @@ class ContextAnalyst(BaseAgent):
     def __init__(self, config: Config) -> None:
         super().__init__(
             name="context_analyst",
-            role="Context Analyst (상황판 분석관)",
+            role="Context Analyst (상황 분석관)",
             system_prompt=SYSTEM_PROMPT,
             config=config,
             use_light_model=True,
