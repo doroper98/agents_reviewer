@@ -68,11 +68,13 @@ class ChainReactionAnalyst(BaseAgent):
         directive: str = "",
     ) -> ChainReactionAnalysis:
         """Analyze cause-effect chains based on prior analyses."""
-        context = {
-            "context_analysis": context_analysis.model_dump(),
-            "player_analysis": player_analysis.model_dump(),
-            "dynamics_analysis": dynamics_analysis.model_dump(),
-        }
+        context: dict = {}
+        if context_analysis:
+            context["context_analysis"] = context_analysis.model_dump()
+        if player_analysis:
+            context["player_analysis"] = player_analysis.model_dump()
+        if dynamics_analysis:
+            context["dynamics_analysis"] = dynamics_analysis.model_dump()
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
         if directive:

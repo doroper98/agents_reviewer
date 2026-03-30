@@ -58,10 +58,11 @@ class DynamicsAnalyst(BaseAgent):
         directive: str = "",
     ) -> DynamicsAnalysis:
         """Analyze structural dynamics based on context and player analyses."""
-        context = {
-            "context_analysis": context_analysis.model_dump(),
-            "player_analysis": player_analysis.model_dump(),
-        }
+        context: dict = {}
+        if context_analysis:
+            context["context_analysis"] = context_analysis.model_dump()
+        if player_analysis:
+            context["player_analysis"] = player_analysis.model_dump()
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
         if directive:
