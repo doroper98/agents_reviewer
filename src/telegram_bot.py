@@ -318,17 +318,20 @@ class TelegramBot:
             if glossary_text:
                 await update.message.reply_text(glossary_text)
 
-            # Send HTML file with share link in caption
+            # Send report link (external Cloudflare URL only, no file attachment)
             report_path = result.report_path
-            if report_path and os.path.isfile(report_path):
-                caption = "📊 Full Analysis Report"
-                if result.report_url and result.report_url.startswith("http"):
-                    caption += f"\n\n공유 링크: {result.report_url}"
+            if result.report_url and result.report_url.startswith("http"):
+                await update.message.reply_text(
+                    f"📊 Full Analysis Report\n\n"
+                    f"🔗 보고서 링크: {result.report_url}"
+                )
+            elif report_path and os.path.isfile(report_path):
+                # Fallback: send file only if Cloudflare upload failed
                 with open(report_path, "rb") as f:
                     await update.message.reply_document(
                         document=f,
                         filename=os.path.basename(report_path),
-                        caption=caption,
+                        caption="📊 Full Analysis Report (외부링크 생성 실패 — 파일 첨부)",
                     )
 
             global _analysis_count
