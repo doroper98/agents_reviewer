@@ -61,6 +61,36 @@
   --border: #2A3A2C; --border-light: #1E2A20; --divider: #3A4E3C;
 }
 
+/* --- Liquid Glass: iOS 26 스타일 (프리미엄/미래적) --- */
+[data-theme="liquidglass"] {
+  --bg: #0A0A0F; --card: rgba(255,255,255,0.05); --card-hover: rgba(255,255,255,0.08); --accent: rgba(255,255,255,0.04);
+  --text-primary: #F0F0F8; --text-secondary: #C0C0D0; --text-muted: #808098; --text-faded: #505068;
+  --gold: #E0C060; --gold-light: #F0D070;
+  --red: #FF6B6B; --red-light: rgba(255,80,80,0.1);
+  --orange: #FFA060; --orange-light: rgba(255,160,96,0.1);
+  --green: #60E0A0; --green-light: rgba(96,224,160,0.1);
+  --blue: #60A0FF; --blue-light: rgba(96,160,255,0.1);
+  --border: rgba(255,255,255,0.1); --border-light: rgba(255,255,255,0.05); --divider: rgba(255,255,255,0.12);
+  --shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+[data-theme="liquidglass"] .card,
+[data-theme="liquidglass"] .player-card,
+[data-theme="liquidglass"] .signal-item,
+[data-theme="liquidglass"] .callout,
+[data-theme="liquidglass"] .data-table {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+[data-theme="liquidglass"] .hero {
+  background: linear-gradient(180deg, rgba(20,20,40,0.9) 0%, #0A0A0F 100%);
+}
+[data-theme="liquidglass"] .nav {
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
 /* --- Reset --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }

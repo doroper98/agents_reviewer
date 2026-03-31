@@ -21,7 +21,6 @@
     <p class="hero-sub">{{ result.executive_summary if result.executive_summary else '' }}</p>
     <div class="hero-tags">
       {% if result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
-      {% if result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
       <span>{{ generated_at }}</span>
     </div>
   </div>
