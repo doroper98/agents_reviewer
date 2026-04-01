@@ -1,4 +1,4 @@
-"""Chain Reaction Analyst Agent -- ACT IV: cause-effect chains."""
+"""Chain Reaction Analyst Agent -- cause-effect chains."""
 
 from __future__ import annotations
 

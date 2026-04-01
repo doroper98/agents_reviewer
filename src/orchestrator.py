@@ -418,6 +418,7 @@ class Orchestrator:
         result.visuals = await self.visual_analyst.analyze(
             result.context, result.players, result.dynamics,
             result.chain_reaction, result.scenarios,
+            directive=strategy.get("visuals", "") if strategy else "",
         )
         visual_types: list[str] = []
         if result.visuals.svg_content:

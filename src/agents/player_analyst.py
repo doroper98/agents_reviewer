@@ -1,4 +1,4 @@
-"""Player Analyst Agent -- ACT II: key actors identification."""
+"""Player Analyst Agent -- key actors identification."""
 
 from __future__ import annotations
 

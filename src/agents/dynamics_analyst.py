@@ -1,4 +1,4 @@
-"""Dynamics Analyst Agent -- ACT III: structural dynamics analysis."""
+"""Dynamics Analyst Agent -- structural dynamics analysis."""
 
 from __future__ import annotations
 

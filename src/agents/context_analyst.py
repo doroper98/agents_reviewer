@@ -1,4 +1,4 @@
-"""Context Analyst Agent -- ACT I: situation board."""
+"""Context Analyst Agent -- situation and fact analysis."""
 
 from __future__ import annotations
 

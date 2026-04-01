@@ -1,4 +1,4 @@
-"""Scenario Architect Agent -- ACT V+VI: scenarios and watch signals."""
+"""Scenario Architect Agent -- scenarios and watch signals."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ SYSTEM_PROMPT = (
     "규칙:\n"
     "- 음슴체\n"
     "- 비전문가도 이해할 수 있는 쉬운 표현 사용. 전문용어 쓸 경우 괄호 안에 간단한 설명 추가\n"
-    "- 반드시 4개 시나리오 (최선/기본/악화/최악)\n"
+    "- 시나리오 개수와 유형은 사건 성격에 맞게 자유 결정 (2~5개)\n"
     "- 각 시나리오에 확률 배정\n"
     "- 각 시나리오가 핵심 행위자에게 미치는 영향 명시\n"
     "- 각 시나리오로 전환되는 트리거 신호 명시\n"

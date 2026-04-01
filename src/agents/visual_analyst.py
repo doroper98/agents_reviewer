@@ -15,12 +15,16 @@ from src.models import (
 )
 from .base import BaseAgent
 
-SYSTEM_PROMPT = """당신은 시각화 분석관. 분석 결과를 SVG, 지도, 차트로 시각화함.
+SYSTEM_PROMPT = """당신은 시각화 분석관. 분석 결과를 시각적 요소로 표현함.
+입력에 strategic_directive가 있으면 그 지시에 따라 시각화 유형을 결정할 것.
 
 핵심 규칙:
 - 텍스트 겹침/잘림 금지 (가장 중요)
 - 모든 요소에 충분한 여백
 - Mermaid 사용 금지. SVG 직접 생성만.
+- 지도(leaflet)는 지리적 요소가 있을 때만 생성. 없으면 enabled: false
+- 차트(chart)는 수치/시계열 데이터가 있을 때만 생성. 없으면 enabled: false
+- 불필요한 시각화를 억지로 만들지 말 것
 
 SVG 관계도:
 - viewBox="0 0 800 560", 노드는 y=80 이후 배치
@@ -95,6 +99,7 @@ class VisualAnalyst(BaseAgent):
         dynamics: DynamicsAnalysis | None,
         chain_reaction: ChainReactionAnalysis | None,
         scenarios: ScenarioAnalysis | None,
+        directive: str = "",
     ) -> VisualAnalysis:
         """Analyze all results and produce visual specifications."""
         analysis_context: dict = {}
@@ -110,6 +115,8 @@ class VisualAnalyst(BaseAgent):
             analysis_context["scenarios"] = scenarios.model_dump()
         analysis_context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         analysis_context["instruction"] = f"오늘은 {analysis_context['current_date']}. 최신 정보 기준으로 분석할 것."
+        if directive:
+            analysis_context["strategic_directive"] = directive
 
         raw_text = await super().analyze(analysis_context)
         return self._parse_json_response(raw_text, VisualAnalysis)
