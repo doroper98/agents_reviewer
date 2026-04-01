@@ -304,21 +304,26 @@ class TelegramBot:
                 status_callback=status_callback,
             )
 
-            # Send text report (without glossary, for easy x.com sharing)
-            text_report = self.orchestrator._build_text_report(result)
-            if len(text_report) > 4000:
-                chunks = [text_report[i:i+3900] for i in range(0, len(text_report), 3900)]
-                for chunk in chunks:
+            # Send text report (best effort — don't block report link)
+            try:
+                text_report = self.orchestrator._build_text_report(result)
+                for i in range(0, len(text_report), 3900):
+                    chunk = text_report[i:i+3900]
                     await update.message.reply_text(chunk)
-            else:
-                await update.message.reply_text(text_report)
+            except Exception as e:
+                logger.warning(f"Text report send failed: {e}")
 
-            # Send glossary as a SEPARATE message
-            glossary_text = self.orchestrator._build_glossary_text(result)
-            if glossary_text:
-                await update.message.reply_text(glossary_text)
+            # Send glossary (best effort)
+            try:
+                glossary_text = self.orchestrator._build_glossary_text(result)
+                if glossary_text:
+                    for i in range(0, len(glossary_text), 3900):
+                        chunk = glossary_text[i:i+3900]
+                        await update.message.reply_text(chunk)
+            except Exception as e:
+                logger.warning(f"Glossary send failed: {e}")
 
-            # Send report link (external Cloudflare URL only, no file attachment)
+            # Send report link (must always reach user)
             report_path = result.report_path
             if result.report_url and result.report_url.startswith("http"):
                 await update.message.reply_text(
