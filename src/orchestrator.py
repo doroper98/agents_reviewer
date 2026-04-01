@@ -21,7 +21,7 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.1.0"
+VERSION = "v2.2.0"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
