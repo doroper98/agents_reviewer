@@ -129,7 +129,15 @@ class Orchestrator:
                 return {}
 
             strategy = json.loads(match.group())
-            logger.info(f"[orchestrator] Analysis strategy generated for: {event_name}")
+            logger.info(
+                f"[orchestrator] Analysis strategy generated for: {event_name}\n"
+                f"  theme: {strategy.get('theme', 'N/A')}\n"
+                f"  skip: {strategy.get('skip', [])}\n"
+                f"  players: {strategy.get('players', '')[:80]}\n"
+                f"  dynamics: {strategy.get('dynamics', '')[:80]}\n"
+                f"  chain_reaction: {strategy.get('chain_reaction', '')[:80]}\n"
+                f"  scenarios: {strategy.get('scenarios', '')[:80]}"
+            )
             return strategy
 
         except Exception as e:
