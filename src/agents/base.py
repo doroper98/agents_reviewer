@@ -61,6 +61,8 @@ class BaseAgent:
     # ------------------------------------------------------------------
 
     async def _analyze_cli(self, context: dict) -> str:
+        # Extract directive and inject it prominently before data
+        directive = context.pop("strategic_directive", "")
         user_message = json.dumps(context, ensure_ascii=False, indent=2)
 
         claude_bin = shutil.which("claude")
@@ -70,7 +72,16 @@ class BaseAgent:
                 "Install it with: npm install -g @anthropic-ai/claude-code && claude login"
             )
 
-        full_prompt = f"{self.system_prompt}\n\n---\n\n{user_message}"
+        if directive:
+            full_prompt = (
+                f"{self.system_prompt}\n\n"
+                f"=== 전략 지시 (최우선 준수) ===\n{directive}\n"
+                f"위 지시에 따라 분석 관점과 기법을 조정할 것. "
+                f"JSON 필드 중 이 사건에 불필요한 항목은 빈 값으로 두고, 지시된 분석에 집중.\n"
+                f"===\n\n{user_message}"
+            )
+        else:
+            full_prompt = f"{self.system_prompt}\n\n---\n\n{user_message}"
 
         cmd = [
             claude_bin,
@@ -107,13 +118,22 @@ class BaseAgent:
 
     async def _analyze_api(self, context: dict) -> str:
         assert self._api_client is not None, "API client not initialised"
+        directive = context.pop("strategic_directive", "")
         user_message = json.dumps(context, ensure_ascii=False, indent=2)
+
+        system = self.system_prompt
+        if directive:
+            system += (
+                f"\n\n=== 전략 지시 (최우선 준수) ===\n{directive}\n"
+                f"위 지시에 따라 분석 관점과 기법을 조정할 것. "
+                f"JSON 필드 중 이 사건에 불필요한 항목은 빈 값으로 두고, 지시된 분석에 집중.\n==="
+            )
 
         logger.info(f"[{self.name}] Starting API analysis ({self.model_name})...")
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
             model=self.model_name,
             max_tokens=4096,
-            system=self.system_prompt,
+            system=system,
             messages=[{"role": "user", "content": user_message}],
         )
 
