@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Analysis Team — System Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700;900&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0A0F;
+  --card: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --text: #F0F0F8;
+  --text-sub: #A0A0B8;
+  --text-muted: #606078;
+  --accent: #60A0FF;
+  --gold: #F0C040;
+  --red: #FF6B6B;
+  --green: #60E0A0;
+  --purple: #B080FF;
+  --cyan: #60D0E0;
+  --orange: #FFA060;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+.page { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+
+/* --- SLIDE 1: HERO --- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 20px;
+  background: radial-gradient(ellipse at 50% 30%, rgba(96,160,255,0.08) 0%, transparent 60%);
+}
+.hero-badge {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #F0F0F8, #60A0FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-desc {
+  font-size: 14px;
+  color: var(--text-sub);
+  max-width: 360px;
+  margin-bottom: 32px;
+}
+.hero-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+.hero-stat {
+  text-align: center;
+}
+.hero-stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--gold);
+}
+.hero-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.version-tag {
+  margin-top: 32px;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+}
+
+/* --- SLIDE 2: ARCHITECTURE --- */
+.section {
+  padding: 60px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.section-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 24px;
+}
+
+.arch-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+}
+.arch-node {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+.arch-node-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.arch-node-desc {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+.arch-arrow {
+  width: 1px;
+  height: 24px;
+  background: linear-gradient(180deg, var(--accent), transparent);
+  position: relative;
+}
+.arch-arrow::after {
+  content: '▼';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: var(--accent);
+}
+.arch-node.user { border-color: var(--gold); }
+.arch-node.user .arch-node-title { color: var(--gold); }
+.arch-node.server { border-color: var(--green); }
+.arch-node.server .arch-node-title { color: var(--green); }
+.arch-node.strategy { border-color: var(--purple); }
+.arch-node.strategy .arch-node-title { color: var(--purple); }
+.arch-node.agents { border-color: var(--cyan); }
+.arch-node.agents .arch-node-title { color: var(--cyan); }
+.arch-node.report { border-color: var(--orange); }
+.arch-node.report .arch-node-title { color: var(--orange); }
+
+/* --- SLIDE 3: AGENTS --- */
+.agent-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.agent-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+}
+.agent-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.agent-info { flex: 1; }
+.agent-name {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.agent-role {
+  font-size: 10px;
+  color: var(--text-sub);
+}
+.agent-model {
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* --- SLIDE 4: SEQUENCE --- */
+.seq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.seq-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.seq-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 2px solid;
+}
+.seq-content { flex: 1; }
+.seq-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.seq-desc {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+.seq-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* --- SLIDE 5: THEMES --- */
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.theme-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  text-align: center;
+}
+.theme-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  margin: 0 auto 8px;
+}
+.theme-name {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.theme-use {
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+/* --- SLIDE 6: FEATURES --- */
+.feat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.feat-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.feat-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+}
+.feat-text {
+  flex: 1;
+}
+.feat-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.feat-desc {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+/* --- FOOTER --- */
+.footer {
+  padding: 40px 0;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.footer-logo {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #F0F0F8, #60A0FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.footer-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.footer-stack {
+  margin-top: 16px;
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- SLIDE 1: HERO -->
+  <section class="hero">
+    <div class="hero-badge">AI Multi-Agent System</div>
+    <h1>Event Analysis Team</h1>
+    <p class="hero-desc">
+      텔레그램 한 줄 명령으로 7개 전문 AI 에이전트가
+      협업하여 사건을 다각도로 분석하고,
+      프리미엄 HTML 보고서를 자동 생성하는 시스템
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-value">7</div>
+        <div class="hero-stat-label">AI Agents</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">6</div>
+        <div class="hero-stat-label">Themes</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">25+</div>
+        <div class="hero-stat-label">Frameworks</div>
+      </div>
+    </div>
+    <div class="version-tag">v2.3.0 · Claude Opus + Sonnet</div>
+  </section>
+
+  <!-- SLIDE 2: ARCHITECTURE -->
+  <section class="section">
+    <div class="section-label">Architecture</div>
+    <div class="section-title">시스템 구성</div>
+    <div class="arch-flow">
+      <div class="arch-node user">
+        <div class="arch-node-title">Telegram</div>
+        <div class="arch-node-desc">사용자가 분석 주제를 입력</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node server">
+        <div class="arch-node-title">Oracle Cloud VM</div>
+        <div class="arch-node-desc">Ubuntu 22.04 · Python 봇 상시 가동</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node strategy">
+        <div class="arch-node-title">Strategic Planner (Opus)</div>
+        <div class="arch-node-desc">25+ 분석 기법에서 최적 전략 결정 · 테마 선택</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node agents">
+        <div class="arch-node-title">7 Expert Agents</div>
+        <div class="arch-node-desc">각 에이전트가 전략 지시에 따라 맞춤 분석</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node report">
+        <div class="arch-node-title">HTML Report + Cloudflare</div>
+        <div class="arch-node-desc">동적 테마 보고서 생성 · 즉시 공유 가능</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: AGENTS -->
+  <section class="section">
+    <div class="section-label">Expert Agents</div>
+    <div class="section-title">7명의 전문 분석가</div>
+    <div class="agent-grid">
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(96,160,255,0.15);color:var(--accent)">1</div>
+        <div class="agent-info">
+          <div class="agent-name">상황 분석관</div>
+          <div class="agent-role">팩트 수집 · 웹 검색 · 타임라인</div>
+        </div>
+        <div class="agent-model">Sonnet</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(240,192,64,0.15);color:var(--gold)">2</div>
+        <div class="agent-info">
+          <div class="agent-name">이해관계자 분석관</div>
+          <div class="agent-role">핵심 행위자 · 전략 · 관계 구도</div>
+        </div>
+        <div class="agent-model">Sonnet</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(176,128,255,0.15);color:var(--purple)">3</div>
+        <div class="agent-info">
+          <div class="agent-name">구조 분석관</div>
+          <div class="agent-role">구조적 원인 · 힘의 역학</div>
+        </div>
+        <div class="agent-model">Opus</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(255,107,107,0.15);color:var(--red)">4</div>
+        <div class="agent-info">
+          <div class="agent-name">연쇄반응 분석관</div>
+          <div class="agent-role">인과 사슬 · 파급효과 추적</div>
+        </div>
+        <div class="agent-model">Sonnet</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(96,224,160,0.15);color:var(--green)">5</div>
+        <div class="agent-info">
+          <div class="agent-name">시나리오 설계관</div>
+          <div class="agent-role">향후 전개 경로 · 감시 신호</div>
+        </div>
+        <div class="agent-model">Opus</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(96,208,224,0.15);color:var(--cyan)">6</div>
+        <div class="agent-info">
+          <div class="agent-name">시각화 분석관</div>
+          <div class="agent-role">SVG 관계도 · 지도 · 차트</div>
+        </div>
+        <div class="agent-model">Opus</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-num" style="background:rgba(255,160,96,0.15);color:var(--orange)">7</div>
+        <div class="agent-info">
+          <div class="agent-name">보고서 합성관</div>
+          <div class="agent-role">내러티브 구성 · HTML 렌더링</div>
+        </div>
+        <div class="agent-model">Sonnet</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: SEQUENCE -->
+  <section class="section">
+    <div class="section-label">Analysis Sequence</div>
+    <div class="section-title">분석 시퀀스</div>
+    <div class="seq-list">
+      <div class="seq-item">
+        <div class="seq-num" style="border-color:var(--gold);color:var(--gold)">1</div>
+        <div class="seq-content">
+          <div class="seq-title">분석 요청</div>
+          <div class="seq-desc">텔레그램에 주제를 자연어로 입력. "짧게" 키워드로 빠른분석 모드 가능</div>
+        </div>
+      </div>
+      <div class="seq-item">
+        <div class="seq-num" style="border-color:var(--accent);color:var(--accent)">2</div>
+        <div class="seq-content">
+          <div class="seq-title">상황 파악</div>
+          <div class="seq-desc">상황 분석관이 웹 검색으로 최신 팩트·타임라인·핵심 수치 수집</div>
+        </div>
+      </div>
+      <div class="seq-item">
+        <div class="seq-num" style="border-color:var(--purple);color:var(--purple)">3</div>
+        <div class="seq-content">
+          <div class="seq-title">전략 기획</div>
+          <div class="seq-desc">Opus가 25+ 분석 기법 중 최적 기법 선택, 각 에이전트에 맞춤 지시, 보고서 테마 결정, 불필요한 에이전트 스킵</div>
+        </div>
+      </div>
+      <div class="seq-item">
+        <div class="seq-num" style="border-color:var(--cyan);color:var(--cyan)">4</div>
+        <div class="seq-content">
+          <div class="seq-title">전문 분석</div>
+          <div class="seq-desc">각 에이전트가 전략 지시에 따라 고유 관점으로 분석. 이전 에이전트 결과를 반영한 점진적 심화</div>
+        </div>
+      </div>
+      <div class="seq-item">
+        <div class="seq-num" style="border-color:var(--green);color:var(--green)">5</div>
+        <div class="seq-content">
+          <div class="seq-title">시각화</div>
+          <div class="seq-desc">SVG 관계도, 지도, Canvas 차트 등 — 주제에 필요한 시각 요소만 선택적 생성</div>
+        </div>
+      </div>
+      <div class="seq-item">
+        <div class="seq-num" style="border-color:var(--orange);color:var(--orange)">6</div>
+        <div class="seq-content">
+          <div class="seq-title">보고서 생성</div>
+          <div class="seq-desc">동적 내러티브 구조로 HTML 보고서 렌더링, Cloudflare에 즉시 배포, 공유 링크 전달</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: THEMES -->
+  <section class="section">
+    <div class="section-label">Dynamic Themes</div>
+    <div class="section-title">주제별 자동 테마</div>
+    <div class="theme-grid">
+      <div class="theme-card">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#2B1A1A,#3D2828);border:1px solid #5A4A3A"></div>
+        <div class="theme-name">Burgundy</div>
+        <div class="theme-use">범용</div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0F1923,#1A2836);border:1px solid #2A3A4A"></div>
+        <div class="theme-name">Geopolitical</div>
+        <div class="theme-use">안보 · 군사 · 전쟁</div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0A1628,#142236);border:1px solid #1E3048"></div>
+        <div class="theme-name">Financial</div>
+        <div class="theme-use">금융 · 경제 · 시장</div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0E1117,#1A1E26);border:1px solid #2A3040"></div>
+        <div class="theme-name">Tech</div>
+        <div class="theme-use">기술 · AI · IT</div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#121A14,#1E2A20);border:1px solid #2A3A2C"></div>
+        <div class="theme-name">Nature</div>
+        <div class="theme-use">환경 · 에너지</div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0A0A0F,#14141E);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px)"></div>
+        <div class="theme-name">Liquid Glass</div>
+        <div class="theme-use">프리미엄 · 혁신</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: FEATURES -->
+  <section class="section">
+    <div class="section-label">Key Features</div>
+    <div class="section-title">핵심 기능</div>
+    <div class="feat-list">
+      <div class="feat-item">
+        <div class="feat-icon">🧭</div>
+        <div class="feat-text">
+          <div class="feat-title">전략 기획 에이전트</div>
+          <div class="feat-desc">ACH, DIME, Stress Test 등 25+ 분석 기법에서 주제에 최적인 방법론 자동 선택</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🎭</div>
+        <div class="feat-text">
+          <div class="feat-title">동적 내러티브</div>
+          <div class="feat-desc">고정된 보고서 틀 없이, 사건 성격에 맞게 섹션 순서와 제목을 매번 새로 구성</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-text">
+          <div class="feat-title">빠른분석 모드</div>
+          <div class="feat-desc">"짧게", "간략히" 키워드로 핵심 에이전트만 가동, 3배 빠른 분석</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🎨</div>
+        <div class="feat-text">
+          <div class="feat-title">6가지 동적 테마</div>
+          <div class="feat-desc">전략 기획이 주제를 파악하고 최적 테마 자동 적용 — Liquid Glass까지</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🌐</div>
+        <div class="feat-text">
+          <div class="feat-title">즉시 공유</div>
+          <div class="feat-desc">Cloudflare Pages 자동 배포, 링크 하나로 누구에게나 공유</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section class="footer">
+    <div class="footer-logo">Event Analysis Team</div>
+    <div class="footer-sub">Powered by Claude Opus + Sonnet · 7 Expert AI Agents</div>
+    <div class="footer-stack">PYTHON · JINJA2 · TELEGRAM · CLOUDFLARE · ORACLE CLOUD</div>
+  </section>
+
+</div>
+
+</body>
+</html>
