@@ -326,9 +326,11 @@ class TelegramBot:
             # Send report link (must always reach user)
             report_path = result.report_path
             if result.report_url and result.report_url.startswith("http"):
+                md_url = result.report_url.replace(".html", ".md")
                 await update.message.reply_text(
                     f"📊 Full Analysis Report\n\n"
-                    f"🔗 보고서 링크: {result.report_url}"
+                    f"🔗 보고서 링크: {result.report_url}\n"
+                    f"🤖 AI 전달용 (Markdown): {md_url}"
                 )
             elif report_path and os.path.isfile(report_path):
                 # Fallback: send file only if Cloudflare upload failed
