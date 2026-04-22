@@ -3,7 +3,7 @@
 /* --- Default: Burgundy (범용) --- */
 :root, [data-theme="burgundy"] {
   --bg: #2B1A1A; --card: #3D2828; --card-hover: #4A3232; --accent: #4A3232;
-  --text-primary: #F0E2CC; --text-secondary: #D4C4AA; --text-muted: #A89880; --text-faded: #7A6E5E;
+  --text-primary: #F0E2CC; --text-secondary: #D4C4AA; --text-muted: #C0AC90; --text-faded: #9A8A74;
   --gold: #C9A84C; --gold-light: #D4B45C;
   --red: #C45C4C; --red-light: #4A2828;
   --orange: #C4884C; --orange-light: #4A3828;
@@ -16,7 +16,7 @@
 /* --- Geopolitical: 지정학/안보/군사 --- */
 [data-theme="geopolitical"] {
   --bg: #0F1923; --card: #1A2836; --card-hover: #243342; --accent: #1E2D3D;
-  --text-primary: #E8EDF2; --text-secondary: #B8C8D8; --text-muted: #7A8FA0; --text-faded: #4E6070;
+  --text-primary: #E8EDF2; --text-secondary: #C4D0DC; --text-muted: #94A8B8; --text-faded: #6E8498;
   --gold: #D4A854; --gold-light: #E0B860;
   --red: #DC4444; --red-light: #2A1A1A;
   --orange: #E08040; --orange-light: #2A2018;
@@ -28,7 +28,7 @@
 /* --- Financial: 금융/경제/시장 --- */
 [data-theme="financial"] {
   --bg: #0A1628; --card: #142236; --card-hover: #1E2E44; --accent: #182A3E;
-  --text-primary: #E4ECF4; --text-secondary: #B0C4D8; --text-muted: #6E8AA0; --text-faded: #4A6478;
+  --text-primary: #E4ECF4; --text-secondary: #C0D0E0; --text-muted: #8AA0B8; --text-faded: #648098;
   --gold: #F0C040; --gold-light: #F4CC58;
   --red: #E85454; --red-light: #2A1418;
   --orange: #E89040; --orange-light: #2A2014;
@@ -40,7 +40,7 @@
 /* --- Tech: 기술/AI/IT --- */
 [data-theme="tech"] {
   --bg: #0E1117; --card: #1A1E26; --card-hover: #242A34; --accent: #1E242E;
-  --text-primary: #E6EDF3; --text-secondary: #B0BEC8; --text-muted: #7A8A98; --text-faded: #4E5A66;
+  --text-primary: #E6EDF3; --text-secondary: #C0CCD8; --text-muted: #94A4B0; --text-faded: #6E7E8A;
   --gold: #F0C040; --gold-light: #F4CC58;
   --red: #F07070; --red-light: #2A1818;
   --orange: #E09050; --orange-light: #2A2018;
@@ -52,7 +52,7 @@
 /* --- Nature: 환경/에너지/기후 --- */
 [data-theme="nature"] {
   --bg: #121A14; --card: #1E2A20; --card-hover: #28362A; --accent: #223024;
-  --text-primary: #E4EDE6; --text-secondary: #B8CCB8; --text-muted: #7A9A7E; --text-faded: #506854;
+  --text-primary: #E4EDE6; --text-secondary: #C4D8C4; --text-muted: #90B094; --text-faded: #6A8A6E;
   --gold: #D4A040; --gold-light: #E0B050;
   --red: #CC5040; --red-light: #2A1A16;
   --orange: #D89040; --orange-light: #2A2414;
@@ -64,7 +64,7 @@
 /* --- Liquid Glass: iOS 26 스타일 (프리미엄/미래적) --- */
 [data-theme="liquidglass"] {
   --bg: #0A0A0F; --card: rgba(255,255,255,0.05); --card-hover: rgba(255,255,255,0.08); --accent: rgba(255,255,255,0.04);
-  --text-primary: #F0F0F8; --text-secondary: #C0C0D0; --text-muted: #808098; --text-faded: #505068;
+  --text-primary: #F0F0F8; --text-secondary: #D0D0E0; --text-muted: #A0A0B8; --text-faded: #787890;
   --gold: #E0C060; --gold-light: #F0D070;
   --red: #FF6B6B; --red-light: rgba(255,80,80,0.1);
   --orange: #FFA060; --orange-light: rgba(255,160,96,0.1);
