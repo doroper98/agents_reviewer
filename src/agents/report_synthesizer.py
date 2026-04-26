@@ -110,7 +110,42 @@ class ReportSynthesizer:
 
     @staticmethod
     def _format_structured_text(text: str) -> str:
-        """Convert numbered patterns (첫째/둘째/N층 etc.) into <br> separated lines."""
+        """Convert numbered patterns (첫째/둘째/N층 etc.) into <br> separated lines.
+
+        Also splits the text into paragraphs on:
+        - Explicit double-newline breaks
+        - [N단락] / [핵심 판단] style block headers
+        - Section headers like '핵심 판단:', '상방/하방 비대칭:', '변수 민감도:', '한계:' etc.
+        """
+        if not text:
+            return text
+
+        # Block headers like [1단락] / [핵심 판단] -> bold heading on a new paragraph
+        text = re.sub(
+            r"\[([^\[\]\n]{1,30})\]\s*",
+            r"<br><br><strong>\1</strong><br>",
+            text,
+        )
+
+        # Inline section headers ending with colon (e.g. '핵심 판단:', '변수 민감도:')
+        section_keywords = (
+            r"핵심 판단|상방/하방 비대칭|상방·하방 비대칭|상하방 비대칭|"
+            r"변수 민감도|민감도 분석|분석가의 한계|한계와 유보|유보사항|"
+            r"전제 조건|결론|시사점|권고|요약"
+        )
+        # After sentence terminator
+        text = re.sub(
+            rf"(?<=[.。!?])\s*({section_keywords})\s*[:：]\s*",
+            r"<br><br><strong>\1.</strong><br>",
+            text,
+        )
+        # At start of string
+        text = re.sub(
+            rf"^\s*({section_keywords})\s*[:：]\s*",
+            r"<strong>\1.</strong><br>",
+            text,
+        )
+
         # N층: patterns
         text = re.sub(r"(?<=[.。])\s*(\d+층\s*[:：])", r"<br><br><strong>\1</strong>", text)
         # 첫째/둘째/셋째/넷째/다섯째 patterns
@@ -121,6 +156,15 @@ class ReportSynthesizer:
         )
         # ①②③ patterns
         text = re.sub(r"(?<=[.。])\s*([①②③④⑤⑥])", r"<br><br>\1", text)
+
+        # Generic paragraph break on \n\n
+        text = re.sub(r"\n{2,}", "<br><br>", text)
+        # Single newlines -> single <br>
+        text = re.sub(r"(?<!>)\n", "<br>", text)
+
+        # Clean up duplicate leading <br> and collapse 3+ consecutive <br>
+        text = re.sub(r"^(?:<br>\s*)+", "", text)
+        text = re.sub(r"(?:<br>\s*){3,}", "<br><br>", text)
         return text
 
     async def _call_cli(self, prompt: str) -> str:
@@ -656,6 +700,13 @@ class ReportSynthesizer:
                     line += f" (advantage: {adv})"
                 parts.append(line)
             parts.append("")
+        if d.feedback_loops:
+            parts.append("**Feedback Loops:**\n")
+            for fl in d.feedback_loops:
+                ftype = fl.get("type", "")
+                desc = fl.get("description", "")
+                parts.append(f"- [{ftype}] {desc}")
+            parts.append("")
         if d.tipping_points:
             parts.append("**Tipping Points:**\n")
             for tp in d.tipping_points:
@@ -666,6 +717,10 @@ class ReportSynthesizer:
             parts.append("")
         if d.why_unresolved:
             parts.append(f"**Why Unresolved:** {d.why_unresolved}\n")
+        if d.counter_view:
+            parts.append(f"**Counter View:** {d.counter_view}\n")
+        if d.cognitive_biases:
+            parts.append(f"**Cognitive Biases to Watch:** {' · '.join(d.cognitive_biases)}\n")
         if d.key_insight:
             parts.append(f"> **Key Insight:** {d.key_insight}\n")
         return "\n".join(parts)
@@ -689,12 +744,24 @@ class ReportSynthesizer:
                 line += f"\n   - Affected: {', '.join(affected)}"
             parts.append(line)
         parts.append("")
+        if c.feedback_loops:
+            parts.append("**Feedback Loops:**\n")
+            for fl in c.feedback_loops:
+                parts.append(f"- {fl.get('description', '')}")
+            parts.append("")
         if c.break_points:
             parts.append("**Break Points:**\n")
             for bp in c.break_points:
                 step = bp.get("at_step", "")
                 cond = bp.get("condition", "")
                 parts.append(f"- Step {step}: {cond}")
+            parts.append("")
+        if c.wildcards:
+            parts.append("**Wildcards:**\n")
+            for w in c.wildcards:
+                ev = w.get("event", "")
+                pr = w.get("probability", "")
+                parts.append(f"- {ev}" + (f" (prob: {pr})" if pr else ""))
             parts.append("")
         if c.worst_case:
             parts.append(f"> **Worst Case:** {c.worst_case}\n")
@@ -708,8 +775,6 @@ class ReportSynthesizer:
         parts: list[str] = []
         if s.base_case_summary:
             parts.append(s.base_case_summary + "\n")
-        elif s.summary:
-            parts.append(s.summary + "\n")
         for i, sc in enumerate(s.scenarios, 1):
             name = sc.get("name", "")
             tag = sc.get("tag", "")
@@ -718,6 +783,11 @@ class ReportSynthesizer:
             trigger = sc.get("trigger", "")
             parts.append(f"### Scenario {i}: {name} [{tag}] — {prob}")
             parts.append(f"{desc}")
+            preconds = sc.get("preconditions", [])
+            if preconds:
+                parts.append("**Preconditions:**")
+                for pc in preconds:
+                    parts.append(f"- {pc}")
             if trigger:
                 parts.append(f"**Trigger:** {trigger}")
             impacts = sc.get("impact_by_player", [])
@@ -728,6 +798,14 @@ class ReportSynthesizer:
                     impact = imp.get("impact", "")
                     sentiment = imp.get("sentiment", "")
                     parts.append(f"- {player} ({sentiment}): {impact}")
+            parts.append("")
+        if s.summary:
+            parts.append("### 균형 분석\n")
+            parts.append(s.summary.strip() + "\n")
+        if s.invalidation_conditions:
+            parts.append("**분석 무효화 조건:**")
+            for cond in s.invalidation_conditions:
+                parts.append(f"- {cond}")
             parts.append("")
         return "\n".join(parts)
 
