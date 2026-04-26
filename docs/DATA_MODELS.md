@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.4.1
+last_synced_with: v2.5.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -21,6 +21,15 @@ last_review: 2026-04-26
                     AnalysisRequest
                          │
                          ▼
+              ┌──────────────────────┐
+              │  AnalysisStrategy    │ ← Strategy Planner 산출 (V3 Step 1, v2.5.0)
+              │  - user_intent       │   user_intent / core_questions /
+              │  - core_questions    │   recommended_lenses 결정
+              │  - recommended_lenses│
+              │  - skip_agents       │
+              │  - legacy_directives │ ← Step 1 transitional shim (Step 5 제거 예정)
+              └──────────┬───────────┘
+                         ▼
                   Orchestrator pipeline
                          │
         ┌──────┬──────┬──┴───┬───────┬──────────┐
@@ -31,12 +40,13 @@ last_review: 2026-04-26
         └──────┴──────┴──┬───┴───────┴──────────┘
                          ▼
                   FullAnalysisResult
+                  (strategy + 6 analyses)
                          │
                          ▼
                 ReportSynthesizer (HTML/Markdown)
 ```
 
-각 분석 모델은 `FullAnalysisResult` 의 optional 필드. `NarrativePlan` 은 보고서 합성 단계에서 동적 생성됨.
+각 분석 모델은 `FullAnalysisResult` 의 optional 필드. `AnalysisStrategy` 도 optional 로 보존되어 보고서·로깅 단계에서 user_intent 를 추적할 수 있음. `NarrativePlan` 은 보고서 합성 단계에서 동적 생성됨.
 
 ---
 
@@ -45,6 +55,10 @@ last_review: 2026-04-26
 | 모델 | 책무 | 정의 위치 |
 |------|------|-----------|
 | `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델) | `src/models.py` |
+| `AnalysisStrategy` | 분석 설계도 — user_intent, core_questions, recommended_lenses, skip_agents, theme (V3 Step 1) | `src/models.py` |
+| `EvidenceNeed` | Strategy 가 명세하는 증거 수집 항목 (V3 Step 1) | `src/models.py` |
+| `ReportSectionPlan` | 보고서 섹션 계획 (Step 3 블록 시스템 도입 후 본격 사용) | `src/models.py` |
+| `VisualizationSpec` | 시각화 사양 — Visual Analyst 가 참조 | `src/models.py` |
 | `ContextAnalysis` | ACT I 결과 (팩트·타임라인·수치) | `src/models.py` |
 | `PlayerAnalysis` | ACT II 결과 (행위자·동맹·power_dynamics) | `src/models.py` |
 | `DynamicsAnalysis` | ACT III 결과 (비대칭·전환점·피드백 루프·반대 가설) | `src/models.py` |
@@ -53,7 +67,7 @@ last_review: 2026-04-26
 | `VisualAnalysis` | 시각 요소 (SVG·Leaflet·Canvas) | `src/models.py` |
 | `NarrativeSection` | 보고서의 단일 섹션 사양 | `src/models.py` |
 | `NarrativePlan` | 섹션 순서·테마 (Claude 생성) | `src/models.py` |
-| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 | `src/models.py` |
+| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 (`strategy` 포함) | `src/models.py` |
 
 각 모델의 **현재 필드 목록**은 `src/models.py` 를 직접 읽는다 — 본 문서에 필드 사본을 두면 SSOT 위반이 된다.
 
@@ -62,6 +76,22 @@ last_review: 2026-04-26
 ## 3. 핵심 필드 의미 (분석 산출물 위주)
 
 필드 *정의* 가 아니라, 필드의 *목적*을 사람의 언어로 풀어둔 가이드.
+
+### 3.0 AnalysisStrategy (V3 Step 1, v2.5.0)
+- `event_type`: 사건 유형 한 단어 (예: "trade_dispute", "war", "tech_launch").
+- `user_intent`: 7종 Literal — 사용자가 가장 알고 싶어 하는 질문 유형. (`what_happened`, `why_happened`, `who_benefits`, `where_spreads`, `what_next`, `where_vulnerable`, `what_to_do`)
+- `intent_confidence`: 0.0~1.0. intent 분류 확신도.
+- `multi_intent_secondary`: 모호한 경우의 보조 intent 목록.
+- `core_questions`: 1~7개. 이 사건이 답해야 할 핵심 질문들. *반드시 1개 이상* (Pydantic `min_length=1`).
+- `recommended_lenses`: 1~4개. 적용할 분석 렌즈 ID 목록. `core_questions` 가 비어 있지 않은데 비면 ValidationError (`validate_lens_question_alignment`).
+- `evidence_plan`: `EvidenceNeed` 배열. 수집해야 할 증거 명세.
+- `report_archetype`: 보고서 아키타입 ID. 현재는 `"six_act_theater"` 만 사용. Step 2 에서 다중화.
+- `section_plan`: `ReportSectionPlan` 배열. Step 3 블록 시스템에서 본격 활용.
+- `visualization_plan`: `VisualizationSpec` 배열.
+- `skip_agents`: 스킵할 에이전트 이름 목록. v2 dict 호환을 위해 alias `"skip"` 보유.
+- `uncertainty_policy`: `aggressive | moderate | conservative` (기본 `moderate`).
+- `theme`: 보고서 테마. `burgundy | geopolitical | financial | tech | nature | liquidglass` (기본 `burgundy`).
+- `legacy_directives`: **Step 1 한정 transitional shim**. v2 의 dict 기반 per-agent directive 문자열을 보존. Step 5 lens pool 도입 시 제거됨. 신규 코드는 `recommended_lenses` 를 사용할 것.
 
 ### 3.1 ContextAnalysis
 - `timeline`: 날짜/사건/영향 트리오. 보고서 ACT I 의 타임라인 카드로 렌더.

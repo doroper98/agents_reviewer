@@ -10,7 +10,7 @@ import time
 from typing import Any, Callable, Coroutine, Optional
 
 from src.config import Config
-from src.models import AnalysisRequest, FullAnalysisResult
+from src.models import AnalysisRequest, AnalysisStrategy, FullAnalysisResult
 from src.agents.context_analyst import ContextAnalyst
 from src.agents.player_analyst import PlayerAnalyst
 from src.agents.dynamics_analyst import DynamicsAnalyst
@@ -21,7 +21,7 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.4.0"
+VERSION = "v2.5.0"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
@@ -49,23 +49,56 @@ class Orchestrator:
         bar = "▓" * filled + "░" * (20 - filled)
         return f"{bar} {pct}%"
 
+    @staticmethod
+    def _empty_strategy_fallback() -> AnalysisStrategy:
+        """LLM 호출 실패 또는 파싱 실패 시 사용할 최소 유효 AnalysisStrategy.
+
+        Anti-pattern #3 (dict 회귀) 방지를 위해 빈 dict 가 아닌 빈 객체로 폴백.
+        Pydantic validator 를 통과해야 하므로 core_questions/recommended_lenses 에
+        한 항목씩 더미를 채운다.
+        """
+        return AnalysisStrategy(
+            event_type="unknown",
+            user_intent="what_happened",
+            intent_confidence=0.5,
+            core_questions=["사건의 핵심 사실을 파악한다"],
+            recommended_lenses=["context"],
+            evidence_plan=[],
+            report_archetype="six_act_theater",
+            section_plan=[],
+            visualization_plan=[],
+            theme="burgundy",
+            legacy_directives={},
+        )
+
     async def _generate_analysis_strategy(
         self, event_name: str, category: str, summary: str
-    ) -> dict:
-        """Generate per-agent analysis directives based on the event context.
+    ) -> AnalysisStrategy:
+        """Generate AnalysisStrategy based on the event context.
 
-        Returns a dict with:
-        - Agent name keys with directive strings
-        - "skip" key with list of agents to skip
+        Step 1 (v2.5.0): dict 반환에서 정식 Pydantic 모델 (AnalysisStrategy) 반환으로 승격.
+        실패 시 ``_empty_strategy_fallback()`` 을 반환 (Anti-pattern #3 방지).
+        per-agent directive 문자열은 ``strategy.legacy_directives`` 에 보존된다.
         """
         prompt = (
-            "당신은 세계 최고 수준의 분석 전략 기획자. 아래 사건을 보고 세 가지를 결정:\n"
-            "1) 각 에이전트에게 이 사건을 발골할 최적의 분석 기법 지시\n"
-            "2) 이 사건에 불필요한 에이전트는 스킵 지정\n"
-            "3) 보고서 테마 선택\n\n"
-            f"사건명: {event_name}\n"
-            f"분류: {category}\n"
-            f"요약: {summary[:500]}\n\n"
+            "당신은 세계 최고 수준의 분석 전략 기획자. 아래 사건을 보고 다음을 결정:\n"
+            "1) user_intent — 사용자가 가장 알고 싶어 하는 질문 유형 (7종 중 1)\n"
+            "2) core_questions — 이 사건이 답해야 할 핵심 질문 (1~5개)\n"
+            "3) recommended_lenses — 적용할 분석 렌즈 ID (1~4개)\n"
+            "4) 각 에이전트에게 이 사건을 발골할 최적의 분석 기법 지시\n"
+            "5) 이 사건에 불필요한 에이전트는 스킵 지정\n"
+            "6) 보고서 테마 선택\n\n"
+            "사건명: " + event_name + "\n"
+            "분류: " + category + "\n"
+            "요약: " + summary[:500] + "\n\n"
+            "=== user_intent 7종 (이 중 정확히 1개 선택) ===\n"
+            "what_happened: 사실 파악 — 무슨 일이 있었나\n"
+            "why_happened: 원인 분석 — 왜 그런 일이 있었나\n"
+            "who_benefits: 이해관계 분석 — 누가 이득/손해를 보나\n"
+            "where_spreads: 파급효과 — 이 사건이 어디로 번지나\n"
+            "what_next: 시나리오/전망 — 앞으로 어떻게 될 것인가\n"
+            "where_vulnerable: 취약점 분석 — 어디가 약한 고리인가\n"
+            "what_to_do: 의사결정 — 어떻게 대응해야 하나\n\n"
             "=== 분석 기법 레퍼런스 ===\n"
             "[인텔리전스] ACH(경쟁가설분석), Red Team, Key Assumptions Check, I&W(징후경보)\n"
             "[지정학/전략] DIME(외교·정보·군사·경제), PMESII(6차원환경), Escalation Ladder, Center of Gravity\n"
@@ -90,16 +123,22 @@ class Orchestrator:
             "- 레퍼런스에 없는 기법도 적합하면 자유롭게 사용 가능\n"
             "- 이 사건에 맞지 않는 분석 함정도 명시\n\n"
             "스킵 판단: 가치를 못 더하면 skip. context/visuals는 스킵 불가.\n\n"
-            "반드시 아래 JSON만 출력:\n"
-            '{"players":"지시","dynamics":"지시","chain_reaction":"지시",'
+            "반드시 아래 JSON만 출력 (event_type/user_intent/intent_confidence/core_questions/recommended_lenses 필수):\n"
+            '{"event_type":"사건 유형 한 단어",'
+            '"user_intent":"what_happened|why_happened|who_benefits|where_spreads|what_next|where_vulnerable|what_to_do",'
+            '"intent_confidence":0.0~1.0,'
+            '"core_questions":["질문1","질문2"],'
+            '"recommended_lenses":["lens_id1","lens_id2"],'
+            '"players":"지시","dynamics":"지시","chain_reaction":"지시",'
             '"scenarios":"지시","visuals":"지시",'
-            '"skip":["스킵할 에이전트명"],"theme":"burgundy|geopolitical|financial|tech|nature"}\n'
+            '"skip":["스킵할 에이전트명"],"theme":"burgundy|geopolitical|financial|tech|nature|liquidglass"}\n'
         )
 
         try:
             claude_bin = shutil.which("claude")
             if claude_bin is None:
-                return {}
+                logger.warning("[orchestrator] claude CLI not found; using empty strategy")
+                return self._empty_strategy_fallback()
 
             cmd = [
                 claude_bin,
@@ -118,31 +157,50 @@ class Orchestrator:
             stdout, stderr = await proc.communicate()
 
             if proc.returncode != 0:
-                logger.warning("[orchestrator] Strategy generation failed")
-                return {}
+                logger.warning("[orchestrator] Strategy generation failed; using empty strategy")
+                return self._empty_strategy_fallback()
 
             raw = stdout.decode().strip()
-            # Extract JSON
             import re
             match = re.search(r"\{[\s\S]*\}", raw)
             if not match:
-                return {}
+                logger.warning("[orchestrator] No JSON in strategy response; using empty strategy")
+                return self._empty_strategy_fallback()
 
-            strategy = json.loads(match.group())
+            raw_dict = json.loads(match.group())
+
+            # Pull per-agent directive strings into legacy_directives shim.
+            legacy_keys = ("players", "dynamics", "chain_reaction", "scenarios", "visuals")
+            legacy_directives: dict[str, str] = {
+                k: raw_dict.pop(k, "") for k in legacy_keys
+            }
+            raw_dict["legacy_directives"] = legacy_directives
+
+            strategy = AnalysisStrategy.model_validate(raw_dict)
+
             logger.info(
-                f"[orchestrator] Analysis strategy generated for: {event_name}\n"
-                f"  theme: {strategy.get('theme', 'N/A')}\n"
-                f"  skip: {strategy.get('skip', [])}\n"
-                f"  players: {strategy.get('players', '')[:80]}\n"
-                f"  dynamics: {strategy.get('dynamics', '')[:80]}\n"
-                f"  chain_reaction: {strategy.get('chain_reaction', '')[:80]}\n"
-                f"  scenarios: {strategy.get('scenarios', '')[:80]}"
+                "[orchestrator] AnalysisStrategy generated for: %s\n"
+                "  user_intent: %s (confidence=%.2f)\n"
+                "  event_type: %s\n"
+                "  core_questions: %s\n"
+                "  recommended_lenses: %s\n"
+                "  theme: %s\n"
+                "  skip_agents: %s",
+                event_name,
+                strategy.user_intent, strategy.intent_confidence,
+                strategy.event_type,
+                strategy.core_questions,
+                strategy.recommended_lenses,
+                strategy.theme,
+                strategy.skip_agents,
             )
             return strategy
 
         except Exception as e:
-            logger.warning(f"[orchestrator] Strategy generation error: {e}")
-            return {}
+            logger.warning(
+                "[orchestrator] Strategy generation error: %s; using empty strategy", e
+            )
+            return self._empty_strategy_fallback()
 
     async def _notify(
         self, message: str, status_callback: StatusCallback
@@ -300,9 +358,10 @@ class Orchestrator:
 
         # -- Strategic Planning: 분석 전략 기획 --
         if quick_mode:
-            # Quick mode: 전략기획 스킵, 핵심 에이전트만 실행
-            strategy = {}
-            skip_agents = {"players", "dynamics", "chain_reaction"}
+            # Quick mode: 전략기획 스킵, 핵심 에이전트만 실행. AnalysisStrategy 는 빈 폴백 + skip 지정.
+            strategy = self._empty_strategy_fallback()
+            strategy.skip_agents = ["players", "dynamics", "chain_reaction"]
+            skip_agents = set(strategy.skip_agents)
             logger.info("[orchestrator] Quick mode: skipping players, dynamics, chain_reaction")
             await self._notify(
                 f"⚡ 빠른분석: 상황분석 → 시나리오 → 시각화 → 보고서",
@@ -318,13 +377,16 @@ class Orchestrator:
                 result.context.category,
                 result.context.summary,
             )
-            skip_agents = set(strategy.get("skip", []))
+            skip_agents = set(strategy.skip_agents)
             if skip_agents:
                 logger.info(f"[orchestrator] Skipping agents: {skip_agents}")
                 await self._notify(
                     f"🧭 전략 기획 완료. 스킵: {', '.join(skip_agents) or '없음'}",
                     status_callback,
                 )
+
+        # Persist the strategy onto the result so downstream consumers (template, logs) can read it.
+        result.strategy = strategy
 
         step = 1
 
@@ -336,7 +398,7 @@ class Orchestrator:
                 status_callback,
             )
             result.players = await self.player_analyst.analyze(
-                result.context, directive=strategy.get("players", "")
+                result.context, directive=strategy.legacy_directives.get("players", "")
             )
             player_names = ", ".join(
                 [p.get("name", "") for p in result.players.players[:5]]
@@ -355,7 +417,7 @@ class Orchestrator:
                 status_callback,
             )
             result.dynamics = await self.dynamics_analyst.analyze(
-                result.context, result.players, directive=strategy.get("dynamics", "")
+                result.context, result.players, directive=strategy.legacy_directives.get("dynamics", "")
             )
             step += 1
             await self._notify(
@@ -374,7 +436,7 @@ class Orchestrator:
             )
             result.chain_reaction = await self.chain_reaction_analyst.analyze(
                 result.context, result.players, result.dynamics,
-                directive=strategy.get("chain_reaction", ""),
+                directive=strategy.legacy_directives.get("chain_reaction", ""),
             )
             chain_summary = " → ".join(
                 [s.get("title", "") for s in result.chain_reaction.chain[:4]]
@@ -395,7 +457,7 @@ class Orchestrator:
             )
             result.scenarios = await self.scenario_architect.analyze(
                 result.context, result.players, result.dynamics, result.chain_reaction,
-                directive=strategy.get("scenarios", ""),
+                directive=strategy.legacy_directives.get("scenarios", ""),
             )
             scenario_names = " / ".join(
                 [s.get("name", "") for s in result.scenarios.scenarios]
@@ -418,7 +480,7 @@ class Orchestrator:
         result.visuals = await self.visual_analyst.analyze(
             result.context, result.players, result.dynamics,
             result.chain_reaction, result.scenarios,
-            directive=strategy.get("visuals", "") if strategy else "",
+            directive=strategy.legacy_directives.get("visuals", ""),
         )
         visual_types: list[str] = []
         if result.visuals.svg_content:
@@ -446,7 +508,7 @@ class Orchestrator:
 
         result.total_duration_seconds = time.time() - start_time
 
-        report_theme = strategy.get("theme", "burgundy") if strategy else "burgundy"
+        report_theme = strategy.theme or "burgundy"
         report_url = await self.report_synthesizer.synthesize(result, theme=report_theme)
         result.report_url = report_url
 

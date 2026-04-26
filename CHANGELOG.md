@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.4.1
+last_synced_with: v2.5.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -52,6 +52,11 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [2.5.0] — 2026-04-26
 
 ### Added
+- **V3 Step 1 — AnalysisStrategy Pydantic 모델 정식 승격**
+  - `AnalysisStrategy`, `EvidenceNeed`, `ReportSectionPlan`, `VisualizationSpec`, `UserIntent` (Literal 7종) 신규
+  - `user_intent` / `core_questions` / `recommended_lenses` 필드 도입 → 사용자 질문 의도별 분석 분기 기반 마련
+  - `FullAnalysisResult.strategy: AnalysisStrategy | None` Optional 필드 추가
+  - `model_validator` 로 lens-question 정합성 강제, `core_questions min_length=1` 보장
 - `dynamics_analyst` 신규 필드: `feedback_loops`, `counter_view`, `cognitive_biases`
 - `chain_reaction_analyst` 신규 필드: `feedback_loops`, `wildcards`, `time_horizon`, `effect_type`, `reversible`
 - `scenario_architect` 신규 필드: `preconditions`, `invalidation_conditions`
@@ -59,8 +64,13 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 - `.balance-analysis` CSS 컴포넌트 (시인성 강화)
 
 ### Changed
-- 모든 에이전트 시스템 프롬프트의 용어 난이도를 학부생 수준으로 낮춤
-- 분석 시각 풀 확장: 게임이론·시스템 사고·경로 의존성·신호 이론·네트워크·행동경제학 등 14가지
+- `src/orchestrator.py:_generate_analysis_strategy()` 가 dict 대신 `AnalysisStrategy` 반환. 호출 측은 객체 속성 (`strategy.skip_agents`, `strategy.theme`) 으로 접근 (Anti-pattern #3 dict 회귀 방지).
+- `src/orchestrator.py:VERSION` `v2.4.0 → v2.5.0`.
+- 모든 에이전트 시스템 프롬프트의 용어 난이도를 학부생 수준으로 낮춤.
+- 분석 시각 풀 확장: 게임이론·시스템 사고·경로 의존성·신호 이론·네트워크·행동경제학 등 14가지.
+
+### Deprecated
+- `AnalysisStrategy.legacy_directives` — Step 1 한정 transitional shim. Step 5 lens pool 도입 시 제거 예정. 신규 코드는 `recommended_lenses` 사용.
 
 ---
 

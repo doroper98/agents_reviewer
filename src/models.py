@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class AnalysisRequest(BaseModel):
@@ -117,10 +118,100 @@ class NarrativePlan(BaseModel):
     sections: list[NarrativeSection] = Field(default_factory=list)
 
 
+# ====== V3 Strategy Models (Step 1 — REFACTOR_V3_PLAN.md §4.1) ======
+
+UserIntent = Literal[
+    "what_happened",       # 사실 파악
+    "why_happened",        # 원인 분석
+    "who_benefits",        # 이해관계 분석
+    "where_spreads",       # 파급효과
+    "what_next",           # 시나리오/전망
+    "where_vulnerable",    # 취약점 분석
+    "what_to_do",          # 의사결정
+]
+
+
+class EvidenceNeed(BaseModel):
+    """수집해야 할 증거 명세 (Strategy Planner 산출)."""
+
+    need_id: str
+    description: str
+    expected_source_types: list[str] = Field(default_factory=list)
+    priority: Literal["P0", "P1", "P2"] = "P1"
+
+
+class ReportSectionPlan(BaseModel):
+    """보고서 섹션 계획. Step 3 블록 시스템 도입 후 본격 사용."""
+
+    section_id: str
+    title: str
+    purpose: str = ""
+    block_types: list[str] = Field(default_factory=list)
+
+
+class VisualizationSpec(BaseModel):
+    """시각화 사양. Visual Analyst 가 참조할 명세."""
+
+    visual_id: str
+    visual_type: Literal[
+        "svg_relationship", "leaflet_map", "canvas_chart",
+        "mermaid_flow", "d3_custom",
+    ]
+    purpose: str = ""
+    data_source: str = ""
+
+
+class AnalysisStrategy(BaseModel):
+    """분석 전체 설계도 — dict 기반 strategy 의 정식 Pydantic 승격본.
+
+    Step 1 (v2.5.0): 정식 모델로 도입. core_questions, user_intent, recommended_lenses 신설.
+    Step 5 (V3 후): legacy_directives 제거, lens-driven directives 로 대체 예정.
+
+    SSOT: 본 정의. ``docs/DATA_MODELS.md`` 는 도식 미러.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    # === Intent + 질문 (Step 1 신규) ===
+    event_type: str
+    user_intent: UserIntent
+    intent_confidence: float = Field(ge=0.0, le=1.0)
+    multi_intent_secondary: list[UserIntent] = Field(default_factory=list)
+
+    core_questions: list[str] = Field(min_length=1, max_length=7)
+    recommended_lenses: list[str] = Field(min_length=1, max_length=4)
+
+    # === 계획 (Step 1 신규, Step 2~3 본격 활용) ===
+    evidence_plan: list[EvidenceNeed] = Field(default_factory=list)
+    report_archetype: str = "six_act_theater"
+    section_plan: list[ReportSectionPlan] = Field(default_factory=list)
+    visualization_plan: list[VisualizationSpec] = Field(default_factory=list)
+
+    # === 실행 옵션 (alias='skip' 으로 v2 dict 호환 유지) ===
+    skip_agents: list[str] = Field(default_factory=list, alias="skip")
+    uncertainty_policy: Literal["aggressive", "moderate", "conservative"] = "moderate"
+    theme: str = "burgundy"
+
+    # === Step 1 한정 transitional shim ===
+    # v2 의 dict 기반 per-agent directive 문자열을 보존하기 위한 임시 필드.
+    # Step 5 lens pool 도입 시 제거됨. 신규 코드는 recommended_lenses 를 사용할 것.
+    legacy_directives: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_lens_question_alignment(self) -> "AnalysisStrategy":
+        if len(self.core_questions) > 0 and len(self.recommended_lenses) == 0:
+            raise ValueError(
+                "Core questions exist but no lenses recommended. "
+                "Strategy must propose at least one lens for any core question."
+            )
+        return self
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
     request: AnalysisRequest
+    strategy: AnalysisStrategy | None = None  # V3 Step 1
     context: ContextAnalysis | None = None
     players: PlayerAnalysis | None = None
     dynamics: DynamicsAnalysis | None = None

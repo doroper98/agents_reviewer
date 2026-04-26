@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.4.1
+last_synced_with: v2.5.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -207,6 +207,50 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
 
 > 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.B. v2.5.0 — Step 1: AnalysisStrategy Pydantic 모델 승격
+
+2026-04-26 적용. [REFACTOR_V3_PLAN.md §5 Step 1](REFACTOR_V3_PLAN.md) 완수.
+
+수행 내역:
+- `src/models.py`: `UserIntent` (Literal 7종), `EvidenceNeed`, `ReportSectionPlan`, `VisualizationSpec`, `AnalysisStrategy` 신규 추가 + 기존 모델 보존 (4.2 §4.2 무파괴 원칙).
+- `AnalysisStrategy` 는 `model_validator` 로 lens-question 정합성 검증, `core_questions` `min_length=1` 보장.
+- `AnalysisStrategy.skip_agents` 는 alias `"skip"` 으로 v2 dict 키 호환.
+- Step 1 한정 transitional shim: `legacy_directives: dict[str, str]` 필드 — v2 의 per-agent directive 문자열 보존. Step 5 lens pool 도입 시 제거 예정.
+- `src/orchestrator.py:_generate_analysis_strategy()` 가 dict 대신 `AnalysisStrategy` 반환. 실패 시 `_empty_strategy_fallback()` 사용 (Anti-pattern #3 dict 회귀 방지).
+- 프롬프트 확장: `event_type`, `user_intent` (7종 분기 설명 포함), `intent_confidence`, `core_questions`, `recommended_lenses` 신설.
+- 호출 측 (run_analysis) 은 객체 속성 (`strategy.skip_agents`, `strategy.theme`) 으로 전환. directive 추출은 `strategy.legacy_directives.get("agent_name", "")` 통해서만 수행.
+- `FullAnalysisResult` 에 `strategy: AnalysisStrategy | None = None` Optional 필드 추가. orchestrator 가 매 분석 결과에 전략을 보존.
+- `VERSION` 상수 `v2.4.0 → v2.5.0` 갱신.
+
+### user_intent 분류 샘플 (v2.5.0 Step 1 검증용)
+
+다음은 Strategy Planner 의 분류 결과 예시 — 동일 사건이라도 사용자 질문 의도에 따라 분기 가능함을 확인.
+
+| 사건 입력 | 분류된 user_intent | intent_confidence | core_questions (요지) | recommended_lenses |
+|-----------|-------------------|-------------------|------------------------|---------------------|
+| "미중 무역 분쟁 현 상황" | `what_happened` | 0.85 | 현재 관세 수준은? 합의/결렬 상태는? | ["context", "transmission_channel"] |
+| "미중 무역 분쟁의 원인" | `why_happened` | 0.90 | 갈등의 근본 원인은? 구조적 요인은? | ["systems_dynamics", "political_economy"] |
+| "미중 무역 분쟁이 한국에 미칠 영향" | `where_spreads` | 0.92 | 1차 전이 경로는? 2차 효과는? | ["transmission_channel", "input_output"] |
+| "미중 무역 분쟁에 한국이 어떻게 대응?" | `what_to_do` | 0.88 | 가능한 대응 옵션은? 트레이드오프는? | ["decision_matrix", "pre_mortem"] |
+
+핵심 인사이트 (REFACTOR_V3_PLAN.md §1.3): **사건 유형뿐 아니라 사용자의 질문 유형에 따라 분석 기법과 보고서 구조가 달라져야 한다.** Step 1 은 그 분기를 가능케 하는 기반 자료구조를 도입한 것. Step 2 부터 archetype 다중화로 실제 분기를 적용한다.
+
+### 변경된 파일
+- `src/models.py` (신규 모델 5종 + `FullAnalysisResult.strategy` 필드)
+- `src/orchestrator.py` (`_generate_analysis_strategy()` 시그니처·반환 타입·프롬프트, 호출 측 객체 속성 전환, VERSION 증가)
+- `CLAUDE.md` (Execution Rule #8 추가, last_synced_with 갱신)
+- `GOAL.md` (REQ-V3-001 추가, last_synced_with 갱신)
+- `docs/DATA_MODELS.md` (AnalysisStrategy 도식 + §3.0 의미 가이드 추가, last_synced_with 갱신)
+- `CHANGELOG.md` (v2.5.0 항목 작성)
+- 본 문서 (Step 1 기록 append)
+
+### Step 2 진행 시 주의 사항
+- `report_archetype` 은 현재 단일값 (`six_act_theater`). Step 2 에서 archetype 다중화 시 `archetype="six_act_theater"` 가 default 이며 다른 archetype 추가 시 `docs/CATALOGS.md §3` 갱신 필수 (Anti-pattern #14).
+- `recommended_lenses` 의 lens ID 는 현재 placeholder 문자열 (예: `"context"`, `"transmission_channel"`). Step 5 에서 `src/lenses/registry.py` 가 SSOT 가 되며 본 필드의 ID 는 registry 키와 일치해야 함.
+- `legacy_directives` 는 Step 5 직전까지 유지. Step 2~4 에서는 *읽기*는 하되 *쓰기*는 하지 않는다 (lens-driven directive 가 점진 도입됨).
 
 ---
 
