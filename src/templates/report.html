@@ -206,6 +206,17 @@
   </div>
   {% endif %}
 
+  {% if result.dynamics.feedback_loops %}
+  <div class="card" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:8px">피드백 루프 (자기강화·균형 구조)</div>
+    {% for fl in result.dynamics.feedback_loops %}
+    <div style="font-size:10px;line-height:1.7;padding:6px 0;{% if not loop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
+      <strong style="color:{% if fl.type == '강화' %}var(--red){% else %}var(--blue){% endif %}">[{{ fl.type or '루프' }}]</strong> {{ fl.description }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% if result.dynamics.tipping_points %}
   <div class="card" style="margin-bottom:14px">
     <div style="font-weight:700;font-size:12px;margin-bottom:10px">전환점</div>
@@ -225,6 +236,20 @@
   </div>
   {% endif %}
 
+  {% if result.dynamics.counter_view %}
+  <div class="card" style="margin-bottom:14px;border-left:3px solid var(--blue)">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--blue)">반대 가설 / 대안 해석</div>
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.dynamics.counter_view }}</div>
+  </div>
+  {% endif %}
+
+  {% if result.dynamics.cognitive_biases %}
+  <div class="card" style="margin-bottom:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px">경계할 인지 편향</div>
+    <div style="font-size:10px;line-height:1.7;color:var(--text-muted)">{{ result.dynamics.cognitive_biases | join(' · ') }}</div>
+  </div>
+  {% endif %}
+
   {% if result.dynamics.key_insight %}
   <div class="callout">
     <b>핵심 통찰</b>
@@ -239,11 +264,34 @@
     <div class="flow-node" style="border-color:{% if step.severity == 'HIGH' %}var(--red){% elif step.severity == 'MEDIUM' %}var(--orange){% else %}var(--gold){% endif %}">
       <strong>{{ loop.index }}. {{ step.title }}</strong>
       <span>{{ step.description }}</span>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;font-size:9px;color:var(--text-muted)">
+        {% if step.time_horizon %}<span>⏱ {{ step.time_horizon }}</span>{% endif %}
+        {% if step.effect_type %}<span>· {{ step.effect_type }}</span>{% endif %}
+        {% if step.reversible is defined and step.reversible == false %}<span style="color:var(--red)">· 비가역</span>{% endif %}
+      </div>
       {% if step.affected %}<span style="font-size:9px;color:var(--text-muted);margin-top:2px">영향: {{ step.affected|join(', ') }}</span>{% endif %}
     </div>
     {% if not loop.last %}<div class="flow-arrow"></div>{% endif %}
     {% endfor %}
   </div>
+
+  {% if result.chain_reaction.feedback_loops %}
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px">증폭·억제 루프</div>
+    {% for fl in result.chain_reaction.feedback_loops %}
+    <div style="font-size:10px;line-height:1.7;padding:4px 0">{{ fl.description }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if result.chain_reaction.wildcards %}
+  <div class="card" style="margin-top:14px;border-left:3px solid var(--orange)">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--orange)">예측 어려운 변수 (와일드카드)</div>
+    {% for w in result.chain_reaction.wildcards %}
+    <div style="font-size:10px;line-height:1.7;padding:4px 0">{{ w.event }}{% if w.probability %} <span style="color:var(--text-muted)">— 확률: {{ w.probability }}</span>{% endif %}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   {% if result.chain_reaction.break_points %}
   <div class="card" style="margin-top:14px">
@@ -286,9 +334,20 @@
   </div>
 
   {% if result.scenarios.summary %}
-  <div class="callout" style="margin-top:14px">
-    <b>균형 분석</b>
-    <p>{{ result.scenarios.summary }}</p>
+  <div class="balance-analysis">
+    <div class="balance-analysis-title">균형 분석</div>
+    <div class="balance-analysis-body">{{ result.scenarios.summary | structured }}</div>
+  </div>
+  {% endif %}
+
+  {% if result.scenarios.invalidation_conditions %}
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--red)">분석 무효화 조건</div>
+    <ul style="margin:0;padding-left:18px;font-size:11px;line-height:1.7;color:var(--text-secondary)">
+    {% for cond in result.scenarios.invalidation_conditions %}
+      <li style="margin-bottom:4px">{{ cond }}</li>
+    {% endfor %}
+    </ul>
   </div>
   {% endif %}
 {% endmacro %}

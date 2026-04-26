@@ -49,8 +49,11 @@ class DynamicsAnalysis(BaseModel):
     framework: str = ""
     core_tension: str = ""
     asymmetries: list[dict] = Field(default_factory=list)
+    feedback_loops: list[dict] = Field(default_factory=list)
     why_unresolved: str = ""
     tipping_points: list[dict] = Field(default_factory=list)
+    counter_view: str = ""
+    cognitive_biases: list[str] = Field(default_factory=list)
     key_insight: str = ""
     summary: str = ""
     glossary: list[dict] = Field(default_factory=list)
@@ -61,7 +64,9 @@ class ChainReactionAnalysis(BaseModel):
     """ACT IV: Cause-effect chain and domino effect analysis."""
 
     chain: list[dict] = Field(default_factory=list)
+    feedback_loops: list[dict] = Field(default_factory=list)
     break_points: list[dict] = Field(default_factory=list)
+    wildcards: list[dict] = Field(default_factory=list)
     worst_case: str = ""
     summary: str = ""
     glossary: list[dict] = Field(default_factory=list)
@@ -73,6 +78,7 @@ class ScenarioAnalysis(BaseModel):
 
     scenarios: list[dict] = Field(default_factory=list)
     watch_signals: list[dict] = Field(default_factory=list)
+    invalidation_conditions: list[str] = Field(default_factory=list)
     base_case_summary: str = ""
     summary: str = ""
     glossary: list[dict] = Field(default_factory=list)
