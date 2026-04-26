@@ -1,0 +1,9 @@
+{# narrative — 산문 단락. payload: {text: str, tone?: str} #}
+<div class="block-narrative" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-narrative-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.text %}
+  <div class="block-narrative-body block-narrative-tone-{{ block.payload.tone or 'neutral' }}">{{ block.payload.text | structured }}</div>
+  {% else %}
+  <div class="block-narrative-empty">(내용 없음)</div>
+  {% endif %}
+</div>

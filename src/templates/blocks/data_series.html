@@ -1,0 +1,23 @@
+{# data_series — 수치 시계열. payload: {series: list[{label, points: list[{x, y}]}], unit?: str} #}
+<div class="block-data-series" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-data-series-title">{{ block.title }}{% if block.payload.unit %} <span class="block-data-series-unit">({{ block.payload.unit }})</span>{% endif %}</div>{% endif %}
+  {% if block.payload.series %}
+  <div class="block-data-series-grid">
+  {% for s in block.payload.series %}
+  <div class="block-data-series-card">
+    <div class="block-data-series-label">{{ s.label or '?' }}</div>
+    {% if s.points %}
+    <table class="block-data-series-table">
+      <thead><tr><th>x</th><th>y</th></tr></thead>
+      <tbody>
+      {% for p in s.points %}<tr><td class="block-data-series-x">{{ p.x }}</td><td class="block-data-series-y">{{ p.y }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="block-data-series-empty">(데이터 없음)</div>{% endif %}
+  </div>
+  {% endfor %}
+  </div>
+  {% else %}
+  <div class="block-data-series-empty">(시계열 데이터 없음 — Canvas 차트는 visuals 블록에서 렌더)</div>
+  {% endif %}
+</div>

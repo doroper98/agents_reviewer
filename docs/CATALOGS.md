@@ -1,15 +1,15 @@
 ---
 tier: 2
-last_synced_with: v2.6.0
+last_synced_with: v2.7.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
-  - "보고서 블록 타입 카탈로그 (V3 Step 3 후 src/models.py:BlockType 미러)"
+  - "보고서 블록 타입 카탈로그 (mirror of src/models.py:BlockType — V3 Step 3 활성화)"
   - "분석 렌즈 카탈로그 (V3 Step 5 후 src/lenses/registry.py 미러)"
 depends_on:
   - "src/agents/* (현재 SSOT)"
   - "src/archetypes/registry.py (archetype SSOT, Step 2 활성화)"
-  - "src/models.py (V3 후 BlockType SSOT)"
+  - "src/models.py:BlockType (BlockType SSOT, Step 3 활성화)"
   - "src/lenses/registry.py (V3 후 lens SSOT)"
 last_review: 2026-04-26
 ---
@@ -77,13 +77,56 @@ REFACTOR_V3_PLAN.md Appendix B 의 11종 중 Step 2 에서는 3종만 도입. �
 
 ---
 
-## 4. Block Types — V3 후 도입 예정
+## 4. Block Types — V3 Step 3 (v2.7.0) 도입
 
-V3 Step 3 에서 17종 블록 타입이 도입된다. 등록 SSOT 는 `src/models.py:BlockType` (V3 후).
+`src/models.py:BlockType` Literal 의 17종 미러. 정의 SSOT 는 코드. 각 블록은 `src/templates/blocks/<type>.html` 로 렌더되고, payload 는 빌더 (`src/agents/report_synthesizer.py:_payload_*`) 가 v2 분석 데이터에서 매핑한다.
 
-| Block ID | 카테고리 | 용도 |
-|----------|----------|------|
-| (V3 Step 3 후 작성) | — | — |
+| Block ID | 템플릿 | payload 핵심 키 | 빌더 데이터 출처 (v2.7.0 기준) |
+|----------|--------|-----------------|--------------------------------|
+| `narrative` | `blocks/narrative.html` | `text`, `tone?` | `result.context.background` + `result.dynamics.summary` |
+| `claim_card` | `blocks/claim_card.html` | `claim_id`, `statement`, `evidence_ids[]`, `confidence?`, `claim_type?` | placeholder (Step 4 에서 본격 도입) |
+| `evidence_table` | `blocks/evidence_table.html` | `evidences[]: {evidence_id, source_url, quote_or_data, reliability, timestamp}` | placeholder (Step 4) |
+| `timeline` | `blocks/timeline.html` | `events[]: {date, event, impact?}` | `result.context.timeline` |
+| `matrix` | `blocks/matrix.html` | `rows[]`, `cols[]`, `cells: dict["row|col": str]` | placeholder (Step 5 lens-driven 비교) |
+| `actor_cards` | `blocks/actor_cards.html` | `actors[]: {name, position, strategy, vulnerability, role_tag?, risk_level?, emoji?}` | `result.players.players` |
+| `flow_chain` | `blocks/flow_chain.html` | `steps[]: {title, description?, severity?, affected?, time_horizon?}` | `result.chain_reaction.chain` |
+| `scenario_table` | `blocks/scenario_table.html` | `scenarios[]: {name, tag?, probability?, description?, impact?}` | `result.scenarios.scenarios` (impact 는 impact_by_player 요약) |
+| `decomposition` | `blocks/decomposition.html` | `root`, `branches[]: {label, detail?, branches?}` (재귀) | `result.dynamics.framework` + `asymmetries` |
+| `argument_pair` | `blocks/argument_pair.html` | `hypothesis_a`, `hypothesis_b`, `evidence_alignment?: dict` | `result.dynamics.key_insight` vs `counter_view` |
+| `data_series` | `blocks/data_series.html` | `series[]: {label, points[]: {x, y}}`, `unit?` | `result.visuals.chart_config.charts` |
+| `watchlist` | `blocks/watchlist.html` | `signals[]: {signal, description?, indicates?, icon?, direction?, deadline?}` | `result.scenarios.watch_signals` |
+| `qna` | `blocks/qna.html` | `pairs[]: {q, a}` | placeholder (후속) |
+| `callout` | `blocks/callout.html` | `title?`, `body`, `style?: warning\|info\|insight` | `result.dynamics.key_insight` 또는 `result.chain_reaction.worst_case` |
+| `counter_hypothesis` | `blocks/counter_hypothesis.html` | `base_judgment?`, `counter`, `required_evidence?[]`, `current_conflict?` | `result.dynamics.key_insight` + `counter_view` + `cognitive_biases` |
+| `decision_matrix` | `blocks/decision_matrix.html` | `options[]`, `criteria[]`, `scores: dict["option|criterion": str]`, `recommendation?` | placeholder (Step 4+ decision_brief archetype) |
+| `risk_matrix` | `blocks/risk_matrix.html` | `risks[]: {risk, probability?, impact?, mitigation?}` | `result.chain_reaction.wildcards` |
+
+### 4.1 블록 템플릿 작성 규칙
+
+- **Anti-pattern #8**: 템플릿은 `block.payload` 만 참조. `result.*` 모델 객체 직접 접근 금지. 검증 명령:
+  ```bash
+  grep -lE "result\.(context|players|dynamics|chain_reaction|scenarios|visuals|strategy)" src/templates/blocks/*.html
+  # 빈 출력이어야 함
+  ```
+- **단일 책임**: 각 템플릿 파일 50줄 이내 (현재 평균 ~21 줄, 최대 29 줄).
+- **CSS 명명**: `block-{type}-{element}` (예: `block-actor-cards-name`). 디자인 토큰 (`--text-primary`, `--gold`, `--red` 등) 재사용 — 신규 토큰 도입 금지.
+- **빈 payload**: 데이터가 없을 때 우아하게 표시할 것 (`(데이터 없음)` 등 placeholder). 완전 빈 출력 금지.
+
+### 4.2 디스패처 흐름
+
+```
+ReportSynthesizer.synthesize(result, theme, archetype)
+  ├─ if archetype.archetype_id == "six_act_theater":
+  │     → render('report.html', ...)            # legacy, byte-equal
+  └─ else:
+        ├─ blocks = self._build_blocks(result, archetype)
+        │   ├─ archetype.section_plan(strategy) → list[ReportSectionPlan]
+        │   ├─ for each section, for each block_type → _BLOCK_BUILDERS[type](result, section)
+        │   └─ result.strategy.section_plan = plan; result.blocks = blocks
+        └─ render('report_block.html', result, archetype_id, ...)
+              → 디스패처가 result.strategy.section_plan 을 iterate,
+                각 section.section_id 와 매치되는 result.blocks 를 include "blocks/<type>.html"
+```
 
 ---
 

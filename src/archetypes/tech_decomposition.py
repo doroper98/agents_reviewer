@@ -63,7 +63,10 @@ class TechDecompositionArchetype:
         ]
 
     def template_path(self) -> str:
-        return "archetypes/tech_decomposition.html"
+        # V3 Step 3 (v2.7.0): 블록 디스패처로 통일. archetype 별 placeholder HTML
+        # (``archetypes/tech_decomposition.html``) 은 디스크에 보존되지만 더 이상
+        # 사용되지 않음 (Anti-pattern #2 회피 — 삭제하지 않음).
+        return "report_block.html"
 
 
 ARCHETYPE = TechDecompositionArchetype()

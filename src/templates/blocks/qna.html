@@ -1,0 +1,16 @@
+{# qna — 흔한 질문 응답. payload: {pairs: list[{q, a}]} #}
+<div class="block-qna" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-qna-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.pairs %}
+  <dl class="block-qna-list">
+    {% for pair in block.payload.pairs %}
+    <div class="block-qna-pair">
+      <dt class="block-qna-q">Q. {{ pair.q or '' }}</dt>
+      <dd class="block-qna-a">A. {{ pair.a or '' }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% else %}
+  <div class="block-qna-empty">(QnA 데이터 없음 — 후속 Step 에서 도입 가능)</div>
+  {% endif %}
+</div>

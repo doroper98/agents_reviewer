@@ -1,10 +1,11 @@
 ---
 tier: 2
-last_synced_with: v2.6.0
+last_synced_with: v2.7.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
   - "보고서 archetype 분기 구조 (V3 Step 2 활성화)"
+  - "보고서 블록 렌더링 흐름 (V3 Step 3 활성화)"
   - "토큰 사용량 추정"
 depends_on:
   - "src/orchestrator.py:VERSION"
@@ -163,9 +164,9 @@ report_synthesizer.py
             → https://<프로젝트명>.pages.dev/analysis_YYYYMMDD_HHMMSS.html
 ```
 
-### 5.1 Archetype 분기 (V3 Step 2 — v2.6.0)
+### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3 — v2.6.0/v2.7.0)
 
-Strategy Planner 가 `user_intent` + `event_type` 으로 archetype 을 결정 → `src/archetypes/registry.py` 가 archetype 객체 반환 → ReportSynthesizer 가 `archetype.template_path()` 로 분기 렌더.
+Strategy Planner 가 `user_intent` + `event_type` 으로 archetype 을 결정 → `src/archetypes/registry.py` 가 archetype 객체 반환 → ReportSynthesizer 가 archetype 별로 분기 렌더. **legacy 6막 극장은 그대로**, 그 외는 블록 디스패처를 통과.
 
 ```
               AnalysisStrategy.report_archetype  (string ID)
@@ -178,15 +179,35 @@ Strategy Planner 가 `user_intent` + `event_type` 으로 archetype 을 결정 �
 six_act_theater   financial_transmission  tech_decomposition
    (default)      (시장·거시)            (기술·AI·인프라)
         │               │                │
-        ▼               ▼                ▼
-report.html      archetypes/             archetypes/
-  (legacy,       financial_              tech_
-   byte-equal)   transmission.html       decomposition.html
-                 (Step 2 placeholder,    (Step 2 placeholder,
-                  Step 3 본격 렌더)       Step 3 본격 렌더)
+        │   ┌───────────┴────────────────┘
+        │   │
+        │   ▼  V3 Step 3 (v2.7.0): 블록 디스패처 경로
+        │   ┌─────────────────────────────────────────────┐
+        │   │ ReportSynthesizer._build_blocks()           │
+        │   │   for section in archetype.section_plan():  │
+        │   │     for block_type in section.block_types:  │
+        │   │       payload = _BLOCK_BUILDERS[type](result, section)  │
+        │   │       if payload is None: skip              │
+        │   │       else: AnalysisBlock(section_id=..., …)│
+        │   │   result.strategy.section_plan = plan       │
+        │   │   result.blocks = [...]                     │
+        │   └────────────────────┬────────────────────────┘
+        │                        ▼
+        │   ┌─────────────────────────────────────────────┐
+        │   │ render('report_block.html', …)              │
+        │   │  for section in result.strategy.section_plan│
+        │   │    for block in result.blocks where         │
+        │   │      block.section_id == section.section_id │
+        │   │      include "blocks/<block.block_type>.html"│
+        │   │      (17종 템플릿 — payload only access)    │
+        │   └─────────────────────────────────────────────┘
+        ▼
+report.html
+  (legacy six_act_theater 전용,
+   byte-equal 보장 — Anti-pattern #2)
 ```
 
-archetype 카탈로그의 SSOT 미러는 [docs/CATALOGS.md §3](CATALOGS.md). 신규 archetype 추가 시 `src/archetypes/<name>.py` 신설 → `registry.py` 등록 → CATALOGS 갱신 (Anti-pattern #14 회피).
+빌더 매핑·블록 카탈로그의 SSOT 는 코드 (`src/agents/report_synthesizer.py:_BLOCK_BUILDERS`, `src/models.py:BlockType`). 사람-친화 미러는 [docs/CATALOGS.md §3-4](CATALOGS.md). 신규 archetype 추가 시 `src/archetypes/<name>.py` 신설 → `registry.py` 등록 → CATALOGS §3 갱신 (Anti-pattern #14). 신규 BlockType 추가 시 `src/models.py:BlockType` Literal 확장 → `src/templates/blocks/<type>.html` 신설 → `_BLOCK_BUILDERS` 등록 → CATALOGS §4 갱신 (Anti-pattern #15).
 
 ### 5.2 보고서 구조 — six_act_theater (default archetype)
 

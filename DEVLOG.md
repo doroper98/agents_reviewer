@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.6.0
+last_synced_with: v2.7.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -207,6 +207,95 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
 
 > 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.D. v2.7.0 — Step 3: 보고서 블록 렌더링 시스템
+
+2026-04-26 적용. [REFACTOR_V3_PLAN.md §5 Step 3](REFACTOR_V3_PLAN.md) + [Appendix D](REFACTOR_V3_PLAN.md) 완수.
+
+### 수행 내역
+
+- `src/models.py`:
+  - `BlockType` Literal 17종 도입 (narrative, claim_card, evidence_table, timeline, matrix, actor_cards, flow_chain, scenario_table, decomposition, argument_pair, data_series, watchlist, qna, callout, counter_hypothesis, decision_matrix, risk_matrix).
+  - `AnalysisBlock` Pydantic 모델 (block_id / block_type / title / purpose / payload / related_findings / section_id).
+  - `FullAnalysisResult.blocks: list[AnalysisBlock]` Optional 필드 추가.
+- `src/templates/blocks/` — 17 개 단일-책임 템플릿. 평균 ~21 줄, 최대 29 줄, 모두 ≤ 50 줄 제약 준수. `block.payload` 만 참조 (Anti-pattern #8).
+- `src/templates/report_block.html` — 디스패처. `result.strategy.section_plan` 을 iterate 하고 각 섹션의 `block.section_id` 매치 블록을 `{% include "blocks/<type>.html" %}` 로 렌더.
+- `src/templates/report.css` — block-* 클래스 append 만 추가 (기존 클래스 무수정). 542 → 765 줄. 기존 디자인 토큰 (`--text-primary`, `--gold`, `--red` 등) 재사용.
+- `src/agents/report_synthesizer.py`:
+  - 17개 `_payload_*` 정적 메서드 (v2 분석 데이터 → typed payload dict).
+  - `_BLOCK_BUILDERS` 레지스트리 (BlockType → builder 함수).
+  - `_build_blocks(result, archetype)` — archetype.section_plan() 순회하며 AnalysisBlock 생성. six_act_theater 면 빈 리스트 반환 (legacy 경로 보존).
+  - `synthesize()` 분기: legacy six_act_theater 는 기존 코드 경로 100% 유지 (byte-equal), 그 외는 빌더 호출 + 디스패처 렌더.
+- `src/archetypes/{financial_transmission,tech_decomposition}.py` — `template_path()` 가 `report_block.html` 반환. Step 2 placeholder HTML 은 디스크에 보존만 (Anti-pattern #2).
+- `src/orchestrator.py:VERSION` `v2.6.0 → v2.7.0`.
+
+### 17 종 블록 카탈로그 (요약)
+
+| Block | 빌더 데이터 출처 (v2.7.0 기준) | 상태 |
+|-------|------------------------------|------|
+| `narrative` | `result.context.background` + `result.dynamics.summary` | 활성 |
+| `claim_card` | placeholder | Step 4 활성 예정 |
+| `evidence_table` | placeholder | Step 4 |
+| `timeline` | `result.context.timeline` | 활성 |
+| `matrix` | placeholder | Step 5 lens-driven |
+| `actor_cards` | `result.players.players` | 활성 |
+| `flow_chain` | `result.chain_reaction.chain` | 활성 |
+| `scenario_table` | `result.scenarios.scenarios` | 활성 |
+| `decomposition` | `result.dynamics.framework` + `asymmetries` | 활성 |
+| `argument_pair` | `result.dynamics.key_insight` vs `counter_view` | 활성 |
+| `data_series` | `result.visuals.chart_config.charts` | 활성 |
+| `watchlist` | `result.scenarios.watch_signals` | 활성 |
+| `qna` | placeholder | 후속 |
+| `callout` | `result.dynamics.key_insight` 또는 `result.chain_reaction.worst_case` | 활성 |
+| `counter_hypothesis` | `result.dynamics.counter_view` + `cognitive_biases` | 활성 |
+| `decision_matrix` | placeholder | Step 4+ decision_brief archetype |
+| `risk_matrix` | `result.chain_reaction.wildcards` | 활성 |
+
+상세 payload 스키마는 [docs/CATALOGS.md §4](docs/CATALOGS.md).
+
+### 회귀 테스트 3건 결과 (정적 시뮬레이션)
+
+> **테스트 한계**: 본 세션에 텔레그램 봇·Cloudflare 인프라 없음. _build_blocks() 호출 + 디스패처 직접 렌더로 검증.
+
+| # | 입력 | 기대 archetype | 결과 |
+|---|------|----------------|------|
+| 1 | "미중 무역 분쟁 현 상황" | `six_act_theater` | template=`report.html` (legacy), 0 blocks built. byte-equal 검증 sha256 `d22a78077300b6b4...` 일치. |
+| 2 | "환율 어떻게 됨" | `financial_transmission` | template=`report_block.html`, 6 sections / 11 blocks built. 9 types used: callout, counter_hypothesis, data_series, decomposition, flow_chain, narrative, risk_matrix, scenario_table, watchlist. 디스패처 렌더 42,626 bytes / 307 block-* CSS 클래스. |
+| 3 | "GPT-5 출시" | `tech_decomposition` | template=`report_block.html`, 6 sections / 10 blocks built. 9 types used (decomposition + risk_matrix 포함 ✓). 디스패처 렌더 41,695 bytes / 294 block-* CSS 클래스. |
+
+### Acceptance Criteria
+
+- [x] archetype="six_act_theater" 보고서 byte 단위 동일 — sha256 검증 통과
+- [x] archetype="financial_transmission" 보고서가 report_block.html 로 렌더 — 분기 진입 + 11 blocks 생성 확인
+- [x] archetype="tech_decomposition" 동일 — 10 blocks 생성, decomposition + risk_matrix 포함
+- [x] 17 종 블록 단독 렌더링 통과 — ok=17/17
+- [x] 모든 블록 템플릿 50 줄 이내 — 최대 29 줄 (scenario_table)
+- [x] `grep "result\.(context|players|...)" src/templates/blocks/*.html` 결과 0 건 — payload-only access 준수
+
+### 변경된 파일
+
+- 신규: `src/templates/blocks/{17 types}.html`, `src/templates/report_block.html`
+- 수정: `src/models.py` (BlockType, AnalysisBlock, FullAnalysisResult.blocks), `src/orchestrator.py` (VERSION), `src/agents/report_synthesizer.py` (블록 빌더 + 분기), `src/archetypes/{financial_transmission,tech_decomposition}.py` (template_path), `src/templates/report.css` (block-* append)
+- 수정: `CLAUDE.md`, `GOAL.md`, `README.md`, `CHANGELOG.md`, `docs/CATALOGS.md`, `docs/DATA_MODELS.md`, `docs/ARCHITECTURE.md` (헤더 + 본문)
+- 본 문서 (Step 3 기록 append)
+
+### Step 4 진행 시 주의 사항
+
+1. **Claim/Evidence 도입 영향**: 현재 `claim_card`, `evidence_table` 빌더는 placeholder (빈 payload 반환). Step 4 가 `Claim` / `Evidence` 모델을 추가하면 두 빌더를 *수정*하면 되며, 템플릿은 이미 payload 스키마 (`statement`, `evidence_ids`, `evidences[]` 등) 가 정의돼 있어 그대로 쓸 수 있음.
+
+2. **Pydantic validator 우회 금지** (Anti-pattern #4): Step 4 가 `Claim.must_have_evidence` validator 를 도입하면, 빌더가 빈 evidence 로 Claim 을 생성할 수 없게 됨. 기존 `_payload_claim_card` placeholder 는 **반드시 함께 갱신**하여 ValidationError 방지. (현재 placeholder 는 dict 만 반환하므로 영향 없음 — 구조화된 Claim 객체로 전환 시 주의.)
+
+3. **`legacy_directives` 잔존**: Step 5 까지 유지. Step 4 에서 *읽기*만 가능, *쓰기* 금지.
+
+4. **section_plan 사이드 이펙트**: `_build_blocks()` 가 `result.strategy.section_plan = plan` 으로 strategy 를 변형함. Step 4 에서 strategy 를 다른 곳에서 재참조하는 경우 이 사이드 이펙트를 인지할 것.
+
+5. **Step 2 placeholder HTML**: `src/templates/archetypes/{financial_transmission,tech_decomposition}.html` 은 *고아* 상태 (사용처 없음). Step 4+ 에서 정리 가능하지만 빅뱅 회피 (Anti-pattern #12) — 한 커밋에 여러 정리 작업 묶지 말 것.
+
+6. **Confidence/3축 분해**: Step 4 에서 `ConfidenceProfile` 도입 시, 현재 `confidence_score: float` (스칼라) 사용 중인 모든 모델은 deprecated 마킹만 하고 즉시 삭제 금지 (Anti-pattern #10).
+
+7. **Synthesis Judge**: Step 4 spec 에 `JudgmentVerdict` 가 있을 가능성 높음. 도입 시 `result.judgment` Optional 필드 추가 + 신규 archetype section 에서 활용. `argument_pair`, `counter_hypothesis` 블록의 빌더가 judgment 데이터를 참조하도록 확장 가능 (현재는 dynamics 에서만 가져옴).
 
 ---
 

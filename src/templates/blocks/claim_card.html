@@ -1,0 +1,17 @@
+{# claim_card — 주장 + 근거 카드. payload: {claim_id, statement, evidence_ids: list[str], confidence?: float, claim_type?: str} #}
+<div class="block-claim-card" data-block-id="{{ block.block_id }}">
+  <div class="block-claim-card-header">
+    {% if block.payload.claim_id %}<span class="block-claim-card-id">{{ block.payload.claim_id }}</span>{% endif %}
+    {% if block.payload.claim_type %}<span class="block-claim-card-type">{{ block.payload.claim_type }}</span>{% endif %}
+    {% if block.payload.confidence is defined %}<span class="block-claim-card-confidence">{{ '%.0f'|format(block.payload.confidence * 100) }}%</span>{% endif %}
+  </div>
+  <div class="block-claim-card-statement">{{ block.payload.statement or '(주장 미기재)' }}</div>
+  {% if block.payload.evidence_ids %}
+  <div class="block-claim-card-evidence">
+    <span class="block-claim-card-evidence-label">근거:</span>
+    {% for eid in block.payload.evidence_ids %}<span class="block-claim-card-evidence-id">{{ eid }}</span>{% endfor %}
+  </div>
+  {% else %}
+  <div class="block-claim-card-evidence-missing">근거 미연결 (Step 4 에서 본격 도입)</div>
+  {% endif %}
+</div>

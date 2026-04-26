@@ -1,0 +1,24 @@
+{# argument_pair — ACH 가설 대결. payload: {hypothesis_a, hypothesis_b, evidence_alignment?: dict} #}
+<div class="block-argument-pair" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-argument-pair-title">{{ block.title }}</div>{% endif %}
+  <div class="block-argument-pair-grid">
+    <div class="block-argument-pair-side block-argument-pair-side-a">
+      <div class="block-argument-pair-label">가설 A</div>
+      <div class="block-argument-pair-text">{{ block.payload.hypothesis_a or '(미기재)' }}</div>
+    </div>
+    <div class="block-argument-pair-side block-argument-pair-side-b">
+      <div class="block-argument-pair-label">가설 B</div>
+      <div class="block-argument-pair-text">{{ block.payload.hypothesis_b or '(미기재)' }}</div>
+    </div>
+  </div>
+  {% if block.payload.evidence_alignment %}
+  <div class="block-argument-pair-alignment">
+    <div class="block-argument-pair-alignment-title">증거 정렬</div>
+    <ul class="block-argument-pair-alignment-list">
+      {% for evid, side in block.payload.evidence_alignment.items() %}
+      <li class="block-argument-pair-alignment-item"><b>{{ evid }}</b> → {{ side }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>

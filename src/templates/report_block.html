@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="{{ report_theme or 'burgundy' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>{{ css_content }}</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Event Analysis Report · archetype: {{ archetype_id or 'unknown' }}</div>
+    <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
+    <p class="hero-sub">{{ result.executive_summary or '' }}</p>
+    <div class="hero-tags">
+      {% if result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
+      {% if archetype_name %}<span>{{ archetype_name }}</span>{% endif %}
+      <span>{{ generated_at }}</span>
+    </div>
+  </div>
+</header>
+
+{% if key_summary_items %}
+<section class="report-block-key-summary-section">
+  <div class="container">
+    <div class="key-summary">
+      <div class="key-summary-title">핵심 요약</div>
+      <ol>{% for item in key_summary_items %}<li>{{ item }}</li>{% endfor %}</ol>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<main class="container">
+
+{% set section_plan = (result.strategy.section_plan if result.strategy else []) %}
+{% if section_plan %}
+{% for section in section_plan %}
+<section id="{{ section.section_id }}" class="report-block-section fade-in">
+  {% if section.purpose %}<div class="section-label">{{ section.purpose }}</div>{% endif %}
+  <h2 class="section-title">{{ section.title }}</h2>
+  {% set section_blocks = result.blocks | selectattr("section_id", "equalto", section.section_id) | list %}
+  {% if section_blocks %}
+    {% for block in section_blocks %}
+      {% include "blocks/" + block.block_type + ".html" %}
+    {% endfor %}
+  {% else %}
+  <div class="report-block-section-empty">(이 섹션에 할당된 블록이 없음)</div>
+  {% endif %}
+</section>
+{% endfor %}
+{% else %}
+<section class="report-block-fallback">
+  <div class="callout"><b>섹션 계획 없음</b><p>Strategy 가 section_plan 을 산출하지 않았음. archetype 설정을 점검하세요.</p></div>
+</section>
+{% endif %}
+
+</main>
+
+<footer class="footer">
+  {% if confidence_text %}<div class="footer-confidence">{{ confidence_text }}</div>{% endif %}
+  <div>archetype: {{ archetype_id or 'unknown' }} · Generated {{ generated_at }} · Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
+  {% if result.report_url and result.report_url.startswith('http') %}
+  <div class="footer-share"><span>공유 링크:</span> <a href="{{ result.report_url }}">{{ result.report_url }}</a></div>
+  {% endif %}
+</footer>
+
+<script>
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.06});
+document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
+</script>
+</body>
+</html>

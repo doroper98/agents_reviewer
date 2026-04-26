@@ -1,0 +1,21 @@
+{# watchlist — 감시 신호 그리드. payload: {signals: list[{signal, description?, indicates?, icon?, direction?, deadline?}]} #}
+<div class="block-watchlist" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-watchlist-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.signals %}
+  <div class="block-watchlist-grid">
+    {% for ws in block.payload.signals %}
+    <div class="block-watchlist-item block-watchlist-dir-{{ ws.direction or 'ambiguous' }}">
+      <div class="block-watchlist-icon">{{ ws.icon or '📊' }}</div>
+      <div class="block-watchlist-body">
+        <div class="block-watchlist-signal">{{ ws.signal or '?' }}</div>
+        {% if ws.description %}<div class="block-watchlist-desc">{{ ws.description }}</div>{% endif %}
+        {% if ws.indicates %}<div class="block-watchlist-indicates">→ {{ ws.indicates }}</div>{% endif %}
+        {% if ws.deadline %}<div class="block-watchlist-deadline">데드라인: {{ ws.deadline }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="block-watchlist-empty">(감시 신호 없음)</div>
+  {% endif %}
+</div>

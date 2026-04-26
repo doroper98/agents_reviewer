@@ -1,0 +1,26 @@
+{# evidence_table — 증거 표. payload: {evidences: list[{evidence_id, source_url, quote_or_data, reliability, timestamp}]} #}
+<div class="block-evidence-table" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-evidence-table-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.evidences %}
+  <table class="block-evidence-table-grid">
+    <thead><tr>
+      <th class="block-evidence-table-th">ID</th>
+      <th class="block-evidence-table-th">출처/인용</th>
+      <th class="block-evidence-table-th">신뢰도</th>
+      <th class="block-evidence-table-th">시점</th>
+    </tr></thead>
+    <tbody>
+    {% for e in block.payload.evidences %}
+    <tr class="block-evidence-table-row">
+      <td class="block-evidence-table-id">{{ e.evidence_id or '' }}</td>
+      <td class="block-evidence-table-quote">{{ e.quote_or_data or '' }}{% if e.source_url %} · <a class="block-evidence-table-link" href="{{ e.source_url }}">출처</a>{% endif %}</td>
+      <td class="block-evidence-table-reliability block-evidence-table-rel-{{ e.reliability or 'unknown' }}">{{ e.reliability or '-' }}</td>
+      <td class="block-evidence-table-ts">{{ e.timestamp or '-' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="block-evidence-table-empty">(증거 미수집 — Step 4 에서 도입)</div>
+  {% endif %}
+</div>

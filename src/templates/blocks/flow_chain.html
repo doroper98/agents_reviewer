@@ -1,0 +1,23 @@
+{# flow_chain — 인과 사슬. payload: {steps: list[{title, description?, severity?, affected?, time_horizon?}]} #}
+<div class="block-flow-chain" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-flow-chain-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.steps %}
+  <ol class="block-flow-chain-list">
+    {% for s in block.payload.steps %}
+    <li class="block-flow-chain-step block-flow-chain-sev-{{ (s.severity or 'low')|lower }}">
+      <div class="block-flow-chain-header">
+        <span class="block-flow-chain-num">{{ loop.index }}</span>
+        <span class="block-flow-chain-title-text">{{ s.title or '' }}</span>
+      </div>
+      {% if s.description %}<div class="block-flow-chain-desc">{{ s.description }}</div>{% endif %}
+      <div class="block-flow-chain-meta">
+        {% if s.time_horizon %}<span class="block-flow-chain-time">⏱ {{ s.time_horizon }}</span>{% endif %}
+        {% if s.affected %}<span class="block-flow-chain-affected">영향: {{ s.affected|join(', ') }}</span>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <div class="block-flow-chain-empty">(인과 단계 없음)</div>
+  {% endif %}
+</div>

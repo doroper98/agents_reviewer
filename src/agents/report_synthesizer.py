@@ -14,7 +14,10 @@ from jinja2 import Environment, FileSystemLoader
 
 from src.archetypes import ReportArchetype, get_archetype
 from src.config import Config
-from src.models import FullAnalysisResult, NarrativePlan, NarrativeSection
+from src.models import (
+    AnalysisBlock, FullAnalysisResult, NarrativePlan, NarrativeSection,
+    ReportSectionPlan,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +170,225 @@ class ReportSynthesizer:
         text = re.sub(r"^(?:<br>\s*)+", "", text)
         text = re.sub(r"(?:<br>\s*){3,}", "<br><br>", text)
         return text
+
+    # ------------------------------------------------------------------
+    # V3 Step 3 — AnalysisBlock builders (per BlockType)
+    # ------------------------------------------------------------------
+    #
+    # Each builder maps existing v2 analysis data (FullAnalysisResult fields) into
+    # a typed payload dict for an AnalysisBlock. Block templates read ONLY
+    # ``block.payload`` (Anti-pattern #8). Builders are pure functions and return
+    # ``None`` when the source data is unavailable — the caller skips those.
+    #
+    # Step 4 will introduce claim/evidence and replace the placeholder builders for
+    # claim_card / evidence_table / qna with proper data.
+
+    @staticmethod
+    def _payload_narrative(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # Pick the most relevant text source for this section purpose.
+        sources = []
+        if result.context and result.context.background:
+            sources.append(result.context.background)
+        if result.dynamics and result.dynamics.summary:
+            sources.append(result.dynamics.summary)
+        if not sources:
+            return None
+        return {"text": "\n\n".join(sources[:2]), "tone": "neutral"}
+
+    @staticmethod
+    def _payload_actor_cards(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.players or not result.players.players:
+            return None
+        return {"actors": result.players.players}
+
+    @staticmethod
+    def _payload_flow_chain(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.chain_reaction or not result.chain_reaction.chain:
+            return None
+        return {"steps": result.chain_reaction.chain}
+
+    @staticmethod
+    def _payload_scenario_table(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.scenarios or not result.scenarios.scenarios:
+            return None
+        scenarios = []
+        for sc in result.scenarios.scenarios:
+            impacts = sc.get("impact_by_player", [])
+            impact_text = " · ".join(f"{i.get('player','')}: {i.get('impact','')}" for i in impacts[:3])
+            scenarios.append({
+                "name": sc.get("name", ""),
+                "tag": sc.get("tag", ""),
+                "probability": sc.get("probability", ""),
+                "description": sc.get("description", ""),
+                "impact": impact_text or sc.get("trigger", ""),
+            })
+        return {"scenarios": scenarios}
+
+    @staticmethod
+    def _payload_timeline(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.context or not result.context.timeline:
+            return None
+        return {"events": result.context.timeline}
+
+    @staticmethod
+    def _payload_data_series(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # Map visuals.chart_config (Canvas series) into a generic data_series payload.
+        if not result.visuals:
+            return None
+        cfg = result.visuals.chart_config or {}
+        if not cfg.get("enabled"):
+            return None
+        series: list[dict] = []
+        for ch in (cfg.get("charts") or []):
+            pts = ch.get("points") or []
+            series.append({
+                "label": ch.get("title") or ch.get("type", "series"),
+                "points": [{"x": p.get("label", ""), "y": p.get("value", "")} for p in pts],
+            })
+        if not series:
+            return None
+        return {"series": series, "unit": ""}
+
+    @staticmethod
+    def _payload_watchlist(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.scenarios or not result.scenarios.watch_signals:
+            return None
+        return {"signals": result.scenarios.watch_signals}
+
+    @staticmethod
+    def _payload_counter_hypothesis(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.dynamics:
+            return None
+        if not result.dynamics.counter_view and not result.dynamics.key_insight:
+            return None
+        return {
+            "base_judgment": result.dynamics.key_insight or result.dynamics.summary or "",
+            "counter": result.dynamics.counter_view or "(반대 가설 없음)",
+            "required_evidence": result.dynamics.cognitive_biases or [],
+        }
+
+    @staticmethod
+    def _payload_callout(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if result.dynamics and result.dynamics.key_insight:
+            return {"title": "핵심 통찰", "body": result.dynamics.key_insight, "style": "insight"}
+        if result.chain_reaction and result.chain_reaction.worst_case:
+            return {"title": "최악의 경우", "body": result.chain_reaction.worst_case, "style": "warning"}
+        return None
+
+    @staticmethod
+    def _payload_decomposition(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.dynamics or not result.dynamics.asymmetries:
+            return None
+        return {
+            "root": result.dynamics.framework or section.title,
+            "branches": [
+                {"label": a.get("type", ""), "detail": a.get("description", "")}
+                for a in result.dynamics.asymmetries
+            ],
+        }
+
+    @staticmethod
+    def _payload_matrix(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # Placeholder: no native matrix data in v2 models. Builders will populate this
+        # when V3 lens runners produce cross-cutting comparisons (Step 5).
+        return None
+
+    @staticmethod
+    def _payload_risk_matrix(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.chain_reaction or not result.chain_reaction.wildcards:
+            return None
+        risks = []
+        for w in result.chain_reaction.wildcards:
+            risks.append({
+                "risk": w.get("event", ""),
+                "probability": w.get("probability", ""),
+                "impact": "high",
+                "mitigation": "",
+            })
+        return {"risks": risks} if risks else None
+
+    @staticmethod
+    def _payload_argument_pair(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        if not result.dynamics:
+            return None
+        a = result.dynamics.key_insight or result.dynamics.summary
+        b = result.dynamics.counter_view
+        if not a or not b:
+            return None
+        return {"hypothesis_a": a, "hypothesis_b": b, "evidence_alignment": {}}
+
+    @staticmethod
+    def _payload_decision_matrix(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # Placeholder: requires explicit option/criterion data. Step 4+ once the
+        # decision_brief archetype lands.
+        return None
+
+    @staticmethod
+    def _payload_claim_card(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # Placeholder for Step 4 (Claim/Evidence). For now, an empty card with a clear
+        # marker so block tests render successfully.
+        return {"statement": "", "evidence_ids": [], "claim_type": "inference"}
+
+    @staticmethod
+    def _payload_evidence_table(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # Placeholder for Step 4. Render an empty table.
+        return {"evidences": []}
+
+    @staticmethod
+    def _payload_qna(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        # No QnA source in v2. Render empty.
+        return {"pairs": []}
+
+    _BLOCK_BUILDERS: dict = {}  # populated below to avoid forward-ref issues
+
+    def _build_blocks(
+        self, result: FullAnalysisResult, archetype: ReportArchetype,
+    ) -> list[AnalysisBlock]:
+        """Build AnalysisBlock list from archetype.section_plan(strategy).
+
+        Returns empty list for the legacy six_act_theater path (caller does not use).
+        For other archetypes, walk each ReportSectionPlan and build one AnalysisBlock
+        per requested block_type. Also populates ``result.strategy.section_plan`` so the
+        dispatcher template can iterate it (spec contract).
+        """
+        if archetype.archetype_id == "six_act_theater":
+            return []
+        if result.strategy is None:
+            return []
+        plan = archetype.section_plan(result.strategy)
+        # Spec: dispatcher reads result.strategy.section_plan. archetype.section_plan()
+        # is the SSOT for the per-archetype layout, but strategy is what the dispatcher
+        # iterates — so we mirror it here.
+        result.strategy.section_plan = plan
+        builders = self._BLOCK_BUILDERS
+        blocks: list[AnalysisBlock] = []
+        block_seq = 0
+        for section in plan:
+            for btype in (section.block_types or []):
+                builder = builders.get(btype)
+                if builder is None:
+                    logger.warning(
+                        "[report_synthesizer] No builder for block_type=%s; skipping",
+                        btype,
+                    )
+                    continue
+                payload = builder(result, section)
+                if payload is None:
+                    continue
+                block_seq += 1
+                blocks.append(AnalysisBlock(
+                    block_id=f"B-{block_seq:03d}",
+                    block_type=btype,
+                    title="",
+                    purpose=section.purpose,
+                    payload=payload,
+                    section_id=section.section_id,
+                ))
+        logger.info(
+            "[report_synthesizer] Built %d blocks for archetype=%s across %d sections",
+            len(blocks), archetype.archetype_id, len(plan),
+        )
+        return blocks
 
     async def _call_cli(self, prompt: str) -> str:
         """Call Claude CLI for text generation."""
@@ -525,15 +747,19 @@ class ReportSynthesizer:
                 report_theme=theme,
             )
         else:
-            # Step 2 placeholder render — minimal vars + section_plan from the archetype object.
-            archetype_sections = (
-                archetype.section_plan(result.strategy)
-                if result.strategy is not None else []
-            )
+            # V3 Step 3 (v2.7.0): Block dispatcher path.
+            # 1) build AnalysisBlocks from archetype.section_plan(strategy)
+            # 2) attach to result.blocks
+            # 3) render via report_block.html (archetype.template_path() returns this)
+            blocks = self._build_blocks(result, archetype)
+            result.blocks = blocks
+            block_types_used = sorted({b.block_type for b in blocks})
             logger.info(
                 "[report_synthesizer] Archetype branch entered: %s "
-                "(template=%s, sections=%d)",
-                archetype.archetype_id, archetype.template_path(), len(archetype_sections),
+                "(template=%s, sections=%d, blocks=%d, types_used=%s)",
+                archetype.archetype_id, archetype.template_path(),
+                len(result.strategy.section_plan) if result.strategy and result.strategy.section_plan else 0,
+                len(blocks), block_types_used,
             )
             html = template.render(
                 result=result,
@@ -544,7 +770,6 @@ class ReportSynthesizer:
                 report_theme=theme,
                 archetype_id=archetype.archetype_id,
                 archetype_name=archetype.name,
-                archetype_sections=archetype_sections,
             )
 
         # Save HTML to file
@@ -936,3 +1161,28 @@ tr:hover{{background:#4A3232}}
         with open(index_path, "w", encoding="utf-8") as f:
             f.write(index_html)
         logger.info(f"[report_synthesizer] Index page updated: {index_path}")
+
+
+# Populate the block builder registry after class definition.
+# Mapping: BlockType (17) → method on ReportSynthesizer.
+# Step 3 covers builders that have v2 data sources; the rest return None
+# placeholders so block tests render successfully.
+ReportSynthesizer._BLOCK_BUILDERS = {
+    "narrative":          ReportSynthesizer._payload_narrative,
+    "claim_card":         ReportSynthesizer._payload_claim_card,
+    "evidence_table":     ReportSynthesizer._payload_evidence_table,
+    "timeline":           ReportSynthesizer._payload_timeline,
+    "matrix":             ReportSynthesizer._payload_matrix,
+    "actor_cards":        ReportSynthesizer._payload_actor_cards,
+    "flow_chain":         ReportSynthesizer._payload_flow_chain,
+    "scenario_table":     ReportSynthesizer._payload_scenario_table,
+    "decomposition":      ReportSynthesizer._payload_decomposition,
+    "argument_pair":      ReportSynthesizer._payload_argument_pair,
+    "data_series":        ReportSynthesizer._payload_data_series,
+    "watchlist":          ReportSynthesizer._payload_watchlist,
+    "qna":                ReportSynthesizer._payload_qna,
+    "callout":            ReportSynthesizer._payload_callout,
+    "counter_hypothesis": ReportSynthesizer._payload_counter_hypothesis,
+    "decision_matrix":    ReportSynthesizer._payload_decision_matrix,
+    "risk_matrix":        ReportSynthesizer._payload_risk_matrix,
+}

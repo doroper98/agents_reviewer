@@ -1,0 +1,7 @@
+{# callout — 강조 인용. payload: {title?, body, style?: warning|info|insight} #}
+<div class="block-callout block-callout-style-{{ block.payload.style or 'insight' }}" data-block-id="{{ block.block_id }}">
+  {% if block.payload.title or block.title %}
+  <div class="block-callout-title"><b>{{ block.payload.title or block.title }}</b></div>
+  {% endif %}
+  <div class="block-callout-body">{{ block.payload.body or '(내용 없음)' }}</div>
+</div>

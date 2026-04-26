@@ -1,0 +1,26 @@
+{# decision_matrix — 의사결정 매트릭스. payload: {options: list[str], criteria: list[str], scores: dict[option|criterion: str|float], notes?: dict} #}
+<div class="block-decision-matrix" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-decision-matrix-title">{{ block.title }}</div>{% endif %}
+  {% set options = block.payload.options or [] %}
+  {% set criteria = block.payload.criteria or [] %}
+  {% set scores = block.payload.scores or {} %}
+  {% if options and criteria %}
+  <table class="block-decision-matrix-grid">
+    <thead><tr>
+      <th class="block-decision-matrix-corner">옵션 \ 기준</th>
+      {% for cr in criteria %}<th class="block-decision-matrix-criterion">{{ cr }}</th>{% endfor %}
+    </tr></thead>
+    <tbody>
+    {% for opt in options %}
+    <tr class="block-decision-matrix-row">
+      <th class="block-decision-matrix-option">{{ opt }}</th>
+      {% for cr in criteria %}<td class="block-decision-matrix-cell">{{ scores.get(opt ~ '|' ~ cr) or scores.get(opt + '|' + cr) or '-' }}</td>{% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if block.payload.recommendation %}<div class="block-decision-matrix-rec"><b>권고:</b> {{ block.payload.recommendation }}</div>{% endif %}
+  {% else %}
+  <div class="block-decision-matrix-empty">(의사결정 데이터 없음)</div>
+  {% endif %}
+</div>

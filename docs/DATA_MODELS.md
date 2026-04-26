@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.5.0
+last_synced_with: v2.7.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -24,8 +24,10 @@ last_review: 2026-04-26
               ┌──────────────────────┐
               │  AnalysisStrategy    │ ← Strategy Planner 산출 (V3 Step 1, v2.5.0)
               │  - user_intent       │   user_intent / core_questions /
-              │  - core_questions    │   recommended_lenses 결정
-              │  - recommended_lenses│
+              │  - core_questions    │   recommended_lenses / report_archetype
+              │  - recommended_lenses│   결정
+              │  - report_archetype  │
+              │  - section_plan      │ ← V3 Step 3 활성화 (archetype 이 채움)
               │  - skip_agents       │
               │  - legacy_directives │ ← Step 1 transitional shim (Step 5 제거 예정)
               └──────────┬───────────┘
@@ -40,34 +42,51 @@ last_review: 2026-04-26
         └──────┴──────┴──┬───┴───────┴──────────┘
                          ▼
                   FullAnalysisResult
-                  (strategy + 6 analyses)
+                  (strategy + 6 analyses + blocks)
                          │
-                         ▼
-                ReportSynthesizer (HTML/Markdown)
+                         ├─ archetype="six_act_theater" ──→ ReportSynthesizer (legacy report.html)
+                         │
+                         └─ 그 외 archetype ──→  _build_blocks(result, archetype)
+                                                        │
+                                                        ▼
+                                            list[AnalysisBlock]
+                                            (V3 Step 3 활성화)
+                                            block_id / block_type / payload /
+                                            section_id / related_findings
+                                                        │
+                                                        ▼
+                                            ReportSynthesizer (report_block.html dispatcher)
+                                                        │
+                                                        ▼
+                                            include "blocks/<block_type>.html"
+                                            (17종 BlockType — 각 템플릿은
+                                             block.payload 만 참조)
 ```
 
-각 분석 모델은 `FullAnalysisResult` 의 optional 필드. `AnalysisStrategy` 도 optional 로 보존되어 보고서·로깅 단계에서 user_intent 를 추적할 수 있음. `NarrativePlan` 은 보고서 합성 단계에서 동적 생성됨.
+각 분석 모델은 `FullAnalysisResult` 의 optional 필드. `AnalysisStrategy` 도 optional 로 보존되어 보고서·로깅 단계에서 user_intent 를 추적할 수 있음. `NarrativePlan` 은 legacy six_act_theater 흐름 전용 — 신규 archetype 은 `result.strategy.section_plan` (`ReportSectionPlan` 배열) 이 디스패처의 iteration 대상.
 
 ---
 
-## 2. 모델 목록 (현재 v2.4.1)
+## 2. 모델 목록 (현재 v2.7.0)
 
 | 모델 | 책무 | 정의 위치 |
 |------|------|-----------|
 | `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델) | `src/models.py` |
-| `AnalysisStrategy` | 분석 설계도 — user_intent, core_questions, recommended_lenses, skip_agents, theme (V3 Step 1) | `src/models.py` |
+| `AnalysisStrategy` | 분석 설계도 — user_intent, core_questions, recommended_lenses, skip_agents, theme, report_archetype, section_plan (V3 Step 1~3) | `src/models.py` |
 | `EvidenceNeed` | Strategy 가 명세하는 증거 수집 항목 (V3 Step 1) | `src/models.py` |
-| `ReportSectionPlan` | 보고서 섹션 계획 (Step 3 블록 시스템 도입 후 본격 사용) | `src/models.py` |
+| `ReportSectionPlan` | 보고서 섹션 계획 — archetype.section_plan() 산출, 디스패처가 iterate (V3 Step 3 활성화) | `src/models.py` |
 | `VisualizationSpec` | 시각화 사양 — Visual Analyst 가 참조 | `src/models.py` |
+| `BlockType` (Literal 17종) | 블록 타입 enum — narrative, claim_card, evidence_table, timeline, matrix, actor_cards, flow_chain, scenario_table, decomposition, argument_pair, data_series, watchlist, qna, callout, counter_hypothesis, decision_matrix, risk_matrix (V3 Step 3) | `src/models.py` |
+| `AnalysisBlock` | 보고서 렌더링의 기본 단위 — block_id/block_type/payload (V3 Step 3) | `src/models.py` |
 | `ContextAnalysis` | ACT I 결과 (팩트·타임라인·수치) | `src/models.py` |
 | `PlayerAnalysis` | ACT II 결과 (행위자·동맹·power_dynamics) | `src/models.py` |
 | `DynamicsAnalysis` | ACT III 결과 (비대칭·전환점·피드백 루프·반대 가설) | `src/models.py` |
 | `ChainReactionAnalysis` | ACT IV 결과 (인과 사슬·차단점·와일드카드) | `src/models.py` |
 | `ScenarioAnalysis` | ACT V+VI 결과 (시나리오·감시 신호·무효화 조건) | `src/models.py` |
 | `VisualAnalysis` | 시각 요소 (SVG·Leaflet·Canvas) | `src/models.py` |
-| `NarrativeSection` | 보고서의 단일 섹션 사양 | `src/models.py` |
-| `NarrativePlan` | 섹션 순서·테마 (Claude 생성) | `src/models.py` |
-| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 (`strategy` 포함) | `src/models.py` |
+| `NarrativeSection` | 보고서의 단일 섹션 사양 (legacy six_act_theater 전용) | `src/models.py` |
+| `NarrativePlan` | 섹션 순서·테마 (legacy six_act_theater 전용) | `src/models.py` |
+| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 (`strategy`, `blocks` 포함) | `src/models.py` |
 
 각 모델의 **현재 필드 목록**은 `src/models.py` 를 직접 읽는다 — 본 문서에 필드 사본을 두면 SSOT 위반이 된다.
 
@@ -127,6 +146,18 @@ last_review: 2026-04-26
 ### 3.6 NarrativePlan
 - `report_theme`: 핵심 서사 한 문장.
 - `sections`: NarrativeSection 배열. 각 섹션은 act_label / title / data_source / narrative_bridge / subsections 보유.
+- **Scope**: legacy `six_act_theater` archetype 전용. 신규 archetype 은 `AnalysisStrategy.section_plan` 사용.
+
+### 3.7 AnalysisBlock (V3 Step 3, v2.7.0)
+- `block_id`: 보고서 내 고유 ID (예: `B-001`). 디스패처가 자동 생성.
+- `block_type`: 17종 `BlockType` Literal 중 하나.
+- `title`: 블록 제목 (선택). 빈 문자열이면 템플릿이 생략.
+- `purpose`: 이 블록이 답하려는 질문 또는 책무 — 보통 부모 `ReportSectionPlan.purpose` 와 동일.
+- `payload`: 자유 dict. block_type 별 스키마는 [docs/CATALOGS.md §4](CATALOGS.md) 의 표 참조. **블록 템플릿이 접근 가능한 유일한 데이터** (Anti-pattern #8).
+- `related_findings`: V3 Step 4+ Finding ID 역참조용 (현재는 빈 리스트).
+- `section_id`: 디스패처가 `result.strategy.section_plan` 의 동일 ID 섹션과 매치.
+
+블록 빌더 매핑 SSOT 는 `src/agents/report_synthesizer.py:_BLOCK_BUILDERS` 와 `_payload_*` 정적 메서드들. 빌더는 v2 분석 데이터 (`result.context`, `result.players` 등) 를 typed payload 로 변환하지만, 데이터 부재 시 `None` 반환 → 디스패처는 해당 블록을 생성하지 않음.
 
 ---
 

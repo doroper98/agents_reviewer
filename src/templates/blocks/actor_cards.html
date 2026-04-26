@@ -1,0 +1,22 @@
+{# actor_cards — 행위자 카드. payload: {actors: list[{name, position, strategy, vulnerability, role_tag?, risk_level?, emoji?}]} #}
+<div class="block-actor-cards" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-actor-cards-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.actors %}
+  <div class="block-actor-cards-grid">
+    {% for a in block.payload.actors %}
+    <div class="block-actor-cards-card block-actor-cards-risk-{{ (a.risk_level or 'unknown') }}">
+      <div class="block-actor-cards-header">
+        {% if a.emoji %}<span class="block-actor-cards-emoji">{{ a.emoji }}</span>{% endif %}
+        <span class="block-actor-cards-name">{{ a.name or '?' }}</span>
+        {% if a.role_tag %}<span class="block-actor-cards-role">{{ a.role_tag }}</span>{% endif %}
+      </div>
+      {% if a.position %}<div class="block-actor-cards-position">{{ a.position }}</div>{% endif %}
+      {% if a.strategy %}<div class="block-actor-cards-detail"><b>전략:</b> {{ a.strategy }}</div>{% endif %}
+      {% if a.vulnerability %}<div class="block-actor-cards-detail"><b>취약점:</b> {{ a.vulnerability }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="block-actor-cards-empty">(행위자 데이터 없음)</div>
+  {% endif %}
+</div>

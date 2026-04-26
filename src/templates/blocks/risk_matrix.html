@@ -1,0 +1,26 @@
+{# risk_matrix — 리스크 매트릭스. payload: {risks: list[{risk, probability?, impact?, mitigation?}]} #}
+<div class="block-risk-matrix" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-risk-matrix-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.risks %}
+  <table class="block-risk-matrix-grid">
+    <thead><tr>
+      <th class="block-risk-matrix-th">리스크</th>
+      <th class="block-risk-matrix-th">확률</th>
+      <th class="block-risk-matrix-th">영향</th>
+      <th class="block-risk-matrix-th">완화책</th>
+    </tr></thead>
+    <tbody>
+    {% for r in block.payload.risks %}
+    <tr class="block-risk-matrix-row block-risk-matrix-impact-{{ (r.impact or 'low')|lower }}">
+      <td class="block-risk-matrix-name">{{ r.risk or '?' }}</td>
+      <td class="block-risk-matrix-prob">{{ r.probability or '-' }}</td>
+      <td class="block-risk-matrix-impact-cell">{{ r.impact or '-' }}</td>
+      <td class="block-risk-matrix-mitigation">{{ r.mitigation or '-' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="block-risk-matrix-empty">(리스크 데이터 없음)</div>
+  {% endif %}
+</div>

@@ -207,11 +207,52 @@ class AnalysisStrategy(BaseModel):
         return self
 
 
+# ====== V3 Block Rendering (Step 3 — v2.7.0) ======
+
+BlockType = Literal[
+    "narrative",            # 산문 단락
+    "claim_card",           # 주장 + 근거 카드 (Step 4 에서 본격 활용)
+    "evidence_table",       # 증거 표 (Step 4)
+    "timeline",             # 시계열
+    "matrix",               # 비교 매트릭스
+    "actor_cards",          # 행위자 카드 (legacy player_card 대체)
+    "flow_chain",           # 인과 사슬 (legacy chain_reaction 대체)
+    "scenario_table",       # 시나리오 표
+    "decomposition",        # 메커니즘 분해
+    "argument_pair",        # ACH 가설 대결
+    "data_series",          # 수치 시계열
+    "watchlist",            # 감시 신호 그리드
+    "qna",                  # 흔한 질문 응답 (Step 4+)
+    "callout",              # 강조 인용
+    "counter_hypothesis",   # 반대 가설 박스
+    "decision_matrix",      # 의사결정 매트릭스
+    "risk_matrix",          # 리스크 매트릭스
+]
+
+
+class AnalysisBlock(BaseModel):
+    """보고서 렌더링의 기본 단위 — V3 매크로 1:1 강결합 해소.
+
+    템플릿은 ``block.payload`` 만 참조해야 한다 (Anti-pattern #8). payload 스키마는
+    block_type 별로 자유 dict — 본 정의는 컨테이너만 책임지고, 스키마는
+    `docs/CATALOGS.md §4` 가 사람-친화 가이드를 제공한다.
+    """
+
+    block_id: str
+    block_type: BlockType
+    title: str = ""
+    purpose: str = ""
+    payload: dict = Field(default_factory=dict)
+    related_findings: list[str] = Field(default_factory=list)
+    section_id: str = ""
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
     request: AnalysisRequest
     strategy: AnalysisStrategy | None = None  # V3 Step 1
+    blocks: list[AnalysisBlock] = Field(default_factory=list)  # V3 Step 3
     context: ContextAnalysis | None = None
     players: PlayerAnalysis | None = None
     dynamics: DynamicsAnalysis | None = None

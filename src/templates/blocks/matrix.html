@@ -1,0 +1,25 @@
+{# matrix — 비교 매트릭스. payload: {rows: list[str], cols: list[str], cells: dict[(row|col): str]} #}
+<div class="block-matrix" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-matrix-title">{{ block.title }}</div>{% endif %}
+  {% set rows = block.payload.rows or [] %}
+  {% set cols = block.payload.cols or [] %}
+  {% set cells = block.payload.cells or {} %}
+  {% if rows and cols %}
+  <table class="block-matrix-grid">
+    <thead><tr>
+      <th class="block-matrix-corner"></th>
+      {% for c in cols %}<th class="block-matrix-col">{{ c }}</th>{% endfor %}
+    </tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr class="block-matrix-row">
+      <th class="block-matrix-row-label">{{ r }}</th>
+      {% for c in cols %}<td class="block-matrix-cell">{{ cells.get(r ~ '|' ~ c) or cells.get(r + '|' + c) or '-' }}</td>{% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="block-matrix-empty">(매트릭스 데이터 없음)</div>
+  {% endif %}
+</div>

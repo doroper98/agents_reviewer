@@ -1,0 +1,29 @@
+{# scenario_table — 시나리오 표. payload: {scenarios: list[{name, tag?, probability?, description?, impact?}]} #}
+<div class="block-scenario-table" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-scenario-table-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.scenarios %}
+  <table class="block-scenario-table-grid">
+    <thead><tr>
+      <th class="block-scenario-table-th">시나리오</th>
+      <th class="block-scenario-table-th">전개</th>
+      <th class="block-scenario-table-th">확률</th>
+      <th class="block-scenario-table-th">영향</th>
+    </tr></thead>
+    <tbody>
+    {% for sc in block.payload.scenarios %}
+    <tr class="block-scenario-table-row block-scenario-table-tag-{{ (sc.tag or 'base')|lower }}">
+      <td class="block-scenario-table-name">
+        <strong>{{ loop.index }}. {{ sc.name or '?' }}</strong>
+        {% if sc.tag %}<br><span class="block-scenario-table-tag">{{ sc.tag }}</span>{% endif %}
+      </td>
+      <td class="block-scenario-table-desc">{{ sc.description or '-' }}</td>
+      <td class="block-scenario-table-prob">{{ sc.probability or '-' }}</td>
+      <td class="block-scenario-table-impact">{{ sc.impact or '-' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="block-scenario-table-empty">(시나리오 데이터 없음)</div>
+  {% endif %}
+</div>

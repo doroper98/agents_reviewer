@@ -1,0 +1,25 @@
+{# decomposition — 메커니즘 분해. payload: {root: str, branches: list[{label, detail?, branches?}]} #}
+{%- macro render_node(node, depth) -%}
+<li class="block-decomposition-node block-decomposition-depth-{{ depth }}">
+  <div class="block-decomposition-label">{{ node.label or '?' }}</div>
+  {% if node.detail %}<div class="block-decomposition-detail">{{ node.detail }}</div>{% endif %}
+  {% if node.branches %}
+  <ul class="block-decomposition-children">
+    {% for child in node.branches %}{{ render_node(child, depth + 1) }}{% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{%- endmacro -%}
+<div class="block-decomposition" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-decomposition-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.root or block.payload.branches %}
+  <div class="block-decomposition-root">{{ block.payload.root or '?' }}</div>
+  {% if block.payload.branches %}
+  <ul class="block-decomposition-tree">
+    {% for child in block.payload.branches %}{{ render_node(child, 1) }}{% endfor %}
+  </ul>
+  {% endif %}
+  {% else %}
+  <div class="block-decomposition-empty">(분해 데이터 없음)</div>
+  {% endif %}
+</div>

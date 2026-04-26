@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.6.0
+last_synced_with: v2.7.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -23,6 +23,28 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [2.7.0] — 2026-04-26
+
+### Added
+- **V3 Step 3 — 보고서 블록 렌더링 시스템**
+  - `BlockType` Literal 17종 + `AnalysisBlock` Pydantic 모델 (`src/models.py`)
+  - `FullAnalysisResult.blocks: list[AnalysisBlock]` 필드
+  - `src/templates/blocks/` — 17개 단일-책임 템플릿 (각 ≤50 줄, payload-only access)
+  - `src/templates/report_block.html` — 디스패처 (section_plan iterate + section_id 매치)
+  - `src/agents/report_synthesizer.py` — `_BLOCK_BUILDERS` 레지스트리 + 17개 `_payload_*` 빌더
+  - `report.css` — block-* 클래스 append (기존 클래스 무수정, 디자인 토큰 재사용)
+
+### Changed
+- `src/orchestrator.py:VERSION` `v2.6.0 → v2.7.0`
+- 신규 archetype (`financial_transmission`, `tech_decomposition`) 의 `template_path()` 가 `report_block.html` 반환 — Step 2 placeholder HTML 은 디스크에 보존되지만 사용 안 됨 (Anti-pattern #2)
+- `ReportSynthesizer.synthesize()` 가 archetype 별 분기: legacy six_act_theater 는 기존 흐름 (byte-equal 보장), 그 외는 블록 빌더 + 디스패처
+
+### Migration notes
+- six_act_theater 보고서 출력은 v2.6.0 과 byte 단위 동일 (sha256 검증 통과).
+- 신규 BlockType 추가 절차: ① `src/models.py:BlockType` Literal 확장 → ② `src/templates/blocks/<type>.html` 신설 (≤50 줄, payload-only) → ③ `_BLOCK_BUILDERS` 등록 → ④ `docs/CATALOGS.md §4` 갱신 (Anti-pattern #15).
 
 ---
 

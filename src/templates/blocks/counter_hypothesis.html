@@ -1,0 +1,25 @@
+{# counter_hypothesis — 반대 가설 박스. payload: {base_judgment?, counter, required_evidence?: list[str], current_conflict?: str} #}
+<div class="block-counter-hypothesis" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-counter-hypothesis-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.base_judgment %}
+  <div class="block-counter-hypothesis-base">
+    <div class="block-counter-hypothesis-label">현재 판단</div>
+    <div class="block-counter-hypothesis-text">{{ block.payload.base_judgment }}</div>
+  </div>
+  {% endif %}
+  <div class="block-counter-hypothesis-counter">
+    <div class="block-counter-hypothesis-label">반대 가설</div>
+    <div class="block-counter-hypothesis-text">{{ block.payload.counter or '(반대 가설 미기재)' }}</div>
+  </div>
+  {% if block.payload.required_evidence %}
+  <div class="block-counter-hypothesis-required">
+    <div class="block-counter-hypothesis-label">반대 가설이 옳다면 필요한 증거</div>
+    <ul class="block-counter-hypothesis-list">
+      {% for ev in block.payload.required_evidence %}<li>{{ ev }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if block.payload.current_conflict %}
+  <div class="block-counter-hypothesis-conflict"><b>현재 충돌 지점:</b> {{ block.payload.current_conflict }}</div>
+  {% endif %}
+</div>

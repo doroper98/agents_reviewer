@@ -1,0 +1,17 @@
+{# timeline — 시계열. payload: {events: list[{date, event, impact?}]} #}
+<div class="block-timeline" data-block-id="{{ block.block_id }}">
+  {% if block.title %}<div class="block-timeline-title">{{ block.title }}</div>{% endif %}
+  {% if block.payload.events %}
+  <ol class="block-timeline-list">
+    {% for ev in block.payload.events %}
+    <li class="block-timeline-item">
+      <span class="block-timeline-date">{{ ev.date or '-' }}</span>
+      <span class="block-timeline-event">{{ ev.event or '' }}</span>
+      {% if ev.impact %}<span class="block-timeline-impact">→ {{ ev.impact }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <div class="block-timeline-empty">(타임라인 데이터 없음)</div>
+  {% endif %}
+</div>
