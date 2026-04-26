@@ -9,6 +9,7 @@ import shutil
 import time
 from typing import Any, Callable, Coroutine, Optional
 
+from src.archetypes.registry import get_archetype, list_archetypes
 from src.config import Config
 from src.models import AnalysisRequest, AnalysisStrategy, FullAnalysisResult
 from src.agents.context_analyst import ContextAnalyst
@@ -21,7 +22,7 @@ from src.agents.report_synthesizer import ReportSynthesizer
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.5.0"
+VERSION = "v2.6.0"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
@@ -85,9 +86,10 @@ class Orchestrator:
             "1) user_intent — 사용자가 가장 알고 싶어 하는 질문 유형 (7종 중 1)\n"
             "2) core_questions — 이 사건이 답해야 할 핵심 질문 (1~5개)\n"
             "3) recommended_lenses — 적용할 분석 렌즈 ID (1~4개)\n"
-            "4) 각 에이전트에게 이 사건을 발골할 최적의 분석 기법 지시\n"
-            "5) 이 사건에 불필요한 에이전트는 스킵 지정\n"
-            "6) 보고서 테마 선택\n\n"
+            "4) report_archetype — 이 사건에 가장 적합한 보고서 아키타입 (3종 중 1)\n"
+            "5) 각 에이전트에게 이 사건을 발골할 최적의 분석 기법 지시\n"
+            "6) 이 사건에 불필요한 에이전트는 스킵 지정\n"
+            "7) 보고서 테마 선택\n\n"
             "사건명: " + event_name + "\n"
             "분류: " + category + "\n"
             "요약: " + summary[:500] + "\n\n"
@@ -99,6 +101,22 @@ class Orchestrator:
             "what_next: 시나리오/전망 — 앞으로 어떻게 될 것인가\n"
             "where_vulnerable: 취약점 분석 — 어디가 약한 고리인가\n"
             "what_to_do: 의사결정 — 어떻게 대응해야 하나\n\n"
+            "=== report_archetype 3종 (정확히 1개 선택, archetype_id 그대로 출력) ===\n"
+            "six_act_theater (기본값): 인물극형 사건 (전쟁, 외교, 정치 갈등, 리더십, 선거).\n"
+            "  · suitable_intents: 7종 모두 가능. 분류가 애매하면 이걸로 간다.\n"
+            "  · 섹션 흐름: 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 (6막)\n"
+            "financial_transmission: 시장/거시 사건 (환율, 금리, 자산 가격, 통화 정책, 신용 시장).\n"
+            "  · suitable_intents: where_spreads, where_vulnerable, what_next 우선.\n"
+            "  · suitable_event_types: financial, market, macro, currency, interest_rate, asset_price 등.\n"
+            "  · 섹션 흐름: 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표\n"
+            "tech_decomposition: 기술/AI/IT 사건 (모델 출시, 시스템 장애, 사이버 보안, 인프라).\n"
+            "  · suitable_intents: where_vulnerable, what_to_do, why_happened 우선.\n"
+            "  · suitable_event_types: tech, ai, it, software, model_release, system_outage, cyber_security 등.\n"
+            "  · 섹션 흐름: 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고\n\n"
+            "선택 매트릭스 (강한 가이드):\n"
+            "- user_intent='where_spreads' AND event_type∈{financial, market, macro, currency, interest_rate} → financial_transmission\n"
+            "- event_type∈{tech, ai, it, software, model_release, system_outage} → tech_decomposition\n"
+            "- 그 외 (인물극, 외교, 갈등, 정치, 일반) → six_act_theater\n\n"
             "=== 분석 기법 레퍼런스 ===\n"
             "[인텔리전스] ACH(경쟁가설분석), Red Team, Key Assumptions Check, I&W(징후경보)\n"
             "[지정학/전략] DIME(외교·정보·군사·경제), PMESII(6차원환경), Escalation Ladder, Center of Gravity\n"
@@ -123,12 +141,13 @@ class Orchestrator:
             "- 레퍼런스에 없는 기법도 적합하면 자유롭게 사용 가능\n"
             "- 이 사건에 맞지 않는 분석 함정도 명시\n\n"
             "스킵 판단: 가치를 못 더하면 skip. context/visuals는 스킵 불가.\n\n"
-            "반드시 아래 JSON만 출력 (event_type/user_intent/intent_confidence/core_questions/recommended_lenses 필수):\n"
-            '{"event_type":"사건 유형 한 단어",'
+            "반드시 아래 JSON만 출력 (event_type/user_intent/intent_confidence/core_questions/recommended_lenses/report_archetype 필수):\n"
+            '{"event_type":"사건 유형 한 단어 (예: financial, tech, war, diplomacy, currency, model_release, cyber_security)",'
             '"user_intent":"what_happened|why_happened|who_benefits|where_spreads|what_next|where_vulnerable|what_to_do",'
             '"intent_confidence":0.0~1.0,'
             '"core_questions":["질문1","질문2"],'
             '"recommended_lenses":["lens_id1","lens_id2"],'
+            '"report_archetype":"six_act_theater|financial_transmission|tech_decomposition",'
             '"players":"지시","dynamics":"지시","chain_reaction":"지시",'
             '"scenarios":"지시","visuals":"지시",'
             '"skip":["스킵할 에이전트명"],"theme":"burgundy|geopolitical|financial|tech|nature|liquidglass"}\n'
@@ -176,6 +195,16 @@ class Orchestrator:
             }
             raw_dict["legacy_directives"] = legacy_directives
 
+            # Validate archetype_id against registry; unknown values fall back to default.
+            requested_archetype = raw_dict.get("report_archetype", "")
+            if requested_archetype and requested_archetype not in list_archetypes():
+                logger.warning(
+                    "[orchestrator] LLM emitted unknown archetype_id=%r; "
+                    "falling back to six_act_theater (registered: %s)",
+                    requested_archetype, list_archetypes(),
+                )
+                raw_dict["report_archetype"] = "six_act_theater"
+
             strategy = AnalysisStrategy.model_validate(raw_dict)
 
             logger.info(
@@ -184,6 +213,7 @@ class Orchestrator:
                 "  event_type: %s\n"
                 "  core_questions: %s\n"
                 "  recommended_lenses: %s\n"
+                "  report_archetype: %s\n"
                 "  theme: %s\n"
                 "  skip_agents: %s",
                 event_name,
@@ -191,6 +221,7 @@ class Orchestrator:
                 strategy.event_type,
                 strategy.core_questions,
                 strategy.recommended_lenses,
+                strategy.report_archetype,
                 strategy.theme,
                 strategy.skip_agents,
             )
@@ -509,7 +540,14 @@ class Orchestrator:
         result.total_duration_seconds = time.time() - start_time
 
         report_theme = strategy.theme or "burgundy"
-        report_url = await self.report_synthesizer.synthesize(result, theme=report_theme)
+        archetype = get_archetype(strategy.report_archetype)
+        logger.info(
+            "[orchestrator] Routing report through archetype=%s (template=%s)",
+            archetype.archetype_id, archetype.template_path(),
+        )
+        report_url = await self.report_synthesizer.synthesize(
+            result, theme=report_theme, archetype=archetype,
+        )
         result.report_url = report_url
 
         # Restore original model assignments after quick mode

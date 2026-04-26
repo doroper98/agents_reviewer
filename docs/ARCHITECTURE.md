@@ -1,15 +1,16 @@
 ---
 tier: 2
-last_synced_with: v2.4.1
+last_synced_with: v2.6.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
-  - "보고서 6막 극장 구조 (현재 archetype)"
+  - "보고서 archetype 분기 구조 (V3 Step 2 활성화)"
   - "토큰 사용량 추정"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "src/agents/* (구성)"
-  - "GOAL.md (REQ-AGT-*)"
+  - "src/archetypes/registry.py (archetype 분기 SSOT)"
+  - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
 last_review: 2026-04-26
 ---
 
@@ -162,7 +163,32 @@ report_synthesizer.py
             → https://<프로젝트명>.pages.dev/analysis_YYYYMMDD_HHMMSS.html
 ```
 
-### 5.1 보고서 구조 (현재: 6막 극장)
+### 5.1 Archetype 분기 (V3 Step 2 — v2.6.0)
+
+Strategy Planner 가 `user_intent` + `event_type` 으로 archetype 을 결정 → `src/archetypes/registry.py` 가 archetype 객체 반환 → ReportSynthesizer 가 `archetype.template_path()` 로 분기 렌더.
+
+```
+              AnalysisStrategy.report_archetype  (string ID)
+                        │
+                        ▼
+            src/archetypes/registry.get_archetype()
+                        │
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+six_act_theater   financial_transmission  tech_decomposition
+   (default)      (시장·거시)            (기술·AI·인프라)
+        │               │                │
+        ▼               ▼                ▼
+report.html      archetypes/             archetypes/
+  (legacy,       financial_              tech_
+   byte-equal)   transmission.html       decomposition.html
+                 (Step 2 placeholder,    (Step 2 placeholder,
+                  Step 3 본격 렌더)       Step 3 본격 렌더)
+```
+
+archetype 카탈로그의 SSOT 미러는 [docs/CATALOGS.md §3](CATALOGS.md). 신규 archetype 추가 시 `src/archetypes/<name>.py` 신설 → `registry.py` 등록 → CATALOGS 갱신 (Anti-pattern #14 회피).
+
+### 5.2 보고서 구조 — six_act_theater (default archetype)
 
 | 막 | 영문 | 한글 | 내용 |
 |----|------|------|------|
@@ -172,8 +198,6 @@ report_synthesizer.py
 | ACT IV | THE CHAIN REACTION | 연쇄반응 | 인과 사슬, 차단점, 최악의 경우 |
 | ACT V | THE SCENARIOS | 향후 시나리오 | 시나리오, 확률, 행위자별 영향 |
 | ACT VI | THE SIGNALS | 감시 시그널 | 시나리오 전환 판별 신호 |
-
-V3 이후 archetype 카탈로그가 도입되며, 6막 극장은 `archetype="six_act_theater"` 로 보존됨. 전환 후 archetype 목록은 [docs/CATALOGS.md](CATALOGS.md).
 
 ---
 

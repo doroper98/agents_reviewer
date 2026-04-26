@@ -12,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 
 from jinja2 import Environment, FileSystemLoader
 
+from src.archetypes import ReportArchetype, get_archetype
 from src.config import Config
 from src.models import FullAnalysisResult, NarrativePlan, NarrativeSection
 
@@ -455,8 +456,22 @@ class ReportSynthesizer:
             logger.error(f"[report_synthesizer] Cloudflare upload exception: {e}")
             return ""
 
-    async def synthesize(self, result: FullAnalysisResult, theme: str = "burgundy") -> str:
-        """Render HTML report, upload to Cloudflare, return URL or filepath."""
+    async def synthesize(
+        self,
+        result: FullAnalysisResult,
+        theme: str = "burgundy",
+        archetype: ReportArchetype | None = None,
+    ) -> str:
+        """Render HTML report, upload to Cloudflare, return URL or filepath.
+
+        V3 Step 2 (v2.6.0): ``archetype`` 인자 추가. 미지정 시 ``six_act_theater`` 로 폴백 →
+        기존 흐름과 byte-equal 출력 보장. ``six_act_theater`` 가 아닌 경우 archetype 객체의
+        ``template_path()`` 로 분기. 본격 블록 렌더링은 Step 3 에서 도입.
+        """
+        if archetype is None:
+            archetype = get_archetype("six_act_theater")
+        is_legacy_six_act = archetype.archetype_id == "six_act_theater"
+
         # Generate executive summary + narrative plan in parallel
         key_summary_items: list[str] = []
         narrative_plan: NarrativePlan | None = None
@@ -492,19 +507,45 @@ class ReportSynthesizer:
 
         env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
         env.filters["structured"] = self._format_structured_text
-        template = env.get_template("report.html")
 
-        html = template.render(
-            result=result,
-            css_content=css_content,
-            chart_data_json=json.dumps(chart_data, ensure_ascii=False),
-            generated_at=datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
-            key_summary_items=key_summary_items,
-            confidence_text=confidence_text,
-            sections=narrative_plan.sections,
-            narrative_theme=narrative_plan.report_theme,
-            report_theme=theme,
-        )
+        # Branch by archetype. six_act_theater = unchanged legacy path (byte-equal output guarantee).
+        # New archetypes (financial_transmission, tech_decomposition) render placeholder templates;
+        # full block rendering arrives in Step 3.
+        template = env.get_template(archetype.template_path())
+        if is_legacy_six_act:
+            html = template.render(
+                result=result,
+                css_content=css_content,
+                chart_data_json=json.dumps(chart_data, ensure_ascii=False),
+                generated_at=datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
+                key_summary_items=key_summary_items,
+                confidence_text=confidence_text,
+                sections=narrative_plan.sections,
+                narrative_theme=narrative_plan.report_theme,
+                report_theme=theme,
+            )
+        else:
+            # Step 2 placeholder render — minimal vars + section_plan from the archetype object.
+            archetype_sections = (
+                archetype.section_plan(result.strategy)
+                if result.strategy is not None else []
+            )
+            logger.info(
+                "[report_synthesizer] Archetype branch entered: %s "
+                "(template=%s, sections=%d)",
+                archetype.archetype_id, archetype.template_path(), len(archetype_sections),
+            )
+            html = template.render(
+                result=result,
+                css_content=css_content,
+                generated_at=datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
+                key_summary_items=key_summary_items,
+                confidence_text=confidence_text,
+                report_theme=theme,
+                archetype_id=archetype.archetype_id,
+                archetype_name=archetype.name,
+                archetype_sections=archetype_sections,
+            )
 
         # Save HTML to file
         output_dir = self.config.report_output_dir

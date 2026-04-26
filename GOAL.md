@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v2.5.0
+last_synced_with: v2.6.0
 ssot_for:
   - "기능 요구사항 ID 체계 (REQ-*)"
   - "비기능 요구사항 (NFR-*)"
@@ -40,6 +40,7 @@ last_review: 2026-04-26
 | REQ-RPT-004 | Report | 용어 정의(glossary) 포함 | P1 | ✅ |
 | REQ-RPT-005 | Report | 모바일 반응형 | P1 | ✅ |
 | REQ-V3-001 | Strategy | AnalysisStrategy Pydantic 모델 정식 승격 (dict 폐기, user_intent/core_questions/recommended_lenses 신설) | P0 | ✅ |
+| REQ-V3-002 | Archetype | 보고서 아키타입 다중화 (six_act_theater 강등 + financial_transmission, tech_decomposition 추가; registry 패턴) | P0 | ✅ |
 
 ### 비기능 요구사항 (Non-Functional)
 

@@ -1,16 +1,16 @@
 ---
 tier: 2
-last_synced_with: v2.4.1
+last_synced_with: v2.6.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
-  - "보고서 블록 타입 카탈로그 (V3 후 src/models.py:BlockType 미러)"
-  - "분석 렌즈 카탈로그 (V3 후 src/lenses/registry.py 미러)"
-  - "보고서 archetype 카탈로그 (V3 후 src/archetypes/registry.py 미러)"
+  - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
+  - "보고서 블록 타입 카탈로그 (V3 Step 3 후 src/models.py:BlockType 미러)"
+  - "분석 렌즈 카탈로그 (V3 Step 5 후 src/lenses/registry.py 미러)"
 depends_on:
   - "src/agents/* (현재 SSOT)"
+  - "src/archetypes/registry.py (archetype SSOT, Step 2 활성화)"
   - "src/models.py (V3 후 BlockType SSOT)"
   - "src/lenses/registry.py (V3 후 lens SSOT)"
-  - "src/archetypes/registry.py (V3 후 archetype SSOT)"
 last_review: 2026-04-26
 ---
 
@@ -51,16 +51,29 @@ V3 적용 전까지 본 섹션은 비어 있다. 빈 섹션을 *임의로 채우
 
 ---
 
-## 3. Report Archetypes — V3 후 도입 예정
+## 3. Report Archetypes — V3 Step 2 (v2.6.0) 도입
 
-V3 Step 2 에서 보고서 archetype 다중화가 도입된다. 첫 archetype:
+archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 
-| Archetype ID | 설명 | 대상 사건 유형 |
-|--------------|------|----------------|
-| `six_act_theater` | 현재의 6막 극장 구조 (보존) | 인물극 중심 사건 |
-| (추가 archetype은 V3 Step 2 후 등록) | — | — |
+| Archetype ID | 모듈 | 적용 상황 | suitable_intents | 섹션 흐름 |
+|--------------|------|-----------|------------------|-----------|
+| `six_act_theater` | `src/archetypes/six_act_theater.py` | 인물극형 사건 (전쟁, 외교, 정치 갈등, 리더십, 선거). 분류 애매 시 default. | 7종 모두 | 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 |
+| `financial_transmission` | `src/archetypes/financial_transmission.py` | 시장/거시 사건 (환율, 금리, 자산 가격, 통화 정책, 신용). | `where_spreads`, `where_vulnerable`, `what_next` | 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표 |
+| `tech_decomposition` | `src/archetypes/tech_decomposition.py` | 기술/AI/IT 사건 (모델 출시, 시스템 장애, 사이버 보안, 인프라). | `where_vulnerable`, `what_to_do`, `why_happened` | 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고 |
 
-archetype registry 의 SSOT 는 `src/archetypes/registry.py` (V3 도입 후).
+### 3.1 선택 매트릭스 (Strategy Planner 가이드)
+
+Strategy Planner 프롬프트에 박힌 분기 규칙. 자세한 본문은 `src/orchestrator.py:_generate_analysis_strategy()`.
+
+- `user_intent='where_spreads'` AND `event_type ∈ {financial, market, macro, currency, interest_rate, asset_price}` → `financial_transmission`
+- `event_type ∈ {tech, ai, it, software, model_release, system_outage, cyber_security}` → `tech_decomposition`
+- 그 외 (인물극, 외교, 갈등, 정치, 일반) → `six_act_theater`
+
+LLM 이 미등록 archetype_id 를 출력하면 `get_archetype()` 가 `six_act_theater` 로 폴백 (warning 로그).
+
+### 3.2 V3 후 추가 archetype (예정)
+
+REFACTOR_V3_PLAN.md Appendix B 의 11종 중 Step 2 에서는 3종만 도입. 나머지 8종 (geopolitical_strategic, industry_value_chain, accident_forensic, policy_implementation, decision_brief, timeline_first, scenario_first, mechanism_decomp) 은 V3 후속 트랙에서 추가. 추가 시 본 표 갱신 + `src/archetypes/<name>.py` 신설 + `registry.py` 등록 (Anti-pattern #14 회피).
 
 ---
 

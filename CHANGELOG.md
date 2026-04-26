@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.5.0
+last_synced_with: v2.6.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -22,8 +22,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
+(다음 릴리스 항목 대기 중.)
+
+---
+
+## [2.6.0] — 2026-04-26
+
 ### Added
-- (Step 0.X 진행 중인 항목들이 여기 모임)
+- **V3 Step 2 — 보고서 아키타입 다중화**
+  - `src/archetypes/` 디렉토리 신설 (Protocol-based registry pattern)
+    - `base.py` (`ReportArchetype` Protocol, `runtime_checkable`)
+    - `six_act_theater.py` (default; 기존 `report.html` 그대로 가리킴)
+    - `financial_transmission.py` (시장·거시 사건용 archetype)
+    - `tech_decomposition.py` (기술·AI·IT 사건용 archetype)
+    - `registry.py` (`get_archetype()`, `list_archetypes()`)
+  - `src/templates/archetypes/{financial_transmission,tech_decomposition}.html` (Step 2 placeholder; Step 3 에서 본격 블록 렌더링)
+  - Strategy Planner 프롬프트에 archetype 자동 선택 매트릭스 추가 (user_intent + event_type → archetype_id)
+  - `ReportSynthesizer.synthesize()` 에 `archetype` 인자 추가, `archetype.template_path()` 로 분기
+
+### Changed
+- `src/orchestrator.py:VERSION` `v2.5.0 → v2.6.0`
+- `AnalysisStrategy.report_archetype` 가 본격 활용됨 (Step 1 에서는 placeholder default 만 보유)
+- 기존 6막 극장은 `archetype="six_act_theater"` 로 강등 — 분류 애매 시 default fallback (Anti-pattern #2: 즉시 제거 금지)
+
+### Migration notes
+- `archetype="six_act_theater"` 경로의 렌더 출력은 이전과 byte 단위 동일 (sha256 검증 통과).
+- LLM 이 미등록 archetype_id 를 출력하면 `get_archetype()` 가 `six_act_theater` 로 폴백하며 warning 로그 기록.
 
 ---
 

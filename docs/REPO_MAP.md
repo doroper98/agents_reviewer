@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.4.1
+last_synced_with: v2.6.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -32,11 +32,19 @@ src/
 │   ├── scenario_architect.py
 │   ├── visual_analyst.py
 │   └── report_synthesizer.py
-├── templates/
-│   ├── report.html      # Jinja2 HTML report template
-│   └── report.css       # Report theme styles
-└── style_guide/
-    └── REPORT_STYLE_GUIDE.md
+├── archetypes/          # V3 Step 2 — 보고서 archetype 풀 (registry 패턴)
+│   ├── __init__.py
+│   ├── base.py                   # ReportArchetype Protocol
+│   ├── registry.py               # archetype_id → 객체 (SSOT for archetype catalog)
+│   ├── six_act_theater.py        # default; template=report.html (legacy)
+│   ├── financial_transmission.py # 금융·거시 사건
+│   └── tech_decomposition.py     # 기술·AI·IT 사건
+└── templates/
+    ├── report.html      # six_act_theater 용 (legacy 보존)
+    ├── report.css       # 공통 CSS (모든 archetype 공유)
+    └── archetypes/      # 신규 archetype placeholder 템플릿 (Step 3 에서 본격화)
+        ├── financial_transmission.html
+        └── tech_decomposition.html
 ```
 
 ## Configuration Files
