@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="{{ report_theme or 'financial' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ result.context.event_name or result.context.event_name_en or 'Financial Transmission Analysis' }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>{{ css_content }}</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faded);margin-bottom:8px;font-family:'Noto Serif KR',serif;font-style:italic">Financial Transmission Analysis · Archetype Preview</div>
+    <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
+    <p class="hero-sub">{{ result.executive_summary if result.executive_summary else '' }}</p>
+    <div class="hero-tags">
+      {% if result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
+      <span>archetype: financial_transmission</span>
+      <span>{{ generated_at }}</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+<section style="padding:28px 0">
+  <div class="callout">
+    <b>Archetype Preview — financial_transmission</b>
+    <p>이 보고서는 <strong>financial_transmission</strong> archetype 으로 라우팅되었습니다.
+    본격 블록 렌더링은 <strong>V3 Step 3 (블록 시스템)</strong> 에서 도입됩니다. 그 전까지는
+    분석 데이터의 핵심만 placeholder 형태로 표시합니다. 6막 극장 형식이 필요하면
+    Strategy 의 archetype 을 <code>six_act_theater</code> 로 강제 지정하세요.</p>
+  </div>
+</section>
+
+{% if archetype_sections %}
+<section style="padding:8px 0 24px">
+  <div class="section-label">PLANNED SECTIONS</div>
+  <h2 class="section-title">섹션 흐름 (Step 3 에서 본격 렌더)</h2>
+  <ol style="padding-left:18px;font-size:11px;line-height:1.85;color:var(--text-secondary)">
+    {% for sec in archetype_sections %}
+    <li><strong>{{ sec.title }}</strong> — {{ sec.purpose }}<br>
+      <span style="font-size:10px;color:var(--text-muted)">block_types: {{ sec.block_types|join(', ') }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+{% if result.context %}
+<section style="padding:24px 0;border-top:1px solid var(--border-light)">
+  <div class="section-label">PART I — SITUATION</div>
+  <h2 class="section-title">상황인식</h2>
+  <div class="card" style="margin-bottom:14px">
+    <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">{{ result.context.summary }}</div>
+  </div>
+
+  {% if result.context.key_figures %}
+  <div style="margin-bottom:14px">
+    {% for fig in result.context.key_figures %}
+    <div class="gauge-bar">
+      <div class="gauge-label"><span>{{ fig.label }}</span><span>{{ fig.value }}</span></div>
+      {% if fig.context %}<div style="font-size:9px;color:var(--text-muted)">{{ fig.context }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if result.scenarios and result.scenarios.scenarios %}
+<section style="padding:24px 0;border-top:1px solid var(--border-light)">
+  <div class="section-label">PART II — STRESS SCENARIOS</div>
+  <h2 class="section-title">스트레스 시나리오</h2>
+  <table class="data-table">
+    <thead><tr><th>시나리오</th><th>전개</th><th>확률</th></tr></thead>
+    <tbody>
+    {% for sc in result.scenarios.scenarios %}
+    <tr>
+      <td><strong>{{ sc.name }}</strong>{% if sc.tag %}<br><span style="font-size:9px">{{ sc.tag }}</span>{% endif %}</td>
+      <td style="font-size:10px">{{ sc.description }}</td>
+      <td style="font-size:11px;font-weight:600">{{ sc.probability }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% if result.scenarios and result.scenarios.watch_signals %}
+<section style="padding:24px 0;border-top:1px solid var(--border-light)">
+  <div class="section-label">PART III — OBSERVABLES</div>
+  <h2 class="section-title">관찰 지표</h2>
+  <div class="signal-grid">
+    {% for ws in result.scenarios.watch_signals %}
+    <div class="signal-item">
+      <div class="signal-icon" style="background:var(--orange-light)">{{ ws.icon or '📊' }}</div>
+      <div>
+        <h4>{{ ws.signal }}</h4>
+        <p>{{ ws.description }}{% if ws.indicates %} → {{ ws.indicates }}{% endif %}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+</main>
+
+<footer class="footer">
+  {% if confidence_text %}<div style="max-width:600px;margin:0 auto 10px;color:var(--text-faded);font-size:10px">{{ confidence_text }}</div>{% endif %}
+  <div>Archetype: financial_transmission · Generated {{ generated_at }} · Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
+  {% if result.report_url and result.report_url.startswith('http') %}
+  <div style="margin-top:10px;font-size:11px"><span style="color:rgba(255,255,255,.5)">공유 링크:</span> <a href="{{ result.report_url }}">{{ result.report_url }}</a></div>
+  {% endif %}
+</footer>
+
+</body>
+</html>

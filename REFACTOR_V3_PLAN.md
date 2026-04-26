@@ -1,3 +1,16 @@
+---
+tier: 2
+last_synced_with: v2.4.1
+ssot_for:
+  - "V3 리팩토링 단계별 명세 (Step 0~5)"
+  - "V3 File Change Matrix"
+  - "V3 Anti-patterns"
+depends_on:
+  - "DOCS_GOVERNANCE_V3.md (Step 0 선결)"
+  - "src/orchestrator.py:VERSION"
+last_review: 2026-04-26
+---
+
 # Agents Reviewer — V3 Refactoring Master Plan
 
 > **Target:** `doroper98/agents_reviewer`
@@ -8,6 +21,8 @@
 ---
 
 ## 0. How to Use This Document
+
+> **Prerequisite:** 본 리팩토링을 시작하기 전에 `DOCS_GOVERNANCE_V3.md`의 Step 0를 먼저 완료해야 한다. 거버넌스가 적용되지 않은 상태에서 V3 리팩토링을 진행하면 신규 파일·신규 카탈로그가 추가될 때마다 문서 파편이 늘어난다.
 
 이 문서는 코딩 에이전트가 단계적으로 실행할 마스터 플랜이다. 다음 규칙을 지킬 것.
 
@@ -380,7 +395,27 @@ class AnalysisBlock(BaseModel):
 
 ---
 
-## 5. Migration Plan — 5 Steps
+## 5. Migration Plan — Step 0 + 5 Steps
+
+### Step 0: 문서 거버넌스 적용 (선결 조건)
+
+`DOCS_GOVERNANCE_V3.md` 전체를 따른다. 본 문서는 코드 리팩토링 명세이지 거버넌스 명세가 아니다.
+
+**Step 0 완료 기준 (요약):**
+- 3-Tier 계층 적용 (Tier 1: GOAL/CLAUDE/STYLEGUIDE, Tier 2: ARCHITECTURE/DATA_MODELS/CATALOGS, Tier 3: DEVLOG/WORKFLOWS/CHANGELOG)
+- 모든 문서에 거버넌스 YAML 헤더
+- SSOT 매트릭스 적용 (사실 중복 제거)
+- `docs_canonical/` → `docs/` 이름 변경
+- `overall_structure.md`, 루트의 `prototype_*.html` 정리
+- CHANGELOG.md 신설
+- README.md 슬림화 (60줄 이내)
+- CLAUDE.md에 Change Propagation 매트릭스 추가
+
+**커밋:** `v2.4.1: 문서 거버넌스 V3 적용`
+
+Step 0 완료 후 Step 1로 진행한다.
+
+---
 
 ### Step 1: AnalysisStrategy 정식 모델 (1주, 무파괴)
 
@@ -632,6 +667,13 @@ class LensRunner(ABC):
 
 | 파일/디렉토리 | 작업 | Step |
 |---------------|------|------|
+| `docs/` | `docs_canonical/`에서 이름 변경 | 0 |
+| `overall_structure.md` | `docs/ARCHITECTURE.md`로 흡수 후 삭제 | 0 |
+| `prototype_*.html` | `docs/references/`로 이동 | 0 |
+| `CHANGELOG.md` | 신규 | 0 |
+| `docs/CATALOGS.md` | 신규 (V3에서 archetype/lens/block 추가) | 0, 2, 3, 5 |
+| `docs/DATA_MODELS.md` | 신규 (V3에서 신규 모델 추가) | 0, 4, 5 |
+| 모든 *.md 헤더 | 거버넌스 YAML 헤더 추가 | 0 |
 | `src/models.py` | 신규 모델 추가 (보존) | 1, 4, 5 |
 | `src/orchestrator.py` | strategy 객체화, 게이트 통합 | 1, 2, 4, 5 |
 | `src/archetypes/` | 신규 디렉토리 | 2 |
@@ -701,6 +743,10 @@ python -m src.tests.regression  # 신규 테스트 모듈
 10. ❌ **ConfidenceProfile 우회한 단일 스칼라 점수 신규 도입.** 신규 코드는 3축 분해 필수.
 11. ❌ **Watchlist를 보고서 텍스트로만 남기기.** Step 5 이후 반드시 DB 등록.
 12. ❌ **빅뱅 리팩토링.** 한 커밋에 여러 Step 섞지 않는다.
+13. ❌ **Step 0(거버넌스) 건너뛰고 Step 1부터 시작.** 거버넌스 없이는 V3 종료 시점에 문서 파편이 더 심해진다.
+14. ❌ **신규 archetype/lens/block을 코드에 추가하면서 docs/CATALOGS.md 갱신 누락.**
+15. ❌ **신규 Pydantic 모델 추가하면서 docs/DATA_MODELS.md 도식 갱신 누락.**
+16. ❌ **DOCS_GOVERNANCE_V3.md의 SSOT 규칙을 우회하여 사실을 두 곳에 작성.**
 
 ---
 
@@ -847,6 +893,12 @@ Strategy Planner가 user_intent를 결정한 후 lens 후보를 좁히는 데 �
 - [ ] 토큰 사용량 측정값 README에 갱신
 - [ ] Cloudflare Pages 배포 정상
 - [ ] Watchlist cron 동작 확인 (최소 1건 신호 발화)
+- [ ] 모든 문서의 `last_synced_with: v3.0.0`으로 갱신
+- [ ] CHANGELOG.md v3.0.0 항목 작성 완료
+- [ ] docs/CATALOGS.md에 신규 archetype·lens·block 모두 등록
+- [ ] docs/DATA_MODELS.md에 신규 Pydantic 모델 도식 갱신
+- [ ] SSOT 위반 검사 통과 (`grep` 자동 검사)
+- [ ] 분기 검토 일정 등록 (3개월 후 재검토)
 
 ---
 

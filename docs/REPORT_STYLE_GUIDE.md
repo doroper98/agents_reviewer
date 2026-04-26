@@ -1,3 +1,14 @@
+---
+tier: 2
+last_synced_with: v2.4.1
+ssot_for:
+  - "보고서 톤앤매너 스타일 가이드 (abhinavbwj 기반)"
+depends_on:
+  - "src/templates/report.css"
+  - "src/templates/report.html"
+last_review: 2026-04-26
+---
+
 # Report Style Guide — abhinavbwj 톤앤매너 기반
 
 > 마지막 업데이트: 2026-03-29

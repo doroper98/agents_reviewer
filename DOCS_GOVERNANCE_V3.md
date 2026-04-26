@@ -1,3 +1,12 @@
+---
+tier: 1
+last_synced_with: v2.4.1
+ssot_for:
+  - "문서 거버넌스 규칙 (3-Tier, SSOT 매트릭스, 헤더 규약, Change Propagation)"
+depends_on: []
+last_review: 2026-04-26
+---
+
 # Agents Reviewer — Document Governance V3
 
 > **Target:** `doroper98/agents_reviewer`

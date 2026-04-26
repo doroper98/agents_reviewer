@@ -1,3 +1,16 @@
+---
+tier: 3
+last_synced_with: v2.4.1
+ssot_for:
+  - "분석 실행 워크플로우 (텔레그램 명령 → 보고서)"
+  - "개발 워크플로우"
+  - "배포 워크플로우"
+depends_on:
+  - "src/orchestrator.py (파이프라인 단계)"
+  - "docs/ARCHITECTURE.md"
+last_review: 2026-04-26
+---
+
 # WORKFLOWS — Event Analysis Team
 
 ## 분석 실행 워크플로우
@@ -41,7 +54,7 @@ Phase 4: [보고서 합성관] Executive Summary 생성
 
 ```
 1. 요구사항 확인 (GOAL.md)
-2. 아키텍처 참조 (docs_canonical/ARCHITECTURE.md)
+2. 아키텍처 참조 (docs/ARCHITECTURE.md)
 3. 코드 구현 (type hints 필수, Pydantic 모델 사용)
 4. 컴파일 검증: python -m py_compile src/*.py
 5. 수동 테스트 (텔레그램 분석 요청)
