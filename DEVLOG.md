@@ -1,3 +1,16 @@
+---
+tier: 3
+last_synced_with: v2.4.1
+ssot_for:
+  - "개발 상세 로그 (append-only)"
+  - "인프라 설치 가이드"
+  - "트러블슈팅 기록"
+depends_on:
+  - "GOAL.md (REQ-* 변경 추적)"
+  - "CHANGELOG.md (사용자 관점 변경은 그쪽 SSOT)"
+last_review: 2026-04-26
+---
+
 # DEVLOG — Event Analysis Team Agent System
 
 > 전체 개발 과정 기록. 인프라 설정부터 에이전트 설계, 트러블슈팅까지 포함.
@@ -190,6 +203,27 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v1.3.0 | 2026-03-28 | 프리미엄 시각화 (SVG 직접 생성), ? 질문 기능 |
 | v1.3.1 | 2026-03-28 | 이해관계자 한글 태그, 웹 검색으로 최신 데이터 |
 | v1.3.2 | 2026-03-28 | system prompt .format() → .replace() 버그 수정 |
+| v2.5.0 | 2026-04-26 | 분석 용어 학부생 수준화 + 분석 시각 풀 확장 + 균형 분석 4단락 |
+| v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
+
+> 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.A. v2.4.1 — 문서 거버넌스 V3 적용 (Step 0)
+
+2026-04-26 적용. [DOCS_GOVERNANCE_V3.md](DOCS_GOVERNANCE_V3.md) Step 0 완수.
+
+수행 내역:
+- 디렉토리 정리: `docs_canonical/` → `docs/`, `prototype_*.html` → `docs/references/`, `overall_structure.md` 흡수 후 삭제, `src/style_guide/REPORT_STYLE_GUIDE.md` → `docs/REPORT_STYLE_GUIDE.md` 이전
+- 모든 마크다운에 거버넌스 YAML 헤더 추가 (tier, last_synced_with, ssot_for, depends_on, last_review)
+- 신규 문서 3종: `CHANGELOG.md`, `docs/CATALOGS.md`, `docs/DATA_MODELS.md`
+- README 60줄 이내로 슬림화 (현행 48줄). 7개 에이전트 표·토큰 추정·6막 디자인 설명 → 각 SSOT 로 이전
+- CLAUDE.md 에 Change Propagation 매트릭스 추가, 7개 에이전트 표를 CATALOGS 링크로 대체
+- WORKFLOWS.md 의 stale `docs_canonical/` 경로 갱신
+- SSOT 위반 grep 검사 통과 (실질 위반 0건, 단순 언급은 SSOT 위반 아님)
+
+V3 리팩토링 본 트랙 (Step 1~5) 은 별도 진행 — 본 작업은 Step 0 만 완료 후 멈춤.
 
 ---
 

@@ -1,3 +1,16 @@
+---
+tier: 2
+last_synced_with: v2.4.1
+ssot_for:
+  - "V3 리팩토링 단계별 명세 (Step 0~5)"
+  - "V3 File Change Matrix"
+  - "V3 Anti-patterns"
+depends_on:
+  - "DOCS_GOVERNANCE_V3.md (Step 0 선결)"
+  - "src/orchestrator.py:VERSION"
+last_review: 2026-04-26
+---
+
 # Agents Reviewer — V3 Refactoring Master Plan
 
 > **Target:** `doroper98/agents_reviewer`
