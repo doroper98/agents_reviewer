@@ -247,12 +247,105 @@ class AnalysisBlock(BaseModel):
     section_id: str = ""
 
 
+# ====== V3 Claim / Evidence / Confidence (Step 4 — v2.8.0, REFACTOR_V3_PLAN.md §4.1) ======
+
+ClaimType = Literal["fact", "inference", "prediction", "judgment"]
+Reliability = Literal["primary", "secondary", "expert", "model_inference"]
+
+
+class Evidence(BaseModel):
+    """추적 가능한 증거 단위.
+
+    SSOT: 본 정의. ``claim_card`` / ``evidence_table`` 블록의 payload 와 lens runner 산출에
+    공통으로 쓰인다.
+    """
+
+    evidence_id: str  # 예: "E-001"
+    source_url: str = ""
+    quote_or_data: str = ""
+    reliability: Reliability = "model_inference"
+    timestamp: str = ""
+    supports_claims: list[str] = Field(default_factory=list)
+
+
+class Claim(BaseModel):
+    """주장 단위. 반드시 evidence_id 를 1개 이상 가짐.
+
+    Anti-pattern #4 방지: ``evidence_ids`` 가 비어 있으면 ValidationError.
+    """
+
+    claim_id: str  # 예: "C-001"
+    statement: str
+    claim_type: ClaimType = "inference"
+    evidence_ids: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def must_have_evidence(self) -> "Claim":
+        if len(self.evidence_ids) == 0:
+            raise ValueError(
+                f"Claim {self.claim_id} requires at least one evidence_id. "
+                f"This is a hard constraint (Anti-pattern #4)."
+            )
+        return self
+
+
+class ConfidenceProfile(BaseModel):
+    """단일 confidence_score 대체. 3축 분해. Anti-pattern #10 회피.
+
+    가중평균 ``aggregate`` 는 단일 점수가 필요한 좁은 곳에서만 사용 — 신규 코드는 3축을
+    따로따로 노출하는 게 원칙.
+    """
+
+    source_diversity: float = Field(ge=0.0, le=1.0, default=0.5)
+    data_freshness: float = Field(ge=0.0, le=1.0, default=0.5)
+    expert_consensus: float = Field(ge=0.0, le=1.0, default=0.5)
+
+    @property
+    def aggregate(self) -> float:
+        return (
+            0.4 * self.source_diversity
+            + 0.3 * self.data_freshness
+            + 0.3 * self.expert_consensus
+        )
+
+
+class AnalyticalFinding(BaseModel):
+    """렌즈가 산출하는 단위 결과 (Step 5 lens runner 도입 전엔 v2 분석 래퍼)."""
+
+    finding_id: str
+    lens_id: str
+    answers_question: str = ""
+    main_claim: Claim
+    supporting_findings: list[str] = Field(default_factory=list)
+    evidence: list[Evidence] = Field(default_factory=list)
+    confidence: ConfidenceProfile
+
+    counter_hypothesis: str = ""
+    counter_required_evidence: list[str] = Field(default_factory=list)
+
+
+class JudgmentVerdict(BaseModel):
+    """Synthesis Judge 의 종합 판단. Anti-pattern #5 (모순 봉합) 회피 — contradictions 필드는
+    명시적으로 모순을 *드러낸다*.
+    """
+
+    main_judgment: str = ""
+    base_scenario: str = ""
+    biggest_uncertainty: str = ""
+    contradictions: list[dict] = Field(default_factory=list)  # [{lens_a, lens_b, conflict, resolution}]
+    counter_hypothesis: str = ""
+    counter_evidence_needed: list[str] = Field(default_factory=list)
+    confidence: ConfidenceProfile = Field(default_factory=ConfidenceProfile)
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
     request: AnalysisRequest
     strategy: AnalysisStrategy | None = None  # V3 Step 1
     blocks: list[AnalysisBlock] = Field(default_factory=list)  # V3 Step 3
+    findings: list[AnalyticalFinding] = Field(default_factory=list)  # V3 Step 4
+    judgment: JudgmentVerdict | None = None  # V3 Step 4
     context: ContextAnalysis | None = None
     players: PlayerAnalysis | None = None
     dynamics: DynamicsAnalysis | None = None
@@ -266,3 +359,7 @@ class FullAnalysisResult(BaseModel):
         default_factory=lambda: datetime.now().isoformat()
     )
     total_duration_seconds: float = 0.0
+    # NOTE (V3 Step 4 / Anti-pattern #10): ``ContextAnalysis.confidence_score`` 등 기존
+    # ``confidence_score: float`` 필드들은 v2 호환 목적으로 보존되며 deprecated 상태.
+    # 신규 코드는 ``ConfidenceProfile`` (3축) 을 사용. v3.0.0 릴리스 시점에 일괄 정리 예정.
+

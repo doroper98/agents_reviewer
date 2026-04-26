@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.7.0
+last_synced_with: v2.8.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -23,6 +23,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [2.8.0] — 2026-04-26
+
+### Added
+- **V3 Step 4 — Quality Gate 1/2 + Claim-Evidence 추적성 + Synthesis Judge**
+  - 모델: `Claim` (evidence_ids ≥1 Pydantic 강제, Anti-pattern #4), `Evidence`, `ConfidenceProfile` (3축, Anti-pattern #10), `AnalyticalFinding`, `JudgmentVerdict` (contradictions 노출, 봉합 X — Anti-pattern #5)
+  - `FullAnalysisResult.findings`, `FullAnalysisResult.judgment` 신규 필드
+  - `src/agents/quality_inspector.py` — `gate_1_plan_sanity` + `gate_2_coverage_check` (heuristic-first, LLM-as-judge 보강)
+  - `src/agents/synthesis_judge.py` — findings → JudgmentVerdict, 어휘+counter_hypothesis 기반 모순 검출, 3축 신뢰도 합성
+  - `orchestrator._wrap_findings()` — v2 분석 결과를 AnalyticalFinding 리스트로 래핑 (sources → Evidence 풀)
+  - 게이트 wiring: gate 1 (strategy 직후, max 2 retry), gate 2 (보고서 합성 직전, max 2 retry), 실패 시 "⚠️ 부분 분석 완료. {gate} 실패 ({reason})" 텔레그램 알림 — 우회 금지 (Anti-pattern #7)
+  - 게이트 통과율·재시도율 통계 INFO 로그
+  - `src/tests/test_quality_gates.py` — 18 케이스 pytest 단위 테스트
+
+### Changed
+- `src/orchestrator.py:VERSION` `v2.7.0 → v2.8.0`
+- 텔레그램 진행 메시지에 "🧮 종합 판단관" 단계 추가 (모순 건수 노출)
+
+### Deprecated
+- 기존 `confidence_score: float` 필드들 (`ContextAnalysis`, `PlayerAnalysis` 등) — 호환 목적 보존, 신규 코드는 `ConfidenceProfile` 사용 (Anti-pattern #10 회피)
+
+### Migration notes
+- six_act_theater 보고서 출력은 기능적으로 v2.7.0 과 동일. 진행 메시지에 게이트/판단관 단계만 추가.
+- 게이트 실패가 분석 *중단* 을 뜻하지 않음 — 부분-분석 알림 후 보고서 생성 계속.
 
 ---
 

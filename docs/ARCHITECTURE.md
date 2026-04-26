@@ -1,11 +1,12 @@
 ---
 tier: 2
-last_synced_with: v2.7.0
+last_synced_with: v2.8.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
   - "보고서 archetype 분기 구조 (V3 Step 2 활성화)"
   - "보고서 블록 렌더링 흐름 (V3 Step 3 활성화)"
+  - "Quality Gate + Synthesis Judge 위치 (V3 Step 4 활성화)"
   - "토큰 사용량 추정"
 depends_on:
   - "src/orchestrator.py:VERSION"
@@ -74,44 +75,81 @@ last_review: 2026-04-26
 ## 3. 분석 파이프라인 (에이전트 실행 순서)
 
 ```
-Phase 1   ┌─────────────────────────────────────────┐
-          │  ① 상황인식 분석관 (context_analyst)      │
-          │     웹 검색 → 팩트, 타임라인, 핵심 수치     │
-          └──────────────────┬──────────────────────┘
-                             ▼
-Phase 2   ┌─────────────────────────────────────────┐
-          │  ② 이해관계자 분석관 (player_analyst)     │
-          │     행위자, 전략, 위험도                   │
-          └──────────────────┬──────────────────────┘
-                             ▼
-          ┌─────────────────────────────────────────┐
-          │  ③ 구조/상호작용 분석관 (dynamics_analyst) │
-          │     게임이론, 비대칭, 전환점               │
-          └──────────────────┬──────────────────────┘
-                             ▼
-Phase 3   ┌─────────────────────────────────────────┐
-          │  ④ 연쇄반응 분석관 (chain_reaction)       │
-          │     인과 사슬, 도미노 효과                 │
-          └──────────────────┬──────────────────────┘
-                             ▼
-          ┌─────────────────────────────────────────┐
-          │  ⑤ 시나리오 분석관 (scenario_architect)   │
-          │     시나리오 + 감시 신호                   │
-          └──────────────────┬──────────────────────┘
-                             ▼
-Phase 3.5 ┌─────────────────────────────────────────┐
-          │  ⑥ 시각화 분석관 (visual_analyst)         │
-          │     SVG, Leaflet 지도, Canvas 차트       │
-          └──────────────────┬──────────────────────┘
-                             ▼
-Phase 4   ┌─────────────────────────────────────────┐
-          │  ⑦ 보고서 합성관 (report_synthesizer)     │
-          │     Executive Summary → Jinja2 → HTML    │
-          │     → Cloudflare Pages 배포              │
-          └──────────────────────────────────────────┘
+Phase 1   ① 상황인식 분석관 → ContextAnalysis
+                ▼
+Phase 1.5 [V3 Step 4] 🛡 Quality Gate 1 — Plan Sanity
+                ▼  (failure → max 2 retries → "⚠️ 부분 분석 완료. gate_1 실패")
+Phase 2   ② 이해관계자 분석관 → PlayerAnalysis
+          ③ 구조/상호작용 분석관 → DynamicsAnalysis
+Phase 3   ④ 연쇄반응 분석관 → ChainReactionAnalysis
+          ⑤ 시나리오 분석관 → ScenarioAnalysis
+Phase 3.5 ⑥ 시각화 분석관 → VisualAnalysis
+                ▼
+Phase 3.7 [V3 Step 4] orchestrator._wrap_findings()
+                ▼  (각 v2 분석 → AnalyticalFinding(Claim+Evidence+ConfidenceProfile))
+Phase 3.8 [V3 Step 4] 🧮 SynthesisJudge.judge(findings) → JudgmentVerdict
+                ▼  (contradictions 노출, 봉합 X — Anti-pattern #5)
+Phase 3.9 [V3 Step 4] 🛡 Quality Gate 2 — Coverage Check
+                ▼  (failure → max 2 retries (judgment 재생성) → "⚠️ 부분 분석 완료. gate_2 실패")
+Phase 4   ⑦ 보고서 합성관 → Jinja2 → HTML → Cloudflare Pages
 ```
 
-각 에이전트는 이전 에이전트들의 결과를 누적해서 받음. 자세한 역할은 [docs/CATALOGS.md](CATALOGS.md) 의 Agents 섹션 참조.
+각 에이전트는 이전 에이전트들의 결과를 누적해서 받음. Quality Gate 두 곳은 우회 금지 (Anti-pattern #7) — 실패해도 부분-분석 알림 후 *계속 진행*. 자세한 역할은 [docs/CATALOGS.md](CATALOGS.md) 의 Agents 섹션 참조.
+
+### 3.0 Quality Gates + Synthesis Judge 다이어그램 (V3 Step 4 — v2.8.0)
+
+```
+   AnalysisStrategy ─────┐
+        │                │
+        ▼                │
+  ┌──────────────────────┴────────────────────────┐
+  │  🛡 Gate 1 — Plan Sanity                       │
+  │  · core_questions 분석 가능성                    │
+  │  · lens-intent 정합성                           │
+  │  · evidence_plan 실행 가능성                     │
+  │  · LLM-as-judge (선택, CLI 가용 시)              │
+  │  · 실패 → 최대 2회 strategy 재생성                │
+  │  · 그래도 실패 → "⚠️ 부분 분석 완료" 알림 + 계속    │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+            (모든 v2 에이전트 실행)
+                     │
+                     ▼
+        FullAnalysisResult (v2 분석들)
+                     │
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  orchestrator._wrap_findings()                │
+  │  · context.sources → Evidence 풀              │
+  │  · 각 분석 → Claim (evidence_ids ≥1 강제)      │
+  │  · ConfidenceProfile 3축 분해                  │
+  │  · counter_hypothesis 보존                    │
+  │  → list[AnalyticalFinding]                    │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  🧮 SynthesisJudge.judge()                     │
+  │  · 페어와이즈 어휘 충돌 스캔                       │
+  │  · counter_hypothesis 명시적 모순 검출            │
+  │  · contradictions[] 에 노출 (봉합 X)             │
+  │  · resolution: 어느 쪽 채택 + 패배자 counter 보존  │
+  │  · ConfidenceProfile = finding 평균 - 모순 페널티  │
+  │  → JudgmentVerdict                            │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  🛡 Gate 2 — Coverage Check                    │
+  │  · 모든 core_question 에 finding 매칭            │
+  │  · Claim → Evidence 연결 (Pydantic 가드 + 추가)   │
+  │  · main_judgment + counter_hypothesis 비어있지 않음│
+  │  · 실패 → 최대 2회 judgment 재생성                │
+  │  · 그래도 실패 → "⚠️ 부분 분석 완료" 알림 + 계속    │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+            (보고서 합성 — Phase 4)
+```
+
+게이트는 항상 실행되며 우회 불가 (Anti-pattern #7). 게이트 통과율·재시도율은 `[quality_inspector] gate_X stats: ...` 로 INFO 로그.
 
 ### 3.1 토큰 사용량 (분석 1건당 추정)
 

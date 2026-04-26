@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.7.0
+last_synced_with: v2.8.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -207,6 +207,107 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
 
 > 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.E. v2.8.0 — Step 4: Quality Gate 1/2 + Claim-Evidence + Synthesis Judge
+
+2026-04-26 적용. [REFACTOR_V3_PLAN.md §5 Step 4](REFACTOR_V3_PLAN.md) + Anti-patterns #4/#5/#7/#10 준수.
+
+### 수행 내역
+
+- `src/models.py`:
+  - `Claim` (evidence_ids `min_length=1` + `must_have_evidence` model_validator — Anti-pattern #4 이중 가드)
+  - `Evidence` (evidence_id / source_url / quote_or_data / reliability / timestamp / supports_claims)
+  - `ConfidenceProfile` (3축 + `aggregate` property — `0.4·sd + 0.3·df + 0.3·ec`, Anti-pattern #10 회피)
+  - `AnalyticalFinding` (main_claim + evidence + confidence + counter_hypothesis)
+  - `JudgmentVerdict` (main_judgment + contradictions[] 노출 + counter_hypothesis — Anti-pattern #5)
+  - `FullAnalysisResult.findings`, `FullAnalysisResult.judgment` Optional 필드
+  - 기존 `confidence_score: float` 필드들은 deprecated 마킹 (즉시 삭제 금지 — Anti-pattern #10)
+- `src/agents/quality_inspector.py` — Heuristic-first + LLM-as-judge 보강:
+  - `gate_1_plan_sanity(strategy)` → core_questions 길이/내용, recommended_lenses 정합성, evidence_plan 실행 가능성
+  - `gate_2_coverage_check(strategy, findings, judgment)` → 모든 core_question 매칭, claim-evidence 연결 추가 검증, judgment.main_judgment & counter_hypothesis 비어있지 않음
+  - LLM judge 는 30초 timeout, CLI 부재/실패 시 휴리스틱 결과 채택 (게이트 자체가 죽지 않게)
+- `src/agents/synthesis_judge.py` — Findings → JudgmentVerdict (Anti-pattern #5 회피):
+  - 페어와이즈 어휘 충돌 스캔 (12쌍 lexicon: 상승↔하락, 증가↔감소, 강세↔약세, ...)
+  - counter_hypothesis 명시적 모순 검출
+  - resolution 에 *어느 쪽 채택했는지* 명시 — 패배자 입장은 봉합되지 않고 counter_hypothesis 로 보존
+  - 3축 신뢰도 합성 = finding 평균 - (모순 1건당 expert_consensus 0.1 차감)
+  - LLM 으로 main_judgment / base_scenario / counter_hypothesis 산출 (실패 시 휴리스틱 폴백)
+- `src/orchestrator.py`:
+  - `_wrap_findings(result)` 헬퍼 — context.sources → Evidence 풀, 각 v2 분석 → AnalyticalFinding (round-robin question 매칭, ConfidenceProfile 휴리스틱 변환)
+  - `_run_gate_with_retries(gate_name, gate_fn, regen_fn, ...)` — 최대 2회 재시도 + 부분-분석 알림 + 통계 카운터
+  - run_analysis 흐름 wiring: Gate 1 (strategy 직후), Gate 2 (보고서 합성 직전 — wrap → judge → gate 2)
+  - `_gate_stats` 카운터 + 끝부분에 통과율/재시도율 INFO 로그
+  - `VERSION` `v2.7.0 → v2.8.0`
+- `src/tests/test_quality_gates.py` — pytest 18 케이스 (Claim validator, ConfidenceProfile, gate 1/2, synthesis judge contradiction)
+- `src/tests/__init__.py`
+
+### Acceptance Criteria
+
+- [x] `Claim(claim_id='C-1', statement='x', claim_type='fact', evidence_ids=[])` → ValidationError (PASS)
+- [x] gate_1 / gate_2 단위 테스트 통과 (PASS, 18/18)
+- [x] 인위적 모순 케이스 (호르무즈 어휘 충돌) → contradictions 1건 기록 (PASS)
+- [x] 게이트 실패 시 텔레그램 알림 형식 `"⚠️ 부분 분석 완료. {gate} 실패 ({reason})"` (PASS, simulation 으로 검증)
+- [x] 게이트 통과율·재시도율 로그 출력 (`[quality_inspector] gate_X stats: ...`) — 코드 경로 확인
+- [x] ConfidenceProfile.aggregate 가중평균 정확 (0.4·sd + 0.3·df + 0.3·ec — PASS)
+
+### 회귀 테스트 3건 결과 (정적 시뮬레이션)
+
+> **테스트 한계**: VM 텔레그램 봇·CLI 호출 없이 `_wrap_findings + judge + gate_2` 직접 호출로 검증.
+
+| # | 입력 | findings | contradictions | gate_1 | gate_2 | 노출된 모순 |
+|---|------|---------:|---------------:|--------|--------|-------------|
+| 1 | "미중 무역 분쟁 현 상황" | 5 | 0 | PASS | PASS | (없음) |
+| 2 | "호르무즈 해협 위기 분석" | 5 | **1** | PASS | PASS | dynamics_analyst("강한 상승") vs scenario_architect("분명한 하락") — resolution: dynamics 채택 (conf 0.52 vs 0.50), 패배자는 counter_hypothesis 로 보존 |
+| 3 | (force-fail: findings=[], judgment=None) | 0 | — | — | **FAIL** | reason: "judgment is None (Synthesis Judge 미실행)". 부분-분석 알림: `"⚠️ 부분 분석 완료. gate_2 실패 (judgment is None ...)"` |
+
+### 게이트 통과율·재시도율 (시뮬레이션 통계)
+
+3건 시뮬레이션 기준:
+- `gate_1`: attempts=2, passes=2, retries=0, partial=0 → **pass_rate 100%, retry_rate 0%**
+- `gate_2`: attempts=3, passes=2, retries=0, partial=1 → **pass_rate 67%, retry_rate 0%, partial_rate 33%**
+
+partial 1건은 의도적 강제 실패 케이스 (Case 3) 이므로, 정상 케이스 기준 게이트 통과율은 100%.
+실제 봇 운영 환경에서는 `[quality_inspector] gate_X stats: attempts=N passes=M retries=R partial=P (pass_rate=X% retry_rate=Y%)` 로기로 관측 가능.
+
+### ConfidenceProfile 3축 값 분포 샘플
+
+Case 2 (호르무즈 해협 위기) 의 JudgmentVerdict.confidence:
+- `source_diversity = 0.200` (sources 1개 / 5)
+- `data_freshness  = 0.700` (web search 가정)
+- `expert_consensus = 0.630` (finding 평균 0.73 - 모순 1건 페널티 0.10)
+- `aggregate       = 0.479` (0.4·0.20 + 0.3·0.70 + 0.3·0.63)
+
+Case 1 (미중 무역 분쟁, 모순 0건) 의 동일 입력 대비:
+- `expert_consensus = 0.730` (페널티 없음 → 모순 페널티 차이만큼 +0.10)
+- `aggregate       = 0.509` (Case 2 보다 +0.030)
+
+→ 신뢰도가 *모순 발견 시 자동 하락* 함을 확인. Anti-pattern #5 가 강조하는 "모순 노출이 신뢰도 자체에도 반영되어야 한다" 원칙 준수.
+
+### 변경된 파일
+- 신규: `src/agents/quality_inspector.py`, `src/agents/synthesis_judge.py`, `src/tests/__init__.py`, `src/tests/test_quality_gates.py`
+- 수정: `src/models.py` (5개 신규 모델 + FullAnalysisResult 필드 + deprecation 주석), `src/orchestrator.py` (VERSION + 게이트 wiring + findings wrapper + 통계)
+- 수정: `CLAUDE.md` (Execution Rule #9, #10), `GOAL.md` (REQ-V3-004/005), `README.md`, `CHANGELOG.md`, `docs/CATALOGS.md`, `docs/DATA_MODELS.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/REPO_MAP.md` (헤더 + 본문)
+- 본 문서 (Step 4 기록 append)
+
+### Step 5 진행 시 주의 사항 (Lens Pool 통합 지점)
+
+1. **Lens runner 가 `AnalyticalFinding` 을 직접 산출**: 현재 `orchestrator._wrap_findings()` 가 v2 분석 결과 → AnalyticalFinding 변환 어댑터. Step 5 의 LensRunner ABC 가 도입되면 이 어댑터는 *비-lens* 출처 (legacy 에이전트) 에만 사용. lens runner 는 Pydantic Claim/Evidence 를 처음부터 직접 만들어 반환.
+
+2. **`finding.lens_id` 와 lens registry 매핑**: 현재 lens_id 는 v2 에이전트 이름 (`context_analyst` 등). Step 5 에서 `src/lenses/registry.py` 가 SSOT 가 되며 lens_id 가 registry 키와 일치해야 함. 어댑터의 lens_id 매핑도 함께 정리.
+
+3. **Synthesis Judge 의 LLM 호출 비용**: Step 5 가 lens 4개를 병렬 실행하면 finding 수가 5 → 10+ 로 증가, judge 의 페어와이즈 스캔도 증가. timeout 60초가 짧을 수 있음 — 모니터링 필요.
+
+4. **Quality Gate 2 의 evidence 매칭 강화**: 현재 evidence_pool 은 context.sources 공유 (모든 finding 이 같은 풀). Step 5 lens 가 *자체* evidence 를 산출하면 finding.evidence 가 다양해짐 → gate 2 의 evidence_id 매칭 검사가 더 의미있어짐. 단 Step 5 에서 *너무 엄격해지지 않게* 주의 — 한 lens 의 evidence 가 다른 lens 의 claim 에 사용될 수 있음.
+
+5. **`Watchlist` 모델 도입**: spec §4.1 의 `WatchSignal` (Step 5 신설 예정) 은 `parent_report_id`, `parent_report_url`, `fired`, `fired_at` 등 운영 메타데이터 보유. DB 등록 (Anti-pattern #11) — 텍스트 보존만 하지 말 것. `result.scenarios.watch_signals` (현재 dict[]) 와의 매핑 어댑터가 필요할 수 있음.
+
+6. **`legacy_directives` 제거 시점**: Step 5 가 lens runner 를 도입하면 더 이상 dict-shaped per-agent directive 가 필요 없음. 그러나 *제거는 별도 PR* 로 (Anti-pattern #12 빅뱅 회피).
+
+7. **`confidence_score: float` 정리 시점**: deprecated 마킹만 되어 있음. v3.0.0 릴리스에서 일괄 제거 예정. Step 5 까지는 그대로 보존 + 신규 코드는 `ConfidenceProfile` 만 사용.
+
+8. **Quality Gate 의 `regenerate_fn` 의미**: gate_1 재시도는 strategy 재생성 (LLM 다시 호출), gate_2 재시도는 judgment 재생성 (synthesis judge 다시). Step 5 lens runner 도입 시 gate_2 재시도가 "lens 재실행" 까지 포함할지 결정 필요. 현재는 judgment 만 재생성하지만 lens 결과가 부족해 gate 2 가 실패할 수 있음.
 
 ---
 

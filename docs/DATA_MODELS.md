@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.7.0
+last_synced_with: v2.8.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -42,8 +42,19 @@ last_review: 2026-04-26
         └──────┴──────┴──┬───┴───────┴──────────┘
                          ▼
                   FullAnalysisResult
-                  (strategy + 6 analyses + blocks)
+                  (strategy + 6 analyses + blocks + findings + judgment)
                          │
+                         ├─ V3 Step 4 (v2.8.0) ──→ orchestrator._wrap_findings() ──→ list[AnalyticalFinding]
+                         │                              │  (각 finding = main_claim(Claim, evidence_ids≥1)
+                         │                              │   + evidence[Evidence] + ConfidenceProfile 3축
+                         │                              │   + counter_hypothesis)
+                         │                              ▼
+                         │                  SynthesisJudge.judge(findings) ──→ JudgmentVerdict
+                         │                              │  (contradictions 노출, 봉합 X — Anti-pattern #5)
+                         │                              ▼
+                         │                  QualityInspector.gate_2_coverage_check(strategy, findings, judgment)
+                         │                              │  (실패 시 max 2 retry → "⚠️ 부분 분석 완료" 알림)
+                         │                              ▼
                          ├─ archetype="six_act_theater" ──→ ReportSynthesizer (legacy report.html)
                          │
                          └─ 그 외 archetype ──→  _build_blocks(result, archetype)
@@ -78,6 +89,13 @@ last_review: 2026-04-26
 | `VisualizationSpec` | 시각화 사양 — Visual Analyst 가 참조 | `src/models.py` |
 | `BlockType` (Literal 17종) | 블록 타입 enum — narrative, claim_card, evidence_table, timeline, matrix, actor_cards, flow_chain, scenario_table, decomposition, argument_pair, data_series, watchlist, qna, callout, counter_hypothesis, decision_matrix, risk_matrix (V3 Step 3) | `src/models.py` |
 | `AnalysisBlock` | 보고서 렌더링의 기본 단위 — block_id/block_type/payload (V3 Step 3) | `src/models.py` |
+| `ClaimType` (Literal) | fact / inference / prediction / judgment (V3 Step 4) | `src/models.py` |
+| `Reliability` (Literal) | primary / secondary / expert / model_inference (V3 Step 4) | `src/models.py` |
+| `Evidence` | 추적 가능한 증거 단위 — evidence_id/source_url/quote_or_data/reliability/timestamp (V3 Step 4) | `src/models.py` |
+| `Claim` | 주장 단위 — evidence_ids ≥ 1 강제 (Pydantic validator, Anti-pattern #4) | `src/models.py` |
+| `ConfidenceProfile` | 3축 분해 신뢰도 — source_diversity/data_freshness/expert_consensus + aggregate property (V3 Step 4, Anti-pattern #10) | `src/models.py` |
+| `AnalyticalFinding` | 렌즈 단위 결과 — main_claim + evidence + confidence + counter_hypothesis (V3 Step 4) | `src/models.py` |
+| `JudgmentVerdict` | Synthesis Judge 산출 — main_judgment / contradictions (봉합 금지, Anti-pattern #5) / counter_hypothesis (V3 Step 4) | `src/models.py` |
 | `ContextAnalysis` | ACT I 결과 (팩트·타임라인·수치) | `src/models.py` |
 | `PlayerAnalysis` | ACT II 결과 (행위자·동맹·power_dynamics) | `src/models.py` |
 | `DynamicsAnalysis` | ACT III 결과 (비대칭·전환점·피드백 루프·반대 가설) | `src/models.py` |
@@ -158,6 +176,49 @@ last_review: 2026-04-26
 - `section_id`: 디스패처가 `result.strategy.section_plan` 의 동일 ID 섹션과 매치.
 
 블록 빌더 매핑 SSOT 는 `src/agents/report_synthesizer.py:_BLOCK_BUILDERS` 와 `_payload_*` 정적 메서드들. 빌더는 v2 분석 데이터 (`result.context`, `result.players` 등) 를 typed payload 로 변환하지만, 데이터 부재 시 `None` 반환 → 디스패처는 해당 블록을 생성하지 않음.
+
+### 3.8 Evidence (V3 Step 4, v2.8.0)
+- `evidence_id`: 보고서 내 고유 ID (예: `E-001`, `E-INF-001` for model-inference fallback).
+- `source_url`: 1차 출처 URL — 비어있으면 `quote_or_data` 가 자체 텍스트.
+- `quote_or_data`: 인용 또는 수치. 출처가 없는 model_inference 의 경우 추론 근거 텍스트.
+- `reliability`: `primary` / `secondary` / `expert` / `model_inference` 중 하나.
+- `timestamp`: ISO 8601 형식 (또는 분석 시점 날짜).
+- `supports_claims`: 이 evidence 가 뒷받침하는 claim_id 역참조 목록.
+
+### 3.9 Claim (V3 Step 4, v2.8.0 — Anti-pattern #4 강제)
+- `claim_id`: 고유 ID (예: `C-001`, `C-context_analyst-001`).
+- `statement`: 주장 내용 (≤ 500자 권장).
+- `claim_type`: `fact` / `inference` / `prediction` / `judgment`.
+- `evidence_ids`: **min_length=1 강제**. 빈 리스트로 Claim 인스턴스 생성 시 ValidationError. `must_have_evidence` model_validator 가 이중 가드.
+
+### 3.10 ConfidenceProfile (V3 Step 4, v2.8.0 — Anti-pattern #10 회피)
+- 단일 스칼라 `confidence_score` 의 대체 모델. 기존 `confidence_score: float` 필드들은 호환 목적으로 보존되나 deprecated.
+- 3축 (각 0.0~1.0):
+  - `source_diversity`: 독립 출처 다양성 (출처 1개 → 0.2, 5개 이상 → 1.0 휴리스틱).
+  - `data_freshness`: 데이터 시점의 최신성 (web search 기반 분석은 보통 0.7).
+  - `expert_consensus`: 전문가 의견 수렴도 (모순 1건당 0.1 차감).
+- `aggregate` (property): 가중 평균 `0.4·source_diversity + 0.3·data_freshness + 0.3·expert_consensus`. 단일 점수가 강제로 필요한 좁은 곳에서만 사용.
+
+### 3.11 AnalyticalFinding (V3 Step 4, v2.8.0)
+- `finding_id`: 고유 ID (예: `F-context_analyst-001`).
+- `lens_id`: 산출 렌즈 ID (현재는 v2 에이전트 이름. Step 5 에서 lens registry 의 ID 로).
+- `answers_question`: `strategy.core_questions` 중 어느 것에 답하는가.
+- `main_claim`: 이 finding 의 핵심 주장 (Claim, evidence 1개 이상 강제).
+- `supporting_findings`: 다른 finding ID 참조 (보조 근거).
+- `evidence`: Evidence 리스트. main_claim 의 evidence_ids 가 여기 포함되어야 (gate_2 검증).
+- `confidence`: ConfidenceProfile 3축.
+- `counter_hypothesis`: 본 결론의 반대 가설 텍스트.
+- `counter_required_evidence`: 반대 가설이 옳다면 추가로 필요한 증거 목록.
+
+### 3.12 JudgmentVerdict (V3 Step 4, v2.8.0 — Anti-pattern #5 회피)
+- Synthesis Judge 의 종합 판단. **모순을 봉합하지 않고 `contradictions` 필드에 노출**.
+- `main_judgment`: 종합 판단 1~2 문장. 모순 발견 시 *어느 쪽 채택했는지* 명시.
+- `base_scenario`: 기준 시나리오 1 문장.
+- `biggest_uncertainty`: 가장 큰 불확실성 1 문장.
+- `contradictions`: `[{lens_a, lens_b, conflict, resolution}]` 배열. 빈 배열은 "모순 없음을 명시" — 봉합과는 다름.
+- `counter_hypothesis`: 종합 차원의 반대 가설.
+- `counter_evidence_needed`: 반대 가설이 옳다면 필요한 증거 목록.
+- `confidence`: ConfidenceProfile (finding 평균 - 모순 페널티).
 
 ---
 

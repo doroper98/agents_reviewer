@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.7.0
+last_synced_with: v2.8.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -31,7 +31,9 @@ src/
 │   ├── chain_reaction_analyst.py
 │   ├── scenario_architect.py
 │   ├── visual_analyst.py
-│   └── report_synthesizer.py
+│   ├── report_synthesizer.py
+│   ├── quality_inspector.py    # V3 Step 4 — Gate 1/2 (Plan Sanity + Coverage Check)
+│   └── synthesis_judge.py      # V3 Step 4 — findings → JudgmentVerdict (모순 노출)
 ├── archetypes/          # V3 Step 2 — 보고서 archetype 풀 (registry 패턴)
 │   ├── __init__.py
 │   ├── base.py                   # ReportArchetype Protocol
@@ -81,3 +83,4 @@ src/
 - `samples/` — 샘플 입력·출력
 - `scripts/` — 보조 스크립트 (예: html_to_md.py)
 - `reports/` — 생성된 HTML 보고서 (git ignored)
+- `src/tests/` — pytest 단위 테스트 (V3 Step 4 부터; 현재 `test_quality_gates.py` 18 케이스)

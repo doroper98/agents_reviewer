@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.7.0
+last_synced_with: v2.8.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
@@ -34,6 +34,8 @@ last_review: 2026-04-26
 | 5 | 향후 시나리오 분석관 | `src/agents/scenario_architect.py` | ACT V+VI: 시나리오, 감시 신호, 균형 분석 |
 | 6 | 시각화 분석관 | `src/agents/visual_analyst.py` | SVG 관계도, Leaflet 지도, Canvas 차트 |
 | 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드 |
+| 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 (Plan Sanity) + Gate 2 (Coverage Check) — heuristic + LLM-as-judge |
+| 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도 |
 
 기능 요구사항 매핑은 [GOAL.md](../GOAL.md) 의 REQ-AGT-001~007 참조.
 

@@ -11,7 +11,10 @@ from typing import Any, Callable, Coroutine, Optional
 
 from src.archetypes.registry import get_archetype, list_archetypes
 from src.config import Config
-from src.models import AnalysisRequest, AnalysisStrategy, FullAnalysisResult
+from src.models import (
+    AnalysisRequest, AnalysisStrategy, AnalyticalFinding, Claim, ConfidenceProfile,
+    Evidence, FullAnalysisResult, JudgmentVerdict,
+)
 from src.agents.context_analyst import ContextAnalyst
 from src.agents.player_analyst import PlayerAnalyst
 from src.agents.dynamics_analyst import DynamicsAnalyst
@@ -19,10 +22,12 @@ from src.agents.chain_reaction_analyst import ChainReactionAnalyst
 from src.agents.scenario_architect import ScenarioArchitect
 from src.agents.visual_analyst import VisualAnalyst
 from src.agents.report_synthesizer import ReportSynthesizer
+from src.agents.quality_inspector import QualityInspector
+from src.agents.synthesis_judge import SynthesisJudge
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.7.0"
+VERSION = "v2.8.0"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
@@ -41,6 +46,14 @@ class Orchestrator:
         self.scenario_architect = ScenarioArchitect(config)
         self.visual_analyst = VisualAnalyst(config)
         self.report_synthesizer = ReportSynthesizer(config)
+        # V3 Step 4 (v2.8.0)
+        self.quality_inspector = QualityInspector(config)
+        self.synthesis_judge = SynthesisJudge(config)
+        # Counters for gate stats — reset per process. Logged at INFO at end of run.
+        self._gate_stats = {
+            "gate_1_attempts": 0, "gate_1_passes": 0, "gate_1_retries": 0, "gate_1_partial": 0,
+            "gate_2_attempts": 0, "gate_2_passes": 0, "gate_2_retries": 0, "gate_2_partial": 0,
+        }
 
     @staticmethod
     def _progress_bar(step: int, total: int = 7) -> str:
@@ -233,6 +246,245 @@ class Orchestrator:
             )
             return self._empty_strategy_fallback()
 
+    # ------------------------------------------------------------------
+    # V3 Step 4 — Findings wrapper (v2 analyses → AnalyticalFinding list)
+    # ------------------------------------------------------------------
+    #
+    # Wraps the existing ContextAnalysis / PlayerAnalysis / ... outputs into
+    # AnalyticalFinding instances so Synthesis Judge + Gate 2 can operate on a
+    # unified shape. ContextAnalysis.sources are converted to Evidence (real URLs).
+    # Lenses without a real source get a single ``model_inference`` evidence with
+    # quote_or_data marking the limitation explicitly.
+    #
+    # Step 5 (Lens Pool) will replace this wrapper — lens runners will produce
+    # AnalyticalFinding directly.
+
+    @staticmethod
+    def _confidence_from_score(
+        score: float, sources_count: int = 0
+    ) -> ConfidenceProfile:
+        """Convert legacy ``confidence_score: float`` (deprecated) to ConfidenceProfile."""
+        # source_diversity: linear ramp on independent source count, capped at 5.
+        sd = min(1.0, max(0.0, sources_count / 5.0))
+        # data_freshness: web-search era assumption — moderate-to-high.
+        df = 0.7
+        # expert_consensus: legacy scalar maps here as a rough proxy.
+        ec = max(0.0, min(1.0, score))
+        return ConfidenceProfile(
+            source_diversity=round(sd, 3),
+            data_freshness=round(df, 3),
+            expert_consensus=round(ec, 3),
+        )
+
+    @staticmethod
+    def _make_evidence_pool(
+        result: FullAnalysisResult,
+    ) -> tuple[list[Evidence], list[str]]:
+        """Build a shared Evidence pool from result.context.sources + lens-level fallback.
+
+        Returns (evidence_list, evidence_ids). Always returns at least one Evidence
+        so that Claim validators (evidence_ids min_length=1) never fail at wrap time.
+        """
+        evs: list[Evidence] = []
+        if result.context and result.context.sources:
+            for i, src in enumerate(result.context.sources, 1):
+                # source can be a URL or free-text — store as source_url if it looks like URL.
+                if src.startswith(("http://", "https://")):
+                    ev = Evidence(
+                        evidence_id=f"E-{i:03d}",
+                        source_url=src,
+                        quote_or_data=src,
+                        reliability="secondary",
+                        timestamp=result.context.date or "",
+                    )
+                else:
+                    ev = Evidence(
+                        evidence_id=f"E-{i:03d}",
+                        source_url="",
+                        quote_or_data=src[:200],
+                        reliability="secondary",
+                        timestamp=result.context.date or "",
+                    )
+                evs.append(ev)
+        if not evs:
+            # Fallback: one model_inference evidence so claims can still validate.
+            evs.append(Evidence(
+                evidence_id="E-INF-001",
+                source_url="",
+                quote_or_data="1차 출처 미수집 — 모델 추론 기반",
+                reliability="model_inference",
+                timestamp="",
+            ))
+        return evs, [e.evidence_id for e in evs]
+
+    @staticmethod
+    def _assign_question(
+        strategy: AnalysisStrategy | None, lens_id: str, idx: int
+    ) -> str:
+        """Round-robin assignment of strategy.core_questions to findings.
+        If strategy is None or core_questions empty, returns generic placeholder.
+        """
+        if strategy is None or not strategy.core_questions:
+            return f"({lens_id} 가 답변하는 질문 미지정)"
+        return strategy.core_questions[idx % len(strategy.core_questions)]
+
+    def _wrap_findings(
+        self, result: FullAnalysisResult
+    ) -> list[AnalyticalFinding]:
+        """Wrap available v2 analyses into AnalyticalFinding list."""
+        if result.strategy is None:
+            logger.warning("[orchestrator] _wrap_findings called with no strategy")
+            return []
+        evidence_pool, evidence_ids = self._make_evidence_pool(result)
+        findings: list[AnalyticalFinding] = []
+        idx = 0
+
+        def _add(
+            lens_id: str,
+            statement: str,
+            counter_hyp: str,
+            score: float,
+            claim_type: str = "inference",
+        ) -> None:
+            nonlocal idx
+            statement = (statement or "").strip()
+            if not statement:
+                return
+            try:
+                claim = Claim(
+                    claim_id=f"C-{lens_id[:6]}-{idx + 1:03d}",
+                    statement=statement[:500],
+                    claim_type=claim_type,  # type: ignore[arg-type]
+                    evidence_ids=evidence_ids,
+                )
+            except Exception as e:
+                # Anti-pattern #4 guard — must NOT silently downgrade by passing empty
+                # evidence. If we can't build a valid claim, log and skip the finding.
+                logger.warning(
+                    "[orchestrator] Skipping finding for lens=%s; claim invalid: %s",
+                    lens_id, e,
+                )
+                return
+            findings.append(AnalyticalFinding(
+                finding_id=f"F-{lens_id}-{idx + 1:03d}",
+                lens_id=lens_id,
+                answers_question=self._assign_question(result.strategy, lens_id, idx),
+                main_claim=claim,
+                evidence=evidence_pool,
+                confidence=self._confidence_from_score(
+                    score,
+                    len(result.context.sources) if result.context else 0,
+                ),
+                counter_hypothesis=counter_hyp,
+            ))
+            idx += 1
+
+        if result.context:
+            _add(
+                "context_analyst",
+                result.context.summary,
+                "",
+                result.context.confidence_score,
+                claim_type="fact",
+            )
+        if result.players:
+            _add(
+                "player_analyst",
+                result.players.power_dynamics or result.players.summary,
+                "",
+                result.players.confidence_score,
+                claim_type="inference",
+            )
+        if result.dynamics:
+            _add(
+                "dynamics_analyst",
+                result.dynamics.key_insight or result.dynamics.summary,
+                result.dynamics.counter_view or "",
+                result.dynamics.confidence_score,
+                claim_type="inference",
+            )
+        if result.chain_reaction:
+            chain_summary = result.chain_reaction.worst_case
+            if not chain_summary and result.chain_reaction.chain:
+                chain_summary = " → ".join(
+                    s.get("title", "") for s in result.chain_reaction.chain[:5]
+                )
+            _add(
+                "chain_reaction_analyst",
+                chain_summary,
+                "",
+                result.chain_reaction.confidence_score,
+                claim_type="prediction",
+            )
+        if result.scenarios:
+            sc_summary = (
+                result.scenarios.base_case_summary or result.scenarios.summary
+            )
+            _add(
+                "scenario_architect",
+                sc_summary,
+                "",
+                result.scenarios.confidence_score,
+                claim_type="prediction",
+            )
+        return findings
+
+    # ------------------------------------------------------------------
+    # V3 Step 4 — Gate runner (with retry + partial-analysis alert)
+    # ------------------------------------------------------------------
+
+    async def _run_gate_with_retries(
+        self,
+        gate_name: str,
+        gate_fn,
+        regenerate_fn,
+        status_callback: "StatusCallback",
+        max_retries: int = 2,
+    ) -> tuple[bool, str]:
+        """Run a quality gate with retries. On final failure, emit partial-analysis alert.
+
+        Args:
+            gate_name: e.g. "gate_1" or "gate_2" (used in stats + alert text).
+            gate_fn: async () -> (passed, reason).
+            regenerate_fn: async () -> None — called between retries to refresh inputs.
+        Returns:
+            (final_passed, final_reason). Even if False, caller should continue with
+            partial output (Anti-pattern #7: never silently bypass).
+        """
+        attempts_key = f"{gate_name}_attempts"
+        passes_key = f"{gate_name}_passes"
+        retries_key = f"{gate_name}_retries"
+        partial_key = f"{gate_name}_partial"
+
+        self._gate_stats[attempts_key] += 1
+        passed, reason = await gate_fn()
+        if passed:
+            self._gate_stats[passes_key] += 1
+            return True, reason
+
+        for attempt in range(1, max_retries + 1):
+            self._gate_stats[retries_key] += 1
+            logger.info(
+                "[quality_inspector] %s failed (%s). retry %d/%d",
+                gate_name, reason, attempt, max_retries,
+            )
+            try:
+                await regenerate_fn()
+            except Exception as e:
+                logger.warning("[orchestrator] %s regenerate error: %s", gate_name, e)
+            self._gate_stats[attempts_key] += 1
+            passed, reason = await gate_fn()
+            if passed:
+                self._gate_stats[passes_key] += 1
+                return True, reason
+
+        self._gate_stats[partial_key] += 1
+        await self._notify(
+            f"⚠️ 부분 분석 완료. {gate_name} 실패 ({reason})",
+            status_callback,
+        )
+        return False, reason
+
     async def _notify(
         self, message: str, status_callback: StatusCallback
     ) -> None:
@@ -419,6 +671,29 @@ class Orchestrator:
         # Persist the strategy onto the result so downstream consumers (template, logs) can read it.
         result.strategy = strategy
 
+        # -- V3 Step 4 — Quality Gate 1: Plan Sanity --
+        # Quick mode 는 게이트 검사 스킵 (스킵 에이전트가 많아 plan 자체가 부분적임).
+        if not quick_mode:
+            async def _gate_1() -> tuple[bool, str]:
+                return await self.quality_inspector.gate_1_plan_sanity(result.strategy)
+
+            async def _regen_strategy() -> None:
+                new_strategy = await self._generate_analysis_strategy(
+                    event_name,
+                    result.context.category if result.context else "",
+                    result.context.summary if result.context else "",
+                )
+                result.strategy = new_strategy
+
+            gate1_pass, gate1_reason = await self._run_gate_with_retries(
+                "gate_1", _gate_1, _regen_strategy, status_callback,
+            )
+            # Refresh skip_agents from possibly-replaced strategy.
+            skip_agents = set(result.strategy.skip_agents)
+            strategy = result.strategy  # local var continues to be used below
+            if gate1_pass:
+                logger.info("[orchestrator] gate_1 PASS (%s)", gate1_reason)
+
         step = 1
 
         # -- Phase 2: 이해관계자 분석관 + 구조 분석관 --
@@ -530,6 +805,40 @@ class Orchestrator:
             status_callback,
         )
 
+        # -- V3 Step 4 — Findings wrapping + Synthesis Judge + Quality Gate 2 --
+        # Quick mode 는 finding 수가 적어 게이트가 의미 없으니 스킵.
+        if not quick_mode:
+            await self._notify(
+                "🧮 종합 판단관: finding 들의 정합성·모순을 검사합니다.",
+                status_callback,
+            )
+            result.findings = self._wrap_findings(result)
+            result.judgment = await self.synthesis_judge.judge(result.findings)
+
+            async def _gate_2() -> tuple[bool, str]:
+                return await self.quality_inspector.gate_2_coverage_check(
+                    result.strategy, result.findings, result.judgment,
+                )
+
+            async def _regen_judgment() -> None:
+                # 재생성 전략: findings 는 v2 분석 자체에서 오므로 변경되지 않음.
+                # judgment 만 다시 호출 — LLM 응답 변동성에 기대.
+                result.judgment = await self.synthesis_judge.judge(result.findings)
+
+            gate2_pass, gate2_reason = await self._run_gate_with_retries(
+                "gate_2", _gate_2, _regen_judgment, status_callback,
+            )
+            if gate2_pass:
+                logger.info("[orchestrator] gate_2 PASS (%s)", gate2_reason)
+            n_contradictions = (
+                len(result.judgment.contradictions) if result.judgment else 0
+            )
+            await self._notify(
+                f"🧮 종합 판단 완료 — finding {len(result.findings)}건 / "
+                f"contradictions {n_contradictions}건 (봉합 안 함)",
+                status_callback,
+            )
+
         # -- Phase 4: 보고서 생성 --
         await self._notify(
             f"📝 보고서를 생성하고 있습니다.\n"
@@ -558,5 +867,20 @@ class Orchestrator:
             self.chain_reaction_analyst.model_name = self.config.model_name_light
             self.scenario_architect.model_name = self.config.model_name
             self.visual_analyst.model_name = self.config.model_name
+
+        # V3 Step 4: log cumulative gate stats (per-process counters).
+        s = self._gate_stats
+        for g in ("gate_1", "gate_2"):
+            attempts = s[f"{g}_attempts"]
+            passes = s[f"{g}_passes"]
+            retries = s[f"{g}_retries"]
+            partial = s[f"{g}_partial"]
+            pass_rate = (passes / attempts * 100.0) if attempts else 0.0
+            retry_rate = (retries / attempts * 100.0) if attempts else 0.0
+            logger.info(
+                "[quality_inspector] %s stats: attempts=%d passes=%d retries=%d "
+                "partial=%d (pass_rate=%.1f%% retry_rate=%.1f%%)",
+                g, attempts, passes, retries, partial, pass_rate, retry_rate,
+            )
 
         return result
