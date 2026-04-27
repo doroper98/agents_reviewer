@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
@@ -21,29 +21,31 @@ last_review: 2026-04-26
 
 ---
 
-## 1. Agents — 현재 (v2.4.x, V3 이전)
+## 1. Agents — 현재 (v3.0.0)
 
 각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러.
 
 | # | 에이전트 | 파일 | 역할 (요약) |
 |---|---------|------|-------------|
 | 1 | 상황인식 분석관 | `src/agents/context_analyst.py` | ACT I: 팩트, 타임라인, 핵심 수치, 웹 검색 |
-| 2 | 이해관계자 분석관 | `src/agents/player_analyst.py` | ACT II: 행위자 식별, 전략, 위험도 |
-| 3 | 구조 및 상호작용 분석관 | `src/agents/dynamics_analyst.py` | ACT III: 게임이론, 비대칭, 전환점, 피드백 루프 |
-| 4 | 연쇄반응 분석관 | `src/agents/chain_reaction_analyst.py` | ACT IV: 인과 사슬, 도미노, 와일드카드 |
+| 2 | 이해관계자 분석관 **[DEPRECATED v3.0.0]** | `src/agents/player_analyst.py` | ACT II 행위자 식별 / 위험도. v4.0.0 제거 예정 (`FUT-LEGACY-001`) — `src.lenses.StakeholderLens` 사용 권장 |
+| 3 | 구조 및 상호작용 분석관 **[DEPRECATED v3.0.0]** | `src/agents/dynamics_analyst.py` | ACT III 게임이론·전환점. v4.0.0 제거 예정 — `src.lenses.StructuralLens` 사용 권장 |
+| 4 | 연쇄반응 분석관 **[DEPRECATED v3.0.0]** | `src/agents/chain_reaction_analyst.py` | ACT IV 인과 사슬·와일드카드. v4.0.0 제거 예정 — `src.lenses.CascadeLens` 사용 권장 |
 | 5 | 향후 시나리오 분석관 | `src/agents/scenario_architect.py` | ACT V+VI: 시나리오, 감시 신호, 균형 분석 |
 | 6 | 시각화 분석관 | `src/agents/visual_analyst.py` | SVG 관계도, Leaflet 지도, Canvas 차트 |
 | 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드 |
 | 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 (Plan Sanity) + Gate 2 (Coverage Check) — heuristic + LLM-as-judge |
 | 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도 |
 
-기능 요구사항 매핑은 [GOAL.md](../GOAL.md) 의 REQ-AGT-001~007 참조.
+DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v3.x 동안 동작 보장, v4.0.0 제거 (`GOAL.md FUT-LEGACY-001`). 신규 코드는 lens 풀의 `stakeholder` / `structural` / `cascade` 사용 (§2 표 참조).
+
+기능 요구사항 매핑은 [GOAL.md](../GOAL.md) 의 REQ-AGT-001~007, REQ-V3-009 참조.
 
 ---
 
-## 2. Analysis Lenses — V3 Step 5-A (v2.9.0) 도입
+## 2. Analysis Lenses — V3 Step 5-A (v2.9.0) 도입, Step 5-C (v3.0.0) 페르소나 이전 3종 추가
 
-`src/lenses/registry.py` 의 8종 미러. lens 정의 SSOT 는 코드. 사건당 동시 실행 한도 = 4 (Anti-pattern #6).
+`src/lenses/registry.py` 의 11종 미러 (분야 6 + 메타 2 + 페르소나 이전 3). lens 정의 SSOT 는 코드. 사건당 동시 실행 한도 = 4 (Anti-pattern #6).
 
 | Lens ID | 모듈 | 분야 | suitable_intents (top) | method_steps 핵심 |
 |---------|------|------|------------------------|-------------------|
@@ -55,6 +57,9 @@ last_review: 2026-04-26
 | `market_structure` | `src/lenses/market_structure_lens.py` | 시장 | who_benefits, where_spreads, what_next | Network Analysis / Game Theory / Regime Shift |
 | `red_team` | `src/lenses/red_team_lens.py` | 메타 (반대 가설) | 7종 모두 (보조) | ACH / Pre-mortem / Devil's Advocate |
 | `pre_mortem` | `src/lenses/pre_mortem_lens.py` | 메타 (실패 시나리오) | what_to_do, what_next, where_vulnerable | 실패 가정 후 역설계 |
+| `stakeholder` (5-C) | `src/lenses/stakeholder_lens.py` | 페르소나 이전 (구 PlayerAnalyst) | who_benefits, what_happened | 행위자 식별 → 동기·자원·전략 → 위험도·연합·취약 고리 |
+| `structural` (5-C) | `src/lenses/structural_lens.py` | 페르소나 이전 (구 DynamicsAnalyst) | why_happened, where_vulnerable | 게임이론 / 비대칭 / 전환점 / 피드백 루프 |
+| `cascade` (5-C) | `src/lenses/cascade_lens.py` | 페르소나 이전 (구 ChainReactionAnalyst) | where_spreads, what_next | 인과 사슬 → 도미노 단계 → 와일드카드 → 차단점·시간지평 |
 
 ### 2.1 Lens 선택 규칙 (Strategy Planner 가이드)
 
@@ -73,35 +78,49 @@ last_review: 2026-04-26
 
 ---
 
-## 3. Report Archetypes — V3 Step 2 + 5-A 도입 (총 6종)
+## 3. Report Archetypes — V3 Step 2/5-A/5-C 누적 (총 11종, v3.0.0 완성)
 
 archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 
 | Archetype ID | 모듈 | 적용 상황 | suitable_intents | 섹션 흐름 |
 |--------------|------|-----------|------------------|-----------|
-| `six_act_theater` | `src/archetypes/six_act_theater.py` | 인물극형 사건 (전쟁, 외교, 정치 갈등, 리더십, 선거). 분류 애매 시 default. | 7종 모두 | 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 |
-| `financial_transmission` | `src/archetypes/financial_transmission.py` | 시장/거시 사건 (환율, 금리, 자산 가격, 통화 정책, 신용). | `where_spreads`, `where_vulnerable`, `what_next` | 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표 |
-| `tech_decomposition` | `src/archetypes/tech_decomposition.py` | 기술/AI/IT 사건 (모델 출시, 시스템 장애, 사이버 보안, 인프라). | `where_vulnerable`, `what_to_do`, `why_happened` | 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고 |
+| `six_act_theater` | `src/archetypes/six_act_theater.py` | **인물극형 사건 specialty** (외교 갈등, 정치 분쟁, 리더십, 선거). v3.0.0 부터 default 가 아님. | `who_benefits`, `what_happened` | 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 |
+| `financial_transmission` (5-A) | `src/archetypes/financial_transmission.py` | 시장/거시 사건 (환율, 금리, 자산 가격, 통화 정책, 신용). | `where_spreads`, `where_vulnerable`, `what_next` | 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표 |
+| `tech_decomposition` (5-A) | `src/archetypes/tech_decomposition.py` | 기술/AI/IT 사건 (모델 출시, 시스템 장애, 사이버 보안, 인프라). | `where_vulnerable`, `what_to_do`, `why_happened` | 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고 |
 | `geopolitical_strategic` (5-A) | `src/archetypes/geopolitical_strategic.py` | 지정학·전쟁 (군사 행동, 안보 위기, 동맹 변동). | `who_benefits`, `what_next`, `where_vulnerable` | 사건 요약 → 전장·행위자 → 의도와 능력 → 확전 경로 → 억제 요인 → 감시 신호 |
 | `accident_forensic` (5-A) | `src/archetypes/accident_forensic.py` | 사고·재난 (산업재해, 자연재해, 시설 사고). | `why_happened`, `where_vulnerable`, `what_to_do` | 사실 타임라인 → 직접 원인 → 방어막 실패 → 조직적 원인 → 재발 방지 → 미해결 질문 |
-| `policy_implementation` (5-A) | `src/archetypes/policy_implementation.py` | 정책·사회 (법안, 규제, 사회 변화, 부동산 정책). | `who_benefits`, `what_to_do`, `where_vulnerable` | 정책 의도 → 이해관계자 → 제약 조건 → 집행 가능성 → 부작용 → 수정안 |
+| `policy_implementation` (5-A) | `src/archetypes/policy_implementation.py` | 정책·사회 (법안, 규제, 사회 변화). | `who_benefits`, `what_to_do`, `where_vulnerable` | 정책 의도 → 이해관계자 → 제약 조건 → 집행 가능성 → 부작용 → 수정안 |
+| `decision_brief` (5-C) | `src/archetypes/decision_brief.py` | 의사결정 보조 — `what_to_do` 의도 전용. event_type 무관. | `what_to_do` | 판단 요약 → 옵션 비교 → 옵션별 리스크 → 권고 → Pre-mortem → 감시 신호 |
+| `timeline_first` (5-C) | `src/archetypes/timeline_first.py` | 사실 정리 — `what_happened` 의도 전용. | `what_happened` | 핵심 요약 → 사실 타임라인 → 핵심 수치 → 출처 평가 → 미확인 사항 |
+| `scenario_first` (5-C) | `src/archetypes/scenario_first.py` | 향후 분기 — `what_next` 의도 전용. | `what_next` | 기준 시나리오 → 분기 시나리오 → 베이지안 업데이트 가이드 → 감시 신호 |
+| `mechanism_decomp` (5-C) | `src/archetypes/mechanism_decomp.py` | 원인 해부 — `why_happened` 의도 전용. | `why_happened` | 표층 현상 → 직접 원인 → 구조적 원인 → 제1원리 → 흔한 오해 |
+| `industry_value_chain` (5-C) | `src/archetypes/industry_value_chain.py` | 산업·가치사슬 (M&A, 경쟁, 공급망). | `who_benefits`, `where_vulnerable` | 산업 구조 → 가치사슬 → 경쟁 구도 → 수익성 압력 → 전략 옵션 → 의사결정 포인트 |
 
-### 3.1 선택 매트릭스 (Strategy Planner 가이드, 충돌 시 위쪽 우선)
+### 3.1 선택 매트릭스 — `select_archetype()` (v3.0.0)
 
-Strategy Planner 프롬프트에 박힌 분기 규칙. 자세한 본문은 `src/orchestrator.py:_generate_analysis_strategy()`.
+코드 SSOT 는 `src/archetypes/registry.py:select_archetype()`. orchestrator 는 LLM 1순위 후보(strategy.report_archetype) 와 matrix 결과를 모두 산출하고 **matrix 가 최종 결정자**(mismatch 시 INFO 로그). 4-tier 우선순위:
 
-- 사고·재난 (화재/폭발/붕괴/침수/산업재해/자연재해) → `accident_forensic`
-- 정책·법안·규제 (부동산 규제/조세/노동 정책/규제 발표) → `policy_implementation`
-- 군사·전쟁·안보 위기·동맹 변동 → `geopolitical_strategic`
-- 시장·거시 (환율/금리/자산가격/유동성 위기) AND `user_intent ∈ {where_spreads, where_vulnerable, what_next}` → `financial_transmission`
-- 기술·AI·IT (모델 출시/시스템 장애/사이버 사고/인프라) → `tech_decomposition`
-- 그 외 인물극형 (외교 갈등/정치 분쟁/리더십 변화) 또는 분류 애매 → `six_act_theater`
+**1순위 — 분야 + 의도 조합** (event_type 카테고리 정규화 후 매핑):
+- `tech` + (`where_vulnerable`/`what_happened`/`why_happened`) → `tech_decomposition`
+- `tech` + `what_next` → `scenario_first`  ·  `tech` + `what_to_do` → `decision_brief`
+- `accident` + (`where_vulnerable`/`what_happened`/`why_happened`) → `accident_forensic`
+- `accident` + `what_to_do` → `decision_brief`
+- `financial` + (`where_spreads`/`where_vulnerable`) → `financial_transmission`
+- `financial` + `what_next` → `scenario_first`
+- `industry` + (`who_benefits`/`where_vulnerable`) → `industry_value_chain`
+- `industry` + `what_to_do` → `decision_brief`
+- `policy` + (`who_benefits`/`what_to_do`/`where_vulnerable`) → `policy_implementation`
 
-LLM 이 미등록 archetype_id 를 출력하면 `get_archetype()` 가 `six_act_theater` 로 폴백 (warning 로그).
+**2순위 — 의도 전용** (event_type 미분류 / `general`):
+- `what_to_do` → `decision_brief` · `what_next` → `scenario_first` · `why_happened` → `mechanism_decomp` · `what_happened` → `timeline_first`
 
-### 3.2 V3 후 추가 archetype (예정)
+**3순위 — geopolitical**:
+- `geopolitical` + (`who_benefits`/`what_happened`) → `six_act_theater` (인물극형 specialty)
+- `geopolitical` + 그 외 → `geopolitical_strategic`
 
-REFACTOR_V3_PLAN.md Appendix B 의 11종 중 Step 2 + 5-A 에서는 6종 도입. 나머지 5종 (industry_value_chain, decision_brief, timeline_first, scenario_first, mechanism_decomp) 은 v3.x 패치 트랙에서 추가. 추가 시 본 표 갱신 + `src/archetypes/<name>.py` 신설 + `registry.py` 등록 (Anti-pattern #14 회피).
+**4순위 — fallback**: 분류된 event_type 이 1순위 미매칭 시 의도 전용으로 폴(2순위 보충), 그래도 미매칭이면 `six_act_theater` + warning 로그.
+
+LLM 이 미등록 archetype_id 를 출력해도 `get_archetype()` 가 `six_act_theater` 로 폴백 (warning 로그). 이 fallback 은 archetype 누락 방지용 안전망일 뿐 — **분기 결정의 SSOT 는 `select_archetype()`**.
 
 ---
 

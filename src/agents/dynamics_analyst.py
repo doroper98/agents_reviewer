@@ -1,8 +1,22 @@
-"""Dynamics Analyst Agent -- structural dynamics analysis."""
+"""Dynamics Analyst Agent -- structural dynamics analysis.
+
+DEPRECATED since v3.0.0. Use ``src.lenses.structural_lens.StructuralLens`` instead.
+Legacy persona file is preserved (Anti-pattern #1 — 즉시 삭제 금지).
+Removal scheduled for v4.0.0 (GOAL.md FUT-LEGACY-001).
+"""
 
 from __future__ import annotations
 
+import warnings as _warnings
 from datetime import datetime
+
+_warnings.warn(
+    "src.agents.dynamics_analyst.DynamicsAnalyst is deprecated since v3.0.0. "
+    "Use src.lenses.structural_lens.StructuralLens instead. "
+    "Legacy import path scheduled for removal in v4.0.0 (GOAL.md FUT-LEGACY-001).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 from src.agents.base import BaseAgent
 from src.config import Config

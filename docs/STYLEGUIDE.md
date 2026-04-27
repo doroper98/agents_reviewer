@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v2.4.1
+last_synced_with: v3.0.0
 ssot_for:
   - "코드 컨벤션 (Python/네이밍/import/금지 패턴)"
   - "커밋 메시지 형식"

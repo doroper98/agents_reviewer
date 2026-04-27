@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "기능 요구사항 ID 체계 (REQ-*)"
   - "비기능 요구사항 (NFR-*)"
@@ -47,6 +47,8 @@ last_review: 2026-04-26
 | REQ-V3-006 | Lens Pool | LensRunner ABC + 8종 lens (geopolitical / financial_transmission / tech_architecture / policy_implementation / accident_causality / market_structure / red_team / pre_mortem) + 사건당 4개 동시 실행 한도 (Anti-pattern #6) | P0 | ✅ |
 | REQ-V3-006a | Archetype Extension | 신규 archetype 3종 (geopolitical_strategic / accident_forensic / policy_implementation) — 사진 매트릭스 6 케이스 모두 라우팅 | P0 | ✅ |
 | REQ-V3-007 | Watchlist | WatchSignal Pydantic 모델 + SQLite 영구 저장 + 봇 재시작 복구 + 봇 프로세스 내 asyncio monitor (1시간 주기 deadline 자동 발화) + `/watchlist`·`/fire` 명령 (Anti-pattern #11) | P0 | ✅ |
+| REQ-V3-008 | Archetype Completion | 보고서 archetype 11종 완성 (decision_brief / timeline_first / scenario_first / mechanism_decomp / industry_value_chain 5종 추가) + `select_archetype()` 4-tier 우선순위 매트릭스 + LLM-matrix 하이브리드 라우팅 + six_act_theater specialty 강등 (suitable_intents 7→2) | P0 | ✅ |
+| REQ-V3-009 | Persona Migration | 페르소나 → lens 이전 (PlayerAnalyst→stakeholder / DynamicsAnalyst→structural / ChainReactionAnalyst→cascade). 페르소나 모듈 보존 + module-level DeprecationWarning. v3.x 동작 보장. | P0 | ✅ |
 
 ### 비기능 요구사항 (Non-Functional)
 
@@ -92,3 +94,4 @@ last_review: 2026-04-26
 | FUT-003 | 분석 대기열 (여러 분석 동시 요청) | P3 |
 | FUT-004 | Figma MCP를 활용한 고급 시각화 | P3 |
 | FUT-005 | 보고서 에필로그 (예측 검증 스코어카드) | P3 |
+| FUT-LEGACY-001 | v4.0.0 에서 legacy persona 모듈 제거 (`src/agents/player_analyst.py`, `dynamics_analyst.py`, `chain_reaction_analyst.py`). v3.x 동안 DeprecationWarning 으로 유예. orchestrator 가 lens-only 경로로 완전 전환된 후 진행. | P2 |

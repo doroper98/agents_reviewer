@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -25,7 +25,7 @@ last_review: 2026-04-26
 
 ## 1. 한 줄 요약
 
-텔레그램 메시지 → 7개 AI 에이전트 순차 분석 → 6막 HTML 보고서 생성 → Cloudflare 배포 → 텔레그램 공유 링크 전송.
+텔레그램 메시지 → Strategy Planner + Quality Gate 1 → v2 페르소나(deprecated) + 분석 lens 풀 (사건당 ≤4) → Synthesis Judge + Quality Gate 2 → archetype 11종 중 matrix 결정 → HTML 보고서 → Cloudflare 배포 → 공유 링크 + Watchlist 영구 저장.
 
 ---
 
@@ -87,9 +87,13 @@ Phase 3.5 ⑥ 시각화 분석관 → VisualAnalysis
                 ▼
 Phase 3.7 [V3 Step 4] orchestrator._wrap_findings()
                 ▼  (각 v2 분석 → AnalyticalFinding(Claim+Evidence+ConfidenceProfile))
-Phase 3.75 [V3 Step 5-A] 🔬 _run_lenses() — Lens Pool (cap 4)
+Phase 3.75 [V3 Step 5-A/5-C] 🔬 _run_lenses() — Lens Pool (cap 4)
                 ▼  (strategy.recommended_lenses 의 lens_id 들 → registry.get_lens() →
-                    각 lens 가 자체 LLM 호출 + AnalyticalFinding 산출, 8종 풀에서 4개 한도)
+                    각 lens 가 자체 LLM 호출 + AnalyticalFinding 산출, 11종 풀에서 4개 한도.
+                    11종 = 분야 6 (geopolitical/financial_transmission/tech_architecture/
+                    policy_implementation/accident_causality/market_structure) + 메타 2
+                    (red_team/pre_mortem) + 페르소나 이전 3 (stakeholder/structural/cascade,
+                    v3.0.0 Step 5-C — 구 PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst))
 Phase 3.8 [V3 Step 4] 🧮 SynthesisJudge.judge(findings) → JudgmentVerdict
                 ▼  (contradictions 노출, 봉합 X — Anti-pattern #5)
 Phase 3.9 [V3 Step 4] 🛡 Quality Gate 2 — Coverage Check
@@ -210,52 +214,65 @@ report_synthesizer.py
             → https://<프로젝트명>.pages.dev/analysis_YYYYMMDD_HHMMSS.html
 ```
 
-### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3 — v2.6.0/v2.7.0)
+### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3/5-A/5-C — v2.6.0/v2.7.0/v2.9.0/v3.0.0)
 
-Strategy Planner 가 `user_intent` + `event_type` 으로 archetype 을 결정 → `src/archetypes/registry.py` 가 archetype 객체 반환 → ReportSynthesizer 가 archetype 별로 분기 렌더. **legacy 6막 극장은 그대로**, 그 외는 블록 디스패처를 통과.
+Orchestrator 는 **하이브리드 라우팅** 적용 (v3.0.0):
+1. Strategy Planner 가 LLM 후보 1순위 `strategy.report_archetype` (string ID) 를 출력.
+2. `src/archetypes/registry.select_archetype(strategy)` 가 4-tier 우선순위 매트릭스로 archetype 을 결정 (matrix 가 **최종 결정자**).
+3. LLM 후보 ≠ matrix 결과 시 INFO 로그 (`[orchestrator] archetype mismatch — LLM=…, matrix=…`) 후 matrix 결과로 진행. `strategy.report_archetype` 도 matrix 결과로 갱신 → 보고서 헤더와 일치.
+4. ReportSynthesizer 가 archetype 별로 분기 렌더 — `six_act_theater` 는 legacy 흐름(byte-equal 보장), 그 외는 블록 디스패처.
 
 ```
-              AnalysisStrategy.report_archetype  (string ID)
+   AnalysisStrategy.{user_intent, event_type, report_archetype(LLM 후보)}
                         │
                         ▼
-            src/archetypes/registry.get_archetype()
+   src/archetypes/registry.select_archetype(strategy)   ← matrix 최종 결정자
+   (LLM 후보 ≠ matrix 결과 시 INFO 로그 후 matrix 채택,
+    strategy.report_archetype 도 갱신)
                         │
-        ┌───────────────┼────────────────┐
-        ▼               ▼                ▼
-six_act_theater   financial_transmission  tech_decomposition
-   (default)      (시장·거시)            (기술·AI·인프라)
-        │               │                │
-        │   ┌───────────┴────────────────┘
-        │   │
-        │   ▼  V3 Step 3 (v2.7.0): 블록 디스패처 경로
-        │   ┌─────────────────────────────────────────────┐
-        │   │ ReportSynthesizer._build_blocks()           │
-        │   │   for section in archetype.section_plan():  │
-        │   │     for block_type in section.block_types:  │
-        │   │       payload = _BLOCK_BUILDERS[type](result, section)  │
-        │   │       if payload is None: skip              │
-        │   │       else: AnalysisBlock(section_id=..., …)│
-        │   │   result.strategy.section_plan = plan       │
-        │   │   result.blocks = [...]                     │
-        │   └────────────────────┬────────────────────────┘
-        │                        ▼
-        │   ┌─────────────────────────────────────────────┐
-        │   │ render('report_block.html', …)              │
-        │   │  for section in result.strategy.section_plan│
-        │   │    for block in result.blocks where         │
-        │   │      block.section_id == section.section_id │
-        │   │      include "blocks/<block.block_type>.html"│
-        │   │      (17종 템플릿 — payload only access)    │
-        │   └─────────────────────────────────────────────┘
-        ▼
-report.html
-  (legacy six_act_theater 전용,
-   byte-equal 보장 — Anti-pattern #2)
+            ┌───────────┴───────────┐
+            ▼                       ▼
+  Step 2/5-A 분야 6종            Step 5-C 의도 전용 5종
+  ─────────────────────          ───────────────────────
+  · six_act_theater              · decision_brief   (what_to_do)
+    (인물극형 specialty,           · timeline_first  (what_happened)
+     v3.0.0 default 아님)         · scenario_first  (what_next)
+  · financial_transmission       · mechanism_decomp (why_happened)
+  · tech_decomposition           · industry_value_chain
+  · geopolitical_strategic         (산업·가치사슬)
+  · accident_forensic
+  · policy_implementation
+            │                       │
+            └───────────┬───────────┘
+                        ▼
+   ReportSynthesizer.synthesize(result, archetype)
+            │
+   ┌────────┴─────────────┐
+   ▼                      ▼
+ six_act_theater          그 외 archetype (블록 디스패처 경로 — Step 3, v2.7.0)
+ → render('report.html')  ┌─────────────────────────────────────────────┐
+ (legacy, byte-equal      │ _build_blocks(): for section in             │
+  보장 — Anti-pattern #2) │   archetype.section_plan(strategy):         │
+                          │   for block_type in section.block_types:    │
+                          │     payload = _BLOCK_BUILDERS[type](result) │
+                          │     if payload: AnalysisBlock(...)          │
+                          │ result.strategy.section_plan = plan         │
+                          │ result.blocks = [...]                       │
+                          └────────────────────┬────────────────────────┘
+                                               ▼
+                          ┌─────────────────────────────────────────────┐
+                          │ render('report_block.html', ...)            │
+                          │  iterate section_plan, dispatch by          │
+                          │  section_id → include blocks/<type>.html    │
+                          │  (17종 BlockType, payload-only access)      │
+                          └─────────────────────────────────────────────┘
 ```
 
 빌더 매핑·블록 카탈로그의 SSOT 는 코드 (`src/agents/report_synthesizer.py:_BLOCK_BUILDERS`, `src/models.py:BlockType`). 사람-친화 미러는 [docs/CATALOGS.md §3-4](CATALOGS.md). 신규 archetype 추가 시 `src/archetypes/<name>.py` 신설 → `registry.py` 등록 → CATALOGS §3 갱신 (Anti-pattern #14). 신규 BlockType 추가 시 `src/models.py:BlockType` Literal 확장 → `src/templates/blocks/<type>.html` 신설 → `_BLOCK_BUILDERS` 등록 → CATALOGS §4 갱신 (Anti-pattern #15).
 
-### 5.2 보고서 구조 — six_act_theater (default archetype)
+### 5.2 보고서 구조 — six_act_theater (인물극형 specialty)
+
+> v3.0.0 부터 default 가 아님. `select_archetype()` 매트릭스의 3순위 (`geopolitical` + `who_benefits`/`what_happened`) 또는 4순위 fallback 에서만 라우팅.
 
 | 막 | 영문 | 한글 | 내용 |
 |----|------|------|------|

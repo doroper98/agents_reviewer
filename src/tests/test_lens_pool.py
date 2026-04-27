@@ -43,13 +43,17 @@ class _StubConfig:
 
 
 class TestLensRegistry:
-    def test_eight_lenses_registered(self) -> None:
+    def test_lens_count_v3(self) -> None:
+        """V3 Step 5-C 후 11종: 분야 6 + 메타 2 + 페르소나 이전 3."""
         lenses = list_lenses()
-        assert len(lenses) == 8
+        assert len(lenses) == 11
         expected = {
+            # Step 5-A
             "geopolitical", "financial_transmission", "tech_architecture",
             "policy_implementation", "accident_causality", "market_structure",
             "red_team", "pre_mortem",
+            # Step 5-C — 페르소나 이전
+            "stakeholder", "structural", "cascade",
         }
         assert set(lenses) == expected
 
@@ -118,10 +122,15 @@ class TestLensExecution:
 
 
 class TestArchetypeExtension:
-    def test_six_archetypes_registered(self) -> None:
+    def test_archetype_count_v3(self) -> None:
+        """V3 Step 5-C 후 11종 archetype."""
         ids = list_archetypes()
-        assert len(ids) == 6
-        for new_id in ("geopolitical_strategic", "accident_forensic", "policy_implementation"):
+        assert len(ids) == 11
+        for new_id in (
+            "geopolitical_strategic", "accident_forensic", "policy_implementation",
+            "decision_brief", "timeline_first", "scenario_first",
+            "mechanism_decomp", "industry_value_chain",
+        ):
             assert new_id in ids
 
     def test_new_archetypes_use_block_dispatcher(self) -> None:

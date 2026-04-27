@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:

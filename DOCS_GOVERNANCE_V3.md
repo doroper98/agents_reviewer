@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v2.4.1
+last_synced_with: v3.0.0
 ssot_for:
   - "문서 거버넌스 규칙 (3-Tier, SSOT 매트릭스, 헤더 규약, Change Propagation)"
 depends_on: []

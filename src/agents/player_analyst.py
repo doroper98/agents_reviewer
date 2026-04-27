@@ -1,8 +1,22 @@
-"""Player Analyst Agent -- key actors identification."""
+"""Player Analyst Agent -- key actors identification.
+
+DEPRECATED since v3.0.0. Use ``src.lenses.stakeholder_lens.StakeholderLens`` instead.
+Legacy persona file is preserved (Anti-pattern #1 — 즉시 삭제 금지).
+Removal scheduled for v4.0.0 (GOAL.md FUT-LEGACY-001).
+"""
 
 from __future__ import annotations
 
+import warnings as _warnings
 from datetime import datetime
+
+_warnings.warn(
+    "src.agents.player_analyst.PlayerAnalyst is deprecated since v3.0.0. "
+    "Use src.lenses.stakeholder_lens.StakeholderLens instead. "
+    "Legacy import path scheduled for removal in v4.0.0 (GOAL.md FUT-LEGACY-001).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 from src.agents.base import BaseAgent
 from src.config import Config

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:

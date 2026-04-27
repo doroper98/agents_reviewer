@@ -12,11 +12,12 @@ from src.models import AnalysisStrategy, ReportSectionPlan
 class SixActTheaterArchetype:
     archetype_id: str = "six_act_theater"
     name: str = "6막 극장"
-    # Default fallback archetype — applies to all intents but best for 인물극형 사건.
-    suitable_intents: list = [
-        "what_happened", "why_happened", "who_benefits",
-        "where_spreads", "what_next", "where_vulnerable", "what_to_do",
-    ]
+    # V3 Step 5-C (v3.0.0): suitable_intents 좁힘. 인물극형 사건(외교/정치/갈등) 전용 specialty.
+    # default fallback 역할은 select_archetype() 의 4순위(최종 fallback) 에서 별도 처리 —
+    # 다른 의도는 의도 전용 archetype (decision_brief, timeline_first, scenario_first,
+    # mechanism_decomp) 에 양보. Anti-pattern #2: archetype 자체는 *영구 보존*, suitable_intents
+    # 만 좁힌다.
+    suitable_intents: list = ["who_benefits", "what_happened"]
     suitable_event_types: list[str] = [
         "war", "diplomacy", "political_conflict", "international_relations",
         "leadership_change", "election", "general",

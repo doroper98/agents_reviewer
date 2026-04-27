@@ -9,7 +9,7 @@ import shutil
 import time
 from typing import Any, Callable, Coroutine, Optional
 
-from src.archetypes.registry import get_archetype, list_archetypes
+from src.archetypes.registry import get_archetype, list_archetypes, select_archetype
 from src.config import Config
 from src.lenses.registry import get_lens, list_lenses
 from src.models import (
@@ -29,7 +29,7 @@ from src.agents.synthesis_judge import SynthesisJudge
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.9.5"
+VERSION = "v3.0.0"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
@@ -969,7 +969,21 @@ class Orchestrator:
         result.total_duration_seconds = time.time() - start_time
 
         report_theme = strategy.theme or "burgundy"
-        archetype = get_archetype(strategy.report_archetype)
+        # V3 Step 5-C (v3.0.0): 하이브리드 라우팅. LLM 의 report_archetype 출력을 1순위 후보로
+        # 받되, select_archetype() 의 정밀 매트릭스가 *최종 결정자*. LLM 출력이 매트릭스
+        # 결과와 다르면 매트릭스를 우선.
+        llm_archetype = get_archetype(strategy.report_archetype)
+        matrix_archetype = select_archetype(strategy)
+        if llm_archetype.archetype_id != matrix_archetype.archetype_id:
+            logger.info(
+                "[orchestrator] archetype mismatch — LLM=%s, matrix=%s. "
+                "Matrix takes precedence (v3.0.0 정밀 우선순위).",
+                llm_archetype.archetype_id, matrix_archetype.archetype_id,
+            )
+        archetype = matrix_archetype
+        # Persist the resolved archetype back to strategy so downstream (block builders,
+        # report headers) sees a consistent value.
+        strategy.report_archetype = archetype.archetype_id
         logger.info(
             "[orchestrator] Routing report through archetype=%s (template=%s)",
             archetype.archetype_id, archetype.template_path(),

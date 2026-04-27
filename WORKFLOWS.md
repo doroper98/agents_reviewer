@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "분석 실행 워크플로우 (텔레그램 명령 → 보고서)"
   - "개발 워크플로우"

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.4.1
+last_synced_with: v3.0.0
 ssot_for:
   - "V3 리팩토링 단계별 명세 (Step 0~5)"
   - "V3 File Change Matrix"

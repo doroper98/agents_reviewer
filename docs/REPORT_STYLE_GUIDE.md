@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.4.1
+last_synced_with: v3.0.0
 ssot_for:
   - "보고서 톤앤매너 스타일 가이드 (abhinavbwj 기반)"
 depends_on:

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.9.5
+last_synced_with: v3.0.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -207,6 +207,108 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
 
 > 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.H. v3.0.0 — Step 5-C: archetype 11종 완성 + 페르소나 → lens 이전 (V3 메이저)
+
+2026-04-27 적용. [REFACTOR_V3_PLAN.md §5 Step 5](REFACTOR_V3_PLAN.md) 의 5-C — V3 리팩토링 최종 세션. 메이저 릴리스 v3.0.0.
+
+### 사용자 승인 결정 (착수 전 확정)
+
+- **A: archetype 매트릭스 정밀 분리** — 1순위는 분야+의도 조합. 같은 분야라도 의도에 따라 다른 archetype 으로 라우팅 (예: tech+what_next → scenario_first, tech+what_to_do → decision_brief, tech+why_happened → tech_decomposition). geopolitical 은 3순위로 강등.
+- **B: 페르소나 → lens 이전 시 alias 재바인딩 회피** — `LensRunner.run()` vs 페르소나 `.analyze()` 인터페이스가 달라 alias 재바인딩 시 호출 측 코드 깨짐. 대신 (a)+(b) 하이브리드: 페르소나 모듈 보존 + module-level `DeprecationWarning` + `src/agents/__init__.py` 가 lens 클래스도 함께 노출. v4.0.0 에서 모듈 제거 (`FUT-LEGACY-001`).
+- **C: lens 11종 표기** — 분야 6 + 메타 2 + 페르소나 이전 3 = 11. AC-7 의 "≥9" 충족. 모든 문서 표기는 정확히 "11종 (분야 6 + 메타 2 + 페르소나 이전 3)".
+- **D: AC-8 Pydantic ValidationError 수용** — `recommended_lenses: max_length=4` 로 5개 이상 시 `ValidationError` (subclass of `ValueError`). 이중 가드는 orchestrator `LENS_CAP_PER_EVENT=4`.
+- **E: 하이브리드 라우팅** — Strategy Planner 가 LLM 후보 1순위를 출력, `select_archetype()` matrix 가 최종 결정자. mismatch 시 INFO 로그 + matrix 채택 + `strategy.report_archetype` 갱신.
+
+### 수행 내역
+
+**신규 archetype 5종 (`src/archetypes/`)**:
+- `decision_brief.py` — `what_to_do` 의도 전용. 판단 요약 → 옵션 비교 → 옵션별 리스크 → 권고 → Pre-mortem → 감시 신호.
+- `timeline_first.py` — `what_happened` 의도 전용. 핵심 요약 → 사실 타임라인 → 핵심 수치 → 출처 평가 → 미확인 사항.
+- `scenario_first.py` — `what_next` 의도 전용. 기준 시나리오 → 분기 시나리오 → 베이지안 업데이트 가이드 → 감시 신호.
+- `mechanism_decomp.py` — `why_happened` 의도 전용. 표층 현상 → 직접 원인 → 구조적 원인 → 제1원리 → 흔한 오해.
+- `industry_value_chain.py` — 산업·가치사슬. 산업 구조 → 가치사슬 → 경쟁 구도 → 수익성 압력 → 전략 옵션 → 의사결정 포인트.
+
+**`src/archetypes/registry.py`**:
+- `_REGISTRY` 11종 등록 (Step 2 3종 + Step 5-A 3종 + Step 5-C 5종).
+- `_classify_event_type()` — free-text event_type → {tech, accident, financial, industry, geopolitical, policy, general} 정규화.
+- `select_archetype(strategy)` — 4-tier 우선순위 매트릭스 (분야+의도 → 의도 전용 → geopolitical → fallback). 자세한 분기 표는 [docs/CATALOGS.md §3.1](docs/CATALOGS.md).
+- `six_act_theater.suitable_intents` 7종(default) → 2종(`who_benefits`, `what_happened`). 인물극형 specialty 로 좁힘 (Anti-pattern #2 위반 아님 — 코드/템플릿 그대로, 적용 범위만 좁힘).
+
+**페르소나 → lens 이전 3종 (`src/lenses/`)**:
+- `stakeholder_lens.py` (구 PlayerAnalyst) — 행위자 식별, 동기, 위험도, 연합 가능성. `suitable_intents=[who_benefits, what_happened]`.
+- `structural_lens.py` (구 DynamicsAnalyst) — 게임이론, 비대칭, 전환점, 피드백 루프. `suitable_intents=[why_happened, where_vulnerable]`. 범용.
+- `cascade_lens.py` (구 ChainReactionAnalyst) — 인과 사슬, 도미노, 와일드카드, 차단점. `suitable_intents=[where_spreads, what_next]`. 범용.
+- `registry.py` 의 `_LENS_CLASSES` 11종 등록 (Step 5-A 8종 + Step 5-C 3종).
+
+**페르소나 deprecation**:
+- `src/agents/player_analyst.py`, `dynamics_analyst.py`, `chain_reaction_analyst.py` 각 모듈 최상단에 `_warnings.warn(..., DeprecationWarning, stacklevel=2)` 삽입. `stacklevel=2` 로 호출 측 import 행이 경고 위치로 표기됨.
+- `src/agents/__init__.py` — 페르소나 클래스 + 신규 lens 클래스 모두 노출 (alias 재바인딩 *없음*). 호출 측 코드 변경 0.
+
+**Orchestrator 통합**:
+- `VERSION v2.9.5 → v3.0.0`.
+- `from src.archetypes.registry import select_archetype, get_archetype` import 추가.
+- 보고서 합성 직전: LLM 후보 (`get_archetype(strategy.report_archetype)`) + matrix (`select_archetype(strategy)`) 양쪽 산출 → mismatch 시 INFO 로그 → matrix 결과 채택 + `strategy.report_archetype` 갱신 (보고서 헤더 일관성).
+
+**테스트 (`src/tests/test_archetype_selection.py` — 신규 23 케이스)**:
+- `TestArchetypeRegistry` — 11종 등록 + Protocol 검증 + `six_act_theater.suitable_intents` narrow 검증 (AC-3).
+- `TestNewArchetypeSectionPlans` — 5종 신규 archetype 의 section_plan / archetype_id / suitable_intents parametrize.
+- `TestSelectionMatrix` — 10-case 회귀 매트릭스 (6 legacy 케이스 + 4 의도 전용 케이스).
+- `TestTechIntentDifferentiation` — tech+what_next → scenario_first / tech+what_to_do → decision_brief / tech+why_happened → tech_decomposition.
+- `TestFallbackWarning` — AC-6 fallback warning + 미등록 archetype_id 폴백.
+
+**기존 테스트 갱신 (`src/tests/test_lens_pool.py`)**:
+- `test_lens_count_v3` — 11 = 분야 6 + 메타 2 + 페르소나 이전 3.
+- `test_archetype_count_v3` — 11.
+
+**문서 동기화 (전체 *.md)**:
+- 모든 헤더 `last_synced_with: v3.0.0` (15 파일).
+- `CHANGELOG.md` v3.0.0 entry 추가 (Added/Changed/Deprecated/Removed/Security/Migration).
+- `README.md` Status 갱신 + Recent Changes 5건 + What This Does 흐름 갱신.
+- `docs/CATALOGS.md` §1 페르소나 deprecated 마킹 / §2 lens 11종 표 / §3 archetype 11종 표 / §3.1 4-tier 매트릭스 / §3.2 (예정 5종) 삭제.
+- `docs/ARCHITECTURE.md` §1 한 줄 요약 갱신 / §3 Phase 3.75 lens 풀 11종 / §5.1 archetype 분기 다이어그램 11종 + 하이브리드 라우팅 / §5.2 title `(default archetype)` → `(인물극형 specialty)`.
+- `GOAL.md` REQ-V3-008 (archetype 11종) + REQ-V3-009 (페르소나 → lens 이전) + FUT-LEGACY-001 추가.
+
+### Acceptance Criteria — Step 5-C (17 main + 5 추가, 모두 [x])
+
+1. [x] AC-1: archetype 11종 등록 (`list_archetypes()` 길이 11)
+2. [x] AC-2: 신규 5종 모두 `ReportArchetype` Protocol 충족 (runtime_checkable isinstance)
+3. [x] AC-3: `six_act_theater.suitable_intents` = [`who_benefits`, `what_happened`] (specialty)
+4. [x] AC-4: `select_archetype()` 매트릭스 4-tier 모두 분기 검증 — 10-case 회귀 PASS
+5. [x] AC-5: tech 의도 차등화 — what_next/what_to_do/why_happened 별 다른 archetype
+6. [x] AC-6: fallback 시 warning 로그 (caplog 검증)
+7. [x] AC-7: lens ≥ 9 (실제 11 = 분야 6 + 메타 2 + 페르소나 이전 3)
+8. [x] AC-8: `recommended_lenses` 5개 이상 시 Pydantic `ValidationError` (subclass of `ValueError`)
+9. [x] AC-9: 페르소나 import 시 `DeprecationWarning` 발생 (3 모듈 모두)
+10. [x] AC-10: `src/agents/__init__.py` — 페르소나 + 신규 lens 양쪽 export, alias 재바인딩 없음
+11. [x] AC-11: orchestrator 하이브리드 라우팅 — LLM 후보 + matrix 결과 모두 산출, mismatch 시 INFO 로그 + matrix 채택
+12. [x] AC-12: `strategy.report_archetype` 가 최종 archetype_id 로 갱신 (보고서 헤더 일관성)
+13. [x] AC-13: six_act_theater 보고서 출력 byte-equal 보장 (legacy 분기 무수정)
+14. [x] AC-14: `src/orchestrator.py:VERSION = "v3.0.0"` 단일 SSOT
+15. [x] AC-15: 모든 *.md 헤더 `last_synced_with: v3.0.0` 일관
+16. [x] AC-16: 71 pytest (archetype 23 + lens 11 + quality 18 + watchlist 19) 모두 PASS
+17. [x] AC-17: `python -m py_compile` 모든 src 파일 통과
+18. [x] 추가 #1: DOCS_GOVERNANCE §10 grep 통과 (사실 중복 0건)
+19. [x] 추가 #2: SSOT 위반 검사 — archetype/lens 카탈로그는 코드만 SSOT
+20. [x] 추가 #3: 토큰 추정 — lens 4-cap 으로 사건당 ≤57K 유지 (ARCHITECTURE §3.1)
+21. [x] 추가 #4: 메모리 추정 — Watchlist DB 무관 (별도 테이블, 인덱스 3개)
+22. [x] 추가 #5: 분기 검토 일정 등록 — 본 항목 §10 추가 (3개월 후 2026-07-27)
+
+### 변경된 파일
+
+- 신규: `src/archetypes/{decision_brief, timeline_first, scenario_first, mechanism_decomp, industry_value_chain}.py` (5 파일), `src/lenses/{stakeholder, structural, cascade}_lens.py` (3 파일), `src/tests/test_archetype_selection.py`
+- 수정: `src/archetypes/registry.py` (11종 등록 + select_archetype + _classify_event_type), `src/archetypes/six_act_theater.py` (suitable_intents narrow), `src/lenses/registry.py` (3종 추가), `src/orchestrator.py` (VERSION + 하이브리드 라우팅), `src/agents/__init__.py` (lens export), `src/agents/{player,dynamics,chain_reaction}_analyst.py` (DeprecationWarning), `src/tests/test_lens_pool.py` (count 갱신)
+- 수정 (문서): `CLAUDE.md`, `GOAL.md`, `README.md`, `CHANGELOG.md`, `WORKFLOWS.md`, `DOCS_GOVERNANCE_V3.md`, `REFACTOR_V3_PLAN.md`, `docs/{ARCHITECTURE, CATALOGS, DATA_MODELS, REPO_MAP, STYLEGUIDE, TESTING, REPORT_STYLE_GUIDE}.md`
+- 본 문서 (§9.H 신규 + §10 분기 검토 일정 등록)
+
+### v3.0.0 메이저 릴리스 마무리
+
+- 단일 커밋: `v3.0.0: archetype 11종 + lens 9종 + Watchlist + Quality Gate. V3 리팩토링 완료`
+- **NO main merge** (사용자 승인 후 수동) — develop 브랜치에 push 만.
+- **NO `git tag v3.0.0`** (사용자 승인 후 수동) — 메이저 태깅은 main merge 후.
+- 분기 검토 일정 — 2026-07-27 (3개월 후) §10 등록.
 
 ---
 
@@ -660,6 +762,20 @@ length: 18112 == 18112
 - SSOT 위반 grep 검사 통과 (실질 위반 0건, 단순 언급은 SSOT 위반 아님)
 
 V3 리팩토링 본 트랙 (Step 1~5) 은 별도 진행 — 본 작업은 Step 0 만 완료 후 멈춤.
+
+---
+
+## 9.I. 분기 검토 일정 (Quarterly Review Schedule)
+
+V3 리팩토링 완료 (v3.0.0, 2026-04-27) 직후 등록. 메이저 릴리스 후 코드/문서/SSOT 일관성을 정기적으로 점검.
+
+| 검토 일자 (예정) | 점검 항목 | 출력물 |
+|------------------|-----------|--------|
+| 2026-07-27 (3개월) | (1) `src/agents/{player,dynamics,chain_reaction}_analyst.py` 사용 빈도 — DeprecationWarning 로그 수집 후 v4.0.0 제거 가능성 평가. (2) archetype 매트릭스 라우팅 적중률 (LLM 후보 vs matrix 결과 mismatch 비율) 측정. (3) lens 4-cap 충분성 검증. (4) 모든 *.md `last_synced_with` ↔ 코드 VERSION 일치 grep. | DEVLOG §9.I 후속 항목 + (필요 시) FUT-LEGACY-001 priority 조정 |
+| 2026-10-27 (6개월) | (1) Watchlist auto-fire 통계 (deadline / `/fire` 비율). (2) Quality Gate 통과율·재시도율. (3) Synthesis Judge 모순 검출 빈도. (4) 토큰 사용량 vs ARCHITECTURE §3.1 추정치 일치 여부. | DEVLOG §9.J + (필요 시) GOAL.md FUT-* 추가 |
+| 2027-01-27 (9개월) | v4.0.0 사전 점검 — legacy alias 제거 영향 분석 (`grep -r "from src.agents.player_analyst"` 등 외부 호출 0건 확인). | v4.0.0 RFC 초안 |
+
+검토 시 발견된 사실은 본 §9.I 가 아니라 신규 §9.J / §9.K… append-only 항목으로 기록 (Anti-pattern: DEVLOG 과거 항목 수정 금지).
 
 ---
 
