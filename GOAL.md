@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "기능 요구사항 ID 체계 (REQ-*)"
   - "비기능 요구사항 (NFR-*)"
@@ -44,6 +44,8 @@ last_review: 2026-04-26
 | REQ-V3-003 | Block | 보고서 블록 렌더링 시스템 (AnalysisBlock + 17종 BlockType + report_block.html 디스패처; 매크로 1:1 결합 해소) | P0 | ✅ |
 | REQ-V3-004 | Quality | Quality Gate 1/2 (Plan Sanity + Coverage Check); 실패 시 최대 2회 재시도 후 부분-분석 알림 | P0 | ✅ |
 | REQ-V3-005 | Traceability | Claim-Evidence 추적성 (evidence_ids ≥1 Pydantic 강제) + ConfidenceProfile 3축 분해 + Synthesis Judge 모순 노출 | P0 | ✅ |
+| REQ-V3-006 | Lens Pool | LensRunner ABC + 8종 lens (geopolitical / financial_transmission / tech_architecture / policy_implementation / accident_causality / market_structure / red_team / pre_mortem) + 사건당 4개 동시 실행 한도 (Anti-pattern #6) | P0 | ✅ |
+| REQ-V3-006a | Archetype Extension | 신규 archetype 3종 (geopolitical_strategic / accident_forensic / policy_implementation) — 사진 매트릭스 6 케이스 모두 라우팅 | P0 | ✅ |
 
 ### 비기능 요구사항 (Non-Functional)
 
@@ -84,7 +86,7 @@ last_review: 2026-04-26
 
 | ID | 설명 | 우선순위 |
 |----|------|----------|
-| FUT-001 | Mac Mini 이전 시 병렬 실행 복원 | P2 |
+| FUT-001 | Mac Mini 이전 시 병렬 실행 복원 (lens 4개 동시 호출 → 분석 시간 단축) | P2 |
 | FUT-002 | 분석 중 사용자 추가 요청 반영 (중간 피드백) | P2 |
 | FUT-003 | 분석 대기열 (여러 분석 동시 요청) | P3 |
 | FUT-004 | Figma MCP를 활용한 고급 시각화 | P3 |

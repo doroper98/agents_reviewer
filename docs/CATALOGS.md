@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
@@ -41,19 +41,39 @@ last_review: 2026-04-26
 
 ---
 
-## 2. Analysis Lenses — V3 후 도입 예정
+## 2. Analysis Lenses — V3 Step 5-A (v2.9.0) 도입
 
-V3 Step 5 에서 `src/lenses/` 디렉토리에 LensRunner ABC 와 6개 기본 렌즈가 추가된다. 도입 후 등록될 렌즈 풀:
+`src/lenses/registry.py` 의 8종 미러. lens 정의 SSOT 는 코드. 사건당 동시 실행 한도 = 4 (Anti-pattern #6).
 
-| Lens ID | 의미 | 출처 모듈 |
-|---------|------|-----------|
-| (V3 Step 5 후 작성) | — | `src/lenses/registry.py` |
+| Lens ID | 모듈 | 분야 | suitable_intents (top) | method_steps 핵심 |
+|---------|------|------|------------------------|-------------------|
+| `geopolitical` | `src/lenses/geopolitical_lens.py` | 지정학 | who_benefits, what_next, where_vulnerable | DIME / PMESII / Escalation Ladder / Capability-Intent Matrix |
+| `financial_transmission` | `src/lenses/financial_transmission_lens.py` | 금융·거시 | where_spreads, where_vulnerable, what_next | Balance Sheet Map / Flow of Funds / Transmission Channel / Liquidity Stress |
+| `tech_architecture` | `src/lenses/tech_architecture_lens.py` | 기술·AI | where_vulnerable, what_to_do, why_happened | Architecture Decomposition / Dependency Graph / Bottleneck Analysis |
+| `policy_implementation` | `src/lenses/policy_implementation_lens.py` | 정책 | who_benefits, what_to_do, where_vulnerable | Stakeholder Incentive Map / Distributional Impact / Implementation Gap |
+| `accident_causality` | `src/lenses/accident_causality_lens.py` | 사고·재난 | why_happened, where_vulnerable, what_to_do | Fault Tree / Bow-Tie / Swiss Cheese / STAMP |
+| `market_structure` | `src/lenses/market_structure_lens.py` | 시장 | who_benefits, where_spreads, what_next | Network Analysis / Game Theory / Regime Shift |
+| `red_team` | `src/lenses/red_team_lens.py` | 메타 (반대 가설) | 7종 모두 (보조) | ACH / Pre-mortem / Devil's Advocate |
+| `pre_mortem` | `src/lenses/pre_mortem_lens.py` | 메타 (실패 시나리오) | what_to_do, what_next, where_vulnerable | 실패 가정 후 역설계 |
 
-V3 적용 전까지 본 섹션은 비어 있다. 빈 섹션을 *임의로 채우지 않는다* (Anti-pattern 9).
+### 2.1 Lens 선택 규칙 (Strategy Planner 가이드)
+
+- 사건 핵심 분야 lens 1~2개 + 메타 lens (`red_team` 또는 `pre_mortem`) 0~1개 권장.
+- **절대 5개 이상 금지** — Pydantic `recommended_lenses: max_length=4` + orchestrator `LENS_CAP_PER_EVENT=4` 이중 가드 (Anti-pattern #6).
+- 미등록 lens_id 는 `red_team` 으로 폴백 + warning 로그 (registry 가드).
+
+### 2.2 Lens 추가 절차
+
+신규 lens 추가 시 (Anti-pattern #14 회피):
+1. `src/lenses/<name>_lens.py` 신설 — `LensRunner` 상속, 클래스 속성 6종 + system_prompt 정의
+2. `src/lenses/registry.py` `_LENS_CLASSES` 에 등록
+3. 본 §2 표 갱신
+4. `GOAL.md` 에 `REQ-LENS-*` 추가 (Appendix C 규칙)
+5. `src/tests/test_lens_pool.py` 에 isinstance 검증 추가
 
 ---
 
-## 3. Report Archetypes — V3 Step 2 (v2.6.0) 도입
+## 3. Report Archetypes — V3 Step 2 + 5-A 도입 (총 6종)
 
 archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 
@@ -62,20 +82,26 @@ archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 | `six_act_theater` | `src/archetypes/six_act_theater.py` | 인물극형 사건 (전쟁, 외교, 정치 갈등, 리더십, 선거). 분류 애매 시 default. | 7종 모두 | 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 |
 | `financial_transmission` | `src/archetypes/financial_transmission.py` | 시장/거시 사건 (환율, 금리, 자산 가격, 통화 정책, 신용). | `where_spreads`, `where_vulnerable`, `what_next` | 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표 |
 | `tech_decomposition` | `src/archetypes/tech_decomposition.py` | 기술/AI/IT 사건 (모델 출시, 시스템 장애, 사이버 보안, 인프라). | `where_vulnerable`, `what_to_do`, `why_happened` | 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고 |
+| `geopolitical_strategic` (5-A) | `src/archetypes/geopolitical_strategic.py` | 지정학·전쟁 (군사 행동, 안보 위기, 동맹 변동). | `who_benefits`, `what_next`, `where_vulnerable` | 사건 요약 → 전장·행위자 → 의도와 능력 → 확전 경로 → 억제 요인 → 감시 신호 |
+| `accident_forensic` (5-A) | `src/archetypes/accident_forensic.py` | 사고·재난 (산업재해, 자연재해, 시설 사고). | `why_happened`, `where_vulnerable`, `what_to_do` | 사실 타임라인 → 직접 원인 → 방어막 실패 → 조직적 원인 → 재발 방지 → 미해결 질문 |
+| `policy_implementation` (5-A) | `src/archetypes/policy_implementation.py` | 정책·사회 (법안, 규제, 사회 변화, 부동산 정책). | `who_benefits`, `what_to_do`, `where_vulnerable` | 정책 의도 → 이해관계자 → 제약 조건 → 집행 가능성 → 부작용 → 수정안 |
 
-### 3.1 선택 매트릭스 (Strategy Planner 가이드)
+### 3.1 선택 매트릭스 (Strategy Planner 가이드, 충돌 시 위쪽 우선)
 
 Strategy Planner 프롬프트에 박힌 분기 규칙. 자세한 본문은 `src/orchestrator.py:_generate_analysis_strategy()`.
 
-- `user_intent='where_spreads'` AND `event_type ∈ {financial, market, macro, currency, interest_rate, asset_price}` → `financial_transmission`
-- `event_type ∈ {tech, ai, it, software, model_release, system_outage, cyber_security}` → `tech_decomposition`
-- 그 외 (인물극, 외교, 갈등, 정치, 일반) → `six_act_theater`
+- 사고·재난 (화재/폭발/붕괴/침수/산업재해/자연재해) → `accident_forensic`
+- 정책·법안·규제 (부동산 규제/조세/노동 정책/규제 발표) → `policy_implementation`
+- 군사·전쟁·안보 위기·동맹 변동 → `geopolitical_strategic`
+- 시장·거시 (환율/금리/자산가격/유동성 위기) AND `user_intent ∈ {where_spreads, where_vulnerable, what_next}` → `financial_transmission`
+- 기술·AI·IT (모델 출시/시스템 장애/사이버 사고/인프라) → `tech_decomposition`
+- 그 외 인물극형 (외교 갈등/정치 분쟁/리더십 변화) 또는 분류 애매 → `six_act_theater`
 
 LLM 이 미등록 archetype_id 를 출력하면 `get_archetype()` 가 `six_act_theater` 로 폴백 (warning 로그).
 
 ### 3.2 V3 후 추가 archetype (예정)
 
-REFACTOR_V3_PLAN.md Appendix B 의 11종 중 Step 2 에서는 3종만 도입. 나머지 8종 (geopolitical_strategic, industry_value_chain, accident_forensic, policy_implementation, decision_brief, timeline_first, scenario_first, mechanism_decomp) 은 V3 후속 트랙에서 추가. 추가 시 본 표 갱신 + `src/archetypes/<name>.py` 신설 + `registry.py` 등록 (Anti-pattern #14 회피).
+REFACTOR_V3_PLAN.md Appendix B 의 11종 중 Step 2 + 5-A 에서는 6종 도입. 나머지 5종 (industry_value_chain, decision_brief, timeline_first, scenario_first, mechanism_decomp) 은 v3.x 패치 트랙에서 추가. 추가 시 본 표 갱신 + `src/archetypes/<name>.py` 신설 + `registry.py` 등록 (Anti-pattern #14 회피).
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -22,7 +22,30 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
-(다음 릴리스 항목 대기 중.)
+(다음 릴리스 항목 대기 중 — v2.9.5 Watchlist + v3.0.0 페르소나 deprecation.)
+
+---
+
+## [2.9.0] — 2026-04-26
+
+### Added
+- **V3 Step 5-A — Lens Pool 도입**
+  - `src/lenses/` 디렉토리 + `LensRunner` ABC + `registry.py` (8종 lens registry, 미등록 폴백)
+  - 8종 lens 신설: `geopolitical`, `financial_transmission`, `tech_architecture`, `policy_implementation`, `accident_causality`, `market_structure`, `red_team`, `pre_mortem`
+  - 사건당 동시 실행 한도 = 4 (Pydantic `max_length=4` + orchestrator `LENS_CAP_PER_EVENT=4` 이중 가드, Anti-pattern #6)
+  - 신규 archetype 3종: `geopolitical_strategic`, `accident_forensic`, `policy_implementation` (총 6 archetypes)
+  - `src/tests/test_lens_pool.py` — 11 pytest 케이스
+  - `result.findings = wrapped + lens_findings` (Step 4 wrap + Step 5 lens 동시 운용)
+
+### Changed
+- `src/orchestrator.py:VERSION` `v2.8.0 → v2.9.0`
+- Strategy Planner 프롬프트에 archetype 6종 + lens 8종 매트릭스 + 선택 규칙 + 4-cap 명시
+- 텔레그램 진행 메시지에 "🔬 Lens 풀 실행: [...] (N/4 cap)" 추가
+
+### Migration notes
+- 기존 페르소나 (Player/Dynamics/ChainReaction) 는 *그대로 유지*. lens 는 *추가* 호출이라 v2 회귀 0건. 페르소나 → lens 이전은 v3.0.0 (Step 5-C) 에서.
+- Watchlist 자동화 (5-B) 는 v2.9.5 마일스톤 — 별도 PR.
+- six_act_theater 보고서 출력 byte-equal 보장 유지 (legacy 분기 무수정).
 
 ---
 

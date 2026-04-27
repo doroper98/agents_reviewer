@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "테스트 전략 (CLI gate, 수동 검증 절차)"
   - "Quality Gate 단위 테스트 전략 (V3 Step 4)"

@@ -11,6 +11,7 @@ from typing import Any, Callable, Coroutine, Optional
 
 from src.archetypes.registry import get_archetype, list_archetypes
 from src.config import Config
+from src.lenses.registry import get_lens, list_lenses
 from src.models import (
     AnalysisRequest, AnalysisStrategy, AnalyticalFinding, Claim, ConfidenceProfile,
     Evidence, FullAnalysisResult, JudgmentVerdict,
@@ -27,7 +28,7 @@ from src.agents.synthesis_judge import SynthesisJudge
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.8.0"
+VERSION = "v2.9.0"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
@@ -114,22 +115,43 @@ class Orchestrator:
             "what_next: 시나리오/전망 — 앞으로 어떻게 될 것인가\n"
             "where_vulnerable: 취약점 분석 — 어디가 약한 고리인가\n"
             "what_to_do: 의사결정 — 어떻게 대응해야 하나\n\n"
-            "=== report_archetype 3종 (정확히 1개 선택, archetype_id 그대로 출력) ===\n"
-            "six_act_theater (기본값): 인물극형 사건 (전쟁, 외교, 정치 갈등, 리더십, 선거).\n"
-            "  · suitable_intents: 7종 모두 가능. 분류가 애매하면 이걸로 간다.\n"
-            "  · 섹션 흐름: 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 (6막)\n"
-            "financial_transmission: 시장/거시 사건 (환율, 금리, 자산 가격, 통화 정책, 신용 시장).\n"
-            "  · suitable_intents: where_spreads, where_vulnerable, what_next 우선.\n"
-            "  · suitable_event_types: financial, market, macro, currency, interest_rate, asset_price 등.\n"
-            "  · 섹션 흐름: 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표\n"
-            "tech_decomposition: 기술/AI/IT 사건 (모델 출시, 시스템 장애, 사이버 보안, 인프라).\n"
-            "  · suitable_intents: where_vulnerable, what_to_do, why_happened 우선.\n"
-            "  · suitable_event_types: tech, ai, it, software, model_release, system_outage, cyber_security 등.\n"
-            "  · 섹션 흐름: 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고\n\n"
-            "선택 매트릭스 (강한 가이드):\n"
-            "- user_intent='where_spreads' AND event_type∈{financial, market, macro, currency, interest_rate} → financial_transmission\n"
-            "- event_type∈{tech, ai, it, software, model_release, system_outage} → tech_decomposition\n"
-            "- 그 외 (인물극, 외교, 갈등, 정치, 일반) → six_act_theater\n\n"
+            "=== report_archetype 6종 (정확히 1개 선택, archetype_id 그대로 출력) ===\n"
+            "six_act_theater (기본값): 인물극형 사건 (전쟁/외교/정치 갈등/리더십/선거 — 분류 애매 시 폴백).\n"
+            "  · 섹션: 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 (6막)\n"
+            "financial_transmission: 시장/거시 (환율/금리/자산가격/통화정책/신용/부동산).\n"
+            "  · suitable_intents: where_spreads, where_vulnerable, what_next\n"
+            "  · 섹션: 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표\n"
+            "tech_decomposition: 기술/AI/IT (모델 출시/시스템 장애/사이버 보안/인프라).\n"
+            "  · suitable_intents: where_vulnerable, what_to_do, why_happened\n"
+            "  · 섹션: 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고\n"
+            "geopolitical_strategic: 지정학·전쟁 (군사 행동/안보 위기/동맹).\n"
+            "  · suitable_intents: who_benefits, what_next, where_vulnerable\n"
+            "  · 섹션: 사건 요약 → 전장·행위자 → 의도와 능력 → 확전 경로 → 억제 요인 → 감시 신호\n"
+            "accident_forensic: 사고·재난 (산업재해/자연재해/시설 사고/안전).\n"
+            "  · suitable_intents: why_happened, where_vulnerable, what_to_do\n"
+            "  · 섹션: 사실 타임라인 → 직접 원인 → 방어막 실패 → 조직적 원인 → 재발 방지 → 미해결 질문\n"
+            "policy_implementation: 정책·사회 (법안/규제/사회 변화/부동산 정책/조세).\n"
+            "  · suitable_intents: who_benefits, what_to_do, where_vulnerable\n"
+            "  · 섹션: 정책 의도 → 이해관계자 → 제약 조건 → 집행 가능성 → 부작용 → 수정안\n\n"
+            "archetype 선택 매트릭스 (강한 가이드, 충돌 시 위쪽 우선):\n"
+            "- 사고·재난 (화재/폭발/붕괴/침수/산업재해/자연재해) → accident_forensic\n"
+            "- 정책·법안·규제 (부동산 규제/조세/노동 정책/규제 발표) → policy_implementation\n"
+            "- 군사·전쟁·안보 위기·동맹 변동 → geopolitical_strategic\n"
+            "- 시장·거시 (환율/금리/자산가격/유동성 위기) AND user_intent ∈ {where_spreads, where_vulnerable, what_next} → financial_transmission\n"
+            "- 기술·AI·IT (모델 출시/시스템 장애/사이버 사고/인프라) → tech_decomposition\n"
+            "- 그 외 인물극형 (외교 갈등/정치 분쟁/리더십 변화) 또는 분류 애매 → six_act_theater\n\n"
+            "=== recommended_lenses 8종 (1~4개 선택, lens_id 그대로) ===\n"
+            "geopolitical: DIME/PMESII/Escalation Ladder/Capability-Intent. who_benefits/what_next/where_vulnerable.\n"
+            "financial_transmission: Balance Sheet/Flow of Funds/Transmission Channel/Liquidity Stress. 금융·거시.\n"
+            "tech_architecture: Architecture Decomposition/Dependency Graph/Bottleneck. 기술·AI·IT.\n"
+            "policy_implementation: Stakeholder Incentive/Distributional Impact/Implementation Gap. 정책·규제.\n"
+            "accident_causality: Fault Tree/Bow-Tie/Swiss Cheese/STAMP. 사고·재난.\n"
+            "market_structure: Network Analysis/Game Theory/Regime Shift. 시장 구조·경쟁.\n"
+            "red_team: ACH/Pre-mortem/Devil's Advocate. 메타-반론, 어떤 사건에도 보조 가능.\n"
+            "pre_mortem: 실패 가정 후 역설계. 의사결정·전망 보조.\n"
+            "lens 선택 규칙:\n"
+            "- 사건 핵심 분야의 분야별 lens 1~2개 + 메타 lens(red_team 또는 pre_mortem) 0~1개 권장.\n"
+            "- 절대 5개 이상 선택 금지 (Anti-pattern #6: 토큰 폭증). 4개가 상한.\n\n"
             "=== 분석 기법 레퍼런스 ===\n"
             "[인텔리전스] ACH(경쟁가설분석), Red Team, Key Assumptions Check, I&W(징후경보)\n"
             "[지정학/전략] DIME(외교·정보·군사·경제), PMESII(6차원환경), Escalation Ladder, Center of Gravity\n"
@@ -428,6 +450,86 @@ class Orchestrator:
                 claim_type="prediction",
             )
         return findings
+
+    # ------------------------------------------------------------------
+    # V3 Step 5-A — Lens Pool execution
+    # ------------------------------------------------------------------
+    #
+    # AnalysisStrategy.recommended_lenses 의 lens_id 들을 registry 로 resolve 해서 sequential
+    # 실행 (Anti-pattern: 병렬 실행 금지 — 1GB VM 메모리 보호, FUT-001 까지 보류).
+    # 사건당 최대 4개 (Anti-pattern #6 cap). 각 lens 가 산출한 finding 을 list 로 누적.
+
+    LENS_CAP_PER_EVENT: int = 4
+
+    async def _run_lenses(
+        self,
+        result: FullAnalysisResult,
+        evidence: list[Evidence],
+        status_callback: StatusCallback,
+    ) -> list[AnalyticalFinding]:
+        if result.strategy is None:
+            return []
+        requested = list(result.strategy.recommended_lenses or [])
+        # 등록된 lens 만 통과 + cap 적용 (Anti-pattern #6).
+        registered = set(list_lenses())
+        valid = [lid for lid in requested if lid in registered]
+        skipped = [lid for lid in requested if lid not in registered]
+        if skipped:
+            logger.warning(
+                "[orchestrator] Skipping unregistered lens IDs: %s "
+                "(registered: %s)", skipped, list(registered),
+            )
+        if len(valid) > self.LENS_CAP_PER_EVENT:
+            logger.warning(
+                "[orchestrator] Lens cap exceeded — strategy requested %d, "
+                "truncating to %d (Anti-pattern #6)",
+                len(valid), self.LENS_CAP_PER_EVENT,
+            )
+            valid = valid[: self.LENS_CAP_PER_EVENT]
+
+        if not valid:
+            logger.info("[orchestrator] No registered lenses to run")
+            return []
+
+        event_meta = {
+            "event_name": result.context.event_name if result.context else "",
+            "summary": result.context.summary if result.context else "",
+            "category": result.context.category if result.context else "",
+        }
+        core_questions = result.strategy.core_questions or []
+        directives = result.strategy.legacy_directives or {}
+
+        await self._notify(
+            f"🔬 Lens 풀 실행: {valid} ({len(valid)}/{self.LENS_CAP_PER_EVENT} cap)",
+            status_callback,
+        )
+
+        lens_findings: list[AnalyticalFinding] = []
+        for idx, lens_id in enumerate(valid):
+            lens = get_lens(lens_id, self.config)
+            answers_q = (
+                core_questions[idx % len(core_questions)] if core_questions else ""
+            )
+            # Reuse legacy directive when key matches (transitional shim).
+            directive = directives.get(lens_id, "")
+            try:
+                produced = await lens.run(
+                    evidence=evidence,
+                    directive=directive,
+                    event_meta=event_meta,
+                    answers_question=answers_q,
+                )
+                logger.info(
+                    "[orchestrator] lens=%s produced %d finding(s)",
+                    lens_id, len(produced),
+                )
+                lens_findings.extend(produced)
+            except Exception as e:
+                logger.warning(
+                    "[orchestrator] lens=%s execution error: %s; skipping",
+                    lens_id, e,
+                )
+        return lens_findings
 
     # ------------------------------------------------------------------
     # V3 Step 4 — Gate runner (with retry + partial-analysis alert)
@@ -812,7 +914,17 @@ class Orchestrator:
                 "🧮 종합 판단관: finding 들의 정합성·모순을 검사합니다.",
                 status_callback,
             )
-            result.findings = self._wrap_findings(result)
+            # 1) Wrap legacy v2 analyses (Step 4 path — backward compat).
+            wrapped = self._wrap_findings(result)
+            # 2) V3 Step 5-A: run lens pool (cap 4) on shared evidence.
+            evidence_pool, _ = self._make_evidence_pool(result)
+            lens_findings = await self._run_lenses(result, evidence_pool, status_callback)
+            # 3) Combined findings — both feed Synthesis Judge + gate 2.
+            result.findings = wrapped + lens_findings
+            logger.info(
+                "[orchestrator] findings: wrapped=%d + lens=%d = total=%d",
+                len(wrapped), len(lens_findings), len(result.findings),
+            )
             result.judgment = await self.synthesis_judge.judge(result.findings)
 
             async def _gate_2() -> tuple[bool, str]:

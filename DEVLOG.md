@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -207,6 +207,89 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
 
 > 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.F. v2.9.0 — Step 5-A: Lens Pool
+
+2026-04-26 적용. [REFACTOR_V3_PLAN.md §5 Step 5](REFACTOR_V3_PLAN.md) 의 5-A 부분 (Lens Pool 구축) 만 본 마일스톤. 5-B (Watchlist) / 5-C (페르소나 deprecation) 는 별도 세션 사용자 지시 대기.
+
+### 사용자 승인 결정 (착수 전 확정)
+
+- **A**: "4개" = 사건당 *동시 실행 한도* (Anti-pattern #6). 페르소나 lens 화는 5-C 에서 진행.
+- **B**: Watchlist 는 5-B 에서. asyncio task 봇 재시작 시 `WatchlistRegistry.load_active_signals()` 패턴.
+- **C**: archetype 3종 신설 — 본 마일스톤에 포함.
+- **D**: Appendix C 8 lens 모두 신설. 본격 prompt 튜닝은 v3.x.
+- **E**: AC 정확도 5/6 이상, SSOT/헤더 자동 검증 추가.
+
+### 수행 내역
+
+**Lens Pool (5-A 핵심)**:
+- `src/lenses/__init__.py`, `base.py` (`LensRunner` ABC + 공통 LLM 호출 + 출력 JSON 스키마 + Pydantic 가드 + heuristic fallback), `registry.py` (lens_id → LensRunner 인스턴스, 미등록 시 red_team 폴백)
+- 8종 lens 구현: `geopolitical_lens`, `financial_transmission_lens`, `tech_architecture_lens`, `policy_implementation_lens`, `accident_causality_lens`, `market_structure_lens`, `red_team_lens`, `pre_mortem_lens`. 각각 `lens_id`/`name`/`suitable_intents`/`suitable_event_types`/`method_steps`/`failure_modes`/`system_prompt` 6개 클래스 속성 + `_abstract_marker()` 노옵 정의.
+- 각 lens 의 system prompt 는 최소 (분야별 method 1줄 요약 + 음슴체 톤 + JSON 출력 가이드). 본격 튜닝은 v3.x 패치.
+
+**신규 archetype 3종 (5-A에 포함)**:
+- `geopolitical_strategic.py`: 사건 요약 → 전장·행위자 → 의도/능력 → 확전 경로 → 억제 요인 → 감시 신호
+- `accident_forensic.py`: 사실 타임라인 → 직접 원인 → 방어막 실패(Swiss Cheese) → 조직적 원인(STAMP) → 재발 방지 → 미해결 질문
+- `policy_implementation.py`: 정책 의도 → 이해관계자 → 제약 → 집행 가능성 → 부작용 → 수정안
+- `src/archetypes/registry.py` 에 3종 등록 (총 6 archetypes).
+
+**Orchestrator 통합**:
+- `src/orchestrator.py:VERSION` `v2.8.0 → v2.9.0`
+- Strategy Planner 프롬프트에 archetype 6종 + lens 8종 매트릭스 + 선택 규칙 + 4-cap 명시
+- `_run_lenses(result, evidence, status_callback)` 헬퍼 — `LENS_CAP_PER_EVENT=4` 런타임 가드, 미등록 lens_id 필터링
+- `result.findings = wrapped_findings + lens_findings` (Step 4 Wrap + Step 5 Lens 동시)
+- 텔레그램 진행 메시지에 "🔬 Lens 풀 실행: [...] (N/4 cap)" 추가
+
+**Pydantic 가드 강화**:
+- `AnalysisStrategy.recommended_lenses` 의 기존 `max_length=4` 가 1차 가드. orchestrator `LENS_CAP_PER_EVENT=4` 가 런타임 mutation 대비 2차 가드. 둘 다 Anti-pattern #6 회피.
+
+**테스트**:
+- `src/tests/test_lens_pool.py` — 11 케이스 (registry 8 + Protocol/ABC isinstance + fallback finding + archetype 6 + 4-cap 이중 가드)
+- 기존 `test_quality_gates.py` 18 케이스 모두 통과 — 빅뱅 회피 (Anti-pattern #12)
+
+### 회귀 테스트 결과 (사진 매트릭스 6 케이스, 정적 시뮬레이션)
+
+| # | 케이스 | 기대 archetype | 기대 lenses | 결과 | template |
+|---|--------|----------------|-------------|------|----------|
+| 1 | "환율 어떻게 됨" | financial_transmission | market_structure, financial_transmission | ✓ 일치 | report_block.html |
+| 2 | "미중 무역 분쟁 현 상황" | six_act_theater 또는 geopolitical_strategic | geopolitical, policy_implementation | ✓ 일치 (six_act_theater 채택) | report.html (legacy) |
+| 3 | "호르무즈 해협 위기 분석" | geopolitical_strategic | geopolitical, financial_transmission, market_structure | ✓ 일치 | report_block.html |
+| 4 | "GPT-5 출시" | tech_decomposition | tech_architecture, market_structure | ✓ 일치 | report_block.html |
+| 5 | "OO 공장 화재" | accident_forensic | accident_causality | ✓ 일치 | report_block.html |
+| 6 | "한국 부동산 규제 발표" | policy_implementation | policy_implementation, financial_transmission | ✓ 일치 | report_block.html |
+
+**6/6 일치** — AC #1 의 5/6 기준 통과. 4-cap 도 모든 케이스에서 준수 (최대 3 lens — Case 3).
+
+### Acceptance Criteria (5-A 부분 적용 — lens 관련만)
+
+- [x] LensRunner ABC 8종 모두 구현 (`isinstance(LensRunner)=True` 검증, pytest 통과)
+- [x] `src/lenses/registry.py:get_lens()` 함수 존재 + 미등록 ID 폴백
+- [x] 사건당 lens 4개 이하 (Pydantic max_length=4 + LENS_CAP_PER_EVENT=4 이중 가드, pytest 검증)
+- [x] 6 케이스 archetype 자동 선택 6/6 일치 (5/6 기준 초과 달성)
+- [x] 8 lens 단독 실행 통과 (fallback path 검증, pytest 11/11 통과)
+- [x] archetype 6종 등록 (3종 추가) — `report_block.html` 디스패처 사용
+- [x] 모든 v2 회귀 테스트 (Step 4 까지) 여전히 통과 — quality_gates 18/18
+
+(나머지 AC: WatchSignal DB 등록은 5-B, 페르소나 deprecation isinstance 검증은 5-C 에서)
+
+### 변경된 파일
+
+- 신규: `src/lenses/{__init__,base,registry,geopolitical_lens,financial_transmission_lens,tech_architecture_lens,policy_implementation_lens,accident_causality_lens,market_structure_lens,red_team_lens,pre_mortem_lens}.py` (11 파일)
+- 신규: `src/archetypes/{geopolitical_strategic,accident_forensic,policy_implementation}.py` (3 파일)
+- 신규: `src/tests/test_lens_pool.py` (11 케이스)
+- 수정: `src/archetypes/registry.py` (3종 추가 등록), `src/orchestrator.py` (VERSION + 프롬프트 확장 + `_run_lenses` + LENS_CAP)
+- 수정: `CLAUDE.md`, `GOAL.md`, `README.md`, `CHANGELOG.md`, `docs/CATALOGS.md`, `docs/ARCHITECTURE.md`, `docs/REPO_MAP.md`, `docs/DATA_MODELS.md`, `docs/TESTING.md` (헤더 v2.9.0 + 본문)
+- 본 문서 (Step 5-A 기록 append)
+
+### 5-B 진행 시 주의 사항 (사용자 승인 후)
+
+1. **Watchlist registry 저장**: `reports/watchlist.db` (SQLite). Python 표준 라이브러리만 사용 (의존성 추가 0).
+2. **봇 프로세스 내 asyncio task**: 1GB VM 제약 — 별도 cron 프로세스 회피. `WatchlistRegistry.load_active_signals()` 로 부팅 시 DB → task 재구성.
+3. **외부 데이터 폴링은 본 step 밖**: 신호 발화 트리거는 *deadline 도래* 와 *사용자 직접 fire 명령* 둘만. 시장 데이터 자동 폴링은 v3.1+.
+4. **알림 송신**: 기존 텔레그램 봇 객체 재사용. signal 의 `parent_report_url` 에 묶인 chat_id 로.
+5. **ScenarioArchitect.watch_signals → WatchSignal 자동 변환**: dict 형식 → Pydantic WatchSignal Pydantic, deadline 파싱 (없으면 +30일 default).
 
 ---
 

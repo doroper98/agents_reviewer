@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -34,13 +34,28 @@ src/
 │   ├── report_synthesizer.py
 │   ├── quality_inspector.py    # V3 Step 4 — Gate 1/2 (Plan Sanity + Coverage Check)
 │   └── synthesis_judge.py      # V3 Step 4 — findings → JudgmentVerdict (모순 노출)
-├── archetypes/          # V3 Step 2 — 보고서 archetype 풀 (registry 패턴)
+├── archetypes/          # V3 Step 2 + 5-A — 보고서 archetype 풀 (registry 패턴, 6종)
 │   ├── __init__.py
-│   ├── base.py                   # ReportArchetype Protocol
-│   ├── registry.py               # archetype_id → 객체 (SSOT for archetype catalog)
-│   ├── six_act_theater.py        # default; template=report.html (legacy)
-│   ├── financial_transmission.py # 금융·거시 사건
-│   └── tech_decomposition.py     # 기술·AI·IT 사건
+│   ├── base.py                       # ReportArchetype Protocol
+│   ├── registry.py                   # archetype_id → 객체 (SSOT for archetype catalog)
+│   ├── six_act_theater.py            # default; template=report.html (legacy)
+│   ├── financial_transmission.py     # 금융·거시 사건
+│   ├── tech_decomposition.py         # 기술·AI·IT 사건
+│   ├── geopolitical_strategic.py     # V3 Step 5-A — 지정학·전쟁
+│   ├── accident_forensic.py          # V3 Step 5-A — 사고·재난
+│   └── policy_implementation.py      # V3 Step 5-A — 정책·사회
+├── lenses/              # V3 Step 5-A — 분석 lens 풀 (LensRunner ABC + registry, 8종)
+│   ├── __init__.py
+│   ├── base.py                       # LensRunner ABC + 공통 LLM 호출 헬퍼
+│   ├── registry.py                   # lens_id → LensRunner 인스턴스 팩토리
+│   ├── geopolitical_lens.py          # DIME / PMESII / Escalation Ladder
+│   ├── financial_transmission_lens.py # Balance Sheet / Flow of Funds / Transmission
+│   ├── tech_architecture_lens.py     # Architecture Decomposition / Bottleneck
+│   ├── policy_implementation_lens.py # Stakeholder Incentive / Implementation Gap
+│   ├── accident_causality_lens.py    # Fault Tree / Bow-Tie / Swiss Cheese / STAMP
+│   ├── market_structure_lens.py      # Network Analysis / Game Theory / Regime Shift
+│   ├── red_team_lens.py              # ACH / Pre-mortem / Devil's Advocate (메타)
+│   └── pre_mortem_lens.py            # 실패 가정 후 역설계 (메타)
 └── templates/
     ├── report.html         # six_act_theater 용 (legacy 보존, byte-equal 보장)
     ├── report.css          # 공통 CSS — 모든 archetype 공유, block-* 클래스 (Step 3 추가)

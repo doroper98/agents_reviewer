@@ -13,7 +13,10 @@ from __future__ import annotations
 import logging
 
 from src.archetypes.base import ReportArchetype
+from src.archetypes.accident_forensic import ARCHETYPE as ACCIDENT_FORENSIC
 from src.archetypes.financial_transmission import ARCHETYPE as FINANCIAL_TRANSMISSION
+from src.archetypes.geopolitical_strategic import ARCHETYPE as GEOPOLITICAL_STRATEGIC
+from src.archetypes.policy_implementation import ARCHETYPE as POLICY_IMPLEMENTATION
 from src.archetypes.six_act_theater import ARCHETYPE as SIX_ACT_THEATER
 from src.archetypes.tech_decomposition import ARCHETYPE as TECH_DECOMPOSITION
 
@@ -24,6 +27,10 @@ _REGISTRY: dict[str, ReportArchetype] = {
     SIX_ACT_THEATER.archetype_id: SIX_ACT_THEATER,
     FINANCIAL_TRANSMISSION.archetype_id: FINANCIAL_TRANSMISSION,
     TECH_DECOMPOSITION.archetype_id: TECH_DECOMPOSITION,
+    # V3 Step 5-A (v2.9.0)
+    GEOPOLITICAL_STRATEGIC.archetype_id: GEOPOLITICAL_STRATEGIC,
+    ACCIDENT_FORENSIC.archetype_id: ACCIDENT_FORENSIC,
+    POLICY_IMPLEMENTATION.archetype_id: POLICY_IMPLEMENTATION,
 }
 
 DEFAULT_ARCHETYPE_ID: str = SIX_ACT_THEATER.archetype_id

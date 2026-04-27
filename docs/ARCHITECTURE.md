@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.8.0
+last_synced_with: v2.9.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -87,6 +87,9 @@ Phase 3.5 ⑥ 시각화 분석관 → VisualAnalysis
                 ▼
 Phase 3.7 [V3 Step 4] orchestrator._wrap_findings()
                 ▼  (각 v2 분석 → AnalyticalFinding(Claim+Evidence+ConfidenceProfile))
+Phase 3.75 [V3 Step 5-A] 🔬 _run_lenses() — Lens Pool (cap 4)
+                ▼  (strategy.recommended_lenses 의 lens_id 들 → registry.get_lens() →
+                    각 lens 가 자체 LLM 호출 + AnalyticalFinding 산출, 8종 풀에서 4개 한도)
 Phase 3.8 [V3 Step 4] 🧮 SynthesisJudge.judge(findings) → JudgmentVerdict
                 ▼  (contradictions 노출, 봉합 X — Anti-pattern #5)
 Phase 3.9 [V3 Step 4] 🛡 Quality Gate 2 — Coverage Check
