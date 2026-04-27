@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.9.0
+last_synced_with: v2.9.5
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -95,6 +95,11 @@ Phase 3.8 [V3 Step 4] 🧮 SynthesisJudge.judge(findings) → JudgmentVerdict
 Phase 3.9 [V3 Step 4] 🛡 Quality Gate 2 — Coverage Check
                 ▼  (failure → max 2 retries (judgment 재생성) → "⚠️ 부분 분석 완료. gate_2 실패")
 Phase 4   ⑦ 보고서 합성관 → Jinja2 → HTML → Cloudflare Pages
+                ▼
+Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
+                ▼  (ScenarioAnalysis.watch_signals → WatchSignal → SQLite 영구 저장.
+                    봇 프로세스 내 asyncio monitor (1h 주기) 가 deadline 도래 시
+                    auto-fire (ambiguous) + 텔레그램 알림. Anti-pattern #11 회피)
 ```
 
 각 에이전트는 이전 에이전트들의 결과를 누적해서 받음. Quality Gate 두 곳은 우회 금지 (Anti-pattern #7) — 실패해도 부분-분석 알림 후 *계속 진행*. 자세한 역할은 [docs/CATALOGS.md](CATALOGS.md) 의 Agents 섹션 참조.

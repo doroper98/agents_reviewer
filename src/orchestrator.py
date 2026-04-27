@@ -16,6 +16,7 @@ from src.models import (
     AnalysisRequest, AnalysisStrategy, AnalyticalFinding, Claim, ConfidenceProfile,
     Evidence, FullAnalysisResult, JudgmentVerdict,
 )
+from src.watchlist import WatchlistRegistry, convert_watch_signals
 from src.agents.context_analyst import ContextAnalyst
 from src.agents.player_analyst import PlayerAnalyst
 from src.agents.dynamics_analyst import DynamicsAnalyst
@@ -28,7 +29,7 @@ from src.agents.synthesis_judge import SynthesisJudge
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v2.9.0"
+VERSION = "v2.9.5"
 
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
@@ -38,7 +39,11 @@ StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 class Orchestrator:
     """Coordinates the 4-phase analysis pipeline."""
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+        self,
+        config: Config,
+        watchlist_registry: "WatchlistRegistry | None" = None,
+    ) -> None:
         self.config = config
         self.context_analyst = ContextAnalyst(config)
         self.player_analyst = PlayerAnalyst(config)
@@ -50,6 +55,9 @@ class Orchestrator:
         # V3 Step 4 (v2.8.0)
         self.quality_inspector = QualityInspector(config)
         self.synthesis_judge = SynthesisJudge(config)
+        # V3 Step 5-B (v2.9.5) — Watchlist Registry. None 이면 watchlist 등록 스킵
+        # (단위 테스트 / standalone orchestrator 인스턴스 시 안전).
+        self.watchlist_registry = watchlist_registry
         # Counters for gate stats — reset per process. Logged at INFO at end of run.
         self._gate_stats = {
             "gate_1_attempts": 0, "gate_1_passes": 0, "gate_1_retries": 0, "gate_1_partial": 0,
@@ -970,6 +978,38 @@ class Orchestrator:
             result, theme=report_theme, archetype=archetype,
         )
         result.report_url = report_url
+
+        # V3 Step 5-B (v2.9.5): Watchlist 등록.
+        # ScenarioArchitect.watch_signals (dict[]) → WatchSignal Pydantic → SQLite registry.
+        # Anti-pattern #11 회피 — 보고서 텍스트로만 남기지 않음. registry None 일 때만 스킵
+        # (단위 테스트 / standalone 사용 시).
+        if self.watchlist_registry is not None and result.scenarios and result.scenarios.watch_signals:
+            try:
+                report_id = ""
+                if result.report_path:
+                    import os as _os
+                    report_id = _os.path.splitext(_os.path.basename(result.report_path))[0]
+                signals = convert_watch_signals(
+                    scenario_signals=result.scenarios.watch_signals,
+                    parent_report_url=result.report_url or "",
+                    parent_report_id=report_id,
+                    parent_chat_id=request.chat_id,
+                )
+                inserted = sum(
+                    1 for sig in signals if self.watchlist_registry.register(sig)
+                )
+                logger.info(
+                    "[orchestrator] Watchlist registered: %d new signals (out of %d) for chat=%d",
+                    inserted, len(signals), request.chat_id,
+                )
+                if inserted:
+                    await self._notify(
+                        f"📒 감시 신호 {inserted}건 DB 등록 완료. "
+                        f"`/watchlist` 로 확인 가능.",
+                        status_callback,
+                    )
+            except Exception as e:
+                logger.warning("[orchestrator] Watchlist register error: %s", e)
 
         # Restore original model assignments after quick mode
         if quick_mode:

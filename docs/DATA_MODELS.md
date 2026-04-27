@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.9.0
+last_synced_with: v2.9.5
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -78,7 +78,7 @@ last_review: 2026-04-26
 
 ---
 
-## 2. 모델 목록 (현재 v2.9.0)
+## 2. 모델 목록 (현재 v2.9.5)
 
 | 모델 | 책무 | 정의 위치 |
 |------|------|-----------|
@@ -96,6 +96,8 @@ last_review: 2026-04-26
 | `ConfidenceProfile` | 3축 분해 신뢰도 — source_diversity/data_freshness/expert_consensus + aggregate property (V3 Step 4, Anti-pattern #10) | `src/models.py` |
 | `AnalyticalFinding` | 렌즈 단위 결과 — main_claim + evidence + confidence + counter_hypothesis (V3 Step 4) | `src/models.py` |
 | `JudgmentVerdict` | Synthesis Judge 산출 — main_judgment / contradictions (봉합 금지, Anti-pattern #5) / counter_hypothesis (V3 Step 4) | `src/models.py` |
+| `WatchDirection` (Literal) | confirms_base / rejects_base / ambiguous (V3 Step 5-B) | `src/models.py` |
+| `WatchSignal` | 감시 신호 — signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at. `WatchlistRegistry` (SQLite) 에 영구 저장 (Anti-pattern #11) | `src/models.py` |
 | `ContextAnalysis` | ACT I 결과 (팩트·타임라인·수치) | `src/models.py` |
 | `PlayerAnalysis` | ACT II 결과 (행위자·동맹·power_dynamics) | `src/models.py` |
 | `DynamicsAnalysis` | ACT III 결과 (비대칭·전환점·피드백 루프·반대 가설) | `src/models.py` |
@@ -219,6 +221,18 @@ last_review: 2026-04-26
 - `counter_hypothesis`: 종합 차원의 반대 가설.
 - `counter_evidence_needed`: 반대 가설이 옳다면 필요한 증거 목록.
 - `confidence`: ConfidenceProfile (finding 평균 - 모순 페널티).
+
+### 3.13 WatchSignal (V3 Step 5-B, v2.9.5 — Anti-pattern #11 회피)
+- `signal_id`: deterministic hash 기반 (`WS-YYYYMMDD-<8hex>`) — 같은 보고서 + 같은 신호 텍스트면 같은 ID 생성 (idempotent register).
+- `description`: 감시 대상 신호 (예: "DXY 105 돌파").
+- `measurement`: 측정 방식·기준 (예: "DXY 일봉 종가").
+- `direction`: `confirms_base` / `rejects_base` / `ambiguous`. `convert_watch_signals()` 가 indicates 텍스트 어휘 (위험·악화·확정·지속 등) 로 휴리스틱 추정.
+- `deadline`: ISO 8601 date "YYYY-MM-DD". `convert_watch_signals` 의 default = today + 30일.
+- `follow_up_action`: 발화 시 권장 조치 텍스트.
+- `parent_report_url`, `parent_report_id`: 원 보고서 식별. 알림 본문에 노출.
+- `parent_chat_id`: 알림 송신 대상 텔레그램 chat_id (B 보강 결정 — 다중 사용자 지원의 첫 단계).
+- `fired`, `fired_at`: 발화 상태 + 시각 (ISO 8601 datetime).
+- 정의 SSOT 는 `src/models.py`. SQLite 영구 저장은 `src/watchlist/registry.py:WatchlistRegistry`.
 
 ---
 

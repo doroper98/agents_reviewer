@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v2.9.0
+last_synced_with: v2.9.5
 ssot_for:
   - "기능 요구사항 ID 체계 (REQ-*)"
   - "비기능 요구사항 (NFR-*)"
@@ -46,6 +46,7 @@ last_review: 2026-04-26
 | REQ-V3-005 | Traceability | Claim-Evidence 추적성 (evidence_ids ≥1 Pydantic 강제) + ConfidenceProfile 3축 분해 + Synthesis Judge 모순 노출 | P0 | ✅ |
 | REQ-V3-006 | Lens Pool | LensRunner ABC + 8종 lens (geopolitical / financial_transmission / tech_architecture / policy_implementation / accident_causality / market_structure / red_team / pre_mortem) + 사건당 4개 동시 실행 한도 (Anti-pattern #6) | P0 | ✅ |
 | REQ-V3-006a | Archetype Extension | 신규 archetype 3종 (geopolitical_strategic / accident_forensic / policy_implementation) — 사진 매트릭스 6 케이스 모두 라우팅 | P0 | ✅ |
+| REQ-V3-007 | Watchlist | WatchSignal Pydantic 모델 + SQLite 영구 저장 + 봇 재시작 복구 + 봇 프로세스 내 asyncio monitor (1시간 주기 deadline 자동 발화) + `/watchlist`·`/fire` 명령 (Anti-pattern #11) | P0 | ✅ |
 
 ### 비기능 요구사항 (Non-Functional)
 

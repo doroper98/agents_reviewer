@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v2.9.0
+last_synced_with: v2.9.5
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
@@ -141,6 +141,44 @@ REFACTOR_V3_PLAN.md Appendix B 의 11종 중 Step 2 + 5-A 에서는 6종 도입.
 - **빈 payload**: 데이터가 없을 때 우아하게 표시할 것 (`(데이터 없음)` 등 placeholder). 완전 빈 출력 금지.
 
 ### 4.2 디스패처 흐름
+
+(생략 — Step 3 본문 그대로)
+
+---
+
+## 5. Watchlist Registry — V3 Step 5-B (v2.9.5) 도입
+
+`src/watchlist/registry.py` 의 `WatchlistRegistry` (SQLite) 가 SSOT. 보고서 텍스트로만 남기지 않고 *영구 저장* (Anti-pattern #11 회피).
+
+| 컴포넌트 | 모듈 | 책무 |
+|---------|------|------|
+| `WatchSignal` (Pydantic) | `src/models.py` | signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at |
+| `WatchlistRegistry` | `src/watchlist/registry.py` | SQLite CRUD — register / get / list_active / list_active_for_chat / mark_fired |
+| `convert_watch_signals` | `src/watchlist/converter.py` | `ScenarioAnalysis.watch_signals` (dict[]) → `list[WatchSignal]`. direction 휴리스틱 추정, 기본 deadline = today+30일 |
+| `run_monitor_loop` | `src/watchlist/monitor.py` | 봇 프로세스 내 asyncio task — 1시간 주기 active signal 순회, deadline 도래 시 auto-fire (`ambiguous`) + 텔레그램 알림 |
+| `format_telegram_alert` | `src/watchlist/monitor.py` | spec template 알림 텍스트 포맷터 |
+
+### 5.1 발화 트리거 (V3 Step 5-B 한정)
+
+- **deadline 자동 발화**: monitor task 가 `today >= sig.deadline` 인 active signal 을 자동으로 `ambiguous` 방향으로 발화.
+- **사용자 수동 발화**: `/fire <signal_id> [direction]` 로 봇에 명시 발화 요청. direction 미지정 시 기존값 유지.
+- *외부 시장 데이터 자동 폴링은 본 step 밖* (FUT 트랙).
+
+### 5.2 봇 재시작 복구 (B 보강 결정 구현)
+
+SQLite 영구 저장 덕분에 별도 재구성 로직 없이 `WatchlistRegistry(db_path)` 인스턴스화 + monitor task 기동만으로 복구. 봇 시작 시 `count_active()` 가 곧 부팅 시점의 활성 신호 스냅샷.
+
+### 5.3 알림 텍스트 (spec 템플릿 정확)
+
+```
+🔔 감시 신호 발생
+사건: {parent_report_title}
+신호: {description} → {direction}
+원 보고서: {parent_report_url}
+권장 후속: {follow_up_action}
+```
+
+---
 
 ```
 ReportSynthesizer.synthesize(result, theme, archetype)

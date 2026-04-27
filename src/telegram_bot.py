@@ -22,8 +22,15 @@ from telegram.ext import (
 
 from src.config import Config
 from src.orchestrator import Orchestrator
+from src.models import WatchSignal
+from src.watchlist import WatchlistRegistry, run_monitor_loop
+from src.watchlist.monitor import format_telegram_alert
 
 logger = logging.getLogger(__name__)
+
+# V3 Step 5-B (v2.9.5): default DB path. Config 에 별도 필드를 추가하지 않음 — 보고서 출력
+# 디렉토리 옆에 둠 (운영 자연스러움 + git ignored).
+DEFAULT_WATCHLIST_DB_NAME = "watchlist.db"
 
 # Track bot start time and analysis count
 _bot_start_time: float = 0.0
@@ -43,10 +50,17 @@ class TelegramBot:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.orchestrator = Orchestrator(config)
+        # V3 Step 5-B (v2.9.5): Watchlist registry — bot 프로세스 안에서 공유.
+        db_path = os.path.join(config.report_output_dir, DEFAULT_WATCHLIST_DB_NAME)
+        self.watchlist_registry = WatchlistRegistry(db_path)
+        self.orchestrator = Orchestrator(config, watchlist_registry=self.watchlist_registry)
         self._queue: deque[QueueItem] = deque()
         self._is_analyzing: bool = False
         self._current_topic: str = ""
+        # asyncio task handle for the monitor loop — populated in post_init.
+        self._monitor_task: asyncio.Task | None = None
+        # Application reference for telegram message sending from monitor task.
+        self._app: Application | None = None
         global _bot_start_time
         _bot_start_time = time.time()
 
@@ -71,6 +85,8 @@ class TelegramBot:
             "/status — 서버 상태 확인\n"
             "/reports — 전체 보고서 목록\n"
             "/queue — 대기열 확인\n"
+            "/watchlist — 활성 감시 신호 목록 (v2.9.5)\n"
+            "/fire <signal_id> [direction] — 신호 수동 발화 (v2.9.5)\n"
             "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
@@ -167,6 +183,101 @@ class TelegramBot:
         await update.message.reply_text(
             f"📁 전체 보고서 목록:\nhttps://{project}.pages.dev/"
         )
+
+    # ------------------------------------------------------------------
+    # V3 Step 5-B (v2.9.5) — Watchlist commands
+    # ------------------------------------------------------------------
+
+    async def _watchlist_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/watchlist`` — 이 채팅에 등록된 활성(미발화) 감시 신호 목록."""
+        if update.message is None or update.effective_chat is None:
+            return
+        chat_id = update.effective_chat.id
+        signals = self.watchlist_registry.list_active_for_chat(chat_id)
+        if not signals:
+            await update.message.reply_text(
+                "📒 활성 감시 신호 없음.\n"
+                "분석을 실행하면 ScenarioArchitect 의 watch_signals 가 자동 등록됨."
+            )
+            return
+        lines = [f"📒 활성 감시 신호 {len(signals)}건:"]
+        for sig in signals:
+            lines.append(
+                f"\n• `{sig.signal_id}`\n"
+                f"  {sig.description}\n"
+                f"  방향: {sig.direction} · 데드라인: {sig.deadline}"
+            )
+        lines.append("\n수동 발화: /fire <signal_id> [direction]")
+        await update.message.reply_text("\n".join(lines))
+
+    async def _fire_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/fire <signal_id> [direction]`` — 수동 발화. direction 생략 시 기존 방향 유지."""
+        if update.message is None or update.effective_chat is None:
+            return
+        args = list(context.args) if context.args else []
+        if not args:
+            await update.message.reply_text("사용법: /fire <signal_id> [direction]")
+            return
+        signal_id = args[0]
+        new_direction = args[1] if len(args) >= 2 else None
+        if new_direction and new_direction not in ("confirms_base", "rejects_base", "ambiguous"):
+            await update.message.reply_text(
+                f"잘못된 direction: {new_direction!r}. "
+                "허용: confirms_base | rejects_base | ambiguous"
+            )
+            return
+        # Authorization: 발화 요청자 chat_id 가 신호의 parent_chat_id 와 같아야 함.
+        existing = self.watchlist_registry.get(signal_id)
+        if existing is None:
+            await update.message.reply_text(f"신호를 찾을 수 없음: {signal_id}")
+            return
+        if existing.parent_chat_id and existing.parent_chat_id != update.effective_chat.id:
+            await update.message.reply_text("권한 없음 (다른 채팅의 신호).")
+            return
+        if existing.fired:
+            await update.message.reply_text(
+                f"이미 발화된 신호 ({existing.fired_at}). direction={existing.direction}"
+            )
+            return
+        updated = self.watchlist_registry.mark_fired(
+            signal_id, new_direction=new_direction,
+        )
+        if updated is None:
+            await update.message.reply_text("발화 실패 — DB 업데이트가 0건.")
+            return
+        await update.message.reply_text(
+            f"✅ 신호 발화 완료\n"
+            f"`{updated.signal_id}` · 방향={updated.direction} · 시각={updated.fired_at}"
+        )
+        # 신호 발화 알림도 동시 송신 (parent_chat_id 로 broadcast — 본 채팅과 동일).
+        try:
+            await self._notify_signal_fired(updated)
+        except Exception as e:
+            logger.warning("[telegram_bot] /fire notify error: %s", e)
+
+    async def _notify_signal_fired(self, signal: WatchSignal) -> None:
+        """Send signal-fired alert to ``signal.parent_chat_id`` via the bot Application."""
+        if self._app is None:
+            logger.warning("[telegram_bot] notify called before app init; skipping")
+            return
+        if not signal.parent_chat_id:
+            logger.warning(
+                "[telegram_bot] signal %s has no parent_chat_id; cannot notify",
+                signal.signal_id,
+            )
+            return
+        text = format_telegram_alert(signal, parent_title=signal.parent_report_id)
+        try:
+            await self._app.bot.send_message(chat_id=signal.parent_chat_id, text=text)
+        except Exception as e:
+            logger.warning(
+                "[telegram_bot] send_message failed for chat=%d: %s",
+                signal.parent_chat_id, e,
+            )
 
     async def _analyze_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -373,14 +484,20 @@ class TelegramBot:
         app = (
             Application.builder()
             .token(self.config.telegram_bot_token)
+            .post_init(self._on_app_post_init)
+            .post_shutdown(self._on_app_post_shutdown)
             .build()
         )
+        self._app = app
 
         app.add_handler(CommandHandler("start", self._start_command))
         app.add_handler(CommandHandler("status", self._status_command))
         app.add_handler(CommandHandler("queue", self._queue_command))
         app.add_handler(CommandHandler("reports", self._reports_command))
         app.add_handler(CommandHandler("analyze", self._analyze_command))
+        # V3 Step 5-B (v2.9.5)
+        app.add_handler(CommandHandler("watchlist", self._watchlist_command))
+        app.add_handler(CommandHandler("fire", self._fire_command))
         app.add_handler(
             MessageHandler(
                 filters.TEXT & ~filters.COMMAND, self._message_handler
@@ -388,3 +505,44 @@ class TelegramBot:
         )
 
         return app
+
+    # ------------------------------------------------------------------
+    # V3 Step 5-B (v2.9.5) — bot lifecycle hooks for watchlist monitor
+    # ------------------------------------------------------------------
+
+    async def _on_app_post_init(self, app: Application) -> None:
+        """봇 시작 시 호출 — DB 에서 활성 신호 카운트 로깅 + monitor task 기동.
+
+        Note: ``WatchlistRegistry`` 는 SQLite 영구 저장이라 *복구* 라는 액션이 별도로 필요하지
+        않다. ``list_active()`` 호출 자체가 곧 부팅 시점의 활성 신호 스냅샷이며, monitor task 가
+        주기적으로 다시 ``list_active()`` 를 호출한다. B 보강 ("WatchlistRegistry.load_active_signals
+        패턴") 의 실질 구현.
+        """
+        active_count = self.watchlist_registry.count_active()
+        total_count = self.watchlist_registry.count_total()
+        logger.info(
+            "[telegram_bot] Watchlist boot: active=%d total=%d (DB=%s)",
+            active_count, total_count, self.watchlist_registry.db_path,
+        )
+        # Monitor task 기동 — 별도 프로세스 없음, 봇 asyncio loop 안에서 도는 task.
+        self._monitor_task = asyncio.create_task(
+            run_monitor_loop(
+                registry=self.watchlist_registry,
+                notify_fn=self._notify_signal_fired,
+                interval_seconds=3600,  # 1시간
+            ),
+            name="watchlist_monitor",
+        )
+        logger.info("[telegram_bot] Watchlist monitor task started")
+
+    async def _on_app_post_shutdown(self, app: Application) -> None:
+        """봇 종료 시 monitor task 정리. WatchlistRegistry SQLite 데이터는 영구 보존."""
+        if self._monitor_task is not None and not self._monitor_task.done():
+            self._monitor_task.cancel()
+            try:
+                await self._monitor_task
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                logger.warning("[telegram_bot] monitor task shutdown error: %s", e)
+            logger.info("[telegram_bot] Watchlist monitor task stopped")

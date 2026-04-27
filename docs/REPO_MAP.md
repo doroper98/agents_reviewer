@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.9.0
+last_synced_with: v2.9.5
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -56,6 +56,12 @@ src/
 │   ├── market_structure_lens.py      # Network Analysis / Game Theory / Regime Shift
 │   ├── red_team_lens.py              # ACH / Pre-mortem / Devil's Advocate (메타)
 │   └── pre_mortem_lens.py            # 실패 가정 후 역설계 (메타)
+├── watchlist/           # V3 Step 5-B — 감시 신호 영구 저장 + 자동 발화 (Anti-pattern #11)
+│   ├── __init__.py
+│   ├── registry.py                   # WatchlistRegistry (SQLite CRUD)
+│   ├── db_schema.sql                 # watchsignals 테이블 + 인덱스
+│   ├── converter.py                  # ScenarioAnalysis.watch_signals → WatchSignal
+│   └── monitor.py                    # asyncio task (1h 주기) + 알림 포맷터
 └── templates/
     ├── report.html         # six_act_theater 용 (legacy 보존, byte-equal 보장)
     ├── report.css          # 공통 CSS — 모든 archetype 공유, block-* 클래스 (Step 3 추가)

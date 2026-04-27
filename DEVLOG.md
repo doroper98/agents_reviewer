@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v2.9.0
+last_synced_with: v2.9.5
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -207,6 +207,70 @@ Phase 4: 보고서 합성관 (HTML 렌더링 + Cloudflare 배포)
 | v2.4.1 | 2026-04-26 | 문서 거버넌스 V3 적용 (3-tier, SSOT 매트릭스, README 슬림화) |
 
 > 이후 릴리스 노트의 SSOT 는 [CHANGELOG.md](CHANGELOG.md). 본 표는 historical snapshot 으로 보존.
+
+---
+
+## 9.G. v2.9.5 — Step 5-B: Watchlist Registry
+
+2026-04-26 적용. [REFACTOR_V3_PLAN.md §5 Step 5](REFACTOR_V3_PLAN.md) 의 5-B 부분만 본 마일스톤. 5-C (페르소나 deprecation) 는 별도 세션 사용자 지시 대기.
+
+### 사용자 승인 결정 (재확인)
+
+- **B 보강**: 봇 재시작 복구 — `WatchlistRegistry.load_active_signals()` 호출 *불필요*. SQLite 영구 저장이라 인스턴스화만으로 active 상태 자연 복구. monitor task 만 새로 띄우면 됨. (B 보강 결정의 *실질 구현* 은 SQLite 자체의 영속성)
+- **외부 데이터 폴링 제외**: deadline 자동 + 사용자 `/fire` 두 트리거만. 외부 데이터 폴링 (예: DXY 자동 검증) 은 v3.1+ FUT 트랙.
+
+### 수행 내역
+
+**모델**:
+- `WatchSignal` Pydantic — signal_id / description / measurement / direction / deadline / follow_up_action / parent_report_url / parent_report_id / parent_chat_id / fired / fired_at
+- `WatchDirection` Literal 3종 — `confirms_base` / `rejects_base` / `ambiguous`
+
+**`src/watchlist/`**:
+- `__init__.py` — 공개 API (`WatchlistRegistry`, `convert_watch_signals`, `run_monitor_loop`)
+- `db_schema.sql` — `watchsignals` 테이블 + 3 인덱스 + WAL 모드. 표준 라이브러리 (`sqlite3`) 만 사용 — 의존성 추가 0.
+- `registry.py` — sync API on top of sqlite3. CRUD: `register` (idempotent INSERT OR IGNORE) / `get` / `list_active` / `list_active_for_chat` / `list_fired` / `mark_fired` (선택적 direction 갱신) / `count_active` / `count_total`. 컨텍스트 매니저로 connection 관리.
+- `converter.py` — ScenarioAnalysis.watch_signals (dict[]) → WatchSignal[]. direction 휴리스틱 추정 (위험·악화 → rejects_base, 지속·확정 → confirms_base, 그 외 ambiguous), deterministic signal_id (`WS-YYYYMMDD-<hash>` — 같은 보고서 + 같은 신호 텍스트 동일 ID), default deadline = today + 30일.
+- `monitor.py` — `run_monitor_loop` (asyncio background task), `tick_once` (mock 가능 단위 함수), `format_telegram_alert` (spec template 정확). LLM 호출 없음 — 가벼운 시간 기반 스캔.
+
+**Orchestrator 통합**:
+- `__init__(config, watchlist_registry=None)` — None 이면 등록 스킵 (단위 테스트 안전)
+- 분석 종료 직후 (보고서 URL 발급 후) `result.scenarios.watch_signals` 자동 변환 + `registry.register()` (Anti-pattern #11 회피)
+- `VERSION v2.9.0 → v2.9.5`
+
+**TelegramBot 통합**:
+- `__init__` 에서 `WatchlistRegistry(reports/watchlist.db)` 인스턴스화 후 orchestrator 에 주입
+- Application.builder() 에 `post_init` (monitor task 기동) + `post_shutdown` (정리) 훅
+- `_notify_signal_fired(signal)` — `app.bot.send_message(chat_id=signal.parent_chat_id, ...)`
+- 신규 명령: `/watchlist` (chat-scoped active list), `/fire <signal_id> [direction]` (auth 검증 + 수동 발화 + 알림)
+
+**테스트**:
+- `src/tests/test_watchlist.py` — 19 pytest 케이스 (모델 / Registry CRUD / converter / monitor auto-fire mocked clock / notify failure isolation / 봇 재시작 sim / 알림 포맷)
+- 기존 28 케이스 (lens_pool 11 + quality_gates 18) 모두 통과 — 빅뱅 회피 (Anti-pattern #12). 누적 48/48 PASS.
+
+### Acceptance Criteria — Step 5-B 부분 적용 (watchlist 관련)
+
+- [x] WatchSignal SQLite DB 등록 검증 (Anti-pattern #11): `registry.register()` 후 `count_active()` 증가 확인 (pytest)
+- [x] 봇 재시작 시 active 신호 복구: 새 `WatchlistRegistry(same_path)` 인스턴스가 이전 active 신호 그대로 보여줌 (pytest `TestBotRestartPersistence`)
+- [x] monitor task deadline 도래 시 auto-fire: mocked clock 으로 검증 (pytest)
+- [x] 알림 메시지 형식 spec 정확 (pytest `TestAlertFormat`)
+- [x] `/watchlist` chat-scoped 필터링 검증 (pytest)
+- [x] 모든 v2 / Step 5-A 회귀 통과 (49/49 pytest)
+- [x] AC #14: 모든 *.md 헤더 v2.9.5 일관 + SSOT/payload-only grep 통과
+
+### 변경된 파일
+
+- 신규: `src/watchlist/{__init__, registry, db_schema, monitor, converter}.py` (5 파일), `src/tests/test_watchlist.py`
+- 수정: `src/models.py` (WatchSignal + WatchDirection), `src/orchestrator.py` (VERSION + watchlist_registry param + 분석 종료 후 등록), `src/telegram_bot.py` (registry 생성 + monitor lifecycle hooks + `/watchlist` `/fire` 명령 + notify callback)
+- 수정: `CLAUDE.md`, `GOAL.md` (REQ-V3-007), `README.md`, `CHANGELOG.md`, `docs/CATALOGS.md` (§5 Watchlist), `docs/DATA_MODELS.md` (§3.13 WatchSignal), `docs/ARCHITECTURE.md` (Phase 4.5), `docs/REPO_MAP.md`, `docs/TESTING.md` (헤더 v2.9.5)
+- 본 문서 (Step 5-B 기록 append)
+
+### 5-C 진행 시 주의 사항 (다음 마일스톤 — 사용자 승인 후)
+
+1. **3 페르소나 (Player/Dynamics/ChainReaction) → lens 이전**: `src/lenses/{stakeholder,structural,cascade}_lens.py` 신설. 기존 페르소나 파일은 *deprecated 마킹만* 유지 (Anti-pattern #1 — 즉시 삭제 금지).
+2. **Legacy import alias**: `from src.agents.player_analyst import PlayerAnalyst` 호출 경로 보존. lens 가 페르소나 *대체* 가 아니라 *추가 / 보완* 으로 운용.
+3. **회귀 검증 우선순위**: six_act_theater archetype 의 byte-equal 출력은 v3.0.0 까지 유지. legacy 데이터 흐름 (`result.players`, `result.dynamics`, `result.chain_reaction`) 도 그대로.
+4. **메이저 릴리스 마무리**: 모든 *.md 헤더 v3.0.0, CHANGELOG.md v3.0.0 항목, README architecture 다이어그램 갱신, 분기 검토 일정 등록, `git tag v3.0.0`.
+5. **`legacy_directives` 제거 시점**: Step 5-C 메이저 릴리스에 동시 제거 가능 (lens runner 가 directive 를 직접 처리). 단 *제거는 별도 sub-PR* 권장.
 
 ---
 

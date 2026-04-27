@@ -338,6 +338,34 @@ class JudgmentVerdict(BaseModel):
     confidence: ConfidenceProfile = Field(default_factory=ConfidenceProfile)
 
 
+# ====== V3 Watchlist (Step 5-B — v2.9.5, REFACTOR_V3_PLAN.md §4.1) ======
+
+WatchDirection = Literal["confirms_base", "rejects_base", "ambiguous"]
+
+
+class WatchSignal(BaseModel):
+    """감시 신호 — 보고서가 끝난 뒤 그 시점의 *검증되지 않은 가설* 을 추적하는 단위.
+
+    Anti-pattern #11 방지: 보고서 텍스트로만 남기지 말고 반드시 ``WatchlistRegistry`` (SQLite) 에
+    등록해야 한다. 발화는 (a) ``deadline`` 도래 시 자동 ``ambiguous`` (b) 사용자 ``/fire`` 수동
+    두 트리거.
+
+    SSOT: 본 정의. ``src/watchlist/registry.py`` 가 SQLite CRUD 미러.
+    """
+
+    signal_id: str  # 예: "WS-20260426-abc123"
+    description: str
+    measurement: str = ""
+    direction: WatchDirection = "ambiguous"
+    deadline: str  # ISO 8601 date "YYYY-MM-DD" — 자동 ambiguous 발화 데드라인
+    follow_up_action: str = ""
+    parent_report_url: str = ""
+    parent_report_id: str = ""
+    parent_chat_id: int = 0  # 알림 송신 대상 (V3 Step 5-B 보강)
+    fired: bool = False
+    fired_at: str | None = None  # ISO 8601 datetime; None 이면 미발화
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
