@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v3.1.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -8,12 +8,15 @@ ssot_for:
   - "보고서 블록 렌더링 흐름 (V3 Step 3 활성화)"
   - "Quality Gate + Synthesis Judge 위치 (V3 Step 4 활성화)"
   - "토큰 사용량 추정"
+  - "Token Budget + Mode Routing (v3.1.0 활성화)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "src/agents/* (구성)"
   - "src/archetypes/registry.py (archetype 분기 SSOT)"
+  - "src/token_budget.py (mode 정책)"
+  - "src/lens_policy.py (lens 결정 규칙)"
   - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
-last_review: 2026-04-26
+last_review: 2026-04-27
 ---
 
 # Event Analysis Team — Architecture
@@ -25,7 +28,7 @@ last_review: 2026-04-26
 
 ## 1. 한 줄 요약
 
-텔레그램 메시지 → Strategy Planner + Quality Gate 1 → v2 페르소나(deprecated) + 분석 lens 풀 (사건당 ≤4) → Synthesis Judge + Quality Gate 2 → archetype 11종 중 matrix 결정 → HTML 보고서 → Cloudflare 배포 → 공유 링크 + Watchlist 영구 저장.
+텔레그램 메시지 → mode 결정 (fast/standard/deep, 키워드 자동 매핑) → ContextAnalyst → Strategy Planner (축약) + Quality Gate 1 → lens pool (mode 별 cap 1/2/4) + (deep 만) v2 페르소나 → 시나리오 → 결정적 시각화 → Synthesis Judge (heuristic-first) + Quality Gate 2 → archetype 11종 중 matrix 결정 → HTML 보고서 → Cloudflare 배포 → 공유 링크 + Watchlist 영구 저장.
 
 ---
 
@@ -163,15 +166,56 @@ Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
 
 게이트는 항상 실행되며 우회 불가 (Anti-pattern #7). 게이트 통과율·재시도율은 `[quality_inspector] gate_X stats: ...` 로 INFO 로그.
 
-### 3.1 토큰 사용량 (분석 1건당 추정)
+### 3.1 토큰 사용량 + Mode 정책 (v3.1.0)
 
-| 시나리오 | 입력 | 출력 | 합계 |
-|---------|------|------|------|
-| 짧은 이벤트 | ~16K | ~5K | ~21K |
-| 보통 이벤트 | ~28K | ~9K | ~37K |
-| 복잡한 이벤트 | ~44K | ~13K | ~57K |
+분석 1건당 LLM 호출 수와 lens 개수, 보조 LLM 단계의 사용 여부는 mode 별로 차등. SSOT 는 [src/token_budget.py](../src/token_budget.py).
 
-Max 플랜 CLI 모드라 추가 비용 없음.
+| Mode | LLM 호출 cap | Lens cap | LLM Quality Gate | LLM Narrative Plan | LLM Visuals | LLM Synthesis | Legacy Persona |
+|------|------------|---------|----------------|------------------|-----------|--------------|---------------|
+| fast | 4 | 1 | ❌ | ❌ | ❌ | ❌ | ❌ |
+| standard (default) | 7 | 2 | ❌ | ❌ | ❌ | 조건부* | ❌ |
+| deep | 12 | 4 | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+\* standard 의 SynthesisJudge LLM 은 contradictions 발견 / aggregate confidence 0.55 미만 / core_questions 미답변 위험 시에만 발화. 그 외에는 heuristic 만.
+
+#### Mode 결정 규칙
+- 사용자 메시지에 `짧게` / `간략히` / `간략하게` / `빠르게` / `요약` / `간단히` / `간단하게` / `fast` 키워드 → **fast**
+- 사용자 메시지에 `심층` / `깊게` / `자세히` / `정밀` / `면밀` / `상세하게` / `deep` 키워드 → **deep**
+- 둘 다 있으면 deep 우선
+- 그 외 → **standard** (default)
+
+#### 토큰 사용량 (분석 1건당 추정, 입력+출력 합계)
+
+| Mode | v3.0.0 (이전) | v3.1.0 (이후) |
+|------|------------|------------|
+| fast (구 quick_mode) | ~28K | ~12K |
+| standard | ~37K | ~18K |
+| deep | ~57K | ~46K (품질 보존) |
+
+추가로 Strategy Planner 프롬프트 5배 축소 + `json.dumps(indent=2)` 폐기로 input 토큰 ~30% 추가 절감. Max 플랜 CLI 모드라 추가 비용 없음 — 절감 효과는 *시간 단축* 과 *보고서 응답 지연 감소* 로 체감.
+
+### 3.2 Lens 선택 정책 (`lens_policy`)
+
+[src/lens_policy.py](../src/lens_policy.py) 가 `(event_type, user_intent, mode)` 3-튜플로 lens 를 결정. 카탈로그는 [docs/CATALOGS.md §2](CATALOGS.md).
+
+```
+event_type 분야별 lens 우선순위:
+  tech       → tech_architecture, structural
+  accident   → accident_causality, structural, cascade
+  financial  → financial_transmission, market_structure, cascade
+  industry   → market_structure, stakeholder, structural
+  policy     → policy_implementation, stakeholder
+  geopolitical → geopolitical, stakeholder, structural
+  general    → stakeholder, structural
+
+메타 lens (red_team / pre_mortem) 자동 추가 조건:
+  user_intent ∈ {what_to_do, where_vulnerable} → red_team
+  user_intent ∈ {what_next}                    → pre_mortem
+  · fast 모드는 메타 lens 추가 안 함 (cap=1)
+  · deep 모드는 cap 여유 있을 때 반대편 메타 lens 도 추가
+```
+
+LLM Strategy Planner 의 `recommended_lenses` 출력은 *우선순위 보정* 에만 활용 (분야 lens 만). 메타 lens 결정권은 정책 단독.
 
 ---
 

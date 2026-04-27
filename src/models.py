@@ -15,6 +15,9 @@ class AnalysisRequest(BaseModel):
     request_type: str = "full_analysis"
     requested_by: str = ""
     chat_id: int = 0
+    # v3.1.0: 분석 모드. ``token_budget.resolve_mode()`` 가 키워드 → mode 매핑.
+    # default 는 standard. fast/deep 은 키워드 또는 명시적 호출 시.
+    mode: Literal["fast", "standard", "deep"] = "standard"
 
 
 class ContextAnalysis(BaseModel):
@@ -364,6 +367,75 @@ class WatchSignal(BaseModel):
     parent_chat_id: int = 0  # 알림 송신 대상 (V3 Step 5-B 보강)
     fired: bool = False
     fired_at: str | None = None  # ISO 8601 datetime; None 이면 미발화
+
+
+# ====== V3 Step 6 (v3.1.0) — Compact context (AnalysisBrief) ======
+#
+# 후속 에이전트·lens 가 *전체* model_dump 를 재투입하면서 토큰이 폭증하던 문제를 해소.
+# brief 는 이전 분석의 *핵심 사실+판단+불확실성* 만 길이 제한된 채 담는다.
+# SSOT: 본 정의. 빌더는 ``src/brief_builder.py``.
+
+# 길이 제한 — 회귀 방지 차원에서 코드에 명시. 변경 시 token_budget 정책과 함께 검토.
+BRIEF_MAX_FACTS = 8
+BRIEF_MAX_TIMELINE = 6
+BRIEF_MAX_ACTORS = 5
+BRIEF_MAX_CAUSAL = 6
+BRIEF_MAX_SCENARIOS = 4
+BRIEF_MAX_UNCERTAINTIES = 4
+BRIEF_MAX_SOURCES = 8
+
+
+class AnalysisBrief(BaseModel):
+    """후속 에이전트/렌즈에게 전달하는 *압축* 컨텍스트.
+
+    ``FullAnalysisResult`` 전체를 재직렬화하는 대신 본 brief 를 사용해 입력 토큰을 줄인다.
+    각 list 필드는 길이 제한 (BRIEF_MAX_* 상수) 을 코드에서 강제.
+
+    빌더: ``src.brief_builder.build_analysis_brief(result)``.
+    """
+
+    event_name: str = ""
+    event_type: str = ""
+    user_intent: str = ""
+    date: str = ""
+    facts: list[str] = Field(default_factory=list)
+    timeline: list[dict] = Field(default_factory=list)
+    actors: list[dict] = Field(default_factory=list)
+    causal_claims: list[str] = Field(default_factory=list)
+    scenarios: list[dict] = Field(default_factory=list)
+    uncertainties: list[str] = Field(default_factory=list)
+    sources: list[str] = Field(default_factory=list)
+
+    def compact(self) -> dict:
+        """LLM 입력용 dict — 빈 필드는 생략해서 토큰 추가 절약.
+
+        반환값은 ``json.dumps(..., separators=(',',':'))`` 로 직렬화될 것을 가정 — 즉
+        compact JSON 친화적인 평탄 dict.
+        """
+        out: dict = {}
+        if self.event_name:
+            out["event"] = self.event_name
+        if self.event_type:
+            out["type"] = self.event_type
+        if self.user_intent:
+            out["intent"] = self.user_intent
+        if self.date:
+            out["date"] = self.date
+        if self.facts:
+            out["facts"] = self.facts[:BRIEF_MAX_FACTS]
+        if self.timeline:
+            out["timeline"] = self.timeline[:BRIEF_MAX_TIMELINE]
+        if self.actors:
+            out["actors"] = self.actors[:BRIEF_MAX_ACTORS]
+        if self.causal_claims:
+            out["causal"] = self.causal_claims[:BRIEF_MAX_CAUSAL]
+        if self.scenarios:
+            out["scenarios"] = self.scenarios[:BRIEF_MAX_SCENARIOS]
+        if self.uncertainties:
+            out["uncertainties"] = self.uncertainties[:BRIEF_MAX_UNCERTAINTIES]
+        if self.sources:
+            out["sources"] = self.sources[:BRIEF_MAX_SOURCES]
+        return out
 
 
 class FullAnalysisResult(BaseModel):

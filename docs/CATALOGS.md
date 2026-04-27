@@ -1,17 +1,20 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v3.1.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
   - "보고서 블록 타입 카탈로그 (mirror of src/models.py:BlockType — V3 Step 3 활성화)"
   - "분석 렌즈 카탈로그 (V3 Step 5 후 src/lenses/registry.py 미러)"
+  - "Mode 별 lens cap 정책 (mirror of src/token_budget.py + src/lens_policy.py — v3.1.0)"
 depends_on:
   - "src/agents/* (현재 SSOT)"
   - "src/archetypes/registry.py (archetype SSOT, Step 2 활성화)"
   - "src/models.py:BlockType (BlockType SSOT, Step 3 활성화)"
   - "src/lenses/registry.py (V3 후 lens SSOT)"
-last_review: 2026-04-26
+  - "src/token_budget.py (mode 정책 SSOT, v3.1.0)"
+  - "src/lens_policy.py (lens 결정 규칙 SSOT, v3.1.0)"
+last_review: 2026-04-27
 ---
 
 # Catalogs — Agents · Lenses · Archetypes · Blocks
@@ -21,23 +24,23 @@ last_review: 2026-04-26
 
 ---
 
-## 1. Agents — 현재 (v3.0.0)
+## 1. Agents — 현재 (v3.1.0)
 
-각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러.
+각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러. v3.1.0 부터 mode (fast/standard/deep) 별 호출 여부가 다르다.
 
-| # | 에이전트 | 파일 | 역할 (요약) |
-|---|---------|------|-------------|
-| 1 | 상황인식 분석관 | `src/agents/context_analyst.py` | ACT I: 팩트, 타임라인, 핵심 수치, 웹 검색 |
-| 2 | 이해관계자 분석관 **[DEPRECATED v3.0.0]** | `src/agents/player_analyst.py` | ACT II 행위자 식별 / 위험도. v4.0.0 제거 예정 (`FUT-LEGACY-001`) — `src.lenses.StakeholderLens` 사용 권장 |
-| 3 | 구조 및 상호작용 분석관 **[DEPRECATED v3.0.0]** | `src/agents/dynamics_analyst.py` | ACT III 게임이론·전환점. v4.0.0 제거 예정 — `src.lenses.StructuralLens` 사용 권장 |
-| 4 | 연쇄반응 분석관 **[DEPRECATED v3.0.0]** | `src/agents/chain_reaction_analyst.py` | ACT IV 인과 사슬·와일드카드. v4.0.0 제거 예정 — `src.lenses.CascadeLens` 사용 권장 |
-| 5 | 향후 시나리오 분석관 | `src/agents/scenario_architect.py` | ACT V+VI: 시나리오, 감시 신호, 균형 분석 |
-| 6 | 시각화 분석관 | `src/agents/visual_analyst.py` | SVG 관계도, Leaflet 지도, Canvas 차트 |
-| 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드 |
-| 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 (Plan Sanity) + Gate 2 (Coverage Check) — heuristic + LLM-as-judge |
-| 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도 |
+| # | 에이전트 | 파일 | 역할 (요약) | fast | standard | deep |
+|---|---------|------|-------------|:----:|:--------:|:----:|
+| 1 | 상황인식 분석관 | `src/agents/context_analyst.py` | ACT I: 팩트, 타임라인, 핵심 수치, 웹 검색 | ✅ | ✅ | ✅ |
+| 2 | 이해관계자 분석관 **[DEPRECATED v3.0.0]** | `src/agents/player_analyst.py` | ACT II 행위자 식별 / 위험도. v4.0.0 제거 예정 (`FUT-LEGACY-001`) — `src.lenses.StakeholderLens` 사용 권장 | ❌ | ❌ | ✅ |
+| 3 | 구조 및 상호작용 분석관 **[DEPRECATED v3.0.0]** | `src/agents/dynamics_analyst.py` | ACT III 게임이론·전환점. v4.0.0 제거 예정 — `src.lenses.StructuralLens` 사용 권장 | ❌ | ❌ | ✅ |
+| 4 | 연쇄반응 분석관 **[DEPRECATED v3.0.0]** | `src/agents/chain_reaction_analyst.py` | ACT IV 인과 사슬·와일드카드. v4.0.0 제거 예정 — `src.lenses.CascadeLens` 사용 권장 | ❌ | ❌ | ✅ |
+| 5 | 향후 시나리오 분석관 | `src/agents/scenario_architect.py` | ACT V+VI: 시나리오, 감시 신호, 균형 분석 | ✅ | ✅ | ✅ |
+| 6 | 시각화 분석관 | `src/agents/visual_analyst.py` | SVG 관계도, Leaflet 지도, Canvas 차트 (LLM) — fast/standard 는 `visual_builder` 결정적 빌더만 사용 | 결정적 | 결정적 | ✅ |
+| 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드. fast/standard 는 deterministic summary + default narrative plan | 결정적 | 결정적 | ✅ LLM |
+| 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 + Gate 2. fast/standard 는 heuristic 만, deep 또는 `QUALITY_LLM_JUDGE=true` 일 때만 LLM judge | heuristic | heuristic | ✅ LLM |
+| 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도. standard 는 contradictions/저신뢰 시에만 LLM | heuristic | 조건부 | ✅ LLM |
 
-DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v3.x 동안 동작 보장, v4.0.0 제거 (`GOAL.md FUT-LEGACY-001`). 신규 코드는 lens 풀의 `stakeholder` / `structural` / `cascade` 사용 (§2 표 참조).
+DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v3.1.0 부터는 deep 모드에서만 호출 — fast/standard 에서는 lens pool 의 `stakeholder` / `structural` / `cascade` 가 대체 (§2 표 참조). v4.0.0 에서 6막 템플릿 재작업과 함께 정식 제거 (`GOAL.md FUT-LEGACY-001`).
 
 기능 요구사항 매핑은 [GOAL.md](../GOAL.md) 의 REQ-AGT-001~007, REQ-V3-009 참조.
 
@@ -61,10 +64,36 @@ DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v
 | `structural` (5-C) | `src/lenses/structural_lens.py` | 페르소나 이전 (구 DynamicsAnalyst) | why_happened, where_vulnerable | 게임이론 / 비대칭 / 전환점 / 피드백 루프 |
 | `cascade` (5-C) | `src/lenses/cascade_lens.py` | 페르소나 이전 (구 ChainReactionAnalyst) | where_spreads, what_next | 인과 사슬 → 도미노 단계 → 와일드카드 → 차단점·시간지평 |
 
-### 2.1 Lens 선택 규칙 (Strategy Planner 가이드)
+### 2.1 Lens 선택 규칙 (v3.1.0 — `lens_policy.select_lenses()`)
 
-- 사건 핵심 분야 lens 1~2개 + 메타 lens (`red_team` 또는 `pre_mortem`) 0~1개 권장.
+LLM 의 `recommended_lenses` 출력에 의존하지 않고 코드 규칙으로 결정. SSOT 는 [src/lens_policy.py](../src/lens_policy.py).
+
+#### Mode 별 cap
+| Mode | Lens cap | 메타 lens 자동 추가 |
+|------|---------|-------------------|
+| fast | 1 | ❌ |
+| standard | 2 | ✅ (의사결정·전망 의도에서만) |
+| deep | 4 | ✅ + 반대편 메타 lens 도 추가 |
+
+#### 분야 lens 우선순위 (event_type 정규화 후)
+```
+tech         → tech_architecture, structural
+accident     → accident_causality, structural, cascade
+financial    → financial_transmission, market_structure, cascade
+industry     → market_structure, stakeholder, structural
+policy       → policy_implementation, stakeholder
+geopolitical → geopolitical, stakeholder, structural
+general      → stakeholder, structural
+```
+
+#### 메타 lens 자동 추가 매핑
+- `user_intent ∈ {what_to_do, where_vulnerable}` → `red_team` 추가
+- `user_intent ∈ {what_next}` → `pre_mortem` 추가
+- 그 외 의도 (what_happened, why_happened, who_benefits, where_spreads) → 메타 lens 자동 추가 안 함 (모든 사건에 강제 추가 금지)
+
+#### 가드
 - **절대 5개 이상 금지** — Pydantic `recommended_lenses: max_length=4` + orchestrator `LENS_CAP_PER_EVENT=4` 이중 가드 (Anti-pattern #6).
+- LLM 추천이 들어오면 *분야 lens 만* 우선순위 보정에 활용 (메타 lens 결정권은 정책 단독).
 - 미등록 lens_id 는 `red_team` 으로 폴백 + warning 로그 (registry 가드).
 
 ### 2.2 Lens 추가 절차

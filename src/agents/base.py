@@ -6,9 +6,11 @@ import asyncio
 import json
 import logging
 import shutil
-from typing import TypeVar, Type
+import time
+from typing import Optional, TypeVar, Type
 
 from src.config import Config
+from src.telemetry import RunTelemetry
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,9 @@ class BaseAgent:
         self.config = config
         self.model_name = config.model_name_light if use_light_model else config.model_name
         self._api_client: object | None = None
+        # v3.1.0: telemetry registry. Orchestrator 가 사건당 인스턴스를 주입.
+        # None 이면 telemetry 기록을 스킵 (단위 테스트 / standalone 사용 시).
+        self.telemetry: Optional[RunTelemetry] = None
 
         if not config.use_cli_mode:
             import anthropic  # lazy import – not required in CLI mode
@@ -56,14 +61,27 @@ class BaseAgent:
             return await self._analyze_cli(context)
         return await self._analyze_api(context)
 
+    @staticmethod
+    def _serialize_context(context: dict) -> tuple[str, str]:
+        """입력 dict → (directive, compact JSON user_message).
+
+        v3.1.0: ``json.dumps(..., indent=2)`` 폐기. 한국어 nested JSON 에서 indent 는
+        토큰을 30~50% 더 먹는다. 또한 ``context.pop`` 부작용을 제거 — 호출자 dict 를
+        변형하지 않음 (Anti-pattern: side-effect 입력 변형).
+        """
+        context_for_prompt = dict(context)
+        directive = context_for_prompt.pop("strategic_directive", "") or ""
+        user_message = json.dumps(
+            context_for_prompt, ensure_ascii=False, separators=(",", ":")
+        )
+        return directive, user_message
+
     # ------------------------------------------------------------------
     # CLI mode (Claude Max plan via ``claude`` subprocess)
     # ------------------------------------------------------------------
 
     async def _analyze_cli(self, context: dict) -> str:
-        # Extract directive and inject it prominently before data
-        directive = context.pop("strategic_directive", "")
-        user_message = json.dumps(context, ensure_ascii=False, indent=2)
+        directive, user_message = self._serialize_context(context)
 
         claude_bin = shutil.which("claude")
         if claude_bin is None:
@@ -93,6 +111,7 @@ class BaseAgent:
         ]
 
         logger.info(f"[{self.name}] Starting CLI analysis ({self.model_name})...")
+        start_ts = time.time()
         proc = await asyncio.create_subprocess_exec(
             *cmd,
             stdin=asyncio.subprocess.DEVNULL,
@@ -109,7 +128,15 @@ class BaseAgent:
 
         raw_text = stdout.decode().strip()
         raw_text = raw_text.replace("**", "")
+        elapsed_ms = int((time.time() - start_ts) * 1000)
         logger.info(f"[{self.name}] Received CLI response ({len(raw_text)} chars)")
+        if self.telemetry is not None:
+            self.telemetry.record_llm_call(
+                agent_name=self.name,
+                input_chars=len(full_prompt),
+                output_chars=len(raw_text),
+                elapsed_ms=elapsed_ms,
+            )
         return raw_text
 
     # ------------------------------------------------------------------
@@ -118,8 +145,7 @@ class BaseAgent:
 
     async def _analyze_api(self, context: dict) -> str:
         assert self._api_client is not None, "API client not initialised"
-        directive = context.pop("strategic_directive", "")
-        user_message = json.dumps(context, ensure_ascii=False, indent=2)
+        directive, user_message = self._serialize_context(context)
 
         system = self.system_prompt
         if directive:
@@ -130,6 +156,7 @@ class BaseAgent:
             )
 
         logger.info(f"[{self.name}] Starting API analysis ({self.model_name})...")
+        start_ts = time.time()
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
             model=self.model_name,
             max_tokens=4096,
@@ -139,7 +166,15 @@ class BaseAgent:
 
         raw_text = response.content[0].text  # type: ignore[index]
         raw_text = raw_text.replace("**", "")
+        elapsed_ms = int((time.time() - start_ts) * 1000)
         logger.info(f"[{self.name}] Received API response ({len(raw_text)} chars)")
+        if self.telemetry is not None:
+            self.telemetry.record_llm_call(
+                agent_name=self.name,
+                input_chars=len(system) + len(user_message),
+                output_chars=len(raw_text),
+                elapsed_ms=elapsed_ms,
+            )
         return raw_text
 
     def _parse_json_response(self, raw_text: str, output_type: Type[T]) -> T:

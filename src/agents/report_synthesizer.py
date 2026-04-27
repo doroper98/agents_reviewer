@@ -32,15 +32,78 @@ class ReportSynthesizer:
     Does NOT extend BaseAgent. Uses Jinja2 for HTML rendering,
     calls Claude CLI for executive summary generation,
     builds Canvas 2D chart data, and uploads to Cloudflare Pages.
+
+    v3.1.0:
+    - ``use_llm_narrative_plan`` (default False) — fast/standard 는 default plan 사용.
+    - ``use_llm_executive_summary`` (default False) — deterministic builder 우선,
+      실패 또는 deep 일 때만 LLM.
     """
 
     def __init__(self, config: Config) -> None:
         self.config = config
         self._api_client: object | None = None
+        # v3.1.0: orchestrator 가 mode 별로 주입.
+        self.use_llm_narrative_plan: bool = False
+        self.use_llm_executive_summary: bool = False
 
         if not config.use_cli_mode:
             import anthropic
             self._api_client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
+
+    # ------------------------------------------------------------------
+    # v3.1.0 — Deterministic executive summary builder
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_deterministic_summary(
+        result: FullAnalysisResult,
+    ) -> tuple[str, list[str]]:
+        """LLM 호출 없이 ``judgment.main_judgment`` + ``biggest_uncertainty`` +
+        top findings 로 governance + key items 생성.
+
+        반환값: (governance_text, key_summary_items)
+        실패하면 ("", []) 반환 → 호출자가 LLM 폴백 결정.
+        """
+        ctx = result.context
+        judgment = result.judgment
+
+        governance_pieces: list[str] = []
+        if ctx and ctx.event_name:
+            governance_pieces.append(f"{ctx.event_name}.")
+        if ctx and ctx.summary:
+            governance_pieces.append(ctx.summary.strip().split("\n", 1)[0][:200])
+        elif judgment and judgment.main_judgment:
+            governance_pieces.append(judgment.main_judgment.strip()[:200])
+        governance = " ".join(p for p in governance_pieces if p).strip()
+
+        key_items: list[str] = []
+        if judgment and judgment.main_judgment:
+            key_items.append(judgment.main_judgment.strip()[:160])
+        if judgment and judgment.base_scenario and judgment.base_scenario.strip():
+            key_items.append(f"기준 시나리오: {judgment.base_scenario.strip()[:140]}")
+        # Top finding (highest confidence) — 종합 판단과 다른 각도 보강.
+        if result.findings:
+            top = max(result.findings, key=lambda f: f.confidence.aggregate)
+            stmt = top.main_claim.statement.strip()
+            if stmt and stmt not in (judgment.main_judgment if judgment else ""):
+                key_items.append(stmt[:160])
+        if judgment and judgment.counter_hypothesis:
+            key_items.append(
+                f"반대 가설: {judgment.counter_hypothesis.strip()[:140]}"
+            )
+        if judgment and judgment.biggest_uncertainty:
+            key_items.append(
+                f"가장 큰 불확실성: {judgment.biggest_uncertainty.strip()[:140]}"
+            )
+
+        # 최소 검증 — governance/key_items 둘 다 비어있으면 실패 신호.
+        if not governance and not key_items:
+            return "", []
+        if not key_items:
+            # judgment 없이 context 만 있을 때 — context 핵심 1~2개 fallback.
+            if ctx and ctx.summary:
+                key_items.append(ctx.summary.strip().split("\n", 1)[0][:160])
+        return governance, key_items[:5]
 
     async def _generate_executive_summary(
         self, result: FullAnalysisResult
@@ -694,25 +757,48 @@ class ReportSynthesizer:
             archetype = get_archetype("six_act_theater")
         is_legacy_six_act = archetype.archetype_id == "six_act_theater"
 
-        # Generate executive summary + narrative plan in parallel
+        # v3.1.0: deterministic-first executive summary + conditional narrative plan.
         key_summary_items: list[str] = []
         narrative_plan: NarrativePlan | None = None
 
-        async def _gen_summary() -> tuple[str, list[str]]:
-            if result.executive_summary:
-                return result.executive_summary, []
-            return await self._generate_executive_summary(result)
+        # 1) Executive summary — deterministic builder 우선.
+        if result.executive_summary:
+            governance, key_items = result.executive_summary, []
+        else:
+            governance, key_items = self._build_deterministic_summary(result)
+            if (not governance or not key_items) and self.use_llm_executive_summary:
+                # deterministic 실패 + LLM 허용 시에만 폴백.
+                logger.info(
+                    "[report_synthesizer] deterministic summary insufficient; "
+                    "falling back to LLM executive summary",
+                )
+                try:
+                    governance, key_items = await self._generate_executive_summary(result)
+                except Exception as e:
+                    logger.warning(
+                        "[report_synthesizer] LLM executive summary failed: %s; "
+                        "using deterministic placeholder", e,
+                    )
+            if not governance:
+                governance = (
+                    result.context.event_name if result.context else ""
+                ) or "(요약 미생성 — 분석 데이터 부족)"
+            if not result.executive_summary:
+                result.executive_summary = governance
+                key_summary_items = key_items
 
-        async def _gen_plan() -> NarrativePlan:
-            return await self._generate_narrative_plan(result)
-
-        (governance, key_items), plan = await asyncio.gather(
-            _gen_summary(), _gen_plan()
-        )
-        if not result.executive_summary:
-            result.executive_summary = governance
-            key_summary_items = key_items
-        narrative_plan = plan
+        # 2) Narrative plan — fast/standard 는 default, deep 만 LLM.
+        if self.use_llm_narrative_plan:
+            try:
+                narrative_plan = await self._generate_narrative_plan(result)
+            except Exception as e:
+                logger.warning(
+                    "[report_synthesizer] LLM narrative plan failed: %s; "
+                    "using default plan", e,
+                )
+                narrative_plan = self._default_narrative_plan(result)
+        else:
+            narrative_plan = self._default_narrative_plan(result)
 
         # Build chart data & confidence text
         chart_data = self._build_chart_data(result)

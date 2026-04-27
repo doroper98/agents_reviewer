@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v3.0.0
+last_synced_with: v3.1.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
@@ -74,6 +74,8 @@ last_review: 2026-04-26
 | `src/templates/blocks/*` 신규 추가 (V3 Step 3 활성) | [docs/CATALOGS.md §4](docs/CATALOGS.md), `src/models.py:BlockType` Literal 확장, `_BLOCK_BUILDERS` 등록 |
 | `src/models.py:BlockType` 변경 | [docs/CATALOGS.md §4](docs/CATALOGS.md), [docs/DATA_MODELS.md §3.7](docs/DATA_MODELS.md), 신규 타입은 `src/templates/blocks/<type>.html` + 빌더 추가 |
 | `src/templates/archetypes/*` 신규 추가 | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| `src/token_budget.py` 정책 변경 | [docs/ARCHITECTURE.md §3.1](docs/ARCHITECTURE.md), [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
+| `src/lens_policy.py` 매핑 변경 | [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
 | [GOAL.md](GOAL.md) `REQ-*` 추가/완료 | [DEVLOG.md](DEVLOG.md) 에 변경 기록 |
 | 의존성 추가 (`requirements.txt`) | [DEVLOG.md](DEVLOG.md), [README.md](README.md) Quick Start |
 | 워크플로우 변경 | [WORKFLOWS.md](WORKFLOWS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
@@ -87,9 +89,22 @@ last_review: 2026-04-26
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
 ## Key Directories
-- `src/agents/` — 분석 에이전트 정의 (현재 7개)
+- `src/agents/` — 분석 에이전트 정의 (7개)
+- `src/lenses/` — 분석 lens 풀 (11종, `lens_policy` 가 mode 별 cap 결정)
+- `src/archetypes/` — 보고서 archetype (11종)
 - `src/templates/` — HTML 보고서 템플릿
 - `src/templates/report.css` — 보고서 CSS
+- `src/token_budget.py` — Mode (fast/standard/deep) 별 LLM 호출 / lens cap 정책 (v3.1.0)
+- `src/lens_policy.py` — `(event_type, user_intent, mode)` → lens 결정 (v3.1.0)
+- `src/brief_builder.py` — `FullAnalysisResult` → `AnalysisBrief` 압축 컨텍스트 (v3.1.0)
+- `src/visual_builder.py` — 결정적 SVG/시각화 빌더 (v3.1.0)
+- `src/telemetry.py` — LLM 호출 / 단계별 elapsed 기록 (v3.1.0)
 - `docs/` — 모든 정규 문서 (이전 `docs_canonical/` 에서 이름 단순화)
 - `docs/references/` — 참조 자료 (prototype HTML)
 - `reports/` — 생성된 HTML 보고서 (git ignored)
+
+## Mode Routing (v3.1.0)
+- 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard.
+- Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
+- legacy 페르소나 (PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst) 는 deep 모드에서만 호출.
+- LLM 호출 cap: fast=4, standard=7, deep=12 (soft guard, telemetry 가 초과 시 경고).

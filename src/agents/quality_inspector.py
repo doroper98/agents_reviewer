@@ -42,6 +42,10 @@ class QualityInspector:
 
     def __init__(self, config: Config) -> None:
         self.config = config
+        # v3.1.0: LLM judge 활성화 플래그. Orchestrator 가 mode 별로 주입.
+        # default False — fast/standard 는 heuristic 만, deep 또는 명시적 환경변수
+        # ``QUALITY_LLM_JUDGE=true`` 일 때만 LLM judge.
+        self.use_llm_judge: bool = False
 
     # ------------------------------------------------------------------
     # Gate 1: Plan Sanity
@@ -54,13 +58,21 @@ class QualityInspector:
         - core_questions 존재 + 분석 가능한 질문인지
         - lens-intent 정합성 (recommended_lenses 가 user_intent 와 호환)
         - evidence_plan 실행 가능성 (있다면 expected_source_types 명시)
+
+        v3.1.0: LLM judge 는 ``self.use_llm_judge=True`` 또는 환경변수
+        ``QUALITY_LLM_JUDGE=true`` 일 때만 호출. 그 외에는 heuristic 결과로 종결.
         """
         # Heuristic checks
         passed, reason = self._gate_1_heuristics(strategy)
         if not passed:
             return False, reason
 
-        # Optional LLM augmentation. CLI 미설치 또는 실패 시 휴리스틱 결과 채택.
+        # v3.1.0: LLM judge gating — 기본 비활성.
+        import os
+        env_enabled = (os.getenv("QUALITY_LLM_JUDGE") or "").lower() in ("1", "true", "yes")
+        if not (self.use_llm_judge or env_enabled):
+            return True, "ok"
+
         try:
             llm_pass, llm_reason = await self._gate_1_llm_judge(strategy)
             if not llm_pass:

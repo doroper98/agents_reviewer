@@ -49,10 +49,24 @@ _CONFLICT_LEXICON: list[tuple[str, str]] = [
 
 
 class SynthesisJudge:
-    """Findings → JudgmentVerdict. Heuristic-first, LLM-augmented when CLI available."""
+    """Findings → JudgmentVerdict. Heuristic-first, LLM-augmented when CLI available.
+
+    v3.1.0:
+    - ``use_llm_synthesis`` (default False) — fast/standard 는 heuristic 만.
+    - ``llm_synthesis_threshold`` (default 0.55) — confidence aggregate 가 이보다 낮거나
+      contradictions 가 존재하면 standard 에서도 LLM synthesis 발화 (저신뢰 케이스 보강).
+    - deep 에서는 ``use_llm_synthesis=True`` 로 기존 동작 유지.
+    """
 
     def __init__(self, config: Config) -> None:
         self.config = config
+        # v3.1.0 — LLM synthesis 활성 플래그. Orchestrator 가 mode 별로 주입.
+        self.use_llm_synthesis: bool = False
+        # standard 에서 모순 또는 저신뢰일 때 LLM 으로 보강할지 (default True).
+        self.allow_llm_on_low_confidence: bool = True
+        self.llm_synthesis_threshold: float = 0.55
+        # core_questions 미답변 위험 신호 (orchestrator 가 주입 가능).
+        self.core_questions_at_risk: bool = False
 
     # ------------------------------------------------------------------
     # Public entry
@@ -82,11 +96,22 @@ class SynthesisJudge:
         confidence = self._aggregate_confidence(findings, contradictions)
 
         # 3) main_judgment / base_scenario / counter_hypothesis 산출
-        #    LLM 이 가능하면 LLM 으로, 아니면 heuristic 으로.
-        try:
-            verdict_extras = await self._llm_synthesize(findings, contradictions)
-        except Exception as e:
-            logger.info("[synthesis_judge] LLM synthesize fallback to heuristic: %s", e)
+        #    v3.1.0: LLM 호출은 조건부.
+        should_call_llm = self._should_call_llm(contradictions, confidence)
+        if should_call_llm:
+            try:
+                verdict_extras = await self._llm_synthesize(findings, contradictions)
+            except Exception as e:
+                logger.info(
+                    "[synthesis_judge] LLM synthesize fallback to heuristic: %s", e,
+                )
+                verdict_extras = self._heuristic_synthesize(findings, contradictions)
+        else:
+            logger.info(
+                "[synthesis_judge] heuristic-only path (use_llm_synthesis=%s, "
+                "contradictions=%d, confidence=%.2f)",
+                self.use_llm_synthesis, len(contradictions), confidence.aggregate,
+            )
             verdict_extras = self._heuristic_synthesize(findings, contradictions)
 
         return JudgmentVerdict(
@@ -98,6 +123,34 @@ class SynthesisJudge:
             counter_evidence_needed=verdict_extras.get("counter_evidence_needed", []),
             confidence=confidence,
         )
+
+    # ------------------------------------------------------------------
+    # v3.1.0 — LLM gating
+    # ------------------------------------------------------------------
+
+    def _should_call_llm(
+        self,
+        contradictions: list[dict[str, Any]],
+        confidence: ConfidenceProfile,
+    ) -> bool:
+        """LLM synthesis 호출 여부 결정.
+
+        - ``use_llm_synthesis=True`` (deep): 항상 호출
+        - ``allow_llm_on_low_confidence=True`` (standard): contradictions 있거나
+          aggregate < threshold 또는 core_questions_at_risk → 호출
+        - 그 외 (fast 또는 standard 안전 케이스): 호출 안 함
+        """
+        if self.use_llm_synthesis:
+            return True
+        if not self.allow_llm_on_low_confidence:
+            return False
+        if contradictions:
+            return True
+        if confidence.aggregate < self.llm_synthesis_threshold:
+            return True
+        if self.core_questions_at_risk:
+            return True
+        return False
 
     # ------------------------------------------------------------------
     # Contradiction detection (Anti-pattern #5: 봉합 금지)
