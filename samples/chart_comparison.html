@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>차트 비교 — Canvas 2D vs d3 SVG</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<style>
+:root{
+  --bg:#2B1A1A;--card:#3D2828;--card-deep:#321F1F;
+  --border:#5A4A3A;--border-light:rgba(90,74,58,.4);
+  --text-primary:#F0E2CC;--text-secondary:#D4C4AA;--text-muted:#A89880;
+  --gold:#C9A84C;--gold-dark:#9E8A15;
+  --green:#1A7B3E;--green-dark:#125A2D;
+  --orange:#C76B1E;--orange-dark:#8D4D14;
+  --red:#BD3227;--red-dark:#8A2018;
+  --blue:#1D6FA5;
+  --shadow:0 2px 8px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+body{
+  font-family:'Noto Sans KR',sans-serif;background:var(--bg);
+  color:var(--text-secondary);margin:0;padding:24px 12px;line-height:1.6;
+}
+.wrap{max-width:920px;margin:0 auto}
+h1{
+  font-family:'Noto Serif KR',serif;font-weight:900;font-size:22px;
+  color:var(--text-primary);margin:0 0 6px;letter-spacing:-.5px;
+}
+.sub{color:var(--text-muted);font-size:12px;margin-bottom:24px}
+.legend{
+  display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px;
+  font-size:11px;color:var(--text-muted);
+}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.section-tag{
+  display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--gold);
+  border:1px solid var(--gold);padding:3px 10px;border-radius:12px;
+  margin-bottom:8px;
+}
+.card{
+  background:var(--card);border:1px solid var(--border-light);
+  border-radius:10px;padding:22px 18px 18px;margin-bottom:24px;
+  box-shadow:var(--shadow);
+}
+.chart-title{
+  font-family:'Noto Serif KR',serif;font-weight:700;font-size:15px;
+  color:var(--text-primary);margin-bottom:4px;
+}
+.chart-subtitle{font-size:11px;color:var(--text-muted);margin-bottom:14px}
+.chart-stage{
+  width:100%;aspect-ratio:5/3;background:var(--card-deep);
+  border-radius:8px;padding:10px;
+}
+.chart-meta{
+  display:flex;flex-wrap:wrap;gap:6px 18px;font-size:10px;color:var(--text-muted);
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light);
+}
+.chart-meta strong{color:var(--gold);font-weight:700;font-size:9px;letter-spacing:1px;text-transform:uppercase}
+canvas{display:block;width:100%;height:100%}
+.note{
+  font-size:11px;color:var(--text-muted);background:var(--card-deep);
+  padding:14px 16px;border-radius:8px;border-left:3px solid var(--gold);
+  margin-top:32px;line-height:1.7;
+}
+.note b{color:var(--text-primary)}
+.diff-grid{display:grid;grid-template-columns:1fr;gap:6px;margin-top:10px}
+.diff-grid div{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;font-size:10px}
+.diff-grid .h{color:var(--gold);font-weight:700;border-bottom:1px solid var(--border-light);padding-bottom:4px;margin-bottom:4px}
+@media(min-width:540px){.diff-grid div{grid-template-columns:1.4fr 1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>차트 렌더링 비교</h1>
+  <div class="sub">동일한 시나리오 데이터를 두 가지 방식으로 렌더링. 같은 burgundy 디자인 토큰, 같은 폰트 적용.</div>
+
+  <div class="legend">
+    <span><i style="background:#1A7B3E"></i>최선</span>
+    <span><i style="background:#C9A84C"></i>기본선</span>
+    <span><i style="background:#C76B1E"></i>악화</span>
+    <span><i style="background:#BD3227"></i>최악</span>
+  </div>
+
+  <!-- ======================== Option 1: Canvas 2D ======================== -->
+  <div class="card">
+    <div class="section-tag">Option 1 · Canvas 2D 디테일 강화</div>
+    <div class="chart-title">시나리오 확률 분포</div>
+    <div class="chart-subtitle">2026.04.30 기준 · 4 분기 시나리오</div>
+    <div class="chart-stage"><canvas id="cvBar"></canvas></div>
+    <div class="chart-meta">
+      <span><strong>방식</strong> Canvas 2D 직접 그리기 (~150 lines)</span>
+      <span><strong>의존성</strong> 0</span>
+      <span><strong>크기</strong> +5 KB</span>
+      <span><strong>인터랙션</strong> 없음 (정적)</span>
+    </div>
+  </div>
+
+  <!-- ======================== Option 3: d3 SVG ======================== -->
+  <div class="card">
+    <div class="section-tag" style="color:#1D6FA5;border-color:#1D6FA5">Option 3 · d3 SVG (자체 디자인 시스템)</div>
+    <div class="chart-title">시나리오 확률 분포</div>
+    <div class="chart-subtitle">2026.04.30 기준 · 4 분기 시나리오 · hover 가능</div>
+    <div class="chart-stage" style="padding:0"><svg id="d3Bar" width="100%" height="100%" viewBox="0 0 600 360" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="chart-meta">
+      <span><strong>방식</strong> d3 v7 SVG 기반 (~200 lines)</span>
+      <span><strong>의존성</strong> d3.js 인라인 (~80 KB gz)</span>
+      <span><strong>크기</strong> +25 KB</span>
+      <span><strong>인터랙션</strong> hover 강조 + 애니메이션</span>
+    </div>
+  </div>
+
+  <!-- ======================== 차이 비교 표 ======================== -->
+  <div class="card" style="background:var(--card-deep);padding:18px 16px">
+    <div class="chart-title" style="font-size:13px;margin-bottom:12px">디자인 디테일 차이</div>
+    <div class="diff-grid">
+      <div class="h"><span>요소</span><span>Canvas 2D</span><span>d3 SVG</span></div>
+      <div><span style="color:var(--text-secondary)">막대 그라디언트</span><span>✅ 가능</span><span>✅ 가능</span></div>
+      <div><span style="color:var(--text-secondary)">미세 그리드</span><span>✅ 직접 그림</span><span>✅ d3.axis</span></div>
+      <div><span style="color:var(--text-secondary)">한국어 폰트 통일</span><span>✅</span><span>✅</span></div>
+      <div><span style="color:var(--text-secondary)">호버 툴팁</span><span>❌ 직접 구현 부담</span><span>✅ 단순</span></div>
+      <div><span style="color:var(--text-secondary)">진입 애니메이션</span><span>가능 (코드 추가)</span><span>✅ d3.transition</span></div>
+      <div><span style="color:var(--text-secondary)">라벨 충돌 회피</span><span>❌ 직접 계산</span><span>가능 (별도 라이브러리)</span></div>
+      <div><span style="color:var(--text-secondary)">SVG 무손실 확대</span><span>❌ 래스터</span><span>✅</span></div>
+      <div><span style="color:var(--text-secondary)">PDF/인쇄 품질</span><span>중 (해상도 의존)</span><span>✅ 무손실</span></div>
+      <div><span style="color:var(--text-secondary)">차트 종류 확장</span><span>코드량 폭증</span><span>유연 (sankey/시계열/줌)</span></div>
+      <div><span style="color:var(--text-secondary)">유지보수</span><span>단순</span><span>중 (d3 학습 필요)</span></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>비교 포인트.</b>
+    위 두 차트 모두 같은 디자인 토큰 (burgundy 테마, Noto Serif/Sans KR) 을 적용했음. 정적인 모습은 거의 같지만, d3 쪽은 마우스를 막대에 올리면 강조 + 옆에 정보가 나타남. Canvas 2D 도 호버 인터랙션을 *직접* 구현할 수는 있지만 좌표 hit-test 코드가 따로 필요해 코드량이 늘어남.
+    <br><br>
+    <b>핵심.</b> 정적 결과물의 "전문성" 측면에선 두 방식 차이가 크지 않음. 차이가 두드러지는 건 ① 인터랙션 ② 차트 종류 다양성 ③ 무손실 확대 (PDF). 보고서가 주로 텔레그램·웹 정적 표시 용도라면 Canvas 2D 로 충분, 인터랙티브 대시보드 / PDF 인쇄 / 시계열 줌이 필요해지면 d3 가 적합.
+  </div>
+</div>
+
+<script>
+/* ============== Option 1: Canvas 2D 디테일 강화 ============== */
+(function(){
+  const canvas = document.getElementById('cvBar');
+  const ctx = canvas.getContext('2d');
+  const data = [
+    {name:'여름의 그랜드 바겐', tag:'최선',   prob:20, color:'#1A7B3E', dark:'#125A2D'},
+    {name:'연출된 교착',         tag:'기본선', prob:35, color:'#C9A84C', dark:'#9E8A15'},
+    {name:'IRGC 장악',          tag:'악화',   prob:25, color:'#C76B1E', dark:'#8D4D14'},
+    {name:'호르무즈 봉쇄',      tag:'최악',   prob:20, color:'#BD3227', dark:'#8A2018'},
+  ];
+
+  function draw(){
+    const dpr = window.devicePixelRatio || 1;
+    const r = canvas.parentElement.getBoundingClientRect();
+    const W = r.width, H = r.height;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    const padL = 130, padR = 70, padT = 20, padB = 30;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+    const barH = Math.min(34, (chartH - (data.length-1)*16) / data.length);
+    const gap = (chartH - barH*data.length) / Math.max(1,data.length-1);
+
+    /* ---- 미세 그리드 ---- */
+    ctx.strokeStyle = 'rgba(212,196,170,0.08)';
+    ctx.lineWidth = 1;
+    for(let p=0;p<=100;p+=10){
+      const x = padL + (p/100)*chartW;
+      ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,H-padB+4); ctx.stroke();
+    }
+
+    /* ---- X축 라벨 (0/25/50/75/100%) ---- */
+    ctx.fillStyle = '#A89880';
+    ctx.font = '600 9px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ['0','25','50','75','100'].forEach((t,i)=>{
+      const x = padL + (i*25/100)*chartW;
+      ctx.fillText(t+'%', x, H-padB+18);
+    });
+
+    /* ---- 막대 + 라벨 ---- */
+    data.forEach((d,i)=>{
+      const y = padT + i*(barH+gap);
+      const barW = (d.prob/100)*chartW;
+
+      /* 좌측 라벨 (시나리오명 + 태그) */
+      ctx.fillStyle = '#F0E2CC';
+      ctx.font = '700 11px "Noto Sans KR",sans-serif';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(d.name, padL-12, y+barH/2-6);
+      ctx.fillStyle = d.color;
+      ctx.font = '600 9px "Noto Sans KR",sans-serif';
+      ctx.fillText(d.tag, padL-12, y+barH/2+8);
+
+      /* 막대 그라디언트 */
+      const grad = ctx.createLinearGradient(padL,0,padL+barW,0);
+      grad.addColorStop(0, d.dark);
+      grad.addColorStop(1, d.color);
+
+      /* 둥근 막대 */
+      const r = Math.min(6, barH/2);
+      ctx.fillStyle = grad;
+      roundRect(ctx, padL, y, barW, barH, r);
+      ctx.fill();
+
+      /* 막대 위 미세 highlight */
+      const hi = ctx.createLinearGradient(0,y,0,y+barH);
+      hi.addColorStop(0,'rgba(255,255,255,0.18)');
+      hi.addColorStop(0.5,'rgba(255,255,255,0)');
+      ctx.fillStyle = hi;
+      roundRect(ctx, padL, y, barW, barH, r);
+      ctx.fill();
+
+      /* 우측 % 라벨 (Serif 강조) */
+      ctx.fillStyle = '#F0E2CC';
+      ctx.font = '900 18px "Noto Serif KR", serif';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(d.prob+'%', padL+barW+10, y+barH/2);
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r){
+    if (w < 2*r) r = w/2; if (h < 2*r) r = h/2;
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y,   x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x,   y+h, r);
+    ctx.arcTo(x,   y+h, x,   y,   r);
+    ctx.arcTo(x,   y,   x+w, y,   r);
+    ctx.closePath();
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+/* ============== Option 3: d3 SVG ============== */
+(function(){
+  if (typeof d3 === 'undefined') return;
+  const svg = d3.select('#d3Bar');
+  const W = 600, H = 360;
+  const padL = 140, padR = 70, padT = 24, padB = 36;
+
+  const data = [
+    {name:'여름의 그랜드 바겐', tag:'최선',   prob:20, color:'#1A7B3E', dark:'#125A2D'},
+    {name:'연출된 교착',         tag:'기본선', prob:35, color:'#C9A84C', dark:'#9E8A15'},
+    {name:'IRGC 장악',          tag:'악화',   prob:25, color:'#C76B1E', dark:'#8D4D14'},
+    {name:'호르무즈 봉쇄',      tag:'최악',   prob:20, color:'#BD3227', dark:'#8A2018'},
+  ];
+
+  const x = d3.scaleLinear().domain([0,100]).range([padL, W-padR]);
+  const y = d3.scaleBand()
+    .domain(data.map(d=>d.name))
+    .range([padT, H-padB])
+    .padding(0.34);
+
+  /* Gradient defs (각 막대용) */
+  const defs = svg.append('defs');
+  data.forEach((d,i)=>{
+    const g = defs.append('linearGradient')
+      .attr('id','grad-'+i).attr('x1','0%').attr('y1','0%').attr('x2','100%').attr('y2','0%');
+    g.append('stop').attr('offset','0%').attr('stop-color', d.dark);
+    g.append('stop').attr('offset','100%').attr('stop-color', d.color);
+  });
+
+  /* 미세 그리드 */
+  svg.append('g').selectAll('line')
+    .data(d3.range(0,101,10))
+    .enter().append('line')
+      .attr('x1', d => x(d)).attr('x2', d => x(d))
+      .attr('y1', padT).attr('y2', H-padB+4)
+      .attr('stroke','#D4C4AA').attr('stroke-opacity', 0.08)
+      .attr('stroke-width',1);
+
+  /* X 축 라벨 (0/25/50/75/100) */
+  svg.append('g').selectAll('text')
+    .data([0,25,50,75,100])
+    .enter().append('text')
+      .attr('x', d=>x(d)).attr('y', H-padB+22)
+      .attr('text-anchor','middle')
+      .attr('fill','#A89880')
+      .attr('font-family','"JetBrains Mono", monospace')
+      .attr('font-size','9px').attr('font-weight','600')
+      .text(d => d+'%');
+
+  /* 좌측 시나리오명 라벨 */
+  svg.append('g').selectAll('g.label')
+    .data(data).enter().append('g').attr('class','label')
+    .each(function(d){
+      const g = d3.select(this);
+      const yc = y(d.name) + y.bandwidth()/2;
+      g.append('text')
+        .attr('x', padL-14).attr('y', yc-4)
+        .attr('text-anchor','end').attr('fill','#F0E2CC')
+        .attr('font-family','"Noto Sans KR", sans-serif')
+        .attr('font-size','11px').attr('font-weight','700')
+        .text(d.name);
+      g.append('text')
+        .attr('x', padL-14).attr('y', yc+10)
+        .attr('text-anchor','end').attr('fill', d.color)
+        .attr('font-family','"Noto Sans KR", sans-serif')
+        .attr('font-size','9px').attr('font-weight','600')
+        .text(d.tag);
+    });
+
+  /* 막대 + 진입 애니메이션 + 호버 인터랙션 */
+  const tooltip = d3.select('body').append('div')
+    .style('position','absolute')
+    .style('pointer-events','none')
+    .style('background','rgba(48,30,30,0.96)')
+    .style('color','#F0E2CC')
+    .style('padding','8px 12px')
+    .style('border-radius','6px')
+    .style('font-size','11px')
+    .style('font-family','"Noto Sans KR",sans-serif')
+    .style('border','1px solid #5A4A3A')
+    .style('box-shadow','0 4px 12px rgba(0,0,0,0.5)')
+    .style('opacity',0)
+    .style('transition','opacity 0.15s ease');
+
+  const bars = svg.append('g').selectAll('rect.bar')
+    .data(data).enter().append('rect').attr('class','bar')
+    .attr('x', padL).attr('width', 0)
+    .attr('y', d=>y(d.name)).attr('height', y.bandwidth())
+    .attr('rx', 5).attr('ry', 5)
+    .attr('fill', (d,i)=>'url(#grad-'+i+')')
+    .attr('stroke','rgba(255,255,255,0.04)').attr('stroke-width',1)
+    .style('cursor','pointer')
+    .on('mouseenter', function(e,d){
+      d3.select(this).transition().duration(140)
+        .attr('stroke','rgba(255,255,255,0.45)').attr('stroke-width', 2);
+      tooltip.html('<b>'+d.name+'</b><br><span style="color:'+d.color+'">'+d.tag+'</span> · '+d.prob+'%')
+        .style('opacity',1);
+    })
+    .on('mousemove', function(e){
+      tooltip.style('left', (e.pageX+12)+'px').style('top',(e.pageY-10)+'px');
+    })
+    .on('mouseleave', function(){
+      d3.select(this).transition().duration(140)
+        .attr('stroke','rgba(255,255,255,0.04)').attr('stroke-width', 1);
+      tooltip.style('opacity',0);
+    });
+
+  /* 막대 진입 애니메이션 (좌→우 stretch) */
+  bars.transition().duration(900).delay((d,i)=>i*120).ease(d3.easeCubicOut)
+    .attr('width', d => x(d.prob) - padL);
+
+  /* 우측 % 라벨 (지연 fade-in) */
+  svg.append('g').selectAll('text.pct')
+    .data(data).enter().append('text').attr('class','pct')
+    .attr('x', d => x(d.prob) + 10)
+    .attr('y', d => y(d.name) + y.bandwidth()/2 + 6)
+    .attr('fill','#F0E2CC')
+    .attr('font-family','"Noto Serif KR", serif')
+    .attr('font-size','18px').attr('font-weight','900')
+    .attr('opacity', 0)
+    .text(d => d.prob+'%')
+    .transition().duration(500).delay((d,i)=>i*120 + 700)
+    .attr('opacity', 1);
+})();
+</script>
+</body>
+</html>
