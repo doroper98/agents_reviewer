@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v3.3.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -106,7 +106,9 @@ last_review: 2026-04-26
 | `VisualAnalysis` | 시각 요소 (SVG·Leaflet·Canvas) | `src/models.py` |
 | `NarrativeSection` | 보고서의 단일 섹션 사양 (legacy six_act_theater 전용) | `src/models.py` |
 | `NarrativePlan` | 섹션 순서·테마 (legacy six_act_theater 전용) | `src/models.py` |
-| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 (`strategy`, `blocks` 포함) | `src/models.py` |
+| `ComposedSection` (v3.3.0) | narrative_composer (Opus 4.7) 가 작성한 1개 자유 섹션. heading / kicker / prose / `embedded_charts` (chart_id) / `embedded_blocks` (block_type) / pull_quote / `cited_claim_ids` | `src/models.py` |
+| `ComposedReport` (v3.3.0) | composer 산출물 — headline / deck / sections / closing. `freeform_essay` archetype 의 입력 SSOT | `src/models.py` |
+| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 (`strategy`, `blocks`, `composed_report` 포함) | `src/models.py` |
 
 각 모델의 **현재 필드 목록**은 `src/models.py` 를 직접 읽는다 — 본 문서에 필드 사본을 두면 SSOT 위반이 된다.
 

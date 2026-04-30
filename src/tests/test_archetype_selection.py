@@ -43,13 +43,15 @@ def _make_strategy(intent: str, event_type: str) -> AnalysisStrategy:
 
 class TestArchetypeRegistry:
     def test_eleven_archetypes_registered(self) -> None:
+        # v3.3.0: +freeform_essay (composer 전용) → 12종.
         ids = list_archetypes()
-        assert len(ids) == 11
+        assert len(ids) == 12
         expected = {
             "six_act_theater", "financial_transmission", "tech_decomposition",
             "geopolitical_strategic", "accident_forensic", "policy_implementation",
             "decision_brief", "timeline_first", "scenario_first",
             "mechanism_decomp", "industry_value_chain",
+            "freeform_essay",
         }
         assert set(ids) == expected
 
@@ -59,9 +61,13 @@ class TestArchetypeRegistry:
             assert isinstance(arch, ReportArchetype), f"{aid} not Protocol"
             assert arch.archetype_id == aid
             assert arch.name
-            # All non-legacy archetypes route through report_block.html.
-            # Legacy six_act_theater keeps report.html (byte-equal preservation).
-            assert arch.template_path() in ("report.html", "report_block.html")
+            # Legacy six_act_theater → report.html. freeform_essay → archetypes/freeform_essay.html.
+            # 그 외는 모두 report_block.html.
+            assert arch.template_path() in (
+                "report.html",
+                "report_block.html",
+                "archetypes/freeform_essay.html",
+            )
 
     def test_six_act_theater_suitable_intents_narrowed(self) -> None:
         sat = get_archetype("six_act_theater")

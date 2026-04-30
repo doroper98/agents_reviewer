@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.2.0
+last_synced_with: v3.3.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -23,6 +23,42 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.3.0] — 2026-04-30
+
+> **Narrative Composer (Opus 4.7) — Freeform Editorial Pass.** 보고서가 17 BlockType 슬롯에 데이터를 부어넣는 정형 구조에서 벗어나, deep 모드에서 Opus 4.7 단일 콜이 *편집장* 역할로 사건 성격에 맞춰 섹션 수/길이/순서/톤을 자유 결정. 차트는 composer 가 본문에 박는 자리만 결정하고 (auto-dashboard 폐지), 데이터 빌드는 그대로 결정적. fast/standard 모드는 영향 없음.
+
+### Added
+- **`src/agents/narrative_composer.py`** `NarrativeComposer` — Opus 4.7 (`claude-opus-4-7`) 단일 콜로 `ComposedReport` 산출. 전체 분석 결과 + claim 카탈로그 + 차트 catalog 를 입력으로 받음. CLI/API 모드 모두 지원, max_tokens=8192. 실패 시 `None` 반환하여 호출자가 폴백.
+- **`src/models.py:ComposedReport`** + **`ComposedSection`** — composer 산출물 Pydantic 모델. `embedded_charts: list[chart_id]` + `embedded_blocks: list[block_type]` + `cited_claim_ids` 로 evidence 추적성 보존 (Anti-pattern #4 우회 금지).
+- **`src/models.py:FullAnalysisResult.composed_report`** — composer 출력 보유 필드. None 이면 폴백 archetype 으로 라우팅.
+- **`src/archetypes/freeform_essay.py`** + **`src/templates/archetypes/freeform_essay.html`** — composer 출력 전용 archetype + 템플릿. 산문 우위 디자인 (max-width 780px, Noto Serif KR 헤드라인, 최소한의 chrome). select_archetype matrix 가 아니라 orchestrator 가 deep + 성공 시 *명시* 라우팅.
+- **`src/visual_builder.py:build_chart_catalog()`** + **`chart_id_to_payload_key()`** — 데이터 가용한 차트만 `[{id,title,hint}]` 로 노출. composer prompt 입력에 포함되어 invalid chart_id reference 방지.
+- **`src/agents/report_synthesizer.py:_build_all_available_blocks()`** — freeform_essay 용 블록 빌더. section_plan 무관하게 가용한 BlockType 마다 1개씩 빌드 → composer 가 type 으로 referencing.
+- **`src/tests/test_narrative_composer.py`** — 16 pytest 케이스 (chart catalog 필터링, ComposedReport/Section 모델, parser, reference validator, archetype 등록, token budget gating, payload builder).
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.2.0 → v3.3.0`
+- **`src/orchestrator.py:run_analysis`** — judgment + visuals 직후 `narrative_composer.compose()` 호출 (deep 모드만). 성공 시 archetype 을 `freeform_essay` 로 *명시* 라우팅 (matrix 우선순위 무시). 실패 시 `select_archetype()` 폴백.
+- **`src/orchestrator.py:Orchestrator.__init__`** + **`_wire_telemetry`** — `narrative_composer` 인스턴스 등록 + telemetry 와이어링.
+- **`src/token_budget.py:TokenBudget`** — `use_llm_narrative_composer: bool` 필드 신규. deep=True, 그 외 False. deep 의 `max_llm_calls` `12 → 13` (composer +1).
+- **`src/archetypes/registry.py`** — `freeform_essay` 추가 (총 12종).
+
+### LLM 호출 수 변화
+- fast/standard: 변화 없음 (composer 비활성).
+- deep: `+1 Opus 4.7 콜` (max_tokens 8K, 입력 ~30~50K). 총 12 → 13. 기존 `_generate_executive_summary` / `_generate_narrative_plan` 보조 콜은 그대로 유지 (composer 출력이 메인 본문, deterministic summary 는 hero 영역).
+
+### 보고서 디자인 변화
+- deep 모드 보고서: 정형 17 슬롯 매핑이 아닌 **3~7개 자유 섹션** + 사건 성격에 맞춘 헤드라인/부제. Auto-dashboard 폐지 — 차트는 본문 흐름에 따라 composer 가 적재적소에 embed.
+- Evidence 추적성: 본문에 등장하는 핵심 주장 옆에 `cited_claim_ids` (claim_id 목록) 인용 표기.
+- fast/standard: v3.2.0 과 동일 (auto-dashboard + 정형 archetype).
+
+### Migration
+- 기존 보고서 URL 계속 동작.
+- `FullAnalysisResult.composed_report` 필드는 optional — 기존 코드 영향 없음.
+- 새 archetype `freeform_essay` 는 select_archetype() matrix 에 포함되지 않음 (orchestrator 만 라우팅).
 
 ---
 

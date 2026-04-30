@@ -408,18 +408,59 @@ class ReportSynthesizer:
 
     _BLOCK_BUILDERS: dict = {}  # populated below to avoid forward-ref issues
 
+    def _build_all_available_blocks(
+        self, result: FullAnalysisResult,
+    ) -> list[AnalysisBlock]:
+        """v3.3.0 — freeform_essay 용. 가용한 BlockType 마다 1개씩 빌드.
+
+        composer 의 ``embedded_blocks: [block_type]`` 가 type 으로 referencing 하므로
+        section_plan 무관하게 *지금 가용한* 블록을 모두 채워둔다. 데이터 없는 type 은
+        builder 가 None 반환 → 자동 스킵.
+        """
+        # 더미 ReportSectionPlan — 빌더 시그니처 호환용. composer 가 section_id 를 쓰지
+        # 않으므로 모두 "freeform" 으로 통일.
+        dummy_section = ReportSectionPlan(
+            section_id="freeform",
+            title="",
+            purpose="",
+            block_types=[],
+        )
+        blocks: list[AnalysisBlock] = []
+        seq = 0
+        for btype, builder in self._BLOCK_BUILDERS.items():
+            payload = builder(result, dummy_section)
+            if payload is None:
+                continue
+            seq += 1
+            blocks.append(AnalysisBlock(
+                block_id=f"B-{seq:03d}",
+                block_type=btype,
+                title="",
+                purpose="",
+                payload=payload,
+                section_id="freeform",
+            ))
+        logger.info(
+            "[report_synthesizer] freeform_essay: built %d available blocks (%s)",
+            len(blocks), [b.block_type for b in blocks],
+        )
+        return blocks
+
     def _build_blocks(
         self, result: FullAnalysisResult, archetype: ReportArchetype,
     ) -> list[AnalysisBlock]:
         """Build AnalysisBlock list from archetype.section_plan(strategy).
 
         Returns empty list for the legacy six_act_theater path (caller does not use).
+        For freeform_essay (v3.3.0), build one block per available BlockType so
+        composer's ``embedded_blocks`` references resolve regardless of section_plan.
         For other archetypes, walk each ReportSectionPlan and build one AnalysisBlock
-        per requested block_type. Also populates ``result.strategy.section_plan`` so the
-        dispatcher template can iterate it (spec contract).
+        per requested block_type.
         """
         if archetype.archetype_id == "six_act_theater":
             return []
+        if archetype.archetype_id == "freeform_essay":
+            return self._build_all_available_blocks(result)
         if result.strategy is None:
             return []
         plan = archetype.section_plan(result.strategy)

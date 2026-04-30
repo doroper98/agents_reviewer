@@ -77,6 +77,8 @@ last_review: 2026-04-26
 | `src/token_budget.py` 정책 변경 | [docs/ARCHITECTURE.md §3.1](docs/ARCHITECTURE.md), [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
 | `src/lens_policy.py` 매핑 변경 | [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
 | `src/templates/static/charts.js` 차트 추가/변경 (v3.2.0) | [CLAUDE.md `Chart System`](CLAUDE.md), `samples/chart_gallery.html`, `src/visual_builder.py:build_chart_payload`, `src/tests/test_chart_builders.py` |
+| `src/agents/narrative_composer.py` 변경 (v3.3.0) | [docs/CATALOGS.md §1](docs/CATALOGS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [src/visual_builder.py:build_chart_catalog](src/visual_builder.py), [src/tests/test_narrative_composer.py](src/tests/test_narrative_composer.py) |
+| `src/templates/archetypes/freeform_essay.html` 변경 (v3.3.0) | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/CATALOGS.md §3](docs/CATALOGS.md) |
 | `src/templates/static/charts.css` 차트 디자인 토큰 변경 | [CLAUDE.md `Chart System`](CLAUDE.md) |
 | `src/visual_builder.py:build_chart_payload` 차트 매핑 변경 | [CHANGELOG.md `차트 매트릭스`](CHANGELOG.md) |
 | [GOAL.md](GOAL.md) `REQ-*` 추가/완료 | [DEVLOG.md](DEVLOG.md) 에 변경 기록 |
@@ -114,8 +116,9 @@ last_review: 2026-04-26
 - 디자인 토큰은 `src/templates/static/charts.css` 에 통일 (burgundy 테마 변수 상속).
 - 신규 차트 추가 절차: ① `charts.js` 에 `drawXxx` 함수 + auto-init 분기 추가 ② `visual_builder.py:build_xxx_chart_data()` 추가 + `build_chart_payload()` 에 결합 ③ `report.html` / `report_block.html` 의 dashboard 섹션에 SVG 컨테이너 추가 ④ `samples/chart_gallery.html` 에 시연 ⑤ `test_chart_builders.py` 에 검증 테스트.
 
-## Mode Routing (v3.1.0)
+## Mode Routing (v3.1.0~v3.3.0)
 - 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard.
 - Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
 - legacy 페르소나 (PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst) 는 deep 모드에서만 호출.
-- LLM 호출 cap: fast=4, standard=7, deep=12 (soft guard, telemetry 가 초과 시 경고).
+- LLM 호출 cap: fast=4, standard=7, deep=13 (soft guard, telemetry 가 초과 시 경고). v3.3.0: deep 에 narrative_composer 추가로 12 → 13.
+- **v3.3.0 narrative_composer (Opus 4.7)**: deep 모드에서만 활성. 성공 시 archetype 이 `freeform_essay` 로 명시 라우팅 → 정형 17 슬롯 대신 사건별 3~7 섹션 자유 형식. 실패 시 select_archetype() matrix 폴백.

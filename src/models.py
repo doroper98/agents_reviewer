@@ -438,6 +438,38 @@ class AnalysisBrief(BaseModel):
         return out
 
 
+# ====== V3.3.0 — Narrative Composer (Opus 4.7 freeform editorial pass) ======
+#
+# 7개 에이전트가 evidence/claim 을 수집한 뒤, Opus 4.7 단일 콜이 *편집장* 역할로
+# 자유 형식 보고서를 작성한다. 기존 17 BlockType 슬롯에 데이터를 부어넣는 대신
+# 사건 성격에 맞춰 섹션 수/길이/순서/톤을 결정한다.
+#
+# - 모든 주장은 claim_id 인용 필수 (Anti-pattern #4 must_have_evidence 우회 금지).
+# - 차트는 ``embedded_charts`` 의 chart_id 로 본문에 박는다 (charts.js auto-init).
+# - 풍부한 정형 데이터 (행위자 카드, 시나리오 그리드 등) 는 ``embedded_blocks`` 의
+#   BlockType 문자열로 referencing.
+
+class ComposedSection(BaseModel):
+    """Composer 가 자유롭게 짠 한 섹션. ``prose`` 가 본문이고, 시각화는 모두 선택적."""
+
+    heading: str
+    kicker: str = ""              # 짧은 도입구 (생략 가능)
+    prose: str                     # 본문 — 마크다운 단락 자유
+    embedded_charts: list[str] = Field(default_factory=list)  # chart_id (charts.js)
+    embedded_blocks: list[str] = Field(default_factory=list)  # BlockType 문자열
+    pull_quote: str = ""
+    cited_claim_ids: list[str] = Field(default_factory=list)
+
+
+class ComposedReport(BaseModel):
+    """Opus 4.7 narrative_composer 산출. archetype=freeform_essay 일 때만 채워짐."""
+
+    headline: str
+    deck: str = ""                 # 부제 1~2 문장
+    sections: list[ComposedSection] = Field(default_factory=list)
+    closing: str = ""              # 에필로그 (생략 가능)
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
@@ -452,6 +484,7 @@ class FullAnalysisResult(BaseModel):
     chain_reaction: ChainReactionAnalysis | None = None
     scenarios: ScenarioAnalysis | None = None
     visuals: VisualAnalysis | None = None
+    composed_report: ComposedReport | None = None  # V3.3.0 — freeform editorial pass
     executive_summary: str = ""
     report_url: str = ""
     report_path: str = ""

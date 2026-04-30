@@ -49,6 +49,8 @@ class TokenBudget:
     - ``use_legacy_personas``: PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst 호출 여부
       (deep 에서만 True — fast/standard 는 lens pool 로 대체)
     - ``allow_meta_lenses``: red_team / pre_mortem 자동 추가 여부
+    - ``use_llm_narrative_composer``: v3.3.0 freeform editorial pass (Opus 4.7) 활성화
+      (deep 에서만 True). 성공 시 archetype 이 ``freeform_essay`` 로 라우팅된다.
     """
 
     mode: AnalysisMode
@@ -61,6 +63,7 @@ class TokenBudget:
     use_llm_synthesis: bool
     use_legacy_personas: bool
     allow_meta_lenses: bool
+    use_llm_narrative_composer: bool = False
 
     @classmethod
     def for_mode(cls, mode: AnalysisMode) -> "TokenBudget":
@@ -81,7 +84,8 @@ class TokenBudget:
         if mode == "deep":
             return cls(
                 mode="deep",
-                max_llm_calls=12,
+                # +1 for narrative_composer (Opus 4.7 freeform editorial pass).
+                max_llm_calls=13,
                 max_lenses=4,
                 use_llm_quality_gate=True,
                 use_llm_narrative_plan=True,
@@ -90,6 +94,7 @@ class TokenBudget:
                 use_llm_synthesis=True,
                 use_legacy_personas=True,
                 allow_meta_lenses=True,
+                use_llm_narrative_composer=True,
             )
         # default == standard
         return cls(

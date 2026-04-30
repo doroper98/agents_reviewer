@@ -522,6 +522,61 @@ def build_chart_payload(
     return payload
 
 
+# ----------------------------------------------------------------------
+# v3.3.0 — Chart catalog for narrative_composer
+# ----------------------------------------------------------------------
+#
+# narrative_composer 는 ``embedded_charts: list[str]`` 에 chart_id 를 적어 본문에
+# 박는다. 본 catalog 는 *지금 가용한* 차트만 (id, title, hint) 형태로 노출 →
+# 데이터 없는 차트를 composer 가 referencing 하지 못하게 한다.
+#
+# chart_id ↔ payload key ↔ charts.js auto-init element id 매핑은 1:1:
+#   payload["scenarios"]      → element id "chart-scenarios"
+#   payload["key_figures"]    → element id "chart-figures"
+#   payload["severity_chain"] → element id "chart-severity"
+#   payload["confidence"]     → element id "chart-confidence"
+#   payload["timeseries"]     → element id "chart-timeseries"
+#   payload["stacked"]        → element id "chart-stacked"
+#   payload["bubble"]         → element id "chart-bubble"
+#   payload["gantt"]          → element id "chart-gantt"
+#   payload["network"]        → element id "chart-network"
+
+_CHART_CATALOG_DESCRIPTORS: dict[str, tuple[str, str, str]] = {
+    # payload_key: (chart_id, title, hint for composer)
+    "scenarios":      ("chart-scenarios",  "시나리오 확률 분포",     "막대 차트. 시나리오별 확률을 한눈에 비교할 때."),
+    "key_figures":    ("chart-figures",    "핵심 수치 분배",         "도넛 차트. 사건의 핵심 수치 비중을 보여줄 때."),
+    "severity_chain": ("chart-severity",   "인과 사슬 위험도",       "히트맵. 각 인과 단계의 심각도 흐름을 시각화."),
+    "confidence":     ("chart-confidence", "신뢰도 분해",            "3축 차트. 출처 다양성·신선도·전문가 합의를 분리해 보여줌."),
+    "timeseries":     ("chart-timeseries", "시계열 추이",            "선 차트. 시간에 따른 핵심 지표 변화를 강조할 때."),
+    "stacked":        ("chart-stacked",    "시나리오 × 행위자 영향",  "누적 막대. 시나리오별로 누가 얼마나 영향받는지."),
+    "bubble":         ("chart-bubble",     "리스크 매트릭스",        "버블. 확률 × 영향 좌표에 와일드카드를 배치."),
+    "gantt":          ("chart-gantt",      "타임라인",               "Gantt. 사건의 시간축 구간을 보여줄 때."),
+    "network":        ("chart-network",    "행위자 관계도",          "네트워크. 행위자 간 동맹·대립 구조를 시각화."),
+}
+
+
+def build_chart_catalog(chart_payload: dict) -> list[dict]:
+    """``chart_payload`` 에서 *실제로 데이터가 있는* 차트만 추려 catalog 로 반환.
+
+    composer prompt 입력용 — 데이터 없는 chart_id 를 referencing 못하게 한다.
+    """
+    if not chart_payload:
+        return []
+    out: list[dict] = []
+    for key, (chart_id, title, hint) in _CHART_CATALOG_DESCRIPTORS.items():
+        if chart_payload.get(key):
+            out.append({"id": chart_id, "title": title, "hint": hint})
+    return out
+
+
+def chart_id_to_payload_key(chart_id: str) -> str | None:
+    """역방향 lookup. composer 가 임의 chart_id 를 적었을 때 payload key 로 변환."""
+    for key, (cid, _, _) in _CHART_CATALOG_DESCRIPTORS.items():
+        if cid == chart_id:
+            return key
+    return None
+
+
 def needs_advanced_visuals(event_description: str) -> bool:
     """사용자 요청 텍스트가 고급 시각화/지도/차트를 *명시* 했는지.
 

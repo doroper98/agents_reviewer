@@ -30,10 +30,12 @@ from src.agents.visual_analyst import VisualAnalyst
 from src.agents.report_synthesizer import ReportSynthesizer
 from src.agents.quality_inspector import QualityInspector
 from src.agents.synthesis_judge import SynthesisJudge
+from src.agents.narrative_composer import NarrativeComposer
+from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.2.0"
+VERSION = "v3.3.0"
 
 # v3.1.0: legacy keywords map → fast mode (quick mode 와 같은 의미).
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
@@ -62,6 +64,8 @@ class Orchestrator:
         # V3 Step 4 (v2.8.0)
         self.quality_inspector = QualityInspector(config)
         self.synthesis_judge = SynthesisJudge(config)
+        # v3.3.0 — freeform editorial pass (Opus 4.7). deep 모드만 호출.
+        self.narrative_composer = NarrativeComposer(config)
         # V3 Step 5-B (v2.9.5) — Watchlist Registry. None 이면 watchlist 등록 스킵
         # (단위 테스트 / standalone orchestrator 인스턴스 시 안전).
         self.watchlist_registry = watchlist_registry
@@ -80,6 +84,8 @@ class Orchestrator:
             self.chain_reaction_analyst, self.scenario_architect, self.visual_analyst,
         ):
             agent.telemetry = self.telemetry
+        # narrative_composer 는 BaseAgent 가 아니지만 telemetry 속성 보유.
+        self.narrative_composer.telemetry = self.telemetry
 
     @staticmethod
     def _progress_bar(step: int, total: int = 7) -> str:
@@ -927,6 +933,37 @@ class Orchestrator:
         )
         self.telemetry.stage_end(stage)
 
+        # -- v3.3.0 Narrative Composer (deep 모드만, Opus 4.7) --
+        # judgment + visuals 가 준비된 시점에서 호출. 성공 시 archetype 을
+        # freeform_essay 로 *명시적* 라우팅 (matrix 우선순위 무시).
+        if budget.use_llm_narrative_composer:
+            await self._notify(
+                "✍️ 편집장 (Opus 4.7): 자유 형식 보고서 작성 중.",
+                status_callback,
+            )
+            stage = self.telemetry.stage_start("narrative_composer")
+            chart_payload = (
+                result.visuals.chart_config.get("payload", {})
+                if result.visuals and result.visuals.chart_config else {}
+            )
+            chart_catalog = build_chart_catalog(chart_payload)
+            try:
+                result.composed_report = await self.narrative_composer.compose(
+                    result, chart_catalog,
+                )
+            except Exception as e:
+                logger.warning("[orchestrator] narrative_composer error: %s", e)
+                result.composed_report = None
+            self.telemetry.stage_end(stage)
+            if result.composed_report is None:
+                self.telemetry.record_llm_skip(
+                    "narrative_composer", "failed → archetype fallback",
+                )
+        else:
+            self.telemetry.record_llm_skip(
+                "narrative_composer", f"{mode} mode (deep only)",
+            )
+
         # -- Phase 4: 보고서 생성 --
         await self._notify(
             f"📝 보고서를 생성하고 있습니다.\n"
@@ -937,8 +974,16 @@ class Orchestrator:
         result.total_duration_seconds = time.time() - start_time
 
         report_theme = strategy.theme or "burgundy"
-        # archetype matrix routing — LLM 후보가 사라졌으므로 matrix 결정자 단독 운영.
-        archetype = select_archetype(strategy)
+        # archetype routing:
+        # 1) composer 성공 → freeform_essay 명시 라우팅 (v3.3.0)
+        # 2) 그 외 → matrix 결정자 (select_archetype)
+        if result.composed_report is not None:
+            archetype = get_archetype("freeform_essay")
+            logger.info(
+                "[orchestrator] narrative_composer success → routing to freeform_essay",
+            )
+        else:
+            archetype = select_archetype(strategy)
         strategy.report_archetype = archetype.archetype_id
         logger.info(
             "[orchestrator] Routing report through archetype=%s (template=%s, mode=%s)",

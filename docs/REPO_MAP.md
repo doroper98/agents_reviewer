@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.0.0
+last_synced_with: v3.3.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -33,8 +33,9 @@ src/
 │   ├── visual_analyst.py
 │   ├── report_synthesizer.py
 │   ├── quality_inspector.py    # V3 Step 4 — Gate 1/2 (Plan Sanity + Coverage Check)
-│   └── synthesis_judge.py      # V3 Step 4 — findings → JudgmentVerdict (모순 노출)
-├── archetypes/          # V3 Step 2 + 5-A — 보고서 archetype 풀 (registry 패턴, 6종)
+│   ├── synthesis_judge.py      # V3 Step 4 — findings → JudgmentVerdict (모순 노출)
+│   └── narrative_composer.py   # v3.3.0 — Opus 4.7 freeform editorial pass (deep only)
+├── archetypes/          # V3 Step 2/5-A/5-C/3.3.0 — 보고서 archetype 풀 (registry, 12종)
 │   ├── __init__.py
 │   ├── base.py                       # ReportArchetype Protocol
 │   ├── registry.py                   # archetype_id → 객체 (SSOT for archetype catalog)
@@ -43,7 +44,13 @@ src/
 │   ├── tech_decomposition.py         # 기술·AI·IT 사건
 │   ├── geopolitical_strategic.py     # V3 Step 5-A — 지정학·전쟁
 │   ├── accident_forensic.py          # V3 Step 5-A — 사고·재난
-│   └── policy_implementation.py      # V3 Step 5-A — 정책·사회
+│   ├── policy_implementation.py      # V3 Step 5-A — 정책·사회
+│   ├── decision_brief.py             # V3 Step 5-C — what_to_do 의도 전용
+│   ├── timeline_first.py             # V3 Step 5-C — what_happened 의도 전용
+│   ├── scenario_first.py             # V3 Step 5-C — what_next 의도 전용
+│   ├── mechanism_decomp.py           # V3 Step 5-C — why_happened 의도 전용
+│   ├── industry_value_chain.py       # V3 Step 5-C — 산업·가치사슬
+│   └── freeform_essay.py             # v3.3.0 — composer 전용 (deep + 성공 시)
 ├── lenses/              # V3 Step 5-A — 분석 lens 풀 (LensRunner ABC + registry, 8종)
 │   ├── __init__.py
 │   ├── base.py                       # LensRunner ABC + 공통 LLM 호출 헬퍼
@@ -73,7 +80,8 @@ src/
     │   └── counter_hypothesis.html, decision_matrix.html, risk_matrix.html
     └── archetypes/         # Step 2 placeholder HTML — Step 3 후 고아 상태 (보존)
         ├── financial_transmission.html
-        └── tech_decomposition.html
+        ├── tech_decomposition.html
+        └── freeform_essay.html  # v3.3.0 — composer 출력 전용 산문 우위 템플릿
 ```
 
 ## Configuration Files

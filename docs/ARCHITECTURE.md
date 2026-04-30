@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.2.0
+last_synced_with: v3.3.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -104,6 +104,9 @@ Phase 3.8 [V3 Step 4] 🧮 SynthesisJudge.judge(findings) → JudgmentVerdict
                 ▼  (contradictions 노출, 봉합 X — Anti-pattern #5)
 Phase 3.9 [V3 Step 4] 🛡 Quality Gate 2 — Coverage Check
                 ▼  (failure → max 2 retries (judgment 재생성) → "⚠️ 부분 분석 완료. gate_2 실패")
+Phase 3.95 [v3.3.0] ✍️ NarrativeComposer (Opus 4.7, deep 모드만)
+                ▼  (judgment + visuals + claim 카탈로그 + chart catalog → ComposedReport.
+                    성공 시 archetype 을 freeform_essay 로 명시 라우팅. 실패 시 select_archetype matrix 폴백.)
 Phase 4   ⑦ 보고서 합성관 → Jinja2 → HTML → Cloudflare Pages
                 ▼
 Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
@@ -189,13 +192,13 @@ Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
 
 #### 토큰 사용량 (분석 1건당 추정, 입력+출력 합계)
 
-| Mode | v3.0.0 (이전) | v3.1.0 (이후) |
-|------|------------|------------|
-| fast (구 quick_mode) | ~28K | ~12K |
-| standard | ~37K | ~18K |
-| deep | ~57K | ~46K (품질 보존) |
+| Mode | v3.0.0 (이전) | v3.1.0~3.2.0 | v3.3.0 |
+|------|------------|------------|------------|
+| fast (구 quick_mode) | ~28K | ~12K | ~12K |
+| standard | ~37K | ~18K | ~18K |
+| deep | ~57K | ~46K | ~85K (composer Opus 4.7 +1 콜) |
 
-추가로 Strategy Planner 프롬프트 5배 축소 + `json.dumps(indent=2)` 폐기로 input 토큰 ~30% 추가 절감. Max 플랜 CLI 모드라 추가 비용 없음 — 절감 효과는 *시간 단축* 과 *보고서 응답 지연 감소* 로 체감.
+v3.3.0 deep 토큰 폭증의 정체: narrative_composer 가 입력 ~30~50K (전체 분석 결과 + claim 카탈로그) + 출력 ~6K 를 추가로 사용. 대신 `_generate_executive_summary` / `_generate_narrative_plan` 보조 콜은 그대로 유지 (composer 출력이 메인 본문, deterministic summary 는 hero 영역). LLM 호출 수: deep 12 → 13 (max_llm_calls cap 도 13 으로 상향). fast/standard 는 영향 0. Max 플랜 CLI 모드라 추가 비용 없음.
 
 ### 3.2 Lens 선택 정책 (`lens_policy`)
 
@@ -267,17 +270,21 @@ report_synthesizer.py
             → https://<프로젝트명>.pages.dev/analysis_YYYYMMDD_HHMMSS.html
 ```
 
-### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3/5-A/5-C — v2.6.0/v2.7.0/v2.9.0/v3.0.0)
+### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3/5-A/5-C/v3.3.0)
 
-Orchestrator 는 **하이브리드 라우팅** 적용 (v3.0.0):
-1. Strategy Planner 가 LLM 후보 1순위 `strategy.report_archetype` (string ID) 를 출력.
-2. `src/archetypes/registry.select_archetype(strategy)` 가 4-tier 우선순위 매트릭스로 archetype 을 결정 (matrix 가 **최종 결정자**).
-3. LLM 후보 ≠ matrix 결과 시 INFO 로그 (`[orchestrator] archetype mismatch — LLM=…, matrix=…`) 후 matrix 결과로 진행. `strategy.report_archetype` 도 matrix 결과로 갱신 → 보고서 헤더와 일치.
-4. ReportSynthesizer 가 archetype 별로 분기 렌더 — `six_act_theater` 는 legacy 흐름(byte-equal 보장), 그 외는 블록 디스패처.
+Orchestrator 는 **하이브리드 라우팅** 적용:
+1. **(v3.3.0)** deep 모드 + `narrative_composer` 성공 시 archetype 을 `freeform_essay` 로 *명시* 라우팅. matrix 우선순위를 우회 — composer 출력이 SSOT.
+2. composer 미사용 / 실패 시 Strategy Planner 가 LLM 후보 1순위 `strategy.report_archetype` (string ID) 를 출력.
+3. `src/archetypes/registry.select_archetype(strategy)` 가 4-tier 우선순위 매트릭스로 archetype 을 결정 (matrix 가 **최종 결정자**).
+4. LLM 후보 ≠ matrix 결과 시 INFO 로그 후 matrix 결과로 진행. `strategy.report_archetype` 도 matrix 결과로 갱신.
+5. ReportSynthesizer 가 archetype 별로 분기 렌더 — `six_act_theater` 는 legacy 흐름(byte-equal 보장), `freeform_essay` 는 composed_report 직렬 렌더, 그 외는 블록 디스패처.
 
 ```
    AnalysisStrategy.{user_intent, event_type, report_archetype(LLM 후보)}
                         │
+                        ▼
+   [v3.3.0] deep 모드 + narrative_composer 성공?  ──▶ freeform_essay (명시 라우팅)
+                        │ no
                         ▼
    src/archetypes/registry.select_archetype(strategy)   ← matrix 최종 결정자
    (LLM 후보 ≠ matrix 결과 시 INFO 로그 후 matrix 채택,

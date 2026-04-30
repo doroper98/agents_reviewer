@@ -66,12 +66,14 @@ class TestTokenBudget:
 
     def test_deep_mode_caps(self) -> None:
         b = TokenBudget.for_mode("deep")
-        assert b.max_llm_calls == 12
+        # v3.3.0: +1 for narrative_composer (Opus 4.7).
+        assert b.max_llm_calls == 13
         assert b.max_lenses == 4
         assert b.use_llm_quality_gate
         assert b.use_llm_narrative_plan
         assert b.use_llm_visuals
         assert b.use_legacy_personas
+        assert b.use_llm_narrative_composer
 
     def test_resolve_mode_keywords(self) -> None:
         assert resolve_mode("짧게 설명") == "fast"
