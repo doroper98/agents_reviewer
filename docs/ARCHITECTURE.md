@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.1.0
+last_synced_with: v3.2.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -9,14 +9,17 @@ ssot_for:
   - "Quality Gate + Synthesis Judge 위치 (V3 Step 4 활성화)"
   - "토큰 사용량 추정"
   - "Token Budget + Mode Routing (v3.1.0 활성화)"
+  - "d3 차트 자동 생성 매트릭스 (v3.2.0 활성화)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "src/agents/* (구성)"
   - "src/archetypes/registry.py (archetype 분기 SSOT)"
   - "src/token_budget.py (mode 정책)"
   - "src/lens_policy.py (lens 결정 규칙)"
+  - "src/visual_builder.py:build_chart_payload (차트 데이터 SSOT)"
+  - "src/templates/static/charts.js (d3 렌더 SSOT)"
   - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
-last_review: 2026-04-27
+last_review: 2026-04-30
 ---
 
 # Event Analysis Team — Architecture
@@ -245,15 +248,21 @@ telegram_bot.py: HTML 파일 + 공유 링크 전송
 ## 5. 보고서 생성 흐름
 
 ```
-에이전트 1~6 분석 완료
+에이전트 1~6 분석 완료 + Synthesis Judge → JudgmentVerdict
     │
     ▼
+visual_analyst.analyze(use_llm=False, judgment=...) [fast/standard]
+   │   - svg_actor (행위자 관계도, 결정적)
+   │   - svg_flow (인과 사슬, 결정적)
+   │   - chart_config.payload — 8종 d3 차트 데이터 (모두 결정적, v3.2.0)
+   ▼
 report_synthesizer.py
-    ├── 1) Claude 호출: Executive Summary (3줄)
+    ├── 1) deterministic 또는 LLM executive summary
     ├── 2) report.css 로드
-    ├── 3) Jinja2 렌더링 (report.html + 데이터 + CSS → HTML)
+    ├── 3) Jinja2 렌더링 (report.html + 데이터 + chart_payload → HTML)
     ├── 4) reports/analysis_YYYYMMDD_HHMMSS.html 저장
     ├── 5) reports/index.html (목록 페이지) 갱신
+    ├── 6) **_sync_static_assets** (v3.2.0): d3.v7.min.js / charts.js / charts.css 를 reports/ 로 복사 (idempotent)
     └── 6) wrangler pages deploy reports/
             → https://<프로젝트명>.pages.dev/analysis_YYYYMMDD_HHMMSS.html
 ```
@@ -314,7 +323,42 @@ Orchestrator 는 **하이브리드 라우팅** 적용 (v3.0.0):
 
 빌더 매핑·블록 카탈로그의 SSOT 는 코드 (`src/agents/report_synthesizer.py:_BLOCK_BUILDERS`, `src/models.py:BlockType`). 사람-친화 미러는 [docs/CATALOGS.md §3-4](CATALOGS.md). 신규 archetype 추가 시 `src/archetypes/<name>.py` 신설 → `registry.py` 등록 → CATALOGS §3 갱신 (Anti-pattern #14). 신규 BlockType 추가 시 `src/models.py:BlockType` Literal 확장 → `src/templates/blocks/<type>.html` 신설 → `_BLOCK_BUILDERS` 등록 → CATALOGS §4 갱신 (Anti-pattern #15).
 
-### 5.2 보고서 구조 — six_act_theater (인물극형 specialty)
+### 5.2 d3 차트 시스템 (v3.2.0)
+
+보고서가 데이터 가용성에 따라 자동으로 8종 d3 SVG 차트를 생성한다. SSOT 는 [src/visual_builder.py:build_chart_payload](../src/visual_builder.py) 와 [src/templates/static/charts.js](../src/templates/static/charts.js).
+
+#### 자동 차트 매트릭스
+| 데이터 가용성 | 자동 생성되는 차트 |
+|-----|-----|
+| `scenarios` 있음 | `scenarios` (가로 막대) |
+| `scenarios[*].impact_by_player` 있음 | `stacked` (시나리오 × 행위자 누적 막대) |
+| `context.key_figures` 있음 | `key_figures` (도넛) |
+| `chain_reaction.chain` 있음 | `severity_chain` (히트맵) |
+| `chain_reaction.wildcards` 있음 | `bubble` (리스크 매트릭스) |
+| `context.timeline ≥ 2건` | `gantt` (간트 타임라인) |
+| `players + alliances` 있음 | `network` (force-directed 그래프) |
+| `judgment.confidence` 있음 | `confidence` (3축 막대) |
+
+데이터 없으면 해당 차트는 스킵. 모든 차트는 LLM 호출 0 (`build_chart_payload` 가 결정적).
+
+#### 정적 자산
+보고서 HTML 은 같은 디렉토리의 `d3.v7.min.js` (~274KB), `charts.js` (~26KB), `charts.css` (~6KB) 를 참조. `report_synthesizer._sync_static_assets()` 가 보고서 생성 시 자동으로 reports/ 에 복사 (size+mtime 기반 idempotent). Cloudflare Pages 가 CDN 캐시.
+
+#### 디자인 토큰
+- 색상: burgundy 테마 변수 (`--gold`, `--green`, `--orange`, `--red`, `--blue`) 차트도 동일하게 사용 → 보고서 본문과 통일된 시각 언어
+- 타이포: Noto Serif KR (수치 강조), Noto Sans KR (라벨), JetBrains Mono (축 눈금)
+- 모든 차트는 `viewBox + preserveAspectRatio="xMidYMid meet"` 로 모바일 적응 (CSS aspect-ratio 컨테이너 내부에서 자동 스케일)
+- 호버 인터랙션: 단일 `.chart-tooltip` element (lazy 생성)
+
+#### 신규 차트 추가 절차
+1. `charts.js` 에 `drawXxx(svgEl, data)` 함수 + `autoInit()` 분기 + API export 추가
+2. `visual_builder.py` 에 `build_xxx_chart_data()` 추가 + `build_chart_payload()` 에 결합
+3. `report.html` / `report_block.html` 의 dashboard 섹션에 SVG 컨테이너 추가
+4. `samples/chart_gallery.html` 에 시연 카드 추가
+5. `test_chart_builders.py` 에 검증 테스트 추가
+6. CHANGELOG 매트릭스 갱신
+
+### 5.3 보고서 구조 — six_act_theater (인물극형 specialty)
 
 > v3.0.0 부터 default 가 아님. `select_archetype()` 매트릭스의 3순위 (`geopolitical` + `who_benefits`/`what_happened`) 또는 4순위 fallback 에서만 라우팅.
 

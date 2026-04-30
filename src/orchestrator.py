@@ -33,7 +33,7 @@ from src.agents.synthesis_judge import SynthesisJudge
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.1.0"
+VERSION = "v3.2.0"
 
 # v3.1.0: legacy keywords map → fast mode (quick mode 와 같은 의미).
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
@@ -860,23 +860,8 @@ class Orchestrator:
             status_callback,
         )
 
-        # -- Visual generation: deterministic-first --
-        await self._notify(
-            "🎨 시각화: 결정적 빌더로 SVG 생성 중.",
-            status_callback,
-        )
-        stage = self.telemetry.stage_start("visuals")
-        use_llm_visuals = budget.use_llm_visuals or wants_advanced_visuals
-        if not use_llm_visuals:
-            self.telemetry.record_llm_skip("visual_analyst", "deterministic builder")
-        result.visuals = await self.visual_analyst.analyze(
-            result.context, result.players, result.dynamics,
-            result.chain_reaction, result.scenarios,
-            use_llm=use_llm_visuals,
-        )
-        self.telemetry.stage_end(stage)
-
         # -- Findings wrapping + lens pool + Synthesis Judge + Gate 2 --
+        # v3.2.0: 차트 빌더가 judgment.confidence 를 사용하므로 시각화는 judgment 이후로 이동.
         await self._notify(
             "🧮 종합 판단관: finding 정합성·모순을 검사합니다.",
             status_callback,
@@ -924,6 +909,23 @@ class Orchestrator:
             f"contradictions {n_contradictions}건 (봉합 안 함)",
             status_callback,
         )
+
+        # -- Visual generation (after judgment so confidence chart available) --
+        await self._notify(
+            "🎨 시각화: 결정적 빌더로 SVG + d3 차트 데이터 생성 중.",
+            status_callback,
+        )
+        stage = self.telemetry.stage_start("visuals")
+        use_llm_visuals = budget.use_llm_visuals or wants_advanced_visuals
+        if not use_llm_visuals:
+            self.telemetry.record_llm_skip("visual_analyst", "deterministic builder")
+        result.visuals = await self.visual_analyst.analyze(
+            result.context, result.players, result.dynamics,
+            result.chain_reaction, result.scenarios,
+            use_llm=use_llm_visuals,
+            judgment=result.judgment,
+        )
+        self.telemetry.stage_end(stage)
 
         # -- Phase 4: 보고서 생성 --
         await self._notify(

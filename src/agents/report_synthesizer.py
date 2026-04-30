@@ -23,7 +23,11 @@ logger = logging.getLogger(__name__)
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 CSS_PATH = os.path.join(TEMPLATE_DIR, "report.css")
+STATIC_DIR = os.path.join(TEMPLATE_DIR, "static")
 KST = timezone(timedelta(hours=9))
+
+# v3.2.0 — 정적 자산 (d3 + charts.js + charts.css). 보고서 디렉토리에 한 번만 복사.
+STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css")
 
 
 class ReportSynthesizer:
@@ -888,6 +892,9 @@ class ReportSynthesizer:
         # Generate index.html (report listing page)
         self._generate_index(output_dir)
 
+        # v3.2.0 — 정적 자산 (d3 + charts.js + charts.css) 복사.
+        self._sync_static_assets(output_dir)
+
         # Ensure _headers file exists for proper MIME type on .md files
         headers_path = os.path.join(output_dir, "_headers")
         headers_content = (
@@ -1177,6 +1184,34 @@ class ReportSynthesizer:
             parts.append(line)
         parts.append("")
         return "\n".join(parts)
+
+    @staticmethod
+    def _sync_static_assets(output_dir: str) -> None:
+        """v3.2.0 — d3, charts.js, charts.css 를 reports/ 로 복사.
+
+        파일이 같으면 스킵 (mtime + size 비교). 다르거나 없으면 덮어씀.
+        Cloudflare Pages 가 같은 버전 파일을 캐시하도록 helps.
+        """
+        import shutil as _sh
+        for asset in STATIC_ASSETS:
+            src = os.path.join(STATIC_DIR, asset)
+            dst = os.path.join(output_dir, asset)
+            if not os.path.exists(src):
+                logger.warning(
+                    "[report_synthesizer] Static asset missing: %s", src,
+                )
+                continue
+            try:
+                if os.path.exists(dst):
+                    if (os.path.getsize(src) == os.path.getsize(dst)
+                            and os.path.getmtime(dst) >= os.path.getmtime(src)):
+                        continue  # already up to date
+                _sh.copyfile(src, dst)
+                logger.info(f"[report_synthesizer] Synced static asset: {asset}")
+            except OSError as e:
+                logger.warning(
+                    "[report_synthesizer] Failed to copy %s: %s", asset, e,
+                )
 
     def _generate_index(self, output_dir: str) -> None:
         """Generate index.html listing all reports."""

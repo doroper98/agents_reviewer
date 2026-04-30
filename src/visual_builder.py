@@ -215,35 +215,311 @@ def build_visuals(
     dynamics: DynamicsAnalysis | None,
     chain_reaction: ChainReactionAnalysis | None,
     scenarios: ScenarioAnalysis | None,
+    judgment: "JudgmentVerdict | None" = None,  # forward ref
 ) -> VisualAnalysis:
     """결정적 빌더 종합. LLM 없이 시각화 채움. 데이터 없는 부분은 빈 값.
 
     confidence_score 는 *생성 가능한 시각화의 비율* 을 0~1 로 정규화.
+    chart_config 에 d3 차트들이 들어감 (charts.js 가 ID 별로 그림).
     """
     svg_actor = build_actor_relationship_svg(players)
     svg_flow = build_flow_chain_svg(chain_reaction)
     key_metrics = build_key_metrics(context)
     glossary: list[dict] = []
 
-    # 가용 시각화 갯수 → confidence proxy.
+    # v3.2.0 — d3 차트 데이터 빌더 (모두 결정적).
+    chart_payload = build_chart_payload(
+        context=context,
+        players=players,
+        dynamics=dynamics,
+        chain_reaction=chain_reaction,
+        scenarios=scenarios,
+        judgment=judgment,
+    )
+
     tries = 3
     have = sum(bool(x) for x in (svg_actor, svg_flow, key_metrics))
     confidence = round(have / tries, 2) if tries else 0.0
 
-    # 본 빌더는 SVG 기반. Leaflet/Canvas chart 는 데이터에 명시적 좌표/시계열이 있을 때만
-    # LLM VisualAnalyst 가 채움 — 결정적 빌더는 enabled=False 로 둠.
     primary_svg = svg_actor or svg_flow
+    chart_enabled = bool(chart_payload)
     return VisualAnalysis(
         hero_visual_type="relationship_map" if svg_actor else "flow_diagram",
         hero_title="행위자 관계도" if svg_actor else "인과 사슬",
         svg_content=primary_svg,
         mermaid_code="",
         leaflet_config={"enabled": False},
-        chart_config={"enabled": False},
+        chart_config={"enabled": chart_enabled, "payload": chart_payload},
         key_metrics=key_metrics,
         glossary=glossary,
         confidence_score=confidence,
     )
+
+
+# ----------------------------------------------------------------------
+# v3.2.0 — d3 chart payload builders (deterministic, no LLM)
+# ----------------------------------------------------------------------
+
+
+def _parse_prob(p) -> int:
+    """Parse '35%' / '0.35' / 35 → integer 0~100."""
+    if isinstance(p, (int, float)):
+        return int(round(p * 100)) if p <= 1.0001 else int(round(p))
+    if isinstance(p, str):
+        import re
+        m = re.search(r"(\d{1,3}(?:\.\d+)?)", p)
+        if m:
+            v = float(m.group(1))
+            return int(round(v * 100)) if v <= 1.0001 else int(round(v))
+    return 0
+
+
+def build_scenario_chart_data(scenarios: "ScenarioAnalysis | None") -> list[dict]:
+    """ScenarioAnalysis → 시나리오 막대 차트 데이터."""
+    if not scenarios or not scenarios.scenarios:
+        return []
+    out: list[dict] = []
+    for sc in scenarios.scenarios[:6]:
+        out.append({
+            "name": (sc.get("name") or "")[:24],
+            "tag": sc.get("tag") or "",
+            "prob": _parse_prob(sc.get("probability", 0)),
+            "note": (sc.get("description") or "")[:80],
+        })
+    return out
+
+
+def build_key_figures_chart_data(context: "ContextAnalysis | None") -> list[dict]:
+    """ContextAnalysis.key_figures → 도넛 차트 데이터.
+
+    수치 추출: value 문자열에서 첫 숫자 파싱. 추출 실패 시 1로 폴백.
+    """
+    if not context or not context.key_figures:
+        return []
+    import re
+    out: list[dict] = []
+    for fig in context.key_figures[:6]:
+        raw = str(fig.get("value", ""))
+        m = re.search(r"(\d+(?:[.,]\d+)?)", raw.replace(",", ""))
+        v = float(m.group(1)) if m else 1.0
+        out.append({
+            "label": (fig.get("label") or "")[:14],
+            "value": v,
+            "context": (fig.get("context") or "")[:60],
+        })
+    return out
+
+
+def build_severity_chart_data(chain: "ChainReactionAnalysis | None") -> list[dict]:
+    """ChainReactionAnalysis.chain → severity 히트맵 데이터."""
+    if not chain or not chain.chain:
+        return []
+    out: list[dict] = []
+    for step in chain.chain[:8]:
+        out.append({
+            "title": (step.get("title") or "")[:24],
+            "severity": (step.get("severity") or "low"),
+        })
+    return out
+
+
+def build_confidence_chart_data(judgment) -> dict | None:
+    """JudgmentVerdict.confidence (3축) → 차트 데이터."""
+    if judgment is None or judgment.confidence is None:
+        return None
+    cp = judgment.confidence
+    return {
+        "source_diversity": float(cp.source_diversity),
+        "data_freshness": float(cp.data_freshness),
+        "expert_consensus": float(cp.expert_consensus),
+    }
+
+
+def build_stacked_chart_data(scenarios: "ScenarioAnalysis | None") -> dict | None:
+    """ScenarioAnalysis.scenarios[*].impact_by_player → 시나리오 × 행위자 누적 막대."""
+    if not scenarios or not scenarios.scenarios:
+        return None
+    palette_seed = ["#1A7B3E", "#C9A84C", "#1D6FA5", "#C76B1E", "#BD3227", "#8D4D14"]
+    actors_seen: dict[str, str] = {}
+
+    def _color_for(actor: str) -> str:
+        if actor not in actors_seen:
+            actors_seen[actor] = palette_seed[len(actors_seen) % len(palette_seed)]
+        return actors_seen[actor]
+
+    rows: list[dict] = []
+    for sc in scenarios.scenarios[:5]:
+        impacts = sc.get("impact_by_player") or []
+        if not impacts:
+            continue
+        segments = []
+        for imp in impacts[:5]:
+            actor = (imp.get("player") or "")[:14]
+            if not actor:
+                continue
+            # sentiment 가 비대칭이라 절대값으로 가중치 — 전부 동등 가중 1.
+            segments.append({
+                "label": actor,
+                "value": 1,
+                "color": _color_for(actor),
+            })
+        if segments:
+            rows.append({
+                "name": (sc.get("name") or "")[:18],
+                "segments": segments,
+            })
+    if not rows:
+        return None
+    return {"scenarios": rows}
+
+
+def build_bubble_chart_data(chain: "ChainReactionAnalysis | None") -> list[dict] | None:
+    """ChainReactionAnalysis.wildcards → 리스크 매트릭스 버블."""
+    if not chain or not chain.wildcards:
+        return None
+    out: list[dict] = []
+    for w in chain.wildcards[:8]:
+        prob = _parse_prob(w.get("probability", 0)) / 100.0
+        impact_str = (w.get("impact") or w.get("severity") or "").lower()
+        if "극심" in impact_str or "crit" in impact_str:
+            impact = 0.95
+        elif "높" in impact_str or "high" in impact_str:
+            impact = 0.75
+        elif "중" in impact_str or "med" in impact_str:
+            impact = 0.5
+        elif "낮" in impact_str or "low" in impact_str:
+            impact = 0.25
+        else:
+            impact = 0.6
+        out.append({
+            "label": (w.get("event") or "")[:14],
+            "x": prob,
+            "y": impact,
+            "size": max(20, int(prob * 100)),
+            "note": (w.get("event") or "")[:80],
+        })
+    return out if out else None
+
+
+def build_gantt_chart_data(context: "ContextAnalysis | None") -> list[dict] | None:
+    """ContextAnalysis.timeline → Gantt. 날짜 비교가 가능하면 enable."""
+    if not context or not context.timeline:
+        return None
+    items = []
+    timeline = context.timeline[:8]
+    n = len(timeline)
+    for i, t in enumerate(timeline):
+        date = (t.get("date") or "")[:10] or f"T{i+1}"
+        event = (t.get("event") or "")[:24]
+        if not event:
+            continue
+        items.append({
+            "label": event,
+            "start": i,
+            "end": min(i + 1, n - 1) + 0.7,
+            "color": "#C9A84C",
+            "note": date,
+        })
+    return items if len(items) >= 2 else None
+
+
+def build_network_chart_data(players: "PlayerAnalysis | None") -> dict | None:
+    """PlayerAnalysis.players + alliances → force-directed network."""
+    if not players or not players.players:
+        return None
+    nodes: list[dict] = []
+    for p in players.players[:10]:
+        name = (p.get("name") or "")[:12]
+        if not name:
+            continue
+        risk = (p.get("risk_level") or "").lower()
+        if "극심" in risk or "crit" in risk:
+            group = "대립"
+        elif "높" in risk:
+            group = "주요"
+        elif "낮" in risk:
+            group = "중립"
+        else:
+            group = "주요"
+        nodes.append({
+            "id": name,
+            "label": name,
+            "group": group,
+            "note": (p.get("role_tag") or "")[:30],
+        })
+    if len(nodes) < 2:
+        return None
+
+    links: list[dict] = []
+    for a in (players.alliances or [])[:10]:
+        group_names = a.get("group") or []
+        if len(group_names) < 2:
+            continue
+        nature = (a.get("nature") or "중립").lower()
+        link_type = "동맹"
+        if "대립" in nature or "경쟁" in nature:
+            link_type = "대립"
+        elif "협력" in nature or "동맹" in nature:
+            link_type = "동맹"
+        else:
+            link_type = "중립"
+        for i in range(len(group_names) - 1):
+            src = group_names[i][:12]
+            tgt = group_names[i + 1][:12]
+            if src and tgt:
+                links.append({"source": src, "target": tgt, "type": link_type})
+
+    return {"nodes": nodes, "links": links}
+
+
+def build_chart_payload(
+    *,
+    context: "ContextAnalysis | None",
+    players: "PlayerAnalysis | None",
+    dynamics: "DynamicsAnalysis | None",
+    chain_reaction: "ChainReactionAnalysis | None",
+    scenarios: "ScenarioAnalysis | None",
+    judgment=None,
+) -> dict:
+    """가용 데이터를 보고 적절한 차트 데이터를 모두 채움.
+
+    빈 dict 반환 가능 (데이터 없으면 차트 0개 → chart_config.enabled=False).
+    """
+    payload: dict = {}
+
+    sc_bar = build_scenario_chart_data(scenarios)
+    if sc_bar:
+        payload["scenarios"] = sc_bar
+
+    kf_donut = build_key_figures_chart_data(context)
+    if kf_donut:
+        payload["key_figures"] = kf_donut
+
+    sev = build_severity_chart_data(chain_reaction)
+    if sev:
+        payload["severity_chain"] = sev
+
+    conf = build_confidence_chart_data(judgment)
+    if conf:
+        payload["confidence"] = conf
+
+    stacked = build_stacked_chart_data(scenarios)
+    if stacked:
+        payload["stacked"] = stacked
+
+    bubble = build_bubble_chart_data(chain_reaction)
+    if bubble:
+        payload["bubble"] = bubble
+
+    gantt = build_gantt_chart_data(context)
+    if gantt:
+        payload["gantt"] = gantt
+
+    network = build_network_chart_data(players)
+    if network:
+        payload["network"] = network
+
+    return payload
 
 
 def needs_advanced_visuals(event_description: str) -> bool:

@@ -1,12 +1,13 @@
 ---
 tier: 2
-last_synced_with: v3.1.0
+last_synced_with: v3.2.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
   - "보고서 블록 타입 카탈로그 (mirror of src/models.py:BlockType — V3 Step 3 활성화)"
   - "분석 렌즈 카탈로그 (V3 Step 5 후 src/lenses/registry.py 미러)"
   - "Mode 별 lens cap 정책 (mirror of src/token_budget.py + src/lens_policy.py — v3.1.0)"
+  - "d3 차트 카탈로그 (mirror of src/templates/static/charts.js — v3.2.0)"
 depends_on:
   - "src/agents/* (현재 SSOT)"
   - "src/archetypes/registry.py (archetype SSOT, Step 2 활성화)"
@@ -14,7 +15,8 @@ depends_on:
   - "src/lenses/registry.py (V3 후 lens SSOT)"
   - "src/token_budget.py (mode 정책 SSOT, v3.1.0)"
   - "src/lens_policy.py (lens 결정 규칙 SSOT, v3.1.0)"
-last_review: 2026-04-27
+  - "src/templates/static/charts.js (d3 차트 SSOT, v3.2.0)"
+last_review: 2026-04-30
 ---
 
 # Catalogs — Agents · Lenses · Archetypes · Blocks
@@ -244,7 +246,36 @@ ReportSynthesizer.synthesize(result, theme, archetype)
 
 ---
 
-## 5. 카탈로그 갱신 절차
+## 6. d3 Chart Library — v3.2.0 도입
+
+`src/templates/static/charts.js` 의 9종 d3 차트 미러. 차트 SSOT 는 코드. 본 표는 사람-친화 가이드.
+
+| 차트 ID (charts.js fn) | 용도 | 입력 데이터 (visual_builder 빌더) |
+|---|---|---|
+| `drawScenarioBar` | 시나리오 확률 가로 막대 (gradient + tag 색띠) | `[{name, tag, prob, note?}]` ← `build_scenario_chart_data` |
+| `drawKeyFiguresDonut` | 핵심 수치 도넛 (중심에 카운트) | `[{label, value, context?}]` ← `build_key_figures_chart_data` |
+| `drawSeverityHeatmap` | 인과 사슬 위험도 (CSS 기반, PDF 안전) | `[{title, severity}]` ← `build_severity_chart_data` |
+| `drawConfidenceTriple` | 신뢰도 3축 막대 | `{source_diversity, data_freshness, expert_consensus}` ← `build_confidence_chart_data` |
+| `drawTimeseriesLine` | 시계열 라인 (area gradient + 진입 애니메이션) | `{label, points: [{x, y}], unit?}` |
+| `drawStackedBar` | 누적 막대 (시나리오 × 행위자) | `{scenarios: [{name, segments: [{label, value, color?}]}]}` ← `build_stacked_chart_data` |
+| `drawBubble` | 리스크 매트릭스 (확률 × 영향 4사분면) | `[{label, x, y, size, color?, note?}]` ← `build_bubble_chart_data` |
+| `drawGantt` | 간트 타임라인 | `[{label, start, end, color?, note?}]` ← `build_gantt_chart_data` |
+| `drawNetwork` | 행위자 force-directed 그래프 (대립=점선) | `{nodes: [{id, label, group}], links: [{source, target, type}]}` ← `build_network_chart_data` |
+
+### 6.1 자동 차트 매트릭스
+보고서가 데이터 가용성에 따라 자동 생성하는 차트 매핑은 [docs/ARCHITECTURE.md §5.2](ARCHITECTURE.md). 모든 차트 데이터는 결정적 (LLM 호출 0).
+
+### 6.2 차트 추가 절차
+1. `src/templates/static/charts.js` 에 `drawXxx` 함수 + auto-init 분기 + API export
+2. `src/visual_builder.py` 에 `build_xxx_chart_data()` 추가 + `build_chart_payload()` 결합
+3. `src/templates/report.html` + `src/templates/report_block.html` dashboard 섹션에 SVG 컨테이너
+4. `samples/chart_gallery.html` 시연 추가
+5. `src/tests/test_chart_builders.py` 검증 테스트 추가
+6. 본 §6 표 + CHANGELOG 매트릭스 갱신
+
+---
+
+## 7. 카탈로그 갱신 절차
 
 신규 항목을 코드 registry 에 추가했다면 본 문서도 동시에 갱신한다 ([CLAUDE.md](../CLAUDE.md) Change Propagation 매트릭스 참조).
 

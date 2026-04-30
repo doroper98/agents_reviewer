@@ -1,0 +1,314 @@
+/* ============================================================
+   charts.css — v3.2.0 차트 디자인 시스템
+   ------------------------------------------------------------
+   d3 SVG 차트 + 시나리오 카드 + hero dashboard 의 공통 토큰.
+   `report.css` 의 burgundy 테마 변수 (--card, --gold 등) 를
+   상속받아 차트 전용 디테일을 추가한다.
+   ============================================================ */
+
+/* ---- Chart card frame ---- */
+.chart-card{
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+  margin: 12px 0;
+  box-shadow: var(--shadow);
+}
+.chart-card-title{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 700; font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px; letter-spacing: -.3px;
+}
+.chart-card-subtitle{
+  font-size: 11px; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.chart-card-stage{
+  width: 100%;
+  background: var(--card-deep, #321F1F);
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+}
+.chart-card-stage svg{
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.chart-card-meta{
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  font-size: 9.5px; color: var(--text-muted);
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
+.chart-card-meta strong{
+  color: var(--gold); font-weight: 700;
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  margin-right: 4px;
+}
+
+/* ---- Chart legend (universal) ---- */
+.chart-legend{
+  display: flex; flex-wrap: wrap; gap: 12px 16px;
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 8px; padding: 6px 0;
+}
+.chart-legend span{display: inline-flex; align-items: center; gap: 6px}
+.chart-legend i{
+  display: inline-block; width: 12px; height: 12px;
+  border-radius: 3px; flex-shrink: 0;
+}
+
+/* ---- Chart aspect-ratio holders ---- */
+.chart-stage-bar{aspect-ratio: 5 / 3}
+.chart-stage-donut{aspect-ratio: 1 / 1; max-width: 280px; margin: 0 auto}
+.chart-stage-heatmap{aspect-ratio: 5 / 2}
+.chart-stage-triple{aspect-ratio: 5 / 2.4}
+
+@media (max-width: 540px){
+  .chart-stage-bar{aspect-ratio: 4 / 3}
+  .chart-stage-heatmap{aspect-ratio: 5 / 2.4}
+  .chart-stage-triple{aspect-ratio: 5 / 2.6}
+  .chart-card{padding: 14px 12px 12px}
+  .chart-card-title{font-size: 13px}
+}
+
+/* ---- Tooltip (d3 charts) ---- */
+.chart-tooltip{
+  position: absolute; pointer-events: none;
+  background: rgba(48, 30, 30, 0.96);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Noto Sans KR', sans-serif;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0; transition: opacity 0.15s ease;
+  z-index: 1000; max-width: 240px;
+}
+.chart-tooltip b{color: var(--text-primary); font-weight: 700}
+.chart-tooltip .tag-최선{color: var(--green)}
+.chart-tooltip .tag-기본선,
+.chart-tooltip .tag-기본{color: var(--gold)}
+.chart-tooltip .tag-악화{color: var(--orange)}
+.chart-tooltip .tag-최악{color: var(--red)}
+
+/* ---- Mobile-first scenario card grid (replaces table) ---- */
+.scenario-grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+@media (min-width: 720px){
+  .scenario-grid{grid-template-columns: 1fr 1fr}
+}
+
+.scenario-card{
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--gold);
+  border-radius: 10px;
+  padding: 14px 14px 12px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.scenario-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+}
+.scenario-card.tag-최선   {border-left-color: var(--green)}
+.scenario-card.tag-기본선,
+.scenario-card.tag-기본   {border-left-color: var(--gold)}
+.scenario-card.tag-악화   {border-left-color: var(--orange)}
+.scenario-card.tag-최악   {border-left-color: var(--red)}
+
+.scenario-card-head{
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 8px; flex-wrap: wrap;
+}
+.scenario-card-num{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 900; font-size: 18px;
+  color: var(--gold); line-height: 1;
+}
+.scenario-card-name{
+  font-weight: 700; font-size: 14px;
+  color: var(--text-primary); flex: 1;
+  letter-spacing: -.3px;
+}
+.scenario-card-tag{
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 12px;
+  border: 1px solid currentColor;
+}
+.scenario-card.tag-최선 .scenario-card-tag{color: var(--green)}
+.scenario-card.tag-기본선 .scenario-card-tag,
+.scenario-card.tag-기본   .scenario-card-tag{color: var(--gold)}
+.scenario-card.tag-악화 .scenario-card-tag{color: var(--orange)}
+.scenario-card.tag-최악 .scenario-card-tag{color: var(--red)}
+
+.scenario-card-prob{
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.scenario-card-prob-num{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 900; font-size: 28px;
+  color: var(--text-primary); line-height: 1;
+  letter-spacing: -1px;
+}
+.scenario-card-prob-bar{
+  flex: 1; height: 6px;
+  background: rgba(212, 196, 170, 0.10);
+  border-radius: 3px; overflow: hidden;
+}
+.scenario-card-prob-fill{
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold-dark, #9E8A15), var(--gold));
+  transition: width .8s cubic-bezier(.22,1,.36,1);
+}
+.scenario-card.tag-최선 .scenario-card-prob-fill{
+  background: linear-gradient(90deg, #125A2D, var(--green));
+}
+.scenario-card.tag-악화 .scenario-card-prob-fill{
+  background: linear-gradient(90deg, #8D4D14, var(--orange));
+}
+.scenario-card.tag-최악 .scenario-card-prob-fill{
+  background: linear-gradient(90deg, #8A2018, var(--red));
+}
+
+.scenario-card-section{margin-bottom: 8px}
+.scenario-card-section-label{
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.scenario-card-desc{
+  font-size: 11.5px; line-height: 1.65;
+  color: var(--text-secondary);
+}
+.scenario-card-impact{
+  font-size: 11px; line-height: 1.7;
+  color: var(--text-secondary);
+}
+.scenario-card-impact-row{
+  display: flex; gap: 6px; padding: 3px 0;
+  border-bottom: 1px dashed var(--border-light);
+}
+.scenario-card-impact-row:last-child{border-bottom: none}
+.scenario-card-impact-player{
+  font-weight: 700; flex-shrink: 0;
+  font-size: 10.5px; min-width: 64px;
+  color: var(--text-primary);
+}
+.scenario-card-impact-text{flex: 1}
+.scenario-card-impact-row.positive .scenario-card-impact-text{color: var(--green)}
+.scenario-card-impact-row.negative .scenario-card-impact-text{color: var(--red)}
+.scenario-card-impact-row.neutral  .scenario-card-impact-text{color: var(--gold)}
+
+.scenario-card-trigger{
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed var(--border-light);
+  font-size: 10.5px; color: var(--text-muted);
+  line-height: 1.6;
+}
+.scenario-card-trigger b{color: var(--orange); font-weight: 700; margin-right: 4px}
+
+/* ---- Hero dashboard (보고서 상단 한눈에 보기) ---- */
+.hero-dashboard{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+@media (min-width: 720px){
+  .hero-dashboard{grid-template-columns: 1.4fr 1fr}
+}
+.hero-dashboard-main{
+  background: linear-gradient(135deg, var(--card) 0%, var(--card-deep, #321F1F) 100%);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 20px 18px;
+  box-shadow: var(--shadow);
+}
+.hero-dashboard-eyebrow{
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 8px;
+}
+.hero-dashboard-headline{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 900; font-size: 18px;
+  color: var(--text-primary);
+  line-height: 1.45; margin-bottom: 10px;
+  letter-spacing: -.4px;
+}
+.hero-dashboard-meta{
+  display: flex; flex-wrap: wrap; gap: 8px 14px;
+  font-size: 10.5px; color: var(--text-muted);
+}
+.hero-dashboard-meta b{
+  color: var(--gold); font-weight: 700;
+  font-size: 10px; letter-spacing: 1px;
+  text-transform: uppercase; margin-right: 4px;
+}
+.hero-dashboard-confidence{
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; box-shadow: var(--shadow);
+}
+.hero-dashboard-confidence-num{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 900; font-size: 44px;
+  color: var(--gold); line-height: 1;
+  letter-spacing: -2px;
+}
+.hero-dashboard-confidence-unit{
+  font-size: 16px; color: var(--text-muted); font-weight: 400;
+}
+.hero-dashboard-confidence-label{
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 6px;
+}
+.hero-dashboard-confidence-axes{
+  display: flex; gap: 10px; margin-top: 12px;
+  font-size: 9.5px; color: var(--text-muted);
+}
+.hero-dashboard-confidence-axes span{
+  display: flex; flex-direction: column; align-items: center;
+}
+.hero-dashboard-confidence-axes b{
+  color: var(--text-secondary); font-size: 12px;
+  font-weight: 700; font-family: 'JetBrains Mono', monospace;
+}
+
+/* ---- Severity heatmap rows ---- */
+.heatmap-row{display: flex; align-items: center; gap: 8px; margin: 4px 0}
+.heatmap-row-label{
+  flex: 0 0 auto; min-width: 90px; max-width: 150px;
+  font-size: 10.5px; color: var(--text-secondary);
+  text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+}
+.heatmap-row-cells{
+  flex: 1; display: grid; gap: 2px;
+  grid-template-columns: repeat(var(--cells, 5), 1fr);
+}
+.heatmap-cell{
+  height: 22px; border-radius: 3px;
+  background: rgba(212, 196, 170, 0.06);
+}
+.heatmap-cell.s-low{background: rgba(29, 111, 165, .55)}     /* blue   */
+.heatmap-cell.s-med{background: rgba(201, 168, 76, .65)}     /* gold   */
+.heatmap-cell.s-high{background: rgba(199, 107, 30, .75)}    /* orange */
+.heatmap-cell.s-crit{background: rgba(189, 50, 39, .85)}     /* red    */

@@ -102,6 +102,7 @@ class VisualAnalyst(BaseAgent):
         directive: str = "",
         *,
         use_llm: bool = True,
+        judgment=None,
     ) -> VisualAnalysis:
         """Analyze all results and produce visual specifications.
 
@@ -109,14 +110,14 @@ class VisualAnalyst(BaseAgent):
         Orchestrator 가 mode 별로 결정 — fast/standard 는 False, deep 또는 사용자가
         고급 시각화를 명시한 경우만 True.
 
-        ``use_llm=True`` 라도 입력 누적은 brief 가 아닌 *전체* 가 들어가는데, 이는
-        deep 모드의 시각화 품질 보존 의도. fast/standard 에서 호출되지 않도록 orchestrator
-        가 차단.
+        v3.2.0: ``judgment`` 인자 추가 — 신뢰도 차트 데이터 빌더용.
         """
         # v3.1.0: deterministic-first 경로.
         if not use_llm:
             from src.visual_builder import build_visuals
-            return build_visuals(context, players, dynamics, chain_reaction, scenarios)
+            return build_visuals(
+                context, players, dynamics, chain_reaction, scenarios, judgment=judgment,
+            )
 
         analysis_context: dict = {}
         if context:

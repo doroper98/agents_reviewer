@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 {% if result.visuals and result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 {% endif %}
+<link rel="stylesheet" href="charts.css">
 <style>{{ css_content }}</style>
 </head>
 <body>
@@ -91,9 +92,8 @@
     </div>
     {% endif %}
 
-    <!-- Canvas Charts -->
-    {% if result.visuals.chart_config and result.visuals.chart_config.enabled %}
-    {% if result.visuals.chart_config.charts %}
+    <!-- Legacy Canvas Charts (LLM VisualAnalyst 산출, deep 모드만) -->
+    {% if result.visuals.chart_config and result.visuals.chart_config.enabled and result.visuals.chart_config.charts %}
     <div class="chart-grid">
       {% for ch in result.visuals.chart_config.charts %}
       <div class="card" style="padding:14px;overflow:hidden">
@@ -102,14 +102,77 @@
       </div>
       {% endfor %}
     </div>
-    {% else %}
-    <div class="card" style="margin-bottom:14px;padding:14px">
-      <div style="font-weight:700;font-size:12px;margin-bottom:8px">{{ result.visuals.chart_config.title or '차트' }}</div>
-      <canvas id="visual-chart" style="width:100%;height:220px"></canvas>
-    </div>
-    {% endif %}
     {% endif %}
 
+  </div>
+</section>
+{% endif %}
+
+<!-- ===== v3.2.0 d3 CHART DASHBOARD (deterministic, all modes) ===== -->
+{% set chart_payload = (result.visuals.chart_config.payload if result.visuals and result.visuals.chart_config else {}) or {} %}
+{% if chart_payload %}
+<section style="padding:8px 0 24px;border-bottom:1px solid var(--border-light)">
+  <div class="container">
+    <div class="section-label">DATA DASHBOARD</div>
+    <h2 class="section-title">한눈에 보기</h2>
+    <div style="display:grid;grid-template-columns:1fr;gap:14px">
+      {% if chart_payload.scenarios %}
+      <div class="chart-card">
+        <div class="chart-card-title">시나리오 확률 분포</div>
+        <div class="chart-card-subtitle">각 시나리오의 발생 확률 비교</div>
+        <div class="chart-card-stage chart-stage-bar"><svg id="chart-scenarios"></svg></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.confidence %}
+      <div class="chart-card">
+        <div class="chart-card-title">신뢰도 분해</div>
+        <div class="chart-card-subtitle">출처 다양성 · 데이터 신선도 · 전문가 합의</div>
+        <div class="chart-card-stage chart-stage-triple"><svg id="chart-confidence"></svg></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.severity_chain %}
+      <div class="chart-card">
+        <div class="chart-card-title">인과 사슬 위험도</div>
+        <div class="chart-card-subtitle">단계별 severity 히트맵</div>
+        <div class="chart-card-stage chart-stage-heatmap" id="chart-severity"></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.bubble %}
+      <div class="chart-card">
+        <div class="chart-card-title">리스크 매트릭스</div>
+        <div class="chart-card-subtitle">와일드카드 · 확률 × 영향 4사분면</div>
+        <div class="chart-card-stage chart-stage-bar"><svg id="chart-bubble"></svg></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.gantt %}
+      <div class="chart-card">
+        <div class="chart-card-title">타임라인</div>
+        <div class="chart-card-subtitle">사건 진행 순서 + 단계별 시간선</div>
+        <div class="chart-card-stage chart-stage-bar"><svg id="chart-gantt"></svg></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.network %}
+      <div class="chart-card">
+        <div class="chart-card-title">행위자 관계도</div>
+        <div class="chart-card-subtitle">force-directed network · 동맹/대립/중립</div>
+        <div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="chart-network"></svg></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.key_figures %}
+      <div class="chart-card">
+        <div class="chart-card-title">핵심 수치 분배</div>
+        <div class="chart-card-subtitle">주요 지표 비중</div>
+        <div class="chart-card-stage chart-stage-donut"><svg id="chart-figures"></svg></div>
+      </div>
+      {% endif %}
+      {% if chart_payload.stacked %}
+      <div class="chart-card">
+        <div class="chart-card-title">시나리오 × 행위자 영향</div>
+        <div class="chart-card-subtitle">누적 막대 — 행위자별 영향 분배</div>
+        <div class="chart-card-stage chart-stage-bar"><svg id="chart-stacked"></svg></div>
+      </div>
+      {% endif %}
+    </div>
   </div>
 </section>
 {% endif %}
@@ -311,26 +374,50 @@
 {% endmacro %}
 
 {% macro render_scenarios(result) %}
-  <div style="overflow-x:auto">
-  <table class="data-table">
-    <thead><tr><th style="width:20%">시나리오</th><th style="width:35%">전개 경로</th><th style="width:10%">확률</th><th style="width:35%">영향</th></tr></thead>
-    <tbody>
+  {# v3.2.0 — 모바일-우선 카드 그리드 (charts.css 의 .scenario-grid). #}
+  <div class="scenario-grid">
     {% for sc in result.scenarios.scenarios %}
-    <tr>
-      <td><strong>{{ loop.index }}. {{ sc.name }}</strong><br>{% if sc.tag %}<span style="font-size:9px;color:{% if sc.tag == '최선' %}var(--green){% elif sc.tag == '기본선' or sc.tag == '기본' %}var(--gold){% elif sc.tag == '악화' %}var(--orange){% else %}var(--red){% endif %}">{{ sc.tag }}</span>{% endif %}</td>
-      <td style="font-size:10px">{{ sc.description }}</td>
-      <td style="font-size:11px;font-weight:600">{{ sc.probability }}</td>
-      <td style="font-size:10px">
-        {% if sc.impact_by_player %}
+    {% set tag_cls = sc.tag or '기본' %}
+    {% set prob_str = (sc.probability or '')|string %}
+    {% set prob_clean = prob_str.replace('%','').replace(' ','').strip() %}
+    <article class="scenario-card tag-{{ tag_cls }}">
+      <header class="scenario-card-head">
+        <span class="scenario-card-num">{{ loop.index }}</span>
+        <span class="scenario-card-name">{{ sc.name }}</span>
+        {% if sc.tag %}<span class="scenario-card-tag">{{ sc.tag }}</span>{% endif %}
+      </header>
+      {% if sc.probability %}
+      <div class="scenario-card-prob">
+        <span class="scenario-card-prob-num">{{ sc.probability }}</span>
+        <span class="scenario-card-prob-bar">
+          <span class="scenario-card-prob-fill" style="width:{{ prob_clean if prob_clean.isdigit() else '0' }}%"></span>
+        </span>
+      </div>
+      {% endif %}
+      {% if sc.description %}
+      <div class="scenario-card-section">
+        <div class="scenario-card-section-label">전개</div>
+        <div class="scenario-card-desc">{{ sc.description }}</div>
+      </div>
+      {% endif %}
+      {% if sc.impact_by_player %}
+      <div class="scenario-card-section">
+        <div class="scenario-card-section-label">영향</div>
+        <div class="scenario-card-impact">
           {% for imp in sc.impact_by_player %}
-          <span style="color:{% if imp.sentiment == 'positive' %}var(--green){% elif imp.sentiment == 'negative' %}var(--red){% else %}var(--gold){% endif %}">{{ imp.player }}: {{ imp.impact }}</span><br>
+          <div class="scenario-card-impact-row {{ imp.sentiment or 'neutral' }}">
+            <span class="scenario-card-impact-player">{{ imp.player }}</span>
+            <span class="scenario-card-impact-text">{{ imp.impact }}</span>
+          </div>
           {% endfor %}
-        {% endif %}
-      </td>
-    </tr>
+        </div>
+      </div>
+      {% endif %}
+      {% if sc.trigger %}
+      <div class="scenario-card-trigger"><b>전환 신호</b>{{ sc.trigger }}</div>
+      {% endif %}
+    </article>
     {% endfor %}
-    </tbody>
-  </table>
   </div>
 
   {% if result.scenarios.summary %}
@@ -587,5 +674,13 @@ window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(s
 })();
 </script>
 {% endif %}
+
+<!-- v3.2.0 d3 charts payload + library -->
+{% if chart_payload %}
+<script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+{% endif %}
+
 </body>
 </html>

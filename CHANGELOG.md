@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v3.1.0
+last_synced_with: v3.2.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-04-27
+last_review: 2026-04-30
 ---
 
 # Changelog
@@ -23,6 +23,66 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.2.0] — 2026-04-30
+
+> **d3 Chart Dashboard + Mobile-first Scenario Cards.** 보고서 시각화 품질을 대폭 강화하는 minor 릴리스. d3 v7 라이브러리 인라인 임베드 (정적 자산) + 9종 차트 라이브러리 + 모바일 우선 시나리오 카드. 보고서가 데이터 가용성에 따라 자동으로 적절한 차트들을 모두 생성. v3.1.0 의 token budget 정책은 그대로.
+
+### Added
+- **`src/templates/static/d3.v7.min.js`** — d3 v7.9.0 minified (~274KB). Cloudflare Pages 에 정적 자산으로 배포되어 외부 CDN 의존 없음.
+- **`src/templates/static/charts.js`** — 9종 d3 SVG 차트 라이브러리 (~700 lines). 모두 hover 인터랙션 + 진입 애니메이션 + 자체 디자인 토큰.
+  1. `drawScenarioBar` — 시나리오 확률 가로 막대 (gradient + tag 색띠)
+  2. `drawKeyFiguresDonut` — 핵심 수치 도넛
+  3. `drawSeverityHeatmap` — 인과 사슬 위험도 히트맵 (CSS 기반, PDF 안전)
+  4. `drawConfidenceTriple` — 신뢰도 3축 막대
+  5. `drawTimeseriesLine` — 시계열 라인 (area gradient + animated path)
+  6. `drawStackedBar` — 시나리오 × 행위자 누적 막대
+  7. `drawBubble` — 리스크 매트릭스 (확률 × 영향, 4사분면)
+  8. `drawGantt` — 타임라인 간트 차트
+  9. `drawNetwork` — 행위자 force-directed 네트워크 그래프
+- **`src/templates/static/charts.css`** — 차트 + 시나리오 카드 + hero dashboard 디자인 토큰 (~250 lines). burgundy 테마 변수 상속.
+- **`src/visual_builder.py`** 차트 데이터 빌더 8종 — `build_scenario_chart_data`, `build_key_figures_chart_data`, `build_severity_chart_data`, `build_confidence_chart_data`, `build_stacked_chart_data`, `build_bubble_chart_data`, `build_gantt_chart_data`, `build_network_chart_data`, `build_chart_payload` (모두 결정적, LLM 호출 0).
+- **`src/agents/report_synthesizer.py:_sync_static_assets`** — 보고서 디렉토리에 d3/charts.js/charts.css 자동 복사 (size+mtime 기반 idempotent).
+- **`samples/chart_gallery.html`** — 9종 차트 모두 한 페이지에 보여주는 샘플 갤러리.
+- **`src/tests/test_chart_builders.py`** — 24 pytest 케이스 (각 차트 데이터 빌더, 통합, 정적 자산 존재, 시나리오 카드 템플릿 검증).
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.1.0 → v3.2.0`
+- **`src/templates/blocks/scenario_table.html`** — 4컬럼 `<table>` 폐기 → 모바일 우선 카드 그리드 (`scenario-grid` + `scenario-card`). 모바일에서 1열, 720px+ 에서 2열. tag 별 색띠 (`최선`/`기본`/`악화`/`최악`), 확률 큰 숫자 + gradient bar, 영향을 sentiment 색 칩으로 표시.
+- **`src/templates/report.html:render_scenarios`** — 동일하게 카드 그리드로 통일. 표 마크업 완전 폐기.
+- **`src/templates/report.html`** — 보고서 상단에 "한눈에 보기" (DATA DASHBOARD) 섹션 추가. 데이터 가용성에 따라 최대 8개 d3 차트 자동 렌더. 보고서 끝에 `<script type="application/json" id="chart-payload">` + d3.js + charts.js 로드.
+- **`src/templates/report_block.html`** — 동일한 차트 대시보드 섹션 추가 (block dispatcher 경로 archetype 도 차트 동일하게 표시).
+- **`src/agents/visual_analyst.py:VisualAnalyst.analyze(judgment=...)`** — 새 인자. deterministic 경로에서 신뢰도 차트 데이터 빌더 호출용.
+- **`src/orchestrator.py:run_analysis`** — 시각화 단계를 SynthesisJudge 이후로 이동 (judgment.confidence 를 차트 데이터로 전달하기 위함).
+- **`src/visual_builder.py:build_visuals(judgment=...)`** — 새 인자. `chart_config.payload` 에 8종 차트 데이터 dict 자동 채움.
+
+### LLM 호출 수 변화
+없음. 모든 차트는 결정적 빌더로 생성 (LLM 호출 0). v3.1.0 의 mode 정책 그대로 유지 — fast 4회, standard 7회, deep 12회.
+
+### 보고서 크기 변화
+- 보고서 HTML 자체: +2~5KB (chart payload + chart card markup)
+- 정적 자산 (한 번만 다운로드 + 캐시): d3.v7.min.js 274KB + charts.js ~26KB + charts.css ~6KB = **306KB 추가** (Cloudflare 캐시 후 재방문 시 0KB)
+- 첫 방문 시 Cloudflare CDN 에서 모든 자산 한 번에 다운로드 → 후속 보고서 방문은 캐시 사용
+
+### 보고서 자동 차트 매트릭스
+| 데이터 가용성 | 자동 생성되는 차트 |
+|-----|-----|
+| `scenarios` | 시나리오 막대 + (impact_by_player 있으면) 누적 막대 |
+| `key_figures` | 도넛 |
+| `chain.chain` | severity 히트맵 |
+| `judgment.confidence` | 3축 신뢰도 막대 |
+| `chain.wildcards` | 리스크 매트릭스 (버블) |
+| `context.timeline ≥ 2건` | Gantt 타임라인 |
+| `players.players + alliances` | force-directed 네트워크 그래프 |
+
+데이터 없으면 해당 차트는 안 그림 (현재 정책 그대로).
+
+### Migration
+- 기존 보고서 URL 계속 동작 (마크업 변경만, 데이터 모델 변경 없음).
+- `result.visuals.chart_config` dict 의 구조에 `payload` 키 추가됨 — 기존 `enabled`/`charts` 키는 그대로 유지 (LLM VisualAnalyst 산출물 호환).
+- 봇 재시작 시 자동으로 d3/charts.js/charts.css 가 첫 보고서 생성 시 reports/ 로 복사되어 Cloudflare 에 배포됨.
 
 ---
 
