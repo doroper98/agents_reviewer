@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>차트 갤러리 — d3 + 자체 디자인 시스템</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <style>
 :root{
   --bg:#2B1A1A;--card:#3D2828;--card-deep:#321F1F;
@@ -25,7 +24,7 @@ h1{font-family:'Noto Serif KR',serif;font-weight:900;font-size:24px;color:var(--
 .grid{display:grid;grid-template-columns:1fr;gap:18px}
 @media(min-width:880px){.grid{grid-template-columns:1fr 1fr}}
 </style>
-<link rel="stylesheet" href="../src/templates/static/charts.css">
+<link rel="stylesheet" href="charts.css">
 </head>
 <body>
 <div class="wrap">
@@ -109,7 +108,8 @@ h1{font-family:'Noto Serif KR',serif;font-weight:900;font-size:24px;color:var(--
   </div>
 </div>
 
-<script src="../src/templates/static/charts.js"></script>
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
 <script>
 /* ===== Gallery sample data ===== */
 const G = window.AnalysisCharts;
