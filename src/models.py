@@ -489,6 +489,9 @@ class FullAnalysisResult(BaseModel):
     executive_summary: str = ""
     report_url: str = ""
     report_path: str = ""
+    # v3.4.3 — block builder 가 light/burgundy 분기 위해 사용 (synthesize() 초입에 설정).
+    # 이 필드 없이 v3.4.0 _payload_map() 이 result.report_theme 읽다가 Pydantic 거부 → 분석 실패.
+    report_theme: str = ""
     analysis_timestamp: str = Field(
         default_factory=lambda: datetime.now().isoformat()
     )
