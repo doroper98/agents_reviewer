@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.3.0
+last_synced_with: v3.4.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
@@ -160,7 +160,7 @@ LLM 이 미등록 archetype_id 를 출력해도 `get_archetype()` 가 `six_act_t
 
 ## 4. Block Types — V3 Step 3 (v2.7.0) 도입
 
-`src/models.py:BlockType` Literal 의 17종 미러. 정의 SSOT 는 코드. 각 블록은 `src/templates/blocks/<type>.html` 로 렌더되고, payload 는 빌더 (`src/agents/report_synthesizer.py:_payload_*`) 가 v2 분석 데이터에서 매핑한다.
+`src/models.py:BlockType` Literal 의 18종 미러 (v3.4.0 에서 `map` 추가). 정의 SSOT 는 코드. 각 블록은 `src/templates/blocks/<type>.html` 로 렌더되고, payload 는 빌더 (`src/agents/report_synthesizer.py:_payload_*`) 가 v2 분석 데이터에서 매핑한다.
 
 | Block ID | 템플릿 | payload 핵심 키 | 빌더 데이터 출처 (v2.7.0 기준) |
 |----------|--------|-----------------|--------------------------------|
@@ -181,6 +181,7 @@ LLM 이 미등록 archetype_id 를 출력해도 `get_archetype()` 가 `six_act_t
 | `counter_hypothesis` | `blocks/counter_hypothesis.html` | `base_judgment?`, `counter`, `required_evidence?[]`, `current_conflict?` | `result.dynamics.key_insight` + `counter_view` + `cognitive_biases` |
 | `decision_matrix` | `blocks/decision_matrix.html` | `options[]`, `criteria[]`, `scores: dict["option|criterion": str]`, `recommendation?` | placeholder (Step 4+ decision_brief archetype) |
 | `risk_matrix` | `blocks/risk_matrix.html` | `risks[]: {risk, probability?, impact?, mitigation?}` | `result.chain_reaction.wildcards` |
+| `map` (v3.4.0) | `blocks/map.html` + `static/maps.{js,css}` | `theme: light_mono\|burgundy_mono`, `center: [lng,lat]`, `zoom`, `markers[]: {id,name,lng,lat,highlight}`, `arcs[]: {from_id,to_id,highlight}`, `legend[]?`, `caption?` | `result.visuals.leaflet_config` (visual_analyst) → `build_map_payload()` 변환 |
 
 ### 4.1 블록 템플릿 작성 규칙
 

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.3.0
+last_synced_with: v3.4.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -87,7 +87,7 @@ last_review: 2026-04-26
 | `EvidenceNeed` | Strategy 가 명세하는 증거 수집 항목 (V3 Step 1) | `src/models.py` |
 | `ReportSectionPlan` | 보고서 섹션 계획 — archetype.section_plan() 산출, 디스패처가 iterate (V3 Step 3 활성화) | `src/models.py` |
 | `VisualizationSpec` | 시각화 사양 — Visual Analyst 가 참조 | `src/models.py` |
-| `BlockType` (Literal 17종) | 블록 타입 enum — narrative, claim_card, evidence_table, timeline, matrix, actor_cards, flow_chain, scenario_table, decomposition, argument_pair, data_series, watchlist, qna, callout, counter_hypothesis, decision_matrix, risk_matrix (V3 Step 3) | `src/models.py` |
+| `BlockType` (Literal 18종) | 블록 타입 enum — narrative, claim_card, evidence_table, timeline, matrix, actor_cards, flow_chain, scenario_table, decomposition, argument_pair, data_series, watchlist, qna, callout, counter_hypothesis, decision_matrix, risk_matrix (V3 Step 3) + `map` (v3.4.0 maplibre-gl + d3-geo) | `src/models.py` |
 | `AnalysisBlock` | 보고서 렌더링의 기본 단위 — block_id/block_type/payload (V3 Step 3) | `src/models.py` |
 | `ClaimType` (Literal) | fact / inference / prediction / judgment (V3 Step 4) | `src/models.py` |
 | `Reliability` (Literal) | primary / secondary / expert / model_inference (V3 Step 4) | `src/models.py` |
@@ -172,7 +172,7 @@ last_review: 2026-04-26
 
 ### 3.7 AnalysisBlock (V3 Step 3, v2.7.0)
 - `block_id`: 보고서 내 고유 ID (예: `B-001`). 디스패처가 자동 생성.
-- `block_type`: 17종 `BlockType` Literal 중 하나.
+- `block_type`: 18종 `BlockType` Literal 중 하나 (v3.4.0 부터 `map` 포함).
 - `title`: 블록 제목 (선택). 빈 문자열이면 템플릿이 생략.
 - `purpose`: 이 블록이 답하려는 질문 또는 책무 — 보통 부모 `ReportSectionPlan.purpose` 와 동일.
 - `payload`: 자유 dict. block_type 별 스키마는 [docs/CATALOGS.md §4](CATALOGS.md) 의 표 참조. **블록 템플릿이 접근 가능한 유일한 데이터** (Anti-pattern #8).

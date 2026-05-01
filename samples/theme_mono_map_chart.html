@@ -185,7 +185,9 @@ body {
   filter: grayscale(1) contrast(0.96) brightness(1.04);
 }
 .theme-burgundy .map-canvas {
-  filter: grayscale(1) sepia(0.55) hue-rotate(-25deg) saturate(0.9) contrast(1.1) brightness(0.55);
+  /* voyager 베이스의 바다 톤(연블루)이 grayscale → 중간 회색이 되어 육지(밝은 베이지) 와 명도 분리.
+     sepia + hue-rotate 로 마룬 톤 합성, brightness 0.78 로 충분히 어둡되 바다 윤곽이 보이도록. */
+  filter: grayscale(1) sepia(0.55) hue-rotate(-22deg) saturate(0.85) contrast(1.18) brightness(0.78);
 }
 
 .map-overlay {
@@ -473,8 +475,8 @@ const PALETTES = {
     highlight: "#C9A84C",
     highlightDeep: "#D4B45C",
     highlightHalo: "rgba(201,168,76,0.22)",
-    // dark base tile, CSS 필터로 마룬 톤 합성
-    tilesUrl: "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+    // voyager 베이스 (육지·바다 자연 명도차) + CSS 필터로 마룬 톤 합성
+    tilesUrl: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png",
   },
 };
 

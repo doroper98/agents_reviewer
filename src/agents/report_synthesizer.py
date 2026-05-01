@@ -27,7 +27,7 @@ STATIC_DIR = os.path.join(TEMPLATE_DIR, "static")
 KST = timezone(timedelta(hours=9))
 
 # v3.2.0 — 정적 자산 (d3 + charts.js + charts.css). 보고서 디렉토리에 한 번만 복사.
-STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css")
+STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css", "maps.js", "maps.css")
 
 
 class ReportSynthesizer:
@@ -359,6 +359,22 @@ class ReportSynthesizer:
         # Placeholder: no native matrix data in v2 models. Builders will populate this
         # when V3 lens runners produce cross-cutting comparisons (Step 5).
         return None
+
+    @staticmethod
+    def _payload_map(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
+        """v3.4.0 — maplibre-gl + d3-geo 지도 블록.
+
+        기존 visual_analyst 가 산출한 ``result.visuals.leaflet_config`` 를 데이터 소스로 사용.
+        없으면 None — 지리 차원이 없는 사건에는 블록을 만들지 않는다 (Anti-pattern #4).
+        """
+        from src.visual_builder import build_map_payload  # 지연 import: circular 방지
+        if not result.visuals or not result.visuals.leaflet_config:
+            return None
+        cfg = result.visuals.leaflet_config or {}
+        if not cfg.get("enabled"):
+            return None
+        theme = "burgundy_mono" if (result.report_theme or "burgundy") == "burgundy" else "light_mono"
+        return build_map_payload(cfg, theme=theme)
 
     @staticmethod
     def _payload_risk_matrix(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
@@ -801,6 +817,10 @@ class ReportSynthesizer:
         if archetype is None:
             archetype = get_archetype("six_act_theater")
         is_legacy_six_act = archetype.archetype_id == "six_act_theater"
+
+        # v3.4.0 — theme 을 결과에 기록해 block builder 가 읽을 수 있게 함.
+        # (`_payload_map` 등이 ``result.report_theme`` 으로 light/burgundy 분기.)
+        result.report_theme = theme
 
         # v3.1.0: deterministic-first executive summary + conditional narrative plan.
         key_summary_items: list[str] = []
@@ -1347,4 +1367,5 @@ ReportSynthesizer._BLOCK_BUILDERS = {
     "counter_hypothesis": ReportSynthesizer._payload_counter_hypothesis,
     "decision_matrix":    ReportSynthesizer._payload_decision_matrix,
     "risk_matrix":        ReportSynthesizer._payload_risk_matrix,
+    "map":                ReportSynthesizer._payload_map,
 }

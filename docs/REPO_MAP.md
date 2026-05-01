@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.3.0
+last_synced_with: v3.4.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -73,11 +73,15 @@ src/
     ├── report.html         # six_act_theater 용 (legacy 보존, byte-equal 보장)
     ├── report.css          # 공통 CSS — 모든 archetype 공유, block-* 클래스 (Step 3 추가)
     ├── report_block.html   # 디스패처 — 신규 archetype 의 블록 렌더링 진입점 (Step 3)
-    ├── blocks/             # 17 종 블록 템플릿 (Step 3, 각 ≤50 줄, payload-only)
+    ├── blocks/             # 18 종 블록 템플릿 (Step 3, 각 ≤50 줄, payload-only)
     │   ├── narrative.html, claim_card.html, evidence_table.html, timeline.html, matrix.html
     │   ├── actor_cards.html, flow_chain.html, scenario_table.html, decomposition.html
     │   ├── argument_pair.html, data_series.html, watchlist.html, qna.html, callout.html
-    │   └── counter_hypothesis.html, decision_matrix.html, risk_matrix.html
+    │   ├── counter_hypothesis.html, decision_matrix.html, risk_matrix.html
+    │   └── map.html         # v3.4.0 — maplibre-gl + d3-geo 지도 블록
+    ├── static/             # 보고서 정적 자산 (보고서 dir 로 동기화)
+    │   ├── d3.v7.min.js, charts.js, charts.css   # v3.2.0
+    │   └── maps.js, maps.css                     # v3.4.0
     └── archetypes/         # Step 2 placeholder HTML — Step 3 후 고아 상태 (보존)
         ├── financial_transmission.html
         ├── tech_decomposition.html
