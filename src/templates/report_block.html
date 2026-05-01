@@ -6,6 +6,11 @@
 <title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="charts.css">
+{% set has_map_block = result.blocks and (result.blocks | selectattr("block_type", "equalto", "map") | list | length > 0) %}
+{% if has_map_block %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="maps.css">
+{% endif %}
 <style>{{ css_content }}</style>
 </head>
 <body>
@@ -95,10 +100,16 @@ document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 </script>
 
 <!-- v3.2.0 d3 charts payload + library -->
+{% if chart_payload or has_map_block %}
+<script src="d3.v7.min.js"></script>
+{% endif %}
 {% if chart_payload %}
 <script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
-<script src="d3.v7.min.js"></script>
 <script src="charts.js"></script>
+{% endif %}
+{% if has_map_block %}
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="maps.js"></script>
 {% endif %}
 
 </body>

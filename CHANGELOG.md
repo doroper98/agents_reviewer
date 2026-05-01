@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v3.3.0
+last_synced_with: v3.4.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-04-30
+last_review: 2026-05-01
 ---
 
 # Changelog
@@ -23,6 +23,58 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.4.0] — 2026-05-01
+
+> **`map` BlockType — MapLibre + d3-geo 지도 블록 통합.** 보고서 파이프라인에 maplibre-gl 4.7 + d3-geo v7 기반 지도 블록을 정식 추가. `BlockType` Literal 18번째로 `"map"` 등록. light_mono / burgundy_mono 두 테마와 골드(#C9A84C) 단일 하이라이트 원칙은 `samples/theme_mono_map_chart.html` 의 검증된 디자인을 그대로 옮긴다. 데이터 소스는 기존 `visual_analyst` 의 `leaflet_config` 를 재사용해 분석 흐름 변경 없이 시각화만 교체. 데이터 없으면 빌더가 None 반환 → 자동 스킵.
+
+### Added
+- **`src/templates/blocks/map.html`** — 새 블록 템플릿. `data-block-id` + `theme-light_mono`/`theme-burgundy_mono` 클래스 + `<script type="application/json">` 페이로드. 초기화는 `maps.js` 가 `DOMContentLoaded` 에 일괄 처리.
+- **`src/templates/static/maps.js`** — `window.MapBlocks.initAll()` 진입점. maplibre-gl 인스턴스 생성, `d3.geoTransform` 으로 maplibre `map.project()` 를 d3-geo path projection 에 위임, `d3.geoInterpolate` 로 great-circle arc 64분할. `move`/`resize` 이벤트마다 SVG 오버레이 재투영. 244 lines, no deps beyond global `maplibregl` + `d3`.
+- **`src/templates/static/maps.css`** — 블록 컨테이너·헤드·스테이지·범례·캡션 + 두 테마 CSS variables. 버건디는 `voyager_nolabels` 베이스 + `grayscale → sepia → hue-rotate(-22deg) → brightness(0.78)` 필터로 마룬 합성, 라이트는 `light_nolabels` + `grayscale → contrast(0.96) → brightness(1.04)`.
+- **`src/visual_builder.py:build_map_payload()`** — leaflet_config (legacy `[lat,lng]`) → MAP block payload (`[lng,lat]`) 변환기. marker color/emoji 로 highlight 결정, line color 명시 시 highlight, 매칭 안 되는 line endpoint 는 placeholder 노드로 합성. legend 도 자동 생성.
+- **`src/agents/report_synthesizer.py:_payload_map()`** — `result.visuals.leaflet_config` 가 enabled 일 때만 payload 빌드. theme 은 `result.report_theme` 을 따라 burgundy/light 분기. `_BLOCK_BUILDERS["map"]` 에 등록.
+- **`src/tests/test_map_block.py`** — 13 케이스 (BlockType 검증, leaflet → maplibre 좌표 변환, highlight 룰, theme 분기, legend 자동 생성, placeholder 노드 합성, 빌더 등록).
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.3.1 → v3.4.0`
+- **`src/models.py:BlockType`** Literal 에 `"map"` 추가 (17 → 18종).
+- **`src/agents/report_synthesizer.py:STATIC_ASSETS`** `+ "maps.js", "maps.css"` (보고서 디렉토리 동기화 대상).
+- **`src/agents/report_synthesizer.py:synthesize()`** `result.report_theme = theme` 를 초입에 기록 → block builder 가 light/burgundy 분기 가능.
+- **`src/templates/report_block.html`** + **`src/templates/archetypes/freeform_essay.html`** — `has_map_block` 분기로 maplibre-gl CSS/JS + `maps.css`/`maps.js` + `d3.v7.min.js` 조건부 로드. 차트 블록과 d3 공유.
+- **`src/archetypes/geopolitical_strategic.py`** — "전장·행위자" 섹션의 `block_types` 에 `"map"` 선두 추가. 데이터 없으면 자동 스킵.
+
+### LLM 호출 수 변화
+- 없음. 결정적 빌더만 추가.
+
+### 보고서 디자인 변화
+- `geopolitical_strategic` archetype 으로 라우팅된 보고서 + visual_analyst 가 `leaflet_config` 를 enabled 로 산출한 경우 → "전장·행위자" 섹션 상단에 maplibre+d3-geo 지도 블록이 등장. 기존 Leaflet 시각화 (`report.html` six_act_theater 경로) 는 그대로 유지.
+- freeform_essay (deep 모드) 도 `_build_all_available_blocks` 에서 자동으로 map 블록 빌드 → composer 가 `embedded_blocks` 에 `"map"` 을 referencing 하면 본문에 박힘.
+
+### Migration
+- 기존 보고서 URL 계속 동작.
+- visual_analyst 프롬프트 / 산출물 스키마 변경 없음 — `leaflet_config` 를 그대로 사용.
+- **VM 재기동 필요** (코드 변경, 정적 자산 추가).
+- 보고서 디렉토리에 `maps.js` / `maps.css` 가 처음 보고서 생성 시 자동 동기화됨.
+
+---
+
+## [3.3.1] — 2026-05-01
+
+> **Sample 추가 (showcase only).** 보고서 파이프라인에는 변화 없음 — 디자인/톤앤매너 검증용 독립 HTML 페이지 1개 추가.
+
+### Added
+- **`samples/theme_mono_map_chart.html`** — maplibre-gl 4.7 + d3-geo v7 단일 페이지 샘플. 라이트 모노 (#FAFAF7 크림) / 버건디 모노 (#2B1A1A 마룬) 두 팔레트에 동일 데이터셋 (동북아·동남아 항만 네트워크 + 16주 컨테이너 처리량) 을 입혀 비교. 두 테마 공통 하이라이트 `#C9A84C` (골드) 로 부산↔싱가포르 회랑·관측 노드·14주차 피크 막대만 강조. 베이스 타일은 CartoDB `light_nolabels` / `dark_nolabels` + CSS 필터(`grayscale` / `sepia + hue-rotate`) 합성. d3.geoTransform 으로 maplibre `map.project()` 를 d3-geo path 에 위임, `d3.geoInterpolate` 로 great-circle arc 64분할.
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.3.0 → v3.3.1`
+- **`README.md`** Status / Recent Changes / `last_synced_with` 갱신
+
+### Not Changed (중요)
+- **보고서 생성 파이프라인은 v3.3.0 과 동일.** 이 샘플은 `src/templates/`, `src/visual_builder.py`, `src/agents/visual_analyst.py`, `src/models.py:BlockType` 어디에도 연결되지 않은 **독립 쇼케이스**. 텔레그램 보고서가 maplibre 지도를 포함하려면 별도 통합 작업 (BlockType 추가, 블록 빌더, 템플릿 임베드, archetype 라우팅) 이 필요하며 이는 v3.4.0 이상에서 다룬다.
+- VM 재기동 불필요 (런타임 동작 변화 없음).
 
 ---
 

@@ -577,6 +577,111 @@ def chart_id_to_payload_key(chart_id: str) -> str | None:
     return None
 
 
+def build_map_payload(leaflet_config: dict, theme: str = "burgundy_mono") -> dict | None:
+    """v3.4.0 — leaflet_config (legacy [lat,lng] 스키마) → MAP block payload ([lng,lat] 스키마).
+
+    leaflet_config schema (visual_analyst 가 산출):
+      ``markers``: ``[{lat, lng, emoji, label, color}]``
+      ``lines``:   ``[{from: [lat,lng], to: [lat,lng], color, label}]``
+      ``center``:  ``[lat, lng]``  · ``zoom``: float
+
+    MAP block payload schema (maps.js 가 소비):
+      ``theme``: ``"burgundy_mono"`` | ``"light_mono"``
+      ``center``: ``[lng, lat]``  · ``zoom``: float
+      ``markers``: ``[{id, name, lng, lat, highlight}]``
+      ``arcs``: ``[{from_id, to_id, highlight}]``
+      ``legend``: ``[{label, kind, highlight}]``  (optional)
+
+    Highlight 룰: marker 의 ``color`` 가 비어있지 않거나 ``label`` 이 visual_analyst 의
+    "core" 키워드를 포함하면 highlight=True. 라인은 ``color`` 가 명시되면 highlight=True.
+    """
+    if not leaflet_config or not leaflet_config.get("enabled"):
+        return None
+
+    raw_markers = leaflet_config.get("markers") or []
+    raw_lines = leaflet_config.get("lines") or []
+    raw_center = leaflet_config.get("center") or [0, 0]
+    zoom = leaflet_config.get("zoom") or 3.0
+
+    # leaflet center 는 [lat, lng]; maplibre 는 [lng, lat]
+    if isinstance(raw_center, list) and len(raw_center) == 2:
+        center = [raw_center[1], raw_center[0]]
+    else:
+        center = [0, 0]
+
+    markers: list[dict] = []
+    name_to_id: dict[str, str] = {}
+    for idx, m in enumerate(raw_markers):
+        try:
+            lat = float(m.get("lat", 0))
+            lng = float(m.get("lng", 0))
+        except (TypeError, ValueError):
+            continue
+        label = (m.get("label") or "").strip()
+        marker_id = label or f"m{idx}"
+        # 같은 라벨이 이미 있으면 인덱스 붙여 unique 유지
+        if marker_id in name_to_id:
+            marker_id = f"{marker_id}-{idx}"
+        name_to_id[(label, lat, lng)] = marker_id  # composite key for arc lookup
+        # 색상이 명시되었거나 emoji 가 ⚠/⚔/🔴 같은 경고/강조 기호면 highlight
+        color = (m.get("color") or "").strip()
+        emoji = (m.get("emoji") or "").strip()
+        is_hl = bool(color) and color not in ("#888", "#999", "#aaa", "#bbb", "#ccc", "#ddd")
+        is_hl = is_hl or emoji in ("⚠", "⚔", "🔴", "🟠", "💥", "🛢")
+        markers.append({
+            "id": marker_id,
+            "name": label or marker_id,
+            "lng": lng,
+            "lat": lat,
+            "highlight": is_hl,
+        })
+
+    def _lookup_id(latlng) -> str | None:
+        try:
+            lat = float(latlng[0]); lng = float(latlng[1])
+        except (TypeError, ValueError, IndexError):
+            return None
+        for (lbl, ml_lat, ml_lng), mid in name_to_id.items():
+            if abs(ml_lat - lat) < 1e-6 and abs(ml_lng - lng) < 1e-6:
+                return mid
+        # 라벨이 매칭 안되면 즉석 노드 추가
+        synth_id = f"_pt_{lat:.4f}_{lng:.4f}"
+        if not any(m["id"] == synth_id for m in markers):
+            markers.append({
+                "id": synth_id, "name": "", "lng": lng, "lat": lat, "highlight": False,
+            })
+        return synth_id
+
+    arcs: list[dict] = []
+    for ln in raw_lines:
+        a_id = _lookup_id(ln.get("from") or [None, None])
+        b_id = _lookup_id(ln.get("to") or [None, None])
+        if not a_id or not b_id:
+            continue
+        is_hl = bool((ln.get("color") or "").strip())
+        arcs.append({"from_id": a_id, "to_id": b_id, "highlight": is_hl})
+
+    if not markers and not arcs:
+        return None
+
+    legend = []
+    if any(a["highlight"] for a in arcs):
+        legend.append({"label": "중점 회랑", "kind": "line", "highlight": True})
+    if any(not a["highlight"] for a in arcs):
+        legend.append({"label": "일반 항로", "kind": "line", "highlight": False})
+    if any(m["highlight"] for m in markers):
+        legend.append({"label": "관측 노드", "kind": "dot", "highlight": True})
+
+    return {
+        "theme": theme,
+        "center": center,
+        "zoom": float(zoom),
+        "markers": markers,
+        "arcs": arcs,
+        "legend": legend,
+    }
+
+
 def needs_advanced_visuals(event_description: str) -> bool:
     """사용자 요청 텍스트가 고급 시각화/지도/차트를 *명시* 했는지.
 

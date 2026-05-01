@@ -6,6 +6,11 @@
 <title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="charts.css">
+{% set has_map_block = result.blocks and (result.blocks | selectattr("block_type", "equalto", "map") | list | length > 0) %}
+{% if has_map_block %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="maps.css">
+{% endif %}
 <style>{{ css_content }}</style>
 <style>
 /* freeform_essay — 산문 우위. 정형 슬롯을 줄이고 단락 호흡을 살림. */
@@ -149,10 +154,16 @@ var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isInters
 document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 </script>
 
+{% if chart_payload or has_map_block %}
+<script src="d3.v7.min.js"></script>
+{% endif %}
 {% if chart_payload %}
 <script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
-<script src="d3.v7.min.js"></script>
 <script src="charts.js"></script>
+{% endif %}
+{% if has_map_block %}
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="maps.js"></script>
 {% endif %}
 
 </body>

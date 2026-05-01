@@ -1,0 +1,42 @@
+{# map — maplibre-gl + d3-geo. payload schema:
+   {
+     theme: "burgundy_mono" | "light_mono",   # default: burgundy_mono
+     center: [lng, lat],                       # 지도 초기 중심
+     zoom: float,                              # 초기 줌 (1~10)
+     markers: [{id, name, lng, lat, highlight}],
+     arcs: [{from_id, to_id, highlight}],      # great-circle 보간으로 그려짐
+     legend: [{label, kind: "line"|"dot", highlight: bool}],   # optional
+     caption: "..."                            # optional, 지도 아래 캡션
+   }
+   초기화는 maps.js (window.MapBlocks.initAll()) 가 페이지 로드 시 처리.
+#}
+{% set _payload = block.payload or {} %}
+{% set _theme = _payload.theme or 'burgundy_mono' %}
+<div class="block-map theme-{{ _theme }}" data-block-id="{{ block.block_id }}">
+  {% if block.title %}
+  <div class="block-map-head">
+    <div class="block-map-title">{{ block.title }}</div>
+    <div class="block-map-meta">MapLibre · d3-geo</div>
+  </div>
+  {% endif %}
+  <div class="block-map-stage">
+    <div class="block-map-canvas" id="map-{{ block.block_id }}"></div>
+    <svg class="block-map-overlay" id="overlay-{{ block.block_id }}"></svg>
+    {% if _payload.legend %}
+    <div class="block-map-legend">
+      {% for item in _payload.legend %}
+      <div class="row">
+        {% if item.kind == 'dot' %}
+        <span class="swatch dot{% if item.highlight %} is-hl{% endif %}"></span>
+        {% else %}
+        <span class="swatch line{% if item.highlight %} is-hl{% endif %}"></span>
+        {% endif %}
+        <span>{{ item.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% if _payload.caption %}<div class="block-map-caption">{{ _payload.caption }}</div>{% endif %}
+  <script type="application/json" id="map-payload-{{ block.block_id }}">{{ _payload | tojson }}</script>
+</div>

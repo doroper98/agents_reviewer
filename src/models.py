@@ -230,6 +230,7 @@ BlockType = Literal[
     "counter_hypothesis",   # 반대 가설 박스
     "decision_matrix",      # 의사결정 매트릭스
     "risk_matrix",          # 리스크 매트릭스
+    "map",                  # 지리 지도 (maplibre-gl + d3-geo, v3.4.0)
 ]
 
 

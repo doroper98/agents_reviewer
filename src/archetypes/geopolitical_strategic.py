@@ -33,7 +33,9 @@ class GeopoliticalStrategicArchetype:
                 section_id="gs_2_battlefield",
                 title="전장·행위자",
                 purpose="공간적 무대와 핵심 행위자 배치",
-                block_types=["actor_cards", "callout"],
+                # v3.4.0: 전장 섹션에 maplibre+d3-geo 지도 블록 추가.
+                # 데이터 없으면 _payload_map → None → 자동 스킵.
+                block_types=["map", "actor_cards", "callout"],
             ),
             ReportSectionPlan(
                 section_id="gs_3_intent_capability",
