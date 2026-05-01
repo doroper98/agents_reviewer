@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Analysis Team — v3.4 Development Summary</title>
+<meta name="description" content="2026-04-30 → 2026-05-01, 24시간 동안 v3.3.1 → v3.4.2 까지의 개발 기록. maplibre+d3-geo 지도 블록, 운영 가시성, 사용자 제어 명령.">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #2B1A1A;
+  --bg-2: #1F1212;
+  --panel: #3D2828;
+  --panel-2: #4A3232;
+  --ink: #F0E2CC;
+  --ink-2: #D4C4AA;
+  --ink-3: #A89880;
+  --ink-4: #7A6E5E;
+  --line: #5A4A3A;
+  --line-soft: #4A3737;
+  --gold: #C9A84C;
+  --gold-soft: #D4B45C;
+  --gold-deep: #A88A2E;
+  --green: #6B8A5C;
+  --red: #C45C4C;
+  --blue: #5C7A8A;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.75;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+/* ============ HERO ============ */
+.hero {
+  padding: 80px 24px 56px;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+.hero-eyebrow {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--gold); font-style: italic; margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(28px, 5.5vw, 48px);
+  font-weight: 900; color: var(--ink); line-height: 1.2; margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+.hero h1 em {
+  font-style: normal; color: var(--gold);
+  border-bottom: 3px solid var(--gold); padding-bottom: 4px;
+}
+.hero-deck {
+  font-size: 16px; color: var(--ink-3); max-width: 680px; margin: 0 auto 24px;
+  line-height: 1.85; font-weight: 300;
+}
+.hero-stats {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  margin-top: 24px;
+}
+.hero-stat {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 14px 22px; min-width: 130px;
+}
+.hero-stat-num {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 28px; font-weight: 900; color: var(--gold); line-height: 1;
+}
+.hero-stat-label {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink-4); margin-top: 6px;
+}
+
+/* ============ SECTION ============ */
+section { padding: 56px 24px; border-bottom: 1px solid var(--line-soft); }
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); font-style: italic; margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(22px, 4vw, 32px); font-weight: 900;
+  line-height: 1.3; color: var(--ink); margin-bottom: 8px;
+}
+.section-desc {
+  font-size: 14px; color: var(--ink-3); line-height: 1.85;
+  max-width: 720px; margin-bottom: 32px;
+}
+
+/* ============ TIMELINE ============ */
+.timeline {
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute; left: 18px; top: 0; bottom: 0;
+  width: 2px; background: var(--line);
+}
+.tl-item {
+  position: relative; padding-left: 56px; margin-bottom: 36px;
+}
+.tl-item::before {
+  content: '';
+  position: absolute; left: 12px; top: 8px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.12);
+}
+.tl-version {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  background: var(--gold); color: var(--bg);
+  padding: 2px 10px; border-radius: 3px;
+  margin-bottom: 10px;
+}
+.tl-tag {
+  display: inline-block;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ink-4); margin-left: 10px; font-style: italic;
+}
+.tl-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px; font-weight: 700; color: var(--ink);
+  line-height: 1.3; margin-bottom: 14px;
+}
+.tl-card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 22px; margin-bottom: 14px;
+}
+.tl-card.is-accent {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+}
+.tl-row { margin-bottom: 14px; }
+.tl-row:last-child { margin-bottom: 0; }
+.tl-row-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); font-style: italic; margin-bottom: 4px;
+}
+.tl-row-body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.85;
+}
+.tl-row-body strong { color: var(--ink); font-weight: 700; }
+.tl-row-body em { color: var(--gold-soft); font-style: normal; font-weight: 500; }
+.tl-row-body code {
+  font-family: var(--mono); font-size: 12.5px;
+  background: var(--bg-2); color: var(--gold-soft);
+  padding: 1px 6px; border-radius: 3px; border: 1px solid var(--line-soft);
+}
+.tl-row-body ul { margin: 6px 0 0 18px; }
+.tl-row-body li { margin-bottom: 4px; }
+
+/* ============ DEMO MAP ============ */
+.demo-map-wrap {
+  position: relative; height: 360px;
+  border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--line);
+  margin-top: 16px;
+}
+.demo-map-canvas { position: absolute; inset: 0;
+  filter: grayscale(1) sepia(0.55) hue-rotate(-22deg) saturate(0.85) contrast(1.18) brightness(0.78);
+}
+.demo-map-overlay { position: absolute; inset: 0; pointer-events: none; }
+.demo-map-legend {
+  position: absolute; left: 12px; bottom: 12px;
+  background: rgba(43,26,26,0.85); border: 1px solid var(--line);
+  font-size: 10px; line-height: 1.6;
+  padding: 8px 10px; border-radius: 4px;
+  color: var(--ink-2);
+}
+.demo-map-legend .row { display: flex; align-items: center; gap: 6px; }
+.demo-map-legend .swatch.line { width: 18px; height: 2px; background: var(--ink-3); }
+.demo-map-legend .swatch.line.gold { background: var(--gold); height: 3px; }
+.demo-map-legend .swatch.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold); border: 1px solid var(--gold-deep);
+}
+
+/* ============ CODE BLOCK ============ */
+pre.code {
+  background: var(--bg-2); border: 1px solid var(--line-soft);
+  border-radius: 4px; padding: 14px 16px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.7;
+  color: var(--ink-2); overflow-x: auto;
+  margin-top: 10px;
+}
+pre.code .k { color: var(--gold-soft); font-weight: 600; }
+pre.code .s { color: var(--green); }
+pre.code .c { color: var(--ink-4); font-style: italic; }
+pre.code .n { color: var(--ink); }
+
+/* ============ ARCH DIAGRAM ============ */
+.arch-svg-wrap {
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 24px; overflow-x: auto;
+}
+.arch-svg-wrap svg { width: 100%; max-width: 800px; height: auto; display: block; margin: 0 auto; }
+
+/* ============ FOOTER ============ */
+.footer {
+  background: var(--bg-2); padding: 40px 24px 32px;
+  text-align: center; border-top: 1px solid var(--line);
+}
+.footer-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); font-style: italic; margin-bottom: 12px;
+}
+.footer-links {
+  display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 12px;
+}
+.footer-links a {
+  color: var(--ink-3); text-decoration: none;
+  border-bottom: 1px dotted var(--ink-4);
+  padding-bottom: 1px;
+}
+.footer-links a:hover { color: var(--gold); border-color: var(--gold); }
+.footer-meta {
+  font-size: 10px; letter-spacing: 1px; color: var(--ink-4); margin-top: 22px;
+  font-style: italic; font-family: 'Noto Serif KR', serif;
+}
+
+/* ============ STATS GRID ============ */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px; margin-top: 24px;
+}
+.stats-cell {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 18px 16px;
+}
+.stats-cell-num {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px; font-weight: 900; color: var(--gold); line-height: 1;
+}
+.stats-cell-label {
+  font-size: 11px; color: var(--ink-3); margin-top: 6px; line-height: 1.5;
+}
+
+/* ============ TECH PILLS ============ */
+.tech-pills {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+}
+.pill {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  background: var(--panel); color: var(--ink-2);
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 5px 14px;
+}
+.pill.is-gold {
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
+  border-color: var(--gold-deep);
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Development Summary · 2026-05-01</div>
+    <h1>24시간, <em>v3.3.1 → v3.4.2</em></h1>
+    <p class="hero-deck">
+      디자인 검증 → 보고서 파이프라인 통합 → 운영 가시성 → 사용자 제어.
+      한 흐름의 네 단계가 하루에 메인에 들어갔다.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">4</div><div class="hero-stat-label">Versions</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">5</div><div class="hero-stat-label">PRs Merged</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">~1.5K</div><div class="hero-stat-label">Lines Added</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">0</div><div class="hero-stat-label">Breaking</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TIMELINE ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Part I — The Build</div>
+    <h2 class="section-title">시간 순으로 본 네 단계</h2>
+    <p class="section-desc">
+      각 버전은 바로 앞 버전의 결과를 받아 다음 단계를 푼다.
+      디자인 → 코드 → 운영 → 사용자 — 같은 기능이 네 면을 가진다는 점을 시간이 보여준다.
+    </p>
+
+    <div class="timeline">
+
+      <!-- v3.3.1 -->
+      <div class="tl-item">
+        <span class="tl-version">v3.3.1</span>
+        <span class="tl-tag">PART 1 — DESIGN PROBE</span>
+        <h3 class="tl-title">모노 테마 + d3-geo 샘플 — 디자인 검증</h3>
+
+        <div class="tl-card">
+          <div class="tl-row">
+            <div class="tl-row-label">What</div>
+            <div class="tl-row-body">
+              <em>라이트 모노 / 버건디 모노</em> 두 팔레트에 동일 데이터셋
+              (동북아·동남아 항만 네트워크 + 16주 처리량) 을 입혀 비교한 단일 페이지.
+              <code>samples/theme_mono_map_chart.html</code> 1 file, 747 lines.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Why</div>
+            <div class="tl-row-body">
+              보고서에 지도 블록을 정식 도입하기 전, <strong>실제 톤이 화면에서 어떻게 작동하는지</strong>
+              디자인 검증부터. 코드 리뷰가 아니라 눈으로 검증할 수 있는 살아있는 프로토타입.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">How</div>
+            <div class="tl-row-body">
+              maplibre-gl 4.7 raster 베이스맵 + CSS 필터로 톤 합성.
+              <code>d3.geoTransform</code> 으로 maplibre <code>map.project()</code> 를
+              d3-geo path projection 에 위임 — <code>move</code>/<code>resize</code> 이벤트마다 SVG 오버레이가 따라옴.
+              <code>d3.geoInterpolate</code> 64 분할로 great-circle arc.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Outcome</div>
+            <div class="tl-row-body">
+              골드 <code>#C9A84C</code> 단일 하이라이트 원칙이 양 테마에서 작동함을 확인.
+              버건디 베이스 타일은 <code>dark_nolabels</code> 가 너무 어두워 처음에 바다·육지 구분이 안 됐고,
+              <code>voyager_nolabels</code> + <code>brightness 0.78</code> 로 교체해서 해결 — 첫 사용자 피드백 1회로.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v3.4.0 -->
+      <div class="tl-item">
+        <span class="tl-version">v3.4.0</span>
+        <span class="tl-tag">PART 2 — INTEGRATION</span>
+        <h3 class="tl-title"><code>map</code> BlockType — 보고서 파이프라인 통합</h3>
+
+        <div class="tl-card is-accent">
+          <div class="tl-row">
+            <div class="tl-row-label">What</div>
+            <div class="tl-row-body">
+              17 → <em>18종 BlockType</em>. 보고서가 maplibre+d3-geo 지도를 자동 임베드.
+              <code>geopolitical_strategic</code> archetype 의 "전장·행위자" 섹션에 자동 포함, 데이터 없으면 자동 스킵.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Why</div>
+            <div class="tl-row-body">
+              디자인 검증된 톤을 분석 결과에 직접 적용. 기존 Leaflet 시각화 (legacy <code>six_act_theater</code>) 는
+              그대로 보존하면서, 신규 archetype 은 maplibre 길로 일원화. 두 길을 동시에 가져가는 것이
+              과도기에 가장 안전한 선택.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">How</div>
+            <div class="tl-row-body">
+              데이터 소스는 <strong>기존 <code>visual_analyst</code> 의 <code>leaflet_config</code> 재사용</strong> —
+              분석 흐름 코드 변경 0. <code>build_map_payload()</code> 가 leaflet 의 <code>[lat,lng]</code> 를
+              maplibre 의 <code>[lng,lat]</code> 로 변환하면서 highlight 룰·legend 자동 생성.
+              <ul>
+                <li><code>src/models.py:BlockType</code> Literal 확장</li>
+                <li><code>src/templates/blocks/map.html</code> 신설</li>
+                <li><code>src/templates/static/maps.{js,css}</code> (정적 자산 동기화 대상)</li>
+                <li><code>src/visual_builder.py:build_map_payload()</code> 변환기</li>
+                <li><code>src/agents/report_synthesizer.py:_payload_map()</code> + <code>_BLOCK_BUILDERS</code> 등록</li>
+                <li><code>src/tests/test_map_block.py</code> — 13 케이스</li>
+              </ul>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Live</div>
+            <div class="tl-row-body" style="margin-bottom:6px">
+              아래는 v3.4.0 에서 도입된 <code>map</code> BlockType 이 실제로 렌더하는 모습. 페이지 안에 직접 임베드.
+            </div>
+            <div class="demo-map-wrap">
+              <div id="demo-map" class="demo-map-canvas"></div>
+              <svg id="demo-overlay" class="demo-map-overlay"></svg>
+              <div class="demo-map-legend">
+                <div class="row"><span class="swatch line"></span>일반 항로</div>
+                <div class="row"><span class="swatch line gold"></span>중점 회랑</div>
+                <div class="row"><span class="swatch dot"></span>관측 노드</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v3.4.1 -->
+      <div class="tl-item">
+        <span class="tl-version">v3.4.1</span>
+        <span class="tl-tag">PART 3 — OBSERVABILITY</span>
+        <h3 class="tl-title"><code>/status</code> 에 git branch · commit · dirty</h3>
+
+        <div class="tl-card">
+          <div class="tl-row">
+            <div class="tl-row-label">What</div>
+            <div class="tl-row-body">
+              봇 시작 시점에 <code>git rev-parse --abbrev-ref HEAD</code> /
+              <code>--short=7 HEAD</code> / <code>git log -1 --format=%cd</code> /
+              <code>git status --porcelain</code> 4 호출로 git 상태 한 번 캡처해
+              <code>BUILD_INFO</code> 에 보관. 시작 로그 + 텔레그램 <code>/status</code> 응답 양쪽에 노출.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Why</div>
+            <div class="tl-row-body">
+              실제 운영 중 발생한 디버깅 케이스: <em>"v3.4.0 머지했는데 왜 v3.3.0 이 뜨지?"</em>
+              원인은 옛 봇 프로세스가 안 죽고 살아있던 것. <strong>디스크의 코드와 실행 중인 코드가 다를 때</strong>
+              가 운영의 가장 흔한 함정. import 시점 1회만 캡처 — pull 후 재기동 안 한 케이스에도
+              <code>BUILD_INFO</code> 는 *실행 중인* 커밋을 가리키므로 미스매치를 즉시 인지.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">출력 예시</div>
+            <div class="tl-row-body">
+              <pre class="code"><span class="c"># /status 응답</span>
+<span class="n">✅ 봇 실행 중 — v3.4.1</span>
+
+  <span class="n">브랜치: main</span>
+  <span class="n">커밋: 181a620 (2026-05-01 15:33)</span>  <span class="c">⚠️ uncommitted</span>
+  <span class="n">가동시간: 0시간 5분</span>
+  <span class="c">...</span></pre>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Outcome</div>
+            <div class="tl-row-body">
+              <code>/status</code> 가 <em>verifiable</em>. 운영자가 더 이상 어느 버전이 도는지 헷갈리지 않음.
+              비-git 환경 / repo 외부에서는 모두 <code>"?"</code> 로 graceful degrade.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v3.4.2 -->
+      <div class="tl-item">
+        <span class="tl-version">v3.4.2</span>
+        <span class="tl-tag">PART 4 — USER CONTROL</span>
+        <h3 class="tl-title"><code>/stop</code> · <code>/stopall</code> — 진행 중 분석 중단</h3>
+
+        <div class="tl-card">
+          <div class="tl-row">
+            <div class="tl-row-label">What</div>
+            <div class="tl-row-body">
+              두 명령으로 분석 흐름을 사용자가 직접 제어:
+              <ul>
+                <li><code>/stop</code> — 진행 중 1건만 cancel. <strong>큐는 보존</strong> (다음 건 자동 진행)</li>
+                <li><code>/stopall</code> — 진행 중 cancel + 큐 전체 비움</li>
+              </ul>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">Why</div>
+            <div class="tl-row-body">
+              잘못 보낸 분석 요청을 <strong>무력하게 끝까지 기다릴 필요 없다.</strong>
+              Claude API 호출 비용도, 사용자 시간도 절약. 두 명령으로 분리한 이유는
+              "지금 이거 잘못 보냈다" 와 "전부 다 취소하고 싶다" 는 <em>다른 문제</em> 이기 때문.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">How</div>
+            <div class="tl-row-body">
+              <code>_run_analysis</code> 시작 시점에 <code>self._current_task = asyncio.current_task()</code> 캡처.
+              핸들러는 그 task 의 <code>cancel()</code> 호출 → <code>CancelledError</code> 가 위로 전파.
+              Python 3.8+ 부터 <code>CancelledError</code> 는 <code>BaseException</code> 상속 →
+              orchestrator/agent 의 <code>except Exception:</code> 블록을 <em>통과</em>해서
+              <code>_run_analysis</code> 의 전용 <code>except CancelledError</code> 까지 도달, 사용자 알림 후 re-raise.
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-row-label">취소 시그널 전파 경로</div>
+            <div class="tl-row-body">
+              <pre class="code"><span class="k">/stop</span> handler
+   <span class="n">└─</span> self._current_task.cancel()
+       <span class="n">└─</span> raises CancelledError <span class="c">into</span> _run_analysis()
+           <span class="n">└─</span> propagates up <span class="c">through</span> await orchestrator.run_analysis()
+               <span class="n">└─</span> propagates up <span class="c">through</span> await agent.run() <span class="c">(LLM call)</span>
+                   <span class="n">└─</span> subprocess.terminate() <span class="c"># Claude CLI gets SIGTERM</span>
+                       <span class="n">└─</span> finally: cleanup + reply "🛑 분석 중단됨"</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARCH DIAGRAM ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Part II — One Picture</div>
+    <h2 class="section-title">map BlockType 데이터 흐름</h2>
+    <p class="section-desc">
+      v3.4.0 의 <code>map</code> 블록이 어떻게 분석 흐름에 끼워 들어갔는지.
+      회색 부분은 기존 코드, 골드 부분은 v3.4.0 신규.
+    </p>
+
+    <div class="arch-svg-wrap">
+      <svg viewBox="0 0 800 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,3 L0,6 Z" fill="#A89880"/>
+          </marker>
+          <marker id="argold" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,3 L0,6 Z" fill="#C9A84C"/>
+          </marker>
+        </defs>
+
+        <!-- Existing path (top row) -->
+        <g font-family="Noto Sans KR, sans-serif" font-size="11" fill="#D4C4AA">
+          <!-- visual_analyst -->
+          <rect x="20" y="40" width="140" height="56" rx="6" fill="#3D2828" stroke="#5A4A3A" stroke-width="1"/>
+          <text x="90" y="62" text-anchor="middle" font-weight="700" fill="#F0E2CC">visual_analyst</text>
+          <text x="90" y="80" text-anchor="middle" font-size="10" fill="#A89880">LLM (deep mode)</text>
+
+          <!-- leaflet_config -->
+          <rect x="200" y="40" width="160" height="56" rx="6" fill="#3D2828" stroke="#5A4A3A" stroke-width="1"/>
+          <text x="280" y="62" text-anchor="middle" font-weight="700" fill="#F0E2CC">leaflet_config</text>
+          <text x="280" y="80" text-anchor="middle" font-size="10" fill="#A89880">[lat,lng] markers + lines</text>
+
+          <line x1="160" y1="68" x2="200" y2="68" stroke="#A89880" stroke-width="1.5" marker-end="url(#ar)"/>
+
+          <!-- old: report.html (Leaflet) -->
+          <rect x="400" y="40" width="160" height="56" rx="6" fill="#3D2828" stroke="#5A4A3A" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="480" y="58" text-anchor="middle" font-size="10" fill="#A89880" font-style="italic">six_act_theater 만</text>
+          <text x="480" y="76" text-anchor="middle" font-weight="700" fill="#F0E2CC">report.html</text>
+          <text x="480" y="90" text-anchor="middle" font-size="9" fill="#7A6E5E">Leaflet (legacy 보존)</text>
+
+          <line x1="360" y1="68" x2="400" y2="68" stroke="#A89880" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ar)"/>
+
+          <!-- New v3.4.0 path (bottom row) -->
+          <!-- build_map_payload -->
+          <rect x="200" y="180" width="160" height="56" rx="6" fill="#4A3232" stroke="#C9A84C" stroke-width="1.5"/>
+          <text x="280" y="202" text-anchor="middle" font-weight="700" fill="#F0E2CC">build_map_payload()</text>
+          <text x="280" y="220" text-anchor="middle" font-size="10" fill="#C9A84C">[lng,lat] + highlight 룰</text>
+
+          <!-- _payload_map / MAP block -->
+          <rect x="400" y="180" width="160" height="56" rx="6" fill="#4A3232" stroke="#C9A84C" stroke-width="1.5"/>
+          <text x="480" y="200" text-anchor="middle" font-size="9" fill="#C9A84C">v3.4.0 신규</text>
+          <text x="480" y="216" text-anchor="middle" font-weight="700" fill="#F0E2CC">map BlockType</text>
+          <text x="480" y="232" text-anchor="middle" font-size="10" fill="#A89880">blocks/map.html</text>
+
+          <!-- maps.js + maplibre -->
+          <rect x="600" y="180" width="160" height="56" rx="6" fill="#4A3232" stroke="#C9A84C" stroke-width="1.5"/>
+          <text x="680" y="202" text-anchor="middle" font-weight="700" fill="#F0E2CC">maps.js</text>
+          <text x="680" y="220" text-anchor="middle" font-size="10" fill="#C9A84C">maplibre-gl + d3-geo</text>
+
+          <!-- arrow: leaflet_config → build_map_payload -->
+          <path d="M280,96 Q280,140 280,180" fill="none" stroke="#C9A84C" stroke-width="1.5" marker-end="url(#argold)"/>
+          <text x="293" y="142" font-size="9" fill="#C9A84C" font-style="italic">v3.4.0</text>
+
+          <line x1="360" y1="208" x2="400" y2="208" stroke="#C9A84C" stroke-width="1.5" marker-end="url(#argold)"/>
+          <line x1="560" y1="208" x2="600" y2="208" stroke="#C9A84C" stroke-width="1.5" marker-end="url(#argold)"/>
+
+          <!-- archetypes -->
+          <rect x="600" y="40" width="160" height="56" rx="6" fill="#3D2828" stroke="#5A4A3A" stroke-width="1"/>
+          <text x="680" y="58" text-anchor="middle" font-size="10" fill="#A89880" font-style="italic">geopolitical_strategic</text>
+          <text x="680" y="76" text-anchor="middle" font-weight="700" fill="#F0E2CC">archetype</text>
+          <text x="680" y="90" text-anchor="middle" font-size="9" fill="#C9A84C">"전장·행위자" + map</text>
+
+          <line x1="600" y1="68" x2="680" y2="68" stroke="#A89880" stroke-width="0" />
+          <line x1="680" y1="96" x2="680" y2="180" stroke="#C9A84C" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#argold)"/>
+          <text x="690" y="140" font-size="9" fill="#C9A84C" font-style="italic">block_types</text>
+          <text x="690" y="152" font-size="9" fill="#C9A84C" font-style="italic">선두 추가</text>
+
+          <!-- legend -->
+          <g transform="translate(20, 290)">
+            <text x="0" y="0" font-size="10" fill="#A89880" font-style="italic">기존</text>
+            <rect x="40" y="-9" width="40" height="14" rx="3" fill="#3D2828" stroke="#5A4A3A" stroke-width="1"/>
+            <text x="100" y="0" font-size="10" fill="#C9A84C" font-style="italic">v3.4.0 신규</text>
+            <rect x="160" y="-9" width="40" height="14" rx="3" fill="#4A3232" stroke="#C9A84C" stroke-width="1.5"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NUMBERS ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Part III — By the Numbers</div>
+    <h2 class="section-title">v3.4 의 윤곽</h2>
+    <p class="section-desc">
+      적당히 측정 가능한 것들. 의도된 것보다는 작게, 의도하지 않은 것보다는 크게.
+    </p>
+
+    <div class="stats-grid">
+      <div class="stats-cell"><div class="stats-cell-num">5</div><div class="stats-cell-label">PRs (#2~#5) main 머지</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">4</div><div class="stats-cell-label">신규 버전 (v3.3.1~v3.4.2)</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">25+</div><div class="stats-cell-label">touched files</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">~1.5K</div><div class="stats-cell-label">lines added (net)</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">13</div><div class="stats-cell-label">신규 테스트</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">0</div><div class="stats-cell-label">breaking changes</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">2</div><div class="stats-cell-label">신규 telegram 명령</div></div>
+      <div class="stats-cell"><div class="stats-cell-num">18</div><div class="stats-cell-label">BlockType (17 → 18)</div></div>
+    </div>
+
+    <div class="tech-pills">
+      <span class="pill is-gold">maplibre-gl 4.7</span>
+      <span class="pill is-gold">d3-geo v7</span>
+      <span class="pill is-gold">d3 v7</span>
+      <span class="pill">python-telegram-bot</span>
+      <span class="pill">Pydantic v2</span>
+      <span class="pill">Jinja2</span>
+      <span class="pill">asyncio</span>
+      <span class="pill">Claude Code CLI (Max plan)</span>
+      <span class="pill">CartoDB raster tiles</span>
+      <span class="pill">Cloudflare Pages</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-title">Event Analysis Team · v3.4.2</div>
+    <div class="footer-links">
+      <a href="https://github.com/doroper98/agents_reviewer">repo</a>
+      <a href="https://github.com/doroper98/agents_reviewer/pull/3">PR #3 v3.4.0</a>
+      <a href="https://github.com/doroper98/agents_reviewer/pull/4">PR #4 v3.4.1</a>
+      <a href="https://github.com/doroper98/agents_reviewer/pull/5">PR #5 v3.4.2</a>
+      <a href="https://github.com/doroper98/agents_reviewer/blob/main/CHANGELOG.md">CHANGELOG</a>
+    </div>
+    <div class="footer-meta">
+      Generated 2026-05-01 · One day, four versions, one direction.
+    </div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+/* ============================================================
+ * Live demo of the v3.4.0 map BlockType (burgundy_mono).
+ * Same code path as src/templates/static/maps.js.
+ * ========================================================== */
+(function () {
+  if (typeof maplibregl === 'undefined' || typeof d3 === 'undefined') return;
+
+  var pal = {
+    bg: '#2B1A1A', flow: '#A89880', nodeFill: '#3D2828', nodeStroke: '#A89880',
+    highlight: '#C9A84C', highlightDeep: '#D4B45C', highlightHalo: 'rgba(201,168,76,0.22)',
+    ink2: '#D4C4AA',
+  };
+
+  var cities = [
+    { id: 'seoul',     name: '서울',      lng: 126.97, lat: 37.56, hl: false },
+    { id: 'busan',     name: '부산',      lng: 129.08, lat: 35.18, hl: true  },
+    { id: 'tokyo',     name: '도쿄',      lng: 139.69, lat: 35.68, hl: false },
+    { id: 'shanghai',  name: '상하이',    lng: 121.47, lat: 31.23, hl: false },
+    { id: 'hongkong',  name: '홍콩',      lng: 114.17, lat: 22.32, hl: false },
+    { id: 'singapore', name: '싱가포르',  lng: 103.82, lat:  1.35, hl: true  },
+  ];
+  var byId = {}; cities.forEach(function (c) { byId[c.id] = c; });
+  var arcs = [
+    { from: 'busan', to: 'singapore', hl: true  },
+    { from: 'busan', to: 'shanghai',  hl: false },
+    { from: 'busan', to: 'tokyo',     hl: false },
+    { from: 'shanghai', to: 'hongkong', hl: false },
+    { from: 'hongkong', to: 'singapore', hl: false },
+  ];
+
+  var canvas = document.getElementById('demo-map');
+  var overlay = d3.select('#demo-overlay');
+
+  var map = new maplibregl.Map({
+    container: canvas,
+    style: {
+      version: 8,
+      sources: {
+        base: {
+          type: 'raster',
+          tiles: [
+            'https://a.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap, © CARTO',
+        },
+      },
+      layers: [{ id: 'base', type: 'raster', source: 'base' }],
+    },
+    center: [122, 22],
+    zoom: 3.0,
+    minZoom: 2,
+    maxZoom: 6,
+    attributionControl: { compact: true },
+    pitchWithRotate: false,
+    dragRotate: false,
+  });
+  map.touchZoomRotate.disableRotation();
+
+  function project(lng, lat) {
+    var p = map.project(new maplibregl.LngLat(lng, lat));
+    return [p.x, p.y];
+  }
+  var transform = d3.geoTransform({
+    point: function (lng, lat) {
+      var p = project(lng, lat); this.stream.point(p[0], p[1]);
+    },
+  });
+  var geoPath = d3.geoPath().projection(transform);
+
+  var arcFeatures = arcs.map(function (a) {
+    var s = byId[a.from], t = byId[a.to];
+    var interp = d3.geoInterpolate([s.lng, s.lat], [t.lng, t.lat]);
+    return {
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: d3.range(0, 1.0001, 1/64).map(interp) },
+      properties: a,
+    };
+  });
+  var pointFeatures = cities.map(function (c) {
+    return { type: 'Feature', geometry: { type: 'Point', coordinates: [c.lng, c.lat] }, properties: c };
+  });
+
+  var gA = overlay.append('g'), gN = overlay.append('g'), gL = overlay.append('g');
+  var aSel = gA.selectAll('path').data(arcFeatures).join('path')
+    .attr('fill', 'none').attr('stroke-linecap', 'round')
+    .attr('stroke', function (d) { return d.properties.hl ? pal.highlight : pal.flow; })
+    .attr('stroke-width', function (d) { return d.properties.hl ? 2.4 : 1.1; })
+    .attr('stroke-opacity', function (d) { return d.properties.hl ? 0.92 : 0.55; })
+    .attr('stroke-dasharray', function (d) { return d.properties.hl ? '0' : '3,3'; });
+  var nSel = gN.selectAll('g').data(pointFeatures).join(function (e) {
+    var g = e.append('g');
+    g.append('circle').attr('r', function (d) { return d.properties.hl ? 12 : 0; }).attr('fill', pal.highlightHalo);
+    g.append('circle')
+      .attr('r', function (d) { return d.properties.hl ? 5 : 3.2; })
+      .attr('fill', function (d) { return d.properties.hl ? pal.highlight : pal.nodeFill; })
+      .attr('stroke', function (d) { return d.properties.hl ? pal.highlightDeep : pal.nodeStroke; })
+      .attr('stroke-width', function (d) { return d.properties.hl ? 1.5 : 1; });
+    return g;
+  });
+  var lSel = gL.selectAll('text').data(pointFeatures).join('text')
+    .attr('font-family', "'Noto Sans KR', sans-serif")
+    .attr('font-size', function (d) { return d.properties.hl ? 11 : 10; })
+    .attr('font-weight', function (d) { return d.properties.hl ? 700 : 500; })
+    .attr('fill', function (d) { return d.properties.hl ? pal.highlightDeep : pal.ink2; })
+    .attr('paint-order', 'stroke')
+    .attr('stroke', pal.bg).attr('stroke-width', 3).attr('stroke-linejoin', 'round')
+    .text(function (d) { return d.properties.name; });
+
+  function render() {
+    overlay.attr('width', canvas.clientWidth).attr('height', canvas.clientHeight);
+    aSel.attr('d', geoPath);
+    nSel.attr('transform', function (d) {
+      var p = project(d.geometry.coordinates[0], d.geometry.coordinates[1]);
+      return 'translate(' + p[0] + ',' + p[1] + ')';
+    });
+    lSel
+      .attr('x', function (d) { return project(d.geometry.coordinates[0], d.geometry.coordinates[1])[0] + 8; })
+      .attr('y', function (d) { return project(d.geometry.coordinates[0], d.geometry.coordinates[1])[1] + 4; });
+  }
+  map.on('load', render);
+  map.on('move', render);
+  map.on('resize', render);
+})();
+</script>
+</body>
+</html>
