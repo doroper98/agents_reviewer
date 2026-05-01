@@ -234,20 +234,14 @@ function buildMap(containerId, t, themeKey) {
   const idp = definePatterns(svg, t, `map-${themeKey}`);
   console.log('[map]', themeKey, 'svg created', W, 'x', H);
 
-  // Project: fit a bbox slightly larger than our city set into the canvas
-  const lngs = CITIES.map(c => c.lng), lats = CITIES.map(c => c.lat);
-  const padDeg = 9;
-  const aoi = {
-    type: 'Polygon',
-    coordinates: [[
-      [Math.min(...lngs) - padDeg, Math.min(...lats) - padDeg],
-      [Math.max(...lngs) + padDeg, Math.min(...lats) - padDeg],
-      [Math.max(...lngs) + padDeg, Math.max(...lats) + padDeg*2],
-      [Math.min(...lngs) - padDeg, Math.max(...lats) + padDeg*2],
-      [Math.min(...lngs) - padDeg, Math.min(...lats) - padDeg],
-    ]],
-  };
-  const projection = d3.geoMercator().fitExtent([[6, 6], [W-6, H-6]], aoi);
+  // Mercator centered on the Middle-East ↔ East-Asia corridor of interest.
+  // Scale is hand-tuned for the canvas width: at scale s, 1 deg longitude
+  // ≈ s * π/180 px. Our scenario spans ~92° (Tel Aviv to Seoul); scale 180
+  // gives a comfortable horizontal fit in 360px with margins.
+  const projection = d3.geoMercator()
+    .center([78, 27])
+    .scale(180)
+    .translate([W/2, H * 0.55]);
   const path = d3.geoPath(projection);
 
   const gMap = svg.append('g').attr('class','map-base');
