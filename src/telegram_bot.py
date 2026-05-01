@@ -139,10 +139,20 @@ class TelegramBot:
             f"  ⑧ 편집장 (deep 전용) · {opus_47}\n"
         )
 
-        from src.orchestrator import VERSION
+        from src.orchestrator import VERSION, BUILD_INFO
+
+        # v3.4.1 — 어떤 브랜치/커밋이 실제로 돌고 있는지 보여줘서
+        # "pull 만 하고 재기동 안 함" 류 디버깅을 즉시 종결한다.
+        dirty_mark = "  ⚠️ uncommitted" if BUILD_INFO.get("dirty") else ""
+        build_str = (
+            f"  브랜치: {BUILD_INFO.get('branch', '?')}\n"
+            f"  커밋: {BUILD_INFO.get('commit', '?')} "
+            f"({BUILD_INFO.get('commit_date', '?')}){dirty_mark}\n"
+        )
 
         status_msg = (
             f"✅ 봇 실행 중 — {VERSION}\n\n"
+            f"{build_str}"
             f"  가동시간: {uptime_str}\n"
             f"  생성된 보고서: {report_count}건\n"
             f"  이번 세션 분석: {_analysis_count}건\n"

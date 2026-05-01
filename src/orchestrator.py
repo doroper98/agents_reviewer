@@ -35,7 +35,42 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.4.0"
+VERSION = "v3.4.1"
+
+
+# v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
+#   ① 시작 로그 (tmux/journal 으로 운영자가 즉시 확인)
+#   ② /status 명령 응답 (텔레그램에서 어떤 commit 이 돌고 있는지 명시)
+# pull 만 하고 재기동을 안 했다면 BUILD_INFO 는 "이미 실행 중인" 코드의 commit 을 가리킨다 —
+# 그래야 "v3.4.0 머지했는데 왜 v3.3.0 이 뜨지?" 류 디버깅이 즉시 풀린다.
+def _capture_build_info() -> dict:
+    """Capture git branch + commit at process start. Static — does not refresh post-start."""
+    import subprocess as _sp
+    info = {"branch": "?", "commit": "?", "commit_date": "?", "dirty": False}
+    try:
+        info["branch"] = _sp.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            stderr=_sp.DEVNULL, text=True, timeout=2,
+        ).strip()
+        info["commit"] = _sp.check_output(
+            ["git", "rev-parse", "--short=7", "HEAD"],
+            stderr=_sp.DEVNULL, text=True, timeout=2,
+        ).strip()
+        info["commit_date"] = _sp.check_output(
+            ["git", "log", "-1", "--format=%cd", "--date=format:%Y-%m-%d %H:%M"],
+            stderr=_sp.DEVNULL, text=True, timeout=2,
+        ).strip()
+        info["dirty"] = bool(_sp.check_output(
+            ["git", "status", "--porcelain"],
+            stderr=_sp.DEVNULL, text=True, timeout=2,
+        ).strip())
+    except (OSError, _sp.SubprocessError, _sp.TimeoutExpired):
+        # git 미설치 / repo 밖 / 권한 없음 — 모두 "?" 로 graceful degrade.
+        pass
+    return info
+
+
+BUILD_INFO = _capture_build_info()
 
 # v3.1.0: legacy keywords map → fast mode (quick mode 와 같은 의미).
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
