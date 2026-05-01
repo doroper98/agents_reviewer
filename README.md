@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v3.4.1
+last_synced_with: v3.4.2
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
@@ -15,7 +15,7 @@ last_review: 2026-05-01
 텔레그램 메시지로 사건 분석을 지시하면, 모드별 (fast/standard/deep) AI 에이전트가 분석한 뒤 d3 기반 인터랙티브 차트가 들어간 HTML 보고서를 만들어 Cloudflare Pages 에 배포하는 시스템.
 
 ## Status
-- Version: v3.4.1 (SSOT: `src/orchestrator.py:VERSION`) — `/status` 에 git 브랜치·커밋·dirty 표시 + 시작 로그에도 동일 정보. "pull 만 하고 재기동 안 함" 디버깅 즉시 종결.
+- Version: v3.4.2 (SSOT: `src/orchestrator.py:VERSION`) — `/stop` (현재 분석 중단) + `/stopall` (현재 + 대기열 전체) 명령 추가. asyncio.Task.cancel() 기반.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
 - Tier 3 docs: [WORKFLOWS](WORKFLOWS.md) · [DEVLOG](DEVLOG.md) · [CHANGELOG](CHANGELOG.md)
@@ -39,6 +39,7 @@ python -m src.main
 
 ## Recent Changes
 최신 5건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+- **v3.4.2** `/stop` `/stopall` 명령 추가 — 진행 중 분석을 텔레그램에서 직접 중단. `/stop` 은 현재 1건만, `/stopall` 은 현재 + 대기열 전체 비움. asyncio.Task.cancel() 기반으로 LLM 호출/서브프로세스까지 시그널 전파. 인가 체크는 `/analyze` 와 동일.
 - **v3.4.1** `/status` build info — 봇 프로세스 시작 시점에 git branch / short commit / commit date / dirty 여부를 한 번 캡처해 (`src/orchestrator.py:BUILD_INFO`) 시작 로그와 텔레그램 `/status` 응답에 노출. pull 만 하고 재기동을 안 한 경우에도 BUILD_INFO 는 *실행 중인 코드의* 커밋을 가리키므로 운영자가 버전 미스매치를 즉시 인지할 수 있다.
 - **v3.4.0** `map` BlockType 추가 — maplibre-gl 4.7 + d3-geo v7 지도 블록을 보고서 파이프라인에 통합. `BlockType` Literal 에 `"map"` 추가 (총 18종), `_payload_map` 빌더 + `build_map_payload()` (visual_analyst 의 leaflet_config → MAP block payload 변환), `blocks/map.html` 템플릿, 정적 자산 `maps.js` / `maps.css`. light_mono / burgundy_mono 두 테마 + 골드 `#C9A84C` 단일 하이라이트. `geopolitical_strategic` archetype 의 "전장·행위자" 섹션에 자동 포함, 데이터 없으면 자동 스킵. **VM 재기동 필요.**
 - **v3.3.1** Sample 추가 — `samples/theme_mono_map_chart.html` (maplibre-gl 4.7 + d3-geo v7). 라이트 모노 / 버건디 모노 두 팔레트에 동일 데이터셋 (동북아·동남아 항만 네트워크 + 16주 처리량) 을 입혀 `#C9A84C` 골드 단일 하이라이트 원칙을 보여주는 단일 페이지. 코드 영향 없음.

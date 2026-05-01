@@ -57,6 +57,8 @@ class TelegramBot:
         self._queue: deque[QueueItem] = deque()
         self._is_analyzing: bool = False
         self._current_topic: str = ""
+        # v3.4.2: 진행 중 분석의 asyncio task 핸들. /stop /stopall 이 cancel 호출.
+        self._current_task: asyncio.Task | None = None
         # asyncio task handle for the monitor loop — populated in post_init.
         self._monitor_task: asyncio.Task | None = None
         # Application reference for telegram message sending from monitor task.
@@ -82,6 +84,8 @@ class TelegramBot:
             "6명의 AI 분석관이 종합 보고서를 작성합니다.\n\n"
             "명령어:\n"
             "/analyze <주제> — 분석 시작\n"
+            "/stop — 진행 중 분석 중단 (v3.4.2)\n"
+            "/stopall — 진행 중 분석 + 대기열 전체 비우기 (v3.4.2)\n"
             "/status — 서버 상태 확인\n"
             "/reports — 전체 보고서 목록\n"
             "/queue — 대기열 확인\n"
@@ -90,6 +94,48 @@ class TelegramBot:
             "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
+
+    async def _stop_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """v3.4.2 — 진행 중 분석만 중단. 대기열은 보존."""
+        if update.message is None or update.effective_chat is None:
+            return
+        if not self._is_authorized(update.effective_chat.id):
+            return
+        if not self._is_analyzing or self._current_task is None or self._current_task.done():
+            await update.message.reply_text("실행 중인 분석이 없습니다.")
+            return
+        topic = self._current_topic[:50]
+        queue_left = len(self._queue)
+        self._current_task.cancel()
+        tail = f"\n📋 대기열 {queue_left}건 은 그대로 유지." if queue_left else ""
+        await update.message.reply_text(
+            f"🛑 분석 중단 요청 보냄: {topic}\n정리 후 곧 종료됩니다.{tail}"
+        )
+
+    async def _stopall_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """v3.4.2 — 진행 중 분석 + 대기열 전체 비우기."""
+        if update.message is None or update.effective_chat is None:
+            return
+        if not self._is_authorized(update.effective_chat.id):
+            return
+        had_running = self._is_analyzing and self._current_task is not None and not self._current_task.done()
+        cleared = len(self._queue)
+        self._queue.clear()
+        if had_running:
+            assert self._current_task is not None  # for type checker
+            topic = self._current_topic[:50]
+            self._current_task.cancel()
+            await update.message.reply_text(
+                f"🛑 전체 중단: 진행 중 분석 ({topic}) 취소 + 대기열 {cleared}건 비움."
+            )
+        elif cleared:
+            await update.message.reply_text(f"📋 대기열 {cleared}건 비움. 진행 중 분석은 없었음.")
+        else:
+            await update.message.reply_text("실행 중인 분석도, 대기열도 없습니다.")
 
     async def _status_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -412,6 +458,8 @@ class TelegramBot:
 
         self._is_analyzing = True
         self._current_topic = event_text
+        # v3.4.2 — /stop /stopall 이 cancel() 호출할 수 있게 task 핸들 보관.
+        self._current_task = asyncio.current_task()
         chat_id = update.effective_chat.id
 
         async def status_callback(status: str) -> None:
@@ -482,6 +530,15 @@ class TelegramBot:
                     f"📁 전체 보고서 목록: {index_url}"
                 )
 
+        except asyncio.CancelledError:
+            # v3.4.2 — /stop /stopall 으로 취소됨. 사용자에게 알리고 정상 종료 시그널 전파.
+            logger.info("[telegram_bot] Analysis cancelled by /stop or /stopall")
+            try:
+                await update.message.reply_text("🛑 분석 중단됨")
+            except Exception:
+                pass
+            raise
+
         except Exception as e:
             logger.exception("Analysis failed")
             await update.message.reply_text(f"❌ 분석 실패: {str(e)[:200]}")
@@ -489,7 +546,8 @@ class TelegramBot:
         finally:
             self._is_analyzing = False
             self._current_topic = ""
-            # Process next in queue
+            self._current_task = None
+            # Process next in queue (CancelledError 가 났어도 큐는 진행해야 함 — /stop 이면 큐 살아있음)
             await self._process_queue()
 
     def create_app(self) -> Application:
@@ -505,6 +563,8 @@ class TelegramBot:
 
         app.add_handler(CommandHandler("start", self._start_command))
         app.add_handler(CommandHandler("status", self._status_command))
+        app.add_handler(CommandHandler("stop", self._stop_command))           # v3.4.2
+        app.add_handler(CommandHandler("stopall", self._stopall_command))     # v3.4.2
         app.add_handler(CommandHandler("queue", self._queue_command))
         app.add_handler(CommandHandler("reports", self._reports_command))
         app.add_handler(CommandHandler("analyze", self._analyze_command))
