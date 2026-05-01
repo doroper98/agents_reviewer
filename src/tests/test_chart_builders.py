@@ -68,19 +68,35 @@ class TestScenarioChartData:
 
 class TestKeyFiguresChartData:
     def test_extracts_numeric_value(self) -> None:
+        # Insight Gate (PR1'): donut 은 ≥3 항목 + variance>0 일 때만 생성.
         ctx = ContextAnalysis(key_figures=[
             {"label": "유가", "value": "$108", "context": "WTI"},
             {"label": "환율", "value": "1,420원", "context": "KRW"},
+            {"label": "수입", "value": "320억", "context": "월"},
         ])
         out = build_key_figures_chart_data(ctx)
-        assert len(out) == 2
+        assert len(out) == 3
         assert out[0]["value"] == 108.0
         assert out[1]["value"] == 1420.0
+        assert out[2]["value"] == 320.0
 
-    def test_falls_back_to_one_when_no_number(self) -> None:
-        ctx = ContextAnalysis(key_figures=[{"label": "긴장도", "value": "높음"}])
-        out = build_key_figures_chart_data(ctx)
-        assert out[0]["value"] == 1.0
+    def test_skips_when_no_number(self) -> None:
+        # Insight Gate: 숫자 추출 실패 시 1.0 폴백 금지 (= 균등 도넛 안티패턴).
+        # 그 항목은 skip; 결과가 < 3 항목이면 빈 list 반환.
+        ctx = ContextAnalysis(key_figures=[
+            {"label": "긴장도", "value": "높음"},
+            {"label": "위험", "value": "심각"},
+        ])
+        assert build_key_figures_chart_data(ctx) == []
+
+    def test_skips_when_uniform_values(self) -> None:
+        # Insight Gate: 모든 값이 같으면 도넛 미생성 (균등 슬라이스 = 의미 없음).
+        ctx = ContextAnalysis(key_figures=[
+            {"label": "A", "value": "100"},
+            {"label": "B", "value": "100"},
+            {"label": "C", "value": "100"},
+        ])
+        assert build_key_figures_chart_data(ctx) == []
 
 
 # ----------------------------------------------------------------------
@@ -200,24 +216,45 @@ class TestNetworkChartData:
 
 
 class TestStackedChartData:
-    def test_builds_segments_per_scenario(self) -> None:
+    def test_builds_segments_with_varied_magnitudes(self) -> None:
+        # Insight Gate (PR1'): segment value 는 _impact_magnitude() 로 추출.
+        # variance>0 + ≥4 segment 일 때만 차트 생성.
         sa = ScenarioAnalysis(scenarios=[
             {
                 "name": "S1",
                 "impact_by_player": [
-                    {"player": "A", "impact": "긍정"},
-                    {"player": "B", "impact": "부정"},
+                    {"player": "A", "impact": "극심한 타격"},
+                    {"player": "B", "impact": "낮은 영향"},
                 ],
             },
             {
                 "name": "S2",
-                "impact_by_player": [{"player": "A", "impact": "중립"}],
+                "impact_by_player": [
+                    {"player": "A", "impact": "중간 영향"},
+                    {"player": "B", "impact": "높은 충격"},
+                ],
             },
         ])
         out = build_stacked_chart_data(sa)
         assert out is not None
         assert len(out["scenarios"]) == 2
-        assert len(out["scenarios"][0]["segments"]) == 2
+        # 모든 segment 의 value 가 정량 magnitude (0~1) 에서 추출됨
+        all_vals = [s["value"] for sc in out["scenarios"] for s in sc["segments"]]
+        assert max(all_vals) - min(all_vals) > 0  # variance>0
+
+    def test_returns_none_when_uniform_magnitudes(self) -> None:
+        # Insight Gate: 모든 segment 가 동일 magnitude → 균등 누적 막대 = 의미 없음.
+        sa = ScenarioAnalysis(scenarios=[
+            {"name": "S1", "impact_by_player": [
+                {"player": "A", "impact": "중간"},
+                {"player": "B", "impact": "중간"},
+            ]},
+            {"name": "S2", "impact_by_player": [
+                {"player": "A", "impact": "중간"},
+                {"player": "B", "impact": "중간"},
+            ]},
+        ])
+        assert build_stacked_chart_data(sa) is None
 
     def test_returns_none_when_no_impacts(self) -> None:
         sa = ScenarioAnalysis(scenarios=[{"name": "S1"}])
@@ -231,7 +268,8 @@ class TestStackedChartData:
 
 class TestChartPayload:
     def test_omits_empty_chart_types(self) -> None:
-        # Only context + scenarios → only those keys present.
+        # PR1' Insight Gate: key_figures 는 ≥3 항목 + variance 있을 때만 생성.
+        # 1개만 주면 key_figures 도 omit. scenarios 는 1개만 있어도 OK.
         payload = build_chart_payload(
             context=ContextAnalysis(
                 event_name="x",
@@ -246,17 +284,22 @@ class TestChartPayload:
             judgment=None,
         )
         assert "scenarios" in payload
-        assert "key_figures" in payload
+        assert "key_figures" not in payload  # Insight Gate: <3 항목이라 skip
         assert "severity_chain" not in payload
         assert "confidence" not in payload
         assert "network" not in payload
         assert "bubble" not in payload
 
     def test_full_payload_with_all_data(self) -> None:
+        # PR1' Insight Gate 충족: ≥3 varied key_figures, ≥4 varied stacked segments.
         payload = build_chart_payload(
             context=ContextAnalysis(
                 event_name="x",
-                key_figures=[{"label": "유가", "value": "108"}],
+                key_figures=[
+                    {"label": "유가", "value": "108"},
+                    {"label": "환율", "value": "1420"},
+                    {"label": "수입", "value": "320"},
+                ],
                 timeline=[
                     {"date": "1", "event": "A"},
                     {"date": "2", "event": "B"},
@@ -277,7 +320,17 @@ class TestChartPayload:
             scenarios=ScenarioAnalysis(scenarios=[
                 {
                     "name": "S1", "tag": "최선", "probability": "30%",
-                    "impact_by_player": [{"player": "P1", "impact": "긍정"}],
+                    "impact_by_player": [
+                        {"player": "P1", "impact": "극심한 타격"},
+                        {"player": "P2", "impact": "낮은 영향"},
+                    ],
+                },
+                {
+                    "name": "S2", "tag": "악화", "probability": "40%",
+                    "impact_by_player": [
+                        {"player": "P1", "impact": "높은 충격"},
+                        {"player": "P2", "impact": "중간"},
+                    ],
                 },
             ]),
             judgment=JudgmentVerdict(

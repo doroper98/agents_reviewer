@@ -763,3 +763,63 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 .block-risk-matrix-impact-medium { border-left: 3px solid var(--orange); }
 .block-risk-matrix-impact-low { border-left: 3px solid var(--gold); }
 .block-risk-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* ============================================================ */
+/* === Mobile readability (PR1', 2026-05-01)                   === */
+/* === scenario_grid 등은 charts.css 가 처리. 여기는 timeline 과 === */
+/* === evidence/risk_matrix 의 좁은 폭 cram 을 해소.           === */
+/* ============================================================ */
+
+@media (max-width: 540px) {
+  /* timeline: flex 좌우 → 세로 스택. min-width:110px 의 날짜 칸 해제. */
+  .block-timeline-item { flex-direction: column; gap: 2px; padding: 10px 0; align-items: stretch; }
+  .block-timeline-date { min-width: 0; white-space: normal; font-size: 10px; }
+  .block-timeline-event { font-size: 11px; }
+  .block-timeline-impact { margin-left: 0; font-size: 11px; }
+
+  /* table 폰트 10px → 11px (모바일 가독성) */
+  .block-evidence-table-grid,
+  .block-matrix-grid,
+  .block-risk-matrix-grid,
+  .block-decision-matrix-grid { font-size: 11px; }
+
+  /* evidence_table / risk_matrix: thead 숨기고 row → 카드, td → 라벨된 행 */
+  .block-evidence-table-grid thead,
+  .block-risk-matrix-grid thead { display: none; }
+
+  .block-evidence-table-grid,
+  .block-evidence-table-grid tbody,
+  .block-risk-matrix-grid,
+  .block-risk-matrix-grid tbody { display: block; }
+
+  .block-evidence-table-grid tr,
+  .block-risk-matrix-grid tr {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .block-evidence-table-grid td,
+  .block-risk-matrix-grid td {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  /* td[data-label] 가 있으면 라벨 표시 (template 갱신 필요) */
+  .block-evidence-table-grid td[data-label]::before,
+  .block-risk-matrix-grid td[data-label]::before {
+    content: attr(data-label) ":  ";
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  /* matrix 류는 가로 스크롤 유지 (이게 더 읽힘) */
+  .block-matrix, .block-decision-matrix { -webkit-overflow-scrolling: touch; }
+}
