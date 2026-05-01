@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.4.3
+last_synced_with: v3.4.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:

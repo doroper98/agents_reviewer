@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v3.4.3
+last_synced_with: v3.4.7
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
@@ -15,7 +15,7 @@ last_review: 2026-05-01
 텔레그램 메시지로 사건 분석을 지시하면, 모드별 (fast/standard/deep) AI 에이전트가 분석한 뒤 d3 기반 인터랙티브 차트가 들어간 HTML 보고서를 만들어 Cloudflare Pages 에 배포하는 시스템.
 
 ## Status
-- Version: v3.4.3 (SSOT: `src/orchestrator.py:VERSION`) — **핫픽스**: `FullAnalysisResult.report_theme` 필드 추가. v3.4.0 에서 block builder 가 읽으려던 필드가 모델에 없어 보고서 생성 단계에서 실패하던 회귀 수정.
+- Version: v3.4.7 (SSOT: `src/orchestrator.py:VERSION`) — **AMC + Narrative DSL 4-PR 시리즈 완료**. 사용자 진단 6가지 보고서 품질 문제 처리 (PR1' 표면 4개 + PR2 시나리오 데이터 + PR3 단조로움 구조적 처방 + PR4 12 archetype 전체 적용 + required_inputs 검증).
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
 - Tier 3 docs: [WORKFLOWS](WORKFLOWS.md) · [DEVLOG](DEVLOG.md) · [CHANGELOG](CHANGELOG.md)
@@ -39,6 +39,10 @@ python -m src.main
 
 ## Recent Changes
 최신 5건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+- **v3.4.7** AMC 전체 archetype 적용 + required_inputs 검증 (PR4) — PR3 의 5개 archetype contract() 를 12개 전체로 확장. `_check_required_inputs()` 신설로 `FullAnalysisResult.<field>` 누락 시 WARNING + 보고서 상단에 ⚠ 가시화. parametrize 로 11개 strict archetype 자가 정합성 검증. **pytest 202 passed, 4 skipped**.
+- **v3.4.6** AMC + Narrative DSL (PR3) — 단조로움의 *구조적* 처방. `NarrativeStage` Literal 5단계 (`fact / mechanism / divergence / decision / trigger`) + `ReportSectionPlan.narrative_stage`. `AnalysisMethodContract` Pydantic 모델 (mandatory_stages, forbidden_blocks, rationale). 5개 archetype 에 contract() 구현. 섹션 헤더 stage 배지 + 좌측 컬러 액센트로 시각 차별화.
+- **v3.4.5** 시나리오 데이터 강화 (PR2) — `ScenarioAnalysis.scenarios[*]` 에 `confidence` (0~1 또는 0~100) + `driver_signals` (선행 지표 list) 필드 도입. `visual_builder.build_scenario_table` 정규화. `scenario_table.html` 카드 헤더에 신뢰도 배지 (색상이 신뢰도 따라 변화) + "선행 신호" 칩 list. backward-compat (loose dict).
+- **v3.4.4** 보고서 품질 핫픽스 (PR1') — 4개 표면 문제 처리: ① `charts.js` TOKENS 하드코딩 → `getComputedStyle` (테마 동기), ② `visual_builder` Insight Gate (variance=0/value=1 차단, `_impact_magnitude()` 텍스트 키워드 추출), ③ `_payload_claim_card / evidence_table / qna` None 반환 (placeholder 회귀 차단), ④ `@media (max-width:540px)` 추가 (timeline 세로 스택, 테이블 카드 스택).
 - **v3.4.3** 핫픽스 — `FullAnalysisResult.report_theme: str = ""` 필드 추가. v3.4.0 의 `_payload_map()` 이 `result.report_theme` 으로 light/burgundy 분기를 시도했지만 Pydantic 모델에 필드가 없어 `AttributeError` 로 보고서 생성 실패 → 분석 자체가 실패 판정. 한 줄 패치.
 - **v3.4.2** `/stop` `/stopall` 명령 추가 — 진행 중 분석을 텔레그램에서 직접 중단. `/stop` 은 현재 1건만, `/stopall` 은 현재 + 대기열 전체 비움. asyncio.Task.cancel() 기반으로 LLM 호출/서브프로세스까지 시그널 전파. 인가 체크는 `/analyze` 와 동일.
 - **v3.4.1** `/status` build info — 봇 프로세스 시작 시점에 git branch / short commit / commit date / dirty 여부를 한 번 캡처해 (`src/orchestrator.py:BUILD_INFO`) 시작 로그와 텔레그램 `/status` 응답에 노출. pull 만 하고 재기동을 안 한 경우에도 BUILD_INFO 는 *실행 중인 코드의* 커밋을 가리키므로 운영자가 버전 미스매치를 즉시 인지할 수 있다.
