@@ -180,18 +180,73 @@ def build_flow_chain_svg(chain_reaction: ChainReactionAnalysis | None) -> str:
 
 
 def build_scenario_table(scenarios: ScenarioAnalysis | None) -> list[dict]:
-    """시나리오 카드 데이터를 dict 리스트로. 템플릿이 표로 렌더."""
+    """시나리오 카드 데이터를 dict 리스트로. 템플릿이 표로 렌더.
+
+    PR2 (v3.4.5): confidence + driver_signals + trigger + impact_summary 통과.
+    LLM 출력에 해당 필드 없으면 None/빈 list (템플릿이 조건부 렌더).
+    """
     if not scenarios or not scenarios.scenarios:
         return []
     out: list[dict] = []
     for sc in scenarios.scenarios[:5]:
+        # impact_by_player → 카드용 한 줄 요약 (행위자: 강도 형식, 상위 3개)
+        impacts = sc.get("impact_by_player") or []
+        impact_summary = " · ".join(
+            f"{(i.get('player') or '')}: {(i.get('impact') or '')[:14]}"
+            for i in impacts[:3]
+            if i.get("player")
+        )
+        # driver_signals 정규화 — 문자열 list 또는 dict list 모두 허용
+        raw_signals = sc.get("driver_signals") or sc.get("trigger_signals") or []
+        signals: list[str] = []
+        for s in (raw_signals if isinstance(raw_signals, list) else [])[:4]:
+            if isinstance(s, str) and s.strip():
+                signals.append(s.strip()[:40])
+            elif isinstance(s, dict):
+                txt = (s.get("signal") or s.get("name") or s.get("description") or "").strip()
+                if txt:
+                    signals.append(txt[:40])
+        # confidence 정규화 — float (0~1 또는 0~100) 또는 dict({raw,label})
+        conf_raw = sc.get("confidence")
+        confidence: dict | None = None
+        if isinstance(conf_raw, (int, float)):
+            v = float(conf_raw)
+            v01 = v / 100.0 if v > 1.0001 else v
+            confidence = {
+                "raw": round(v01 * 100),
+                "label": _confidence_label(v01),
+            }
+        elif isinstance(conf_raw, dict):
+            v = conf_raw.get("raw") or conf_raw.get("value") or conf_raw.get("score")
+            if isinstance(v, (int, float)):
+                vf = float(v)
+                v01 = vf / 100.0 if vf > 1.0001 else vf
+                confidence = {
+                    "raw": round(v01 * 100),
+                    "label": conf_raw.get("label") or _confidence_label(v01),
+                }
         out.append({
             "name": (sc.get("name") or "")[:60],
             "tag": (sc.get("tag") or "")[:20],
             "probability": (sc.get("probability") or "")[:20],
             "description": (sc.get("description") or "")[:200],
+            "trigger": (sc.get("trigger") or "")[:140],
+            "impact": impact_summary[:200],
+            "confidence": confidence,        # None | {raw:int(0-100), label:str}
+            "driver_signals": signals,       # list[str], 최대 4개
         })
     return out
+
+
+def _confidence_label(v01: float) -> str:
+    """0~1 confidence 값을 한국어 라벨로."""
+    if v01 >= 0.75:
+        return "높음"
+    if v01 >= 0.5:
+        return "중간"
+    if v01 >= 0.25:
+        return "낮음"
+    return "매우 낮음"
 
 
 def build_key_metrics(context: ContextAnalysis | None) -> list[dict]:

@@ -22,6 +22,37 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
+### v3.4.5 — Scenario data enrichment (PR2)
+
+PR1' 후속. 사용자 진단 #2 (시나리오 시인성)의 *완성판* — 확률 bar 외에 **신뢰도** 와 **선행 신호** 를 시각화.
+
+#### Added
+- **`ScenarioAnalysis.scenarios[*].confidence`** (0.0~1.0 또는 0~100) — 이 시나리오 판단의 신뢰도. `scenario_architect` SYSTEM_PROMPT 가 LLM 에 요청. `visual_builder.build_scenario_table` 이 dict (`{raw, label}`) 로 정규화 (raw는 0~100 정수, label은 "높음/중간/낮음/매우 낮음").
+- **`ScenarioAnalysis.scenarios[*].driver_signals`** (list[str] 또는 list[dict]) — 이 시나리오로의 분기를 *현재 관측 가능한* 형태로 식별하는 선행 지표 (최대 4개). visual_builder 가 dict/string 양쪽 입력 받아 정규화.
+- **scenario_table.html 렌더 보강**:
+  - 카드 헤더에 **신뢰도 배지** (`scenario-card-confidence`) — 색상이 신뢰도에 따라 변화 (높음=녹색, 중간=골드, 낮음=주황, 매우낮음=빨강).
+  - **"선행 신호" 섹션** (`scenario-card-signals`) — 칩 형태 list, 각 칩 앞에 ► 마커.
+- **scenario_architect prompt** 가 impact_by_player 의 impact 텍스트에 정량 강도 단어("극심한 타격", "높은 충격", "중간 영향", "낮은 파급") 포함을 권장. PR1'의 `_impact_magnitude` 가 추출하여 stacked chart 의 segment 가중치로 사용.
+
+#### Backward compatibility
+- 모든 신규 필드는 *optional*. `ScenarioAnalysis.scenarios` 는 여전히 `list[dict]` (loose). LLM 출력에 confidence/driver_signals 없으면 `confidence=None`, `driver_signals=[]` → 템플릿이 조건부 렌더 (`{% if sc.confidence %}` / `{% if sc.driver_signals %}`).
+- 기존 시나리오 데이터(probability/description/impact_by_player만 있음)는 그대로 동작.
+
+#### Tests
+- `TestScenarioTable` 클래스 신설 — 6개 테스트:
+  - `test_passes_confidence_as_float` (0~1 입력)
+  - `test_passes_confidence_as_percent` (0~100 입력)
+  - `test_omits_confidence_when_missing`
+  - `test_extracts_driver_signals_from_string_list`
+  - `test_extracts_driver_signals_from_dict_list`
+  - `test_summarizes_impact_by_player`
+- 결과: `pytest src/tests/` **156 passed** (PR1' 150 + PR2 6).
+
+#### Roadmap
+- **PR3** (별도 세션): AMC (Analysis Method Contract) + Narrative DSL — 단조로움의 *구조적* 처방.
+
+---
+
 ### v3.4.4 — Quality fixes (PR1')
 
 샘플 보고서(`analysis_20260501_165647`)에서 관찰된 6가지 품질 문제 중 v3.4.3 이후에도 *여전히 미해결인 4개*만 처리. 시나리오 모델 강화(PR2)와 AMC + Narrative DSL(PR3)은 후속.

@@ -28,6 +28,7 @@ from src.visual_builder import (
     build_key_figures_chart_data,
     build_network_chart_data,
     build_scenario_chart_data,
+    build_scenario_table,
     build_severity_chart_data,
     build_stacked_chart_data,
     build_visuals,
@@ -37,6 +38,61 @@ from src.visual_builder import (
 # ----------------------------------------------------------------------
 # 1. Scenario chart data
 # ----------------------------------------------------------------------
+
+
+class TestScenarioTable:
+    """PR2 (v3.4.5) — confidence + driver_signals 통과."""
+
+    def test_passes_confidence_as_float(self) -> None:
+        sa = ScenarioAnalysis(scenarios=[
+            {"name": "S1", "probability": "30%", "confidence": 0.72},
+        ])
+        out = build_scenario_table(sa)
+        assert out[0]["confidence"] == {"raw": 72, "label": "중간"}
+
+    def test_passes_confidence_as_percent(self) -> None:
+        # > 1 이면 0~100 으로 간주
+        sa = ScenarioAnalysis(scenarios=[
+            {"name": "S1", "confidence": 85},
+        ])
+        out = build_scenario_table(sa)
+        assert out[0]["confidence"]["raw"] == 85
+        assert out[0]["confidence"]["label"] == "높음"
+
+    def test_omits_confidence_when_missing(self) -> None:
+        sa = ScenarioAnalysis(scenarios=[{"name": "S1"}])
+        out = build_scenario_table(sa)
+        assert out[0]["confidence"] is None
+
+    def test_extracts_driver_signals_from_string_list(self) -> None:
+        sa = ScenarioAnalysis(scenarios=[
+            {"name": "S1", "driver_signals": ["유가 5% 추가 상승", "이란 외무 발언"]},
+        ])
+        out = build_scenario_table(sa)
+        assert out[0]["driver_signals"] == ["유가 5% 추가 상승", "이란 외무 발언"]
+
+    def test_extracts_driver_signals_from_dict_list(self) -> None:
+        sa = ScenarioAnalysis(scenarios=[
+            {"name": "S1", "driver_signals": [
+                {"signal": "유가 급등"},
+                {"name": "외환 개입"},
+            ]},
+        ])
+        out = build_scenario_table(sa)
+        assert "유가 급등" in out[0]["driver_signals"]
+        assert "외환 개입" in out[0]["driver_signals"]
+
+    def test_summarizes_impact_by_player(self) -> None:
+        sa = ScenarioAnalysis(scenarios=[{
+            "name": "S1",
+            "impact_by_player": [
+                {"player": "중국", "impact": "긍정적"},
+                {"player": "미국", "impact": "부정적"},
+            ],
+        }])
+        out = build_scenario_table(sa)
+        assert "중국" in out[0]["impact"]
+        assert "미국" in out[0]["impact"]
 
 
 class TestScenarioChartData:
