@@ -1,0 +1,162 @@
+---
+tier: 2
+last_synced_with: v3.4.7
+ssot_for:
+  - "Light Mono / Burgundy Mono 보고서 톤 팔레트"
+  - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
+  - "MapLibre + d3-geo + d3-charts 시각화 스택 결정"
+depends_on:
+  - "samples/chart_map_mono_compare.html"
+  - "docs/REPORT_STYLE_GUIDE.md"
+last_review: 2026-05-01
+---
+
+# Mono Theme Guide — Light Mono · Burgundy Mono
+
+> 보고서 톤 두 종(Light Mono · Burgundy Mono)의 색 팔레트와, 색 대신 패턴/명암으로 데이터 카테고리를 구분하는 모노톤 시각화 시스템을 정의한다.
+> 두 톤은 본 프로젝트 보고서의 **표준 메인 테마**다. 멀티 컬러(red·orange·gold·green·blue) 팔레트는 더 이상 사용하지 않는다.
+> 살아있는 참조 구현은 [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html) — 같은 시나리오를 Light Mono · Burgundy Mono 두 컬럼으로 동시 렌더해서 비교한다.
+
+---
+
+## 1. 결정 배경
+
+기존 보고서 멀티컬러(red·orange·gold·green·blue) 팔레트는 정보 밀도가 높을 때 시각 피로를 유발하고, 모노 인쇄·캡처·임베딩 환경에서 카테고리 구분이 사라지는 약점이 있었다. 멀티 컬러 팔레트는 **폐기**하고, 다음 두 모노톤을 보고서 메인 테마로 채택한다.
+
+- **Light Mono** — 크림 배경 + 검정 텍스트 + 버건디 액센트. IBKR 풍 편집 톤.
+- **Burgundy Mono** — 와인 배경 + 파치먼트 텍스트 + 앰버 액센트. @abhinavbwj 카드 풍.
+
+색이 한 가지 지배 hue 로 수렴하므로, **카테고리 구분은 hue 차이가 아니라 패턴(45° 사선 밀도)·도트·액센트 단색·명암 단계**로 구현한다.
+
+## 2. 시각화 스택
+
+| 레이어 | 라이브러리 | 비고 |
+|---|---|---|
+| 베이스맵 | **MapLibre GL JS 4.x** | 벡터 타일 렌더, 인라인 style spec 으로 레이어 색 100% 제어 |
+| 베이스맵 타일 | **OpenFreeMap** (`tiles.openfreemap.org/planet`) | 무료, API 키 불필요, MIT, OpenMapTiles 스키마 |
+| 지리 오버레이 | **d3 + d3-geo** | 위·경도→픽셀 투영 (`map.project`), 호·반경원·마커 SVG 그리기 |
+| 차트 | **d3 v7** (line/area/bar/force) | 모두 SVG. Canvas 사용 금지 |
+| 폰트 | Noto Serif KR / Noto Sans KR | 베이스맵 라벨은 `Noto Sans Regular` 글리프 사용 |
+
+**Leaflet + 비트맵 타일을 쓰지 않는 이유**: 비트맵은 모노 톤에 강제 리스타일이 어렵고, 패턴 오버레이와 충돌하며, 캡처·인쇄 시 깨진다.
+
+## 3. 색 팔레트
+
+### 3.1 Light Mono
+
+```
+용도            토큰         HEX          비고
+배경           --bg          #efe8d9      따뜻한 크림
+카드 면        --card        #f8f2e4
+경계 (강)      --border      #b3a586
+경계 (약)      --borderLight #d4c8a8
+텍스트 본문    --text        #1a1a1a      거의 검정
+텍스트 보조    --muted       #5a5a5a
+지도 육지      land          #efe8d9
+지도 수면      water         #dccea8
+지도 국경      boundary      #1a1a1a
+액센트 1 (편집 강조)  --accent  #9a1e3c   딥버건디
+액센트 2 (긍정)       --up      #2d6a3e   포레스트 그린
+액센트 3 (위험)       --down    #9a1e3c   동일 버건디 재사용
+```
+
+### 3.2 Burgundy Mono
+
+```
+용도            토큰         HEX          비고
+배경           --bg          #3D1820      식별 가능한 딥와인
+카드 면        --card        #4A222E
+경계 (강)      --border      #6E3340
+경계 (약)      --borderLight #4A222E
+텍스트 본문    --text        #EFE5D1      파치먼트 크림
+텍스트 보조    --muted       #A88E7A      더스티 모브
+지도 육지      land          #3D1820
+지도 수면      water         #2A0E16
+지도 국경      boundary      #EFE5D1
+액센트 1 (편집 강조)  --accent  #D4A858   앰버 골드
+액센트 2 (긍정)       --up      #A8B582   세이지 올리브
+액센트 3 (위험)       --down    #C9837A   더스티 로즈
+```
+
+### 3.3 액센트 의미 일관성
+
+| 역할 | 적용 위치 |
+|---|---|
+| `--accent` | 편집 강조 (italic 단어), callout 좌측 보더, 키 카테고리 단색 |
+| `--up` | 상승·기회·성공 지표 (작은 변동 라벨만) |
+| `--down` | 하락·위험·경보 (작은 변동 라벨, 이벤트 vertical, 위험권 보더) |
+
+큰 숫자(metric value)는 `--text` 로 강제 — 작은 변동 라벨에만 색을 쓴다.
+
+## 4. 패턴 시스템
+
+### 4.1 정의
+
+총 4종 패턴 + 액센트 솔리드. 모든 사선은 **45°** 한 방향만, 도트는 미세 원형. **opposite-diagonal / cross-hatch / dashed-stroke 패턴 금지** — §6 참조.
+
+| ID | 모양 | 타일 | stroke | 색 |
+|---|---|---|---|---|
+| `hatch-tight` | 45° 솔리드 사선 | 2.4 × 2.4 | 0.85 | `--text` |
+| `hatch-wide` | 45° 솔리드 사선 | 3.8 × 3.8 | 0.7 | `--text` |
+| `accent-hatch` | 45° 솔리드 사선 | 2.4 × 2.4 | 0.85 | `--accent` |
+| `dots` | 미세 원 | 2.4 × 2.4 | r=0.22 | `--text` |
+| (액센트 솔리드) | 단색 채움 | — | — | `--accent` |
+
+SVG 정의 예시는 `samples/chart_map_mono_compare.html` 의 `definePatterns()` 참조.
+
+### 4.2 카테고리·심각도 적용 규칙
+
+| 적용 대상 | 카테고리/단계 | 패턴 |
+|---|---|---|
+| 위험도 (3단계) | high | `hatch-tight` |
+|  | medium | `hatch-wide` |
+|  | low | `dots` |
+| 막대 카테고리 (5종) | 핵심 항목 | 액센트 솔리드 |
+|  | 기타 항목 1~4 | `hatch-tight` / `accent-hatch` / `hatch-wide` / `dots` (인덱스 순환) |
+| 면적 차트 fill | 단일 시리즈 | `hatch-wide` 사선 해칭 |
+| 지도 위험 반경 | 한 단계 | `hatch-wide` 채움 + 보더 점선 |
+
+### 4.3 라인·연결선 스타일
+
+색 대신 dash array 로 관계 종류 구분 (방향성 역시 같은 색계 안에서 처리).
+
+| 종류 | dash | stroke-width |
+|---|---|---|
+| 동맹 / 협력 | 실선 | 1.4 |
+| 충돌 / 봉쇄 | `5,3` | 2.0 |
+| 영향 / 충격 | `2,3` | 1.4 |
+| 전략 / 보조 | `1,3` | 1.4 |
+
+## 5. 시각화별 처리 규칙
+
+| Viz | 처리 |
+|---|---|
+| Geographic Map | 주 경로 = 실선, 보조 경로 = 점선. 위험권 = 사선 해칭 채움 + 점선 보더. 마커 라벨은 SVG 오버레이로 직접 그리고 베이스맵 텍스트 레이어는 사용하지 않는다 (성능). |
+| Force Network | 관계 종류는 dash array (동맹=실선, 충돌=대시, 영향=점선, 전략=세점선). 위험도는 노드 하단 패턴 바 밀도 (high=tight, med=wide, low=dots). |
+| Line + Events | 면 채움은 `hatch-wide` 사선 해칭. 이벤트 vertical 은 `--down` 점선. 끝점 dot + 값 라벨은 `--accent`. |
+| Bar Categorical | 핵심 항목 = 액센트 솔리드. 기타 항목 = §4.2 패턴 순환 (`hatch-tight`, `accent-hatch`, `hatch-wide`, `dots`). |
+
+## 6. Anti-patterns (절대 금지)
+
+검증 과정에서 시각적으로 깨졌던 조합. 새 패턴/시각화 추가 시에도 위반 금지.
+
+1. **Cross-hatch (가로+세로 교차 패턴)** — 격자 문양이 차트의 그리드 라인과 충돌하고 데이터 카테고리 구분이 시각적으로 사라짐.
+2. **Opposite-direction diagonals (45° + −45°)** — 인접 막대 사이에서 시선이 두 방향을 합쳐서 'X' 로 인지함. 모든 사선은 한 방향(45°)만.
+3. **Dashed strokes inside rotated patterns** — 회전 후 인접 타일의 dash 가 격자처럼 정렬되어 '+' 모양으로 보임. dash 는 line element 에는 OK, pattern 내부에는 금지.
+4. **너무 큰 도트** — r ≥ 0.4 는 점박이 텍스처가 되어 데이터 표면에 노이즈 유발. r=0.22 ~ 0.25 micro-dot 만 사용.
+5. **인접 카테고리에 같은 hue 의 다른 명암** — 모노 한계로 카테고리간 차이가 거의 안 보임. 패턴 차이가 명암 차이보다 우선.
+6. **베이스맵 비트맵 타일** — 모노 리스타일 불가, 패턴 오버레이와 색 충돌. 벡터 타일 + 인라인 style 만.
+7. **큰 숫자(metric value)에 액센트 색 적용** — IBKR 레퍼런스 일관성. 큰 숫자는 항상 `--text`, 작은 변동 라벨에만 `--up`/`--down`.
+
+## 7. 참조 자료
+
+- 살아있는 비교 샘플: [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html)
+- 보고서 전반 톤 가이드 (Burgundy 베이스): [docs/REPORT_STYLE_GUIDE.md](REPORT_STYLE_GUIDE.md)
+- @abhinavbwj 의 "the distinction" / "computational design" 카드 톤 (Burgundy Mono 베이스 레퍼런스)
+- IBKR Korean Stocks 리포트 (Light Mono 베이스 레퍼런스)
+
+## 8. Change Propagation
+
+- 팔레트 hex 변경 → `samples/chart_map_mono_compare.html` 의 `THEMES` 객체 + 본 문서 §3 동시 갱신
+- 패턴 정의 변경 → `definePatterns()` + 본 문서 §4.1 동시 갱신
+- Anti-pattern 추가 → 본 문서 §6 + 샘플 파일 검증 후 등재

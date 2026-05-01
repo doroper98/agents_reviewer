@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart × Map · Light Mono vs Burgundy Mono</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #1a1a1a; color: #fff; font-size: 13px; line-height: 1.6; }
+
+.compare-bar { position: sticky; top: 0; z-index: 200; display: grid; grid-template-columns: repeat(2, 1fr); background: #0d0d0d; border-bottom: 1px solid #2a2a2a; }
+.compare-bar > div { padding: 10px 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: #f5f5f5; border-right: 1px solid #2a2a2a; font-family: 'Noto Serif KR', serif; }
+.compare-bar > div:last-child { border-right: none; }
+.compare-bar > div small { display: block; font-family: 'Noto Sans KR', sans-serif; font-size: 9px; letter-spacing: 1px; color: #888; font-weight: 400; margin-top: 2px; text-transform: none; }
+
+.compare-grid { display: grid; grid-template-columns: repeat(2, 1fr); min-height: calc(100vh - 41px); }
+.col { overflow: hidden; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; }
+.col:last-child { border-right: none; }
+.col-inner { flex: 1; overflow-y: auto; padding: 14px; }
+.col-inner::-webkit-scrollbar { width: 6px; }
+.col-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.col-light { --bg: #efe8d9; --card: #f8f2e4; --text: #1a1a1a; --muted: #5a5a5a; --border: #b3a586; --borderLight: #d4c8a8; }
+.col-burgundy { --bg: #3D1820; --card: #4A222E; --text: #EFE5D1; --muted: #A88E7A; --border: #6E3340; --borderLight: #4A222E; }
+
+.col-inner { background: var(--bg); color: var(--text); }
+
+.viz { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+.viz-header { margin-bottom: 10px; }
+.viz-kicker { font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); font-style: italic; font-family: 'Noto Serif KR', serif; }
+.viz-title { font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 900; color: var(--text); margin-top: 2px; }
+.viz-desc { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.55; }
+
+.viz-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 9px; color: var(--muted); margin-top: 10px; align-items: center; }
+.viz-legend > span { display: inline-flex; align-items: center; gap: 5px; }
+.viz-legend i { display: inline-block; width: 18px; height: 8px; border-radius: 1px; }
+.viz-legend i.line { height: 0; border-top: 2px solid currentColor; border-radius: 0; }
+
+.map-wrap { position: relative; height: 280px; border-radius: 6px; overflow: hidden; border: 1px solid var(--borderLight); }
+.map-wrap .map { position: absolute; inset: 0; }
+.map-wrap .overlay { position: absolute; inset: 0; pointer-events: none; }
+.maplibregl-ctrl-attrib { font-size: 8px !important; background: rgba(0,0,0,0.3) !important; color: #ccc !important; }
+.maplibregl-ctrl-attrib a { color: #ccc !important; }
+
+svg.viz-svg { display: block; width: 100%; height: auto; }
+
+.chart-line .axis-x text, .chart-line .axis-y text, .chart-bar .axis-x text, .chart-bar .axis-y text { font-size: 9px; fill: var(--muted); font-family: 'Noto Sans KR', sans-serif; }
+.chart-line .grid line, .chart-bar .grid line { stroke: var(--border); stroke-width: 0.5; stroke-dasharray: 2,3; opacity: 0.55; }
+.chart-line .area-fill { opacity: 0.18; }
+.chart-line .end-label, .chart-bar .bar-label { font-size: 10px; font-weight: 700; fill: var(--text); font-family: 'Noto Sans KR', sans-serif; }
+.chart-line .event-line { stroke-dasharray: 3,3; stroke-width: 1; opacity: 0.65; }
+.chart-line .event-label { font-size: 8px; font-family: 'Noto Sans KR', sans-serif; }
+
+.network text.node-label { font-size: 10px; font-weight: 700; fill: var(--text); pointer-events: none; font-family: 'Noto Sans KR', sans-serif; }
+.network text.link-label { font-size: 7.5px; fill: var(--muted); pointer-events: none; font-family: 'Noto Sans KR', sans-serif; }
+
+.map-marker-label { font-size: 9px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; }
+.map-arc-label { font-size: 8px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; letter-spacing: 0.5px; }
+
+@media (max-width: 1100px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-bar { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="compare-bar">
+  <div>Light Mono<small>Cream + Pattern · Burgundy Accent</small></div>
+  <div>Burgundy Mono<small>Wine + Pattern · Amber Accent</small></div>
+</div>
+
+<div class="compare-grid">
+  <div class="col col-light" data-theme="light"><div class="col-inner" id="col-light"></div></div>
+  <div class="col col-burgundy" data-theme="burgundy"><div class="col-inner" id="col-burgundy"></div></div>
+</div>
+
+<script>
+// =============================================================================
+// THEME DEFINITIONS
+// =============================================================================
+const THEMES = {
+  light: {
+    name: 'Light Mono', mono: true,
+    bg:'#efe8d9', card:'#f8f2e4', text:'#1a1a1a', muted:'#5a5a5a', border:'#b3a586', borderLight:'#d4c8a8',
+    map: { land:'#efe8d9', water:'#dccea8', boundary:'#1a1a1a', label:'#1a1a1a', halo:'#efe8d9' },
+    accent:'#9a1e3c', up:'#2d6a3e', down:'#9a1e3c', neutral:'#1a1a1a',
+    series: ['#1a1a1a','#9a1e3c','#2d6a3e','#5a5a5a'],
+    seriesDash: [null, '5,3', '2,3', '1,3'],
+    risk: { high:'#1a1a1a', med:'#5a5a5a', low:'#9a8a6a', crisis:'#9a1e3c' },
+    link: { ally:'#1a1a1a', conflict:'#9a1e3c', impact:'#5a5a5a', strategic:'#9a8a6a' },
+    linkDash: { ally:null, conflict:'5,3', impact:'2,3', strategic:'1,3' },
+    arc: { primary:'#9a1e3c', secondary:'#1a1a1a' },
+    arcDash: { primary:null, secondary:'4,3' },
+    riskCircle: { color:'#1a1a1a', dash:'3,3', alpha:0.08 },
+    patternStroke:'#1a1a1a',
+  },
+  burgundy: {
+    name: 'Burgundy Mono', mono: true,
+    bg:'#3D1820', card:'#4A222E', text:'#EFE5D1', muted:'#A88E7A', border:'#6E3340', borderLight:'#4A222E',
+    map: { land:'#3D1820', water:'#2A0E16', boundary:'#EFE5D1', label:'#EFE5D1', halo:'#3D1820' },
+    accent:'#D4A858', up:'#A8B582', down:'#C9837A', neutral:'#EFE5D1',
+    series: ['#EFE5D1','#D4A858','#A8B582','#C9837A'],
+    seriesDash: [null, '5,3', '2,3', '1,3'],
+    risk: { high:'#D4A858', med:'#EFE5D1', low:'#A88E7A', crisis:'#D4A858' },
+    link: { ally:'#EFE5D1', conflict:'#D4A858', impact:'#A88E7A', strategic:'#A88E7A' },
+    linkDash: { ally:null, conflict:'5,3', impact:'2,3', strategic:'1,3' },
+    arc: { primary:'#D4A858', secondary:'#EFE5D1' },
+    arcDash: { primary:null, secondary:'4,3' },
+    riskCircle: { color:'#D4A858', dash:'3,3', alpha:0.10 },
+    patternStroke:'#EFE5D1',
+  },
+};
+
+// =============================================================================
+// DATA (shared across all themes)
+// =============================================================================
+const SCENARIO = {
+  title: '이란-호르무즈 위기 → 동북아 에너지 충격',
+  date: '2026-03-29',
+};
+
+const CITIES = [
+  { id:'tehran',     name:'테헤란',       lng:51.39, lat:35.69, role:'origin'  },
+  { id:'hormuz',     name:'호르무즈',     lng:56.50, lat:26.60, role:'crisis', radius_km:220 },
+  { id:'babelmandeb',name:'바브엘만데브', lng:43.40, lat:12.50, role:'crisis', radius_km:180 },
+  { id:'telaviv',    name:'텔아비브',     lng:34.78, lat:32.09, role:'ally'    },
+  { id:'riyadh',     name:'리야드',       lng:46.68, lat:24.71, role:'neutral' },
+  { id:'seoul',      name:'서울',         lng:126.98,lat:37.57, role:'impact'  },
+];
+const ARCS = [
+  { from:'hormuz',     to:'seoul',   kind:'primary',   label:'원유 70%' },
+  { from:'hormuz',     to:'telaviv', kind:'secondary', label:'' },
+  { from:'babelmandeb',to:'seoul',   kind:'secondary', label:'LNG' },
+];
+
+const NETWORK_NODES = [
+  { id:'crisis', label:'이중 봉쇄\n위기', risk:'crisis' },
+  { id:'us',     label:'미국',         risk:'high' },
+  { id:'israel', label:'이스라엘',     risk:'high' },
+  { id:'iran',   label:'이란',         risk:'high' },
+  { id:'houthi', label:'후티',         risk:'high' },
+  { id:'saudi',  label:'사우디',       risk:'med'  },
+  { id:'cn_ru',  label:'중·러',        risk:'med'  },
+  { id:'kr',     label:'한국',         risk:'high' },
+];
+const NETWORK_LINKS = [
+  { source:'us',     target:'crisis', kind:'conflict' },
+  { source:'israel', target:'crisis', kind:'conflict' },
+  { source:'iran',   target:'crisis', kind:'conflict' },
+  { source:'houthi', target:'crisis', kind:'conflict' },
+  { source:'us',     target:'israel', kind:'ally' },
+  { source:'iran',   target:'houthi', kind:'ally' },
+  { source:'crisis', target:'kr',     kind:'impact' },
+  { source:'crisis', target:'saudi',  kind:'impact' },
+  { source:'cn_ru',  target:'iran',   kind:'strategic' },
+];
+
+// Brent 30-day series
+const OIL = (() => {
+  const seed = [66,67,69,72,75,78,82,85,89,93,96,98,99,100,102,104,105,107,108,109,109,110,110,111,111,111,112,112,112,112];
+  return seed.map((v, i) => ({ day: i+1, value: v }));
+})();
+const OIL_EVENTS = [
+  { day: 1,  label:'핵시설 공습' },
+  { day: 8,  label:'호르무즈 봉쇄' },
+  { day: 17, label:'위안 통행료' },
+];
+
+const DEPENDENCY = [
+  { country:'한국', value:97, key:true  },
+  { country:'일본', value:91, key:false },
+  { country:'대만', value:88, key:false },
+  { country:'인도', value:83, key:false },
+  { country:'중국', value:73, key:false },
+];
+
+// =============================================================================
+// SVG PATTERN HELPERS
+// =============================================================================
+function definePatterns(svg, t, prefix) {
+  const defs = svg.append('defs');
+  const id = (n) => `${prefix}-${n}`;
+  // Only solid 45deg diagonals (different densities) + a tiny dot pattern.
+  // No dashed hatches (they tiled into a perceived '+' / grid effect) and
+  // no opposite-direction hatches.
+
+  // hatch-tight — dense solid 45deg
+  defs.append('pattern').attr('id', id('hatch-tight')).attr('patternUnits','userSpaceOnUse')
+    .attr('width', 2.4).attr('height', 2.4).attr('patternTransform','rotate(45)')
+    .append('line').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',2.4)
+    .attr('stroke', t.text).attr('stroke-width', 0.85);
+  // hatch-wide — medium-density solid 45deg
+  defs.append('pattern').attr('id', id('hatch-wide')).attr('patternUnits','userSpaceOnUse')
+    .attr('width', 3.8).attr('height', 3.8).attr('patternTransform','rotate(45)')
+    .append('line').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',3.8)
+    .attr('stroke', t.text).attr('stroke-width', 0.7);
+  // dots — micro-dot, very fine
+  defs.append('pattern').attr('id', id('dots')).attr('patternUnits','userSpaceOnUse')
+    .attr('width', 2.4).attr('height', 2.4)
+    .append('circle').attr('cx',1.2).attr('cy',1.2).attr('r',0.22).attr('fill', t.text);
+  // accent hatch — same density as hatch-tight, accent color, 45deg
+  defs.append('pattern').attr('id', id('accent-hatch')).attr('patternUnits','userSpaceOnUse')
+    .attr('width', 2.4).attr('height', 2.4).attr('patternTransform','rotate(45)')
+    .append('line').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',2.4)
+    .attr('stroke', t.accent).attr('stroke-width', 0.85);
+  return id;
+}
+
+// =============================================================================
+// VIZ 1 — GEOGRAPHIC MAP (MapLibre + custom mono style + D3 SVG overlay)
+// =============================================================================
+function buildMap(containerId, t, themeKey) {
+  // Custom MapLibre style: OpenFreeMap planet vector tiles, our color palette.
+  // Country text labels are intentionally omitted — fetching glyph PBFs for
+  // multi-script country names was the slowest part of map init. City/region
+  // labels are drawn on the SVG overlay instead, in our own theme font.
+  const style = {
+    version: 8,
+    sources: {
+      of: { type:'vector', url:'https://tiles.openfreemap.org/planet' }
+    },
+    layers: [
+      { id:'bg', type:'background', paint: { 'background-color': t.map.land } },
+      { id:'water', source:'of', 'source-layer':'water', type:'fill',
+        paint: { 'fill-color': t.map.water, 'fill-antialias': true } },
+      { id:'admin-l2', source:'of', 'source-layer':'boundary', type:'line',
+        filter: ['all', ['==', ['get','admin_level'], 2], ['!=', ['get','maritime'], 1]],
+        paint: { 'line-color': t.map.boundary, 'line-width': 0.7, 'line-opacity': 0.85 } },
+      { id:'admin-l4', source:'of', 'source-layer':'boundary', type:'line',
+        filter: ['all', ['==', ['get','admin_level'], 4]],
+        paint: { 'line-color': t.map.boundary, 'line-width': 0.3, 'line-opacity': 0.35 } },
+    ],
+  };
+
+  const containerEl = document.getElementById(containerId);
+  const map = new maplibregl.Map({
+    container: containerEl,
+    style,
+    center: [80, 26],
+    zoom: 2.5,
+    minZoom: 1.5, maxZoom: 3.5,
+    attributionControl: { compact: true, customAttribution:'© OpenFreeMap · OSM' },
+    interactive: true,
+  });
+  map.scrollZoom.disable();
+  map.on('error', (e) => console.warn('[map ' + themeKey + ']', e?.error?.message || e));
+
+  // SVG overlay for arcs, risk circles, markers
+  const overlayEl = containerEl.parentElement.querySelector('.overlay');
+  const svg = d3.select(overlayEl).append('svg')
+    .attr('width','100%').attr('height','100%')
+    .style('position','absolute').style('inset','0').style('display','block');
+
+  const idp = definePatterns(svg, t, `map-${themeKey}`);
+
+  const gArc = svg.append('g').attr('class','arcs');
+  const gRisk = svg.append('g').attr('class','risk');
+  const gMarker = svg.append('g').attr('class','markers');
+
+  function metersToPixels(m, lat) {
+    const z = map.getZoom();
+    return m / (40075016.686 * Math.cos(lat * Math.PI / 180) / Math.pow(2, z + 8));
+  }
+  function project(lng, lat) { const p = map.project([lng, lat]); return [p.x, p.y]; }
+
+  function curvedPath(p1, p2, bow) {
+    const mx = (p1[0]+p2[0])/2, my = (p1[1]+p2[1])/2;
+    const dx = p2[0]-p1[0], dy = p2[1]-p1[1];
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const nx = -dy/dist, ny = dx/dist;
+    const cx = mx + nx*bow, cy = my + ny*bow;
+    return `M${p1[0]},${p1[1]} Q${cx},${cy} ${p2[0]},${p2[1]}`;
+  }
+
+  function redraw() {
+    const cityById = Object.fromEntries(CITIES.map(c => [c.id, c]));
+
+    // arcs
+    const arcSel = gArc.selectAll('g.arc').data(ARCS).join(
+      enter => {
+        const g = enter.append('g').attr('class','arc');
+        g.append('path').attr('class','arc-path').attr('fill','none');
+        g.append('text').attr('class','arc-label map-arc-label');
+        return g;
+      }
+    );
+    arcSel.each(function(a) {
+      const f = cityById[a.from], to = cityById[a.to];
+      const p1 = project(f.lng, f.lat), p2 = project(to.lng, to.lat);
+      const pathStr = curvedPath(p1, p2, Math.min(80, Math.hypot(p2[0]-p1[0], p2[1]-p1[1]) * 0.25));
+      const g = d3.select(this);
+      const color = t.arc[a.kind] || t.arc.primary;
+      const dash  = t.arcDash[a.kind] || null;
+      g.select('path')
+        .attr('d', pathStr).attr('stroke', color)
+        .attr('stroke-width', a.kind === 'primary' ? 2.4 : 1.6)
+        .attr('stroke-dasharray', dash)
+        .attr('opacity', 0.92);
+      // arrow marker: small triangle at end
+      // (simple — we draw the triangle manually)
+      // label
+      if (a.label) {
+        const mx = (p1[0]+p2[0])/2, my = (p1[1]+p2[1])/2;
+        g.select('text')
+          .attr('x', mx).attr('y', my - 6)
+          .attr('text-anchor','middle')
+          .attr('fill', color)
+          .text(a.label);
+      } else {
+        g.select('text').text('');
+      }
+    });
+
+    // risk circles (around crisis points)
+    const riskCities = CITIES.filter(c => c.radius_km);
+    const riskSel = gRisk.selectAll('g.risk-c').data(riskCities, d => d.id).join(
+      enter => {
+        const g = enter.append('g').attr('class','risk-c');
+        g.append('circle').attr('class','risk-fill');
+        g.append('circle').attr('class','risk-stroke');
+        return g;
+      }
+    );
+    riskSel.each(function(c) {
+      const [x, y] = project(c.lng, c.lat);
+      const r = Math.max(20, metersToPixels(c.radius_km * 1000, c.lat));
+      const g = d3.select(this);
+      // mono → patterned fill; original → solid alpha fill
+      g.select('.risk-fill')
+        .attr('cx', x).attr('cy', y).attr('r', r)
+        .attr('fill', t.mono ? `url(#${idp('hatch-wide')})` : t.riskCircle.color)
+        .attr('fill-opacity', t.mono ? 0.55 : t.riskCircle.alpha);
+      g.select('.risk-stroke')
+        .attr('cx', x).attr('cy', y).attr('r', r)
+        .attr('fill','none')
+        .attr('stroke', t.riskCircle.color)
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', t.riskCircle.dash);
+    });
+
+    // markers
+    const mkSel = gMarker.selectAll('g.mk').data(CITIES, d => d.id).join(
+      enter => {
+        const g = enter.append('g').attr('class','mk');
+        g.append('circle').attr('class','mk-outer');
+        g.append('circle').attr('class','mk-inner');
+        g.append('text').attr('class','mk-label map-marker-label');
+        return g;
+      }
+    );
+    mkSel.each(function(c) {
+      const [x, y] = project(c.lng, c.lat);
+      const isCrisis = c.role === 'crisis';
+      const isImpact = c.role === 'impact';
+      const colorMap = {
+        crisis: t.risk.high, origin: t.risk.high, ally: t.neutral,
+        neutral: t.muted, impact: t.accent
+      };
+      const col = colorMap[c.role] || t.text;
+      const g = d3.select(this);
+      g.select('.mk-outer')
+        .attr('cx', x).attr('cy', y).attr('r', isCrisis ? 9 : 6)
+        .attr('fill', t.card).attr('stroke', col).attr('stroke-width', 2);
+      g.select('.mk-inner')
+        .attr('cx', x).attr('cy', y).attr('r', isCrisis ? 4 : 2.5)
+        .attr('fill', col);
+      g.select('.mk-label')
+        .attr('x', x).attr('y', y - (isCrisis ? 14 : 11))
+        .attr('text-anchor','middle')
+        .attr('fill', t.text)
+        .attr('stroke', t.card).attr('stroke-width', 3).attr('paint-order','stroke')
+        .text(c.name);
+    });
+  }
+
+  // Initial center/zoom is already chosen to frame all cities. Skip
+  // fitBounds animation entirely — it triggered an extra tile-fetch
+  // wave when the camera moved post-load.
+  map.on('load', redraw);
+  map.on('move', redraw);
+  map.on('zoom', redraw);
+  map.on('resize', redraw);
+  setTimeout(redraw, 600);
+
+  return map;
+}
+
+// =============================================================================
+// VIZ 2 — FORCE-DIRECTED NETWORK (D3)
+// =============================================================================
+function buildNetwork(svgEl, t, themeKey) {
+  const W = 360, H = 280;
+  const svg = d3.select(svgEl)
+    .attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('class','viz-svg network')
+    .attr('preserveAspectRatio','xMidYMid meet');
+  svg.selectAll('*').remove();
+
+  const idp = definePatterns(svg, t, `net-${themeKey}`);
+
+  // Arrow markers per link kind
+  Object.keys(t.link).forEach(kind => {
+    svg.select('defs').append('marker')
+      .attr('id', `arr-${themeKey}-${kind}`)
+      .attr('viewBox','0 0 8 8').attr('refX', 7).attr('refY', 4)
+      .attr('markerWidth', 6).attr('markerHeight', 6).attr('orient','auto')
+      .append('path').attr('d','M0,0 L8,4 L0,8 Z').attr('fill', t.link[kind]);
+  });
+
+  const nodes = NETWORK_NODES.map(d => Object.assign({}, d));
+  const links = NETWORK_LINKS.map(d => Object.assign({}, d));
+
+  // Pin crisis to center
+  nodes.find(n => n.id === 'crisis').fx = W/2;
+  nodes.find(n => n.id === 'crisis').fy = H/2;
+
+  const sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(d => (d.source.id === 'crisis' || d.target.id === 'crisis') ? 80 : 65))
+    .force('charge', d3.forceManyBody().strength(-220))
+    .force('center', d3.forceCenter(W/2, H/2))
+    .force('collide', d3.forceCollide().radius(28));
+
+  const linkG = svg.append('g').attr('class','links');
+  const link = linkG.selectAll('line').data(links).join('line')
+    .attr('stroke', d => t.link[d.kind])
+    .attr('stroke-width', d => d.kind === 'conflict' ? 2 : 1.4)
+    .attr('stroke-dasharray', d => t.linkDash[d.kind])
+    .attr('opacity', 0.85)
+    .attr('marker-end', d => `url(#arr-${themeKey}-${d.kind})`);
+
+  const nodeG = svg.append('g').attr('class','nodes');
+  const node = nodeG.selectAll('g').data(nodes).join('g').attr('class','node');
+
+  node.each(function(d) {
+    const g = d3.select(this);
+    const isCrisis = d.risk === 'crisis';
+    const fillCol = isCrisis ? t.risk.crisis : t.card;
+    const strokeCol = t.risk[d.risk] || t.text;
+    if (isCrisis) {
+      g.append('rect')
+        .attr('width', 70).attr('height', 38)
+        .attr('x', -35).attr('y', -19).attr('rx', 6)
+        .attr('fill', t.mono ? `url(#${idp('accent-hatch')})` : t.risk.crisis)
+        .attr('stroke', t.accent).attr('stroke-width', 1.5);
+    } else {
+      g.append('rect')
+        .attr('width', 50).attr('height', 26)
+        .attr('x', -25).attr('y', -13).attr('rx', 5)
+        .attr('fill', fillCol).attr('stroke', strokeCol).attr('stroke-width', 1.2);
+      // risk indicator: dot (original) or hatch bar (mono)
+      if (t.mono) {
+        const patId = d.risk === 'high' ? 'hatch-tight' : (d.risk === 'med' ? 'hatch-wide' : 'dots');
+        g.append('rect')
+          .attr('width', 50).attr('height', 4)
+          .attr('x', -25).attr('y', 9)
+          .attr('fill', `url(#${idp(patId)})`);
+      } else {
+        g.append('circle').attr('cx', -19).attr('cy', -7).attr('r', 2.2).attr('fill', strokeCol);
+      }
+    }
+    const labels = d.label.split('\n');
+    labels.forEach((line, i) => {
+      g.append('text').attr('class','node-label')
+        .attr('text-anchor','middle')
+        .attr('y', isCrisis ? (-3 + i * 11) : (3 + i * 11))
+        .attr('fill', isCrisis ? (t.mono ? t.text : '#020617') : t.text)
+        .text(line);
+    });
+  });
+
+  sim.on('tick', () => {
+    nodes.forEach(n => {
+      n.x = Math.max(40, Math.min(W - 40, n.x));
+      n.y = Math.max(20, Math.min(H - 20, n.y));
+    });
+    link
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => {
+        const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        return d.target.x - (dx/dist) * (d.target.id === 'crisis' ? 36 : 26);
+      })
+      .attr('y2', d => {
+        const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        return d.target.y - (dy/dist) * (d.target.id === 'crisis' ? 20 : 14);
+      });
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+}
+
+// =============================================================================
+// VIZ 3 — LINE CHART (Brent oil + events) (D3)
+// =============================================================================
+function buildLine(svgEl, t, themeKey) {
+  const W = 360, H = 220;
+  const M = { t: 18, r: 22, b: 36, l: 38 };
+  const svg = d3.select(svgEl).attr('viewBox', `0 0 ${W} ${H}`).attr('class','viz-svg chart-line').attr('preserveAspectRatio','xMidYMid meet');
+  svg.selectAll('*').remove();
+
+  const idp = definePatterns(svg, t, `line-${themeKey}`);
+
+  const x = d3.scaleLinear().domain([1, OIL.length]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([60, 120]).range([H - M.b, M.t]);
+
+  // Grid
+  svg.append('g').attr('class','grid').selectAll('line').data(y.ticks(4)).join('line')
+    .attr('x1', M.l).attr('x2', W - M.r).attr('y1', y).attr('y2', y);
+
+  // Y axis labels
+  svg.append('g').attr('class','axis-y').selectAll('text').data(y.ticks(4)).join('text')
+    .attr('x', M.l - 5).attr('y', d => y(d) + 3).attr('text-anchor','end').text(d => '$' + d);
+
+  // X axis labels
+  svg.append('g').attr('class','axis-x').selectAll('text').data([1, 8, 15, 22, 30]).join('text')
+    .attr('x', x).attr('y', H - M.b + 12).attr('text-anchor','middle').text(d => 'D'+d);
+
+  // Area fill
+  const areaGen = d3.area().x(d => x(d.day)).y0(H - M.b).y1(d => y(d.value)).curve(d3.curveMonotoneX);
+  svg.append('path')
+    .datum(OIL)
+    .attr('class','area-fill')
+    .attr('d', areaGen)
+    .attr('fill', t.mono ? `url(#${idp('hatch-wide')})` : t.accent)
+    .attr('opacity', t.mono ? 0.35 : 0.18);
+
+  // Event vertical lines + labels
+  OIL_EVENTS.forEach(ev => {
+    const xv = x(ev.day);
+    svg.append('line').attr('class','event-line')
+      .attr('x1', xv).attr('x2', xv).attr('y1', M.t).attr('y2', H - M.b)
+      .attr('stroke', t.down);
+    svg.append('text').attr('class','event-label')
+      .attr('x', xv + 3).attr('y', M.t + 8)
+      .attr('fill', t.down).attr('text-anchor','start')
+      .text(ev.label);
+  });
+
+  // Line
+  const lineGen = d3.line().x(d => x(d.day)).y(d => y(d.value)).curve(d3.curveMonotoneX);
+  svg.append('path').datum(OIL)
+    .attr('fill','none').attr('stroke', t.accent).attr('stroke-width', 2)
+    .attr('d', lineGen);
+
+  // End dot + value
+  const last = OIL[OIL.length - 1];
+  svg.append('circle').attr('cx', x(last.day)).attr('cy', y(last.value)).attr('r', 3.5).attr('fill', t.accent);
+  svg.append('text').attr('class','end-label')
+    .attr('x', x(last.day) - 2).attr('y', y(last.value) - 8)
+    .attr('text-anchor','end')
+    .text('$' + last.value);
+  // Start label
+  const first = OIL[0];
+  svg.append('text').attr('class','end-label')
+    .attr('x', x(first.day) + 2).attr('y', y(first.value) + 14)
+    .attr('text-anchor','start').attr('fill', t.muted)
+    .text('$' + first.value);
+}
+
+// =============================================================================
+// VIZ 4 — BAR CHART (oil import dependency) (D3)
+// =============================================================================
+function buildBar(svgEl, t, themeKey) {
+  const W = 360, H = 220;
+  const M = { t: 22, r: 16, b: 32, l: 38 };
+  const svg = d3.select(svgEl).attr('viewBox', `0 0 ${W} ${H}`).attr('class','viz-svg chart-bar').attr('preserveAspectRatio','xMidYMid meet');
+  svg.selectAll('*').remove();
+  const idp = definePatterns(svg, t, `bar-${themeKey}`);
+
+  const x = d3.scaleBand().domain(DEPENDENCY.map(d => d.country)).range([M.l, W - M.r]).padding(0.32);
+  const y = d3.scaleLinear().domain([0, 100]).range([H - M.b, M.t]);
+
+  // grid
+  svg.append('g').attr('class','grid').selectAll('line').data(y.ticks(4)).join('line')
+    .attr('x1', M.l).attr('x2', W - M.r).attr('y1', y).attr('y2', y);
+
+  // y labels
+  svg.append('g').attr('class','axis-y').selectAll('text').data(y.ticks(4)).join('text')
+    .attr('x', M.l - 5).attr('y', d => y(d) + 3).attr('text-anchor','end').text(d => d + '%');
+
+  // x labels
+  svg.append('g').attr('class','axis-x').selectAll('text').data(DEPENDENCY).join('text')
+    .attr('x', d => x(d.country) + x.bandwidth()/2)
+    .attr('y', H - M.b + 12).attr('text-anchor','middle').text(d => d.country);
+
+  // Bars: in mono, alternate pattern types per category; in original, gradient series
+  // 4 distinct fills + key (accent solid). 5 categories cover comfortably.
+  const monoPatterns = ['hatch-tight','accent-hatch','hatch-wide','dots'];
+  svg.append('g').selectAll('rect').data(DEPENDENCY).join('rect')
+    .attr('x', d => x(d.country)).attr('width', x.bandwidth())
+    .attr('y', d => y(d.value)).attr('height', d => H - M.b - y(d.value))
+    .attr('rx', 2)
+    .attr('stroke', t.text).attr('stroke-width', t.mono ? 1 : 0)
+    .attr('fill', (d, i) => {
+      if (t.mono) {
+        // key country gets accent solid; others get patterns
+        if (d.key) return t.accent;
+        return `url(#${idp(monoPatterns[i % monoPatterns.length])})`;
+      }
+      return d.key ? t.accent : t.series[i % t.series.length];
+    });
+
+  // value labels above bars
+  svg.append('g').selectAll('text').data(DEPENDENCY).join('text')
+    .attr('class','bar-label')
+    .attr('x', d => x(d.country) + x.bandwidth()/2)
+    .attr('y', d => y(d.value) - 5)
+    .attr('text-anchor','middle')
+    .attr('fill', d => d.key ? t.accent : t.text)
+    .text(d => d.value + '%');
+}
+
+// =============================================================================
+// COLUMN BUILDER
+// =============================================================================
+function buildColumn(rootId, themeKey) {
+  const root = document.getElementById(rootId);
+  const t = THEMES[themeKey];
+
+  // ---- Geographic Map ----
+  const mapBlock = document.createElement('div');
+  mapBlock.className = 'viz';
+  mapBlock.innerHTML = `
+    <div class="viz-header">
+      <div class="viz-kicker">VIZ 01 · Geographic Map</div>
+      <div class="viz-title">호르무즈 · 바브엘만데브 충격 전파</div>
+      <div class="viz-desc">MapLibre + OpenFreeMap 베이스 + D3 SVG 오버레이. 위험권은 사선 해칭, 보조 경로는 점선.</div>
+    </div>
+    <div class="map-wrap"><div class="map" id="map-${themeKey}"></div><div class="overlay"></div></div>
+    <div class="viz-legend">
+      <span><i style="background:repeating-linear-gradient(45deg,${t.text} 0 0.85px,transparent 0.85px 2.4px)"></i>위험권 (해칭)</span>
+      <span><i class="line" style="color:${t.arc.primary}"></i>주 경로 (실선)</span>
+      <span><i class="line" style="color:${t.arc.secondary};border-top-style:dashed"></i>보조 경로 (점선)</span>
+    </div>`;
+  root.appendChild(mapBlock);
+
+  // ---- Force Network ----
+  const netBlock = document.createElement('div');
+  netBlock.className = 'viz';
+  netBlock.innerHTML = `
+    <div class="viz-header">
+      <div class="viz-kicker">VIZ 02 · Actor Network</div>
+      <div class="viz-title">행위자 관계도</div>
+      <div class="viz-desc">d3-force 시뮬레이션. 동맹=실선, 충돌=대시, 영향=점선, 전략=세점선. 위험도는 노드 하단 해칭 밀도.</div>
+    </div>
+    <svg id="net-${themeKey}"></svg>
+    <div class="viz-legend">
+      <span><i class="line" style="color:${t.link.ally}"></i>동맹</span>
+      <span><i class="line" style="color:${t.link.conflict};border-top-style:dashed"></i>충돌·봉쇄</span>
+      <span><i class="line" style="color:${t.link.impact};border-top-style:dotted"></i>영향</span>
+      <span><i class="line" style="color:${t.link.strategic};border-top-style:dotted"></i>전략</span>
+    </div>`;
+  root.appendChild(netBlock);
+
+  // ---- Line Chart ----
+  const lineBlock = document.createElement('div');
+  lineBlock.className = 'viz';
+  lineBlock.innerHTML = `
+    <div class="viz-header">
+      <div class="viz-kicker">VIZ 03 · Time Series · Brent</div>
+      <div class="viz-title">브렌트유 30일 추이 + 사건 마킹</div>
+      <div class="viz-desc">$66 → $112 (+70%). 사건은 점선 vertical, 면 채움은 사선 해칭.</div>
+    </div>
+    <svg id="line-${themeKey}"></svg>`;
+  root.appendChild(lineBlock);
+
+  // ---- Bar Chart ----
+  const barBlock = document.createElement('div');
+  barBlock.className = 'viz';
+  barBlock.innerHTML = `
+    <div class="viz-header">
+      <div class="viz-kicker">VIZ 04 · Categorical · Dependency</div>
+      <div class="viz-title">동북아 에너지 수입 의존도</div>
+      <div class="viz-desc">카테고리는 45° 사선 밀도·색 + 미세 도트로 구분 (액센트 솔리드 / 액센트 사선 / 중간 사선 / 미세 도트 / 촘촘 사선). 핵심 국가만 액센트 솔리드.</div>
+    </div>
+    <svg id="bar-${themeKey}"></svg>`;
+  root.appendChild(barBlock);
+
+  // Render
+  buildMap(`map-${themeKey}`, t, themeKey);
+  buildNetwork(document.getElementById(`net-${themeKey}`), t, themeKey);
+  buildLine(document.getElementById(`line-${themeKey}`), t, themeKey);
+  buildBar(document.getElementById(`bar-${themeKey}`), t, themeKey);
+}
+
+// =============================================================================
+// INIT
+// =============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildColumn('col-light', 'light');
+  buildColumn('col-burgundy', 'burgundy');
+});
+</script>
+</body>
+</html>
