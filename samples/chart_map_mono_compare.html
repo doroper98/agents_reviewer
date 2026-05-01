@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chart × Map · Light Mono vs Burgundy Mono</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -42,10 +41,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #1a1a1a; color: #fff
 .viz-legend i.line { height: 0; border-top: 2px solid currentColor; border-radius: 0; }
 
 .map-wrap { position: relative; height: 280px; border-radius: 6px; overflow: hidden; border: 1px solid var(--borderLight); }
-.map-wrap .map { position: absolute; inset: 0; }
-.map-wrap .overlay { position: absolute; inset: 0; pointer-events: none; }
-.maplibregl-ctrl-attrib { font-size: 8px !important; background: rgba(0,0,0,0.3) !important; color: #ccc !important; }
-.maplibregl-ctrl-attrib a { color: #ccc !important; }
+.map-wrap svg.map-svg { display: block; width: 100%; height: 100%; }
 
 svg.viz-svg { display: block; width: 100%; height: auto; }
 
@@ -213,85 +209,64 @@ function definePatterns(svg, t, prefix) {
 }
 
 // =============================================================================
-// VIZ 1 — GEOGRAPHIC MAP (MapLibre + custom mono style + D3 SVG overlay)
+// VIZ 1 — GEOGRAPHIC MAP (d3-geo + TopoJSON world-atlas/110m)
 // =============================================================================
 function buildMap(containerId, t, themeKey) {
-  // Use OpenFreeMap's hosted "positron" style as base — its source/layer
-  // schema is verified by them. Apply our mono palette by overriding paint
-  // properties after style.load. Hide every symbol layer (text labels are
-  // the slowest thing — font glyph PBFs per script range).
+  // Pure d3-geo + TopoJSON (world-atlas 110m). No tile dependency.
+  // One small JSON load (~100KB) is shared by both columns.
   const containerEl = document.getElementById(containerId);
-  const map = new maplibregl.Map({
-    container: containerEl,
-    style: 'https://tiles.openfreemap.org/styles/positron',
-    center: [80, 26],
-    zoom: 2.5,
-    minZoom: 1.5, maxZoom: 3.5,
-    attributionControl: { compact: true, customAttribution:'© OpenFreeMap · OSM' },
-    interactive: true,
-  });
-  map.scrollZoom.disable();
-  map.on('error', (e) => console.warn('[map ' + themeKey + ']', e?.error?.message || e));
+  containerEl.innerHTML = '';
+  const W = containerEl.clientWidth || 360;
+  const H = 280;
 
-  // Re-color the loaded style to fit the current theme.
-  function applyMonoPaint() {
-    const layers = map.getStyle().layers || [];
-    layers.forEach(l => {
-      const id = l.id.toLowerCase();
-      try {
-        if (l.type === 'background') {
-          map.setPaintProperty(l.id, 'background-color', t.map.land);
-        } else if (l.type === 'fill') {
-          if (id.includes('water')) {
-            map.setPaintProperty(l.id, 'fill-color', t.map.water);
-            map.setPaintProperty(l.id, 'fill-opacity', 1);
-          } else if (id.includes('building')) {
-            map.setLayoutProperty(l.id, 'visibility', 'none');
-          } else {
-            // landcover / landuse / park / etc: blend into land color (slightly
-            // tinted so the underlying texture is preserved without distracting)
-            map.setPaintProperty(l.id, 'fill-color', t.map.land);
-            map.setPaintProperty(l.id, 'fill-opacity', 0.4);
-          }
-        } else if (l.type === 'line') {
-          if (id.includes('admin') || id.includes('boundary') || id.includes('country')) {
-            map.setPaintProperty(l.id, 'line-color', t.map.boundary);
-            // bolder country borders, thinner sub-admins
-            const isMajor = id.includes('country') || id.includes('0') || id.includes('country_2');
-            map.setPaintProperty(l.id, 'line-opacity', isMajor ? 0.9 : 0.45);
-          } else if (id.includes('water') || id.includes('river') || id.includes('coast')) {
-            map.setPaintProperty(l.id, 'line-color', t.map.boundary);
-            map.setPaintProperty(l.id, 'line-opacity', 0.3);
-          } else {
-            // roads/rails/etc — hide entirely (we don't show street level)
-            map.setLayoutProperty(l.id, 'visibility', 'none');
-          }
-        } else if (l.type === 'symbol') {
-          // hide ALL text symbols — they trigger font glyph fetches
-          map.setLayoutProperty(l.id, 'visibility', 'none');
-        }
-      } catch (e) { /* paint property may not exist on every layer */ }
-    });
-  }
-
-  // SVG overlay for arcs, risk circles, markers
-  const overlayEl = containerEl.parentElement.querySelector('.overlay');
-  const svg = d3.select(overlayEl).append('svg')
-    .attr('width','100%').attr('height','100%')
-    .style('position','absolute').style('inset','0').style('display','block');
+  const svg = d3.select(containerEl).append('svg')
+    .attr('class','map-svg')
+    .attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('preserveAspectRatio','xMidYMid meet')
+    .style('background', t.map.water);
 
   const idp = definePatterns(svg, t, `map-${themeKey}`);
 
+  // Project: fit a bbox slightly larger than our city set into the canvas
+  const lngs = CITIES.map(c => c.lng), lats = CITIES.map(c => c.lat);
+  const padDeg = 9;
+  const aoi = {
+    type: 'Polygon',
+    coordinates: [[
+      [Math.min(...lngs) - padDeg, Math.min(...lats) - padDeg],
+      [Math.max(...lngs) + padDeg, Math.min(...lats) - padDeg],
+      [Math.max(...lngs) + padDeg, Math.max(...lats) + padDeg*2],
+      [Math.min(...lngs) - padDeg, Math.max(...lats) + padDeg*2],
+      [Math.min(...lngs) - padDeg, Math.min(...lats) - padDeg],
+    ]],
+  };
+  const projection = d3.geoMercator().fitExtent([[6, 6], [W-6, H-6]], aoi);
+  const path = d3.geoPath(projection);
+
+  const gMap = svg.append('g').attr('class','map-base');
   const gArc = svg.append('g').attr('class','arcs');
   const gRisk = svg.append('g').attr('class','risk');
   const gMarker = svg.append('g').attr('class','markers');
 
-  function metersToPixels(m, lat) {
-    const z = map.getZoom();
-    return m / (40075016.686 * Math.cos(lat * Math.PI / 180) / Math.pow(2, z + 8));
+  // Render base map. world-atlas is fetched once and cached on window.
+  function renderBase(world) {
+    const countries = topojson.feature(world, world.objects.countries);
+    const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+    gMap.selectAll('path.country').data(countries.features).join('path')
+      .attr('class','country').attr('d', path)
+      .attr('fill', t.map.land).attr('stroke','none');
+    gMap.append('path').datum(borders)
+      .attr('class','country-border').attr('d', path).attr('fill','none')
+      .attr('stroke', t.map.boundary).attr('stroke-width', 0.7).attr('stroke-opacity', 0.75);
   }
-  function project(lng, lat) { const p = map.project([lng, lat]); return [p.x, p.y]; }
+  if (window.__WORLD_TOPO__) renderBase(window.__WORLD_TOPO__);
+  else window.__WORLD_TOPO_PROMISE__.then(renderBase);
 
+  function project(lng, lat) { return projection([lng, lat]); }
+  function metersToPixels(m, lat) {
+    // Approximation valid at given latitude on Mercator.
+    return m * projection.scale() / (6371008.8 * Math.cos(lat * Math.PI / 180));
+  }
   function curvedPath(p1, p2, bow) {
     const mx = (p1[0]+p2[0])/2, my = (p1[1]+p2[1])/2;
     const dx = p2[0]-p1[0], dy = p2[1]-p1[1];
@@ -301,116 +276,56 @@ function buildMap(containerId, t, themeKey) {
     return `M${p1[0]},${p1[1]} Q${cx},${cy} ${p2[0]},${p2[1]}`;
   }
 
-  function redraw() {
-    const cityById = Object.fromEntries(CITIES.map(c => [c.id, c]));
+  // Risk circles
+  const cityById = Object.fromEntries(CITIES.map(c => [c.id, c]));
+  CITIES.filter(c => c.radius_km).forEach(c => {
+    const [x, y] = project(c.lng, c.lat);
+    const r = Math.max(18, metersToPixels(c.radius_km * 1000, c.lat));
+    const g = gRisk.append('g').attr('class','risk-c');
+    g.append('circle').attr('cx', x).attr('cy', y).attr('r', r)
+      .attr('fill', `url(#${idp('hatch-wide')})`).attr('fill-opacity', 0.6);
+    g.append('circle').attr('cx', x).attr('cy', y).attr('r', r)
+      .attr('fill','none').attr('stroke', t.riskCircle.color)
+      .attr('stroke-width', 1.4).attr('stroke-dasharray', t.riskCircle.dash);
+  });
 
-    // arcs
-    const arcSel = gArc.selectAll('g.arc').data(ARCS).join(
-      enter => {
-        const g = enter.append('g').attr('class','arc');
-        g.append('path').attr('class','arc-path').attr('fill','none');
-        g.append('text').attr('class','arc-label map-arc-label');
-        return g;
-      }
-    );
-    arcSel.each(function(a) {
-      const f = cityById[a.from], to = cityById[a.to];
-      const p1 = project(f.lng, f.lat), p2 = project(to.lng, to.lat);
-      const pathStr = curvedPath(p1, p2, Math.min(80, Math.hypot(p2[0]-p1[0], p2[1]-p1[1]) * 0.25));
-      const g = d3.select(this);
-      const color = t.arc[a.kind] || t.arc.primary;
-      const dash  = t.arcDash[a.kind] || null;
-      g.select('path')
-        .attr('d', pathStr).attr('stroke', color)
-        .attr('stroke-width', a.kind === 'primary' ? 2.4 : 1.6)
-        .attr('stroke-dasharray', dash)
-        .attr('opacity', 0.92);
-      // arrow marker: small triangle at end
-      // (simple — we draw the triangle manually)
-      // label
-      if (a.label) {
-        const mx = (p1[0]+p2[0])/2, my = (p1[1]+p2[1])/2;
-        g.select('text')
-          .attr('x', mx).attr('y', my - 6)
-          .attr('text-anchor','middle')
-          .attr('fill', color)
-          .text(a.label);
-      } else {
-        g.select('text').text('');
-      }
-    });
+  // Arcs
+  ARCS.forEach(a => {
+    const f = cityById[a.from], to = cityById[a.to];
+    const p1 = project(f.lng, f.lat), p2 = project(to.lng, to.lat);
+    const bow = Math.min(70, Math.hypot(p2[0]-p1[0], p2[1]-p1[1]) * 0.22);
+    const color = t.arc[a.kind] || t.arc.primary;
+    const dash = t.arcDash[a.kind] || null;
+    const g = gArc.append('g').attr('class','arc');
+    g.append('path').attr('d', curvedPath(p1, p2, bow))
+      .attr('fill','none').attr('stroke', color)
+      .attr('stroke-width', a.kind === 'primary' ? 2.4 : 1.6)
+      .attr('stroke-dasharray', dash).attr('opacity', 0.94);
+    if (a.label) {
+      const mx = (p1[0]+p2[0])/2 + 4, my = (p1[1]+p2[1])/2 - 6 - bow*0.5;
+      g.append('text').attr('class','map-arc-label')
+        .attr('x', mx).attr('y', my).attr('text-anchor','middle')
+        .attr('fill', color).text(a.label);
+    }
+  });
 
-    // risk circles (around crisis points)
-    const riskCities = CITIES.filter(c => c.radius_km);
-    const riskSel = gRisk.selectAll('g.risk-c').data(riskCities, d => d.id).join(
-      enter => {
-        const g = enter.append('g').attr('class','risk-c');
-        g.append('circle').attr('class','risk-fill');
-        g.append('circle').attr('class','risk-stroke');
-        return g;
-      }
-    );
-    riskSel.each(function(c) {
-      const [x, y] = project(c.lng, c.lat);
-      const r = Math.max(20, metersToPixels(c.radius_km * 1000, c.lat));
-      const g = d3.select(this);
-      // mono → patterned fill; original → solid alpha fill
-      g.select('.risk-fill')
-        .attr('cx', x).attr('cy', y).attr('r', r)
-        .attr('fill', t.mono ? `url(#${idp('hatch-wide')})` : t.riskCircle.color)
-        .attr('fill-opacity', t.mono ? 0.55 : t.riskCircle.alpha);
-      g.select('.risk-stroke')
-        .attr('cx', x).attr('cy', y).attr('r', r)
-        .attr('fill','none')
-        .attr('stroke', t.riskCircle.color)
-        .attr('stroke-width', 1.5)
-        .attr('stroke-dasharray', t.riskCircle.dash);
-    });
-
-    // markers
-    const mkSel = gMarker.selectAll('g.mk').data(CITIES, d => d.id).join(
-      enter => {
-        const g = enter.append('g').attr('class','mk');
-        g.append('circle').attr('class','mk-outer');
-        g.append('circle').attr('class','mk-inner');
-        g.append('text').attr('class','mk-label map-marker-label');
-        return g;
-      }
-    );
-    mkSel.each(function(c) {
-      const [x, y] = project(c.lng, c.lat);
-      const isCrisis = c.role === 'crisis';
-      const isImpact = c.role === 'impact';
-      const colorMap = {
-        crisis: t.risk.high, origin: t.risk.high, ally: t.neutral,
-        neutral: t.muted, impact: t.accent
-      };
-      const col = colorMap[c.role] || t.text;
-      const g = d3.select(this);
-      g.select('.mk-outer')
-        .attr('cx', x).attr('cy', y).attr('r', isCrisis ? 9 : 6)
-        .attr('fill', t.card).attr('stroke', col).attr('stroke-width', 2);
-      g.select('.mk-inner')
-        .attr('cx', x).attr('cy', y).attr('r', isCrisis ? 4 : 2.5)
-        .attr('fill', col);
-      g.select('.mk-label')
-        .attr('x', x).attr('y', y - (isCrisis ? 14 : 11))
-        .attr('text-anchor','middle')
-        .attr('fill', t.text)
-        .attr('stroke', t.card).attr('stroke-width', 3).attr('paint-order','stroke')
-        .text(c.name);
-    });
-  }
-
-  // Initial center/zoom is already chosen to frame all cities.
-  map.on('load', () => { applyMonoPaint(); redraw(); });
-  map.on('styledata', applyMonoPaint);
-  map.on('move', redraw);
-  map.on('zoom', redraw);
-  map.on('resize', redraw);
-  setTimeout(redraw, 600);
-
-  return map;
+  // Markers
+  CITIES.forEach(c => {
+    const [x, y] = project(c.lng, c.lat);
+    const isCrisis = c.role === 'crisis';
+    const colorMap = { crisis: t.risk.high, origin: t.risk.high, ally: t.neutral, neutral: t.muted, impact: t.accent };
+    const col = colorMap[c.role] || t.text;
+    const g = gMarker.append('g').attr('class','mk');
+    g.append('circle').attr('cx', x).attr('cy', y).attr('r', isCrisis ? 8 : 5)
+      .attr('fill', t.card).attr('stroke', col).attr('stroke-width', 2);
+    g.append('circle').attr('cx', x).attr('cy', y).attr('r', isCrisis ? 3.2 : 2.2)
+      .attr('fill', col);
+    g.append('text').attr('class','map-marker-label')
+      .attr('x', x).attr('y', y - (isCrisis ? 12 : 9))
+      .attr('text-anchor','middle').attr('fill', t.text)
+      .attr('stroke', t.card).attr('stroke-width', 2.6).attr('paint-order','stroke')
+      .text(c.name);
+  });
 }
 
 // =============================================================================
@@ -652,9 +567,9 @@ function buildColumn(rootId, themeKey) {
     <div class="viz-header">
       <div class="viz-kicker">VIZ 01 · Geographic Map</div>
       <div class="viz-title">호르무즈 · 바브엘만데브 충격 전파</div>
-      <div class="viz-desc">MapLibre + OpenFreeMap 베이스 + D3 SVG 오버레이. 위험권은 사선 해칭, 보조 경로는 점선.</div>
+      <div class="viz-desc">d3-geo + TopoJSON world-atlas/110m 으로 직접 렌더 (외부 타일 없음). 위험권은 사선 해칭, 보조 경로는 점선.</div>
     </div>
-    <div class="map-wrap"><div class="map" id="map-${themeKey}"></div><div class="overlay"></div></div>
+    <div class="map-wrap" id="map-${themeKey}"></div>
     <div class="viz-legend">
       <span><i style="background:repeating-linear-gradient(45deg,${t.text} 0 0.85px,transparent 0.85px 2.4px)"></i>위험권 (해칭)</span>
       <span><i class="line" style="color:${t.arc.primary}"></i>주 경로 (실선)</span>
@@ -714,6 +629,13 @@ function buildColumn(rootId, themeKey) {
 // =============================================================================
 // INIT
 // =============================================================================
+// Pre-fetch world-atlas TopoJSON once for both columns. Maps render
+// instantly on cache hit; on first load the fetch is small (~100KB).
+window.__WORLD_TOPO_PROMISE__ = fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+  .then(r => r.json())
+  .then(data => { window.__WORLD_TOPO__ = data; return data; })
+  .catch(err => { console.warn('[world-atlas]', err); return null; });
+
 document.addEventListener('DOMContentLoaded', () => {
   buildColumn('col-light', 'light');
   buildColumn('col-burgundy', 'burgundy');

@@ -32,13 +32,15 @@ last_review: 2026-05-01
 
 | 레이어 | 라이브러리 | 비고 |
 |---|---|---|
-| 베이스맵 | **MapLibre GL JS 4.x** | 벡터 타일 렌더, 인라인 style spec 으로 레이어 색 100% 제어 |
-| 베이스맵 타일 | **OpenFreeMap** (`tiles.openfreemap.org/planet`) | 무료, API 키 불필요, MIT, OpenMapTiles 스키마 |
-| 지리 오버레이 | **d3 + d3-geo** | 위·경도→픽셀 투영 (`map.project`), 호·반경원·마커 SVG 그리기 |
+| 베이스맵 | **d3 + d3-geo + TopoJSON (world-atlas/110m)** | 단일 ~100KB JSON 으로 전 세계 국경 벡터, 외부 타일 의존 없음 |
+| 지리 오버레이 | **d3** (`geoMercator` + `geoPath`) | 위·경도→픽셀 투영, 호·반경원·마커 SVG 그리기 |
 | 차트 | **d3 v7** (line/area/bar/force) | 모두 SVG. Canvas 사용 금지 |
-| 폰트 | Noto Serif KR / Noto Sans KR | 베이스맵 라벨은 `Noto Sans Regular` 글리프 사용 |
+| 폰트 | Noto Serif KR / Noto Sans KR | 본문/지도 라벨 모두 동일 폰트 사용 |
 
-**Leaflet + 비트맵 타일을 쓰지 않는 이유**: 비트맵은 모노 톤에 강제 리스타일이 어렵고, 패턴 오버레이와 충돌하며, 캡처·인쇄 시 깨진다.
+**MapLibre + 벡터 타일 / Leaflet + 비트맵 타일을 쓰지 않는 이유**:
+- 외부 타일 서비스(OpenFreeMap, Maptiler 등)는 응답 지연 / 글리프 PBF 호출 / 스키마 변경에 취약함. 샘플 페이지가 빈 배경으로 떨어지는 회귀 발생.
+- 이벤트 분석 보고서는 줌·팬이 거의 필요 없고 국가 수준 경계만 있으면 충분함. world-atlas 110m 으로 모든 케이스 커버.
+- TopoJSON 은 한 번 받으면 두 컬럼이 캐시 공유. 인쇄·캡처 시에도 안정적.
 
 ## 3. 색 팔레트
 
@@ -160,3 +162,4 @@ SVG 정의 예시는 `samples/chart_map_mono_compare.html` 의 `definePatterns()
 - 팔레트 hex 변경 → `samples/chart_map_mono_compare.html` 의 `THEMES` 객체 + 본 문서 §3 동시 갱신
 - 패턴 정의 변경 → `definePatterns()` + 본 문서 §4.1 동시 갱신
 - Anti-pattern 추가 → 본 문서 §6 + 샘플 파일 검증 후 등재
+- 지도 라이브러리 변경 → 본 문서 §2 + 샘플의 `buildMap()` + `buildColumn` 의 viz-desc 텍스트 동시 갱신
