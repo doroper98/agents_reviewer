@@ -626,11 +626,12 @@ function buildColumn(rootId, themeKey) {
     <svg id="bar-${themeKey}"></svg>`;
   root.appendChild(barBlock);
 
-  // Render
-  buildMap(`map-${themeKey}`, t, themeKey);
-  buildNetwork(document.getElementById(`net-${themeKey}`), t, themeKey);
-  buildLine(document.getElementById(`line-${themeKey}`), t, themeKey);
-  buildBar(document.getElementById(`bar-${themeKey}`), t, themeKey);
+  // Render — wrap each so a failure in one viz doesn't block the others
+  const safe = (fn, name) => { try { fn(); } catch (e) { console.error('[' + themeKey + '/' + name + ']', e); } };
+  safe(() => buildMap(`map-${themeKey}`, t, themeKey), 'map');
+  safe(() => buildNetwork(document.getElementById(`net-${themeKey}`), t, themeKey), 'network');
+  safe(() => buildLine(document.getElementById(`line-${themeKey}`), t, themeKey), 'line');
+  safe(() => buildBar(document.getElementById(`bar-${themeKey}`), t, themeKey), 'bar');
 }
 
 // =============================================================================
