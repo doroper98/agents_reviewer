@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.4.1
+last_synced_with: v3.4.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -23,6 +23,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.4.2] — 2026-05-01
+
+> **`/stop` `/stopall` — 진행 중 분석 텔레그램에서 직접 중단.** `_run_analysis` 시작 시점에 `asyncio.current_task()` 를 보관해 두고, `/stop` 핸들러가 `cancel()` 호출 → `CancelledError` 가 위로 전파되며 LLM 호출 / 서브프로세스 / await 체인 모두 정상 종료. `/stop` 은 현재 1건만, `/stopall` 은 큐까지 전부 비움. 인가 체크는 `/analyze` 와 동일 (`_is_authorized`).
+
+### Added
+- **`src/telegram_bot.py:_stop_command()`** — 진행 중 분석만 cancel. 큐는 보존. 메시지: `🛑 분석 중단 요청 보냄: <topic>\n정리 후 곧 종료됩니다.\n📋 대기열 N건 은 그대로 유지.`
+- **`src/telegram_bot.py:_stopall_command()`** — 진행 중 분석 cancel + `self._queue.clear()`. 메시지: `🛑 전체 중단: 진행 중 분석 (<topic>) 취소 + 대기열 N건 비움.`
+- **`src/telegram_bot.py:TelegramBot.__init__`** — `self._current_task: asyncio.Task | None = None` 인스턴스 변수.
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.4.1 → v3.4.2`
+- **`src/telegram_bot.py:_run_analysis()`** — 시작 시점에 `self._current_task = asyncio.current_task()` 캡처. `except asyncio.CancelledError` 블록 추가 (사용자에게 "🛑 분석 중단됨" 알림 후 re-raise). `finally` 에서 `self._current_task = None`. `await self._process_queue()` 는 finally 에서 그대로 — `/stop` 후에도 큐 진행 (스킵하려면 `/stopall` 사용).
+- **`src/telegram_bot.py:create_app()`** — `CommandHandler("stop", ...)` + `CommandHandler("stopall", ...)` 등록.
+- **`src/telegram_bot.py:_start_command()`** — 도움말에 `/stop`, `/stopall` 두 줄 추가.
+
+### Migration
+- **VM 재기동 필요** — 코드 변경.
+- 기존 동작 변경 없음. 새 명령만 추가.
+
+### 동작 노트
+- `CancelledError` 는 Python 3.8+ 부터 `BaseException` 상속이라 `except Exception:` 에 안 잡힘 — orchestrator/agent 의 일반 except 블록을 통과해 위로 전파.
+- subprocess 기반 Claude CLI 호출 (`asyncio.create_subprocess_*`) 도 cancel 시 SIGTERM 전파됨.
+- 부분적으로 생성된 `reports/` 임시 파일은 그대로 남을 수 있음 — 다음 분석에 영향 없음, 추후 cleanup 필요시 별도 작업.
 
 ---
 
