@@ -215,17 +215,24 @@ function buildMap(containerId, t, themeKey) {
   // Pure d3-geo + TopoJSON (world-atlas 110m). No tile dependency.
   // One small JSON load (~100KB) is shared by both columns.
   const containerEl = document.getElementById(containerId);
+  if (!containerEl) { console.error('[map] container not found:', containerId); return; }
   containerEl.innerHTML = '';
-  const W = containerEl.clientWidth || 360;
-  const H = 280;
+  // Use a fixed viewBox; CSS scales the SVG to fit the wrapper.
+  const W = 360, H = 280;
 
   const svg = d3.select(containerEl).append('svg')
     .attr('class','map-svg')
+    .attr('width','100%').attr('height','100%')
     .attr('viewBox', `0 0 ${W} ${H}`)
-    .attr('preserveAspectRatio','xMidYMid meet')
-    .style('background', t.map.water);
+    .attr('preserveAspectRatio','xMidYMid meet');
+
+  // Background as <rect> instead of CSS — CSS background on inline SVG
+  // is unreliable in some renderers, especially when scaled via viewBox.
+  svg.append('rect').attr('class','map-bg')
+    .attr('width', W).attr('height', H).attr('fill', t.map.water);
 
   const idp = definePatterns(svg, t, `map-${themeKey}`);
+  console.log('[map]', themeKey, 'svg created', W, 'x', H);
 
   // Project: fit a bbox slightly larger than our city set into the canvas
   const lngs = CITIES.map(c => c.lng), lats = CITIES.map(c => c.lat);
@@ -259,8 +266,14 @@ function buildMap(containerId, t, themeKey) {
       .attr('class','country-border').attr('d', path).attr('fill','none')
       .attr('stroke', t.map.boundary).attr('stroke-width', 0.7).attr('stroke-opacity', 0.75);
   }
-  if (window.__WORLD_TOPO__) renderBase(window.__WORLD_TOPO__);
-  else window.__WORLD_TOPO_PROMISE__.then(renderBase);
+  if (window.__WORLD_TOPO__) {
+    renderBase(window.__WORLD_TOPO__);
+  } else if (window.__WORLD_TOPO_PROMISE__) {
+    window.__WORLD_TOPO_PROMISE__.then(w => {
+      if (w) renderBase(w);
+      else console.warn('[map]', themeKey, 'world topo unavailable; base map blank');
+    });
+  }
 
   function project(lng, lat) { return projection([lng, lat]); }
   function metersToPixels(m, lat) {
@@ -636,10 +649,18 @@ window.__WORLD_TOPO_PROMISE__ = fetch('https://cdn.jsdelivr.net/npm/world-atlas@
   .then(data => { window.__WORLD_TOPO__ = data; return data; })
   .catch(err => { console.warn('[world-atlas]', err); return null; });
 
-document.addEventListener('DOMContentLoaded', () => {
-  buildColumn('col-light', 'light');
-  buildColumn('col-burgundy', 'burgundy');
-});
+function init() {
+  console.log('[init] building columns');
+  try { buildColumn('col-light', 'light'); }
+  catch (e) { console.error('[col-light]', e); }
+  try { buildColumn('col-burgundy', 'burgundy'); }
+  catch (e) { console.error('[col-burgundy]', e); }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
