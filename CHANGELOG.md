@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.4.2
+last_synced_with: v3.4.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -23,6 +23,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.4.3] — 2026-05-01
+
+> **핫픽스 — v3.4.0 회귀 수정.** `_payload_map()` 이 `result.report_theme` 을 읽어 light/burgundy 분기를 시도하지만, `FullAnalysisResult` 모델에 해당 필드가 없어 `synthesize()` 초입의 `result.report_theme = theme` 할당이 Pydantic ValidationError 를 던졌다. 결과: 모든 보고서 생성이 `❌ 분석 실패: "FullAnalysisResult" object has no field "report_theme"` 로 실패. **한 줄 패치 — 모델에 필드 추가.**
+
+### Changed
+- **`src/models.py:FullAnalysisResult`** — `report_theme: str = ""` 필드 추가. SSOT (`NarrativePlan.report_theme`) 과 별개로 block builder 가 읽는 채널.
+- **`src/orchestrator.py:VERSION`** `v3.4.2 → v3.4.3`
+
+### Migration
+- **VM 재기동 필요**.
+- 분석 흐름은 그대로. Block builder 의 theme 분기가 이제 정상 작동.
 
 ---
 
