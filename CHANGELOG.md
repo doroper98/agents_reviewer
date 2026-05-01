@@ -22,6 +22,55 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
+### v3.4.6 — AMC + Narrative DSL (PR3) — 단조로움의 구조적 처방
+
+PR1'/PR2 후속. 사용자 지적 *"기법 다양성을 주문했는데 형식이 늘 비슷함"* (REFACTOR_V3_PLAN §6) 의 **구조적** 처방.
+
+문제의 본질은 LLM 능력 부족이 아니라 *아키텍처가 다양성을 보존·증폭하지 못하고 기본형으로 수렴*시키는 것. archetype 들은 표면상 다른 `block_types` 를 선언하지만 빌더가 archetype-blind 라 결국 같은 모양으로 평탄화됨. PR3 는 두 메커니즘으로 해결:
+
+#### Added — Narrative DSL (5단계)
+- **`NarrativeStage` Literal** (`src/models.py`): `fact / mechanism / divergence / decision / trigger` — 보고서 흐름의 5단 분석 단계.
+- **`ReportSectionPlan.narrative_stage`** (optional): archetype 작성자가 각 섹션이 어느 단계인지 선언. backward-compat (None 허용).
+- **시각 차별화** (`report.css`):
+  - 섹션 헤더에 stage 배지 (색상이 단계별 — fact=blue / mechanism=gold / divergence=orange / decision=green / trigger=red)
+  - 섹션 자체에 좌측 컬러 액센트 (스크롤하면서 단계 흐름이 한눈에 보임)
+- 결과: 같은 archetype 의 섹션도 단계별로 시각적으로 분리되어 *단조로움 직접 해소*.
+
+#### Added — AMC (Analysis Method Contract)
+- **`AnalysisMethodContract` Pydantic model**: `method_id`, `required_inputs`, `mandatory_stages`, `forbidden_blocks`, `rationale` 필드.
+- **archetype 별 `contract()` 메서드** (5개 구현):
+  - `scenario_first`: mandatory `[fact, divergence, trigger]`, forbidden `[decision_matrix]`
+  - `decision_brief`: mandatory `[fact, divergence, decision, trigger]`
+  - `mechanism_decomp`: mandatory `[fact, mechanism, divergence]`, forbidden `[scenario_table, decision_matrix]`
+  - `accident_forensic`: mandatory `[fact, mechanism, decision]`, forbidden `[scenario_table]`
+  - `financial_transmission`: mandatory `[fact, mechanism, divergence, trigger]`, forbidden `[decision_matrix]`
+- **default_contract()** helper: contract() 미선언 archetype 은 빈 contract → backward-compat.
+- **synthesizer enforcement** (`_build_blocks`):
+  - `forbidden_blocks` 등재된 block_type 은 빌더 실행 전 reject + INFO 로그
+  - 빌드 후 mandatory stage 미달 시 WARNING 로그
+  - 첫 블록 payload 에 `__amc__` 메타 부착 (covered/missing stages 기록)
+- **템플릿 가시화** (`report_block.html`): AMC 미달 시 보고서 상단에 ⚠ 경고 배너 — 어떤 분석 단계가 빠졌는지 사용자에게 직접 노출.
+
+#### Why this fixes monotony
+이전: 5개 archetype 모두 `narrative` + `decomposition` + `matrix` + ...를 비슷한 순서로 호출 → *결과물이 비슷해 보임*. <br>
+이후: 같은 `narrative` block 도 한 섹션은 `stage="fact"` (파란 배지), 다른 섹션은 `stage="divergence"` (주황 배지) → *시각·의미적으로 분리*. archetype 간 차별화는 mandatory_stages 차이 (decision_brief 만 `decision` 강제, accident_forensic 만 `decision`+`mechanism` 강제 등) 로 *구조적으로* 보장.
+
+#### Tests
+- `test_amc_narrative_dsl.py` 신설 — 19개 테스트:
+  - `TestNarrativeStageField` (4): NarrativeStage Literal 동작 + ReportSectionPlan 확장
+  - `TestAnalysisMethodContract` (3): AMC 모델 동작 + default_contract helper
+  - `TestArchetypeContracts` (5): 5개 archetype 모두 contract() 선언 검증
+  - `TestArchetypeStageCoverage` (5): 각 archetype 의 section_plan 이 자기 mandatory_stages 를 모두 커버 (자가 정합성)
+  - `TestArchetypeNoSelfViolation` (2): forbidden_blocks 가 자기 section_plan 안에 없음 (자가 모순 방지)
+- 결과: `pytest src/tests/` **175 passed** (PR2 156 + PR3 19).
+
+#### Roadmap (남은 작업)
+- 6개 archetype (geopolitical_strategic / industry_value_chain / policy_implementation / tech_decomposition / timeline_first / freeform_essay) 에 contract() + stage 태깅 → backward-compat 라 점진 가능.
+- lens 단위 contract (현재는 archetype 단위만). lens 가 fact/mechanism 출력을 강제하는 형태로 확장 가능.
+- AMC `required_inputs` 가 *충족 안 되면* archetype 자체 라우팅 거부 (현재는 경고만).
+
+---
+
 ### v3.4.5 — Scenario data enrichment (PR2)
 
 PR1' 후속. 사용자 진단 #2 (시나리오 시인성)의 *완성판* — 확률 bar 외에 **신뢰도** 와 **선행 신호** 를 시각화.

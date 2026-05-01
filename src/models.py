@@ -143,6 +143,20 @@ class EvidenceNeed(BaseModel):
     priority: Literal["P0", "P1", "P2"] = "P1"
 
 
+NarrativeStage = Literal[
+    "fact",        # 관측된 사실 — 모호성 감소
+    "mechanism",   # 작동 원리 — "왜" 모호성 감소
+    "divergence",  # 경합 가설 / 분기 — 과확신 감소
+    "decision",    # 선택지 / 기준 — 분석 마비 감소
+    "trigger",     # 관측 가능 신호 — 모니터링 사각지대 감소
+]
+"""PR3 (v3.4.6): 보고서 흐름의 5단 narrative DSL.
+
+archetype 별 section 이 어떤 분석 단계에 해당하는지 선언. 시각 차별화
+(섹션 헤더 배지 + 색상)로 단조로움 해소.
+"""
+
+
 class ReportSectionPlan(BaseModel):
     """보고서 섹션 계획. Step 3 블록 시스템 도입 후 본격 사용."""
 
@@ -150,6 +164,8 @@ class ReportSectionPlan(BaseModel):
     title: str
     purpose: str = ""
     block_types: list[str] = Field(default_factory=list)
+    narrative_stage: NarrativeStage | None = None
+    """PR3: 이 섹션이 5단 narrative DSL 중 어느 단계인지. archetype 작성자가 선언."""
 
 
 class VisualizationSpec(BaseModel):
@@ -162,6 +178,46 @@ class VisualizationSpec(BaseModel):
     ]
     purpose: str = ""
     data_source: str = ""
+
+
+class AnalysisMethodContract(BaseModel):
+    """PR3 (v3.4.6): 분석 기법(archetype/lens) 별 출력 계약.
+
+    아키텍처가 다양한 archetype 을 선언해도 빌더가 archetype-blind 라
+    *결국 같은 모양*으로 평탄화되는 문제(REFACTOR_V3_PLAN §6) 해결책.
+    각 archetype 이 자신의 contract() 를 선언하면 synthesizer 가:
+
+    1. ``mandatory_stages`` 미달 시 경고 로그 + 시각 표시 (어떤 분석 단계가
+       빠졌는지 보고서에 가시화)
+    2. ``forbidden_blocks`` 에 등재된 빌더 출력은 reject
+    3. ``required_inputs`` 에 명시된 result 필드가 없으면 archetype 자체 적용 거부
+
+    Anti-pattern (REFACTOR_V3_PLAN §6 결론): "다양한 분석 기법을 주문했는데
+    형식이 늘 비슷함" 의 *구조적* 처방.
+    """
+
+    method_id: str
+    """archetype_id 또는 lens_id."""
+
+    required_inputs: list[str] = Field(default_factory=list)
+    """반드시 존재해야 하는 ``FullAnalysisResult`` 필드 (예: 'context', 'scenarios')."""
+
+    mandatory_stages: list[NarrativeStage] = Field(default_factory=list)
+    """이 기법이 *반드시* 다뤄야 하는 narrative stage 들. 미달 시 경고 표시.
+
+    예: decision_brief 는 반드시 [fact, divergence, decision, trigger] 를 다뤄야 함.
+    예: mechanism_decomp 는 반드시 [fact, mechanism] 을 다뤄야 함.
+    """
+
+    forbidden_blocks: list[str] = Field(default_factory=list)
+    """이 기법에서 사용 금지된 BlockType. placeholder 회귀 차단용.
+
+    예: scenario_first 의 forbidden_blocks=['decision_matrix'] —
+        의사결정 매트릭스는 decision_brief 의 영역.
+    """
+
+    rationale: str = ""
+    """이 contract 가 왜 이렇게 짜였는지의 한 줄 설명. 디버깅/문서용."""
 
 
 class AnalysisStrategy(BaseModel):

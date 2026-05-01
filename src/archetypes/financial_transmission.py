@@ -10,7 +10,7 @@ V3 Step 2 (v2.6.0): section_plan + 분기 진입까지만 도입. HTML 본격 �
 
 from __future__ import annotations
 
-from src.models import AnalysisStrategy, ReportSectionPlan
+from src.models import AnalysisMethodContract, AnalysisStrategy, ReportSectionPlan
 
 
 class FinancialTransmissionArchetype:
@@ -29,38 +29,53 @@ class FinancialTransmissionArchetype:
                 title="가격 반응",
                 purpose="자산 가격의 즉시 반응과 변동성 측정",
                 block_types=["data_series", "narrative"],
+                narrative_stage="fact",
             ),
             ReportSectionPlan(
                 section_id="ft_2_positioning",
                 title="포지션·자금흐름",
                 purpose="누가 어떤 포지션을 쥐고 있는지, 자금이 어디로 흐르는지",
                 block_types=["matrix", "data_series"],
+                narrative_stage="fact",
             ),
             ReportSectionPlan(
                 section_id="ft_3_transmission",
                 title="전이 경로",
                 purpose="1차/2차/3차 전이 채널과 시간 척도",
                 block_types=["flow_chain", "callout"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="ft_4_vulnerabilities",
                 title="취약 고리",
                 purpose="스트레스 누적이 가장 큰 지점과 그 이유",
                 block_types=["risk_matrix", "decomposition"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="ft_5_stress_scenarios",
                 title="스트레스 시나리오",
                 purpose="기준·악화·꼬리 시나리오의 가격·자금 흐름 결과",
                 block_types=["scenario_table", "data_series"],
+                narrative_stage="divergence",
             ),
             ReportSectionPlan(
                 section_id="ft_6_observables",
                 title="관찰 지표",
                 purpose="시나리오 분기를 가리는 선행/동행 지표 + 반대 가설",
                 block_types=["watchlist", "counter_hypothesis"],
+                narrative_stage="trigger",
             ),
         ]
+
+    def contract(self) -> AnalysisMethodContract:
+        return AnalysisMethodContract(
+            method_id=self.archetype_id,
+            required_inputs=["context"],
+            mandatory_stages=["fact", "mechanism", "divergence", "trigger"],
+            forbidden_blocks=["decision_matrix"],
+            rationale="금융 전이 — 가격/자금(fact) → 전이/취약성(mechanism) → 시나리오(divergence) → 관찰(trigger). 의사결정은 별도 archetype.",
+        )
 
     def template_path(self) -> str:
         # V3 Step 3 (v2.7.0): 블록 디스패처로 통일. archetype 별 placeholder HTML

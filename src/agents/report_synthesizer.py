@@ -470,6 +470,12 @@ class ReportSynthesizer:
         composer's ``embedded_blocks`` references resolve regardless of section_plan.
         For other archetypes, walk each ReportSectionPlan and build one AnalysisBlock
         per requested block_type.
+
+        PR3 (v3.4.6): AMC enforcement.
+        - archetype.contract().forbidden_blocks 에 등재된 block_type 은 reject
+          (placeholder 회귀 차단).
+        - 빌드 후 contract().mandatory_stages 미달 시 경고 로그 + 첫 섹션 메타에
+          missing_stages 기록 (템플릿이 시각화).
         """
         if archetype.archetype_id == "six_act_theater":
             return []
@@ -482,11 +488,23 @@ class ReportSynthesizer:
         # is the SSOT for the per-archetype layout, but strategy is what the dispatcher
         # iterates — so we mirror it here.
         result.strategy.section_plan = plan
+
+        # PR3: AMC 읽기 (contract() 미선언 archetype 은 default_contract — 느슨한 계약)
+        contract = self._archetype_contract(archetype)
+        forbidden = set(contract.forbidden_blocks or [])
+
         builders = self._BLOCK_BUILDERS
         blocks: list[AnalysisBlock] = []
         block_seq = 0
+        covered_stages: set[str] = set()
         for section in plan:
             for btype in (section.block_types or []):
+                if btype in forbidden:
+                    logger.info(
+                        "[report_synthesizer] AMC forbids block_type=%s in archetype=%s; skipping",
+                        btype, archetype.archetype_id,
+                    )
+                    continue
                 builder = builders.get(btype)
                 if builder is None:
                     logger.warning(
@@ -506,11 +524,53 @@ class ReportSynthesizer:
                     payload=payload,
                     section_id=section.section_id,
                 ))
+            # 이 섹션의 narrative_stage 가 *실제로 블록을 1개 이상 만들었으면* 커버됨으로 간주
+            if section.narrative_stage and any(
+                b.section_id == section.section_id for b in blocks
+            ):
+                covered_stages.add(section.narrative_stage)
+
+        # PR3: mandatory_stages 검증 — 미달 stage 가 있으면 contract.method_id 와 함께 경고.
+        # 메타데이터로 result.strategy 에 부착 (템플릿/디버그 가시화).
+        missing = [s for s in contract.mandatory_stages if s not in covered_stages]
+        if missing:
+            logger.warning(
+                "[report_synthesizer] AMC %s: mandatory stages missing %s — only covered %s",
+                contract.method_id, missing, sorted(covered_stages),
+            )
+        # strategy 에 매번 새 attribute 를 박는 건 Pydantic 에서 안전하지 않으므로
+        # 첫 블록 메타에 결과 기록 (있을 때만)
+        if blocks:
+            blocks[0].payload = dict(blocks[0].payload or {})
+            blocks[0].payload.setdefault("__amc__", {})
+            blocks[0].payload["__amc__"] = {
+                "method_id": contract.method_id,
+                "mandatory_stages": list(contract.mandatory_stages),
+                "covered_stages": sorted(covered_stages),
+                "missing_stages": missing,
+            }
+
         logger.info(
-            "[report_synthesizer] Built %d blocks for archetype=%s across %d sections",
-            len(blocks), archetype.archetype_id, len(plan),
+            "[report_synthesizer] Built %d blocks for archetype=%s across %d sections "
+            "(stages covered: %s)",
+            len(blocks), archetype.archetype_id, len(plan), sorted(covered_stages),
         )
         return blocks
+
+    @staticmethod
+    def _archetype_contract(archetype: ReportArchetype):
+        """archetype.contract() 호출. 미선언 archetype 은 default 반환."""
+        from src.archetypes.base import default_contract
+        getter = getattr(archetype, "contract", None)
+        if callable(getter):
+            try:
+                return getter()
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "[report_synthesizer] archetype.%s.contract() raised %s; using default",
+                    getattr(archetype, "archetype_id", "?"), exc,
+                )
+        return default_contract(getattr(archetype, "archetype_id", "unknown"))
 
     async def _call_cli(self, prompt: str) -> str:
         """Call Claude CLI for text generation."""

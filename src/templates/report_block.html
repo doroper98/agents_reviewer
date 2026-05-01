@@ -63,11 +63,33 @@
 <main class="container">
 
 {% set section_plan = (result.strategy.section_plan if result.strategy else []) %}
+{# PR3 (v3.4.6): AMC 메타데이터 — 첫 블록의 payload.__amc__ 에서 추출 #}
+{% set amc_meta = none %}
+{% if result.blocks and result.blocks[0].payload and result.blocks[0].payload.get('__amc__') %}
+  {% set amc_meta = result.blocks[0].payload.get('__amc__') %}
+{% endif %}
+{# 5단 narrative DSL 라벨 매핑 #}
+{% set _stage_label = {
+  'fact': '사실', 'mechanism': '메커니즘', 'divergence': '분기',
+  'decision': '의사결정', 'trigger': '관찰 신호'
+} %}
+{% if amc_meta and amc_meta.get('missing_stages') %}
+<section class="report-block-amc-warning">
+  <div class="amc-warning-badge">⚠ 분석 기법 계약 미달 — <code>{{ amc_meta.method_id }}</code></div>
+  <div class="amc-warning-detail">
+    이 archetype 은 다음 단계를 *반드시* 다뤄야 하나 누락:
+    {% for s in amc_meta.missing_stages %}<span class="amc-stage-missing">{{ _stage_label.get(s, s) }}</span>{% endfor %}
+  </div>
+</section>
+{% endif %}
 {% if section_plan %}
 {% for section in section_plan %}
-<section id="{{ section.section_id }}" class="report-block-section fade-in">
-  {% if section.purpose %}<div class="section-label">{{ section.purpose }}</div>{% endif %}
-  <h2 class="section-title">{{ section.title }}</h2>
+<section id="{{ section.section_id }}" class="report-block-section fade-in stage-{{ section.narrative_stage or 'none' }}">
+  <div class="section-header">
+    {% if section.narrative_stage %}<span class="section-stage-badge stage-{{ section.narrative_stage }}">{{ _stage_label.get(section.narrative_stage, section.narrative_stage) }}</span>{% endif %}
+    {% if section.purpose %}<div class="section-label">{{ section.purpose }}</div>{% endif %}
+    <h2 class="section-title">{{ section.title }}</h2>
+  </div>
   {% set section_blocks = result.blocks | selectattr("section_id", "equalto", section.section_id) | list %}
   {% if section_blocks %}
     {% for block in section_blocks %}
