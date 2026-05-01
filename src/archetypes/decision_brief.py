@@ -2,11 +2,12 @@
 
 V3 Step 5-C (v3.0.0). 사용 상황: 사용자가 *결정* 또는 *대응* 을 묻는 경우. event_type 무관 — 의도 전용.
 섹션: 판단 요약 → 옵션 비교 → 옵션별 리스크 → 권고 → Pre-mortem → 감시 신호.
+PR3 (v3.4.6): narrative_stage 태깅 + contract().
 """
 
 from __future__ import annotations
 
-from src.models import AnalysisStrategy, ReportSectionPlan
+from src.models import AnalysisMethodContract, AnalysisStrategy, ReportSectionPlan
 
 
 class DecisionBriefArchetype:
@@ -22,38 +23,53 @@ class DecisionBriefArchetype:
                 title="판단 요약",
                 purpose="현 시점의 핵심 판단과 권고의 결론 1문장",
                 block_types=["narrative", "callout"],
+                narrative_stage="fact",
             ),
             ReportSectionPlan(
                 section_id="db_2_options",
                 title="옵션 비교",
                 purpose="가능한 옵션들과 비교 매트릭스",
                 block_types=["decision_matrix", "matrix"],
+                narrative_stage="divergence",
             ),
             ReportSectionPlan(
                 section_id="db_3_risks",
                 title="옵션별 리스크",
                 purpose="각 옵션의 부작용·실패 모드",
                 block_types=["risk_matrix", "decomposition"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="db_4_recommendation",
                 title="권고",
                 purpose="최종 권고 + 전제 조건",
                 block_types=["narrative", "callout"],
+                narrative_stage="decision",
             ),
             ReportSectionPlan(
                 section_id="db_5_premortem",
                 title="Pre-mortem",
                 purpose="권고가 실패했다면 무엇이 사실이어야 하는가",
                 block_types=["counter_hypothesis", "narrative"],
+                narrative_stage="divergence",
             ),
             ReportSectionPlan(
                 section_id="db_6_signals",
                 title="감시 신호",
                 purpose="권고 무효화 조건 + 모니터링 지표",
                 block_types=["watchlist"],
+                narrative_stage="trigger",
             ),
         ]
+
+    def contract(self) -> AnalysisMethodContract:
+        return AnalysisMethodContract(
+            method_id=self.archetype_id,
+            required_inputs=["judgment"],
+            mandatory_stages=["fact", "divergence", "decision", "trigger"],
+            forbidden_blocks=[],
+            rationale="결정 브리프 — 5단 중 mechanism 만 선택. 최종 decision 강제. trigger 로 무효화 조건 강제.",
+        )
 
     def template_path(self) -> str:
         return "report_block.html"

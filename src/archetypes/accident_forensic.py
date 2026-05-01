@@ -9,7 +9,7 @@ V3 Step 5-A (v2.9.0) 도입.
 
 from __future__ import annotations
 
-from src.models import AnalysisStrategy, ReportSectionPlan
+from src.models import AnalysisMethodContract, AnalysisStrategy, ReportSectionPlan
 
 
 class AccidentForensicArchetype:
@@ -28,38 +28,53 @@ class AccidentForensicArchetype:
                 title="사실 타임라인",
                 purpose="사고 전·발생·이후의 시간 순서 사실",
                 block_types=["timeline", "narrative"],
+                narrative_stage="fact",
             ),
             ReportSectionPlan(
                 section_id="af_2_proximate",
                 title="직접 원인",
                 purpose="사고를 직접 촉발한 요소 (Fault Tree 의 leaf)",
                 block_types=["flow_chain", "callout"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="af_3_swiss_cheese",
                 title="방어막 실패",
                 purpose="다층 방어막의 구멍이 정렬된 지점 (Swiss Cheese)",
                 block_types=["decomposition", "matrix"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="af_4_organizational",
                 title="조직적 원인",
                 purpose="STAMP — 통제 구조·정보 흐름·피드백 루프 누락",
                 block_types=["narrative", "decomposition"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="af_5_prevention",
                 title="재발 방지",
                 purpose="구체적 방지책 + 우선순위 + 비용/현실성 검토",
                 block_types=["risk_matrix", "decision_matrix"],
+                narrative_stage="decision",
             ),
             ReportSectionPlan(
                 section_id="af_6_open",
                 title="미해결 질문 + 반대 가설",
                 purpose="조사가 답하지 못한 부분 + 반대 가설",
                 block_types=["watchlist", "counter_hypothesis"],
+                narrative_stage="trigger",
             ),
         ]
+
+    def contract(self) -> AnalysisMethodContract:
+        return AnalysisMethodContract(
+            method_id=self.archetype_id,
+            required_inputs=["context"],
+            mandatory_stages=["fact", "mechanism", "decision"],
+            forbidden_blocks=["scenario_table"],
+            rationale="사고 포렌식 — fact(타임라인) → mechanism(직접/구조/조직) → decision(재발 방지) 강제. 미래 시나리오 금지.",
+        )
 
     def template_path(self) -> str:
         return "report_block.html"
