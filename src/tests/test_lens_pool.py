@@ -123,13 +123,14 @@ class TestLensExecution:
 
 class TestArchetypeExtension:
     def test_archetype_count_v3(self) -> None:
-        """V3 Step 5-C 후 11종 archetype."""
+        """V3 Step 5-C 후 11종 archetype + v3.3.0 freeform_essay → 12종."""
         ids = list_archetypes()
-        assert len(ids) == 11
+        assert len(ids) == 12
         for new_id in (
             "geopolitical_strategic", "accident_forensic", "policy_implementation",
             "decision_brief", "timeline_first", "scenario_first",
             "mechanism_decomp", "industry_value_chain",
+            "freeform_essay",
         ):
             assert new_id in ids
 

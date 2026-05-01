@@ -101,15 +101,20 @@ class ScenarioArchitect(BaseAgent):
         chain_reaction_analysis: ChainReactionAnalysis,
         directive: str = "",
     ) -> ScenarioAnalysis:
-        """Design scenarios and watch signals based on all prior analyses."""
+        """Design scenarios and watch signals based on all prior analyses.
+
+        v3.1.0: persona 단계가 없는 fast/standard 에서는 player/dynamics/chain_reaction
+        이 None 으로 들어옴 — context 만 사용.
+        """
         context: dict = {}
         if context_analysis:
             context["context_analysis"] = context_analysis.model_dump()
-        if player_analysis:
+        # v3.1.0: persona 데이터가 None 이 아닐 때만 동봉 (fast/standard 토큰 절약).
+        if player_analysis is not None:
             context["player_analysis"] = player_analysis.model_dump()
-        if dynamics_analysis:
+        if dynamics_analysis is not None:
             context["dynamics_analysis"] = dynamics_analysis.model_dump()
-        if chain_reaction_analysis:
+        if chain_reaction_analysis is not None:
             context["chain_reaction_analysis"] = chain_reaction_analysis.model_dump()
         context["current_date"] = datetime.now().strftime("%Y-%m-%d")
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."

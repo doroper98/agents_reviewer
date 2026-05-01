@@ -23,7 +23,11 @@ logger = logging.getLogger(__name__)
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 CSS_PATH = os.path.join(TEMPLATE_DIR, "report.css")
+STATIC_DIR = os.path.join(TEMPLATE_DIR, "static")
 KST = timezone(timedelta(hours=9))
+
+# v3.2.0 — 정적 자산 (d3 + charts.js + charts.css). 보고서 디렉토리에 한 번만 복사.
+STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css")
 
 
 class ReportSynthesizer:
@@ -32,15 +36,78 @@ class ReportSynthesizer:
     Does NOT extend BaseAgent. Uses Jinja2 for HTML rendering,
     calls Claude CLI for executive summary generation,
     builds Canvas 2D chart data, and uploads to Cloudflare Pages.
+
+    v3.1.0:
+    - ``use_llm_narrative_plan`` (default False) — fast/standard 는 default plan 사용.
+    - ``use_llm_executive_summary`` (default False) — deterministic builder 우선,
+      실패 또는 deep 일 때만 LLM.
     """
 
     def __init__(self, config: Config) -> None:
         self.config = config
         self._api_client: object | None = None
+        # v3.1.0: orchestrator 가 mode 별로 주입.
+        self.use_llm_narrative_plan: bool = False
+        self.use_llm_executive_summary: bool = False
 
         if not config.use_cli_mode:
             import anthropic
             self._api_client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
+
+    # ------------------------------------------------------------------
+    # v3.1.0 — Deterministic executive summary builder
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_deterministic_summary(
+        result: FullAnalysisResult,
+    ) -> tuple[str, list[str]]:
+        """LLM 호출 없이 ``judgment.main_judgment`` + ``biggest_uncertainty`` +
+        top findings 로 governance + key items 생성.
+
+        반환값: (governance_text, key_summary_items)
+        실패하면 ("", []) 반환 → 호출자가 LLM 폴백 결정.
+        """
+        ctx = result.context
+        judgment = result.judgment
+
+        governance_pieces: list[str] = []
+        if ctx and ctx.event_name:
+            governance_pieces.append(f"{ctx.event_name}.")
+        if ctx and ctx.summary:
+            governance_pieces.append(ctx.summary.strip().split("\n", 1)[0][:200])
+        elif judgment and judgment.main_judgment:
+            governance_pieces.append(judgment.main_judgment.strip()[:200])
+        governance = " ".join(p for p in governance_pieces if p).strip()
+
+        key_items: list[str] = []
+        if judgment and judgment.main_judgment:
+            key_items.append(judgment.main_judgment.strip()[:160])
+        if judgment and judgment.base_scenario and judgment.base_scenario.strip():
+            key_items.append(f"기준 시나리오: {judgment.base_scenario.strip()[:140]}")
+        # Top finding (highest confidence) — 종합 판단과 다른 각도 보강.
+        if result.findings:
+            top = max(result.findings, key=lambda f: f.confidence.aggregate)
+            stmt = top.main_claim.statement.strip()
+            if stmt and stmt not in (judgment.main_judgment if judgment else ""):
+                key_items.append(stmt[:160])
+        if judgment and judgment.counter_hypothesis:
+            key_items.append(
+                f"반대 가설: {judgment.counter_hypothesis.strip()[:140]}"
+            )
+        if judgment and judgment.biggest_uncertainty:
+            key_items.append(
+                f"가장 큰 불확실성: {judgment.biggest_uncertainty.strip()[:140]}"
+            )
+
+        # 최소 검증 — governance/key_items 둘 다 비어있으면 실패 신호.
+        if not governance and not key_items:
+            return "", []
+        if not key_items:
+            # judgment 없이 context 만 있을 때 — context 핵심 1~2개 fallback.
+            if ctx and ctx.summary:
+                key_items.append(ctx.summary.strip().split("\n", 1)[0][:160])
+        return governance, key_items[:5]
 
     async def _generate_executive_summary(
         self, result: FullAnalysisResult
@@ -341,18 +408,59 @@ class ReportSynthesizer:
 
     _BLOCK_BUILDERS: dict = {}  # populated below to avoid forward-ref issues
 
+    def _build_all_available_blocks(
+        self, result: FullAnalysisResult,
+    ) -> list[AnalysisBlock]:
+        """v3.3.0 — freeform_essay 용. 가용한 BlockType 마다 1개씩 빌드.
+
+        composer 의 ``embedded_blocks: [block_type]`` 가 type 으로 referencing 하므로
+        section_plan 무관하게 *지금 가용한* 블록을 모두 채워둔다. 데이터 없는 type 은
+        builder 가 None 반환 → 자동 스킵.
+        """
+        # 더미 ReportSectionPlan — 빌더 시그니처 호환용. composer 가 section_id 를 쓰지
+        # 않으므로 모두 "freeform" 으로 통일.
+        dummy_section = ReportSectionPlan(
+            section_id="freeform",
+            title="",
+            purpose="",
+            block_types=[],
+        )
+        blocks: list[AnalysisBlock] = []
+        seq = 0
+        for btype, builder in self._BLOCK_BUILDERS.items():
+            payload = builder(result, dummy_section)
+            if payload is None:
+                continue
+            seq += 1
+            blocks.append(AnalysisBlock(
+                block_id=f"B-{seq:03d}",
+                block_type=btype,
+                title="",
+                purpose="",
+                payload=payload,
+                section_id="freeform",
+            ))
+        logger.info(
+            "[report_synthesizer] freeform_essay: built %d available blocks (%s)",
+            len(blocks), [b.block_type for b in blocks],
+        )
+        return blocks
+
     def _build_blocks(
         self, result: FullAnalysisResult, archetype: ReportArchetype,
     ) -> list[AnalysisBlock]:
         """Build AnalysisBlock list from archetype.section_plan(strategy).
 
         Returns empty list for the legacy six_act_theater path (caller does not use).
+        For freeform_essay (v3.3.0), build one block per available BlockType so
+        composer's ``embedded_blocks`` references resolve regardless of section_plan.
         For other archetypes, walk each ReportSectionPlan and build one AnalysisBlock
-        per requested block_type. Also populates ``result.strategy.section_plan`` so the
-        dispatcher template can iterate it (spec contract).
+        per requested block_type.
         """
         if archetype.archetype_id == "six_act_theater":
             return []
+        if archetype.archetype_id == "freeform_essay":
+            return self._build_all_available_blocks(result)
         if result.strategy is None:
             return []
         plan = archetype.section_plan(result.strategy)
@@ -694,25 +802,48 @@ class ReportSynthesizer:
             archetype = get_archetype("six_act_theater")
         is_legacy_six_act = archetype.archetype_id == "six_act_theater"
 
-        # Generate executive summary + narrative plan in parallel
+        # v3.1.0: deterministic-first executive summary + conditional narrative plan.
         key_summary_items: list[str] = []
         narrative_plan: NarrativePlan | None = None
 
-        async def _gen_summary() -> tuple[str, list[str]]:
-            if result.executive_summary:
-                return result.executive_summary, []
-            return await self._generate_executive_summary(result)
+        # 1) Executive summary — deterministic builder 우선.
+        if result.executive_summary:
+            governance, key_items = result.executive_summary, []
+        else:
+            governance, key_items = self._build_deterministic_summary(result)
+            if (not governance or not key_items) and self.use_llm_executive_summary:
+                # deterministic 실패 + LLM 허용 시에만 폴백.
+                logger.info(
+                    "[report_synthesizer] deterministic summary insufficient; "
+                    "falling back to LLM executive summary",
+                )
+                try:
+                    governance, key_items = await self._generate_executive_summary(result)
+                except Exception as e:
+                    logger.warning(
+                        "[report_synthesizer] LLM executive summary failed: %s; "
+                        "using deterministic placeholder", e,
+                    )
+            if not governance:
+                governance = (
+                    result.context.event_name if result.context else ""
+                ) or "(요약 미생성 — 분석 데이터 부족)"
+            if not result.executive_summary:
+                result.executive_summary = governance
+                key_summary_items = key_items
 
-        async def _gen_plan() -> NarrativePlan:
-            return await self._generate_narrative_plan(result)
-
-        (governance, key_items), plan = await asyncio.gather(
-            _gen_summary(), _gen_plan()
-        )
-        if not result.executive_summary:
-            result.executive_summary = governance
-            key_summary_items = key_items
-        narrative_plan = plan
+        # 2) Narrative plan — fast/standard 는 default, deep 만 LLM.
+        if self.use_llm_narrative_plan:
+            try:
+                narrative_plan = await self._generate_narrative_plan(result)
+            except Exception as e:
+                logger.warning(
+                    "[report_synthesizer] LLM narrative plan failed: %s; "
+                    "using default plan", e,
+                )
+                narrative_plan = self._default_narrative_plan(result)
+        else:
+            narrative_plan = self._default_narrative_plan(result)
 
         # Build chart data & confidence text
         chart_data = self._build_chart_data(result)
@@ -801,6 +932,9 @@ class ReportSynthesizer:
 
         # Generate index.html (report listing page)
         self._generate_index(output_dir)
+
+        # v3.2.0 — 정적 자산 (d3 + charts.js + charts.css) 복사.
+        self._sync_static_assets(output_dir)
 
         # Ensure _headers file exists for proper MIME type on .md files
         headers_path = os.path.join(output_dir, "_headers")
@@ -1091,6 +1225,34 @@ class ReportSynthesizer:
             parts.append(line)
         parts.append("")
         return "\n".join(parts)
+
+    @staticmethod
+    def _sync_static_assets(output_dir: str) -> None:
+        """v3.2.0 — d3, charts.js, charts.css 를 reports/ 로 복사.
+
+        파일이 같으면 스킵 (mtime + size 비교). 다르거나 없으면 덮어씀.
+        Cloudflare Pages 가 같은 버전 파일을 캐시하도록 helps.
+        """
+        import shutil as _sh
+        for asset in STATIC_ASSETS:
+            src = os.path.join(STATIC_DIR, asset)
+            dst = os.path.join(output_dir, asset)
+            if not os.path.exists(src):
+                logger.warning(
+                    "[report_synthesizer] Static asset missing: %s", src,
+                )
+                continue
+            try:
+                if os.path.exists(dst):
+                    if (os.path.getsize(src) == os.path.getsize(dst)
+                            and os.path.getmtime(dst) >= os.path.getmtime(src)):
+                        continue  # already up to date
+                _sh.copyfile(src, dst)
+                logger.info(f"[report_synthesizer] Synced static asset: {asset}")
+            except OSError as e:
+                logger.warning(
+                    "[report_synthesizer] Failed to copy %s: %s", asset, e,
+                )
 
     def _generate_index(self, output_dir: str) -> None:
         """Generate index.html listing all reports."""

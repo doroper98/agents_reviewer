@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v3.3.0
 ssot_for:
   - "시스템 아키텍처 다이어그램"
   - "분석 파이프라인 흐름"
@@ -8,12 +8,18 @@ ssot_for:
   - "보고서 블록 렌더링 흐름 (V3 Step 3 활성화)"
   - "Quality Gate + Synthesis Judge 위치 (V3 Step 4 활성화)"
   - "토큰 사용량 추정"
+  - "Token Budget + Mode Routing (v3.1.0 활성화)"
+  - "d3 차트 자동 생성 매트릭스 (v3.2.0 활성화)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "src/agents/* (구성)"
   - "src/archetypes/registry.py (archetype 분기 SSOT)"
+  - "src/token_budget.py (mode 정책)"
+  - "src/lens_policy.py (lens 결정 규칙)"
+  - "src/visual_builder.py:build_chart_payload (차트 데이터 SSOT)"
+  - "src/templates/static/charts.js (d3 렌더 SSOT)"
   - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
-last_review: 2026-04-26
+last_review: 2026-04-30
 ---
 
 # Event Analysis Team — Architecture
@@ -25,7 +31,7 @@ last_review: 2026-04-26
 
 ## 1. 한 줄 요약
 
-텔레그램 메시지 → Strategy Planner + Quality Gate 1 → v2 페르소나(deprecated) + 분석 lens 풀 (사건당 ≤4) → Synthesis Judge + Quality Gate 2 → archetype 11종 중 matrix 결정 → HTML 보고서 → Cloudflare 배포 → 공유 링크 + Watchlist 영구 저장.
+텔레그램 메시지 → mode 결정 (fast/standard/deep, 키워드 자동 매핑) → ContextAnalyst → Strategy Planner (축약) + Quality Gate 1 → lens pool (mode 별 cap 1/2/4) + (deep 만) v2 페르소나 → 시나리오 → 결정적 시각화 → Synthesis Judge (heuristic-first) + Quality Gate 2 → archetype 11종 중 matrix 결정 → HTML 보고서 → Cloudflare 배포 → 공유 링크 + Watchlist 영구 저장.
 
 ---
 
@@ -98,6 +104,9 @@ Phase 3.8 [V3 Step 4] 🧮 SynthesisJudge.judge(findings) → JudgmentVerdict
                 ▼  (contradictions 노출, 봉합 X — Anti-pattern #5)
 Phase 3.9 [V3 Step 4] 🛡 Quality Gate 2 — Coverage Check
                 ▼  (failure → max 2 retries (judgment 재생성) → "⚠️ 부분 분석 완료. gate_2 실패")
+Phase 3.95 [v3.3.0] ✍️ NarrativeComposer (Opus 4.7, deep 모드만)
+                ▼  (judgment + visuals + claim 카탈로그 + chart catalog → ComposedReport.
+                    성공 시 archetype 을 freeform_essay 로 명시 라우팅. 실패 시 select_archetype matrix 폴백.)
 Phase 4   ⑦ 보고서 합성관 → Jinja2 → HTML → Cloudflare Pages
                 ▼
 Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
@@ -163,15 +172,56 @@ Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
 
 게이트는 항상 실행되며 우회 불가 (Anti-pattern #7). 게이트 통과율·재시도율은 `[quality_inspector] gate_X stats: ...` 로 INFO 로그.
 
-### 3.1 토큰 사용량 (분석 1건당 추정)
+### 3.1 토큰 사용량 + Mode 정책 (v3.1.0)
 
-| 시나리오 | 입력 | 출력 | 합계 |
-|---------|------|------|------|
-| 짧은 이벤트 | ~16K | ~5K | ~21K |
-| 보통 이벤트 | ~28K | ~9K | ~37K |
-| 복잡한 이벤트 | ~44K | ~13K | ~57K |
+분석 1건당 LLM 호출 수와 lens 개수, 보조 LLM 단계의 사용 여부는 mode 별로 차등. SSOT 는 [src/token_budget.py](../src/token_budget.py).
 
-Max 플랜 CLI 모드라 추가 비용 없음.
+| Mode | LLM 호출 cap | Lens cap | LLM Quality Gate | LLM Narrative Plan | LLM Visuals | LLM Synthesis | Legacy Persona |
+|------|------------|---------|----------------|------------------|-----------|--------------|---------------|
+| fast | 4 | 1 | ❌ | ❌ | ❌ | ❌ | ❌ |
+| standard (default) | 7 | 2 | ❌ | ❌ | ❌ | 조건부* | ❌ |
+| deep | 12 | 4 | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+\* standard 의 SynthesisJudge LLM 은 contradictions 발견 / aggregate confidence 0.55 미만 / core_questions 미답변 위험 시에만 발화. 그 외에는 heuristic 만.
+
+#### Mode 결정 규칙
+- 사용자 메시지에 `짧게` / `간략히` / `간략하게` / `빠르게` / `요약` / `간단히` / `간단하게` / `fast` 키워드 → **fast**
+- 사용자 메시지에 `심층` / `깊게` / `자세히` / `정밀` / `면밀` / `상세하게` / `deep` 키워드 → **deep**
+- 둘 다 있으면 deep 우선
+- 그 외 → **standard** (default)
+
+#### 토큰 사용량 (분석 1건당 추정, 입력+출력 합계)
+
+| Mode | v3.0.0 (이전) | v3.1.0~3.2.0 | v3.3.0 |
+|------|------------|------------|------------|
+| fast (구 quick_mode) | ~28K | ~12K | ~12K |
+| standard | ~37K | ~18K | ~18K |
+| deep | ~57K | ~46K | ~85K (composer Opus 4.7 +1 콜) |
+
+v3.3.0 deep 토큰 폭증의 정체: narrative_composer 가 입력 ~30~50K (전체 분석 결과 + claim 카탈로그) + 출력 ~6K 를 추가로 사용. 대신 `_generate_executive_summary` / `_generate_narrative_plan` 보조 콜은 그대로 유지 (composer 출력이 메인 본문, deterministic summary 는 hero 영역). LLM 호출 수: deep 12 → 13 (max_llm_calls cap 도 13 으로 상향). fast/standard 는 영향 0. Max 플랜 CLI 모드라 추가 비용 없음.
+
+### 3.2 Lens 선택 정책 (`lens_policy`)
+
+[src/lens_policy.py](../src/lens_policy.py) 가 `(event_type, user_intent, mode)` 3-튜플로 lens 를 결정. 카탈로그는 [docs/CATALOGS.md §2](CATALOGS.md).
+
+```
+event_type 분야별 lens 우선순위:
+  tech       → tech_architecture, structural
+  accident   → accident_causality, structural, cascade
+  financial  → financial_transmission, market_structure, cascade
+  industry   → market_structure, stakeholder, structural
+  policy     → policy_implementation, stakeholder
+  geopolitical → geopolitical, stakeholder, structural
+  general    → stakeholder, structural
+
+메타 lens (red_team / pre_mortem) 자동 추가 조건:
+  user_intent ∈ {what_to_do, where_vulnerable} → red_team
+  user_intent ∈ {what_next}                    → pre_mortem
+  · fast 모드는 메타 lens 추가 안 함 (cap=1)
+  · deep 모드는 cap 여유 있을 때 반대편 메타 lens 도 추가
+```
+
+LLM Strategy Planner 의 `recommended_lenses` 출력은 *우선순위 보정* 에만 활용 (분야 lens 만). 메타 lens 결정권은 정책 단독.
 
 ---
 
@@ -201,30 +251,40 @@ telegram_bot.py: HTML 파일 + 공유 링크 전송
 ## 5. 보고서 생성 흐름
 
 ```
-에이전트 1~6 분석 완료
+에이전트 1~6 분석 완료 + Synthesis Judge → JudgmentVerdict
     │
     ▼
+visual_analyst.analyze(use_llm=False, judgment=...) [fast/standard]
+   │   - svg_actor (행위자 관계도, 결정적)
+   │   - svg_flow (인과 사슬, 결정적)
+   │   - chart_config.payload — 8종 d3 차트 데이터 (모두 결정적, v3.2.0)
+   ▼
 report_synthesizer.py
-    ├── 1) Claude 호출: Executive Summary (3줄)
+    ├── 1) deterministic 또는 LLM executive summary
     ├── 2) report.css 로드
-    ├── 3) Jinja2 렌더링 (report.html + 데이터 + CSS → HTML)
+    ├── 3) Jinja2 렌더링 (report.html + 데이터 + chart_payload → HTML)
     ├── 4) reports/analysis_YYYYMMDD_HHMMSS.html 저장
     ├── 5) reports/index.html (목록 페이지) 갱신
+    ├── 6) **_sync_static_assets** (v3.2.0): d3.v7.min.js / charts.js / charts.css 를 reports/ 로 복사 (idempotent)
     └── 6) wrangler pages deploy reports/
             → https://<프로젝트명>.pages.dev/analysis_YYYYMMDD_HHMMSS.html
 ```
 
-### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3/5-A/5-C — v2.6.0/v2.7.0/v2.9.0/v3.0.0)
+### 5.1 Archetype 분기 + 블록 렌더링 (V3 Step 2/3/5-A/5-C/v3.3.0)
 
-Orchestrator 는 **하이브리드 라우팅** 적용 (v3.0.0):
-1. Strategy Planner 가 LLM 후보 1순위 `strategy.report_archetype` (string ID) 를 출력.
-2. `src/archetypes/registry.select_archetype(strategy)` 가 4-tier 우선순위 매트릭스로 archetype 을 결정 (matrix 가 **최종 결정자**).
-3. LLM 후보 ≠ matrix 결과 시 INFO 로그 (`[orchestrator] archetype mismatch — LLM=…, matrix=…`) 후 matrix 결과로 진행. `strategy.report_archetype` 도 matrix 결과로 갱신 → 보고서 헤더와 일치.
-4. ReportSynthesizer 가 archetype 별로 분기 렌더 — `six_act_theater` 는 legacy 흐름(byte-equal 보장), 그 외는 블록 디스패처.
+Orchestrator 는 **하이브리드 라우팅** 적용:
+1. **(v3.3.0)** deep 모드 + `narrative_composer` 성공 시 archetype 을 `freeform_essay` 로 *명시* 라우팅. matrix 우선순위를 우회 — composer 출력이 SSOT.
+2. composer 미사용 / 실패 시 Strategy Planner 가 LLM 후보 1순위 `strategy.report_archetype` (string ID) 를 출력.
+3. `src/archetypes/registry.select_archetype(strategy)` 가 4-tier 우선순위 매트릭스로 archetype 을 결정 (matrix 가 **최종 결정자**).
+4. LLM 후보 ≠ matrix 결과 시 INFO 로그 후 matrix 결과로 진행. `strategy.report_archetype` 도 matrix 결과로 갱신.
+5. ReportSynthesizer 가 archetype 별로 분기 렌더 — `six_act_theater` 는 legacy 흐름(byte-equal 보장), `freeform_essay` 는 composed_report 직렬 렌더, 그 외는 블록 디스패처.
 
 ```
    AnalysisStrategy.{user_intent, event_type, report_archetype(LLM 후보)}
                         │
+                        ▼
+   [v3.3.0] deep 모드 + narrative_composer 성공?  ──▶ freeform_essay (명시 라우팅)
+                        │ no
                         ▼
    src/archetypes/registry.select_archetype(strategy)   ← matrix 최종 결정자
    (LLM 후보 ≠ matrix 결과 시 INFO 로그 후 matrix 채택,
@@ -270,7 +330,42 @@ Orchestrator 는 **하이브리드 라우팅** 적용 (v3.0.0):
 
 빌더 매핑·블록 카탈로그의 SSOT 는 코드 (`src/agents/report_synthesizer.py:_BLOCK_BUILDERS`, `src/models.py:BlockType`). 사람-친화 미러는 [docs/CATALOGS.md §3-4](CATALOGS.md). 신규 archetype 추가 시 `src/archetypes/<name>.py` 신설 → `registry.py` 등록 → CATALOGS §3 갱신 (Anti-pattern #14). 신규 BlockType 추가 시 `src/models.py:BlockType` Literal 확장 → `src/templates/blocks/<type>.html` 신설 → `_BLOCK_BUILDERS` 등록 → CATALOGS §4 갱신 (Anti-pattern #15).
 
-### 5.2 보고서 구조 — six_act_theater (인물극형 specialty)
+### 5.2 d3 차트 시스템 (v3.2.0)
+
+보고서가 데이터 가용성에 따라 자동으로 8종 d3 SVG 차트를 생성한다. SSOT 는 [src/visual_builder.py:build_chart_payload](../src/visual_builder.py) 와 [src/templates/static/charts.js](../src/templates/static/charts.js).
+
+#### 자동 차트 매트릭스
+| 데이터 가용성 | 자동 생성되는 차트 |
+|-----|-----|
+| `scenarios` 있음 | `scenarios` (가로 막대) |
+| `scenarios[*].impact_by_player` 있음 | `stacked` (시나리오 × 행위자 누적 막대) |
+| `context.key_figures` 있음 | `key_figures` (도넛) |
+| `chain_reaction.chain` 있음 | `severity_chain` (히트맵) |
+| `chain_reaction.wildcards` 있음 | `bubble` (리스크 매트릭스) |
+| `context.timeline ≥ 2건` | `gantt` (간트 타임라인) |
+| `players + alliances` 있음 | `network` (force-directed 그래프) |
+| `judgment.confidence` 있음 | `confidence` (3축 막대) |
+
+데이터 없으면 해당 차트는 스킵. 모든 차트는 LLM 호출 0 (`build_chart_payload` 가 결정적).
+
+#### 정적 자산
+보고서 HTML 은 같은 디렉토리의 `d3.v7.min.js` (~274KB), `charts.js` (~26KB), `charts.css` (~6KB) 를 참조. `report_synthesizer._sync_static_assets()` 가 보고서 생성 시 자동으로 reports/ 에 복사 (size+mtime 기반 idempotent). Cloudflare Pages 가 CDN 캐시.
+
+#### 디자인 토큰
+- 색상: burgundy 테마 변수 (`--gold`, `--green`, `--orange`, `--red`, `--blue`) 차트도 동일하게 사용 → 보고서 본문과 통일된 시각 언어
+- 타이포: Noto Serif KR (수치 강조), Noto Sans KR (라벨), JetBrains Mono (축 눈금)
+- 모든 차트는 `viewBox + preserveAspectRatio="xMidYMid meet"` 로 모바일 적응 (CSS aspect-ratio 컨테이너 내부에서 자동 스케일)
+- 호버 인터랙션: 단일 `.chart-tooltip` element (lazy 생성)
+
+#### 신규 차트 추가 절차
+1. `charts.js` 에 `drawXxx(svgEl, data)` 함수 + `autoInit()` 분기 + API export 추가
+2. `visual_builder.py` 에 `build_xxx_chart_data()` 추가 + `build_chart_payload()` 에 결합
+3. `report.html` / `report_block.html` 의 dashboard 섹션에 SVG 컨테이너 추가
+4. `samples/chart_gallery.html` 에 시연 카드 추가
+5. `test_chart_builders.py` 에 검증 테스트 추가
+6. CHANGELOG 매트릭스 갱신
+
+### 5.3 보고서 구조 — six_act_theater (인물극형 specialty)
 
 > v3.0.0 부터 default 가 아님. `select_archetype()` 매트릭스의 3순위 (`geopolitical` + `who_benefits`/`what_happened`) 또는 4순위 fallback 에서만 라우팅.
 

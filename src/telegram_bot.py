@@ -124,9 +124,11 @@ class TelegramBot:
 
         opus = self.config.model_name
         sonnet = self.config.model_name_light
+        # v3.3.0 — narrative_composer 는 Opus 4.7 고정 (NarrativeComposer.COMPOSER_MODEL).
+        opus_47 = "claude-opus-4-7"
 
         agents_info = (
-            f"📋 에이전트 구성 (7명)\n"
+            f"📋 에이전트 구성 (8명)\n"
             f"  ① 상황 분석관 ······· {sonnet}\n"
             f"  ② 플레이어 분석관 ··· {sonnet}\n"
             f"  ③ 구조/역학 분석관 ·· {opus}\n"
@@ -134,6 +136,7 @@ class TelegramBot:
             f"  ⑤ 시나리오 설계관 ··· {opus}\n"
             f"  ⑥ 시각화 분석관 ····· {opus}\n"
             f"  ⑦ 보고서 합성관 ····· {sonnet}\n"
+            f"  ⑧ 편집장 (deep 전용) · {opus_47}\n"
         )
 
         from src.orchestrator import VERSION

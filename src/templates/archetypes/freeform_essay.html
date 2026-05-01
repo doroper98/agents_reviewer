@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="{{ report_theme or 'burgundy' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+<style>{{ css_content }}</style>
+<style>
+/* freeform_essay — 산문 우위. 정형 슬롯을 줄이고 단락 호흡을 살림. */
+.freeform-hero{padding:48px 0 32px;background:linear-gradient(180deg,var(--bg-2,#2B1A1A) 0%,var(--bg-1,#1B1010) 100%);border-bottom:1px solid var(--border-light,#3D2828)}
+.freeform-hero .container{max-width:780px}
+.freeform-eyebrow{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:12px}
+.freeform-headline{font-family:'Noto Serif KR',serif;font-size:34px;font-weight:900;line-height:1.25;color:var(--fg-1,#F0E2CC);margin:0 0 14px;letter-spacing:-0.5px}
+.freeform-deck{font-size:17px;line-height:1.6;color:var(--fg-2,#D4C4AA);font-weight:300;margin-bottom:18px}
+.freeform-meta{font-size:12px;color:var(--fg-3,#A89880);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.freeform-meta span+span::before{content:"·";margin-right:10px;color:var(--fg-3,#A89880);opacity:0.5}
+.freeform-section{padding:32px 0;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.freeform-section:last-of-type{border-bottom:none}
+.freeform-section .container{max-width:780px}
+.freeform-kicker{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:8px}
+.freeform-heading{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1,#F0E2CC);margin:0 0 16px}
+.freeform-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400}
+.freeform-prose p{margin:0 0 16px}
+.freeform-prose strong, .freeform-prose b{color:var(--fg-1,#F0E2CC);font-weight:600}
+.freeform-prose em, .freeform-prose i{color:var(--accent,#C9A84C);font-style:normal}
+.freeform-prose blockquote{margin:18px 0;padding:6px 0 6px 16px;border-left:3px solid var(--accent,#C9A84C);color:var(--fg-1,#F0E2CC);font-style:italic;font-size:16.5px}
+.freeform-prose ul, .freeform-prose ol{margin:0 0 16px;padding-left:22px}
+.freeform-prose li{margin-bottom:6px}
+.freeform-pullquote{margin:24px 0 8px;padding:18px 22px;background:rgba(201,168,76,0.06);border-left:4px solid var(--accent,#C9A84C);border-radius:4px;font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;line-height:1.5;color:var(--fg-1,#F0E2CC)}
+.freeform-cited{margin-top:10px;font-size:11px;color:var(--fg-3,#A89880);letter-spacing:0.4px}
+.freeform-cited code{background:rgba(201,168,76,0.10);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--accent,#C9A84C);margin-right:4px}
+.freeform-chart-wrap{margin:18px 0}
+.freeform-chart-wrap .chart-card{background:rgba(0,0,0,0.18);border:1px solid var(--border-soft,rgba(125,98,76,0.25));border-radius:10px;padding:14px}
+.freeform-chart-wrap .chart-card-title{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.6px;color:var(--fg-2,#D4C4AA);margin-bottom:10px;text-transform:uppercase}
+.freeform-block-wrap{margin:18px 0}
+.freeform-closing{padding:32px 0 48px;background:var(--bg-3,#1B1010)}
+.freeform-closing .container{max-width:780px}
+.freeform-closing-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:10px}
+.freeform-closing-body{font-family:'Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2,#D4C4AA);font-style:italic}
+@media(max-width:640px){
+  .freeform-hero{padding:32px 0 24px}
+  .freeform-headline{font-size:26px}
+  .freeform-deck{font-size:15.5px}
+  .freeform-section{padding:24px 0}
+  .freeform-heading{font-size:20px}
+  .freeform-prose{font-size:15px;line-height:1.78}
+  .freeform-pullquote{font-size:16px;padding:14px 16px}
+}
+</style>
+</head>
+<body>
+
+{% set composed = result.composed_report %}
+{% set chart_payload = (result.visuals.chart_config.payload if result.visuals and result.visuals.chart_config else {}) or {} %}
+{% set blocks_by_type = {} %}
+{% if result.blocks %}{% for b in result.blocks %}{% if blocks_by_type.update({b.block_type: b}) %}{% endif %}{% endfor %}{% endif %}
+
+{# fallback if composed_report missing — render a minimal essay from executive_summary #}
+<header class="freeform-hero">
+  <div class="container">
+    <div class="freeform-eyebrow">Event Analysis · Composed</div>
+    <h1 class="freeform-headline">{{ composed.headline if composed else (result.context.event_name or 'Analysis') }}</h1>
+    {% if composed and composed.deck %}<p class="freeform-deck">{{ composed.deck }}</p>{% endif %}
+    <div class="freeform-meta">
+      {% if result.context and result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
+      {% if result.context and result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
+      <span>{{ generated_at }}</span>
+    </div>
+  </div>
+</header>
+
+{% if composed and composed.sections %}
+{% for sec in composed.sections %}
+<section class="freeform-section fade-in">
+  <div class="container">
+    {% if sec.kicker %}<div class="freeform-kicker">{{ sec.kicker }}</div>{% endif %}
+    <h2 class="freeform-heading">{{ sec.heading }}</h2>
+    {% if sec.prose %}<div class="freeform-prose">{{ sec.prose | structured }}</div>{% endif %}
+    {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote }}</div>{% endif %}
+
+    {% for chart_id in sec.embedded_charts %}
+      {% if chart_id == 'chart-scenarios' and chart_payload.scenarios %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">시나리오 확률 분포</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-scenarios"></svg></div></div></div>
+      {% elif chart_id == 'chart-figures' and chart_payload.key_figures %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">핵심 수치 분배</div><div class="chart-card-stage chart-stage-donut"><svg id="chart-figures"></svg></div></div></div>
+      {% elif chart_id == 'chart-severity' and chart_payload.severity_chain %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">인과 사슬 위험도</div><div class="chart-card-stage chart-stage-heatmap" id="chart-severity"></div></div></div>
+      {% elif chart_id == 'chart-confidence' and chart_payload.confidence %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">신뢰도 분해</div><div class="chart-card-stage chart-stage-triple"><svg id="chart-confidence"></svg></div></div></div>
+      {% elif chart_id == 'chart-timeseries' and chart_payload.timeseries %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">시계열 추이</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-timeseries"></svg></div></div></div>
+      {% elif chart_id == 'chart-stacked' and chart_payload.stacked %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">시나리오 × 행위자 영향</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-stacked"></svg></div></div></div>
+      {% elif chart_id == 'chart-bubble' and chart_payload.bubble %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">리스크 매트릭스</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-bubble"></svg></div></div></div>
+      {% elif chart_id == 'chart-gantt' and chart_payload.gantt %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">타임라인</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-gantt"></svg></div></div></div>
+      {% elif chart_id == 'chart-network' and chart_payload.network %}
+      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">행위자 관계도</div><div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="chart-network"></svg></div></div></div>
+      {% endif %}
+    {% endfor %}
+
+    {% for btype in sec.embedded_blocks %}
+      {% set block = blocks_by_type.get(btype) %}
+      {% if block %}
+      <div class="freeform-block-wrap">{% include "blocks/" + block.block_type + ".html" %}</div>
+      {% endif %}
+    {% endfor %}
+
+    {% if sec.cited_claim_ids %}
+    <div class="freeform-cited">근거: {% for cid in sec.cited_claim_ids %}<code>{{ cid }}</code>{% endfor %}</div>
+    {% endif %}
+  </div>
+</section>
+{% endfor %}
+{% else %}
+<section class="freeform-section">
+  <div class="container">
+    <div class="freeform-prose">
+      <p>(composed_report 없음 — narrative_composer 호출이 실패했거나 비활성 상태입니다.
+      상위 archetype 으로 폴백되어야 정상이지만, 현재 freeform_essay 템플릿이 직접 렌더링됨.)</p>
+      <p>{{ result.executive_summary or '' }}</p>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if composed and composed.closing %}
+<section class="freeform-closing">
+  <div class="container">
+    <div class="freeform-closing-label">분석가의 한계</div>
+    <div class="freeform-closing-body">{{ composed.closing }}</div>
+  </div>
+</section>
+{% endif %}
+
+<footer class="footer">
+  {% if confidence_text %}<div class="footer-confidence">{{ confidence_text }}</div>{% endif %}
+  <div>archetype: freeform_essay · Generated {{ generated_at }} · Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
+  {% if result.report_url and result.report_url.startswith('http') %}
+  <div class="footer-share"><span>공유 링크:</span> <a href="{{ result.report_url }}">{{ result.report_url }}</a></div>
+  {% endif %}
+</footer>
+
+<script>
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.06});
+document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
+</script>
+
+{% if chart_payload %}
+<script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+{% endif %}
+
+</body>
+</html>

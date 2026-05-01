@@ -1,10 +1,10 @@
 ---
 tier: 1
-last_synced_with: v3.0.0
+last_synced_with: v3.2.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
-  - "Canvas 차트 제작 기준"
+  - "d3 차트 디자인 시스템 (v3.2.0 활성화)"
 depends_on:
   - "docs/STYLEGUIDE.md (코드 컨벤션 SSOT)"
   - "DOCS_GOVERNANCE_V3.md (문서 거버넌스 SSOT)"
@@ -74,6 +74,13 @@ last_review: 2026-04-26
 | `src/templates/blocks/*` 신규 추가 (V3 Step 3 활성) | [docs/CATALOGS.md §4](docs/CATALOGS.md), `src/models.py:BlockType` Literal 확장, `_BLOCK_BUILDERS` 등록 |
 | `src/models.py:BlockType` 변경 | [docs/CATALOGS.md §4](docs/CATALOGS.md), [docs/DATA_MODELS.md §3.7](docs/DATA_MODELS.md), 신규 타입은 `src/templates/blocks/<type>.html` + 빌더 추가 |
 | `src/templates/archetypes/*` 신규 추가 | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| `src/token_budget.py` 정책 변경 | [docs/ARCHITECTURE.md §3.1](docs/ARCHITECTURE.md), [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
+| `src/lens_policy.py` 매핑 변경 | [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
+| `src/templates/static/charts.js` 차트 추가/변경 (v3.2.0) | [CLAUDE.md `Chart System`](CLAUDE.md), `samples/chart_gallery.html`, `src/visual_builder.py:build_chart_payload`, `src/tests/test_chart_builders.py` |
+| `src/agents/narrative_composer.py` 변경 (v3.3.0) | [docs/CATALOGS.md §1](docs/CATALOGS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [src/visual_builder.py:build_chart_catalog](src/visual_builder.py), [src/tests/test_narrative_composer.py](src/tests/test_narrative_composer.py) |
+| `src/templates/archetypes/freeform_essay.html` 변경 (v3.3.0) | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/CATALOGS.md §3](docs/CATALOGS.md) |
+| `src/templates/static/charts.css` 차트 디자인 토큰 변경 | [CLAUDE.md `Chart System`](CLAUDE.md) |
+| `src/visual_builder.py:build_chart_payload` 차트 매핑 변경 | [CHANGELOG.md `차트 매트릭스`](CHANGELOG.md) |
 | [GOAL.md](GOAL.md) `REQ-*` 추가/완료 | [DEVLOG.md](DEVLOG.md) 에 변경 기록 |
 | 의존성 추가 (`requirements.txt`) | [DEVLOG.md](DEVLOG.md), [README.md](README.md) Quick Start |
 | 워크플로우 변경 | [WORKFLOWS.md](WORKFLOWS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
@@ -87,9 +94,31 @@ last_review: 2026-04-26
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
 ## Key Directories
-- `src/agents/` — 분석 에이전트 정의 (현재 7개)
+- `src/agents/` — 분석 에이전트 정의 (7개)
+- `src/lenses/` — 분석 lens 풀 (11종, `lens_policy` 가 mode 별 cap 결정)
+- `src/archetypes/` — 보고서 archetype (11종)
 - `src/templates/` — HTML 보고서 템플릿
-- `src/templates/report.css` — 보고서 CSS
+- `src/templates/report.css` — 보고서 CSS (burgundy 테마 토큰)
+- `src/templates/static/` — 정적 자산 (v3.2.0: d3.v7.min.js / charts.js / charts.css). 보고서 생성 시 자동으로 reports/ 에 복사.
+- `src/token_budget.py` — Mode (fast/standard/deep) 별 LLM 호출 / lens cap 정책 (v3.1.0)
+- `src/lens_policy.py` — `(event_type, user_intent, mode)` → lens 결정 (v3.1.0)
+- `src/brief_builder.py` — `FullAnalysisResult` → `AnalysisBrief` 압축 컨텍스트 (v3.1.0)
+- `src/visual_builder.py` — 결정적 SVG/시각화 빌더 + d3 차트 데이터 빌더 (v3.1.0~v3.2.0)
+- `src/telemetry.py` — LLM 호출 / 단계별 elapsed 기록 (v3.1.0)
 - `docs/` — 모든 정규 문서 (이전 `docs_canonical/` 에서 이름 단순화)
 - `docs/references/` — 참조 자료 (prototype HTML)
+- `samples/` — 디자인/차트 샘플 페이지 (chart_gallery.html, chart_comparison.html 등)
 - `reports/` — 생성된 HTML 보고서 (git ignored)
+
+## Chart System (v3.2.0)
+- 9종 d3 SVG 차트 (bar/donut/heatmap/triple/line/stacked/bubble/gantt/network) 가 `src/templates/static/charts.js` 에 정의되어 있고, 데이터 가용성에 따라 보고서가 자동 생성한다.
+- 차트 데이터는 모두 결정적 (LLM 호출 0). 빌더는 `src/visual_builder.py:build_chart_payload()`.
+- 디자인 토큰은 `src/templates/static/charts.css` 에 통일 (burgundy 테마 변수 상속).
+- 신규 차트 추가 절차: ① `charts.js` 에 `drawXxx` 함수 + auto-init 분기 추가 ② `visual_builder.py:build_xxx_chart_data()` 추가 + `build_chart_payload()` 에 결합 ③ `report.html` / `report_block.html` 의 dashboard 섹션에 SVG 컨테이너 추가 ④ `samples/chart_gallery.html` 에 시연 ⑤ `test_chart_builders.py` 에 검증 테스트.
+
+## Mode Routing (v3.1.0~v3.3.0)
+- 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard.
+- Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
+- legacy 페르소나 (PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst) 는 deep 모드에서만 호출.
+- LLM 호출 cap: fast=4, standard=7, deep=13 (soft guard, telemetry 가 초과 시 경고). v3.3.0: deep 에 narrative_composer 추가로 12 → 13.
+- **v3.3.0 narrative_composer (Opus 4.7)**: deep 모드에서만 활성. 성공 시 archetype 이 `freeform_essay` 로 명시 라우팅 → 정형 17 슬롯 대신 사건별 3~7 섹션 자유 형식. 실패 시 select_archetype() matrix 폴백.

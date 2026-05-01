@@ -1,4 +1,4 @@
-"""Orchestrator -- 4-Phase analysis pipeline coordinator."""
+"""Orchestrator -- mode-aware analysis pipeline coordinator (v3.1.0)."""
 
 from __future__ import annotations
 
@@ -11,11 +11,15 @@ from typing import Any, Callable, Coroutine, Optional
 
 from src.archetypes.registry import get_archetype, list_archetypes, select_archetype
 from src.config import Config
+from src.lens_policy import select_lenses, select_theme
 from src.lenses.registry import get_lens, list_lenses
 from src.models import (
     AnalysisRequest, AnalysisStrategy, AnalyticalFinding, Claim, ConfidenceProfile,
     Evidence, FullAnalysisResult, JudgmentVerdict,
 )
+from src.telemetry import RunTelemetry
+from src.token_budget import AnalysisMode, TokenBudget, resolve_mode
+from src.visual_builder import needs_advanced_visuals
 from src.watchlist import WatchlistRegistry, convert_watch_signals
 from src.agents.context_analyst import ContextAnalyst
 from src.agents.player_analyst import PlayerAnalyst
@@ -26,11 +30,14 @@ from src.agents.visual_analyst import VisualAnalyst
 from src.agents.report_synthesizer import ReportSynthesizer
 from src.agents.quality_inspector import QualityInspector
 from src.agents.synthesis_judge import SynthesisJudge
+from src.agents.narrative_composer import NarrativeComposer
+from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.0.0"
+VERSION = "v3.3.0"
 
+# v3.1.0: legacy keywords map → fast mode (quick mode 와 같은 의미).
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
@@ -46,6 +53,8 @@ class Orchestrator:
     ) -> None:
         self.config = config
         self.context_analyst = ContextAnalyst(config)
+        # v3.1.0: legacy persona 인스턴스는 보존하지만 fast/standard 에서는 호출하지 않음.
+        # deep 모드에서만 6막 보고서 풍부 데이터 보존을 위해 호출 (FUT-LEGACY-001).
         self.player_analyst = PlayerAnalyst(config)
         self.dynamics_analyst = DynamicsAnalyst(config)
         self.chain_reaction_analyst = ChainReactionAnalyst(config)
@@ -55,6 +64,8 @@ class Orchestrator:
         # V3 Step 4 (v2.8.0)
         self.quality_inspector = QualityInspector(config)
         self.synthesis_judge = SynthesisJudge(config)
+        # v3.3.0 — freeform editorial pass (Opus 4.7). deep 모드만 호출.
+        self.narrative_composer = NarrativeComposer(config)
         # V3 Step 5-B (v2.9.5) — Watchlist Registry. None 이면 watchlist 등록 스킵
         # (단위 테스트 / standalone orchestrator 인스턴스 시 안전).
         self.watchlist_registry = watchlist_registry
@@ -63,6 +74,18 @@ class Orchestrator:
             "gate_1_attempts": 0, "gate_1_passes": 0, "gate_1_retries": 0, "gate_1_partial": 0,
             "gate_2_attempts": 0, "gate_2_passes": 0, "gate_2_retries": 0, "gate_2_partial": 0,
         }
+        # v3.1.0: telemetry — 사건당 새 인스턴스를 ``run_analysis`` 가 만든다.
+        self.telemetry: Optional[RunTelemetry] = None
+
+    def _wire_telemetry(self) -> None:
+        """현재 ``self.telemetry`` 를 모든 BaseAgent 후속에 전파."""
+        for agent in (
+            self.context_analyst, self.player_analyst, self.dynamics_analyst,
+            self.chain_reaction_analyst, self.scenario_architect, self.visual_analyst,
+        ):
+            agent.telemetry = self.telemetry
+        # narrative_composer 는 BaseAgent 가 아니지만 telemetry 속성 보유.
+        self.narrative_composer.telemetry = self.telemetry
 
     @staticmethod
     def _progress_bar(step: int, total: int = 7) -> str:
@@ -95,105 +118,37 @@ class Orchestrator:
         )
 
     async def _generate_analysis_strategy(
-        self, event_name: str, category: str, summary: str
+        self,
+        event_name: str,
+        category: str,
+        summary: str,
+        mode: AnalysisMode = "standard",
     ) -> AnalysisStrategy:
         """Generate AnalysisStrategy based on the event context.
 
-        Step 1 (v2.5.0): dict 반환에서 정식 Pydantic 모델 (AnalysisStrategy) 반환으로 승격.
-        실패 시 ``_empty_strategy_fallback()`` 을 반환 (Anti-pattern #3 방지).
-        per-agent directive 문자열은 ``strategy.legacy_directives`` 에 보존된다.
+        v3.1.0: Strategy Planner 프롬프트를 대폭 축소.
+        LLM 은 ``event_type`` / ``user_intent`` / ``intent_confidence`` /
+        ``core_questions`` / ``complexity`` (선택) 만 출력.
+        - archetype 선택은 ``select_archetype()`` 매트릭스가 최종 결정자.
+        - theme 선택은 ``lens_policy.select_theme()`` (코드 규칙).
+        - recommended_lenses 는 ``lens_policy.select_lenses()`` 가 mode 기반으로 결정.
+        - per-agent directive (legacy_directives) 는 더 이상 LLM 으로 생성하지 않음.
         """
+        intent_confidence_default = 0.5
         prompt = (
-            "당신은 세계 최고 수준의 분석 전략 기획자. 아래 사건을 보고 다음을 결정:\n"
-            "1) user_intent — 사용자가 가장 알고 싶어 하는 질문 유형 (7종 중 1)\n"
-            "2) core_questions — 이 사건이 답해야 할 핵심 질문 (1~5개)\n"
-            "3) recommended_lenses — 적용할 분석 렌즈 ID (1~4개)\n"
-            "4) report_archetype — 이 사건에 가장 적합한 보고서 아키타입 (3종 중 1)\n"
-            "5) 각 에이전트에게 이 사건을 발골할 최적의 분석 기법 지시\n"
-            "6) 이 사건에 불필요한 에이전트는 스킵 지정\n"
-            "7) 보고서 테마 선택\n\n"
-            "사건명: " + event_name + "\n"
-            "분류: " + category + "\n"
-            "요약: " + summary[:500] + "\n\n"
-            "=== user_intent 7종 (이 중 정확히 1개 선택) ===\n"
-            "what_happened: 사실 파악 — 무슨 일이 있었나\n"
-            "why_happened: 원인 분석 — 왜 그런 일이 있었나\n"
-            "who_benefits: 이해관계 분석 — 누가 이득/손해를 보나\n"
-            "where_spreads: 파급효과 — 이 사건이 어디로 번지나\n"
-            "what_next: 시나리오/전망 — 앞으로 어떻게 될 것인가\n"
-            "where_vulnerable: 취약점 분석 — 어디가 약한 고리인가\n"
-            "what_to_do: 의사결정 — 어떻게 대응해야 하나\n\n"
-            "=== report_archetype 6종 (정확히 1개 선택, archetype_id 그대로 출력) ===\n"
-            "six_act_theater (기본값): 인물극형 사건 (전쟁/외교/정치 갈등/리더십/선거 — 분류 애매 시 폴백).\n"
-            "  · 섹션: 상황 → 행위자 → 구조 → 인과 → 시나리오 → 감시 신호 (6막)\n"
-            "financial_transmission: 시장/거시 (환율/금리/자산가격/통화정책/신용/부동산).\n"
-            "  · suitable_intents: where_spreads, where_vulnerable, what_next\n"
-            "  · 섹션: 가격 반응 → 포지션·자금흐름 → 전이 경로 → 취약 고리 → 스트레스 시나리오 → 관찰 지표\n"
-            "tech_decomposition: 기술/AI/IT (모델 출시/시스템 장애/사이버 보안/인프라).\n"
-            "  · suitable_intents: where_vulnerable, what_to_do, why_happened\n"
-            "  · 섹션: 문제 정의 → 시스템 구조 → 병목 → 성능·비용·리스크 → 대안 비교 → 실행 권고\n"
-            "geopolitical_strategic: 지정학·전쟁 (군사 행동/안보 위기/동맹).\n"
-            "  · suitable_intents: who_benefits, what_next, where_vulnerable\n"
-            "  · 섹션: 사건 요약 → 전장·행위자 → 의도와 능력 → 확전 경로 → 억제 요인 → 감시 신호\n"
-            "accident_forensic: 사고·재난 (산업재해/자연재해/시설 사고/안전).\n"
-            "  · suitable_intents: why_happened, where_vulnerable, what_to_do\n"
-            "  · 섹션: 사실 타임라인 → 직접 원인 → 방어막 실패 → 조직적 원인 → 재발 방지 → 미해결 질문\n"
-            "policy_implementation: 정책·사회 (법안/규제/사회 변화/부동산 정책/조세).\n"
-            "  · suitable_intents: who_benefits, what_to_do, where_vulnerable\n"
-            "  · 섹션: 정책 의도 → 이해관계자 → 제약 조건 → 집행 가능성 → 부작용 → 수정안\n\n"
-            "archetype 선택 매트릭스 (강한 가이드, 충돌 시 위쪽 우선):\n"
-            "- 사고·재난 (화재/폭발/붕괴/침수/산업재해/자연재해) → accident_forensic\n"
-            "- 정책·법안·규제 (부동산 규제/조세/노동 정책/규제 발표) → policy_implementation\n"
-            "- 군사·전쟁·안보 위기·동맹 변동 → geopolitical_strategic\n"
-            "- 시장·거시 (환율/금리/자산가격/유동성 위기) AND user_intent ∈ {where_spreads, where_vulnerable, what_next} → financial_transmission\n"
-            "- 기술·AI·IT (모델 출시/시스템 장애/사이버 사고/인프라) → tech_decomposition\n"
-            "- 그 외 인물극형 (외교 갈등/정치 분쟁/리더십 변화) 또는 분류 애매 → six_act_theater\n\n"
-            "=== recommended_lenses 8종 (1~4개 선택, lens_id 그대로) ===\n"
-            "geopolitical: DIME/PMESII/Escalation Ladder/Capability-Intent. who_benefits/what_next/where_vulnerable.\n"
-            "financial_transmission: Balance Sheet/Flow of Funds/Transmission Channel/Liquidity Stress. 금융·거시.\n"
-            "tech_architecture: Architecture Decomposition/Dependency Graph/Bottleneck. 기술·AI·IT.\n"
-            "policy_implementation: Stakeholder Incentive/Distributional Impact/Implementation Gap. 정책·규제.\n"
-            "accident_causality: Fault Tree/Bow-Tie/Swiss Cheese/STAMP. 사고·재난.\n"
-            "market_structure: Network Analysis/Game Theory/Regime Shift. 시장 구조·경쟁.\n"
-            "red_team: ACH/Pre-mortem/Devil's Advocate. 메타-반론, 어떤 사건에도 보조 가능.\n"
-            "pre_mortem: 실패 가정 후 역설계. 의사결정·전망 보조.\n"
-            "lens 선택 규칙:\n"
-            "- 사건 핵심 분야의 분야별 lens 1~2개 + 메타 lens(red_team 또는 pre_mortem) 0~1개 권장.\n"
-            "- 절대 5개 이상 선택 금지 (Anti-pattern #6: 토큰 폭증). 4개가 상한.\n\n"
-            "=== 분석 기법 레퍼런스 ===\n"
-            "[인텔리전스] ACH(경쟁가설분석), Red Team, Key Assumptions Check, I&W(징후경보)\n"
-            "[지정학/전략] DIME(외교·정보·군사·경제), PMESII(6차원환경), Escalation Ladder, Center of Gravity\n"
-            "[경제/금융] Transmission Channel(전이경로), Stress Test, Input-Output(산업연관), Flow of Funds\n"
-            "[구조/시스템] Systems Dynamics(피드백루프), Network Analysis, Fault Tree, Bow-Tie\n"
-            "[의사결정/전망] Decision Tree, Cone of Plausibility, Pre-mortem, Bayesian Updating\n\n"
-            "=== 보고서 테마 ===\n"
-            "burgundy: 기본 버건디 (범용)\n"
-            "geopolitical: 다크 네이비+레드 (지정학, 안보, 군사, 전쟁)\n"
-            "financial: 딥 블루+그린/레드 (금융, 경제, 시장, 투자)\n"
-            "tech: 다크 슬레이트+시안 (기술, AI, IT, 사이버)\n"
-            "nature: 다크 그린+앰버 (환경, 에너지, 기후, 농업)\n"
-            "liquidglass: iOS Liquid Glass (프리미엄, 미래적, 혁신, 디자인, 문화, 트렌드)\n\n"
-            "=== 5개 에이전트 ===\n"
-            "1. players: 이해관계자 식별, 입장·전략 분석\n"
-            "2. dynamics: 구조적 원인, 힘의 역학 분석\n"
-            "3. chain_reaction: 인과 사슬, 파급효과 추적\n"
-            "4. scenarios: 향후 전개 경로 설계\n"
-            "5. visuals: 시각화 (SVG 관계도, 지도, 차트)\n\n"
-            "각 에이전트 지시사항:\n"
-            "- 위 레퍼런스에서 이 사건에 최적인 기법을 골라 구체적으로 지시 (1~2문장)\n"
-            "- 레퍼런스에 없는 기법도 적합하면 자유롭게 사용 가능\n"
-            "- 이 사건에 맞지 않는 분석 함정도 명시\n\n"
-            "스킵 판단: 가치를 못 더하면 skip. context/visuals는 스킵 불가.\n\n"
-            "반드시 아래 JSON만 출력 (event_type/user_intent/intent_confidence/core_questions/recommended_lenses/report_archetype 필수):\n"
-            '{"event_type":"사건 유형 한 단어 (예: financial, tech, war, diplomacy, currency, model_release, cyber_security)",'
-            '"user_intent":"what_happened|why_happened|who_benefits|where_spreads|what_next|where_vulnerable|what_to_do",'
-            '"intent_confidence":0.0~1.0,'
-            '"core_questions":["질문1","질문2"],'
-            '"recommended_lenses":["lens_id1","lens_id2"],'
-            '"report_archetype":"six_act_theater|financial_transmission|tech_decomposition",'
-            '"players":"지시","dynamics":"지시","chain_reaction":"지시",'
-            '"scenarios":"지시","visuals":"지시",'
-            '"skip":["스킵할 에이전트명"],"theme":"burgundy|geopolitical|financial|tech|nature|liquidglass"}\n'
+            "당신은 분석 전략 기획자. 아래 사건에 대해 4가지만 출력.\n\n"
+            f"사건명: {event_name}\n"
+            f"분류: {category}\n"
+            f"요약: {summary[:400]}\n\n"
+            "출력 항목:\n"
+            "1) event_type — 한 단어 (financial/tech/accident/policy/geopolitical/industry/general 중 가장 가까운 것)\n"
+            "2) user_intent — 7종 중 1: what_happened|why_happened|who_benefits|where_spreads|"
+            "what_next|where_vulnerable|what_to_do\n"
+            "3) intent_confidence — 0.0~1.0\n"
+            "4) core_questions — 이 사건이 답해야 할 핵심 질문 1~4개\n\n"
+            "JSON 만 출력 (다른 텍스트 금지):\n"
+            '{"event_type":"...","user_intent":"...",'
+            '"intent_confidence":0.0,"core_questions":["q1","q2"]}\n'
         )
 
         try:
@@ -206,10 +161,11 @@ class Orchestrator:
                 claude_bin,
                 "-p", prompt,
                 "--output-format", "text",
-                "--model", self.config.model_name,
+                "--model", self.config.model_name_light,
                 "--dangerously-skip-permissions",
             ]
 
+            llm_start = time.time()
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdin=asyncio.subprocess.DEVNULL,
@@ -217,12 +173,21 @@ class Orchestrator:
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, stderr = await proc.communicate()
+            llm_elapsed_ms = int((time.time() - llm_start) * 1000)
 
             if proc.returncode != 0:
                 logger.warning("[orchestrator] Strategy generation failed; using empty strategy")
                 return self._empty_strategy_fallback()
 
             raw = stdout.decode().strip()
+            if self.telemetry is not None:
+                self.telemetry.record_llm_call(
+                    agent_name="strategy_planner",
+                    input_chars=len(prompt),
+                    output_chars=len(raw),
+                    elapsed_ms=llm_elapsed_ms,
+                )
+
             import re
             match = re.search(r"\{[\s\S]*\}", raw)
             if not match:
@@ -230,43 +195,49 @@ class Orchestrator:
                 return self._empty_strategy_fallback()
 
             raw_dict = json.loads(match.group())
+            event_type = (raw_dict.get("event_type") or "general").strip().lower()
+            user_intent = (raw_dict.get("user_intent") or "what_happened").strip()
+            intent_confidence = float(
+                raw_dict.get("intent_confidence", intent_confidence_default)
+            )
+            core_questions = list(raw_dict.get("core_questions") or [])
+            core_questions = [q.strip() for q in core_questions if q and q.strip()]
+            if not core_questions:
+                core_questions = [f"{event_name} 의 핵심 사실을 파악한다"]
 
-            # Pull per-agent directive strings into legacy_directives shim.
-            legacy_keys = ("players", "dynamics", "chain_reaction", "scenarios", "visuals")
-            legacy_directives: dict[str, str] = {
-                k: raw_dict.pop(k, "") for k in legacy_keys
-            }
-            raw_dict["legacy_directives"] = legacy_directives
+            # Lens 결정은 코드 규칙으로. 미사용 LLM 추천은 우선순위 보정에만 활용.
+            recommended_lenses = select_lenses(
+                event_type=event_type,
+                user_intent=user_intent,
+                mode=mode,
+            )
+            theme = select_theme(event_type)
 
-            # Validate archetype_id against registry; unknown values fall back to default.
-            requested_archetype = raw_dict.get("report_archetype", "")
-            if requested_archetype and requested_archetype not in list_archetypes():
-                logger.warning(
-                    "[orchestrator] LLM emitted unknown archetype_id=%r; "
-                    "falling back to six_act_theater (registered: %s)",
-                    requested_archetype, list_archetypes(),
-                )
-                raw_dict["report_archetype"] = "six_act_theater"
-
-            strategy = AnalysisStrategy.model_validate(raw_dict)
+            strategy = AnalysisStrategy(
+                event_type=event_type,
+                user_intent=user_intent,  # type: ignore[arg-type]
+                intent_confidence=max(0.0, min(1.0, intent_confidence)),
+                core_questions=core_questions[:5],
+                recommended_lenses=recommended_lenses,
+                report_archetype="six_act_theater",  # matrix 가 곧 덮어씀
+                theme=theme,
+                legacy_directives={},
+            )
 
             logger.info(
                 "[orchestrator] AnalysisStrategy generated for: %s\n"
+                "  mode: %s\n"
                 "  user_intent: %s (confidence=%.2f)\n"
                 "  event_type: %s\n"
                 "  core_questions: %s\n"
-                "  recommended_lenses: %s\n"
-                "  report_archetype: %s\n"
-                "  theme: %s\n"
-                "  skip_agents: %s",
-                event_name,
+                "  recommended_lenses: %s (cap by mode)\n"
+                "  theme: %s",
+                event_name, mode,
                 strategy.user_intent, strategy.intent_confidence,
                 strategy.event_type,
                 strategy.core_questions,
                 strategy.recommended_lenses,
-                strategy.report_archetype,
                 strategy.theme,
-                strategy.skip_agents,
             )
             return strategy
 
@@ -705,29 +676,57 @@ class Orchestrator:
         event_description: str,
         chat_id: int,
         status_callback: StatusCallback = None,
+        mode: AnalysisMode | None = None,
     ) -> FullAnalysisResult:
-        """Execute the full analysis pipeline."""
+        """Execute the mode-aware analysis pipeline (v3.1.0).
+
+        ``mode`` 가 None 이면 ``token_budget.resolve_mode(event_description)`` 가
+        키워드를 보고 결정. 기본은 ``standard``. ``fast`` (간략/빠르게/요약 등),
+        ``deep`` (심층/자세히/면밀 등) 키워드는 자동 매핑.
+        """
         start_time = time.time()
 
-        # Detect quick mode from keywords
-        quick_mode = any(kw in event_description for kw in QUICK_MODE_KEYWORDS)
-        if quick_mode:
-            # Switch all agents to Sonnet for speed
-            for agent in [
-                self.context_analyst, self.player_analyst,
-                self.dynamics_analyst, self.chain_reaction_analyst,
-                self.scenario_architect, self.visual_analyst,
-            ]:
-                agent.model_name = self.config.model_name_light
-            logger.info("[orchestrator] Quick mode enabled — all agents using Sonnet")
+        # v3.1.0: mode resolution
+        if mode is None:
+            mode = resolve_mode(event_description)
+        budget = TokenBudget.for_mode(mode)
+
+        # Telemetry per-run.
+        self.telemetry = RunTelemetry(mode=mode)
+        self._wire_telemetry()
+
+        # Wire mode-driven flags into agents (single source of decisions: budget).
+        self.quality_inspector.use_llm_judge = budget.use_llm_quality_gate
+        self.synthesis_judge.use_llm_synthesis = budget.use_llm_synthesis
+        self.synthesis_judge.allow_llm_on_low_confidence = (mode == "standard")
+        self.report_synthesizer.use_llm_narrative_plan = budget.use_llm_narrative_plan
+        self.report_synthesizer.use_llm_executive_summary = budget.use_llm_executive_summary
+
+        # Detect explicit advanced-visual request (e.g. 사용자가 지도/차트 명시).
+        wants_advanced_visuals = needs_advanced_visuals(event_description)
 
         request = AnalysisRequest(
             event_description=event_description,
             chat_id=chat_id,
+            mode=mode,
         )
         result = FullAnalysisResult(request=request)
 
-        mode_label = " ⚡빠른분석" if quick_mode else ""
+        if mode == "fast":
+            mode_label = " ⚡fast"
+        elif mode == "deep":
+            mode_label = " 🔬deep"
+        else:
+            mode_label = " 🟢standard"
+
+        # In fast mode, downgrade context analyst to light model for speed.
+        original_models: dict = {}
+        if mode == "fast":
+            for agent in [
+                self.context_analyst, self.scenario_architect, self.visual_analyst,
+            ]:
+                original_models[id(agent)] = agent.model_name
+                agent.model_name = self.config.model_name_light
 
         # -- Phase 1: 상황 분석관 --
         await self._notify(
@@ -735,9 +734,12 @@ class Orchestrator:
             f"Analysis Team {VERSION}{mode_label}",
             status_callback,
         )
+        stage = self.telemetry.stage_start("context_analyst")
         result.context = await self.context_analyst.analyze(request)
+        self.telemetry.stage_end(stage)
 
         event_name = result.context.event_name or event_description[:30]
+        self.telemetry.event_name = event_name
         timeline_count = len(result.context.timeline)
         figures_count = len(result.context.key_figures)
         await self._notify(
@@ -749,214 +751,217 @@ class Orchestrator:
             status_callback,
         )
 
-        # -- Strategic Planning: 분석 전략 기획 --
-        if quick_mode:
-            # Quick mode: 전략기획 스킵, 핵심 에이전트만 실행. AnalysisStrategy 는 빈 폴백 + skip 지정.
-            strategy = self._empty_strategy_fallback()
-            strategy.skip_agents = ["players", "dynamics", "chain_reaction"]
-            skip_agents = set(strategy.skip_agents)
-            logger.info("[orchestrator] Quick mode: skipping players, dynamics, chain_reaction")
-            await self._notify(
-                f"⚡ 빠른분석: 상황분석 → 시나리오 → 시각화 → 보고서",
-                status_callback,
-            )
-        else:
-            await self._notify(
-                f"🧭 전략 기획: \"{event_name}\"에 최적화된 분석 전략을 수립하고 있습니다.",
-                status_callback,
-            )
-            strategy = await self._generate_analysis_strategy(
-                event_name,
-                result.context.category,
-                result.context.summary,
-            )
-            skip_agents = set(strategy.skip_agents)
-            if skip_agents:
-                logger.info(f"[orchestrator] Skipping agents: {skip_agents}")
-                await self._notify(
-                    f"🧭 전략 기획 완료. 스킵: {', '.join(skip_agents) or '없음'}",
-                    status_callback,
-                )
-
-        # Persist the strategy onto the result so downstream consumers (template, logs) can read it.
+        # -- Strategic Planning --
+        await self._notify(
+            f"🧭 전략 기획 ({mode}): \"{event_name}\" 핵심 질문/의도 결정.",
+            status_callback,
+        )
+        stage = self.telemetry.stage_start("strategy_planner")
+        strategy = await self._generate_analysis_strategy(
+            event_name,
+            result.context.category,
+            result.context.summary,
+            mode=mode,
+        )
+        self.telemetry.stage_end(stage)
         result.strategy = strategy
+        self.telemetry.selected_lenses = list(strategy.recommended_lenses)
 
-        # -- V3 Step 4 — Quality Gate 1: Plan Sanity --
-        # Quick mode 는 게이트 검사 스킵 (스킵 에이전트가 많아 plan 자체가 부분적임).
-        if not quick_mode:
-            async def _gate_1() -> tuple[bool, str]:
-                return await self.quality_inspector.gate_1_plan_sanity(result.strategy)
+        # -- Quality Gate 1 (heuristic only unless deep) --
+        async def _gate_1() -> tuple[bool, str]:
+            return await self.quality_inspector.gate_1_plan_sanity(result.strategy)
 
-            async def _regen_strategy() -> None:
-                new_strategy = await self._generate_analysis_strategy(
-                    event_name,
-                    result.context.category if result.context else "",
-                    result.context.summary if result.context else "",
-                )
-                result.strategy = new_strategy
-
-            gate1_pass, gate1_reason = await self._run_gate_with_retries(
-                "gate_1", _gate_1, _regen_strategy, status_callback,
+        async def _regen_strategy() -> None:
+            new_strategy = await self._generate_analysis_strategy(
+                event_name,
+                result.context.category if result.context else "",
+                result.context.summary if result.context else "",
+                mode=mode,
             )
-            # Refresh skip_agents from possibly-replaced strategy.
-            skip_agents = set(result.strategy.skip_agents)
-            strategy = result.strategy  # local var continues to be used below
-            if gate1_pass:
-                logger.info("[orchestrator] gate_1 PASS (%s)", gate1_reason)
+            result.strategy = new_strategy
+
+        gate1_pass, gate1_reason = await self._run_gate_with_retries(
+            "gate_1", _gate_1, _regen_strategy, status_callback,
+        )
+        strategy = result.strategy
+        if gate1_pass:
+            logger.info("[orchestrator] gate_1 PASS (%s)", gate1_reason)
 
         step = 1
 
-        # -- Phase 2: 이해관계자 분석관 + 구조 분석관 --
-        if "players" not in skip_agents:
-            player_context = result.context.summary[:50] if result.context.summary else event_name
+        # -- Phase 2/3: legacy persona path (deep only) --
+        if budget.use_legacy_personas:
+            stage = self.telemetry.stage_start("player_analyst")
             await self._notify(
-                f"👥 이해관계자 분석관: \"{player_context}\"와 관련된 핵심 행위자들을 식별하고 있습니다.",
+                f"👥 이해관계자 분석관: 핵심 행위자 식별 중.",
                 status_callback,
             )
-            result.players = await self.player_analyst.analyze(
-                result.context, directive=strategy.legacy_directives.get("players", "")
-            )
-            player_names = ", ".join(
-                [p.get("name", "") for p in result.players.players[:5]]
-            )
+            result.players = await self.player_analyst.analyze(result.context)
+            self.telemetry.stage_end(stage)
             step += 1
             await self._notify(
-                f"👥 이해관계자 분석관: {player_names} 등 {len(result.players.players)}개 행위자 분석 완료.\n"
+                f"👥 이해관계자 분석관: {len(result.players.players)}개 행위자 분석 완료.\n"
                 f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%\n"
                 f"{self._progress_bar(step)}",
                 status_callback,
             )
 
-        if "dynamics" not in skip_agents:
+            stage = self.telemetry.stage_start("dynamics_analyst")
             await self._notify(
-                f"⚡ 구조 분석관: 구조적 원인과 힘의 역학을 분석하고 있습니다.",
+                f"⚡ 구조 분석관: 구조적 원인 분석 중.",
                 status_callback,
             )
             result.dynamics = await self.dynamics_analyst.analyze(
-                result.context, result.players, directive=strategy.legacy_directives.get("dynamics", "")
+                result.context, result.players,
             )
+            self.telemetry.stage_end(stage)
             step += 1
             await self._notify(
                 f"⚡ 구조 분석관: {result.dynamics.framework} 관점으로 분석 완료.\n"
-                f"  · 핵심 통찰: {result.dynamics.key_insight[:200]}\n"
-                f"  · 신뢰도: {result.dynamics.confidence_score * 100:.0f}%\n"
                 f"{self._progress_bar(step)}",
                 status_callback,
             )
 
-        # -- Phase 3: 연쇄반응 분석관 + 향후 시나리오 분석관 --
-        if "chain_reaction" not in skip_agents:
+            stage = self.telemetry.stage_start("chain_reaction_analyst")
             await self._notify(
-                f"🔗 연쇄반응 분석관: \"{event_name}\"에서 비롯되는 파급효과를 추적하고 있습니다.",
+                f"🔗 연쇄반응 분석관: 파급효과 추적 중.",
                 status_callback,
             )
             result.chain_reaction = await self.chain_reaction_analyst.analyze(
                 result.context, result.players, result.dynamics,
-                directive=strategy.legacy_directives.get("chain_reaction", ""),
             )
-            chain_summary = " → ".join(
-                [s.get("title", "") for s in result.chain_reaction.chain[:4]]
-            )
+            self.telemetry.stage_end(stage)
             step += 1
             await self._notify(
-                f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬 분석 완료.\n"
-                f"  · {chain_summary}\n"
-                f"  · 신뢰도: {result.chain_reaction.confidence_score * 100:.0f}%\n"
+                f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬.\n"
                 f"{self._progress_bar(step)}",
                 status_callback,
             )
+        else:
+            # fast/standard: persona 호출 안 함 — lens pool 이 대체.
+            self.telemetry.record_skip("player_analyst", "fast/standard")
+            self.telemetry.record_skip("dynamics_analyst", "fast/standard")
+            self.telemetry.record_skip("chain_reaction_analyst", "fast/standard")
 
-        if "scenarios" not in skip_agents:
-            await self._notify(
-                f"🎲 시나리오 설계관: 향후 전개 가능한 시나리오를 설계하고 있습니다.",
-                status_callback,
-            )
-            result.scenarios = await self.scenario_architect.analyze(
-                result.context, result.players, result.dynamics, result.chain_reaction,
-                directive=strategy.legacy_directives.get("scenarios", ""),
-            )
-            scenario_names = " / ".join(
-                [s.get("name", "") for s in result.scenarios.scenarios]
-            )
-            step += 1
-            await self._notify(
-                f"🎲 시나리오 설계관: {len(result.scenarios.scenarios)}개 시나리오 설계 완료.\n"
-                f"  · {scenario_names}\n"
-                f"  · 감시 신호 {len(result.scenarios.watch_signals)}건 식별\n"
-                f"  · 신뢰도: {result.scenarios.confidence_score * 100:.0f}%\n"
-                f"{self._progress_bar(step)}",
-                status_callback,
-            )
-
-        # -- Visual Analyst: 시각화 생성 --
+        # -- Scenario Architect (fast 도 호출, 단 model 은 light) --
+        # fast 에서도 시나리오/감시 신호는 보고서 핵심 가치라 보존.
+        stage = self.telemetry.stage_start("scenario_architect")
         await self._notify(
-            "🎨 시각화 분석관: 분석 결과를 시각적 요소로 변환하고 있습니다.",
+            f"🎲 시나리오 설계관: 향후 전개 시나리오를 설계 중.",
             status_callback,
         )
+        result.scenarios = await self.scenario_architect.analyze(
+            result.context, result.players, result.dynamics, result.chain_reaction,
+        )
+        self.telemetry.stage_end(stage)
+        step += 1
+        scenario_names = " / ".join(
+            [s.get("name", "") for s in (result.scenarios.scenarios or [])]
+        )
+        await self._notify(
+            f"🎲 시나리오 설계관: {len(result.scenarios.scenarios)}개 시나리오, "
+            f"감시 신호 {len(result.scenarios.watch_signals)}건.\n"
+            f"  · {scenario_names}\n"
+            f"{self._progress_bar(step)}",
+            status_callback,
+        )
+
+        # -- Findings wrapping + lens pool + Synthesis Judge + Gate 2 --
+        # v3.2.0: 차트 빌더가 judgment.confidence 를 사용하므로 시각화는 judgment 이후로 이동.
+        await self._notify(
+            "🧮 종합 판단관: finding 정합성·모순을 검사합니다.",
+            status_callback,
+        )
+        stage = self.telemetry.stage_start("findings_lens_judgment")
+        wrapped = self._wrap_findings(result)
+        evidence_pool, _ = self._make_evidence_pool(result)
+        lens_findings = await self._run_lenses(result, evidence_pool, status_callback)
+        result.findings = wrapped + lens_findings
+        logger.info(
+            "[orchestrator] findings: wrapped=%d + lens=%d = total=%d (mode=%s)",
+            len(wrapped), len(lens_findings), len(result.findings), mode,
+        )
+        # Detect core_questions risk for synthesis_judge gating.
+        answered = {f.answers_question for f in result.findings if f.answers_question}
+        unanswered = [
+            q for q in (result.strategy.core_questions or []) if q not in answered
+        ]
+        self.synthesis_judge.core_questions_at_risk = bool(unanswered)
+        if not budget.use_llm_synthesis and not (mode == "standard"):
+            self.telemetry.record_llm_skip(
+                "synthesis_judge", "fast — heuristic only",
+            )
+        result.judgment = await self.synthesis_judge.judge(result.findings)
+        self.telemetry.stage_end(stage)
+
+        async def _gate_2() -> tuple[bool, str]:
+            return await self.quality_inspector.gate_2_coverage_check(
+                result.strategy, result.findings, result.judgment,
+            )
+
+        async def _regen_judgment() -> None:
+            result.judgment = await self.synthesis_judge.judge(result.findings)
+
+        gate2_pass, gate2_reason = await self._run_gate_with_retries(
+            "gate_2", _gate_2, _regen_judgment, status_callback,
+        )
+        if gate2_pass:
+            logger.info("[orchestrator] gate_2 PASS (%s)", gate2_reason)
+        n_contradictions = (
+            len(result.judgment.contradictions) if result.judgment else 0
+        )
+        await self._notify(
+            f"🧮 종합 판단 완료 — finding {len(result.findings)}건 / "
+            f"contradictions {n_contradictions}건 (봉합 안 함)",
+            status_callback,
+        )
+
+        # -- Visual generation (after judgment so confidence chart available) --
+        await self._notify(
+            "🎨 시각화: 결정적 빌더로 SVG + d3 차트 데이터 생성 중.",
+            status_callback,
+        )
+        stage = self.telemetry.stage_start("visuals")
+        use_llm_visuals = budget.use_llm_visuals or wants_advanced_visuals
+        if not use_llm_visuals:
+            self.telemetry.record_llm_skip("visual_analyst", "deterministic builder")
         result.visuals = await self.visual_analyst.analyze(
             result.context, result.players, result.dynamics,
             result.chain_reaction, result.scenarios,
-            directive=strategy.legacy_directives.get("visuals", ""),
+            use_llm=use_llm_visuals,
+            judgment=result.judgment,
         )
-        visual_types: list[str] = []
-        if result.visuals.svg_content:
-            visual_types.append("관계도")
-        if result.visuals.mermaid_code:
-            visual_types.append("플로우차트")
-        if result.visuals.leaflet_config.get("enabled"):
-            visual_types.append("지도")
-        if result.visuals.chart_config.get("enabled"):
-            visual_types.append("차트")
-        await self._notify(
-            f"🎨 시각화 분석관: {', '.join(visual_types) or '인포그래픽'} 생성 완료.\n"
-            f"  · 핵심 지표 {len(result.visuals.key_metrics)}건\n"
-            f"  · 신뢰도: {result.visuals.confidence_score * 100:.0f}%\n"
-            f"{self._progress_bar(6)}",
-            status_callback,
-        )
+        self.telemetry.stage_end(stage)
 
-        # -- V3 Step 4 — Findings wrapping + Synthesis Judge + Quality Gate 2 --
-        # Quick mode 는 finding 수가 적어 게이트가 의미 없으니 스킵.
-        if not quick_mode:
+        # -- v3.3.0 Narrative Composer (deep 모드만, Opus 4.7) --
+        # judgment + visuals 가 준비된 시점에서 호출. 성공 시 archetype 을
+        # freeform_essay 로 *명시적* 라우팅 (matrix 우선순위 무시).
+        if budget.use_llm_narrative_composer:
             await self._notify(
-                "🧮 종합 판단관: finding 들의 정합성·모순을 검사합니다.",
+                "✍️ 편집장 (Opus 4.7): 자유 형식 보고서 작성 중.",
                 status_callback,
             )
-            # 1) Wrap legacy v2 analyses (Step 4 path — backward compat).
-            wrapped = self._wrap_findings(result)
-            # 2) V3 Step 5-A: run lens pool (cap 4) on shared evidence.
-            evidence_pool, _ = self._make_evidence_pool(result)
-            lens_findings = await self._run_lenses(result, evidence_pool, status_callback)
-            # 3) Combined findings — both feed Synthesis Judge + gate 2.
-            result.findings = wrapped + lens_findings
-            logger.info(
-                "[orchestrator] findings: wrapped=%d + lens=%d = total=%d",
-                len(wrapped), len(lens_findings), len(result.findings),
+            stage = self.telemetry.stage_start("narrative_composer")
+            chart_payload = (
+                result.visuals.chart_config.get("payload", {})
+                if result.visuals and result.visuals.chart_config else {}
             )
-            result.judgment = await self.synthesis_judge.judge(result.findings)
-
-            async def _gate_2() -> tuple[bool, str]:
-                return await self.quality_inspector.gate_2_coverage_check(
-                    result.strategy, result.findings, result.judgment,
+            chart_catalog = build_chart_catalog(chart_payload)
+            try:
+                result.composed_report = await self.narrative_composer.compose(
+                    result, chart_catalog,
                 )
-
-            async def _regen_judgment() -> None:
-                # 재생성 전략: findings 는 v2 분석 자체에서 오므로 변경되지 않음.
-                # judgment 만 다시 호출 — LLM 응답 변동성에 기대.
-                result.judgment = await self.synthesis_judge.judge(result.findings)
-
-            gate2_pass, gate2_reason = await self._run_gate_with_retries(
-                "gate_2", _gate_2, _regen_judgment, status_callback,
-            )
-            if gate2_pass:
-                logger.info("[orchestrator] gate_2 PASS (%s)", gate2_reason)
-            n_contradictions = (
-                len(result.judgment.contradictions) if result.judgment else 0
-            )
-            await self._notify(
-                f"🧮 종합 판단 완료 — finding {len(result.findings)}건 / "
-                f"contradictions {n_contradictions}건 (봉합 안 함)",
-                status_callback,
+            except Exception as e:
+                logger.warning("[orchestrator] narrative_composer error: %s", e)
+                result.composed_report = None
+            self.telemetry.stage_end(stage)
+            if result.composed_report is None:
+                self.telemetry.record_llm_skip(
+                    "narrative_composer", "failed → archetype fallback",
+                )
+        else:
+            self.telemetry.record_llm_skip(
+                "narrative_composer", f"{mode} mode (deep only)",
             )
 
         # -- Phase 4: 보고서 생성 --
@@ -969,34 +974,36 @@ class Orchestrator:
         result.total_duration_seconds = time.time() - start_time
 
         report_theme = strategy.theme or "burgundy"
-        # V3 Step 5-C (v3.0.0): 하이브리드 라우팅. LLM 의 report_archetype 출력을 1순위 후보로
-        # 받되, select_archetype() 의 정밀 매트릭스가 *최종 결정자*. LLM 출력이 매트릭스
-        # 결과와 다르면 매트릭스를 우선.
-        llm_archetype = get_archetype(strategy.report_archetype)
-        matrix_archetype = select_archetype(strategy)
-        if llm_archetype.archetype_id != matrix_archetype.archetype_id:
+        # archetype routing:
+        # 1) composer 성공 → freeform_essay 명시 라우팅 (v3.3.0)
+        # 2) 그 외 → matrix 결정자 (select_archetype)
+        if result.composed_report is not None:
+            archetype = get_archetype("freeform_essay")
             logger.info(
-                "[orchestrator] archetype mismatch — LLM=%s, matrix=%s. "
-                "Matrix takes precedence (v3.0.0 정밀 우선순위).",
-                llm_archetype.archetype_id, matrix_archetype.archetype_id,
+                "[orchestrator] narrative_composer success → routing to freeform_essay",
             )
-        archetype = matrix_archetype
-        # Persist the resolved archetype back to strategy so downstream (block builders,
-        # report headers) sees a consistent value.
+        else:
+            archetype = select_archetype(strategy)
         strategy.report_archetype = archetype.archetype_id
         logger.info(
-            "[orchestrator] Routing report through archetype=%s (template=%s)",
-            archetype.archetype_id, archetype.template_path(),
+            "[orchestrator] Routing report through archetype=%s (template=%s, mode=%s)",
+            archetype.archetype_id, archetype.template_path(), mode,
         )
+        if not budget.use_llm_narrative_plan:
+            self.telemetry.record_llm_skip("narrative_plan", "default plan")
+        if not budget.use_llm_executive_summary:
+            self.telemetry.record_llm_skip(
+                "executive_summary", "deterministic builder",
+            )
+
+        stage = self.telemetry.stage_start("report_synthesis")
         report_url = await self.report_synthesizer.synthesize(
             result, theme=report_theme, archetype=archetype,
         )
+        self.telemetry.stage_end(stage)
         result.report_url = report_url
 
-        # V3 Step 5-B (v2.9.5): Watchlist 등록.
-        # ScenarioArchitect.watch_signals (dict[]) → WatchSignal Pydantic → SQLite registry.
-        # Anti-pattern #11 회피 — 보고서 텍스트로만 남기지 않음. registry None 일 때만 스킵
-        # (단위 테스트 / standalone 사용 시).
+        # Watchlist 등록 (변경 없음).
         if self.watchlist_registry is not None and result.scenarios and result.scenarios.watch_signals:
             try:
                 report_id = ""
@@ -1025,16 +1032,15 @@ class Orchestrator:
             except Exception as e:
                 logger.warning("[orchestrator] Watchlist register error: %s", e)
 
-        # Restore original model assignments after quick mode
-        if quick_mode:
-            self.context_analyst.model_name = self.config.model_name_light
-            self.player_analyst.model_name = self.config.model_name_light
-            self.dynamics_analyst.model_name = self.config.model_name
-            self.chain_reaction_analyst.model_name = self.config.model_name_light
-            self.scenario_architect.model_name = self.config.model_name
-            self.visual_analyst.model_name = self.config.model_name
+        # Restore models if downgraded for fast mode.
+        for agent_id, original in original_models.items():
+            for agent in (
+                self.context_analyst, self.scenario_architect, self.visual_analyst,
+            ):
+                if id(agent) == agent_id:
+                    agent.model_name = original
 
-        # V3 Step 4: log cumulative gate stats (per-process counters).
+        # Gate stats logging (변경 없음).
         s = self._gate_stats
         for g in ("gate_1", "gate_2"):
             attempts = s[f"{g}_attempts"]
@@ -1048,5 +1054,16 @@ class Orchestrator:
                 "partial=%d (pass_rate=%.1f%% retry_rate=%.1f%%)",
                 g, attempts, passes, retries, partial, pass_rate, retry_rate,
             )
+
+        # Telemetry summary.
+        if self.telemetry is not None:
+            self.telemetry.log_summary()
+            # Soft warning if budget exceeded.
+            if self.telemetry.total_llm_calls > budget.max_llm_calls:
+                logger.warning(
+                    "[telemetry] LLM call budget exceeded: %d > %d (mode=%s). "
+                    "Consider reviewing per-step decisions.",
+                    self.telemetry.total_llm_calls, budget.max_llm_calls, mode,
+                )
 
         return result

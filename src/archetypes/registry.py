@@ -17,6 +17,7 @@ from src.archetypes.accident_forensic import ARCHETYPE as ACCIDENT_FORENSIC
 from src.archetypes.base import ReportArchetype
 from src.archetypes.decision_brief import ARCHETYPE as DECISION_BRIEF
 from src.archetypes.financial_transmission import ARCHETYPE as FINANCIAL_TRANSMISSION
+from src.archetypes.freeform_essay import ARCHETYPE as FREEFORM_ESSAY
 from src.archetypes.geopolitical_strategic import ARCHETYPE as GEOPOLITICAL_STRATEGIC
 from src.archetypes.industry_value_chain import ARCHETYPE as INDUSTRY_VALUE_CHAIN
 from src.archetypes.mechanism_decomp import ARCHETYPE as MECHANISM_DECOMP
@@ -44,6 +45,8 @@ _REGISTRY: dict[str, ReportArchetype] = {
     SCENARIO_FIRST.archetype_id: SCENARIO_FIRST,
     MECHANISM_DECOMP.archetype_id: MECHANISM_DECOMP,
     INDUSTRY_VALUE_CHAIN.archetype_id: INDUSTRY_VALUE_CHAIN,
+    # v3.3.0 — composer 전용 (deep 모드에서 명시적 라우팅)
+    FREEFORM_ESSAY.archetype_id: FREEFORM_ESSAY,
 }
 
 DEFAULT_ARCHETYPE_ID: str = SIX_ACT_THEATER.archetype_id

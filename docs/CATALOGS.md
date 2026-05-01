@@ -1,17 +1,23 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v3.3.0
 ssot_for:
   - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
   - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
   - "보고서 블록 타입 카탈로그 (mirror of src/models.py:BlockType — V3 Step 3 활성화)"
   - "분석 렌즈 카탈로그 (V3 Step 5 후 src/lenses/registry.py 미러)"
+  - "Mode 별 lens cap 정책 (mirror of src/token_budget.py + src/lens_policy.py — v3.1.0)"
+  - "d3 차트 카탈로그 (mirror of src/templates/static/charts.js — v3.2.0)"
+  - "Narrative Composer (mirror of src/agents/narrative_composer.py — v3.3.0)"
 depends_on:
   - "src/agents/* (현재 SSOT)"
   - "src/archetypes/registry.py (archetype SSOT, Step 2 활성화)"
   - "src/models.py:BlockType (BlockType SSOT, Step 3 활성화)"
   - "src/lenses/registry.py (V3 후 lens SSOT)"
-last_review: 2026-04-26
+  - "src/token_budget.py (mode 정책 SSOT, v3.1.0)"
+  - "src/lens_policy.py (lens 결정 규칙 SSOT, v3.1.0)"
+  - "src/templates/static/charts.js (d3 차트 SSOT, v3.2.0)"
+last_review: 2026-04-30
 ---
 
 # Catalogs — Agents · Lenses · Archetypes · Blocks
@@ -21,23 +27,24 @@ last_review: 2026-04-26
 
 ---
 
-## 1. Agents — 현재 (v3.0.0)
+## 1. Agents — 현재 (v3.1.0)
 
-각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러.
+각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러. v3.1.0 부터 mode (fast/standard/deep) 별 호출 여부가 다르다.
 
-| # | 에이전트 | 파일 | 역할 (요약) |
-|---|---------|------|-------------|
-| 1 | 상황인식 분석관 | `src/agents/context_analyst.py` | ACT I: 팩트, 타임라인, 핵심 수치, 웹 검색 |
-| 2 | 이해관계자 분석관 **[DEPRECATED v3.0.0]** | `src/agents/player_analyst.py` | ACT II 행위자 식별 / 위험도. v4.0.0 제거 예정 (`FUT-LEGACY-001`) — `src.lenses.StakeholderLens` 사용 권장 |
-| 3 | 구조 및 상호작용 분석관 **[DEPRECATED v3.0.0]** | `src/agents/dynamics_analyst.py` | ACT III 게임이론·전환점. v4.0.0 제거 예정 — `src.lenses.StructuralLens` 사용 권장 |
-| 4 | 연쇄반응 분석관 **[DEPRECATED v3.0.0]** | `src/agents/chain_reaction_analyst.py` | ACT IV 인과 사슬·와일드카드. v4.0.0 제거 예정 — `src.lenses.CascadeLens` 사용 권장 |
-| 5 | 향후 시나리오 분석관 | `src/agents/scenario_architect.py` | ACT V+VI: 시나리오, 감시 신호, 균형 분석 |
-| 6 | 시각화 분석관 | `src/agents/visual_analyst.py` | SVG 관계도, Leaflet 지도, Canvas 차트 |
-| 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드 |
-| 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 (Plan Sanity) + Gate 2 (Coverage Check) — heuristic + LLM-as-judge |
-| 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도 |
+| # | 에이전트 | 파일 | 역할 (요약) | fast | standard | deep |
+|---|---------|------|-------------|:----:|:--------:|:----:|
+| 1 | 상황인식 분석관 | `src/agents/context_analyst.py` | ACT I: 팩트, 타임라인, 핵심 수치, 웹 검색 | ✅ | ✅ | ✅ |
+| 2 | 이해관계자 분석관 **[DEPRECATED v3.0.0]** | `src/agents/player_analyst.py` | ACT II 행위자 식별 / 위험도. v4.0.0 제거 예정 (`FUT-LEGACY-001`) — `src.lenses.StakeholderLens` 사용 권장 | ❌ | ❌ | ✅ |
+| 3 | 구조 및 상호작용 분석관 **[DEPRECATED v3.0.0]** | `src/agents/dynamics_analyst.py` | ACT III 게임이론·전환점. v4.0.0 제거 예정 — `src.lenses.StructuralLens` 사용 권장 | ❌ | ❌ | ✅ |
+| 4 | 연쇄반응 분석관 **[DEPRECATED v3.0.0]** | `src/agents/chain_reaction_analyst.py` | ACT IV 인과 사슬·와일드카드. v4.0.0 제거 예정 — `src.lenses.CascadeLens` 사용 권장 | ❌ | ❌ | ✅ |
+| 5 | 향후 시나리오 분석관 | `src/agents/scenario_architect.py` | ACT V+VI: 시나리오, 감시 신호, 균형 분석 | ✅ | ✅ | ✅ |
+| 6 | 시각화 분석관 | `src/agents/visual_analyst.py` | SVG 관계도, Leaflet 지도, Canvas 차트 (LLM) — fast/standard 는 `visual_builder` 결정적 빌더만 사용 | 결정적 | 결정적 | ✅ |
+| 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드. fast/standard 는 deterministic summary + default narrative plan | 결정적 | 결정적 | ✅ LLM |
+| 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 + Gate 2. fast/standard 는 heuristic 만, deep 또는 `QUALITY_LLM_JUDGE=true` 일 때만 LLM judge | heuristic | heuristic | ✅ LLM |
+| 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도. standard 는 contradictions/저신뢰 시에만 LLM | heuristic | 조건부 | ✅ LLM |
+| 10 | 편집장 / Narrative Composer (v3.3.0) | `src/agents/narrative_composer.py` | Opus 4.7 단일 콜로 자유 형식 보고서 작성. 정형 17 슬롯이 아닌 사건별 3~7 섹션. 차트는 본문 흐름에 따라 embed. 성공 시 archetype 이 `freeform_essay` 로 라우팅. | ❌ | ❌ | ✅ Opus 4.7 |
 
-DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v3.x 동안 동작 보장, v4.0.0 제거 (`GOAL.md FUT-LEGACY-001`). 신규 코드는 lens 풀의 `stakeholder` / `structural` / `cascade` 사용 (§2 표 참조).
+DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v3.1.0 부터는 deep 모드에서만 호출 — fast/standard 에서는 lens pool 의 `stakeholder` / `structural` / `cascade` 가 대체 (§2 표 참조). v4.0.0 에서 6막 템플릿 재작업과 함께 정식 제거 (`GOAL.md FUT-LEGACY-001`).
 
 기능 요구사항 매핑은 [GOAL.md](../GOAL.md) 의 REQ-AGT-001~007, REQ-V3-009 참조.
 
@@ -61,10 +68,36 @@ DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v
 | `structural` (5-C) | `src/lenses/structural_lens.py` | 페르소나 이전 (구 DynamicsAnalyst) | why_happened, where_vulnerable | 게임이론 / 비대칭 / 전환점 / 피드백 루프 |
 | `cascade` (5-C) | `src/lenses/cascade_lens.py` | 페르소나 이전 (구 ChainReactionAnalyst) | where_spreads, what_next | 인과 사슬 → 도미노 단계 → 와일드카드 → 차단점·시간지평 |
 
-### 2.1 Lens 선택 규칙 (Strategy Planner 가이드)
+### 2.1 Lens 선택 규칙 (v3.1.0 — `lens_policy.select_lenses()`)
 
-- 사건 핵심 분야 lens 1~2개 + 메타 lens (`red_team` 또는 `pre_mortem`) 0~1개 권장.
+LLM 의 `recommended_lenses` 출력에 의존하지 않고 코드 규칙으로 결정. SSOT 는 [src/lens_policy.py](../src/lens_policy.py).
+
+#### Mode 별 cap
+| Mode | Lens cap | 메타 lens 자동 추가 |
+|------|---------|-------------------|
+| fast | 1 | ❌ |
+| standard | 2 | ✅ (의사결정·전망 의도에서만) |
+| deep | 4 | ✅ + 반대편 메타 lens 도 추가 |
+
+#### 분야 lens 우선순위 (event_type 정규화 후)
+```
+tech         → tech_architecture, structural
+accident     → accident_causality, structural, cascade
+financial    → financial_transmission, market_structure, cascade
+industry     → market_structure, stakeholder, structural
+policy       → policy_implementation, stakeholder
+geopolitical → geopolitical, stakeholder, structural
+general      → stakeholder, structural
+```
+
+#### 메타 lens 자동 추가 매핑
+- `user_intent ∈ {what_to_do, where_vulnerable}` → `red_team` 추가
+- `user_intent ∈ {what_next}` → `pre_mortem` 추가
+- 그 외 의도 (what_happened, why_happened, who_benefits, where_spreads) → 메타 lens 자동 추가 안 함 (모든 사건에 강제 추가 금지)
+
+#### 가드
 - **절대 5개 이상 금지** — Pydantic `recommended_lenses: max_length=4` + orchestrator `LENS_CAP_PER_EVENT=4` 이중 가드 (Anti-pattern #6).
+- LLM 추천이 들어오면 *분야 lens 만* 우선순위 보정에 활용 (메타 lens 결정권은 정책 단독).
 - 미등록 lens_id 는 `red_team` 으로 폴백 + warning 로그 (registry 가드).
 
 ### 2.2 Lens 추가 절차
@@ -78,7 +111,7 @@ DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v
 
 ---
 
-## 3. Report Archetypes — V3 Step 2/5-A/5-C 누적 (총 11종, v3.0.0 완성)
+## 3. Report Archetypes — V3 Step 2/5-A/5-C/v3.3.0 누적 (총 12종)
 
 archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 
@@ -95,6 +128,7 @@ archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 | `scenario_first` (5-C) | `src/archetypes/scenario_first.py` | 향후 분기 — `what_next` 의도 전용. | `what_next` | 기준 시나리오 → 분기 시나리오 → 베이지안 업데이트 가이드 → 감시 신호 |
 | `mechanism_decomp` (5-C) | `src/archetypes/mechanism_decomp.py` | 원인 해부 — `why_happened` 의도 전용. | `why_happened` | 표층 현상 → 직접 원인 → 구조적 원인 → 제1원리 → 흔한 오해 |
 | `industry_value_chain` (5-C) | `src/archetypes/industry_value_chain.py` | 산업·가치사슬 (M&A, 경쟁, 공급망). | `who_benefits`, `where_vulnerable` | 산업 구조 → 가치사슬 → 경쟁 구도 → 수익성 압력 → 전략 옵션 → 의사결정 포인트 |
+| `freeform_essay` (v3.3.0) | `src/archetypes/freeform_essay.py` | **Composer 전용** — Opus 4.7 narrative_composer 가 자유 형식으로 작성. select_archetype matrix 에서 매칭되지 않으며, deep 모드 + composer 성공 시 orchestrator 가 명시 라우팅. | (matrix 외) | composer 가 사건별로 자유 결정 (3~7 섹션) |
 
 ### 3.1 선택 매트릭스 — `select_archetype()` (v3.0.0)
 
@@ -215,7 +249,36 @@ ReportSynthesizer.synthesize(result, theme, archetype)
 
 ---
 
-## 5. 카탈로그 갱신 절차
+## 6. d3 Chart Library — v3.2.0 도입
+
+`src/templates/static/charts.js` 의 9종 d3 차트 미러. 차트 SSOT 는 코드. 본 표는 사람-친화 가이드.
+
+| 차트 ID (charts.js fn) | 용도 | 입력 데이터 (visual_builder 빌더) |
+|---|---|---|
+| `drawScenarioBar` | 시나리오 확률 가로 막대 (gradient + tag 색띠) | `[{name, tag, prob, note?}]` ← `build_scenario_chart_data` |
+| `drawKeyFiguresDonut` | 핵심 수치 도넛 (중심에 카운트) | `[{label, value, context?}]` ← `build_key_figures_chart_data` |
+| `drawSeverityHeatmap` | 인과 사슬 위험도 (CSS 기반, PDF 안전) | `[{title, severity}]` ← `build_severity_chart_data` |
+| `drawConfidenceTriple` | 신뢰도 3축 막대 | `{source_diversity, data_freshness, expert_consensus}` ← `build_confidence_chart_data` |
+| `drawTimeseriesLine` | 시계열 라인 (area gradient + 진입 애니메이션) | `{label, points: [{x, y}], unit?}` |
+| `drawStackedBar` | 누적 막대 (시나리오 × 행위자) | `{scenarios: [{name, segments: [{label, value, color?}]}]}` ← `build_stacked_chart_data` |
+| `drawBubble` | 리스크 매트릭스 (확률 × 영향 4사분면) | `[{label, x, y, size, color?, note?}]` ← `build_bubble_chart_data` |
+| `drawGantt` | 간트 타임라인 | `[{label, start, end, color?, note?}]` ← `build_gantt_chart_data` |
+| `drawNetwork` | 행위자 force-directed 그래프 (대립=점선) | `{nodes: [{id, label, group}], links: [{source, target, type}]}` ← `build_network_chart_data` |
+
+### 6.1 자동 차트 매트릭스
+보고서가 데이터 가용성에 따라 자동 생성하는 차트 매핑은 [docs/ARCHITECTURE.md §5.2](ARCHITECTURE.md). 모든 차트 데이터는 결정적 (LLM 호출 0).
+
+### 6.2 차트 추가 절차
+1. `src/templates/static/charts.js` 에 `drawXxx` 함수 + auto-init 분기 + API export
+2. `src/visual_builder.py` 에 `build_xxx_chart_data()` 추가 + `build_chart_payload()` 결합
+3. `src/templates/report.html` + `src/templates/report_block.html` dashboard 섹션에 SVG 컨테이너
+4. `samples/chart_gallery.html` 시연 추가
+5. `src/tests/test_chart_builders.py` 검증 테스트 추가
+6. 본 §6 표 + CHANGELOG 매트릭스 갱신
+
+---
+
+## 7. 카탈로그 갱신 절차
 
 신규 항목을 코드 registry 에 추가했다면 본 문서도 동시에 갱신한다 ([CLAUDE.md](../CLAUDE.md) Change Propagation 매트릭스 참조).
 

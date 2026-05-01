@@ -1,28 +1,46 @@
-{# scenario_table — 시나리오 표. payload: {scenarios: list[{name, tag?, probability?, description?, impact?}]} #}
+{# scenario_table — v3.2.0 모바일-우선 카드 그리드.
+   payload: {scenarios: list[{name, tag?, probability?, description?, impact?, trigger?}]}
+   디자인 토큰은 charts.css 의 .scenario-grid / .scenario-card. #}
 <div class="block-scenario-table" data-block-id="{{ block.block_id }}">
   {% if block.title %}<div class="block-scenario-table-title">{{ block.title }}</div>{% endif %}
   {% if block.payload.scenarios %}
-  <table class="block-scenario-table-grid">
-    <thead><tr>
-      <th class="block-scenario-table-th">시나리오</th>
-      <th class="block-scenario-table-th">전개</th>
-      <th class="block-scenario-table-th">확률</th>
-      <th class="block-scenario-table-th">영향</th>
-    </tr></thead>
-    <tbody>
+  <div class="scenario-grid">
     {% for sc in block.payload.scenarios %}
-    <tr class="block-scenario-table-row block-scenario-table-tag-{{ (sc.tag or 'base')|lower }}">
-      <td class="block-scenario-table-name">
-        <strong>{{ loop.index }}. {{ sc.name or '?' }}</strong>
-        {% if sc.tag %}<br><span class="block-scenario-table-tag">{{ sc.tag }}</span>{% endif %}
-      </td>
-      <td class="block-scenario-table-desc">{{ sc.description or '-' }}</td>
-      <td class="block-scenario-table-prob">{{ sc.probability or '-' }}</td>
-      <td class="block-scenario-table-impact">{{ sc.impact or '-' }}</td>
-    </tr>
+    {% set tag_cls = (sc.tag or '기본')|string %}
+    {% set prob_num = sc.probability|string %}
+    {% set prob_clean = prob_num.replace('%','').replace(' ','') %}
+    <article class="scenario-card tag-{{ tag_cls }}">
+      <header class="scenario-card-head">
+        <span class="scenario-card-num">{{ loop.index }}</span>
+        <span class="scenario-card-name">{{ sc.name or '?' }}</span>
+        {% if sc.tag %}<span class="scenario-card-tag">{{ sc.tag }}</span>{% endif %}
+      </header>
+      {% if sc.probability %}
+      <div class="scenario-card-prob">
+        <span class="scenario-card-prob-num">{{ sc.probability }}</span>
+        <span class="scenario-card-prob-bar">
+          <span class="scenario-card-prob-fill" style="width:{{ prob_clean if prob_clean.isdigit() else '0' }}%"></span>
+        </span>
+      </div>
+      {% endif %}
+      {% if sc.description %}
+      <div class="scenario-card-section">
+        <div class="scenario-card-section-label">전개</div>
+        <div class="scenario-card-desc">{{ sc.description }}</div>
+      </div>
+      {% endif %}
+      {% if sc.impact %}
+      <div class="scenario-card-section">
+        <div class="scenario-card-section-label">영향</div>
+        <div class="scenario-card-impact">{{ sc.impact }}</div>
+      </div>
+      {% endif %}
+      {% if sc.trigger %}
+      <div class="scenario-card-trigger"><b>전환 신호</b>{{ sc.trigger }}</div>
+      {% endif %}
+    </article>
     {% endfor %}
-    </tbody>
-  </table>
+  </div>
   {% else %}
   <div class="block-scenario-table-empty">(시나리오 데이터 없음)</div>
   {% endif %}

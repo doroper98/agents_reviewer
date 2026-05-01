@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
 <style>{{ css_content }}</style>
 </head>
 <body>
@@ -28,6 +29,27 @@
     <div class="key-summary">
       <div class="key-summary-title">핵심 요약</div>
       <ol>{% for item in key_summary_items %}<li>{{ item }}</li>{% endfor %}</ol>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- v3.2.0 d3 CHART DASHBOARD -->
+{% set chart_payload = (result.visuals.chart_config.payload if result.visuals and result.visuals.chart_config else {}) or {} %}
+{% if chart_payload %}
+<section style="padding:8px 0 24px;border-bottom:1px solid var(--border-light)">
+  <div class="container">
+    <div class="section-label">DATA DASHBOARD</div>
+    <h2 class="section-title">한눈에 보기</h2>
+    <div style="display:grid;grid-template-columns:1fr;gap:14px">
+      {% if chart_payload.scenarios %}<div class="chart-card"><div class="chart-card-title">시나리오 확률 분포</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-scenarios"></svg></div></div>{% endif %}
+      {% if chart_payload.confidence %}<div class="chart-card"><div class="chart-card-title">신뢰도 분해</div><div class="chart-card-stage chart-stage-triple"><svg id="chart-confidence"></svg></div></div>{% endif %}
+      {% if chart_payload.severity_chain %}<div class="chart-card"><div class="chart-card-title">인과 사슬 위험도</div><div class="chart-card-stage chart-stage-heatmap" id="chart-severity"></div></div>{% endif %}
+      {% if chart_payload.bubble %}<div class="chart-card"><div class="chart-card-title">리스크 매트릭스</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-bubble"></svg></div></div>{% endif %}
+      {% if chart_payload.gantt %}<div class="chart-card"><div class="chart-card-title">타임라인</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-gantt"></svg></div></div>{% endif %}
+      {% if chart_payload.network %}<div class="chart-card"><div class="chart-card-title">행위자 관계도</div><div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="chart-network"></svg></div></div>{% endif %}
+      {% if chart_payload.key_figures %}<div class="chart-card"><div class="chart-card-title">핵심 수치 분배</div><div class="chart-card-stage chart-stage-donut"><svg id="chart-figures"></svg></div></div>{% endif %}
+      {% if chart_payload.stacked %}<div class="chart-card"><div class="chart-card-title">시나리오 × 행위자 영향</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-stacked"></svg></div></div>{% endif %}
     </div>
   </div>
 </section>
@@ -71,5 +93,13 @@
 var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.06});
 document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 </script>
+
+<!-- v3.2.0 d3 charts payload + library -->
+{% if chart_payload %}
+<script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+{% endif %}
+
 </body>
 </html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>차트 갤러리 — d3 + 자체 디자인 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2B1A1A;--card:#3D2828;--card-deep:#321F1F;
+  --border:#5A4A3A;--border-light:rgba(90,74,58,.4);
+  --text-primary:#F0E2CC;--text-secondary:#D4C4AA;--text-muted:#A89880;
+  --gold:#C9A84C;--gold-dark:#9E8A15;
+  --green:#1A7B3E;--green-dark:#125A2D;
+  --orange:#C76B1E;--orange-dark:#8D4D14;
+  --red:#BD3227;--red-dark:#8A2018;--blue:#1D6FA5;
+  --shadow:0 2px 8px rgba(0,0,0,.45);--radius:8px;
+}
+*{box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-secondary);margin:0;padding:24px 12px;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-family:'Noto Serif KR',serif;font-weight:900;font-size:24px;color:var(--text-primary);margin:0 0 6px;letter-spacing:-.5px}
+.sub{color:var(--text-muted);font-size:12px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:880px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="stylesheet" href="charts.css">
+</head>
+<body>
+<div class="wrap">
+  <h1>차트 갤러리</h1>
+  <div class="sub">d3 v7 + 자체 디자인 토큰. 모든 차트 hover 인터랙션 + 진입 애니메이션. 모바일 적응 (가로 600 기준 SVG viewBox + preserveAspectRatio).</div>
+
+  <div class="grid">
+
+    <!-- 1. Scenario Bar -->
+    <div class="chart-card">
+      <div class="chart-card-title">1. 시나리오 확률 분포</div>
+      <div class="chart-card-subtitle">가로 막대 — 각 시나리오 확률 비교 (gradient + tag 색띠)</div>
+      <div class="chart-card-stage chart-stage-bar"><svg id="g-scenarios"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> [{name, tag, prob}]</span><span><strong>타입</strong> bar</span></div>
+    </div>
+
+    <!-- 2. Donut -->
+    <div class="chart-card">
+      <div class="chart-card-title">2. 핵심 수치 분배</div>
+      <div class="chart-card-subtitle">도넛 — 핵심 지표의 상대 비중. 중심에 합계/카운트.</div>
+      <div class="chart-card-stage chart-stage-donut"><svg id="g-figures"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> [{label, value, context?}]</span><span><strong>타입</strong> donut</span></div>
+    </div>
+
+    <!-- 3. Severity Heatmap -->
+    <div class="chart-card">
+      <div class="chart-card-title">3. 인과 사슬 위험도</div>
+      <div class="chart-card-subtitle">히트맵 — 단계별 severity 를 색띠 그리드로. CSS 기반이라 PDF/캡처 안전.</div>
+      <div class="chart-card-stage chart-stage-heatmap" id="g-severity"></div>
+      <div class="chart-card-meta"><span><strong>data</strong> [{title, severity}]</span><span><strong>타입</strong> heatmap (css)</span></div>
+    </div>
+
+    <!-- 4. Triple confidence -->
+    <div class="chart-card">
+      <div class="chart-card-title">4. 신뢰도 3축 분해</div>
+      <div class="chart-card-subtitle">3축 막대 — 출처 다양성 / 데이터 신선도 / 전문가 합의.</div>
+      <div class="chart-card-stage chart-stage-triple"><svg id="g-confidence"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> {source_diversity, data_freshness, expert_consensus}</span><span><strong>타입</strong> triple</span></div>
+    </div>
+
+    <!-- 5. Time series -->
+    <div class="chart-card">
+      <div class="chart-card-title">5. 시계열 라인</div>
+      <div class="chart-card-subtitle">가격/수치 시간 추이 — area gradient + animated path.</div>
+      <div class="chart-card-stage chart-stage-bar"><svg id="g-timeseries"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> {label, points: [{x, y}], unit?}</span><span><strong>타입</strong> line</span></div>
+    </div>
+
+    <!-- 6. Stacked bar -->
+    <div class="chart-card">
+      <div class="chart-card-title">6. 시나리오 × 영향 누적</div>
+      <div class="chart-card-subtitle">누적 막대 — 시나리오별로 행위자 영향 분해.</div>
+      <div class="chart-card-stage chart-stage-bar"><svg id="g-stacked"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> {scenarios: [{name, segments: [{label, value}]}]}</span><span><strong>타입</strong> stacked</span></div>
+    </div>
+
+    <!-- 7. Bubble -->
+    <div class="chart-card">
+      <div class="chart-card-title">7. 리스크 매트릭스</div>
+      <div class="chart-card-subtitle">버블 — 확률 × 영향. 4사분면 (고확률·고영향이 우상단).</div>
+      <div class="chart-card-stage chart-stage-bar"><svg id="g-bubble"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> [{label, x, y, size, color?}]</span><span><strong>타입</strong> bubble</span></div>
+    </div>
+
+    <!-- 8. Gantt -->
+    <div class="chart-card">
+      <div class="chart-card-title">8. 타임라인 (Gantt)</div>
+      <div class="chart-card-subtitle">사건/시나리오 시간선 — start/end 기준.</div>
+      <div class="chart-card-stage chart-stage-bar"><svg id="g-gantt"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> [{label, start, end, color?}]</span><span><strong>타입</strong> gantt</span></div>
+    </div>
+
+    <!-- 9. Network -->
+    <div class="chart-card" style="grid-column:1/-1">
+      <div class="chart-card-title">9. 행위자 네트워크 그래프</div>
+      <div class="chart-card-subtitle">force-directed — 행위자 간 동맹/대립/중립 관계. 대립은 점선.</div>
+      <div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="g-network"></svg></div>
+      <div class="chart-card-meta"><span><strong>data</strong> {nodes: [{id, label, group}], links: [{source, target, type}]}</span><span><strong>타입</strong> network</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+<script>
+/* ===== Gallery sample data ===== */
+const G = window.AnalysisCharts;
+
+/* 1. Scenarios */
+G.drawScenarioBar(document.getElementById('g-scenarios'), [
+  {name:'여름의 그랜드 바겐', tag:'최선', prob:20, note:'기술관료 집단지도 + 핵포기 + 호르무즈 개방'},
+  {name:'연출된 교착',         tag:'기본선', prob:35, note:'백채널 부분 타결, 9~10월 중 발표'},
+  {name:'IRGC 장악 + $135+',   tag:'악화', prob:25, note:'강경파 권력 장악, 봉쇄 무기화'},
+  {name:'호르무즈 봉쇄',       tag:'최악', prob:20, note:'전면 충돌, 글로벌 공급 충격'},
+]);
+
+/* 2. Key figures */
+G.drawKeyFiguresDonut(document.getElementById('g-figures'), [
+  {label:'유가', value:108, context:'WTI $/bbl'},
+  {label:'한국 수입', value:32, context:'중동 의존도 %'},
+  {label:'美 SPR', value:68, context:'전략비축 백만 bbl'},
+  {label:'OPEC+', value:96, context:'생산 합의 %'},
+  {label:'IRGC', value:14, context:'예산 비중 %'},
+]);
+
+/* 3. Severity heatmap */
+G.drawSeverityHeatmap(document.getElementById('g-severity'), [
+  {title:'IRGC 봉쇄 위협', severity:'critical'},
+  {title:'유가 급등 $135+', severity:'high'},
+  {title:'美 SPR 방출',     severity:'medium'},
+  {title:'한국 정유사 대응', severity:'medium'},
+  {title:'환율 1450 돌파',  severity:'high'},
+  {title:'중동 외교 협상',  severity:'low'},
+]);
+
+/* 4. Confidence */
+G.drawConfidenceTriple(document.getElementById('g-confidence'), {
+  source_diversity: 0.78,
+  data_freshness:  0.82,
+  expert_consensus:0.55,
+});
+
+/* 5. Time series */
+G.drawTimeseriesLine(document.getElementById('g-timeseries'), {
+  label:'WTI 유가 일별 ($)',
+  unit: '$',
+  points:[
+    {x:'4/01', y:84}, {x:'4/05', y:88}, {x:'4/10', y:92}, {x:'4/13', y:108},
+    {x:'4/16', y:104}, {x:'4/20', y:99}, {x:'4/24', y:106}, {x:'4/28', y:114},
+    {x:'4/30', y:108},
+  ],
+});
+
+/* 6. Stacked bar */
+G.drawStackedBar(document.getElementById('g-stacked'), {
+  scenarios:[
+    {name:'여름의 그랜드 바겐', segments:[
+      {label:'미국', value:30, color:'#1A7B3E'},
+      {label:'이란', value:25, color:'#C9A84C'},
+      {label:'사우디', value:20, color:'#1D6FA5'},
+      {label:'한국', value:15, color:'#C76B1E'},
+    ]},
+    {name:'연출된 교착', segments:[
+      {label:'미국', value:25, color:'#1A7B3E'},
+      {label:'이란', value:30, color:'#C9A84C'},
+      {label:'사우디', value:25, color:'#1D6FA5'},
+      {label:'한국', value:10, color:'#C76B1E'},
+    ]},
+    {name:'IRGC 장악',  segments:[
+      {label:'미국', value:15, color:'#1A7B3E'},
+      {label:'이란', value:35, color:'#C9A84C'},
+      {label:'사우디', value:20, color:'#1D6FA5'},
+      {label:'한국', value:25, color:'#C76B1E'},
+    ]},
+    {name:'호르무즈 봉쇄', segments:[
+      {label:'미국', value:20, color:'#1A7B3E'},
+      {label:'이란', value:30, color:'#C9A84C'},
+      {label:'사우디', value:15, color:'#1D6FA5'},
+      {label:'한국', value:35, color:'#C76B1E'},
+    ]},
+  ],
+});
+
+/* 7. Bubble — risk matrix */
+G.drawBubble(document.getElementById('g-bubble'), [
+  {label:'호르무즈',  x:0.20, y:0.92, size:80, color:'#BD3227', note:'전면 봉쇄'},
+  {label:'유가급등',  x:0.55, y:0.78, size:60, color:'#C76B1E', note:'$135+ 시나리오'},
+  {label:'환율',     x:0.62, y:0.55, size:35, color:'#C9A84C', note:'1450 돌파 압력'},
+  {label:'IRGC쿠데타', x:0.18, y:0.84, size:55, color:'#BD3227', note:'권력 교체'},
+  {label:'바겐타결',  x:0.30, y:0.20, size:40, color:'#1A7B3E', note:'협상 성공'},
+  {label:'외교중재',  x:0.42, y:0.30, size:30, color:'#1D6FA5', note:'백채널'},
+]);
+
+/* 8. Gantt */
+G.drawGantt(document.getElementById('g-gantt'), [
+  {label:'美 SPR 방출',     start:1,  end:7,  color:'#1D6FA5', note:'단기 가격 안정'},
+  {label:'OPEC+ 회의',      start:5,  end:9,  color:'#C9A84C', note:'증산 결정'},
+  {label:'백채널 협상',     start:6,  end:14, color:'#1A7B3E'},
+  {label:'호르무즈 긴장',   start:9,  end:15, color:'#BD3227'},
+  {label:'IRGC 권력 다툼',  start:11, end:16, color:'#C76B1E'},
+  {label:'바겐 패키지 발표', start:14, end:18, color:'#1A7B3E', note:'9~10월 윤곽'},
+]);
+
+/* 9. Network */
+G.drawNetwork(document.getElementById('g-network'), {
+  nodes:[
+    {id:'us', label:'미국', group:'주요'},
+    {id:'ir', label:'이란', group:'주요'},
+    {id:'sa', label:'사우디', group:'동맹'},
+    {id:'irgc', label:'IRGC', group:'대립'},
+    {id:'kr', label:'한국', group:'중립'},
+    {id:'eu', label:'EU', group:'중립'},
+    {id:'cn', label:'중국', group:'중립'},
+    {id:'media', label:'언론', group:'미디어'},
+  ],
+  links:[
+    {source:'us', target:'ir',   type:'대립'},
+    {source:'us', target:'sa',   type:'동맹'},
+    {source:'ir', target:'irgc', type:'동맹'},
+    {source:'ir', target:'cn',   type:'동맹'},
+    {source:'sa', target:'eu',   type:'중립'},
+    {source:'kr', target:'us',   type:'동맹'},
+    {source:'kr', target:'sa',   type:'중립'},
+    {source:'media', target:'us', type:'중립'},
+    {source:'media', target:'ir', type:'중립'},
+    {source:'irgc', target:'us', type:'대립'},
+  ],
+});
+</script>
+</body>
+</html>
