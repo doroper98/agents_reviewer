@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.3.0"
+VERSION = "v3.3.1"
 
 # v3.1.0: legacy keywords map → fast mode (quick mode 와 같은 의미).
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}

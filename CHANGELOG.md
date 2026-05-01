@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v3.3.0
+last_synced_with: v3.3.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-04-30
+last_review: 2026-05-01
 ---
 
 # Changelog
@@ -23,6 +23,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.3.1] — 2026-05-01
+
+> **Sample 추가 (showcase only).** 보고서 파이프라인에는 변화 없음 — 디자인/톤앤매너 검증용 독립 HTML 페이지 1개 추가.
+
+### Added
+- **`samples/theme_mono_map_chart.html`** — maplibre-gl 4.7 + d3-geo v7 단일 페이지 샘플. 라이트 모노 (#FAFAF7 크림) / 버건디 모노 (#2B1A1A 마룬) 두 팔레트에 동일 데이터셋 (동북아·동남아 항만 네트워크 + 16주 컨테이너 처리량) 을 입혀 비교. 두 테마 공통 하이라이트 `#C9A84C` (골드) 로 부산↔싱가포르 회랑·관측 노드·14주차 피크 막대만 강조. 베이스 타일은 CartoDB `light_nolabels` / `dark_nolabels` + CSS 필터(`grayscale` / `sepia + hue-rotate`) 합성. d3.geoTransform 으로 maplibre `map.project()` 를 d3-geo path 에 위임, `d3.geoInterpolate` 로 great-circle arc 64분할.
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.3.0 → v3.3.1`
+- **`README.md`** Status / Recent Changes / `last_synced_with` 갱신
+
+### Not Changed (중요)
+- **보고서 생성 파이프라인은 v3.3.0 과 동일.** 이 샘플은 `src/templates/`, `src/visual_builder.py`, `src/agents/visual_analyst.py`, `src/models.py:BlockType` 어디에도 연결되지 않은 **독립 쇼케이스**. 텔레그램 보고서가 maplibre 지도를 포함하려면 별도 통합 작업 (BlockType 추가, 블록 빌더, 템플릿 임베드, archetype 라우팅) 이 필요하며 이는 v3.4.0 이상에서 다룬다.
+- VM 재기동 불필요 (런타임 동작 변화 없음).
 
 ---
 
