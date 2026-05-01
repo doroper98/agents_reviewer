@@ -216,32 +216,14 @@ function definePatterns(svg, t, prefix) {
 // VIZ 1 — GEOGRAPHIC MAP (MapLibre + custom mono style + D3 SVG overlay)
 // =============================================================================
 function buildMap(containerId, t, themeKey) {
-  // Custom MapLibre style: OpenFreeMap planet vector tiles, our color palette.
-  // Country text labels are intentionally omitted — fetching glyph PBFs for
-  // multi-script country names was the slowest part of map init. City/region
-  // labels are drawn on the SVG overlay instead, in our own theme font.
-  const style = {
-    version: 8,
-    sources: {
-      of: { type:'vector', url:'https://tiles.openfreemap.org/planet' }
-    },
-    layers: [
-      { id:'bg', type:'background', paint: { 'background-color': t.map.land } },
-      { id:'water', source:'of', 'source-layer':'water', type:'fill',
-        paint: { 'fill-color': t.map.water, 'fill-antialias': true } },
-      { id:'admin-l2', source:'of', 'source-layer':'boundary', type:'line',
-        filter: ['all', ['==', ['get','admin_level'], 2], ['!=', ['get','maritime'], 1]],
-        paint: { 'line-color': t.map.boundary, 'line-width': 0.7, 'line-opacity': 0.85 } },
-      { id:'admin-l4', source:'of', 'source-layer':'boundary', type:'line',
-        filter: ['all', ['==', ['get','admin_level'], 4]],
-        paint: { 'line-color': t.map.boundary, 'line-width': 0.3, 'line-opacity': 0.35 } },
-    ],
-  };
-
+  // Use OpenFreeMap's hosted "positron" style as base — its source/layer
+  // schema is verified by them. Apply our mono palette by overriding paint
+  // properties after style.load. Hide every symbol layer (text labels are
+  // the slowest thing — font glyph PBFs per script range).
   const containerEl = document.getElementById(containerId);
   const map = new maplibregl.Map({
     container: containerEl,
-    style,
+    style: 'https://tiles.openfreemap.org/styles/positron',
     center: [80, 26],
     zoom: 2.5,
     minZoom: 1.5, maxZoom: 3.5,
@@ -250,6 +232,47 @@ function buildMap(containerId, t, themeKey) {
   });
   map.scrollZoom.disable();
   map.on('error', (e) => console.warn('[map ' + themeKey + ']', e?.error?.message || e));
+
+  // Re-color the loaded style to fit the current theme.
+  function applyMonoPaint() {
+    const layers = map.getStyle().layers || [];
+    layers.forEach(l => {
+      const id = l.id.toLowerCase();
+      try {
+        if (l.type === 'background') {
+          map.setPaintProperty(l.id, 'background-color', t.map.land);
+        } else if (l.type === 'fill') {
+          if (id.includes('water')) {
+            map.setPaintProperty(l.id, 'fill-color', t.map.water);
+            map.setPaintProperty(l.id, 'fill-opacity', 1);
+          } else if (id.includes('building')) {
+            map.setLayoutProperty(l.id, 'visibility', 'none');
+          } else {
+            // landcover / landuse / park / etc: blend into land color (slightly
+            // tinted so the underlying texture is preserved without distracting)
+            map.setPaintProperty(l.id, 'fill-color', t.map.land);
+            map.setPaintProperty(l.id, 'fill-opacity', 0.4);
+          }
+        } else if (l.type === 'line') {
+          if (id.includes('admin') || id.includes('boundary') || id.includes('country')) {
+            map.setPaintProperty(l.id, 'line-color', t.map.boundary);
+            // bolder country borders, thinner sub-admins
+            const isMajor = id.includes('country') || id.includes('0') || id.includes('country_2');
+            map.setPaintProperty(l.id, 'line-opacity', isMajor ? 0.9 : 0.45);
+          } else if (id.includes('water') || id.includes('river') || id.includes('coast')) {
+            map.setPaintProperty(l.id, 'line-color', t.map.boundary);
+            map.setPaintProperty(l.id, 'line-opacity', 0.3);
+          } else {
+            // roads/rails/etc — hide entirely (we don't show street level)
+            map.setLayoutProperty(l.id, 'visibility', 'none');
+          }
+        } else if (l.type === 'symbol') {
+          // hide ALL text symbols — they trigger font glyph fetches
+          map.setLayoutProperty(l.id, 'visibility', 'none');
+        }
+      } catch (e) { /* paint property may not exist on every layer */ }
+    });
+  }
 
   // SVG overlay for arcs, risk circles, markers
   const overlayEl = containerEl.parentElement.querySelector('.overlay');
@@ -379,10 +402,9 @@ function buildMap(containerId, t, themeKey) {
     });
   }
 
-  // Initial center/zoom is already chosen to frame all cities. Skip
-  // fitBounds animation entirely — it triggered an extra tile-fetch
-  // wave when the camera moved post-load.
-  map.on('load', redraw);
+  // Initial center/zoom is already chosen to frame all cities.
+  map.on('load', () => { applyMonoPaint(); redraw(); });
+  map.on('styledata', applyMonoPaint);
   map.on('move', redraw);
   map.on('zoom', redraw);
   map.on('resize', redraw);
