@@ -40,7 +40,16 @@ def main() -> None:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    logger.info("Starting Event Analysis Team bot...")
+    from src.orchestrator import VERSION, BUILD_INFO
+    dirty = "  [DIRTY: uncommitted changes]" if BUILD_INFO.get("dirty") else ""
+    logger.info(
+        "Starting Event Analysis Team bot — %s · branch=%s · commit=%s (%s)%s",
+        VERSION,
+        BUILD_INFO.get("branch", "?"),
+        BUILD_INFO.get("commit", "?"),
+        BUILD_INFO.get("commit_date", "?"),
+        dirty,
+    )
     app.run_polling()
 
 

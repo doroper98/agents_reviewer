@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.4.0
+last_synced_with: v3.4.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -23,6 +23,24 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ## [Unreleased]
 
 (다음 릴리스 항목 대기 중.)
+
+---
+
+## [3.4.1] — 2026-05-01
+
+> **`/status` build info — 운영 디버깅 가속.** 봇 프로세스가 시작될 때 git 상태 (branch / short commit / commit date / dirty) 를 한 번 캡처해 `src/orchestrator.py:BUILD_INFO` 에 보관. 시작 로그 (`Starting Event Analysis Team bot — v3.4.1 · branch=main · commit=af9443d (...)`) 와 텔레그램 `/status` 응답 모두에 노출. *실행 중인 코드*의 커밋을 가리키므로 (pull 후 재기동을 안 한 케이스 포함) 운영자가 버전 미스매치를 즉시 알 수 있다.
+
+### Added
+- **`src/orchestrator.py:_capture_build_info()` + `BUILD_INFO`** — `git rev-parse --abbrev-ref HEAD` / `--short=7 HEAD` / `git log -1 --format=%cd --date=format:...` / `git status --porcelain` 4개 호출 (각 timeout 2s, stderr 무음). 실패 시 `"?"` 로 graceful degrade. import 시점에 1회만 실행 — 이후 disk 변경은 반영되지 않으며 이게 *목적*이다.
+
+### Changed
+- **`src/orchestrator.py:VERSION`** `v3.4.0 → v3.4.1`
+- **`src/main.py:main()`** — `app.run_polling()` 직전 `logger.info("Starting Event Analysis Team bot — %s · branch=%s · commit=%s (%s)%s", ...)` 추가. 운영자가 tmux 첫 줄에서 즉시 확인.
+- **`src/telegram_bot.py:_status_command()`** — `브랜치` / `커밋` 두 줄 추가 (`✅ 봇 실행 중` 직후, `가동시간` 위). dirty 일 때 `⚠️ uncommitted` 표기.
+
+### Migration
+- **VM 재기동 필요** — 코드 변경. 재기동 후 시작 로그와 `/status` 출력에 새 줄이 보여야 정상.
+- 비-git 환경 / repo 외부에서 실행 시 `BUILD_INFO` 가 모두 `"?"` 로 표시됨 — 의도된 동작.
 
 ---
 
