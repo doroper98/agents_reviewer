@@ -2,11 +2,13 @@
 
 V3 Step 2 (v2.6.0): 강등됨. archetype 옵션 1종으로 보존 (Anti-pattern #2 — 즉시 제거 금지).
 ``template_path()`` 는 기존 ``report.html`` 을 그대로 가리켜 byte-equal 출력 보장.
+PR4 (v3.4.7): contract() + narrative_stage 태깅 — legacy 라 _build_blocks 가 early
+return 으로 빠져나가지만, 일관성/디버깅을 위해 선언.
 """
 
 from __future__ import annotations
 
-from src.models import AnalysisStrategy, ReportSectionPlan
+from src.models import AnalysisMethodContract, AnalysisStrategy, ReportSectionPlan
 
 
 class SixActTheaterArchetype:
@@ -33,38 +35,53 @@ class SixActTheaterArchetype:
                 title="ACT I — 상황인식",
                 purpose="사건의 팩트, 타임라인, 핵심 수치",
                 block_types=["narrative", "timeline", "data_series"],
+                narrative_stage="fact",
             ),
             ReportSectionPlan(
                 section_id="act_2_players",
                 title="ACT II — 이해관계자",
                 purpose="행위자 식별, 입장, 전략, 위험도",
                 block_types=["actor_cards"],
+                narrative_stage="fact",
             ),
             ReportSectionPlan(
                 section_id="act_3_dynamics",
                 title="ACT III — 구조 및 상호작용",
                 purpose="비대칭, 피드백 루프, 전환점",
                 block_types=["narrative", "matrix", "callout"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="act_4_chain",
                 title="ACT IV — 연쇄반응",
                 purpose="인과 사슬, 도미노 효과, 차단점",
                 block_types=["flow_chain", "callout"],
+                narrative_stage="mechanism",
             ),
             ReportSectionPlan(
                 section_id="act_5_scenarios",
                 title="ACT V — 향후 시나리오",
                 purpose="시나리오, 확률, 행위자별 영향",
                 block_types=["scenario_table", "callout"],
+                narrative_stage="divergence",
             ),
             ReportSectionPlan(
                 section_id="act_6_signals",
                 title="ACT VI — 감시 시그널",
                 purpose="시나리오 분기를 판별하는 핵심 신호",
                 block_types=["watchlist", "counter_hypothesis"],
+                narrative_stage="trigger",
             ),
         ]
+
+    def contract(self) -> AnalysisMethodContract:
+        return AnalysisMethodContract(
+            method_id=self.archetype_id,
+            required_inputs=["context"],
+            mandatory_stages=["fact", "mechanism", "divergence", "trigger"],
+            forbidden_blocks=[],
+            rationale="6막 극장 (legacy) — fact(상황/이해관계자) → mechanism(구조/연쇄) → divergence(시나리오) → trigger(감시).",
+        )
 
     def template_path(self) -> str:
         # Relative to src/templates/ — keeps the v2 file unchanged for byte-equal output.

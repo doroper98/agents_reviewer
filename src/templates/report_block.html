@@ -73,13 +73,21 @@
   'fact': '사실', 'mechanism': '메커니즘', 'divergence': '분기',
   'decision': '의사결정', 'trigger': '관찰 신호'
 } %}
-{% if amc_meta and amc_meta.get('missing_stages') %}
+{% if amc_meta and (amc_meta.get('missing_stages') or amc_meta.get('missing_inputs')) %}
 <section class="report-block-amc-warning">
   <div class="amc-warning-badge">⚠ 분석 기법 계약 미달 — <code>{{ amc_meta.method_id }}</code></div>
+  {% if amc_meta.get('missing_stages') %}
   <div class="amc-warning-detail">
-    이 archetype 은 다음 단계를 *반드시* 다뤄야 하나 누락:
+    누락된 분석 단계:
     {% for s in amc_meta.missing_stages %}<span class="amc-stage-missing">{{ _stage_label.get(s, s) }}</span>{% endfor %}
   </div>
+  {% endif %}
+  {% if amc_meta.get('missing_inputs') %}
+  <div class="amc-warning-detail">
+    누락된 필수 입력:
+    {% for inp in amc_meta.missing_inputs %}<span class="amc-stage-missing">{{ inp }}</span>{% endfor %}
+  </div>
+  {% endif %}
 </section>
 {% endif %}
 {% if section_plan %}

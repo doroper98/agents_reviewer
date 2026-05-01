@@ -493,6 +493,16 @@ class ReportSynthesizer:
         contract = self._archetype_contract(archetype)
         forbidden = set(contract.forbidden_blocks or [])
 
+        # PR4: required_inputs 검증 — 빠진 input 이 있으면 경고. 라우팅 자체는 거부하지
+        # 않음 (archetype 선택은 select_archetype 영역). 빠진 정보를 사용자에게 가시화
+        # 하기 위해 missing_inputs 도 메타에 기록.
+        missing_inputs = self._check_required_inputs(result, contract.required_inputs)
+        if missing_inputs:
+            logger.warning(
+                "[report_synthesizer] AMC %s: required_inputs missing %s — archetype 결과 빈약 가능",
+                contract.method_id, missing_inputs,
+            )
+
         builders = self._BLOCK_BUILDERS
         blocks: list[AnalysisBlock] = []
         block_seq = 0
@@ -548,6 +558,8 @@ class ReportSynthesizer:
                 "mandatory_stages": list(contract.mandatory_stages),
                 "covered_stages": sorted(covered_stages),
                 "missing_stages": missing,
+                "required_inputs": list(contract.required_inputs),
+                "missing_inputs": missing_inputs,
             }
 
         logger.info(
@@ -571,6 +583,42 @@ class ReportSynthesizer:
                     getattr(archetype, "archetype_id", "?"), exc,
                 )
         return default_contract(getattr(archetype, "archetype_id", "unknown"))
+
+    @staticmethod
+    def _check_required_inputs(
+        result: FullAnalysisResult, required: list[str],
+    ) -> list[str]:
+        """PR4: contract.required_inputs 가 result 에 실제로 채워졌는지 검증.
+
+        FullAnalysisResult 의 attribute 가 None 이거나 (모델 인스턴스인 경우) 해당
+        모델의 핵심 list/dict 필드가 비어있으면 missing 으로 간주.
+
+        예:
+        - 'context' 가 None 또는 ContextAnalysis() 빈 인스턴스 → missing
+        - 'scenarios' 가 None 또는 ScenarioAnalysis(scenarios=[]) → missing
+        - 'players' 가 None 또는 PlayerAnalysis(players=[]) → missing
+        """
+        missing: list[str] = []
+        for field in required:
+            obj = getattr(result, field, None)
+            if obj is None:
+                missing.append(field)
+                continue
+            # Pydantic 모델일 수 있음 — 핵심 list/dict 필드가 비어있는지 검사
+            cls = type(obj)
+            if hasattr(cls, "model_fields"):
+                has_any = False
+                for fname in cls.model_fields:
+                    val = getattr(obj, fname, None)
+                    if isinstance(val, (list, dict)) and len(val) > 0:
+                        has_any = True
+                        break
+                    if isinstance(val, str) and val.strip():
+                        has_any = True
+                        break
+                if not has_any:
+                    missing.append(field)
+        return missing
 
     async def _call_cli(self, prompt: str) -> str:
         """Call Claude CLI for text generation."""
