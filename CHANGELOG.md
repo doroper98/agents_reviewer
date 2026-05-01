@@ -22,6 +22,42 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
+### v3.4.7 — AMC 전체 archetype 적용 + required_inputs 검증 (PR4)
+
+PR3 후속. PR3 에서 5개 archetype 만 contract() 선언 → PR4 에서 **나머지 7개까지 전체 12개 archetype 에 적용** + required_inputs 런타임 검증 추가.
+
+#### Added — 7개 archetype 에 contract() + narrative_stage 태깅
+- `geopolitical_strategic`: mandatory `[fact, mechanism, divergence, trigger]`, forbidden `[decision_matrix]`
+- `industry_value_chain`: mandatory `[fact, mechanism, divergence, trigger]`
+- `policy_implementation`: mandatory `[fact, mechanism, divergence, decision]`
+- `tech_decomposition`: mandatory `[fact, mechanism, divergence, decision]`, forbidden `[scenario_table]`
+- `timeline_first`: mandatory `[fact, divergence]`, forbidden `[decision_matrix, scenario_table]` (what_happened 전용 — 사실 정리가 본분)
+- `freeform_essay`: 느슨한 contract (composer 가 stage 자율 결정 — mandatory_stages 비어있음)
+- `six_act_theater`: mandatory `[fact, mechanism, divergence, trigger]` (legacy 라 enforcement 트리거 안 됨, 일관성/디버깅용)
+
+→ **이제 12개 archetype 전체가 narrative_stage 태깅 + contract() 선언**. 모든 archetype 에서 stage 배지가 시각화되고 mandatory stage 미달 시 경고 가시화.
+
+#### Added — required_inputs 런타임 검증
+- `ReportSynthesizer._check_required_inputs()` 신설: contract.required_inputs 가 result 에 실제로 채워졌는지 검증.
+  - `FullAnalysisResult.<field>` 가 None → missing
+  - Pydantic 모델 인스턴스이지만 모든 list/dict/str 필드 비어있음 → missing
+- `_build_blocks` 가 시작 시 검증, 누락 시 WARNING 로그.
+- 첫 블록 `__amc__` 메타에 `required_inputs` + `missing_inputs` 기록.
+- `report_block.html` 의 AMC 경고 배너가 누락된 입력도 표시 ("누락된 필수 입력: context, players").
+
+#### Tests
+- `test_amc_narrative_dsl.py` 확장:
+  - **`TestArchetypeStageCoverage`**: 5개 individual test → `parametrize` 로 11개 strict archetype 전체 검증 (freeform_essay 는 별도)
+  - **`TestArchetypeNoSelfViolation`**: 동일하게 11개 전체 자가 모순 검증
+  - **`TestAllArchetypesHaveContract`** (신설): 12개 archetype 모두 callable contract() 노출 + AnalysisMethodContract 인스턴스 반환
+  - **`TestRequiredInputsCheck`** (신설): _check_required_inputs 4개 테스트 (None / 빈 모델 / 데이터 있음 / 부분 누락)
+- 결과: `pytest src/tests/` **202 passed, 4 skipped** (PR3 175 + PR4 27 신설). skip 4개는 mandatory_stages 또는 forbidden_blocks 가 비어있는 archetype 의 parametrize 항목.
+
+#### Code quality
+- Pydantic V2.11 deprecation 경고 해소: `obj.model_fields` → `type(obj).model_fields` (V3.0 에서 제거 예정).
+
+---
+
 ### v3.4.6 — AMC + Narrative DSL (PR3) — 단조로움의 구조적 처방
 
 PR1'/PR2 후속. 사용자 지적 *"기법 다양성을 주문했는데 형식이 늘 비슷함"* (REFACTOR_V3_PLAN §6) 의 **구조적** 처방.

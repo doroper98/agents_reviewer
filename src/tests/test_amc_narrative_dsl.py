@@ -1,4 +1,4 @@
-"""PR3 (v3.4.6) tests — AMC + Narrative DSL.
+"""PR3/PR4 (v3.4.6/v3.4.7) tests — AMC + Narrative DSL.
 
 Run:
     python -m pytest src/tests/test_amc_narrative_dsl.py -v
@@ -13,14 +13,43 @@ from src.archetypes.accident_forensic import ARCHETYPE as ACCIDENT_FORENSIC
 from src.archetypes.base import default_contract
 from src.archetypes.decision_brief import ARCHETYPE as DECISION_BRIEF
 from src.archetypes.financial_transmission import ARCHETYPE as FINANCIAL_TRANSMISSION
+from src.archetypes.freeform_essay import ARCHETYPE as FREEFORM_ESSAY
+from src.archetypes.geopolitical_strategic import ARCHETYPE as GEOPOLITICAL_STRATEGIC
+from src.archetypes.industry_value_chain import ARCHETYPE as INDUSTRY_VALUE_CHAIN
 from src.archetypes.mechanism_decomp import ARCHETYPE as MECHANISM_DECOMP
+from src.archetypes.policy_implementation import ARCHETYPE as POLICY_IMPLEMENTATION
 from src.archetypes.scenario_first import ARCHETYPE as SCENARIO_FIRST
+from src.archetypes.six_act_theater import ARCHETYPE as SIX_ACT_THEATER
+from src.archetypes.tech_decomposition import ARCHETYPE as TECH_DECOMPOSITION
+from src.archetypes.timeline_first import ARCHETYPE as TIMELINE_FIRST
 from src.models import (
     AnalysisMethodContract,
+    AnalysisRequest,
     AnalysisStrategy,
+    ContextAnalysis,
+    FullAnalysisResult,
     NarrativeStage,
+    PlayerAnalysis,
     ReportSectionPlan,
+    ScenarioAnalysis,
 )
+
+
+def _empty_result(**kwargs) -> FullAnalysisResult:
+    """FullAnalysisResult 는 request 가 필수. 테스트용 helper."""
+    return FullAnalysisResult(
+        request=AnalysisRequest(event_description="test"),
+        **kwargs,
+    )
+
+
+# 11개 archetype + freeform = 12개. 강한 contract 검증 대상은 freeform 제외 11개.
+ALL_ARCHETYPES = [
+    SCENARIO_FIRST, DECISION_BRIEF, MECHANISM_DECOMP, ACCIDENT_FORENSIC,
+    FINANCIAL_TRANSMISSION, GEOPOLITICAL_STRATEGIC, INDUSTRY_VALUE_CHAIN,
+    POLICY_IMPLEMENTATION, TECH_DECOMPOSITION, TIMELINE_FIRST, SIX_ACT_THEATER,
+]
+STRICT_ARCHETYPES = [a for a in ALL_ARCHETYPES if a.archetype_id != "freeform_essay"]
 
 
 # ----------------------------------------------------------------------
@@ -141,40 +170,30 @@ def sample_strategy() -> AnalysisStrategy:
 
 class TestArchetypeStageCoverage:
     """각 archetype 의 section_plan 이 자기 contract 의 mandatory_stages 를 모두
-    커버하는지 검증. 이게 깨지면 archetype 작성 자체가 잘못된 것."""
+    커버하는지 검증. 이게 깨지면 archetype 작성 자체가 잘못된 것.
 
-    def test_scenario_first_covers_mandatory(self, sample_strategy) -> None:
-        plan = SCENARIO_FIRST.section_plan(sample_strategy)
+    PR4: 11개 strict archetype (freeform 제외) 전체 검증으로 확장.
+    """
+
+    @pytest.mark.parametrize("archetype", STRICT_ARCHETYPES, ids=lambda a: a.archetype_id)
+    def test_archetype_covers_mandatory_stages(self, archetype, sample_strategy) -> None:
+        contract = archetype.contract()
+        if not contract.mandatory_stages:
+            pytest.skip(f"{archetype.archetype_id}: no mandatory_stages declared")
+        plan = archetype.section_plan(sample_strategy)
         stages = {s.narrative_stage for s in plan if s.narrative_stage}
-        for required in SCENARIO_FIRST.contract().mandatory_stages:
+        for required in contract.mandatory_stages:
             assert required in stages, (
-                f"scenario_first archetype 의 section_plan 이 mandatory stage "
-                f"{required!r} 를 커버하지 않음"
+                f"{archetype.archetype_id} 의 section_plan 이 mandatory stage "
+                f"{required!r} 를 커버하지 않음. 현재 stages: {sorted(stages)}"
             )
 
-    def test_decision_brief_covers_mandatory(self, sample_strategy) -> None:
-        plan = DECISION_BRIEF.section_plan(sample_strategy)
-        stages = {s.narrative_stage for s in plan if s.narrative_stage}
-        for required in DECISION_BRIEF.contract().mandatory_stages:
-            assert required in stages
-
-    def test_mechanism_decomp_covers_mandatory(self, sample_strategy) -> None:
-        plan = MECHANISM_DECOMP.section_plan(sample_strategy)
-        stages = {s.narrative_stage for s in plan if s.narrative_stage}
-        for required in MECHANISM_DECOMP.contract().mandatory_stages:
-            assert required in stages
-
-    def test_accident_forensic_covers_mandatory(self, sample_strategy) -> None:
-        plan = ACCIDENT_FORENSIC.section_plan(sample_strategy)
-        stages = {s.narrative_stage for s in plan if s.narrative_stage}
-        for required in ACCIDENT_FORENSIC.contract().mandatory_stages:
-            assert required in stages
-
-    def test_financial_transmission_covers_mandatory(self, sample_strategy) -> None:
-        plan = FINANCIAL_TRANSMISSION.section_plan(sample_strategy)
-        stages = {s.narrative_stage for s in plan if s.narrative_stage}
-        for required in FINANCIAL_TRANSMISSION.contract().mandatory_stages:
-            assert required in stages
+    def test_freeform_essay_has_loose_contract(self, sample_strategy) -> None:
+        # freeform_essay 는 composer 가 stage 자율 결정 → mandatory_stages 비어있어야 함.
+        contract = FREEFORM_ESSAY.contract()
+        assert contract.mandatory_stages == []
+        # section_plan 도 빈 list (composer 가 SSOT)
+        assert FREEFORM_ESSAY.section_plan(sample_strategy) == []
 
 
 # ----------------------------------------------------------------------
@@ -183,16 +202,78 @@ class TestArchetypeStageCoverage:
 
 
 class TestArchetypeNoSelfViolation:
-    def test_scenario_first_does_not_request_forbidden(self, sample_strategy) -> None:
-        plan = SCENARIO_FIRST.section_plan(sample_strategy)
+    """PR4: 11개 strict archetype 전체에 대해 자가 모순 검증."""
+
+    @pytest.mark.parametrize("archetype", STRICT_ARCHETYPES, ids=lambda a: a.archetype_id)
+    def test_archetype_does_not_request_forbidden(self, archetype, sample_strategy) -> None:
+        contract = archetype.contract()
+        if not contract.forbidden_blocks:
+            pytest.skip(f"{archetype.archetype_id}: no forbidden_blocks declared")
+        plan = archetype.section_plan(sample_strategy)
         all_blocks = {bt for s in plan for bt in s.block_types}
-        for forbidden in SCENARIO_FIRST.contract().forbidden_blocks:
+        for forbidden in contract.forbidden_blocks:
             assert forbidden not in all_blocks, (
-                f"scenario_first 가 자기 forbidden_blocks 의 {forbidden!r} 를 요청"
+                f"{archetype.archetype_id} 가 자기 forbidden_blocks 의 {forbidden!r} 를 요청 — 자가 모순"
             )
 
-    def test_mechanism_decomp_does_not_request_forbidden(self, sample_strategy) -> None:
-        plan = MECHANISM_DECOMP.section_plan(sample_strategy)
-        all_blocks = {bt for s in plan for bt in s.block_types}
-        for forbidden in MECHANISM_DECOMP.contract().forbidden_blocks:
-            assert forbidden not in all_blocks
+
+# ----------------------------------------------------------------------
+# 6. 모든 archetype 이 contract() 메서드를 노출
+# ----------------------------------------------------------------------
+
+
+class TestAllArchetypesHaveContract:
+    """PR4: 모든 archetype 에 contract() 가 있는지 + AnalysisMethodContract 인스턴스 반환."""
+
+    @pytest.mark.parametrize("archetype", ALL_ARCHETYPES, ids=lambda a: a.archetype_id)
+    def test_archetype_has_callable_contract(self, archetype) -> None:
+        assert hasattr(archetype, "contract"), (
+            f"{archetype.archetype_id} 에 contract() 메서드 부재"
+        )
+        c = archetype.contract()
+        assert isinstance(c, AnalysisMethodContract)
+        assert c.method_id == archetype.archetype_id
+
+
+# ----------------------------------------------------------------------
+# 7. Synthesizer required_inputs 검증 (PR4)
+# ----------------------------------------------------------------------
+
+
+class TestRequiredInputsCheck:
+    """PR4: ReportSynthesizer._check_required_inputs 동작 검증."""
+
+    def test_missing_when_none(self) -> None:
+        from src.agents.report_synthesizer import ReportSynthesizer
+        result = _empty_result()  # 모든 분석 필드 None
+        missing = ReportSynthesizer._check_required_inputs(
+            result, ["context", "scenarios"],
+        )
+        assert "context" in missing
+        assert "scenarios" in missing
+
+    def test_missing_when_empty_pydantic_model(self) -> None:
+        from src.agents.report_synthesizer import ReportSynthesizer
+        # ScenarioAnalysis() 인스턴스이지만 모든 list 필드 비어있음
+        result = _empty_result(scenarios=ScenarioAnalysis())
+        missing = ReportSynthesizer._check_required_inputs(result, ["scenarios"])
+        assert "scenarios" in missing
+
+    def test_present_when_pydantic_has_data(self) -> None:
+        from src.agents.report_synthesizer import ReportSynthesizer
+        result = _empty_result(
+            scenarios=ScenarioAnalysis(scenarios=[{"name": "S1"}]),
+        )
+        missing = ReportSynthesizer._check_required_inputs(result, ["scenarios"])
+        assert missing == []
+
+    def test_partial_missing(self) -> None:
+        from src.agents.report_synthesizer import ReportSynthesizer
+        result = _empty_result(
+            context=ContextAnalysis(event_name="x"),
+        )
+        missing = ReportSynthesizer._check_required_inputs(
+            result, ["context", "players"],
+        )
+        assert "context" not in missing
+        assert "players" in missing

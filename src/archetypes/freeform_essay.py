@@ -8,11 +8,14 @@ narrative_composer 성공 시 *명시적으로* 라우팅한다 (registry lookup
 
 section_plan() 은 호환을 위해 빈 리스트 반환 — composer 출력이 SSOT 라서 strategy 의
 section_plan 에 의존하지 않는다.
+
+PR4 (v3.4.7): contract() 추가 — composer 가 stage 를 직접 관리하므로 강제 stage 없이
+선언만. forbidden_blocks 도 비워둠 (composer 가 자유롭게 조합).
 """
 
 from __future__ import annotations
 
-from src.models import AnalysisStrategy, ReportSectionPlan
+from src.models import AnalysisMethodContract, AnalysisStrategy, ReportSectionPlan
 
 
 class FreeformEssayArchetype:
@@ -26,6 +29,18 @@ class FreeformEssayArchetype:
         # composer 가 ComposedReport.sections 로 SSOT 를 보유. strategy.section_plan
         # 은 본 archetype 에선 무의미하므로 빈 리스트.
         return []
+
+    def contract(self) -> AnalysisMethodContract:
+        # composer (Opus 4.7) 가 narrative stage 를 자율적으로 결정. AMC 는 강제 stage
+        # 없이 *선언만* — synthesizer 가 freeform_essay 라우트를 따로 처리하므로
+        # mandatory_stages 검증은 어차피 trigger 안 됨 (ComposedReport.sections SSOT).
+        return AnalysisMethodContract(
+            method_id=self.archetype_id,
+            required_inputs=["composed_report"],
+            mandatory_stages=[],
+            forbidden_blocks=[],
+            rationale="Freeform essay — composer 가 stage 자율 결정. AMC 는 라우팅 식별용 declarative 정보.",
+        )
 
     def template_path(self) -> str:
         return "archetypes/freeform_essay.html"
