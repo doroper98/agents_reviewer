@@ -12,10 +12,10 @@
     <tbody>
     {% for e in block.payload.evidences %}
     <tr class="block-evidence-table-row">
-      <td class="block-evidence-table-id">{{ e.evidence_id or '' }}</td>
-      <td class="block-evidence-table-quote">{{ e.quote_or_data or '' }}{% if e.source_url %} · <a class="block-evidence-table-link" href="{{ e.source_url }}">출처</a>{% endif %}</td>
-      <td class="block-evidence-table-reliability block-evidence-table-rel-{{ e.reliability or 'unknown' }}">{{ e.reliability or '-' }}</td>
-      <td class="block-evidence-table-ts">{{ e.timestamp or '-' }}</td>
+      <td class="block-evidence-table-id" data-label="ID">{{ e.evidence_id or '' }}</td>
+      <td class="block-evidence-table-quote" data-label="출처/인용">{{ e.quote_or_data or '' }}{% if e.source_url %} · <a class="block-evidence-table-link" href="{{ e.source_url }}">출처</a>{% endif %}</td>
+      <td class="block-evidence-table-reliability block-evidence-table-rel-{{ e.reliability or 'unknown' }}" data-label="신뢰도">{{ e.reliability or '-' }}</td>
+      <td class="block-evidence-table-ts" data-label="시점">{{ e.timestamp or '-' }}</td>
     </tr>
     {% endfor %}
     </tbody>

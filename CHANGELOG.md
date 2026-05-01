@@ -22,7 +22,39 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
-(다음 릴리스 항목 대기 중.)
+### v3.4.4 — Quality fixes (PR1')
+
+샘플 보고서(`analysis_20260501_165647`)에서 관찰된 6가지 품질 문제 중 v3.4.3 이후에도 *여전히 미해결인 4개*만 처리. 시나리오 모델 강화(PR2)와 AMC + Narrative DSL(PR3)은 후속.
+
+#### Fixed
+- **차트 테마 미동기 (#1)** — `src/templates/static/charts.js` 의 `TOKENS` 상수가 burgundy hex(`#321F1F`, `#C9A84C` 등) 하드코딩 → `getComputedStyle` 로 `:root` 의 `--card / --gold / --green / --orange / --red / --blue / --text-*` CSS 변수 읽기. 페이지 `data-theme` (geopolitical/financial/tech/nature/liquidglass) 와 차트 팔레트 자동 동기화. fallback 으로 burgundy 유지.
+- **무지성 차트 (#3)** — `src/visual_builder.py`:
+  - `build_key_figures_chart_data`: 숫자 추출 실패 시 `1.0` 폴백 제거 (균등 도넛 안티패턴 차단). 항목 < 3 이거나 모든 값 동일이면 빈 list → 도넛 미생성.
+  - `build_stacked_chart_data`: 모든 segment `value=1` 하드코딩 제거. `_impact_magnitude()` 가 (a) 명시적 `impact_score/magnitude/weight` 필드, (b) impact 텍스트의 키워드("극심"/"높음"/"중간"/"낮음" 등) 우선순위로 정량값 추출. 추출 실패 segment skip, ≥4 segment + variance>0 일 때만 차트 생성.
+- **빈 placeholder 블록 (#5 부분)** — `_payload_claim_card / _payload_evidence_table / _payload_qna` 가 빈 dict 대신 `None` 반환. 기존엔 빈 카드/표가 매 보고서에 렌더되어 단조로움의 직접 원인.
+- **모바일 cram (#6 부분)** — `src/templates/report.css` 에 `@media (max-width:540px)` 추가:
+  - `block-timeline-item` 세로 스택 (이전: `display:flex` + `min-width:110px` 날짜 → 좁은 폭에서 셀 안 텍스트가 한두 글자씩 흘러내림).
+  - `evidence_table / risk_matrix` 테이블 → 카드 스택 변환 (`<thead>` 숨김, `<tr>`→카드, `<td>`→라벨된 행). `<td>` 에 `data-label` 속성 추가하여 카드 모드에서 라벨 표시.
+
+#### Already-fixed-on-main (verified, no work needed)
+- **#2 시나리오 시인성** — `scenario_table.html` 이 이미 `scenario-grid` + 확률 bar (v3.2.0). 단 `confidence`/`driver_signals` 필드는 **PR2 범위**.
+- **#4 차트 빈 공간** — `charts.js` 가 이미 dynamic SVG sizing + `aspect-ratio` + 모바일 breakpoint (v3.2.0).
+- **#5 단조로움 (부분)** — Narrative Composer (v3.3.0) 가 deep mode 에서 freeform 에디토리얼. AMC 등 구조적 처방은 **PR3 범위**.
+
+#### Tests
+- `test_chart_builders.py` 중 4개 테스트가 *이전의 잘못된 동작*(value=1 fallback, `1.0` default)을 검증하고 있어 **새 (올바른) 동작**에 맞게 갱신:
+  - `test_extracts_numeric_value`: 3+ figures 로 변경 (Insight Gate 충족)
+  - `test_falls_back_to_one_when_no_number` → `test_skips_when_no_number` (정정된 동작 검증)
+  - `test_skips_when_uniform_values` 신설
+  - `test_builds_segments_per_scenario` → `test_builds_segments_with_varied_magnitudes` (variance>0 검증)
+  - `test_returns_none_when_uniform_magnitudes` 신설
+  - `test_omits_empty_chart_types`: 1개 figure → key_figures omit (Insight Gate 동작 명시)
+  - `test_full_payload_with_all_data`: 3+ figures + 변동성 있는 stacked
+- 결과: `pytest src/tests/` **150 passed** (이전 144 + 신설 6).
+
+#### Roadmap
+- **PR2** (다음): `ScenarioAnalysis` 모델에 `confidence` + `driver_signals` 필드 추가. `visual_builder.build_scenario_table` 추출 + `scenario_table.html` 배지 렌더.
+- **PR3** (별도 세션): AMC (Analysis Method Contract) — 기법별 `required_inputs / output_schema / mandatory_sections / forbidden_fallbacks` 선언. + Narrative DSL (fact→mechanism→divergence→decision→trigger). 사용자 지적 "기법 다양성을 주문했는데 형식이 늘 같음"의 *구조적* 처방.
 
 ---
 

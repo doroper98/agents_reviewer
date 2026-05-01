@@ -12,10 +12,10 @@
     <tbody>
     {% for r in block.payload.risks %}
     <tr class="block-risk-matrix-row block-risk-matrix-impact-{{ (r.impact or 'low')|lower }}">
-      <td class="block-risk-matrix-name">{{ r.risk or '?' }}</td>
-      <td class="block-risk-matrix-prob">{{ r.probability or '-' }}</td>
-      <td class="block-risk-matrix-impact-cell">{{ r.impact or '-' }}</td>
-      <td class="block-risk-matrix-mitigation">{{ r.mitigation or '-' }}</td>
+      <td class="block-risk-matrix-name" data-label="리스크">{{ r.risk or '?' }}</td>
+      <td class="block-risk-matrix-prob" data-label="확률">{{ r.probability or '-' }}</td>
+      <td class="block-risk-matrix-impact-cell" data-label="영향">{{ r.impact or '-' }}</td>
+      <td class="block-risk-matrix-mitigation" data-label="완화책">{{ r.mitigation or '-' }}</td>
     </tr>
     {% endfor %}
     </tbody>

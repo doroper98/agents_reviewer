@@ -408,19 +408,17 @@ class ReportSynthesizer:
 
     @staticmethod
     def _payload_claim_card(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
-        # Placeholder for Step 4 (Claim/Evidence). For now, an empty card with a clear
-        # marker so block tests render successfully.
-        return {"statement": "", "evidence_ids": [], "claim_type": "inference"}
+        # Step 4 (Claim/Evidence) 미도입 → 빈 placeholder 렌더 금지. 데이터 없으면 블록 skip.
+        # 빈 카드를 매번 렌더하던 것이 보고서 단조로움의 직접 원인이었음.
+        return None
 
     @staticmethod
     def _payload_evidence_table(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
-        # Placeholder for Step 4. Render an empty table.
-        return {"evidences": []}
+        return None
 
     @staticmethod
     def _payload_qna(result: FullAnalysisResult, section: ReportSectionPlan) -> dict | None:
-        # No QnA source in v2. Render empty.
-        return {"pairs": []}
+        return None
 
     _BLOCK_BUILDERS: dict = {}  # populated below to avoid forward-ref issues
 

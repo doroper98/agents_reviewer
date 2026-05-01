@@ -292,7 +292,10 @@ def build_scenario_chart_data(scenarios: "ScenarioAnalysis | None") -> list[dict
 def build_key_figures_chart_data(context: "ContextAnalysis | None") -> list[dict]:
     """ContextAnalysis.key_figures → 도넛 차트 데이터.
 
-    수치 추출: value 문자열에서 첫 숫자 파싱. 추출 실패 시 1로 폴백.
+    Insight Gate:
+    - value 에서 숫자 추출 실패 시 해당 항목 skip (이전엔 1.0 폴백 → 균등 슬라이스).
+    - 추출된 value 가 모두 동일하면 (variance=0) 빈 list 반환 → 도넛 자체 미렌더.
+    - 항목 < 3 이면 도넛 가치 없으므로 빈 list.
     """
     if not context or not context.key_figures:
         return []
@@ -301,12 +304,24 @@ def build_key_figures_chart_data(context: "ContextAnalysis | None") -> list[dict
     for fig in context.key_figures[:6]:
         raw = str(fig.get("value", ""))
         m = re.search(r"(\d+(?:[.,]\d+)?)", raw.replace(",", ""))
-        v = float(m.group(1)) if m else 1.0
+        if not m:
+            continue  # 숫자 추출 실패 → 도넛 슬라이스 가치 없음, skip
+        try:
+            v = float(m.group(1))
+        except (TypeError, ValueError):
+            continue
+        if v <= 0:
+            continue
         out.append({
             "label": (fig.get("label") or "")[:14],
             "value": v,
             "context": (fig.get("context") or "")[:60],
         })
+    if len(out) < 3:
+        return []
+    values = [d["value"] for d in out]
+    if max(values) - min(values) < 1e-9:
+        return []  # 균등 분포 — 도넛이 아니라 텍스트 카드로 처리해야 함
     return out
 
 
@@ -335,8 +350,47 @@ def build_confidence_chart_data(judgment) -> dict | None:
     }
 
 
+_IMPACT_MAGNITUDE_KEYWORDS = (
+    ("극심", 1.0), ("치명", 1.0), ("crit", 1.0),
+    ("매우 큰", 0.9), ("매우 높", 0.9),
+    ("큰", 0.75), ("높", 0.75), ("high", 0.75), ("심각", 0.75),
+    ("중간", 0.5), ("중", 0.5), ("med", 0.5), ("보통", 0.5),
+    ("낮", 0.3), ("low", 0.3), ("작은", 0.3), ("미미", 0.2),
+    ("긍정", 0.6), ("부정", 0.6),
+)
+
+
+def _impact_magnitude(imp: dict) -> float:
+    """impact dict 에서 정량 강도 추출.
+
+    우선순위:
+    1) 명시적 numeric 필드 (impact_score, magnitude, weight)
+    2) impact 텍스트의 키워드 매칭
+    3) 매칭 실패 → 0.0 (= segment 자체 skip)
+
+    이전엔 모든 segment 가 value=1 로 균등 누적 막대 → 시각적 의미 없음.
+    """
+    for k in ("impact_score", "magnitude", "weight"):
+        v = imp.get(k)
+        if isinstance(v, (int, float)) and v > 0:
+            return min(float(v), 1.0)
+    text = str(imp.get("impact") or imp.get("description") or "").lower()
+    if not text:
+        return 0.0
+    for kw, score in _IMPACT_MAGNITUDE_KEYWORDS:
+        if kw in text:
+            return score
+    return 0.0
+
+
 def build_stacked_chart_data(scenarios: "ScenarioAnalysis | None") -> dict | None:
-    """ScenarioAnalysis.scenarios[*].impact_by_player → 시나리오 × 행위자 누적 막대."""
+    """ScenarioAnalysis.scenarios[*].impact_by_player → 시나리오 × 행위자 누적 막대.
+
+    Insight Gate:
+    - 각 segment 의 value 는 _impact_magnitude() 로 추출 (0.2~1.0).
+    - 모든 segment 가 동일 magnitude 면 차트 미생성 (= 균등 누적은 의미 없음).
+    - magnitude 추출 실패한 segment 는 skip.
+    """
     if not scenarios or not scenarios.scenarios:
         return None
     palette_seed = ["#1A7B3E", "#C9A84C", "#1D6FA5", "#C76B1E", "#BD3227", "#8D4D14"]
@@ -348,6 +402,7 @@ def build_stacked_chart_data(scenarios: "ScenarioAnalysis | None") -> dict | Non
         return actors_seen[actor]
 
     rows: list[dict] = []
+    all_values: list[float] = []
     for sc in scenarios.scenarios[:5]:
         impacts = sc.get("impact_by_player") or []
         if not impacts:
@@ -357,19 +412,24 @@ def build_stacked_chart_data(scenarios: "ScenarioAnalysis | None") -> dict | Non
             actor = (imp.get("player") or "")[:14]
             if not actor:
                 continue
-            # sentiment 가 비대칭이라 절대값으로 가중치 — 전부 동등 가중 1.
+            mag = _impact_magnitude(imp)
+            if mag <= 0:
+                continue
             segments.append({
                 "label": actor,
-                "value": 1,
+                "value": mag,
                 "color": _color_for(actor),
             })
+            all_values.append(mag)
         if segments:
             rows.append({
                 "name": (sc.get("name") or "")[:18],
                 "segments": segments,
             })
-    if not rows:
+    if not rows or len(all_values) < 4:
         return None
+    if max(all_values) - min(all_values) < 1e-9:
+        return None  # 모든 segment 동일 magnitude → 누적 막대 의미 없음
     return {"scenarios": rows}
 
 

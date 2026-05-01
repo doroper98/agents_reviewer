@@ -17,7 +17,7 @@
     return;
   }
 
-  const TOKENS = {
+  const TOKENS_FALLBACK = {
     bg:           '#321F1F',
     text:         '#F0E2CC',
     textMuted:    '#A89880',
@@ -34,6 +34,45 @@
     redDark:      '#8A2018',
     blue:         '#1D6FA5',
   };
+
+  /* TOKENS 를 :root 의 CSS 변수에서 읽는다 — 페이지 data-theme 변경 시 자동 동기.
+     CSS 변수가 비어있으면 burgundy fallback. _read() 는 매 차트 렌더 시 호출되어
+     테마 변경에도 반응한다. */
+  function _readToken(name, fb){
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+    return (v && v.trim()) || fb;
+  }
+  function _shade(hex, lum){
+    /* 단순 음영 함수 — hex 끝에 lum (0~1, <1 어둡게) 곱해 반환. rgba 는 그대로 통과. */
+    if (!hex || hex.indexOf('#') !== 0 || hex.length !== 7) return hex;
+    var n = parseInt(hex.slice(1), 16);
+    var r = Math.max(0, Math.min(255, Math.round(((n>>16)&255) * lum)));
+    var g = Math.max(0, Math.min(255, Math.round(((n>>8)&255) * lum)));
+    var b = Math.max(0, Math.min(255, Math.round((n&255) * lum)));
+    return '#' + ((1<<24) + (r<<16) + (g<<8) + b).toString(16).slice(1);
+  }
+  function _tokens(){
+    var gold   = _readToken('--gold',           TOKENS_FALLBACK.gold);
+    var green  = _readToken('--green',          TOKENS_FALLBACK.green);
+    var orange = _readToken('--orange',         TOKENS_FALLBACK.orange);
+    var red    = _readToken('--red',            TOKENS_FALLBACK.red);
+    return {
+      bg:            _readToken('--card',           TOKENS_FALLBACK.bg),
+      text:          _readToken('--text-primary',   TOKENS_FALLBACK.text),
+      textMuted:     _readToken('--text-muted',     TOKENS_FALLBACK.textMuted),
+      textSecondary: _readToken('--text-secondary', TOKENS_FALLBACK.textSecondary),
+      grid:          TOKENS_FALLBACK.grid,
+      gridStrong:    TOKENS_FALLBACK.gridStrong,
+      gold:       gold,    goldDark:   _shade(gold,   0.78),
+      green:      green,   greenDark:  _shade(green,  0.72),
+      orange:     orange,  orangeDark: _shade(orange, 0.72),
+      red:        red,     redDark:    _shade(red,    0.74),
+      blue:       _readToken('--blue',            TOKENS_FALLBACK.blue),
+    };
+  }
+  /* TOKENS 는 모듈 로드 시 한 번 계산. 테마 변경 시 페이지 reload 가 일반적이므로
+     매 렌더마다 재계산할 필요는 없으나, 동적 테마 토글이 필요하면 _tokens() 사용. */
+  const TOKENS = _tokens();
 
   /** tag → (color, dark) */
   function tagPalette(tag){
