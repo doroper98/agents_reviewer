@@ -221,6 +221,43 @@
 }
 .scenario-card-trigger b{color: var(--orange); font-weight: 700; margin-right: 4px}
 
+/* PR2 — confidence 배지 + driver_signals 칩 (선행 신호) */
+.scenario-card-confidence{
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 2px 8px; border-radius: 10px;
+  background: var(--accent, rgba(212,196,170,0.08));
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
+  margin-left: auto;
+}
+.scenario-card-confidence.conf-높음{color: var(--green); border-color: var(--green)}
+.scenario-card-confidence.conf-중간{color: var(--gold); border-color: var(--gold)}
+.scenario-card-confidence.conf-낮음{color: var(--orange); border-color: var(--orange)}
+.scenario-card-confidence.conf-매우-낮음{color: var(--red); border-color: var(--red)}
+
+.scenario-card-signals{
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+.scenario-card-signal{
+  font-size: 10px; line-height: 1.5;
+  padding: 3px 8px;
+  background: var(--accent, rgba(212,196,170,0.06));
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 18px;
+}
+.scenario-card-signal::before{
+  content: '►';
+  position: absolute;
+  left: 7px; top: 3px;
+  color: var(--gold);
+  font-size: 8px;
+}
+
 /* ---- Hero dashboard (보고서 상단 한눈에 보기) ---- */
 .hero-dashboard{
   display: grid;

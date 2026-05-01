@@ -14,6 +14,11 @@
         <span class="scenario-card-num">{{ loop.index }}</span>
         <span class="scenario-card-name">{{ sc.name or '?' }}</span>
         {% if sc.tag %}<span class="scenario-card-tag">{{ sc.tag }}</span>{% endif %}
+        {% if sc.confidence %}
+        <span class="scenario-card-confidence conf-{{ sc.confidence.label|replace(' ','-') }}" title="시나리오 판단 신뢰도">
+          신뢰 {{ sc.confidence.label }} · {{ sc.confidence.raw }}%
+        </span>
+        {% endif %}
       </header>
       {% if sc.probability %}
       <div class="scenario-card-prob">
@@ -33,6 +38,14 @@
       <div class="scenario-card-section">
         <div class="scenario-card-section-label">영향</div>
         <div class="scenario-card-impact">{{ sc.impact }}</div>
+      </div>
+      {% endif %}
+      {% if sc.driver_signals %}
+      <div class="scenario-card-section">
+        <div class="scenario-card-section-label">선행 신호</div>
+        <ul class="scenario-card-signals">
+          {% for sig in sc.driver_signals %}<li class="scenario-card-signal">{{ sig }}</li>{% endfor %}
+        </ul>
       </div>
       {% endif %}
       {% if sc.trigger %}
