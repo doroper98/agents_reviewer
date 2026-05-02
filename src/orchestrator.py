@@ -885,12 +885,14 @@ class Orchestrator:
         # Telemetry summary.
         if self.telemetry is not None:
             self.telemetry.log_summary()
-            # Soft warning if budget exceeded.
-            if self.telemetry.total_llm_calls > budget.max_llm_calls:
+            # v4.0.0 Tier 4: 모든 모드 max_llm_calls=2 고정. 직접 비교 (budget 변수 미사용).
+            from src.token_budget import TokenBudget
+            cap = TokenBudget.for_mode(mode).max_llm_calls
+            if self.telemetry.total_llm_calls > cap:
                 logger.warning(
                     "[telemetry] LLM call budget exceeded: %d > %d (mode=%s). "
                     "Consider reviewing per-step decisions.",
-                    self.telemetry.total_llm_calls, budget.max_llm_calls, mode,
+                    self.telemetry.total_llm_calls, cap, mode,
                 )
 
         return result
