@@ -27,6 +27,7 @@ from src.config import Config
 from src.models import (
     ComposedReport,
     ComposedSection,
+    ContextAnalysis,
     FullAnalysisResult,
 )
 from src.telemetry import RunTelemetry
@@ -35,36 +36,56 @@ logger = logging.getLogger(__name__)
 
 
 SYSTEM_PROMPT = (
-    "당신은 사건 분석 보고서의 편집장. 7명의 분석가가 수집한 evidence + claim 을 받아 "
-    "독자에게 전달할 *완성된 보고서* 를 작성한다.\n\n"
-    "=== 형식 자유 ===\n"
+    "당신은 사건 분석가이자 편집장. 1차 사실 자료(웹 검색으로 수집된 사실/타임라인/"
+    "핵심 수치/출처 URL)를 받아 *단독으로* 분석하고 보고서를 작성한다.\n\n"
+    "v4.0.0 Tier 4: 별도의 행위자/구조/시나리오/판단 분석가가 없음. 본 호출 한 번에\n"
+    "다음을 모두 수행: ① 핵심 행위자 식별 ② 구조적 동인 분석 ③ 인과 사슬 추적 ④\n"
+    "시나리오 설계 ⑤ 모순/반대 가설 표면화 ⑥ 보고서 본문 작성 ⑦ 감시 신호 추출.\n\n"
+    "=== 분석 깊이 (mode 인자에 따라) ===\n"
+    "- fast:     핵심만 간결. 3~4 섹션. 시나리오 2~3개. 모순 명시 선택.\n"
+    "- standard: 다각도 4~6 섹션. 시나리오 3~5개. 모순 1~2건 명시 권장.\n"
+    "- deep:     5~7 섹션. 시나리오 4~5개. 모순/반대 가설 *필수*. 감시 신호 ≥3건.\n\n"
+    "=== 분석 단계 (자율 결정, 본문에 녹여서) ===\n"
+    "1. 행위자 식별 — 누가 결정권자 / 이득 / 손해 / 숨은 영향력자.\n"
+    "2. 구조적 동인 — 왜 이 사건이 *지금* 일어났나. 비대칭 / 피드백 루프 / 전환점.\n"
+    "3. 인과 사슬 — 단기·중기·장기 파급. 차단 가능 지점 + 와일드카드.\n"
+    "4. 시나리오 — 3~5개. 각각 트리거 / 확률 / 영향 / 신호.\n"
+    "5. 모순 표면화 — 관점 충돌 / 데이터 모순. 봉합 금지 (Anti-pattern #5).\n"
+    "6. 감시 신호 — 앞으로 무엇을 보면 시나리오 분기가 결정되는가.\n\n"
+    "=== 형식 자유 (보고서 본문) ===\n"
     "- 섹션 수 / 길이 / 순서 / 톤 모두 사건 성격에 맞게 자유 결정.\n"
-    "- 정형 템플릿 슬롯에 데이터를 끼워맞추지 말 것. 글이 데이터를 끌고 가야 함.\n"
-    "- 한 사건엔 3~7개 섹션이 적당. 사건이 단순하면 더 적게, 복잡하면 더 많이.\n"
+    "- 정형 템플릿 슬롯에 데이터 끼워맞추지 말 것. 글이 데이터를 끌고 가야 함.\n"
     "- heading 은 사건 본질을 가리키는 한국어. 'PART I' 같은 영문 라벨 금지.\n"
-    "- prose 는 마크다운 단락 자유. 짧은 문단을 권장하나 강제하지 않음.\n\n"
+    "- prose 는 마크다운 단락 자유. 짧은 문단 권장.\n\n"
     "=== 음슴체 + 쉬운 우리말 ===\n"
     "- 음슴체 (~함, ~임, ~없음).\n"
     "- 학부생 수준 어휘. '베이스라인/컨센서스/내러티브' 같은 외래어 남발 금지.\n"
     "- 영어 약어 첫 등장 시 괄호로 풀어쓸 것.\n\n"
-    "=== Evidence 추적성 (필수) ===\n"
-    "- 본문에 등장하는 *핵심 주장* 은 ``cited_claim_ids`` 에 적용된 claim_id 를 적는다.\n"
-    "- claim 카탈로그 (입력에 포함) 외의 claim_id 를 만들지 말 것.\n"
-    "- evidence 가 부족한 주장은 *작성하지 말 것*. 모르는 건 모른다고 쓰는 게 낫다.\n\n"
-    "=== 차트 (선택) ===\n"
-    "- 입력의 ``available_charts`` 에 *지금 가용한* 차트만 listing 됨.\n"
-    "- 본문에서 강조하고 싶은 지점에 ``embedded_charts: [chart-id]`` 로 박는다.\n"
-    "- 같은 섹션에 여러 차트 가능. 0개여도 무방.\n"
-    "- 가용 외의 chart_id 를 적지 말 것.\n\n"
-    "=== 정형 블록 임베드 (선택) ===\n"
-    "- 풍부한 정형 데이터 (행위자 카드, 시나리오 그리드 등) 를 그대로 끼우고 싶으면 \n"
-    "  ``embedded_blocks: [block_type]`` 에 BlockType 을 적는다.\n"
-    "- 가용 BlockType: actor_cards, scenario_table, timeline, flow_chain, watchlist,\n"
-    "  data_series, risk_matrix, decomposition, counter_hypothesis, callout.\n"
-    "- 본문에서 같은 정보를 길게 풀어 적었다면 블록 embed 는 생략.\n\n"
-    "=== 모순 (Anti-pattern #5) ===\n"
-    "- judgment.contradictions 가 있으면 *드러내라*. 봉합하지 말 것.\n"
+    "=== 출처 추적성 (필수) ===\n"
+    "- 입력의 ``event.sources`` 에 1차 출처 URL 목록이 있음.\n"
+    "- 본문에서 *수치/날짜/구체 사실* 을 인용할 땐 가능하면 출처 URL 을 직접 본문에\n"
+    "  '(출처: example.com)' 형식으로 표기하거나 cited_sources 에 정리.\n"
+    "- 출처가 없는 추론은 '~라고 추정' / '~할 가능성' 같은 보수 표현으로 명시.\n\n"
+    "=== 차트 / 정형 블록 (선택, 보수적으로) ===\n"
+    "- 정말 *수치 비교가 본문 이해에 결정적* 일 때만 차트 embed.\n"
+    "- 가용 차트 id (charts.js auto-init): chart-scenarios, chart-figures,\n"
+    "  chart-severity, chart-confidence, chart-stacked, chart-bubble, chart-gantt,\n"
+    "  chart-network. 그러나 본 v4.0.0 에서는 차트 데이터 빌더가 비활성. 차트는\n"
+    "  embed 하지 않는 것을 기본으로.\n"
+    "- 정형 블록도 마찬가지 (actor_cards/scenario_table/timeline 등). 본문이\n"
+    "  같은 정보를 풀어 적었다면 블록 embed 는 생략.\n\n"
+    "=== 모순 / 반대 가설 (Anti-pattern #5) ===\n"
+    "- contradictions 배열에 명시적 list 로 보존. 본문 안에서도 한 섹션은 모순/\n"
+    "  반대 가설을 다루는 것을 권장.\n"
     "- 어느 쪽 손을 들어줬는지, 패배한 입장은 어떤 조건에서 살아나는지 명시.\n\n"
+    "=== 감시 신호 (Watchlist 통합) ===\n"
+    "- watch_signals 배열 — Watchlist 시스템이 SQLite 에 INSERT.\n"
+    "- 형식: [{signal, description, indicates, deadline?, icon?}]\n"
+    "  · signal: 짧은 식별자 (예: 'Fed 6월 FOMC 점도표')\n"
+    "  · description: 신호 설명 한 문장\n"
+    "  · indicates: 이 신호가 어느 시나리오 분기를 가리키는지\n"
+    "  · deadline: 'YYYY-MM-DD' 또는 '6월 중' 등 (생략 가능)\n"
+    "  · icon: 이모지 1~2자 (생략 가능)\n\n"
     "=== JSON 응답 형식 (반드시 준수) ===\n"
     "```json\n"
     "{\n"
@@ -75,13 +96,32 @@ SYSTEM_PROMPT = (
     '      "heading": "섹션 제목",\n'
     '      "kicker": "도입구 한 문장 (생략 가능, 빈 문자열도 OK)",\n'
     '      "prose": "본문. 단락 사이는 \\n\\n. 마크다운 강조(*..*)·인용(>) 사용 가능.",\n'
-    '      "embedded_charts": ["chart-id"],\n'
-    '      "embedded_blocks": ["block_type"],\n'
+    '      "embedded_charts": [],\n'
+    '      "embedded_blocks": [],\n'
     '      "pull_quote": "강조 인용 한 문장 (생략 가능)",\n'
-    '      "cited_claim_ids": ["C-..."]\n'
+    '      "cited_claim_ids": []\n'
     "    }\n"
     "  ],\n"
-    '  "closing": "에필로그 1~2 문장. 분석가의 한계와 유보 (생략 가능)."\n'
+    '  "closing": "에필로그 1~2 문장. 분석가의 한계와 유보 (생략 가능).",\n'
+    '  "watch_signals": [\n'
+    "    {\n"
+    '      "signal": "Fed 6월 FOMC 점도표",\n'
+    '      "description": "추가 인하 시그널 여부",\n'
+    '      "indicates": "기준선 시나리오 vs 인하 가속 시나리오 분기",\n'
+    '      "deadline": "2026-06-18",\n'
+    '      "icon": "📊"\n'
+    "    }\n"
+    "  ],\n"
+    '  "contradictions": [\n'
+    "    {\n"
+    '      "side_a": "관점 A 한 줄",\n'
+    '      "side_b": "반대 관점 B 한 줄",\n'
+    '      "evidence": "양 관점이 충돌하는 데이터/논거 (생략 가능)",\n'
+    '      "resolution": "현 시점 어느 손 들었는지 + 패배 입장 살아나는 조건"\n'
+    "    }\n"
+    "  ],\n"
+    '  "confidence_summary": "출처 다양성/신선도/확신도에 대한 한 줄 자유 평가",\n'
+    '  "confidence_score": 0.0~1.0\n'
     "}\n"
     "```\n"
     "JSON 만 출력. 추가 설명 텍스트 금지.\n"
@@ -111,20 +151,73 @@ class NarrativeComposer:
     # Public entry point
     # ------------------------------------------------------------------
 
+    async def compose_unified(
+        self,
+        context: ContextAnalysis,
+        mode: str = "standard",
+    ) -> ComposedReport | None:
+        """v4.0.0 Tier 4 — ContextAnalysis 만 받아 *단독 분석 + 작성*.
+
+        이전 ``compose()`` 는 7개 분석가 결과를 받아 편집만 했음. 본 메서드는
+        composer 가 행위자/구조/시나리오/모순 분석까지 *모두* Opus 4.7 단일 호출에서
+        수행. orchestrator 가 v4.0.0 부터 본 경로를 호출.
+        """
+        user_payload = self._build_unified_payload(context, mode)
+        user_message = json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
+
+        try:
+            if self.config.use_cli_mode:
+                raw = await self._call_cli(user_message)
+            else:
+                raw = await self._call_api(user_message)
+        except Exception as e:
+            logger.warning("[unified_composer] LLM call failed: %s", e)
+            return None
+
+        composed = self._parse_response(raw)
+        if composed is None:
+            return None
+        # v4.0.0: chart_catalog 가 비었으니 embedded_charts 도 빈 list 로 강제 (검증 layer).
+        composed = self._validate_references(composed, chart_catalog=[])
+        logger.info(
+            "[unified_composer] Composed: %d sections, headline=%r, "
+            "watch_signals=%d, contradictions=%d, conf=%.2f",
+            len(composed.sections), composed.headline[:40],
+            len(composed.watch_signals), len(composed.contradictions),
+            composed.confidence_score,
+        )
+        return composed
+
+    @staticmethod
+    def _build_unified_payload(context: ContextAnalysis, mode: str) -> dict:
+        """v4.0.0 Tier 4 — ContextAnalysis + mode → composer 입력.
+
+        멀티 에이전트 시절의 풍부한 입력 (players/dynamics/chain_reaction/...) 없이
+        1차 사실 자료만 제공. composer 가 그 위에서 분석을 수행.
+        """
+        return {
+            "mode": mode,
+            "event": {
+                "name": context.event_name,
+                "category": context.category,
+                "date": context.date,
+                "summary": context.summary,
+                "background": context.background,
+                "key_figures": context.key_figures,
+                "timeline": context.timeline,
+                "sources": context.sources,
+            },
+        }
+
     async def compose(
         self,
         result: FullAnalysisResult,
         chart_catalog: list[dict],
     ) -> ComposedReport | None:
-        """Run a single Opus 4.7 call → ComposedReport.
+        """[Legacy v3.3.0~v3.5.0] 7개 분석가 결과를 받아 편집만 하는 경로.
 
-        Args:
-            result: 분석 결과 전체 (judgment 포함, visuals 채워진 상태).
-            chart_catalog: ``visual_builder.build_chart_catalog(chart_payload)`` 결과.
-                          데이터 가용한 차트만 [{"id","title","hint"}] 형식.
-
-        Returns:
-            ComposedReport 또는 실패 시 None.
+        v4.0.0 Tier 4 부터는 ``compose_unified()`` 가 기본 경로. 본 메서드는
+        하위 호환을 위해 보존하지만 orchestrator 는 호출하지 않음. 향후 정리 시 제거.
         """
         user_payload = self._build_user_payload(result, chart_catalog)
         # JSON 직렬화 — compact (한국어 nested JSON 토큰 절약, base.py 와 동일).

@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.5.0"
+VERSION = "v4.0.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -713,32 +713,28 @@ class Orchestrator:
         status_callback: StatusCallback = None,
         mode: AnalysisMode | None = None,
     ) -> FullAnalysisResult:
-        """Execute the mode-aware analysis pipeline (v3.1.0).
+        """v4.0.0 Tier 4: 2-call unified pipeline.
 
-        ``mode`` 가 None 이면 ``token_budget.resolve_mode(event_description)`` 가
-        키워드를 보고 결정. 기본은 ``standard``. ``fast`` (간략/빠르게/요약 등),
-        ``deep`` (심층/자세히/면밀 등) 키워드는 자동 매핑.
+        Phase 1 — ContextAnalyst (Sonnet 4.6, 웹검색): 사실/타임라인/출처 수집.
+        Phase 2 — UnifiedComposer (Opus 4.7): 행위자/구조/시나리오/모순 분석 +
+                  보고서 본문 작성을 *단일 LLM 호출*로 모두 수행.
+        Phase 3 — HTML 렌더 + Cloudflare Pages 배포.
+        Phase 4 — composed_report.watch_signals → SQLite Watchlist.
+
+        legacy 멀티 에이전트 (player/dynamics/chain_reaction/scenario/synthesis_judge/
+        quality_inspector/visual_analyst/lens_pool) 는 v4.0.0 부터 호출 안 함.
+        모듈 자체는 보존 (향후 정리 commit 에서 제거).
         """
+        from src.models import ComposedReport, ComposedSection
+
         start_time = time.time()
 
-        # v3.1.0: mode resolution
         if mode is None:
             mode = resolve_mode(event_description)
-        budget = TokenBudget.for_mode(mode)
 
         # Telemetry per-run.
         self.telemetry = RunTelemetry(mode=mode)
         self._wire_telemetry()
-
-        # Wire mode-driven flags into agents (single source of decisions: budget).
-        self.quality_inspector.use_llm_judge = budget.use_llm_quality_gate
-        self.synthesis_judge.use_llm_synthesis = budget.use_llm_synthesis
-        self.synthesis_judge.allow_llm_on_low_confidence = (mode == "standard")
-        self.report_synthesizer.use_llm_narrative_plan = budget.use_llm_narrative_plan
-        self.report_synthesizer.use_llm_executive_summary = budget.use_llm_executive_summary
-
-        # Detect explicit advanced-visual request (e.g. 사용자가 지도/차트 명시).
-        wants_advanced_visuals = needs_advanced_visuals(event_description)
 
         request = AnalysisRequest(
             event_description=event_description,
@@ -747,25 +743,17 @@ class Orchestrator:
         )
         result = FullAnalysisResult(request=request)
 
-        if mode == "fast":
-            mode_label = " ⚡fast"
-        elif mode == "deep":
-            mode_label = " 🔬deep"
-        else:
-            mode_label = " 🟢standard"
+        mode_label = {"fast": " ⚡fast", "deep": " 🔬deep"}.get(mode, " 🟢standard")
 
-        # In fast mode, downgrade context analyst to light model for speed.
-        original_models: dict = {}
+        # In fast mode, downgrade context_analyst to light model for speed.
+        original_context_model = None
         if mode == "fast":
-            for agent in [
-                self.context_analyst, self.scenario_architect, self.visual_analyst,
-            ]:
-                original_models[id(agent)] = agent.model_name
-                agent.model_name = self.config.model_name_light
+            original_context_model = self.context_analyst.model_name
+            self.context_analyst.model_name = self.config.model_name_light
 
-        # -- Phase 1: 상황 분석관 --
+        # -- Phase 1: 상황 분석관 (사실 수집 + 웹 검색) --
         await self._notify(
-            f"🔍 상황 분석관: \"{event_description}\"에 대한 상황을 인식하고 있습니다.\n"
+            f"🔍 상황 분석관: \"{event_description}\" 사실 수집 중.\n"
             f"Analysis Team {VERSION}{mode_label}",
             status_callback,
         )
@@ -775,278 +763,91 @@ class Orchestrator:
 
         event_name = result.context.event_name or event_description[:30]
         self.telemetry.event_name = event_name
-        timeline_count = len(result.context.timeline)
-        figures_count = len(result.context.key_figures)
         await self._notify(
-            f"📋 상황 분석관: \"{event_name}\"의 배경과 타임라인을 분석하였습니다.\n"
+            f"📋 상황 분석관: \"{event_name}\" 사실 정리 완료.\n"
             f"  · 사건 분류: {result.context.category}\n"
-            f"  · 타임라인 {timeline_count}건, 핵심 지표 {figures_count}건 수집\n"
-            f"  · 신뢰도: {result.context.confidence_score * 100:.0f}%\n"
-            f"{self._progress_bar(1)}",
+            f"  · 타임라인 {len(result.context.timeline)}건, "
+            f"핵심 지표 {len(result.context.key_figures)}건, "
+            f"출처 {len(result.context.sources)}건\n"
+            f"{self._progress_bar(1, total=2)}",
             status_callback,
         )
 
-        # -- Strategic Planning --
+        # -- Phase 2: UnifiedComposer (Opus 4.7) — 분석 + 작성 단일 호출 --
         await self._notify(
-            f"🧭 전략 기획 ({mode}): \"{event_name}\" 핵심 질문/의도 결정.",
+            "✍️ 편집장 (Opus 4.7): 행위자/구조/시나리오/모순 분석 + 보고서 작성 (단일 호출)",
             status_callback,
         )
-        stage = self.telemetry.stage_start("strategy_planner")
-        strategy = await self._generate_analysis_strategy(
-            event_name,
-            result.context.category,
-            result.context.summary,
-            mode=mode,
-        )
+        stage = self.telemetry.stage_start("unified_composer")
+        try:
+            result.composed_report = await self.narrative_composer.compose_unified(
+                result.context, mode=mode,
+            )
+        except Exception as e:
+            logger.warning("[orchestrator] unified_composer error: %s", e)
+            result.composed_report = None
         self.telemetry.stage_end(stage)
-        result.strategy = strategy
-        self.telemetry.selected_lenses = list(strategy.recommended_lenses)
 
-        # -- Quality Gate 1 (heuristic only unless deep) --
-        async def _gate_1() -> tuple[bool, str]:
-            return await self.quality_inspector.gate_1_plan_sanity(result.strategy)
-
-        async def _regen_strategy() -> None:
-            new_strategy = await self._generate_analysis_strategy(
-                event_name,
-                result.context.category if result.context else "",
-                result.context.summary if result.context else "",
-                mode=mode,
+        # composer 실패 시 graceful fallback — minimal report from context only
+        if result.composed_report is None:
+            logger.warning("[orchestrator] composer failed; emitting minimal fallback")
+            result.composed_report = ComposedReport(
+                headline=event_name,
+                deck=(result.context.summary or "")[:200],
+                sections=[ComposedSection(
+                    heading="요약",
+                    prose=result.context.summary or "(분석 실패 — composer 호출 오류)",
+                )],
+                confidence_score=0.0,
+                confidence_summary="composer 호출 실패. 사실 자료만 표시.",
             )
-            result.strategy = new_strategy
-
-        gate1_pass, gate1_reason = await self._run_gate_with_retries(
-            "gate_1", _gate_1, _regen_strategy, status_callback,
-        )
-        strategy = result.strategy
-        if gate1_pass:
-            logger.info("[orchestrator] gate_1 PASS (%s)", gate1_reason)
-
-        step = 1
-
-        # -- Phase 2/3: legacy persona path (deep only) --
-        if budget.use_legacy_personas:
-            stage = self.telemetry.stage_start("player_analyst")
-            await self._notify(
-                f"👥 이해관계자 분석관: 핵심 행위자 식별 중.",
-                status_callback,
-            )
-            result.players = await self.player_analyst.analyze(result.context)
-            self.telemetry.stage_end(stage)
-            step += 1
-            await self._notify(
-                f"👥 이해관계자 분석관: {len(result.players.players)}개 행위자 분석 완료.\n"
-                f"  · 신뢰도: {result.players.confidence_score * 100:.0f}%\n"
-                f"{self._progress_bar(step)}",
-                status_callback,
-            )
-
-            stage = self.telemetry.stage_start("dynamics_analyst")
-            await self._notify(
-                f"⚡ 구조 분석관: 구조적 원인 분석 중.",
-                status_callback,
-            )
-            result.dynamics = await self.dynamics_analyst.analyze(
-                result.context, result.players,
-            )
-            self.telemetry.stage_end(stage)
-            step += 1
-            await self._notify(
-                f"⚡ 구조 분석관: {result.dynamics.framework} 관점으로 분석 완료.\n"
-                f"{self._progress_bar(step)}",
-                status_callback,
-            )
-
-            stage = self.telemetry.stage_start("chain_reaction_analyst")
-            await self._notify(
-                f"🔗 연쇄반응 분석관: 파급효과 추적 중.",
-                status_callback,
-            )
-            result.chain_reaction = await self.chain_reaction_analyst.analyze(
-                result.context, result.players, result.dynamics,
-            )
-            self.telemetry.stage_end(stage)
-            step += 1
-            await self._notify(
-                f"🔗 연쇄반응 분석관: {len(result.chain_reaction.chain)}단계 인과 사슬.\n"
-                f"{self._progress_bar(step)}",
-                status_callback,
-            )
-        else:
-            # fast/standard: persona 호출 안 함 — lens pool 이 대체.
-            self.telemetry.record_skip("player_analyst", "fast/standard")
-            self.telemetry.record_skip("dynamics_analyst", "fast/standard")
-            self.telemetry.record_skip("chain_reaction_analyst", "fast/standard")
-
-        # -- Scenario Architect (fast 도 호출, 단 model 은 light) --
-        # fast 에서도 시나리오/감시 신호는 보고서 핵심 가치라 보존.
-        stage = self.telemetry.stage_start("scenario_architect")
-        await self._notify(
-            f"🎲 시나리오 설계관: 향후 전개 시나리오를 설계 중.",
-            status_callback,
-        )
-        result.scenarios = await self.scenario_architect.analyze(
-            result.context, result.players, result.dynamics, result.chain_reaction,
-        )
-        self.telemetry.stage_end(stage)
-        step += 1
-        scenario_names = " / ".join(
-            [s.get("name", "") for s in (result.scenarios.scenarios or [])]
-        )
-        await self._notify(
-            f"🎲 시나리오 설계관: {len(result.scenarios.scenarios)}개 시나리오, "
-            f"감시 신호 {len(result.scenarios.watch_signals)}건.\n"
-            f"  · {scenario_names}\n"
-            f"{self._progress_bar(step)}",
-            status_callback,
-        )
-
-        # -- Findings wrapping + lens pool + Synthesis Judge + Gate 2 --
-        # v3.2.0: 차트 빌더가 judgment.confidence 를 사용하므로 시각화는 judgment 이후로 이동.
-        await self._notify(
-            "🧮 종합 판단관: finding 정합성·모순을 검사합니다.",
-            status_callback,
-        )
-        stage = self.telemetry.stage_start("findings_lens_judgment")
-        wrapped = self._wrap_findings(result)
-        evidence_pool, _ = self._make_evidence_pool(result)
-        lens_findings = await self._run_lenses(result, evidence_pool, status_callback)
-        result.findings = wrapped + lens_findings
-        logger.info(
-            "[orchestrator] findings: wrapped=%d + lens=%d = total=%d (mode=%s)",
-            len(wrapped), len(lens_findings), len(result.findings), mode,
-        )
-        # Detect core_questions risk for synthesis_judge gating.
-        answered = {f.answers_question for f in result.findings if f.answers_question}
-        unanswered = [
-            q for q in (result.strategy.core_questions or []) if q not in answered
-        ]
-        self.synthesis_judge.core_questions_at_risk = bool(unanswered)
-        if not budget.use_llm_synthesis and not (mode == "standard"):
             self.telemetry.record_llm_skip(
-                "synthesis_judge", "fast — heuristic only",
-            )
-        result.judgment = await self.synthesis_judge.judge(result.findings)
-        self.telemetry.stage_end(stage)
-
-        async def _gate_2() -> tuple[bool, str]:
-            return await self.quality_inspector.gate_2_coverage_check(
-                result.strategy, result.findings, result.judgment,
+                "unified_composer", "failed → minimal fallback",
             )
 
-        async def _regen_judgment() -> None:
-            result.judgment = await self.synthesis_judge.judge(result.findings)
-
-        gate2_pass, gate2_reason = await self._run_gate_with_retries(
-            "gate_2", _gate_2, _regen_judgment, status_callback,
-        )
-        if gate2_pass:
-            logger.info("[orchestrator] gate_2 PASS (%s)", gate2_reason)
-        n_contradictions = (
-            len(result.judgment.contradictions) if result.judgment else 0
-        )
+        n_sections = len(result.composed_report.sections)
+        n_signals = len(result.composed_report.watch_signals)
+        n_contradictions = len(result.composed_report.contradictions)
         await self._notify(
-            f"🧮 종합 판단 완료 — finding {len(result.findings)}건 / "
-            f"contradictions {n_contradictions}건 (봉합 안 함)",
+            f"✍️ 보고서 완성: {n_sections}개 섹션, "
+            f"감시 신호 {n_signals}건, 모순 {n_contradictions}건 명시.\n"
+            f"  · 신뢰도: {result.composed_report.confidence_score * 100:.0f}%\n"
+            f"{self._progress_bar(2, total=2)}",
             status_callback,
         )
 
-        # -- Visual generation (after judgment so confidence chart available) --
-        await self._notify(
-            "🎨 시각화: 결정적 빌더로 SVG + d3 차트 데이터 생성 중.",
-            status_callback,
-        )
-        stage = self.telemetry.stage_start("visuals")
-        use_llm_visuals = budget.use_llm_visuals or wants_advanced_visuals
-        if not use_llm_visuals:
-            self.telemetry.record_llm_skip("visual_analyst", "deterministic builder")
-        result.visuals = await self.visual_analyst.analyze(
-            result.context, result.players, result.dynamics,
-            result.chain_reaction, result.scenarios,
-            use_llm=use_llm_visuals,
-            judgment=result.judgment,
-        )
-        self.telemetry.stage_end(stage)
-
-        # -- v3.3.0 Narrative Composer (deep 모드만, Opus 4.7) --
-        # judgment + visuals 가 준비된 시점에서 호출. 성공 시 archetype 을
-        # freeform_essay 로 *명시적* 라우팅 (matrix 우선순위 무시).
-        if budget.use_llm_narrative_composer:
-            await self._notify(
-                "✍️ 편집장 (Opus 4.7): 자유 형식 보고서 작성 중.",
-                status_callback,
-            )
-            stage = self.telemetry.stage_start("narrative_composer")
-            chart_payload = (
-                result.visuals.chart_config.get("payload", {})
-                if result.visuals and result.visuals.chart_config else {}
-            )
-            chart_catalog = build_chart_catalog(chart_payload)
-            try:
-                result.composed_report = await self.narrative_composer.compose(
-                    result, chart_catalog,
-                )
-            except Exception as e:
-                logger.warning("[orchestrator] narrative_composer error: %s", e)
-                result.composed_report = None
-            self.telemetry.stage_end(stage)
-            if result.composed_report is None:
-                self.telemetry.record_llm_skip(
-                    "narrative_composer", "failed → archetype fallback",
-                )
-        else:
-            self.telemetry.record_llm_skip(
-                "narrative_composer", f"{mode} mode (deep only)",
-            )
-
-        # -- Phase 4: 보고서 생성 --
-        await self._notify(
-            f"📝 보고서를 생성하고 있습니다.\n"
-            f"{self._progress_bar(6)}",
-            status_callback,
-        )
-
+        # -- Phase 3: HTML 렌더링 + Cloudflare Pages 배포 --
         result.total_duration_seconds = time.time() - start_time
 
-        report_theme = strategy.theme or "burgundy_mono"
-        # archetype routing:
-        # 1) composer 성공 → freeform_essay 명시 라우팅 (v3.3.0)
-        # 2) 그 외 → matrix 결정자 (select_archetype)
-        if result.composed_report is not None:
-            archetype = get_archetype("freeform_essay")
-            logger.info(
-                "[orchestrator] narrative_composer success → routing to freeform_essay",
-            )
-        else:
-            archetype = select_archetype(strategy)
-        strategy.report_archetype = archetype.archetype_id
-        logger.info(
-            "[orchestrator] Routing report through archetype=%s (template=%s, mode=%s)",
-            archetype.archetype_id, archetype.template_path(), mode,
+        # composer 산출 → executive_summary (markdown/index 공통 텍스트로 사용).
+        result.executive_summary = (
+            result.composed_report.deck or result.composed_report.headline or ""
         )
-        if not budget.use_llm_narrative_plan:
-            self.telemetry.record_llm_skip("narrative_plan", "default plan")
-        if not budget.use_llm_executive_summary:
-            self.telemetry.record_llm_skip(
-                "executive_summary", "deterministic builder",
-            )
+
+        # Theme: code-rule via lens_policy.select_theme — mono 2종만 emit
+        result.report_theme = select_theme(result.context.category or "general")
+        archetype = get_archetype("freeform_essay")
+        logger.info(
+            "[orchestrator] Tier 4 routing — theme=%s, archetype=%s, mode=%s",
+            result.report_theme, archetype.archetype_id, mode,
+        )
 
         stage = self.telemetry.stage_start("report_synthesis")
         report_url = await self.report_synthesizer.synthesize(
-            result, theme=report_theme, archetype=archetype,
+            result, theme=result.report_theme, archetype=archetype,
         )
         self.telemetry.stage_end(stage)
         result.report_url = report_url
 
-        # Watchlist 등록 (변경 없음).
-        if self.watchlist_registry is not None and result.scenarios and result.scenarios.watch_signals:
+        # -- Phase 4: Watchlist 등록 (composed_report.watch_signals 에서) --
+        if self.watchlist_registry is not None and result.composed_report.watch_signals:
             try:
                 report_id = ""
                 if result.report_path:
                     import os as _os
                     report_id = _os.path.splitext(_os.path.basename(result.report_path))[0]
                 signals = convert_watch_signals(
-                    scenario_signals=result.scenarios.watch_signals,
+                    scenario_signals=result.composed_report.watch_signals,
                     parent_report_url=result.report_url or "",
                     parent_report_id=report_id,
                     parent_chat_id=request.chat_id,
@@ -1055,25 +856,20 @@ class Orchestrator:
                     1 for sig in signals if self.watchlist_registry.register(sig)
                 )
                 logger.info(
-                    "[orchestrator] Watchlist registered: %d new signals (out of %d) for chat=%d",
+                    "[orchestrator] Watchlist: %d/%d signals registered (chat=%d)",
                     inserted, len(signals), request.chat_id,
                 )
                 if inserted:
                     await self._notify(
-                        f"📒 감시 신호 {inserted}건 DB 등록 완료. "
-                        f"`/watchlist` 로 확인 가능.",
+                        f"📒 감시 신호 {inserted}건 DB 등록. /watchlist 로 확인.",
                         status_callback,
                     )
             except Exception as e:
                 logger.warning("[orchestrator] Watchlist register error: %s", e)
 
-        # Restore models if downgraded for fast mode.
-        for agent_id, original in original_models.items():
-            for agent in (
-                self.context_analyst, self.scenario_architect, self.visual_analyst,
-            ):
-                if id(agent) == agent_id:
-                    agent.model_name = original
+        # Restore model if downgraded for fast mode.
+        if original_context_model is not None:
+            self.context_analyst.model_name = original_context_model
 
         # Gate stats logging (변경 없음).
         s = self._gate_stats

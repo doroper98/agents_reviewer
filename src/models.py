@@ -519,12 +519,34 @@ class ComposedSection(BaseModel):
 
 
 class ComposedReport(BaseModel):
-    """Opus 4.7 narrative_composer 산출. archetype=freeform_essay 일 때만 채워짐."""
+    """Opus 4.7 unified composer 산출. v4.0.0 Tier 4 부터 분석 + 작성 단일 호출.
+
+    이전엔 (v3.3.0~v3.5.0) 7개 분석 에이전트 결과를 받아 편집하는 역할이었음.
+    v4.0.0 부터는 ContextAnalysis 만 받아서 *내부적으로* 행위자/구조/시나리오/모순까지
+    분석하고 본문을 짠다. 단일 Opus 4.7 호출.
+    """
 
     headline: str
     deck: str = ""                 # 부제 1~2 문장
     sections: list[ComposedSection] = Field(default_factory=list)
     closing: str = ""              # 에필로그 (생략 가능)
+
+    # v4.0.0 — Tier 4 통합 출력 (이전엔 ScenarioArchitect/SynthesisJudge 가 emit)
+    watch_signals: list[dict] = Field(default_factory=list)
+    """감시 신호. Watchlist Registry 가 SQLite 에 등록.
+    형식: [{signal, description, indicates, deadline?, icon?}]
+    """
+
+    contradictions: list[dict] = Field(default_factory=list)
+    """관점 충돌 / 데이터 모순. Anti-pattern #5 (봉합 금지) 보존.
+    형식: [{side_a, side_b, evidence?, resolution?}]
+    """
+
+    confidence_summary: str = ""
+    """신뢰도에 대한 한 줄 자유 텍스트 (예: '주요 출처 3건 모두 일치, 단 환율 데이터는 2일 지연')."""
+
+    confidence_score: float = Field(default=0.5, ge=0.0, le=1.0)
+    """0~1 종합 신뢰도. composer 가 자체 평가."""
 
 
 class FullAnalysisResult(BaseModel):

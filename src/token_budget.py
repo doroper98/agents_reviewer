@@ -69,55 +69,26 @@ class TokenBudget:
     def for_mode(cls, mode: AnalysisMode) -> "TokenBudget":
         """mode 키워드 → 정책 dataclass.
 
-        v3.5.0: narrative_composer (Opus 4.7) 를 모든 모드에서 활성화. 결과:
-        보고서 흐름은 항상 LLM 이 자유 결정. 정형 archetype 슬롯에 데이터를
-        부어넣는 패턴 영구 차단. composer 실패 시에만 archetype 폴백.
+        v4.0.0 Tier 4: 멀티 에이전트 파이프라인 폐기. 모든 모드는 동일한 2-call
+        파이프라인 (ContextAnalyst + UnifiedComposer). mode 는 composer 프롬프트의
+        분석 깊이 지시 (fast 3~4 섹션 / standard 4~6 / deep 5~7 + 모순 필수) 에만
+        영향. 다른 budget 플래그는 모두 비활성 (호출 안 됨).
         """
-        if mode == "fast":
-            return cls(
-                mode="fast",
-                # +1 for narrative_composer. 5 = context + strategy + scenarios + judgment + composer.
-                max_llm_calls=5,
-                max_lenses=1,
-                use_llm_quality_gate=False,
-                use_llm_narrative_plan=False,
-                use_llm_executive_summary=False,
-                use_llm_visuals=False,
-                use_llm_synthesis=False,
-                use_legacy_personas=False,
-                allow_meta_lenses=False,
-                use_llm_narrative_composer=True,  # v3.5.0
-            )
-        if mode == "deep":
-            return cls(
-                mode="deep",
-                # +1 for narrative_composer (Opus 4.7 freeform editorial pass).
-                max_llm_calls=13,
-                max_lenses=4,
-                use_llm_quality_gate=True,
-                use_llm_narrative_plan=True,
-                use_llm_executive_summary=True,
-                use_llm_visuals=True,
-                use_llm_synthesis=True,
-                use_legacy_personas=True,
-                allow_meta_lenses=True,
-                use_llm_narrative_composer=True,
-            )
-        # default == standard
-        return cls(
-            mode="standard",
-            # +1 for narrative_composer. 8 = 기존 7 + composer.
-            max_llm_calls=8,
-            max_lenses=2,
+        common = dict(
             use_llm_quality_gate=False,
             use_llm_narrative_plan=False,
             use_llm_executive_summary=False,
             use_llm_visuals=False,
             use_llm_synthesis=False,
             use_legacy_personas=False,
-            allow_meta_lenses=True,
-            use_llm_narrative_composer=True,  # v3.5.0
+            allow_meta_lenses=False,
+            use_llm_narrative_composer=True,
         )
+        if mode == "fast":
+            return cls(mode="fast", max_llm_calls=2, max_lenses=0, **common)
+        if mode == "deep":
+            return cls(mode="deep", max_llm_calls=2, max_lenses=0, **common)
+        return cls(mode="standard", max_llm_calls=2, max_lenses=0, **common)
 
 
 def resolve_mode(event_description: str) -> AnalysisMode:
