@@ -104,6 +104,21 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설)
+**charts.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 9개 패턴 누적:
+- CHART-AP-1: category/group 시각 분리 미적용 (drawNetwork 회귀)
+- CHART-AP-2: 반복 라벨 시각 일관성 깨짐 (drawStacked 회귀)
+- CHART-AP-3: 음수/0/극단값 robust 처리 누락
+- CHART-AP-4: 고정 aspect-ratio ↔ 동적 viewBox 충돌 (letterbox)
+- CHART-AP-5: 라벨 zone 밖 잘림 (drawBar 회귀)
+- CHART-AP-6: annotation 충돌 (vline + end label 등)
+- CHART-AP-7: 빈 데이터 차트 emit
+- CHART-AP-8: 차트 type 이 사건과 부적합
+- CHART-AP-9: 지도 zoom/center 디폴트 의존
+
+회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
+
 ## Key Directories (v4.2.0 — 호출되는 것만)
 - `src/agents/` — 살아있는 에이전트 2개 (`context_analyst.py`, `narrative_composer.py`). 나머지 7개 파일은 보존하되 호출 안 됨.
 - `src/templates/archetypes/freeform_essay.html` — 유일하게 사용되는 보고서 템플릿

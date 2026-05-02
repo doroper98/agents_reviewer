@@ -920,3 +920,32 @@ v4.1.0 까지 차트/지도가 *전혀* 안 박혔던 문제 해결. composer �
 - composer 가 가끔 JSON 출력 깨질 수 있음 → `_parse_response` 가 None 반환 → orchestrator 가 minimal fallback (context.summary 1섹션) 생성. 사용자에겐 보고서가 *비어있어 보일 수 있음*.
 - composer 비용 (Opus 4.7) 이 사용자 결정으로 OK 받음. 모니터링은 telemetry 의 `record_llm_call` (input/output chars + elapsed_ms) 으로 해결.
 - 차트/지도 ANTHROPIC_API_KEY 경고는 CLI 모드면 무시 가능 (config.use_cli_mode=True 일 때).
+
+### 13.8 v4.4.0~v4.4.3 — Tier 1+2 차트 강화 + 회귀 누적 + 체계화 (2026-05-02 후속)
+
+[v4.4.0] Tier 1 (메타데이터 5필드: subtitle / annotations / source / takeaway / reference_line) +
+Tier 2 (신규 type 3종: dual_line / forecast / choropleth) + zone-based layout 엔진
+(top/right/bottom margin 분리 + OccupancyTracker bbox 충돌 검사 + 5종 fallback).
+
+[v4.4.1] patch_report.py 신설 — LLM 호출 0 으로 보고서 부분 수정·재렌더·재배포.
+ReportSynthesizer 가 HTML 옆에 ComposedReport JSON 자동 저장.
+
+[v4.4.2 — 사용자 검증으로 발견한 시스템 회귀 2건]
+소말릴란드 승인 보고서 검증 결과:
+- network 차트가 node.group 시각 무시 — 진영 (승인/반대/검토/비공식) 모두 동일 fill (CHART-AP-1)
+- stacked 차트 segment legend 없음 — 어느 막대가 어느 카테고리인지 모름 (CHART-AP-2)
+- gantt timeline 라벨 너무 길어 zone 밖 겹침 → 차트 의미 0 (CHART-AP-8, 데이터 수정으로 해결)
+- 지도 zoom/center 디폴트 (3.0) → 호른 아프리카 안 보임 (CHART-AP-9, 데이터 수정)
+
+전자 2건 (CHART-AP-1, 2) 은 charts.js 코드 수정 → 모든 보고서 자동 fix.
+후자 2건 (CHART-AP-8, 9) 은 patch_report.py 로 보고서 한정 fix.
+
+[v4.4.3 — 체계화] 사용자 요청: "같은 방식의 실수가 반복되지 않는 체계에 적용"
+- docs/CHART_RENDERING_ANTIPATTERNS.md 신설 (Tier 2 SSOT) — 9개 패턴 + 검증 체크리스트.
+  매 charts.js / composer prompt 변경 시 점검. 새 회귀 발견 시 append-only.
+- CLAUDE.md 의 Anti-Patterns 섹션에 차트 9 패턴 요약 + 새 문서 링크 추가.
+- 본 §13.8 항목으로 회귀 발견·수정 흐름 기록 (DEVLOG append-only 규칙).
+
+[적용 방법 — 운영자]
+charts.js 변경은 정적 자산이라 봇 재기동 불필요. `cp src/templates/static/charts.* reports/`
++ `wrangler pages deploy reports` 만 실행하면 모든 보고서 (기존 포함) 즉시 fix.
