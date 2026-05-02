@@ -168,23 +168,19 @@ class TelegramBot:
         analyzing_str = f"분석 중: {self._current_topic[:30]}" if self._is_analyzing else "대기 중"
         queue_str = f"{len(self._queue)}건 대기" if self._queue else "없음"
 
-        opus = self.config.model_name
-        sonnet = self.config.model_name_light
-        # narrative_composer 는 Opus 4.7 고정 (NarrativeComposer.COMPOSER_MODEL).
+        # v4.1.0 — context + composer 모두 Opus 4.7 일관. 멀티 에이전트 7명은
+        # 코드 보존하되 호출 안 됨. legacy 모델 라벨 (sonnet/opus 4.6) 은 의미 잃음.
         opus_47 = "claude-opus-4-7"
 
-        # v4.0.0 Tier 4 — ContextAnalyst + UnifiedComposer 2-call 파이프라인.
-        # 옛 7개 에이전트 (player/dynamics/chain_reaction/scenario/synthesis_judge/
-        # quality_inspector/visual_analyst) + lens pool 11종 + archetype matrix 11종은
-        # 코드 보존하되 호출 안 됨.
         agents_info = (
             f"📋 에이전트 구성 — Tier 4 (2-call 파이프라인)\n"
-            f"  ① 상황 분석관 ······· {sonnet} · 사실/타임라인/출처 수집\n"
+            f"  ① 상황 분석관 ······· {opus_47} · 사실/타임라인/출처 수집\n"
             f"  ② 편집장 (UnifiedComposer) · {opus_47} · 분석+보고서 단일 호출\n"
             f"\n"
             f"  ※ 모든 모드(fast/standard/deep) 가 동일하게 2회 LLM 호출.\n"
             f"     mode 는 편집장 prompt 의 분석 깊이 지시 (섹션 수 / 모순 명시 등) 만 결정.\n"
-            f"     legacy 7-agent 멀티 파이프라인은 v4.0.0 부터 호출 안 됨 (코드는 보존).\n"
+            f"     v4.1.0 — context 도 Opus 4.7 (이전 Sonnet 4.6 → 사실 품질 상향).\n"
+            f"     legacy 7-agent 멀티 파이프라인은 호출 안 됨 (코드는 보존).\n"
         )
 
         from src.orchestrator import VERSION, BUILD_INFO

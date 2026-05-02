@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v4.0.0"
+VERSION = "v4.1.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -745,11 +745,9 @@ class Orchestrator:
 
         mode_label = {"fast": " ⚡fast", "deep": " 🔬deep"}.get(mode, " 🟢standard")
 
-        # In fast mode, downgrade context_analyst to light model for speed.
-        original_context_model = None
-        if mode == "fast":
-            original_context_model = self.context_analyst.model_name
-            self.context_analyst.model_name = self.config.model_name_light
+        # v4.1.0 — fast 모드에서도 context 모델 다운그레이드 안 함.
+        # Tier 4 2-call 파이프라인에서 context 는 편집장이 보는 유일한 사실 입력이라
+        # 어떤 모드든 Opus 4.7 reasoning 필요 (사실 추출 품질 = 보고서 품질의 상한).
 
         # -- Phase 1: 상황 분석관 (사실 수집 + 웹 검색) --
         await self._notify(
@@ -867,9 +865,7 @@ class Orchestrator:
             except Exception as e:
                 logger.warning("[orchestrator] Watchlist register error: %s", e)
 
-        # Restore model if downgraded for fast mode.
-        if original_context_model is not None:
-            self.context_analyst.model_name = original_context_model
+        # v4.1.0: 모델 다운그레이드 자체를 안 하므로 복원 로직도 불필요.
 
         # Gate stats logging (변경 없음).
         s = self._gate_stats

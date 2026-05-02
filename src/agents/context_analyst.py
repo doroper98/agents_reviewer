@@ -56,8 +56,13 @@ class ContextAnalyst(BaseAgent):
             role="Context Analyst (상황 분석관)",
             system_prompt=SYSTEM_PROMPT,
             config=config,
-            use_light_model=True,
+            use_light_model=False,
         )
+        # v4.1.0 — Tier 4 의 2-call 파이프라인에서는 context 가 편집장(Opus 4.7)이
+        # 보는 *유일한* 사실 입력. 사실/숫자/타임라인 추출 품질이 보고서 전체 품질의
+        # 상한선이 되므로 Opus 4.7 일관 적용 (composer 와 같은 모델).
+        # config.model_name (Opus 4.6) 보다 한 세대 위 모델을 쓰기 위해 직접 지정.
+        self.model_name = "claude-opus-4-7"
 
     async def analyze(self, request: AnalysisRequest) -> ContextAnalysis:
         """Analyze event and return context / situation board."""
