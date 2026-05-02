@@ -512,7 +512,15 @@ class ComposedSection(BaseModel):
     heading: str
     kicker: str = ""              # 짧은 도입구 (생략 가능)
     prose: str                     # 본문 — 마크다운 단락 자유
-    embedded_charts: list[str] = Field(default_factory=list)  # chart_id (charts.js)
+
+    # v4.2.0 — composer 가 데이터까지 직접 emit (chart-id 참조 폐기)
+    # 각 dict: {"type": "donut|bar|line|gantt|network|stacked|bubble|heatmap",
+    #           "title": str, "data": list|dict, "note"?: str}
+    charts: list[dict] = Field(default_factory=list)
+
+    # legacy v3.3.0 — chart-id 문자열. v4.2.0 에서 의미 잃음. 보존만 (호환).
+    embedded_charts: list[str] = Field(default_factory=list)
+
     embedded_blocks: list[str] = Field(default_factory=list)  # BlockType 문자열
     pull_quote: str = ""
     cited_claim_ids: list[str] = Field(default_factory=list)
@@ -547,6 +555,13 @@ class ComposedReport(BaseModel):
 
     confidence_score: float = Field(default=0.5, ge=0.0, le=1.0)
     """0~1 종합 신뢰도. composer 가 자체 평가."""
+
+    # v4.2.0 — 보고서 레벨 단일 지도. 지리적 사건일 때만 composer 가 채움.
+    # 형식: {"center": [lng, lat], "zoom": float,
+    #        "markers": [{"id", "name", "lng", "lat", "highlight": bool}],
+    #        "arcs": [{"from_id", "to_id", "highlight"?, "label"?}],
+    #        "legend"?: [{"label", "kind", "highlight"?}]}
+    embedded_map: dict | None = None
 
 
 class FullAnalysisResult(BaseModel):

@@ -6,9 +6,11 @@
 <title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="charts.css">
-{% set has_map_block = result.blocks and (result.blocks | selectattr("block_type", "equalto", "map") | list | length > 0) %}
-{% if has_map_block %}
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+{# v4.2.0 — composer-emitted chart/map. maplibre 폐기, d3 + d3-geo + TopoJSON 사용. #}
+{% set composed = result.composed_report %}
+{% set has_inline_charts = composed and composed.sections and (composed.sections | selectattr("charts") | list | length > 0) %}
+{% set has_inline_map = composed and composed.embedded_map %}
+{% if has_inline_map %}
 <link rel="stylesheet" href="maps.css">
 {% endif %}
 <style>{{ css_content }}</style>
@@ -57,12 +59,11 @@
 </head>
 <body>
 
-{% set composed = result.composed_report %}
-{% set chart_payload = (result.visuals.chart_config.payload if result.visuals and result.visuals.chart_config else {}) or {} %}
+{# v4.2.0 — composed 변수는 head 에서 이미 set (line 9). 추가 set 불필요.
+   blocks_by_type 은 embedded_blocks 렌더링용 (composer 가 actor_cards 등 명시 시). #}
 {% set blocks_by_type = {} %}
 {% if result.blocks %}{% for b in result.blocks %}{% if blocks_by_type.update({b.block_type: b}) %}{% endif %}{% endfor %}{% endif %}
 
-{# fallback if composed_report missing — render a minimal essay from executive_summary #}
 <header class="freeform-hero">
   <div class="container">
     <div class="freeform-eyebrow">Event Analysis · Composed</div>
@@ -85,26 +86,22 @@
     {% if sec.prose %}<div class="freeform-prose">{{ sec.prose | structured }}</div>{% endif %}
     {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote }}</div>{% endif %}
 
-    {% for chart_id in sec.embedded_charts %}
-      {% if chart_id == 'chart-scenarios' and chart_payload.scenarios %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">시나리오 확률 분포</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-scenarios"></svg></div></div></div>
-      {% elif chart_id == 'chart-figures' and chart_payload.key_figures %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">핵심 수치 분배</div><div class="chart-card-stage chart-stage-donut"><svg id="chart-figures"></svg></div></div></div>
-      {% elif chart_id == 'chart-severity' and chart_payload.severity_chain %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">인과 사슬 위험도</div><div class="chart-card-stage chart-stage-heatmap" id="chart-severity"></div></div></div>
-      {% elif chart_id == 'chart-confidence' and chart_payload.confidence %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">신뢰도 분해</div><div class="chart-card-stage chart-stage-triple"><svg id="chart-confidence"></svg></div></div></div>
-      {% elif chart_id == 'chart-timeseries' and chart_payload.timeseries %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">시계열 추이</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-timeseries"></svg></div></div></div>
-      {% elif chart_id == 'chart-stacked' and chart_payload.stacked %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">시나리오 × 행위자 영향</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-stacked"></svg></div></div></div>
-      {% elif chart_id == 'chart-bubble' and chart_payload.bubble %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">리스크 매트릭스</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-bubble"></svg></div></div></div>
-      {% elif chart_id == 'chart-gantt' and chart_payload.gantt %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">타임라인</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-gantt"></svg></div></div></div>
-      {% elif chart_id == 'chart-network' and chart_payload.network %}
-      <div class="freeform-chart-wrap"><div class="chart-card"><div class="chart-card-title">행위자 관계도</div><div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="chart-network"></svg></div></div></div>
-      {% endif %}
+    {# v4.2.0 — composer 가 inline 으로 emit 한 차트 데이터 (sec.charts: list[dict]).
+       각 차트는 dict {type, title, data, note?}. charts.js 가 data-chart-payload
+       속성을 읽어 SVG 로 렌더. data-chart-type 으로 분기. #}
+    {% for ch in (sec.charts or []) %}
+    <div class="freeform-chart-wrap">
+      <div class="chart-card">
+        <div class="chart-card-title">{{ ch.title or '차트' }}</div>
+        <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}"
+             data-chart-type="{{ ch.type or 'bar' }}"
+             data-chart-id="ch-s{{ loop.index0 }}-{{ loop.index }}">
+          <svg></svg>
+        </div>
+        {% if ch.note %}<div class="chart-card-note">{{ ch.note }}</div>{% endif %}
+        <script type="application/json" class="chart-payload-inline">{{ ch | tojson }}</script>
+      </div>
+    </div>
     {% endfor %}
 
     {% for btype in sec.embedded_blocks %}
@@ -184,6 +181,20 @@
 </section>
 {% endif %}
 
+{# v4.2.0 — composer-emitted 지도 (보고서 레벨, 지리적 사건일 때만) #}
+{% if has_inline_map %}
+<section class="freeform-section fade-in">
+  <div class="container">
+    <div class="freeform-kicker">지리적 구도</div>
+    <h2 class="freeform-heading">지도</h2>
+    <div class="map-card">
+      <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'burgundy_mono' }}"></div>
+      <script type="application/json" id="map-payload">{{ composed.embedded_map | tojson }}</script>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <footer class="footer">
   {% if confidence_text %}<div class="footer-confidence">{{ confidence_text }}</div>{% endif %}
   <div>archetype: freeform_essay · Generated {{ generated_at }} · Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
@@ -197,15 +208,15 @@ var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isInters
 document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 </script>
 
-{% if chart_payload or has_map_block %}
+{# v4.2.0 — 차트/지도 모두 d3 SVG. maplibre 폐기. TopoJSON 은 지도 있을 때만 로드. #}
+{% if has_inline_charts or has_inline_map %}
 <script src="d3.v7.min.js"></script>
 {% endif %}
-{% if chart_payload %}
-<script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
+{% if has_inline_charts %}
 <script src="charts.js"></script>
 {% endif %}
-{% if has_map_block %}
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+{% if has_inline_map %}
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script src="maps.js"></script>
 {% endif %}
 

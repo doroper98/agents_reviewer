@@ -66,14 +66,49 @@ SYSTEM_PROMPT = (
     "- 본문에서 *수치/날짜/구체 사실* 을 인용할 땐 가능하면 출처 URL 을 직접 본문에\n"
     "  '(출처: example.com)' 형식으로 표기하거나 cited_sources 에 정리.\n"
     "- 출처가 없는 추론은 '~라고 추정' / '~할 가능성' 같은 보수 표현으로 명시.\n\n"
-    "=== 차트 / 정형 블록 (선택, 보수적으로) ===\n"
-    "- 정말 *수치 비교가 본문 이해에 결정적* 일 때만 차트 embed.\n"
-    "- 가용 차트 id (charts.js auto-init): chart-scenarios, chart-figures,\n"
-    "  chart-severity, chart-confidence, chart-stacked, chart-bubble, chart-gantt,\n"
-    "  chart-network. 그러나 본 v4.0.0 에서는 차트 데이터 빌더가 비활성. 차트는\n"
-    "  embed 하지 않는 것을 기본으로.\n"
-    "- 정형 블록도 마찬가지 (actor_cards/scenario_table/timeline 등). 본문이\n"
-    "  같은 정보를 풀어 적었다면 블록 embed 는 생략.\n\n"
+    "=== 차트 (v4.2.0 — 데이터까지 직접 emit) ===\n"
+    "- *수치 비교가 본문 이해에 결정적* 일 때만 emit. 사건당 0~3개가 적당.\n"
+    "- 무관한 차트 박지 말 것 (mono guide §6 anti-pattern).\n"
+    "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식:\n"
+    "  ```json\n"
+    "  {\n"
+    '    \"type\": \"donut|bar|line|gantt|network|stacked|bubble|heatmap\",\n'
+    '    \"title\": \"차트 제목\",\n'
+    '    \"data\": [...],            // type 별 스키마 (아래 참조)\n'
+    '    \"note\": \"caption (선택)\"\n'
+    "  }\n"
+    "  ```\n"
+    "- type 별 data 스키마:\n"
+    "  · donut:   [{label, value:number, note?}]                   비중 비교 (3개 이상, 균등 X)\n"
+    "  · bar:     [{label, value:number, note?}]                   순위·분포\n"
+    "  · line:    [{x, y:number, event?}]                          시계열 추이\n"
+    "  · gantt:   [{label, start, end, note?}]                     사건 구간 (start/end 는 상대 인덱스 또는 날짜)\n"
+    "  · network: {nodes:[{id,label,group?}], links:[{source,target,type?}]}  관계도\n"
+    "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자 영향\n"
+    "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향 매트릭스\n"
+    "  · heatmap: [{title, severity:'low'|'medium'|'high'}]        단계별 위험도\n"
+    "- 모든 차트는 mono guide 의 45° 패턴 + 단일 골드 액센트. 색은 자동 적용.\n"
+    "- 데이터 없으면 차트도 없음. 모르는 수치를 *추정해서* 차트 만들지 말 것.\n\n"
+    "=== 지도 (v4.2.0 — 지리적 사건일 때만) ===\n"
+    "- 사건이 *명백히 지리적* 일 때만 (해협 봉쇄 / 무역 회랑 / 분쟁 지역 등).\n"
+    "- 보고서 레벨 1개 (top-level ``embedded_map``). 섹션별 지도 없음.\n"
+    "- 형식:\n"
+    "  ```json\n"
+    "  {\n"
+    '    \"center\": [경도, 위도],\n'
+    '    \"zoom\": 3.0,\n'
+    '    \"markers\": [{\"id\":\"hormuz\",\"name\":\"호르무즈\",\"lng\":56.4,\"lat\":26.6,\"highlight\":true}],\n'
+    '    \"arcs\": [{\"from_id\":\"hormuz\",\"to_id\":\"singapore\",\"highlight\":true,\"label\":\"원유 회랑\"}],\n'
+    '    \"legend\": [{\"label\":\"중점 회랑\",\"kind\":\"line\",\"highlight\":true}]\n'
+    "  }\n"
+    "  ```\n"
+    "- d3-geo + TopoJSON 베이스맵 위에 mono 톤으로 렌더 (외부 타일 의존 없음).\n\n"
+    "=== 정형 블록 (선택, 보수적) ===\n"
+    "- 풍부한 정형 데이터를 본문 외에 따로 보여줘야 할 때만.\n"
+    "- ``embedded_blocks``: actor_cards / scenario_table / timeline / flow_chain /\n"
+    "  watchlist / data_series / risk_matrix / decomposition / counter_hypothesis /\n"
+    "  callout. v4.2.0 Tier 4 에선 데이터 출처 (players/scenarios 등) 가 비어있어\n"
+    "  대부분 렌더 안 됨. 본문에 풀어쓰는 것을 기본으로.\n\n"
     "=== 모순 / 반대 가설 (Anti-pattern #5) ===\n"
     "- contradictions 배열에 명시적 list 로 보존. 본문 안에서도 한 섹션은 모순/\n"
     "  반대 가설을 다루는 것을 권장.\n"
@@ -94,33 +129,43 @@ SYSTEM_PROMPT = (
     '  "sections": [\n'
     "    {\n"
     '      "heading": "섹션 제목",\n'
-    '      "kicker": "도입구 한 문장 (생략 가능, 빈 문자열도 OK)",\n'
-    '      "prose": "본문. 단락 사이는 \\n\\n. 마크다운 강조(*..*)·인용(>) 사용 가능.",\n'
-    '      "embedded_charts": [],\n'
+    '      "kicker": "도입구 한 문장 (생략 가능)",\n'
+    '      "prose": "본문. 단락 사이는 \\n\\n. 마크다운 강조(*..*)·인용(>) 가능.",\n'
+    '      "charts": [\n'
+    "        {\n"
+    '          \"type\": \"donut\",\n'
+    '          \"title\": \"호르무즈 의존 비중\",\n'
+    '          \"data\": [\n'
+    '            {\"label\":\"한국\",\"value\":12,\"note\":\"원유\"},\n'
+    '            {\"label\":\"일본\",\"value\":11},\n'
+    '            {\"label\":\"기타\",\"value\":77}\n'
+    "          ]\n"
+    "        }\n"
+    "      ],\n"
     '      "embedded_blocks": [],\n'
-    '      "pull_quote": "강조 인용 한 문장 (생략 가능)",\n'
-    '      "cited_claim_ids": []\n'
+    '      "pull_quote": "강조 인용 한 문장 (생략 가능)"\n'
     "    }\n"
     "  ],\n"
-    '  "closing": "에필로그 1~2 문장. 분석가의 한계와 유보 (생략 가능).",\n'
+    '  "closing": "에필로그 1~2 문장 (생략 가능).",\n'
+    '  "embedded_map": null,\n'
     '  "watch_signals": [\n'
     "    {\n"
-    '      "signal": "Fed 6월 FOMC 점도표",\n'
-    '      "description": "추가 인하 시그널 여부",\n'
-    '      "indicates": "기준선 시나리오 vs 인하 가속 시나리오 분기",\n'
-    '      "deadline": "2026-06-18",\n'
-    '      "icon": "📊"\n'
+    '      \"signal\": \"Fed 6월 FOMC 점도표\",\n'
+    '      \"description\": \"추가 인하 시그널 여부\",\n'
+    '      \"indicates\": \"기준선 vs 인하 가속 시나리오 분기\",\n'
+    '      \"deadline\": \"2026-06-18\",\n'
+    '      \"icon\": \"📊\"\n'
     "    }\n"
     "  ],\n"
     '  "contradictions": [\n'
     "    {\n"
-    '      "side_a": "관점 A 한 줄",\n'
-    '      "side_b": "반대 관점 B 한 줄",\n'
-    '      "evidence": "양 관점이 충돌하는 데이터/논거 (생략 가능)",\n'
-    '      "resolution": "현 시점 어느 손 들었는지 + 패배 입장 살아나는 조건"\n'
+    '      \"side_a\": \"관점 A 한 줄\",\n'
+    '      \"side_b\": \"반대 관점 B 한 줄\",\n'
+    '      \"evidence\": \"양 관점이 충돌하는 데이터/논거 (생략 가능)\",\n'
+    '      \"resolution\": \"현 시점 어느 손 들었는지 + 패배 입장 살아나는 조건\"\n'
     "    }\n"
     "  ],\n"
-    '  "confidence_summary": "출처 다양성/신선도/확신도에 대한 한 줄 자유 평가",\n'
+    '  "confidence_summary": "출처 다양성/신선도/확신도 한 줄 자유 평가",\n'
     '  "confidence_score": 0.0~1.0\n'
     "}\n"
     "```\n"

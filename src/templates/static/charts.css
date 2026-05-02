@@ -38,6 +38,12 @@
   height: auto;
   font-family: 'Noto Sans KR', sans-serif;
 }
+.chart-card-note{
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.6;
+}
 .chart-card-meta{
   display: flex; flex-wrap: wrap; gap: 6px 14px;
   font-size: 9.5px; color: var(--text-muted);
