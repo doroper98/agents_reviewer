@@ -1,33 +1,43 @@
 ---
 tier: 1
-last_synced_with: v3.2.0
+last_synced_with: v4.2.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
-  - "d3 차트 디자인 시스템 (v3.2.0 활성화)"
+  - "Tier 4 파이프라인 정책 (2-call: context + composer)"
 depends_on:
   - "docs/STYLEGUIDE.md (코드 컨벤션 SSOT)"
+  - "docs/MONO_THEME_GUIDE.md (테마/패턴 SSOT)"
   - "DOCS_GOVERNANCE_V3.md (문서 거버넌스 SSOT)"
-last_review: 2026-04-26
+last_review: 2026-05-02
 ---
 
 # CLAUDE.md — Event Analysis Team Agent System
 
 ## Project Overview
-텔레그램 메시지 → 다중 AI 에이전트 분석 → HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Sonnet 4.6 + UnifiedComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Tech Stack
+## Tech Stack (v4.2.0)
 - Language: Python 3.11+
-- AI: Claude Code CLI (claude-opus-4-6, Max 플랜 무료 모드) + 웹 검색
+- AI 모델: **claude-opus-4-7** (composer + context, 일관) · claude-sonnet-4-6 (legacy 보존)
+- AI 호출: Claude Code CLI (--dangerously-skip-permissions) 또는 Anthropic API
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
-- Report: Jinja2 HTML + 별도 CSS
-- Visualization: SVG 직접 생성, Leaflet 지도, Canvas 2D 차트
+- Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
+- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, 8종 type)
+- Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
+- Theme: mono 2종 (burgundy_mono / light_mono) 만, 멀티컬러 폐기
 - Hosting: Cloudflare Pages (wrangler CLI 배포)
 - Infra: Oracle Cloud VM (무료 티어)
 
-## Agents
-현재 구성 카탈로그(역할·파일 위치)는 [docs/CATALOGS.md §1](docs/CATALOGS.md). 이 문서는 카탈로그를 사본으로 갖지 않는다 (SSOT 단일 출처 원칙).
+## Agents (v4.2.0 Tier 4)
+실제 호출되는 에이전트는 **2개**:
+1. **ContextAnalyst** (Opus 4.7, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 수집
+2. **UnifiedComposer / NarrativeComposer** (Opus 4.7, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 작성 + 차트 / 지도 데이터 emit
+
+> legacy 7-agent (PlayerAnalyst, DynamicsAnalyst, ChainReactionAnalyst, ScenarioArchitect, SynthesisJudge, QualityInspector, VisualAnalyst) + 11-lens pool + 11-archetype matrix 는 **v4.0.0 부터 호출 안 함**. 모듈은 보존 (cleanup commit 미정).
+
+세부 카탈로그는 [docs/CATALOGS.md §1](docs/CATALOGS.md). 이 문서는 카탈로그를 사본으로 갖지 않는다 (SSOT 단일 출처).
 
 ## Canonical Documents
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — 시스템 아키텍처
@@ -40,13 +50,14 @@ last_review: 2026-04-26
 - [CHANGELOG.md](CHANGELOG.md) — 사용자 관점 릴리스 노트
 - [DOCS_GOVERNANCE_V3.md](DOCS_GOVERNANCE_V3.md) — 문서 거버넌스 (3-tier, SSOT 매트릭스)
 
-## Canvas 차트 제작 기준
-- 참조 구현: [docs/references/prototype_gold_chart.html](docs/references/prototype_gold_chart.html)
-- 해상도: 최소 3x DPR
-- 폰트: Noto Serif KR (가격/숫자), Noto Sans KR (라벨/설명/제목)
-- 가격 라벨: 스팟 위 20px, 겹침 시 자동 상향 조정
-- 이벤트 라벨: 차트 하단, -45도 좌하향, 6글자 줄바꿈
-- 곡선: quadratic bezier, 구간별 색상 분리
+## 차트·지도 제작 기준 (v4.2.0)
+SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
+- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid).
+- **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6).
+- **폰트**: Noto Serif KR (숫자/타이틀), Noto Sans KR (라벨/본문/지도 라벨)
+- **색**: 큰 숫자에 액센트 색 금지 → `--text` 만 (mono guide §3.3)
+- **사선**: 45° 한 방향만. cross-hatch / 반대 방향 / 회전 패턴 안에 dash 모두 금지 (mono guide §6.1~6.3).
+- **참조 구현**: [samples/chart_map_mono_compare.html](samples/chart_map_mono_compare.html) (라이브: doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html)
 
 ## Execution Rules
 1. 모든 코드 변경 후 `python -m py_compile` 검증
@@ -93,32 +104,43 @@ last_review: 2026-04-26
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Key Directories
-- `src/agents/` — 분석 에이전트 정의 (7개)
-- `src/lenses/` — 분석 lens 풀 (11종, `lens_policy` 가 mode 별 cap 결정)
-- `src/archetypes/` — 보고서 archetype (11종)
-- `src/templates/` — HTML 보고서 템플릿
-- `src/templates/report.css` — 보고서 CSS (burgundy 테마 토큰)
-- `src/templates/static/` — 정적 자산 (v3.2.0: d3.v7.min.js / charts.js / charts.css). 보고서 생성 시 자동으로 reports/ 에 복사.
-- `src/token_budget.py` — Mode (fast/standard/deep) 별 LLM 호출 / lens cap 정책 (v3.1.0)
-- `src/lens_policy.py` — `(event_type, user_intent, mode)` → lens 결정 (v3.1.0)
-- `src/brief_builder.py` — `FullAnalysisResult` → `AnalysisBrief` 압축 컨텍스트 (v3.1.0)
-- `src/visual_builder.py` — 결정적 SVG/시각화 빌더 + d3 차트 데이터 빌더 (v3.1.0~v3.2.0)
-- `src/telemetry.py` — LLM 호출 / 단계별 elapsed 기록 (v3.1.0)
-- `docs/` — 모든 정규 문서 (이전 `docs_canonical/` 에서 이름 단순화)
-- `docs/references/` — 참조 자료 (prototype HTML)
-- `samples/` — 디자인/차트 샘플 페이지 (chart_gallery.html, chart_comparison.html 등)
+## Key Directories (v4.2.0 — 호출되는 것만)
+- `src/agents/` — 살아있는 에이전트 2개 (`context_analyst.py`, `narrative_composer.py`). 나머지 7개 파일은 보존하되 호출 안 됨.
+- `src/templates/archetypes/freeform_essay.html` — 유일하게 사용되는 보고서 템플릿
+- `src/templates/report.css` — mono 2테마 (burgundy_mono + light_mono) 정의 SSOT
+- `src/templates/static/` — d3.v7.min.js / charts.js / maps.js / charts.css / maps.css (보고서 dir 로 동기화)
+- `src/orchestrator.py` — 4단계 (context → composer → render → watchlist) 진입점, `VERSION` SSOT
+- `src/models.py` — Pydantic 데이터 모델 SSOT (`ComposedReport.charts` / `embedded_map` 포함)
+- `src/token_budget.py` — mode 별 정책. v4.2.0 에선 모든 모드 동일하게 2 LLM 호출. mode 는 composer prompt 깊이 지시만 결정
+- `src/lens_policy.py` — `select_theme(category)` 로 mono 2종 중 결정. `select_lenses()` 는 호출 안 됨
+- `src/telemetry.py` — LLM 호출 / 단계별 elapsed 기록
+- `src/watchlist/` — SQLite Watchlist Registry (composed_report.watch_signals 에서 등록)
+- `docs/` — 모든 정규 문서. `MONO_THEME_GUIDE.md` 가 차트/지도/테마 SSOT.
+- `samples/` — 라이브 샘플 (GitHub Pages 자동 배포 — `chart_map_mono_compare.html`, `v4_2_0_architecture.html` 등)
 - `reports/` — 생성된 HTML 보고서 (git ignored)
 
-## Chart System (v3.2.0)
-- 9종 d3 SVG 차트 (bar/donut/heatmap/triple/line/stacked/bubble/gantt/network) 가 `src/templates/static/charts.js` 에 정의되어 있고, 데이터 가용성에 따라 보고서가 자동 생성한다.
-- 차트 데이터는 모두 결정적 (LLM 호출 0). 빌더는 `src/visual_builder.py:build_chart_payload()`.
-- 디자인 토큰은 `src/templates/static/charts.css` 에 통일 (burgundy 테마 변수 상속).
-- 신규 차트 추가 절차: ① `charts.js` 에 `drawXxx` 함수 + auto-init 분기 추가 ② `visual_builder.py:build_xxx_chart_data()` 추가 + `build_chart_payload()` 에 결합 ③ `report.html` / `report_block.html` 의 dashboard 섹션에 SVG 컨테이너 추가 ④ `samples/chart_gallery.html` 에 시연 ⑤ `test_chart_builders.py` 에 검증 테스트.
+### Deprecated 모듈 (호출 안 됨, 파일 보존)
+- `src/agents/{player,dynamics,chain_reaction,scenario,visual,quality_inspector,synthesis_judge}_*.py`
+- `src/lenses/` (전체 11종)
+- `src/archetypes/` (freeform_essay 외 11종)
+- `src/visual_builder.py` (build_chart_payload / build_map_payload — composer 가 직접 emit 으로 대체)
+- `src/templates/{report.html,report_block.html}` (legacy archetype 용)
+- `src/templates/blocks/` 17종 — composer 가 `embedded_blocks` 로 명시 시만 사용 (현재 실질 미사용)
 
-## Mode Routing (v3.1.0~v3.3.0)
+## Chart System (v4.2.0)
+- 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
+- 8종 type: bar / donut / line / gantt / network / stacked / bubble / heatmap (mono guide §5).
+- 각 차트는 `ComposedSection.charts: list[dict]` 의 dict 1개 — `{type, title, data, note?}`.
+- 렌더링: `freeform_essay.html` 이 chart-card SVG + inline JSON payload emit → `charts.js` 가 스캔/렌더 (mono guide §4 패턴 자동 적용).
+- 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ samples 갱신 ④ 테스트.
+
+## Map System (v4.2.0)
+- composer 가 `ComposedReport.embedded_map` 에 보고서당 1개 emit (지리적 사건일 때만).
+- 베이스맵: d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl 의존 폐기.
+- 렌더링: `maps.js` 가 `#freeform-map` 컨테이너 + `#map-payload` 스크립트 읽어 SVG 그림.
+- mono guide §2.2: 외부 타일 서비스 / 글리프 PBF 호출 금지. world-atlas 한 번 fetch (~100KB) 후 캐시.
+
+## Mode Routing (v4.2.0)
 - 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard.
 - Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
-- legacy 페르소나 (PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst) 는 deep 모드에서만 호출.
-- LLM 호출 cap: fast=4, standard=7, deep=13 (soft guard, telemetry 가 초과 시 경고). v3.3.0: deep 에 narrative_composer 추가로 12 → 13.
-- **v3.3.0 narrative_composer (Opus 4.7)**: deep 모드에서만 활성. 성공 시 archetype 이 `freeform_essay` 로 명시 라우팅 → 정형 17 슬롯 대신 사건별 3~7 섹션 자유 형식. 실패 시 select_archetype() matrix 폴백.
+- v4.0.0 부터 모든 모드 LLM 호출 **2회** 동일 (context + composer). mode 는 composer prompt 의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) 만 결정.

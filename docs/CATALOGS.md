@@ -1,28 +1,23 @@
 ---
 tier: 2
-last_synced_with: v3.4.0
+last_synced_with: v4.2.0
 ssot_for:
-  - "현재 에이전트 카탈로그 (mirror of src/agents/*)"
-  - "보고서 archetype 카탈로그 (mirror of src/archetypes/registry.py — V3 Step 2 활성화)"
-  - "보고서 블록 타입 카탈로그 (mirror of src/models.py:BlockType — V3 Step 3 활성화)"
-  - "분석 렌즈 카탈로그 (V3 Step 5 후 src/lenses/registry.py 미러)"
-  - "Mode 별 lens cap 정책 (mirror of src/token_budget.py + src/lens_policy.py — v3.1.0)"
-  - "d3 차트 카탈로그 (mirror of src/templates/static/charts.js — v3.2.0)"
-  - "Narrative Composer (mirror of src/agents/narrative_composer.py — v3.3.0)"
+  - "에이전트 카탈로그 (mirror of src/agents/*)"
+  - "Mode 별 정책 (mirror of src/token_budget.py)"
+  - "Composer chart type 카탈로그 (mirror of narrative_composer.py SYSTEM_PROMPT + charts.js RENDERERS)"
 depends_on:
-  - "src/agents/* (현재 SSOT)"
-  - "src/archetypes/registry.py (archetype SSOT, Step 2 활성화)"
-  - "src/models.py:BlockType (BlockType SSOT, Step 3 활성화)"
-  - "src/lenses/registry.py (V3 후 lens SSOT)"
-  - "src/token_budget.py (mode 정책 SSOT, v3.1.0)"
-  - "src/lens_policy.py (lens 결정 규칙 SSOT, v3.1.0)"
-  - "src/templates/static/charts.js (d3 차트 SSOT, v3.2.0)"
-last_review: 2026-04-30
+  - "src/agents/{context_analyst, narrative_composer}.py (살아있는 2개)"
+  - "src/token_budget.py (mode 정책 SSOT)"
+  - "src/lens_policy.py:select_theme (테마 결정)"
+  - "src/templates/static/charts.js (d3 렌더 SSOT)"
+last_review: 2026-05-02
 ---
 
-# Catalogs — Agents · Lenses · Archetypes · Blocks
+# Catalogs — Agents · Charts · Maps (v4.2.0)
 
 > 본 문서는 **카탈로그 미러**다. 정의는 코드에서만, 문서는 사람이 읽기 쉬운 형태로 동기화한 사본일 뿐이다.
+>
+> **v4.0.0 Tier 4 부터** legacy 멀티 에이전트 (player/dynamics/chain/scenario/visual/judge/inspector) + 11종 lens pool + 11종 archetype matrix + 17종 BlockType 은 **호출 안 됨**. 본 문서의 해당 섹션은 *역사적 참고용*. 운영 중인 카탈로그는 §1 (에이전트 2개) + §5 (차트 type 8종) + §6 (지도 시스템) 뿐.
 > 카탈로그를 *정의*하지 않는다. 카탈로그는 코드 registry 가 SSOT.
 
 ---

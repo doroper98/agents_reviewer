@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.4.7
+last_synced_with: v4.2.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -8,7 +8,7 @@ ssot_for:
 depends_on:
   - "GOAL.md (REQ-* 변경 추적)"
   - "CHANGELOG.md (사용자 관점 변경은 그쪽 SSOT)"
-last_review: 2026-05-01
+last_review: 2026-05-02
 ---
 
 # DEVLOG — Event Analysis Team Agent System
@@ -843,3 +843,80 @@ V3 리팩토링 완료 (v3.0.0, 2026-04-27) 직후 등록. 메이저 릴리스 �
 - 분석 대기열 (여러 분석 동시 요청)
 - Figma MCP를 활용한 더 고급 시각화
 - 보고서 에필로그 (예측 검증 스코어카드)
+
+---
+
+## 13. v4.x — Tier 4 단순화 (2026-05-02)
+
+### 13.1 배경 — v3.5.0 까지의 누적 문제
+스크린샷 분석 결과 v3.4.7 까지 보고서에서 두 가지 증상이 살아있었다:
+
+1. **차트 무지성 박힘** — `visual_builder.build_chart_payload()` (v3.2.0 추가) 가 분석 결과 데이터에서 9종 차트를 자동 추출하고, `report_block.html` 의 "DATA DASHBOARD" 섹션이 데이터만 있으면 무조건 9개 슬롯을 렌더. Insight Gate (v3.4.4) 는 donut/stacked 만 가벼운 검사. 사건과 무관한 차트가 양산됨.
+2. **보고서 틀 고정** — `archetypes/registry.py:select_archetype()` 매트릭스가 LLM 의 `report_archetype` 결정을 *덮어씀* (v3.0.0 의 "정밀 우선순위"). 11개 archetype 의 `section_plan()` 은 Python 코드로 고정된 6 섹션. 사건마다 보고서가 같은 틀로 떨어짐.
+
+진단 결과 두 문제는 다른 파일에 있지만 *공통 원인*: 다중 에이전트 체계가 자유도를 막고 있었다. v3.0.0~v3.4.7 의 7-agent + 11-lens + 11-archetype + 5-게이트 파이프라인은 분석 깊이는 보장하지만 보고서 형태/내용 선택의 자유는 코드가 빼앗고 있던 구조.
+
+### 13.2 v4.0.0 — Tier 4 (2026-05-02)
+멀티 에이전트 파이프라인을 폐기하고 **ContextAnalyst + UnifiedComposer 2-call** 로 압축.
+
+**호출 안 되게 된 모듈** (코드 보존):
+- `src/agents/{player,dynamics,chain_reaction,scenario,visual,quality_inspector,synthesis_judge}_*.py` (7개)
+- `src/lenses/` 11종
+- `src/archetypes/` 의 `freeform_essay` 외 11종
+- `src/visual_builder.py:build_chart_payload / build_map_payload`
+- `src/templates/{report.html, report_block.html}` (legacy archetype 용)
+
+**남은 호출 경로**:
+1. `ContextAnalyst.analyze()` — 사실/타임라인/출처 (Sonnet 4.6)
+2. `NarrativeComposer.compose_unified()` — 행위자/구조/시나리오/모순 분석 + 본문 작성 + watch_signals + contradictions + confidence (Opus 4.7 단일 호출)
+3. `ReportSynthesizer.synthesize()` — `freeform_essay.html` 로 mono 테마 HTML 렌더 (LLM 0)
+4. Watchlist Registry — `composed_report.watch_signals` SQLite INSERT
+
+**LLM 호출 수**: deep 13 → 2 (~85% 감소). 모든 모드 동일하게 2회.
+**지연**: ~90~180초 → ~30~60초 추정 (~60% 감소).
+**비용**: 운영 비용 ~70% 추정 절감 (단일 Opus 4.7 호출 vs 13개 호출).
+
+**ComposedReport 확장**:
+- `watch_signals: list[dict]` — Watchlist 통합 (이전 ScenarioArchitect 출력 대체)
+- `contradictions: list[dict]` — Anti-pattern #5 (모순 봉합 금지) 보존
+- `confidence_summary: str` + `confidence_score: float` — composer 자체 평가
+
+**잃은 것** (사용자에게 사전 안내됨):
+- 다중 관점 분리 분석 (각 lens 별 독립 finding)
+- Evidence-Claim 추적성 강제 (Claim.evidence_ids min_length=1 validator)
+- Quality Gate 1/2 + AMC required_inputs 검증
+- SynthesisJudge 의 별도 모순 검사 (LLM cross-check)
+- red_team / pre_mortem 메타 lens 자동 추가
+
+### 13.3 v4.1.0 — ContextAnalyst → Opus 4.7
+v4.0.0 의 2-call 파이프라인에서 context 가 composer 가 보는 *유일한* 사실 입력 → 사실 추출 품질이 보고서 전체 품질의 상한. ContextAnalyst 를 Sonnet 4.6 → Opus 4.7 로 통일 (composer 와 같은 모델). fast 모드 다운그레이드 로직도 제거.
+
+비용 ~1.6~1.8× (vs v4.0.0). 지연 ~30초 추가. 절대값으로는 v3.5.0 deep 의 30~40% 수준.
+
+### 13.4 v4.2.0 — Composer-emitted 차트/지도
+v4.1.0 까지 차트/지도가 *전혀* 안 박혔던 문제 해결. composer 가 chart-id 를 referencing 해도 freeform_essay.html 의 chart_payload 가 비어있어 매칭이 항상 false.
+
+해결: composer 가 차트/지도 데이터를 직접 emit.
+- `ComposedSection.charts: list[dict]` — `{type, title, data, note?}`. 8종 type.
+- `ComposedReport.embedded_map: dict | None` — 보고서 레벨 단일 지도.
+- `charts.js` 전면 재작성 — 전역 chart-payload 객체 패턴 폐기, 섹션별 inline JSON payload + mono guide §4 패턴 자동 적용.
+- `maps.js` 전면 재작성 — maplibre-gl 의존 폐기, d3 + d3-geo + world-atlas/110m TopoJSON.
+
+### 13.5 v4.x 아키텍처 시각화
+- `samples/v3_5_0_architecture.html` — v3.5.0 아카이브 (히스토리)
+- `samples/v4_0_0_architecture.html` — v4.0.0 Tier 4 (burgundy_mono)
+- `samples/v4_2_0_architecture.html` — v4.2.0 (light_mono, 본 절에서 추가)
+
+라이브 URL: `https://doroper98.github.io/agents_reviewer/samples/<file>.html` (GitHub Pages 자동 배포)
+
+### 13.6 트러블슈팅
+- VM 봇 재기동 시 옛 인스턴스 죽이기 — `pkill -9 -f 'python -m src.main'` 한 줄로 통일 (literal `<PID>` 입력 실수 회피)
+- `kill -9 <PID>` 는 bash 가 `<` 를 redirection 으로 해석해 syntax error → 사용자 가이드에서 제거
+- VM 의 venv 활성 (`source venv/bin/activate`) 안 하고 `python -m src.main` 시 `python` 미발견 — venv activation 절차 필수
+- v4.0.0 첫 기동 시 옛 v3.5.0 인스턴스와 동시 실행 → 텔레그램 `409 Conflict: terminated by other getUpdates request` — `pkill` 로 한 번에 종료
+- `/status` 의 에이전트 리스트가 옛 8명 그대로 → `telegram_bot.py:_status` 핸들러 갱신 (v4.1.0)
+
+### 13.7 회귀 우려 + 운용 메모
+- composer 가 가끔 JSON 출력 깨질 수 있음 → `_parse_response` 가 None 반환 → orchestrator 가 minimal fallback (context.summary 1섹션) 생성. 사용자에겐 보고서가 *비어있어 보일 수 있음*.
+- composer 비용 (Opus 4.7) 이 사용자 결정으로 OK 받음. 모니터링은 telemetry 의 `record_llm_call` (input/output chars + elapsed_ms) 으로 해결.
+- 차트/지도 ANTHROPIC_API_KEY 경고는 CLI 모드면 무시 가능 (config.use_cli_mode=True 일 때).

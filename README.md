@@ -1,22 +1,22 @@
 ---
 tier: 1
-last_synced_with: v3.4.7
+last_synced_with: v4.2.0
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "CHANGELOG.md"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-01
+last_review: 2026-05-02
 ---
 
 # Event Analysis Team — AI Agent System
 
-텔레그램 메시지로 사건 분석을 지시하면, 모드별 (fast/standard/deep) AI 에이전트가 분석한 뒤 d3 기반 인터랙티브 차트가 들어간 HTML 보고서를 만들어 Cloudflare Pages 에 배포하는 시스템.
+텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Sonnet 4.6 → UnifiedComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 mono 톤 HTML 로 Cloudflare Pages 에 배포하는 시스템.
 
 ## Status
-- Version: v3.4.7 (SSOT: `src/orchestrator.py:VERSION`) — **AMC + Narrative DSL 4-PR 시리즈 완료**. 사용자 진단 6가지 보고서 품질 문제 처리 (PR1' 표면 4개 + PR2 시나리오 데이터 + PR3 단조로움 구조적 처방 + PR4 12 archetype 전체 적용 + required_inputs 검증).
-- Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md)
+- Version: **v4.2.0** (SSOT: `src/orchestrator.py:VERSION`) — **composer-emitted 차트/지도** + mono guide 정합. composer 가 차트 데이터 (8종 type) 와 지도 데이터 (d3 + d3-geo + TopoJSON) 를 직접 emit. 기존 build_chart_payload 결정적 빌더 + maplibre-gl 의존 폐기.
+- Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
 - Tier 3 docs: [WORKFLOWS](WORKFLOWS.md) · [DEVLOG](DEVLOG.md) · [CHANGELOG](CHANGELOG.md)
 
@@ -29,17 +29,25 @@ cp .env.example .env  # 환경변수 입력
 python -m src.main
 ```
 
-## What This Does
-- 텔레그램 봇이 분석 명령을 받음 (일반 메시지 → 풀 분석, `?` 접두어 → 간단 질답).
-- 오케스트레이터가 mode (fast/standard/deep) 를 결정 (사용자 키워드 또는 default `standard`) 후, 상황인식 → Strategy Planner (축약) → Quality Gate 1 → lens pool (mode 별 cap 1/2/4) → 시나리오 → 결정적 시각화 → Synthesis Judge (heuristic-first) → Quality Gate 2 → 합성관 순으로 진행.
-- 보고서 archetype 12종 중 matrix 결정 (`select_archetype`) → Jinja2 렌더 → Cloudflare Pages 배포. **deep 모드는 Opus 4.7 narrative_composer 가 자유 형식 보고서를 작성하여 freeform_essay 로 라우팅 (v3.3.0).**
-- legacy 페르소나 (PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst) 는 `deep` 모드에서만 호출.
+## What This Does (v4.2.0 Tier 4)
+- 텔레그램 봇이 사건 한 줄 메시지를 받음. `짧게/간략/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard 모드 자동 결정.
+- **2-call 파이프라인**: ContextAnalyst (Sonnet 4.6, 웹 검색) 가 사실/타임라인/출처 수집 → UnifiedComposer (Opus 4.7) 가 *단일 호출* 로 행위자/구조/시나리오/모순 분석 + 보고서 본문 작성 + 감시 신호 추출 + 차트 데이터 + 지도 데이터까지 모두 emit.
+- mode 는 composer 프롬프트의 분석 깊이 지시 (fast 3~4 섹션 / standard 4~6 / deep 5~7 + 모순 명시 필수) 에만 영향. LLM 호출 수는 모든 모드 2회 동일.
+- 보고서: `freeform_essay.html` 단일 템플릿. composer 의 `ComposedReport` (headline / sections / charts / map / watch_signals / contradictions / confidence) 를 mono 테마 (burgundy_mono / light_mono) 로 렌더 → Cloudflare Pages 배포.
+- 차트 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap) 은 composer 가 데이터까지 직접 emit, charts.js 가 mono guide §4 패턴으로 SVG 렌더. 지도는 d3 + d3-geo + TopoJSON (maplibre 폐기).
+- 감시 신호는 SQLite Watchlist Registry 에 등록 → `/watchlist`, `/fire` 명령으로 후속 추적.
+
+> v3.x 의 7-agent + 11-lens + 11-archetype + 5-게이트 멀티 파이프라인은 **v4.0.0 부터 호출되지 않음**. 코드는 보존 (향후 cleanup commit 에서 제거 예정).
 
 자세한 시스템 흐름은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), 에이전트·렌즈·archetype 카탈로그는 [docs/CATALOGS.md](docs/CATALOGS.md).
 
 ## Recent Changes
-최신 5건 — 전체 [CHANGELOG.md](CHANGELOG.md):
-- **v3.4.7** AMC 전체 archetype 적용 + required_inputs 검증 (PR4) — PR3 의 5개 archetype contract() 를 12개 전체로 확장. `_check_required_inputs()` 신설로 `FullAnalysisResult.<field>` 누락 시 WARNING + 보고서 상단에 ⚠ 가시화. parametrize 로 11개 strict archetype 자가 정합성 검증. **pytest 202 passed, 4 skipped**.
+최신 7건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+- **v4.2.0** Composer-emitted charts + maps. ComposedSection.charts (8 type) + ComposedReport.embedded_map 신설. charts.js 전면 재작성 (inline payload + mono guide §4 패턴). maps.js d3-geo + TopoJSON 으로 재작성, maplibre 폐기.
+- **v4.1.0** ContextAnalyst → Opus 4.7. Tier 4 의 2-call 파이프라인에서 context 가 composer 가 보는 *유일한* 사실 입력이라 사실 추출 품질을 한 세대 위 모델로 상향. fast 모드 다운그레이드 제거.
+- **v4.0.0** Tier 4 — UnifiedComposer 단일 호출 파이프라인 (MAJOR). 7개 분석 에이전트 + 11종 lens + 11종 archetype + 5단계 게이트 모두 호출 중단 (코드는 보존). LLM 호출 deep 13 → 2 (~85% ↓). archetype 매트릭스 라우팅 폐기, 항상 freeform_essay.
+- **v3.5.0** Option C — narrative_composer 모든 모드에 활성. token_budget 통일. report_block.html 의 DATA DASHBOARD (9개 차트 슬롯 무지성 박힘) 통째 삭제. mono 테마 표준 적용 (lens_policy.select_theme 도 mono 만 emit).
+- **v3.4.7** AMC 전체 archetype 적용 + required_inputs 검증 (PR4) — 12 archetype 에 contract() 적용. **pytest 202 passed**.
 - **v3.4.6** AMC + Narrative DSL (PR3) — 단조로움의 *구조적* 처방. `NarrativeStage` Literal 5단계 (`fact / mechanism / divergence / decision / trigger`) + `ReportSectionPlan.narrative_stage`. `AnalysisMethodContract` Pydantic 모델 (mandatory_stages, forbidden_blocks, rationale). 5개 archetype 에 contract() 구현. 섹션 헤더 stage 배지 + 좌측 컬러 액센트로 시각 차별화.
 - **v3.4.5** 시나리오 데이터 강화 (PR2) — `ScenarioAnalysis.scenarios[*]` 에 `confidence` (0~1 또는 0~100) + `driver_signals` (선행 지표 list) 필드 도입. `visual_builder.build_scenario_table` 정규화. `scenario_table.html` 카드 헤더에 신뢰도 배지 (색상이 신뢰도 따라 변화) + "선행 신호" 칩 list. backward-compat (loose dict).
 - **v3.4.4** 보고서 품질 핫픽스 (PR1') — 4개 표면 문제 처리: ① `charts.js` TOKENS 하드코딩 → `getComputedStyle` (테마 동기), ② `visual_builder` Insight Gate (variance=0/value=1 차단, `_impact_magnitude()` 텍스트 키워드 추출), ③ `_payload_claim_card / evidence_table / qna` None 반환 (placeholder 회귀 차단), ④ `@media (max-width:540px)` 추가 (timeline 세로 스택, 테이블 카드 스택).

@@ -1,31 +1,52 @@
 ---
 tier: 2
-last_synced_with: v3.3.0
+last_synced_with: v4.2.0
 ssot_for:
-  - "시스템 아키텍처 다이어그램"
-  - "분석 파이프라인 흐름"
-  - "보고서 archetype 분기 구조 (V3 Step 2 활성화)"
-  - "보고서 블록 렌더링 흐름 (V3 Step 3 활성화)"
-  - "Quality Gate + Synthesis Judge 위치 (V3 Step 4 활성화)"
-  - "토큰 사용량 추정"
-  - "Token Budget + Mode Routing (v3.1.0 활성화)"
-  - "d3 차트 자동 생성 매트릭스 (v3.2.0 활성화)"
+  - "시스템 아키텍처 다이어그램 (v4.2.0 Tier 4)"
+  - "2-call 파이프라인 흐름"
+  - "Mono 테마 적용 흐름"
+  - "Composer-emitted 차트/지도 (v4.2.0)"
 depends_on:
   - "src/orchestrator.py:VERSION"
-  - "src/agents/* (구성)"
-  - "src/archetypes/registry.py (archetype 분기 SSOT)"
-  - "src/token_budget.py (mode 정책)"
-  - "src/lens_policy.py (lens 결정 규칙)"
-  - "src/visual_builder.py:build_chart_payload (차트 데이터 SSOT)"
-  - "src/templates/static/charts.js (d3 렌더 SSOT)"
+  - "src/agents/{context_analyst, narrative_composer}.py"
+  - "src/agents/narrative_composer.py:SYSTEM_PROMPT"
+  - "src/token_budget.py"
+  - "src/lens_policy.py:select_theme"
+  - "src/templates/static/charts.js + maps.js"
+  - "docs/MONO_THEME_GUIDE.md"
   - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
-last_review: 2026-04-30
+last_review: 2026-05-02
 ---
 
-# Event Analysis Team — Architecture
+# Event Analysis Team — Architecture (v4.2.0)
 
 > 시스템 아키텍처의 SSOT. 다이어그램·데이터 흐름·기술 스택을 한곳에 정리.
 > 에이전트·렌즈·블록 카탈로그는 [docs/CATALOGS.md](CATALOGS.md), 데이터 모델 도식은 [docs/DATA_MODELS.md](DATA_MODELS.md).
+
+## Current Pipeline (v4.0.0~v4.2.0 Tier 4)
+
+```
+사용자 메시지 (텔레그램)
+   ↓
+[Phase 1] ContextAnalyst (Opus 4.7, 웹 검색)
+   → ContextAnalysis (사실 / 타임라인 / 핵심 수치 / 출처 URL)
+   ↓
+[Phase 2] UnifiedComposer (Opus 4.7, 단일 호출)
+   → ComposedReport (headline / sections / charts / map / watch_signals /
+                     contradictions / confidence)
+   ↓
+[Phase 3] ReportSynthesizer (코드, LLM 0)
+   → freeform_essay.html 렌더 (mono 테마, charts.js + maps.js)
+   → Cloudflare Pages 배포
+   ↓
+[Phase 4] Watchlist Registry (코드, SQLite)
+   → composed_report.watch_signals INSERT
+```
+
+**LLM 호출 수**: 모든 모드 (fast/standard/deep) 동일하게 **2회**.
+**mode 의 의미**: composer 프롬프트의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) 만 결정. 호출 개수에 영향 없음.
+
+> v3.x 의 7-agent + 11-lens + 11-archetype + 5-게이트 파이프라인은 **v4.0.0 부터 호출되지 않음**. 모듈은 보존 (cleanup commit 미정). 아래 섹션 (V3 step 5 이전 흐름) 은 *역사적 참고용* 으로만 보존.
 
 ---
 

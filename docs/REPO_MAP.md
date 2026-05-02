@@ -1,17 +1,19 @@
 ---
 tier: 3
-last_synced_with: v3.4.0
+last_synced_with: v4.2.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
   - "src/* (실제 파일 구성)"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-04-26
+last_review: 2026-05-02
 ---
 
-# Event Analysis Team — Repository Map
+# Event Analysis Team — Repository Map (v4.2.0)
 
 > 파일·디렉토리 책무를 한눈에 보는 지도. 카탈로그성 사실(에이전트 역할 등)은 [docs/CATALOGS.md](CATALOGS.md), 시스템 흐름은 [docs/ARCHITECTURE.md](ARCHITECTURE.md).
+>
+> **v4.0.0 Tier 4 부터 `[deprecated]` 표시 모듈은 코드 보존하되 호출 안 됨**. cleanup commit 시 일괄 제거 예정.
 
 ## Source Structure
 ```
@@ -19,39 +21,44 @@ src/
 ├── __init__.py
 ├── main.py              # Entry point — Telegram bot startup
 ├── config.py            # Environment config (Pydantic Settings)
-├── models.py            # Pydantic data models (SSOT for data definitions)
-├── orchestrator.py      # 4-phase pipeline orchestrator (VERSION SSOT)
-├── telegram_bot.py      # Telegram bot handlers
-├── agents/              # 에이전트 정의 — 카탈로그는 docs/CATALOGS.md
+├── models.py            # Pydantic data models (SSOT). v4.0.0~v4.2.0 ComposedReport 확장
+├── orchestrator.py      # 2-call 파이프라인 진입점 (VERSION SSOT). v4.0.0 부터 ~120줄
+├── telegram_bot.py      # Telegram bot handlers (/status, /watchlist, /stop 등)
+├── token_budget.py      # mode 별 정책. v4.2.0: 모든 모드 max_llm_calls=2
+├── lens_policy.py       # select_theme(category) → mono 2종. select_lenses() [deprecated]
+├── telemetry.py         # LLM 호출 / 단계별 elapsed 기록
+├── visual_builder.py    # [deprecated v4.2.0] build_chart_payload / build_map_payload — composer 가 직접 emit
+├── brief_builder.py     # [deprecated] FullAnalysisResult 압축. 호출 안 됨
+├── agents/              # v4.2.0: 살아있는 에이전트 2개 (나머지 보존)
 │   ├── __init__.py
 │   ├── base.py                   # BaseAgent (Claude CLI/API wrapper)
-│   ├── context_analyst.py
-│   ├── player_analyst.py
-│   ├── dynamics_analyst.py
-│   ├── chain_reaction_analyst.py
-│   ├── scenario_architect.py
-│   ├── visual_analyst.py
-│   ├── report_synthesizer.py
-│   ├── quality_inspector.py    # V3 Step 4 — Gate 1/2 (Plan Sanity + Coverage Check)
-│   ├── synthesis_judge.py      # V3 Step 4 — findings → JudgmentVerdict (모순 노출)
-│   └── narrative_composer.py   # v3.3.0 — Opus 4.7 freeform editorial pass (deep only)
-├── archetypes/          # V3 Step 2/5-A/5-C/3.3.0 — 보고서 archetype 풀 (registry, 12종)
+│   ├── context_analyst.py        # ✅ Opus 4.7 (v4.1.0) — 사실/타임라인/출처 수집
+│   ├── narrative_composer.py     # ✅ Opus 4.7 — UnifiedComposer (단일 호출)
+│   ├── report_synthesizer.py     # ✅ HTML 렌더 + Cloudflare 배포 (LLM 거의 0)
+│   ├── player_analyst.py         # [deprecated v4.0.0]
+│   ├── dynamics_analyst.py       # [deprecated v4.0.0]
+│   ├── chain_reaction_analyst.py # [deprecated v4.0.0]
+│   ├── scenario_architect.py     # [deprecated v4.0.0]
+│   ├── visual_analyst.py         # [deprecated v4.0.0]
+│   ├── quality_inspector.py      # [deprecated v4.0.0] Gate 1/2
+│   └── synthesis_judge.py        # [deprecated v4.0.0]
+├── archetypes/          # v4.0.0: freeform_essay 만 사용. 11종은 deprecated.
 │   ├── __init__.py
 │   ├── base.py                       # ReportArchetype Protocol
-│   ├── registry.py                   # archetype_id → 객체 (SSOT for archetype catalog)
-│   ├── six_act_theater.py            # default; template=report.html (legacy)
-│   ├── financial_transmission.py     # 금융·거시 사건
-│   ├── tech_decomposition.py         # 기술·AI·IT 사건
-│   ├── geopolitical_strategic.py     # V3 Step 5-A — 지정학·전쟁
-│   ├── accident_forensic.py          # V3 Step 5-A — 사고·재난
-│   ├── policy_implementation.py      # V3 Step 5-A — 정책·사회
-│   ├── decision_brief.py             # V3 Step 5-C — what_to_do 의도 전용
-│   ├── timeline_first.py             # V3 Step 5-C — what_happened 의도 전용
-│   ├── scenario_first.py             # V3 Step 5-C — what_next 의도 전용
-│   ├── mechanism_decomp.py           # V3 Step 5-C — why_happened 의도 전용
-│   ├── industry_value_chain.py       # V3 Step 5-C — 산업·가치사슬
-│   └── freeform_essay.py             # v3.3.0 — composer 전용 (deep + 성공 시)
-├── lenses/              # V3 Step 5-A — 분석 lens 풀 (LensRunner ABC + registry, 8종)
+│   ├── registry.py                   # archetype_id → 객체. v4.0.0: select_archetype() 호출 안 됨
+│   ├── freeform_essay.py             # ✅ v4.0.0~ 유일하게 사용되는 archetype
+│   ├── six_act_theater.py            # [deprecated v4.0.0]
+│   ├── financial_transmission.py     # [deprecated]
+│   ├── tech_decomposition.py         # [deprecated]
+│   ├── geopolitical_strategic.py     # [deprecated]
+│   ├── accident_forensic.py          # [deprecated]
+│   ├── policy_implementation.py      # [deprecated]
+│   ├── decision_brief.py             # [deprecated]
+│   ├── timeline_first.py             # [deprecated]
+│   ├── scenario_first.py             # [deprecated]
+│   ├── mechanism_decomp.py           # [deprecated]
+│   └── industry_value_chain.py       # [deprecated]
+├── lenses/              # [deprecated v4.0.0] 11종 모두 호출 안 됨
 │   ├── __init__.py
 │   ├── base.py                       # LensRunner ABC + 공통 LLM 호출 헬퍼
 │   ├── registry.py                   # lens_id → LensRunner 인스턴스 팩토리
@@ -70,22 +77,25 @@ src/
 │   ├── converter.py                  # ScenarioAnalysis.watch_signals → WatchSignal
 │   └── monitor.py                    # asyncio task (1h 주기) + 알림 포맷터
 └── templates/
-    ├── report.html         # six_act_theater 용 (legacy 보존, byte-equal 보장)
-    ├── report.css          # 공통 CSS — 모든 archetype 공유, block-* 클래스 (Step 3 추가)
-    ├── report_block.html   # 디스패처 — 신규 archetype 의 블록 렌더링 진입점 (Step 3)
-    ├── blocks/             # 18 종 블록 템플릿 (Step 3, 각 ≤50 줄, payload-only)
+    ├── report.css          # ✅ Mono 2테마 (burgundy_mono + light_mono) SSOT. v3.5.0 부터 멀티컬러 폐기.
+    ├── report.html         # [deprecated] six_act_theater 용
+    ├── report_block.html   # [deprecated] 옛 archetype 디스패처. v3.5.0 에서 DATA DASHBOARD 섹션 삭제.
+    ├── blocks/             # 17종 블록 템플릿. composer 가 embedded_blocks 로 명시 시만 사용 (실질 미사용).
     │   ├── narrative.html, claim_card.html, evidence_table.html, timeline.html, matrix.html
     │   ├── actor_cards.html, flow_chain.html, scenario_table.html, decomposition.html
     │   ├── argument_pair.html, data_series.html, watchlist.html, qna.html, callout.html
     │   ├── counter_hypothesis.html, decision_matrix.html, risk_matrix.html
-    │   └── map.html         # v3.4.0 — maplibre-gl + d3-geo 지도 블록
+    │   └── map.html         # [deprecated v4.2.0] composer.embedded_map 으로 대체
     ├── static/             # 보고서 정적 자산 (보고서 dir 로 동기화)
-    │   ├── d3.v7.min.js, charts.js, charts.css   # v3.2.0
-    │   └── maps.js, maps.css                     # v3.4.0
-    └── archetypes/         # Step 2 placeholder HTML — Step 3 후 고아 상태 (보존)
-        ├── financial_transmission.html
-        ├── tech_decomposition.html
-        └── freeform_essay.html  # v3.3.0 — composer 출력 전용 산문 우위 템플릿
+    │   ├── d3.v7.min.js
+    │   ├── charts.js       # ✅ v4.2.0 재작성 — inline payload + mono guide §4 패턴
+    │   ├── charts.css
+    │   ├── maps.js         # ✅ v4.2.0 재작성 — d3 + d3-geo + TopoJSON (maplibre 폐기)
+    │   └── maps.css        # ✅ v4.2.0 재작성 — mono 토큰만 사용
+    └── archetypes/
+        ├── freeform_essay.html       # ✅ v4.0.0~ 유일하게 사용. v4.2.0 에서 inline charts/map 렌더 추가.
+        ├── financial_transmission.html # [deprecated]
+        └── tech_decomposition.html   # [deprecated]
 ```
 
 ## Configuration Files

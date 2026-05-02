@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v3.4.7
+last_synced_with: v4.2.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-01
+last_review: 2026-05-02
 ---
 
 # Changelog
@@ -21,6 +21,95 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ---
 
 ## [Unreleased]
+
+### v4.2.0 — Composer-emitted Charts + Maps
+
+Composer 가 차트/지도 데이터를 단일 LLM 호출에서 *직접 emit*. 옛 결정적 빌더 (`visual_builder.build_chart_payload`) + `auto-init by element id` 패턴 + `maplibre-gl` 의존 모두 폐기. mono guide §2 (d3 + d3-geo + TopoJSON) + §4 (45° 패턴 시스템) 정합.
+
+#### Added
+- `ComposedSection.charts: list[dict]` — 차트 데이터 inline. `{type, title, data, note?}`. 8종 type: `bar / donut / line / gantt / network / stacked / bubble / heatmap`.
+- `ComposedReport.embedded_map: dict | None` — 보고서 레벨 단일 지도. `{center, zoom, markers, arcs, legend?}`.
+- `charts.js` 전면 재작성 — 섹션마다 `<script class="chart-payload-inline">` 스캔, mono guide §4 패턴 (hatch-tight / hatch-wide / dots / accent-hatch) 자동 적용.
+- `maps.js` 전면 재작성 — `d3.geoMercator` + `topojson.feature(world-atlas/110m)` 베이스맵, 외부 타일 서비스 의존 0.
+- `freeform_essay.html` 의 closing 앞에 `#freeform-map` 영역 + `#map-payload` 스크립트 (composer 가 emit 했을 때만).
+
+#### Changed
+- composer SYSTEM_PROMPT — 차트 type 8종 별 data 스키마 명시. "수치 비교가 본문 이해에 결정적일 때만" 보수적 게이팅.
+- `freeform_essay.html` — 옛 chart-id 기반 9개 if/elif 분기 (chart-scenarios / chart-figures / chart-severity / ...) 통째 폐기. 섹션마다 `sec.charts` 순회로 변경.
+- `maps.css` — 옛 maplibre 용 `.block-map.theme-{light_mono,burgundy_mono}` 트리 통째 폐기. mono 토큰만으로 동적 적용하는 `.map-card / .map-stage` 만 남김.
+
+#### Deprecated (호출 안 됨)
+- `src/visual_builder.py:build_chart_payload()` — composer 가 직접 emit 으로 대체.
+- `src/visual_builder.py:build_map_payload()` — 동일.
+- `src/templates/blocks/map.html` (v3.4.0 추가분) — composer.embedded_map 으로 대체.
+
+---
+
+### v4.1.0 — ContextAnalyst → Opus 4.7
+
+Tier 4 의 2-call 파이프라인에서 context 가 composer (Opus 4.7) 가 보는 *유일한* 사실 입력. 사실 추출 품질이 보고서 전체 품질의 상한선이라 모델을 한 세대 위로 통일.
+
+#### Changed
+- `src/agents/context_analyst.py` — `use_light_model=True → False` + `self.model_name = "claude-opus-4-7"` 직접 지정. config.model_name (Opus 4.6) 보다 한 세대 위.
+- `src/orchestrator.py` — fast 모드의 context 다운그레이드 로직 + 모델 복원 코드 제거.
+- `src/telegram_bot.py` — `/status` 의 ① 상황 분석관 모델 표시 갱신.
+
+#### Effects
+- 사실 추출 품질 상한 ↑ — 출처 1차/2차 구분 / 단위 보존 / 인과 순서 정확도.
+- 비용: ~1.6~1.8× (vs v4.0.0). v3.5.0 deep (13-call) 대비 30~40% 수준.
+- 지연: context 단계 ~10초 → ~25초 (총 ~30초 추가 추정).
+
+---
+
+### v4.0.0 — Tier 4 Unified Pipeline (MAJOR)
+
+7개 분석 에이전트 + 11종 lens + 11종 archetype + 5단계 게이트 다중 파이프라인을 폐기하고 ContextAnalyst + UnifiedComposer 2회 LLM 호출로 압축. 보고서 자유도 최대화 + LLM 호출 ~85% 감소 + 지연 시간 ~60% 감소.
+
+#### Pipeline change
+- BEFORE (v3.5.0): context → strategy → gate1 → [players → dynamics → chain (deep만)] → scenarios → lens_pool 1~4종 → judgment → gate2 → visuals → composer → render. **LLM 호출 fast 5 / standard 8 / deep 13**.
+- AFTER (v4.0.0): context → unified_composer → render. **LLM 호출 모든 모드 2회**.
+
+#### Added
+- `NarrativeComposer.compose_unified(context, mode)` — Opus 4.7 단일 호출에서 행위자 / 구조 / 시나리오 / 모순 분석 + 본문 작성.
+- `ComposedReport.watch_signals: list[dict]` — Watchlist Registry 통합용. 기존 `ScenarioArchitect` 출력 대체.
+- `ComposedReport.contradictions: list[dict]` — Anti-pattern #5 (모순 봉합 금지) 보존.
+- `ComposedReport.confidence_summary: str` + `confidence_score: float` — composer 자체 신뢰도 평가.
+- `freeform_essay.html` 에 contradictions / watch_signals / confidence 노출 섹션 추가.
+
+#### Removed (호출 안 됨, 파일 보존)
+- `_generate_analysis_strategy` LLM 호출 (event_type / intent / lenses / archetype 결정).
+- Quality Gate 1 (계획 sanity) + Gate 2 (커버리지) LLM 검증.
+- `PlayerAnalyst / DynamicsAnalyst / ChainReactionAnalyst / ScenarioArchitect` 호출.
+- `SynthesisJudge.judge()` (모순/판단 LLM 검사).
+- `_run_lenses()` (lens pool 1~4 LLM 호출).
+- `VisualAnalyst.analyze()` (LLM 시각화 + 결정적 빌더 양쪽 모두).
+- `select_archetype()` matrix 라우팅 — 항상 `freeform_essay`.
+
+#### Changed
+- `token_budget.py` — 모든 모드 `max_llm_calls=2`, `max_lenses=0`. mode 는 composer prompt 깊이 지시만 결정.
+- orchestrator `run_analysis()` — ~370줄 → ~120줄.
+
+---
+
+### v3.5.0 — Composer to All Modes + Mono Theme Standard
+
+`narrative_composer` (Opus 4.7) 를 fast/standard 에도 활성화 + 멀티컬러 6테마 폐기 + DATA DASHBOARD 9개 차트 무지성 박힘 차단.
+
+#### Added
+- `token_budget.for_mode("fast"|"standard")` 에 `use_llm_narrative_composer=True`. cap 상향 (fast 4→5, standard 7→8).
+- `report.css` 의 `burgundy_mono` + `light_mono` 정의 (mono guide §3 팔레트).
+- `freeform_essay.html` 에 contradictions / watch_signals / confidence 노출 섹션 (v4.0.0 으로 이어짐).
+
+#### Removed
+- `report.css` 의 6 멀티컬러 테마 (burgundy / geopolitical / financial / tech / nature / liquidglass) 통째 삭제.
+- `report_block.html` 의 "DATA DASHBOARD / 한눈에 보기" 섹션 (9개 차트 슬롯) — composer-referenced 만 freeform_essay.html 이 렌더하는 정책으로 통일.
+
+#### Changed
+- `lens_policy.select_theme()` — multi-color 6테마 매핑 → mono 2종만. policy → light_mono, 그 외 → burgundy_mono.
+- 모든 템플릿 (report_block / freeform_essay / financial_transmission / tech_decomposition) 디폴트 `data-theme` → `burgundy_mono`.
+- `AnalysisStrategy.theme` 디폴트 + `_empty_strategy_fallback` + orchestrator fallback 모두 `burgundy_mono`.
+
+---
 
 ### v3.4.7 — AMC 전체 archetype 적용 + required_inputs 검증 (PR4)
 
