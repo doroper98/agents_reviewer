@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="burgundy_mono">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Analysis Team v4.0.0 — Tier 4 Unified Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #3D1820; --card: #4A222E; --card-2: #2A0E16;
+  --border: #6E3340; --border-soft: rgba(110,51,64,0.4);
+  --text: #EFE5D1; --text-2: #D8CCB8; --muted: #A88E7A;
+  --accent: #D4A858; --up: #A8B582; --down: #C9837A;
+  --radius: 6px; --radius-lg: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.75;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+
+/* Hero */
+.hero {
+  padding: 64px 0 40px;
+  background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border-soft);
+}
+.hero .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.hero .deck {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  font-weight: 300;
+  max-width: 640px;
+  margin-bottom: 22px;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.hero-meta .pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px 12px;
+  letter-spacing: 0.4px;
+}
+.hero-meta .pill.accent { border-color: var(--accent); color: var(--accent); }
+.hero-meta .pill.major  { border-color: var(--down); color: var(--down); font-weight: 700; }
+
+/* Section */
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-soft); }
+section:last-of-type { border-bottom: none; }
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.3px;
+}
+.section-desc { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; max-width: 720px; line-height: 1.75; }
+
+/* Prose */
+.prose p { margin-bottom: 14px; font-size: 14.5px; line-height: 1.85; }
+.prose strong { color: var(--text); font-weight: 700; }
+.prose em { color: var(--accent); font-style: italic; }
+.prose code, code.inline {
+  background: rgba(212,168,88,0.10);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+}
+
+/* Mode comparison — diff style */
+.mode-comparison {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin: 18px 0;
+}
+@media (min-width: 720px) { .mode-comparison { grid-template-columns: 1fr 1fr; } }
+.mode-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+}
+.mode-block.before { border-left: 3px solid var(--down); border-left-style: dashed; }
+.mode-block.after  { border-left: 3px solid var(--up); border-left-style: solid; }
+.mode-block-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.mode-block.before .mode-block-label { color: var(--down); }
+.mode-block.after  .mode-block-label { color: var(--up); }
+.mode-block h3 { font-family: 'Noto Serif KR', serif; font-size: 15px; color: var(--text); margin-bottom: 6px; font-weight: 700; }
+.mode-block ol, .mode-block ul { padding-left: 18px; }
+.mode-block li { font-size: 12.5px; line-height: 1.7; color: var(--text-2); margin-bottom: 4px; }
+.mode-block .stats {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.mode-block .stats strong { color: var(--text); }
+
+/* Pipeline Steps */
+.pipeline { margin: 20px 0; }
+.step {
+  position: relative;
+  padding: 16px 18px 16px 56px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+}
+.step::before {
+  content: attr(data-num);
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+  width: 28px;
+  text-align: center;
+}
+.step-title { font-family: 'Noto Serif KR', serif; font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.step-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.3px; }
+.step-body { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+.step-body strong { color: var(--text); font-weight: 600; }
+.step.composer { border-left: 3px solid var(--accent); background: linear-gradient(90deg, rgba(212,168,88,0.08) 0%, var(--card) 70%); }
+.step.deterministic { border-left: 3px dotted var(--up); }
+
+/* Mode table */
+.mode-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.mode-table th, .mode-table td {
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.mode-table th {
+  background: var(--card-2);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.mode-table tr:last-child td { border-bottom: none; }
+.mode-table td:first-child { font-weight: 700; color: var(--text); }
+.mode-table .yes { color: var(--up); }
+.mode-table .no { color: var(--muted); }
+
+/* Composed report schema */
+.schema-card {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-2);
+  white-space: pre;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.schema-card .key { color: var(--accent); }
+.schema-card .type { color: var(--muted); }
+.schema-card .new { color: var(--up); font-weight: 700; }
+
+/* Lost/Gained */
+.tradeoff {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin: 14px 0;
+}
+@media (min-width: 720px) { .tradeoff { grid-template-columns: 1fr 1fr; } }
+.tradeoff-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.tradeoff-card.lost { border-left: 3px dashed var(--down); }
+.tradeoff-card.gained { border-left: 3px solid var(--up); }
+.tradeoff-card h3 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-weight: 700;
+}
+.tradeoff-card.lost h3   { color: var(--down); }
+.tradeoff-card.gained h3 { color: var(--up); }
+.tradeoff-card ul { list-style: none; padding: 0; }
+.tradeoff-card li { font-size: 12.5px; line-height: 1.7; padding: 4px 0 4px 18px; position: relative; color: var(--text-2); }
+.tradeoff-card.lost li::before   { content: '−'; position: absolute; left: 0; color: var(--down); font-weight: 700; }
+.tradeoff-card.gained li::before { content: '+'; position: absolute; left: 0; color: var(--up); font-weight: 700; }
+
+/* Callout */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+.callout-title { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.callout p { font-size: 12.5px; color: var(--text-2); line-height: 1.7; }
+.callout.warning { border-left-style: dashed; border-left-color: var(--down); }
+.callout.warning .callout-title { color: var(--down); }
+
+/* File map */
+.filetree {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-2);
+  white-space: pre;
+  overflow-x: auto;
+}
+.filetree .dir { color: var(--accent); }
+.filetree .gone { color: var(--muted); text-decoration: line-through; opacity: 0.55; }
+.filetree .new { color: var(--up); }
+.filetree .key { color: var(--text); font-weight: 700; }
+
+/* Footer */
+footer.foot {
+  padding: 32px 0;
+  background: var(--card-2);
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+footer.foot a { color: var(--accent); text-decoration: underline; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .hero { padding: 40px 0 28px; }
+  .hero h1 { font-size: 28px; }
+  .hero .deck { font-size: 15px; }
+  section { padding: 32px 0 24px; }
+  .section-title { font-size: 22px; }
+  .step { padding: 14px 14px 14px 48px; }
+  .step::before { left: 10px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">Event Analysis Team · System Architecture</div>
+    <h1>v4.0.0 — Tier 4 · Unified Composer</h1>
+    <p class="deck">멀티 에이전트 파이프라인을 단일 LLM 호출로 압축. 사실 수집 + 분석 + 보고서 작성을 ContextAnalyst + UnifiedComposer 2회 호출로 완료. 보고서 자유도 최대화 + LLM 비용 ~70% 감소.</p>
+    <div class="hero-meta">
+      <span class="pill major">v4.0.0 (MAJOR)</span>
+      <span class="pill">main · eab9678</span>
+      <span class="pill accent">2-call pipeline</span>
+      <span class="pill">Mono Theme Standard</span>
+      <span class="pill">Python 3.11+ · Pydantic v2</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 1. 한 화면 요약 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 1</div>
+    <h2 class="section-title">한 화면 요약</h2>
+    <div class="prose">
+      <p><strong>입력</strong>: 텔레그램에 사건 한 줄. <code>심층/짧게/요약</code> 키워드로 모드 자동 결정 (fast/standard/deep — 모두 같은 2-call 파이프라인을 거치되 composer 의 분석 깊이 지시만 다름).</p>
+      <p><strong>처리</strong>: 1) <em>상황 분석관</em> (Sonnet 4.6, 웹 검색) — 사실/타임라인/핵심 수치/출처 URL 수집 → 2) <em>편집장</em> (Opus 4.7, 단일 호출) — 행위자/구조/시나리오/모순 분석 + 보고서 본문 작성 모두 수행 → 3) HTML 렌더 + Cloudflare Pages 배포.</p>
+      <p><strong>출력</strong>: mono 톤 HTML. 사건마다 섹션 수/제목/순서/톤이 다른 자유 형식. composer 가 명시한 watch_signals 는 SQLite 에 등록되어 <code>/watchlist</code> 명령으로 추적.</p>
+      <p><strong>핵심 변화 v3.5.0 → v4.0.0</strong>: <em>이해관계 분석관 / 구조 분석관 / 연쇄반응 분석관 / 시나리오 설계관 / 종합 판단관 / 품질 검사관 / 시각화 분석관 / lens pool 8~11종 / archetype matrix 11종 모두 호출되지 않음.</em> 분석 깊이는 잃되 보고서 형태 자유도와 비용 절감 확보.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2. 파이프라인 비교 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 2</div>
+    <h2 class="section-title">파이프라인 비교 — Before vs After</h2>
+    <p class="section-desc">v3.5.0 까지는 사건당 5~13회 LLM 호출. v4.0.0 부터는 모든 모드가 2회.</p>
+
+    <div class="mode-comparison">
+      <div class="mode-block before">
+        <div class="mode-block-label">v3.5.0 (BEFORE)</div>
+        <h3>9~13 단계</h3>
+        <ol>
+          <li>ContextAnalyst (Sonnet)</li>
+          <li>Strategy Planner (Opus)</li>
+          <li>Quality Gate 1</li>
+          <li>PlayerAnalyst (deep, Sonnet)</li>
+          <li>DynamicsAnalyst (deep, Opus)</li>
+          <li>ChainReactionAnalyst (deep, Sonnet)</li>
+          <li>ScenarioArchitect (Opus)</li>
+          <li>Lens Pool 1~4 lenses</li>
+          <li>SynthesisJudge (Opus)</li>
+          <li>Quality Gate 2</li>
+          <li>VisualAnalyst (mostly deterministic)</li>
+          <li>NarrativeComposer (Opus 4.7) — 편집만</li>
+          <li>ReportSynthesizer (HTML)</li>
+        </ol>
+        <div class="stats">
+          LLM 호출: <strong>fast 5 / standard 8 / deep 13</strong><br>
+          평균 지연: <strong>~90~180초</strong>
+        </div>
+      </div>
+
+      <div class="mode-block after">
+        <div class="mode-block-label">v4.0.0 (AFTER) — Tier 4</div>
+        <h3>4 단계</h3>
+        <ol>
+          <li>ContextAnalyst (Sonnet 4.6, 웹 검색)</li>
+          <li><strong>UnifiedComposer (Opus 4.7) — 분석 + 작성 단일 호출 ⭐</strong></li>
+          <li>ReportSynthesizer (HTML 렌더, LLM 0)</li>
+          <li>Watchlist Registry (SQLite, LLM 0)</li>
+        </ol>
+        <div class="stats">
+          LLM 호출: <strong>모든 모드 2회</strong><br>
+          평균 지연: <strong>~30~60초</strong> 추정
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">mode 의 의미가 달라짐</div>
+      <p>v3.5.0 까지 mode 는 <em>몇 개의 에이전트를 호출할지</em> 결정했음. v4.0.0 에서는 mode 가 composer 프롬프트의 <em>분석 깊이 지시</em> 만 결정 (fast 3~4 섹션 / standard 4~6 섹션 / deep 5~7 섹션 + 모순 명시 필수). 호출 수는 모든 모드 동일.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. 새 파이프라인 단계 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 3</div>
+    <h2 class="section-title">v4.0.0 파이프라인 4단계</h2>
+    <div class="pipeline">
+
+      <div class="step" data-num="1">
+        <div class="step-title">상황 분석관 — ContextAnalyst</div>
+        <div class="step-meta">claude-sonnet-4-6 · 웹 검색 활성</div>
+        <div class="step-body">사건의 <strong>사실 / 타임라인 / 핵심 수치 / 출처 URL</strong> 수집. 모든 후속 분석의 1차 evidence. fast 모드에선 Sonnet 4.6 그대로, standard/deep 도 Sonnet (composer 가 분석 무게 담당하니 context 는 가벼움).</div>
+      </div>
+
+      <div class="step composer" data-num="2">
+        <div class="step-title">편집장 — UnifiedComposer ⭐</div>
+        <div class="step-meta">claude-opus-4-7 · 단일 LLM 호출 (max 8K tokens)</div>
+        <div class="step-body">
+          ContextAnalysis 만 받아 *내부적으로* 다음을 모두 수행:
+          <ol style="padding-left:18px;margin-top:8px">
+            <li>핵심 행위자 식별 — 결정권자 / 이득 / 손해 / 숨은 영향력자</li>
+            <li>구조적 동인 — 왜 지금 이 사건이 / 비대칭 / 피드백 루프 / 전환점</li>
+            <li>인과 사슬 — 단·중·장기 파급 / 차단 가능 지점 / 와일드카드</li>
+            <li>시나리오 설계 — 3~5개 (트리거 / 확률 / 영향)</li>
+            <li>모순 표면화 — 관점 충돌 / 데이터 모순 (Anti-pattern #5)</li>
+            <li>본문 작성 — headline + deck + 3~7 sections + closing</li>
+            <li>감시 신호 추출 — watch_signals 배열 (Watchlist 통합)</li>
+          </ol>
+          <p style="margin-top:8px">출력: 확장된 ComposedReport (headline, deck, sections, watch_signals, contradictions, confidence, closing).</p>
+        </div>
+      </div>
+
+      <div class="step deterministic" data-num="3">
+        <div class="step-title">보고서 합성 — ReportSynthesizer</div>
+        <div class="step-meta">코드 결정적 · LLM 호출 0</div>
+        <div class="step-body">composer 의 <code>ComposedReport</code> 를 <code>freeform_essay.html</code> 에 주입해 mono 테마 HTML 생성. <code>lens_policy.select_theme()</code> 가 사건 카테고리에서 burgundy_mono / light_mono 자동 선택. 최종 HTML 을 wrangler 로 Cloudflare Pages 배포 후 URL 반환.</div>
+      </div>
+
+      <div class="step deterministic" data-num="4">
+        <div class="step-title">Watchlist 등록</div>
+        <div class="step-meta">SQLite · LLM 호출 0</div>
+        <div class="step-body"><code>composed_report.watch_signals</code> 를 SQLite Registry 에 INSERT. 텔레그램 <code>/watchlist</code>, <code>/fire</code> 명령으로 후속 추적. 이전엔 ScenarioArchitect 의 출력에서 가져왔는데 이제 composer 가 직접 emit.</div>
+      </div>
+
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">composer 실패 시 폴백</div>
+      <p>편집장 호출이 실패하면 (LLM 오류 / 파싱 실패 등), context.summary 를 그대로 보여주는 <strong>1섹션 minimal 보고서</strong> 가 생성됨. archetype 폴백 (v3.5.0) 은 더 이상 사용되지 않음.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. ComposedReport 스키마 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 4</div>
+    <h2 class="section-title">ComposedReport 스키마 (확장)</h2>
+    <p class="section-desc">composer 가 emit 하는 단일 출력 객체. v4.0.0 에서 <span style="color:var(--up);font-weight:700">+4 필드</span> 추가 (watch_signals / contradictions / confidence_summary / confidence_score).</p>
+
+<div class="schema-card"><span class="key">class</span> <span class="key">ComposedReport</span>(BaseModel):
+    <span class="key">headline</span>: str                                <span class="type"># 한 줄 헤드라인</span>
+    <span class="key">deck</span>: str = ""                               <span class="type"># 부제 1~2 문장</span>
+    <span class="key">sections</span>: list[ComposedSection]              <span class="type"># 3~7 섹션</span>
+    <span class="key">closing</span>: str = ""                            <span class="type"># 에필로그 (선택)</span>
+
+    <span class="new"># v4.0.0 — Tier 4 통합 출력</span>
+    <span class="new key">watch_signals</span>: list[dict]                    <span class="type"># Watchlist Registry 통합</span>
+        <span class="type">#   [{signal, description, indicates, deadline?, icon?}]</span>
+
+    <span class="new key">contradictions</span>: list[dict]                   <span class="type"># Anti-pattern #5 (봉합 금지)</span>
+        <span class="type">#   [{side_a, side_b, evidence?, resolution?}]</span>
+
+    <span class="new key">confidence_summary</span>: str = ""                 <span class="type"># 한 줄 자유 평가</span>
+    <span class="new key">confidence_score</span>: float = 0.5                <span class="type"># 0.0~1.0 종합 신뢰도</span>
+
+
+<span class="key">class</span> <span class="key">ComposedSection</span>(BaseModel):
+    <span class="key">heading</span>: str                                 <span class="type"># 섹션 제목</span>
+    <span class="key">kicker</span>: str = ""                            <span class="type"># 도입구 (선택)</span>
+    <span class="key">prose</span>: str                                   <span class="type"># 본문 (마크다운)</span>
+    <span class="key">embedded_charts</span>: list[str]                   <span class="type"># 차트 ID (v4.0.0 거의 미사용)</span>
+    <span class="key">embedded_blocks</span>: list[str]                   <span class="type"># 블록 type (선택)</span>
+    <span class="key">pull_quote</span>: str = ""                        <span class="type"># 강조 인용 (선택)</span>
+    <span class="key">cited_claim_ids</span>: list[str]                   <span class="type"># 인용 (v4.0.0 거의 미사용)</span></div>
+  </div>
+</section>
+
+<!-- ===== 5. Mode 정책 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 5</div>
+    <h2 class="section-title">3단 모드 — composer 프롬프트 깊이만 결정</h2>
+    <p class="section-desc"><code>token_budget.py</code> 의 모든 budget 플래그가 v4.0.0 에서 비활성. mode 는 composer 가 받는 분석 깊이 지시문에만 영향.</p>
+
+    <table class="mode-table">
+      <thead>
+        <tr><th>항목</th><th>fast ⚡</th><th>standard 🟢</th><th>deep 🔬</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>키워드</td><td>짧게/간략/요약/빠르게</td><td>(기본)</td><td>심층/자세히/면밀</td></tr>
+        <tr><td>LLM 호출 수</td><td>2</td><td>2</td><td>2</td></tr>
+        <tr><td>composer 권장 섹션 수</td><td>3~4</td><td>4~6</td><td>5~7</td></tr>
+        <tr><td>composer 권장 시나리오 수</td><td>2~3</td><td>3~5</td><td>4~5</td></tr>
+        <tr><td>모순 명시 (contradictions)</td><td class="no">선택</td><td class="yes">권장</td><td class="yes">필수</td></tr>
+        <tr><td>감시 신호 (watch_signals)</td><td class="no">선택</td><td class="yes">권장</td><td class="yes">≥3건</td></tr>
+        <tr><td>Context Analyst 모델</td><td>Sonnet 4.6 (downgrade)</td><td>Sonnet 4.6</td><td>Sonnet 4.6</td></tr>
+        <tr><td>UnifiedComposer 모델</td><td>Opus 4.7</td><td>Opus 4.7</td><td>Opus 4.7</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== 6. 잃은 것 / 얻은 것 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 6</div>
+    <h2 class="section-title">트레이드오프 — 잃은 것 vs 얻은 것</h2>
+
+    <div class="tradeoff">
+      <div class="tradeoff-card lost">
+        <h3>잃은 것</h3>
+        <ul>
+          <li>다중 관점 분리 분석 (PlayerAnalyst / DynamicsAnalyst / ChainReactionAnalyst 가 각자 독립 perspective 로 finding emit)</li>
+          <li>Lens Pool 8~11종 (geopolitical / financial_transmission / tech_architecture / accident_causality / market_structure / red_team / pre_mortem 등) 의 분야별 전문 기법 체크리스트</li>
+          <li>Evidence-Claim 추적성 강제 (Claim.evidence_ids min_length=1 validator) — composer 자율 cited_sources 로 약화</li>
+          <li>Quality Gate 1 (계획 sanity) + Gate 2 (커버리지) 검증</li>
+          <li>AMC (AnalysisMethodContract) 의 required_inputs / mandatory_stages 검증 + 미달 경고 배너</li>
+          <li>Synthesis Judge 의 모순 표면화 (별도 LLM 호출로 cross-finding 검사) — composer 자율 평가로 약화</li>
+          <li>red_team / pre_mortem 메타 lens 자동 추가</li>
+          <li>archetype 11종 라우팅 매트릭스 (사건 카테고리별 고유 섹션 흐름)</li>
+        </ul>
+      </div>
+
+      <div class="tradeoff-card gained">
+        <h3>얻은 것</h3>
+        <ul>
+          <li>보고서 형태 완전 자유 — 사건마다 섹션 수 / 제목 / 순서 / 톤이 다름</li>
+          <li>차트 무지성 박힘 영구 차단 — composer 가 reference 한 차트만 (실제로 v4.0.0 에선 거의 0개)</li>
+          <li>LLM 호출 수 감소: deep 13 → 2 (~85% ↓), standard 8 → 2, fast 5 → 2</li>
+          <li>지연 시간 감소: ~90~180초 → ~30~60초 추정 (~60% ↓)</li>
+          <li>코드 단순화: orchestrator.run_analysis 가 ~370줄 → ~120줄</li>
+          <li>모드별 분기 단순화: budget 플래그 8개 → composer prompt 인자 1개</li>
+          <li>Opus 4.7 의 reasoning 능력에 신뢰 — 단일 호출에서 다각도 분석 수행</li>
+          <li>운영 비용 ~70% 추정 절감 (단일 Opus 4.7 호출 vs 13개 호출)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-title">잃은 것을 부분 보완하는 방안</div>
+      <p>composer 시스템 프롬프트에 7단계 분석 가이드 (행위자 / 구조 / 사슬 / 시나리오 / 모순 / 감시 신호) 를 명시 — Opus 4.7 의 reasoning 으로 단일 패스에서 다각도 커버. 다만 분리된 LLM 호출의 *독립적* 다각도 보장은 없음. 깊이 검증이 핵심인 사건은 외부 critic 호출 (현재 미구현) 추가 검토 필요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7. 디렉토리 변화 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 7</div>
+    <h2 class="section-title">디렉토리 변화 — 호출 안 되는 모듈</h2>
+    <p class="section-desc">v4.0.0 에서 <span style="color:var(--muted);text-decoration:line-through">취소선</span> 표시는 코드는 살아있지만 <em>호출되지 않는</em> 모듈. <span style="color:var(--up)">+ 표시</span> 는 신규 또는 강화. 향후 정리 commit 에서 deprecated 모듈 일괄 제거 예정.</p>
+
+    <div class="filetree"><span class="dir">src/</span>
+├── <span class="key">orchestrator.py</span>          ← 4단계 단순화. ~370줄 → ~120줄. <span class="new">VERSION = v4.0.0</span>
+├── <span class="key">models.py</span>                ← <span class="new">+ ComposedReport.watch_signals/contradictions/confidence</span>
+├── <span class="key">token_budget.py</span>          ← 모든 모드 max_llm_calls=2. budget 플래그 통일
+├── lens_policy.py              ← select_theme() 만 사용. select_lenses() 호출 안 됨
+├── <span class="dir">agents/</span>
+│   ├── <span class="key">context_analyst.py</span>       ← Sonnet 4.6 (사실 수집)
+│   ├── <span class="key">narrative_composer.py</span>    ← Opus 4.7. <span class="new">+ compose_unified() — Tier 4 진입점</span>
+│   ├── report_synthesizer.py   ← HTML 렌더 (LLM 호출 거의 없음)
+│   ├── <span class="gone">player_analyst.py</span>        ← deprecated (호출 안 됨)
+│   ├── <span class="gone">dynamics_analyst.py</span>      ← deprecated
+│   ├── <span class="gone">chain_reaction_analyst.py</span> ← deprecated
+│   ├── <span class="gone">scenario_architect.py</span>    ← deprecated
+│   ├── <span class="gone">synthesis_judge.py</span>       ← deprecated
+│   ├── <span class="gone">quality_inspector.py</span>     ← deprecated
+│   └── <span class="gone">visual_analyst.py</span>        ← deprecated
+├── <span class="gone dir">lenses/</span>                  ← 11종 모두 호출 안 됨
+├── <span class="dir">archetypes/</span>
+│   ├── <span class="key">freeform_essay.py</span>        ← <strong>유일하게 사용되는 archetype</strong>
+│   ├── <span class="gone">six_act_theater.py</span>       ← deprecated (10종 전부 호출 안 됨)
+│   └── ...
+├── <span class="gone">visual_builder.py</span>        ← 9종 차트 데이터 빌더, 호출 안 됨
+├── telemetry.py                ← 유지 (LLM 호출 추적)
+├── watchlist/                  ← 유지 (composed_report.watch_signals 에서 등록)
+├── <span class="dir">templates/</span>
+│   ├── <span class="key">report.css</span>               ← Mono 2테마 (burgundy_mono + light_mono)
+│   ├── <span class="dir">archetypes/</span>
+│   │   └── <span class="key">freeform_essay.html</span>    ← <strong>유일하게 사용</strong>. <span class="new">+ contradictions/watch_signals/confidence 섹션</span>
+│   ├── <span class="gone">report.html</span>              ← deprecated (six_act_theater 전용)
+│   ├── <span class="gone">report_block.html</span>        ← deprecated (archetype 폴백 더 이상 사용 안 함)
+│   └── <span class="dir">blocks/</span>              ← 17종 블록, embedded_blocks 통해 composer 가 선택 시만 사용
+└── ...
+
+<span class="dir">samples/</span>
+├── chart_map_mono_compare.html
+├── v3_5_0_architecture.html    ← <span class="gone">v3.5.0 시점 자료 (히스토리)</span>
+└── <span class="new">v4_0_0_architecture.html</span>   ← <strong>본 페이지</strong></div>
+  </div>
+</section>
+
+<!-- ===== 8. 운영 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 8</div>
+    <h2 class="section-title">운영 — 봇 재기동</h2>
+    <div class="prose">
+      <p>v4.0.0 메이저 버전 변경. 코드 + 모델 + 템플릿 모두 변경됐으니 VM 재기동 필수.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">재기동 절차</div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.85;color:var(--text-2)">
+        cd ~/agents_reviewer<br>
+        git pull origin main<br>
+        kill -9 &lt;old_pid&gt;<br>
+        source venv/bin/activate<br>
+        nohup python -m src.main &gt; bot.log 2&gt;&amp;1 &amp;<br>
+        disown
+      </p>
+    </div>
+    <p class="prose"><strong>확인</strong>: 텔레그램 <code>/status</code> → <code>commit: eab9678 / VERSION: v4.0.0</code>. 분석 후 보고서 footer 에 <code>archetype: freeform_essay</code> 표시되면 정상 (다른 archetype 표시되면 기동 실패).</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="container">
+    <div>Event Analysis Team · v4.0.0 · main · eab9678 · 2026-05-02</div>
+    <div style="margin-top:6px">SSOT: <a href="https://github.com/doroper98/agents_reviewer">github.com/doroper98/agents_reviewer</a> · <a href="https://doroper98.github.io/agents_reviewer/samples/v3_5_0_architecture.html">v3.5.0 아카이브</a> · <a href="https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html">Mono Compare</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
