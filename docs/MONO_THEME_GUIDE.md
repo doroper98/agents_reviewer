@@ -4,9 +4,11 @@ last_synced_with: v3.4.7
 ssot_for:
   - "Light Mono / Burgundy Mono 보고서 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
-  - "MapLibre + d3-geo + d3-charts 시각화 스택 결정"
+  - "d3 + d3-geo + TopoJSON 시각화 스택 결정"
+  - "샘플 호스팅 — GitHub Pages + Actions 자동 배포"
 depends_on:
   - "samples/chart_map_mono_compare.html"
+  - ".github/workflows/pages.yml"
   - "docs/REPORT_STYLE_GUIDE.md"
 last_review: 2026-05-01
 ---
@@ -16,6 +18,7 @@ last_review: 2026-05-01
 > 보고서 톤 두 종(Light Mono · Burgundy Mono)의 색 팔레트와, 색 대신 패턴/명암으로 데이터 카테고리를 구분하는 모노톤 시각화 시스템을 정의한다.
 > 두 톤은 본 프로젝트 보고서의 **표준 메인 테마**다. 멀티 컬러(red·orange·gold·green·blue) 팔레트는 더 이상 사용하지 않는다.
 > 살아있는 참조 구현은 [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html) — 같은 시나리오를 Light Mono · Burgundy Mono 두 컬럼으로 동시 렌더해서 비교한다.
+> **라이브 미리보기**: <https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html>
 
 ---
 
@@ -150,16 +153,49 @@ SVG 정의 예시는 `samples/chart_map_mono_compare.html` 의 `definePatterns()
 6. **베이스맵 비트맵 타일** — 모노 리스타일 불가, 패턴 오버레이와 색 충돌. 벡터 타일 + 인라인 style 만.
 7. **큰 숫자(metric value)에 액센트 색 적용** — IBKR 레퍼런스 일관성. 큰 숫자는 항상 `--text`, 작은 변동 라벨에만 `--up`/`--down`.
 
-## 7. 참조 자료
+## 7. 샘플 호스팅 (GitHub Pages)
 
-- 살아있는 비교 샘플: [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html)
+샘플 HTML 은 GitHub Pages 로 자동 배포된다. raw.githack / jsDelivr / cdn.statically 같은 외부 프록시는 모바일 ISP 차단 / CDN 캐시 / Content-Type 문제로 신뢰할 수 없으므로, GitHub 자체 인프라(Pages + Actions)를 표준 미리보기 채널로 사용한다.
+
+### 7.1 라이브 URL
+
+```
+https://doroper98.github.io/agents_reviewer/samples/<file>.html
+```
+
+현재 활성 샘플:
+- [chart_map_mono_compare.html](https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html) — 모노 테마 + 차트·지도 비교 레퍼런스
+
+### 7.2 자동 배포 흐름
+
+`.github/workflows/pages.yml` 워크플로우가 다음 조건에서 트리거되어 Pages 로 배포한다.
+- `main` 브랜치에 `samples/**` 또는 `.github/workflows/pages.yml` 변경이 push 될 때
+- Actions UI 에서 수동 dispatch (workflow_dispatch)
+
+소요 시간 약 1~2분. 배포 결과는 위 URL 에서 즉시 확인 가능.
+
+### 7.3 1회 설정
+
+repo settings 에서 두 곳을 한 번만 켜두면 끝:
+1. **Settings → Pages** → Source = `GitHub Actions`
+2. **Settings → Environments → github-pages → Deployment branches and tags** = `No restriction` (또는 `main` 룰 추가)
+
+이후로는 코드 push 만으로 자동 갱신.
+
+## 8. 참조 자료
+
+- 살아있는 비교 샘플 (라이브): <https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html>
+- 살아있는 비교 샘플 (소스): [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html)
 - 보고서 전반 톤 가이드 (Burgundy 베이스): [docs/REPORT_STYLE_GUIDE.md](REPORT_STYLE_GUIDE.md)
+- 배포 워크플로우: [.github/workflows/pages.yml](../.github/workflows/pages.yml)
 - @abhinavbwj 의 "the distinction" / "computational design" 카드 톤 (Burgundy Mono 베이스 레퍼런스)
 - IBKR Korean Stocks 리포트 (Light Mono 베이스 레퍼런스)
 
-## 8. Change Propagation
+## 9. Change Propagation
 
 - 팔레트 hex 변경 → `samples/chart_map_mono_compare.html` 의 `THEMES` 객체 + 본 문서 §3 동시 갱신
 - 패턴 정의 변경 → `definePatterns()` + 본 문서 §4.1 동시 갱신
 - Anti-pattern 추가 → 본 문서 §6 + 샘플 파일 검증 후 등재
 - 지도 라이브러리 변경 → 본 문서 §2 + 샘플의 `buildMap()` + `buildColumn` 의 viz-desc 텍스트 동시 갱신
+- 신규 샘플 추가 → `samples/` 에 파일 추가 + 본 문서 §7.1 활성 샘플 목록에 라이브 URL 등재
+- Pages 워크플로우 변경 → `.github/workflows/pages.yml` + 본 문서 §7.2 트리거 조건 동시 갱신
