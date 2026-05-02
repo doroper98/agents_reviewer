@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="burgundy_mono">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Analysis Team v3.5.0 — System Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #3D1820; --card: #4A222E; --card-2: #2A0E16;
+  --border: #6E3340; --border-soft: rgba(110,51,64,0.4);
+  --text: #EFE5D1; --text-2: #D8CCB8; --muted: #A88E7A;
+  --accent: #D4A858; --up: #A8B582; --down: #C9837A;
+  --radius: 6px; --radius-lg: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+
+/* Hero */
+.hero {
+  padding: 64px 0 40px;
+  background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border-soft);
+}
+.hero .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.hero .deck {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+  font-weight: 300;
+  max-width: 640px;
+  margin-bottom: 22px;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.hero-meta .pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px 12px;
+  letter-spacing: 0.4px;
+}
+.hero-meta .pill.accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Section */
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-soft); }
+section:last-of-type { border-bottom: none; }
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.3px;
+}
+.section-desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  max-width: 720px;
+  line-height: 1.75;
+}
+
+/* Prose */
+.prose p { margin-bottom: 14px; font-size: 14.5px; line-height: 1.85; }
+.prose strong { color: var(--text); font-weight: 700; }
+.prose em { color: var(--accent); font-style: italic; }
+.prose code, code.inline {
+  background: rgba(212,168,88,0.10);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.card h3 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.card p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+
+/* Pipeline Steps */
+.pipeline { margin: 20px 0; }
+.step {
+  position: relative;
+  padding: 16px 18px 16px 56px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+}
+.step::before {
+  content: attr(data-num);
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+  width: 28px;
+  text-align: center;
+}
+.step-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.step-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.step-body { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+.step-body strong { color: var(--text); font-weight: 600; }
+
+/* Step modifiers — mono 의미축 */
+.step.optional { border-style: dashed; border-color: var(--accent); }
+.step.optional .step-meta::after {
+  content: " · 선택";
+  color: var(--accent);
+  font-style: italic;
+}
+.step.deepgated { border-left: 3px solid var(--accent); }
+.step.composer { border-left: 3px solid var(--accent); background: linear-gradient(90deg, rgba(212,168,88,0.08) 0%, var(--card) 70%); }
+.step.deterministic { border-left: 3px dotted var(--up); }
+
+/* Mode table */
+.mode-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.mode-table th, .mode-table td {
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.mode-table th {
+  background: var(--card-2);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.mode-table tr:last-child td { border-bottom: none; }
+.mode-table td:first-child { font-weight: 700; color: var(--text); }
+.mode-table .yes { color: var(--up); }
+.mode-table .no { color: var(--muted); }
+.mode-table .partial { color: var(--accent); }
+
+/* Agent cards grid */
+.agents-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 14px 0 6px;
+}
+@media (min-width: 720px) { .agents-grid { grid-template-columns: 1fr 1fr; } }
+.agent-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.agent-card.heavy::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+}
+.agent-card.light::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(45deg, var(--up) 0 1px, transparent 1px 4px);
+}
+.agent-card.composer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(212,168,88,0.3);
+}
+.agent-name {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.agent-role {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.agent-model {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--accent);
+  background: rgba(212,168,88,0.10);
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+.agent-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.65; }
+.agent-meta {
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+.agent-meta .badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  margin-right: 4px;
+  color: var(--muted);
+}
+.agent-meta .badge.deep-only { color: var(--accent); border-color: var(--accent); }
+.agent-meta .badge.all-modes { color: var(--up); border-color: var(--up); }
+
+/* Lens table */
+.lens-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.lens-table th, .lens-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.lens-table th {
+  background: var(--card-2);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.lens-table tr:last-child td { border-bottom: none; }
+.lens-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 11.5px; white-space: nowrap; }
+
+/* Theme swatches */
+.theme-pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin: 16px 0;
+}
+@media (min-width: 700px) { .theme-pair { grid-template-columns: 1fr 1fr; } }
+.theme-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  overflow: hidden;
+}
+.theme-card-name {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.swatch-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.swatch {
+  width: 36px; height: 36px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.05);
+  position: relative;
+}
+.swatch::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 38px; left: 0;
+  font-size: 8.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.theme-card-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.7; margin-top: 16px; }
+
+/* Pattern demo (mono guide §4) */
+.pattern-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin: 12px 0;
+}
+.pattern-chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.pattern-swatch {
+  width: 28px; height: 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* Callout */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+.callout-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.callout p { font-size: 12.5px; color: var(--text-2); line-height: 1.7; }
+.callout.warning { border-left-style: dashed; border-left-color: var(--down); }
+.callout.warning .callout-title { color: var(--down); }
+
+/* Diff list */
+.diff-list { list-style: none; padding: 0; margin: 12px 0; }
+.diff-list li {
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 6px 12px;
+  border-left: 2px solid var(--border);
+  margin-bottom: 4px;
+  background: rgba(255,255,255,0.02);
+}
+.diff-list li.add { border-left-color: var(--up); border-left-style: solid; }
+.diff-list li.remove { border-left-color: var(--down); border-left-style: dashed; }
+.diff-list li.change { border-left-color: var(--accent); }
+.diff-list li::before {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  margin-right: 8px;
+  font-weight: 700;
+}
+.diff-list li.add::before    { content: '+'; color: var(--up); }
+.diff-list li.remove::before { content: '−'; color: var(--down); }
+.diff-list li.change::before { content: '~'; color: var(--accent); }
+
+/* File map */
+.filetree {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-2);
+  white-space: pre;
+  overflow-x: auto;
+}
+.filetree .dir { color: var(--accent); }
+.filetree .file { color: var(--text-2); }
+.filetree .gone { color: var(--muted); text-decoration: line-through; opacity: 0.6; }
+.filetree .new { color: var(--up); }
+.filetree .key { color: var(--text); font-weight: 700; }
+
+/* Footer */
+footer.foot {
+  padding: 32px 0;
+  background: var(--card-2);
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+footer.foot a { color: var(--accent); text-decoration: underline; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .hero { padding: 40px 0 28px; }
+  .hero h1 { font-size: 28px; }
+  .hero .deck { font-size: 15px; }
+  section { padding: 32px 0 24px; }
+  .section-title { font-size: 22px; }
+  .step { padding: 14px 14px 14px 48px; }
+  .step::before { left: 10px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">Event Analysis Team · System Architecture</div>
+    <h1>v3.5.0 — Composer-First, Mono-Only</h1>
+    <p class="deck">텔레그램 메시지 한 줄을 받아 다중 LLM 분석을 거친 뒤 자유 형식 mono 보고서를 생성하는 시스템. 보고서 형태는 사건마다 LLM 편집장이 자유 결정함.</p>
+    <div class="hero-meta">
+      <span class="pill accent">v3.5.0</span>
+      <span class="pill">main · 733d604</span>
+      <span class="pill">Python 3.11+ · Pydantic v2</span>
+      <span class="pill">Cloudflare Pages · Oracle Cloud VM</span>
+      <span class="pill">Mono Guide v3.4.7</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 1. 한 화면 요약 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 1</div>
+    <h2 class="section-title">한 화면 요약</h2>
+    <div class="prose">
+      <p><strong>입력</strong>: 텔레그램에 사건 한 줄 (예: "미국-이란 호르무즈 봉쇄 분석"). <code>심층/짧게/요약</code> 같은 키워드로 분석 강도 모드 자동 결정.</p>
+      <p><strong>처리</strong>: 1) <em>상황 분석관</em> 이 웹 검색으로 사실·타임라인·출처 수집 → 2) <em>전략 기획자</em> 가 핵심 질문/의도/렌즈 결정 → 3) 모드별로 페르소나·렌즈 1~4종이 다각도 분석 → 4) <em>종합 판단관</em> 이 모순/판단 정리 → 5) <em>편집장 (Opus 4.7)</em> 이 보고서 본문을 자유 형식으로 작성 → 6) HTML 렌더 후 Cloudflare Pages 배포.</p>
+      <p><strong>출력</strong>: mono 톤 HTML 보고서 URL. 사건마다 섹션 수/제목/순서/톤이 다름 (정형 슬롯 부어넣기 폐기).</p>
+      <p><strong>핵심 변화 v3.4.7 → v3.5.0</strong>: <em>편집장</em> 이 모든 모드에서 호출됨. <em>차트는 편집장이 본문에서 명시 reference 한 것만</em> 박힘 (이전엔 데이터만 있으면 9종 차트가 무차별 발화). 테마는 mono 2종 (<code>burgundy_mono</code> · <code>light_mono</code>) 만 사용.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2. 모드 정책 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 2</div>
+    <h2 class="section-title">3단 모드 정책</h2>
+    <p class="section-desc"><code>token_budget.py</code> 가 SSOT. 사용자 메시지의 키워드로 자동 매핑되며 (없으면 standard), 호출되는 에이전트 / 렌즈 수 / LLM 호출 cap 이 다름.</p>
+    <table class="mode-table">
+      <thead>
+        <tr><th>항목</th><th>fast ⚡</th><th>standard 🟢</th><th>deep 🔬</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>키워드</td><td>짧게/간략/요약/빠르게</td><td>(기본)</td><td>심층/자세히/면밀</td></tr>
+        <tr><td>LLM 호출 cap</td><td>5</td><td>8</td><td>13</td></tr>
+        <tr><td>최대 lens 개수</td><td>1</td><td>2</td><td>4</td></tr>
+        <tr><td>레거시 페르소나 (Player/Dynamics/ChainReaction)</td><td class="no">미호출</td><td class="no">미호출</td><td class="yes">호출</td></tr>
+        <tr><td>Quality Gate 1 LLM</td><td class="no">휴리스틱만</td><td class="no">휴리스틱만</td><td class="yes">LLM</td></tr>
+        <tr><td>Quality Gate 2 (커버리지)</td><td class="no">스킵</td><td class="partial">휴리스틱</td><td class="yes">LLM</td></tr>
+        <tr><td>Synthesis Judge LLM</td><td class="no">휴리스틱</td><td class="partial">조건부</td><td class="yes">LLM</td></tr>
+        <tr><td>red_team / pre_mortem 메타 lens</td><td class="no">없음</td><td class="yes">조건부</td><td class="yes">자동</td></tr>
+        <tr><td>NarrativeComposer (편집장 Opus 4.7)</td><td class="yes"><strong>호출 (v3.5.0)</strong></td><td class="yes"><strong>호출 (v3.5.0)</strong></td><td class="yes">호출</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <div class="callout-title">v3.5.0 차이</div>
+      <p>이전 (v3.4.7) 에는 fast/standard 에서 편집장이 호출되지 않아 정형 archetype 11종 중 1개에 데이터를 슬롯-부어넣는 패턴이었음. 이제 모든 모드에서 편집장이 보고서 본문을 자유 작성하므로 보고서 형태가 사건마다 다름.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. 파이프라인 단계 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 3</div>
+    <h2 class="section-title">한 사건당 파이프라인</h2>
+    <p class="section-desc">한 분석 1회당 거치는 단계. 점선 박스는 <em>모드 또는 조건부 호출</em>, 굵은 골드 좌측 보더는 <em>편집장 (composer)</em>, 점선 좌측 도트는 <em>결정적 (LLM 없음)</em>.</p>
+    <div class="pipeline">
+
+      <div class="step" data-num="1">
+        <div class="step-title">상황 분석관 — ContextAnalyst</div>
+        <div class="step-meta">Sonnet 4.6 · 웹 검색 활성 · 모든 모드 호출</div>
+        <div class="step-body">사건의 <strong>사실 / 타임라인 / 핵심 수치 / 출처 URL</strong> 을 수집. 1차 사실 검증 단계로 후속 모든 단계의 입력 근거가 됨. 출처를 <code>ContextAnalysis.sources</code> 로 보존.</div>
+      </div>
+
+      <div class="step" data-num="2">
+        <div class="step-title">전략 기획자 — Strategy Planner</div>
+        <div class="step-meta">Opus 4.6 · 모든 모드 호출 · 단일 LLM 호출</div>
+        <div class="step-body">상황을 보고 <strong>event_type / user_intent / core_questions</strong> 를 결정. v3.1.0 부터 lens 선택과 theme 선택은 LLM 이 아닌 코드 정책 (<code>lens_policy.py</code>) 이 처리.</div>
+      </div>
+
+      <div class="step optional" data-num="3">
+        <div class="step-title">Quality Gate 1 — 계획 sanity check</div>
+        <div class="step-meta">Sonnet 4.6 · deep 만 LLM, 그 외 휴리스틱</div>
+        <div class="step-body">전략의 의도-렌즈 정합성 확인. 실패 시 전략 재생성 1회 시도.</div>
+      </div>
+
+      <div class="step deepgated" data-num="4">
+        <div class="step-title">레거시 페르소나 3종 (deep 만)</div>
+        <div class="step-meta">Sonnet 4.6 + Opus 4.6 + Sonnet 4.6 · 순차 호출</div>
+        <div class="step-body">
+          <strong>이해관계 분석관</strong> (PlayerAnalyst, Sonnet) → 핵심 행위자 식별, 입장·전략·취약점.<br>
+          <strong>구조 분석관</strong> (DynamicsAnalyst, Opus) → 구조적 원인, 비대칭, 피드백 루프, 전환점.<br>
+          <strong>연쇄반응 분석관</strong> (ChainReactionAnalyst, Sonnet) → 인과 사슬, 차단 가능 지점, 와일드카드.<br>
+          fast/standard 에서는 lens pool 의 stakeholder/structural/cascade lens 가 대체.
+        </div>
+      </div>
+
+      <div class="step" data-num="5">
+        <div class="step-title">시나리오 설계관 — ScenarioArchitect</div>
+        <div class="step-meta">Opus 4.6 · 모든 모드 호출</div>
+        <div class="step-body">3~5개 시나리오 설계 + 감시 신호 + 무효화 조건. fast 에서도 호출됨 (보고서의 핵심 가치).</div>
+      </div>
+
+      <div class="step deterministic" data-num="6">
+        <div class="step-title">Lens Pool — 1~4 lens 분석</div>
+        <div class="step-meta">코드 정책 매핑 + 각 lens 별 LLM 호출</div>
+        <div class="step-body">사건 카테고리에 맞춰 <code>lens_policy.py</code> 가 결정한 1~4종 렌즈 (geopolitical / financial_transmission / tech_architecture / accident_causality / market_structure / stakeholder / structural / cascade / red_team / pre_mortem 등) 가 각자 finding 을 emit. 각 finding 은 <strong>claim + evidence_id 1+</strong> 강제.</div>
+      </div>
+
+      <div class="step optional" data-num="7">
+        <div class="step-title">종합 판단관 — SynthesisJudge</div>
+        <div class="step-meta">Opus 4.6 · deep 만 LLM, 그 외 휴리스틱</div>
+        <div class="step-body">finding 들의 <strong>모순 표면화</strong> (Anti-pattern #5: 봉합 금지). 패배한 입장은 <code>counter_hypothesis</code> 로 보존. 신뢰도 3축 분해 (출처 다양성·신선도·전문가 합의) 산출.</div>
+      </div>
+
+      <div class="step optional" data-num="8">
+        <div class="step-title">Quality Gate 2 — 커버리지 확인</div>
+        <div class="step-meta">Sonnet 4.6 · deep 만 LLM</div>
+        <div class="step-body">core_questions 가 finding 으로 답변됐는지 확인. 미답변 시 judgment 재생성 1회.</div>
+      </div>
+
+      <div class="step composer" data-num="9">
+        <div class="step-title">편집장 — NarrativeComposer ⭐</div>
+        <div class="step-meta">Opus 4.7 · <strong>모든 모드 호출 (v3.5.0)</strong> · 단일 LLM 호출 (max 8K 토큰)</div>
+        <div class="step-body">7개 분석가의 finding/claim/judgment 를 모두 받아서 <strong>보고서 본문을 자유 형식으로 작성</strong>. 섹션 수 (3~7개) / 제목 / 순서 / 톤 / pull quote / 차트 referencing 모두 LLM 결정. 각 주장은 <code>cited_claim_ids</code> 로 evidence 추적성 강제. 차트는 <code>embedded_charts: [chart-id]</code> 에 적은 것만 본문에 박힘. 실패 시 archetype 폴백.</div>
+      </div>
+
+      <div class="step deterministic" data-num="10">
+        <div class="step-title">시각화 빌더 — visual_builder</div>
+        <div class="step-meta">코드 결정적 · LLM 호출 0</div>
+        <div class="step-body">9종 d3 차트 데이터 (시나리오 막대 / 핵심 수치 도넛 / 인과 사슬 히트맵 / 신뢰도 3축 / 시계열 / 누적막대 / 리스크 매트릭스 / 간트 / 행위자 네트워크) 를 분석 결과에서 자동 추출. <strong>v3.5.0 핵심: 추출만 하고 자동 박지 않음.</strong> 편집장이 명시 reference 한 chart-id 만 freeform_essay.html 이 렌더.</div>
+      </div>
+
+      <div class="step deterministic" data-num="11">
+        <div class="step-title">보고서 합성 — ReportSynthesizer</div>
+        <div class="step-meta">Sonnet 4.6 (executive summary 만, 옵션) · 결정적 HTML 렌더</div>
+        <div class="step-body">composer 의 <code>ComposedReport</code> 또는 (실패 시) archetype 의 <code>section_plan</code> 을 받아 mono 테마 HTML 생성. <code>freeform_essay.html</code> 또는 <code>report_block.html</code> 폴백. wrangler 로 Cloudflare Pages 에 배포 후 URL 반환.</div>
+      </div>
+
+      <div class="step deterministic" data-num="12">
+        <div class="step-title">Watchlist 등록</div>
+        <div class="step-meta">SQLite · LLM 없음</div>
+        <div class="step-body">시나리오의 <code>watch_signals</code> 를 SQLite 레지스트리에 INSERT. 텔레그램 <code>/watchlist</code>, <code>/fire</code> 명령으로 후속 추적.</div>
+      </div>
+
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">호출 수 합산</div>
+      <p>fast 5회 (context + strategy + scenarios + lens 1 + composer) · standard 8회 · deep 13회. <em>Quick mode</em> 진입 시 모든 에이전트가 Sonnet 4.6 으로 다운그레이드.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. 에이전트 카탈로그 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 4</div>
+    <h2 class="section-title">에이전트 카탈로그</h2>
+    <p class="section-desc">현재 v3.5.0 에서 살아있는 7개 에이전트. 좌측 보더 굵은 솔리드 = Opus 라인 (heavy). 점선 사선 패턴 = Sonnet 라인 (light). 골드 글로우 = 편집장 (Opus 4.7).</p>
+
+    <div class="agents-grid">
+
+      <div class="agent-card light">
+        <div class="agent-name">상황 분석관</div>
+        <div class="agent-role">ContextAnalyst</div>
+        <span class="agent-model">claude-sonnet-4-6</span>
+        <p class="agent-desc">웹 검색으로 사건의 사실/타임라인/핵심 수치/출처 URL 수집. 1차 evidence 의 출처가 됨.</p>
+        <div class="agent-meta"><span class="badge all-modes">all modes</span></div>
+      </div>
+
+      <div class="agent-card heavy">
+        <div class="agent-name">시나리오 설계관</div>
+        <div class="agent-role">ScenarioArchitect</div>
+        <span class="agent-model">claude-opus-4-6</span>
+        <p class="agent-desc">3~5개 시나리오 (기본/최선/최악/구조전환) + 감시 신호 + 무효화 조건. confidence + driver_signals 도 emit.</p>
+        <div class="agent-meta"><span class="badge all-modes">all modes</span></div>
+      </div>
+
+      <div class="agent-card light">
+        <div class="agent-name">이해관계 분석관 (deep)</div>
+        <div class="agent-role">PlayerAnalyst · 페르소나 (legacy)</div>
+        <span class="agent-model">claude-sonnet-4-6</span>
+        <p class="agent-desc">핵심 행위자 식별, 입장·자원·전략·취약점·관계 구도. fast/standard 에서는 stakeholder lens 가 대체.</p>
+        <div class="agent-meta"><span class="badge deep-only">deep only</span></div>
+      </div>
+
+      <div class="agent-card heavy">
+        <div class="agent-name">구조 분석관 (deep)</div>
+        <div class="agent-role">DynamicsAnalyst · 페르소나 (legacy)</div>
+        <span class="agent-model">claude-opus-4-6</span>
+        <p class="agent-desc">구조적 원인, 비대칭, 피드백 루프, 전환점, 인지 편향, 반대가설. fast/standard 에서는 structural lens 가 대체.</p>
+        <div class="agent-meta"><span class="badge deep-only">deep only</span></div>
+      </div>
+
+      <div class="agent-card light">
+        <div class="agent-name">연쇄반응 분석관 (deep)</div>
+        <div class="agent-role">ChainReactionAnalyst · 페르소나 (legacy)</div>
+        <span class="agent-model">claude-sonnet-4-6</span>
+        <p class="agent-desc">인과 사슬 (단계별 severity / time_horizon / 가역성), 차단 지점, 와일드카드, 최악의 경우. fast/standard 에서는 cascade lens 가 대체.</p>
+        <div class="agent-meta"><span class="badge deep-only">deep only</span></div>
+      </div>
+
+      <div class="agent-card heavy">
+        <div class="agent-name">종합 판단관</div>
+        <div class="agent-role">SynthesisJudge</div>
+        <span class="agent-model">claude-opus-4-6</span>
+        <p class="agent-desc">모든 finding 의 모순 표면화 (봉합 금지). 신뢰도 3축 분해. core_question 미답변 자동 감지.</p>
+        <div class="agent-meta"><span class="badge">deep LLM · 그 외 휴리스틱</span></div>
+      </div>
+
+      <div class="agent-card composer">
+        <div class="agent-name">편집장 ⭐</div>
+        <div class="agent-role">NarrativeComposer</div>
+        <span class="agent-model">claude-opus-4-7</span>
+        <p class="agent-desc">7명의 분석가 결과를 받아 <strong>보고서 본문을 자유 형식</strong>으로 작성. 섹션 수/제목/순서/톤/pull quote/차트 referencing 모두 결정. claim 인용 강제로 evidence 추적성 보존.</p>
+        <div class="agent-meta"><span class="badge all-modes">v3.5.0: all modes</span></div>
+      </div>
+
+      <div class="agent-card light">
+        <div class="agent-name">품질 검사관</div>
+        <div class="agent-role">QualityInspector</div>
+        <span class="agent-model">claude-sonnet-4-6</span>
+        <p class="agent-desc">Gate 1 (계획 sanity) + Gate 2 (커버리지). deep 에서만 LLM, 그 외 휴리스틱. 실패 시 1회 재시도.</p>
+        <div class="agent-meta"><span class="badge">deep LLM · 그 외 휴리스틱</span></div>
+      </div>
+
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-title">VisualAnalyst (옛 시각화 분석관)</div>
+      <p>v3.0~v3.4.x 에 있던 시각화 LLM. v3.5.0 에서 모든 모드의 LLM 경로가 사실상 비활성. <code>visual_builder.py</code> 의 결정적 빌더가 9종 차트 데이터를 추출하지만, 자동 박힘은 차단됨. 편집장이 명시 reference 한 차트만 본문에 박힘.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5. Lens Pool ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 5</div>
+    <h2 class="section-title">렌즈 풀 (Lens Pool)</h2>
+    <p class="section-desc">사건 카테고리 × 의도 × 모드 → <code>lens_policy.select_lenses()</code> 가 결정. 한 사건당 1~4종 (mode 별 cap). 각 렌즈는 독립 LLM 호출로 finding 을 emit.</p>
+
+    <table class="lens-table">
+      <thead><tr><th>lens_id</th><th>적용 분야</th><th>핵심 기법</th></tr></thead>
+      <tbody>
+        <tr><td>geopolitical</td><td>전쟁·외교·안보</td><td>DIME / PMESII / Escalation Ladder / Capability-Intent</td></tr>
+        <tr><td>financial_transmission</td><td>금융·거시</td><td>Balance Sheet / Flow of Funds / Transmission Channel / Liquidity Stress</td></tr>
+        <tr><td>tech_architecture</td><td>기술·AI·IT</td><td>Architecture Decomposition / Dependency Graph / Bottleneck</td></tr>
+        <tr><td>accident_causality</td><td>사고·재난</td><td>Fault Tree / Bow-Tie / Swiss Cheese / STAMP</td></tr>
+        <tr><td>policy_implementation</td><td>정책·규제</td><td>Stakeholder Incentive / Distributional Impact / Implementation Gap</td></tr>
+        <tr><td>market_structure</td><td>시장·산업</td><td>Network Analysis / Game Theory / Regime Shift</td></tr>
+        <tr><td>stakeholder</td><td>행위자 분석 (페르소나 대체)</td><td>이해관계자 식별·전략 매핑 — fast/standard 에서 PlayerAnalyst 대체</td></tr>
+        <tr><td>structural</td><td>구조 분석 (페르소나 대체)</td><td>피드백 루프·전환점 — fast/standard 에서 DynamicsAnalyst 대체</td></tr>
+        <tr><td>cascade</td><td>인과 사슬 (페르소나 대체)</td><td>전이 경로·차단점 — fast/standard 에서 ChainReactionAnalyst 대체</td></tr>
+        <tr><td>red_team</td><td>메타 (반론)</td><td>ACH / Devil's Advocate — what_to_do, where_vulnerable 의도</td></tr>
+        <tr><td>pre_mortem</td><td>메타 (실패 시뮬)</td><td>실패 가정 후 역설계 — what_next, where_vulnerable 의도</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== 6. 테마 시스템 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 6</div>
+    <h2 class="section-title">테마 시스템 — Mono Only</h2>
+    <p class="section-desc">v3.5.0 에서 멀티컬러 6테마 (burgundy/geopolitical/financial/tech/nature/liquidglass) 를 통째 폐기하고 mono 2종만 사용. 카테고리 구분은 hue 가 아니라 패턴 (45° hatch) 과 명암으로. <code>lens_policy.select_theme()</code> 이 사건 카테고리에서 자동 선택.</p>
+
+    <div class="theme-pair">
+      <div class="theme-card" style="background:#3D1820;border-color:#6E3340">
+        <div class="theme-card-name" style="color:#EFE5D1">Burgundy Mono <span style="color:#D4A858;font-size:11px">(기본)</span></div>
+        <div class="swatch-row">
+          <div class="swatch" style="background:#3D1820" data-label="bg"></div>
+          <div class="swatch" style="background:#4A222E" data-label="card"></div>
+          <div class="swatch" style="background:#EFE5D1" data-label="text"></div>
+          <div class="swatch" style="background:#A88E7A" data-label="muted"></div>
+          <div class="swatch" style="background:#D4A858" data-label="accent"></div>
+          <div class="swatch" style="background:#A8B582" data-label="up"></div>
+          <div class="swatch" style="background:#C9837A" data-label="down"></div>
+        </div>
+        <p class="theme-card-desc" style="color:#D8CCB8;margin-top:24px">딥와인 + 앰버 골드 + 파치먼트. 정보 밀도 높은 분석에 적합. 일반·금융·기술·지정학·산업·사고 사건의 기본 테마.</p>
+      </div>
+
+      <div class="theme-card" style="background:#efe8d9;border-color:#b3a586">
+        <div class="theme-card-name" style="color:#1a1a1a">Light Mono</div>
+        <div class="swatch-row">
+          <div class="swatch" style="background:#efe8d9" data-label="bg"></div>
+          <div class="swatch" style="background:#f8f2e4" data-label="card"></div>
+          <div class="swatch" style="background:#1a1a1a" data-label="text"></div>
+          <div class="swatch" style="background:#5a5a5a" data-label="muted"></div>
+          <div class="swatch" style="background:#9a1e3c" data-label="accent"></div>
+          <div class="swatch" style="background:#2d6a3e" data-label="up"></div>
+          <div class="swatch" style="background:#9a1e3c" data-label="down"></div>
+        </div>
+        <p class="theme-card-desc" style="color:#3a3a3a;margin-top:24px">크림 + 딥버건디 + 포레스트 그린. 편집·인쇄·문서 친화. 정책 사건 (policy_implementation) 의 기본 테마.</p>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Noto Serif KR',serif;font-size:16px;color:var(--text);margin:18px 0 8px">패턴 시스템 (mono guide §4)</h3>
+    <p class="section-desc">색이 한 hue 로 수렴하므로 카테고리 구분은 4종 패턴 + 액센트 솔리드로. 모든 사선은 45° 한 방향만 (Anti-pattern: cross-hatch / opposite diagonals 금지).</p>
+    <div class="pattern-row">
+      <div class="pattern-chip"><div class="pattern-swatch" style="background: repeating-linear-gradient(45deg, #EFE5D1 0 0.85px, transparent 0.85px 2.4px)"></div>hatch-tight</div>
+      <div class="pattern-chip"><div class="pattern-swatch" style="background: repeating-linear-gradient(45deg, #EFE5D1 0 0.7px, transparent 0.7px 3.8px)"></div>hatch-wide</div>
+      <div class="pattern-chip"><div class="pattern-swatch" style="background: repeating-linear-gradient(45deg, #D4A858 0 0.85px, transparent 0.85px 2.4px)"></div>accent-hatch</div>
+      <div class="pattern-chip"><div class="pattern-swatch" style="background-color:transparent;background-image:radial-gradient(#EFE5D1 0.6px, transparent 0.6px);background-size:3px 3px"></div>dots</div>
+      <div class="pattern-chip"><div class="pattern-swatch" style="background:#D4A858"></div>accent solid</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7. 차트 시스템 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 7</div>
+    <h2 class="section-title">차트 시스템 — Composer-Referenced Only</h2>
+    <p class="section-desc"><code>visual_builder.build_chart_payload()</code> 가 분석 결과에서 9종 차트 데이터를 결정적으로 추출. <strong>그러나 자동 박지 않음.</strong> 편집장이 본문에서 명시 reference 한 chart-id 만 freeform_essay.html 에서 렌더 (mono guide anti-pattern #6: 무지성 차트 박힘 차단).</p>
+
+    <table class="lens-table">
+      <thead><tr><th>chart-id</th><th>형식</th><th>데이터 출처</th><th>Insight Gate</th></tr></thead>
+      <tbody>
+        <tr><td>chart-scenarios</td><td>막대</td><td>scenarios[].probability</td><td>≥1</td></tr>
+        <tr><td>chart-figures</td><td>도넛</td><td>context.key_figures</td><td>≥3 + non-uniform</td></tr>
+        <tr><td>chart-severity</td><td>히트맵</td><td>chain_reaction.chain[].severity</td><td>≥1</td></tr>
+        <tr><td>chart-confidence</td><td>3축</td><td>judgment.confidence (3축)</td><td>판단 존재</td></tr>
+        <tr><td>chart-stacked</td><td>누적 막대</td><td>scenarios[].impact_by_player</td><td>≥4 segments + non-uniform</td></tr>
+        <tr><td>chart-bubble</td><td>버블</td><td>chain.wildcards (확률 × 영향)</td><td>≥1</td></tr>
+        <tr><td>chart-gantt</td><td>간트</td><td>context.timeline</td><td>≥2</td></tr>
+        <tr><td>chart-network</td><td>포스</td><td>players.players + alliances</td><td>≥2 nodes</td></tr>
+        <tr><td>chart-timeseries</td><td>선</td><td>(예약 — 미사용)</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">v3.5.0 의 차트 게이팅 흐름</div>
+      <p>① 분석 끝 → ② <code>build_chart_payload()</code> 가 가용 차트 데이터 추출 → ③ <code>build_chart_catalog()</code> 가 편집장에게 "지금 가용한 차트 목록" 전달 → ④ 편집장이 본문 작성 시 <code>embedded_charts: ["chart-id"]</code> 로 명시 → ⑤ 그 chart-id 만 freeform_essay.html 의 차트 카드로 렌더. <strong>편집장이 reference 안 한 차트는 박히지 않음.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 8. v3.5.0 변경 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 8</div>
+    <h2 class="section-title">v3.5.0 = Option C — 무엇이 바뀌었나</h2>
+    <p class="section-desc">v3.4.7 → v3.5.0 의 단일 PR. 보고서 자유도 확보 + mono 표준 적용 + 차트 무지성 박힘 차단.</p>
+
+    <ul class="diff-list">
+      <li class="add"><code>token_budget</code>: fast/standard 에도 <code>use_llm_narrative_composer=True</code>. max_llm_calls cap +1 (fast 4→5, standard 7→8).</li>
+      <li class="remove"><code>report_block.html</code>: "DATA DASHBOARD / 한눈에 보기" 섹션 통째 삭제 (9개 차트 슬롯). 무지성 박힘 영구 차단.</li>
+      <li class="remove"><code>report.css</code>: 6 멀티컬러 테마 정의 (burgundy/geopolitical/financial/tech/nature/liquidglass) 통째 폐기.</li>
+      <li class="add"><code>report.css</code>: <code>burgundy_mono</code> + <code>light_mono</code> 정의 (mono guide §3 팔레트). 컴포넌트 클래스용 legacy alias (--red→--down 등) 로 호환 보존.</li>
+      <li class="change"><code>lens_policy.select_theme()</code>: 매핑이 mono 2종만 emit. policy 사건은 light_mono, 그 외 burgundy_mono.</li>
+      <li class="change">모든 템플릿 (report_block / freeform_essay / financial_transmission / tech_decomposition) 의 디폴트 <code>data-theme</code> = <code>burgundy_mono</code>.</li>
+      <li class="change"><code>AnalysisStrategy.theme</code> 디폴트 + <code>_empty_strategy_fallback</code> + orchestrator fallback 모두 <code>burgundy_mono</code>.</li>
+      <li class="add">버전 v3.4.7 → <strong>v3.5.0</strong>.</li>
+    </ul>
+
+    <div class="callout warning">
+      <div class="callout-title">미적용 (Tier 4 옵션)</div>
+      <p>다중 에이전트 + 렌즈 파이프라인을 1~2개로 압축해 분석 깊이를 trade-off 하는 변경은 v3.5.0 에서 진행하지 않음. 이해관계 분석관 / 구조 분석관 / 종합 판단관 등 7개 에이전트 모두 살아있음. v3.5.0 의 자유도 결과를 며칠 운용해본 뒤 깊이가 충분한지 확인하고 결정할 사안.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 9. 키 파일 맵 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 9</div>
+    <h2 class="section-title">키 파일 맵</h2>
+    <p class="section-desc">v3.5.0 의 핵심 파일. <span style="color:var(--accent)">골드</span> = 디렉토리, <span style="color:var(--text);font-weight:700">진한 텍스트</span> = SSOT 위치.</p>
+
+    <div class="filetree"><span class="dir">src/</span>
+├── <span class="key">orchestrator.py</span>          ← 4-Phase 파이프라인 진입점, VERSION 상수
+├── <span class="key">models.py</span>                ← Pydantic SSOT (AnalysisStrategy, FullAnalysisResult, ComposedReport)
+├── <span class="key">token_budget.py</span>          ← mode (fast/standard/deep) 별 정책 SSOT
+├── <span class="key">lens_policy.py</span>           ← (event_type, intent, mode) → lens / theme 결정
+├── <span class="key">visual_builder.py</span>        ← 9종 d3 차트 데이터 결정적 빌더 (LLM 0)
+├── telemetry.py                ← 사건당 LLM 호출 / 단계별 elapsed 기록
+├── brief_builder.py            ← FullAnalysisResult → 압축 brief
+├── <span class="dir">agents/</span>
+│   ├── context_analyst.py      ← Sonnet 4.6 (웹검색)
+│   ├── player_analyst.py       ← Sonnet 4.6 (deep 페르소나)
+│   ├── dynamics_analyst.py     ← Opus 4.6 (deep 페르소나)
+│   ├── chain_reaction_analyst.py ← Sonnet 4.6 (deep 페르소나)
+│   ├── scenario_architect.py   ← Opus 4.6
+│   ├── synthesis_judge.py      ← Opus 4.6 (모순 표면화)
+│   ├── quality_inspector.py    ← Sonnet 4.6 (Gate 1, 2)
+│   ├── <span class="key">narrative_composer.py</span>    ← Opus 4.7 ⭐ 편집장
+│   ├── report_synthesizer.py   ← HTML 렌더 + Cloudflare 배포
+│   └── visual_analyst.py       ← LLM 시각화 (사실상 비활성)
+├── <span class="dir">lenses/</span>                  ← 11종 렌즈
+├── <span class="dir">archetypes/</span>              ← 11종 아키타입 (composer 실패 시 폴백)
+│   └── freeform_essay.py       ← 편집장 출력 전용 SSOT
+├── <span class="dir">templates/</span>
+│   ├── <span class="key">report.css</span>               ← Mono 2테마 SSOT (burgundy_mono + light_mono)
+│   ├── report.html             ← (legacy 페르소나 풍부 데이터 → 6막 극장)
+│   ├── report_block.html       ← 블록 시스템 폴백 (차트 9슬롯 삭제됨)
+│   ├── <span class="dir">archetypes/</span>
+│   │   ├── <span class="key">freeform_essay.html</span>    ← ⭐ 편집장 출력 렌더 (디폴트 경로)
+│   │   ├── financial_transmission.html
+│   │   └── tech_decomposition.html
+│   ├── <span class="dir">blocks/</span>              ← 17종 블록 템플릿 (timeline / actor_cards / scenario_table 등)
+│   └── <span class="dir">static/</span>              ← d3 / charts.js / charts.css / maps.js
+├── <span class="dir">tests/</span>
+├── telegram_bot.py             ← 봇 진입점 (textfile)
+├── watchlist/                  ← SQLite registry
+└── main.py                     ← <code>python -m src.main</code> 진입점
+
+<span class="dir">docs/</span>
+├── <span class="key">MONO_THEME_GUIDE.md</span>      ← 본 페이지의 SSOT (Tier 2)
+├── ARCHITECTURE.md
+├── REPO_MAP.md
+├── CATALOGS.md
+└── DATA_MODELS.md
+
+<span class="dir">samples/</span>
+├── chart_map_mono_compare.html ← mono 비교 샘플
+└── <span class="new">v3_5_0_architecture.html</span>   ← <strong>본 페이지</strong></div>
+  </div>
+</section>
+
+<!-- ===== 10. 운영 ===== -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 10</div>
+    <h2 class="section-title">운영 — 봇 재기동</h2>
+    <div class="prose">
+      <p>코드 변경 시 VM 의 봇 프로세스 재기동 필요. orchestrator 가 프로세스 시작 시점에 <code>BUILD_INFO</code> (branch / commit / VERSION) 를 캡처해 텔레그램 <code>/status</code> 응답에 노출.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">재기동 절차</div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.85;color:var(--text-2)">
+        cd ~/agents_reviewer<br>
+        git pull origin main<br>
+        kill -9 &lt;old_pid&gt;<br>
+        source venv/bin/activate<br>
+        nohup python -m src.main &gt; bot.log 2&gt;&amp;1 &amp;<br>
+        disown
+      </p>
+    </div>
+    <p class="prose"><strong>확인</strong>: 텔레그램 <code>/status</code> → <code>commit: 733d604 / VERSION: v3.5.0</code> 출력. 옛 commit 이 보이면 재기동 안 된 것.</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="container">
+    <div>Event Analysis Team · v3.5.0 · main · 733d604 · 2026-05-02</div>
+    <div style="margin-top:6px">SSOT: <a href="https://github.com/doroper98/agents_reviewer">github.com/doroper98/agents_reviewer</a> · <a href="https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html">Mono Compare</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
