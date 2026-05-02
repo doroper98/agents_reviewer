@@ -86,22 +86,52 @@
     {% if sec.prose %}<div class="freeform-prose">{{ sec.prose | structured }}</div>{% endif %}
     {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote }}</div>{% endif %}
 
-    {# v4.2.0 — composer 가 inline 으로 emit 한 차트 데이터 (sec.charts: list[dict]).
-       각 차트는 dict {type, title, data, note?}. charts.js 가 data-chart-payload
-       속성을 읽어 SVG 로 렌더. data-chart-type 으로 분기. #}
+    {# v4.4.0 — composer 가 inline 으로 emit 한 차트 데이터 (sec.charts: list[dict]).
+       schema (Tier 1+2): {type, title, subtitle?, data, annotations?, source?, takeaway?, note?}.
+       data 비어있으면 chart-card 자체를 emit 하지 않음 (빈 frame 회귀 차단). #}
     {% for ch in (sec.charts or []) %}
-    <div class="freeform-chart-wrap">
-      <div class="chart-card">
-        <div class="chart-card-title">{{ ch.title or '차트' }}</div>
-        <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}"
-             data-chart-type="{{ ch.type or 'bar' }}"
-             data-chart-id="ch-s{{ loop.index0 }}-{{ loop.index }}">
-          <svg></svg>
+      {# data 검증: type 별로 빈 데이터 체크. composer 가 잘못 emit 했어도 화면에 빈 차트 안 박힘 #}
+      {% set has_data = false %}
+      {% if ch.data %}
+        {% if ch.type == 'dual_line' %}
+          {% if ch.data.left and ch.data.left.series and ch.data.right and ch.data.right.series %}{% set has_data = true %}{% endif %}
+        {% elif ch.type == 'forecast' %}
+          {% if ch.data.actual %}{% set has_data = true %}{% endif %}
+        {% elif ch.type == 'network' %}
+          {% if ch.data.nodes and (ch.data.nodes | length) >= 2 %}{% set has_data = true %}{% endif %}
+        {% elif ch.type == 'stacked' %}
+          {% if ch.data.scenarios %}{% set has_data = true %}{% endif %}
+        {% elif ch.data is iterable and (ch.data | length) > 0 %}
+          {% set has_data = true %}
+        {% endif %}
+      {% endif %}
+
+      {% if has_data %}
+      <div class="freeform-chart-wrap">
+        <div class="chart-card">
+          <div class="chart-card-title">{{ ch.title or '차트' }}</div>
+          {% if ch.subtitle %}<div class="chart-card-subtitle">{{ ch.subtitle }}</div>{% endif %}
+          <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}"
+               data-chart-type="{{ ch.type or 'bar' }}"
+               data-chart-id="ch-s{{ loop.index0 }}-{{ loop.index }}">
+            <svg></svg>
+          </div>
+          {% if ch.source %}
+          <div class="chart-card-source">
+            <span class="chart-card-source-label">출처:</span> {{ ch.source }}
+          </div>
+          {% endif %}
+          {% if ch.takeaway %}
+          <div class="chart-card-takeaway">
+            <span class="chart-card-takeaway-label">Takeaway</span>
+            {{ ch.takeaway }}
+          </div>
+          {% endif %}
+          {% if ch.note %}<div class="chart-card-note">{{ ch.note }}</div>{% endif %}
+          <script type="application/json" class="chart-payload-inline">{{ ch | tojson }}</script>
         </div>
-        {% if ch.note %}<div class="chart-card-note">{{ ch.note }}</div>{% endif %}
-        <script type="application/json" class="chart-payload-inline">{{ ch | tojson }}</script>
       </div>
-    </div>
+      {% endif %}
     {% endfor %}
 
     {% for btype in sec.embedded_blocks %}

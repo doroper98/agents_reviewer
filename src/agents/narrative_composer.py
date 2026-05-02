@@ -84,31 +84,76 @@ SYSTEM_PROMPT = (
     "- 본문에서 *수치/날짜/구체 사실* 을 인용할 땐 가능하면 출처 URL 을 직접 본문에\n"
     "  '(출처: example.com)' 형식으로 표기하거나 cited_sources 에 정리.\n"
     "- 출처가 없는 추론은 '~라고 추정' / '~할 가능성' 같은 보수 표현으로 명시.\n\n"
-    "=== 차트 (v4.2.0 — 데이터까지 직접 emit) ===\n"
+    "=== 차트 (v4.4.0 — 메타데이터 + 본문 결합 + 신규 type 3종) ===\n"
     "- *수치 비교가 본문 이해에 결정적* 일 때만 emit. 사건당 0~3개가 적당.\n"
     "- 무관한 차트 박지 말 것 (mono guide §6 anti-pattern).\n"
-    "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식:\n"
+    "- 차트 *직전* 단락에서 thesis 한 줄 미리 제시 (예: '...의존도가 평균의 4배\n"
+    "  다 (아래 차트).'). 차트 *직후* 단락에서 패턴을 한 단계 해석. 차트 단독\n"
+    "  emit 금지 — 본문 흐름 안에서만.\n"
+    "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식 (v4.4.0):\n"
     "  ```json\n"
     "  {\n"
-    '    \"type\": \"donut|bar|line|gantt|network|stacked|bubble|heatmap\",\n'
+    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth\",\n'
     '    \"title\": \"차트 제목\",\n'
+    '    \"subtitle\": \"한 줄 thesis — 제목과 다른 결론. 예: 동진 7.9는 OP 기준, 회계는 23.08\",\n'
     '    \"data\": [...],            // type 별 스키마 (아래 참조)\n'
-    '    \"note\": \"caption (선택)\"\n'
+    '    \"annotations\": [          // 선택. 최대 3개. (vline 2 + hline 1 등)\n'
+    '      {\"kind\":\"vline\", \"x\":\"2024-09\", \"label\":\"Fed 첫 인하\", \"sublabel\":\"2024-09\"},\n'
+    '      {\"kind\":\"hline\", \"y\":26.4, \"label\":\"동종 평균 PER\"},\n'
+    '      {\"kind\":\"band\",  \"x_from\":\"2025-07\", \"x_to\":\"2025-12\", \"label\":\"박스권\"},\n'
+    '      {\"kind\":\"point\", \"x\":\"2024-12\", \"y\":150, \"label\":\"전환점\"}\n'
+    "    ],\n"
+    '    \"source\": \"Bloomberg, KRX / 2026-04 종가 기준 · N=5\",\n'
+    '    \"takeaway\": \"차트가 보여준 한 줄 인사이트 (선택)\",\n'
+    '    \"note\": \"부가 설명 (선택, 더 긴 caption 용)\"\n'
     "  }\n"
     "  ```\n"
-    "- type 별 data 스키마:\n"
+    "- annotations 사용 가이드:\n"
+    "  · vline: 사건 트리거 (Fed 회의 / 위기 시점 / 정책 발표). *최대 2개*.\n"
+    "  · hline: 평균선·목표치·임계값. *최대 1개*.\n"
+    "  · band:  음영 영역 (침체기·박스권·위기 구간). *최대 1개*.\n"
+    "  · point: 인플렉션 데이터 점 강조. *최대 2개*.\n"
+    "  · 차트 1개에 4종 모두 박지 말 것 (산만). 합산 최대 3개.\n"
+    "- subtitle 은 *제목과 다른 thesis*. '5종목 PER 비교' (제목) 와 '동진 7.9는\n"
+    "  OP 기준 — 회계 PER 23.08' (subtitle) 같이 *서로 다른 정보*.\n"
+    "- source 는 출처·시점·관측 N 항상 함께 (예: 'Bloomberg / 2026-04 / N=5').\n"
+    "- takeaway 는 차트가 *보여준* 패턴의 한 줄 해석. 본문 단락의 thesis 와 중복\n"
+    "  되면 생략 (양쪽 모두 같은 말 X).\n\n"
+    "[type 별 data 스키마]\n"
+    "기존 8종 (Tier 1):\n"
     "  · donut:   [{label, value:number, note?}]                   비중 비교 (3개 이상, 균등 X)\n"
     "  · bar:     [{label, value:number, note?}]                   순위·분포\n"
     "  · line:    [{x, y:number, event?}]                          시계열 추이\n"
-    "  · gantt:   [{label, start, end, note?}]                     사건 구간 (start/end 는 상대 인덱스 또는 날짜)\n"
+    "  · gantt:   [{label, start, end, note?}]                     사건 구간\n"
     "  · network: {nodes:[{id,label,group?}], links:[{source,target,type?}]}  관계도\n"
-    "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자 영향\n"
-    "             (value 는 *양수 magnitude 만* — 영향의 크기. 부호 있는 점수 (±9 등) 가\n"
-    "              필요하면 stacked 가 아니라 bar 로 emit. stacked 음수 입력 시 깨짐 위험)\n"
-    "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향 매트릭스\n"
-    "  · heatmap: [{title, severity:'low'|'medium'|'high'}]        단계별 위험도\n"
-    "- 모든 차트는 mono guide 의 45° 패턴 + 단일 골드 액센트. 색은 자동 적용.\n"
-    "- 데이터 없으면 차트도 없음. 모르는 수치를 *추정해서* 차트 만들지 말 것.\n\n"
+    "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자\n"
+    "             (value 는 *양수 magnitude 만*. 부호 있는 점수면 bar 로)\n"
+    "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향\n"
+    "  · heatmap: [{title, severity:'low'|'medium'|'high'}]        단계별 위험도\n\n"
+    "신규 3종 (Tier 2 — v4.4.0):\n"
+    "  · dual_line:  {                                                두 metric *상관관계* — 금리 vs 환율 등\n"
+    '      \"left\":  {\"label\":\"원유\", \"unit\":\"$/bbl\", \"series\":[{x,y},...]},\n'
+    '      \"right\": {\"label\":\"환율\", \"unit\":\"USD/KRW\", \"series\":[{x,y},...]}\n'
+    "    }\n"
+    "    좌·우 y축 분리. 두 시리즈가 *함께 변하는지* 보여줄 때만.\n\n"
+    "  · forecast:   {                                                기준선 + 불확실성 — 시나리오 분석에\n"
+    '      \"actual\":   [{x, y}, ...],          // 실측\n'
+    '      \"forecast\": [{x, mid, low, high}, ...],  // 중앙선 + 신뢰구간\n'
+    '      \"fork_at\":  \"2026-04\"               // 실측↔예측 경계\n'
+    "    }\n"
+    "    실측은 실선, 예측은 점선 + 음영 cone. 단순 추세 연장 X — *진짜 예측* 일 때만.\n\n"
+    "  · choropleth: 국가별 색농도 지도 — 지정학·무역·금융 사건의 *국가간 통계 비교*\n"
+    '    [{country_code:\"KR\", value:12.4}, {country_code:\"JP\", value:10.8}, ...]\n'
+    "    + value_label (예: '원유 의존도 (%)') + scale ('linear'|'quantile'|'log')\n"
+    "    country_code 는 ISO-3166-1 alpha-2 (KR, JP, US, CN, IN 등).\n\n"
+    "- 모든 차트는 mono guide 의 45° 패턴 + 단일 액센트. 색은 자동 적용.\n"
+    "- *데이터가 비어있으면 차트 자체를 emit 하지 말 것* (charts 배열에 추가 금지).\n"
+    "  · bar/donut/line/gantt/heatmap: data 가 빈 배열이면 emit X\n"
+    "  · network: data.nodes 가 2개 미만이면 emit X\n"
+    "  · stacked: data.scenarios 가 빈 배열이면 emit X\n"
+    "  · dual_line: left.series 또는 right.series 가 비면 emit X\n"
+    "  · forecast: data.actual 이 2개 미만이면 emit X\n"
+    "  · 모르는 수치를 *추정해서* 차트 만들지 말 것 — 진짜 출처 데이터만.\n\n"
     "=== 지도 (v4.2.0 — 지리적 사건일 때만) ===\n"
     "- 사건이 *명백히 지리적* 일 때만 (해협 봉쇄 / 무역 회랑 / 분쟁 지역 등).\n"
     "- 보고서 레벨 1개 (top-level ``embedded_map``). 섹션별 지도 없음.\n"
