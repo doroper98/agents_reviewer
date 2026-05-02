@@ -41,6 +41,24 @@ SYSTEM_PROMPT = (
     "v4.0.0 Tier 4: 별도의 행위자/구조/시나리오/판단 분석가가 없음. 본 호출 한 번에\n"
     "다음을 모두 수행: ① 핵심 행위자 식별 ② 구조적 동인 분석 ③ 인과 사슬 추적 ④\n"
     "시나리오 설계 ⑤ 모순/반대 가설 표면화 ⑥ 보고서 본문 작성 ⑦ 감시 신호 추출.\n\n"
+    "=== 페르소나 적용 (v4.3.0 — 입력의 ``persona`` 필드) ===\n"
+    "ContextAnalyst 가 사건에 맞춰 추천한 페르소나가 입력에 있음. 5개 구성요소를\n"
+    "*느슨하게* 적용 (자율 판단 우선, persona 는 영감용):\n"
+    "- ``tone``: 본문 어조의 베이스. 기본은 객관적 + 수치 강함 + 공식 narrative 너머\n"
+    "  까지 진지하게 검토하되 음모적 추측 단호히 기각, 지적 유희가 살아있되 가독성\n"
+    "  해치지 않음, 모순 봉합 금지. ``override_reason`` 이 있으면 그쪽 우선 (예:\n"
+    "  사망/재난 사건 → 엄숙·존중 톤).\n"
+    "- ``numeric_principle``: 수치 인용 규칙. 출처·단위·시점·비교 기준 항상 함께.\n"
+    "  결정적 수치 1~2개만 본문, 나머지는 차트로.\n"
+    "- ``frameworks``: 분석 프레임 (DIME / Bow-Tie / Porter 5F 등). *영감용*. 사건에\n"
+    "  더 적합한 게 있으면 자율 선택. 강제 X.\n"
+    "- ``vocabulary``: 어휘 수준. 평이한 문장 + 어려운 개념 한두 문장 풀이 + 영어\n"
+    "  약어 첫 등장 시 괄호. 한 문장에 두 새 개념 도입 금지.\n"
+    "- ``analytical_pressure``: 흐름 강도. 기초→깊이 단계적, 사실→메커니즘→함의→\n"
+    "  반례·미해결 의 cumulative 구조. 독자가 도출 추적 가능해야.\n\n"
+    "단 persona 가 본 시스템의 핵심 원칙 (Anti-pattern #5 모순 봉합 금지 / evidence\n"
+    "추적성 / 추정 명시) 와 충돌하면 *원칙 우선*. persona 는 톤·맛 부여용일 뿐\n"
+    "분석 무결성을 침해하지 않음. persona 가 비어있으면 위 디폴트 톤 자율 적용.\n\n"
     "=== 분석 깊이 (mode 인자에 따라) ===\n"
     "- fast:     핵심만 간결. 3~4 섹션. 시나리오 2~3개. 모순 명시 선택.\n"
     "- standard: 다각도 4~6 섹션. 시나리오 3~5개. 모순 1~2건 명시 권장.\n"
@@ -241,8 +259,11 @@ class NarrativeComposer:
 
         멀티 에이전트 시절의 풍부한 입력 (players/dynamics/chain_reaction/...) 없이
         1차 사실 자료만 제공. composer 가 그 위에서 분석을 수행.
+
+        v4.3.0: ContextAnalyst 가 emit 한 ``recommended_persona`` 를 함께 전달.
+        composer 가 톤·프레임·어휘·분석 강도를 *느슨하게* 적용.
         """
-        return {
+        payload: dict = {
             "mode": mode,
             "event": {
                 "name": context.event_name,
@@ -255,6 +276,9 @@ class NarrativeComposer:
                 "sources": context.sources,
             },
         }
+        if context.recommended_persona:
+            payload["persona"] = context.recommended_persona
+        return payload
 
     async def compose(
         self,

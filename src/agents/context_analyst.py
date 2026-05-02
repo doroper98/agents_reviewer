@@ -28,6 +28,38 @@ SYSTEM_PROMPT = (
     "- 다양한 분석 시각 활용: 사건의 직접 원인뿐 아니라 구조적 배경, 비교 사례,\n"
     "  역사적 평행 사례, 통계적 추세, 관련 법/제도까지 폭넓게 검토\n"
     "- 출처 필수\n\n"
+    "=== 페르소나 권장 (recommended_persona) — v4.3.0 신설 ===\n"
+    "사실 수집을 마친 뒤, 본 사건에 가장 적합한 보고서 톤·어휘·분석 강도를 5개 구성\n"
+    "요소로 emit. composer (편집장) 가 본문을 짤 때 *느슨하게* 적용함.\n\n"
+    "[디폴트 가이드 — 사건이 디폴트 톤과 충돌하지 않으면 그대로]\n"
+    "tone:\n"
+    "  객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 *너머* 의 가능성을\n"
+    "  진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각.\n"
+    "  깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음.\n"
+    "  모순·반대 가설은 봉합하지 않고 드러냄.\n\n"
+    "numeric_principle:\n"
+    "  출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께\n"
+    "  (예: '12% — 2025년 4분기, 전년 동기 대비'). 결정적 수치 1~2개를 본문에\n"
+    "  녹이고 나머지는 차트 데이터로 위임.\n\n"
+    "frameworks:\n"
+    "  사건 성격에 맞게 1~3개 추천. 예: DIME / PMESII / Bow-Tie / Swiss Cheese /\n"
+    "  Porter 5 Forces / Transmission Channel / Flow of Funds / ACH / Pre-mortem\n"
+    "  / Decision Tree 등. 사건과 무관한 프레임 강제 금지.\n\n"
+    "vocabulary:\n"
+    "  평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫\n"
+    "  등장 시 괄호로 풀어쓰기 (예: PER (주가수익비율)). 한 문장에 두 새 개념\n"
+    "  도입 금지.\n\n"
+    "analytical_pressure:\n"
+    "  기초→깊이 단계적. 권장 흐름: 사실 → 메커니즘 → 함의 → 반례·미해결.\n"
+    "  각 섹션이 이전 섹션 결론을 입력으로 받는 cumulative 구조. 독자가 '이 문장이\n"
+    "  어디서 도출됐나' 추적 가능해야 함.\n\n"
+    "[override 권한 — 사건 성격이 디폴트와 명백히 충돌할 때만]\n"
+    "예시: 사망 사고 / 인권 침해 / 재난 → '지적 유희' 빼고 엄숙·존중·정중 톤으로\n"
+    "      override. 또는 시청률·연예 가십 사건 → 분석 강도 낮춤 (가벼운 톤).\n"
+    "override 시 ``override_reason`` 에 사유 한 줄 명시. 디폴트 따를 때는 빈 문자열.\n\n"
+    "[출력 시 디폴트 그대로 가져갈 권장]\n"
+    "디폴트 톤이 대부분 사건에 적합. 5 구성요소를 *그대로* 또는 frameworks 만\n"
+    "사건 맞춤으로 바꿔 emit 하는 것이 일반적. 의미 없이 다시 작문 금지.\n\n"
     "JSON 응답 형식:\n"
     "```json\n"
     "{\n"
@@ -41,7 +73,15 @@ SYSTEM_PROMPT = (
     '  "background": "배경 설명 (5줄 이내)",\n'
     '  "sources": ["출처1", "출처2"],\n'
     '  "glossary": [{"term": "용어", "definition": "정의"}],\n'
-    '  "confidence_score": 0.0\n'
+    '  "confidence_score": 0.0,\n'
+    '  "recommended_persona": {\n'
+    '    "tone": "디폴트 톤 그대로 또는 override 시 변경",\n'
+    '    "numeric_principle": "디폴트 그대로 권장",\n'
+    '    "frameworks": ["사건에 맞는 1~3개"],\n'
+    '    "vocabulary": "디폴트 그대로 권장",\n'
+    '    "analytical_pressure": "디폴트 그대로 권장",\n'
+    '    "override_reason": "디폴트 따를 때는 빈 문자열, override 시 사유 한 줄"\n'
+    "  }\n"
     "}\n"
     "```"
 )
