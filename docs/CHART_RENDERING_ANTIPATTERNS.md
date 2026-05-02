@@ -163,6 +163,36 @@ function placeLabel(svg, x, y, text, t, occupancy, zones) {
 
 ---
 
+## CHART-AP-10: 지도 마커 라벨 충돌
+
+**증상**: 지도에 가까이 있는 마커들 (예: 호른 아프리카의 자부티·베르베라·바벨만데브 — 100km 안) 의 라벨이 같은 좌표에 중첩되어 *전혀 읽을 수 없음*.
+
+**최초 사례**: 소말릴란드 보고서 (v4.4.3 사용자 보고). `maps.js` 가 모든 마커 라벨을 *항상 marker 우측* (x = r + 4) 에 fixed → 가까운 마커끼리 100% 겹침.
+
+**검증 체크리스트**:
+- [ ] 마커 라벨 placement 가 4 candidate 위치 (우/좌/상/하) 시도?
+- [ ] OccupancyTracker 로 bbox 충돌 검사?
+- [ ] 라벨이 마커에서 떨어져 있으면 *leader line* (얇은 muted 선) 으로 연결?
+- [ ] highlight 마커 *우선* placement (먼저 자리잡고 일반 마커는 남는 자리)?
+
+**적용 패턴 (maps.js v4.4.4)**:
+```js
+const candidates = [
+  { x: px + r + 6,      y: py - h/2, anchor: 'start' },  // right (default)
+  { x: px - r - 6 - w,  y: py - h/2, anchor: 'start' },  // left
+  { x: px - w/2,        y: py - r - 14, anchor: 'start' }, // above
+  { x: px - w/2,        y: py + r + 4,  anchor: 'start' }, // below
+];
+for (const c of candidates) {
+  if (!occupancy.hits(c.x - 2, c.y - 2, w + 4, h + 4)) {
+    place(c); break;
+  }
+}
+// 라벨 떨어져 있으면 leader line 추가
+```
+
+---
+
 ## CHART-AP-9: 지도 zoom / center 디폴트 의존
 
 **증상**: composer 가 정밀하게 emit 안 하면 지도가 잘못된 영역 / 너무 축소 → 핵심 마커 안 보임.

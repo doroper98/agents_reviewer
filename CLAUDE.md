@@ -104,9 +104,9 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Anti-Patterns (차트 렌더링 — v4.4.3 신설)
-**charts.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 9개 패턴 누적:
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.4.4 확장)
+**charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 10개 패턴 누적:
 - CHART-AP-1: category/group 시각 분리 미적용 (drawNetwork 회귀)
 - CHART-AP-2: 반복 라벨 시각 일관성 깨짐 (drawStacked 회귀)
 - CHART-AP-3: 음수/0/극단값 robust 처리 누락
@@ -116,8 +116,21 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-7: 빈 데이터 차트 emit
 - CHART-AP-8: 차트 type 이 사건과 부적합
 - CHART-AP-9: 지도 zoom/center 디폴트 의존
+- CHART-AP-10: 지도 마커 라벨 충돌 (v4.4.4 신설 — 가까운 마커 라벨 100% 겹침)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
+
+## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설)
+**composer SYSTEM_PROMPT / persona 가이드 / 본문 출력 변경 시 반드시 점검.**
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 6개 패턴 누적:
+- WRITE-AP-1: 마크다운 강조 기호 raw 노출 ('AI 작성 흔적')
+- WRITE-AP-2: 전문 용어 첫 등장 시 풀이 누락
+- WRITE-AP-3: 지리적 사건의 지도 후행 배치
+- WRITE-AP-4: AI 작성 느낌의 표현 (clichés)
+- WRITE-AP-5: 출처 없는 추정을 단정으로 진술
+- WRITE-AP-6: 모순을 자연스럽게 봉합
+
+회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 
 ## Key Directories (v4.2.0 — 호출되는 것만)
 - `src/agents/` — 살아있는 에이전트 2개 (`context_analyst.py`, `narrative_composer.py`). 나머지 7개 파일은 보존하되 호출 안 됨.

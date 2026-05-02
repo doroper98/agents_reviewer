@@ -115,21 +115,75 @@
         }
       });
 
+      // v4.4.4 (CHART-AP-10): 마커 라벨 collision-aware placement.
+      // 이전엔 모든 라벨을 marker 우측 (x = r + 4) 에 fixed → 가까운 마커 라벨 100% 겹침.
+      // 4 candidate position 시도 (우/좌/상/하) + bbox 충돌 검사 + 멀리 떨어지면 leader line.
+      const labelOcc = (function () {
+        const taken = [];
+        return {
+          hits: (x, y, w, h) => taken.some(b =>
+            x < b.x + b.w && x + w > b.x && y < b.y + b.h && y + h > b.y),
+          add: (x, y, w, h) => taken.push({ x, y, w, h }),
+        };
+      })();
+      // Render markers first (so they're behind labels visually if overlap)
+      const markerPositions = [];
       (payload.markers || []).forEach(m => {
         const p = project(+m.lng, +m.lat);
         if (!p) return;
         const isHL = !!m.highlight;
         const r = isHL ? 6 : 4;
         const color = isHL ? t.accent : t.muted;
-        const g = gMarker.append('g').attr('class', 'marker').attr('transform', `translate(${p[0]},${p[1]})`);
+        const g = gMarker.append('g').attr('class', 'marker')
+          .attr('transform', `translate(${p[0]},${p[1]})`);
         g.append('circle').attr('r', r + 2).attr('fill', t.water).attr('opacity', 0.85);
         g.append('circle').attr('r', r).attr('fill', color)
           .attr('stroke', t.text).attr('stroke-width', isHL ? 1.0 : 0.6);
-        if (m.name) {
-          g.append('text').attr('x', r + 4).attr('y', 4).attr('fill', t.text)
-            .attr('font-family', 'Noto Sans KR').attr('font-size', 11)
-            .attr('font-weight', isHL ? 700 : 500).text(m.name);
+        markerPositions.push({ m, px: p[0], py: p[1], r, isHL });
+      });
+      // Render labels with collision avoidance (highlight markers first — priority)
+      const sorted = markerPositions.slice().sort((a, b) => (b.isHL ? 1 : 0) - (a.isHL ? 1 : 0));
+      sorted.forEach(({ m, px, py, r, isHL }) => {
+        if (!m.name) return;
+        const text = String(m.name);
+        const fontSize = 11;
+        // Korean approx width per char ~6.5, English ~5
+        const labelW = text.length * 6.8;
+        const labelH = fontSize + 2;
+        const candidates = [
+          { x: px + r + 6,         y: py - labelH / 2,  anchor: 'start', dx: r + 6,  dy: 4 },  // right
+          { x: px - r - 6 - labelW, y: py - labelH / 2, anchor: 'start', dx: -r - 6 - labelW, dy: 4 },  // left
+          { x: px - labelW / 2,     y: py - r - 14,     anchor: 'start', dx: -labelW / 2, dy: -r - 8 },  // above
+          { x: px - labelW / 2,     y: py + r + 4,      anchor: 'start', dx: -labelW / 2, dy: r + 14 },  // below
+        ];
+        let placed = null;
+        for (const c of candidates) {
+          // 4px padding around label for collision check
+          if (!labelOcc.hits(c.x - 2, c.y - 2, labelW + 4, labelH + 4)) {
+            placed = c;
+            break;
+          }
         }
+        // Fallback: place anyway (right) — better than nothing, but log for debugging
+        if (!placed) placed = candidates[0];
+        // Render label
+        svg.append('text').attr('x', placed.x).attr('y', placed.y + labelH - 3)
+          .attr('text-anchor', placed.anchor)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', fontSize)
+          .attr('font-weight', isHL ? 700 : 500).attr('fill', t.text)
+          .text(text);
+        // Leader line if label is displaced (not adjacent to marker)
+        const labelCenterX = placed.x + labelW / 2;
+        const labelCenterY = placed.y + labelH / 2;
+        const dist = Math.hypot(labelCenterX - px, labelCenterY - py);
+        if (dist > r + 18) {
+          svg.append('line')
+            .attr('x1', px).attr('y1', py)
+            .attr('x2', placed.x + (placed.anchor === 'start' ? -2 : labelW + 2))
+            .attr('y2', placed.y + labelH / 2)
+            .attr('stroke', t.muted).attr('stroke-width', 0.5).attr('stroke-opacity', 0.5);
+        }
+        labelOcc.add(placed.x - 2, placed.y - 2, labelW + 4, labelH + 4);
       });
     });
 

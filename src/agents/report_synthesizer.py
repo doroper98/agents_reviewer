@@ -191,6 +191,17 @@ class ReportSynthesizer:
         if not text:
             return text
 
+        # v4.4.4 (WRITE-AP-1): composer prompt 에 마크다운 강조 금지를 명시했지만,
+        # 실수로 emit 했을 경우의 *fallback strip*. raw 마크다운 기호가 보고서에
+        # 노출되어 'AI 작성 흔적' 으로 보이는 회귀 차단.
+        # **bold** / *italic* / __bold__ / _italic_ 모두 가운데 텍스트만 남김.
+        text = re.sub(r"\*\*([^*\n]{1,300})\*\*", r"\1", text)
+        text = re.sub(r"\*([^*\n]{1,300})\*", r"\1", text)
+        text = re.sub(r"__([^_\n]{1,300})__", r"\1", text)
+        text = re.sub(r"(?<!\w)_([^_\n]{1,300})_(?!\w)", r"\1", text)
+        # Markdown blockquote `> ...` 도 한국어 본문에 어울리지 않으니 제거 (선행 `> `만 strip)
+        text = re.sub(r"^> ?", "", text, flags=re.MULTILINE)
+
         # Block headers like [1단락] / [핵심 판단] -> bold heading on a new paragraph
         text = re.sub(
             r"\[([^\[\]\n]{1,30})\]\s*",

@@ -472,44 +472,37 @@
 
   // ----- NETWORK (radial static) -----
   // ----- NETWORK (radial static) -----
-  // v4.4.2: node.group 별 시각 변형 (accent solid / accent-hatch / hatch-tight / dots / muted)
-  //         + 자동 legend. composer 가 emit 한 group 분류가 시각적으로 즉시 전달됨.
+  // v4.4.4: 작은 노드 (색만) + 외부 라벨 (각도별 placement) — JPM 풍.
+  //         한국어 라벨이 노드 안에 안 들어가는 CHART-AP-1 후속 이슈 해결.
+  //         link type legend 추가 — 선 의미 (대립/영향/연관) 명시.
   function drawNetwork(stage, payload, t) {
     const nodes = (payload.data && payload.data.nodes) || [];
     const links = (payload.data && payload.data.links) || [];
     if (nodes.length < 2) return;
-    // 더 큰 viewBox + 우측 legend 영역 별도
-    const W = 600, H = 360;
-    const zones = computeZones(W, H, { left: 16, right: 130, top: 16, bottom: 16 });
+    const W = 640, H = 400;
+    const zones = computeZones(W, H, { left: 16, right: 140, top: 16, bottom: 16 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     const prefix = stage.getAttribute('data-chart-id') || 'pat';
     definePatterns(svg, t, prefix);
     const idp = (n) => `${prefix}-${n}`;
 
-    // group → 시각 스타일 매핑. 처음 만나는 group 순서대로 5가지 변형 할당.
-    // 한국어 키워드 매칭으로 *의미* 일치 시 (승인/검토/반대/비공식) 일관 매핑.
+    // group → 시각 스타일 매핑 (v4.4.2 와 동일)
     const SEMANTIC_STYLES = {
-      // 승인·찬성 · 동맹 → accent solid
-      approve: { kind: 'solid',  fill: t.accent,                       stroke: t.text,   strokeStyle: null },
-      // 검토·중립 → accent-hatch
-      review:  { kind: 'pattern', fill: `url(#${idp('accent-hatch')})`, stroke: t.text,   strokeStyle: null },
-      // 반대·대립 → 비채움 + down 색 stroke
-      oppose:  { kind: 'open',   fill: t.bg,                           stroke: t.down,   strokeStyle: 'solid' },
-      // 비공식·간접 → dots
-      informal:{ kind: 'pattern', fill: `url(#${idp('dots')})`,         stroke: t.text,   strokeStyle: null },
-      // 그 외 → muted
-      other:   { kind: 'muted',  fill: t.card,                         stroke: t.muted,  strokeStyle: 'dashed' },
+      approve: { kind: 'solid',   fill: t.accent,                       stroke: t.text,  strokeStyle: null   },
+      review:  { kind: 'pattern', fill: `url(#${idp('accent-hatch')})`, stroke: t.text,  strokeStyle: null   },
+      oppose:  { kind: 'open',    fill: t.bg,                           stroke: t.down,  strokeStyle: 'solid' },
+      informal:{ kind: 'pattern', fill: `url(#${idp('dots')})`,         stroke: t.text,  strokeStyle: null   },
+      other:   { kind: 'muted',   fill: t.card,                         stroke: t.muted, strokeStyle: 'dashed'},
     };
     function classify(group) {
       const g = String(group || '').toLowerCase();
-      if (/승인|찬성|동맹|approve|support|ally/.test(g)) return 'approve';
+      if (/승인|찬성|동맹|approve|support|ally|core/.test(g)) return 'approve';
       if (/검토|중립|관망|review|neutral|considering/.test(g)) return 'review';
       if (/반대|대립|적|oppose|against|hostile/.test(g)) return 'oppose';
       if (/비공식|간접|informal|covert|indirect/.test(g)) return 'informal';
-      return null;  // unknown — assign by order
+      return null;
     }
-    // 미리 group 별 SEMANTIC class 결정 (semantic 매칭 → fallback by appearance order)
     const groupOrder = [];
     const groupClass = {};
     nodes.forEach(n => {
@@ -519,9 +512,7 @@
       if (sem) {
         groupClass[g] = sem;
       } else {
-        // semantic 매칭 안 됐으면 등장 순서대로 (approve → review → oppose → informal → other)
         const fallbackOrder = ['approve', 'review', 'oppose', 'informal', 'other'];
-        // 이미 사용된 semantic 빼고 남은 것 중 첫 번째
         const used = new Set(Object.values(groupClass));
         const next = fallbackOrder.find(s => !used.has(s)) || 'other';
         groupClass[g] = next;
@@ -531,11 +522,12 @@
 
     const cx = zones.data.x + zones.data.w / 2;
     const cy = zones.data.y + zones.data.h / 2;
-    const r = Math.min(zones.data.w, zones.data.h) * 0.38;
+    const r = Math.min(zones.data.w, zones.data.h) * 0.40;
     nodes.forEach((n, i) => {
       const ang = -Math.PI / 2 + (2 * Math.PI * i / nodes.length);
       n._x = cx + r * Math.cos(ang);
       n._y = cy + r * Math.sin(ang);
+      n._ang = ang;
     });
     const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
 
@@ -548,51 +540,88 @@
         : (lt.includes('영향') || lt.includes('influence')) ? '2,3'
         : null;
       svg.append('line').attr('x1', a._x).attr('y1', a._y).attr('x2', b._x).attr('y2', b._y)
-        .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.6)
+        .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.55)
         .attr('stroke-dasharray', dash);
     });
 
-    // Render nodes with group-specific visual
+    // Render nodes (small dots) + external labels (angular placement, no overflow)
+    const nodeR = 10;
     nodes.forEach(n => {
       const sem = groupClass[String(n.group || '_default')] || 'other';
       const style = SEMANTIC_STYLES[sem];
-      const c = svg.append('circle').attr('cx', n._x).attr('cy', n._y).attr('r', 17)
+      const c = svg.append('circle').attr('cx', n._x).attr('cy', n._y).attr('r', nodeR)
         .attr('fill', style.fill).attr('stroke', style.stroke);
       if (style.kind === 'open') {
-        c.attr('stroke-width', 1.8);
+        c.attr('stroke-width', 1.6);
       } else if (style.strokeStyle === 'dashed') {
-        c.attr('stroke-width', 1.0).attr('stroke-dasharray', '3,2');
+        c.attr('stroke-width', 0.9).attr('stroke-dasharray', '3,2');
       } else {
         c.attr('stroke-width', 0.8);
       }
-      // Text color depends on fill — solid filled circle → bg color, others → text color
-      const textColor = sem === 'approve' ? t.bg : t.text;
-      svg.append('text').attr('x', n._x).attr('y', n._y + 4).attr('text-anchor', 'middle')
-        .attr('fill', textColor).attr('font-family', 'Noto Sans KR').attr('font-size', 9)
-        .attr('font-weight', 700).text(String(n.label || n.id || '').slice(0, 5));
+      // External label: angular placement based on node's position relative to center
+      // Right half: anchor=start (label to right of node)
+      // Left half: anchor=end (label to left)
+      const labelText = String(n.label || n.id || '').slice(0, 8);
+      const isRight = Math.cos(n._ang) >= 0;
+      const lx = n._x + (isRight ? nodeR + 6 : -(nodeR + 6));
+      const ly = n._y + 4;
+      svg.append('text').attr('x', lx).attr('y', ly)
+        .attr('text-anchor', isRight ? 'start' : 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11)
+        .attr('font-weight', sem === 'approve' ? 700 : 500)
+        .attr('fill', t.text).text(labelText);
     });
 
-    // Legend in right zone — 사용된 group 만 표시
-    const legendX = W - 124;
+    // Legend in right zone — group + link type
+    const legendX = W - 130;
     let legendY = 24;
     svg.append('text').attr('x', legendX).attr('y', legendY)
       .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
       .attr('font-weight', 700).attr('fill', t.text).text('진영');
-    legendY += 16;
+    legendY += 18;
     groupOrder.forEach(g => {
       const sem = groupClass[g];
       const style = SEMANTIC_STYLES[sem];
-      // swatch circle
-      const swc = svg.append('circle').attr('cx', legendX + 8).attr('cy', legendY - 3).attr('r', 7)
+      const swc = svg.append('circle').attr('cx', legendX + 7).attr('cy', legendY - 3).attr('r', 6)
         .attr('fill', style.fill).attr('stroke', style.stroke);
-      if (style.kind === 'open') swc.attr('stroke-width', 1.5);
+      if (style.kind === 'open') swc.attr('stroke-width', 1.4);
       else if (style.strokeStyle === 'dashed') swc.attr('stroke-width', 0.8).attr('stroke-dasharray', '2,1');
       else swc.attr('stroke-width', 0.6);
-      svg.append('text').attr('x', legendX + 22).attr('y', legendY)
+      svg.append('text').attr('x', legendX + 20).attr('y', legendY)
         .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
         .text(String(g).slice(0, 12));
-      legendY += 18;
+      legendY += 17;
     });
+
+    // Link type legend (only if multiple types observed)
+    const linkTypes = new Set(links.map(l => String(l.type || '').toLowerCase()));
+    const linkLegendItems = [];
+    let hasConflict = false, hasInfluence = false, hasOther = false;
+    linkTypes.forEach(lt => {
+      if (lt.includes('대립') || lt.includes('conflict')) hasConflict = true;
+      else if (lt.includes('영향') || lt.includes('influence')) hasInfluence = true;
+      else if (lt) hasOther = true;
+    });
+    if (hasConflict || hasInfluence || hasOther) {
+      legendY += 8;
+      svg.append('text').attr('x', legendX).attr('y', legendY)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+        .attr('font-weight', 700).attr('fill', t.text).text('관계');
+      legendY += 16;
+      const linkLegend = (label, dash) => {
+        svg.append('line').attr('x1', legendX).attr('y1', legendY - 3)
+          .attr('x2', legendX + 18).attr('y2', legendY - 3)
+          .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.7)
+          .attr('stroke-dasharray', dash);
+        svg.append('text').attr('x', legendX + 24).attr('y', legendY)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
+          .text(label);
+        legendY += 16;
+      };
+      if (hasConflict)  linkLegend('대립', '5,3');
+      if (hasInfluence) linkLegend('영향', '2,3');
+      if (hasOther)     linkLegend('연관', null);
+    }
   }
 
 
