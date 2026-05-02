@@ -170,19 +170,21 @@ class TelegramBot:
 
         opus = self.config.model_name
         sonnet = self.config.model_name_light
-        # v3.3.0 — narrative_composer 는 Opus 4.7 고정 (NarrativeComposer.COMPOSER_MODEL).
+        # narrative_composer 는 Opus 4.7 고정 (NarrativeComposer.COMPOSER_MODEL).
         opus_47 = "claude-opus-4-7"
 
+        # v4.0.0 Tier 4 — ContextAnalyst + UnifiedComposer 2-call 파이프라인.
+        # 옛 7개 에이전트 (player/dynamics/chain_reaction/scenario/synthesis_judge/
+        # quality_inspector/visual_analyst) + lens pool 11종 + archetype matrix 11종은
+        # 코드 보존하되 호출 안 됨.
         agents_info = (
-            f"📋 에이전트 구성 (8명)\n"
-            f"  ① 상황 분석관 ······· {sonnet}\n"
-            f"  ② 플레이어 분석관 ··· {sonnet}\n"
-            f"  ③ 구조/역학 분석관 ·· {opus}\n"
-            f"  ④ 연쇄반응 분석관 ··· {sonnet}\n"
-            f"  ⑤ 시나리오 설계관 ··· {opus}\n"
-            f"  ⑥ 시각화 분석관 ····· {opus}\n"
-            f"  ⑦ 보고서 합성관 ····· {sonnet}\n"
-            f"  ⑧ 편집장 (deep 전용) · {opus_47}\n"
+            f"📋 에이전트 구성 — Tier 4 (2-call 파이프라인)\n"
+            f"  ① 상황 분석관 ······· {sonnet} · 사실/타임라인/출처 수집\n"
+            f"  ② 편집장 (UnifiedComposer) · {opus_47} · 분석+보고서 단일 호출\n"
+            f"\n"
+            f"  ※ 모든 모드(fast/standard/deep) 가 동일하게 2회 LLM 호출.\n"
+            f"     mode 는 편집장 prompt 의 분석 깊이 지시 (섹션 수 / 모순 명시 등) 만 결정.\n"
+            f"     legacy 7-agent 멀티 파이프라인은 v4.0.0 부터 호출 안 됨 (코드는 보존).\n"
         )
 
         from src.orchestrator import VERSION, BUILD_INFO
