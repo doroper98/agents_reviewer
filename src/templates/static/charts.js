@@ -471,22 +471,75 @@
   }
 
   // ----- NETWORK (radial static) -----
+  // ----- NETWORK (radial static) -----
+  // v4.4.2: node.group 별 시각 변형 (accent solid / accent-hatch / hatch-tight / dots / muted)
+  //         + 자동 legend. composer 가 emit 한 group 분류가 시각적으로 즉시 전달됨.
   function drawNetwork(stage, payload, t) {
     const nodes = (payload.data && payload.data.nodes) || [];
     const links = (payload.data && payload.data.links) || [];
     if (nodes.length < 2) return;
-    const W = 480, H = 320;
-    const zones = computeZones(W, H, { left: 16, right: 16, top: 16, bottom: 16 });
+    // 더 큰 viewBox + 우측 legend 영역 별도
+    const W = 600, H = 360;
+    const zones = computeZones(W, H, { left: 16, right: 130, top: 16, bottom: 16 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
-    const cx = W / 2, cy = H / 2;
-    const r = Math.min(zones.data.w, zones.data.h) * 0.35;
+    const prefix = stage.getAttribute('data-chart-id') || 'pat';
+    definePatterns(svg, t, prefix);
+    const idp = (n) => `${prefix}-${n}`;
+
+    // group → 시각 스타일 매핑. 처음 만나는 group 순서대로 5가지 변형 할당.
+    // 한국어 키워드 매칭으로 *의미* 일치 시 (승인/검토/반대/비공식) 일관 매핑.
+    const SEMANTIC_STYLES = {
+      // 승인·찬성 · 동맹 → accent solid
+      approve: { kind: 'solid',  fill: t.accent,                       stroke: t.text,   strokeStyle: null },
+      // 검토·중립 → accent-hatch
+      review:  { kind: 'pattern', fill: `url(#${idp('accent-hatch')})`, stroke: t.text,   strokeStyle: null },
+      // 반대·대립 → 비채움 + down 색 stroke
+      oppose:  { kind: 'open',   fill: t.bg,                           stroke: t.down,   strokeStyle: 'solid' },
+      // 비공식·간접 → dots
+      informal:{ kind: 'pattern', fill: `url(#${idp('dots')})`,         stroke: t.text,   strokeStyle: null },
+      // 그 외 → muted
+      other:   { kind: 'muted',  fill: t.card,                         stroke: t.muted,  strokeStyle: 'dashed' },
+    };
+    function classify(group) {
+      const g = String(group || '').toLowerCase();
+      if (/승인|찬성|동맹|approve|support|ally/.test(g)) return 'approve';
+      if (/검토|중립|관망|review|neutral|considering/.test(g)) return 'review';
+      if (/반대|대립|적|oppose|against|hostile/.test(g)) return 'oppose';
+      if (/비공식|간접|informal|covert|indirect/.test(g)) return 'informal';
+      return null;  // unknown — assign by order
+    }
+    // 미리 group 별 SEMANTIC class 결정 (semantic 매칭 → fallback by appearance order)
+    const groupOrder = [];
+    const groupClass = {};
+    nodes.forEach(n => {
+      const g = String(n.group || '_default');
+      if (groupClass[g]) return;
+      const sem = classify(g);
+      if (sem) {
+        groupClass[g] = sem;
+      } else {
+        // semantic 매칭 안 됐으면 등장 순서대로 (approve → review → oppose → informal → other)
+        const fallbackOrder = ['approve', 'review', 'oppose', 'informal', 'other'];
+        // 이미 사용된 semantic 빼고 남은 것 중 첫 번째
+        const used = new Set(Object.values(groupClass));
+        const next = fallbackOrder.find(s => !used.has(s)) || 'other';
+        groupClass[g] = next;
+      }
+      groupOrder.push(g);
+    });
+
+    const cx = zones.data.x + zones.data.w / 2;
+    const cy = zones.data.y + zones.data.h / 2;
+    const r = Math.min(zones.data.w, zones.data.h) * 0.38;
     nodes.forEach((n, i) => {
       const ang = -Math.PI / 2 + (2 * Math.PI * i / nodes.length);
       n._x = cx + r * Math.cos(ang);
       n._y = cy + r * Math.sin(ang);
     });
     const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+    // Render links first (behind)
     links.forEach(l => {
       const a = byId[l.source], b = byId[l.target];
       if (!a || !b) return;
@@ -495,31 +548,85 @@
         : (lt.includes('영향') || lt.includes('influence')) ? '2,3'
         : null;
       svg.append('line').attr('x1', a._x).attr('y1', a._y).attr('x2', b._x).attr('y2', b._y)
-        .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.7)
+        .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.6)
         .attr('stroke-dasharray', dash);
     });
+
+    // Render nodes with group-specific visual
     nodes.forEach(n => {
-      svg.append('circle').attr('cx', n._x).attr('cy', n._y).attr('r', 16)
-        .attr('fill', t.accent).attr('stroke', t.text).attr('stroke-width', 0.8);
+      const sem = groupClass[String(n.group || '_default')] || 'other';
+      const style = SEMANTIC_STYLES[sem];
+      const c = svg.append('circle').attr('cx', n._x).attr('cy', n._y).attr('r', 17)
+        .attr('fill', style.fill).attr('stroke', style.stroke);
+      if (style.kind === 'open') {
+        c.attr('stroke-width', 1.8);
+      } else if (style.strokeStyle === 'dashed') {
+        c.attr('stroke-width', 1.0).attr('stroke-dasharray', '3,2');
+      } else {
+        c.attr('stroke-width', 0.8);
+      }
+      // Text color depends on fill — solid filled circle → bg color, others → text color
+      const textColor = sem === 'approve' ? t.bg : t.text;
       svg.append('text').attr('x', n._x).attr('y', n._y + 4).attr('text-anchor', 'middle')
-        .attr('fill', t.bg).attr('font-family', 'Noto Sans KR').attr('font-size', 9)
+        .attr('fill', textColor).attr('font-family', 'Noto Sans KR').attr('font-size', 9)
         .attr('font-weight', 700).text(String(n.label || n.id || '').slice(0, 5));
+    });
+
+    // Legend in right zone — 사용된 group 만 표시
+    const legendX = W - 124;
+    let legendY = 24;
+    svg.append('text').attr('x', legendX).attr('y', legendY)
+      .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+      .attr('font-weight', 700).attr('fill', t.text).text('진영');
+    legendY += 16;
+    groupOrder.forEach(g => {
+      const sem = groupClass[g];
+      const style = SEMANTIC_STYLES[sem];
+      // swatch circle
+      const swc = svg.append('circle').attr('cx', legendX + 8).attr('cy', legendY - 3).attr('r', 7)
+        .attr('fill', style.fill).attr('stroke', style.stroke);
+      if (style.kind === 'open') swc.attr('stroke-width', 1.5);
+      else if (style.strokeStyle === 'dashed') swc.attr('stroke-width', 0.8).attr('stroke-dasharray', '2,1');
+      else swc.attr('stroke-width', 0.6);
+      svg.append('text').attr('x', legendX + 22).attr('y', legendY)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
+        .text(String(g).slice(0, 12));
+      legendY += 18;
     });
   }
 
+
   // ----- STACKED (positive magnitude only — composer prompt enforces) -----
+  // ----- STACKED (positive magnitude only) -----
+  // v4.4.2: 모든 row 의 unique segment.label 을 모아 *하단 자동 legend* 추가.
+  //         같은 label 은 같은 fill 일관 적용 (이전엔 row 안 k 인덱스로 row 간 fill 불일치).
   function drawStacked(stage, payload, t) {
     const rows = (payload.data && payload.data.scenarios) || [];
     if (!rows.length) return;
+    // Pre-pass: collect unique segment labels in encounter order → consistent fill mapping
+    const labelOrder = [];
+    rows.forEach(r => (r.segments || []).forEach(s => {
+      const lbl = String(s.label || '').trim();
+      if (lbl && labelOrder.indexOf(lbl) === -1) labelOrder.push(lbl);
+    }));
+    const labelToIndex = Object.fromEntries(labelOrder.map((l, i) => [l, i]));
+
     const W = 720;
     const rowH = 30;
-    const H = 56 + 32 + (rows.length * rowH) + 8;
-    const zones = computeZones(W, H, { left: 130, right: 50 });
+    const legendH = labelOrder.length > 0 ? 30 : 0;
+    const H = 56 + 32 + (rows.length * rowH) + 8 + legendH;
+    const zones = computeZones(W, H, { left: 130, right: 50, bottom: 32 + legendH });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     const prefix = stage.getAttribute('data-chart-id') || 'pat';
     definePatterns(svg, t, prefix);
     const idp = (n) => `${prefix}-${n}`;
+
+    function fillForLabel(lbl) {
+      const idx = labelToIndex[lbl] != null ? labelToIndex[lbl] : 0;
+      if (idx === 0) return t.accent;
+      return `url(#${idp(PATTERN_SEQ[(idx - 1) % PATTERN_SEQ.length])})`;
+    }
 
     const rowAbsTotals = rows.map(r =>
       d3.sum((r.segments || []), s => Math.abs(+s.value || 0))
@@ -539,11 +646,11 @@
           .attr('stroke-dasharray', '2,2');
         return;
       }
-      segs.forEach((s, k) => {
+      segs.forEach((s) => {
         const v = +s.value || 0;
         const w = (Math.abs(v) / maxTotal) * totalW;
         const isNeg = v < 0;
-        const fill = k === 0 ? t.accent : `url(#${idp(PATTERN_SEQ[k % PATTERN_SEQ.length])})`;
+        const fill = fillForLabel(String(s.label || '').trim());
         const rect = svg.append('rect').attr('x', cur).attr('y', y)
           .attr('width', Math.max(1, w)).attr('height', 16).attr('fill', fill);
         if (isNeg) {
@@ -554,6 +661,22 @@
         cur += w;
       });
     });
+
+    // Legend at bottom — unique labels with consistent fill
+    if (labelOrder.length) {
+      const legendY = zones.data.y + zones.data.h + 14;
+      const legendStartX = zones.data.x;
+      const itemSpacing = Math.min(140, (zones.data.w / Math.max(1, labelOrder.length)) - 4);
+      labelOrder.forEach((lbl, i) => {
+        const lx = legendStartX + i * itemSpacing;
+        if (lx > zones.data.x + zones.data.w - 60) return;  // 너무 많으면 끊기
+        svg.append('rect').attr('x', lx).attr('y', legendY - 9).attr('width', 14).attr('height', 10)
+          .attr('fill', fillForLabel(lbl)).attr('stroke', t.text).attr('stroke-width', 0.4);
+        svg.append('text').attr('x', lx + 18).attr('y', legendY)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
+          .text(lbl.slice(0, 14));
+      });
+    }
   }
 
   // ----- BUBBLE -----
