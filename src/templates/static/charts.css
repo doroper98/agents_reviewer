@@ -68,16 +68,16 @@
   border-radius: 3px; flex-shrink: 0;
 }
 
-/* ---- Chart aspect-ratio holders ---- */
-.chart-stage-bar{aspect-ratio: 5 / 3}
-.chart-stage-donut{aspect-ratio: 1 / 1; max-width: 280px; margin: 0 auto}
-.chart-stage-heatmap{aspect-ratio: 5 / 2}
-.chart-stage-triple{aspect-ratio: 5 / 2.4}
+/* ---- Chart sizing — v4.2.1 ----
+   v4.2.0 의 charts.js 가 데이터 길이 따라 SVG viewBox 를 *동적으로* 결정한다.
+   고정 aspect-ratio 를 CSS 에서 강제하면 컨테이너가 SVG 보다 커져 letterbox
+   (위·아래 빈 공간) 발생. 따라서 aspect-ratio 강제 폐기 — stage 는 SVG 의
+   natural ratio (viewBox 비율 + width:100% + height:auto) 를 그대로 따른다.
+
+   donut 만 가독성 위해 max-width 280px (모바일에서 너무 커지지 않게). */
+.chart-stage-donut{ max-width: 320px; margin: 0 auto; }
 
 @media (max-width: 540px){
-  .chart-stage-bar{aspect-ratio: 4 / 3}
-  .chart-stage-heatmap{aspect-ratio: 5 / 2.4}
-  .chart-stage-triple{aspect-ratio: 5 / 2.6}
   .chart-card{padding: 14px 12px 12px}
   .chart-card-title{font-size: 13px}
 }

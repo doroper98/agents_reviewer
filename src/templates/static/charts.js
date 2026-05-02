@@ -217,6 +217,8 @@
   }
 
   // ===== STACKED =====
+  // v4.2.1: 음수 / 0 robust 처리. composer 가 ±N 정성 점수로 emit 해도 깨지지 않음.
+  // 음수 segment 는 절댓값으로 width 계산 + dashed 보더로 시각 구분.
   function drawStacked(stage, payload, t) {
     const rows = (payload.data && payload.data.scenarios) || [];
     if (!rows.length) return;
@@ -227,19 +229,42 @@
     definePatterns(svg, t, prefix);
     const idp = (n) => `${prefix}-${n}`;
     const labelW = 90;
-    const maxTotal = d3.max(rows, r => d3.sum(r.segments || [], s => +s.value)) || 1;
+    // 모든 row 의 절댓값 합산으로 maxTotal 결정 (음수 포함 robust).
+    const rowAbsTotals = rows.map(r =>
+      d3.sum((r.segments || []), s => Math.abs(+s.value || 0))
+    );
+    const maxTotal = d3.max(rowAbsTotals) || 1;
     rows.forEach((row, i) => {
       const y = 12 + i * 28;
       svg.append('text').attr('x', labelW - 6).attr('y', y + 10).attr('text-anchor', 'end')
         .attr('fill', t.text).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-        .text((row.name || '').slice(0, 12));
+        .text((row.name || '').slice(0, 14));
       let cur = labelW + 4;
       const totalW = W - cur - 16;
-      (row.segments || []).forEach((s, k) => {
-        const w = (+s.value / maxTotal) * totalW;
-        const fill = k === 0 ? t.accent : `url(#${idp(PATTERN_SEQ[k % PATTERN_SEQ.length])})`;
-        svg.append('rect').attr('x', cur).attr('y', y).attr('width', Math.max(1, w)).attr('height', 14)
-          .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', 0.4);
+      const segs = (row.segments || []).filter(s => Math.abs(+s.value || 0) > 1e-6);
+      if (!segs.length) {
+        // 빈 row 표시 — dotted track
+        svg.append('rect').attr('x', cur).attr('y', y).attr('width', totalW).attr('height', 14)
+          .attr('fill', 'none').attr('stroke', t.muted).attr('stroke-width', 0.5)
+          .attr('stroke-dasharray', '2,2');
+        return;
+      }
+      segs.forEach((s, k) => {
+        const v = +s.value || 0;
+        const w = (Math.abs(v) / maxTotal) * totalW;
+        const isNeg = v < 0;
+        const fill = k === 0
+          ? t.accent
+          : `url(#${idp(PATTERN_SEQ[k % PATTERN_SEQ.length])})`;
+        const rect = svg.append('rect').attr('x', cur).attr('y', y)
+          .attr('width', Math.max(1, w)).attr('height', 14)
+          .attr('fill', fill);
+        if (isNeg) {
+          // 음수 = dashed 보더로 시각 차별화
+          rect.attr('stroke', t.down).attr('stroke-width', 1).attr('stroke-dasharray', '3,2');
+        } else {
+          rect.attr('stroke', t.text).attr('stroke-width', 0.4);
+        }
         cur += w;
       });
     });

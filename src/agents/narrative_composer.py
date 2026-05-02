@@ -85,6 +85,8 @@ SYSTEM_PROMPT = (
     "  · gantt:   [{label, start, end, note?}]                     사건 구간 (start/end 는 상대 인덱스 또는 날짜)\n"
     "  · network: {nodes:[{id,label,group?}], links:[{source,target,type?}]}  관계도\n"
     "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자 영향\n"
+    "             (value 는 *양수 magnitude 만* — 영향의 크기. 부호 있는 점수 (±9 등) 가\n"
+    "              필요하면 stacked 가 아니라 bar 로 emit. stacked 음수 입력 시 깨짐 위험)\n"
     "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향 매트릭스\n"
     "  · heatmap: [{title, severity:'low'|'medium'|'high'}]        단계별 위험도\n"
     "- 모든 차트는 mono guide 의 45° 패턴 + 단일 골드 액센트. 색은 자동 적용.\n"
