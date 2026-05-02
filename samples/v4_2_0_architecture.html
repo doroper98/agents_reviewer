@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light_mono">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Analysis Team v4.2.0 — Composer-Emitted Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Light Mono — mono guide §3.1 */
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-2: #e6dec9;
+  --border: #b3a586;
+  --border-soft: #d4c8a8;
+  --text: #1a1a1a;
+  --text-2: #3a3a3a;
+  --muted: #5a5a5a;
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+
+/* Hero */
+.hero {
+  padding: 64px 0 40px;
+  background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border-soft);
+}
+.hero .eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.hero .deck {
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--text-2);
+  font-weight: 400;
+  max-width: 660px;
+  margin-bottom: 22px;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.hero-meta .pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px 12px;
+  letter-spacing: 0.4px;
+}
+.hero-meta .pill.accent { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.hero-meta .pill.major  { border-color: var(--accent); background: var(--accent); color: var(--bg); font-weight: 700; }
+
+/* Section */
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-soft); }
+section:last-of-type { border-bottom: none; }
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.3px;
+}
+.section-desc { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; max-width: 720px; line-height: 1.75; }
+
+/* Prose */
+.prose p { margin-bottom: 14px; font-size: 14.5px; line-height: 1.85; }
+.prose strong { color: var(--text); font-weight: 700; }
+.prose em { color: var(--accent); font-style: italic; }
+.prose code, code.inline {
+  background: rgba(154,30,60,0.08);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+}
+
+/* Pipeline Steps */
+.pipeline { margin: 20px 0; }
+.step {
+  position: relative;
+  padding: 18px 20px 18px 60px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+}
+.step::before {
+  content: attr(data-num);
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+  width: 28px;
+  text-align: center;
+}
+.step-title { font-family: 'Noto Serif KR', serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.step-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.3px; }
+.step-body { font-size: 13.5px; color: var(--text-2); line-height: 1.75; }
+.step-body strong { color: var(--text); font-weight: 600; }
+.step.composer { border-left: 3px solid var(--accent); }
+.step.deterministic { border-left: 3px dotted var(--up); }
+
+/* Mode comparison — diff style */
+.mode-comparison {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin: 18px 0;
+}
+@media (min-width: 720px) { .mode-comparison { grid-template-columns: 1fr 1fr; } }
+.mode-block {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+}
+.mode-block.before { border-left: 3px dashed var(--down); }
+.mode-block.after  { border-left: 3px solid var(--up); }
+.mode-block-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.mode-block.before .mode-block-label { color: var(--down); }
+.mode-block.after  .mode-block-label { color: var(--up); }
+.mode-block h3 { font-family: 'Noto Serif KR', serif; font-size: 15px; color: var(--text); margin-bottom: 6px; font-weight: 700; }
+.mode-block ol { padding-left: 20px; }
+.mode-block li { font-size: 12.5px; line-height: 1.7; color: var(--text-2); margin-bottom: 4px; }
+.mode-block .stats {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.mode-block .stats strong { color: var(--text); }
+
+/* Schema box */
+.schema-card {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-2);
+  white-space: pre;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.schema-card .key { color: var(--accent); }
+.schema-card .type { color: var(--muted); }
+.schema-card .new { color: var(--up); font-weight: 700; }
+
+/* Chart type table */
+.chart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.chart-table th, .chart-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.chart-table th {
+  background: var(--card-2);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.chart-table tr:last-child td { border-bottom: none; }
+.chart-table td:first-child {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 11.5px;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* Pattern demo (45° hatch) — SVG inline */
+.pattern-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin: 12px 0;
+}
+.pattern-chip {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.pattern-swatch {
+  width: 28px; height: 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* Callout */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+.callout-title { font-weight: 700; font-size: 13.5px; color: var(--text); margin-bottom: 4px; }
+.callout p { font-size: 12.5px; color: var(--text-2); line-height: 1.75; }
+.callout.warning { border-left-style: dashed; border-left-color: var(--down); }
+.callout.warning .callout-title { color: var(--down); }
+
+/* File map */
+.filetree {
+  background: var(--card-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text-2);
+  white-space: pre;
+  overflow-x: auto;
+}
+.filetree .dir { color: var(--accent); font-weight: 700; }
+.filetree .gone { color: var(--muted); text-decoration: line-through; opacity: 0.55; }
+.filetree .new { color: var(--up); font-weight: 700; }
+.filetree .key { color: var(--text); font-weight: 700; }
+.filetree .live::before { content: '✅ '; color: var(--up); }
+
+/* Footer */
+footer.foot {
+  padding: 32px 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+footer.foot a { color: var(--accent); text-decoration: underline; }
+
+/* Sample chart preview */
+.demo-chart {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 12px 0;
+}
+.demo-chart-title {
+  font-family: 'Noto Sans KR';
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: var(--text-2);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.demo-chart svg { width: 100%; height: auto; display: block; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .hero { padding: 40px 0 28px; }
+  .hero h1 { font-size: 28px; }
+  .hero .deck { font-size: 15px; }
+  section { padding: 32px 0 24px; }
+  .section-title { font-size: 22px; }
+  .step { padding: 16px 14px 16px 50px; }
+  .step::before { left: 12px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">Event Analysis Team · System Architecture</div>
+    <h1>v4.2.0 — Composer-Emitted Charts &amp; Maps</h1>
+    <p class="deck">UnifiedComposer (Opus 4.7) 가 분석·본문·차트·지도까지 모두 단일 호출로 emit. 외부 결정적 빌더와 maplibre 의존을 폐기하고 mono guide 정합으로 통일. 보고서 자유도 + 시각화 자유도가 한 LLM 의 판단으로 수렴.</p>
+    <div class="hero-meta">
+      <span class="pill major">v4.2.0</span>
+      <span class="pill">main · f8e68ec</span>
+      <span class="pill accent">2-call · Opus 4.7 × 2</span>
+      <span class="pill">Light Mono Theme</span>
+      <span class="pill">d3-geo + TopoJSON</span>
+      <span class="pill">Mono Guide §4 patterns</span>
+    </div>
+  </div>
+</header>
+
+<!-- 1. 한 화면 요약 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 1</div>
+    <h2 class="section-title">한 화면 요약</h2>
+    <div class="prose">
+      <p><strong>입력</strong>: 텔레그램에 사건 한 줄. <code>심층/짧게/요약</code> 키워드로 모드 자동 결정. 모든 모드 LLM 호출 2회.</p>
+      <p><strong>처리</strong>: 1) <em>상황 분석관</em> (Opus 4.7, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 URL 수집 → 2) <em>편집장</em> (Opus 4.7, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 본문 + 감시 신호 + <strong>차트 8종 데이터 + 지도 데이터</strong> 모두 emit → 3) HTML 렌더 + Cloudflare Pages 배포.</p>
+      <p><strong>v4.0.0~v4.1.0 vs v4.2.0 차이</strong>: 이전엔 차트/지도가 <em>전혀</em> 안 박혔음 (composer 가 chart-id referencing 해도 chart_payload 가 비어있어 매칭 실패). v4.2.0 에서 composer 가 차트 데이터를 직접 dict 로 emit, charts.js 가 inline payload 로 렌더. 지도도 composer 가 lat/lng 직접 emit, maplibre 폐기하고 d3 + d3-geo + TopoJSON 으로 통일.</p>
+      <p><strong>핵심 안전장치</strong>: <em>수치 비교가 본문 이해에 결정적일 때만</em> 차트 emit (composer 시스템 프롬프트). 데이터 없으면 차트 0개. 무지성 박힘 영구 차단.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 파이프라인 비교 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 2</div>
+    <h2 class="section-title">파이프라인 — Before vs After</h2>
+    <p class="section-desc">v3.5.0 까지 5~13단계 + 차트는 결정적 빌더 자동 추출. v4.2.0 부터 4단계 + 차트/지도 모두 composer 가 직접 emit.</p>
+
+    <div class="mode-comparison">
+      <div class="mode-block before">
+        <div class="mode-block-label">v3.5.0 → v4.1.0 (BEFORE)</div>
+        <h3>차트/지도가 안 나옴</h3>
+        <ol>
+          <li>visual_builder.build_chart_payload() 호출 안 함 (Tier 4 에서 제거)</li>
+          <li>composer 가 embedded_charts 에 chart-id 적어도</li>
+          <li>freeform_essay.html 의 chart_payload 가 빈 dict → 매칭 실패</li>
+          <li>결과: 차트 0개. 본문 텍스트만</li>
+          <li>지도도 동일. result.visuals.leaflet_config 가 None</li>
+        </ol>
+        <div class="stats">
+          시각화: <strong>전혀 없음</strong>. 본문에 묻혀버린 정보 비교는 텍스트로만.
+        </div>
+      </div>
+
+      <div class="mode-block after">
+        <div class="mode-block-label">v4.2.0 (AFTER)</div>
+        <h3>composer 가 데이터까지 emit</h3>
+        <ol>
+          <li>composer SYSTEM_PROMPT 에 차트 8종 type / data 스키마 명시</li>
+          <li>composer 가 ComposedSection.charts 에 dict list 출력</li>
+          <li>composer 가 ComposedReport.embedded_map 에 지도 데이터 (필요 시)</li>
+          <li>freeform_essay.html 이 inline payload + SVG 컨테이너 emit</li>
+          <li>charts.js + maps.js 가 mono guide 패턴으로 SVG 렌더</li>
+        </ol>
+        <div class="stats">
+          시각화: <strong>본문 이해에 결정적일 때만</strong>. composer 가 의미와 데이터를 같은 호출에서 결정.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">왜 composer 가 데이터까지 emit 해야 하나</div>
+      <p>이전 v3.x 의 결정적 빌더 (build_chart_payload) 는 분석 결과 데이터에서 9종 차트를 자동 추출. <em>왜</em> 그 차트를 박는지 (= 본문에서 referencing 하는지) 와 데이터 추출이 분리되어 있어 무관한 차트가 양산됨. v4.2.0 은 둘을 합침 — composer 가 본문을 짜면서 "이 단락은 도넛으로 보여주는 게 결정적" 이라고 판단할 때만 차트 emit. 외부 빌더 0줄.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 4단계 파이프라인 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 3</div>
+    <h2 class="section-title">4단계 파이프라인</h2>
+    <div class="pipeline">
+
+      <div class="step" data-num="1">
+        <div class="step-title">상황 분석관 — ContextAnalyst</div>
+        <div class="step-meta">claude-opus-4-7 · 웹 검색 활성 · v4.1.0 부터 Opus</div>
+        <div class="step-body">사건의 <strong>사실 / 타임라인 / 핵심 수치 / 출처 URL</strong> 수집. composer 가 보는 *유일한* 사실 입력이라 사실 추출 품질이 보고서 전체 품질의 상한선. 출처 1차/2차 구분 / 단위 보존 / 인과 순서 모두 Opus 수준 reasoning 필요.</div>
+      </div>
+
+      <div class="step composer" data-num="2">
+        <div class="step-title">편집장 — UnifiedComposer ⭐</div>
+        <div class="step-meta">claude-opus-4-7 · 단일 LLM 호출 · max 8K tokens</div>
+        <div class="step-body">
+          ContextAnalysis 만 받아 다음을 *모두* 수행:
+          <ol style="padding-left:18px;margin-top:8px">
+            <li>핵심 행위자 식별</li>
+            <li>구조적 동인 분석</li>
+            <li>인과 사슬 추적</li>
+            <li>시나리오 설계 (3~5개)</li>
+            <li>모순 / 반대 가설 표면화</li>
+            <li>보고서 본문 작성 (자유 형식)</li>
+            <li>감시 신호 추출 (Watchlist 통합)</li>
+            <li><strong>(v4.2.0) 차트 데이터 emit</strong> — 본문 이해에 결정적일 때만, type 8종 중 선택</li>
+            <li><strong>(v4.2.0) 지도 데이터 emit</strong> — 명백히 지리적 사건일 때만</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="step deterministic" data-num="3">
+        <div class="step-title">보고서 합성 — ReportSynthesizer</div>
+        <div class="step-meta">코드 결정적 · LLM 호출 0</div>
+        <div class="step-body">composer 의 <code>ComposedReport</code> 를 <code>freeform_essay.html</code> 에 주입해 mono 테마 HTML 생성. <code>lens_policy.select_theme()</code> 가 사건 카테고리에서 burgundy_mono / light_mono 자동 선택. 차트는 <code>charts.js</code> (inline payload 스캔), 지도는 <code>maps.js</code> (d3-geo + TopoJSON) 가 SVG 로 렌더. wrangler 로 Cloudflare Pages 배포.</div>
+      </div>
+
+      <div class="step deterministic" data-num="4">
+        <div class="step-title">Watchlist 등록</div>
+        <div class="step-meta">SQLite · LLM 호출 0</div>
+        <div class="step-body"><code>composed_report.watch_signals</code> 를 SQLite Registry 에 INSERT. 텔레그램 <code>/watchlist</code>, <code>/fire</code> 명령으로 후속 추적.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 4. 차트 8종 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 4</div>
+    <h2 class="section-title">차트 type 8종 (composer-emitted)</h2>
+    <p class="section-desc">composer 가 <code>ComposedSection.charts</code> 의 각 dict 로 type 1개씩 emit. type 별 data 스키마는 composer SYSTEM_PROMPT 가 SSOT. <code>charts.js</code> 가 inline payload 스캔 후 mono guide §4 패턴으로 SVG 렌더.</p>
+
+    <table class="chart-table">
+      <thead><tr><th>type</th><th>용도</th><th>data 스키마</th><th>게이팅</th></tr></thead>
+      <tbody>
+        <tr><td>donut</td><td>비중 비교</td><td>[{label, value:number, note?}]</td><td>≥3개 + non-uniform</td></tr>
+        <tr><td>bar</td><td>순위·분포</td><td>[{label, value:number, note?}]</td><td>≥1</td></tr>
+        <tr><td>line</td><td>시계열 추이</td><td>[{x, y:number, event?}]</td><td>≥2 점</td></tr>
+        <tr><td>gantt</td><td>사건 구간</td><td>[{label, start, end, note?}]</td><td>≥1</td></tr>
+        <tr><td>network</td><td>관계도</td><td>{nodes:[{id,label,group?}], links:[{source,target,type?}]}</td><td>nodes ≥2</td></tr>
+        <tr><td>stacked</td><td>시나리오 × 행위자 영향</td><td>{scenarios:[{name, segments:[{label,value}]}]}</td><td>≥1 row</td></tr>
+        <tr><td>bubble</td><td>확률 × 영향 매트릭스</td><td>[{label, x:number, y:number, size?}]</td><td>≥1</td></tr>
+        <tr><td>heatmap</td><td>단계별 위험도</td><td>[{title, severity:'low'|'medium'|'high'}]</td><td>≥1</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-family:'Noto Serif KR',serif;font-size:16px;color:var(--text);margin:18px 0 8px">Mono guide §4 패턴 시스템</h3>
+    <p class="section-desc">색이 mono 한 hue 로 수렴하므로 카테고리 구분은 <em>45° 패턴 + 액센트 솔리드</em>. 핵심 항목은 accent solid, 그 외는 패턴 순환 (hatch-tight → accent-hatch → hatch-wide → dots).</p>
+
+    <div class="pattern-row">
+      <div class="pattern-chip"><div class="pattern-swatch" style="background:#9a1e3c"></div>accent solid · 핵심</div>
+      <div class="pattern-chip"><svg class="pattern-swatch" viewBox="0 0 28 18"><defs><pattern id="ht" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2.4" stroke="#1a1a1a" stroke-width="0.85"/></pattern></defs><rect width="28" height="18" fill="url(#ht)"/></svg>hatch-tight</div>
+      <div class="pattern-chip"><svg class="pattern-swatch" viewBox="0 0 28 18"><defs><pattern id="ah" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2.4" stroke="#9a1e3c" stroke-width="0.85"/></pattern></defs><rect width="28" height="18" fill="url(#ah)"/></svg>accent-hatch</div>
+      <div class="pattern-chip"><svg class="pattern-swatch" viewBox="0 0 28 18"><defs><pattern id="hw" patternUnits="userSpaceOnUse" width="3.8" height="3.8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3.8" stroke="#1a1a1a" stroke-width="0.7"/></pattern></defs><rect width="28" height="18" fill="url(#hw)"/></svg>hatch-wide</div>
+      <div class="pattern-chip"><svg class="pattern-swatch" viewBox="0 0 28 18"><defs><pattern id="dt" patternUnits="userSpaceOnUse" width="2.4" height="2.4"><circle cx="1.2" cy="1.2" r="0.22" fill="#1a1a1a"/></pattern></defs><rect width="28" height="18" fill="url(#dt)"/></svg>dots</div>
+    </div>
+
+    <h3 style="font-family:'Noto Serif KR',serif;font-size:16px;color:var(--text);margin:18px 0 8px">demo — donut 차트 (light_mono)</h3>
+    <div class="demo-chart">
+      <div class="demo-chart-title">호르무즈 의존 비중 (가상 데이터)</div>
+      <svg viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <pattern id="d-tight" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="2.4" stroke="#1a1a1a" stroke-width="0.85"/>
+          </pattern>
+          <pattern id="d-ahatch" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="2.4" stroke="#9a1e3c" stroke-width="0.85"/>
+          </pattern>
+          <pattern id="d-wide" patternUnits="userSpaceOnUse" width="3.8" height="3.8" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="3.8" stroke="#1a1a1a" stroke-width="0.7"/>
+          </pattern>
+          <pattern id="d-dots" patternUnits="userSpaceOnUse" width="2.4" height="2.4">
+            <circle cx="1.2" cy="1.2" r="0.22" fill="#1a1a1a"/>
+          </pattern>
+        </defs>
+        <!-- accent solid (key) -->
+        <path d="M 110 30 A 80 80 0 0 1 174 134 L 153 122 A 50 50 0 0 0 110 60 Z" fill="#9a1e3c" stroke="#1a1a1a" stroke-width="0.5"/>
+        <!-- hatch-tight -->
+        <path d="M 174 134 A 80 80 0 0 1 78 195 L 96 168 A 50 50 0 0 0 153 122 Z" fill="url(#d-tight)" stroke="#1a1a1a" stroke-width="0.5"/>
+        <!-- accent-hatch -->
+        <path d="M 78 195 A 80 80 0 0 1 38 144 L 73 134 A 50 50 0 0 0 96 168 Z" fill="url(#d-ahatch)" stroke="#1a1a1a" stroke-width="0.5"/>
+        <!-- hatch-wide -->
+        <path d="M 38 144 A 80 80 0 0 1 50 78 L 80 96 A 50 50 0 0 0 73 134 Z" fill="url(#d-wide)" stroke="#1a1a1a" stroke-width="0.5"/>
+        <!-- dots -->
+        <path d="M 50 78 A 80 80 0 0 1 110 30 L 110 60 A 50 50 0 0 0 80 96 Z" fill="url(#d-dots)" stroke="#1a1a1a" stroke-width="0.5"/>
+        <!-- legend -->
+        <g font-family="Noto Sans KR" font-size="11" fill="#1a1a1a">
+          <rect x="220" y="22" width="14" height="10" fill="#9a1e3c" stroke="#1a1a1a" stroke-width="0.4"/>
+          <text x="240" y="30">한국  31%</text>
+          <rect x="220" y="44" width="14" height="10" fill="url(#d-tight)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <text x="240" y="52">일본  24%</text>
+          <rect x="220" y="66" width="14" height="10" fill="url(#d-ahatch)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <text x="240" y="74">대만  17%</text>
+          <rect x="220" y="88" width="14" height="10" fill="url(#d-wide)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <text x="240" y="96">인도  15%</text>
+          <rect x="220" y="110" width="14" height="10" fill="url(#d-dots)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <text x="240" y="118">중국  13%</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 지도 시스템 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 5</div>
+    <h2 class="section-title">지도 시스템 — d3 + d3-geo + TopoJSON</h2>
+    <p class="section-desc">v4.2.0 에서 maplibre-gl 의존 폐기 (mono guide §2). composer 가 <code>ComposedReport.embedded_map</code> 에 lat/lng + arcs 를 직접 emit, <code>maps.js</code> 가 d3.geoMercator + world-atlas/110m TopoJSON 으로 정적 SVG 렌더.</p>
+
+    <div class="callout">
+      <div class="callout-title">왜 maplibre 폐기인가 (mono guide §2.2)</div>
+      <p><strong>외부 타일 서비스 / 글리프 PBF 호출 / 스키마 변경에 취약</strong>. 샘플 페이지가 빈 배경으로 떨어지는 회귀 발생. 모바일 ISP 차단 / CDN 캐시 / Content-Type 문제로 신뢰할 수 없음. world-atlas 110m TopoJSON 한 번 fetch (~100KB) 로 전 세계 국경 벡터를 받아 정적 SVG 로 렌더 → 인쇄·캡처 모두 안정적.</p>
+    </div>
+
+    <div class="schema-card"><span class="key">embedded_map</span> = {
+  <span class="key">"center"</span>: [<span class="type">lng, lat</span>],
+  <span class="key">"zoom"</span>: <span class="type">float</span>,
+  <span class="key">"markers"</span>: [
+    {<span class="key">"id"</span>: "hormuz", <span class="key">"name"</span>: "호르무즈",
+     <span class="key">"lng"</span>: 56.4, <span class="key">"lat"</span>: 26.6,
+     <span class="key">"highlight"</span>: <span class="type">true</span>}
+  ],
+  <span class="key">"arcs"</span>: [
+    {<span class="key">"from_id"</span>: "hormuz", <span class="key">"to_id"</span>: "singapore",
+     <span class="key">"highlight"</span>: <span class="type">true</span>,
+     <span class="key">"label"</span>: "원유 회랑"}
+  ],
+  <span class="key">"legend"</span>: [
+    {<span class="key">"label"</span>: "중점 회랑", <span class="key">"kind"</span>: "line",
+     <span class="key">"highlight"</span>: <span class="type">true</span>}
+  ]
+}</div>
+
+    <p class="section-desc" style="margin-top:14px">호 색상은 <strong>highlight 여부로 accent / muted</strong> 분리. 1차 회랑 (highlight=true) 은 실선 굵게, 보조 항로는 점선 얇게. 마커는 highlight 만 accent + 굵게. 베이스맵은 mono 토큰 (--map-land / --map-water / --map-boundary) 으로 동적 적용.</p>
+  </div>
+</section>
+
+<!-- 6. ComposedReport 스키마 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 6</div>
+    <h2 class="section-title">ComposedReport 스키마 (v4.2.0)</h2>
+    <p class="section-desc">composer 가 emit 하는 단일 출력 객체. v4.0.0 → v4.2.0 사이 추가된 필드는 <span style="color:var(--up);font-weight:700">+ 표시</span>.</p>
+
+<div class="schema-card"><span class="key">class</span> <span class="key">ComposedReport</span>(BaseModel):
+    <span class="key">headline</span>: str
+    <span class="key">deck</span>: str = ""
+    <span class="key">sections</span>: list[ComposedSection]
+    <span class="key">closing</span>: str = ""
+
+    <span class="new"># v4.0.0 — Tier 4 통합 출력</span>
+    <span class="new key">watch_signals</span>: list[dict]                    <span class="type"># Watchlist Registry 통합</span>
+    <span class="new key">contradictions</span>: list[dict]                   <span class="type"># Anti-pattern #5 보존</span>
+    <span class="new key">confidence_summary</span>: str = ""                 <span class="type"># 한 줄 자유 평가</span>
+    <span class="new key">confidence_score</span>: float = 0.5                <span class="type"># 0.0~1.0</span>
+
+    <span class="new"># v4.2.0 — 지도 (보고서당 1개, 지리적 사건일 때만)</span>
+    <span class="new key">embedded_map</span>: dict | None = None             <span class="type"># {center, zoom, markers, arcs, legend?}</span>
+
+
+<span class="key">class</span> <span class="key">ComposedSection</span>(BaseModel):
+    <span class="key">heading</span>: str
+    <span class="key">kicker</span>: str = ""
+    <span class="key">prose</span>: str
+
+    <span class="new"># v4.2.0 — composer 가 차트 데이터를 inline 으로 emit</span>
+    <span class="new key">charts</span>: list[dict]                            <span class="type"># [{type, title, data, note?}]</span>
+
+    <span class="key">embedded_charts</span>: list[str]                    <span class="type"># [legacy] chart-id 참조, 호환만</span>
+    <span class="key">embedded_blocks</span>: list[str]                    <span class="type"># actor_cards 등 (선택)</span>
+    <span class="key">pull_quote</span>: str = ""
+    <span class="key">cited_claim_ids</span>: list[str]</div>
+  </div>
+</section>
+
+<!-- 7. 디렉토리 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 7</div>
+    <h2 class="section-title">디렉토리 변화 — v4.2.0</h2>
+    <p class="section-desc"><span style="color:var(--muted);text-decoration:line-through">취소선</span> = 코드 보존하되 호출 안 됨. <span style="color:var(--up);font-weight:700">초록</span> = v4.x 신규 또는 강화. 추후 cleanup commit 시 deprecated 모듈 일괄 제거 예정.</p>
+
+    <div class="filetree"><span class="dir">src/</span>
+├── <span class="key">orchestrator.py</span>          ← 4단계 단순화 (~120줄). <span class="new">VERSION = v4.2.0</span>
+├── <span class="key">models.py</span>                ← <span class="new">+ ComposedSection.charts + ComposedReport.embedded_map</span>
+├── <span class="key">token_budget.py</span>          ← 모든 모드 max_llm_calls=2. mode = composer prompt 깊이 지시
+├── lens_policy.py              ← select_theme() 만 사용. select_lenses() 호출 안 됨
+├── <span class="gone">visual_builder.py</span>        ← v4.2.0 호출 안 됨 (composer 가 직접 emit 으로 대체)
+├── <span class="dir">agents/</span>
+│   ├── <span class="key live">context_analyst.py</span>       ← Opus 4.7 (v4.1.0)
+│   ├── <span class="key live">narrative_composer.py</span>    ← Opus 4.7. <span class="new">+ 차트/지도 emit prompt</span>
+│   ├── <span class="key live">report_synthesizer.py</span>    ← HTML 렌더 + Cloudflare 배포
+│   ├── <span class="gone">player_analyst.py</span>        ← deprecated
+│   ├── <span class="gone">dynamics_analyst.py</span>      ← deprecated
+│   ├── <span class="gone">chain_reaction_analyst.py</span> ← deprecated
+│   ├── <span class="gone">scenario_architect.py</span>    ← deprecated
+│   ├── <span class="gone">synthesis_judge.py</span>       ← deprecated
+│   ├── <span class="gone">quality_inspector.py</span>     ← deprecated
+│   └── <span class="gone">visual_analyst.py</span>        ← deprecated
+├── <span class="gone dir">lenses/</span>                  ← 11종 모두 deprecated
+├── <span class="dir">archetypes/</span>
+│   └── <span class="key live">freeform_essay.py</span>        ← <strong>유일하게 사용</strong>
+└── <span class="dir">templates/</span>
+    ├── <span class="key">report.css</span>               ← Mono 2테마 (burgundy_mono + light_mono)
+    ├── <span class="dir">archetypes/</span>
+    │   └── <span class="key live">freeform_essay.html</span>    ← <span class="new">+ inline charts/map 렌더</span>
+    ├── <span class="dir">static/</span>
+    │   ├── <span class="key">d3.v7.min.js</span>
+    │   ├── <span class="key">charts.js</span>            ← <span class="new">v4.2.0 전면 재작성 (inline payload + mono 패턴)</span>
+    │   ├── <span class="key">charts.css</span>
+    │   ├── <span class="key">maps.js</span>              ← <span class="new">v4.2.0 전면 재작성 (d3-geo + TopoJSON, maplibre 폐기)</span>
+    │   └── <span class="key">maps.css</span>             ← <span class="new">v4.2.0 재작성 (mono 토큰만)</span>
+    ├── <span class="gone">report.html</span>              ← deprecated (six_act_theater)
+    ├── <span class="gone">report_block.html</span>        ← deprecated (옛 archetype 디스패처)
+    └── <span class="gone dir">blocks/</span>              ← composer.embedded_blocks 명시 시만, 실질 미사용
+
+<span class="dir">samples/</span>
+├── <span class="new">v4_2_0_architecture.html</span>   ← <strong>본 페이지 (light_mono)</strong>
+├── v4_0_0_architecture.html    ← v4.0.0 아카이브 (burgundy_mono)
+├── v3_5_0_architecture.html    ← v3.5.0 아카이브
+└── chart_map_mono_compare.html ← mono guide 살아있는 비교 샘플</div>
+  </div>
+</section>
+
+<!-- 8. 운영 -->
+<section>
+  <div class="container">
+    <div class="section-label">Section 8</div>
+    <h2 class="section-title">운영 — VM 봇 재기동</h2>
+    <div class="prose">
+      <p>v4.2.0 변경은 코드 + 모델 + 템플릿 + 정적 자산 4개 영역 모두 영향. VM 재기동 필수.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">재기동 절차</div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.85;color:var(--text-2)">
+        cd ~/agents_reviewer<br>
+        git pull origin main<br>
+        pkill -9 -f 'python -m src.main'   <span style="color:var(--muted)"># 옛 인스턴스 일괄 종료 (literal &lt;PID&gt; 입력 실수 회피)</span><br>
+        sleep 2<br>
+        source venv/bin/activate<br>
+        nohup python -m src.main &gt; bot.log 2&gt;&amp;1 &amp;<br>
+        disown<br>
+        sleep 5 &amp;&amp; tail -30 bot.log
+      </p>
+    </div>
+    <p class="prose"><strong>확인</strong>: 텔레그램 <code>/status</code> → <code>VERSION: v4.2.0</code> + 에이전트 구성 2명 (상황 분석관 / 편집장 모두 Opus 4.7) 표시. 분석 후 보고서 footer 에 <code>archetype: freeform_essay</code> 표시.</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="container">
+    <div>Event Analysis Team · v4.2.0 · main · f8e68ec · 2026-05-02</div>
+    <div style="margin-top:6px">SSOT: <a href="https://github.com/doroper98/agents_reviewer">github.com/doroper98/agents_reviewer</a> · <a href="https://doroper98.github.io/agents_reviewer/samples/v4_0_0_architecture.html">v4.0.0 아카이브</a> · <a href="https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html">Mono Compare</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
