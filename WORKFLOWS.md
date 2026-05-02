@@ -116,3 +116,48 @@ Phase 4: [보고서 합성관] Executive Summary 생성
 4. pip install -r requirements.txt (의존성 변경 시)
 5. python -m src.main (봇 재시작)
 ```
+
+## 보고서 부분 수정 워크플로우 (v4.4.1+)
+
+이미 생성된 보고서를 LLM 호출 *없이* 부분 수정·재렌더·재배포. 차트 1개가
+깨졌다거나 빈 차트가 박혔을 때 전체 재분석 (Opus 4.7 호출 ~$2-3) 대신 사용.
+
+전제: v4.4.1 이후 생성된 보고서. ReportSynthesizer 가 HTML + ComposedReport
+JSON 을 함께 저장 (`reports/analysis_<timestamp>.json`).
+
+### 사용 예
+
+```bash
+cd ~/agents_reviewer
+source venv/bin/activate
+
+# 1) 빈 bubble 차트 제거 (3번째 섹션의 1번째 차트, 0-based)
+python scripts/patch_report.py 20260502_154823 --remove-chart 2:0
+
+# 2) 섹션 통째 제거 (5번째 섹션, 0-based)
+python scripts/patch_report.py 20260502_154823 --remove-section 4
+
+# 3) JSON 직접 편집 (vim 으로 본문/차트 데이터 수정)
+EDITOR=vim python scripts/patch_report.py 20260502_154823 --edit
+
+# 4) 수정 없이 재렌더만 (charts.js 갱신 후 정적 자산 동기화)
+python scripts/patch_report.py 20260502_154823 --rerender-only
+
+# 5) 로컬만 갱신 (Cloudflare 배포 X)
+python scripts/patch_report.py 20260502_154823 --remove-chart 0:0 --no-deploy
+```
+
+### 효과
+
+| | 전체 재분석 | patch_report.py |
+|---|---|---|
+| LLM 호출 | Opus 4.7 × 2 | 0 |
+| 비용 | ~$2-3 | 0 |
+| 시간 | ~1분 | ~5초 |
+| URL | *새* timestamp 로 변경 | 그대로 (사용자 받은 링크 유효) |
+
+### 주의
+
+- v4.4.1 이전 보고서는 JSON 저장 없음 → patch 불가. 재분석 필요.
+- `--edit` 시 JSON schema 깨면 검증 실패 (`FullAnalysisResult.model_validate`) — 백업 후 편집 권장.
+- Cloudflare 배포는 wrangler 가 reports/ 통째 업로드 — 다른 보고서들도 함께 갱신됨 (정적 자산 새 charts.js / charts.css 동기화).

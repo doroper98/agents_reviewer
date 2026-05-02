@@ -913,8 +913,14 @@ class ReportSynthesizer:
         result: FullAnalysisResult,
         theme: str = "burgundy",
         archetype: ReportArchetype | None = None,
+        *,
+        report_id: str | None = None,
     ) -> str:
         """Render HTML report, upload to Cloudflare, return URL or filepath.
+
+        v4.4.1: ``report_id`` 인자 추가. 지정 시 timestamp 생성 대신 그 ID 를 그대로
+        사용 (= 기존 파일 덮어쓰기). ``scripts/patch_report.py`` 에서 LLM 호출 없이
+        보고서 일부 수정 후 재렌더할 때 사용.
 
         V3 Step 2 (v2.6.0): ``archetype`` 인자 추가. 미지정 시 ``six_act_theater`` 로 폴백 →
         기존 흐름과 byte-equal 출력 보장. ``six_act_theater`` 가 아닌 경우 archetype 객체의
@@ -1033,7 +1039,8 @@ class ReportSynthesizer:
         output_dir = self.config.report_output_dir
         os.makedirs(output_dir, exist_ok=True)
 
-        timestamp = datetime.now(KST).strftime("%Y%m%d_%H%M%S")
+        # v4.4.1: report_id 가 주어지면 그대로 사용 (patch 시 기존 파일 덮어쓰기).
+        timestamp = report_id if report_id else datetime.now(KST).strftime("%Y%m%d_%H%M%S")
         filename = f"analysis_{timestamp}.html"
         filepath = os.path.join(output_dir, filename)
 
@@ -1055,6 +1062,21 @@ class ReportSynthesizer:
         with open(md_filepath, "w", encoding="utf-8") as f:
             f.write(md_content)
         logger.info(f"[report_synthesizer] Markdown saved: {md_filepath}")
+
+        # v4.4.1: FullAnalysisResult JSON 저장 — patch_report.py 가 LLM 호출 없이
+        # 보고서 부분 수정 후 재렌더할 수 있게. composer 출력 (composed_report) +
+        # 메타데이터 (theme, context, etc.) 포함.
+        json_filename = f"analysis_{timestamp}.json"
+        json_filepath = os.path.join(output_dir, json_filename)
+        try:
+            with open(json_filepath, "w", encoding="utf-8") as f:
+                json.dump(
+                    result.model_dump(mode='json'),
+                    f, ensure_ascii=False, indent=2,
+                )
+            logger.info(f"[report_synthesizer] JSON saved: {json_filepath}")
+        except Exception as e:
+            logger.warning(f"[report_synthesizer] JSON save failed: {e}")
 
         # Generate index.html (report listing page)
         self._generate_index(output_dir)
