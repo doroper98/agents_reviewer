@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="{{ report_theme or 'burgundy' }}">
+<html lang="ko" data-theme="{{ report_theme or 'burgundy_mono' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,26 +39,13 @@
 </section>
 {% endif %}
 
-<!-- v3.2.0 d3 CHART DASHBOARD -->
+<!-- v3.5.0: "DATA DASHBOARD / 한눈에 보기" 섹션 통째 삭제.
+     이전엔 build_chart_payload() 가 만든 9개 차트 슬롯을 데이터만 있으면 무조건 렌더하는
+     "무지성 박힘" 경로였음 (mono guide §6 anti-pattern). composer 가 본문에서 명시
+     reference 한 차트만 freeform_essay.html 에서 렌더되도록 정책 통일.
+     report_block.html 은 composer 실패 시 폴백 경로 — 폴백에서도 차트 박힘 금지.
+     payload 변수는 d3 라이브러리 로드 조건으로만 사용. -->
 {% set chart_payload = (result.visuals.chart_config.payload if result.visuals and result.visuals.chart_config else {}) or {} %}
-{% if chart_payload %}
-<section style="padding:8px 0 24px;border-bottom:1px solid var(--border-light)">
-  <div class="container">
-    <div class="section-label">DATA DASHBOARD</div>
-    <h2 class="section-title">한눈에 보기</h2>
-    <div style="display:grid;grid-template-columns:1fr;gap:14px">
-      {% if chart_payload.scenarios %}<div class="chart-card"><div class="chart-card-title">시나리오 확률 분포</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-scenarios"></svg></div></div>{% endif %}
-      {% if chart_payload.confidence %}<div class="chart-card"><div class="chart-card-title">신뢰도 분해</div><div class="chart-card-stage chart-stage-triple"><svg id="chart-confidence"></svg></div></div>{% endif %}
-      {% if chart_payload.severity_chain %}<div class="chart-card"><div class="chart-card-title">인과 사슬 위험도</div><div class="chart-card-stage chart-stage-heatmap" id="chart-severity"></div></div>{% endif %}
-      {% if chart_payload.bubble %}<div class="chart-card"><div class="chart-card-title">리스크 매트릭스</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-bubble"></svg></div></div>{% endif %}
-      {% if chart_payload.gantt %}<div class="chart-card"><div class="chart-card-title">타임라인</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-gantt"></svg></div></div>{% endif %}
-      {% if chart_payload.network %}<div class="chart-card"><div class="chart-card-title">행위자 관계도</div><div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="chart-network"></svg></div></div>{% endif %}
-      {% if chart_payload.key_figures %}<div class="chart-card"><div class="chart-card-title">핵심 수치 분배</div><div class="chart-card-stage chart-stage-donut"><svg id="chart-figures"></svg></div></div>{% endif %}
-      {% if chart_payload.stacked %}<div class="chart-card"><div class="chart-card-title">시나리오 × 행위자 영향</div><div class="chart-card-stage chart-stage-bar"><svg id="chart-stacked"></svg></div></div>{% endif %}
-    </div>
-  </div>
-</section>
-{% endif %}
 
 <main class="container">
 
@@ -129,15 +116,10 @@ var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isInters
 document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 </script>
 
-<!-- v3.2.0 d3 charts payload + library -->
-{% if chart_payload or has_map_block %}
-<script src="d3.v7.min.js"></script>
-{% endif %}
-{% if chart_payload %}
-<script type="application/json" id="chart-payload">{{ chart_payload | tojson }}</script>
-<script src="charts.js"></script>
-{% endif %}
+<!-- v3.5.0: charts.js 로드 제거 — DATA DASHBOARD 섹션 삭제로 차트 SVG 슬롯이 없어
+     로드 의미 없음. map 블록만 d3 + maplibre 필요. -->
 {% if has_map_block %}
+<script src="d3.v7.min.js"></script>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="maps.js"></script>
 {% endif %}

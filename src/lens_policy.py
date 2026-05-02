@@ -138,18 +138,20 @@ def select_lenses(
 
 
 # Theme 결정도 코드 규칙으로 처리 (Strategy Planner 프롬프트에서 분리).
+# v3.5.0: docs/MONO_THEME_GUIDE.md 채택 — mono 2종 만 사용. 멀티컬러 폐기.
+# 정책·법안·규제는 라이트 톤(편집 풍, 인쇄 친화), 그 외는 다크 mono 가 정보 밀도와 어울림.
 _THEME_BY_CATEGORY: dict[str, str] = {
-    "tech": "tech",
-    "financial": "financial",
-    "geopolitical": "geopolitical",
-    "accident": "burgundy",
-    "policy": "burgundy",
-    "industry": "financial",
-    "general": "burgundy",
+    "tech": "burgundy_mono",
+    "financial": "burgundy_mono",
+    "geopolitical": "burgundy_mono",
+    "accident": "burgundy_mono",
+    "policy": "light_mono",
+    "industry": "burgundy_mono",
+    "general": "burgundy_mono",
 }
 
 
 def select_theme(event_type: str) -> str:
-    """event_type → 보고서 테마. LLM 호출 없이 결정."""
+    """event_type → 보고서 테마. LLM 호출 없이 결정. mono 2종(burgundy_mono/light_mono)만."""
     category = _classify_event_type(event_type)
-    return _THEME_BY_CATEGORY.get(category, "burgundy")
+    return _THEME_BY_CATEGORY.get(category, "burgundy_mono")

@@ -67,11 +67,17 @@ class TokenBudget:
 
     @classmethod
     def for_mode(cls, mode: AnalysisMode) -> "TokenBudget":
-        """mode 키워드 → 정책 dataclass."""
+        """mode 키워드 → 정책 dataclass.
+
+        v3.5.0: narrative_composer (Opus 4.7) 를 모든 모드에서 활성화. 결과:
+        보고서 흐름은 항상 LLM 이 자유 결정. 정형 archetype 슬롯에 데이터를
+        부어넣는 패턴 영구 차단. composer 실패 시에만 archetype 폴백.
+        """
         if mode == "fast":
             return cls(
                 mode="fast",
-                max_llm_calls=4,
+                # +1 for narrative_composer. 5 = context + strategy + scenarios + judgment + composer.
+                max_llm_calls=5,
                 max_lenses=1,
                 use_llm_quality_gate=False,
                 use_llm_narrative_plan=False,
@@ -80,6 +86,7 @@ class TokenBudget:
                 use_llm_synthesis=False,
                 use_legacy_personas=False,
                 allow_meta_lenses=False,
+                use_llm_narrative_composer=True,  # v3.5.0
             )
         if mode == "deep":
             return cls(
@@ -99,7 +106,8 @@ class TokenBudget:
         # default == standard
         return cls(
             mode="standard",
-            max_llm_calls=7,
+            # +1 for narrative_composer. 8 = 기존 7 + composer.
+            max_llm_calls=8,
             max_lenses=2,
             use_llm_quality_gate=False,
             use_llm_narrative_plan=False,
@@ -108,6 +116,7 @@ class TokenBudget:
             use_llm_synthesis=False,
             use_legacy_personas=False,
             allow_meta_lenses=True,
+            use_llm_narrative_composer=True,  # v3.5.0
         )
 
 

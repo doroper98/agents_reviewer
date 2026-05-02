@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v3.4.7"
+VERSION = "v3.5.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -148,7 +148,7 @@ class Orchestrator:
             report_archetype="six_act_theater",
             section_plan=[],
             visualization_plan=[],
-            theme="burgundy",
+            theme="burgundy_mono",
             legacy_directives={},
         )
 
@@ -1008,7 +1008,7 @@ class Orchestrator:
 
         result.total_duration_seconds = time.time() - start_time
 
-        report_theme = strategy.theme or "burgundy"
+        report_theme = strategy.theme or "burgundy_mono"
         # archetype routing:
         # 1) composer 성공 → freeform_essay 명시 라우팅 (v3.3.0)
         # 2) 그 외 → matrix 결정자 (select_archetype)

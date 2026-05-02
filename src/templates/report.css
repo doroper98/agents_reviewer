@@ -1,94 +1,118 @@
-/* ===== Report Theme System ===== */
+/* ===== Report Theme System — Mono Only (v3.5.0) =====
+   SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
+   두 톤(Burgundy Mono · Light Mono) 만 사용. 멀티컬러 6테마 폐기.
+   카테고리 구분은 hue 가 아닌 border-style(solid/dashed/dotted) + 패턴으로 표현.
+   레거시 컴포넌트 클래스 (--red/--orange/--green/--blue/--gold 등) 는 alias 통해 mono 의미축에 매핑.
+   ============================================================ */
 
-/* --- Default: Burgundy (범용) --- */
-:root, [data-theme="burgundy"] {
-  --bg: #2B1A1A; --card: #3D2828; --card-hover: #4A3232; --accent: #4A3232;
-  --text-primary: #F0E2CC; --text-secondary: #D4C4AA; --text-muted: #C0AC90; --text-faded: #9A8A74;
-  --gold: #C9A84C; --gold-light: #D4B45C;
-  --red: #C45C4C; --red-light: #4A2828;
-  --orange: #C4884C; --orange-light: #4A3828;
-  --green: #6B8A5C; --green-light: #2A3828;
-  --blue: #5C7A8A; --blue-light: #283A4A;
-  --border: #5A4A3A; --border-light: #3D2828; --divider: #6B5F50;
-  --shadow: none; --radius: 6px; --radius-lg: 8px;
+/* --- Default: Burgundy Mono (deep wine + amber gold + parchment) --- */
+:root, [data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #3D1820;
+  --card: #4A222E;
+  --card-hover: #4A222E;
+  --accent-surface: #4A222E;
+  --border: #6E3340;
+  --border-light: #4A222E;
+  --divider: #6E3340;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents — guide §3.2 */
+  --accent: #D4A858;   /* 편집 강조 (italic, callout border, key category) */
+  --up: #A8B582;       /* 상승·기회·성공 — 작은 변동 라벨만 */
+  --down: #C9837A;     /* 하락·위험·경보 — 작은 변동 라벨, 이벤트 vertical */
+
+  /* Map tokens */
+  --map-land: #3D1820;
+  --map-water: #2A0E16;
+  --map-boundary: #EFE5D1;
+  --map-graticule: #6E3340;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* === Legacy class aliases — mono 의미축 매핑 ===
+     기존 컴포넌트 CSS 가 --red/--orange/--green/--blue/--gold 토큰을 그대로 사용.
+     멀티컬러 토큰을 mono 3종(--accent/--up/--down)으로 매핑. */
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #2A0E16;            /* 딥 와인 — closing/footer 톤 */
+  --fg-1: var(--text);
+  --fg-2: #D8CCB8;            /* 텍스트 보조 (text 와 muted 사이) */
+  --fg-3: var(--muted);
+  --border-soft: rgba(110,51,64,0.4);
 }
 
-/* --- Geopolitical: 지정학/안보/군사 --- */
-[data-theme="geopolitical"] {
-  --bg: #0F1923; --card: #1A2836; --card-hover: #243342; --accent: #1E2D3D;
-  --text-primary: #E8EDF2; --text-secondary: #C4D0DC; --text-muted: #94A8B8; --text-faded: #6E8498;
-  --gold: #D4A854; --gold-light: #E0B860;
-  --red: #DC4444; --red-light: #2A1A1A;
-  --orange: #E08040; --orange-light: #2A2018;
-  --green: #48A868; --green-light: #1A2A1E;
-  --blue: #4488CC; --blue-light: #1A2840;
-  --border: #2A3A4A; --border-light: #1A2836; --divider: #3A4A5A;
-}
+/* --- Light Mono (cream + deep burgundy + forest green) --- */
+[data-theme="light_mono"] {
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-hover: #f8f2e4;
+  --accent-surface: #f8f2e4;
+  --border: #b3a586;
+  --border-light: #d4c8a8;
+  --divider: #b3a586;
 
-/* --- Financial: 금융/경제/시장 --- */
-[data-theme="financial"] {
-  --bg: #0A1628; --card: #142236; --card-hover: #1E2E44; --accent: #182A3E;
-  --text-primary: #E4ECF4; --text-secondary: #C0D0E0; --text-muted: #8AA0B8; --text-faded: #648098;
-  --gold: #F0C040; --gold-light: #F4CC58;
-  --red: #E85454; --red-light: #2A1418;
-  --orange: #E89040; --orange-light: #2A2014;
-  --green: #38B878; --green-light: #142A1E;
-  --blue: #3498DB; --blue-light: #142844;
-  --border: #1E3048; --border-light: #142236; --divider: #2E4058;
-}
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
 
-/* --- Tech: 기술/AI/IT --- */
-[data-theme="tech"] {
-  --bg: #0E1117; --card: #1A1E26; --card-hover: #242A34; --accent: #1E242E;
-  --text-primary: #E6EDF3; --text-secondary: #C0CCD8; --text-muted: #94A4B0; --text-faded: #6E7E8A;
-  --gold: #F0C040; --gold-light: #F4CC58;
-  --red: #F07070; --red-light: #2A1818;
-  --orange: #E09050; --orange-light: #2A2018;
-  --green: #40D8A0; --green-light: #142A22;
-  --blue: #58A6FF; --blue-light: #142844;
-  --border: #2A3040; --border-light: #1A1E26; --divider: #3A4250;
-}
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
 
-/* --- Nature: 환경/에너지/기후 --- */
-[data-theme="nature"] {
-  --bg: #121A14; --card: #1E2A20; --card-hover: #28362A; --accent: #223024;
-  --text-primary: #E4EDE6; --text-secondary: #C4D8C4; --text-muted: #90B094; --text-faded: #6A8A6E;
-  --gold: #D4A040; --gold-light: #E0B050;
-  --red: #CC5040; --red-light: #2A1A16;
-  --orange: #D89040; --orange-light: #2A2414;
-  --green: #4CAF50; --green-light: #1A2E1A;
-  --blue: #4A90A4; --blue-light: #162A30;
-  --border: #2A3A2C; --border-light: #1E2A20; --divider: #3A4E3C;
-}
+  --map-land: #efe8d9;
+  --map-water: #dccea8;
+  --map-boundary: #1a1a1a;
+  --map-graticule: #b3a586;
 
-/* --- Liquid Glass: iOS 26 스타일 (프리미엄/미래적) --- */
-[data-theme="liquidglass"] {
-  --bg: #0A0A0F; --card: rgba(255,255,255,0.05); --card-hover: rgba(255,255,255,0.08); --accent: rgba(255,255,255,0.04);
-  --text-primary: #F0F0F8; --text-secondary: #D0D0E0; --text-muted: #A0A0B8; --text-faded: #787890;
-  --gold: #E0C060; --gold-light: #F0D070;
-  --red: #FF6B6B; --red-light: rgba(255,80,80,0.1);
-  --orange: #FFA060; --orange-light: rgba(255,160,96,0.1);
-  --green: #60E0A0; --green-light: rgba(96,224,160,0.1);
-  --blue: #60A0FF; --blue-light: rgba(96,160,255,0.1);
-  --border: rgba(255,255,255,0.1); --border-light: rgba(255,255,255,0.05); --divider: rgba(255,255,255,0.12);
-  --shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-[data-theme="liquidglass"] .card,
-[data-theme="liquidglass"] .player-card,
-[data-theme="liquidglass"] .signal-item,
-[data-theme="liquidglass"] .callout,
-[data-theme="liquidglass"] .data-table {
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
-}
-[data-theme="liquidglass"] .hero {
-  background: linear-gradient(180deg, rgba(20,20,40,0.9) 0%, #0A0A0F 100%);
-}
-[data-theme="liquidglass"] .nav {
-  background: rgba(10,10,15,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0, light mono) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --fg-1: var(--text);
+  --fg-2: #3a3a3a;
+  --fg-3: var(--muted);
+  --border-soft: rgba(179,165,134,0.4);
 }
 
 /* --- Reset --- */
