@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light_mono">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tier 1 차트 미리보기 — JPM 풍 메타데이터 적용 샘플</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Light Mono — mono guide §3.1 */
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-2: #e6dec9;
+  --border: #b3a586;
+  --border-soft: #d4c8a8;
+  --text: #1a1a1a;
+  --text-2: #3a3a3a;
+  --muted: #5a5a5a;
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.78;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 880px; margin: 0 auto; padding: 0 22px; }
+
+/* === Banner — 이건 샘플임을 명시 === */
+.preview-banner {
+  background: var(--accent);
+  color: var(--bg);
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+.preview-banner code {
+  background: rgba(255,255,255,0.18);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+/* === Hero === */
+.hero {
+  padding: 56px 0 40px;
+  border-bottom: 1px solid var(--border);
+}
+.hero .eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1.22;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+}
+.hero .deck {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text-2);
+  font-weight: 400;
+  max-width: 720px;
+  margin-bottom: 22px;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.hero-meta .pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px 12px;
+  letter-spacing: 0.4px;
+}
+.hero-meta .pill.accent { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+/* === Sections === */
+section { padding: 40px 0 32px; border-bottom: 1px solid var(--border-soft); }
+section:last-of-type { border-bottom: none; }
+
+.kicker {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.heading {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.32;
+  color: var(--text);
+  margin-bottom: 16px;
+  letter-spacing: -0.3px;
+}
+
+.prose p { margin-bottom: 14px; font-size: 15.5px; line-height: 1.85; color: var(--text-2); }
+.prose strong { color: var(--text); font-weight: 700; }
+.prose em { color: var(--accent); font-style: italic; }
+.prose code {
+  background: rgba(154,30,60,0.08);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.pull-quote {
+  margin: 22px 0;
+  padding: 18px 22px;
+  background: rgba(154,30,60,0.05);
+  border-left: 4px solid var(--accent);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* === Chart Card — Tier 1 메타데이터 표시 === */
+.chart-card {
+  margin: 26px 0;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 16px;
+}
+.chart-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.1px;
+}
+.chart-subtitle {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-2);
+  margin-bottom: 14px;
+  line-height: 1.55;
+  font-style: italic;
+}
+.chart-stage {
+  width: 100%;
+  background: transparent;
+}
+.chart-stage svg { display: block; width: 100%; height: auto; font-family: 'Noto Sans KR', sans-serif; }
+.chart-source {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-soft);
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'Noto Sans KR', sans-serif;
+  letter-spacing: 0.2px;
+}
+.chart-source-label { font-weight: 600; }
+.chart-takeaway {
+  margin-top: 8px;
+  padding: 9px 14px;
+  background: rgba(154,30,60,0.06);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.chart-takeaway-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: 6px;
+}
+
+/* annotations callout (legend below chart) */
+.chart-annotations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.chart-annotation-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.chart-annotation-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+}
+.chart-annotation-swatch.dashed {
+  background: repeating-linear-gradient(90deg, var(--accent) 0 4px, transparent 4px 7px);
+}
+.chart-annotation-swatch.band {
+  background: rgba(154,30,60,0.12);
+  height: 10px;
+  border: 1px solid rgba(154,30,60,0.3);
+}
+.chart-annotation-swatch.point {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+}
+
+/* === Watchlist + Contradictions (compact preview) === */
+.signals-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+@media (min-width: 600px) { .signals-grid { grid-template-columns: 1fr 1fr; } }
+.signal-card {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+}
+.signal-name { font-family: 'Noto Serif KR', serif; font-weight: 700; color: var(--text); font-size: 13px; margin-bottom: 3px; }
+.signal-desc { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+.signal-meta { font-size: 10.5px; color: var(--muted); margin-top: 4px; letter-spacing: 0.2px; }
+
+.contradiction {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-left: 3px dashed var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-top: 14px;
+}
+.contradiction-side { font-size: 13.5px; line-height: 1.65; color: var(--text); margin-bottom: 5px; }
+.contradiction-side strong { color: var(--text); font-weight: 700; margin-right: 4px; }
+.contradiction-resolution { font-size: 12.5px; color: var(--accent); font-style: italic; margin-top: 6px; line-height: 1.6; }
+
+footer.foot {
+  padding: 28px 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+footer.foot a { color: var(--accent); text-decoration: underline; }
+
+/* mobile */
+@media (max-width: 540px) {
+  .hero { padding: 36px 0 28px; }
+  .hero h1 { font-size: 26px; }
+  .hero .deck { font-size: 15px; }
+  section { padding: 28px 0 24px; }
+  .heading { font-size: 22px; }
+  .chart-card { padding: 14px 14px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="preview-banner">
+  Tier 1 차트 메타데이터 적용 미리보기 — <code>subtitle / annotations / reference line / source / takeaway</code>
+</div>
+
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">Sample Report · Light Mono · Tier 1 Preview</div>
+    <h1>코스닥 반도체 소부장 5선 — 1위 prestige 가 항상 valuation 으로 환전되진 않는다</h1>
+    <p class="deck">밸류 갭이 가장 큰 동진쎄미켐·케이씨텍은 단기 catalyst 부재가 할인을 유지시키는 구조. 주성엔지니어링은 이미 2년간 325% 상승 — momentum 이 valuation 을 압축한 사례. 1위라는 사실 자체보다 <em>왜 시장이 1위 premium 을 인정하는가</em> 가 분기점.</p>
+    <div class="hero-meta">
+      <span class="pill accent">Sample Report</span>
+      <span class="pill">투자 분석</span>
+      <span class="pill">2026-05-02</span>
+      <span class="pill">신뢰도 72%</span>
+    </div>
+  </div>
+</header>
+
+<!-- ========== Section 1 — 사실 ========== -->
+<section>
+  <div class="container">
+    <div class="kicker">현재 상황 · 사실</div>
+    <h2 class="heading">2년 누적 6배 격차 — 주성 단독 폭등의 맥락</h2>
+    <div class="prose">
+      <p>2024년 5월부터 2026년 4월까지 5종목의 누적 수익률은 <strong>주성엔지니어링 +325%</strong> 로 압도적이고, 나머지 4종목 (동진쎄미켐·케이씨텍·원익IPS) 은 평균 +59% 로 코스닥 지수 +25% 의 약 2.4배. 즉 <em>주성 단독 폭등</em> 이지 <em>섹터 전체 거품</em> 은 아닌 구조다 (아래 차트).</p>
+      <p>주성의 폭등을 빼고 보면 코스닥 반도체 소부장 1위 종목들이 *지수 대비 알파* 를 만든다는 명제는 유지되지만, 그 알파가 6~7할 수준임을 동시에 인지해야 한다.</p>
+    </div>
+
+    <!-- Chart 1 — Bar with reference line + source + takeaway -->
+    <div class="chart-card">
+      <div class="chart-title">5종목 2년 누적 주가 상승률 (2024-05 → 2026-04)</div>
+      <div class="chart-subtitle">주성 단독 폭등. 4종목 평균 +59%, 코스닥 +25% — 격차는 약 2.4배지만 *섹터 거품* 은 아님</div>
+      <div class="chart-stage">
+        <svg viewBox="0 0 760 280" preserveAspectRatio="xMidYMid meet">
+          <!-- Y axis labels -->
+          <g font-family="Noto Sans KR" font-size="10" fill="#5a5a5a" text-anchor="end">
+            <text x="120" y="48">주성엔지니어링</text>
+            <text x="120" y="86">동진쎄미켐</text>
+            <text x="120" y="124">케이씨텍</text>
+            <text x="120" y="162">원익IPS</text>
+            <text x="120" y="200">코스닥 지수</text>
+          </g>
+          <!-- Bars -->
+          <rect x="128" y="36"  width="595" height="18" fill="#9a1e3c" stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="128" y="74"  width="123" height="18" fill="none" stroke="#1a1a1a" stroke-width="0.6">
+            <animate attributeName="opacity" values="1;1" dur="1s"/>
+          </rect>
+          <defs>
+            <pattern id="ht" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="2.4" stroke="#1a1a1a" stroke-width="0.85"/>
+            </pattern>
+            <pattern id="hw" patternUnits="userSpaceOnUse" width="3.8" height="3.8" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="3.8" stroke="#1a1a1a" stroke-width="0.7"/>
+            </pattern>
+            <pattern id="ah" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="2.4" stroke="#9a1e3c" stroke-width="0.85"/>
+            </pattern>
+            <pattern id="dt" patternUnits="userSpaceOnUse" width="2.4" height="2.4">
+              <circle cx="1.2" cy="1.2" r="0.22" fill="#1a1a1a"/>
+            </pattern>
+          </defs>
+          <rect x="128" y="74"  width="123" height="18" fill="url(#ht)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="128" y="112" width="104" height="18" fill="url(#ah)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="128" y="150" width="97"  height="18" fill="url(#hw)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="128" y="188" width="46"  height="18" fill="url(#dt)" stroke="#1a1a1a" stroke-width="0.4"/>
+          <!-- Bar value labels -->
+          <g font-family="Noto Serif KR" font-size="11" font-weight="700" fill="#1a1a1a">
+            <text x="730" y="49" text-anchor="end">+325%</text>
+            <text x="258" y="87" text-anchor="start">+67%</text>
+            <text x="239" y="125" text-anchor="start">+57%</text>
+            <text x="232" y="163" text-anchor="start">+53%</text>
+            <text x="181" y="201" text-anchor="start">+25%</text>
+          </g>
+          <!-- Reference line — 4종목 평균 (주성 제외) -->
+          <line x1="237" y1="20" x2="237" y2="225" stroke="#9a1e3c" stroke-width="1.2" stroke-dasharray="5,3"/>
+          <text x="237" y="244" text-anchor="middle" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="600">4종목 평균 +59%</text>
+          <line x1="237" y1="248" x2="237" y2="253" stroke="#9a1e3c" stroke-width="0.8"/>
+          <!-- 코스닥 line for ref -->
+          <line x1="174" y1="20" x2="174" y2="225" stroke="#5a5a5a" stroke-width="0.8" stroke-dasharray="2,2"/>
+          <text x="174" y="262" text-anchor="middle" font-family="Noto Sans KR" font-size="9.5" fill="#5a5a5a">코스닥 25%</text>
+          <!-- X axis -->
+          <line x1="128" y1="225" x2="730" y2="225" stroke="#5a5a5a" stroke-width="0.5"/>
+          <g font-family="Noto Sans KR" font-size="9" fill="#5a5a5a" text-anchor="middle">
+            <text x="128" y="240">0%</text>
+            <text x="296" y="240">100%</text>
+            <text x="456" y="240">200%</text>
+            <text x="616" y="240">300%</text>
+          </g>
+        </svg>
+      </div>
+      <div class="chart-annotations">
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch dashed"></span>4종목 평균 (주성 제외)</span>
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch dashed" style="background: repeating-linear-gradient(90deg, #5a5a5a 0 2px, transparent 2px 4px);"></span>코스닥 지수</span>
+      </div>
+      <div class="chart-source">
+        <span><span class="chart-source-label">출처:</span> KRX, 종목별 IR · 2026-05-02 종가 기준</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">N=5</span>
+      </div>
+      <div class="chart-takeaway">
+        <span class="chart-takeaway-label">Takeaway</span>
+        주성 폭등이 섹터 거품 신호는 아님. 4종목 평균조차 코스닥의 2.4배 — 1위 종목군이 지수 대비 알파를 만든다는 명제는 유지되되, 그 알파의 크기는 6~7할 수준으로 인지.
+      </div>
+    </div>
+
+    <p class="prose">주성의 +325% 가 *왜 가능했나* 는 별개 질문 — 주가만 보면 momentum trade 가 valuation 을 압축한 것으로 보이지만, 이게 *진짜 선반영* 인지 *과열* 인지 판단하려면 PER 비교가 필요하다 (다음 섹션).</p>
+  </div>
+</section>
+
+<!-- ========== Section 2 — 메커니즘 ========== -->
+<section>
+  <div class="container">
+    <div class="kicker">왜 가능한가 · 메커니즘</div>
+    <h2 class="heading">PER 격차 — 1위 prestige 가 valuation 으로 환전되지 않는 구조</h2>
+    <div class="prose">
+      <p>같은 "1위" 라도 시장이 매기는 PER 은 <strong>4~7할 수준 할인</strong> 이다. 동진쎄미켐 PER 7.9, 케이씨텍 11.8 (시총÷영업이익 기준) — 동종업계 평균 26.4 와 비교하면 약 30% 수준에서 거래되고 있다는 의미.</p>
+      <p>다만 동진쎄미켐의 7.9 는 <em>영업이익 기준 (시총÷OP)</em> 이다 — 회계 기준 PER 은 23.08 로 동종 평균 근처. 영업이익 변동성이 높은 시기에는 PER 7.9 같은 *극단 할인* 신호를 그대로 받아들이지 말고, GAAP 기준과 구분해서 봐야 한다.</p>
+      <p class="pull-quote">"1위 prestige" 는 시장 narrative 에선 강하지만, 실제 valuation 으로 환전되는 비율은 종목별로 천차만별이다.</p>
+    </div>
+
+    <!-- Chart 2 — Bar with hline + band -->
+    <div class="chart-card">
+      <div class="chart-title">5종목 PER 비교 — 동종업계 평균 대비</div>
+      <div class="chart-subtitle">동진쎄미켐·케이씨텍은 평균 대비 4~7할 할인. 단 동진의 7.9 는 영업이익 기준 — 회계 변동성 보정 필요</div>
+      <div class="chart-stage">
+        <svg viewBox="0 0 760 320" preserveAspectRatio="xMidYMid meet">
+          <!-- Background band — 할인 영역 (0 ~ 26.4) -->
+          <rect x="155" y="20" width="240" height="240" fill="rgba(154,30,60,0.06)"/>
+          <text x="275" y="14" text-anchor="middle" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="600" font-style="italic">↓ 동종 평균 아래 — 할인 구간 ↓</text>
+          <!-- Y axis labels -->
+          <g font-family="Noto Sans KR" font-size="10" fill="#5a5a5a" text-anchor="end">
+            <text x="148" y="48">동진쎄미켐 (시총÷OP)</text>
+            <text x="148" y="86">케이씨텍 (시총÷OP)</text>
+            <text x="148" y="124">케이씨텍 (PER)</text>
+            <text x="148" y="162">동종업계 평균</text>
+            <text x="148" y="200">피에스케이 (PER)</text>
+            <text x="148" y="238">한미반도체 (참고)</text>
+          </g>
+          <!-- Bars -->
+          <defs>
+            <pattern id="ht2" patternUnits="userSpaceOnUse" width="2.4" height="2.4" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="2.4" stroke="#1a1a1a" stroke-width="0.85"/>
+            </pattern>
+            <pattern id="hw2" patternUnits="userSpaceOnUse" width="3.8" height="3.8" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="3.8" stroke="#1a1a1a" stroke-width="0.7"/>
+            </pattern>
+            <pattern id="dt2" patternUnits="userSpaceOnUse" width="2.4" height="2.4">
+              <circle cx="1.2" cy="1.2" r="0.22" fill="#1a1a1a"/>
+            </pattern>
+          </defs>
+          <rect x="155" y="36"  width="72"  height="18" fill="#9a1e3c"      stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="155" y="74"  width="107" height="18" fill="url(#ht2)"    stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="155" y="112" width="210" height="18" fill="url(#hw2)"    stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="155" y="150" width="240" height="18" fill="none"         stroke="#9a1e3c" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="155" y="188" width="276" height="18" fill="url(#dt2)"    stroke="#1a1a1a" stroke-width="0.4"/>
+          <rect x="155" y="226" width="364" height="18" fill="url(#hw2)"    stroke="#1a1a1a" stroke-width="0.4"/>
+          <!-- Bar value labels -->
+          <g font-family="Noto Serif KR" font-size="11" font-weight="700" fill="#1a1a1a">
+            <text x="234" y="49">7.9</text>
+            <text x="269" y="87">11.8</text>
+            <text x="372" y="125">23.08</text>
+            <text x="402" y="163" fill="#9a1e3c">26.4</text>
+            <text x="438" y="201">30.28</text>
+            <text x="526" y="239">40</text>
+          </g>
+          <!-- Reference line — 동종업계 평균 26.4 -->
+          <line x1="395" y1="20" x2="395" y2="265" stroke="#9a1e3c" stroke-width="1.4" stroke-dasharray="5,3"/>
+          <text x="395" y="280" text-anchor="middle" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="700">동종업계 평균 PER 26.4</text>
+          <!-- Annotation — 회계 변동성 주의 화살표 -->
+          <path d="M 240 50 Q 280 22 320 30" fill="none" stroke="#9a1e3c" stroke-width="0.9" marker-end="url(#arr)"/>
+          <defs>
+            <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#9a1e3c"/>
+            </marker>
+          </defs>
+          <text x="324" y="22" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="600">회계 PER 23.08 와 큰 차이</text>
+          <!-- X axis -->
+          <line x1="155" y1="265" x2="730" y2="265" stroke="#5a5a5a" stroke-width="0.5"/>
+          <g font-family="Noto Sans KR" font-size="9" fill="#5a5a5a" text-anchor="middle">
+            <text x="155" y="298">0</text>
+            <text x="280" y="298">10</text>
+            <text x="427" y="298">20</text>
+            <text x="568" y="298">30</text>
+            <text x="710" y="298">40</text>
+          </g>
+        </svg>
+      </div>
+      <div class="chart-annotations">
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch band"></span>할인 영역 (평균 아래)</span>
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch dashed"></span>동종업계 평균 PER 26.4</span>
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch point" style="border-radius: 0; height: 12px; width: 6px; background: rgba(154,30,60,0.4);"></span>주석 마커 (회계 변동성)</span>
+      </div>
+      <div class="chart-source">
+        <span><span class="chart-source-label">출처:</span> DART 공시, 종목별 1Q26 IR / 동종업계 평균은 코스닥 반도체 소부장 30개사 단순 평균</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">As of 2026-04</span>
+      </div>
+      <div class="chart-takeaway">
+        <span class="chart-takeaway-label">Takeaway</span>
+        동진쎄미켐의 7.9 PER 은 *영업이익* 기준 — 회계 PER 23.08 와 함께 봐야 함. 진짜 할인은 케이씨텍의 11.8 (시총÷OP) 가 더 안정적 신호.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== Section 3 — 함의 ========== -->
+<section>
+  <div class="container">
+    <div class="kicker">앞으로의 흐름 · 함의</div>
+    <h2 class="heading">시계열로 본 격차 확대 — Fed 첫 인하 후 분기점</h2>
+    <div class="prose">
+      <p>5종목 평균 (주성 제외 4종목 + 주성 가중) 과 코스닥 지수의 격차는 <strong>2024년 9월 Fed 첫 인하 직후</strong> 부터 본격 확대됐다. 박스권 진입 시기 (2025 하반기) 에 갭이 일시 좁혀졌으나, 2026 초 메모리 가격 회복 기대로 다시 벌어지는 양상.</p>
+      <p>점선 미래 구간은 단순 추세 연장 — <em>예측이 아니라 reference</em>. 시나리오 분기는 <code>watch_signals</code> 섹션의 3개 신호 (Fed 6월 점도표 / 메모리 가격 분기점 / 외국인 순매수) 가 결정.</p>
+    </div>
+
+    <!-- Chart 3 — Line with vline + band + forecast hint -->
+    <div class="chart-card">
+      <div class="chart-title">5종목 가중평균 vs 코스닥 지수 (2024-05 = 100)</div>
+      <div class="chart-subtitle">Fed 첫 인하 후 갭 확대. 2025 하반기 박스권에서 일시 수렴 — 2026 메모리 회복 기대로 재확대</div>
+      <div class="chart-stage">
+        <svg viewBox="0 0 760 320" preserveAspectRatio="xMidYMid meet">
+          <!-- y grid -->
+          <g stroke="#5a5a5a" stroke-opacity="0.18" stroke-width="0.5">
+            <line x1="80" y1="40"  x2="730" y2="40"/>
+            <line x1="80" y1="100" x2="730" y2="100"/>
+            <line x1="80" y1="160" x2="730" y2="160"/>
+            <line x1="80" y1="220" x2="730" y2="220"/>
+            <line x1="80" y1="280" x2="730" y2="280"/>
+          </g>
+          <g font-family="Noto Sans KR" font-size="9" fill="#5a5a5a" text-anchor="end">
+            <text x="74" y="44">300</text>
+            <text x="74" y="104">225</text>
+            <text x="74" y="164">175</text>
+            <text x="74" y="224">125</text>
+            <text x="74" y="284">100</text>
+          </g>
+
+          <!-- Highlight band — 2025 하반기 박스권 -->
+          <rect x="455" y="40" width="115" height="240" fill="rgba(154,30,60,0.08)"/>
+          <text x="513" y="33" text-anchor="middle" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="600" font-style="italic">2025 H2 박스권</text>
+
+          <!-- vline — Fed 첫 인하 (2024-09) -->
+          <line x1="200" y1="40" x2="200" y2="280" stroke="#9a1e3c" stroke-width="1.2" stroke-dasharray="4,3"/>
+          <text x="204" y="56" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="700">Fed 첫 인하 ▼</text>
+          <text x="204" y="68" font-family="Noto Sans KR" font-size="9" fill="#9a1e3c">2024-09</text>
+
+          <!-- vline — 메모리 가격 회복 기대 (2026-02) -->
+          <line x1="612" y1="40" x2="612" y2="280" stroke="#9a1e3c" stroke-width="1.2" stroke-dasharray="4,3"/>
+          <text x="616" y="56" font-family="Noto Sans KR" font-size="10" fill="#9a1e3c" font-weight="700">메모리 회복 ▼</text>
+          <text x="616" y="68" font-family="Noto Sans KR" font-size="9" fill="#9a1e3c">2026-02</text>
+
+          <!-- 5종목 가중평균 line -->
+          <path d="M 80 280 L 140 270 L 200 250 L 260 200 L 320 170 L 380 130 L 440 110 L 500 130 L 560 145 L 612 105 L 670 65"
+                fill="none" stroke="#9a1e3c" stroke-width="2.2"/>
+          <!-- 코스닥 line -->
+          <path d="M 80 280 L 140 278 L 200 270 L 260 260 L 320 245 L 380 230 L 440 220 L 500 230 L 560 232 L 612 215 L 670 205"
+                fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-dasharray="3,3"/>
+
+          <!-- forecast tail (점선 + 음영 cone, demonstration) -->
+          <path d="M 670 65 L 730 50" fill="none" stroke="#9a1e3c" stroke-width="2" stroke-dasharray="2,2" opacity="0.6"/>
+          <path d="M 670 65 L 730 80 L 730 25 Z" fill="rgba(154,30,60,0.12)" stroke="none"/>
+          <text x="700" y="35" text-anchor="middle" font-family="Noto Sans KR" font-size="9" fill="#9a1e3c" font-style="italic">추세 연장 (예측 X)</text>
+
+          <!-- end markers -->
+          <circle cx="670" cy="65" r="3.5" fill="#9a1e3c"/>
+          <text x="666" y="60" text-anchor="end" font-family="Noto Serif KR" font-size="11" font-weight="700" fill="#9a1e3c">5종목 +178</text>
+          <circle cx="670" cy="205" r="3.5" fill="#1a1a1a"/>
+          <text x="666" y="200" text-anchor="end" font-family="Noto Serif KR" font-size="11" font-weight="700" fill="#1a1a1a">코스닥 +25</text>
+
+          <!-- x axis -->
+          <line x1="80" y1="280" x2="730" y2="280" stroke="#5a5a5a" stroke-width="0.5"/>
+          <g font-family="Noto Sans KR" font-size="9" fill="#5a5a5a" text-anchor="middle">
+            <text x="80"  y="298">2024-05</text>
+            <text x="200" y="298">2024-09</text>
+            <text x="320" y="298">2025-01</text>
+            <text x="440" y="298">2025-05</text>
+            <text x="560" y="298">2025-10</text>
+            <text x="670" y="298">2026-04</text>
+          </g>
+        </svg>
+      </div>
+      <div class="chart-annotations">
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch" style="background: #9a1e3c; height: 2.2px;"></span>5종목 가중평균</span>
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch dashed" style="background: repeating-linear-gradient(90deg, #1a1a1a 0 3px, transparent 3px 6px); height: 1.4px;"></span>코스닥 지수</span>
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch dashed"></span>주요 이벤트 vline</span>
+        <span class="chart-annotation-item"><span class="chart-annotation-swatch band"></span>박스권 음영</span>
+      </div>
+      <div class="chart-source">
+        <span><span class="chart-source-label">출처:</span> KRX, FRED (Fed funds rate) · 2024-05 = 100 정규화</span>
+        <span style="font-family: 'JetBrains Mono', monospace;">N=5 + KOSDAQ</span>
+      </div>
+      <div class="chart-takeaway">
+        <span class="chart-takeaway-label">Takeaway</span>
+        Fed 첫 인하 후 갭이 본격 확대됐다는 점은 *금리 민감도* 가 높은 종목군임을 시사. 점선 구간은 추세 연장일 뿐 예측 X — 실제 분기는 watch_signals 의 3개 신호로 판단.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== Section 4 — 반례·미해결 ========== -->
+<section>
+  <div class="container">
+    <div class="kicker">반례·미해결 질문</div>
+    <h2 class="heading">"1위 = 저평가 매수 신호" 가 깨질 수 있는 4가지 조건</h2>
+    <div class="prose">
+      <p>본 분석의 thesis 는 "1위 prestige + valuation 할인" 조합이 *언젠가* 리레이팅 트리거를 받으면 압축이 풀린다는 것. 그러나 다음 4가지 조건 중 하나라도 맞으면 <em>할인이 영구 고착</em> 될 수 있다.</p>
+      <ol style="padding-left: 22px; margin: 14px 0;">
+        <li style="margin-bottom: 8px;"><strong>구조적 시장 축소</strong> — 메모리 사이클이 *영구 둔화* 단계 진입 시. 2026~2028 의 AI 드라이븐 회복이 단기 사이클일 뿐일 가능성.</li>
+        <li style="margin-bottom: 8px;"><strong>1위 지위 변동</strong> — 후발 (피에스케이·테스 등) 의 캐파 증설 + 기술 격차 축소. 동진쎄미켐의 EUV 포토레지스트 1위 지위가 SK 머티리얼즈 등에 위협받는 시나리오.</li>
+        <li style="margin-bottom: 8px;"><strong>외국인 자금 이탈</strong> — 환율 1500원대 진입 + Fed 재인상 시 외국인 코스닥 매도세 누적. 1위 종목군이 *유동성 발판* 을 잃음.</li>
+        <li style="margin-bottom: 8px;"><strong>회계 issue</strong> — 동진쎄미켐의 영업이익 7.9 PER 처럼 OP 변동성 큰 시기에 *진짜 PER* 이 30+ 로 튀면 <em>겉보기 할인</em> 이 신기루였음이 드러남.</li>
+      </ol>
+      <p>이 4가지가 *모두* 발생하면 본 분석의 thesis 는 폐기. 1~2개 발생하면 시나리오 가중치 재조정 필요.</p>
+    </div>
+
+    <!-- Contradictions -->
+    <h3 style="font-family: 'Noto Serif KR', serif; font-size: 17px; color: var(--text); margin: 22px 0 8px;">관점 충돌 (봉합하지 않음)</h3>
+    <div class="contradiction">
+      <div class="contradiction-side"><strong>관점 A:</strong> 동진쎄미켐의 PER 7.9 (시총÷OP) 는 시장이 매기는 가장 큰 할인 신호.</div>
+      <div class="contradiction-side"><strong>관점 B:</strong> 영업이익 기준 PER 은 회계 변동성으로 신뢰도 낮음. 회계 PER 23.08 가 진짜 신호 — 동종 평균과 큰 차이 없음.</div>
+      <div class="contradiction-resolution">→ 본 시점 관점 B 손 듦 (회계 일관성 우선). 단 OP 가 4분기 연속 안정되면 관점 A 부활 가능.</div>
+    </div>
+    <div class="contradiction">
+      <div class="contradiction-side"><strong>관점 A:</strong> 주성엔지니어링 +325% 는 주가 선반영 — 추가 상승여력 제한.</div>
+      <div class="contradiction-side"><strong>관점 B:</strong> 폭등 후에도 PER 이 동종 평균 이하면 momentum + valuation 양쪽 살아있는 상태.</div>
+      <div class="contradiction-resolution">→ 본 분석에선 주성을 *valuation 관점에서 제외* (이미 압축). 4종목 (동진/케이씨텍/원익IPS) 에 집중. 관점 B 는 별도 momentum trade 로만 검토 가능.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== watch signals + closing ========== -->
+<section>
+  <div class="container">
+    <div class="kicker">앞으로 무엇을 볼까</div>
+    <h2 class="heading">감시 신호 5건</h2>
+    <div class="signals-grid">
+      <div class="signal-card">
+        <div class="signal-name">📊 Fed 6월 FOMC 점도표</div>
+        <div class="signal-desc">추가 인하 시그널 여부. 1위 종목군 금리 민감도 확인.</div>
+        <div class="signal-meta">2026-06-18 · 시나리오 분기</div>
+      </div>
+      <div class="signal-card">
+        <div class="signal-name">📉 DRAM 컨택트 가격 분기점</div>
+        <div class="signal-desc">2026 1Q 회복세 지속 여부. 메모리 cycle 영구 둔화 vs 회복 분기.</div>
+        <div class="signal-meta">2026-07 (TrendForce 월간) · 반례 #1 검증</div>
+      </div>
+      <div class="signal-card">
+        <div class="signal-name">💱 외국인 코스닥 순매수 누적</div>
+        <div class="signal-desc">환율 1450원 돌파 시 추적. 외국인 이탈이 1위 종목군 압박.</div>
+        <div class="signal-meta">상시 (KRX 일별) · 반례 #3</div>
+      </div>
+      <div class="signal-card">
+        <div class="signal-name">📑 동진쎄미켐 OP 안정화</div>
+        <div class="signal-desc">4분기 연속 OP 변동성 감소면 PER 7.9 신호 부활.</div>
+        <div class="signal-meta">2026-08 (2Q 실적) · 반례 #4</div>
+      </div>
+      <div class="signal-card">
+        <div class="signal-name">🏭 SK머티리얼즈 EUV PR 양산</div>
+        <div class="signal-desc">동진의 1위 지위 위협. 후발의 캐파 + 기술 격차 축소 신호.</div>
+        <div class="signal-meta">2026 H2 (시장 보도) · 반례 #2</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="container">
+    <div>Tier 1 미리보기 — Sample Report · Light Mono · 2026-05-02</div>
+    <div style="margin-top: 6px;">실제 v4.4.0 적용 시: 위 차트 메타데이터 (subtitle / annotations / reference line / source / takeaway) 가 composer SYSTEM_PROMPT + charts.js 에 박혀 모든 보고서에 자동 적용됨.</div>
+    <div style="margin-top: 6px;">SSOT: <a href="https://github.com/doroper98/agents_reviewer">github.com/doroper98/agents_reviewer</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
