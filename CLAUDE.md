@@ -105,9 +105,9 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.4.4 확장)
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.3 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 10개 패턴 누적:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 12개 패턴 누적:
 - CHART-AP-1: category/group 시각 분리 미적용 (drawNetwork 회귀)
 - CHART-AP-2: 반복 라벨 시각 일관성 깨짐 (drawStacked 회귀)
 - CHART-AP-3: 음수/0/극단값 robust 처리 누락
@@ -117,7 +117,9 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-7: 빈 데이터 차트 emit
 - CHART-AP-8: 차트 type 이 사건과 부적합
 - CHART-AP-9: 지도 zoom/center 디폴트 의존
-- CHART-AP-10: 지도 마커 라벨 충돌 (v4.4.4 신설 — 가까운 마커 라벨 100% 겹침)
+- CHART-AP-10: 지도 마커 라벨 충돌 (v4.4.4 신설)
+- CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 신설 — `--card-deep` 미정의로 dark wine 항상)
+- CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 신설 — `domain([0,1])` 고정으로 데이터 frame 밖)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 

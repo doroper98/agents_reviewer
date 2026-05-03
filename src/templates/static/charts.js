@@ -716,8 +716,20 @@
     const zones = computeZones(W, H, { left: 50, right: 24, top: 28, bottom: 36 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
-    const x = d3.scaleLinear().domain([0, 1]).range([zones.data.x, zones.data.x + zones.data.w]);
-    const y = d3.scaleLinear().domain([0, 1]).range([zones.data.y + zones.data.h, zones.data.y]);
+    // v4.5.3 (CHART-AP-11): x/y 스케일 자동 감지. 이전엔 [0,1] 고정 — composer 가 0~5
+    // / 0~100 으로 emit 시 모든 bubble 이 frame 밖. 이제 입력 extent 기반 + 0 포함
+    // + 약간의 padding 으로 frame 안에 항상 들어옴.
+    const xs = data.map(d => +d.x).filter(v => !isNaN(v));
+    const ys = data.map(d => +d.y).filter(v => !isNaN(v));
+    const xMin = xs.length ? Math.min(0, d3.min(xs)) : 0;
+    const xMax = xs.length ? Math.max(d3.max(xs), xMin === 0 && d3.max(xs) === 0 ? 1 : d3.max(xs) * 1.05) : 1;
+    const yMin = ys.length ? Math.min(0, d3.min(ys)) : 0;
+    const yMax = ys.length ? Math.max(d3.max(ys), yMin === 0 && d3.max(ys) === 0 ? 1 : d3.max(ys) * 1.05) : 1;
+    const x = d3.scaleLinear().domain([xMin, xMax]).range([zones.data.x, zones.data.x + zones.data.w]);
+    const y = d3.scaleLinear().domain([yMin, yMax]).range([zones.data.y + zones.data.h, zones.data.y]);
+    // size 도 robust — 0~1 가정이지만 1 초과해도 정규화
+    const sizes = data.map(d => +(d.size || 0)).filter(v => !isNaN(v) && v > 0);
+    const sMax = sizes.length ? Math.max(...sizes, 1) : 1;
     // Axes labels
     svg.append('text').attr('x', zones.data.x + zones.data.w / 2).attr('y', H - 8).attr('text-anchor', 'middle')
       .attr('fill', t.muted).attr('font-family', 'Noto Sans KR').attr('font-size', 10).text('확률 →');
@@ -733,7 +745,8 @@
     // Bubbles + smart label placement
     data.forEach(d => {
       const cx = x(+d.x), cy = y(+d.y);
-      const r = 6 + 16 * (+(d.size || 0.5));
+      const sNorm = (+(d.size || 0.5)) / sMax;  // 0~1 정규화
+      const r = 6 + 16 * Math.min(1, Math.max(0, sNorm));
       svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', r)
         .attr('fill', t.accent).attr('fill-opacity', 0.5).attr('stroke', t.text).attr('stroke-width', 0.8);
       const lbl = String(d.label || '').slice(0, 10);

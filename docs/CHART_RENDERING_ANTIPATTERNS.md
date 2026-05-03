@@ -236,6 +236,65 @@ for (const c of candidates) {
 
 ---
 
+## CHART-AP-11: 차트 카드 배경이 하드코딩 fallback (테마 미반영)
+
+**증상**: 보고서 테마는 cream 인데 *차트 카드 (chart-card-stage)* 만 짙은 wine
+색으로 박힘. 카드 안 SVG 가 본문 배경과 충돌해 텍스트/축 가독성 0.
+
+**최초 사례**: 20260503_112703 보고서 (v4.5.2 사용자 보고). editorial_cream
+테마 적용됐는데 모든 차트 카드 내부가 dark wine 박스. "글씨가 하나도 제대로
+안 보이고 정보전달에 실패" — 사용자 인용.
+
+**원인**: `charts.css:30` 의 `.chart-card-stage{background: var(--card-deep, #321F1F)}`
+에서 `--card-deep` 변수가 *어떤 테마 블록에도 정의 안 됨* → CSS variable
+resolution 실패 → fallback `#321F1F` (dark wine) 항상 적용. burgundy_mono 에선
+우연히 어울려서 v4.4.x 까지 발견 안 됐고, editorial_cream 디폴트 채택 (v4.5.0)
+후 즉시 노출.
+
+**검증 체크리스트**:
+- [ ] 모든 CSS `var()` fallback 이 *주 사용 테마* 와 어울리는지 검토. 단일
+  하드코딩 fallback 은 다중 테마 시스템에서 회귀 자석.
+- [ ] 신규 테마 도입 시 *모든* CSS 변수 (특히 chart-card / map / hero) 가
+  새 테마에서 어떻게 보이는지 시각 확인.
+- [ ] freeform_essay.html 의 `rgba(0,0,0,...)` 같은 *어두운 overlay* 도
+  cream 테마에서 dim gray 로 보임 → 테마 변수 사용 권장.
+
+**Fix (v4.5.3)**:
+- `report.css` 각 테마 블록에 `--card-deep` 정의 추가 (editorial: cream tone,
+  burgundy: deepest wine, light: deeper cream).
+- `freeform_essay.html` 의 `.freeform-chart-wrap .chart-card` 배경:
+  `rgba(0,0,0,0.18)` → `var(--card, var(--bg-2))`.
+
+---
+
+## CHART-AP-12: 버블 차트 스케일 고정 — 데이터가 frame 밖으로
+
+**증상**: 버블 차트 frame + 축 라벨 (확률→ / 영향) 만 보이고 *버블 자체가
+하나도 안 보임*. 데이터는 emit 됐는데 모든 점이 frame 밖.
+
+**최초 사례**: 20260503_112703 보고서 (v4.5.2 사용자 보고). "주요 시나리오 —
+확률 × 영향" 버블 차트 빈 frame. composer 가 emit 한 x/y 가 0~5 또는
+0~100 범위였을 가능성 (composer prompt 가 0~1 정규화를 명시 안 함).
+
+**원인**: `charts.js:drawBubble` 의 x/y 스케일이 `domain([0, 1])` 고정.
+composer 가 `{x: 0.6, y: 0.7}` (0~1) 가정 emit 시 OK 지만, `{x: 60, y: 70}`
+(0~100) emit 시 모든 bubble 이 frame 우상단 *밖*으로 나가 안 보임.
+
+**검증 체크리스트**:
+- [ ] charts.js 의 모든 차트 type 이 *데이터 extent 자동 감지* — 고정 domain
+  금지. d3.extent / d3.min / d3.max 활용.
+- [ ] composer prompt 의 bubble (또는 좌표 차트) 가이드에 *값 범위* 명시
+  ("x, y 모두 0~1 정규화" 같은 강제) — 또는 자동 감지로 무관해지게.
+- [ ] 빈 frame / 빈 차트 자체를 차단 (CHART-AP-7) — has_data 검증.
+- [ ] size 도 동일 robust 처리 (composer 가 0~1 가정 위반해도 정규화).
+
+**Fix (v4.5.3)**:
+- `drawBubble`: `domain([0, 1])` → `domain([min, max])` 자동 감지 (d3.min/max).
+  0 포함 + 약간의 padding 으로 frame 안 항상 보임.
+- size 도 sMax 기반 정규화 (composer 가 0~10 emit 해도 OK).
+
+---
+
 ## 회귀 발견 시 — 표준 프로토콜
 
 1. 본 문서의 9 패턴 중 어디에 해당하는지 분류

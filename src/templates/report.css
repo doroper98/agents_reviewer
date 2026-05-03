@@ -59,6 +59,7 @@
   --bg-1: var(--bg);
   --bg-2: var(--card);
   --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --card-deep: #E5DBC4;       /* v4.5.3 — chart-card-stage 배경 (본문보다 한 단계 깊게) */
   --fg-1: var(--text);
   --fg-2: #2D241B;
   --fg-3: var(--muted);
@@ -117,6 +118,7 @@
   --bg-1: var(--bg);
   --bg-2: var(--card);
   --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
+  --card-deep: #1A0810;       /* v4.5.3 — chart-card-stage 배경 */
   --fg-1: var(--text);
   --fg-2: #D8CCB8;
   --fg-3: var(--muted);
@@ -168,6 +170,7 @@
   --bg-1: var(--bg);
   --bg-2: var(--card);
   --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --card-deep: #dccea8;       /* v4.5.3 — chart-card-stage 배경 */
   --fg-1: var(--text);
   --fg-2: #3a3a3a;
   --fg-3: var(--muted);
