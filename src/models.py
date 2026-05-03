@@ -613,6 +613,14 @@ class FullAnalysisResult(BaseModel):
         default_factory=lambda: datetime.now().isoformat()
     )
     total_duration_seconds: float = 0.0
+    # v4.5.5 — 시스템 추적성. 회귀 / 재생성 / 패치 흔적이 보고서 자체에 노출.
+    system_version: str = ""
+    """보고서 생성 시점의 src/orchestrator.py:VERSION (예: 'v4.5.4').
+    재렌더 시엔 *재렌더 시점 버전* 으로 갱신 (CSS/JS 변경이 그 버전 따름)."""
+    revision: int = 0
+    """patch_report.py 로 수정될 때마다 +1. 0 = 최초 생성, 1+ = 패치됨.
+    초기 생성 보고서는 0. 사용자가 같은 사건 재생성하면 *새 보고서 ID* 라
+    revision 0 부터 시작. revision 은 *동일 보고서의 수정 횟수* 만 추적."""
     # NOTE (V3 Step 4 / Anti-pattern #10): ``ContextAnalysis.confidence_score`` 등 기존
     # ``confidence_score: float`` 필드들은 v2 호환 목적으로 보존되며 deprecated 상태.
     # 신규 코드는 ``ConfidenceProfile`` (3축) 을 사용. v3.0.0 릴리스 시점에 일괄 정리 예정.

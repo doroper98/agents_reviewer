@@ -423,10 +423,13 @@ async def main() -> int:
                 return 1
             mutated = True
 
-    # 수정 사항 있으면 JSON 다시 저장 (--rerender-only / --edit 만이면 이미 변경 X)
-    if mutated:
+    # 수정 사항 있으면 JSON 다시 저장 + revision +1 (v4.5.5).
+    # --rerender-only / --edit 만은 데이터 변경 X 라 revision 안 올림.
+    # --edit 는 사용자가 raw JSON 직접 편집 → 변경 여부 모르니 안전하게 +1.
+    if mutated or args.edit:
+        result.revision = (getattr(result, "revision", 0) or 0) + 1
         write_json(result, json_path)
-        print(f"[patch] JSON 갱신: {json_path}")
+        print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision})")
 
     # 재렌더
     synth = ReportSynthesizer(config)

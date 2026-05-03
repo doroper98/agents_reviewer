@@ -967,6 +967,15 @@ class ReportSynthesizer:
         # (`_payload_map` 등이 ``result.report_theme`` 으로 light/burgundy 분기.)
         result.report_theme = theme
 
+        # v4.5.5 — 시스템 추적성. 보고서 자체에 생성/재렌더 시점 버전 노출.
+        # 재렌더 (--rerender-only) 도 본 메서드 거치므로 매번 *현재 시점 VERSION* 으로
+        # 갱신. revision 은 patch_report.py 가 책임 (본 메서드는 안 건드림).
+        try:
+            from src.orchestrator import VERSION as _SYSTEM_VERSION
+            result.system_version = _SYSTEM_VERSION
+        except Exception:
+            pass  # VERSION import 실패해도 보고서 생성은 계속
+
         # v3.1.0: deterministic-first executive summary + conditional narrative plan.
         key_summary_items: list[str] = []
         narrative_plan: NarrativePlan | None = None

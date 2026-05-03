@@ -21,6 +21,7 @@
 .freeform-hero{padding:48px 0 32px;background:linear-gradient(180deg,var(--bg-2,#2B1A1A) 0%,var(--bg-1,#1B1010) 100%);border-bottom:1px solid var(--border-light,#3D2828)}
 .freeform-hero .container{max-width:780px}
 .freeform-eyebrow{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:12px}
+.freeform-version{font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:0.4px;color:var(--fg-3,var(--muted));text-transform:none;margin-left:4px}
 .freeform-headline{font-family:'Newsreader','Noto Serif KR',serif;font-size:34px;font-weight:900;line-height:1.25;color:var(--fg-1,#F0E2CC);margin:0 0 14px;letter-spacing:-0.5px}
 .freeform-deck{font-size:17px;line-height:1.6;color:var(--fg-2,#D4C4AA);font-weight:300;margin-bottom:18px}
 .freeform-meta{font-size:12px;color:var(--fg-3,#A89880);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -107,7 +108,7 @@
 
 <header class="freeform-hero">
   <div class="container">
-    <div class="freeform-eyebrow">Event Analysis · Composed</div>
+    <div class="freeform-eyebrow">Event Analysis · Composed{% if result.system_version %} · <span class="freeform-version">{{ result.system_version }}{% if result.revision and result.revision > 0 %} · Rev {{ result.revision }}{% endif %}</span>{% endif %}</div>
     <h1 class="freeform-headline">{{ (composed.headline if composed else (result.context.event_name or 'Analysis')) | strip_md }}</h1>
     {% if composed and composed.deck %}<p class="freeform-deck">{{ composed.deck | strip_md }}</p>{% endif %}
     <div class="freeform-meta">
