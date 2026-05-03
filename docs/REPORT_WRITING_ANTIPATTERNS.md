@@ -159,6 +159,38 @@ last_review: 2026-05-02
 
 ---
 
+## WRITE-AP-8: max_tokens 한도로 보고서 본문 중간 절단
+
+**증상**: 보고서가 *분량이 정해진 듯* 항상 비슷한 길이에서 끝남. 사건이 복잡해
+서 더 길게 작성돼야 할 상황에도 본문이 *중간에 끊긴 느낌*. JSON 파싱은 성공
+하지만 마지막 섹션 / 모순 / 감시 신호 등이 누락되거나 짧음.
+
+**최초 사례**: 20260503_142254 보고서 (v4.5.3 사용자 보고). "보고서가 내용을
+검토 하다가 중간에 끊긴 느낌" — 사용자 인용. 자율주행 일정 비교라 다중
+플레이어 + 시계열 + 시나리오 + 정책 환경까지 폭넓게 다뤄야 했으나 본문이
+일정 길이에서 종료.
+
+**원인**: `narrative_composer.MAX_TOKENS = 8192` 고정. fast/standard/deep 동일.
+한국어는 영문보다 토큰 효율이 낮아 (글자당 1.5~2 토큰) deep 모드에서 5~7 섹션
++ 시나리오 + 모순 + 차트 데이터 + 지도 emit 까지 하면 8K 가 초과 — 응답이
+*중간에 잘림*. Anthropic API 는 잘리면 `finish_reason='max_tokens'` 로 알려
+주지만 코드는 그걸 안 보고 그대로 파싱 → 부분 보고서 출력.
+
+**검증 체크리스트**:
+- [ ] composer max_tokens 가 mode 별로 분기되어 있나? (fast/standard/deep)
+- [ ] deep 모드는 *충분히 큰* 한도 (Opus 4.7 기준 32K 권장).
+- [ ] API 응답의 `stop_reason` / `finish_reason` 검사 — `max_tokens` 면
+  warning 로깅 (telemetry).
+- [ ] 한국어 보고서 토큰 효율 계산 (영문 대비 1.5~2배) 가 prompt 가이드의
+  섹션 수 / 길이 권장에 반영돼있나?
+
+**Fix (v4.5.4)**:
+- `narrative_composer.MAX_TOKENS_BY_MODE`: fast 12K / standard 20K / deep 32K.
+- `_call_api(user_message, mode)` 에 mode 인자 추가 → mode 별 max_tokens 적용.
+- 단일 8K 폐기 (legacy MAX_TOKENS 는 default fallback 으로만 32K 보존).
+
+---
+
 ## 체크리스트 — composer prompt / persona 가이드 변경 시
 
 ### prose 형식

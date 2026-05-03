@@ -443,28 +443,89 @@
     const data = (payload.data || []);
     if (!data.length) return;
     const W = 720;
-    const rowH = 24;
-    const H = 56 + 32 + (data.length * rowH) + 8;
-    const zones = computeZones(W, H, { left: 150, right: 60 });
+    const rowH = 26;
+    const axisH = 28;  // v4.5.4 — 시간축 그릴 자리
+    const H = 48 + axisH + (data.length * rowH) + 8;
+    const zones = computeZones(W, H, { left: 150, right: 80, top: 28, bottom: axisH + 8 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
-    const min = d3.min(data, d => +d.start);
-    const max = d3.max(data, d => +d.end || (+d.start + 1));
-    const xScale = d3.scaleLinear().domain([min, max])
+
+    // v4.5.4 (CHART-AP-13): 시간축 자동 추가. 이전엔 X축 자체가 안 그려져
+    // 사용자가 막대 위치만 보고 시점 추정 불가. 또한 start/end 같으면 막대 폭 0
+    // → note 가 행 라벨과 동일 X 위치에 그려져 글자 겹침.
+    // 입력 정규화: numeric 또는 'YYYY' / 'YYYY-MM' 문자열 둘 다 지원.
+    function parseTime(v) {
+      if (typeof v === 'number') return v;
+      const s = String(v || '').trim();
+      const yMatch = s.match(/^(\d{4})/);
+      if (yMatch) {
+        const y = +yMatch[1];
+        const m = s.match(/^\d{4}[-./](\d{1,2})/);
+        return y + (m ? (+m[1] - 1) / 12 : 0);
+      }
+      const n = +s;
+      return isNaN(n) ? 0 : n;
+    }
+    const starts = data.map(d => parseTime(d.start));
+    const ends = data.map((d, i) => {
+      const e = parseTime(d.end);
+      return e > starts[i] ? e : starts[i] + 0.4;  // start === end 면 0.4 단위 폭
+    });
+    const min = Math.min(...starts);
+    const max = Math.max(...ends);
+    const span = Math.max(0.1, max - min);
+    const xScale = d3.scaleLinear()
+      .domain([min - span * 0.02, max + span * 0.02])
       .range([zones.data.x, zones.data.x + zones.data.w]);
+
+    // 시간축 (하단). 정수 연도면 정수 tick, 아니면 d3 자동.
+    const axisG = svg.append('g').attr('class', 'axis-x')
+      .attr('transform', `translate(0, ${zones.data.y + zones.data.h + 4})`);
+    const tickCount = Math.min(8, Math.max(3, Math.round(span * 1.2)));
+    const ticks = xScale.ticks(tickCount).filter(v => Math.abs(v - Math.round(v)) < 0.001 || tickCount > 6);
+    const ticksFinal = ticks.length >= 2 ? ticks : xScale.ticks(tickCount);
+    ticksFinal.forEach(tick => {
+      const x = xScale(tick);
+      axisG.append('line').attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', 4)
+        .attr('stroke', t.muted).attr('stroke-width', 0.7);
+      axisG.append('text').attr('x', x).attr('y', 16).attr('text-anchor', 'middle')
+        .attr('fill', t.muted).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+        .text(Number.isInteger(tick) ? String(tick) : tick.toFixed(1));
+    });
+    // 가로 격자 (가벼운)
+    ticksFinal.forEach(tick => {
+      const x = xScale(tick);
+      svg.append('line').attr('x1', x).attr('x2', x)
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.muted).attr('stroke-width', 0.4).attr('stroke-opacity', 0.25)
+        .attr('stroke-dasharray', '2,3');
+    });
+
     data.forEach((d, i) => {
-      const y = zones.data.y + 4 + i * rowH;
+      const y = zones.data.y + 6 + i * rowH;
+      // 행 라벨 (왼쪽 zone). 길면 25자로 truncate (이전 22 → 25, 가독성↑).
+      const label = String(d.label || '').slice(0, 25);
       svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 11).attr('text-anchor', 'end')
         .attr('fill', t.text).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-        .text(String(d.label || '').slice(0, 22));
-      const x0 = xScale(+d.start);
-      const x1 = xScale(+(d.end || d.start + 1));
-      svg.append('rect').attr('x', x0).attr('y', y).attr('width', Math.max(2, x1 - x0)).attr('height', 14)
-        .attr('fill', t.accent).attr('rx', 1.5);
+        .attr('font-weight', 600)
+        .text(label);
+      const x0 = xScale(starts[i]);
+      const x1 = xScale(ends[i]);
+      const barW = Math.max(6, x1 - x0);  // 최소 6px (이전 2 → 6, 점이 아니게)
+      svg.append('rect').attr('x', x0).attr('y', y).attr('width', barW).attr('height', 14)
+        .attr('fill', t.accent).attr('rx', 2);
+      // note placement — 막대 폭에 따라 안 / 밖. 이전엔 항상 막대 우측 → 다음 행 라벨과
+      // X 가 겹치면 글자 충돌. 이제 막대 폭 ≥ 60px 이면 *안*에 흰글자, 아니면 *밖* 우측.
       if (d.note) {
-        svg.append('text').attr('x', x1 + 6).attr('y', y + 11)
-          .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
-          .text(String(d.note).slice(0, 18));
+        const noteText = String(d.note).slice(0, 22);
+        const inside = barW >= 60;
+        svg.append('text')
+          .attr('x', inside ? x0 + 6 : x1 + 6)
+          .attr('y', y + 11)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 9)
+          .attr('fill', inside ? t.bg : t.muted)
+          .attr('font-weight', inside ? 600 : 400)
+          .text(noteText);
       }
     });
     renderAnnotations(svg, payload, zones, t, xScale, null);

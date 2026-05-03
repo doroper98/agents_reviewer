@@ -105,34 +105,21 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.3 확장)
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.4 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 12개 패턴 누적:
-- CHART-AP-1: category/group 시각 분리 미적용 (drawNetwork 회귀)
-- CHART-AP-2: 반복 라벨 시각 일관성 깨짐 (drawStacked 회귀)
-- CHART-AP-3: 음수/0/극단값 robust 처리 누락
-- CHART-AP-4: 고정 aspect-ratio ↔ 동적 viewBox 충돌 (letterbox)
-- CHART-AP-5: 라벨 zone 밖 잘림 (drawBar 회귀)
-- CHART-AP-6: annotation 충돌 (vline + end label 등)
-- CHART-AP-7: 빈 데이터 차트 emit
-- CHART-AP-8: 차트 type 이 사건과 부적합
-- CHART-AP-9: 지도 zoom/center 디폴트 의존
-- CHART-AP-10: 지도 마커 라벨 충돌 (v4.4.4 신설)
-- CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 신설 — `--card-deep` 미정의로 dark wine 항상)
-- CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 신설 — `domain([0,1])` 고정으로 데이터 frame 밖)
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 13개 패턴 누적:
+- CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
+- CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
+- CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
+- CHART-AP-13: Gantt 차트 시간축 누락 + 행 라벨/note 충돌 (v4.5.4 신설)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
-## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.4.7 확장)
+## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / persona 가이드 / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 7개 패턴 누적:
-- WRITE-AP-1: 마크다운 강조 기호 raw 노출 ('AI 작성 흔적')
-- WRITE-AP-2: 전문 용어 첫 등장 시 풀이 누락
-- WRITE-AP-3: 지리적 사건의 지도 후행 배치
-- WRITE-AP-4: AI 작성 느낌의 표현 (clichés)
-- WRITE-AP-5: 출처 없는 추정을 단정으로 진술
-- WRITE-AP-6: 모순을 자연스럽게 봉합
-- WRITE-AP-7: 서수 / 기수의 모호한 혼용 ('N번' 의 두 얼굴 — v4.4.7 신설)
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 8개 패턴 누적:
+- WRITE-AP-1~7: 기존 (마크다운 raw / 용어 풀이 / 지도 후행 / 진부 연결어 / 추정 단정 / 모순 봉합 / 서수 모호)
+- WRITE-AP-8: max_tokens 한도로 보고서 본문 중간 절단 (v4.5.4 신설 — 단일 8K 한도 회귀)
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 

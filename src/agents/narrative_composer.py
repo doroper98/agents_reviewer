@@ -305,7 +305,14 @@ class NarrativeComposer:
 
     # Opus 4.7 모델 ID. config.model_name 이 4.6 이라도 composer 만 4.7 사용.
     COMPOSER_MODEL: str = "claude-opus-4-7"
-    MAX_TOKENS: int = 8192
+    # v4.5.4: mode 별 분기. 이전엔 8192 단일 → deep 보고서 본문 중간 절단 회귀.
+    # Opus 4.7 출력 한도가 충분히 크므로 deep 은 32K. fast 는 짧은 응답 권장.
+    MAX_TOKENS_BY_MODE: dict[str, int] = {
+        "fast": 12000,
+        "standard": 20000,
+        "deep": 32000,
+    }
+    MAX_TOKENS: int = 32000  # 기본값 (mode 정보 없을 때)
 
     def __init__(self, config: Config) -> None:
         self.config = config
@@ -337,7 +344,7 @@ class NarrativeComposer:
             if self.config.use_cli_mode:
                 raw = await self._call_cli(user_message)
             else:
-                raw = await self._call_api(user_message)
+                raw = await self._call_api(user_message, mode=mode)
         except Exception as e:
             logger.warning("[unified_composer] LLM call failed: %s", e)
             return None
@@ -567,12 +574,13 @@ class NarrativeComposer:
         )
         return raw
 
-    async def _call_api(self, user_message: str) -> str:
+    async def _call_api(self, user_message: str, mode: str = "standard") -> str:
         assert self._api_client is not None, "API client not initialised"
         start = time.time()
+        max_tokens = self.MAX_TOKENS_BY_MODE.get(mode, self.MAX_TOKENS)
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
             model=self.COMPOSER_MODEL,
-            max_tokens=self.MAX_TOKENS,
+            max_tokens=max_tokens,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_message}],
         )
