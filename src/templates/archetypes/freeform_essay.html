@@ -54,10 +54,12 @@
 .freeform-analogy-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#B05A38);margin-bottom:8px}
 .freeform-analogy-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16.5px;font-weight:700;line-height:1.4;color:var(--fg-1);margin-bottom:8px}
 .freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2)}
-.freeform-fact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
-.freeform-fact-grid[data-cols="3"]{grid-template-columns:repeat(2,1fr)}
+/* v4.5.1 — mobile 은 항상 1 col stack (홀수/짝수 wrap 어색 회피).
+   desktop 은 count 별 분기. */
+.freeform-fact-grid{display:grid;grid-template-columns:1fr;gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
 @media(min-width:720px){
   .freeform-fact-grid{grid-template-columns:repeat(4,1fr)}
+  .freeform-fact-grid[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
   .freeform-fact-grid[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
   .freeform-fact-grid[data-cols="5"]{grid-template-columns:repeat(5,1fr)}
   .freeform-fact-grid[data-cols="6"]{grid-template-columns:repeat(3,1fr)}

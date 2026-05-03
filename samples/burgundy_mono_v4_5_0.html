@@ -71,11 +71,11 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 .analogy-title { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; line-height: 1.4; color: var(--fg-1); margin-bottom: 8px; }
 .analogy-body { font-size: 14.5px; line-height: 1.75; color: var(--fg-2); }
 
-/* fact-grid — count 별 컬럼 분기 */
-.fact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin: 24px 0; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden; }
-.fact-grid[data-cols="3"] { grid-template-columns: repeat(2, 1fr); }
+/* v4.5.1 — mobile 은 항상 1 col stack (홀수/짝수 wrap 어색 회피). */
+.fact-grid { display: grid; grid-template-columns: 1fr; gap: 1px; margin: 24px 0; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden; }
 @media (min-width: 720px) {
   .fact-grid { grid-template-columns: repeat(4, 1fr); }
+  .fact-grid[data-cols="2"] { grid-template-columns: repeat(2, 1fr); }
   .fact-grid[data-cols="3"] { grid-template-columns: repeat(3, 1fr); }
   .fact-grid[data-cols="5"] { grid-template-columns: repeat(5, 1fr); }
   .fact-grid[data-cols="6"] { grid-template-columns: repeat(3, 1fr); }
