@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v4.2.0
+last_synced_with: v4.5.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
@@ -26,7 +26,8 @@ last_review: 2026-05-02
 - Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
 - Visualization: d3 v7 SVG 차트 (composer-emitted inline data, 8종 type)
 - Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
-- Theme: mono 2종 (burgundy_mono / light_mono) 만, 멀티컬러 폐기
+- Theme: 3종 (editorial_cream / burgundy_mono / light_mono). v4.5.0 부터 디폴트는 editorial_cream, burgundy_mono 는 위기·분쟁 한정.
+- Font: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. Noto Serif KR 한국어 폴백.
 - Hosting: Cloudflare Pages (wrangler CLI 배포)
 - Infra: Oracle Cloud VM (무료 티어)
 

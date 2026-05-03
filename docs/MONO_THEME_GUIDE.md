@@ -1,24 +1,39 @@
 ---
 tier: 2
-last_synced_with: v3.4.7
+last_synced_with: v4.5.0
 ssot_for:
-  - "Light Mono / Burgundy Mono 보고서 톤 팔레트"
+  - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
   - "d3 + d3-geo + TopoJSON 시각화 스택 결정"
+  - "Newsreader / IBM Plex Sans KR / IBM Plex Mono 폰트 시스템 (v4.5.0)"
   - "샘플 호스팅 — GitHub Pages + Actions 자동 배포"
 depends_on:
   - "samples/chart_map_mono_compare.html"
   - ".github/workflows/pages.yml"
   - "docs/REPORT_STYLE_GUIDE.md"
-last_review: 2026-05-01
+  - "src/templates/report.css (테마 토큰 SSOT)"
+  - "src/lens_policy.py:_THEME_BY_CATEGORY"
+last_review: 2026-05-03
 ---
 
-# Mono Theme Guide — Light Mono · Burgundy Mono
+# Theme Guide — Editorial Cream · Burgundy Mono · Light Mono
 
-> 보고서 톤 두 종(Light Mono · Burgundy Mono)의 색 팔레트와, 색 대신 패턴/명암으로 데이터 카테고리를 구분하는 모노톤 시각화 시스템을 정의한다.
-> 두 톤은 본 프로젝트 보고서의 **표준 메인 테마**다. 멀티 컬러(red·orange·gold·green·blue) 팔레트는 더 이상 사용하지 않는다.
-> 살아있는 참조 구현은 [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html) — 같은 시나리오를 Light Mono · Burgundy Mono 두 컬럼으로 동시 렌더해서 비교한다.
+> v4.5.0 부터 *세 톤* 보고서 테마. 디폴트는 `editorial_cream` (cream + terracotta, LG AI Seminar 톤). `burgundy_mono` 는 위기·분쟁 (`geopolitical`/`accident`) 한정. `light_mono` 는 legacy 보존. 색 대신 패턴/명암으로 카테고리를 구분하는 모노톤 시각화 시스템은 그대로.
+> 살아있는 참조 구현: [samples/chart_map_mono_compare.html](../samples/chart_map_mono_compare.html).
 > **라이브 미리보기**: <https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html>
+
+## 0. v4.5.0 변경 요약
+
+| 항목 | v4.4.x 이전 | v4.5.0 |
+|---|---|---|
+| 디폴트 테마 | `burgundy_mono` (다소 밝은 와인) | `editorial_cream` (cream + terracotta) |
+| `burgundy_mono` 톤 | bg `#3D1820`, water `#2A0E16` | bg `#2A0F18`, water `#1A0810` (어둡게 보정) |
+| 폰트 | Noto Serif KR + Noto Sans KR + JetBrains Mono | **Newsreader** (display, 영문/숫자) + **IBM Plex Sans KR** (본문) + **IBM Plex Mono**. Noto Serif KR 한국어 폴백. |
+| 카테고리 → 테마 | tech/financial/geopolitical/accident → burgundy, policy → light | tech/financial/policy/industry/general → editorial_cream, geopolitical/accident → burgundy_mono |
+| Editorial 컴포넌트 | 없음 | `lede` / `analogy` / `fact_grid` / `dropcap` / 자동 TOC |
+| composer 톤 | 음슴체 (~함) | 평어체 (~다) + 질문 던지기 |
+
+세부 토큰은 `src/templates/report.css` (SSOT). 카테고리 라우팅은 `src/lens_policy.py:_THEME_BY_CATEGORY`.
 
 ---
 

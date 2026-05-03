@@ -1,21 +1,21 @@
 ---
 tier: 1
-last_synced_with: v4.2.0
+last_synced_with: v4.5.0
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "CHANGELOG.md"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-02
+last_review: 2026-05-03
 ---
 
 # Event Analysis Team — AI Agent System
 
-텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Sonnet 4.6 → UnifiedComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 mono 톤 HTML 로 Cloudflare Pages 에 배포하는 시스템.
+텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → UnifiedComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템.
 
 ## Status
-- Version: **v4.2.0** (SSOT: `src/orchestrator.py:VERSION`) — **composer-emitted 차트/지도** + mono guide 정합. composer 가 차트 데이터 (8종 type) 와 지도 데이터 (d3 + d3-geo + TopoJSON) 를 직접 emit. 기존 build_chart_payload 결정적 빌더 + maplibre-gl 의존 폐기.
+- Version: **v4.5.0** (SSOT: `src/orchestrator.py:VERSION`) — **editorial 인터랙션 패턴** (평어체, 비유박스, fact-grid, dropcap, TOC) + Newsreader/IBM Plex 폰트. 신규 디폴트 테마 `editorial_cream` (cream + terracotta), `burgundy_mono` 는 위기·분쟁 한정 (어둡게 보정). v4.4.x 의 d3 차트/지도 + zoom + 소말릴란드 해칭 + 모든 raw text `strip_md` 일관 적용.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
 - Tier 3 docs: [WORKFLOWS](WORKFLOWS.md) · [DEVLOG](DEVLOG.md) · [CHANGELOG](CHANGELOG.md)
@@ -43,6 +43,10 @@ python -m src.main
 
 ## Recent Changes
 최신 7건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+- **v4.5.0** Editorial 인터랙션 패턴 + Newsreader/IBM Plex 폰트 (LG 벤치마크 차용). 신규 디폴트 테마 `editorial_cream`, `burgundy_mono` 어둡게 + 위기/분쟁 한정. composer 평어체 (~다) + 신규 4 필드 (lede / analogy / fact_grid / dropcap) + 자동 TOC. WRITE-AP-7 (서수/식별번호 혼용) 추가.
+- **v4.4.7** patch_report.py `--deck`/`--headline`/`--closing`/`--confidence-summary` 추가. WRITE-AP-1 회귀 fix (모든 raw text 필드에 `strip_md` filter 일괄 적용). WRITE-AP-7 신설.
+- **v4.4.6** 지도 상단 배치 + d3.zoom() 인터랙션 + 소말릴란드 해칭 폴리곤. WRITE-AP-3 (지도 후행 배치) 회귀 fix.
+- **v4.4.5** patch_report.py `--show` / `--map-zoom` / `--map-center` / `--remove-marker` + `--remove-chart` 다중 (인덱스 shift 자동 처리).
 - **v4.2.0** Composer-emitted charts + maps. ComposedSection.charts (8 type) + ComposedReport.embedded_map 신설. charts.js 전면 재작성 (inline payload + mono guide §4 패턴). maps.js d3-geo + TopoJSON 으로 재작성, maplibre 폐기.
 - **v4.1.0** ContextAnalyst → Opus 4.7. Tier 4 의 2-call 파이프라인에서 context 가 composer 가 보는 *유일한* 사실 입력이라 사실 추출 품질을 한 세대 위 모델로 상향. fast 모드 다운그레이드 제거.
 - **v4.0.0** Tier 4 — UnifiedComposer 단일 호출 파이프라인 (MAJOR). 7개 분석 에이전트 + 11종 lens + 11종 archetype + 5단계 게이트 모두 호출 중단 (코드는 보존). LLM 호출 deep 13 → 2 (~85% ↓). archetype 매트릭스 라우팅 폐기, 항상 freeform_essay.

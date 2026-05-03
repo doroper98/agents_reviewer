@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v4.2.0
+last_synced_with: v4.5.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-02
+last_review: 2026-05-03
 ---
 
 # Changelog
@@ -21,6 +21,45 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ---
 
 ## [Unreleased]
+
+### v4.5.0 — Editorial Interaction Patterns + Newsreader/IBM Plex Fonts (LG 벤치마크 차용)
+
+LG AI Seminar 보고서를 인터랙션 패턴 벤치마크로 채택. 기술 스택 (d3 차트/지도, mono 테마 시스템, Tier 4 아키텍처) 은 그대로 유지하고 *말하는 방식 + 페이지 위 텍스트 구조* 만 차용. 음슴체 → 평어체, 신규 editorial 컴포넌트 4종, 폰트 시스템 교체.
+
+#### Added
+- 신규 테마 `editorial_cream` — cream (`#F2EBDB`) + terracotta accent (`#B05A38`). 디폴트로 채택. `burgundy_mono` 는 위기·분쟁 (`geopolitical`/`accident`) 한정.
+- `ComposedSection.lede` — 긴 도입 1~3문장 (italic, prose 위 큰 글씨).
+- `ComposedSection.analogy` — `{title, body}` 비유 박스. 어려운 개념을 일상 비유로.
+- `ComposedSection.fact_grid` — `[{label, value, sublabel?}]` 핵심 수치 격자.
+- `ComposedSection.dropcap` — bool, prose 첫 글자 dropcap 렌더 (보고서당 1~2 섹션 권장).
+- 자동 TOC — 섹션 ≥ 2개일 때 hero 직후 자동 생성. 섹션 anchor (`#sec-N`) 자동 부여.
+- 폰트: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. 한국어는 Noto Serif KR 폴백.
+- WRITE-AP-7 — 서수 / 기수 혼용 ("N번" 의 두 얼굴) anti-pattern 신설.
+
+#### Changed
+- composer SYSTEM_PROMPT v4.5.0 — 음슴체 (~함) 폐기 → 평어체 (~다). 질문 던지기 가이드. WRITE-AP-7 prevention 명시.
+- `burgundy_mono` 톤 어둡게 보정 — bg `#3D1820` → `#2A0F18`, water `#2A0E16` → `#1A0810`. 사용자 피드백 "맑은 와인" → "dried-blood" 톤.
+- `lens_policy._THEME_BY_CATEGORY` — 디폴트 `editorial_cream`, `geopolitical`/`accident` 만 `burgundy_mono`.
+- `freeform_essay.html` — 모든 raw text 출력에 `| strip_md` 적용 (v4.4.7 정책 일관).
+
+#### Fixed
+- WRITE-AP-1 회귀 (v4.4.7) — markdown asterisk 가 `contradictions` / `watch_signals` / `deck` / `headline` 등 dict 필드에서 raw 노출. lightweight `_strip_markdown` 신규 + jinja2 `strip_md` filter + 모든 raw text 필드에 일괄 적용.
+
+---
+
+### v4.4.7 — Patch tool 텍스트 필드 옵션 + WRITE-AP-7 + WRITE-AP-1 확장
+
+`patch_report.py` 에 `--deck` / `--headline` / `--closing` / `--confidence-summary` 추가. composed_report 텍스트 필드를 LLM 호출 없이 즉시 수정.
+
+### v4.4.6 — 지도 상단 배치 + d3.zoom + 소말릴란드 해칭 폴리곤
+
+WRITE-AP-3 (지도 후행 배치) 회귀 fix — 지도 섹션을 hero 직후로 이동. d3.zoom() pan/zoom + 컨트롤 버튼. 소말릴란드 (de facto) 45° 해칭 폴리곤 (Natural Earth 1:50m 단순화).
+
+### v4.4.5 — patch_report.py 지도/마커 옵션 + 다중 차트 제거
+
+`--show` / `--map-zoom` / `--map-center` / `--remove-marker` 추가. `--remove-chart` 다중 가능 (인덱스 shift 자동 처리).
+
+---
 
 ### v4.2.0 — Composer-emitted Charts + Maps
 
