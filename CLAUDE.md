@@ -120,15 +120,16 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
-## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설)
+## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.4.7 확장)
 **composer SYSTEM_PROMPT / persona 가이드 / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 6개 패턴 누적:
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 7개 패턴 누적:
 - WRITE-AP-1: 마크다운 강조 기호 raw 노출 ('AI 작성 흔적')
 - WRITE-AP-2: 전문 용어 첫 등장 시 풀이 누락
 - WRITE-AP-3: 지리적 사건의 지도 후행 배치
 - WRITE-AP-4: AI 작성 느낌의 표현 (clichés)
 - WRITE-AP-5: 출처 없는 추정을 단정으로 진술
 - WRITE-AP-6: 모순을 자연스럽게 봉합
+- WRITE-AP-7: 서수 / 기수의 모호한 혼용 ('N번' 의 두 얼굴 — v4.4.7 신설)
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 

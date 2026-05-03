@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="{{ report_theme or 'burgundy_mono' }}">
+<html lang="ko" data-theme="{{ report_theme or 'editorial_cream' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,8 +67,8 @@
 <header class="freeform-hero">
   <div class="container">
     <div class="freeform-eyebrow">Event Analysis · Composed</div>
-    <h1 class="freeform-headline">{{ composed.headline if composed else (result.context.event_name or 'Analysis') }}</h1>
-    {% if composed and composed.deck %}<p class="freeform-deck">{{ composed.deck }}</p>{% endif %}
+    <h1 class="freeform-headline">{{ (composed.headline if composed else (result.context.event_name or 'Analysis')) | strip_md }}</h1>
+    {% if composed and composed.deck %}<p class="freeform-deck">{{ composed.deck | strip_md }}</p>{% endif %}
     <div class="freeform-meta">
       {% if result.context and result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
       {% if result.context and result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
@@ -91,7 +91,7 @@
         <button type="button" data-map-zoom="out" aria-label="축소">−</button>
         <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
       </div>
-      <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'burgundy_mono' }}"></div>
+      <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'editorial_cream' }}"></div>
       <script type="application/json" id="map-payload">{{ composed.embedded_map | tojson }}</script>
       <div class="map-hint">드래그·휠·핀치로 지도 이동·확대 · 빗금 영역: 소말릴란드</div>
     </div>
@@ -103,10 +103,10 @@
 {% for sec in composed.sections %}
 <section class="freeform-section fade-in">
   <div class="container">
-    {% if sec.kicker %}<div class="freeform-kicker">{{ sec.kicker }}</div>{% endif %}
-    <h2 class="freeform-heading">{{ sec.heading }}</h2>
+    {% if sec.kicker %}<div class="freeform-kicker">{{ sec.kicker | strip_md }}</div>{% endif %}
+    <h2 class="freeform-heading">{{ sec.heading | strip_md }}</h2>
     {% if sec.prose %}<div class="freeform-prose">{{ sec.prose | structured }}</div>{% endif %}
-    {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote }}</div>{% endif %}
+    {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote | strip_md }}</div>{% endif %}
 
     {# v4.4.0 — composer 가 inline 으로 emit 한 차트 데이터 (sec.charts: list[dict]).
        schema (Tier 1+2): {type, title, subtitle?, data, annotations?, source?, takeaway?, note?}.
@@ -131,8 +131,8 @@
       {% if has_data %}
       <div class="freeform-chart-wrap">
         <div class="chart-card">
-          <div class="chart-card-title">{{ ch.title or '차트' }}</div>
-          {% if ch.subtitle %}<div class="chart-card-subtitle">{{ ch.subtitle }}</div>{% endif %}
+          <div class="chart-card-title">{{ (ch.title or '차트') | strip_md }}</div>
+          {% if ch.subtitle %}<div class="chart-card-subtitle">{{ ch.subtitle | strip_md }}</div>{% endif %}
           <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}"
                data-chart-type="{{ ch.type or 'bar' }}"
                data-chart-id="ch-s{{ loop.index0 }}-{{ loop.index }}">
@@ -140,16 +140,16 @@
           </div>
           {% if ch.source %}
           <div class="chart-card-source">
-            <span class="chart-card-source-label">출처:</span> {{ ch.source }}
+            <span class="chart-card-source-label">출처:</span> {{ ch.source | strip_md }}
           </div>
           {% endif %}
           {% if ch.takeaway %}
           <div class="chart-card-takeaway">
             <span class="chart-card-takeaway-label">Takeaway</span>
-            {{ ch.takeaway }}
+            {{ ch.takeaway | strip_md }}
           </div>
           {% endif %}
-          {% if ch.note %}<div class="chart-card-note">{{ ch.note }}</div>{% endif %}
+          {% if ch.note %}<div class="chart-card-note">{{ ch.note | strip_md }}</div>{% endif %}
           <script type="application/json" class="chart-payload-inline">{{ ch | tojson }}</script>
         </div>
       </div>
@@ -189,10 +189,10 @@
     <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
     {% for c in composed.contradictions %}
     <div style="background:rgba(212,168,88,0.06);border-left:3px dashed var(--accent,#D4A858);border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:12px">
-      <div style="font-size:13px;line-height:1.7;color:var(--fg-1,#F0E2CC);margin-bottom:6px"><strong>관점 A:</strong> {{ c.side_a }}</div>
-      <div style="font-size:13px;line-height:1.7;color:var(--fg-1,#F0E2CC);margin-bottom:6px"><strong>관점 B:</strong> {{ c.side_b }}</div>
-      {% if c.evidence %}<div style="font-size:11.5px;color:var(--fg-3,#A89880);margin-bottom:4px">근거 충돌: {{ c.evidence }}</div>{% endif %}
-      {% if c.resolution %}<div style="font-size:12.5px;color:var(--accent,#D4A858);margin-top:6px;font-style:italic">→ {{ c.resolution }}</div>{% endif %}
+      <div style="font-size:13px;line-height:1.7;color:var(--fg-1,#F0E2CC);margin-bottom:6px"><strong>관점 A:</strong> {{ c.side_a | strip_md }}</div>
+      <div style="font-size:13px;line-height:1.7;color:var(--fg-1,#F0E2CC);margin-bottom:6px"><strong>관점 B:</strong> {{ c.side_b | strip_md }}</div>
+      {% if c.evidence %}<div style="font-size:11.5px;color:var(--fg-3,#A89880);margin-bottom:4px">근거 충돌: {{ c.evidence | strip_md }}</div>{% endif %}
+      {% if c.resolution %}<div style="font-size:12.5px;color:var(--accent,#D4A858);margin-top:6px;font-style:italic">→ {{ c.resolution | strip_md }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>
@@ -207,10 +207,10 @@
     <div style="display:grid;grid-template-columns:1fr;gap:10px">
       {% for s in composed.watch_signals %}
       <div style="background:rgba(0,0,0,0.18);border:1px solid var(--border-soft,rgba(125,98,76,0.25));border-left:3px solid var(--accent,#D4A858);border-radius:6px;padding:12px 14px">
-        <div style="font-size:13px;font-weight:700;color:var(--fg-1,#F0E2CC);margin-bottom:4px">{% if s.icon %}{{ s.icon }} {% endif %}{{ s.signal }}</div>
-        {% if s.description %}<div style="font-size:12.5px;color:var(--fg-2,#D4C4AA);line-height:1.6;margin-bottom:4px">{{ s.description }}</div>{% endif %}
-        {% if s.indicates %}<div style="font-size:11.5px;color:var(--accent,#D4A858);margin-bottom:2px">→ {{ s.indicates }}</div>{% endif %}
-        {% if s.deadline %}<div style="font-size:10.5px;color:var(--fg-3,#A89880)">{{ s.deadline }}</div>{% endif %}
+        <div style="font-size:13px;font-weight:700;color:var(--fg-1,#F0E2CC);margin-bottom:4px">{% if s.icon %}{{ s.icon }} {% endif %}{{ s.signal | strip_md }}</div>
+        {% if s.description %}<div style="font-size:12.5px;color:var(--fg-2,#D4C4AA);line-height:1.6;margin-bottom:4px">{{ s.description | strip_md }}</div>{% endif %}
+        {% if s.indicates %}<div style="font-size:11.5px;color:var(--accent,#D4A858);margin-bottom:2px">→ {{ s.indicates | strip_md }}</div>{% endif %}
+        {% if s.deadline %}<div style="font-size:10.5px;color:var(--fg-3,#A89880)">{{ s.deadline | strip_md }}</div>{% endif %}
       </div>
       {% endfor %}
     </div>
@@ -223,11 +223,11 @@
   <div class="container">
     {% if composed.confidence_summary %}
     <div class="freeform-closing-label">신뢰도 ({{ '%.0f'|format(composed.confidence_score * 100) }}%)</div>
-    <div class="freeform-closing-body" style="margin-bottom:14px">{{ composed.confidence_summary }}</div>
+    <div class="freeform-closing-body" style="margin-bottom:14px">{{ composed.confidence_summary | strip_md }}</div>
     {% endif %}
     {% if composed.closing %}
     <div class="freeform-closing-label">분석가의 한계</div>
-    <div class="freeform-closing-body">{{ composed.closing }}</div>
+    <div class="freeform-closing-body">{{ composed.closing | strip_md }}</div>
     {% endif %}
   </div>
 </section>

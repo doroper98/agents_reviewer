@@ -138,20 +138,23 @@ def select_lenses(
 
 
 # Theme 결정도 코드 규칙으로 처리 (Strategy Planner 프롬프트에서 분리).
-# v3.5.0: docs/MONO_THEME_GUIDE.md 채택 — mono 2종 만 사용. 멀티컬러 폐기.
-# 정책·법안·규제는 라이트 톤(편집 풍, 인쇄 친화), 그 외는 다크 mono 가 정보 밀도와 어울림.
+# v4.5.0: editorial_cream (cream + terracotta) 디폴트 채택. burgundy_mono 는
+# 위기·분쟁·사고 등 무게감이 필요한 사건 한정. light_mono 는 legacy 보존.
+# 디폴트 cream 의 근거: 평어체·비유·dropcap 등 v4.5.0 인터랙션 패턴이
+# 편집자형 톤이라 cream 배경과 시각적으로 정합 (LG 보고서 벤치마크 차용).
 _THEME_BY_CATEGORY: dict[str, str] = {
-    "tech": "burgundy_mono",
-    "financial": "burgundy_mono",
-    "geopolitical": "burgundy_mono",
-    "accident": "burgundy_mono",
-    "policy": "light_mono",
-    "industry": "burgundy_mono",
-    "general": "burgundy_mono",
+    "tech": "editorial_cream",
+    "financial": "editorial_cream",
+    "geopolitical": "burgundy_mono",   # 외교·분쟁·전쟁 — gravitas
+    "accident": "burgundy_mono",       # 재난·사고 — 무게감
+    "policy": "editorial_cream",       # 정책·법안 — 편집 톤
+    "industry": "editorial_cream",
+    "general": "editorial_cream",
 }
 
 
 def select_theme(event_type: str) -> str:
-    """event_type → 보고서 테마. LLM 호출 없이 결정. mono 2종(burgundy_mono/light_mono)만."""
+    """event_type → 보고서 테마. LLM 호출 없이 결정.
+    v4.5.0: editorial_cream 디폴트, burgundy_mono 는 위기/분쟁 한정."""
     category = _classify_event_type(event_type)
-    return _THEME_BY_CATEGORY.get(category, "burgundy_mono")
+    return _THEME_BY_CATEGORY.get(category, "editorial_cream")

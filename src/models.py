@@ -255,7 +255,7 @@ class AnalysisStrategy(BaseModel):
     # === 실행 옵션 (alias='skip' 으로 v2 dict 호환 유지) ===
     skip_agents: list[str] = Field(default_factory=list, alias="skip")
     uncertainty_policy: Literal["aggressive", "moderate", "conservative"] = "moderate"
-    theme: str = "burgundy_mono"
+    theme: str = "editorial_cream"
 
     # === Step 1 한정 transitional shim ===
     # v2 의 dict 기반 per-agent directive 문자열을 보존하기 위한 임시 필드.

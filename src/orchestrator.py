@@ -148,7 +148,7 @@ class Orchestrator:
             report_archetype="six_act_theater",
             section_plan=[],
             visualization_plan=[],
-            theme="burgundy_mono",
+            theme="editorial_cream",
             legacy_directives={},
         )
 

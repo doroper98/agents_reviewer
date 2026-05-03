@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""patch_report.py — v4.4.5
+"""patch_report.py — v4.4.7
 이미 생성된 보고서를 LLM 호출 없이 부분 수정하고 재렌더·재배포.
 
 [배경]
@@ -26,6 +26,11 @@
 
   python scripts/patch_report.py 20260502_154823 --remove-marker hargeisa
       지도 마커 1개 제거 (id 기준). --show 로 id 확인 가능.
+
+  python scripts/patch_report.py 20260502_154823 \
+      --deck "유엔 회원국 가운데 첫 공식 승인. 다음 도미노는 미국·UAE·에티오피아."
+      composed_report 의 텍스트 필드 교체 (--deck/--headline/--closing/
+      --confidence-summary). 한국어 따옴표 포함 시 셸 escape 주의.
 
   python scripts/patch_report.py 20260502_154823 --edit
       $EDITOR (vim/nano) 로 JSON 직접 편집
@@ -105,6 +110,26 @@ def parse_args() -> argparse.Namespace:
         "--remove-marker",
         metavar="MARKER_ID",
         help="지도 마커 1개 제거 (id 기준). --show 로 id 확인.",
+    )
+    p.add_argument(
+        "--deck",
+        metavar="TEXT",
+        help="composed_report.deck (헤드라인 부제) 교체.",
+    )
+    p.add_argument(
+        "--headline",
+        metavar="TEXT",
+        help="composed_report.headline 교체.",
+    )
+    p.add_argument(
+        "--closing",
+        metavar="TEXT",
+        help="composed_report.closing (분석가의 한계) 교체.",
+    )
+    p.add_argument(
+        "--confidence-summary",
+        metavar="TEXT",
+        help="composed_report.confidence_summary 교체.",
     )
     p.add_argument(
         "--edit",
@@ -236,6 +261,22 @@ def patch_remove_marker(result: FullAnalysisResult, marker_id: str) -> bool:
         )
         emap["arcs"] = arcs_kept
     print(f"[patch] marker 제거: '{marker_id}' (남은 markers: {len(kept)})")
+    return True
+
+
+def patch_set_text(result: FullAnalysisResult, field: str, value: str) -> bool:
+    """ComposedReport 의 단일 텍스트 필드 (deck/headline/closing/confidence_summary) 교체."""
+    if not result.composed_report:
+        print("[patch] composed_report 없음", file=sys.stderr)
+        return False
+    if not hasattr(result.composed_report, field):
+        print(f"[patch] composed_report 에 '{field}' 필드 없음", file=sys.stderr)
+        return False
+    old = getattr(result.composed_report, field) or ""
+    setattr(result.composed_report, field, value)
+    snip_old = (old[:60] + "...") if len(old) > 60 else old
+    snip_new = (value[:60] + "...") if len(value) > 60 else value
+    print(f"[patch] {field}: '{snip_old}' → '{snip_new}'")
     return True
 
 
@@ -371,6 +412,16 @@ async def main() -> int:
         if not patch_remove_marker(result, args.remove_marker):
             return 1
         mutated = True
+    for field, val in (
+        ("deck", args.deck),
+        ("headline", args.headline),
+        ("closing", args.closing),
+        ("confidence_summary", args.confidence_summary),
+    ):
+        if val is not None:
+            if not patch_set_text(result, field, val):
+                return 1
+            mutated = True
 
     # 수정 사항 있으면 JSON 다시 저장 (--rerender-only / --edit 만이면 이미 변경 X)
     if mutated:

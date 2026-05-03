@@ -29,6 +29,8 @@ last_review: 2026-05-02
 
 **최초 사례**: 소말릴란드 보고서 (v4.4.3 사용자 보고). composer prompt 에 ``*..*`` 사용 *금지* 가 명시 안 돼 있었고, ``_format_structured_text`` 필터에도 strip 처리가 없었음.
 
+**v4.4.7 재발 (회귀 확장)**: 같은 보고서 contradictions / watch_signals 섹션에서 ``*..*`` 가 다시 노출. 원인: ``_format_structured_text`` 가 *prose* 에만 적용되고 dict 필드 (side_a/side_b/evidence/resolution, watch_signals.* 등) 에는 미적용. 수정: lightweight ``_strip_markdown`` 신규 + jinja2 filter ``strip_md`` 등록 + ``freeform_essay.html`` 의 모든 raw text 출력에 ``| strip_md`` 일괄 적용 (headline / deck / kicker / heading / pull_quote / chart-card 메타 / contradictions / watch_signals / closing / confidence_summary).
+
 **검증 체크리스트**:
 - [ ] composer prompt 의 본문 형식 가이드에 *마크다운 강조 금지* 명시?
   ```
@@ -127,12 +129,43 @@ last_review: 2026-05-02
 
 ---
 
+## WRITE-AP-7: 서수와 기수의 모호한 혼용 ('N번' 의 두 얼굴)
+
+**증상**: composer 가 *서수 (첫 번째)* 의미로 "N번" 을 사용. 한국어에서 "N번"
+은 식별번호 / 순번 / 문항 뉘앙스가 강해 *서수* 로 즉시 안 읽힘. 결과: 독자가
+"무슨 의미지?" 하고 멈춤.
+
+**최초 사례**: 소말릴란드 v4.4.6 보고서 deck — *"유엔 회원국 1번이 호른
+아프리카 지도를 흔드는 중"*. composer 의도는 "유엔 회원국 가운데 첫 번째로
+[승인했다]" 였으나 "1번" 이 회원국 ID / 등록순서 (예: 알파벳 1번 아프가니스탄)
+처럼 읽힘. 사용자 피드백: "유엔 회원국 1번이라는게 무슨 의미야?"
+
+**검증 체크리스트**:
+- [ ] composer prompt 의 *수치 / 서수 가이드* 명시?
+  ```
+  - 서수 (첫 번째 / 두 번째 / N 번째) 의미일 때 *"N번"* 형식 금지.
+    "첫", "처음으로", "첫 번째", "가운데 첫" 사용.
+    "N번" 은 식별번호 (1번 출입구, 2번 후보) 뉘앙스가 강해 의미 모호.
+  - 기수 (개수) 일 때만 "1개", "1국" 사용. 사람·국가 단위는 "한 명" /
+    "한 국가" 더 자연스러움.
+  ```
+- [ ] persona 의 "수치에 굉장히 강하며" 가이드와 정합 — 정확한 수치 표현은
+  *모호한 단축형* 의 반대.
+
+**고친 예**:
+- 나쁨: `유엔 회원국 1번이 호른 아프리카 지도를 흔드는 중`
+- 좋음: `유엔 회원국 가운데 첫 공식 승인. 다음 도미노는 미국·UAE·에티오피아.`
+- 좋음: `회원국으로는 처음 — 호른 아프리카 지도가 흔들린다.`
+
+---
+
 ## 체크리스트 — composer prompt / persona 가이드 변경 시
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)
 - [ ] 진부한 연결어 금지 명시 (WRITE-AP-4)
 - [ ] 추정은 hedging 표현 (WRITE-AP-5)
+- [ ] 서수는 "첫"/"처음으로", "N번" 금지 (WRITE-AP-7)
 
 ### 어휘
 - [ ] 전문 용어 첫 등장 시 한 줄 풀이 (WRITE-AP-2)

@@ -180,6 +180,28 @@ class ReportSynthesizer:
         return governance, key_items
 
     @staticmethod
+    def _strip_markdown(text: str) -> str:
+        """Strip markdown emphasis from raw dict text fields (WRITE-AP-1 fallback).
+
+        v4.4.7: ``_format_structured_text`` 의 strip 부분만 떼어낸 lightweight 변형.
+        prose 외 dict 필드 (contradictions.side_a/side_b/evidence/resolution,
+        watch_signals.*, deck, headline, closing, confidence_summary 등) 에
+        적용. ``<br>`` 변환이나 section header 처리는 안 함.
+
+        composer prompt 에 마크다운 강조 금지를 명시했지만 실수로 emit 됐을 때의
+        템플릿-side 마지막 방어선. WRITE-AP-1 회귀가 prose 외 영역에서 재발한
+        것을 v4.4.7 사용자 피드백으로 발견 → 모든 raw text 필드에 적용.
+        """
+        if not text:
+            return text
+        text = re.sub(r"\*\*([^*\n]{1,300})\*\*", r"\1", text)
+        text = re.sub(r"\*([^*\n]{1,300})\*", r"\1", text)
+        text = re.sub(r"__([^_\n]{1,300})__", r"\1", text)
+        text = re.sub(r"(?<!\w)_([^_\n]{1,300})_(?!\w)", r"\1", text)
+        text = re.sub(r"^> ?", "", text, flags=re.MULTILINE)
+        return text
+
+    @staticmethod
     def _format_structured_text(text: str) -> str:
         """Convert numbered patterns (첫째/둘째/N층 etc.) into <br> separated lines.
 
@@ -1003,6 +1025,10 @@ class ReportSynthesizer:
 
         env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
         env.filters["structured"] = self._format_structured_text
+        # v4.4.7 (WRITE-AP-1 확장): dict 필드용 lightweight strip — markdown
+        # 강조만 제거하고 다른 변환은 안 함. contradictions / watch_signals /
+        # deck / headline / closing 등 raw text dict 에 적용.
+        env.filters["strip_md"] = self._strip_markdown
 
         # Branch by archetype. six_act_theater = unchanged legacy path (byte-equal output guarantee).
         # New archetypes (financial_transmission, tech_decomposition) render placeholder templates;

@@ -80,6 +80,9 @@
 [data-theme="burgundy_mono"] .chart-card-takeaway{
   background: rgba(212,168,88,0.08);
 }
+[data-theme="editorial_cream"] .chart-card-takeaway{
+  background: rgba(176,90,56,0.07);  /* terracotta tint on cream */
+}
 .chart-card-takeaway-label{
   font-size: 9px;
   font-weight: 700;
