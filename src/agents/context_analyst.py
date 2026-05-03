@@ -106,6 +106,10 @@ class ContextAnalyst(BaseAgent):
 
     async def analyze(self, request: AnalysisRequest) -> ContextAnalysis:
         """Analyze event and return context / situation board."""
+        # v4.5.7 — mode 별 max_tokens 분기. deep 사건은 사실/타임라인/출처가 많아
+        # 4K 부족 가능. fast/standard 는 4K 충분.
+        MAX_TOKENS_BY_MODE = {"fast": 4096, "standard": 4096, "deep": 10000}
+        self._max_tokens_override = MAX_TOKENS_BY_MODE.get(request.mode, 4096)
         context = {
             "event_description": request.event_description,
             "request_type": request.request_type,

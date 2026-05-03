@@ -157,9 +157,13 @@ class BaseAgent:
 
         logger.info(f"[{self.name}] Starting API analysis ({self.model_name})...")
         start_ts = time.time()
+        # v4.5.7 — subclass 가 self._max_tokens_override 설정하면 그 값 사용.
+        # BaseAgent 디폴트는 4096. ContextAnalyst 가 mode (fast/standard/deep) 별로
+        # 분기 적용 — deep 사건은 사실 수집 범위가 커서 4K 부족.
+        max_tokens = getattr(self, "_max_tokens_override", None) or 4096
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
             model=self.model_name,
-            max_tokens=4096,
+            max_tokens=max_tokens,
             system=system,
             messages=[{"role": "user", "content": user_message}],
         )
