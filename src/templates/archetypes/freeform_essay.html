@@ -77,6 +77,28 @@
   </div>
 </header>
 
+{# v4.4.6 — 지리적 사건은 지도가 본문 *상위* 에 와야 (WRITE-AP-3 회귀 방지).
+   이전엔 모든 섹션 + closing 후 맨 끝에 위치해 독자가 위치를 모른 채 분석 읽음.
+   d3.zoom() 인터랙션 + 소말릴란드 해칭 폴리곤은 maps.js 에서. #}
+{% if has_inline_map %}
+<section class="freeform-section freeform-map-section fade-in">
+  <div class="container">
+    <div class="freeform-kicker">지리적 구도</div>
+    <h2 class="freeform-heading">지도</h2>
+    <div class="map-card">
+      <div class="map-controls">
+        <button type="button" data-map-zoom="in" aria-label="확대">＋</button>
+        <button type="button" data-map-zoom="out" aria-label="축소">−</button>
+        <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
+      </div>
+      <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'burgundy_mono' }}"></div>
+      <script type="application/json" id="map-payload">{{ composed.embedded_map | tojson }}</script>
+      <div class="map-hint">드래그·휠·핀치로 지도 이동·확대 · 빗금 영역: 소말릴란드</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 {% if composed and composed.sections %}
 {% for sec in composed.sections %}
 <section class="freeform-section fade-in">
@@ -211,19 +233,7 @@
 </section>
 {% endif %}
 
-{# v4.2.0 — composer-emitted 지도 (보고서 레벨, 지리적 사건일 때만) #}
-{% if has_inline_map %}
-<section class="freeform-section fade-in">
-  <div class="container">
-    <div class="freeform-kicker">지리적 구도</div>
-    <h2 class="freeform-heading">지도</h2>
-    <div class="map-card">
-      <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'burgundy_mono' }}"></div>
-      <script type="application/json" id="map-payload">{{ composed.embedded_map | tojson }}</script>
-    </div>
-  </div>
-</section>
-{% endif %}
+{# v4.4.6 — 지도 섹션은 hero 직후로 이동. 여기엔 안 둠 (WRITE-AP-3). #}
 
 <footer class="footer">
   {% if confidence_text %}<div class="footer-confidence">{{ confidence_text }}</div>{% endif %}

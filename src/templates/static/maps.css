@@ -31,6 +31,56 @@
 .map-stage .country { fill: var(--map-land, var(--bg)); }
 .map-stage .country-border { stroke: var(--map-boundary, var(--text)); }
 
+/* v4.4.6 — d3.zoom 컨트롤 + 힌트. 지도 컨테이너는 position:relative 이미 잡혀있어
+   absolute 로 우상단에 띄움. */
+.map-card { position: relative; }
+.map-controls {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-soft, rgba(125, 98, 76, 0.35));
+  border-radius: 6px;
+  padding: 4px;
+}
+.map-controls button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text, #EFE5D1);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0;
+}
+.map-controls button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent, #D4A858);
+}
+.map-controls button:active { background: rgba(255, 255, 255, 0.14); }
+
+.map-hint {
+  margin-top: 8px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  color: var(--muted, #A88E7A);
+}
+
+.map-stage { cursor: grab; }
+.map-stage.dragging { cursor: grabbing; }
+
 @media (max-width: 540px) {
   .map-stage { aspect-ratio: 4 / 3; }
+  .map-controls { top: 18px; right: 18px; }
+  .map-controls button { width: 30px; height: 30px; font-size: 16px; }
 }
