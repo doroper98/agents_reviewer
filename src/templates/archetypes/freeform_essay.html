@@ -54,16 +54,12 @@
 .freeform-analogy-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#B05A38);margin-bottom:8px}
 .freeform-analogy-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16.5px;font-weight:700;line-height:1.4;color:var(--fg-1);margin-bottom:8px}
 .freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2)}
-/* v4.5.1 — mobile 은 항상 1 col stack (홀수/짝수 wrap 어색 회피).
-   desktop 은 count 별 분기. */
-.freeform-fact-grid{display:grid;grid-template-columns:1fr;gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
-@media(min-width:720px){
-  .freeform-fact-grid{grid-template-columns:repeat(4,1fr)}
-  .freeform-fact-grid[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
-  .freeform-fact-grid[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
-  .freeform-fact-grid[data-cols="5"]{grid-template-columns:repeat(5,1fr)}
-  .freeform-fact-grid[data-cols="6"]{grid-template-columns:repeat(3,1fr)}
-}
+/* v4.5.2 — count 그대로 한 줄 강제 (전 화면). wrap 자체를 차단. */
+.freeform-fact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
+.freeform-fact-grid[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
+.freeform-fact-grid[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+.freeform-fact-grid[data-cols="5"]{grid-template-columns:repeat(5,1fr)}
+.freeform-fact-grid[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
 .freeform-fact-tile{padding:14px 16px;background:var(--bg-1)}
 .freeform-fact-label{font-size:10.5px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--fg-3,var(--muted));margin-bottom:4px}
 .freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px}
@@ -87,8 +83,18 @@
   .freeform-prose{font-size:15px;line-height:1.78}
   .freeform-pullquote{font-size:16px;padding:14px 16px}
   .freeform-lede{font-size:16.5px}
-  .freeform-fact-value{font-size:19px}
   .freeform-prose.has-dropcap p:first-child::first-letter{font-size:46px}
+  /* fact-grid 좁은 폭 대응 — 한 줄 유지하되 padding/font 축소.
+     value 길면 자동 줄바꿈 + word-break */
+  .freeform-fact-tile{padding:10px 8px}
+  .freeform-fact-label{font-size:9px;letter-spacing:0.4px;margin-bottom:3px}
+  .freeform-fact-value{font-size:15px;word-break:keep-all;overflow-wrap:break-word}
+  .freeform-fact-sublabel{font-size:10px;line-height:1.35}
+  /* 5/6 cols 는 모바일에서 정말 좁으니 더 축소 */
+  .freeform-fact-grid[data-cols="5"] .freeform-fact-tile,
+  .freeform-fact-grid[data-cols="6"] .freeform-fact-tile{padding:8px 6px}
+  .freeform-fact-grid[data-cols="5"] .freeform-fact-value,
+  .freeform-fact-grid[data-cols="6"] .freeform-fact-value{font-size:13px}
 }
 </style>
 </head>

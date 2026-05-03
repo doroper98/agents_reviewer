@@ -71,15 +71,12 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 .analogy-title { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; line-height: 1.4; color: var(--fg-1); margin-bottom: 8px; }
 .analogy-body { font-size: 14.5px; line-height: 1.75; color: var(--fg-2); }
 
-/* v4.5.1 — mobile 은 항상 1 col stack (홀수/짝수 wrap 어색 회피). */
-.fact-grid { display: grid; grid-template-columns: 1fr; gap: 1px; margin: 24px 0; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden; }
-@media (min-width: 720px) {
-  .fact-grid { grid-template-columns: repeat(4, 1fr); }
-  .fact-grid[data-cols="2"] { grid-template-columns: repeat(2, 1fr); }
-  .fact-grid[data-cols="3"] { grid-template-columns: repeat(3, 1fr); }
-  .fact-grid[data-cols="5"] { grid-template-columns: repeat(5, 1fr); }
-  .fact-grid[data-cols="6"] { grid-template-columns: repeat(3, 1fr); }
-}
+/* v4.5.2 — count 그대로 한 줄 강제 (전 화면). */
+.fact-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 24px 0; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden; }
+.fact-grid[data-cols="2"] { grid-template-columns: repeat(2, 1fr); }
+.fact-grid[data-cols="3"] { grid-template-columns: repeat(3, 1fr); }
+.fact-grid[data-cols="5"] { grid-template-columns: repeat(5, 1fr); }
+.fact-grid[data-cols="6"] { grid-template-columns: repeat(6, 1fr); }
 .fact-tile { padding: 14px 16px; background: var(--bg-1); }
 .fact-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--fg-3); margin-bottom: 4px; }
 .fact-value { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 24px; font-weight: 700; color: var(--fg-1); line-height: 1.15; margin-bottom: 2px; }
@@ -96,8 +93,16 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
   h1.headline { font-size: 28px; }
   h2.heading { font-size: 22px; }
   .lede { font-size: 16.5px; }
-  .fact-value { font-size: 20px; }
   .prose.has-dropcap p:first-child::first-letter { font-size: 48px; }
+  /* fact-grid 좁은 폭 대응 */
+  .fact-tile { padding: 10px 8px; }
+  .fact-label { font-size: 9px; letter-spacing: 0.4px; margin-bottom: 3px; }
+  .fact-value { font-size: 15px; word-break: keep-all; overflow-wrap: break-word; }
+  .fact-sublabel { font-size: 10px; line-height: 1.35; }
+  .fact-grid[data-cols="5"] .fact-tile,
+  .fact-grid[data-cols="6"] .fact-tile { padding: 8px 6px; }
+  .fact-grid[data-cols="5"] .fact-value,
+  .fact-grid[data-cols="6"] .fact-value { font-size: 13px; }
 }
 </style>
 </head>
