@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="editorial_cream">
+<html lang="ko" data-theme="burgundy_mono">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>v4.5.0 Editorial Cream — 컴포넌트 데모</title>
+<title>v4.5.0 Burgundy Mono — 위기 보고서 데모</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-/* ─── editorial_cream 테마 토큰 (report.css 동기) ─── */
-:root, [data-theme="editorial_cream"] {
-  --bg: #F2EBDB;
-  --card: #ECE3D0;
-  --border-soft: rgba(212,200,176,0.55);
-  --text: #1F1814;
-  --muted: #6B5C4A;
-  --accent: #B05A38;
+/* ─── burgundy_mono 테마 토큰 (v4.5.0 어둡게 보정) ─── */
+:root, [data-theme="burgundy_mono"] {
+  --bg: #2A0F18;
+  --card: #371721;
+  --border-soft: rgba(90,40,50,0.4);
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+  --accent: #D4A858;
   --bg-1: var(--bg);
   --bg-2: var(--card);
-  --bg-3: #E5DBC4;
+  --bg-3: #1A0810;
   --fg-1: var(--text);
-  --fg-2: #2D241B;
+  --fg-2: #D8CCB8;
   --fg-3: var(--muted);
 }
 
@@ -39,7 +39,7 @@ body {
 .hero { padding: 48px 0 32px; background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%); border-bottom: 1px solid var(--border-soft); }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; font-family: 'IBM Plex Sans KR', sans-serif; }
 h1.headline { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 38px; font-weight: 800; line-height: 1.2; color: var(--fg-1); margin: 0 0 14px; letter-spacing: -0.5px; }
-.deck { font-size: 17px; line-height: 1.6; color: var(--fg-2); font-weight: 400; margin-bottom: 18px; max-width: 640px; }
+.deck { font-size: 17px; line-height: 1.6; color: var(--fg-2); font-weight: 300; margin-bottom: 18px; max-width: 640px; }
 .meta { font-size: 12px; color: var(--fg-3); display: flex; gap: 14px; align-items: center; }
 
 /* TOC */
@@ -63,6 +63,7 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 /* prose + dropcap */
 .prose p { margin: 0 0 16px; }
 .prose.has-dropcap p:first-child::first-letter { font-family: 'Newsreader', 'Noto Serif KR', serif; float: left; font-size: 56px; font-weight: 900; line-height: 0.9; padding: 6px 12px 0 0; color: var(--accent); }
+.prose code { font-family: 'IBM Plex Mono', monospace; background: rgba(212,168,88,0.10); padding: 1px 6px; border-radius: 3px; font-size: 13px; color: var(--accent); }
 
 /* analogy */
 .analogy { margin: 24px 0; padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-soft); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; }
@@ -70,7 +71,7 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 .analogy-title { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; line-height: 1.4; color: var(--fg-1); margin-bottom: 8px; }
 .analogy-body { font-size: 14.5px; line-height: 1.75; color: var(--fg-2); }
 
-/* fact-grid — count 별 컬럼 분기 (3+1 어색한 배치 방지) */
+/* fact-grid — count 별 컬럼 분기 */
 .fact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin: 24px 0; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden; }
 .fact-grid[data-cols="3"] { grid-template-columns: repeat(2, 1fr); }
 @media (min-width: 720px) {
@@ -84,9 +85,12 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 .fact-value { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 24px; font-weight: 700; color: var(--fg-1); line-height: 1.15; margin-bottom: 2px; }
 .fact-sublabel { font-size: 11px; color: var(--fg-3); line-height: 1.4; }
 
+/* pull-quote */
+.pullquote { margin: 24px 0 8px; padding: 18px 22px; background: rgba(212,168,88,0.06); border-left: 4px solid var(--accent); border-radius: 4px; font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 18px; font-weight: 700; line-height: 1.5; color: var(--fg-1); }
+
 /* footer */
 .footer { padding: 24px 0; background: var(--bg-3); font-size: 11px; color: var(--fg-3); text-align: center; }
-.footer code { font-family: 'IBM Plex Mono', monospace; background: rgba(176,90,56,0.10); padding: 2px 6px; border-radius: 3px; color: var(--accent); }
+.footer code { font-family: 'IBM Plex Mono', monospace; background: rgba(212,168,88,0.12); padding: 2px 6px; border-radius: 3px; color: var(--accent); }
 
 @media (max-width: 640px) {
   h1.headline { font-size: 28px; }
@@ -101,9 +105,9 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 
 <header class="hero">
   <div class="container">
-    <div class="eyebrow">v4.5.0 · Editorial Cream Demo</div>
-    <h1 class="headline">크림 위에 놓인 분석가의 펜</h1>
-    <p class="deck">v4.5.0 의 editorial_cream 테마는 LG AI Seminar 보고서의 인터랙션 패턴을 차용한다. 평어체, 비유 박스, 수치 격자, dropcap, 자동 TOC — 모두 컴포저가 *섹션 성격에 맞을 때만* emit 한다.</p>
+    <div class="eyebrow">v4.5.0 · Burgundy Mono Demo</div>
+    <h1 class="headline">와인 잔에 비친 35년 봉인</h1>
+    <p class="deck">burgundy_mono 는 위기·분쟁·사고 보고서의 톤이다. v4.5.0 부터 더 짙은 dried-blood 톤으로 보정. editorial 컴포넌트 (lede / analogy / fact_grid / dropcap / 자동 TOC) 는 cream 과 동일하게 작동한다.</p>
     <div class="meta">
       <span>샘플 · 데모</span>
       <span>2026-05-03</span>
@@ -115,9 +119,9 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
   <div class="container">
     <div class="toc-label">목차</div>
     <ol class="toc-list">
-      <li class="toc-item"><span class="toc-num">01</span><a class="toc-link" href="#sec-1">왜 cream 인가</a></li>
-      <li class="toc-item"><span class="toc-num">02</span><a class="toc-link" href="#sec-2">신규 컴포넌트 4종</a></li>
-      <li class="toc-item"><span class="toc-num">03</span><a class="toc-link" href="#sec-3">폰트 시스템</a></li>
+      <li class="toc-item"><span class="toc-num">01</span><a class="toc-link" href="#sec-1">왜 burgundy 가 남아있나</a></li>
+      <li class="toc-item"><span class="toc-num">02</span><a class="toc-link" href="#sec-2">편집 컴포넌트는 동일</a></li>
+      <li class="toc-item"><span class="toc-num">03</span><a class="toc-link" href="#sec-3">두 톤이 분담하는 영역</a></li>
     </ol>
   </div>
 </nav>
@@ -125,21 +129,23 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 <section id="sec-1" class="section">
   <div class="container">
     <div class="kicker">설계 의도 · 1</div>
-    <h2 class="heading">왜 cream 인가</h2>
-    <div class="lede">밝은 배경에 어두운 글씨, 그리고 한 점의 terracotta. 이 셋이면 인쇄도, 모바일도, 화면 캡처도 흔들리지 않는다. cream 은 안전한 선택이지만 안전한 선택에도 이유가 있다.</div>
+    <h2 class="heading">왜 burgundy 가 남아있나</h2>
+    <div class="lede">위기에는 위기에 어울리는 색이 있다. 전쟁, 사고, 외교 분쟁 — 이런 사건을 cream 위에 올리면 가벼워진다. 진중함은 어두운 배경 위에서 더 잘 전달된다.</div>
     <div class="prose has-dropcap">
-      <p>burgundy 는 위기에 어울린다. 전쟁, 사고, 외교 분쟁. 그러나 모든 사건이 위기는 아니다. 정책 발표, 실적 공시, 산업 동향 같은 *일상적 분석* 은 cream 위에서 더 잘 읽힌다. 라이브러리 책상 위 신문지처럼.</p>
-      <p>v4.5.0 부터 lens_policy 는 카테고리에 따라 라우팅한다. <code>geopolitical</code> · <code>accident</code> 만 burgundy_mono 로, 나머지 다섯 카테고리 (<code>tech</code> · <code>financial</code> · <code>policy</code> · <code>industry</code> · <code>general</code>) 는 editorial_cream 으로.</p>
+      <p>v4.4.x 까지 burgundy_mono 가 디폴트였다. 그런데 사용자 피드백은 두 가지였다. 하나, 기본 톤이 너무 무겁다는 것. 둘, 와인 색감이 다소 밝아 "맑은 와인" 같다는 것.</p>
+      <p>v4.5.0 의 답: 디폴트는 <code>editorial_cream</code> 으로 바꾸되 burgundy 를 폐기하지 않는다. 단 burgundy 는 더 짙게 보정한다. 배경 <code>#3D1820</code> → <code>#2A0F18</code>, 물 색 <code>#2A0E16</code> → <code>#1A0810</code>. dried-blood 톤이라 부른다.</p>
     </div>
+
+    <div class="pullquote">위기에는 위기에 어울리는 색이 있다 — 단 *맑은* 와인이 아니라 *짙은* 와인이어야 한다.</div>
   </div>
 </section>
 
 <section id="sec-2" class="section">
   <div class="container">
     <div class="kicker">컴포넌트 · 2</div>
-    <h2 class="heading">신규 컴포넌트 4종</h2>
+    <h2 class="heading">편집 컴포넌트는 동일</h2>
     <div class="prose">
-      <p>composer 가 emit 할 수 있는 신규 4 필드. 모두 선택적이고, 섹션 성격에 맞을 때만 사용한다. 모든 섹션에 다 박지 않는다.</p>
+      <p>editorial_cream 과 burgundy_mono 는 *색만* 다르다. 신규 4 필드 (<code>lede</code> / <code>analogy</code> / <code>fact_grid</code> / <code>dropcap</code>) 와 자동 TOC 는 양쪽에서 동일하게 작동한다. composer 가 카테고리별로 어느 테마가 라우팅되든 같은 emit 으로 끝난다.</p>
     </div>
 
     <div class="fact-grid" data-cols="4">
@@ -167,48 +173,47 @@ h2.heading { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 26px;
 
     <aside class="analogy">
       <div class="analogy-label">비유</div>
-      <div class="analogy-title">이 컴포넌트들은 '향신료'</div>
-      <div class="analogy-body">잘 쓴 한 꼬집은 음식을 살리지만, 한 봉지 다 부으면 밥이 안 된다. lede 는 보고서 첫 1~2 섹션, dropcap 도 마찬가지. analogy 박스는 어려운 개념이 진짜 어려울 때만, fact_grid 는 차트로 만들기엔 작은 핵심 수치 모음이 정말 필요할 때만.</div>
+      <div class="analogy-title">테마는 '조명', 컴포넌트는 '도구'</div>
+      <div class="analogy-body">조명이 따뜻한 cream 인지 짙은 burgundy 인지로 사건의 무게가 달라진다. 그러나 *어떤 도구* (analogy 박스, fact-grid, dropcap) 를 쓰는지는 사건 성격이지 조명이 아니다. 두 테마가 같은 컴포넌트 셋을 공유하는 이유다.</div>
     </aside>
-
-    <div class="prose">
-      <p>composer 의 SYSTEM_PROMPT 에는 각 필드의 사용 빈도 권장이 명시돼 있다. 모델이 알아서 절제하길 기대하는 것보다 *명시적 가이드* 가 덜 꺠진다.</p>
-    </div>
   </div>
 </section>
 
 <section id="sec-3" class="section">
   <div class="container">
-    <div class="kicker">타이포 · 3</div>
-    <h2 class="heading">폰트 시스템</h2>
+    <div class="kicker">라우팅 · 3</div>
+    <h2 class="heading">두 톤이 분담하는 영역</h2>
     <div class="prose">
-      <p>display serif 는 <strong>Newsreader</strong> 다. 영문 / 숫자 글리프만 가진 폰트라 한국어는 자동으로 <strong>Noto Serif KR</strong> 로 폴백한다. 이 조합이 한·영 혼합 헤딩에서 자연스럽게 어울린다.</p>
-      <p>본문은 <strong>IBM Plex Sans KR</strong>, 코드/메타데이터는 <strong>IBM Plex Mono</strong>. 이전 Noto Sans KR + JetBrains Mono 조합보다 글자폭이 약간 좁고 세로획이 깔끔해 정보 밀도 높은 보고서에 어울린다.</p>
+      <p><code>lens_policy._THEME_BY_CATEGORY</code> 가 카테고리별로 결정한다. 단순한 분기다.</p>
     </div>
 
     <div class="fact-grid" data-cols="3">
       <div class="fact-tile">
-        <div class="fact-label">Display</div>
-        <div class="fact-value">Newsreader</div>
-        <div class="fact-sublabel">+ Noto Serif KR (한국어)</div>
+        <div class="fact-label">Burgundy_mono</div>
+        <div class="fact-value">위기 · 사고</div>
+        <div class="fact-sublabel">geopolitical / accident</div>
       </div>
       <div class="fact-tile">
-        <div class="fact-label">Body</div>
-        <div class="fact-value">IBM Plex KR</div>
-        <div class="fact-sublabel">Sans KR weight 300~700</div>
+        <div class="fact-label">Editorial_cream</div>
+        <div class="fact-value">5 카테고리</div>
+        <div class="fact-sublabel">tech / financial / policy / industry / general</div>
       </div>
       <div class="fact-tile">
-        <div class="fact-label">Mono</div>
-        <div class="fact-value">IBM Plex Mono</div>
-        <div class="fact-sublabel">코드 / 인라인 토큰</div>
+        <div class="fact-label">Light_mono</div>
+        <div class="fact-value">Legacy</div>
+        <div class="fact-sublabel">신규 라우팅 없음</div>
       </div>
+    </div>
+
+    <div class="prose">
+      <p>분쟁 / 외교 / 군사 / 재난 사건이 burgundy 로 넘어가고, 나머지 (실적 공시, 산업 동향, 정책 발표, 일반 사건) 는 cream 으로. 사용자 피드백으로 라우팅 매핑은 추후 조정 가능 — `lens_policy.py` 한 곳만 수정.</p>
     </div>
   </div>
 </section>
 
 <footer class="footer">
   <div class="container">
-    samples/<code>editorial_cream_v4_5_0.html</code> · v4.5.0 컴포넌트 데모 · SSOT: <code>src/templates/report.css</code>
+    samples/<code>burgundy_mono_v4_5_0.html</code> · v4.5.0 위기 보고서 톤 데모 · SSOT: <code>src/templates/report.css</code>
   </div>
 </footer>
 
