@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""patch_report.py — v4.4.1
+"""patch_report.py — v4.4.5
 이미 생성된 보고서를 LLM 호출 없이 부분 수정하고 재렌더·재배포.
 
 [배경]
@@ -9,11 +9,23 @@
 같은 timestamp 로 재렌더 + Cloudflare 재배포.
 
 [사용]
+  python scripts/patch_report.py 20260502_154823 --show
+      섹션/차트/지도 마커 목록 출력 (수정 X). 다른 옵션 인덱스 알기 위함.
+
   python scripts/patch_report.py 20260502_154823 --remove-chart 2:0
       3번째 섹션의 1번째 차트 제거 (0-based)
 
   python scripts/patch_report.py 20260502_154823 --remove-section 4
       5번째 섹션 통째 제거
+
+  python scripts/patch_report.py 20260502_154823 --map-zoom 5.5
+      지도 zoom 변경 (큰 값일수록 확대)
+
+  python scripts/patch_report.py 20260502_154823 --map-center "44.0,9.5"
+      지도 중심점 변경. "lng,lat" — 경도 먼저, 위도 나중.
+
+  python scripts/patch_report.py 20260502_154823 --remove-marker hargeisa
+      지도 마커 1개 제거 (id 기준). --show 로 id 확인 가능.
 
   python scripts/patch_report.py 20260502_154823 --edit
       $EDITOR (vim/nano) 로 JSON 직접 편집
@@ -27,6 +39,7 @@
 [주의]
 - v4.4.0 이전에 생성된 보고서는 JSON 저장이 없어 patch 불가. 재분석 필요.
 - 수정 후 URL 은 동일 (사용자가 받은 링크 그대로 작동).
+- 여러 옵션 동시 가능: --remove-chart 0:0 --map-zoom 5 --map-center "44,9"
 """
 
 from __future__ import annotations
@@ -61,13 +74,37 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--remove-chart",
         metavar="SEC:CHART",
-        help="section_idx:chart_idx (0-based) 차트 제거. 예: 2:0",
+        action="append",
+        default=[],
+        help="section_idx:chart_idx (0-based) 차트 제거. 여러 번 가능: "
+        "--remove-chart 2:0 --remove-chart 0:1 (인덱스 shift 자동 처리).",
     )
     p.add_argument(
         "--remove-section",
         type=int,
         metavar="IDX",
         help="섹션 통째 제거 (0-based). 예: --remove-section 4",
+    )
+    p.add_argument(
+        "--show",
+        action="store_true",
+        help="섹션/차트/지도 마커 목록 출력 (수정 X). 인덱스/id 확인용.",
+    )
+    p.add_argument(
+        "--map-zoom",
+        type=float,
+        metavar="ZOOM",
+        help="지도 zoom 변경 (예: 5.5). 큰 값일수록 확대.",
+    )
+    p.add_argument(
+        "--map-center",
+        metavar="LNG,LAT",
+        help="지도 중심점 변경. \"lng,lat\" 형식 (예: \"44.0,9.5\").",
+    )
+    p.add_argument(
+        "--remove-marker",
+        metavar="MARKER_ID",
+        help="지도 마커 1개 제거 (id 기준). --show 로 id 확인.",
     )
     p.add_argument(
         "--edit",
@@ -136,6 +173,117 @@ def patch_remove_section(result: FullAnalysisResult, sec_i: int) -> bool:
     return True
 
 
+def patch_map_zoom(result: FullAnalysisResult, zoom: float) -> bool:
+    if not result.composed_report or not result.composed_report.embedded_map:
+        print("[patch] embedded_map 이 없음 (지리적 사건 아님)", file=sys.stderr)
+        return False
+    old = result.composed_report.embedded_map.get("zoom")
+    result.composed_report.embedded_map["zoom"] = zoom
+    print(f"[patch] map zoom: {old} → {zoom}")
+    return True
+
+
+def patch_map_center(result: FullAnalysisResult, center_str: str) -> bool:
+    if not result.composed_report or not result.composed_report.embedded_map:
+        print("[patch] embedded_map 이 없음 (지리적 사건 아님)", file=sys.stderr)
+        return False
+    try:
+        lng_str, lat_str = center_str.split(",")
+        lng, lat = float(lng_str.strip()), float(lat_str.strip())
+    except (ValueError, AttributeError):
+        print(
+            f"[patch] --map-center 형식 오류: {center_str} (예: \"44.0,9.5\")",
+            file=sys.stderr,
+        )
+        return False
+    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+        print(
+            f"[patch] center 범위 초과: lng={lng} (-180~180), lat={lat} (-90~90)",
+            file=sys.stderr,
+        )
+        return False
+    old = result.composed_report.embedded_map.get("center")
+    result.composed_report.embedded_map["center"] = [lng, lat]
+    print(f"[patch] map center: {old} → [{lng}, {lat}]")
+    return True
+
+
+def patch_remove_marker(result: FullAnalysisResult, marker_id: str) -> bool:
+    if not result.composed_report or not result.composed_report.embedded_map:
+        print("[patch] embedded_map 이 없음", file=sys.stderr)
+        return False
+    emap = result.composed_report.embedded_map
+    markers = emap.get("markers") or []
+    before = len(markers)
+    kept = [m for m in markers if m.get("id") != marker_id]
+    if len(kept) == before:
+        ids = [m.get("id") for m in markers]
+        print(
+            f"[patch] marker id '{marker_id}' 없음. 현재 ids: {ids}",
+            file=sys.stderr,
+        )
+        return False
+    emap["markers"] = kept
+    # marker 가 사라졌으면 해당 id 를 참조하는 arc 도 제거
+    arcs = emap.get("arcs") or []
+    arcs_kept = [
+        a for a in arcs
+        if a.get("from_id") != marker_id and a.get("to_id") != marker_id
+    ]
+    if len(arcs_kept) != len(arcs):
+        print(
+            f"[patch] 관련 arc {len(arcs) - len(arcs_kept)}개도 함께 제거"
+        )
+        emap["arcs"] = arcs_kept
+    print(f"[patch] marker 제거: '{marker_id}' (남은 markers: {len(kept)})")
+    return True
+
+
+def show_report(result: FullAnalysisResult) -> None:
+    cr = result.composed_report
+    if not cr:
+        print("[show] composed_report 없음")
+        return
+    print(f"[show] headline: {cr.headline}")
+    print(f"[show] sections: {len(cr.sections)}")
+    for i, sec in enumerate(cr.sections):
+        charts = sec.charts or []
+        chart_summary = (
+            ", ".join(
+                f"[{j}] {c.get('type', '?')}/{(c.get('title') or '')[:25]}"
+                for j, c in enumerate(charts)
+            )
+            if charts
+            else "(no charts)"
+        )
+        print(f"  [{i}] {sec.heading[:50]}")
+        print(f"      charts: {chart_summary}")
+    if cr.embedded_map:
+        emap = cr.embedded_map
+        print("[show] embedded_map:")
+        print(f"  center: {emap.get('center')}")
+        print(f"  zoom:   {emap.get('zoom')}")
+        markers = emap.get("markers") or []
+        print(f"  markers ({len(markers)}):")
+        for m in markers:
+            hl = " *" if m.get("highlight") else ""
+            print(
+                f"    id={m.get('id')!s:<20} "
+                f"name={m.get('name')!s:<20} "
+                f"lng={m.get('lng')} lat={m.get('lat')}{hl}"
+            )
+        arcs = emap.get("arcs") or []
+        if arcs:
+            print(f"  arcs ({len(arcs)}):")
+            for a in arcs:
+                print(
+                    f"    {a.get('from_id')} → {a.get('to_id')} "
+                    f"label={a.get('label', '')}"
+                )
+    else:
+        print("[show] embedded_map: (없음)")
+
+
 def patch_edit_json(json_path: str) -> bool:
     editor = os.environ.get("EDITOR", "vi")
     print(f"[patch] $EDITOR={editor} 로 {json_path} 편집. 저장하고 종료하세요.")
@@ -183,16 +331,49 @@ async def main() -> int:
         print(f"[patch] JSON validation 실패: {e}", file=sys.stderr)
         return 1
 
+    # --show 는 출력만 하고 종료 (수정/재렌더 X)
+    if args.show:
+        show_report(result)
+        return 0
+
     # 명령 적용
+    mutated = False
     if args.remove_chart:
-        if not patch_remove_chart(result, args.remove_chart):
+        # 다중 --remove-chart 시 인덱스 shift 방지 위해 (sec, chart) 내림차순.
+        try:
+            specs = sorted(
+                ((int(s), int(c)) for s, c in (x.split(":") for x in args.remove_chart)),
+                reverse=True,
+            )
+        except ValueError:
+            print(
+                f"[patch] --remove-chart 형식 오류: {args.remove_chart} (예: 2:0)",
+                file=sys.stderr,
+            )
             return 1
+        for sec_i, chart_i in specs:
+            if not patch_remove_chart(result, f"{sec_i}:{chart_i}"):
+                return 1
+        mutated = True
     if args.remove_section is not None:
         if not patch_remove_section(result, args.remove_section):
             return 1
+        mutated = True
+    if args.map_zoom is not None:
+        if not patch_map_zoom(result, args.map_zoom):
+            return 1
+        mutated = True
+    if args.map_center:
+        if not patch_map_center(result, args.map_center):
+            return 1
+        mutated = True
+    if args.remove_marker:
+        if not patch_remove_marker(result, args.remove_marker):
+            return 1
+        mutated = True
 
     # 수정 사항 있으면 JSON 다시 저장 (--rerender-only / --edit 만이면 이미 변경 X)
-    if args.remove_chart or args.remove_section is not None:
+    if mutated:
         write_json(result, json_path)
         print(f"[patch] JSON 갱신: {json_path}")
 
