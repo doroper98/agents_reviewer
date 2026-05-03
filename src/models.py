@@ -531,6 +531,24 @@ class ComposedSection(BaseModel):
     pull_quote: str = ""
     cited_claim_ids: list[str] = Field(default_factory=list)
 
+    # v4.5.0 — editorial 인터랙션 패턴 (LG AI Seminar 보고서 차용).
+    # 모두 선택적. composer 가 *섹션 성격에 맞을 때만* emit.
+    lede: str = ""
+    """긴 도입 문장 (1~3문장). prose 시작 전 큰 글씨 italic 으로 표시.
+    kicker 는 한 줄 라벨, lede 는 본문 흐름 도입. 둘은 역할 다름."""
+
+    analogy: dict | None = None
+    """비유 박스. 형식: {title: str, body: str}. 어려운 개념을 일상 비유로 풀어
+    설명할 때만. 예: title='반도체 노광은 마치 사진이다', body='..설명..'."""
+
+    fact_grid: list[dict] = Field(default_factory=list)
+    """수치 격자 (stat tile grid). 형식: [{label: str, value: str, sublabel?: str}].
+    3~6개 핵심 수치를 격자로 한눈에. 본문 prose 의 뒷받침 데이터."""
+
+    dropcap: bool = False
+    """True 시 prose 첫 문단 첫 글자가 dropcap 으로 크게 렌더. 섹션 1~2개 한정.
+    남용하면 시각 피로 — 보고서 전체에서 1~2 섹션만 권장."""
+
 
 class ComposedReport(BaseModel):
     """Opus 4.7 unified composer 산출. v4.0.0 Tier 4 부터 분석 + 작성 단일 호출.

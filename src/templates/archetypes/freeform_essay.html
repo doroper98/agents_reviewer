@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="charts.css">
 {# v4.2.0 — composer-emitted chart/map. maplibre 폐기, d3 + d3-geo + TopoJSON 사용. #}
 {% set composed = result.composed_report %}
@@ -19,7 +21,7 @@
 .freeform-hero{padding:48px 0 32px;background:linear-gradient(180deg,var(--bg-2,#2B1A1A) 0%,var(--bg-1,#1B1010) 100%);border-bottom:1px solid var(--border-light,#3D2828)}
 .freeform-hero .container{max-width:780px}
 .freeform-eyebrow{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:12px}
-.freeform-headline{font-family:'Noto Serif KR',serif;font-size:34px;font-weight:900;line-height:1.25;color:var(--fg-1,#F0E2CC);margin:0 0 14px;letter-spacing:-0.5px}
+.freeform-headline{font-family:'Newsreader','Noto Serif KR',serif;font-size:34px;font-weight:900;line-height:1.25;color:var(--fg-1,#F0E2CC);margin:0 0 14px;letter-spacing:-0.5px}
 .freeform-deck{font-size:17px;line-height:1.6;color:var(--fg-2,#D4C4AA);font-weight:300;margin-bottom:18px}
 .freeform-meta{font-size:12px;color:var(--fg-3,#A89880);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .freeform-meta span+span::before{content:"·";margin-right:10px;color:var(--fg-3,#A89880);opacity:0.5}
@@ -27,7 +29,7 @@
 .freeform-section:last-of-type{border-bottom:none}
 .freeform-section .container{max-width:780px}
 .freeform-kicker{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:8px}
-.freeform-heading{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1,#F0E2CC);margin:0 0 16px}
+.freeform-heading{font-family:'Newsreader','Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1,#F0E2CC);margin:0 0 16px}
 .freeform-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400}
 .freeform-prose p{margin:0 0 16px}
 .freeform-prose strong, .freeform-prose b{color:var(--fg-1,#F0E2CC);font-weight:600}
@@ -35,17 +37,38 @@
 .freeform-prose blockquote{margin:18px 0;padding:6px 0 6px 16px;border-left:3px solid var(--accent,#C9A84C);color:var(--fg-1,#F0E2CC);font-style:italic;font-size:16.5px}
 .freeform-prose ul, .freeform-prose ol{margin:0 0 16px;padding-left:22px}
 .freeform-prose li{margin-bottom:6px}
-.freeform-pullquote{margin:24px 0 8px;padding:18px 22px;background:rgba(201,168,76,0.06);border-left:4px solid var(--accent,#C9A84C);border-radius:4px;font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;line-height:1.5;color:var(--fg-1,#F0E2CC)}
+.freeform-pullquote{margin:24px 0 8px;padding:18px 22px;background:rgba(201,168,76,0.06);border-left:4px solid var(--accent,#C9A84C);border-radius:4px;font-family:'Newsreader','Noto Serif KR',serif;font-size:18px;font-weight:700;line-height:1.5;color:var(--fg-1,#F0E2CC)}
 .freeform-cited{margin-top:10px;font-size:11px;color:var(--fg-3,#A89880);letter-spacing:0.4px}
-.freeform-cited code{background:rgba(201,168,76,0.10);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--accent,#C9A84C);margin-right:4px}
+.freeform-cited code{background:rgba(201,168,76,0.10);padding:1px 6px;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--accent,#C9A84C);margin-right:4px}
 .freeform-chart-wrap{margin:18px 0}
 .freeform-chart-wrap .chart-card{background:rgba(0,0,0,0.18);border:1px solid var(--border-soft,rgba(125,98,76,0.25));border-radius:10px;padding:14px}
-.freeform-chart-wrap .chart-card-title{font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.6px;color:var(--fg-2,#D4C4AA);margin-bottom:10px;text-transform:uppercase}
+.freeform-chart-wrap .chart-card-title{font-family:'IBM Plex Sans KR',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.6px;color:var(--fg-2,#D4C4AA);margin-bottom:10px;text-transform:uppercase}
 .freeform-block-wrap{margin:18px 0}
 .freeform-closing{padding:32px 0 48px;background:var(--bg-3,#1B1010)}
 .freeform-closing .container{max-width:780px}
 .freeform-closing-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:10px}
-.freeform-closing-body{font-family:'Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2,#D4C4AA);font-style:italic}
+.freeform-closing-body{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2,#D4C4AA);font-style:italic}
+/* v4.5.0 — editorial 컴포넌트 (LG AI Seminar 차용) */
+.freeform-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:18.5px;line-height:1.65;color:var(--fg-1,#F0E2CC);font-weight:400;font-style:italic;margin:0 0 22px;padding:0 0 18px;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.20))}
+.freeform-analogy{margin:24px 0;padding:18px 22px;background:var(--bg-2,rgba(0,0,0,0.10));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-left:4px solid var(--accent,#B05A38);border-radius:0 8px 8px 0}
+.freeform-analogy-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#B05A38);margin-bottom:8px}
+.freeform-analogy-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16.5px;font-weight:700;line-height:1.4;color:var(--fg-1);margin-bottom:8px}
+.freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2)}
+.freeform-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
+.freeform-fact-tile{padding:14px 16px;background:var(--bg-1)}
+.freeform-fact-label{font-size:10.5px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--fg-3,var(--muted));margin-bottom:4px}
+.freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px}
+.freeform-fact-sublabel{font-size:11px;color:var(--fg-3,var(--muted));line-height:1.4}
+.freeform-prose.has-dropcap p:first-child::first-letter{font-family:'Newsreader','Noto Serif KR',serif;float:left;font-size:54px;font-weight:900;line-height:0.9;padding:6px 10px 0 0;color:var(--accent,#B05A38)}
+/* TOC — 보고서 상단 (hero 직후, 지도 다음) */
+.freeform-toc{padding:20px 0;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.freeform-toc .container{max-width:780px}
+.freeform-toc-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fg-3,var(--muted));margin-bottom:10px}
+.freeform-toc-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}
+.freeform-toc-item{display:flex;gap:10px;font-size:13px;line-height:1.5}
+.freeform-toc-num{font-family:'Newsreader','Noto Serif KR',serif;font-weight:700;color:var(--accent,#B05A38);min-width:18px}
+.freeform-toc-link{color:var(--fg-2);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s}
+.freeform-toc-link:hover{border-bottom-color:var(--accent,#B05A38);color:var(--fg-1)}
 @media(max-width:640px){
   .freeform-hero{padding:32px 0 24px}
   .freeform-headline{font-size:26px}
@@ -54,6 +77,9 @@
   .freeform-heading{font-size:20px}
   .freeform-prose{font-size:15px;line-height:1.78}
   .freeform-pullquote{font-size:16px;padding:14px 16px}
+  .freeform-lede{font-size:16.5px}
+  .freeform-fact-value{font-size:19px}
+  .freeform-prose.has-dropcap p:first-child::first-letter{font-size:46px}
 }
 </style>
 </head>
@@ -99,13 +125,49 @@
 </section>
 {% endif %}
 
+{# v4.5.0 — TOC. 섹션 heading 에서 자동 생성. 섹션 2개 미만이면 안 띄움. #}
+{% if composed and composed.sections and (composed.sections | length) >= 2 %}
+<nav class="freeform-toc" aria-label="목차">
+  <div class="container">
+    <div class="freeform-toc-label">목차</div>
+    <ol class="freeform-toc-list">
+      {% for sec in composed.sections %}
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">{{ '%02d'|format(loop.index) }}</span>
+        <a class="freeform-toc-link" href="#sec-{{ loop.index }}">{{ sec.heading | strip_md }}</a>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</nav>
+{% endif %}
+
 {% if composed and composed.sections %}
 {% for sec in composed.sections %}
-<section class="freeform-section fade-in">
+<section id="sec-{{ loop.index }}" class="freeform-section fade-in">
   <div class="container">
     {% if sec.kicker %}<div class="freeform-kicker">{{ sec.kicker | strip_md }}</div>{% endif %}
     <h2 class="freeform-heading">{{ sec.heading | strip_md }}</h2>
-    {% if sec.prose %}<div class="freeform-prose">{{ sec.prose | structured }}</div>{% endif %}
+    {% if sec.lede %}<div class="freeform-lede">{{ sec.lede | strip_md }}</div>{% endif %}
+    {% if sec.prose %}<div class="freeform-prose{% if sec.dropcap %} has-dropcap{% endif %}">{{ sec.prose | structured }}</div>{% endif %}
+    {% if sec.fact_grid %}
+    <div class="freeform-fact-grid">
+      {% for f in sec.fact_grid %}
+      <div class="freeform-fact-tile">
+        {% if f.label %}<div class="freeform-fact-label">{{ f.label | strip_md }}</div>{% endif %}
+        {% if f.value %}<div class="freeform-fact-value">{{ f.value | strip_md }}</div>{% endif %}
+        {% if f.sublabel %}<div class="freeform-fact-sublabel">{{ f.sublabel | strip_md }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if sec.analogy and sec.analogy.title %}
+    <aside class="freeform-analogy">
+      <div class="freeform-analogy-label">비유</div>
+      <div class="freeform-analogy-title">{{ sec.analogy.title | strip_md }}</div>
+      {% if sec.analogy.body %}<div class="freeform-analogy-body">{{ sec.analogy.body | strip_md }}</div>{% endif %}
+    </aside>
+    {% endif %}
     {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote | strip_md }}</div>{% endif %}
 
     {# v4.4.0 — composer 가 inline 으로 emit 한 차트 데이터 (sec.charts: list[dict]).
