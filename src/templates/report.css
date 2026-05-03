@@ -1,44 +1,104 @@
-/* ===== Report Theme System — Mono Only (v3.5.0) =====
+/* ===== Report Theme System — Mono + Editorial (v4.5.0) =====
    SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
-   두 톤(Burgundy Mono · Light Mono) 만 사용. 멀티컬러 6테마 폐기.
-   카테고리 구분은 hue 가 아닌 border-style(solid/dashed/dotted) + 패턴으로 표현.
-   레거시 컴포넌트 클래스 (--red/--orange/--green/--blue/--gold 등) 는 alias 통해 mono 의미축에 매핑.
+   세 톤 (Editorial Cream · Burgundy Mono · Light Mono).
+   - editorial_cream: 디폴트. cream + terracotta. 편집·분석·일반 보고서.
+   - burgundy_mono: 위기·분쟁·사고. dark wine + amber. (v4.5.0 어둡게 보정)
+   - light_mono: 폐기 예정 (legacy). 아래 블록은 호환 위해 보존.
+   카테고리 구분은 hue 가 아닌 border-style + 패턴.
    ============================================================ */
 
-/* --- Default: Burgundy Mono (deep wine + amber gold + parchment) --- */
-:root, [data-theme="burgundy_mono"] {
+/* --- Default: Editorial Cream (warm cream + terracotta + warm dark) ---
+   v4.5.0 신규. LG AI Seminar 보고서 톤 차용. 인쇄·캡처·장문 가독성 우위. */
+:root, [data-theme="editorial_cream"] {
   /* Surfaces */
-  --bg: #3D1820;
-  --card: #4A222E;
-  --card-hover: #4A222E;
-  --accent-surface: #4A222E;
-  --border: #6E3340;
-  --border-light: #4A222E;
-  --divider: #6E3340;
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-hover: #E5DBC4;
+  --accent-surface: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --divider: #D4C8B0;
 
   /* Text */
-  --text: #EFE5D1;
-  --muted: #A88E7A;
+  --text: #1F1814;       /* warm dark — pure black 보다 따뜻 */
+  --muted: #6B5C4A;      /* warm grey */
 
   /* Semantic accents — guide §3.2 */
-  --accent: #D4A858;   /* 편집 강조 (italic, callout border, key category) */
-  --up: #A8B582;       /* 상승·기회·성공 — 작은 변동 라벨만 */
-  --down: #C9837A;     /* 하락·위험·경보 — 작은 변동 라벨, 이벤트 vertical */
+  --accent: #B05A38;     /* terracotta — editorial 강조, hatch stroke, callout border */
+  --up: #4A6B3E;         /* forest green — 상승·기회 (작은 변동만) */
+  --down: #8B2A2A;       /* deep crimson — 하락·위험 (작은 변동, 이벤트 vline) */
 
   /* Map tokens */
-  --map-land: #3D1820;
-  --map-water: #2A0E16;
-  --map-boundary: #EFE5D1;
-  --map-graticule: #6E3340;
+  --map-land: #F2EBDB;
+  --map-water: #DFD3B8;  /* sand — water as "aged paper" */
+  --map-boundary: #1F1814;
+  --map-graticule: #D4C8B0;
 
   /* Geometry */
   --radius: 6px;
   --radius-lg: 8px;
   --shadow: none;
 
-  /* === Legacy class aliases — mono 의미축 매핑 ===
-     기존 컴포넌트 CSS 가 --red/--orange/--green/--blue/--gold 토큰을 그대로 사용.
-     멀티컬러 토큰을 mono 3종(--accent/--up/--down)으로 매핑. */
+  /* Legacy aliases (멀티컬러 → mono 매핑 보존) */
+  --text-primary: var(--text);
+  --text-secondary: #2D241B;
+  --text-muted: var(--muted);
+  --text-faded: #8A7A66;
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 톤 변형 토큰 */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+}
+
+/* --- Burgundy Mono (deep wine + amber gold + parchment) — v4.5.0 어둡게 보정 ---
+   이전 #3D1820 은 "맑은 와인" 톤이었고 사용자 피드백으로 더 짙은 dried-blood 톤으로.
+   위기·분쟁·사고 보고서 전용 (lens_policy._THEME_BY_CATEGORY 참조). */
+[data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #2A0F18;             /* v4.5.0: 3D1820 → 2A0F18 (R-22, G-9, B-8) */
+  --card: #371721;           /* 카드는 bg 보다 한 단계 위 */
+  --card-hover: #371721;
+  --accent-surface: #371721;
+  --border: #5A2832;         /* 6E3340 → 5A2832 (어둡게) */
+  --border-light: #371721;
+  --divider: #5A2832;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents */
+  --accent: #D4A858;
+  --up: #A8B582;
+  --down: #C9837A;
+
+  /* Map tokens — water 도 한 단계 더 깊게 */
+  --map-land: #2A0F18;
+  --map-water: #1A0810;      /* 2A0E16 → 1A0810 (near-black wine) */
+  --map-boundary: #EFE5D1;
+  --map-graticule: #5A2832;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases */
   --text-primary: var(--text);
   --text-secondary: var(--text);
   --text-muted: var(--muted);
@@ -54,14 +114,13 @@
   --blue: var(--muted);
   --blue-light: var(--card);
 
-  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0) */
   --bg-1: var(--bg);
   --bg-2: var(--card);
-  --bg-3: #2A0E16;            /* 딥 와인 — closing/footer 톤 */
+  --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
   --fg-1: var(--text);
-  --fg-2: #D8CCB8;            /* 텍스트 보조 (text 와 muted 사이) */
+  --fg-2: #D8CCB8;
   --fg-3: var(--muted);
-  --border-soft: rgba(110,51,64,0.4);
+  --border-soft: rgba(90,40,50,0.4);
 }
 
 /* --- Light Mono (cream + deep burgundy + forest green) --- */
