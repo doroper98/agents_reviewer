@@ -3,36 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chart × Map · Light Mono vs Burgundy Mono</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<title>Chart × Map · Editorial Cream / Burgundy Mono / Light Mono — v4.5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-body { font-family: 'Noto Sans KR', sans-serif; background: #1a1a1a; color: #fff; font-size: 13px; line-height: 1.6; }
+body { font-family: 'IBM Plex Sans KR', sans-serif; background: #1a1a1a; color: #fff; font-size: 13px; line-height: 1.6; }
 
-.compare-bar { position: sticky; top: 0; z-index: 200; display: grid; grid-template-columns: repeat(2, 1fr); background: #0d0d0d; border-bottom: 1px solid #2a2a2a; }
-.compare-bar > div { padding: 10px 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: #f5f5f5; border-right: 1px solid #2a2a2a; font-family: 'Noto Serif KR', serif; }
+.compare-bar { position: sticky; top: 0; z-index: 200; display: grid; grid-template-columns: repeat(3, 1fr); background: #0d0d0d; border-bottom: 1px solid #2a2a2a; }
+.compare-bar > div { padding: 10px 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: #f5f5f5; border-right: 1px solid #2a2a2a; font-family: 'Newsreader','Noto Serif KR', serif; }
 .compare-bar > div:last-child { border-right: none; }
-.compare-bar > div small { display: block; font-family: 'Noto Sans KR', sans-serif; font-size: 9px; letter-spacing: 1px; color: #888; font-weight: 400; margin-top: 2px; text-transform: none; }
+.compare-bar > div small { display: block; font-family: 'IBM Plex Sans KR', sans-serif; font-size: 9px; letter-spacing: 1px; color: #888; font-weight: 400; margin-top: 2px; text-transform: none; }
 
-.compare-grid { display: grid; grid-template-columns: repeat(2, 1fr); min-height: calc(100vh - 41px); }
+.compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); min-height: calc(100vh - 41px); }
 .col { overflow: hidden; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; }
 .col:last-child { border-right: none; }
 .col-inner { flex: 1; overflow-y: auto; padding: 14px; }
 .col-inner::-webkit-scrollbar { width: 6px; }
 .col-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+/* v4.5.0: editorial_cream 디폴트, burgundy 어둡게 보정, light 는 legacy */
+.col-editorial { --bg: #F2EBDB; --card: #ECE3D0; --text: #1F1814; --muted: #6B5C4A; --border: #D4C8B0; --borderLight: #E2D8C0; }
+.col-burgundy { --bg: #2A0F18; --card: #371721; --text: #EFE5D1; --muted: #A88E7A; --border: #5A2832; --borderLight: #371721; }
 .col-light { --bg: #efe8d9; --card: #f8f2e4; --text: #1a1a1a; --muted: #5a5a5a; --border: #b3a586; --borderLight: #d4c8a8; }
-.col-burgundy { --bg: #3D1820; --card: #4A222E; --text: #EFE5D1; --muted: #A88E7A; --border: #6E3340; --borderLight: #4A222E; }
 
 .col-inner { background: var(--bg); color: var(--text); }
 
 .viz { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
 .viz-header { margin-bottom: 10px; }
-.viz-kicker { font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); font-style: italic; font-family: 'Noto Serif KR', serif; }
-.viz-title { font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 900; color: var(--text); margin-top: 2px; }
+.viz-kicker { font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); font-style: italic; font-family: 'Newsreader','Noto Serif KR', serif; }
+.viz-title { font-family: 'Newsreader','Noto Serif KR', serif; font-size: 14px; font-weight: 800; color: var(--text); margin-top: 2px; }
 .viz-desc { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.55; }
 
 .viz-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 9px; color: var(--muted); margin-top: 10px; align-items: center; }
@@ -45,35 +49,43 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #1a1a1a; color: #fff
 
 svg.viz-svg { display: block; width: 100%; height: auto; }
 
-.chart-line .axis-x text, .chart-line .axis-y text, .chart-bar .axis-x text, .chart-bar .axis-y text { font-size: 9px; fill: var(--muted); font-family: 'Noto Sans KR', sans-serif; }
+.chart-line .axis-x text, .chart-line .axis-y text, .chart-bar .axis-x text, .chart-bar .axis-y text { font-size: 9px; fill: var(--muted); font-family: 'IBM Plex Sans KR', sans-serif; }
 .chart-line .grid line, .chart-bar .grid line { stroke: var(--border); stroke-width: 0.5; stroke-dasharray: 2,3; opacity: 0.55; }
 .chart-line .area-fill { opacity: 0.18; }
-.chart-line .end-label, .chart-bar .bar-label { font-size: 10px; font-weight: 700; fill: var(--text); font-family: 'Noto Sans KR', sans-serif; }
+.chart-line .end-label, .chart-bar .bar-label { font-size: 10px; font-weight: 700; fill: var(--text); font-family: 'IBM Plex Sans KR', sans-serif; }
 .chart-line .event-line { stroke-dasharray: 3,3; stroke-width: 1; opacity: 0.65; }
-.chart-line .event-label { font-size: 8px; font-family: 'Noto Sans KR', sans-serif; }
+.chart-line .event-label { font-size: 8px; font-family: 'IBM Plex Sans KR', sans-serif; }
 
-.network text.node-label { font-size: 10px; font-weight: 700; fill: var(--text); pointer-events: none; font-family: 'Noto Sans KR', sans-serif; }
-.network text.link-label { font-size: 7.5px; fill: var(--muted); pointer-events: none; font-family: 'Noto Sans KR', sans-serif; }
+.network text.node-label { font-size: 10px; font-weight: 700; fill: var(--text); pointer-events: none; font-family: 'IBM Plex Sans KR', sans-serif; }
+.network text.link-label { font-size: 7.5px; fill: var(--muted); pointer-events: none; font-family: 'IBM Plex Sans KR', sans-serif; }
 
-.map-marker-label { font-size: 9px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; }
-.map-arc-label { font-size: 8px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; letter-spacing: 0.5px; }
+.map-marker-label { font-size: 9px; font-weight: 700; font-family: 'IBM Plex Sans KR', sans-serif; }
+.map-arc-label { font-size: 8px; font-weight: 600; font-family: 'IBM Plex Sans KR', sans-serif; letter-spacing: 0.5px; }
 
-@media (max-width: 1100px) {
-  .compare-grid { grid-template-columns: 1fr; }
-  .compare-bar { grid-template-columns: 1fr; }
+@media (max-width: 1400px) {
+  .compare-grid, .compare-bar { grid-template-columns: repeat(2, 1fr); }
+  .col-light { display: none; }  /* legacy 컬럼 숨김 — editorial vs burgundy 만 */
+  .compare-bar > div.bar-light { display: none; }
+}
+@media (max-width: 800px) {
+  .compare-grid, .compare-bar { grid-template-columns: 1fr; }
+  .col-burgundy { display: none; }  /* 모바일은 editorial 만 */
+  .compare-bar > div.bar-burgundy { display: none; }
 }
 </style>
 </head>
 <body>
 
 <div class="compare-bar">
-  <div>Light Mono<small>Cream + Pattern · Burgundy Accent</small></div>
-  <div>Burgundy Mono<small>Wine + Pattern · Amber Accent</small></div>
+  <div class="bar-editorial">Editorial Cream<small>v4.5.0 디폴트 · Cream + Terracotta</small></div>
+  <div class="bar-burgundy">Burgundy Mono<small>v4.5.0 어둡게 · 위기·분쟁 한정</small></div>
+  <div class="bar-light">Light Mono<small>legacy · Cream + Burgundy</small></div>
 </div>
 
 <div class="compare-grid">
-  <div class="col col-light" data-theme="light"><div class="col-inner" id="col-light"></div></div>
+  <div class="col col-editorial" data-theme="editorial"><div class="col-inner" id="col-editorial"></div></div>
   <div class="col col-burgundy" data-theme="burgundy"><div class="col-inner" id="col-burgundy"></div></div>
+  <div class="col col-light" data-theme="light"><div class="col-inner" id="col-light"></div></div>
 </div>
 
 <script>
@@ -81,6 +93,39 @@ svg.viz-svg { display: block; width: 100%; height: auto; }
 // THEME DEFINITIONS
 // =============================================================================
 const THEMES = {
+  // v4.5.0 신규 디폴트 — cream + terracotta. 5개 카테고리 라우팅.
+  editorial: {
+    name: 'Editorial Cream', mono: true,
+    bg:'#F2EBDB', card:'#ECE3D0', text:'#1F1814', muted:'#6B5C4A', border:'#D4C8B0', borderLight:'#E2D8C0',
+    map: { land:'#F2EBDB', water:'#DFD3B8', boundary:'#1F1814', label:'#1F1814', halo:'#F2EBDB' },
+    accent:'#B05A38', up:'#4A6B3E', down:'#8B2A2A', neutral:'#1F1814',
+    series: ['#1F1814','#B05A38','#4A6B3E','#6B5C4A'],
+    seriesDash: [null, '5,3', '2,3', '1,3'],
+    risk: { high:'#1F1814', med:'#6B5C4A', low:'#A89A7E', crisis:'#B05A38' },
+    link: { ally:'#1F1814', conflict:'#B05A38', impact:'#6B5C4A', strategic:'#A89A7E' },
+    linkDash: { ally:null, conflict:'5,3', impact:'2,3', strategic:'1,3' },
+    arc: { primary:'#B05A38', secondary:'#1F1814' },
+    arcDash: { primary:null, secondary:'4,3' },
+    riskCircle: { color:'#1F1814', dash:'3,3', alpha:0.08 },
+    patternStroke:'#1F1814',
+  },
+  // v4.5.0 어둡게 보정 — bg #3D1820 → #2A0F18, water #2A0E16 → #1A0810
+  burgundy: {
+    name: 'Burgundy Mono', mono: true,
+    bg:'#2A0F18', card:'#371721', text:'#EFE5D1', muted:'#A88E7A', border:'#5A2832', borderLight:'#371721',
+    map: { land:'#2A0F18', water:'#1A0810', boundary:'#EFE5D1', label:'#EFE5D1', halo:'#2A0F18' },
+    accent:'#D4A858', up:'#A8B582', down:'#C9837A', neutral:'#EFE5D1',
+    series: ['#EFE5D1','#D4A858','#A8B582','#C9837A'],
+    seriesDash: [null, '5,3', '2,3', '1,3'],
+    risk: { high:'#D4A858', med:'#EFE5D1', low:'#A88E7A', crisis:'#D4A858' },
+    link: { ally:'#EFE5D1', conflict:'#D4A858', impact:'#A88E7A', strategic:'#A88E7A' },
+    linkDash: { ally:null, conflict:'5,3', impact:'2,3', strategic:'1,3' },
+    arc: { primary:'#D4A858', secondary:'#EFE5D1' },
+    arcDash: { primary:null, secondary:'4,3' },
+    riskCircle: { color:'#D4A858', dash:'3,3', alpha:0.10 },
+    patternStroke:'#EFE5D1',
+  },
+  // legacy — 신규 라우팅 없음, 보존
   light: {
     name: 'Light Mono', mono: true,
     bg:'#efe8d9', card:'#f8f2e4', text:'#1a1a1a', muted:'#5a5a5a', border:'#b3a586', borderLight:'#d4c8a8',
@@ -95,21 +140,6 @@ const THEMES = {
     arcDash: { primary:null, secondary:'4,3' },
     riskCircle: { color:'#1a1a1a', dash:'3,3', alpha:0.08 },
     patternStroke:'#1a1a1a',
-  },
-  burgundy: {
-    name: 'Burgundy Mono', mono: true,
-    bg:'#3D1820', card:'#4A222E', text:'#EFE5D1', muted:'#A88E7A', border:'#6E3340', borderLight:'#4A222E',
-    map: { land:'#3D1820', water:'#2A0E16', boundary:'#EFE5D1', label:'#EFE5D1', halo:'#3D1820' },
-    accent:'#D4A858', up:'#A8B582', down:'#C9837A', neutral:'#EFE5D1',
-    series: ['#EFE5D1','#D4A858','#A8B582','#C9837A'],
-    seriesDash: [null, '5,3', '2,3', '1,3'],
-    risk: { high:'#D4A858', med:'#EFE5D1', low:'#A88E7A', crisis:'#D4A858' },
-    link: { ally:'#EFE5D1', conflict:'#D4A858', impact:'#A88E7A', strategic:'#A88E7A' },
-    linkDash: { ally:null, conflict:'5,3', impact:'2,3', strategic:'1,3' },
-    arc: { primary:'#D4A858', secondary:'#EFE5D1' },
-    arcDash: { primary:null, secondary:'4,3' },
-    riskCircle: { color:'#D4A858', dash:'3,3', alpha:0.10 },
-    patternStroke:'#EFE5D1',
   },
 };
 
@@ -646,10 +676,12 @@ window.__WORLD_TOPO_PROMISE__ = fetch('https://cdn.jsdelivr.net/npm/world-atlas@
 
 function init() {
   console.log('[init] building columns');
-  try { buildColumn('col-light', 'light'); }
-  catch (e) { console.error('[col-light]', e); }
+  try { buildColumn('col-editorial', 'editorial'); }
+  catch (e) { console.error('[col-editorial]', e); }
   try { buildColumn('col-burgundy', 'burgundy'); }
   catch (e) { console.error('[col-burgundy]', e); }
+  try { buildColumn('col-light', 'light'); }
+  catch (e) { console.error('[col-light]', e); }
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
