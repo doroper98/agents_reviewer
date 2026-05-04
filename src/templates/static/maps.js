@@ -1,7 +1,10 @@
-/* maps.js — v4.4.6 d3 + d3-geo + TopoJSON map renderer.
+/* maps.js — d3 + d3-geo + TopoJSON map renderer.
  *
  * v3.4.0~v4.1.0 의 maplibre-gl 의존 폐기 (mono guide §2).
  * v4.4.6 추가: d3.zoom() pan/zoom 인터랙션 + 소말릴란드 해칭 폴리곤.
+ * v4.5.x: 소말릴란드 폴리곤·legend 를 viewport 가시성으로 게이트 (CHART-AP-13).
+ *   해당 지역이 화면에 안 잡히는 보고서에서는 둘 다 자동으로 사라짐 —
+ *   "지도 = 보고서 주제와 정합" 원칙.
  *
  * 데이터 입력: <script type="application/json" id="map-payload">
  *   { center: [lng, lat], zoom: float,
@@ -113,6 +116,20 @@
 
     function project(lng, lat) { return projection([lng, lat]); }
 
+    // 소말릴란드 viewport 가시성 판정 — 폴리곤 + 범례 둘 다 이 조건에 묶음.
+    // path.bounds() 는 world topo 와 무관하게 SOMALILAND_GEOJSON 만으로 동작하므로
+    // renderBase 의 비동기 결과를 기다릴 필요 없음. 호른 오브 아프리카가 시야에
+    // 안 잡히는 보고서(예: 페르시아만 / 동북아 한정)에서는 둘 다 그리지 않음.
+    const slBounds = (() => {
+      try { return path.bounds(SOMALILAND_GEOJSON); }
+      catch (_) { return null; }
+    })();
+    const somalilandVisible = !!slBounds &&
+      isFinite(slBounds[0][0]) && isFinite(slBounds[0][1]) &&
+      isFinite(slBounds[1][0]) && isFinite(slBounds[1][1]) &&
+      slBounds[0][0] < W && slBounds[1][0] > 0 &&
+      slBounds[0][1] < H && slBounds[1][1] > 0;
+
     function renderBase(world) {
       if (!world) return;
       const countries = topojson.feature(world, world.objects.countries);
@@ -124,14 +141,16 @@
         .attr('stroke', t.boundary).attr('stroke-width', 0.7).attr('stroke-opacity', 0.7)
         .attr('vector-effect', 'non-scaling-stroke');
 
-      // 소말릴란드 해칭 폴리곤 — 베이스 위, 마커 아래.
-      gSomaliland.append('path').datum(SOMALILAND_GEOJSON)
-        .attr('class', 'somaliland-region')
-        .attr('d', path)
-        .attr('fill', `url(#${hatchId})`)
-        .attr('stroke', t.accent).attr('stroke-width', 1.0).attr('stroke-opacity', 0.85)
-        .attr('stroke-dasharray', '3,2')
-        .attr('vector-effect', 'non-scaling-stroke');
+      // 소말릴란드 해칭 폴리곤 — viewport 에 실제 보일 때만 그림.
+      if (somalilandVisible) {
+        gSomaliland.append('path').datum(SOMALILAND_GEOJSON)
+          .attr('class', 'somaliland-region')
+          .attr('d', path)
+          .attr('fill', `url(#${hatchId})`)
+          .attr('stroke', t.accent).attr('stroke-width', 1.0).attr('stroke-opacity', 0.85)
+          .attr('stroke-dasharray', '3,2')
+          .attr('vector-effect', 'non-scaling-stroke');
+      }
     }
 
     loadWorld().then(world => {
@@ -248,17 +267,20 @@
           .attr('font-family', 'Noto Sans KR').attr('font-size', 10).text(l.label);
       });
     }
-    // 소말릴란드 범례 항목 (자동 추가, 본 보고서 외에도 항상 정합)
-    const slY = (payload.legend && payload.legend.length)
-      ? H - 12 - payload.legend.length * 16 - 22
-      : H - 22;
-    const slLeg = svg.append('g').attr('class', 'somaliland-legend')
-      .attr('transform', `translate(12, ${slY})`);
-    slLeg.append('rect').attr('x', 0).attr('y', 0).attr('width', 18).attr('height', 11)
-      .attr('fill', `url(#${hatchId})`).attr('stroke', t.accent).attr('stroke-width', 0.8);
-    slLeg.append('text').attr('x', 24).attr('y', 9).attr('fill', t.text)
-      .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-      .text('소말릴란드 (de facto)');
+    // 소말릴란드 범례 — 폴리곤이 실제 viewport 에 그려지는 경우에만 추가.
+    // (호른 오브 아프리카가 지도에 안 잡히는 보고서에선 의미 없는 noise.)
+    if (somalilandVisible) {
+      const slY = (payload.legend && payload.legend.length)
+        ? H - 12 - payload.legend.length * 16 - 22
+        : H - 22;
+      const slLeg = svg.append('g').attr('class', 'somaliland-legend')
+        .attr('transform', `translate(12, ${slY})`);
+      slLeg.append('rect').attr('x', 0).attr('y', 0).attr('width', 18).attr('height', 11)
+        .attr('fill', `url(#${hatchId})`).attr('stroke', t.accent).attr('stroke-width', 0.8);
+      slLeg.append('text').attr('x', 24).attr('y', 9).attr('fill', t.text)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+        .text('소말릴란드 (de facto)');
+    }
 
     // v4.4.6 — d3.zoom() 인터랙션. transform 은 gContent 에만 적용.
     // 마커 dot/label/arc-label 텍스트는 zoom 시 카운터-스케일 (화면상 동일 크기).
