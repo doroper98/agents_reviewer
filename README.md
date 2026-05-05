@@ -15,8 +15,8 @@ last_review: 2026-05-05
 텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → NarrativeComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템.
 
 ## Status
-- Version: **v4.5.7** (SSOT: `src/orchestrator.py:VERSION`) — ContextAnalyst max_tokens deep 모드 4K → 10K, Somaliland viewport gating (CHART-AP-14 신설). v4.5.x 누적 — **editorial 인터랙션 패턴** (평어체, 비유박스, fact-grid, dropcap, TOC) + Newsreader/IBM Plex 폰트, mode 별 composer max_tokens 분기 (fast 12K / standard 20K / deep 32K), 보고서 상단 `system_version` + `revision` 추적성, chart-card 테마 귀속 (CHART-AP-11), bubble 스케일 자동 감지 (CHART-AP-12), Gantt 시간축 (CHART-AP-13).
-- **V5 리팩토링 진행 중** — [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 의 Phase 0 (Baseline + SSOT Repair) 단계. 4-Tier 17-Phase 로 v4.5.7 의 14개 잔존 결함을 외과적으로 수술한다.
+- Version: **v5.0.0** (SSOT: `src/orchestrator.py:VERSION`) — V5 리팩토링 17-Phase 마스터 플랜 완료. 4-Tier 모두 인수 — Editor Pass + DeskEditor + Strategic Mode + Vega-Lite + Capability Registry + Chart Gate + Deterministic Gate + Layout Primitives + Exhibit 번호제 + Word Budget. v4.5.7 호출 경로 byte-equal 보존 — V5 신규 모듈은 모두 opt-in (`V5_*` env flag). 활성화 가이드: [docs/V5_ACTIVATION.md](docs/V5_ACTIVATION.md).
+- **V5 활성화 단계** — 코드는 v5.0.0 이지만 단계적 활성화 권장 (Plan §0.3). `docs/V5_ACTIVATION.md` 의 5-step 절차 따라 한 phase 씩 켜고 회귀 테스트 통과 확인.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
 - Tier 3 docs: [WORKFLOWS](WORKFLOWS.md) · [DEVLOG](DEVLOG.md) · [CHANGELOG](CHANGELOG.md)
