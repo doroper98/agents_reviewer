@@ -91,6 +91,30 @@ from src.visual.deterministic_gate import (
     DeterministicGateResult,
     run_deterministic_gate,
 )
+from src.visual.exhibit_numbering import (
+    EXHIBIT_REF_PATTERN,
+    EXHIBIT_REF_RANGE_PATTERN,
+    assign_exhibit_ids,
+    collect_exhibit_refs,
+    count_exhibit_refs,
+    resolve_exhibit_refs,
+    resolve_exhibit_refs_html,
+    validate_exhibit_refs,
+)
+from src.visual.word_budget import (
+    COMPOSER_MAX_TOKENS_V5,
+    MODE_BUDGET_BANDS,
+    MODE_TARGET_CHARS_LOWER,
+    TruncationStatus,
+    WordBudget,
+    adaptive_max_tokens,
+    complexity_score_from_context,
+    compute_word_budgets,
+    detect_truncation,
+    gini_coefficient,
+    section_length_distribution,
+    stitch_continuation,
+)
 
 __all__ = [
     # Phase 2A — EvidenceDataset Contract
@@ -155,4 +179,26 @@ __all__ = [
     "SOFT_FAIL_RULES",
     "MODE_LOWER_BOUND",
     "ChartCountLimits",
+    # Phase 4 — Exhibit 번호제
+    "EXHIBIT_REF_PATTERN",
+    "EXHIBIT_REF_RANGE_PATTERN",
+    "assign_exhibit_ids",
+    "collect_exhibit_refs",
+    "count_exhibit_refs",
+    "resolve_exhibit_refs",
+    "resolve_exhibit_refs_html",
+    "validate_exhibit_refs",
+    # Phase 5 — Word Budget + 절단 검출
+    "TruncationStatus",
+    "WordBudget",
+    "MODE_TARGET_CHARS_LOWER",
+    "MODE_BUDGET_BANDS",
+    "COMPOSER_MAX_TOKENS_V5",
+    "detect_truncation",
+    "adaptive_max_tokens",
+    "complexity_score_from_context",
+    "compute_word_budgets",
+    "gini_coefficient",
+    "section_length_distribution",
+    "stitch_continuation",
 ]
