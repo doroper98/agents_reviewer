@@ -59,6 +59,30 @@ from src.visual.capability_registry import (
     list_safe_types,
     load_registry,
 )
+from src.visual.schemas import (
+    BarChartGuard,
+    BubbleChartGuard,
+    DonutGuard,
+    GanttGuard,
+    HeatmapGuard,
+    LineChartGuard,
+    NetworkGuard,
+    StackedBarGuard,
+    guard_for_type,
+    parse_time,
+    validate_chart_data,
+)
+from src.visual.sanity_check import (
+    DEFAULT_THRESHOLDS,
+    SanityCheckThresholds,
+    SanityResult,
+    visual_sanity_check_svg,
+)
+from src.visual.chart_gate import (
+    ChartGateResult,
+    FallbackLadder,
+    run_chart_gate,
+)
 
 __all__ = [
     # Phase 2A — EvidenceDataset Contract
