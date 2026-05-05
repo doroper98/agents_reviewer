@@ -57,6 +57,55 @@ V5 Phase 1A 부터 추가 가능한 에이전트:
 - [CHANGELOG.md](CHANGELOG.md) — 사용자 관점 릴리스 노트
 - [DOCS_GOVERNANCE_V3.md](DOCS_GOVERNANCE_V3.md) — 문서 거버넌스 (3-tier, SSOT 매트릭스)
 
+## VM 배포 SOP (✱ 기능 개발 완료 후 반드시 사용자에게 안내)
+
+**규칙:** Claude 가 새 기능을 개발·main 머지한 직후, **반드시** Ubuntu VM 에서 봇을 재배포하는 정확한 명령어 묶음을 사용자에게 제공한다. 사용자에게 "재시작하세요" 처럼 모호하게 지시하지 말 것. 다음 4단계 *그대로* 복사해서 답변에 포함:
+
+```bash
+# 1. 코드 최신화
+cd ~/agents_reviewer
+git pull
+
+# 2. 기존 봇 프로세스 모두 죽이기 (중복 인스턴스 방지)
+pkill -f "src.main"
+sleep 2 && ps aux | grep "src.main" | grep -v grep
+# 두 번째 줄이 빈 출력이어야 함. 안 죽으면 kill -9 <PID>
+
+# 3. venv 활성화 + 백그라운드로 1개만 띄우기
+source venv/bin/activate
+nohup python -m src.main > bot.log 2>&1 &
+disown
+
+# 4. 정상 가동 확인
+sleep 3
+ps aux | grep "src.main" | grep -v grep   # 한 줄만 떠야 함
+tail -30 bot.log                          # "Application started" 확인
+```
+
+**필수 안내 사항:**
+- venv 가 없으면 `python -m venv venv && source venv/bin/activate && pip install -r requirements.txt` 후 진행
+- `.env` 변경 시 (env flag 추가 등) 재시작 *반드시* 필요. config 는 startup 시점 1회만 로드
+- systemd 서비스로 등록되어 있다면 `sudo systemctl restart agents-reviewer` 한 줄로 대체 가능 — 없으면 위 4단계
+- 사용자가 SSH foreground 로 봇을 띄운 상태에서 SSH 가 끊기면 봇 죽음 → `nohup ... & disown` 필수
+
+**보안:**
+- 봇 토큰·API 키가 노출된 로그를 사용자가 붙여넣으면 즉시 토큰 회전 안내 (`@BotFather /revoke` → `.env` 갱신 → 재시작)
+- `.env` 는 절대 git 에 커밋 금지. `.env.example` 만 커밋
+
+**진단 명령어 (사용자가 막혔을 때):**
+
+```bash
+# V5 flag 가 실제로 로드됐는지
+python -c "from src.config import get_config; c = get_config(); print('research:', c.enable_research_director, 'visual:', c.enable_visual_planner, 'editor:', c.enable_editor_pass, 'layout:', c.enable_layout_typesetter, 'desk:', c.enable_desk_editor)"
+
+# 봇 프로세스 추적
+systemctl list-units --type=service --state=running | grep -iE "bot|analy|review"
+ps aux | grep -iE "python.*bot|src.main" | grep -v grep
+
+# 로그 실시간 모니터
+tail -f bot.log
+```
+
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid).
