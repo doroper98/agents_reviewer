@@ -208,7 +208,10 @@ def extract_chart_numbers(chart: dict[str, Any]) -> set[str]:
         elif isinstance(obj, (int, float)):
             if isinstance(obj, float) and not math.isfinite(obj):
                 return
-            out.add(str(obj))
+            s = str(obj)
+            # 1자리 숫자는 흔해 false-positive 위험 — str 분기와 동일 정책.
+            if len(s.lstrip("-")) >= 2:
+                out.add(s)
         elif isinstance(obj, str):
             for m in _NUMBER_PATTERN.findall(obj):
                 # 너무 짧은 (1자리) 숫자는 흔해 false-positive 위험 — 제외.

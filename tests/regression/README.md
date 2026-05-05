@@ -241,6 +241,51 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 
 ---
 
+## 7.5 v4.5.7 baseline 통과율 — 측정 결과 (2026-05-05 녹화)
+
+20건 Golden Prompt 를 v4.5.7 환경에서 실측 녹화한 후 7종 회귀 테스트를 적용한 결과:
+
+| 항목 | 수치 |
+|------|------|
+| Total tests | 177 |
+| Passed | **124** (helper bug fix 후) |
+| Failed | **52** |
+| Skipped | 1 |
+| **Pass rate** | **70.1%** |
+
+**52 fail 의 분류** — Plan §22 #2 의 의도에 따라 "v4.5.7 가 도달하지 못한 항목 = V5 가 개선해야 할 영역" 의 baseline:
+
+| Fail 카테고리 | 건수 | V5 어느 Phase 가 해결 |
+|--------------|------|----------------------|
+| `watch_signal_actionability=0` (semantic) | ~13 | NarrativeComposer 의 `direction` 필드 emit — Phase 5 또는 LLM SYSTEM_PROMPT 보강 |
+| `total_chars_below_prompt_minimum` (completeness) | ~16 | 분량 부족 — Phase 5 (Word Budget + 절단 검출) |
+| `deck_conclusion_low` (semantic) | ~3 | deck ↔ 결론 정합 — Phase 1 (Editor Pass) |
+| `forbidden_chart_types_emitted` (golden) | ~16 | 사건 부적합 차트 emit — Phase 6 (Chart Critic) |
+| 기타 | ~4 | min_total_chars / 기타 임계 |
+
+이 분류는 *V5 의 후속 Phase 가 정확히 어디를 손봐야 하는지* 의 명세입니다. 임계를 낮춰 100% pass 로 만들면 V5 의 *진보 측정 자체가 불가능* 해지므로, fixture threshold 는 *V5 목표값* 으로 박힌 채 유지됩니다.
+
+### AP-V5-32 강제 정책 — V5 후속 Phase 에서
+
+- **fail count 가 52 보다 늘어나면 회귀** — V5 변경이 baseline 보다 나빠졌다는 신호.
+- **fail count 가 줄어들면 V5 의 개선이 측정됨** — Phase 5 가 watch_signal direction 을 emit 시키면 ~13 fail 이 0 으로 줄어드는 식.
+- 새 fixture / 새 카테고리 추가는 baseline 재측정 후에만.
+
+CI 또는 운영 점검 시 다음 한 줄로 통과율 측정:
+
+```
+python -m pytest tests/regression/ --tb=no -q 2>&1 | tail -5
+```
+
+마지막 줄이 다음 형태로 떨어집니다:
+```
+=========== 124 passed, 52 failed, 1 skipped, 3 warnings in YYs ===========
+```
+
+**52 failed 가 baseline 정확값.** 새 commit 이 53+ 로 늘리면 PR 거절 정책.
+
+---
+
 ## 8. Phase 0B 인수 기준 (Plan §3.5)
 
 본 SSOT 가 충족시키는 항목:
