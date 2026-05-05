@@ -46,6 +46,19 @@ from src.visual.vega_adapter import (
     render_vega_lite,
     validate_vega_spec,
 )
+from src.visual.capability_registry import (
+    REGISTRY_PATH,
+    CapabilityRegistryError,
+    assert_chart_in_registry,
+    check_required_fields,
+    get_capability,
+    is_chart_type_allowed,
+    list_all_types,
+    list_experimental_types,
+    list_guarded_types,
+    list_safe_types,
+    load_registry,
+)
 
 __all__ = [
     # Phase 2A — EvidenceDataset Contract
@@ -70,4 +83,16 @@ __all__ = [
     "is_vl_convert_available",
     "is_vega_cli_available",
     "VegaSpecError",
+    # Phase 2B — Capability Registry
+    "REGISTRY_PATH",
+    "CapabilityRegistryError",
+    "assert_chart_in_registry",
+    "check_required_fields",
+    "get_capability",
+    "is_chart_type_allowed",
+    "list_all_types",
+    "list_experimental_types",
+    "list_guarded_types",
+    "list_safe_types",
+    "load_registry",
 ]

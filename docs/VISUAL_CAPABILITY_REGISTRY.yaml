@@ -1,0 +1,165 @@
+# V5 Phase 2B — Visualization Capability Registry
+#
+# REFACTOR_V5_PLAN.md §9 의 SSOT. 차트 type 의 *capability bound* 를 명시한다.
+# Phase 2 의 "open-ended charts" 표현을 *capability-bounded* 로 정정.
+#
+# [정책 — Plan §9.4 의 3-tier]
+#   safe         : VisualPlanner 가 자유롭게 emit. ChartCritic 통과는 여전히 필요.
+#   guarded      : ChartCritic 통과 + Visual Sanity (Phase 6 Gate C) 통과 필수.
+#                  실패율이 safe 대비 높을 것으로 예상.
+#   experimental : 기본값 forbidden. ResearchDirector (Phase 1A) 의 must_have 또는
+#                  사용자 명시 요청 시에만 허용.
+#
+# [renderer 라벨]
+#   vega_lite             : Plan §7 의 단일 어댑터 (src/visual/vega_adapter.py).
+#   d3_custom             : 별도 d3 SVG 코드 (sankey/network 등 — Vega-Lite 미지원).
+#   vega_lite_or_d3_geo   : Vega-Lite 의 geo encoding + d3-geo 보조.
+#   vega_lite_or_d3_custom: 둘 중 하나 선택 가능 (treemap 등).
+#
+# [추가 절차 — Plan §9.5 인수 기준]
+#   1. 새 차트 type 추가 시 본 yaml 에 항목 신설 (PR 체크리스트 강제).
+#   2. src/visual/capability_registry.py 의 캐시는 자동 갱신.
+#   3. tests/regression/test_capability_registry.py 의 분포 가드 갱신.
+#
+# [필드 정의]
+#   renderer        : 위 4종 enum 중 하나
+#   status          : safe / guarded / experimental
+#   required_fields : 차트 emit 시 EvidenceDataset 의 필드명 세트가 *최소* 만족해야 할 항목
+#   default_policy  : (experimental 만) 'forbidden' 이 디폴트
+#   notes           : 운영 메모 (참고용)
+#   added_in        : V5 의 어느 Phase 에서 도입되었는지
+
+visual_capabilities:
+
+  # ─── Tier — safe (10종): 안정적, VisualPlanner 자유 emit ───────────────
+
+  bar:
+    renderer: vega_lite
+    status: safe
+    required_fields: [category, value]
+    added_in: phase_2
+
+  line:
+    renderer: vega_lite
+    status: safe
+    required_fields: [time, value]
+    added_in: phase_2
+
+  area:
+    renderer: vega_lite
+    status: safe
+    required_fields: [time, value]
+    added_in: phase_2
+
+  stacked_bar:
+    renderer: vega_lite
+    status: safe
+    required_fields: [category, segment, value]
+    added_in: phase_2
+
+  heatmap:
+    renderer: vega_lite
+    status: safe
+    required_fields: [x_category, y_category, value]
+    added_in: phase_2
+
+  bubble:
+    renderer: vega_lite
+    status: safe
+    required_fields: [x, y, size]
+    added_in: phase_2
+
+  donut:
+    renderer: vega_lite
+    status: safe
+    required_fields: [category, value]
+    added_in: phase_2
+
+  forecast:
+    renderer: vega_lite
+    status: safe
+    required_fields: [time, actual, forecast, ci_low, ci_high]
+    added_in: phase_2
+
+  dual_line:
+    renderer: vega_lite
+    status: safe
+    required_fields: [time, left_value, right_value]
+    added_in: phase_2
+
+  gantt:
+    renderer: vega_lite
+    status: safe
+    required_fields: [task, start, end]
+    added_in: phase_2
+    notes: "v4.5.4 의 시간축 자동 추가 정책 (CHART-AP-13) 보존."
+
+  decision_matrix:
+    renderer: vega_lite
+    status: safe
+    required_fields: [option, criterion, score]
+    added_in: phase_2
+    notes: "Phase 8 전략 모드 필수 시각화. heatmap-style 또는 점수표."
+
+  # ─── Tier — guarded (3종): Phase 6 Gate C 강제 ─────────────────────────
+
+  choropleth:
+    renderer: vega_lite_or_d3_geo
+    status: guarded
+    required_fields: [geo_id, value]
+    added_in: phase_2
+    notes: "TopoJSON 베이스맵 의존. Phase 6 Visual Sanity 강제."
+
+  network:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [nodes, links]
+    added_in: phase_2
+    notes: "d3-force 의존. force layout 안정성 회귀 테스트 필수."
+
+  sankey:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [source, target, value]
+    added_in: phase_2
+    notes: "d3-sankey plugin. 노드 수 ≤ 12 권장 (시각 피로 차단)."
+
+  # ─── Tier — experimental (2종): 기본 forbidden, must_have 시만 ─────────
+
+  chord:
+    renderer: d3_custom
+    status: experimental
+    default_policy: forbidden
+    required_fields: [source, target, value]
+    added_in: phase_2
+    notes: "ResearchDirector 의 must_have 에 명시 등재 시에만 허용."
+
+  treemap:
+    renderer: vega_lite_or_d3_custom
+    status: experimental
+    default_policy: forbidden
+    required_fields: [hierarchy, value]
+    added_in: phase_2
+    notes: "계층 데이터에 적합 — 일반 사건엔 거의 부적합."
+
+# ─── 사용 — capability_registry.py 가 본 yaml 을 로드 ─────────────────────
+#
+#   from src.visual.capability_registry import (
+#       load_registry,
+#       get_capability,
+#       is_chart_type_allowed,
+#       check_required_fields,
+#       list_safe_types,
+#       list_guarded_types,
+#       list_experimental_types,
+#   )
+#
+# AP-V5-27 — Capability Registry 미등재 차트 emit 금지. VisualPlanner 가
+# emit 시 본 Registry 외 type 을 박으면 즉시 drop.
+
+# ─── 분포 (test_capability_registry 가 자동 검증) ─────────────────────────
+distribution:
+  safe:         11
+  guarded:      3
+  experimental: 2
+total: 16

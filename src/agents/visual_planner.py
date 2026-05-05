@@ -54,6 +54,10 @@ from src.state.models import (
     EvidenceDataset,
     VisualConstraints,
 )
+from src.visual.capability_registry import (
+    CapabilityRegistryError,
+    assert_chart_in_registry,
+)
 from src.visual.evidence_dataset import EvidenceDatasetGuard
 from src.visual.vega_adapter import VegaSpecError, validate_vega_spec
 
@@ -149,6 +153,8 @@ def plan_via_heuristics(
     sections = getattr(edited_report, "sections", None) or []
     guard = EvidenceDatasetGuard(datasets=datasets)
 
+    must_have = list((visual_constraints.must_have if visual_constraints else []) or [])
+
     for sec_idx, section in enumerate(sections):
         sec = section if isinstance(section, dict) else getattr(section, "model_dump", lambda: {})()
         charts = (sec or {}).get("charts") or []
@@ -161,6 +167,15 @@ def plan_via_heuristics(
                 logger.info(
                     "[visual_planner] heuristic drop: section=%d type=%s — visual_constraints.forbidden",
                     sec_idx, chart_type,
+                )
+                continue
+            # Phase 2B — Capability Registry 미등재 / experimental forbidden 거절.
+            try:
+                assert_chart_in_registry(chart, must_have_types=must_have)
+            except CapabilityRegistryError as e:
+                logger.info(
+                    "[visual_planner] heuristic drop: section=%d type=%s — %s",
+                    sec_idx, chart_type, e,
                 )
                 continue
             # AP-V5-24/26 — Phase 2A guard 가 결정.
@@ -329,6 +344,21 @@ class VisualPlanner(BaseAgent):
                 validate_vega_spec(spec)
             except VegaSpecError as e:
                 logger.info("[visual_planner] drop: spec 검증 실패 — %s", e)
+                continue
+
+            # Phase 2B — Capability Registry 미등재 거절 (AP-V5-27).
+            try:
+                # spec 의 mark 또는 ex.type 으로 type 추출 시도.
+                check_chart = {
+                    "type": ex.get("type") or "",
+                    "mark": spec.get("mark"),
+                }
+                assert_chart_in_registry(check_chart, must_have_types=None)
+            except CapabilityRegistryError as e:
+                logger.info(
+                    "[visual_planner] drop: %s — %s",
+                    ex.get("title", ""), e,
+                )
                 continue
 
             # Phase 2A — source_ids 필수.
