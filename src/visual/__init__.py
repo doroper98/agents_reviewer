@@ -83,6 +83,14 @@ from src.visual.chart_gate import (
     FallbackLadder,
     run_chart_gate,
 )
+from src.visual.deterministic_gate import (
+    HARD_FAIL_RULES,
+    MODE_LOWER_BOUND,
+    SOFT_FAIL_RULES,
+    ChartCountLimits,
+    DeterministicGateResult,
+    run_deterministic_gate,
+)
 
 __all__ = [
     # Phase 2A — EvidenceDataset Contract
@@ -119,4 +127,32 @@ __all__ = [
     "list_guarded_types",
     "list_safe_types",
     "load_registry",
+    # Phase 6 — Schema Pydantic guards (Gate A)
+    "BarChartGuard",
+    "BubbleChartGuard",
+    "DonutGuard",
+    "GanttGuard",
+    "HeatmapGuard",
+    "LineChartGuard",
+    "NetworkGuard",
+    "StackedBarGuard",
+    "guard_for_type",
+    "parse_time",
+    "validate_chart_data",
+    # Phase 6 — Visual Sanity (Gate C)
+    "DEFAULT_THRESHOLDS",
+    "SanityCheckThresholds",
+    "SanityResult",
+    "visual_sanity_check_svg",
+    # Phase 6 — Chart Gate D + 통합
+    "ChartGateResult",
+    "FallbackLadder",
+    "run_chart_gate",
+    # Phase 7A — Deterministic Publish Gate
+    "DeterministicGateResult",
+    "run_deterministic_gate",
+    "HARD_FAIL_RULES",
+    "SOFT_FAIL_RULES",
+    "MODE_LOWER_BOUND",
+    "ChartCountLimits",
 ]

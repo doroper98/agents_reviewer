@@ -43,6 +43,7 @@ tests/regression/
 ├── test_capability_registry.py       # Phase 2B — Registry 분포 + AP-V5-27 강제
 ├── test_chart_correctness.py         # Phase 6 — 4중 게이트 + 14개 antipattern
 ├── test_exhibit_priority.py          # Phase 6A — ExhibitPriority + AP-V5-28
+├── test_deterministic_gate.py        # Phase 7A — 11 Hard + 5 Soft + AP-V5-29
 └── fixtures/
     ├── golden_prompts.yaml           # 20건 Golden Prompt + expected metadata
     ├── baseline_v4_5_7.json          # v4.5.7 측정 결과 (record_baseline.py 가 채움)
@@ -226,6 +227,7 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 |-------|---------------------|
 | Phase 0C (State Compaction) | ✅ 적용 — `tests/regression/test_state_compaction.py` 신설. 6-tier State 정의 + 8단계 guards (Plan §4.4) + RawContext → EvidencePack 압축 ≥30% 토큰 감소 (Plan §4.5 #3) 검증 |
 | Phase 1A (ResearchDirector) | ✅ 적용 — `tests/regression/test_research_director.py` 신설. `golden_prompts.yaml.expected_method` 가 9종 enum 안에 있는지 가드 (`test_each_expected_method_is_in_phase_1a_enum`) + `design_via_heuristics` 의 결정적 fallback 이 ≥80% 일치 (Plan §6.6 #4 임계 충족, 현재 90%). LLM ResearchDirector 의 일치률은 `record_baseline.py` 에서 measured |
+| Phase 7A (Deterministic Publish Gate) | ✅ 적용 — `tests/regression/test_deterministic_gate.py` 신설. 11 Hard fail (Plan §15.4) + 5 Soft fail (§15.5) 모두 검증. Hard fail 시 decision='kill' → LLM 호출 0 (AP-V5-29). 22건. |
 | Phase 6A (Exhibit Priority) | ✅ 적용 — `tests/regression/test_exhibit_priority.py` 신설. ExhibitPriority 3-tier + RequiredExhibit 모델 + AnalysisMethod.required_exhibits 의 legacy `list[str]` 자동 변환 + AP-V5-28 (required silent drop 금지) + table fallback + decorative silent drop. 22건. |
 | Phase 6 (Chart Correctness Gate) | ✅ 적용 — `tests/regression/test_chart_correctness.py` 신설. 4중 게이트 (Schema Pydantic / ChartCritic LLM / Visual Sanity / Fallback Ladder) + 14개 antipattern 시나리오 검증. 38건. |
 | Phase 2B (Capability Registry) | ✅ 적용 — `tests/regression/test_capability_registry.py` 신설. `docs/VISUAL_CAPABILITY_REGISTRY.yaml` 의 16종 type (safe 11 / guarded 3 / experimental 2) 분포 가드 + AP-V5-27 강제 (미등재 chart emit 거절) + experimental forbidden 디폴트 + must_have 우회. 24건. |
