@@ -1,0 +1,342 @@
+{
+  "headline": "지연된 건 2나노가 아니다",
+  "deck": "TSMC 2나노는 일정·수율 모두 사수. HBM4 병목은 다른 노드에 숨어 있다.",
+  "sections": [
+    {
+      "heading": "2나노는 멈추지 않았다",
+      "kicker": "전제 검증 / 1",
+      "prose": "TSMC N2 (2나노미터 노드) 는 2025년 4분기 바오산 (Baoshan) 팹에서 월 3만 장 (wpm, wafers per month) 으로 양산을 시작했다. 2026년 1분기 수율은 70~80%로 보고됐다 (출처: heqingele.com). GAA (게이트 올 어라운드 — 트랜지스터 채널의 4면을 둘러싸는 차세대 구조) 노드 초기치고 매우 높은 숫자다.\n\n2026년 카오슝 팹 22가 본격 가동에 들어가면서 연말까지 월 10만 장 캐파가 목표다. 그 캐파는 이미 매진이다 (출처: androidheadlines.com). 2023년 가을의 '2나노 2026년 연기설'은 회수됐다.\n\n질문이 바뀌어야 한다. 2나노는 늦지 않았다. 그렇다면 HBM4 가 정말 묶여 있는 곳은 어디인가.",
+      "charts": [
+        {
+          "type": "bar",
+          "title": "TSMC N2 월 캐파 램프업",
+          "subtitle": "수율 70~80% — GAA 노드 초기치고 이례적으로 높음",
+          "data": [
+            {
+              "label": "2025-Q4 가동",
+              "value": 30,
+              "note": "바오산 팹"
+            },
+            {
+              "label": "2026-H1 램프",
+              "value": 60,
+              "note": "카오슝 팹 22 합류"
+            },
+            {
+              "label": "2026-말 목표",
+              "value": 100,
+              "note": "전량 booked"
+            }
+          ],
+          "source": "TSMC / Android Headlines, heqingele / 2026-04 보고",
+          "takeaway": "캐파는 차질 없이 늘어가고, 2026년치는 이미 다 팔렸다.",
+          "note": "단위: 1,000 wpm (월간 웨이퍼 수)"
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "지연된 것은 2나노가 아니라 우리의 가정이다.",
+      "cited_claim_ids": [],
+      "lede": "사용자 질의는 'TSMC 2나노 양산 지연이 HBM4 공급망을 흔든다'에서 출발한다. 그러나 2026년 5월 현재 그 전제는 사실과 어긋난다.",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": true
+    },
+    {
+      "heading": "HBM4 베이스 다이는 2나노를 쓰지 않는다",
+      "kicker": "메커니즘 / 2",
+      "prose": "HBM4 (고대역폭 메모리 4세대) 는 메모리 스택 맨 아래에 있는 베이스 다이 (base die — 12층 DRAM 을 받치고 외부 GPU 와 연결을 중계하는 로직 칩) 를 처음으로 파운드리 로직 공정에 위탁한 세대다. 그런데 그 노드는 N2 가 아니다.\n\nSK하이닉스와 Micron 은 TSMC N5 (5나노) 와 12FFC (12나노 강화) 를 쓴다. Samsung 은 자사 4나노로 베이스 다이를 처리해 TSMC 의존을 끊는다 (출처: tomshardware.com). 즉 HBM4 의 베이스 다이 공급망은 TSMC 의 비-N2 노드와 자사 파운드리에 분산돼 있다.\n\nHBM4 자체의 양산 진척은 메모리 3사의 자체 DRAM 캐파에 달려 있다. SK하이닉스 M15X 는 2026년 2월에 가동했는데, 이는 예정 대비 4개월 빠른 출발이다 (출처: trendforce.com). Samsung 은 2026년 HBM 캐파를 전년 대비 50% 늘려 월 25만 장 수준을 노린다.",
+      "charts": [
+        {
+          "type": "donut",
+          "title": "HBM 시장 점유 (2025년 2분기)",
+          "subtitle": "SK하이닉스 압도 — Samsung 의 HBM4 본격화로 2026년 30%대 회복 전망",
+          "data": [
+            {
+              "label": "SK하이닉스",
+              "value": 62,
+              "note": "HBM3E 주력 + HBM4 조기 가동"
+            },
+            {
+              "label": "Micron",
+              "value": 21,
+              "note": "HBM3E 비중 확대"
+            },
+            {
+              "label": "Samsung",
+              "value": 17,
+              "note": "HBM3E 인증 통과 후 반등"
+            }
+          ],
+          "source": "Astute Group / 2025-Q2 기준",
+          "takeaway": "단기 병목은 메모리 3사의 자체 DRAM 캐파지, 파운드리 N2 가 아니다.",
+          "note": "단위: %"
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "베이스 다이는 N2 가 아니라 N5·12FFC·자사 4나노에 흩어져 있다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": {
+        "title": "베이스 다이는 메모리 스택의 1층",
+        "body": "12층짜리 아파트를 짓는다고 치자. 1층은 입구·엘리베이터·전기실이 모이는 자리다. HBM4 의 베이스 다이가 그 1층에 해당한다. 위로 쌓이는 11개 DRAM 층은 메모리 회사가 직접 만들지만, 1층의 배선과 신호 처리는 점점 정교해지면서 결국 파운드리에 외주를 줘야 했다. 그게 N2 가 아니라 N5/12FFC 라는 점이 이번 분기의 핵심이다."
+      },
+      "fact_grid": [],
+      "dropcap": false
+    },
+    {
+      "heading": "Apple 이 흔든 도미노는 N3 에서 만난다",
+      "kicker": "간접 채널 / 3",
+      "prose": "그렇다면 N2 와 HBM4 사이에 정말 아무런 연결도 없는가. 직접 결합은 약하다. 단 간접 채널이 하나 있다. Apple 이다.\n\nApple 은 2026년 N2 캐파의 절반 이상을 선점했다 (출처: appleinsider.com). iPhone 18 Pro 시리즈 AP (Application Processor — 모바일 메인 칩) 용 물량이다. 나머지 절반을 Qualcomm·MediaTek·AMD·NVIDIA 가 나눠 쓴다. 이 압력에 밀려 일부 고객은 한 단계 아래 노드로 후퇴한다. NVIDIA Rubin 의 컴퓨트 다이는 N3P (TSMC 3나노 강화 버전) 로 굳어졌다.\n\n2026년 3월, SK하이닉스가 HBM4E 의 베이스 다이에 TSMC 3나노를 검토 중이라는 보도가 나왔다 (출처: trendforce.com). HBM4 까지는 N5/12FFC 였지만, HBM4E 단계에서는 base die 도 N3 로 옮긴다. 바로 그 슬롯에서 Rubin 의 후속 GPU·Apple 의 차세대 SoC·AMD MI 시리즈가 동시에 N3 캐파를 다투게 된다.\n\n핵심은 다음이다. 2나노 그 자체는 HBM4 와 거의 무관하다. 그러나 Apple 의 N2 점유가 N3 로 다른 고객을 밀어내는 흐름은 HBM4E 단계에서 base die 를 두고 메모리 3사와 GPU·SoC 진영의 캐파 다툼을 만들어낸다.",
+      "charts": [
+        {
+          "type": "network",
+          "title": "TSMC 노드별 고객 점유 — 진짜 압박은 N3 에서",
+          "subtitle": "Apple 이 N2 절반을 흡수 → N3 는 GPU·SoC·HBM4E 가 동시 경합",
+          "data": {
+            "nodes": [
+              {
+                "id": "n2",
+                "label": "N2 (2nm)",
+                "group": "node"
+              },
+              {
+                "id": "n3",
+                "label": "N3 (3nm)",
+                "group": "node"
+              },
+              {
+                "id": "n5",
+                "label": "N5 / 12FFC",
+                "group": "node"
+              },
+              {
+                "id": "apple",
+                "label": "Apple A20 Pro",
+                "group": "customer"
+              },
+              {
+                "id": "qcom",
+                "label": "Qualcomm",
+                "group": "customer"
+              },
+              {
+                "id": "amd",
+                "label": "AMD",
+                "group": "customer"
+              },
+              {
+                "id": "nv_rubin",
+                "label": "NVIDIA Rubin",
+                "group": "customer"
+              },
+              {
+                "id": "hbm4_base",
+                "label": "HBM4 base die",
+                "group": "memory"
+              },
+              {
+                "id": "hbm4e_base",
+                "label": "HBM4E base die (검토)",
+                "group": "memory"
+              }
+            ],
+            "links": [
+              {
+                "source": "apple",
+                "target": "n2",
+                "type": "점유 50%+"
+              },
+              {
+                "source": "qcom",
+                "target": "n2",
+                "type": "분배"
+              },
+              {
+                "source": "amd",
+                "target": "n2",
+                "type": "분배"
+              },
+              {
+                "source": "nv_rubin",
+                "target": "n3",
+                "type": "N3P"
+              },
+              {
+                "source": "hbm4_base",
+                "target": "n5",
+                "type": "확정"
+              },
+              {
+                "source": "hbm4e_base",
+                "target": "n3",
+                "type": "검토"
+              }
+            ]
+          },
+          "source": "AppleInsider, TrendForce, Tom's Hardware / 2025-08 ~ 2026-03",
+          "takeaway": "N2 는 Apple 이 가져가고, 다른 고객은 N3 로 밀린다. HBM4E base die 는 그 N3 위에 올라탄다."
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "직접 결합은 약하나, Apple 이 N2 를 흡수하면서 N3 에서 진짜 다툼이 시작된다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [
+        {
+          "label": "Apple N2 캐파 점유",
+          "value": "50%+",
+          "sublabel": "2026 / 초기 풀가동 기준"
+        },
+        {
+          "label": "NVIDIA Rubin 컴퓨트 다이",
+          "value": "N3P",
+          "sublabel": "N2 가 아닌 한 단계 아래"
+        },
+        {
+          "label": "HBM4 베이스 다이",
+          "value": "N5 / 12FFC",
+          "sublabel": "SK하이닉스·Micron"
+        },
+        {
+          "label": "HBM4E 베이스 다이 검토",
+          "value": "N3",
+          "sublabel": "2026-03 SK하이닉스 보도"
+        },
+        {
+          "label": "Samsung 베이스 다이",
+          "value": "자사 4nm",
+          "sublabel": "TSMC 의존 차단"
+        }
+      ],
+      "dropcap": false
+    },
+    {
+      "heading": "진짜 병목은 어디 있나",
+      "kicker": "모순 표면화 / 4",
+      "prose": "여기서 두 관점이 부딪친다. 한쪽은 단기를 본다. 2026년 HBM4 공급의 진짜 병목은 메모리 3사의 자체 DRAM 캐파지 파운드리 슬롯이 아니다. SK하이닉스가 M15X 를 4개월 앞당긴 것도, Samsung 이 캐파를 50% 늘리는 것도 모두 자체 라인 증설 이야기다. TSMC 가 만드는 베이스 다이는 N5/12FFC 의 보조 역할이고, 그 노드는 N2 만큼 빡빡하지 않다.\n\n반면 다른 한쪽은 중기를 본다. HBM4E 단계에 들어서면 베이스 다이가 N3 로 올라간다. NVIDIA 후속 GPU (Rubin Ultra 또는 Feynman 단계) 와 Apple 차세대 SoC 는 같은 시기 N3 캐파를 두고 메모리 3사와 부딪친다. 2027~2028년이 진짜 결전이라는 시각이다.\n\n둘 다 일부씩 옳다. 어느 쪽 손을 들 것인가. 2026년 시야에선 단기 시각이 우세하다. HBM4 의 양적 한계는 메모리 3사 캐파에서 나오지, 파운드리에서 나오지 않는다. 패배한 입장은 HBM4E 가 N3 base die 로 굳어지고 동시에 Apple·NVIDIA 가 N3 캐파를 추가로 흡수하는 시나리오에서 부활한다. 그 신호는 2026년 하반기 SK하이닉스의 HBM4E 노드 확정 발표다.",
+      "charts": [],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "단기 병목은 DRAM 캐파, 중기 병목은 N3 베이스 다이 — 두 병목은 다른 시간대에 산다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": false
+    },
+    {
+      "heading": "분기를 가르는 다섯 신호",
+      "kicker": "전망 / 5",
+      "prose": "지금부터 1년간 무엇을 보면 시나리오가 갈라지는지 정리한다. 핵심은 N3 캐파의 분배가 HBM4E 단계에서 어떻게 결판나는가에 있다.\n\n첫 번째 분기점은 SK하이닉스의 HBM4E 베이스 다이 노드 확정이다. N3 로 굳어지면 메모리 3사와 GPU·SoC 진영의 N3 다툼이 공식화된다. 두 번째는 Apple 의 2027년 N3 추가 점유율이다. iPhone 19 라인이 N2 와 N3 중 어느 쪽으로 다각화하는지가 압력의 방향을 결정한다.\n\n세 번째 신호는 Samsung 의 12hi HBM4 인증 통과 여부다. NVIDIA Rubin 본격 양산 라인에 진입하면 메모리 3사 균형이 흔들린다. 네 번째는 TSMC N3 캐파 증설 발표다. Apple 이 빠진 N2 잉여 캐파가 N3 변환으로 흘러들어오면 압박이 풀린다.\n\n마지막은 NVIDIA Feynman 의 HBM 사양 공개다. HBM4E 12.8 GT/s 를 채택하면 base die 가 N3 로 가는 흐름이 굳어진다. 반대로 HBM5 로 직접 도약한다는 신호가 나오면 N3 base die 의 수명이 짧아진다.",
+      "charts": [
+        {
+          "type": "bubble",
+          "title": "N3 캐파 경합 시나리오 — 확률 × 영향",
+          "subtitle": "2027년 결전 구도 — HBM4E base die 가 가장 큰 영향력",
+          "data": [
+            {
+              "label": "HBM4E base die N3 확정",
+              "x": 0.7,
+              "y": 0.85,
+              "size": 35
+            },
+            {
+              "label": "Apple N3 추가 흡수",
+              "x": 0.5,
+              "y": 0.7,
+              "size": 28
+            },
+            {
+              "label": "Samsung HBM4 12hi 진입",
+              "x": 0.6,
+              "y": 0.55,
+              "size": 24
+            },
+            {
+              "label": "TSMC N3 캐파 증설",
+              "x": 0.4,
+              "y": 0.5,
+              "size": 20
+            },
+            {
+              "label": "NVIDIA HBM5 직행",
+              "x": 0.2,
+              "y": 0.75,
+              "size": 18
+            }
+          ],
+          "source": "본 보고서 분석 / 2026-05 / 시나리오별 정성 추정",
+          "takeaway": "가장 가능성 높고 가장 무거운 분기는 HBM4E base die 의 N3 확정이다.",
+          "note": "x = 12개월 내 발생 확률, y = HBM4 공급망 영향도"
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "관건은 N3 캐파의 분배 — Apple·NVIDIA·HBM4E base die 셋이 같은 슬롯을 두고 다툰다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": false
+    }
+  ],
+  "closing": "사용자 질의가 뒤집혔다. 2나노는 늦지 않았고, HBM4 는 2나노에 묶이지 않는다. 진짜 압력은 한 노드 아래 N3 에서 2027년 무렵에 모인다. 그 시기를 미리 잡아두는 자가 다음 사이클을 가져간다.",
+  "watch_signals": [
+    {
+      "signal": "SK하이닉스 HBM4E 베이스 다이 노드 확정",
+      "description": "N3 채택 공식 발표 또는 N5 유지 결정",
+      "indicates": "N3 경합 시나리오 vs 단기 병목 시나리오 분기",
+      "deadline": "2026-12-31",
+      "icon": "📌"
+    },
+    {
+      "signal": "Apple 2027 N3 추가 점유율",
+      "description": "iPhone 19 라인 N2/N3 다각화 비율 보도",
+      "indicates": "N3 압박 강도 — Apple 이 N2 만 쓰면 N3 여유, N3 도 쓰면 결전 격화",
+      "deadline": "2026-09-30",
+      "icon": "🍎"
+    },
+    {
+      "signal": "Samsung HBM4 12hi NVIDIA 인증",
+      "description": "Rubin 양산 라인 본격 진입 여부",
+      "indicates": "메모리 3사 점유 재편 — Samsung 30%+ 회복 시 SK하이닉스 압력",
+      "deadline": "2026-09-30",
+      "icon": "✅"
+    },
+    {
+      "signal": "TSMC N3 캐파 증설 발표",
+      "description": "N2 잉여 캐파의 N3 전환 또는 신규 라인 추가",
+      "indicates": "공급 측 완화 — 발표 시 HBM4E 결전 강도 약화",
+      "deadline": "2026-12-31",
+      "icon": "🏭"
+    },
+    {
+      "signal": "NVIDIA Feynman HBM 사양 공개",
+      "description": "HBM4E 채택 vs HBM5 직행 결정",
+      "indicates": "N3 base die 수명 — HBM5 직행 시 N3 base die 짧게 끝남",
+      "deadline": "2027-03-31",
+      "icon": "🎯"
+    }
+  ],
+  "contradictions": [
+    {
+      "side_a": "2026년 HBM4 병목은 메모리 3사 자체 DRAM 캐파에서 나온다 (단기 시각)",
+      "side_b": "진짜 병목은 HBM4E 단계의 N3 베이스 다이 슬롯에서 GPU·SoC 와 만난다 (중기 시각)",
+      "evidence": "단기 시각은 SK하이닉스 M15X 4개월 조기 가동 + Samsung 캐파 50% 증설을 근거로 든다. 중기 시각은 SK하이닉스의 HBM4E N3 채택 검토 보도 (2026-03) 를 근거로 든다.",
+      "resolution": "2026년 시야에선 단기 시각이 우세 — HBM4 베이스 다이는 N5/12FFC 라 N2 와 결합 약하고, 양적 제약은 DRAM 라인에서 결정된다. 중기 시각은 HBM4E N3 확정 + Apple·NVIDIA 의 N3 추가 흡수 두 조건이 맞물려야 부활한다."
+    },
+    {
+      "side_a": "Samsung 의 자사 4nm 베이스 다이 노선이 TSMC 종속을 끊고 비용·일정 자유도를 준다",
+      "side_b": "Samsung 자사 4nm 의 수율·성능이 TSMC N5 보다 떨어지면 NVIDIA 인증 단계에서 SK하이닉스·Micron 에 밀린다",
+      "evidence": "Samsung 은 HBM3E 인증 단계에서 이미 한 차례 지연을 겪었다. HBM4 자사 4nm 베이스 다이가 같은 패턴을 반복하면 점유 회복 시나리오가 흔들린다.",
+      "resolution": "현 시점 Samsung 12hi 인증 결과가 나오기 전까지는 양 입장 모두 살아있다. 2026년 3분기 인증 발표가 첫 결판."
+    }
+  ],
+  "confidence_summary": "출처 8건 (TSMC 보도·트렌드포스·톰스하드웨어·SK하이닉스/Samsung 관련 분석) — 시점 신선 (2025-08~2026-03) 하고 다양성 양호. 단 N2 수율 70~80% 는 단일 출처 (heqingele) 의존이라 보수적으로 해석.",
+  "confidence_score": 0.78,
+  "embedded_map": null
+}

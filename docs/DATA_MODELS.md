@@ -1,11 +1,11 @@
 ---
 tier: 2
-last_synced_with: v4.2.0
+last_synced_with: v4.5.7
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
   - "src/models.py (필드 정의의 SSOT)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
 # Data Models — Pydantic Schema Map
@@ -15,100 +15,62 @@ last_review: 2026-05-02
 
 ---
 
-## 1. 모델 관계도
+## 1. 모델 관계도 (v4.5.7 Tier 4 — 실제 호출 경로)
 
-```
-                    AnalysisRequest
-                         │
-                         ▼
-              ┌──────────────────────┐
-              │  AnalysisStrategy    │ ← Strategy Planner 산출 (V3 Step 1, v2.5.0)
-              │  - user_intent       │   user_intent / core_questions /
-              │  - core_questions    │   recommended_lenses / report_archetype
-              │  - recommended_lenses│   결정
-              │  - report_archetype  │
-              │  - section_plan      │ ← V3 Step 3 활성화 (archetype 이 채움)
-              │  - skip_agents       │
-              │  - legacy_directives │ ← Step 1 transitional shim (Step 5 제거 예정)
-              └──────────┬───────────┘
-                         ▼
-                  Orchestrator pipeline
-                         │
-        ┌──────┬──────┬──┴───┬───────┬──────────┐
-        ▼      ▼      ▼      ▼       ▼          ▼
-   Context  Player Dynamics Chain  Scenario  Visual
-   Analysis Analysis Analysis Reaction Analysis Analysis
-        │      │      │      │       │          │
-        └──────┴──────┴──┬───┴───────┴──────────┘
-                         ▼
-                  FullAnalysisResult
-                  (strategy + 6 analyses + blocks + findings + judgment)
-                         │
-                         ├─ V3 Step 4 (v2.8.0) ──→ orchestrator._wrap_findings() ──→ list[AnalyticalFinding]
-                         │                              │  (각 finding = main_claim(Claim, evidence_ids≥1)
-                         │                              │   + evidence[Evidence] + ConfidenceProfile 3축
-                         │                              │   + counter_hypothesis)
-                         │                              ▼
-                         │                  SynthesisJudge.judge(findings) ──→ JudgmentVerdict
-                         │                              │  (contradictions 노출, 봉합 X — Anti-pattern #5)
-                         │                              ▼
-                         │                  QualityInspector.gate_2_coverage_check(strategy, findings, judgment)
-                         │                              │  (실패 시 max 2 retry → "⚠️ 부분 분석 완료" 알림)
-                         │                              ▼
-                         ├─ archetype="six_act_theater" ──→ ReportSynthesizer (legacy report.html)
-                         │
-                         └─ 그 외 archetype ──→  _build_blocks(result, archetype)
-                                                        │
-                                                        ▼
-                                            list[AnalysisBlock]
-                                            (V3 Step 3 활성화)
-                                            block_id / block_type / payload /
-                                            section_id / related_findings
-                                                        │
-                                                        ▼
-                                            ReportSynthesizer (report_block.html dispatcher)
-                                                        │
-                                                        ▼
-                                            include "blocks/<block_type>.html"
-                                            (17종 BlockType — 각 템플릿은
-                                             block.payload 만 참조)
+```mermaid
+flowchart TD
+    REQ["AnalysisRequest<br/>(event_description / chat_id / mode)"] --> CTX["ContextAnalyst<br/>(Opus 4.7, v4.5.7 max_tokens fast/std 4K, deep 10K)"]
+    CTX --> CTXA["ContextAnalysis<br/>(event_name / category / summary / timeline /<br/>key_figures / sources / recommended_persona [v4.3.0])"]
+    CTXA --> COMP["NarrativeComposer<br/>(Opus 4.7, v4.5.4 max_tokens fast 12K / std 20K / deep 32K)"]
+    COMP --> CR["ComposedReport<br/>(headline / deck / sections[] / closing /<br/>watch_signals[] / contradictions[] /<br/>confidence_score / confidence_summary /<br/>embedded_map [v4.2.0])"]
+    CR --> SECS["ComposedSection (sections 안)<br/>(heading / kicker / lede [v4.5.0] / analogy [v4.5.0] /<br/>fact_grid [v4.5.0] / dropcap [v4.5.0] /<br/>prose / charts [v4.2.0] / pull_quote / cited_claim_ids)"]
+    CR --> FULL["FullAnalysisResult<br/>(request / context / composed_report /<br/>report_theme / report_url / report_path /<br/>system_version [v4.5.5] / revision [v4.5.5] /<br/>analysis_timestamp / total_duration_seconds)"]
+    FULL --> SYNTH["ReportSynthesizer (코드, LLM 0)<br/>→ freeform_essay.html → Cloudflare Pages"]
+    FULL --> WL["WatchlistRegistry.register()<br/>→ WatchSignal[] → SQLite"]
+
+    %% Deprecated v3.x 모델 — 호출 안 됨
+    DEPR["[Deprecated v4.0.0~ — 인스턴스화는 되지만 호출 안 됨]<br/>AnalysisStrategy / AnalysisBlock / AnalyticalFinding /<br/>JudgmentVerdict / PlayerAnalysis / DynamicsAnalysis /<br/>ChainReactionAnalysis / ScenarioAnalysis / VisualAnalysis /<br/>NarrativePlan / NarrativeSection / AnalysisBrief"]
+    style DEPR stroke-dasharray: 5 5,opacity:0.5
 ```
 
-각 분석 모델은 `FullAnalysisResult` 의 optional 필드. `AnalysisStrategy` 도 optional 로 보존되어 보고서·로깅 단계에서 user_intent 를 추적할 수 있음. `NarrativePlan` 은 legacy six_act_theater 흐름 전용 — 신규 archetype 은 `result.strategy.section_plan` (`ReportSectionPlan` 배열) 이 디스패처의 iteration 대상.
+v4.5.7 의 *실제* 데이터 흐름은 `AnalysisRequest → ContextAnalysis → ComposedReport → FullAnalysisResult` 의 단순 4-노드 체인이다. v3 시대의 `AnalysisStrategy → 6개 분석 모델 → AnalyticalFinding → JudgmentVerdict → AnalysisBlock` 흐름은 v4.0.0 부터 호출되지 않으며, 모델 정의는 보존하되 인스턴스가 채워지지 않는다.
+
+`FullAnalysisResult` 는 v3 시대의 optional 필드 (`strategy`, `players`, `dynamics`, `chain_reaction`, `scenarios`, `visuals`, `findings`, `judgment`, `blocks`) 를 **호환 목적으로 보존** 하지만, 현재 호출 경로에서는 채워지지 않는다.
 
 ---
 
-## 2. 모델 목록 (현재 v2.9.5)
+## 2. 모델 목록 (현재 v4.5.7)
+
+**Active (v4.5.7 호출 경로 안)** — composer 와 renderer 가 실제로 채우거나 참조하는 모델.
 
 | 모델 | 책무 | 정의 위치 |
 |------|------|-----------|
-| `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델) | `src/models.py` |
-| `AnalysisStrategy` | 분석 설계도 — user_intent, core_questions, recommended_lenses, skip_agents, theme, report_archetype, section_plan (V3 Step 1~3) | `src/models.py` |
-| `EvidenceNeed` | Strategy 가 명세하는 증거 수집 항목 (V3 Step 1) | `src/models.py` |
-| `ReportSectionPlan` | 보고서 섹션 계획 — archetype.section_plan() 산출, 디스패처가 iterate (V3 Step 3 활성화) | `src/models.py` |
-| `VisualizationSpec` | 시각화 사양 — Visual Analyst 가 참조 | `src/models.py` |
-| `BlockType` (Literal 18종) | 블록 타입 enum — narrative, claim_card, evidence_table, timeline, matrix, actor_cards, flow_chain, scenario_table, decomposition, argument_pair, data_series, watchlist, qna, callout, counter_hypothesis, decision_matrix, risk_matrix (V3 Step 3) + `map` (v3.4.0 maplibre-gl + d3-geo) | `src/models.py` |
-| `AnalysisBlock` | 보고서 렌더링의 기본 단위 — block_id/block_type/payload (V3 Step 3) | `src/models.py` |
-| `ClaimType` (Literal) | fact / inference / prediction / judgment (V3 Step 4) | `src/models.py` |
-| `Reliability` (Literal) | primary / secondary / expert / model_inference (V3 Step 4) | `src/models.py` |
-| `Evidence` | 추적 가능한 증거 단위 — evidence_id/source_url/quote_or_data/reliability/timestamp (V3 Step 4) | `src/models.py` |
-| `Claim` | 주장 단위 — evidence_ids ≥ 1 강제 (Pydantic validator, Anti-pattern #4) | `src/models.py` |
-| `ConfidenceProfile` | 3축 분해 신뢰도 — source_diversity/data_freshness/expert_consensus + aggregate property (V3 Step 4, Anti-pattern #10) | `src/models.py` |
-| `AnalyticalFinding` | 렌즈 단위 결과 — main_claim + evidence + confidence + counter_hypothesis (V3 Step 4) | `src/models.py` |
-| `JudgmentVerdict` | Synthesis Judge 산출 — main_judgment / contradictions (봉합 금지, Anti-pattern #5) / counter_hypothesis (V3 Step 4) | `src/models.py` |
-| `WatchDirection` (Literal) | confirms_base / rejects_base / ambiguous (V3 Step 5-B) | `src/models.py` |
-| `WatchSignal` | 감시 신호 — signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at. `WatchlistRegistry` (SQLite) 에 영구 저장 (Anti-pattern #11) | `src/models.py` |
-| `ContextAnalysis` | ACT I 결과 (팩트·타임라인·수치) | `src/models.py` |
-| `PlayerAnalysis` | ACT II 결과 (행위자·동맹·power_dynamics) | `src/models.py` |
-| `DynamicsAnalysis` | ACT III 결과 (비대칭·전환점·피드백 루프·반대 가설) | `src/models.py` |
-| `ChainReactionAnalysis` | ACT IV 결과 (인과 사슬·차단점·와일드카드) | `src/models.py` |
-| `ScenarioAnalysis` | ACT V+VI 결과 (시나리오·감시 신호·무효화 조건) | `src/models.py` |
-| `VisualAnalysis` | 시각 요소 (SVG·Leaflet·Canvas) | `src/models.py` |
-| `NarrativeSection` | 보고서의 단일 섹션 사양 (legacy six_act_theater 전용) | `src/models.py` |
-| `NarrativePlan` | 섹션 순서·테마 (legacy six_act_theater 전용) | `src/models.py` |
-| `ComposedSection` (v3.3.0~v4.2.0) | composer 가 작성한 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0 신설, inline 차트 데이터 — type/title/data/note)** / embedded_blocks / pull_quote / cited_claim_ids. legacy `embedded_charts: list[str]` (chart-id 참조) 는 v4.2.0 부터 의미 잃음. | `src/models.py` |
-| `ComposedReport` (v3.3.0~v4.2.0) | UnifiedComposer (Opus 4.7) 단일 호출 산출. headline / deck / sections / closing **+ (v4.0.0) watch_signals + contradictions + confidence_summary + confidence_score + (v4.2.0) embedded_map**. v4.0.0 부터 `freeform_essay` 만 사용하므로 사실상 보고서 SSOT | `src/models.py` |
-| `FullAnalysisResult` | 모든 분석 결과 + 메타데이터 (`strategy`, `blocks`, `composed_report` 포함) | `src/models.py` |
+| `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델). event_description / chat_id / mode. | `src/models.py` |
+| `ContextAnalysis` | ContextAnalyst (Opus 4.7) 출력. event_name / category / summary / timeline / key_figures / sources / **`recommended_persona: dict` (v4.3.0 신설)** | `src/models.py` |
+| `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. | `src/models.py` |
+| `ComposedReport` | NarrativeComposer (Opus 4.7) 단일 호출 산출. headline / deck / sections / closing / **(v4.0.0) watch_signals + contradictions + confidence_summary + confidence_score + (v4.2.0) embedded_map**. v4.0.0 부터 보고서 SSOT. | `src/models.py` |
+| `FullAnalysisResult` | 모든 결과 + 메타데이터 컨테이너. request / context / composed_report / report_url / report_path / report_theme / **(v4.5.5) system_version + revision** / analysis_timestamp / total_duration_seconds. v3 시대 optional 필드 (strategy / blocks / findings / judgment / players / dynamics / chain_reaction / scenarios / visuals) 는 호환 목적으로 보존되나 v4.5.7 호출 경로에서는 채워지지 않는다. | `src/models.py` |
+| `WatchSignal` | 감시 신호 — signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at. `WatchlistRegistry` (SQLite) 에 영구 저장 (Anti-pattern #11). composer 의 `composed_report.watch_signals: list[dict]` → `convert_watch_signals()` 변환. | `src/models.py` |
+| `WatchDirection` (Literal) | confirms_base / rejects_base / ambiguous (V3 Step 5-B 도입, v4.5.7 도 동일). | `src/models.py` |
+
+**Deprecated (정의는 보존되나 v4.5.7 호출 경로에서 인스턴스화/사용 안 됨)** — v3 시대의 7-agent + 11-lens + 11-archetype + 5-gate 흐름의 모델들. 코드 cleanup 미정.
+
+| 모델 | 마지막 활성 버전 | 비고 |
+|------|------------------|------|
+| `AnalysisStrategy` | v3.5.0 | Strategy Planner 산출 — v4.0.0 부터 채워지지 않음. `legacy_directives` 는 transitional shim. |
+| `EvidenceNeed` | v3.5.0 | Strategy 의 증거 수집 명세. |
+| `ReportSectionPlan` | v3.5.0 | archetype.section_plan() 산출. |
+| `VisualizationSpec` | v3.5.0 | Visual Analyst 참조. |
+| `AnalysisMethodContract` | v3.4.6 | AMC + Narrative DSL — v4.0.0 부터 비활성. |
+| `BlockType` (Literal 18종) | v3.4.0 (`map` 추가까지) | composer 가 `embedded_blocks` 로 명시 시만 사용. v4.5.7 에서 실질 미사용. |
+| `AnalysisBlock` | v3.5.0 | `_build_blocks()` 가 채우던 단위. v4.0.0 부터 비활성. |
+| `Evidence` / `Claim` / `ClaimType` / `Reliability` | v3.5.0 | V3 Step 4 추적성 모델. composer 가 prose 로 통합 처리. |
+| `ConfidenceProfile` | v3.5.0 | 3축 분해 신뢰도. v4.0.0 부터 `ComposedReport.confidence_score` 단일 스칼라 + `confidence_summary` 자유 텍스트로 대체. |
+| `AnalyticalFinding` | v3.5.0 | lens 단위 결과. |
+| `JudgmentVerdict` | v3.5.0 | SynthesisJudge 산출. v4.0.0 부터 `ComposedReport.contradictions` 가 모순 노출 책임 (봉합 금지 정책 보존, Anti-pattern #5). |
+| `PlayerAnalysis` / `DynamicsAnalysis` / `ChainReactionAnalysis` / `ScenarioAnalysis` / `VisualAnalysis` | v3.5.0 | 6개 분석 에이전트 출력. v4.0.0 부터 composer 가 단일 호출 안에서 통합 처리. |
+| `NarrativeSection` / `NarrativePlan` | v3.5.0 | legacy six_act_theater 흐름 전용. |
+| `AnalysisBrief` | v3.1.0 | V3 Step 6 의 compact context 시도. v4.0.0 부터 호출 경로에 없음. |
 
 각 모델의 **현재 필드 목록**은 `src/models.py` 를 직접 읽는다 — 본 문서에 필드 사본을 두면 SSOT 위반이 된다.
 
@@ -116,9 +78,71 @@ last_review: 2026-05-02
 
 ## 3. 핵심 필드 의미 (분석 산출물 위주)
 
-필드 *정의* 가 아니라, 필드의 *목적*을 사람의 언어로 풀어둔 가이드.
+필드 *정의* 가 아니라, 필드의 *목적*을 사람의 언어로 풀어둔 가이드. 본 섹션은 v4.5.7 호출 경로에서 *실제 채워지는 모델* (Active) 부터 다루고, v3 시대의 deprecated 모델은 §3.99 로 분리한다.
 
-### 3.0 AnalysisStrategy (V3 Step 1, v2.5.0)
+### 3.A ComposedSection (v3.3.0~v4.5.7 — Active SSOT)
+
+composer 가 짠 1개 자유 섹션. `prose` 가 본문이고 시각화 / editorial 컴포넌트는 모두 선택적이다.
+
+- `heading`: 섹션 제목.
+- `kicker`: 짧은 도입 라벨 1줄 (생략 가능). 한 줄 라벨 역할.
+- `lede` (v4.5.0): 1~3문장 도입. prose 시작 전 큰 글씨 italic. *섹션 흐름 도입 역할* — kicker 와 책임 분리.
+- `analogy` (v4.5.0): `{title: str, body: str}` 비유 박스. 어려운 개념을 일상 비유로 풀 때만. 모든 섹션에 박지 않는다.
+- `fact_grid` (v4.5.0): `[{label, value, sublabel?}]` 핵심 수치 격자. v4.5.2 부터 `data-cols` 한 줄 강제 — wrap 없음.
+- `dropcap` (v4.5.0): True 시 prose 첫 글자 dropcap. 보고서당 1~2 섹션 권장 (남용하면 시각 피로).
+- `prose`: 본문 — 마크다운 단락 자유.
+- `charts` (v4.2.0): `list[dict]` — `[{type, title, data, note?}]`. 8종 type (`bar / donut / line / gantt / network / stacked / bubble / heatmap`). composer 가 *수치 비교가 본문 이해에 결정적일 때만* 보수적으로 emit.
+- `pull_quote`: 강조 인용 (선택).
+- `cited_claim_ids`: claim 추적성 보존용 (legacy V3 Step 4 호환).
+- `embedded_blocks` / `embedded_charts`: legacy v3.x 의 chart-id / block-type 참조. v4.2.0 부터 의미 잃었으나 호환 목적으로 보존.
+
+### 3.B ComposedReport (v3.3.0~v4.5.7 — Active SSOT, 보고서의 단일 진실)
+
+NarrativeComposer (Opus 4.7) 의 단일 호출 산출. v4.0.0 부터 `freeform_essay.html` 이 이를 직접 렌더한다.
+
+- `headline`: 보고서 제목.
+- `deck`: 부제 1~2문장 (선택).
+- `sections`: `list[ComposedSection]` 본문 섹션들.
+- `closing`: 에필로그 (선택). v4.5.4 의 절단 검출 (REFACTOR_V5_PLAN.md Phase 5) 이 본 필드 비어 있음을 체크.
+- `watch_signals` (v4.0.0): `list[dict]` — `[{signal, description, indicates, deadline?, icon?}]`. WatchlistRegistry 가 SQLite 에 등록.
+- `contradictions` (v4.0.0): `list[dict]` — `[{side_a, side_b, evidence?, resolution?}]`. **봉합 금지** (Anti-pattern #5) 보존.
+- `confidence_summary` (v4.0.0): 신뢰도에 대한 한 줄 자유 텍스트. v3 시대의 `ConfidenceProfile` 3축 분해를 1줄 prose 로 단순화.
+- `confidence_score` (v4.0.0): 0.0~1.0 종합 신뢰도. composer 자체 평가.
+- `embedded_map` (v4.2.0): `dict | None` — 보고서당 1개 (지리적 사건일 때만). `{center, zoom, markers, arcs, legend?}`. 빈 값이면 지도 섹션 없음.
+
+### 3.C FullAnalysisResult (v4.5.7 메타데이터 컨테이너)
+
+오케스트레이터가 들고 다니는 결과 컨테이너.
+
+- `request: AnalysisRequest`: 원 요청.
+- `context: ContextAnalysis | None`: Phase 1 출력.
+- `composed_report: ComposedReport | None`: Phase 2 출력. v4.0.0 부터 보고서 SSOT.
+- `report_url`, `report_path`: Phase 3 산출 — 배포된 URL 과 로컬 HTML 경로.
+- `report_theme`: `lens_policy.select_theme(category)` 결과 (`editorial_cream` 또는 `burgundy_mono`).
+- `executive_summary`: composer 의 `deck` 또는 `headline` (markdown index 공통 텍스트).
+- `system_version` (v4.5.5): 매 렌더 시점의 `orchestrator.VERSION`. 재렌더 시엔 *재렌더 시점* 으로 갱신.
+- `revision` (v4.5.5): 0 = 최초 생성, 1+ = patch_report.py 로 수정됨. v4.5.6 부터 0 도 항상 hero eyebrow 에 표기.
+- `analysis_timestamp`, `total_duration_seconds`: 메타데이터.
+- (legacy optional) `strategy`, `blocks`, `findings`, `judgment`, `players`, `dynamics`, `chain_reaction`, `scenarios`, `visuals`: v3 시대 흐름의 잔존 필드. v4.5.7 호출 경로에서는 None.
+
+### 3.D ContextAnalysis (Active)
+
+Phase 1 (ContextAnalyst Opus 4.7) 출력. composer 가 보는 *유일한* 사실 입력이라 추출 품질 = 보고서 품질의 상한선이다.
+
+- `event_name`: 사건 이름 (예: "호르무즈 해협 봉쇄").
+- `category`: 사건 유형 (예: `geopolitical`, `accident`, `tech`, `financial`, `policy`, `general`). `select_theme()` 가 이 필드로 테마를 결정.
+- `summary`: 사건 요약 (한 단락).
+- `timeline`: 날짜/사건/영향 트리오 배열.
+- `key_figures`: label / value / context 트리오 배열. fact_grid 의 1차 입력.
+- `sources`: 출처 URL + 메타.
+- `recommended_persona` (v4.3.0): `dict` — composer 가 어떤 톤·관점으로 글을 쓸지 권장. composer 의 user message 에 함께 전달.
+- `glossary`, `background`: 보조 자료 (선택).
+
+### 3.99 v3 시대 모델 (Deprecated, 정의만 보존)
+
+다음 모델들은 v4.5.7 호출 경로에서 *인스턴스화되지 않는다*. 정의는 `src/models.py` 에 보존되어 import 호환성을 유지하지만, 본 §3 의 가이드는 *역사적 참고용* 이다.
+
+#### 3.0 AnalysisStrategy (V3 Step 1, v2.5.0)
 - `event_type`: 사건 유형 한 단어 (예: "trade_dispute", "war", "tech_launch").
 - `user_intent`: 7종 Literal — 사용자가 가장 알고 싶어 하는 질문 유형. (`what_happened`, `why_happened`, `who_benefits`, `where_spreads`, `what_next`, `where_vulnerable`, `what_to_do`)
 - `intent_confidence`: 0.0~1.0. intent 분류 확신도.
@@ -134,8 +158,8 @@ last_review: 2026-05-02
 - `theme`: 보고서 테마. `burgundy | geopolitical | financial | tech | nature | liquidglass` (기본 `burgundy`).
 - `legacy_directives`: **Step 1 한정 transitional shim**. v2 의 dict 기반 per-agent directive 문자열을 보존. Step 5 lens pool 도입 시 제거됨. 신규 코드는 `recommended_lenses` 를 사용할 것.
 
-### 3.1 ContextAnalysis
-- `timeline`: 날짜/사건/영향 트리오. 보고서 ACT I 의 타임라인 카드로 렌더.
+### 3.1 ContextAnalysis (v3 시대 도식 — Active 가이드는 §3.D 참조)
+- `timeline`: 날짜/사건/영향 트리오. v3 시대엔 보고서 ACT I 의 타임라인 카드로 렌더.
 - `key_figures`: label / value / context 트리오. 핵심 수치 카드.
 - `background`: 배경 단락 (다단락 가능, `structured` 필터 처리).
 - `glossary`: 용어 풀이. 보고서 말미.
@@ -240,21 +264,62 @@ last_review: 2026-05-02
 
 ## 4. 모델 변경 시 동시 갱신해야 할 곳
 
-[CLAUDE.md](../CLAUDE.md) Change Propagation 매트릭스의 "src/models.py 변경" 행 참조. 핵심:
+[CLAUDE.md](../CLAUDE.md) Change Propagation 매트릭스의 "src/models.py 변경" 행 참조. v4.5.7 기준 핵심:
 
 1. `src/models.py` 정의 갱신 (코드 SSOT)
-2. 본 문서 §2 `모델 목록` 표 + §3 의미 가이드 갱신
-3. 영향받는 에이전트의 system prompt JSON 스키마 갱신
-4. 보고서 템플릿 (`src/templates/report.html`) 의 렌더링 부분 갱신
-5. `DEVLOG.md` 에 변경 기록
+2. 본 문서 §2 모델 목록 표 (Active / Deprecated 분리 유지) + §3 의미 가이드 갱신
+3. 영향받는 에이전트의 system prompt JSON 스키마 갱신 (`src/agents/context_analyst.py` 또는 `src/agents/narrative_composer.py`)
+4. `src/templates/archetypes/freeform_essay.html` 렌더링 부분 갱신 (단일 템플릿)
+5. `CHANGELOG.md` 에 신규 필드 entry 추가
+6. 헤더 `last_synced_with` 갱신
 
-V3 후에는 추가로:
-- `docs/CATALOGS.md` 의 BlockType 표 갱신 (BlockType 변경 시)
+deprecated 모델 (§3.99) 변경은 사용자 영향이 없으므로 본 문서 §2 의 마지막 활성 버전 표만 갱신.
 
 ---
 
-## 5. Out of scope
+## 5. V5 6-tier State Models (Phase 0C 도입, `src/state/`)
 
-- 필드의 정확한 타입·기본값 → `src/models.py` 직접 읽기
+REFACTOR_V5_PLAN.md Phase 0C 가 신설한 *별도 모델 SSOT*. v4.5.7 의 `src/models.py` (ComposedReport 계열) 와 분리되어 있으며, V5 후속 Phase 가 진입할 때 단계별로 활성화된다.
+
+### 5.1 Tier 별 모델 (`src/state/models.py`)
+
+| Tier | 모델 | 정의 위치 | 활성 Phase |
+|------|------|-----------|-----------|
+| 1 | `RawContext` | `src/state/models.py` | 항상 (ContextAnalyst 입력) |
+| 2 | `EvidencePack` | `src/state/models.py` | Phase 0C — adapter 로 telemetry 추출 / Phase 1A 부터 Composer 입력 |
+| 3 | `AnalysisBrief` | `src/state/models.py` | Phase 1A (ResearchDirector) |
+| 4 | `DraftReport` | `src/state/models.py` | Phase 1 (Editor) |
+| 5 | `ExhibitPack` | `src/state/models.py` | Phase 2 (VisualPlanner) — EvidenceDataset 포함 |
+| 6 | `PublishManifest` | `src/state/models.py` | Phase 7 (DeskEditor) |
+
+leaf 모델 — `RawSource`, `SearchHit`, `Claim`, `Actor`, `TimelineEvent`, `Contradiction`, `AnalysisMethod` (9종 enum), `ReportShape`, `VisualConstraints`, `KeyNumber`, `EvidenceDataset`, **`DatasetField` (Phase 2A 신설, semantic_type 7종 enum: time/category/geo/quantity/ratio/score/text)**, **`TransformStep` (Phase 2A 신설, raw → 차트 데이터 변환 추적)**, `ScreenshotCapture`, **`Exhibit` (Phase 6A 신설 — priority/priority_assigned_by/fallback_form/spec)**, **`RequiredExhibit` (Phase 6A 신설 — description/visual_type_hint/why_required/fallback_form)**, **`ExhibitPriority` Literal 3종 enum (required/supporting/decorative)**.
+
+### 5.2 변환 함수 (`src/state/compaction.py`)
+
+| 함수 | 책무 |
+|------|------|
+| `compact_to_evidence_pack(raw)` | RawContext → EvidencePack 결정적 압축 (LLM 0). LLM 기반 압축은 ContextAnalyst.SYSTEM_PROMPT 가 갱신될 때 활성. |
+| `evidence_pack_from_context_analysis(ctx)` | v4.5.7 ContextAnalysis → V5 EvidencePack adapter. Phase 0C 의 가교. |
+| `estimate_state_token_size(state)` | Pydantic 모델 직렬화 길이 ≈ 토큰 수 (한국어 ~3 chars/token). 30% 절감 검증용. |
+
+### 5.3 입력 제한 강제 (`src/state/guards.py`, Plan §4.4)
+
+```python
+from src.state import assert_input_is, RawContext, EvidencePack
+assert_input_is("composer", EvidencePack(...))   # OK
+assert_input_is("composer", RawContext(...))      # StateGuardError (AP-V5-30)
+```
+
+8개 단계 라벨: `context_analyst`, `research_director`, `composer`, `visual_planner`, `editor`, `layout_typesetter`, `chart_critic`, `desk_editor`. 라벨 추가는 V5 Phase 진입 시점 ([REFACTOR_V5_PLAN.md §4](../REFACTOR_V5_PLAN.md)) 와 함께.
+
+### 5.4 v4.5.7 ComposedReport 와의 관계
+
+V5 의 `DraftReport` 는 v4.5.7 의 `ComposedReport` 와 *역할 일부 중복* — Phase 1 (Editor Pass) 진입 시 두 모델 분리. Phase 0C 시점엔 *형식만 정의* 되어 있고, 실제 Composer 호출은 여전히 `ComposedReport` 를 emit. v4.5.7 호출 경로 byte-equal 보존.
+
+---
+
+## 6. Out of scope
+
+- 필드의 정확한 타입·기본값 → `src/models.py` (v4.5.7) 또는 `src/state/models.py` (V5) 직접 읽기
 - 모델 인스턴스의 직렬화 형식 → Pydantic 의 `model_dump()` / `model_validate_json()` 동작 (코드)
 - 에이전트가 어떤 시스템 프롬프트로 어떤 모델을 채우는지 → `src/agents/<name>.py` 의 SYSTEM_PROMPT

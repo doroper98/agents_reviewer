@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v4.5.0
+last_synced_with: v4.5.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-03
+last_review: 2026-05-05
 ---
 
 # Changelog
@@ -21,6 +21,202 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ---
 
 ## [Unreleased]
+
+V5 리팩토링 (REFACTOR_V5_PLAN.md) 진행 중. Tier 1 (토대) 진행:
+
+- **Phase 0 (Baseline + SSOT Repair) — 완료.** v4.5.7 baseline 으로 문서·메타데이터 정합성 회복. 코드 변경 0 (orchestrator VERSION 은 이미 v4.5.7).
+- **Phase 0B (Golden Evaluation Harness) — framework 완료, baseline 녹화 대기.** 20건 Golden Prompt fixture (8개 카테고리 정합) + 5종 회귀 테스트 (Golden / Visual / Semantic / Cost / Completeness) framework + CLI runner + record_baseline.py. py_compile 통과. 사용자가 `.env` 환경에서 `python scripts/record_baseline.py` 1회 실행 시 baseline 녹화 완료. SSOT: `tests/regression/README.md`.
+- **Phase 0C (Pipeline State Compaction) — framework 완료, 후속 Phase 결합 대기.** `src/state/` 모듈 신설 — 6-tier State 모델 (RawContext / EvidencePack / AnalysisBrief / DraftReport / ExhibitPack / PublishManifest), RawContext → EvidencePack 변환 (`compact_to_evidence_pack`, `evidence_pack_from_context_analysis`), 8단계 입력 제한 강제 (`assert_input_is`, `forbid_raw_context_in`, AP-V5-30). orchestrator 에 EvidencePack adapter *telemetry 전용* 삽입 — v4.5.7 호출 경로 byte-equal 보존. 회귀 테스트 `tests/regression/test_state_compaction.py` 신설 (16건 케이스, Plan §4.5 인수 기준 #1~#3 검증). py_compile + AST + Plan §4.4 / §6.3 정적 일치 검증 통과.
+- **Phase 1A (Research Director / Method Router) — framework 완료, opt-in 활성 대기.** `src/agents/research_director.py` 신설 — Plan §6.4 의 SYSTEM_PROMPT 그대로 + 9종 method enum (ACH / scenario_tree / transmission_channel / stakeholder_matrix / fault_tree / decision_matrix / pre_mortem / transmission_timeline / comparative) + 결정적 fallback `design_via_heuristics` (LLM 0) + DEFAULT_BRIEF (Plan §20.3 fallback). orchestrator 에 *opt-in flag* (`Config.enable_research_director`, env `V5_RESEARCH_DIRECTOR=1`) 로 통합 — 디폴트 OFF, v4.5.7 호출 경로 byte-equal 보존. 꺼진 환경에서도 `design_via_heuristics` 가 모든 prompt 에 AnalysisBrief 를 emit (Plan §6.6 인수 기준 #1 충족). SSOT: `docs/RESEARCH_DIRECTOR_METHODS.md` (9종 method 의 적용 사건·입력·출력·권장 시각화). 회귀 테스트 `tests/regression/test_research_director.py` 신설 — Golden Prompt 20건 expected_method 일치률 90% (Plan §6.6 인수 기준 #4 임계 80% 통과). `run_regression.py` 가 lazy import 로 sandbox graceful degrade.
+- **Phase 4 (Exhibit 번호제) + Phase 5 (Word Budget + 절단 회복) — framework 완료. Tier 4 종료.** Plan §11 + §12 — V5 의 마지막 Phase 들. *V5 의 보고서 본문 품질* 의 마지막 layer.
+  - `src/visual/exhibit_numbering.py` 신설 (Phase 4) — Plan §11.3 의 `[[ex:N]]` / `[[exr:N]]` / `[[exs:N-M]]` 정규식 SSOT (`EXHIBIT_REF_PATTERN` + `EXHIBIT_REF_RANGE_PATTERN`). `assign_exhibit_ids` 자동 1부터 부여 + composer 가 박은 임의 ID 덮어씀 (AP-V5-6 강제). `resolve_exhibit_refs` (plain text) + `resolve_exhibit_refs_html` (anchor 점프) 양쪽. `validate_exhibit_refs` 가 Phase 7A 의 exhibit_ref_broken hard fail 의 사전 가드. `count_exhibit_refs` 통계 (Plan §11.5 인수 기준 — 보고서당 1~3회 권장).
+  - `src/visual/word_budget.py` 신설 (Phase 5) — Plan §12 의 두 작업 통합. `MODE_TARGET_CHARS_LOWER` (Plan §6.4 byte-equal — fast 1500 / std 3500 / deep 6000) + `MODE_BUDGET_BANDS` (Plan §12.3 — peak_target / asymmetry 정도) + `COMPOSER_MAX_TOKENS_V5` (Plan §12.6 — fast 16K~24K / std 28K~40K / deep 48K~64K, **v4.5.7 의 deep 32K 한계 해소**). `detect_truncation` 5종 시그널 (production SSOT, helpers 와 byte-equal). `adaptive_max_tokens(mode, complexity)` + `complexity_score_from_context` (Plan §12.6 가중합). `compute_word_budgets` 가 mode 별 peak/support/watch 역할 분배. `gini_coefficient` + `section_length_distribution` (Plan §12.7 인수 기준 #1 측정). `stitch_continuation` 연속 호출 결합 (Plan §12.5 — 마지막 미완성 잘라내고 이어 작성).
+  - 회귀 테스트 `tests/regression/test_exhibit_and_budget.py` 신설 — 32건 케이스. Phase 4 부분 (15건): assign_exhibit_ids AP-V5-6 강제 + 단일/괄호/범위/phantom resolve + HTML anchor + validate + count + 정규식 SSOT. Phase 5 부분 (17건): SSOT byte-equal + detect_truncation 4 시그널 + adaptive_max_tokens 보간 + complexity_score 가중합 + compute_word_budgets peak/role + gini 균등/집중 + stitch_continuation.
+  - v4.5.7 호출 경로 byte-equal 보존 — Phase 4/5 모두 *데이터 + 함수* 형태. Renderer 결합 (Phase 4 의 anchor HTML 출력) 및 composer 호출 후 처리 (Phase 5 의 절단 검출 → 연속 호출) 는 별도 통합 작업.
+  - **Tier 4 (미적 개선) 4/4 ✅ 종료. V5 17 Phase 모두 완료.**
+
+- **Phase 3 (Layout Primitives) — framework 완료.** Plan §10 — 섹션마다 동일 구조 → *섹션별 layout 변주*. 9종 layout vocab 정본 동결 (AP-V5-3).
+  - `src/state/models.py` — `LayoutPrimitive` Literal 9종 (standard / hero_map / hero_chart / split_2col / sidebar_callout / qna_panel / timeline_strip / signature_summary / exhibit_grid) + `LayoutAssignment` 모델 (section_idx + layout + why + assigned_by 3-tier).
+  - `src/agents/layout_typesetter.py` 신설 — `LayoutTypesetter(BaseAgent)` (Sonnet 4.6, MAX_TOKENS=2048, 빠른 분류 작업). SYSTEM_PROMPT 가 Plan §10.3 의 결정 원칙 (60~70% standard / hero_* ≤ 1~2개 / 연속 배치 차단 / 지리 사건 hero_map 권장 등) 명시.
+  - `plan_layouts_via_heuristics(sections, has_map, is_strategic, section_count)` — LLM 0 결정적 fallback. 9-vocab 모두 트리거 (지리/결론/차트≥3/Q&A 패턴/타임라인/비교/단일 결정적 차트/analogy 동반/그 외 standard) + 연속 배치 차단 + hero count ≤ 2 강제.
+  - `fallback_all_standard(n)` — Plan §10.5 의 LayoutTypesetter 호출 실패 시 모든 섹션 standard fallback.
+  - `Config.enable_layout_typesetter` opt-in flag (env `V5_LAYOUT_TYPESETTER=1`) — 디폴트 OFF.
+  - 회귀 테스트 `tests/regression/test_layout_typesetter.py` 신설 — 23건 케이스. 9-vocab SSOT (AP-V5-3 강제 가드) + LayoutPrimitive Literal 정합 + heuristic 8종 트리거 검증 + 연속 배치 차단 + hero ≤ 2 cap + fallback_all_standard + agent 모델·예산 (Sonnet 4.6, 2048).
+  - HTML 템플릿 (templates/layouts/) 은 *별도 작업* — 본 commit 은 결정 로직만. 템플릿이 박힐 때까지 LayoutAssignment 는 *meta 정보* 로 telemetry / 후속 분기.
+
+- **Phase 1 (Editor Pass) — framework 완료. Tier 4 (미적 개선) 의 첫 Phase.** Plan §5 — V5 의 *보고서 글쓰기 품질* 개선 시작점. Drafting + Editing 2 호출 — 같은 Opus 4.7 이 *editor 페르소나* 로 자기 글을 비평·재집필.
+  - `src/agents/editor.py` 신설 — `Editor(BaseAgent)` (Opus 4.7, MAX_TOKENS=16000). SYSTEM_PROMPT 가 Plan §5.4 의 7-rubric (군더더기 / 결론의 칼날 / 모순 봉합 / 차트-본문 결합 / 분량 비대칭 / 신선함 / 외래어 풀이) 그대로. JSON 응답 스키마 (critique / revisions / final) 강제.
+  - `EditedReport` 모델 — ComposedReport 와 호환 구조 + `editor_critique` + `editor_pass_applied` flag.
+  - `SectionScore` (7-rubric 0~10 점) + `SectionRevision` (rewrite/cut/keep) + `EditorCritique` 모델.
+  - `assert_signal_count_preserved(draft, edited)` — Plan §5.6 인수 기준 #3 강제. Editor 가 watch_signals / contradictions 개수를 *축소* 하면 fail → graceful fallback (draft 그대로). Anti-pattern #5 (모순 봉합) 회귀 차단.
+  - `detect_cliches(text)` — Plan §5.4 Q1 (padding) 의 결정적 보조. 7종 진부어 (`주목할 만한 점은`, `결론적으로`, `대체로` 등) 매칭.
+  - `Config.enable_editor_pass` opt-in flag (env `V5_EDITOR_PASS=1`) — 디폴트 OFF.
+  - 회귀 테스트 `tests/regression/test_editor.py` 신설 — 22건 케이스. SECTION_SCORE_RUBRICS 7종 SSOT + SYSTEM_PROMPT 7-rubric 정합 + 보존 검증 (4건) + 진부어 매칭 + EditedReport / EditorCritique 모델 + Editor 인스턴스 smoke.
+  - v4.5.7 호출 경로 byte-equal 보존 — Composer DraftReport 가 Editor 통과 후 EditedReport 로 emit 되는 결합은 opt-in 시점에 활성.
+
+- **Phase 8 + 8A (Strategic Mode + Contract) — framework 완료.** Plan §17 + §18 — 의사결정 보조 모드. *처방적* 보고서 (옵션 + 권고 + ActionPlan). 분석 모드와 *근본적으로 다른* 보고서 종류.
+  - `docs/STRATEGIC_MODE_PROMPT.md` 신설 (Plan §25.1 사전 작업 #2 완료) — composer system prompt 확장 SSOT (전략 모드 7개 디폴트 섹션 + 핵심 어법 규칙) + 3-경로 감지 (prefix / 패턴 / LLM) + 한계 (LLM 의 utility function 모름) 명시.
+  - `src/agents/strategic_router.py` 신설 — `EXPLICIT_PREFIXES` 7종 (`?전략` / `?분석` / `?예측` / `?비교` / `?지도` / `?짧게` / `?심층` + `/strategy` alias) + `STRATEGIC_PATTERNS` 8종 정규식 (Plan §17.2 byte-equal). `route_query(user_request, llm_user_intent)` 통합 router → `ModeRouting` (mode + detection_source + matched_prefix/patterns + cleaned_query). AP-V5-23 (모호 시 analytical 기본값) 강제.
+  - `src/state/models.py` 강화 — Phase 8A 의 8개 필수 출력 모델: `StrategicReport` (decision_statement / options / criteria / constraints / decision_matrix / recommendation / kill_switch_conditions / action_plan_30_60_90) + leaf 모델 8종 (`StrategicOption` + `Criterion` + `Constraints` + `DecisionMatrix` + `Recommendation` + `ActionItem` + `ActionPlan` + `FailureMode`).
+  - `KILL_RULES_STRATEGIC` (`run_strategic_kill_rules`) — Plan §17.6 + §18.4 의 9종: options_too_many (≥6) / no_decision_matrix / matrix_score_uniform / recommendation_absent (rationale<50자) / premortem_missing_deep / criteria_not_user_aligned / decision_statement_missing / action_plan_missing / kill_switch_missing. **AP-V5-18 갱신** (Plan §18.4) — 옵션 0개 → hold (KILL 아님), 1~2개 허용, 6+ KILL.
+  - `evaluate_strategic_mode(report, mode)` 통합 평가 → `StrategicEvaluation` (decision: publish/hold/kill). 0 옵션 시 hold + 사용자 안내 ("?분석 prefix 로 재시도").
+  - 회귀 테스트 `tests/regression/test_strategic_mode.py` 신설 — 39건 케이스. **Plan §17.7 인수 기준 #1 정확도 검증** — 30건 라벨된 query 의 routing 정확도 100% (≥90% 임계 통과). prefix 7종 + pattern 8종 + 모델 enum + 9종 KILL_RULES + AP-V5-18 갱신 정책 (0/1/2/6 옵션) + 통합 evaluate.
+  - v4.5.7 호출 경로 byte-equal 보존 — 텔레그램 봇의 `_classify_input` 또는 orchestrator 의 mode 결정 시점에 결합 가능 (현재 코드만 박힘).
+
+- **Phase 7 (Desk Editor — Logical + Visual Proof) — framework 완료. Tier 3 의 첫 Phase.** Plan §16 — V5 의 *가장 큰 사용자 체감 변화 시작점*. 신문사 데스크 등급의 시스템 QA + publish/hold/**KILL** 권한.
+  - `docs/DESK_VISUAL_RUBRIC.md` 신설 (Plan §25.1 사전 작업 #4 완료) — Visual 8-rubric SSOT (시각-1~8) + append-only 누적 정책 (AP-V5-16) + 자동 KILL 신호 매트릭스. YK catch 결함이 다음 DeskEditor 호출에서 자동 catch 되도록 self-improving (Plan §16.12).
+  - `src/visual/capture.py` 신설 — Plan §16.5 의 Playwright capture pipeline. `capture_proofs(html_path, exhibit_count, timeout_ms)` 가 desktop_full (1280×scrollHeight) + mobile_full (375×scrollHeight) + chart_closeup (≤3개) 캡쳐. Playwright 미설치 시 graceful 빈 list (Visual rubric skip). `save_captures_to_disk` 디버그용.
+  - `src/agents/desk_editor.py` 신설 — Plan §16.2 의 DeskEditor (Opus 4.7 vision, MAX_TOKENS=8000). SYSTEM_PROMPT 가 Plan §16.3 의 Logical 7-rubric (headline_body / deck_conclusion / section_flow / chart_redundancy / watch_signal_predictivity / source_claim_ratio / smell_test) + DESK_VISUAL_RUBRIC.md §1 의 Visual 8-rubric 자동 포함 (self-improving).
+  - `DeskVerdict` (decision: publish/hold/kill + logical_rubric_scores + visual_rubric_scores + issues + kill_reason + auto_kill_rules_triggered) + `DeskIssue` (severity / domain / rubric / suggested_action / target_module / visual_evidence_idx).
+  - `run_logical_kill_rules` + `run_visual_kill_rules` + `evaluate_auto_kill` — Plan §16.6 의 결정적 KILL_RULES (Logical 5종 + Visual 3종, *둘 이상* 발화 시 자동 KILL). LLM 호출과 *별개* 로 작동 (AP-V5-14 강제).
+  - `HOLD_DISPATCH` 매트릭스 17종 + `dispatch_hold_action` — Plan §16.8 의 lower editor 재호출 분기 (composer/editor/chart_critic/renderer/visual_planner/layout).
+  - `Config.enable_desk_editor` opt-in flag (env `V5_DESK_EDITOR=1`) — 디폴트 OFF.
+  - 회귀 테스트 `tests/regression/test_desk_editor.py` 신설 — 27건 케이스. DeskVerdict/DeskIssue enum 정합 + Logical 5-KILL + Visual 3-KILL + 자동 KILL 통합 (둘 이상 / 1종 / Logical+Visual 조합) + HOLD_DISPATCH 17종 매핑 + Playwright graceful skip + SYSTEM_PROMPT 의 7+8 rubric 정합 + DESK_VISUAL_RUBRIC.md SSOT 형식.
+  - v4.5.7 호출 경로 byte-equal 보존 — Phase 7 전 단계 (Phase 7A Deterministic Gate) 통과 후에만 호출 가능.
+
+- **Phase 7A (Deterministic Publish Gate) — framework 완료. Tier 2 의 마지막 Phase.** Plan §15 — DeskEditor (LLM Vision, Phase 7) 호출 *전* 결정적 (rule-based) 검사. 기계적으로 잡을 수 있는 결함은 LLM 비용 0 으로 차단. AP-V5-29 강제.
+  - `src/visual/deterministic_gate.py` 신설:
+    · **Hard fail 11종** (Plan §15.4): html_render_failed / html_unparseable / required_section_missing / exhibit_ref_broken / chart_without_source (AP-V5-26) / chart_container_empty / report_too_short (mode lower bound) / closing_missing / asset_404 (정적 자산 디스크 verify) / mobile_horizontal_overflow (inline width >400px 검출) / playwright_timeout. 1개라도 발생 시 decision='kill' → LLM 호출 0.
+    · **Soft fail 5종** (Plan §15.5): asymmetry_gini (>0.6) / chart_count_exceeded (mode 별 fast 2 / std 4 / deep 5) / heading_pattern_repetitive (어두 동일 + 길이 ±2자) / watch_signal_all_ambiguous / stale_source_ratio (>70% 90일+). DeskEditor system prompt 에 hold 신호로 전달.
+    · `MODE_LOWER_BOUND` (Plan §6.3 의 fast 1500 / std 3500 / deep 6000) + `ChartCountLimits` (Plan §13.8) SSOT.
+    · `[[ex:N]]` / `[[exr:N]]` / `[[exs:N-M]]` exhibit ref 정규식 파싱 — Phase 4 신설 형식 사전 가드.
+    · `_gini_coefficient` / `_heading_repetitive` / `_stale_source_ratio` 헬퍼.
+    · `run_deterministic_gate(composed, rendered_html_path, mode, must_have_sections, playwright_timed_out)` 통합 진입점 → `DeterministicGateResult` (decision: publish/soft_fail/kill + hard_failures + soft_failures + metrics).
+  - 회귀 테스트 `tests/regression/test_deterministic_gate.py` 신설 — Plan §15.6 인수 기준 #1 (11 hard fail 모두) + #2 (Hard fail → decision='kill' → LLM 호출 0) 결정적 검증. 22건 케이스 — clean publish + 11종 Hard fail 개별 + 4종 Soft fail + 다중 Hard 모두 보고 + Result 형식.
+  - v4.5.7 호출 경로 byte-equal 보존 — Phase 7 (DeskEditor) 활성 시점에 결합. AP-V5-29 가 *Phase 7 가 박힐 때* 본격 활성.
+
+- **Phase 6A (Exhibit Priority Policy) — framework 완료.** Plan §14 — Phase 6 의 보수적 drop 정책이 *핵심 논거 차트까지 조용히 사라지게* 만드는 부작용을 차단. AP-V5-28 (Required Exhibit 의 silent drop 금지) 강제.
+  - `src/state/models.py` 강화 — `ExhibitPriority` Literal 3종 enum (required / supporting / decorative) + `Exhibit` 모델 신설 (priority + priority_assigned_by + fallback_form 필드) + `RequiredExhibit` 모델 신설 (Plan §14.4 — description / visual_type_hint / why_required / fallback_form) + `AnalysisMethod.required_exhibits` 가 `list[str]` → `list[RequiredExhibit]` 로 강화 (legacy `list[str]` 자동 변환 — model_validator before).
+  - `src/visual/chart_gate.py` 강화 — `run_chart_gate(...)` 가 `priority` 와 `required_fallback_form` 인자 추가. priority 별 분기:
+    · `required` → AP-V5-28 강제 격하 (fact_grid / table / text 순). 데이터 결손 시에도 *최소한 placeholder text emit* — drop 절대 금지. `ChartGateResult.required_fallback_used=True` 로 DeskEditor 가 hold 사유로 인지.
+    · `supporting` (기본) → 기존 3단계 ladder (fact_grid → text → drop).
+    · `decorative` → 1단계만 (fact_grid 안 되면 즉시 drop, 조용히).
+  - `FallbackLadder.to_table()` 신설 — 행 다수 (>6) 데이터를 표 형식으로 격하. RequiredExhibit.fallback_form='table' 분기.
+  - `ChartGateResult` 에 `priority` + `required_fallback_used` 추적 필드 추가.
+  - `src/agents/research_director.py` SYSTEM_PROMPT 에 Plan §14 의 required_exhibits 정책 안내 추가 (각 method 마다 1~2개 핵심 차트 명시 + fallback_form 지정). `_DEFAULT_REQUIRED_EXHIBITS` heuristic 매핑 갱신 — 9종 method 모두 매핑 (fault_tree / pre_mortem 은 빈 list 허용). RequiredExhibit dict 형식으로 전환.
+  - 회귀 테스트 `tests/regression/test_exhibit_priority.py` 신설 — Plan §14.5 인수 기준 #1~#3 모두 검증. 22건 케이스 — Exhibit default priority + 3-tier enum + RequiredExhibit 모델 + legacy list[str] 자동 변환 + AP-V5-28 강제 (required + Gate fail → drop 금지) + table fallback (row 다수) + text fallback (data 결손 placeholder) + decorative silent drop + supporting 3-step + ChartGateResult priority 추적 + ResearchDirector heuristic.
+  - v4.5.7 호출 경로 byte-equal 보존 (legacy list[str] 자동 변환).
+
+- **Phase 6 (Chart Correctness Gate — 4중 게이트) — framework 완료.** Tier 2 의 핵심. Plan §13 의 4중 게이트:
+  - **Gate A (Schema Validation)** — `src/visual/schemas.py` 신설. 9개 type 별 Pydantic 가드 (`BubbleChartGuard`/`GanttGuard`/`NetworkGuard`/`BarChartGuard`/`LineChartGuard`/`HeatmapGuard`/`StackedBarGuard`/`DonutGuard`). NaN/inf 거절 (CHART-AP-3), 빈 data 거절 (CHART-AP-7), bubble size>0 (CHART-AP-12), gantt 시간 파싱 + 중복 라벨 (CHART-AP-13), network link 참조 + 노드 ≥ 2 (CHART-AP-1), donut 음수/0 합계, stacked categories ↔ values 정합. `parse_time` 이 ISO/날짜/연도 4종 형식 지원.
+  - **Gate B (ChartCritic LLM)** — `src/agents/chart_critic.py` 신설 (Sonnet 4.6, 1024 tokens). Plan §13.3 의 7개 질문 SYSTEM_PROMPT — Q1 차트 빠지면 논거 약해지나 / Q2 takeaway repeat / Q3 type 적합 / Q4 prose 인용 (AP-V5-7) / Q5 중복 / Q6 지도 무관 (AP-14) / Q7 공허. `ChartVerdict` (score 1~5, keep/replace/drop). Plan §13.8 운영 정책 — score ≥ 4 만 keep (3 ambiguous → drop), 호출 실패 시 보수적 drop fallback. `critique_via_heuristics` 가 LLM 0 결정적 휴리스틱 (Q4 + Q7 평가).
+  - **Gate C (Visual Sanity)** — `src/visual/sanity_check.py` 신설. lxml 기반 SVG 정적 검증 (미설치 시 정규식 fallback). `visual_sanity_check_svg(svg, viewbox)` 가 4개 항목 검증 — 마크 카운트 (AP-12), 라벨 bbox 충돌 ≤ 20% (AP-5/6/10), viewBox 점유율 ≥ 5% (빈 frame), 라벨 viewBox 밖 잘림 (AP-5).
+  - **Gate D (Fallback Ladder)** — `src/visual/chart_gate.py` 신설. Plan §13.5 의 3단계 격하: ① fact_grid 변환 (≤ 6 행 시) → ② 자연어 1문장 요약 → ③ 차트 자체 drop. *깨진 차트 보고서 노출 0건* 정책.
+  - **`run_chart_gate(chart, ...)`** 통합 진입점 — Gate A → B → (B-extra: EvidenceDataset) → C → D 순. 어느 게이트든 fail 시 즉시 Fallback Ladder. `ChartGateResult` 가 final_verdict (keep / fallback_fact_grid / fallback_text / fallback_drop) + gate_results + fallback_payload 반환.
+  - 회귀 테스트 `tests/regression/test_chart_correctness.py` 신설 — Plan §13.7 인수 기준 #1 (14개 antipattern 시나리오). 38건 케이스 — Gate A 8개 type guard + Gate B 4건 (Q4/Q7/threshold 4) + Gate C 5건 (SVG 결함) + Gate D 4건 (fallback ladder) + 통합 5건 (run_chart_gate end-to-end).
+  - v4.5.7 호출 경로 byte-equal 보존 — 본 게이트는 VisualPlanner / 미래 Phase 7 DeskEditor 의 emit 경로에 결합 (현재 코드만 박힘).
+
+- **Phase 2B (Visualization Capability Registry) — framework 완료.** Plan §9 — 차트 type 의 *capability bound* 명시. `docs/VISUAL_CAPABILITY_REGISTRY.yaml` 신설 (16종 type — safe 11 / guarded 3 / experimental 2 정확 분포). `src/visual/capability_registry.py` 신설 — yaml 로더 (캐시) + `is_chart_type_allowed` (3-tier 정책: safe 자유 / guarded Phase 6 Gate C 필수 / experimental forbidden 디폴트, must_have 명시 시만) + `check_required_fields` (필드 정합) + `assert_chart_in_registry` (AP-V5-27 강제). VisualPlanner 의 `_parse_exhibits` + `plan_via_heuristics` 양쪽에 Registry 가드 통합 — emit 전 Registry 미등재/forbidden 즉시 drop. 회귀 테스트 `tests/regression/test_capability_registry.py` 신설 — Plan §9.3 의 11/3/2 분포 검증 + experimental forbidden 강제 + must_have 우회 + required_fields 정합 + renderer enum 4종 검증. 24건 케이스. v4.5.7 호출 경로 byte-equal 보존 (VisualPlanner opt-in flag 그대로).
+
+- **Phase 2 (Visualization Decoupling + Open-Ended Charts) — framework 완료, opt-in 활성 대기.** Tier 2 의 첫 Phase. Plan §7 + §19 에 따라:
+  - `src/visual/v5_theme.py` 신설 — Plan §19 의 design token SSOT (Editorial Cream + Burgundy Mono 2종 + 폰트 트리플렛). `get_theme_config(theme)` 가 Vega-Lite config 로 변환, `apply_theme_to_spec(spec, theme)` 가 LLM 이 박은 색을 *덮어씀* (AP-V5-2 강제).
+  - `src/visual/vega_adapter.py` 신설 — `render_vega_lite(spec, theme, output)` 단일 어댑터 (Plan §7.4). `vl-convert-python` 미설치 환경에서 themed spec dict 로 graceful fallback (브라우저 vega-embed 호환). `validate_vega_spec` 이 Phase 6 Gate A 의 사전 가드 (CHART-AP-7 빈 data / 비-Vega-Lite schema 거절). `chart_dict_to_vega_spec` 이 v4.5.7 의 ComposedSection.charts 형식을 Vega-Lite 로 마이그레이션 보조.
+  - `src/agents/visual_planner.py` 신설 — Plan §7.3 의 VisualPlanner (Opus 4.7, MAX_TOKENS 12000) + SYSTEM_PROMPT (Plan §7.3 그대로). `plan_via_heuristics` 가 LLM 호출 없이 v4.5.7 chart spec 을 EvidenceDataset Guard 통과 기준으로만 필터. `Config.enable_visual_planner` opt-in flag (env `V5_VISUAL_PLANNER=1`) 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존.
+  - 회귀 테스트 `tests/regression/test_phase2_vega.py` 신설 — Plan §19 design token 정합성 + apply_theme 강제 + validate_vega_spec + Plan §7.7 antipattern 자동 해결 매핑 (AP-1 / AP-11 / AP-12) 검증. 25건 케이스.
+  - Plan §7.8 인수 기준: #4 (모든 차트가 V5 design token 강제) ✅, #5 (자동 해결 8개 항목 검증) ✅. #1 (visual_builder 11개 함수 폐기) 은 Phase 2 본격 활성 시점에 — v4.5.7 charts.js 의존이라 *현재 보존*. #2 (새 chart type demo) / #3 (Editor → Visual 호출 순서) 는 Phase 1 (Editor Pass) 결합 후.
+
+- **Tier 1 baseline 측정 (2026-05-05).** VM 에서 v4.5.7 환경 그대로 20건 Golden Prompt 실측 녹화 (139분, errors 0). 회귀 테스트 7종 통과율 **70.1% (124 pass / 52 fail / 1 skip / 177 total)** 박힘. 52 fail 은 *Plan §22 #2 의 의도대로* V5 후속 Phase 가 개선해야 할 항목들의 baseline (watch_signal direction 미발화 / 분량 부족 / 부적합 차트 / deck-결론 정합 등). AP-V5-32 활성 — V5 후속이 fail count 를 늘리면 회귀. helper 버그 1건 (`extract_chart_numbers` 의 1자리 숫자 거름 누락) 수정.
+
+- **Phase 2A (EvidenceDataset Contract) — framework 완료, Phase 6 ChartCritic 결합 대기.** `src/state/models.py` 의 `EvidenceDataset` 강화 — `DatasetField` (semantic_type 7종 enum) + `TransformStep` (raw → 차트 데이터 변환 추적) BaseModel 화. `src/visual/evidence_dataset.py` 신설 — `EvidenceDatasetGuard` + 검증 함수 (`validate_evidence_dataset`, `ensure_chart_has_source_ids`, `ensure_chart_data_cited_in_prose`, `extract_chart_numbers`). Plan §8.5 의 3개 금지 행위 (AP-V5-24 prose 발 차트 데이터 / AP-V5-25 출처 없는 synthetic / AP-V5-26 source_id 없는 chart) 결정적 강제. Plan §8.6 의 ChartCritic 질문 8 (prose 인용 가드) 사전 구현 — 차트 data 의 *고유 숫자 ≥20% 가 prose 에 인용* 되어야 keep, 미만 시 drop 권고. 회귀 테스트 `tests/regression/test_evidence_dataset.py` 신설 — Plan §8.7 인수 기준 #1~#4 모두 결정적 검증 (24건 케이스). v4.5.7 호출 경로 byte-equal 보존 — Phase 6 ChartCritic 진입 시 본격 활성.
+
+---
+
+### v4.5.7 — ContextAnalyst max_tokens deep 모드 4K → 10K + Somaliland viewport gating
+
+#### Changed
+- `src/agents/base.py` — `BaseAgent._max_tokens_override` 지원. subclass 가 mode 별로 override 가능.
+- `src/agents/context_analyst.py` — `request.mode` 별 max_tokens 분기. fast / standard 4096 유지, deep 4096 → 10000. deep 사건의 사실/타임라인/출처 다수 시 4K 부족 회귀 차단.
+
+#### Fixed
+- `src/templates/static/maps.js` — Somaliland (de facto) 해칭 폴리곤과 'de facto' legend 항목이 모든 보고서에 무조건 렌더되던 회귀. `path.bounds(SOMALILAND_GEOJSON)` 로 projection 적용 후 viewport 와 교집합 검사. 호르무즈·동북아 같은 무관 보고서에서 polygon + legend 모두 skip.
+- 사용자 회귀 (호르무즈 / 위안화 통행세 보고서에 'Somaliland (de facto)' legend 노출) 차단.
+
+#### Added
+- **CHART-AP-14** — "보고서와 무관한 지리 annotation 무조건 렌더" anti-pattern 신설 (CHART_RENDERING_ANTIPATTERNS.md). `path.bounds()` 로 viewport 교집합 검사 후 render gating 의무화.
+
+> 주의: 24ba563 commit 메시지는 이 항목을 'CHART-AP-13' 으로 표기했지만, v4.5.4 에서 이미 CHART-AP-13 (Gantt 시간축) 이 부여되어 번호 충돌. REFACTOR_V5_PLAN.md §3.7 의 정본에 맞춰 CHART-AP-14 로 정정한다.
+
+---
+
+### v4.5.6 — 'Analysis Team' 접두 + Rev 0 항상 표기
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` hero eyebrow — `v4.5.5` → `Analysis Team v4.5.5 · Rev 0`. `Rev 0` 도 항상 표기 (이전엔 0 숨김). 사용자 요구 "애너리시스 팀 v4.5.5" 식 명시적 레이블.
+
+---
+
+### v4.5.5 — system_version + revision 추적성 (보고서 상단 노출)
+
+#### Added
+- `FullAnalysisResult.system_version: str` — 생성 시점 `src/orchestrator.py:VERSION` 기록. 재렌더 시엔 *재렌더 시점* 버전으로 갱신 (CSS/JS 가 그 버전 따름).
+- `FullAnalysisResult.revision: int = 0` — 최초 생성 0, `patch_report.py` 수정 시 +1.
+- `freeform_essay.html` hero eyebrow — `EVENT ANALYSIS · COMPOSED · v4.5.5 · Rev 2` 형식. revision 0 면 'Rev 0' 안 표시 (v4.5.6 에서 정책 변경 — 항상 표시).
+- `.freeform-version` 토큰 — IBM Plex Mono, muted 색.
+
+#### Changed
+- `src/agents/report_synthesizer.py:synthesize()` — 매 렌더 (신규/재렌더 모두) 시 `result.system_version` 갱신. 재렌더만 한 경우엔 system_version 만 바뀌고 revision 그대로 (데이터 변경 X).
+- `scripts/patch_report.py` — mutated 또는 `--edit` 인 경우 `result.revision += 1` 후 저장. `--rerender-only` 는 데이터 변경 없으니 revision 안 올림.
+
+#### 배경
+사용자 피드백 (20260503_164450) — 보고서가 477초 걸린 후 'composer 호출 실패. 사실 자료만 표시' 폴백으로 종료. 어떤 코드 버전에서 만들어졌는지, 이후 패치됐는지가 보고서 자체에 안 보여 진단·재발 추적 어려움.
+
+---
+
+### v4.5.4 — drawGantt 시간축 + note placement fix + composer max_tokens mode 별 분기
+
+#### Added
+- `narrative_composer.MAX_TOKENS_BY_MODE` — fast 12K / standard 20K / deep 32K. `_call_api(user_message, mode)` 에 mode 인자 추가.
+- **CHART-AP-13** — "Gantt 차트 시간축 누락 + 행 라벨/note 충돌" anti-pattern 신설.
+- **WRITE-AP-8** — "max_tokens 한도로 보고서 본문 중간 절단" anti-pattern 신설.
+
+#### Changed
+- `charts.js:drawGantt` 전면 보강 — `d3.axisBottom` 풍 시간축 자동 추가 (tick + label + grid). `parseTime()` 입력 정규화 (numeric / 'YYYY' / 'YYYY-MM' 모두 지원). `start === end` 면 0.4 단위 폭 부여. 막대 최소 폭 2 → 6px. note placement 분기 — 막대 폭 ≥ 60px 면 *내부* 흰글자, 아니면 *외부 우측*. 행 라벨 truncate 22 → 25자.
+- `narrative_composer` 단일 `MAX_TOKENS = 8192` → `MAX_TOKENS_BY_MODE` (default fallback 32000).
+
+#### Fixed
+- WRITE-AP-8 회귀 — composer 의 단일 MAX_TOKENS=8192 가 deep 모드 (5~7 섹션 + 시나리오 + 모순 + 차트/지도 emit) 에서 부족해 응답 *중간 절단*. mode 별 분기로 차단.
+- 자율주행 일정 비교 gantt 차트의 의미 불명 회귀 (사용자 피드백 20260503_142254).
+
+---
+
+### v4.5.3 — chart-card 테마 귀속 + bubble 스케일 자동 감지 (CHART-AP-11/12)
+
+#### Added
+- 각 테마 블록에 `--card-deep` CSS 변수 정의 — editorial_cream `#E5DBC4`, burgundy_mono `#1A0810`, light_mono `#dccea8`.
+- **CHART-AP-11** — "차트 카드 배경이 하드코딩 fallback (테마 미반영)" anti-pattern 신설.
+- **CHART-AP-12** — "버블 차트 스케일 고정 — 데이터가 frame 밖으로" anti-pattern 신설.
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` `.freeform-chart-wrap .chart-card` 배경 — `rgba(0,0,0,0.18)` → `var(--card, var(--bg-2))`. 테마 따라감.
+- `charts.js:drawBubble` — `d3.scaleLinear().domain([0,1])` 고정 → `d3.extent` 자동 감지. 0 포함 + 5% padding + size 정규화 (sMax 기반). composer 가 0~1 / 0~5 / 0~100 어느 범위로 emit 해도 정상 표시.
+
+#### Fixed
+- editorial_cream 디폴트 (v4.5.0) 채택 후 즉시 노출된 회귀 — 모든 차트 카드가 dark wine 박스로 표시되어 글자 가독성 0. `--card-deep` 변수 미정의로 CSS variable resolution fallback `#321F1F` 가 항상 적용된 결함.
+- 시나리오 확률×영향 버블 차트의 빈 frame 회귀 — composer 가 0~5 또는 0~100 범위로 emit 시 모든 bubble 이 frame 밖으로 나가 안 보이던 문제.
+
+---
+
+### v4.5.2 — fact-grid 항상 한 줄 (data-cols 강제) + VERSION bump 동기화
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` fact-grid CSS — 미디어 쿼리 폐기. `data-cols` 값 그대로 cols 적용. 2/3/4/5/6 모두 한 줄에 강제. wrap 가능성 자체 제거.
+- 좁은 폭 (≤ 640px) 가독성 — tile padding 14px/16px → 10px/8px, label font 10.5px → 9px, value font 22px → 15px (`word-break: keep-all`), sublabel font 11px → 10px. 5/6 cols 추가 축소.
+- `src/orchestrator.py:VERSION` — v4.5.0 → v4.5.2 (v4.5.1 / v4.5.2 commit 시 VERSION bump 누락분 동기화).
+
+#### 사용자 피드백
+v4.5.1 의 mobile 1-col stack 이 사용자 의도와 반대 ("한 줄에 보이는 게 더 좋아"). 정책 반전.
+
+---
+
+### v4.5.1 — fact-grid 모바일 1 col stack — 홀수 타일 어색 wrap 차단
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` fact-grid — mobile (< 720px) 모든 count 1 col stack. desktop (≥ 720px) count 별 분기 유지 (2/3/4/5/6 한 줄). `data-cols="2"` 추가.
+
+#### 비고
+v4.5.2 에서 정책 반전됨 (사용자 피드백 따라 모바일도 한 줄 강제). v4.5.1 은 short-lived intermediate state.
+
+---
 
 ### v4.5.0 — Editorial Interaction Patterns + Newsreader/IBM Plex Fonts (LG 벤치마크 차용)
 

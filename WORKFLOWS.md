@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v3.0.0
+last_synced_with: v4.5.7
 ssot_for:
   - "분석 실행 워크플로우 (텔레그램 명령 → 보고서)"
   - "개발 워크플로우"
@@ -8,7 +8,7 @@ ssot_for:
 depends_on:
   - "src/orchestrator.py (파이프라인 단계)"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-04-26
+last_review: 2026-05-05
 ---
 
 # WORKFLOWS — Event Analysis Team

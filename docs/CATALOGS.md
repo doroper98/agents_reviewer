@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.2.0
+last_synced_with: v4.5.7
 ssot_for:
   - "에이전트 카탈로그 (mirror of src/agents/*)"
   - "Mode 별 정책 (mirror of src/token_budget.py)"
@@ -8,12 +8,13 @@ ssot_for:
 depends_on:
   - "src/agents/{context_analyst, narrative_composer}.py (살아있는 2개)"
   - "src/token_budget.py (mode 정책 SSOT)"
+  - "src/agents/narrative_composer.py:MAX_TOKENS_BY_MODE (v4.5.4)"
   - "src/lens_policy.py:select_theme (테마 결정)"
   - "src/templates/static/charts.js (d3 렌더 SSOT)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
-# Catalogs — Agents · Charts · Maps (v4.2.0)
+# Catalogs — Agents · Charts · Maps (v4.5.7)
 
 > 본 문서는 **카탈로그 미러**다. 정의는 코드에서만, 문서는 사람이 읽기 쉬운 형태로 동기화한 사본일 뿐이다.
 >
@@ -22,7 +23,21 @@ last_review: 2026-05-02
 
 ---
 
-## 1. Agents — 현재 (v3.1.0)
+## 1. Agents — 현재 (v4.5.7)
+
+> **v4.5.7 호출 경로의 *실제* 에이전트 2개:** ContextAnalyst (#1 아래 표) + NarrativeComposer (#10 아래 표). 그 외 (#2~#9) 는 v4.0.0 부터 호출되지 않음 — 모듈 보존만.
+>
+> **V5 Phase 1A (현재 opt-in)** — `ResearchDirector` (`src/agents/research_director.py`) 가 추가됨. `Config.enable_research_director=True` (env `V5_RESEARCH_DIRECTOR=1`) 일 때 ContextAnalyst 직후에 호출되어 `AnalysisBrief` (분석 설계도) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 9종 method enum SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](RESEARCH_DIRECTOR_METHODS.md).
+>
+> | # | 에이전트 | 파일 | 활성 |
+> |---|---------|------|------|
+> | 1 | ContextAnalyst | `src/agents/context_analyst.py` | ✅ 항상 |
+> | — | **ResearchDirector (V5 Phase 1A)** | `src/agents/research_director.py` | opt-in (`V5_RESEARCH_DIRECTOR=1`) |
+> | 10 | NarrativeComposer | `src/agents/narrative_composer.py` | ✅ 항상 |
+>
+> 아래 §1 의 v3.1.0 시대 표는 *역사적 참고용* — v4.0.0 부터 #2~#9 는 호출되지 않음.
+
+### 1-legacy. Agents — v3.1.0 시대 표 (역사적 참고용)
 
 각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러. v3.1.0 부터 mode (fast/standard/deep) 별 호출 여부가 다르다.
 

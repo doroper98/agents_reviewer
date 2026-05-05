@@ -1,0 +1,21 @@
+# V5 Phase 0B — Test/regression dependencies.
+#
+# 본 파일은 회귀 테스트 framework 가 *전부* 활성될 때 필요한 패키지 목록.
+# 일부는 optional — 미설치 시 해당 테스트만 graceful SKIP.
+
+# ─── Core (필수) ──────────────────────────────────────────────────────
+pytest>=7.0                # 회귀 테스트 실행
+PyYAML>=6.0                # fixtures/golden_prompts.yaml 로딩
+
+# ─── Optional (graceful skip) ────────────────────────────────────────
+playwright>=1.40           # Visual regression — desktop/mobile/exhibit screenshot
+                           # 설치 후: python -m playwright install chromium
+lxml>=4.9                  # SVG sanity check (V5 Phase 6 Gate C 의 사전 구현)
+Pillow>=10.0               # pixel diff (visual regression baseline 비교)
+
+# ─── Notes ────────────────────────────────────────────────────────────
+# - 본 파일은 V5 의 본격 운영 시 install. Phase 0B 코드 단계만 검증하려면
+#   `pip install pytest PyYAML` 만 해도 5종 테스트 중 4종 (visual 제외)
+#   실행 가능. visual 은 dependency 미설치 환경에서 자동 SKIP.
+# - record_baseline.py 는 본 파일의 의존성과 *별개로* requirements.txt 의
+#   anthropic / pydantic 등을 필요로 함 (LLM 호출).

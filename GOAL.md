@@ -1,13 +1,13 @@
 ---
 tier: 1
-last_synced_with: v3.0.0
+last_synced_with: v4.5.7
 ssot_for:
   - "기능 요구사항 ID 체계 (REQ-*)"
   - "비기능 요구사항 (NFR-*)"
   - "성공 기준 (SC-*)"
   - "향후 작업 (FUT-*)"
 depends_on: []
-last_review: 2026-04-26
+last_review: 2026-05-05
 ---
 
 # Event Analysis Team — Project Goal

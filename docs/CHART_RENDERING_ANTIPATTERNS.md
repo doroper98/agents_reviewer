@@ -1,13 +1,14 @@
 ---
 tier: 2
-last_synced_with: v4.4.3
+last_synced_with: v4.5.7
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
   - "docs/MONO_THEME_GUIDE.md (디자인 anti-patterns §6)"
   - "src/templates/static/charts.js"
+  - "src/templates/static/maps.js"
   - "src/agents/narrative_composer.py:SYSTEM_PROMPT (차트 섹션)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
 # Chart Rendering Anti-Patterns
@@ -18,6 +19,8 @@ last_review: 2026-05-02
 > 신규 차트 type 추가 / `charts.js` 수정 / composer prompt 차트 섹션 변경 시
 > 본 문서의 체크리스트 위반 여부 *반드시* 점검. 회귀 1건 발견 시 본 문서에 항목
 > 추가 (append-only) — 같은 실수 반복 방지의 SSOT.
+>
+> **번호 정책**: 본 문서의 CHART-AP-N 번호는 *부여된 순서대로 영구 보존*. 24ba563 commit 의 메시지가 신규 항목 ("보고서와 무관한 지리 annotation") 을 'CHART-AP-13' 으로 표기했으나 v4.5.4 에서 이미 같은 번호 (Gantt 시간축) 가 부여되어 *번호 충돌* 이 발생했음. [REFACTOR_V5_PLAN.md §3.7](../REFACTOR_V5_PLAN.md) 의 정본 표기에 따라 Phase 0 (v4.5.7 baseline SSOT Repair) 에서 후자를 **CHART-AP-14** 로 정정함. 누적 14개.
 
 ---
 
@@ -210,9 +213,11 @@ for (const c of candidates) {
 
 ---
 
-## CHART-AP-13: 보고서와 무관한 지리 annotation 무조건 렌더
+## CHART-AP-14: 보고서와 무관한 지리 annotation 무조건 렌더
 
 **증상**: 특정 사례 때문에 추가한 지도 annotation 이 *모든* 보고서에 영구로 박혀, 주제와 무관한 보고서까지 렌더링됨. 결과: legend 가 본문 사실과 어긋난 noise 로 채워짐, 신뢰도 훼손.
+
+> **번호 이력**: 24ba563 commit 메시지는 본 항목을 'CHART-AP-13' 으로 표기했으나, v4.5.4 에서 이미 같은 번호 (Gantt 시간축) 가 부여되어 충돌이 발생했음. Phase 0 (v4.5.7 SSOT Repair) 에서 [REFACTOR_V5_PLAN.md §3.7](../REFACTOR_V5_PLAN.md) 정본에 맞춰 **CHART-AP-14** 로 정정함.
 
 **최초 사례** (v4.5.7 사용자 보고): `maps.js` 에서 소말릴란드 해칭 폴리곤 + "소말릴란드 (de facto)" legend 가 무조건 그려짐. 호르무즈 / 위안화 통행료 등 호른 아프리카와 무관한 보고서에서도 legend 에 표시 → 주제 혼란.
 

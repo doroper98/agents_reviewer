@@ -101,6 +101,11 @@ class Orchestrator:
         self.synthesis_judge = SynthesisJudge(config)
         # v3.3.0 — freeform editorial pass (Opus 4.7). deep 모드만 호출.
         self.narrative_composer = NarrativeComposer(config)
+        # V5 Phase 1A — ResearchDirector. opt-in flag 가 꺼진 환경에서도 인스턴스는
+        # 만들어 두지만 호출은 Config.enable_research_director 가 True 일 때만.
+        # 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존.
+        from src.agents.research_director import ResearchDirector
+        self.research_director = ResearchDirector(config)
         # V3 Step 5-B (v2.9.5) — Watchlist Registry. None 이면 watchlist 등록 스킵
         # (단위 테스트 / standalone orchestrator 인스턴스 시 안전).
         self.watchlist_registry = watchlist_registry
@@ -758,6 +763,78 @@ class Orchestrator:
         stage = self.telemetry.stage_start("context_analyst")
         result.context = await self.context_analyst.analyze(request)
         self.telemetry.stage_end(stage)
+
+        # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
+        # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로
+        # ContextAnalysis 를 입력으로 사용. EvidencePack 은 *측정 + 향후 Phase 의
+        # 사전 SSOT* 목적으로 추출. AP-V5-30 (RawContext 가 후속 단계로 누설되는
+        # 것을 막는 guard) 의 분기점이 되는 객체.
+        try:
+            from src.state import (
+                evidence_pack_from_context_analysis,
+                estimate_state_token_size,
+            )
+            evidence_pack = evidence_pack_from_context_analysis(result.context)
+            ep_tokens = estimate_state_token_size(evidence_pack)
+            ctx_tokens = estimate_state_token_size(result.context)
+            logger.info(
+                "[orchestrator] Phase 0C: EvidencePack extracted — "
+                "context_tokens≈%d, evidence_pack_tokens≈%d, compaction_ratio=%.2f, "
+                "claims=%d, timeline=%d, sources=%d",
+                ctx_tokens, ep_tokens,
+                (ep_tokens / ctx_tokens) if ctx_tokens else 1.0,
+                len(evidence_pack.claims),
+                len(evidence_pack.timeline),
+                len(evidence_pack.source_index),
+            )
+            # 후속 Phase 가 EvidencePack 을 보고 싶을 때 사용 가능 — Phase 1A/2 진입
+            # 시 self.research_director / self.composer_v5 가 본 객체를 입력으로 받는다.
+            # 현재는 telemetry attribute 로만 보존.
+            if self.telemetry is not None:
+                setattr(self.telemetry, "evidence_pack_token_estimate", ep_tokens)
+                setattr(self.telemetry, "context_token_estimate", ctx_tokens)
+        except Exception as _e:  # pragma: no cover  — adapter 실패는 v4.5.7 흐름 영향 X
+            logger.debug("[orchestrator] Phase 0C adapter skipped: %s", _e)
+            evidence_pack = None
+
+        # V5 Phase 1A — ResearchDirector. opt-in flag 가 켜진 환경에서만 LLM 호출.
+        # 꺼져 있는 경우 design_via_heuristics 가 LLM 호출 없이 결정적 brief 를
+        # emit. 두 경우 모두 Plan §6.6 인수 기준 #1 ("모든 사건에 대해 AnalysisBrief
+        # 를 emit") 충족. v4.5.7 의 NarrativeComposer 호출 형태는 변경되지 않음 —
+        # AnalysisBrief 는 telemetry 에 보존되어 *후속 Phase 의 sanity check* 와
+        # Plan §6.6 인수 기준 #4 (Golden Prompt 20건 ≥80% 일치) 측정의 입력.
+        try:
+            from src.agents.research_director import design_via_heuristics
+            analysis_brief = None
+            if getattr(self.config, "enable_research_director", False):
+                self.research_director.telemetry = self.telemetry
+                analysis_brief = await self.research_director.design_or_heuristic(
+                    user_request=event_description,
+                    evidence_pack=evidence_pack,
+                    mode=mode,
+                    user_intent="",
+                )
+                source = "llm"
+            else:
+                analysis_brief = design_via_heuristics(event_description, mode=mode)
+                source = "heuristic"
+            method_ids = [m.method for m in (analysis_brief.selected_methods or [])]
+            logger.info(
+                "[orchestrator] Phase 1A: AnalysisBrief emit (source=%s) — "
+                "report_mode=%s, methods=%s, strategic_hint=%s, sections=%d",
+                source,
+                analysis_brief.report_mode,
+                method_ids,
+                analysis_brief.strategic_hint,
+                analysis_brief.report_shape.section_count,
+            )
+            if self.telemetry is not None:
+                setattr(self.telemetry, "analysis_brief_methods", method_ids)
+                setattr(self.telemetry, "analysis_brief_report_mode", analysis_brief.report_mode)
+                setattr(self.telemetry, "analysis_brief_strategic_hint", analysis_brief.strategic_hint)
+                setattr(self.telemetry, "analysis_brief_source", source)
+        except Exception as _e:  # pragma: no cover  — Phase 1A 실패는 v4.5.7 흐름 영향 X
+            logger.debug("[orchestrator] Phase 1A skipped: %s", _e)
 
         event_name = result.context.event_name or event_description[:30]
         self.telemetry.event_name = event_name

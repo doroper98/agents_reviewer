@@ -1,0 +1,538 @@
+"""V5 Phase 0C — 6-tier State 모델 정의 SSOT.
+
+Plan §4.3 의 모델 정의를 *byte-equal* 로 따른다. 본 모듈은 *데이터 계약*
+만 책임지며 변환 / guard 는 별도 모듈 (compaction.py / guards.py).
+
+각 tier 의 책임:
+    1. RawContext       — 원문, 검색결과, 출처. ContextAnalyst 가 *입력으로*
+                          받고 *출력은* EvidencePack 으로 압축.
+    2. EvidencePack     — ContextAnalyst 의 *압축 출력*. claims + actors +
+                          timeline + contradictions. 후속 단계가 받는 *유일한*
+                          사실 자료 (RawContext 는 후속 단계에서 못 봄).
+    3. AnalysisBrief    — ResearchDirector (Phase 1A) 출력. 보고서의 분석
+                          설계도. Composer 의 *전체 결정 도메인을 좁힘*.
+    4. DraftReport      — Composer (drafting) 출력. prose 만 책임.
+                          Editor 가 받는다 (RawContext / EvidencePack 미입력).
+    5. ExhibitPack      — VisualPlanner (Phase 2) 출력. EvidenceDataset 별
+                          chart spec + layout 결정.
+    6. PublishManifest  — Renderer 출력. rendered HTML path + screenshots +
+                          chart_gate_results. DeskEditor 가 받는다.
+
+src/models.py 의 *기존* 모델과 분리 — src/models.py 는 v4.5.7 의 ComposedReport
+계열 SSOT. src/state/models.py 는 V5 의 6-tier State SSOT. 둘은 별개로 유지하되
+변환 함수가 가교 (compaction.py).
+"""
+
+from __future__ import annotations
+
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+# ─── 공통 leaf 모델 ────────────────────────────────────────────────────
+
+
+class RawSource(BaseModel):
+    """ContextAnalyst 가 본 1차 / 2차 출처 1건."""
+
+    url: str = ""
+    title: str = ""
+    publisher: str = ""
+    published_at: str = ""           # ISO 8601 또는 자유 텍스트
+    accessed_at: str = ""
+    raw_text: str = ""               # 원문 (요약 X). EvidencePack 으로 압축 시 quote/data 만.
+    reliability: Literal["primary", "secondary", "expert", "model_inference"] = "secondary"
+
+
+class SearchHit(BaseModel):
+    """WebSearch / WebFetch 가 반환한 검색 결과 1건."""
+
+    query: str = ""
+    title: str = ""
+    url: str = ""
+    snippet: str = ""
+
+
+class Claim(BaseModel):
+    """EvidencePack 안의 1개 주장. source_id ≥ 1 강제."""
+
+    claim_id: str = ""
+    statement: str
+    source_ids: list[str] = Field(default_factory=list, min_length=1)
+    quote_or_data: str = ""
+    timestamp: str = ""
+    reliability: Literal["primary", "secondary", "expert", "model_inference"] = "secondary"
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class Actor(BaseModel):
+    """행위자 1명/그룹의 압축 표현. EvidencePack 의 actors 배열 원소."""
+
+    actor_id: str = ""
+    name: str
+    role_tag: str = ""               # "정부", "기업", "분석가" 등 짧은 라벨
+    one_line_summary: str = ""       # 5~10개 행위자 한 줄 요약 (Plan §4.3 actors_summary 의 입력)
+
+
+class TimelineEvent(BaseModel):
+    """EvidencePack.timeline 의 1개 이벤트."""
+
+    when: str = ""                   # 날짜 또는 자유 텍스트
+    what: str = ""                   # 사건 한 줄
+    impact: str = ""                 # 영향 1~2 문장
+    source_ids: list[str] = Field(default_factory=list)
+
+
+class Contradiction(BaseModel):
+    """EvidencePack 안에서 발견된 출처 / 입장 모순. Anti-pattern #5 — 봉합 X."""
+
+    side_a: str
+    side_b: str
+    evidence: str = ""
+    resolution: str = ""             # 채택 측 명시 (단 패배자는 counter_hypothesis 로 보존)
+
+
+# ─── Tier 1 — RawContext ───────────────────────────────────────────────
+
+
+class RawContext(BaseModel):
+    """1단계 — 원문 + 검색결과 + 사용자 요청.
+
+    ContextAnalyst 만 입력으로 받고 *후속 단계는 보지 못한다*. raw_sources 는
+    Plan §4.2 의 ~50KB 짜리 raw 텍스트가 핵심. token compounding 차단의 1차 가드.
+    """
+
+    user_request: str
+    raw_sources: list[RawSource] = Field(default_factory=list)
+    search_results: list[SearchHit] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# ─── Tier 2 — EvidencePack ─────────────────────────────────────────────
+
+
+class EvidencePack(BaseModel):
+    """2단계 — ContextAnalyst 의 압축 출력.
+
+    Plan §4.3 의 정의. 후속 모든 단계 (Composer / Editor / VisualPlanner /
+    DeskEditor) 가 받는 *유일한 사실 자료*. RawContext 는 폐기 (후속 단계 진입 시
+    객체 자체가 전달되지 않음 — guard 가 검증).
+    """
+
+    claims: list[Claim] = Field(default_factory=list)
+    actors: list[Actor] = Field(default_factory=list)
+    timeline: list[TimelineEvent] = Field(default_factory=list)
+    contradictions: list[Contradiction] = Field(default_factory=list)
+    # source_id → URL 룩업 (claims.source_ids 가 가리키는 곳).
+    source_index: dict[str, str] = Field(default_factory=dict)
+    # 사건 카테고리 — select_theme() 의 입력.
+    category: str = ""
+    # ContextAnalyst 가 추천한 페르소나 (v4.3.0 보존).
+    recommended_persona: dict = Field(default_factory=dict)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# ─── Tier 3 — AnalysisBrief (Phase 1A 산출, Phase 0C 에선 *형식만* 정의) ─
+
+
+class AnalysisMethod(BaseModel):
+    """ResearchDirector 가 선택한 분석기법 1종 (Plan §6.3 의 9종 enum)."""
+
+    method: Literal[
+        "ACH",
+        "scenario_tree",
+        "transmission_channel",
+        "stakeholder_matrix",
+        "fault_tree",
+        "decision_matrix",
+        "pre_mortem",
+        "transmission_timeline",
+        "comparative",
+    ]
+    why_this_method: str = ""        # 1~2문장 정당화
+    required_evidence: list[str] = Field(default_factory=list)
+    forbidden_visuals: list[str] = Field(default_factory=list)
+    required_exhibits: list["RequiredExhibit"] = Field(default_factory=list)
+    """Phase 6A — Plan §14.4. 분석기법이 *반드시 요구하는* 차트 종류.
+
+    이 차트들은 Critic fail 해도 *drop 되지 않고* fallback (fact_grid /
+    table / text) 으로 격하만 됨 (AP-V5-28). DeskEditor 가 fallback 발생을
+    hold 사유로 인지.
+
+    *backwards compat* — 본 필드는 Phase 6A 에서 ``list[str]`` → ``list
+    [RequiredExhibit]`` 로 강화. 단순 string list 도 받아 RequiredExhibit
+    으로 자동 변환 (model_validator 가 처리). 기존 code 깨지지 않음.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_required_exhibits(cls, data: Any) -> Any:
+        """legacy ``list[str]`` 형식의 required_exhibits 를 ``list[RequiredExhibit]``
+        로 자동 변환. v4.5.7 호출 경로 byte-equal 보존."""
+        if isinstance(data, dict):
+            ex = data.get("required_exhibits")
+            if isinstance(ex, list):
+                normalized: list[Any] = []
+                for item in ex:
+                    if isinstance(item, str):
+                        normalized.append({
+                            "description": item,
+                            "visual_type_hint": "",
+                            "why_required": "",
+                            "fallback_form": "fact_grid",
+                        })
+                    else:
+                        normalized.append(item)
+                data["required_exhibits"] = normalized
+        return data
+
+
+# ─── Phase 6A — Plan §14.4 의 RequiredExhibit ──────────────────────────
+
+
+class RequiredExhibit(BaseModel):
+    """Plan §14.4 — ResearchDirector 가 분석기법의 *핵심 증거* 로 지정하는 차트.
+
+    이 차트는 priority='required' 가 강제되며, Critic fail 해도 *drop 되지
+    않고* fallback_form 으로 격하만 된다 (AP-V5-28).
+    """
+
+    description: str                      # "호르무즈 의존도 국가별 비교 차트"
+    visual_type_hint: str = ""            # "bar" 또는 "choropleth"
+    why_required: str = ""                # 1문장 정당화
+    fallback_form: Literal[
+        "fact_grid", "table", "text",
+    ] = "fact_grid"
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# ─── Phase 6A — Plan §14.3 의 ExhibitPriority ──────────────────────────
+
+
+ExhibitPriority = Literal["required", "supporting", "decorative"]
+
+
+class Exhibit(BaseModel):
+    """Plan §14.3 — VisualPlanner 가 emit 하는 차트 1개의 메타데이터.
+
+    Phase 6 Gate 의 4중 검증 + Phase 6A 의 priority 정책이 결합되는 객체.
+    실제 Vega-Lite spec 은 ``spec`` 필드에 박힘.
+
+    [정책]
+        required     : Critic fail 해도 drop 금지 (AP-V5-28). fallback_form
+                        으로 강제 격하. DeskEditor 가 hold 사유로 인지.
+        supporting   : 기본값. Critic fail 시 fact_grid 또는 자연어 요약.
+        decorative   : 논거에 부수적. Critic fail 시 조용히 drop.
+    """
+
+    exhibit_id: str = ""                  # 자동 부여 (Phase 4 Exhibit 번호제 결합)
+    spec: dict = Field(default_factory=dict)   # Vega-Lite spec
+    title: str = ""
+    subtitle: str = ""
+    takeaway: str = ""
+    source_ids: list[str] = Field(default_factory=list)
+    anchor_section_idx: int = 0
+    # Phase 6A 핵심 — priority + 부여 주체.
+    priority: ExhibitPriority = "supporting"
+    priority_assigned_by: Literal[
+        "research_director", "visual_planner", "default",
+    ] = "default"
+    # Phase 6A — required exhibit 의 fallback_form 매핑 (RequiredExhibit 에서 복사).
+    fallback_form: Literal["fact_grid", "table", "text"] = "fact_grid"
+
+
+class ReportShape(BaseModel):
+    """보고서 형태 결정 — 섹션 수 / peak / 필수 섹션."""
+
+    section_count: int = 4           # 3~7
+    peak_section: int = 0            # 0-indexed
+    must_have_sections: list[str] = Field(default_factory=list)
+    optional_sections: list[str] = Field(default_factory=list)
+
+
+class VisualConstraints(BaseModel):
+    """시각화 제약 — must_have / allowed / forbidden."""
+
+    must_have: list[str] = Field(default_factory=list)
+    allowed: list[str] = Field(default_factory=list)
+    forbidden: list[str] = Field(default_factory=list)
+
+
+class KeyNumber(BaseModel):
+    """Composer prose 가 인용할 수 있는 핵심 숫자."""
+
+    label: str
+    value: str
+    unit: str = ""
+    source_id: str = ""              # EvidencePack.source_index 의 키
+
+
+class AnalysisBrief(BaseModel):
+    """3단계 — ResearchDirector (Phase 1A) 의 출력. Composer 가 받는다.
+
+    Phase 0C 시점엔 *형식만* 정의. 실제 채워지는 시점은 Phase 1A 진입 후.
+    """
+
+    thesis: str = ""
+    primary_question: str = ""
+    secondary_questions: list[str] = Field(default_factory=list)
+    selected_methods: list[AnalysisMethod] = Field(default_factory=list)
+    report_shape: ReportShape = Field(default_factory=ReportShape)
+    visual_constraints: VisualConstraints = Field(default_factory=VisualConstraints)
+    key_numbers: list[KeyNumber] = Field(default_factory=list)
+    actors_summary: list[str] = Field(default_factory=list)
+    # Phase 8 라우팅 신호.
+    strategic_hint: bool = False
+    # Phase 1A 가 ContextAnalyst 의 recommended_persona 를 직접 사용 시
+    # AnalysisBrief 로 함께 전달.
+    recommended_persona: dict = Field(default_factory=dict)
+    # 보고서 모드 (analytical / strategic 의 V5 분기).
+    report_mode: Literal[
+        "situation", "forecast", "strategy", "technical", "market", "policy",
+    ] = "situation"
+
+
+# ─── Tier 4 — DraftReport ─────────────────────────────────────────────
+
+
+class DraftReport(BaseModel):
+    """4단계 — Composer 출력. Editor 가 받는다.
+
+    EvidencePack / RawContext 를 *다시 보지 않는다*. Plan §4.4 의 입력 제한.
+    Phase 0C 시점엔 src.models.ComposedReport 가 사실상 동일 역할 — Phase 1
+    (Editor Pass) 진입 시 ComposedReport 와 분리.
+    """
+
+    headline: str = ""
+    deck: str = ""
+    sections: list[dict] = Field(default_factory=list)  # ComposedSection 호환 dict
+    closing: str = ""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# ─── Tier 5 — ExhibitPack (Phase 2 / Phase 4 의 입력) ──────────────────
+
+
+class DatasetField(BaseModel):
+    """EvidenceDataset.fields 의 1개 필드 정의 (Plan §8.3).
+
+    semantic_type 은 차트 type 적합도 검증의 입력 — Phase 6 ChartCritic 의 sanity
+    check 가 사용. 예: time / quantity 의 조합은 line 차트 적합, geo 면 choropleth.
+    """
+
+    name: str
+    semantic_type: Literal[
+        "time", "category", "geo", "quantity", "ratio", "score", "text",
+    ]
+    unit: str = ""                   # "USD", "%", "건" 등 — 비어 있어도 허용 (text/category 등)
+    nullable: bool = False
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class TransformStep(BaseModel):
+    """raw → 차트 데이터의 변환 1단계. Plan §8.3 — 감사 추적용."""
+
+    operation: str                   # "filter", "groupby", "normalize", "interpolate" 등
+    description: str                 # 사람이 읽을 수 있는 설명 1~2문장
+    input_fields: list[str] = Field(default_factory=list)
+    output_fields: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class EvidenceDataset(BaseModel):
+    """차트가 입력으로 받는 *유일한* 데이터 형태 (Plan §8.3 — Phase 2A SSOT).
+
+    Phase 0C 에선 *형식 stub* 으로 정의. Phase 2A 부터 본격 활성:
+    - source_ids ≥ 1 강제 (AP-V5-25)
+    - DatasetField 로 fields 강화 (semantic_type 명시)
+    - TransformStep 로 transforms 추적 가능 (Plan §8.7 인수 기준 #4)
+
+    실제 검증 (Plan §8.5 의 3개 금지 행위) 은 src/visual/evidence_dataset.py
+    의 EvidenceDatasetGuard 가 담당.
+    """
+
+    dataset_id: str                  # 보고서 안에서 unique
+    title: str = ""
+    source_ids: list[str] = Field(default_factory=list, min_length=1)
+    rows: list[dict] = Field(default_factory=list)
+    fields: list[DatasetField] = Field(default_factory=list)
+    transforms: list[TransformStep] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    suitable_visuals: list[str] = Field(default_factory=list)
+    forbidden_visuals: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ExhibitPack(BaseModel):
+    """5단계 — VisualPlanner 출력. Renderer 가 받는다 (Plan §4.3)."""
+
+    datasets: list[EvidenceDataset] = Field(default_factory=list)
+    chart_specs: list[dict] = Field(default_factory=list)   # Vega-Lite spec (Phase 2)
+    layouts: list[dict] = Field(default_factory=list)       # LayoutAssignment (Phase 3)
+
+
+# ─── Tier 6 — PublishManifest ─────────────────────────────────────────
+
+
+class ScreenshotCapture(BaseModel):
+    """Playwright 캡쳐 1장 (Plan §8.2)."""
+
+    role: Literal["desktop_full", "mobile_full", "chart_closeup", "map_closeup"] = "desktop_full"
+    image_b64: str = ""
+    label: str = ""
+    width: int = 0
+    height: int = 0
+
+
+class PublishManifest(BaseModel):
+    """6단계 — Renderer 출력. DeskEditor 가 받는다 (Plan §4.3).
+
+    rendered HTML path + screenshots + chart_gate_results + 선검사 결과.
+    DeskEditor 는 RawContext / EvidencePack 의 *원문* 을 보지 못함.
+    """
+
+    rendered_html_path: str = ""
+    screenshots: list[ScreenshotCapture] = Field(default_factory=list)
+    chart_gate_results: dict = Field(default_factory=dict)
+    issues: list[str] = Field(default_factory=list)         # Phase 7A deterministic gate 결과
+    soft_fail_signals: list[str] = Field(default_factory=list)
+
+
+# ─── Phase 8 / 8A — Strategic Mode 모델 (Plan §17 + §18.3) ───────────
+
+
+class FailureMode(BaseModel):
+    """Plan §17.3 Pre-mortem — 옵션별 실패 시나리오 1건."""
+
+    mode: str                          # 실패 모드 1줄
+    leading_indicator: str = ""        # 조기 경보 신호
+    severity: Literal["low", "medium", "high"] = "medium"
+
+
+class StrategicOption(BaseModel):
+    """Plan §18.3 — 전략 옵션 1개. 보고서당 1~5개."""
+
+    label: str                         # "옵션 A: ..."
+    one_line_summary: str
+    core_actions: list[str] = Field(default_factory=list)
+    pre_mortem: list[FailureMode] = Field(default_factory=list)
+
+
+class Criterion(BaseModel):
+    """Plan §17.3 §18.3 — 평가 기준."""
+
+    name: str                          # "비용", "시간", "가역성" 등
+    weight: float = 1.0                # 0~1 또는 자유 가중치
+    inferred: bool = False             # True 면 사용자 명시 외 추론 추가
+    description: str = ""
+
+
+class Constraints(BaseModel):
+    """Plan §18.3 — 결정의 제약 조건."""
+
+    time_horizon: str = ""             # "3개월" / "1년"
+    budget_ceiling: str = ""           # "₩50억 이내"
+    risk_tolerance: Literal["low", "medium", "high"] = "medium"
+    execution_authority: str = ""      # "본인 권한" / "임원 승인"
+    reversibility: Literal["reversible", "partial", "irreversible"] = "partial"
+
+
+class DecisionMatrix(BaseModel):
+    """Plan §18.3 — 옵션 × 기준 점수 매트릭스. 시각화 필수."""
+
+    options: list[str] = Field(default_factory=list)        # StrategicOption.label 과 일치
+    criteria: list[str] = Field(default_factory=list)       # Criterion.name 과 일치
+    scores: list[list[float]] = Field(default_factory=list)  # options × criteria
+    rationale: list[list[str]] = Field(default_factory=list) # options × criteria 근거
+    sensitivity: dict[str, str] = Field(default_factory=dict)  # 가중치 변동 분석
+
+
+class Recommendation(BaseModel):
+    """Plan §18.3 — 단일 권고. 권고 부재는 KILL 사유 (Plan §17.6)."""
+
+    selected_option_label: str         # 권고 옵션 (StrategicOption.label 과 일치)
+    rationale: str = ""                # 근거 ≥ 50자 강제 (KILL_RULE recommendation_absent)
+    rationale_points: list[str] = Field(default_factory=list)  # 근거 ≥3 포인트
+    exceptions: list[str] = Field(default_factory=list)        # 예외 조건
+    execution_order: list[str] = Field(default_factory=list)
+
+
+class ActionItem(BaseModel):
+    """Plan §18.3 ActionPlan 의 1건."""
+
+    action: str
+    owner: str = ""                    # "본인" / "팀" / "외부 vendor"
+    success_metric: str = ""
+    failure_signal: str = ""
+
+
+class ActionPlan(BaseModel):
+    """Plan §18.3 — 30/60/90일 실행계획. 전략 보고서 *필수*.
+
+    KILL_RULE action_plan_missing 이 빈 list 검사 — 모든 시기 비어있으면 KILL.
+    """
+
+    days_30: list[ActionItem] = Field(default_factory=list)
+    days_60: list[ActionItem] = Field(default_factory=list)
+    days_90: list[ActionItem] = Field(default_factory=list)
+
+
+class StrategicReport(BaseModel):
+    """Plan §18.3 — 전략 모드 보고서의 8개 필수 출력 구조.
+
+    - 분석 보고서 (ComposedReport) 와 *별개* 모델. Phase 8 strategic_mode=True
+      일 때 composer 가 emit.
+    - KILL_RULES_STRATEGIC (Plan §17.6 + §18.4) 가 필드별 강제.
+    """
+
+    decision_statement: str = ""                     # 1: 결정 한 문장
+    options: list[StrategicOption] = Field(default_factory=list)  # 2
+    criteria: list[Criterion] = Field(default_factory=list)        # 3
+    constraints: Constraints = Field(default_factory=Constraints)  # 4
+    decision_matrix: DecisionMatrix = Field(default_factory=DecisionMatrix)  # 5
+    recommendation: Recommendation | None = None       # 6
+    kill_switch_conditions: list[str] = Field(default_factory=list)  # 7
+    action_plan_30_60_90: ActionPlan = Field(default_factory=ActionPlan)  # 8
+
+    # 메타 (composer 가 emit, DeskEditor 가 평가).
+    user_provided_criteria: list[str] = Field(default_factory=list)  # 사용자 명시 기준 추적
+    mode: Literal["fast", "standard", "deep"] = "standard"
+
+
+# ─── Phase 3 — Layout Primitives (Plan §10) ──────────────────────────
+
+
+# Plan §10.2 — 9종 layout 정본 (V5 동결, AP-V5-3 강제 — 추가 금지).
+LayoutPrimitive = Literal[
+    "standard",          # 기본 (kicker → heading → lede → prose → charts)
+    "hero_map",          # 풀-bleed 지도 + 짧은 caption
+    "hero_chart",        # 풀-bleed 차트 1개 + 짧은 caption
+    "split_2col",        # 좌측 prose / 우측 차트 또는 fact_grid
+    "sidebar_callout",   # 본문 80% + 우측 사이드바 (analogy / pull_quote)
+    "qna_panel",         # Q&A 형식 (질문 → 짧은 답변 ×3~5)
+    "timeline_strip",    # 가로/세로 타임라인 + 사건별 미니 코멘트
+    "signature_summary", # 큰 글씨 헤드라인 + 부제 1문장 + 본문 X
+    "exhibit_grid",      # 차트 2~4개 그리드 + 짧은 종합 caption
+]
+
+
+class LayoutAssignment(BaseModel):
+    """Plan §10.3 — LayoutTypesetter 가 emit 하는 섹션 별 layout 결정."""
+
+    section_idx: int
+    layout: LayoutPrimitive = "standard"
+    why: str = ""                        # 1줄 정당화 (디버그용)
+    assigned_by: Literal[
+        "layout_typesetter", "heuristic", "default",
+    ] = "default"
+
+    model_config = ConfigDict(extra="forbid")
