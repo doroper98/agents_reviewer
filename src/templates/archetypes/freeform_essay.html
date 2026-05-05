@@ -121,7 +121,8 @@
 
 {# v4.4.6 — 지리적 사건은 지도가 본문 *상위* 에 와야 (WRITE-AP-3 회귀 방지).
    이전엔 모든 섹션 + closing 후 맨 끝에 위치해 독자가 위치를 모른 채 분석 읽음.
-   d3.zoom() 인터랙션 + 소말릴란드 해칭 폴리곤은 maps.js 에서. #}
+   v5.0.1 (CHART-AP-15) — 자동 annotation (소말릴란드 등) 일체 제거. composer 가
+   payload.regions / markers 에 명시 emit 한 것만. #}
 {% if has_inline_map %}
 <section class="freeform-section freeform-map-section fade-in">
   <div class="container">
@@ -135,7 +136,7 @@
       </div>
       <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'editorial_cream' }}"></div>
       <script type="application/json" id="map-payload">{{ composed.embedded_map | tojson }}</script>
-      <div class="map-hint">드래그·휠·핀치로 지도 이동·확대 · 빗금 영역: 소말릴란드</div>
+      <div class="map-hint">드래그·휠·핀치로 지도 이동·확대</div>
     </div>
   </div>
 </section>
@@ -335,7 +336,7 @@ document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 {% endif %}
 {% if has_inline_map %}
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
-<script src="maps.js"></script>
+<script src="maps.js?v=v5_0_1"></script>
 {% endif %}
 
 </body>
