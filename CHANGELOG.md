@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v4.5.7
+last_synced_with: v5.0.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -20,9 +20,37 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.0.0] — 2026-05-05
+
+REFACTOR_V5_PLAN.md 17-Phase 마스터 플랜 완료. v4.5.7 호출 경로 byte-equal 보존 — V5 신규 모듈은 모두 opt-in (`V5_*` env flag, 디폴트 OFF).
+
+**Tier 1 (Phase 0/0B/0C)** — Baseline + Golden Evaluation Harness (20 prompt + 회귀 17종) + 6-tier State 모델 (RawContext → EvidencePack → AnalysisBrief → DraftReport → ExhibitPack → PublishManifest).
+
+**Tier 2 (Phase 1A/2/2A/2B)** — ResearchDirector (9-method 라우팅) + VisualPlanner (Vega-Lite spec) + EvidenceDataset Contract (AP-V5-24/25/26) + Capability Registry (16 chart type, AP-V5-27).
+
+**Tier 3 (Phase 6/6A/7A/7/8/8A)** — Chart Gate (Schema/Critic/Sanity/Fallback) + Exhibit Priority + Deterministic Gate (11 Hard + 5 Soft) + DeskEditor (Logical 7 + Visual 8 rubric) + Strategic Mode (7 prefix + 8 패턴 + 8 필수 출력).
+
+**Tier 4 (Phase 1/3/4/5)** — Editor Pass (7-rubric copy editing) + Layout Primitives (9-vocab AP-V5-3) + Exhibit 번호제 (`[[ex:N]]` / `[[exr:N]]` / `[[exs:N-M]]`, AP-V5-6) + Word Budget (5종 truncation signal + adaptive max_tokens, deep 64K, WRITE-AP-8 해소).
+
+**활성화:** `docs/V5_ACTIVATION.md` 5-step 절차. `V5_RESEARCH_DIRECTOR=1` / `V5_VISUAL_PLANNER=1` / `V5_EDITOR_PASS=1` / `V5_LAYOUT_TYPESETTER=1` / `V5_DESK_EDITOR=1` 환경변수로 단계적 활성화.
+
+**회귀 baseline:** v4.5.7 124 pass / 52 fail / 1 skip. V5 진보 측정은 후속 phase 별 baseline 재측정.
+
+**Anti-pattern:** AP-V5-1 ~ AP-V5-32 누적, 회귀 테스트로 강제.
+
+**진단 도구:** `scripts/retrofit_v5.py` — 기존 v4.5.7 보고서를 V5 게이트로 read-only dry-run 진단.
+
+---
+
 ## [Unreleased]
 
-V5 리팩토링 (REFACTOR_V5_PLAN.md) 진행 중. Tier 1 (토대) 진행:
+V5 활성화 후속 작업 (각 phase 별 회귀 테스트 통과율 baseline 재측정).
+
+---
+
+## [v4.5.7 이전 — V5 리팩토링 진행 중 단계]
+
+V5 리팩토링 (REFACTOR_V5_PLAN.md) Tier 1 (토대) 진행:
 
 - **Phase 0 (Baseline + SSOT Repair) — 완료.** v4.5.7 baseline 으로 문서·메타데이터 정합성 회복. 코드 변경 0 (orchestrator VERSION 은 이미 v4.5.7).
 - **Phase 0B (Golden Evaluation Harness) — framework 완료, baseline 녹화 대기.** 20건 Golden Prompt fixture (8개 카테고리 정합) + 5종 회귀 테스트 (Golden / Visual / Semantic / Cost / Completeness) framework + CLI runner + record_baseline.py. py_compile 통과. 사용자가 `.env` 환경에서 `python scripts/record_baseline.py` 1회 실행 시 baseline 녹화 완료. SSOT: `tests/regression/README.md`.
