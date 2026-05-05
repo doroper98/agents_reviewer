@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class AnalysisRequest(BaseModel):
@@ -518,6 +518,17 @@ class ComposedSection(BaseModel):
     heading: str
     kicker: str = ""              # 짧은 도입구 (생략 가능)
     prose: str                     # 본문 — 마크다운 단락 자유
+
+    @field_validator(
+        "kicker", "prose", "pull_quote", "lede",
+        mode="before",
+    )
+    @classmethod
+    def _none_str_to_empty(cls, v):
+        # composer LLM 이 editorial 필드에 null 박는 경우 ("" 와 의미 동일) 자동 변환.
+        # v5.0.0 에서 발견된 회귀 — 2026-05-06 00:32:24 보고서 사건 (lede/pull_quote
+        # 7건 None 입력 → ComposedReport 전체 reject). 의미 보존하면서 운영 회복.
+        return "" if v is None else v
 
     # v4.2.0 — composer 가 데이터까지 직접 emit (chart-id 참조 폐기)
     # 각 dict: {"type": "donut|bar|line|gantt|network|stacked|bubble|heatmap",
