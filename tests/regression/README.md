@@ -39,6 +39,7 @@ tests/regression/
 ├── test_state_compaction.py          # Phase 0C — 6-tier State + guards + 30% 절감
 ├── test_research_director.py         # Phase 1A — ≥80% expected_method 일치
 ├── test_evidence_dataset.py          # Phase 2A — AP-V5-24/25/26 + prose 인용 가드
+├── test_phase2_vega.py               # Phase 2 — Vega-Lite 어댑터 + design token 강제
 └── fixtures/
     ├── golden_prompts.yaml           # 20건 Golden Prompt + expected metadata
     ├── baseline_v4_5_7.json          # v4.5.7 측정 결과 (record_baseline.py 가 채움)
@@ -222,6 +223,7 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 |-------|---------------------|
 | Phase 0C (State Compaction) | ✅ 적용 — `tests/regression/test_state_compaction.py` 신설. 6-tier State 정의 + 8단계 guards (Plan §4.4) + RawContext → EvidencePack 압축 ≥30% 토큰 감소 (Plan §4.5 #3) 검증 |
 | Phase 1A (ResearchDirector) | ✅ 적용 — `tests/regression/test_research_director.py` 신설. `golden_prompts.yaml.expected_method` 가 9종 enum 안에 있는지 가드 (`test_each_expected_method_is_in_phase_1a_enum`) + `design_via_heuristics` 의 결정적 fallback 이 ≥80% 일치 (Plan §6.6 #4 임계 충족, 현재 90%). LLM ResearchDirector 의 일치률은 `record_baseline.py` 에서 measured |
+| Phase 2 (Vega-Lite Decoupling) | ✅ 적용 — `tests/regression/test_phase2_vega.py` 신설. Plan §19 design token 정합성 + `apply_theme_to_spec` 강제 (AP-V5-2) + `validate_vega_spec` (Phase 6 Gate A 사전) + Plan §7.7 antipattern 자동 해결 매핑 (AP-1/11/12) 검증. 25건. |
 | Phase 2A (EvidenceDataset) | ✅ 적용 — `tests/regression/test_evidence_dataset.py` 신설. `EvidenceDataset` 강화 (DatasetField/TransformStep) + `src/visual/evidence_dataset.py` Guard + AP-V5-24/25/26 검증. Phase 6 ChartCritic 진입 시 VisualPlanner 와 결합 |
 | Phase 2B (Capability Registry) | forbidden_chart_types 가 Registry 의 experimental status 와 일관되는지 |
 | Phase 6 (Chart Gate) | 4중 게이트 (Schema / Critic / Sanity / Fallback) 의 통과율을 Cost Regression 에 누적 |

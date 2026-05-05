@@ -28,6 +28,14 @@ class Config(BaseSettings):
     # 디폴트 OFF. env: V5_RESEARCH_DIRECTOR=1 또는 .env 의 enable_research_director=true.
     enable_research_director: bool = False
 
+    # V5 Phase 2 — VisualPlanner opt-in.
+    # 켜져 있으면 Editor (Phase 1) 또는 composer 직후에 VisualPlanner 를 호출해
+    # Vega-Lite spec 으로 exhibit list 를 emit. 꺼져 있으면 plan_via_heuristics
+    # 가 v4.5.7 의 ComposedSection.charts 를 그대로 통과 (단 EvidenceDataset
+    # Guard 는 적용 — Phase 2A). 디폴트 OFF — v4.5.7 byte-equal 보존.
+    # env: V5_VISUAL_PLANNER=1.
+    enable_visual_planner: bool = False
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

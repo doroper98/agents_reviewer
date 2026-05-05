@@ -63,6 +63,8 @@ _TEST_MODULES = {
     "director":     "tests.regression.test_research_director",
     # V5 Phase 2A — EvidenceDataset Contract (Plan §8.7 #1~#4 / AP-V5-24/25/26).
     "dataset":      "tests.regression.test_evidence_dataset",
+    # V5 Phase 2 — Visualization Decoupling (Plan §7.8 #4·#5 / Vega-Lite + design token).
+    "phase2vega":   "tests.regression.test_phase2_vega",
 }
 
 
@@ -70,10 +72,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="V5 Phase 0B regression runner")
     parser.add_argument(
         "--tests",
-        default="golden,director,dataset,visual,semantic,cost,completeness",
+        default="golden,director,dataset,phase2vega,visual,semantic,cost,completeness",
         help=(
             "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) + "
-            "V5 Phase 2A (dataset) 7종 모두."
+            "V5 Phase 2A (dataset) + V5 Phase 2 (phase2vega) 8종 모두."
         ),
     )
     parser.add_argument(

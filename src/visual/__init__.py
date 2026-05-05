@@ -29,12 +29,45 @@ from src.visual.evidence_dataset import (
     extract_chart_numbers,
     validate_evidence_dataset,
 )
+from src.visual.v5_theme import (
+    BURGUNDY_TOKENS,
+    EDITORIAL_TOKENS,
+    V5_FONTS,
+    V5_THEME,
+    apply_theme_to_spec,
+    get_theme_config,
+    get_token_set,
+)
+from src.visual.vega_adapter import (
+    VegaSpecError,
+    chart_dict_to_vega_spec,
+    is_vega_cli_available,
+    is_vl_convert_available,
+    render_vega_lite,
+    validate_vega_spec,
+)
 
 __all__ = [
+    # Phase 2A — EvidenceDataset Contract
     "EvidenceDatasetGuard",
     "EvidenceDatasetGuardError",
     "ensure_chart_data_cited_in_prose",
     "ensure_chart_has_source_ids",
     "extract_chart_numbers",
     "validate_evidence_dataset",
+    # Phase 2 — V5 design token SSOT
+    "EDITORIAL_TOKENS",
+    "BURGUNDY_TOKENS",
+    "V5_THEME",
+    "V5_FONTS",
+    "get_theme_config",
+    "apply_theme_to_spec",
+    "get_token_set",
+    # Phase 2 — Vega-Lite adapter
+    "render_vega_lite",
+    "validate_vega_spec",
+    "chart_dict_to_vega_spec",
+    "is_vl_convert_available",
+    "is_vega_cli_available",
+    "VegaSpecError",
 ]
