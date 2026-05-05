@@ -1,0 +1,116 @@
+{
+  "_comment": "Phase 0B framework 자체의 smoke test 용 synthetic ComposedReport.",
+  "_purpose": "5종 회귀 테스트의 검증 함수가 *통과하는* 정상 보고서 형식 예시. 실제 v4.5.7 baseline 은 record_baseline.py 가 채운 sample_composed_reports/<id>.json 들. 본 파일은 prompt id 와 매핑되지 않으므로 (prefix _) 회귀 테스트가 자동 로드하지 않는다.",
+  "_note": "본 파일은 helpers.load_sample_composed_report 의 입력 스키마 SSOT — 새 필드 추가 시 함께 갱신.",
+
+  "headline": "이스라엘 이란 직접 충돌 가능성 — 다음 6개월 시각",
+  "deck": "테헤란 핵 시설 정밀 타격 옵션이 다시 부상하면서 호르무즈 항행권 위협이 재점화. 가능성을 두 시나리오로 분기 평가.",
+  "sections": [
+    {
+      "heading": "충돌 시나리오의 재점화",
+      "kicker": "사실 정리",
+      "lede": "직접 충돌은 2024년 4월·10월 두 번의 미사일 교환 이후 잠시 잠복기에 들어갔다.",
+      "prose": "이스라엘 이란 직접 충돌 가능성이 다시 표면 위로 올라오고 있다. 핵 시설 정밀 타격 옵션이 워싱턴 내부에서 재논의되고 있고, 테헤란 측은 호르무즈 봉쇄 카드를 손에 들고 있다. 본 보고서는 다음 6개월 시각에서 두 가지 분기 시나리오를 제시한다. 단계별 트리거와 행위자별 인센티브를 추적해 어느 분기가 더 가능성 높은지 평가한다. 결론은 단호하지 않다 — 양측 모두 *전면적* 충돌의 비용이 막대해 *제한적 교전* 수준에서 멈출 가능성이 더 높지만, 사고로 인한 확대 위험은 무시할 수 없다.",
+      "fact_grid": [
+        {"label": "F-35I 출격 기지 거리", "value": "1,800km", "sublabel": "최단 보급선"},
+        {"label": "호르무즈 일일 통과량", "value": "21M bbl", "sublabel": "전 세계 ~30%"},
+        {"label": "이란 미사일 보유", "value": "3,000+", "sublabel": "기조 추정치"}
+      ],
+      "charts": [
+        {
+          "type": "stacked",
+          "title": "양측 미사일·드론 보유 비교",
+          "data": {"categories": ["이스라엘", "이란"], "series": [{"name": "탄도", "values": [200, 2000]}, {"name": "순항", "values": [500, 1000]}]},
+          "note": "공식 통계 + 전문가 추정. 실시간 변동 가능."
+        }
+      ],
+      "dropcap": true
+    },
+    {
+      "heading": "전이 채널 — 호르무즈 봉쇄가 한국 LNG 에 미치는 경로",
+      "kicker": "메커니즘",
+      "lede": "직접 충돌이 한국 에너지 안보로 전이되는 채널은 두 가지다.",
+      "prose": "첫째는 호르무즈 봉쇄 — 일주일 이상 지속 시 한국의 LNG 도입가 급등 가능성. 한국 LNG 의 약 35% 가 카타르·UAE 발 호르무즈 통과 물량이라 우회 항로 (희망봉) 는 14일 추가 + 운송비 30% 상승. 둘째는 보험료 — 충돌 시 P&I 클럽이 항행 위험 등급을 *war zone* 으로 분류하면 보험료가 4~6배 뛴다. 이 두 채널은 *직접 충돌이 일어나지 않더라도* 위협 수위 상승만으로 작동한다는 점이 핵심이다. 한국 정부의 비축 (90일분) 은 시간 벌이지만, 가격 충격은 단기에 시장에 전이된다.",
+      "charts": [
+        {
+          "type": "bar",
+          "title": "호르무즈 통과 물량 의존도 — 국가별",
+          "data": [
+            {"label": "일본", "value": 80, "group": "high"},
+            {"label": "한국", "value": 35, "group": "mid"},
+            {"label": "중국", "value": 18, "group": "low"},
+            {"label": "EU", "value": 12, "group": "low"}
+          ],
+          "note": "자료: IEA 2024 Q3"
+        }
+      ]
+    },
+    {
+      "heading": "분기 시나리오 — A: 제한적 교전 / B: 전면 확대",
+      "kicker": "시나리오",
+      "prose": "시나리오 A (제한적 교전, 65%) 는 양측이 2024년 패턴 (사전 예고된 정밀 타격 + 방어 위주) 을 반복하는 경우. 직접 사상자 수십 명 수준에서 멈추고 호르무즈는 일시적 (≤ 72시간) 교란만. 시나리오 B (전면 확대, 25%) 는 사고·오해·강경파 압력으로 한쪽이 *비례 원칙* 을 깨고 인구 밀집지 또는 핵 시설 직접 타격으로 가는 경우. 호르무즈 2주 이상 마비. 나머지 10% 는 양측이 *비공식 채널* (오만 / 카타르 중재) 로 데에스컬레이션. 본 보고서는 A 가 가장 가능성 높다고 본다 — 단 B 의 leading indicator (테헤란 강경파 영향력 증대 / 미국 의회 제재 강화) 가 활성화되면 즉시 재평가 필요.",
+      "charts": [
+        {
+          "type": "bubble",
+          "title": "시나리오별 확률 × 영향",
+          "data": [
+            {"x": 0.65, "y": 0.30, "size": 0.5, "label": "A: 제한적 교전"},
+            {"x": 0.25, "y": 0.85, "size": 0.9, "label": "B: 전면 확대"},
+            {"x": 0.10, "y": 0.10, "size": 0.2, "label": "C: 데에스컬레이션"}
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "모순 — 가능성 평가의 두 입장",
+      "kicker": "모순",
+      "prose": "본 분석에서 두 입장이 충돌한다. 첫째 입장 (Foreign Affairs 최근 기고 + 일부 워싱턴 분석가) 은 이란이 *방어 위주 합리적 행위자* 라 직접 확대 가능성 ≤ 15% 라고 본다. 둘째 입장 (이스라엘 안보 연구소 + 일부 강경파) 은 *기존 패턴 깨질* 가능성 ≥ 40% 라고 본다 — 핵 농축 임계 진입 시 이스라엘이 사전 타격 결단할 가능성 때문. 본 보고서는 첫째 입장에 더 무게 둔다 — 둘째 입장의 농축 임계 도달 *시점* 이 이미 6개월 이상 지연되고 있다는 점에서. 단 둘째 입장의 *시나리오 자체* 는 폐기하지 않고 leading indicator 로 추적한다.",
+      "charts": []
+    },
+    {
+      "heading": "한국 의사결정자에게의 함의",
+      "kicker": "결론",
+      "prose": "한국 정부 / LNG 수입사 / 정유사 모두 시나리오 A 를 기본으로 삼되 B 의 leading indicator 발화 시 즉시 비축 가속·우회 계약 활성을 트리거할 수 있는 *결정 매트릭스* 를 미리 갖춰둘 필요가 있다. 본 보고서의 watch_signals 가 그 트리거 신호 목록이다. 30일 이내 첫 신호 (테헤란 강경파 회의 결과) 발화 시 보고서 재집필 권고.",
+      "charts": []
+    }
+  ],
+  "closing": "결론 — 직접 충돌 가능성은 65% (제한적) / 25% (전면) / 10% (데에스컬레이션) 추정. 한국 의사결정자는 A 시나리오를 기본으로 삼되 B 의 5개 watch_signal 을 추적해야 한다.",
+
+  "watch_signals": [
+    {"signal": "테헤란 강경파 회의 결과", "description": "혁명수비대 핵 정책 변경 발표", "indicates": "시나리오 B 가능성 상승", "direction": "rejects_base", "deadline": "2026-06-15"},
+    {"signal": "미국 의회 추가 제재 입법", "description": "세컨더리 sanctions 강화 법안 통과", "indicates": "이란 강경 대응 인센티브 증가", "direction": "rejects_base", "deadline": "2026-07-01"},
+    {"signal": "호르무즈 보험료 동향", "description": "P&I 클럽 war zone 등급 상향", "indicates": "공급망 충격 임박", "direction": "confirms_base", "deadline": "2026-06-30"},
+    {"signal": "오만 / 카타르 중재 채널", "description": "비공식 회담 진행 여부", "indicates": "데에스컬레이션 진척", "direction": "confirms_base", "deadline": "2026-07-15"}
+  ],
+
+  "contradictions": [
+    {
+      "side_a": "이란은 합리적 방어 행위자 — 직접 확대 ≤ 15%",
+      "side_b": "농축 임계 도달 시 이스라엘 사전 타격 ≥ 40%",
+      "evidence": "Foreign Affairs vs 이스라엘 안보 연구소 보고서",
+      "resolution": "side_a 채택 — 농축 임계 6개월+ 지연이 결정적. 단 side_b 는 leading indicator 로 추적."
+    }
+  ],
+
+  "confidence_summary": "주요 출처 4건 (Foreign Affairs, IEA, 이스라엘 안보 연구소, 워싱턴 분석가 그룹) 일치. 단 핵 농축 진척도 데이터는 IAEA 마지막 보고서 (2개월 전) 기준이라 시점 갭 있음.",
+
+  "confidence_score": 0.62,
+
+  "embedded_map": {
+    "center": [50, 28],
+    "zoom": 4,
+    "markers": [
+      {"id": "tlv", "name": "텔아비브", "lng": 34.78, "lat": 32.08, "highlight": true},
+      {"id": "thr", "name": "테헤란", "lng": 51.39, "lat": 35.69, "highlight": true},
+      {"id": "hrm", "name": "호르무즈", "lng": 56.25, "lat": 26.55, "highlight": true}
+    ],
+    "arcs": [
+      {"from_id": "tlv", "to_id": "thr", "highlight": true, "label": "정밀 타격 옵션"},
+      {"from_id": "thr", "to_id": "hrm", "highlight": false, "label": "봉쇄 위협"}
+    ],
+    "legend": [
+      {"label": "주요 도시", "kind": "marker"},
+      {"label": "충돌 벡터", "kind": "arc", "highlight": true}
+    ]
+  }
+}

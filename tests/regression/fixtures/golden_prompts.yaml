@@ -1,0 +1,431 @@
+# Golden Prompt Set — REFACTOR_V5_PLAN.md Phase 0B (§3.3)
+#
+# 20 prompts × 8 categories. 본 fixture 는 V5 의 모든 후속 변경이 v4.5.x baseline
+# 보다 *어떻게* 다른지 결정적으로 측정하는 회귀 하네스의 입력. expected metadata 는
+# Plan 의 §3.4 (가) Golden Prompt Regression 의 5종 (mode / section_count_range /
+# required_evidence_types / forbidden_chart_types / required_map_behavior) + 추가
+# (V5 Phase 1A 의 expected_method, Phase 8 의 strategic_intent) 항목을 포함한다.
+#
+# 항목 의미:
+#   id                       — 카테고리 + 일련번호. 회귀 테스트 결과 추적용.
+#   category                 — 8개 카테고리 라벨. test_golden_prompts.py 가 분포 검증.
+#   prompt                   — 사용자 메시지 그대로. 텔레그램으로 전송한다고 가정.
+#   expected:
+#     mode                   — fast / standard / deep. resolve_mode() 가 prompt 에서
+#                              자동 결정해야 하는 값.
+#     section_count_range    — [min, max]. composer 산출 보고서의 섹션 수 허용 범위.
+#                              fast 3~4, standard 4~6, deep 5~7 의 가이드 안에서
+#                              주제별로 좁혀 박는다.
+#     required_evidence_types — 보고서가 *반드시* 인용해야 할 출처 종류
+#                              (primary / secondary / expert / model_inference).
+#                              '최소 1개 이상 등장' 의미.
+#     forbidden_chart_types  — 본 사건에 *부적합한* 차트 type 목록. composer 가
+#                              emit 한 차트에 포함되면 회귀 fail (CHART-AP-8 회귀).
+#     required_map_behavior:
+#       must_have_map        — true 면 embedded_map 필수. false 면 강제 X.
+#       forbidden_map        — true 면 embedded_map 절대 emit 금지 (지리 무관 사건).
+#       forbidden_geo_annotations — 본문이 다루지 않는 지리 라벨 목록 (CHART-AP-14).
+#                              예: 호르무즈 보고서에 'Somaliland' 가 들어 있으면 fail.
+#     min_total_chars        — 보고서 본문 (모든 섹션 prose 합산) 최소 자수.
+#                              Completeness Regression 의 절단 검출 임계.
+#     must_have_contradictions — true 면 contradictions 비어있으면 fail (deep 모드 권장).
+#     must_have_watch_signals  — true 면 watch_signals 비어있으면 fail.
+#     # V5 Phase 1A 검증용 (현재 Phase 0B 시점 — 미사용, V5 진입 시 활성화)
+#     expected_method        — ResearchDirector 가 선택해야 하는 분석기법 (9종).
+#                              Phase 1A 진입 전엔 informational only.
+#     # V5 Phase 8 검증용 (Phase 0B 시점 — strategic 카테고리만 활성)
+#     strategic_intent       — true 면 strategic mode 라우팅이어야 함 (전략 질의형).
+#
+# 카테고리 분포 (Plan §3.3):
+#   geopolitical_forecast        : 3건
+#   financial_transmission       : 3건
+#   tech_structural              : 3건
+#   policy_decision              : 2건
+#   strategic_query              : 3건  (V5 Phase 8 검증)
+#   map_required                 : 2건
+#   no_charts                    : 2건
+#   long_deep_truncation         : 2건
+# 총                             : 20건
+
+prompts:
+
+  # ─── 1. 지정학 예측형 (3건) ─────────────────────────────────────────
+  - id: geo_forecast_01
+    category: geopolitical_forecast
+    prompt: "이스라엘-이란 직접 충돌 가능성을 다음 6개월 시각으로 자세히 분석해줘"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary]
+      forbidden_chart_types: [donut]
+      required_map_behavior:
+        must_have_map: true
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: scenario_tree
+      strategic_intent: false
+
+  - id: geo_forecast_02
+    category: geopolitical_forecast
+    prompt: "대만 해협 위기 시나리오를 면밀하게 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary]
+      forbidden_chart_types: [donut]
+      required_map_behavior:
+        must_have_map: true
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: scenario_tree
+      strategic_intent: false
+
+  - id: geo_forecast_03
+    category: geopolitical_forecast
+    prompt: "북한 7차 핵실험 가능성 한국-일본 안보 영향 심층 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary, expert]
+      forbidden_chart_types: [bubble]
+      required_map_behavior:
+        must_have_map: true
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: stakeholder_matrix
+      strategic_intent: false
+
+  # ─── 2. 금융·시장 전이형 (3건) ──────────────────────────────────────
+  - id: fin_transmission_01
+    category: financial_transmission
+    prompt: "엔 캐리 unwind 가 KOSPI 200 옵션 변동성에 미치는 전이 채널 자세히 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary]
+      forbidden_chart_types: [network, gantt]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: transmission_channel
+      strategic_intent: false
+
+  - id: fin_transmission_02
+    category: financial_transmission
+    prompt: "FOMC 50bp 인하 시 한국 채권 시장 전이 분석"
+    expected:
+      mode: standard
+      section_count_range: [4, 6]
+      required_evidence_types: [primary]
+      forbidden_chart_types: [network]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: transmission_channel
+      strategic_intent: false
+
+  - id: fin_transmission_03
+    category: financial_transmission
+    prompt: "비트코인 스팟 ETF 자금 유입과 매크로 유동성 상관 심층 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary]
+      forbidden_chart_types: [gantt, network]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: transmission_channel
+      strategic_intent: false
+
+  # ─── 3. 기술·AI 구조분석형 (3건) ────────────────────────────────────
+  - id: tech_struct_01
+    category: tech_structural
+    prompt: "Claude 4.7 출시가 LG에너지솔루션 c-DN 시뮬레이션 통합에 갖는 함의 자세히"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, expert]
+      forbidden_chart_types: [gantt]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: stakeholder_matrix
+      strategic_intent: false
+
+  - id: tech_struct_02
+    category: tech_structural
+    prompt: "TSMC 2nm 양산 일정 지연이 HBM4 공급망에 미치는 영향 분석"
+    expected:
+      mode: standard
+      section_count_range: [4, 6]
+      required_evidence_types: [primary, secondary]
+      forbidden_chart_types: [donut]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: transmission_timeline
+      strategic_intent: false
+
+  - id: tech_struct_03
+    category: tech_structural
+    prompt: "OpenAI o3 추론 모델 공개가 Anthropic Sonnet 4.6 포지셔닝에 끼치는 영향 면밀히"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, model_inference]
+      forbidden_chart_types: [gantt]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: comparative
+      strategic_intent: false
+
+  # ─── 4. 정책·규제 의사결정형 (2건) ──────────────────────────────────
+  - id: policy_dec_01
+    category: policy_decision
+    prompt: "EU AI Act 의 high-risk 분류가 우리 회사 LLM 도입에 미치는 영향 분석"
+    expected:
+      mode: standard
+      section_count_range: [4, 6]
+      required_evidence_types: [primary]
+      forbidden_chart_types: [bubble, network]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: stakeholder_matrix
+      strategic_intent: false
+
+  - id: policy_dec_02
+    category: policy_decision
+    prompt: "한국 가상자산 과세 유예 결정의 시장 영향 분석"
+    expected:
+      mode: standard
+      section_count_range: [4, 6]
+      required_evidence_types: [primary]
+      forbidden_chart_types: [network]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: stakeholder_matrix
+      strategic_intent: false
+
+  # ─── 5. 전략 질의형 (3건) — V5 Phase 8 검증 ─────────────────────────
+  - id: strategy_01
+    category: strategic_query
+    prompt: "Mac Studio M3 Ultra 256GB 도입 시 비용·성능·확장성을 고려한 전략 어떻게 해야 할까"
+    expected:
+      mode: standard
+      section_count_range: [4, 7]
+      required_evidence_types: [secondary, expert]
+      forbidden_chart_types: [network, gantt]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: decision_matrix
+      strategic_intent: true
+
+  - id: strategy_02
+    category: strategic_query
+    prompt: "사내 LLM 인프라 자체 구축 vs 클라우드 API 어떤 전략을 취해야 하지"
+    expected:
+      mode: standard
+      section_count_range: [4, 7]
+      required_evidence_types: [secondary, expert]
+      forbidden_chart_types: [network, gantt]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: decision_matrix
+      strategic_intent: true
+
+  - id: strategy_03
+    category: strategic_query
+    prompt: "스타트업 시리즈 A 다음 라운드 시기 비용·실탄·밸류에이션 고려했을 때 어떻게 해야"
+    expected:
+      mode: standard
+      section_count_range: [4, 7]
+      required_evidence_types: [secondary, model_inference]
+      forbidden_chart_types: [network]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: true
+      expected_method: decision_matrix
+      strategic_intent: true
+
+  # ─── 6. 지도 필수형 (2건) ──────────────────────────────────────────
+  - id: map_required_01
+    category: map_required
+    prompt: "호르무즈 해협 봉쇄 시 한국 LNG·원유 공급망 영향 자세히 분석 (지도 포함)"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary]
+      forbidden_chart_types: [donut]
+      required_map_behavior:
+        must_have_map: true
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]   # CHART-AP-14 회귀 테스트
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: transmission_channel
+      strategic_intent: false
+
+  - id: map_required_02
+    category: map_required
+    prompt: "남중국해 베트남-필리핀 EEZ 분쟁 자원 영향 면밀히 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary]
+      forbidden_chart_types: [donut, gantt]
+      required_map_behavior:
+        must_have_map: true
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: stakeholder_matrix
+      strategic_intent: false
+
+  # ─── 7. 차트 불필요형 (2건) ────────────────────────────────────────
+  - id: no_charts_01
+    category: no_charts
+    prompt: "윤리학적 관점에서 LLM 의 의사결정 보조의 한계 논의"
+    expected:
+      mode: standard
+      section_count_range: [4, 6]
+      required_evidence_types: [expert]
+      # 차트 자체를 emit 하면 회귀 (composer 가 보수적이어야 함)
+      forbidden_chart_types: [bar, donut, line, gantt, network, stacked, bubble, heatmap]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 3500
+      must_have_contradictions: false
+      must_have_watch_signals: false
+      expected_method: comparative
+      strategic_intent: false
+
+  - id: no_charts_02
+    category: no_charts
+    prompt: "프라이버시와 효율성 사이의 trade-off 를 가치판단 측면에서 짧게 논의"
+    expected:
+      mode: fast
+      section_count_range: [3, 4]
+      required_evidence_types: [expert]
+      forbidden_chart_types: [bar, donut, line, gantt, network, stacked, bubble, heatmap]
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: true
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 1500
+      must_have_contradictions: false
+      must_have_watch_signals: false
+      expected_method: comparative
+      strategic_intent: false
+
+  # ─── 8. 긴 deep 보고서 절단 재현형 (2건) ────────────────────────────
+  - id: long_deep_01
+    category: long_deep_truncation
+    prompt: "지난 5년 미중 반도체 갈등 전체 흐름과 향후 시나리오를 매우 자세히 면밀하게 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary, expert]
+      forbidden_chart_types: []  # 사건 복잡도 높아 다양 type 허용
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: transmission_timeline
+      strategic_intent: false
+
+  - id: long_deep_02
+    category: long_deep_truncation
+    prompt: "글로벌 AI 거버넌스 10년 전망 — EU/US/중국/한국 정책 차이와 산업 영향 심층 분석"
+    expected:
+      mode: deep
+      section_count_range: [5, 7]
+      required_evidence_types: [primary, secondary, expert]
+      forbidden_chart_types: []
+      required_map_behavior:
+        must_have_map: false
+        forbidden_map: false
+        forbidden_geo_annotations: [Somaliland]
+      min_total_chars: 6000
+      must_have_contradictions: true
+      must_have_watch_signals: true
+      expected_method: comparative
+      strategic_intent: false
+
+# ─── 카테고리 분포 검증 (test_golden_prompts 가 자동 점검) ────────────
+distribution:
+  geopolitical_forecast:    3
+  financial_transmission:   3
+  tech_structural:          3
+  policy_decision:          2
+  strategic_query:          3
+  map_required:             2
+  no_charts:                2
+  long_deep_truncation:     2
+total: 20

@@ -1,0 +1,13 @@
+{
+  "_comment": "v4.5.7 baseline 측정 결과 stub. record_baseline.py 가 채운다.",
+  "_spec": "REFACTOR_V5_PLAN.md §3 (Phase 0B) — 인수 기준 #3.",
+  "_usage": [
+    "python scripts/record_baseline.py             # 20개 prompt 모두 실행",
+    "python scripts/record_baseline.py --only geo_forecast_01  # 1건만"
+  ],
+  "recorded": false,
+  "recorded_at": null,
+  "version": "v4.5.7",
+  "system_version_actual": null,
+  "results": {}
+}

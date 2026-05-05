@@ -22,7 +22,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## [Unreleased]
 
-V5 리팩토링 (REFACTOR_V5_PLAN.md) 진행 중. Phase 0 (Baseline + SSOT Repair) 에서 v4.5.7 baseline 으로 문서 정합성을 복원했다. 코드 변경 없음 (orchestrator VERSION 은 이미 v4.5.7).
+V5 리팩토링 (REFACTOR_V5_PLAN.md) 진행 중. Tier 1 (토대) 진행:
+
+- **Phase 0 (Baseline + SSOT Repair) — 완료.** v4.5.7 baseline 으로 문서·메타데이터 정합성 회복. 코드 변경 0 (orchestrator VERSION 은 이미 v4.5.7).
+- **Phase 0B (Golden Evaluation Harness) — framework 완료, baseline 녹화 대기.** 20건 Golden Prompt fixture (8개 카테고리 정합) + 5종 회귀 테스트 (Golden / Visual / Semantic / Cost / Completeness) framework + CLI runner + record_baseline.py. py_compile 통과. 사용자가 `.env` 환경에서 `python scripts/record_baseline.py` 1회 실행 시 baseline 녹화 완료. SSOT: `tests/regression/README.md`.
 
 ---
 
