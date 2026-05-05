@@ -759,6 +759,38 @@ class Orchestrator:
         result.context = await self.context_analyst.analyze(request)
         self.telemetry.stage_end(stage)
 
+        # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
+        # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로
+        # ContextAnalysis 를 입력으로 사용. EvidencePack 은 *측정 + 향후 Phase 의
+        # 사전 SSOT* 목적으로 추출. AP-V5-30 (RawContext 가 후속 단계로 누설되는
+        # 것을 막는 guard) 의 분기점이 되는 객체.
+        try:
+            from src.state import (
+                evidence_pack_from_context_analysis,
+                estimate_state_token_size,
+            )
+            evidence_pack = evidence_pack_from_context_analysis(result.context)
+            ep_tokens = estimate_state_token_size(evidence_pack)
+            ctx_tokens = estimate_state_token_size(result.context)
+            logger.info(
+                "[orchestrator] Phase 0C: EvidencePack extracted — "
+                "context_tokens≈%d, evidence_pack_tokens≈%d, compaction_ratio=%.2f, "
+                "claims=%d, timeline=%d, sources=%d",
+                ctx_tokens, ep_tokens,
+                (ep_tokens / ctx_tokens) if ctx_tokens else 1.0,
+                len(evidence_pack.claims),
+                len(evidence_pack.timeline),
+                len(evidence_pack.source_index),
+            )
+            # 후속 Phase 가 EvidencePack 을 보고 싶을 때 사용 가능 — Phase 1A/2 진입
+            # 시 self.research_director / self.composer_v5 가 본 객체를 입력으로 받는다.
+            # 현재는 telemetry attribute 로만 보존.
+            if self.telemetry is not None:
+                setattr(self.telemetry, "evidence_pack_token_estimate", ep_tokens)
+                setattr(self.telemetry, "context_token_estimate", ctx_tokens)
+        except Exception as _e:  # pragma: no cover  — adapter 실패는 v4.5.7 흐름 영향 X
+            logger.debug("[orchestrator] Phase 0C adapter skipped: %s", _e)
+
         event_name = result.context.event_name or event_description[:30]
         self.telemetry.event_name = event_name
         await self._notify(

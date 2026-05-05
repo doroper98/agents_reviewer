@@ -16,6 +16,8 @@ last_review: 2026-05-05
 > **v4.0.0 Tier 4 부터 `[deprecated]` 표시 모듈은 코드 보존하되 호출 안 됨**. cleanup commit 시 일괄 제거 예정.
 >
 > **v4.5.7 baseline 추가 항목**: root `REFACTOR_V5_PLAN.md` (V5 마스터 플랜), `docs/legacy/` (v3 시대 SSOT 이전 디렉토리, Phase 0 SSOT Repair 에서 신설), `docs/legacy/REFACTOR_V3_PLAN.md` (v3 마스터 플랜 본문), `docs/legacy/README.md` (legacy 인덱스). root 의 `REFACTOR_V3_PLAN.md` 는 redirect stub.
+>
+> **V5 Tier 1 진행분** — Phase 0B 의 `tests/regression/` (20건 Golden Prompt + 5종 회귀 테스트), `scripts/run_regression.py` + `scripts/record_baseline.py`, `requirements-test.txt`. Phase 0C 의 `src/state/` (6-tier State 모델 + compaction + guards) + `tests/regression/test_state_compaction.py`. v4.5.7 호출 경로는 byte-equal 보존 (orchestrator 의 EvidencePack adapter 는 telemetry 전용).
 
 ## Source Structure
 ```

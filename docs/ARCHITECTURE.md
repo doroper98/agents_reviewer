@@ -365,7 +365,46 @@ Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
 | Tier 3 — 시스템 QA + 모드 분기 | Phase 7, 8, 8A | DeskEditor (publish/hold/KILL), Strategic Mode | §3 에 Phase 7 (DeskEditor + Playwright 캡쳐) 추가, §1 에 Strategic Mode 분기 |
 | Tier 4 — 미적 개선 | Phase 1, 3, 4, 5 | Editor Pass, Layout Primitives, Exhibit 번호제, Word Budget + 절단 검출 | §6 의 freeform_essay 단일 → 9종 layout primitive |
 
-**현재 단계** — Phase 0 (Baseline + SSOT Repair). 본 문서가 v4.5.7 baseline 으로 갱신된 시점.
+**현재 단계** — Tier 1 의 Phase 0C 완료 (Phase 0 + 0B + 0C). 본 문서가 v4.5.7 baseline 으로 갱신된 시점부터 다음 사항이 누적되었다.
+
+- **Phase 0** ([REFACTOR_V5_PLAN.md §2](../REFACTOR_V5_PLAN.md)) — 문서·코드 SSOT 정합성 회복 (코드 변경 0).
+- **Phase 0B** ([§3](../REFACTOR_V5_PLAN.md)) — Golden Prompt 20건 + 5종 회귀 테스트 framework. SSOT: [tests/regression/README.md](../tests/regression/README.md).
+- **Phase 0C** ([§4](../REFACTOR_V5_PLAN.md)) — 6-tier State 모델 (`src/state/`) + RawContext → EvidencePack 변환 + 단계별 입력 강제 규칙 (AP-V5-30). v4.5.7 호출 경로는 byte-equal 보존. `orchestrator.run_analysis` 에 EvidencePack adapter 가 *telemetry 전용* 으로 삽입됨 — 실제 후속 단계 (Composer / Editor / VisualPlanner / DeskEditor) 의 입력 형태 변경은 Phase 1A 진입 시 결합.
+
+### V5 6-tier State 모델 (Phase 0C 도입, [src/state/](../src/state/))
+
+```mermaid
+flowchart LR
+    REQ["AnalysisRequest"] --> RAW["1. RawContext<br/>(user_request +<br/>raw_sources + search_results)"]
+    RAW -->|"ContextAnalyst"| EP["2. EvidencePack<br/>(claims + actors +<br/>timeline + contradictions)"]
+    EP -->|"ResearchDirector<br/>(Phase 1A)"| AB["3. AnalysisBrief<br/>(thesis + selected_methods +<br/>report_shape + visual_constraints)"]
+    AB -->|"Composer"| DR["4. DraftReport<br/>(headline + sections + closing)"]
+    DR -->|"VisualPlanner<br/>(Phase 2)"| EXP["5. ExhibitPack<br/>(EvidenceDataset[] + chart_specs +<br/>layouts)"]
+    EXP -->|"Renderer"| PM["6. PublishManifest<br/>(rendered_html_path +<br/>screenshots + chart_gate_results)"]
+    PM -->|"DeskEditor<br/>(Phase 7)"| OUT["PUBLISH / HOLD / KILL"]
+
+    style RAW fill:#fde,stroke:#a06
+    style EP fill:#efe,stroke:#0a6
+    style AB fill:#ffd,stroke:#a80
+    style DR fill:#dff,stroke:#06a
+    style EXP fill:#fed,stroke:#860
+    style PM fill:#dfd,stroke:#080
+```
+
+**입력 제한 강제 규칙** ([src/state/guards.py](../src/state/guards.py), Plan §4.4):
+
+| 단계 | 받는 state | 받지 못하는 state |
+|------|-----------|-------------------|
+| ContextAnalyst | RawContext | — |
+| ResearchDirector (Phase 1A) | EvidencePack + user_request | RawContext |
+| Composer | AnalysisBrief + EvidencePack 의 *압축 요약* | RawContext, 출처 원문 전체 |
+| VisualPlanner (Phase 2) | DraftReport + EvidenceDataset[] + visual_constraints | RawContext, raw web snippets |
+| Editor (Phase 1) | DraftReport + AnalysisBrief 의 thesis/critique 만 | RawContext, EvidencePack 전체 |
+| LayoutTypesetter (Phase 3) | DraftReport + ExhibitPack | RawContext, EvidencePack |
+| ChartCritic (Phase 6 Gate B) | 단일 chart spec + 인접 prose + thesis | 다른 차트, RawContext |
+| DeskEditor (Phase 7) | PublishManifest + DraftReport (final) + screenshots | RawContext, raw EvidencePack |
+
+위 규칙 위반은 **AP-V5-30** 회귀이며, `tests/regression/test_state_compaction.py` 가 검증.
 
 ---
 

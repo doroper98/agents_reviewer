@@ -277,8 +277,49 @@ deprecated 모델 (§3.99) 변경은 사용자 영향이 없으므로 본 문서
 
 ---
 
-## 5. Out of scope
+## 5. V5 6-tier State Models (Phase 0C 도입, `src/state/`)
 
-- 필드의 정확한 타입·기본값 → `src/models.py` 직접 읽기
+REFACTOR_V5_PLAN.md Phase 0C 가 신설한 *별도 모델 SSOT*. v4.5.7 의 `src/models.py` (ComposedReport 계열) 와 분리되어 있으며, V5 후속 Phase 가 진입할 때 단계별로 활성화된다.
+
+### 5.1 Tier 별 모델 (`src/state/models.py`)
+
+| Tier | 모델 | 정의 위치 | 활성 Phase |
+|------|------|-----------|-----------|
+| 1 | `RawContext` | `src/state/models.py` | 항상 (ContextAnalyst 입력) |
+| 2 | `EvidencePack` | `src/state/models.py` | Phase 0C — adapter 로 telemetry 추출 / Phase 1A 부터 Composer 입력 |
+| 3 | `AnalysisBrief` | `src/state/models.py` | Phase 1A (ResearchDirector) |
+| 4 | `DraftReport` | `src/state/models.py` | Phase 1 (Editor) |
+| 5 | `ExhibitPack` | `src/state/models.py` | Phase 2 (VisualPlanner) — EvidenceDataset 포함 |
+| 6 | `PublishManifest` | `src/state/models.py` | Phase 7 (DeskEditor) |
+
+leaf 모델 — `RawSource`, `SearchHit`, `Claim`, `Actor`, `TimelineEvent`, `Contradiction`, `AnalysisMethod` (9종 enum), `ReportShape`, `VisualConstraints`, `KeyNumber`, `EvidenceDataset`, `ScreenshotCapture`.
+
+### 5.2 변환 함수 (`src/state/compaction.py`)
+
+| 함수 | 책무 |
+|------|------|
+| `compact_to_evidence_pack(raw)` | RawContext → EvidencePack 결정적 압축 (LLM 0). LLM 기반 압축은 ContextAnalyst.SYSTEM_PROMPT 가 갱신될 때 활성. |
+| `evidence_pack_from_context_analysis(ctx)` | v4.5.7 ContextAnalysis → V5 EvidencePack adapter. Phase 0C 의 가교. |
+| `estimate_state_token_size(state)` | Pydantic 모델 직렬화 길이 ≈ 토큰 수 (한국어 ~3 chars/token). 30% 절감 검증용. |
+
+### 5.3 입력 제한 강제 (`src/state/guards.py`, Plan §4.4)
+
+```python
+from src.state import assert_input_is, RawContext, EvidencePack
+assert_input_is("composer", EvidencePack(...))   # OK
+assert_input_is("composer", RawContext(...))      # StateGuardError (AP-V5-30)
+```
+
+8개 단계 라벨: `context_analyst`, `research_director`, `composer`, `visual_planner`, `editor`, `layout_typesetter`, `chart_critic`, `desk_editor`. 라벨 추가는 V5 Phase 진입 시점 ([REFACTOR_V5_PLAN.md §4](../REFACTOR_V5_PLAN.md)) 와 함께.
+
+### 5.4 v4.5.7 ComposedReport 와의 관계
+
+V5 의 `DraftReport` 는 v4.5.7 의 `ComposedReport` 와 *역할 일부 중복* — Phase 1 (Editor Pass) 진입 시 두 모델 분리. Phase 0C 시점엔 *형식만 정의* 되어 있고, 실제 Composer 호출은 여전히 `ComposedReport` 를 emit. v4.5.7 호출 경로 byte-equal 보존.
+
+---
+
+## 6. Out of scope
+
+- 필드의 정확한 타입·기본값 → `src/models.py` (v4.5.7) 또는 `src/state/models.py` (V5) 직접 읽기
 - 모델 인스턴스의 직렬화 형식 → Pydantic 의 `model_dump()` / `model_validate_json()` 동작 (코드)
 - 에이전트가 어떤 시스템 프롬프트로 어떤 모델을 채우는지 → `src/agents/<name>.py` 의 SYSTEM_PROMPT

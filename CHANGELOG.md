@@ -26,6 +26,7 @@ V5 리팩토링 (REFACTOR_V5_PLAN.md) 진행 중. Tier 1 (토대) 진행:
 
 - **Phase 0 (Baseline + SSOT Repair) — 완료.** v4.5.7 baseline 으로 문서·메타데이터 정합성 회복. 코드 변경 0 (orchestrator VERSION 은 이미 v4.5.7).
 - **Phase 0B (Golden Evaluation Harness) — framework 완료, baseline 녹화 대기.** 20건 Golden Prompt fixture (8개 카테고리 정합) + 5종 회귀 테스트 (Golden / Visual / Semantic / Cost / Completeness) framework + CLI runner + record_baseline.py. py_compile 통과. 사용자가 `.env` 환경에서 `python scripts/record_baseline.py` 1회 실행 시 baseline 녹화 완료. SSOT: `tests/regression/README.md`.
+- **Phase 0C (Pipeline State Compaction) — framework 완료, 후속 Phase 결합 대기.** `src/state/` 모듈 신설 — 6-tier State 모델 (RawContext / EvidencePack / AnalysisBrief / DraftReport / ExhibitPack / PublishManifest), RawContext → EvidencePack 변환 (`compact_to_evidence_pack`, `evidence_pack_from_context_analysis`), 8단계 입력 제한 강제 (`assert_input_is`, `forbid_raw_context_in`, AP-V5-30). orchestrator 에 EvidencePack adapter *telemetry 전용* 삽입 — v4.5.7 호출 경로 byte-equal 보존. 회귀 테스트 `tests/regression/test_state_compaction.py` 신설 (16건 케이스, Plan §4.5 인수 기준 #1~#3 검증). py_compile + AST + Plan §4.4 / §6.3 정적 일치 검증 통과.
 
 ---
 

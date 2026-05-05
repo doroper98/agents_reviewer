@@ -189,7 +189,7 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 
 | Phase | 본 harness 갱신 사항 |
 |-------|---------------------|
-| Phase 0C (State Compaction) | `helpers.detect_truncation` 의 입력이 RawContext 가 아닌 EvidencePack 으로 바뀌는지 검증 추가 |
+| Phase 0C (State Compaction) | ✅ 적용 — `tests/regression/test_state_compaction.py` 신설. 6-tier State 정의 + 8단계 guards (Plan §4.4) + RawContext → EvidencePack 압축 ≥30% 토큰 감소 (Plan §4.5 #3) 검증 |
 | Phase 1A (ResearchDirector) | `golden_prompts.yaml.expected_method` 가 ResearchDirector 의 selected_methods 와 ≥80% 일치하는지 검증 |
 | Phase 2A (EvidenceDataset) | 차트의 source_id 강제 가드를 `test_golden_prompts` 에 추가 |
 | Phase 2B (Capability Registry) | forbidden_chart_types 가 Registry 의 experimental status 와 일관되는지 |
