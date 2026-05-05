@@ -109,26 +109,18 @@
     // v4.4.6: 모든 콘텐츠를 단일 g 안에 — d3.zoom() transform 적용 대상.
     const gContent = svg.append('g').attr('class', 'map-content');
     const gMap = gContent.append('g').attr('class', 'map-base');
-    const gSomaliland = gContent.append('g').attr('class', 'map-somaliland');
     const gArc = gContent.append('g').attr('class', 'arcs');
     const gMarker = gContent.append('g').attr('class', 'markers');
     const gLabel = gContent.append('g').attr('class', 'labels');
 
     function project(lng, lat) { return projection([lng, lat]); }
 
-    // 소말릴란드 viewport 가시성 판정 — 폴리곤 + 범례 둘 다 이 조건에 묶음.
-    // path.bounds() 는 world topo 와 무관하게 SOMALILAND_GEOJSON 만으로 동작하므로
-    // renderBase 의 비동기 결과를 기다릴 필요 없음. 호른 오브 아프리카가 시야에
-    // 안 잡히는 보고서(예: 페르시아만 / 동북아 한정)에서는 둘 다 그리지 않음.
-    const slBounds = (() => {
-      try { return path.bounds(SOMALILAND_GEOJSON); }
-      catch (_) { return null; }
-    })();
-    const somalilandVisible = !!slBounds &&
-      isFinite(slBounds[0][0]) && isFinite(slBounds[0][1]) &&
-      isFinite(slBounds[1][0]) && isFinite(slBounds[1][1]) &&
-      slBounds[0][0] < W && slBounds[1][0] > 0 &&
-      slBounds[0][1] < H && slBounds[1][1] > 0;
+    // CHART-AP-15 (v5.0.1): 소말릴란드 (Somaliland) 자동 렌더 *완전 제거*.
+    // v4.4.6 의 자동 추가 + v4.5.7 의 viewport gating 모두 부분적 해결이었음 —
+    // 호른 오브 아프리카 가까운 경로(예: 호르무즈→싱가포르→동북아) 보고서는
+    // viewport 가 인도양까지 확장되어 소말릴랜드가 무관함에도 그려졌다.
+    // 결정: 어떤 보고서든 *composer 가 명시적으로 emit 한 마커/지역만* 표시.
+    // 보고서 주제와 무관한 자동 annotation 일체 금지 (CHART-AP-14 강화).
 
     function renderBase(world) {
       if (!world) return;
@@ -141,16 +133,7 @@
         .attr('stroke', t.boundary).attr('stroke-width', 0.7).attr('stroke-opacity', 0.7)
         .attr('vector-effect', 'non-scaling-stroke');
 
-      // 소말릴란드 해칭 폴리곤 — viewport 에 실제 보일 때만 그림.
-      if (somalilandVisible) {
-        gSomaliland.append('path').datum(SOMALILAND_GEOJSON)
-          .attr('class', 'somaliland-region')
-          .attr('d', path)
-          .attr('fill', `url(#${hatchId})`)
-          .attr('stroke', t.accent).attr('stroke-width', 1.0).attr('stroke-opacity', 0.85)
-          .attr('stroke-dasharray', '3,2')
-          .attr('vector-effect', 'non-scaling-stroke');
-      }
+      // CHART-AP-15: 소말릴란드 자동 렌더 제거. composer 가 명시 요청한 경우만.
     }
 
     loadWorld().then(world => {
@@ -267,20 +250,7 @@
           .attr('font-family', 'Noto Sans KR').attr('font-size', 10).text(l.label);
       });
     }
-    // 소말릴란드 범례 — 폴리곤이 실제 viewport 에 그려지는 경우에만 추가.
-    // (호른 오브 아프리카가 지도에 안 잡히는 보고서에선 의미 없는 noise.)
-    if (somalilandVisible) {
-      const slY = (payload.legend && payload.legend.length)
-        ? H - 12 - payload.legend.length * 16 - 22
-        : H - 22;
-      const slLeg = svg.append('g').attr('class', 'somaliland-legend')
-        .attr('transform', `translate(12, ${slY})`);
-      slLeg.append('rect').attr('x', 0).attr('y', 0).attr('width', 18).attr('height', 11)
-        .attr('fill', `url(#${hatchId})`).attr('stroke', t.accent).attr('stroke-width', 0.8);
-      slLeg.append('text').attr('x', 24).attr('y', 9).attr('fill', t.text)
-        .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-        .text('소말릴란드 (de facto)');
-    }
+    // CHART-AP-15: 소말릴란드 범례 자동 추가 제거.
 
     // v4.4.6 — d3.zoom() 인터랙션. transform 은 gContent 에만 적용.
     // 마커 dot/label/arc-label 텍스트는 zoom 시 카운터-스케일 (화면상 동일 크기).
