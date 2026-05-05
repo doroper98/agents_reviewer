@@ -80,6 +80,17 @@ SYSTEM_PROMPT = """당신은 데스크 편집자이자 분석 설계자다. 사�
 - 분석기법 선택을 *기록* 으로 남긴다 (`why_this_method`). 후속 단계가 이 근거를 본다.
 - 1~3개 method 만 선택. 4개 이상은 *분석 마비* 신호.
 
+Phase 6A — required_exhibits 정책 (Plan §14):
+- 각 method 마다 *반드시 필요한 차트* 1~2개를 ``required_exhibits`` 에 명시.
+- 이 차트들은 ChartCritic fail 해도 *drop 되지 않고* fallback 으로 격하만 된다
+  (AP-V5-28). DeskEditor 가 이를 hold 사유로 인지.
+- 보고서당 required exhibit 비율이 *너무 높으면* (>50%) ResearchDirector 의
+  prompt tuning 신호 — 정말 핵심인 차트만 required 로.
+- ``fallback_form`` — 차트 깨질 때 어떤 형식으로 격하할지:
+  · ``fact_grid``: 라벨/값 격자 (≤6 행 권장)
+  · ``table``: 데이터 표 (행 다수 시)
+  · ``text``: 1문장 자연어 요약 (마지막 수단)
+
 분석기법 enum (반드시 이 9종 중에서만 선택):
 - ACH                    — Analysis of Competing Hypotheses (가설 경쟁 분석).
                           여러 시나리오의 증거 정합성을 매트릭스로 평가.
@@ -115,7 +126,14 @@ SYSTEM_PROMPT = """당신은 데스크 편집자이자 분석 설계자다. 사�
       "why_this_method": "이 사건에 이 기법을 고른 이유 1~2문장",
       "required_evidence": ["primary","secondary","expert" 중 필요한 종류],
       "forbidden_visuals": ["이 기법에 부적합한 차트 type 0~3개"],
-      "required_exhibits": ["이 기법이 요구하는 시각화 종류 0~3개"]
+      "required_exhibits": [
+        {
+          "description": "예: '호르무즈 의존도 국가별 비교 차트'",
+          "visual_type_hint": "예: 'bar' 또는 'choropleth' (Capability Registry 의 type)",
+          "why_required": "이 차트가 분석기법의 *핵심 증거* 인 이유 1문장",
+          "fallback_form": "fact_grid|table|text"
+        }
+      ]
     }
   ],
   "report_shape": {
@@ -349,13 +367,51 @@ _DEFAULT_FORBIDDEN_VISUALS: dict[str, list[str]] = {
     "comparative": ["network"],
 }
 
-_DEFAULT_REQUIRED_EXHIBITS: dict[str, list[str]] = {
-    "scenario_tree": ["bubble"],
-    "transmission_channel": ["bar", "stacked"],
-    "stakeholder_matrix": ["network"],
-    "decision_matrix": ["heatmap", "decision_matrix"],
-    "transmission_timeline": ["gantt", "line"],
-    "comparative": ["bar"],
+_DEFAULT_REQUIRED_EXHIBITS: dict[str, list[dict[str, str]]] = {
+    "scenario_tree": [{
+        "description": "시나리오별 확률 × 영향 매트릭스",
+        "visual_type_hint": "bubble",
+        "why_required": "분기 시나리오의 정량 비교가 method 의 핵심 산출.",
+        "fallback_form": "fact_grid",
+    }],
+    "transmission_channel": [{
+        "description": "전이 채널 단계별 영향 비교",
+        "visual_type_hint": "bar",
+        "why_required": "한 충격이 단계별로 어떻게 증폭되는지 정량 추적.",
+        "fallback_form": "table",
+    }],
+    "stakeholder_matrix": [{
+        "description": "행위자 관계도",
+        "visual_type_hint": "network",
+        "why_required": "이해관계자 동맹·대립 구도 시각화가 method 의 산출.",
+        "fallback_form": "table",
+    }],
+    "decision_matrix": [{
+        "description": "옵션 × 기준 결정 매트릭스",
+        "visual_type_hint": "decision_matrix",
+        "why_required": "Phase 8 strategic mode 의 핵심 산출 — 권고 도출 근거.",
+        "fallback_form": "table",
+    }],
+    "transmission_timeline": [{
+        "description": "단계별 시간 흐름",
+        "visual_type_hint": "gantt",
+        "why_required": "시계열 변천 추적이 method 의 핵심.",
+        "fallback_form": "table",
+    }],
+    "comparative": [{
+        "description": "차원별 비교 차트",
+        "visual_type_hint": "bar",
+        "why_required": "비교 양측의 정량 차이 표시.",
+        "fallback_form": "fact_grid",
+    }],
+    "ACH": [{
+        "description": "가설 × 증거 매트릭스",
+        "visual_type_hint": "heatmap",
+        "why_required": "가설 경쟁 분석의 핵심 시각화.",
+        "fallback_form": "table",
+    }],
+    "fault_tree": [],
+    "pre_mortem": [],
 }
 
 

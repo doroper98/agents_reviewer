@@ -25,9 +25,9 @@ src/models.py 의 *기존* 모델과 분리 — src/models.py 는 v4.5.7 의 Com
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # ─── 공통 leaf 모델 ────────────────────────────────────────────────────
@@ -156,7 +156,94 @@ class AnalysisMethod(BaseModel):
     why_this_method: str = ""        # 1~2문장 정당화
     required_evidence: list[str] = Field(default_factory=list)
     forbidden_visuals: list[str] = Field(default_factory=list)
-    required_exhibits: list[str] = Field(default_factory=list)
+    required_exhibits: list["RequiredExhibit"] = Field(default_factory=list)
+    """Phase 6A — Plan §14.4. 분석기법이 *반드시 요구하는* 차트 종류.
+
+    이 차트들은 Critic fail 해도 *drop 되지 않고* fallback (fact_grid /
+    table / text) 으로 격하만 됨 (AP-V5-28). DeskEditor 가 fallback 발생을
+    hold 사유로 인지.
+
+    *backwards compat* — 본 필드는 Phase 6A 에서 ``list[str]`` → ``list
+    [RequiredExhibit]`` 로 강화. 단순 string list 도 받아 RequiredExhibit
+    으로 자동 변환 (model_validator 가 처리). 기존 code 깨지지 않음.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_required_exhibits(cls, data: Any) -> Any:
+        """legacy ``list[str]`` 형식의 required_exhibits 를 ``list[RequiredExhibit]``
+        로 자동 변환. v4.5.7 호출 경로 byte-equal 보존."""
+        if isinstance(data, dict):
+            ex = data.get("required_exhibits")
+            if isinstance(ex, list):
+                normalized: list[Any] = []
+                for item in ex:
+                    if isinstance(item, str):
+                        normalized.append({
+                            "description": item,
+                            "visual_type_hint": "",
+                            "why_required": "",
+                            "fallback_form": "fact_grid",
+                        })
+                    else:
+                        normalized.append(item)
+                data["required_exhibits"] = normalized
+        return data
+
+
+# ─── Phase 6A — Plan §14.4 의 RequiredExhibit ──────────────────────────
+
+
+class RequiredExhibit(BaseModel):
+    """Plan §14.4 — ResearchDirector 가 분석기법의 *핵심 증거* 로 지정하는 차트.
+
+    이 차트는 priority='required' 가 강제되며, Critic fail 해도 *drop 되지
+    않고* fallback_form 으로 격하만 된다 (AP-V5-28).
+    """
+
+    description: str                      # "호르무즈 의존도 국가별 비교 차트"
+    visual_type_hint: str = ""            # "bar" 또는 "choropleth"
+    why_required: str = ""                # 1문장 정당화
+    fallback_form: Literal[
+        "fact_grid", "table", "text",
+    ] = "fact_grid"
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# ─── Phase 6A — Plan §14.3 의 ExhibitPriority ──────────────────────────
+
+
+ExhibitPriority = Literal["required", "supporting", "decorative"]
+
+
+class Exhibit(BaseModel):
+    """Plan §14.3 — VisualPlanner 가 emit 하는 차트 1개의 메타데이터.
+
+    Phase 6 Gate 의 4중 검증 + Phase 6A 의 priority 정책이 결합되는 객체.
+    실제 Vega-Lite spec 은 ``spec`` 필드에 박힘.
+
+    [정책]
+        required     : Critic fail 해도 drop 금지 (AP-V5-28). fallback_form
+                        으로 강제 격하. DeskEditor 가 hold 사유로 인지.
+        supporting   : 기본값. Critic fail 시 fact_grid 또는 자연어 요약.
+        decorative   : 논거에 부수적. Critic fail 시 조용히 drop.
+    """
+
+    exhibit_id: str = ""                  # 자동 부여 (Phase 4 Exhibit 번호제 결합)
+    spec: dict = Field(default_factory=dict)   # Vega-Lite spec
+    title: str = ""
+    subtitle: str = ""
+    takeaway: str = ""
+    source_ids: list[str] = Field(default_factory=list)
+    anchor_section_idx: int = 0
+    # Phase 6A 핵심 — priority + 부여 주체.
+    priority: ExhibitPriority = "supporting"
+    priority_assigned_by: Literal[
+        "research_director", "visual_planner", "default",
+    ] = "default"
+    # Phase 6A — required exhibit 의 fallback_form 매핑 (RequiredExhibit 에서 복사).
+    fallback_form: Literal["fact_grid", "table", "text"] = "fact_grid"
 
 
 class ReportShape(BaseModel):

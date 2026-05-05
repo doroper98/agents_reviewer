@@ -69,6 +69,8 @@ _TEST_MODULES = {
     "registry":     "tests.regression.test_capability_registry",
     # V5 Phase 6 — Chart Correctness Gate (Plan §13 4중 게이트).
     "chartgate":    "tests.regression.test_chart_correctness",
+    # V5 Phase 6A — Exhibit Priority Policy (Plan §14 / AP-V5-28).
+    "priority":     "tests.regression.test_exhibit_priority",
 }
 
 
@@ -76,11 +78,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="V5 Phase 0B regression runner")
     parser.add_argument(
         "--tests",
-        default="golden,director,dataset,phase2vega,registry,chartgate,visual,semantic,cost,completeness",
+        default="golden,director,dataset,phase2vega,registry,chartgate,priority,visual,semantic,cost,completeness",
         help=(
             "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) + "
             "V5 Phase 2A (dataset) + V5 Phase 2 (phase2vega) + "
-            "V5 Phase 2B (registry) + V5 Phase 6 (chartgate) 10종 모두."
+            "V5 Phase 2B (registry) + V5 Phase 6 (chartgate) + "
+            "V5 Phase 6A (priority) 11종 모두."
         ),
     )
     parser.add_argument(

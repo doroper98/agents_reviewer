@@ -62,14 +62,27 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ChartGateResult:
-    """4중 게이트 통과 결과 + Fallback 정보."""
+    """4중 게이트 통과 결과 + Fallback 정보 + Phase 6A priority 추적."""
 
     chart_id: str
     passed: bool
-    final_verdict: Literal["keep", "replace", "drop", "fallback_fact_grid", "fallback_text", "fallback_drop"]
+    final_verdict: Literal[
+        "keep",
+        "replace",
+        "drop",
+        "fallback_fact_grid",
+        "fallback_table",
+        "fallback_text",
+        "fallback_drop",
+    ]
     gate_results: dict[str, Any] = field(default_factory=dict)
     issues: list[str] = field(default_factory=list)
-    fallback_payload: Any = None     # fact_grid dict 또는 자연어 텍스트
+    fallback_payload: Any = None     # fact_grid dict / table dict / 자연어 텍스트
+    # Phase 6A — priority 추적. DeskEditor 가 hold 사유로 사용.
+    priority: Literal["required", "supporting", "decorative"] = "supporting"
+    required_fallback_used: bool = False
+    """True 면 priority='required' 차트가 fallback 으로 격하됨 → DeskEditor
+    가 hold 사유로 인지 (Plan §14.5 인수 기준 #3)."""
 
 
 # ─── Plan §13.5 Fallback Ladder ──────────────────────────────────────
@@ -130,6 +143,42 @@ class FallbackLadder:
         }
 
     @staticmethod
+    def to_table(chart_spec: dict[str, Any]) -> dict[str, Any] | None:
+        """Plan §14.3 — required exhibit 의 fallback_form='table' 분기.
+
+        chart data 가 *모든 행* 을 보존해야 할 때 (fact_grid 의 ≤6 행 제약을
+        넘는 경우) 표 형식으로 격하. data 의 첫 dict 의 키들을 columns 로 사용.
+        """
+        data = chart_spec.get("data")
+        if isinstance(data, dict):
+            data = data.get("values") or data.get("rows")
+
+        if not isinstance(data, list) or len(data) == 0:
+            return None
+
+        # 첫 dict 의 키를 columns 로 추출.
+        sample = next((r for r in data if isinstance(r, dict)), None)
+        if sample is None:
+            return None
+
+        columns = list(sample.keys())[:8]      # 최대 8컬럼.
+        rows = []
+        for row in data:
+            if not isinstance(row, dict):
+                continue
+            rows.append([str(row.get(c, ""))[:60] for c in columns])
+
+        if not rows:
+            return None
+
+        return {
+            "kind": "table",
+            "title": _spec_title(chart_spec),
+            "columns": columns,
+            "rows": rows,
+        }
+
+    @staticmethod
     def to_text_summary(chart_spec: dict[str, Any]) -> str | None:
         """2단계 — 자연어 1문장. data 의 max/min 또는 첫 N개 항목 요약."""
         data = chart_spec.get("data")
@@ -183,6 +232,8 @@ def run_chart_gate(
     critic_verdict: Any = None,             # ChartVerdict from Gate B (선택)
     sanity_thresholds: SanityCheckThresholds | None = None,
     chart_id: str = "",
+    priority: Literal["required", "supporting", "decorative"] = "supporting",
+    required_fallback_form: Literal["fact_grid", "table", "text"] = "fact_grid",
 ) -> ChartGateResult:
     """4중 게이트 일괄 실행 + Fallback Ladder.
 
@@ -237,7 +288,11 @@ def run_chart_gate(
     gate_results["gate_a"] = {"passed": gate_a_passed, "reason": gate_a_reason}
 
     if not gate_a_passed:
-        return _apply_fallback_ladder(chart, chart_id, issues, gate_results)
+        return _apply_fallback_ladder(
+            chart, chart_id, issues, gate_results,
+            priority=priority,
+            required_fallback_form=required_fallback_form,
+        )
 
     # ─── Gate B — Chart-Topic Fit Critic ──────────────────────────────
     # critic_verdict 이 주어지지 않으면 결정적 휴리스틱으로 평가.
@@ -278,7 +333,11 @@ def run_chart_gate(
 
     if not gate_b_passed:
         issues.append(f"Gate B: {gate_b_reason}")
-        return _apply_fallback_ladder(chart, chart_id, issues, gate_results)
+        return _apply_fallback_ladder(
+            chart, chart_id, issues, gate_results,
+            priority=priority,
+            required_fallback_form=required_fallback_form,
+        )
 
     # ─── Gate B-extra — EvidenceDataset Guard (Phase 2A 결합) ─────────
     if datasets:
@@ -290,11 +349,19 @@ def run_chart_gate(
             gate_results["gate_b_dataset"] = verdict_ds
             if not verdict_ds["passed"]:
                 issues.extend([f"Gate B-dataset: {i}" for i in verdict_ds["issues"]])
-                return _apply_fallback_ladder(chart, chart_id, issues, gate_results)
+                return _apply_fallback_ladder(
+            chart, chart_id, issues, gate_results,
+            priority=priority,
+            required_fallback_form=required_fallback_form,
+        )
         except EvidenceDatasetGuardError as e:
             gate_results["gate_b_dataset"] = {"passed": False, "issues": [str(e)]}
             issues.append(f"Gate B-dataset: {e}")
-            return _apply_fallback_ladder(chart, chart_id, issues, gate_results)
+            return _apply_fallback_ladder(
+            chart, chart_id, issues, gate_results,
+            priority=priority,
+            required_fallback_form=required_fallback_form,
+        )
 
     # ─── Gate C — Visual Sanity (SVG 렌더 후) ─────────────────────────
     gate_c_passed = True
@@ -312,7 +379,11 @@ def run_chart_gate(
             issues.extend([f"Gate C: {i}" for i in sanity.issues])
 
     if not gate_c_passed:
-        return _apply_fallback_ladder(chart, chart_id, issues, gate_results)
+        return _apply_fallback_ladder(
+            chart, chart_id, issues, gate_results,
+            priority=priority,
+            required_fallback_form=required_fallback_form,
+        )
 
     # 모든 게이트 통과.
     return ChartGateResult(
@@ -321,6 +392,8 @@ def run_chart_gate(
         final_verdict="keep",
         gate_results=gate_results,
         issues=[],
+        priority=priority,
+        required_fallback_used=False,
     )
 
 
@@ -329,9 +402,49 @@ def _apply_fallback_ladder(
     chart_id: str,
     issues: list[str],
     gate_results: dict[str, Any],
+    *,
+    priority: Literal["required", "supporting", "decorative"] = "supporting",
+    required_fallback_form: Literal["fact_grid", "table", "text"] = "fact_grid",
 ) -> ChartGateResult:
-    """Plan §13.5 의 3단계 격하."""
-    # 1단계 — fact_grid.
+    """Plan §13.5 의 3단계 격하 + Phase 6A priority 정책 (Plan §14.3).
+
+    [Phase 6A — AP-V5-28 Required Exhibit 의 silent drop 금지]
+        priority='required' → 절대 fallback_drop 으로 가지 않음. 강제로
+        required_fallback_form (fact_grid / table / text) 중 하나로 격하.
+        모두 실패해도 *최소한 text 라도* emit. DeskEditor 가
+        ``required_fallback_used=True`` 를 hold 사유로 인지.
+        priority='supporting' → 기본 3단계 격하 (fact_grid → text → drop).
+        priority='decorative' → 1단계 (fact_grid) 만 시도, 실패 시 즉시 drop.
+    """
+    # priority='required' — Plan §14.3 / AP-V5-28 강제 격하.
+    if priority == "required":
+        return _required_fallback(
+            chart, chart_id, issues, gate_results, required_fallback_form,
+        )
+
+    # priority='decorative' — 1단계만 시도, 실패 시 silent drop.
+    if priority == "decorative":
+        fact_grid = FallbackLadder.to_fact_grid(chart)
+        if fact_grid is not None:
+            return ChartGateResult(
+                chart_id=chart_id,
+                passed=False,
+                final_verdict="fallback_fact_grid",
+                gate_results=gate_results,
+                issues=issues,
+                fallback_payload=fact_grid,
+                priority="decorative",
+            )
+        return ChartGateResult(
+            chart_id=chart_id,
+            passed=False,
+            final_verdict="fallback_drop",
+            gate_results=gate_results,
+            issues=issues,
+            priority="decorative",
+        )
+
+    # priority='supporting' (기본) — 3단계 격하: fact_grid → text → drop.
     fact_grid = FallbackLadder.to_fact_grid(chart)
     if fact_grid is not None:
         return ChartGateResult(
@@ -341,9 +454,9 @@ def _apply_fallback_ladder(
             gate_results=gate_results,
             issues=issues,
             fallback_payload=fact_grid,
+            priority="supporting",
         )
 
-    # 2단계 — 자연어 1문장.
     text_summary = FallbackLadder.to_text_summary(chart)
     if text_summary is not None:
         return ChartGateResult(
@@ -353,13 +466,78 @@ def _apply_fallback_ladder(
             gate_results=gate_results,
             issues=issues,
             fallback_payload=text_summary,
+            priority="supporting",
         )
 
-    # 3단계 — drop.
     return ChartGateResult(
         chart_id=chart_id,
         passed=False,
         final_verdict="fallback_drop",
         gate_results=gate_results,
         issues=issues,
+        priority="supporting",
+    )
+
+
+def _required_fallback(
+    chart: dict[str, Any],
+    chart_id: str,
+    issues: list[str],
+    gate_results: dict[str, Any],
+    fallback_form: Literal["fact_grid", "table", "text"],
+) -> ChartGateResult:
+    """Plan §14 / AP-V5-28 — required exhibit 의 강제 격하.
+
+    fallback_form 의 우선순위로 시도. 모두 실패해도 최소한 text 로 emit
+    (drop 금지). required_fallback_used=True 로 DeskEditor 가 hold 사유 인지.
+    """
+    # 1차 — RequiredExhibit.fallback_form 가 지정한 형식.
+    if fallback_form == "table":
+        payload = FallbackLadder.to_table(chart)
+        if payload is not None:
+            return ChartGateResult(
+                chart_id=chart_id,
+                passed=False,
+                final_verdict="fallback_table",
+                gate_results=gate_results,
+                issues=issues,
+                fallback_payload=payload,
+                priority="required",
+                required_fallback_used=True,
+            )
+
+    if fallback_form in ("fact_grid", "table"):
+        payload = FallbackLadder.to_fact_grid(chart)
+        if payload is not None:
+            return ChartGateResult(
+                chart_id=chart_id,
+                passed=False,
+                final_verdict="fallback_fact_grid",
+                gate_results=gate_results,
+                issues=issues,
+                fallback_payload=payload,
+                priority="required",
+                required_fallback_used=True,
+            )
+
+    # 2차 — fact_grid / table 실패 시 text 로 격하.
+    payload = FallbackLadder.to_text_summary(chart)
+    if payload is None:
+        # 데이터 자체가 빈 경우 — 최소한 placeholder 메시지라도 emit.
+        # drop 안 함 (Plan §14.3 의 'drop 금지' 강제).
+        title = _spec_title(chart)
+        payload = (
+            f"({title}) 핵심 차트 — 데이터 결손으로 시각화 불가. "
+            f"DeskEditor 가 hold 권고."
+        ) if title else "핵심 차트 — 데이터 결손으로 시각화 불가."
+
+    return ChartGateResult(
+        chart_id=chart_id,
+        passed=False,
+        final_verdict="fallback_text",
+        gate_results=gate_results,
+        issues=issues,
+        fallback_payload=payload,
+        priority="required",
+        required_fallback_used=True,
     )

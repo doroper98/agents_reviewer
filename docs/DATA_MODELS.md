@@ -292,7 +292,7 @@ REFACTOR_V5_PLAN.md Phase 0C 가 신설한 *별도 모델 SSOT*. v4.5.7 의 `src
 | 5 | `ExhibitPack` | `src/state/models.py` | Phase 2 (VisualPlanner) — EvidenceDataset 포함 |
 | 6 | `PublishManifest` | `src/state/models.py` | Phase 7 (DeskEditor) |
 
-leaf 모델 — `RawSource`, `SearchHit`, `Claim`, `Actor`, `TimelineEvent`, `Contradiction`, `AnalysisMethod` (9종 enum), `ReportShape`, `VisualConstraints`, `KeyNumber`, `EvidenceDataset`, **`DatasetField` (Phase 2A 신설, semantic_type 7종 enum: time/category/geo/quantity/ratio/score/text)**, **`TransformStep` (Phase 2A 신설, raw → 차트 데이터 변환 추적)**, `ScreenshotCapture`.
+leaf 모델 — `RawSource`, `SearchHit`, `Claim`, `Actor`, `TimelineEvent`, `Contradiction`, `AnalysisMethod` (9종 enum), `ReportShape`, `VisualConstraints`, `KeyNumber`, `EvidenceDataset`, **`DatasetField` (Phase 2A 신설, semantic_type 7종 enum: time/category/geo/quantity/ratio/score/text)**, **`TransformStep` (Phase 2A 신설, raw → 차트 데이터 변환 추적)**, `ScreenshotCapture`, **`Exhibit` (Phase 6A 신설 — priority/priority_assigned_by/fallback_form/spec)**, **`RequiredExhibit` (Phase 6A 신설 — description/visual_type_hint/why_required/fallback_form)**, **`ExhibitPriority` Literal 3종 enum (required/supporting/decorative)**.
 
 ### 5.2 변환 함수 (`src/state/compaction.py`)
 

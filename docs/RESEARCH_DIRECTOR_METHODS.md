@@ -24,12 +24,14 @@ last_review: 2026-05-05
 
 ---
 
-## 0. method 선택 원칙 (Plan §6.4)
+## 0. method 선택 원칙 (Plan §6.4 + §14)
 
 - 1개 사건에 **1~3개** method 선정. 4개 이상은 *분석 마비* 신호.
 - 사건마다 적합 method 다름. *모든 사건에 같은 기법* 적용 금지.
 - `why_this_method` 필드에 1~2문장 정당화 *반드시* 기록.
 - ResearchDirector 의 선택은 [src/state/models.py:AnalysisBrief.selected_methods](../src/state/models.py) 에 emit, Composer / VisualPlanner / DeskEditor 가 후속 단계에서 본 근거를 본다.
+- **Phase 6A (Plan §14) — 각 method 마다 `required_exhibits: list[RequiredExhibit]` 명시.** 각 RequiredExhibit 은 `description / visual_type_hint / why_required / fallback_form (fact_grid/table/text)` 4 필드. 이 차트는 ChartCritic fail 해도 *drop 되지 않고* fallback 으로 격하만 됨 (AP-V5-28). DeskEditor 가 fallback 발생을 hold 사유로 인지.
+- 보고서당 required exhibit 비율이 *너무 높으면* (>50%) ResearchDirector prompt tuning 신호 — 정말 핵심인 차트만 required 로.
 
 대표 매핑 (Plan §6.4 정본):
 
