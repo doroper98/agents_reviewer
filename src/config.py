@@ -21,6 +21,13 @@ class Config(BaseSettings):
     model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True
 
+    # V5 Phase 1A — ResearchDirector opt-in.
+    # 켜져 있으면 orchestrator 가 Phase 1 (ContextAnalyst) 직후에 ResearchDirector
+    # 를 호출해 AnalysisBrief 를 emit. 꺼져 있으면 design_via_heuristics 의
+    # 결정적 fallback 만 사용 (LLM 0). v4.5.7 호출 경로의 byte-equal 보존을 위해
+    # 디폴트 OFF. env: V5_RESEARCH_DIRECTOR=1 또는 .env 의 enable_research_director=true.
+    enable_research_director: bool = False
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

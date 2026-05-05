@@ -23,7 +23,21 @@ last_review: 2026-05-05
 
 ---
 
-## 1. Agents — 현재 (v3.1.0)
+## 1. Agents — 현재 (v4.5.7)
+
+> **v4.5.7 호출 경로의 *실제* 에이전트 2개:** ContextAnalyst (#1 아래 표) + NarrativeComposer (#10 아래 표). 그 외 (#2~#9) 는 v4.0.0 부터 호출되지 않음 — 모듈 보존만.
+>
+> **V5 Phase 1A (현재 opt-in)** — `ResearchDirector` (`src/agents/research_director.py`) 가 추가됨. `Config.enable_research_director=True` (env `V5_RESEARCH_DIRECTOR=1`) 일 때 ContextAnalyst 직후에 호출되어 `AnalysisBrief` (분석 설계도) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 9종 method enum SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](RESEARCH_DIRECTOR_METHODS.md).
+>
+> | # | 에이전트 | 파일 | 활성 |
+> |---|---------|------|------|
+> | 1 | ContextAnalyst | `src/agents/context_analyst.py` | ✅ 항상 |
+> | — | **ResearchDirector (V5 Phase 1A)** | `src/agents/research_director.py` | opt-in (`V5_RESEARCH_DIRECTOR=1`) |
+> | 10 | NarrativeComposer | `src/agents/narrative_composer.py` | ✅ 항상 |
+>
+> 아래 §1 의 v3.1.0 시대 표는 *역사적 참고용* — v4.0.0 부터 #2~#9 는 호출되지 않음.
+
+### 1-legacy. Agents — v3.1.0 시대 표 (역사적 참고용)
 
 각 에이전트의 정의는 `src/agents/<name>.py` 에 있다. 본 표는 미러. v3.1.0 부터 mode (fast/standard/deep) 별 호출 여부가 다르다.
 

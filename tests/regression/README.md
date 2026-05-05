@@ -36,6 +36,8 @@ tests/regression/
 ├── test_semantic_regression.py       # Test 3/5 — headline/body, deck/conclusion 등 점수
 ├── test_cost_regression.py           # Test 4/5 — 토큰·시간·호출 수 임계
 ├── test_completeness_regression.py   # Test 5/5 — 절단 검출 + placeholder + closing
+├── test_state_compaction.py          # Phase 0C — 6-tier State + guards + 30% 절감
+├── test_research_director.py         # Phase 1A — ≥80% expected_method 일치
 └── fixtures/
     ├── golden_prompts.yaml           # 20건 Golden Prompt + expected metadata
     ├── baseline_v4_5_7.json          # v4.5.7 측정 결과 (record_baseline.py 가 채움)
@@ -97,6 +99,24 @@ baseline 미녹화 시 informational only — telemetry 입력이 있을 때만 
 ### 2.5 Completeness Regression — `test_completeness_regression.py`
 
 Plan §3.4 (마) + Plan §6.4 (절단 검출) — `helpers.detect_truncation` 의 5종 시그널:
+
+### 2.6 (Phase 0C) State Compaction — `test_state_compaction.py`
+
+Plan §4.5 인수 기준 #1~#3:
+- 6-tier State (RawContext / EvidencePack / AnalysisBrief / DraftReport / ExhibitPack / PublishManifest) 정의 검증.
+- 8단계 입력 제한 강제 (`assert_input_is`, AP-V5-30) — composer 가 RawContext 를 받으면 fail, editor 가 EvidencePack 을 받으면 fail 등.
+- RawContext → EvidencePack 압축이 ≥30% 토큰 감소.
+- 9종 method enum 정합성 (`typing.get_args` 정적 검증).
+
+### 2.7 (Phase 1A) Research Director — `test_research_director.py`
+
+Plan §6.6 인수 기준 #1, #4:
+- 모든 사건 (20건) 에 대해 AnalysisBrief 가 emit (heuristic fallback 으로도).
+- Golden Prompt expected_method 와 `design_via_heuristics` 의 selected_methods ≥ 80% 일치 (현재 90%).
+- strategic_query 카테고리 → strategic_hint=true + report_mode='strategy'.
+- map_required → visual_constraints.must_have 에 'map'.
+- no_charts → visual_constraints.forbidden 에 8종 차트 모두.
+- SYSTEM_PROMPT 의 Plan §6.4 (9종 method + 6종 report_mode + 호르무즈/LLM/미중 예시) 명시 검증.
 1. JSON 파싱 실패
 2. 마지막 섹션 prose 가 문장부호 없이 끝남
 3. closing 비어있음
@@ -190,7 +210,7 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 | Phase | 본 harness 갱신 사항 |
 |-------|---------------------|
 | Phase 0C (State Compaction) | ✅ 적용 — `tests/regression/test_state_compaction.py` 신설. 6-tier State 정의 + 8단계 guards (Plan §4.4) + RawContext → EvidencePack 압축 ≥30% 토큰 감소 (Plan §4.5 #3) 검증 |
-| Phase 1A (ResearchDirector) | `golden_prompts.yaml.expected_method` 가 ResearchDirector 의 selected_methods 와 ≥80% 일치하는지 검증 |
+| Phase 1A (ResearchDirector) | ✅ 적용 — `tests/regression/test_research_director.py` 신설. `golden_prompts.yaml.expected_method` 가 9종 enum 안에 있는지 가드 (`test_each_expected_method_is_in_phase_1a_enum`) + `design_via_heuristics` 의 결정적 fallback 이 ≥80% 일치 (Plan §6.6 #4 임계 충족, 현재 90%). LLM ResearchDirector 의 일치률은 `record_baseline.py` 에서 measured |
 | Phase 2A (EvidenceDataset) | 차트의 source_id 강제 가드를 `test_golden_prompts` 에 추가 |
 | Phase 2B (Capability Registry) | forbidden_chart_types 가 Registry 의 experimental status 와 일관되는지 |
 | Phase 6 (Chart Gate) | 4중 게이트 (Schema / Critic / Sanity / Fallback) 의 통과율을 Cost Regression 에 누적 |

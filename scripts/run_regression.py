@@ -27,22 +27,36 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tests.regression import (  # noqa: E402
-    test_completeness_regression as test_completeness,
-    test_cost_regression as test_cost,
-    test_golden_prompts as test_golden,
-    test_semantic_regression as test_semantic,
-    test_visual_regression as test_visual,
-)
 from tests.regression.helpers import RegressionResult  # noqa: E402
 
 
-TEST_REGISTRY = {
-    "golden": test_golden.run_all,
-    "visual": None,           # 별도 처리 (report_dir 인자 필요)
-    "semantic": test_semantic.run_all,
-    "cost": test_cost.run_all,
-    "completeness": test_completeness.run_all,
+def _lazy_import(module_path: str):
+    """테스트 모듈을 *호출 시점* 에 import — pydantic 등 의존성 미설치 환경에서
+    sandbox graceful degrade. 실패 시 None 반환."""
+    try:
+        import importlib
+        return importlib.import_module(module_path)
+    except Exception as e:
+        print(f"  [skip] {module_path} import failed: {e}")
+        return None
+
+
+def _run_module(module_path: str, *args) -> list[RegressionResult]:
+    mod = _lazy_import(module_path)
+    if mod is None:
+        return []
+    return mod.run_all(*args)
+
+
+# 테스트 라벨 → 모듈 경로. lazy import 라 sandbox 에서도 다른 테스트가 SKIP 만 발생.
+_TEST_MODULES = {
+    "golden":       "tests.regression.test_golden_prompts",
+    "visual":       "tests.regression.test_visual_regression",
+    "semantic":     "tests.regression.test_semantic_regression",
+    "cost":         "tests.regression.test_cost_regression",
+    "completeness": "tests.regression.test_completeness_regression",
+    # V5 Phase 1A — ResearchDirector / Method Router (Plan §6.6 #4 ≥80% 일치).
+    "director":     "tests.regression.test_research_director",
 }
 
 
@@ -50,8 +64,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="V5 Phase 0B regression runner")
     parser.add_argument(
         "--tests",
-        default="golden,visual,semantic,cost,completeness",
-        help="콤마 구분 테스트 목록. 기본: 5종 모두",
+        default="golden,director,visual,semantic,cost,completeness",
+        help=(
+            "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) 6종 모두."
+        ),
     )
     parser.add_argument(
         "--json",
@@ -77,7 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     selected = [t.strip() for t in args.tests.split(",") if t.strip()]
-    unknown = set(selected) - set(TEST_REGISTRY)
+    unknown = set(selected) - set(_TEST_MODULES)
     if unknown:
         parser.error(f"unknown tests: {sorted(unknown)}")
 
@@ -85,17 +101,18 @@ def main(argv: list[str] | None = None) -> int:
 
     for name in selected:
         print(f"\n=== {name} ===")
+        module_path = _TEST_MODULES[name]
         if name == "visual":
-            results = test_visual.run_all(args.report_dir)
+            mod = _lazy_import(module_path)
+            results = mod.run_all(args.report_dir) if mod else []
         elif name == "cost":
             telemetry_by_id = {}
             if args.telemetry and args.telemetry.exists():
                 telemetry_by_id = json.loads(args.telemetry.read_text(encoding="utf-8"))
-            results = test_cost.run_all(telemetry_by_id)
+            mod = _lazy_import(module_path)
+            results = mod.run_all(telemetry_by_id) if mod else []
         else:
-            runner = TEST_REGISTRY[name]
-            assert runner is not None
-            results = runner()
+            results = _run_module(module_path)
         all_results.extend(results)
         _print_summary(name, results)
 

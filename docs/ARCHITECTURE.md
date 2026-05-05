@@ -369,7 +369,8 @@ Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
 
 - **Phase 0** ([REFACTOR_V5_PLAN.md §2](../REFACTOR_V5_PLAN.md)) — 문서·코드 SSOT 정합성 회복 (코드 변경 0).
 - **Phase 0B** ([§3](../REFACTOR_V5_PLAN.md)) — Golden Prompt 20건 + 5종 회귀 테스트 framework. SSOT: [tests/regression/README.md](../tests/regression/README.md).
-- **Phase 0C** ([§4](../REFACTOR_V5_PLAN.md)) — 6-tier State 모델 (`src/state/`) + RawContext → EvidencePack 변환 + 단계별 입력 강제 규칙 (AP-V5-30). v4.5.7 호출 경로는 byte-equal 보존. `orchestrator.run_analysis` 에 EvidencePack adapter 가 *telemetry 전용* 으로 삽입됨 — 실제 후속 단계 (Composer / Editor / VisualPlanner / DeskEditor) 의 입력 형태 변경은 Phase 1A 진입 시 결합.
+- **Phase 0C** ([§4](../REFACTOR_V5_PLAN.md)) — 6-tier State 모델 (`src/state/`) + RawContext → EvidencePack 변환 + 단계별 입력 강제 규칙 (AP-V5-30). v4.5.7 호출 경로는 byte-equal 보존. `orchestrator.run_analysis` 에 EvidencePack adapter 가 *telemetry 전용* 으로 삽입됨.
+- **Phase 1A** ([§6](../REFACTOR_V5_PLAN.md)) — `ResearchDirector` (`src/agents/research_director.py`) + 9종 분석기법 enum 활성 + SYSTEM_PROMPT (§6.4) + 결정적 fallback `design_via_heuristics`. orchestrator 가 `Config.enable_research_director` opt-in flag (`V5_RESEARCH_DIRECTOR=1`) 로 ResearchDirector 호출 — 디폴트 OFF 라 v4.5.7 호출 경로는 byte-equal 보존. 꺼진 환경에서도 `design_via_heuristics` 가 *모든 사건에* AnalysisBrief emit (Plan §6.6 #1 충족). Golden Prompt 20건 expected_method 일치률 90% (≥80% 임계 통과). SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](RESEARCH_DIRECTOR_METHODS.md).
 
 ### V5 6-tier State 모델 (Phase 0C 도입, [src/state/](../src/state/))
 
@@ -390,6 +391,27 @@ flowchart LR
     style EXP fill:#fed,stroke:#860
     style PM fill:#dfd,stroke:#080
 ```
+
+### V5 Phase 1A — ResearchDirector 흐름 (현재 opt-in)
+
+```mermaid
+flowchart TD
+    REQ["AnalysisRequest"] --> CTX["ContextAnalyst (Phase 1)<br/>Opus 4.7"]
+    CTX --> EP["EvidencePack<br/>(Phase 0C adapter)"]
+    EP --> FLAG{"Config.enable_research_director?<br/>(env V5_RESEARCH_DIRECTOR=1)"}
+    FLAG -->|"True (opt-in)"| RD["ResearchDirector.design()<br/>Opus 4.7, MAX_TOKENS=6000"]
+    FLAG -->|"False (default)"| HEUR["design_via_heuristics()<br/>(LLM 0, 결정적)"]
+    RD --> AB["AnalysisBrief<br/>(thesis + selected_methods +<br/>report_shape + visual_constraints)"]
+    HEUR --> AB
+    AB --> TELE["telemetry: analysis_brief_methods,<br/>report_mode, strategic_hint"]
+    TELE --> COMP["NarrativeComposer (Phase 2)<br/>v4.5.7 호출 경로 byte-equal — AnalysisBrief 미입력"]
+
+    style RD fill:#ffd,stroke:#a80
+    style HEUR fill:#dfd,stroke:#080
+    style AB fill:#ffd,stroke:#a80
+```
+
+ResearchDirector 의 역할 = *기자 데스크의 사전 지시*. Composer 가 분석기법을 *암묵적으로* 결정하던 v4.5.7 의 결함 (GAP-11) 을 차단. 9종 method enum SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](RESEARCH_DIRECTOR_METHODS.md). Phase 1A 시점은 *AnalysisBrief 가 telemetry 에만 emit* — Composer 입력 형태 변경은 후속 Phase (Tier 2~4 진입) 와 결합.
 
 **입력 제한 강제 규칙** ([src/state/guards.py](../src/state/guards.py), Plan §4.4):
 

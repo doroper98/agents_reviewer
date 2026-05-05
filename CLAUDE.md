@@ -38,6 +38,10 @@ last_review: 2026-05-05
 1. **ContextAnalyst** (Opus 4.7, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 수집. mode 별 max_tokens (fast 4K / standard 4K / deep 10K, v4.5.7).
 2. **NarrativeComposer** (Opus 4.7, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 작성 + 차트 / 지도 데이터 emit. mode 별 max_tokens (fast 12K / standard 20K / deep 32K, v4.5.4 의 `MAX_TOKENS_BY_MODE`).
 
+V5 Phase 1A 부터 추가 가능한 에이전트:
+
+3. **ResearchDirector** (Opus 4.7, MAX_TOKENS=6000) — `Config.enable_research_director` 가 켜진 환경 (env: `V5_RESEARCH_DIRECTOR=1`) 에서만 호출. 사용자 질의 + EvidencePack 을 받아 AnalysisBrief (분석 설계도 — thesis / selected_methods / report_shape / visual_constraints / strategic_hint) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 꺼진 환경에선 `design_via_heuristics` 결정적 fallback 이 LLM 호출 없이 동일 형태로 emit. 9종 method SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](docs/RESEARCH_DIRECTOR_METHODS.md).
+
 > legacy 7-agent (PlayerAnalyst, DynamicsAnalyst, ChainReactionAnalyst, ScenarioArchitect, SynthesisJudge, QualityInspector, VisualAnalyst) + 11-lens pool + 11-archetype matrix 는 **v4.0.0 부터 호출 안 함**. 모듈은 보존 (cleanup commit 미정).
 
 세부 카탈로그는 [docs/CATALOGS.md §1](docs/CATALOGS.md). 이 문서는 카탈로그를 사본으로 갖지 않는다 (SSOT 단일 출처).
@@ -104,6 +108,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | V5 Phase 진입/완료 ([REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md)) | [CHANGELOG.md](CHANGELOG.md), 신규 SSOT 문서 (Phase 0B 의 `tests/regression/README.md`, Phase 1A 의 `docs/RESEARCH_DIRECTOR_METHODS.md`, Phase 2B 의 `docs/VISUAL_CAPABILITY_REGISTRY.yaml`, Phase 7 의 `docs/DESK_VISUAL_RUBRIC.md`, Phase 8 의 `docs/STRATEGIC_MODE_PROMPT.md`), 영향받은 모든 문서 헤더의 `last_synced_with` |
 | `tests/regression/fixtures/golden_prompts.yaml` 변경 | [tests/regression/README.md](tests/regression/README.md) §2 갱신, `helpers.py` 의 검증 함수가 새 expected 키 처리하는지 점검 (Phase 0B SSOT) |
 | `src/state/*.py` 6-tier State 모델 변경 (Phase 0C) | [docs/ARCHITECTURE.md §11](docs/ARCHITECTURE.md) (V5 6-tier 도식), [docs/DATA_MODELS.md](docs/DATA_MODELS.md) (V5 State 섹션), [tests/regression/test_state_compaction.py](tests/regression/test_state_compaction.py) (guards + 30% 절감 검증), [REFACTOR_V5_PLAN.md §4](REFACTOR_V5_PLAN.md) (Phase 0C SSOT) — 단계 라벨·method enum·필드 추가 시 모두 갱신 |
+| `src/agents/research_director.py` 변경 (Phase 1A) | [docs/RESEARCH_DIRECTOR_METHODS.md](docs/RESEARCH_DIRECTOR_METHODS.md) (9종 method SSOT — 사람-친화 정의), [src/state/models.py:AnalysisMethod.method](src/state/models.py) (Literal 9종 enum — 코드 SSOT), [tests/regression/test_research_director.py](tests/regression/test_research_director.py) (≥80% 일치 검증), [tests/regression/fixtures/golden_prompts.yaml](tests/regression/fixtures/golden_prompts.yaml) (각 prompt 의 expected_method), [REFACTOR_V5_PLAN.md §6](REFACTOR_V5_PLAN.md) (Phase 1A SSOT) |
 
 ## Anti-Patterns (문서)
 [DOCS_GOVERNANCE_V3.md §9](DOCS_GOVERNANCE_V3.md) Anti-patterns 1~10 절대 위반 금지. 핵심:

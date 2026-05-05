@@ -182,6 +182,24 @@ def test_each_prompt_has_required_keys() -> None:
         assert not missing_exp, f"{p['id']}: missing expected.* keys {missing_exp}"
 
 
+def test_each_expected_method_is_in_phase_1a_enum() -> None:
+    """Phase 1A — expected_method 가 src/state/models.py:AnalysisMethod 의 9종 안에 있는지.
+
+    fixture 가 enum 외 method 를 박으면 ResearchDirector 가 절대 emit 할 수 없어
+    Plan §6.6 #4 (≥80% 일치) 가 무의미해진다. SSOT drift 차단.
+    """
+    expected_enum = {
+        "ACH", "scenario_tree", "transmission_channel", "stakeholder_matrix",
+        "fault_tree", "decision_matrix", "pre_mortem",
+        "transmission_timeline", "comparative",
+    }
+    for p in load_golden_prompts():
+        m = (p.get("expected") or {}).get("expected_method", "")
+        assert m in expected_enum, (
+            f"{p['id']}: expected_method={m!r} not in Phase 1A 9-enum {sorted(expected_enum)}"
+        )
+
+
 def test_distribution_matches_actual_count() -> None:
     """fixture 의 distribution 섹션이 실제 prompt 들의 카테고리 분포와 정합."""
     prompts = load_golden_prompts()
