@@ -232,21 +232,57 @@ class DraftReport(BaseModel):
 # ─── Tier 5 — ExhibitPack (Phase 2 / Phase 4 의 입력) ──────────────────
 
 
-class EvidenceDataset(BaseModel):
-    """차트가 입력으로 받는 *유일한* 데이터 형태 (Plan §8.3 — Phase 2A SSOT 의 사전 정의).
+class DatasetField(BaseModel):
+    """EvidenceDataset.fields 의 1개 필드 정의 (Plan §8.3).
 
-    Phase 0C 시점엔 형식만. Phase 2A 진입 시 ChartCritic 이 source_ids 강제 검증.
+    semantic_type 은 차트 type 적합도 검증의 입력 — Phase 6 ChartCritic 의 sanity
+    check 가 사용. 예: time / quantity 의 조합은 line 차트 적합, geo 면 choropleth.
     """
 
-    dataset_id: str
+    name: str
+    semantic_type: Literal[
+        "time", "category", "geo", "quantity", "ratio", "score", "text",
+    ]
+    unit: str = ""                   # "USD", "%", "건" 등 — 비어 있어도 허용 (text/category 등)
+    nullable: bool = False
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class TransformStep(BaseModel):
+    """raw → 차트 데이터의 변환 1단계. Plan §8.3 — 감사 추적용."""
+
+    operation: str                   # "filter", "groupby", "normalize", "interpolate" 등
+    description: str                 # 사람이 읽을 수 있는 설명 1~2문장
+    input_fields: list[str] = Field(default_factory=list)
+    output_fields: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class EvidenceDataset(BaseModel):
+    """차트가 입력으로 받는 *유일한* 데이터 형태 (Plan §8.3 — Phase 2A SSOT).
+
+    Phase 0C 에선 *형식 stub* 으로 정의. Phase 2A 부터 본격 활성:
+    - source_ids ≥ 1 강제 (AP-V5-25)
+    - DatasetField 로 fields 강화 (semantic_type 명시)
+    - TransformStep 로 transforms 추적 가능 (Plan §8.7 인수 기준 #4)
+
+    실제 검증 (Plan §8.5 의 3개 금지 행위) 은 src/visual/evidence_dataset.py
+    의 EvidenceDatasetGuard 가 담당.
+    """
+
+    dataset_id: str                  # 보고서 안에서 unique
     title: str = ""
     source_ids: list[str] = Field(default_factory=list, min_length=1)
     rows: list[dict] = Field(default_factory=list)
-    fields: list[dict] = Field(default_factory=list)
-    transforms: list[dict] = Field(default_factory=list)
+    fields: list[DatasetField] = Field(default_factory=list)
+    transforms: list[TransformStep] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
     suitable_visuals: list[str] = Field(default_factory=list)
     forbidden_visuals: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExhibitPack(BaseModel):

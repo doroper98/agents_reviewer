@@ -45,6 +45,10 @@ def _run_module(module_path: str, *args) -> list[RegressionResult]:
     mod = _lazy_import(module_path)
     if mod is None:
         return []
+    if not hasattr(mod, "run_all"):
+        # unit-style test 모듈 (test_evidence_dataset 등) — pytest 직접 호출.
+        print(f"  [info] {module_path} has no run_all(); use 'pytest {module_path.replace('.', '/')}.py'")
+        return []
     return mod.run_all(*args)
 
 
@@ -57,6 +61,8 @@ _TEST_MODULES = {
     "completeness": "tests.regression.test_completeness_regression",
     # V5 Phase 1A — ResearchDirector / Method Router (Plan §6.6 #4 ≥80% 일치).
     "director":     "tests.regression.test_research_director",
+    # V5 Phase 2A — EvidenceDataset Contract (Plan §8.7 #1~#4 / AP-V5-24/25/26).
+    "dataset":      "tests.regression.test_evidence_dataset",
 }
 
 
@@ -64,9 +70,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="V5 Phase 0B regression runner")
     parser.add_argument(
         "--tests",
-        default="golden,director,visual,semantic,cost,completeness",
+        default="golden,director,dataset,visual,semantic,cost,completeness",
         help=(
-            "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) 6종 모두."
+            "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) + "
+            "V5 Phase 2A (dataset) 7종 모두."
         ),
     )
     parser.add_argument(
