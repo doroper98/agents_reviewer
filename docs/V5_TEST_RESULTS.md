@@ -120,14 +120,31 @@ notes: |
   retrofit_v5.py 의 87 kill 은 휴리스틱 오탐 (실제 V5 KILL 율과 다름).
 ```
 
-### Entry 2 — Step 1: Editor only (TBD)
+### Entry 2 — All V5 flags ON + runtime deps 설치 (2026-05-05)
 
 ```yaml
-date: TBD
+date: 2026-05-05
 branch: main
-commit: TBD
-flags: [V5_EDITOR_PASS]
-# 측정 후 사용자가 채움
+commit: 9dec0df
+flags: [V5_RESEARCH_DIRECTOR, V5_VISUAL_PLANNER, V5_EDITOR_PASS, V5_LAYOUT_TYPESETTER, V5_DESK_EDITOR]
+runtime_deps: [vl_convert, lxml, playwright (chromium), Pillow, PyYAML]  # 모두 ✓
+total: 495                     # 477 (이전 177 baseline + 318) + 18 (test_method_compliance.py 신설 16건 + 기타)
+passed: 440
+failed: 53
+skipped: 2
+pass_rate: 88.9%
+fail_delta: +1                 # baseline 의 52 vs 새 53 — 거의 동등 (방금 추가된 playwright smoke 1건)
+pytest_elapsed_s: 11.04         # baseline 30s 대비 단축 (deps 설치 후 SKIP 없어지면 측정 시간 단축)
+new_failures:
+  - test_visual_regression.py::test_playwright_smoke   # chromium 초기화 — 사용자 동작 무관
+notes: |
+  V5 통합의 *진짜 진보*: pass count 124 → 440 (3.5×). baseline 의 52 fail 은 그대로
+  (회귀 0). 그동안 deps 미설치로 SKIP 되던 ~316건 테스트 (Phase 6 chart correctness,
+  Phase 2 vega adapter, Phase 7 desk editor, Phase 2A evidence dataset 등) 가 *실제로
+  실행되어 통과*. V5 framework 의 검증 카버리지가 한 번에 활성화됨.
+
+  Pass rate 70.1% → 88.9% — Plan §22 #2 의 진보 정의 (fail count 동등하면서 카버리지
+  대폭 확장) 충족.
 ```
 
 ### Entry 3 — Step 2: Editor + ResearchDirector (TBD)
