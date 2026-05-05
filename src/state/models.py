@@ -405,3 +405,104 @@ class PublishManifest(BaseModel):
     chart_gate_results: dict = Field(default_factory=dict)
     issues: list[str] = Field(default_factory=list)         # Phase 7A deterministic gate 결과
     soft_fail_signals: list[str] = Field(default_factory=list)
+
+
+# ─── Phase 8 / 8A — Strategic Mode 모델 (Plan §17 + §18.3) ───────────
+
+
+class FailureMode(BaseModel):
+    """Plan §17.3 Pre-mortem — 옵션별 실패 시나리오 1건."""
+
+    mode: str                          # 실패 모드 1줄
+    leading_indicator: str = ""        # 조기 경보 신호
+    severity: Literal["low", "medium", "high"] = "medium"
+
+
+class StrategicOption(BaseModel):
+    """Plan §18.3 — 전략 옵션 1개. 보고서당 1~5개."""
+
+    label: str                         # "옵션 A: ..."
+    one_line_summary: str
+    core_actions: list[str] = Field(default_factory=list)
+    pre_mortem: list[FailureMode] = Field(default_factory=list)
+
+
+class Criterion(BaseModel):
+    """Plan §17.3 §18.3 — 평가 기준."""
+
+    name: str                          # "비용", "시간", "가역성" 등
+    weight: float = 1.0                # 0~1 또는 자유 가중치
+    inferred: bool = False             # True 면 사용자 명시 외 추론 추가
+    description: str = ""
+
+
+class Constraints(BaseModel):
+    """Plan §18.3 — 결정의 제약 조건."""
+
+    time_horizon: str = ""             # "3개월" / "1년"
+    budget_ceiling: str = ""           # "₩50억 이내"
+    risk_tolerance: Literal["low", "medium", "high"] = "medium"
+    execution_authority: str = ""      # "본인 권한" / "임원 승인"
+    reversibility: Literal["reversible", "partial", "irreversible"] = "partial"
+
+
+class DecisionMatrix(BaseModel):
+    """Plan §18.3 — 옵션 × 기준 점수 매트릭스. 시각화 필수."""
+
+    options: list[str] = Field(default_factory=list)        # StrategicOption.label 과 일치
+    criteria: list[str] = Field(default_factory=list)       # Criterion.name 과 일치
+    scores: list[list[float]] = Field(default_factory=list)  # options × criteria
+    rationale: list[list[str]] = Field(default_factory=list) # options × criteria 근거
+    sensitivity: dict[str, str] = Field(default_factory=dict)  # 가중치 변동 분석
+
+
+class Recommendation(BaseModel):
+    """Plan §18.3 — 단일 권고. 권고 부재는 KILL 사유 (Plan §17.6)."""
+
+    selected_option_label: str         # 권고 옵션 (StrategicOption.label 과 일치)
+    rationale: str = ""                # 근거 ≥ 50자 강제 (KILL_RULE recommendation_absent)
+    rationale_points: list[str] = Field(default_factory=list)  # 근거 ≥3 포인트
+    exceptions: list[str] = Field(default_factory=list)        # 예외 조건
+    execution_order: list[str] = Field(default_factory=list)
+
+
+class ActionItem(BaseModel):
+    """Plan §18.3 ActionPlan 의 1건."""
+
+    action: str
+    owner: str = ""                    # "본인" / "팀" / "외부 vendor"
+    success_metric: str = ""
+    failure_signal: str = ""
+
+
+class ActionPlan(BaseModel):
+    """Plan §18.3 — 30/60/90일 실행계획. 전략 보고서 *필수*.
+
+    KILL_RULE action_plan_missing 이 빈 list 검사 — 모든 시기 비어있으면 KILL.
+    """
+
+    days_30: list[ActionItem] = Field(default_factory=list)
+    days_60: list[ActionItem] = Field(default_factory=list)
+    days_90: list[ActionItem] = Field(default_factory=list)
+
+
+class StrategicReport(BaseModel):
+    """Plan §18.3 — 전략 모드 보고서의 8개 필수 출력 구조.
+
+    - 분석 보고서 (ComposedReport) 와 *별개* 모델. Phase 8 strategic_mode=True
+      일 때 composer 가 emit.
+    - KILL_RULES_STRATEGIC (Plan §17.6 + §18.4) 가 필드별 강제.
+    """
+
+    decision_statement: str = ""                     # 1: 결정 한 문장
+    options: list[StrategicOption] = Field(default_factory=list)  # 2
+    criteria: list[Criterion] = Field(default_factory=list)        # 3
+    constraints: Constraints = Field(default_factory=Constraints)  # 4
+    decision_matrix: DecisionMatrix = Field(default_factory=DecisionMatrix)  # 5
+    recommendation: Recommendation | None = None       # 6
+    kill_switch_conditions: list[str] = Field(default_factory=list)  # 7
+    action_plan_30_60_90: ActionPlan = Field(default_factory=ActionPlan)  # 8
+
+    # 메타 (composer 가 emit, DeskEditor 가 평가).
+    user_provided_criteria: list[str] = Field(default_factory=list)  # 사용자 명시 기준 추적
+    mode: Literal["fast", "standard", "deep"] = "standard"
