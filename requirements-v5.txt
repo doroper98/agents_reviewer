@@ -1,0 +1,30 @@
+# V5 운영 의존성 (Plan §22 — runtime).
+#
+# 본 파일은 V5 신규 phase 들이 *런타임에 필요한* 패키지 목록.
+# requirements.txt (v4.5.7 기본) 위에 *추가* 설치.
+#
+# 설치:
+#   pip install -r requirements.txt
+#   pip install -r requirements-v5.txt
+#   python -m playwright install chromium    # Phase 7 DeskEditor 시각 캡처용
+#
+# 미설치 시 동작:
+#   - playwright 없음 → Phase 7 DeskEditor 시각 캡처 graceful SKIP (logical rubric 만)
+#   - lxml 없음 → Phase 6 Gate C SVG sanity check 가 정규식 fallback (정확도 낮음)
+#   - vl-convert-python 없음 → Phase 2 Vega-Lite spec → SVG 변환 SKIP, spec dict 만 emit
+#   - PyYAML 없음 → Phase 2B Capability Registry 로딩 실패 → 모든 차트 emit 차단
+#
+# AP-V5-32 — 검증되지 않은 운영 환경에서 V5 flag ON 금지. 본 파일 설치 후 켤 것.
+
+# ─── Phase 2 — Vega-Lite spec → SVG 서버사이드 렌더 ─────────────────
+vl-convert-python>=1.0     # render_vega_lite() 의 1순위 백엔드
+
+# ─── Phase 2B — Capability Registry YAML 로더 ─────────────────────
+PyYAML>=6.0
+
+# ─── Phase 6 — Visual Sanity Gate C (SVG 정적 검증) ─────────────────
+lxml>=4.9
+
+# ─── Phase 7 — DeskEditor Visual Proof 캡처 ─────────────────────────
+playwright>=1.40           # 설치 후: python -m playwright install chromium
+Pillow>=10.0               # pixel diff (회귀 baseline 비교 시)
