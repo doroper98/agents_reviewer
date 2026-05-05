@@ -49,6 +49,7 @@ tests/regression/
 ├── test_editor.py                    # Phase 1 — 7-rubric + 보존 검증 + 진부어
 ├── test_layout_typesetter.py         # Phase 3 — 9-vocab + AP-V5-3 + heuristic
 ├── test_exhibit_and_budget.py        # Phase 4 + 5 — Exhibit 번호제 + Word Budget + 절단 검출
+├── test_method_compliance.py         # Phase 1A — 9 method × downstream contract (검토자 5번 권장)
 └── fixtures/
     ├── golden_prompts.yaml           # 20건 Golden Prompt + expected metadata
     ├── baseline_v4_5_7.json          # v4.5.7 측정 결과 (record_baseline.py 가 채움)
@@ -235,6 +236,7 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 | Phase 3 (Layout Primitives) | ✅ 적용 — `tests/regression/test_layout_typesetter.py` 신설. 9-vocab SSOT (AP-V5-3 강제) + LayoutPrimitive Literal 정합 + heuristic 8종 트리거 + 연속 배치 차단 + hero ≤ 2 cap + fallback_all_standard. 23건. |
 | Phase 1 (Editor Pass) | ✅ 적용 — `tests/regression/test_editor.py` 신설. SECTION_SCORE_RUBRICS 7종 SSOT + SYSTEM_PROMPT 정합 + 보존 검증 (Plan §5.6 인수 기준 #3) + 진부어 매칭 + EditedReport / EditorCritique 모델. 22건. |
 | Phase 4 + 5 (Exhibit 번호제 + Word Budget) | ✅ 적용 — `tests/regression/test_exhibit_and_budget.py` 신설. AP-V5-6 (renderer 자동 부여, composer ID 임의 박기 금지) + `[[ex:N]]` / `[[exr:N]]` / `[[exs:N-M]]` 패턴 + HTML anchor 변환 + 미해결 ref 검출 + ref_density 통계 (Plan §11.5 1~3회 권장). Phase 5: 5종 truncation signal + adaptive max_tokens (`COMPOSER_MAX_TOKENS_V5` deep 32K → 64K, WRITE-AP-8 해소) + complexity_score (sources×2 + timeline×1.5 + key_figures) + Gini 분포 (peak section 가중) + stitch_continuation 부분 응답 이어붙이기. 32건. |
+| Phase 1A — Method Compliance (검토자 5번 권장) | ✅ 적용 — `tests/regression/test_method_compliance.py` 신설. ResearchDirector 가 method 를 *고른다* 만 검증하던 한계 보완 — *고른 method 를 downstream 객체·heuristic 이 따르는지* 결정적 검증. 9 method × required_exhibits 매핑 + StrategicReport 8 필수 필드 + heuristic fallback 의 method 준수 + DecisionMatrix.options 와 strategic options label 일치 + Pre-mortem FailureMode ≥3 contract + Recommendation/options KILL_RULE precondition. LLM 호출 0. 16건. |
 | Phase 8 + 8A (Strategic Mode + Contract) | ✅ 적용 — `tests/regression/test_strategic_mode.py` 신설. prefix 7종 + STRATEGIC_PATTERNS 8종 + 라벨 30건 routing 정확도 (Plan §17.7 #1 ≥90%) + 9종 KILL_RULES + AP-V5-18 갱신 (옵션 0 hold / 6+ KILL) + 8개 필수 출력 모델. 39건. |
 | Phase 7 (Desk Editor) | ✅ 적용 — `tests/regression/test_desk_editor.py` 신설. Logical 5-KILL + Visual 3-KILL + 자동 KILL 통합 (둘 이상) + HOLD_DISPATCH 17종 + Playwright graceful + SYSTEM_PROMPT 의 7+8 rubric 정합 + DESK_VISUAL_RUBRIC.md SSOT. 27건. |
 | Phase 7A (Deterministic Publish Gate) | ✅ 적용 — `tests/regression/test_deterministic_gate.py` 신설. 11 Hard fail (Plan §15.4) + 5 Soft fail (§15.5) 모두 검증. Hard fail 시 decision='kill' → LLM 호출 0 (AP-V5-29). 22건. |

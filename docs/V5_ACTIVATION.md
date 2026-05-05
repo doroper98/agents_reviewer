@@ -26,6 +26,46 @@ last_review: 2026-05-05
 
 ---
 
+## 1.5. 운영 의존성 — flag 켜기 *전에* 설치 (AP-V5-32 강제)
+
+V5 phase 들은 추가 패키지가 필요합니다. **flag 만 켜고 패키지 안 설치하면 기능이 조용히 SKIP** 됩니다 (예: DeskEditor 는 Playwright 없으면 vision 캡처 부분 누락). 운영 환경에서 V5 켜기 전에 반드시:
+
+```bash
+cd ~/agents_reviewer
+source venv/bin/activate
+pip install -r requirements.txt          # v4.5.7 기본 (이미 설치됐으면 skip)
+pip install -r requirements-v5.txt        # V5 운영 의존성 (vl-convert / lxml / playwright / Pillow / PyYAML)
+python -m playwright install chromium     # Phase 7 DeskEditor vision 캡처용
+```
+
+**의존성 누락 시 동작 (graceful degrade):**
+
+| 누락 패키지 | 영향 받는 phase | 동작 |
+|-----------|---------------|------|
+| `vl-convert-python` | Phase 2 (Vega adapter) | Vega-Lite spec → SVG 변환 SKIP. spec dict 만 emit (렌더링은 d3 fallback) |
+| `lxml` | Phase 6 Gate C | SVG sanity check 가 정규식 fallback (정확도 낮음) |
+| `playwright` | Phase 7 DeskEditor | Visual proof 캡처 SKIP. Logical 7-rubric 만 평가 |
+| `Pillow` | 회귀 테스트 visual baseline | pixel diff SKIP (정량 평가 불가) |
+| `PyYAML` | Phase 2B Capability Registry | **모든 chart emit 차단** (Critical — 반드시 설치) |
+
+**진단:**
+
+```bash
+python -c "
+import importlib
+for pkg in ['vl_convert', 'lxml', 'playwright', 'PIL', 'yaml']:
+    try:
+        importlib.import_module(pkg)
+        print(f'  ✓ {pkg}')
+    except ImportError:
+        print(f'  ✗ {pkg} — pip install -r requirements-v5.txt')
+"
+```
+
+다섯 개 모두 ✓ 가 떠야 V5 운영 환경 준비 완료.
+
+---
+
 ## 2. 5종 Flag (Phase 매핑)
 
 | 환경 변수 | 활성화되는 phase | 효과 |

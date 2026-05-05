@@ -83,6 +83,8 @@ _TEST_MODULES = {
     "layout":       "tests.regression.test_layout_typesetter",
     # V5 Phase 4 + 5 — Exhibit 번호제 + Word Budget (Plan §11 + §12 / AP-V5-6/21/22).
     "exhibitbudget": "tests.regression.test_exhibit_and_budget",
+    # V5 Phase 1A — Method Compliance (검토자 5번 권장 / 9 method × downstream contract).
+    "methodcompliance": "tests.regression.test_method_compliance",
 }
 
 
