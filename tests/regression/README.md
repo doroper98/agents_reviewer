@@ -46,6 +46,7 @@ tests/regression/
 ├── test_deterministic_gate.py        # Phase 7A — 11 Hard + 5 Soft + AP-V5-29
 ├── test_desk_editor.py               # Phase 7 — Logical 7 + Visual 8 + KILL_RULES
 ├── test_strategic_mode.py            # Phase 8 + 8A — prefix + 패턴 + 라벨 30건 + 9-KILL
+├── test_editor.py                    # Phase 1 — 7-rubric + 보존 검증 + 진부어
 └── fixtures/
     ├── golden_prompts.yaml           # 20건 Golden Prompt + expected metadata
     ├── baseline_v4_5_7.json          # v4.5.7 측정 결과 (record_baseline.py 가 채움)
@@ -229,6 +230,7 @@ Phase 0B 의 산출물은 V5 의 *모든* 후속 Phase 진입의 전제 조건 (
 |-------|---------------------|
 | Phase 0C (State Compaction) | ✅ 적용 — `tests/regression/test_state_compaction.py` 신설. 6-tier State 정의 + 8단계 guards (Plan §4.4) + RawContext → EvidencePack 압축 ≥30% 토큰 감소 (Plan §4.5 #3) 검증 |
 | Phase 1A (ResearchDirector) | ✅ 적용 — `tests/regression/test_research_director.py` 신설. `golden_prompts.yaml.expected_method` 가 9종 enum 안에 있는지 가드 (`test_each_expected_method_is_in_phase_1a_enum`) + `design_via_heuristics` 의 결정적 fallback 이 ≥80% 일치 (Plan §6.6 #4 임계 충족, 현재 90%). LLM ResearchDirector 의 일치률은 `record_baseline.py` 에서 measured |
+| Phase 1 (Editor Pass) | ✅ 적용 — `tests/regression/test_editor.py` 신설. SECTION_SCORE_RUBRICS 7종 SSOT + SYSTEM_PROMPT 정합 + 보존 검증 (Plan §5.6 인수 기준 #3) + 진부어 매칭 + EditedReport / EditorCritique 모델. 22건. |
 | Phase 8 + 8A (Strategic Mode + Contract) | ✅ 적용 — `tests/regression/test_strategic_mode.py` 신설. prefix 7종 + STRATEGIC_PATTERNS 8종 + 라벨 30건 routing 정확도 (Plan §17.7 #1 ≥90%) + 9종 KILL_RULES + AP-V5-18 갱신 (옵션 0 hold / 6+ KILL) + 8개 필수 출력 모델. 39건. |
 | Phase 7 (Desk Editor) | ✅ 적용 — `tests/regression/test_desk_editor.py` 신설. Logical 5-KILL + Visual 3-KILL + 자동 KILL 통합 (둘 이상) + HOLD_DISPATCH 17종 + Playwright graceful + SYSTEM_PROMPT 의 7+8 rubric 정합 + DESK_VISUAL_RUBRIC.md SSOT. 27건. |
 | Phase 7A (Deterministic Publish Gate) | ✅ 적용 — `tests/regression/test_deterministic_gate.py` 신설. 11 Hard fail (Plan §15.4) + 5 Soft fail (§15.5) 모두 검증. Hard fail 시 decision='kill' → LLM 호출 0 (AP-V5-29). 22건. |

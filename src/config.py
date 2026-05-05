@@ -43,6 +43,12 @@ class Config(BaseSettings):
     # env: V5_DESK_EDITOR=1.
     enable_desk_editor: bool = False
 
+    # V5 Phase 1 — Editor Pass opt-in.
+    # 켜져 있으면 Composer (drafting) 직후 Editor (Opus 4.7) 가 7-rubric 으로
+    # 비평·재집필. 꺼져 있으면 composer DraftReport 그대로 사용 (v4.5.7 byte-
+    # equal). 디폴트 OFF. env: V5_EDITOR_PASS=1.
+    enable_editor_pass: bool = False
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
