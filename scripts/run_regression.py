@@ -79,6 +79,8 @@ _TEST_MODULES = {
     "strategic":    "tests.regression.test_strategic_mode",
     # V5 Phase 1 — Editor Pass (Plan §5 / AP-V5-1).
     "editor":       "tests.regression.test_editor",
+    # V5 Phase 3 — Layout Primitives (Plan §10 / AP-V5-3).
+    "layout":       "tests.regression.test_layout_typesetter",
 }
 
 
@@ -86,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="V5 Phase 0B regression runner")
     parser.add_argument(
         "--tests",
-        default="golden,director,dataset,phase2vega,registry,chartgate,priority,detgate,desk,strategic,editor,visual,semantic,cost,completeness",
+        default="golden,director,dataset,phase2vega,registry,chartgate,priority,detgate,desk,strategic,editor,layout,visual,semantic,cost,completeness",
         help=(
             "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) + "
             "V5 Phase 2A (dataset) + V5 Phase 2 (phase2vega) + "

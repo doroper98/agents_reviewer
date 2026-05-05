@@ -506,3 +506,33 @@ class StrategicReport(BaseModel):
     # 메타 (composer 가 emit, DeskEditor 가 평가).
     user_provided_criteria: list[str] = Field(default_factory=list)  # 사용자 명시 기준 추적
     mode: Literal["fast", "standard", "deep"] = "standard"
+
+
+# ─── Phase 3 — Layout Primitives (Plan §10) ──────────────────────────
+
+
+# Plan §10.2 — 9종 layout 정본 (V5 동결, AP-V5-3 강제 — 추가 금지).
+LayoutPrimitive = Literal[
+    "standard",          # 기본 (kicker → heading → lede → prose → charts)
+    "hero_map",          # 풀-bleed 지도 + 짧은 caption
+    "hero_chart",        # 풀-bleed 차트 1개 + 짧은 caption
+    "split_2col",        # 좌측 prose / 우측 차트 또는 fact_grid
+    "sidebar_callout",   # 본문 80% + 우측 사이드바 (analogy / pull_quote)
+    "qna_panel",         # Q&A 형식 (질문 → 짧은 답변 ×3~5)
+    "timeline_strip",    # 가로/세로 타임라인 + 사건별 미니 코멘트
+    "signature_summary", # 큰 글씨 헤드라인 + 부제 1문장 + 본문 X
+    "exhibit_grid",      # 차트 2~4개 그리드 + 짧은 종합 caption
+]
+
+
+class LayoutAssignment(BaseModel):
+    """Plan §10.3 — LayoutTypesetter 가 emit 하는 섹션 별 layout 결정."""
+
+    section_idx: int
+    layout: LayoutPrimitive = "standard"
+    why: str = ""                        # 1줄 정당화 (디버그용)
+    assigned_by: Literal[
+        "layout_typesetter", "heuristic", "default",
+    ] = "default"
+
+    model_config = ConfigDict(extra="forbid")

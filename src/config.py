@@ -49,6 +49,12 @@ class Config(BaseSettings):
     # equal). 디폴트 OFF. env: V5_EDITOR_PASS=1.
     enable_editor_pass: bool = False
 
+    # V5 Phase 3 — Layout Typesetter opt-in.
+    # 켜져 있으면 Editor 후 단계로 LayoutTypesetter (Sonnet 4.6) 가 9종 layout
+    # primitive 중 섹션별로 결정. 꺼져 있으면 모든 섹션 'standard' (v4.5.7
+    # byte-equal). 디폴트 OFF. env: V5_LAYOUT_TYPESETTER=1.
+    enable_layout_typesetter: bool = False
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

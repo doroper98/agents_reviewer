@@ -123,6 +123,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | `docs/DESK_VISUAL_RUBRIC.md` 새 (시각-N) 항목 append (AP-V5-16) | YK 가 발견한 결함만 추가 (append-only, 수정 X). 다음 DeskEditor 호출부터 SYSTEM_PROMPT 에 자동 포함. CHANGELOG 의 해당 버전 entry 에 명시 |
 | `src/agents/strategic_router.py` (Phase 8) 변경 | [docs/STRATEGIC_MODE_PROMPT.md](docs/STRATEGIC_MODE_PROMPT.md) (3-경로 감지 SSOT), [src/state/models.py:StrategicReport](src/state/models.py) (8 필수 출력), [tests/regression/test_strategic_mode.py](tests/regression/test_strategic_mode.py) (정확도 ≥90% + KILL_RULES + AP-V5-18 갱신), [REFACTOR_V5_PLAN.md §17 + §18](REFACTOR_V5_PLAN.md) — STRATEGIC_PATTERNS 추가는 plan + 회귀 테스트 *동시* 갱신 |
 | `src/agents/editor.py` (Phase 1) 변경 | [tests/regression/test_editor.py](tests/regression/test_editor.py) (7-rubric SSOT + 보존 검증), [REFACTOR_V5_PLAN.md §5](REFACTOR_V5_PLAN.md) (Phase 1 SSOT) — SYSTEM_PROMPT 의 7-rubric 변경 시 SECTION_SCORE_RUBRICS list + 회귀 테스트 *동시* 갱신. AP-V5-1 (Editor 우회 금지) 강제 |
+| `src/agents/layout_typesetter.py` 또는 `LayoutPrimitive` Literal (Phase 3) 변경 | [src/state/models.py:LayoutPrimitive](src/state/models.py) (Literal SSOT), [tests/regression/test_layout_typesetter.py](tests/regression/test_layout_typesetter.py) (9-vocab AP-V5-3 가드), [REFACTOR_V5_PLAN.md §10](REFACTOR_V5_PLAN.md) (Phase 3 SSOT) — *9종 동결*. 추가/변경 금지 (AP-V5-3). 추가는 RFC + Plan 갱신 + 본 회귀 테스트 *동시* 갱신만 가능 |
 
 ## Anti-Patterns (문서)
 [DOCS_GOVERNANCE_V3.md §9](DOCS_GOVERNANCE_V3.md) Anti-patterns 1~10 절대 위반 금지. 핵심:
