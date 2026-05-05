@@ -1,0 +1,305 @@
+{
+  "headline": "용도가 운명을 가른다 — 사내 LLM 의 D-day 89일",
+  "deck": "2026-08-02, EU AI Act Annex III(부속서 III) 고위험 의무가 본격 적용된다. 핵심은 어떤 모델을 쓰느냐가 아니라 그 모델을 어디에 쓰느냐다.",
+  "sections": [
+    {
+      "heading": "89일 카운트다운",
+      "kicker": "시간표 / 1",
+      "prose": "법 자체는 2024년 8월 1일 관보 게재로 발효됐다. 그러나 모든 조항이 한 번에 적용되지는 않는다. 단계별 시간표가 있다. 금지 AI 조항은 2025년 2월부터, GPAI(범용 AI) 모델 공급자 의무는 2025년 8월부터, AI literacy(AI 활용 역량) 의무는 2026년 2월부터 이미 발효 중이다.\n\n남은 8월의 분기점은 두 갈래다. 사내에 LLM 을 끼워 넣은 워크플로우가 Annex III 의 8개 고위험 영역에 닿으면, 적합성 평가·CE(유럽 적합성) 마킹·EU 데이터베이스 등록·사후 모니터링 체계를 모두 갖춰야 한다. 닿지 않으면 의무는 사실상 가볍다. 같은 모델, 같은 회사여도 용도에 따라 두 운명으로 갈린다.\n\n시간표를 한 장에 그려보면, 지금은 GPAI 의무와 AI literacy 의무는 이미 적용된 구간 안에 있고, Annex III 라는 가장 무거운 의무가 다음 분기에 들어선다. 2027년 8월에는 제품안전 규제(의료기기·완구 등)와 통합된 영역까지 마지막으로 편입된다.",
+      "charts": [
+        {
+          "type": "gantt",
+          "title": "EU AI Act 단계별 적용 일정",
+          "subtitle": "Annex III 가 가장 무거운 분기점 — 89일 뒤 시작",
+          "data": [
+            {
+              "label": "금지 AI 조항",
+              "start": "2025-02-02",
+              "end": "2027-08-02"
+            },
+            {
+              "label": "GPAI 모델 공급자 의무",
+              "start": "2025-08-02",
+              "end": "2027-08-02"
+            },
+            {
+              "label": "AI literacy 의무",
+              "start": "2026-02-02",
+              "end": "2027-08-02"
+            },
+            {
+              "label": "Annex III 고위험 의무 (D-day)",
+              "start": "2026-08-02",
+              "end": "2027-08-02"
+            },
+            {
+              "label": "제품안전 통합 적용",
+              "start": "2027-08-02",
+              "end": "2028-08-02"
+            }
+          ],
+          "annotations": [
+            {
+              "kind": "vline",
+              "x": "2026-05-05",
+              "label": "현재",
+              "sublabel": "D-89"
+            },
+            {
+              "kind": "vline",
+              "x": "2026-08-02",
+              "label": "Annex III 발효"
+            }
+          ],
+          "source": "Regulation (EU) 2024/1689 / European Commission Implementation Timeline",
+          "takeaway": "GPAI·AI literacy 는 이미 살아있다. 다음 무게추는 Annex III."
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "같은 모델, 같은 회사, 다른 운명.",
+      "cited_claim_ids": [],
+      "lede": "오늘은 2026년 5월 5일이다. EU AI Act 의 Annex III 고위험 시스템 의무가 본격 적용되는 2026년 8월 2일까지 89일이 남았다.",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": true
+    },
+    {
+      "heading": "법은 모델을 묻지 않는다 — 무엇에 쓰는지를 묻는다",
+      "kicker": "분류 원리 / 2",
+      "prose": "왜 같은 LLM 이 한쪽에서는 고위험이고 다른 쪽에서는 최소위험인가?\n\nEU AI Act 는 위험 기반 4단계 구조를 택했다. 금지·고위험·제한적 위험·최소 위험. 이 분류 기준의 핵심은 모델 사양이 아니라 사용 맥락이다. 법문은 시스템(system) 단위로 의무를 매긴다. 모델 자체는 GPAI 라는 별도 트랙에서 공급자(provider) 의무로 다루고, 그 모델을 받아 워크플로우를 만든 회사는 배포자(deployer) 로서 별도 의무를 진다. 이 책임 분리가 v4.5.7 규제 설계의 출발점이다.\n\nAnnex III 는 8개 고위험 영역을 못박는다. 생체식별, 주요 인프라, 교육·직업훈련, 고용·인사관리, 필수 민간·공공 서비스 접근, 법 집행, 이주·국경·망명, 사법·민주절차. 이 가운데 일반 기업이 실무에서 자주 닿는 영역은 사실 두 곳에 가깝다. 채용·평가 자동화(고용 영역)와 신용·자격 심사(필수 서비스 접근). 나머지는 정부·국경관리·사법기관 같은 특수 주체에 집중된다.",
+      "charts": [
+        {
+          "type": "heatmap",
+          "title": "Annex III 8개 영역과 일반 기업 노출 가능성",
+          "subtitle": "정부·금융·국경관리 같은 특수 주체에 집중 — 일반 기업이 닿는 곳은 두 곳",
+          "data": [
+            {
+              "title": "고용·인사관리 (채용·평가)",
+              "severity": "high"
+            },
+            {
+              "title": "필수 민간·공공 서비스 접근 (신용·보험 심사)",
+              "severity": "high"
+            },
+            {
+              "title": "교육·직업훈련 (시험·평가)",
+              "severity": "medium"
+            },
+            {
+              "title": "주요 인프라",
+              "severity": "low"
+            },
+            {
+              "title": "생체식별",
+              "severity": "low"
+            },
+            {
+              "title": "법 집행",
+              "severity": "low"
+            },
+            {
+              "title": "이주·국경·망명",
+              "severity": "low"
+            },
+            {
+              "title": "사법·민주절차",
+              "severity": "low"
+            }
+          ],
+          "source": "AI Act Annex III / 일반 기업 노출 가능성은 영역별 주체 구성에 따른 정성 평가",
+          "takeaway": "일반 기업의 실질 위험은 채용·평가와 신용 심사 두 곳에 집중."
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "법은 모델을 묻지 않는다. 무엇에 쓰느냐를 묻는다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": {
+        "title": "칼이 아니라 무엇을 자르느냐가 규제다",
+        "body": "부엌 칼은 합법이고 같은 모양의 칼이라도 무기로 휘둘러야 처벌 대상이 된다. EU AI Act 도 마찬가지다. LLM 자체는 도구일 뿐이다. 그 도구를 회의 요약이나 코드 보조에 쓰면 최소위험, 채용 후보 점수 매기기에 쓰면 고위험. 같은 모델 API, 다른 운명."
+      },
+      "fact_grid": [],
+      "dropcap": false
+    },
+    {
+      "heading": "사내 LLM 워크플로우의 결정 트리",
+      "kicker": "분기점 / 3",
+      "prose": "사내 LLM 워크플로우의 분류는 결정 트리 한 장으로 정리된다. 답은 세 단계로 갈린다.\n\n첫째, 그 워크플로우의 출력이 사람에 대한 결정에 영향을 주는가? 회의록 요약, 문서 번역, 코드 자동완성처럼 의사결정의 입력이 아니라 도구 보조에 머물면 보통 최소위험이다. 단순 생산성 도구는 이 가지에서 끝난다.\n\n둘째, 영향을 준다면 그 결정이 Annex III 8개 영역에 해당하는가? 채용 지원자 서류를 LLM 으로 평가하거나, 직원 성과를 LLM 으로 점수 매기거나, 신용 한도·보험 인수 심사에 LLM 출력을 결정 근거로 쓰면 고위험이다.\n\n셋째, 해당하지만 사람이 최종 결정을 보조 받는 수준인가? 법은 '의미 있는 인적 감독' 을 요구한다. 보조라는 명목으로 인간이 사실상 도장만 찍는 구조라면 고위험 의무를 피하기 어렵다. 인적 감독은 형식이 아니라 실질로 평가된다는 점이 deployer 의 첫 함정이다.",
+      "charts": [],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "보조라는 명목으로 인간이 도장만 찍는 구조는 인적 감독으로 인정되지 않는다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [
+        {
+          "label": "D-day 까지",
+          "value": "89일",
+          "sublabel": "2026-08-02 Annex III 적용"
+        },
+        {
+          "label": "고위험 적합성 평가",
+          "value": "€5만~40만",
+          "sublabel": "시스템당 / EU 영향평가 2021"
+        },
+        {
+          "label": "고위험 영역",
+          "value": "8개",
+          "sublabel": "Annex III"
+        },
+        {
+          "label": "GPAI systemic risk 임계",
+          "value": "10^25 FLOPs",
+          "sublabel": "프런티어 모델 다수 상회"
+        },
+        {
+          "label": "AI literacy 의무",
+          "value": "발효 완료",
+          "sublabel": "2026-02-02"
+        },
+        {
+          "label": "AI Act 일반 위반 과징금",
+          "value": "매출 3% / €1500만",
+          "sublabel": "둘 중 큰 금액"
+        }
+      ],
+      "dropcap": false
+    },
+    {
+      "heading": "의무 이행의 현실 비용",
+      "kicker": "비용·과징금 / 4",
+      "prose": "의무는 종이 위 선언이 아니다. 비용과 인력이 따라붙는다.\n\nEU 집행위 영향평가(2021) 는 고위험 시스템당 적합성 평가 비용을 5만~40만 유로로 추산한다. 여기에 연간 운영비가 더해진다. 외부 감사를 받아야 하는 일부 시스템은 비용이 더 오른다. 실제 회사가 부담하는 항목은 다음에 가깝다. 위험관리 시스템 구축, 데이터 거버넌스 문서화, 기술문서 보관, 자동 로깅, 인적 감독 체계, 정확성·강건성·사이버보안 검증, EU 데이터베이스 등록, 사후 시장 모니터링.\n\n위반 시 과징금은 GDPR(개인정보보호 규정) 보다 무겁다. 단, 모든 위반이 동일한 무게로 쓰러뜨리지는 않는다. 금지 AI 위반은 전 세계 매출 7% 또는 3500만 유로 가운데 큰 쪽이다. 고위험·일반 의무 위반은 매출 3% 또는 1500만 유로 가운데 큰 쪽이다. GDPR 의 4% / 2000만 유로 와 나란히 두면 결이 갈린다. 금지 영역 위반은 GDPR 보다 명백히 무겁고, 일반 의무 위반은 GDPR 보다 다소 가볍다. Annex III 의무를 가볍게 보면 안 된다는 신호 자체는 분명하지만, 모든 위반이 곧장 7% 과징금으로 직결되지는 않는다는 점도 같이 봐야 한다.",
+      "charts": [
+        {
+          "type": "bar",
+          "title": "AI Act vs GDPR — 최대 과징금 비교",
+          "subtitle": "금지 영역은 GDPR 보다 무겁고, 일반 위반은 다소 가볍다",
+          "data": [
+            {
+              "label": "AI Act 금지 위반",
+              "value": 7,
+              "note": "전 세계 매출 % 또는 €3500만 (큰 쪽)"
+            },
+            {
+              "label": "GDPR 최대",
+              "value": 4,
+              "note": "전 세계 매출 % 또는 €2000만"
+            },
+            {
+              "label": "AI Act 고위험·일반",
+              "value": 3,
+              "note": "전 세계 매출 % 또는 €1500만"
+            }
+          ],
+          "annotations": [
+            {
+              "kind": "hline",
+              "y": 4,
+              "label": "GDPR 기준선"
+            }
+          ],
+          "source": "Regulation (EU) 2024/1689 Art.99 / GDPR Art.83",
+          "takeaway": "한 줄 요약: 모든 위반이 GDPR 보다 무겁지는 않다. 영역별로 무게가 갈린다."
+        }
+      ],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "GDPR 보다 무거운 것은 금지 영역, 일반 위반은 오히려 가볍다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": false
+    },
+    {
+      "heading": "회색지대 — 봉합되지 않는 세 가지 모순",
+      "kicker": "미해결 / 5",
+      "prose": "법문이 명료해 보여도 운영의 회색지대는 넓다. 이 지점들은 D-day 이후에도 한동안 다툼의 장이 된다.\n\n첫 번째 모순. 사내 LLM 의 분류는 용도 기반이지만, 같은 모델 공급자에는 모델 기반 의무(GPAI 트랙) 가 동시에 걸린다. 회사가 OpenAI·Anthropic 같은 외부 모델을 받아 채용 보조에 쓰면, 회사는 deployer 로서 고위험 의무를 지면서 동시에 모델 자체의 기술문서·저작권 정책 의무는 공급자가 지는 이중 트랙이 된다. 한쪽이 부실하면 다른 쪽이 위험에 노출된다.\n\n두 번째 모순. AI 시스템 정의의 경계가 흐릿하다. 사내에서 LLM 을 부품으로 끼워 넣은 결정 보조 도구는 별도 시스템인가, 기존 HR 시스템의 일부인가? CEN-CENELEC JTC21 이 작성 중인 조화 표준(harmonised standards) 이 2026년 안에 일부 발표될 예정이지만, 실제 분류 다툼은 표준이 굳어진 뒤에 본격화된다.\n\n세 번째 모순. 중소기업·스타트업 감면 조항은 적합성 평가 수수료에는 적용되지만, 의무 자체는 줄지 않는다. 작은 회사가 채용에 LLM 을 쓰면 부담 항목은 동일한데 자원만 적다. 표면상 비례 원칙이지만 실효는 비대칭이다.",
+      "charts": [],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "비례 원칙은 표면, 실효는 비대칭.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": false
+    },
+    {
+      "heading": "다음 90일에 무엇을 볼 것인가",
+      "kicker": "감시 신호 / 6",
+      "prose": "D-day 이전에 확인해야 할 신호는 네 가지로 좁혀진다.\n\n조화 표준 발표가 첫째다. CEN-CENELEC JTC21 이 적합성 평가의 실무 지침을 어떻게 굳히는지가, 사내 LLM 워크플로우를 분류하는 실제 기준을 결정한다. 추상적 법문은 표준 한 줄로 다른 의미가 된다.\n\n각 회원국 통보기관(notified body) 명단 공개가 둘째다. 외부 감사가 필요한 일부 고위험 시스템은 통보기관이 누구이며 비용이 얼마인지가 실질적인 진입 장벽이다.\n\n집행위 위임행위(delegated act) 가 셋째다. AI Act 는 Annex III 영역을 시행 단계에서 추가·삭제할 수 있도록 위임 권한을 둔다. 범용 챗봇의 일부 용도가 추가될지 여부는 정치적 변수다.\n\n마지막은 첫 시범 집행 사례다. 2026년 8월 2일 직후 어느 회원국 감독기관이 어떤 위반을 어떤 강도로 다루는지가, 모든 deployer 에게 실질적인 가이드가 된다. 표면 과징금과 실제 운영 사이의 거리가 그때 비로소 측정된다.",
+      "charts": [],
+      "embedded_charts": [],
+      "embedded_blocks": [],
+      "pull_quote": "표면 과징금과 실제 운영 사이의 거리는 첫 집행 사례에서 비로소 측정된다.",
+      "cited_claim_ids": [],
+      "lede": "",
+      "analogy": null,
+      "fact_grid": [],
+      "dropcap": false
+    }
+  ],
+  "closing": "같은 LLM 이 D-day 89일 뒤 어떤 운명을 맞을지는 모델 사양표가 아니라 워크플로우 명세서가 결정한다. 사내에서 그 명세서 한 장을 먼저 그려두는 회사가 8월 이후의 시간을 산다.",
+  "watch_signals": [
+    {
+      "signal": "CEN-CENELEC JTC21 조화 표준 발표",
+      "description": "Annex III 적합성 평가의 실무 기준 확정",
+      "indicates": "고위험 분류 다툼의 실질 결과 — '시스템 단위' 경계 결정",
+      "deadline": "2026-08-02 이전 일부 예정",
+      "icon": "📐"
+    },
+    {
+      "signal": "회원국별 통보기관(notified body) 명단 공개",
+      "description": "외부 감사가 필요한 시스템에 대해 가능한 기관·비용 가시화",
+      "indicates": "deployer 의 실질 진입 장벽 측정",
+      "deadline": "2026-08-02",
+      "icon": "🏛️"
+    },
+    {
+      "signal": "D-day 직후 첫 시범 집행 사례",
+      "description": "감독기관이 어떤 위반을 어떤 강도로 다루는지",
+      "indicates": "표면 과징금 vs 실제 운영 사이의 거리 보정",
+      "deadline": "2026-Q4",
+      "icon": "⚖️"
+    },
+    {
+      "signal": "집행위 Annex III 위임행위(delegated act)",
+      "description": "고위험 영역 추가·삭제 — 범용 챗봇 일부 용도 포함 여부",
+      "indicates": "단순 생산성 도구가 고위험 가지로 옮겨갈 위험",
+      "icon": "📜"
+    },
+    {
+      "signal": "AI Office GPAI Code of Practice v2",
+      "description": "모델 공급자 가이드 개정 — provider/deployer 책임 분배 명료화",
+      "indicates": "이중 트랙(공급자 의무 vs deployer 의무) 의 경계 재조정",
+      "icon": "📄"
+    }
+  ],
+  "contradictions": [
+    {
+      "side_a": "분류는 용도 기반이다 — 모델은 부품일 뿐이고 사용 맥락이 의무를 결정한다",
+      "side_b": "모델 자체에 GPAI 의무가 별도로 걸린다 — 공급자도 책임의 한 축",
+      "evidence": "deployer 의 고위험 의무(Art.16~26)와 provider 의 GPAI 의무(Art.51~55)가 같은 LLM 위에 동시 부과됨",
+      "resolution": "이중 트랙으로 공존. 회사 입장에선 용도가 자기 책임 범위를 결정하지만, 공급자가 systemic risk 평가나 기술문서 의무를 부실하게 이행하면 deployer 의 적합성 입증 자체가 흔들리므로 완전 분리되지 않는다."
+    },
+    {
+      "side_a": "중소기업 비례 원칙이 살아있다 — 부담은 합리적 수준으로 조정된다",
+      "side_b": "감면은 적합성 평가 수수료에 한정된다 — 의무 자체는 동일",
+      "evidence": "AI Act 의 SME 지원 조항은 수수료·샌드박스 우대에 머물고, 위험관리·로깅·인적 감독 의무 본문은 모든 deployer 에 동일하게 적용",
+      "resolution": "현 시점 조문 구조상 의무 동일·자원 비대칭이 결론. 패배한 입장(실질적 비례)이 살아나려면 회원국별 가이드라인이 SME 의 실제 부담을 어디까지 낮추는지가 변수가 된다."
+    },
+    {
+      "side_a": "프런티어 모델(>10^25 FLOPs) 의 systemic risk 부담은 모델 공급자의 몫이다",
+      "side_b": "deployer 도 사실상 그 부담의 그림자를 진다",
+      "evidence": "Art.51~55 는 의무 주체를 provider 로 명기, 그러나 공급자의 사고·미흡 평가가 deployer 의 사용 가능성·교체 비용을 좌우",
+      "resolution": "직접 의무는 공급자에게 있다. 단 deployer 측면에선 '대체 모델로 교체 가능 여부' 가 사업 연속성의 새로운 변수로 떠오른다 — 책임은 분리되어도 위험은 흘러내린다."
+    }
+  ],
+  "confidence_summary": "1차 출처 5종(Regulation 2024/1689, Commission Implementation Timeline, AI Office GPAI CoP, Impact Assessment SWD(2021)84, ENISA·DPA 가이드)이 일관된 그림을 그린다. 단 조화 표준·첫 집행 사례는 미래 변수라 분류 경계와 실효 강도에는 추가 보정 여지가 남는다.",
+  "confidence_score": 0.82,
+  "embedded_map": null
+}
