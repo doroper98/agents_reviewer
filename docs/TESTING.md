@@ -1,18 +1,22 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v4.5.7
+status: partially_legacy
 ssot_for:
-  - "테스트 전략 (CLI gate, 수동 검증 절차)"
-  - "Quality Gate 단위 테스트 전략 (V3 Step 4)"
+  - "CLI Gate (py_compile) 정책"
+  - "Quality Gate 단위 테스트 (deprecated 모듈 동작 보존 검증)"
   - "테스트 시나리오 카탈로그"
 depends_on:
-  - "src/agents/* (현재 7개 + quality_inspector + synthesis_judge)"
-  - "src/tests/test_quality_gates.py"
+  - "src/agents/* (활성: context_analyst + narrative_composer 2개. 그 외 7개는 v4.0.0 부터 호출 안 됨)"
+  - "src/tests/test_quality_gates.py (deprecated 모듈의 단위 테스트 — 호출되지 않는 5-gate 의 동작 보존 검증 목적)"
   - "docs/CATALOGS.md"
-last_review: 2026-04-26
+last_review: 2026-05-05
+note: "본 문서의 §2 Quality Gates 단위 테스트는 v4.0.0 부터 호출 경로에서 비활성. 단위 테스트 자체는 여전히 실행 가능 (legacy 모듈의 동작 보존 검증). [REFACTOR_V5_PLAN.md Phase 0B](../REFACTOR_V5_PLAN.md) 가 신설할 Golden Prompt 회귀 하네스로 v5 출시 시점에 대체 예정."
 ---
 
 # Event Analysis Team — Testing Strategy
+
+> **현재 baseline (v4.5.7)**: §1 CLI Gate (`py_compile`) 가 핵심. §2 Quality Gates 단위 테스트는 deprecated 모듈의 *동작 보존 검증* 목적으로만 실행되며, v4.5.7 의 실제 호출 경로 (ContextAnalyst → NarrativeComposer) 에 대한 회귀 검증은 [REFACTOR_V5_PLAN.md Phase 0B](../REFACTOR_V5_PLAN.md) 의 Golden Prompt 20건 + 5종 회귀 테스트가 신설될 때 본격 도입된다. §3 Manual Verification 의 "7개 에이전트 모두 출력 생성 확인" 같은 항목은 v3 시대의 표현이며, v4.5.7 에서는 ContextAnalyst + NarrativeComposer 2개 출력만 검증한다.
 
 ## 1. CLI Gate (구문 검사)
 

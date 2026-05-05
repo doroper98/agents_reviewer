@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v4.5.0
+last_synced_with: v4.5.7
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
@@ -9,15 +9,17 @@ depends_on:
   - "docs/STYLEGUIDE.md (코드 컨벤션 SSOT)"
   - "docs/MONO_THEME_GUIDE.md (테마/패턴 SSOT)"
   - "DOCS_GOVERNANCE_V3.md (문서 거버넌스 SSOT)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
 # CLAUDE.md — Event Analysis Team Agent System
 
 ## Project Overview
-텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Sonnet 4.6 + UnifiedComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 + NarrativeComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Tech Stack (v4.2.0)
+> **V5 리팩토링 진행 중.** [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 가 v5.0.0 의 4-Tier 17-Phase 마스터 플랜 SSOT. 현재는 Phase 0 (Baseline + SSOT Repair) 에 진입한 상태이고, v4.5.7 baseline 으로 코드·문서 정합성을 복원하는 작업이 진행된다. 코드는 v4.5.7 그대로 유지된다.
+
+## Tech Stack (v4.5.7)
 - Language: Python 3.11+
 - AI 모델: **claude-opus-4-7** (composer + context, 일관) · claude-sonnet-4-6 (legacy 보존)
 - AI 호출: Claude Code CLI (--dangerously-skip-permissions) 또는 Anthropic API
@@ -31,10 +33,10 @@ last_review: 2026-05-02
 - Hosting: Cloudflare Pages (wrangler CLI 배포)
 - Infra: Oracle Cloud VM (무료 티어)
 
-## Agents (v4.2.0 Tier 4)
+## Agents (v4.5.7 Tier 4)
 실제 호출되는 에이전트는 **2개**:
-1. **ContextAnalyst** (Opus 4.7, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 수집
-2. **UnifiedComposer / NarrativeComposer** (Opus 4.7, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 작성 + 차트 / 지도 데이터 emit
+1. **ContextAnalyst** (Opus 4.7, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 수집. mode 별 max_tokens (fast 4K / standard 4K / deep 10K, v4.5.7).
+2. **NarrativeComposer** (Opus 4.7, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 작성 + 차트 / 지도 데이터 emit. mode 별 max_tokens (fast 12K / standard 20K / deep 32K, v4.5.4 의 `MAX_TOKENS_BY_MODE`).
 
 > legacy 7-agent (PlayerAnalyst, DynamicsAnalyst, ChainReactionAnalyst, ScenarioArchitect, SynthesisJudge, QualityInspector, VisualAnalyst) + 11-lens pool + 11-archetype matrix 는 **v4.0.0 부터 호출 안 함**. 모듈은 보존 (cleanup commit 미정).
 
@@ -51,7 +53,7 @@ last_review: 2026-05-02
 - [CHANGELOG.md](CHANGELOG.md) — 사용자 관점 릴리스 노트
 - [DOCS_GOVERNANCE_V3.md](DOCS_GOVERNANCE_V3.md) — 문서 거버넌스 (3-tier, SSOT 매트릭스)
 
-## 차트·지도 제작 기준 (v4.2.0)
+## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid).
 - **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6).
@@ -97,6 +99,9 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | 의존성 추가 (`requirements.txt`) | [DEVLOG.md](DEVLOG.md), [README.md](README.md) Quick Start |
 | 워크플로우 변경 | [WORKFLOWS.md](WORKFLOWS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | 인프라 변경 (Cloudflare/VM) | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [DEVLOG.md](DEVLOG.md) |
+| `docs/CHART_RENDERING_ANTIPATTERNS.md` 새 항목 추가 | [CLAUDE.md `Anti-Patterns (차트 렌더링)`](CLAUDE.md), [CHANGELOG.md](CHANGELOG.md) 의 해당 버전 entry |
+| `docs/REPORT_WRITING_ANTIPATTERNS.md` 새 항목 추가 | [CLAUDE.md `Anti-Patterns (보고서 본문 작성)`](CLAUDE.md), [CHANGELOG.md](CHANGELOG.md) |
+| V5 Phase 진입/완료 ([REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md)) | [CHANGELOG.md](CHANGELOG.md), 신규 SSOT 문서 (Phase 1A 의 `docs/RESEARCH_DIRECTOR_METHODS.md`, Phase 2B 의 `docs/VISUAL_CAPABILITY_REGISTRY.yaml`, Phase 7 의 `docs/DESK_VISUAL_RUBRIC.md`, Phase 8 의 `docs/STRATEGIC_MODE_PROMPT.md`), 영향받은 모든 문서 헤더의 `last_synced_with` |
 
 ## Anti-Patterns (문서)
 [DOCS_GOVERNANCE_V3.md §9](DOCS_GOVERNANCE_V3.md) Anti-patterns 1~10 절대 위반 금지. 핵심:
@@ -105,13 +110,14 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.4 확장)
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.7 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). 13개 패턴 누적:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **14개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
 - CHART-AP-13: Gantt 차트 시간축 누락 + 행 라벨/note 충돌 (v4.5.4 신설)
+- CHART-AP-14: 보고서와 무관한 지리 annotation 무조건 렌더 (v4.5.7 신설 — Somaliland viewport gating)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
@@ -123,14 +129,14 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 
-## Key Directories (v4.2.0 — 호출되는 것만)
+## Key Directories (v4.5.7 — 호출되는 것만)
 - `src/agents/` — 살아있는 에이전트 2개 (`context_analyst.py`, `narrative_composer.py`). 나머지 7개 파일은 보존하되 호출 안 됨.
 - `src/templates/archetypes/freeform_essay.html` — 유일하게 사용되는 보고서 템플릿
-- `src/templates/report.css` — mono 2테마 (burgundy_mono + light_mono) 정의 SSOT
+- `src/templates/report.css` — mono 3테마 (editorial_cream + burgundy_mono + light_mono) 정의 SSOT (v4.5.0 부터 editorial_cream 디폴트, burgundy_mono 위기·분쟁 한정)
 - `src/templates/static/` — d3.v7.min.js / charts.js / maps.js / charts.css / maps.css (보고서 dir 로 동기화)
 - `src/orchestrator.py` — 4단계 (context → composer → render → watchlist) 진입점, `VERSION` SSOT
 - `src/models.py` — Pydantic 데이터 모델 SSOT (`ComposedReport.charts` / `embedded_map` 포함)
-- `src/token_budget.py` — mode 별 정책. v4.2.0 에선 모든 모드 동일하게 2 LLM 호출. mode 는 composer prompt 깊이 지시만 결정
+- `src/token_budget.py` — mode 별 정책. v4.5.7 에선 모든 모드 동일하게 2 LLM 호출. mode 는 composer prompt 깊이 지시 + composer/context max_tokens 한도 (v4.5.4/v4.5.7) 결정
 - `src/lens_policy.py` — `select_theme(category)` 로 mono 2종 중 결정. `select_lenses()` 는 호출 안 됨
 - `src/telemetry.py` — LLM 호출 / 단계별 elapsed 기록
 - `src/watchlist/` — SQLite Watchlist Registry (composed_report.watch_signals 에서 등록)
@@ -146,20 +152,21 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `src/templates/{report.html,report_block.html}` (legacy archetype 용)
 - `src/templates/blocks/` 17종 — composer 가 `embedded_blocks` 로 명시 시만 사용 (현재 실질 미사용)
 
-## Chart System (v4.2.0)
+## Chart System (v4.5.7)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
 - 8종 type: bar / donut / line / gantt / network / stacked / bubble / heatmap (mono guide §5).
 - 각 차트는 `ComposedSection.charts: list[dict]` 의 dict 1개 — `{type, title, data, note?}`.
 - 렌더링: `freeform_essay.html` 이 chart-card SVG + inline JSON payload emit → `charts.js` 가 스캔/렌더 (mono guide §4 패턴 자동 적용).
 - 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ samples 갱신 ④ 테스트.
 
-## Map System (v4.2.0)
+## Map System (v4.5.7)
 - composer 가 `ComposedReport.embedded_map` 에 보고서당 1개 emit (지리적 사건일 때만).
 - 베이스맵: d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl 의존 폐기.
 - 렌더링: `maps.js` 가 `#freeform-map` 컨테이너 + `#map-payload` 스크립트 읽어 SVG 그림.
 - mono guide §2.2: 외부 타일 서비스 / 글리프 PBF 호출 금지. world-atlas 한 번 fetch (~100KB) 후 캐시.
+- v4.5.7 — Somaliland (de facto) 폴리곤·legend 는 `path.bounds()` viewport 교집합 통과 시에만 렌더 (CHART-AP-14). 무관한 지리 annotation 의 무조건 렌더 차단.
 
-## Mode Routing (v4.2.0)
+## Mode Routing (v4.5.7)
 - 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard.
 - Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
-- v4.0.0 부터 모든 모드 LLM 호출 **2회** 동일 (context + composer). mode 는 composer prompt 의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) 만 결정.
+- v4.0.0 부터 모든 모드 LLM 호출 **2회** 동일 (context + composer). mode 는 composer prompt 의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) + max_tokens 한도 (v4.5.4: composer fast 12K / standard 20K / deep 32K, v4.5.7: context fast/standard 4K / deep 10K) 결정.

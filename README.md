@@ -1,24 +1,26 @@
 ---
 tier: 1
-last_synced_with: v4.5.0
+last_synced_with: v4.5.7
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "CHANGELOG.md"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-03
+last_review: 2026-05-05
 ---
 
 # Event Analysis Team — AI Agent System
 
-텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → UnifiedComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템.
+텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → NarrativeComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템.
 
 ## Status
-- Version: **v4.5.0** (SSOT: `src/orchestrator.py:VERSION`) — **editorial 인터랙션 패턴** (평어체, 비유박스, fact-grid, dropcap, TOC) + Newsreader/IBM Plex 폰트. 신규 디폴트 테마 `editorial_cream` (cream + terracotta), `burgundy_mono` 는 위기·분쟁 한정 (어둡게 보정). v4.4.x 의 d3 차트/지도 + zoom + 소말릴란드 해칭 + 모든 raw text `strip_md` 일관 적용.
+- Version: **v4.5.7** (SSOT: `src/orchestrator.py:VERSION`) — ContextAnalyst max_tokens deep 모드 4K → 10K, Somaliland viewport gating (CHART-AP-14 신설). v4.5.x 누적 — **editorial 인터랙션 패턴** (평어체, 비유박스, fact-grid, dropcap, TOC) + Newsreader/IBM Plex 폰트, mode 별 composer max_tokens 분기 (fast 12K / standard 20K / deep 32K), 보고서 상단 `system_version` + `revision` 추적성, chart-card 테마 귀속 (CHART-AP-11), bubble 스케일 자동 감지 (CHART-AP-12), Gantt 시간축 (CHART-AP-13).
+- **V5 리팩토링 진행 중** — [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 의 Phase 0 (Baseline + SSOT Repair) 단계. 4-Tier 17-Phase 로 v4.5.7 의 14개 잔존 결함을 외과적으로 수술한다.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
 - Tier 3 docs: [WORKFLOWS](WORKFLOWS.md) · [DEVLOG](DEVLOG.md) · [CHANGELOG](CHANGELOG.md)
+- V5: [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) — V5 마스터 플랜 (proposal). v3 시대 SSOT 는 [docs/legacy/](docs/legacy/) 로 이전됨.
 
 ## Quick Start
 ```bash
@@ -29,12 +31,12 @@ cp .env.example .env  # 환경변수 입력
 python -m src.main
 ```
 
-## What This Does (v4.2.0 Tier 4)
+## What This Does (v4.5.7 Tier 4)
 - 텔레그램 봇이 사건 한 줄 메시지를 받음. `짧게/간략/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard 모드 자동 결정.
-- **2-call 파이프라인**: ContextAnalyst (Sonnet 4.6, 웹 검색) 가 사실/타임라인/출처 수집 → UnifiedComposer (Opus 4.7) 가 *단일 호출* 로 행위자/구조/시나리오/모순 분석 + 보고서 본문 작성 + 감시 신호 추출 + 차트 데이터 + 지도 데이터까지 모두 emit.
-- mode 는 composer 프롬프트의 분석 깊이 지시 (fast 3~4 섹션 / standard 4~6 / deep 5~7 + 모순 명시 필수) 에만 영향. LLM 호출 수는 모든 모드 2회 동일.
-- 보고서: `freeform_essay.html` 단일 템플릿. composer 의 `ComposedReport` (headline / sections / charts / map / watch_signals / contradictions / confidence) 를 mono 테마 (burgundy_mono / light_mono) 로 렌더 → Cloudflare Pages 배포.
-- 차트 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap) 은 composer 가 데이터까지 직접 emit, charts.js 가 mono guide §4 패턴으로 SVG 렌더. 지도는 d3 + d3-geo + TopoJSON (maplibre 폐기).
+- **2-call 파이프라인**: ContextAnalyst (Opus 4.7, 웹 검색, deep 모드 max_tokens 10K) 가 사실/타임라인/출처 수집 → NarrativeComposer (Opus 4.7, mode 별 max_tokens 12K/20K/32K) 가 *단일 호출* 로 행위자/구조/시나리오/모순 분석 + 보고서 본문 작성 + 감시 신호 추출 + 차트 데이터 + 지도 데이터까지 모두 emit.
+- mode 는 composer 프롬프트의 분석 깊이 지시 (fast 3~4 섹션 / standard 4~6 / deep 5~7 + 모순 명시 필수) 와 max_tokens 한도에 영향. LLM 호출 수는 모든 모드 2회 동일.
+- 보고서: `freeform_essay.html` 단일 템플릿. composer 의 `ComposedReport` (headline / sections / charts / map / watch_signals / contradictions / confidence) 를 mono 테마 (editorial_cream 디폴트 / burgundy_mono 위기·분쟁 한정) 로 렌더 → Cloudflare Pages 배포. 보고서 상단 hero 영역에 `system_version + revision` 추적 정보 표시.
+- 차트 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap) 은 composer 가 데이터까지 직접 emit, charts.js 가 mono guide §4 패턴으로 SVG 렌더. 지도는 d3 + d3-geo + TopoJSON (maplibre 폐기). 무관한 지리 annotation (Somaliland 등) 은 viewport 교집합 검사 후 gate (CHART-AP-14).
 - 감시 신호는 SQLite Watchlist Registry 에 등록 → `/watchlist`, `/fire` 명령으로 후속 추적.
 
 > v3.x 의 7-agent + 11-lens + 11-archetype + 5-게이트 멀티 파이프라인은 **v4.0.0 부터 호출되지 않음**. 코드는 보존 (향후 cleanup commit 에서 제거 예정).
@@ -42,7 +44,14 @@ python -m src.main
 자세한 시스템 흐름은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), 에이전트·렌즈·archetype 카탈로그는 [docs/CATALOGS.md](docs/CATALOGS.md).
 
 ## Recent Changes
-최신 7건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+최신 9건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+- **v4.5.7** ContextAnalyst max_tokens deep 모드 4K → 10K. Somaliland (de facto) 폴리곤·legend viewport 교집합 검사 후 gate. CHART-AP-14 신설.
+- **v4.5.6** hero eyebrow `Analysis Team v4.5.5 · Rev 0` 형식. revision 0 도 항상 표기.
+- **v4.5.5** 보고서 상단에 `system_version + revision` 추적성 노출 (`FullAnalysisResult.system_version`, `revision`). patch_report.py mutate 시 revision +1.
+- **v4.5.4** drawGantt 시간축 자동 추가 + note placement 막대 폭 분기 (CHART-AP-13). composer max_tokens mode 별 분기 (fast 12K / standard 20K / deep 32K). WRITE-AP-8 (max_tokens 절단) 신설.
+- **v4.5.3** chart-card 배경 `var(--card)` 로 테마 귀속 + 각 테마 `--card-deep` 정의 (CHART-AP-11). drawBubble 스케일 `d3.extent` 자동 감지 (CHART-AP-12).
+- **v4.5.2** fact-grid 항상 한 줄 (`data-cols` 강제). VERSION bump 누락분 (v4.5.0 → v4.5.2) 동기화.
+- **v4.5.1** fact-grid 모바일 1 col stack — 홀수 타일 어색 wrap 차단 (v4.5.2 에서 정책 반전).
 - **v4.5.0** Editorial 인터랙션 패턴 + Newsreader/IBM Plex 폰트 (LG 벤치마크 차용). 신규 디폴트 테마 `editorial_cream`, `burgundy_mono` 어둡게 + 위기/분쟁 한정. composer 평어체 (~다) + 신규 4 필드 (lede / analogy / fact_grid / dropcap) + 자동 TOC. WRITE-AP-7 (서수/식별번호 혼용) 추가.
 - **v4.4.7** patch_report.py `--deck`/`--headline`/`--closing`/`--confidence-summary` 추가. WRITE-AP-1 회귀 fix (모든 raw text 필드에 `strip_md` filter 일괄 적용). WRITE-AP-7 신설.
 - **v4.4.6** 지도 상단 배치 + d3.zoom() 인터랙션 + 소말릴란드 해칭 폴리곤. WRITE-AP-3 (지도 후행 배치) 회귀 fix.

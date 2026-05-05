@@ -1,11 +1,11 @@
 ---
 tier: 1
-last_synced_with: v3.0.0
+last_synced_with: v4.5.7
 ssot_for:
   - "코드 컨벤션 (Python/네이밍/import/금지 패턴)"
   - "커밋 메시지 형식"
 depends_on: []
-last_review: 2026-04-26
+last_review: 2026-05-05
 ---
 
 # Event Analysis Team — Style Guide

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.2.0
+last_synced_with: v4.5.7
 ssot_for:
   - "에이전트 카탈로그 (mirror of src/agents/*)"
   - "Mode 별 정책 (mirror of src/token_budget.py)"
@@ -8,12 +8,13 @@ ssot_for:
 depends_on:
   - "src/agents/{context_analyst, narrative_composer}.py (살아있는 2개)"
   - "src/token_budget.py (mode 정책 SSOT)"
+  - "src/agents/narrative_composer.py:MAX_TOKENS_BY_MODE (v4.5.4)"
   - "src/lens_policy.py:select_theme (테마 결정)"
   - "src/templates/static/charts.js (d3 렌더 SSOT)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
-# Catalogs — Agents · Charts · Maps (v4.2.0)
+# Catalogs — Agents · Charts · Maps (v4.5.7)
 
 > 본 문서는 **카탈로그 미러**다. 정의는 코드에서만, 문서는 사람이 읽기 쉬운 형태로 동기화한 사본일 뿐이다.
 >

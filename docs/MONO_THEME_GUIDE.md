@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.5.0
+last_synced_with: v4.5.7
 ssot_for:
   - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
@@ -11,9 +11,9 @@ depends_on:
   - "samples/chart_map_mono_compare.html"
   - ".github/workflows/pages.yml"
   - "docs/REPORT_STYLE_GUIDE.md"
-  - "src/templates/report.css (테마 토큰 SSOT)"
+  - "src/templates/report.css (테마 토큰 SSOT — v4.5.3 부터 --card-deep 정의 추가)"
   - "src/lens_policy.py:_THEME_BY_CATEGORY"
-last_review: 2026-05-03
+last_review: 2026-05-05
 ---
 
 # Theme Guide — Editorial Cream · Burgundy Mono · Light Mono

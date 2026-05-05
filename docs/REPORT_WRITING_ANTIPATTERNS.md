@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.4.4
+last_synced_with: v4.5.7
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -8,7 +8,7 @@ depends_on:
   - "src/agents/context_analyst.py:SYSTEM_PROMPT (recommended_persona 가이드)"
   - "src/agents/report_synthesizer.py:_format_structured_text (fallback 변환)"
   - "docs/CHART_RENDERING_ANTIPATTERNS.md (코드/렌더링 anti-pattern 별도)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
 # Report Writing Anti-Patterns

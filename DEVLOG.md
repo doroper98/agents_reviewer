@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v4.2.0
+last_synced_with: v4.5.7
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -8,7 +8,7 @@ ssot_for:
 depends_on:
   - "GOAL.md (REQ-* 변경 추적)"
   - "CHANGELOG.md (사용자 관점 변경은 그쪽 SSOT)"
-last_review: 2026-05-02
+last_review: 2026-05-05
 ---
 
 # DEVLOG — Event Analysis Team Agent System

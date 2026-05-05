@@ -1,10 +1,11 @@
 ---
 tier: 1
-last_synced_with: v3.2.0
+last_synced_with: v4.5.7
 ssot_for:
   - "문서 거버넌스 규칙 (3-Tier, SSOT 매트릭스, 헤더 규약, Change Propagation)"
 depends_on: []
-last_review: 2026-04-30
+last_review: 2026-05-05
+note: "이름은 V3 brand 이지만 v4.5.7 도 본 거버넌스를 SSOT 로 사용. V5 정식 출시 시점에 V5 거버넌스로 갱신 검토."
 ---
 
 # Agents Reviewer — Document Governance V3

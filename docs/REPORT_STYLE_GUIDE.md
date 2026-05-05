@@ -1,12 +1,14 @@
 ---
 tier: 2
-last_synced_with: v3.0.0
+last_synced_with: v4.5.7
 ssot_for:
   - "보고서 톤앤매너 스타일 가이드 (abhinavbwj 기반)"
 depends_on:
   - "src/templates/report.css"
-  - "src/templates/report.html"
-last_review: 2026-04-26
+  - "src/templates/archetypes/freeform_essay.html (v4.5.7 단일 활성 템플릿)"
+  - "docs/MONO_THEME_GUIDE.md (v4.5.0 부터 editorial_cream 디폴트)"
+last_review: 2026-05-05
+note: "v4.5.0 부터 editorial 컴포넌트 (lede / analogy / fact_grid / dropcap) 가 도입되어 본 가이드의 보고서 구조 일부가 superseded. 현재 활성 보고서 구조는 ComposedSection (v4.5.0) + freeform_essay.html 이 SSOT."
 ---
 
 # Report Style Guide — abhinavbwj 톤앤매너 기반

@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v4.5.0
+last_synced_with: v4.5.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-03
+last_review: 2026-05-05
 ---
 
 # Changelog
@@ -21,6 +21,107 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 ---
 
 ## [Unreleased]
+
+V5 리팩토링 (REFACTOR_V5_PLAN.md) 진행 중. Phase 0 (Baseline + SSOT Repair) 에서 v4.5.7 baseline 으로 문서 정합성을 복원했다. 코드 변경 없음 (orchestrator VERSION 은 이미 v4.5.7).
+
+---
+
+### v4.5.7 — ContextAnalyst max_tokens deep 모드 4K → 10K + Somaliland viewport gating
+
+#### Changed
+- `src/agents/base.py` — `BaseAgent._max_tokens_override` 지원. subclass 가 mode 별로 override 가능.
+- `src/agents/context_analyst.py` — `request.mode` 별 max_tokens 분기. fast / standard 4096 유지, deep 4096 → 10000. deep 사건의 사실/타임라인/출처 다수 시 4K 부족 회귀 차단.
+
+#### Fixed
+- `src/templates/static/maps.js` — Somaliland (de facto) 해칭 폴리곤과 'de facto' legend 항목이 모든 보고서에 무조건 렌더되던 회귀. `path.bounds(SOMALILAND_GEOJSON)` 로 projection 적용 후 viewport 와 교집합 검사. 호르무즈·동북아 같은 무관 보고서에서 polygon + legend 모두 skip.
+- 사용자 회귀 (호르무즈 / 위안화 통행세 보고서에 'Somaliland (de facto)' legend 노출) 차단.
+
+#### Added
+- **CHART-AP-14** — "보고서와 무관한 지리 annotation 무조건 렌더" anti-pattern 신설 (CHART_RENDERING_ANTIPATTERNS.md). `path.bounds()` 로 viewport 교집합 검사 후 render gating 의무화.
+
+> 주의: 24ba563 commit 메시지는 이 항목을 'CHART-AP-13' 으로 표기했지만, v4.5.4 에서 이미 CHART-AP-13 (Gantt 시간축) 이 부여되어 번호 충돌. REFACTOR_V5_PLAN.md §3.7 의 정본에 맞춰 CHART-AP-14 로 정정한다.
+
+---
+
+### v4.5.6 — 'Analysis Team' 접두 + Rev 0 항상 표기
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` hero eyebrow — `v4.5.5` → `Analysis Team v4.5.5 · Rev 0`. `Rev 0` 도 항상 표기 (이전엔 0 숨김). 사용자 요구 "애너리시스 팀 v4.5.5" 식 명시적 레이블.
+
+---
+
+### v4.5.5 — system_version + revision 추적성 (보고서 상단 노출)
+
+#### Added
+- `FullAnalysisResult.system_version: str` — 생성 시점 `src/orchestrator.py:VERSION` 기록. 재렌더 시엔 *재렌더 시점* 버전으로 갱신 (CSS/JS 가 그 버전 따름).
+- `FullAnalysisResult.revision: int = 0` — 최초 생성 0, `patch_report.py` 수정 시 +1.
+- `freeform_essay.html` hero eyebrow — `EVENT ANALYSIS · COMPOSED · v4.5.5 · Rev 2` 형식. revision 0 면 'Rev 0' 안 표시 (v4.5.6 에서 정책 변경 — 항상 표시).
+- `.freeform-version` 토큰 — IBM Plex Mono, muted 색.
+
+#### Changed
+- `src/agents/report_synthesizer.py:synthesize()` — 매 렌더 (신규/재렌더 모두) 시 `result.system_version` 갱신. 재렌더만 한 경우엔 system_version 만 바뀌고 revision 그대로 (데이터 변경 X).
+- `scripts/patch_report.py` — mutated 또는 `--edit` 인 경우 `result.revision += 1` 후 저장. `--rerender-only` 는 데이터 변경 없으니 revision 안 올림.
+
+#### 배경
+사용자 피드백 (20260503_164450) — 보고서가 477초 걸린 후 'composer 호출 실패. 사실 자료만 표시' 폴백으로 종료. 어떤 코드 버전에서 만들어졌는지, 이후 패치됐는지가 보고서 자체에 안 보여 진단·재발 추적 어려움.
+
+---
+
+### v4.5.4 — drawGantt 시간축 + note placement fix + composer max_tokens mode 별 분기
+
+#### Added
+- `narrative_composer.MAX_TOKENS_BY_MODE` — fast 12K / standard 20K / deep 32K. `_call_api(user_message, mode)` 에 mode 인자 추가.
+- **CHART-AP-13** — "Gantt 차트 시간축 누락 + 행 라벨/note 충돌" anti-pattern 신설.
+- **WRITE-AP-8** — "max_tokens 한도로 보고서 본문 중간 절단" anti-pattern 신설.
+
+#### Changed
+- `charts.js:drawGantt` 전면 보강 — `d3.axisBottom` 풍 시간축 자동 추가 (tick + label + grid). `parseTime()` 입력 정규화 (numeric / 'YYYY' / 'YYYY-MM' 모두 지원). `start === end` 면 0.4 단위 폭 부여. 막대 최소 폭 2 → 6px. note placement 분기 — 막대 폭 ≥ 60px 면 *내부* 흰글자, 아니면 *외부 우측*. 행 라벨 truncate 22 → 25자.
+- `narrative_composer` 단일 `MAX_TOKENS = 8192` → `MAX_TOKENS_BY_MODE` (default fallback 32000).
+
+#### Fixed
+- WRITE-AP-8 회귀 — composer 의 단일 MAX_TOKENS=8192 가 deep 모드 (5~7 섹션 + 시나리오 + 모순 + 차트/지도 emit) 에서 부족해 응답 *중간 절단*. mode 별 분기로 차단.
+- 자율주행 일정 비교 gantt 차트의 의미 불명 회귀 (사용자 피드백 20260503_142254).
+
+---
+
+### v4.5.3 — chart-card 테마 귀속 + bubble 스케일 자동 감지 (CHART-AP-11/12)
+
+#### Added
+- 각 테마 블록에 `--card-deep` CSS 변수 정의 — editorial_cream `#E5DBC4`, burgundy_mono `#1A0810`, light_mono `#dccea8`.
+- **CHART-AP-11** — "차트 카드 배경이 하드코딩 fallback (테마 미반영)" anti-pattern 신설.
+- **CHART-AP-12** — "버블 차트 스케일 고정 — 데이터가 frame 밖으로" anti-pattern 신설.
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` `.freeform-chart-wrap .chart-card` 배경 — `rgba(0,0,0,0.18)` → `var(--card, var(--bg-2))`. 테마 따라감.
+- `charts.js:drawBubble` — `d3.scaleLinear().domain([0,1])` 고정 → `d3.extent` 자동 감지. 0 포함 + 5% padding + size 정규화 (sMax 기반). composer 가 0~1 / 0~5 / 0~100 어느 범위로 emit 해도 정상 표시.
+
+#### Fixed
+- editorial_cream 디폴트 (v4.5.0) 채택 후 즉시 노출된 회귀 — 모든 차트 카드가 dark wine 박스로 표시되어 글자 가독성 0. `--card-deep` 변수 미정의로 CSS variable resolution fallback `#321F1F` 가 항상 적용된 결함.
+- 시나리오 확률×영향 버블 차트의 빈 frame 회귀 — composer 가 0~5 또는 0~100 범위로 emit 시 모든 bubble 이 frame 밖으로 나가 안 보이던 문제.
+
+---
+
+### v4.5.2 — fact-grid 항상 한 줄 (data-cols 강제) + VERSION bump 동기화
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` fact-grid CSS — 미디어 쿼리 폐기. `data-cols` 값 그대로 cols 적용. 2/3/4/5/6 모두 한 줄에 강제. wrap 가능성 자체 제거.
+- 좁은 폭 (≤ 640px) 가독성 — tile padding 14px/16px → 10px/8px, label font 10.5px → 9px, value font 22px → 15px (`word-break: keep-all`), sublabel font 11px → 10px. 5/6 cols 추가 축소.
+- `src/orchestrator.py:VERSION` — v4.5.0 → v4.5.2 (v4.5.1 / v4.5.2 commit 시 VERSION bump 누락분 동기화).
+
+#### 사용자 피드백
+v4.5.1 의 mobile 1-col stack 이 사용자 의도와 반대 ("한 줄에 보이는 게 더 좋아"). 정책 반전.
+
+---
+
+### v4.5.1 — fact-grid 모바일 1 col stack — 홀수 타일 어색 wrap 차단
+
+#### Changed
+- `src/templates/archetypes/freeform_essay.html` fact-grid — mobile (< 720px) 모든 count 1 col stack. desktop (≥ 720px) count 별 분기 유지 (2/3/4/5/6 한 줄). `data-cols="2"` 추가.
+
+#### 비고
+v4.5.2 에서 정책 반전됨 (사용자 피드백 따라 모바일도 한 줄 강제). v4.5.1 은 short-lived intermediate state.
+
+---
 
 ### v4.5.0 — Editorial Interaction Patterns + Newsreader/IBM Plex Fonts (LG 벤치마크 차용)
 
