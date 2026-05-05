@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from pydantic import model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -26,7 +26,10 @@ class Config(BaseSettings):
     # 를 호출해 AnalysisBrief 를 emit. 꺼져 있으면 design_via_heuristics 의
     # 결정적 fallback 만 사용 (LLM 0). v4.5.7 호출 경로의 byte-equal 보존을 위해
     # 디폴트 OFF. env: V5_RESEARCH_DIRECTOR=1 또는 .env 의 enable_research_director=true.
-    enable_research_director: bool = False
+    enable_research_director: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V5_RESEARCH_DIRECTOR", "ENABLE_RESEARCH_DIRECTOR", "enable_research_director"),
+    )
 
     # V5 Phase 2 — VisualPlanner opt-in.
     # 켜져 있으면 Editor (Phase 1) 또는 composer 직후에 VisualPlanner 를 호출해
@@ -34,26 +37,38 @@ class Config(BaseSettings):
     # 가 v4.5.7 의 ComposedSection.charts 를 그대로 통과 (단 EvidenceDataset
     # Guard 는 적용 — Phase 2A). 디폴트 OFF — v4.5.7 byte-equal 보존.
     # env: V5_VISUAL_PLANNER=1.
-    enable_visual_planner: bool = False
+    enable_visual_planner: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V5_VISUAL_PLANNER", "ENABLE_VISUAL_PLANNER", "enable_visual_planner"),
+    )
 
     # V5 Phase 7 — DeskEditor opt-in.
     # 켜져 있으면 Phase 7A (Deterministic Gate) 통과 후 DeskEditor (Opus 4.7
     # vision) 가 publish/hold/KILL 판정. 꺼져 있으면 v4.5.7 의 minimal fallback
     # 정책 그대로 ("어떻게든 발행"). 디폴트 OFF.
     # env: V5_DESK_EDITOR=1.
-    enable_desk_editor: bool = False
+    enable_desk_editor: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V5_DESK_EDITOR", "ENABLE_DESK_EDITOR", "enable_desk_editor"),
+    )
 
     # V5 Phase 1 — Editor Pass opt-in.
     # 켜져 있으면 Composer (drafting) 직후 Editor (Opus 4.7) 가 7-rubric 으로
     # 비평·재집필. 꺼져 있으면 composer DraftReport 그대로 사용 (v4.5.7 byte-
     # equal). 디폴트 OFF. env: V5_EDITOR_PASS=1.
-    enable_editor_pass: bool = False
+    enable_editor_pass: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V5_EDITOR_PASS", "V5_EDITOR", "ENABLE_EDITOR_PASS", "enable_editor_pass"),
+    )
 
     # V5 Phase 3 — Layout Typesetter opt-in.
     # 켜져 있으면 Editor 후 단계로 LayoutTypesetter (Sonnet 4.6) 가 9종 layout
     # primitive 중 섹션별로 결정. 꺼져 있으면 모든 섹션 'standard' (v4.5.7
     # byte-equal). 디폴트 OFF. env: V5_LAYOUT_TYPESETTER=1.
-    enable_layout_typesetter: bool = False
+    enable_layout_typesetter: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V5_LAYOUT_TYPESETTER", "ENABLE_LAYOUT_TYPESETTER", "enable_layout_typesetter"),
+    )
 
     model_config = {
         "env_file": ".env",
