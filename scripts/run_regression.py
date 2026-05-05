@@ -73,6 +73,8 @@ _TEST_MODULES = {
     "priority":     "tests.regression.test_exhibit_priority",
     # V5 Phase 7A — Deterministic Publish Gate (Plan §15 / AP-V5-29).
     "detgate":      "tests.regression.test_deterministic_gate",
+    # V5 Phase 7 — Desk Editor (Plan §16 / AP-V5-11/12/13/14/15/16).
+    "desk":         "tests.regression.test_desk_editor",
 }
 
 
@@ -80,12 +82,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="V5 Phase 0B regression runner")
     parser.add_argument(
         "--tests",
-        default="golden,director,dataset,phase2vega,registry,chartgate,priority,detgate,visual,semantic,cost,completeness",
+        default="golden,director,dataset,phase2vega,registry,chartgate,priority,detgate,desk,visual,semantic,cost,completeness",
         help=(
             "콤마 구분 테스트 목록. 기본: 5종 + V5 Phase 1A (director) + "
             "V5 Phase 2A (dataset) + V5 Phase 2 (phase2vega) + "
             "V5 Phase 2B (registry) + V5 Phase 6 (chartgate) + "
-            "V5 Phase 6A (priority) + V5 Phase 7A (detgate) 12종 모두."
+            "V5 Phase 6A (priority) + V5 Phase 7A (detgate) + "
+            "V5 Phase 7 (desk) 13종 모두."
         ),
     )
     parser.add_argument(

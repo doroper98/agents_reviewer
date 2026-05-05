@@ -36,6 +36,13 @@ class Config(BaseSettings):
     # env: V5_VISUAL_PLANNER=1.
     enable_visual_planner: bool = False
 
+    # V5 Phase 7 — DeskEditor opt-in.
+    # 켜져 있으면 Phase 7A (Deterministic Gate) 통과 후 DeskEditor (Opus 4.7
+    # vision) 가 publish/hold/KILL 판정. 꺼져 있으면 v4.5.7 의 minimal fallback
+    # 정책 그대로 ("어떻게든 발행"). 디폴트 OFF.
+    # env: V5_DESK_EDITOR=1.
+    enable_desk_editor: bool = False
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
