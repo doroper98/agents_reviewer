@@ -177,6 +177,201 @@
   --border-soft: rgba(179,165,134,0.4);
 }
 
+/* ================================================================
+   v5.0.2 — 5개 신규 테마 (총 7종 중 5종 추가, 사용자 요청)
+   원칙: mono guide §3.3 단일 액센트. 가독성 우선. 카테고리 무관 랜덤.
+   ================================================================ */
+
+/* --- Slate Steel (cool gray + steel blue) — 금융·거시 톤 */
+[data-theme="slate_steel"] {
+  --bg: #E5E9F0;
+  --card: #EEF1F6;
+  --card-hover: #DDE3EC;
+  --accent-surface: #EEF1F6;
+  --border: #C4CCDA;
+  --border-light: #D8DEE8;
+  --divider: #C4CCDA;
+
+  --text: #1A2438;
+  --muted: #5A6478;
+
+  --accent: #2962A0;
+  --up: #2D6B5F;
+  --down: #B84A3F;
+
+  --map-land: #E5E9F0;
+  --map-water: #D2D9E4;
+  --map-boundary: #1A2438;
+  --map-graticule: #C4CCDA;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: #2A3148;
+  --text-muted: var(--muted); --text-faded: #7A839A;
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #DDE3EC;
+  --card-deep: #DDE3EC;
+  --fg-1: var(--text); --fg-2: #2A3148; --fg-3: var(--muted);
+  --border-soft: rgba(196,204,218,0.55);
+}
+
+/* --- Forest Sage (sage paper + forest green) — 산업·환경 톤 */
+[data-theme="forest_sage"] {
+  --bg: #E8EDE5;
+  --card: #F0F4ED;
+  --card-hover: #DEE5DA;
+  --accent-surface: #F0F4ED;
+  --border: #BCC8B6;
+  --border-light: #D1D9CC;
+  --divider: #BCC8B6;
+
+  --text: #1F2A24;
+  --muted: #5C6E60;
+
+  --accent: #4A7C5B;
+  --up: #3D6B4D;
+  --down: #A8584A;
+
+  --map-land: #E8EDE5;
+  --map-water: #D6DECE;
+  --map-boundary: #1F2A24;
+  --map-graticule: #BCC8B6;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: #2D3A30;
+  --text-muted: var(--muted); --text-faded: #7C8A78;
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--muted); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #DEE5DA;
+  --card-deep: #DEE5DA;
+  --fg-1: var(--text); --fg-2: #2D3A30; --fg-3: var(--muted);
+  --border-soft: rgba(188,200,182,0.55);
+}
+
+/* --- Midnight Indigo (deep indigo + sky blue) — 다크 모드, 기술·심층 톤 */
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E;
+  --card: #1F2440;
+  --card-hover: #262C4A;
+  --accent-surface: #1F2440;
+  --border: #3A4060;
+  --border-light: #262C4A;
+  --divider: #3A4060;
+
+  --text: #E8ECEF;
+  --muted: #8A92A8;
+
+  --accent: #6FB3FF;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #161A2E;
+  --map-water: #0D1020;
+  --map-boundary: #E8ECEF;
+  --map-graticule: #3A4060;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0D1020;
+  --card-deep: #0D1020;
+  --fg-1: var(--text); --fg-2: #D0D8E0; --fg-3: var(--muted);
+  --border-soft: rgba(58,64,96,0.45);
+}
+
+/* --- Dusk Rose (dusk paper + deep rose) — 정책·인물 톤, burgundy 보다 가벼움 */
+[data-theme="dusk_rose"] {
+  --bg: #F2E8E5;
+  --card: #F8EFEB;
+  --card-hover: #EDE0DC;
+  --accent-surface: #F8EFEB;
+  --border: #D6C2BE;
+  --border-light: #E5D5D0;
+  --divider: #D6C2BE;
+
+  --text: #2A1F1D;
+  --muted: #7A5C58;
+
+  --accent: #B85968;
+  --up: #6B8550;
+  --down: #A8584A;
+
+  --map-land: #F2E8E5;
+  --map-water: #E0D0CB;
+  --map-boundary: #2A1F1D;
+  --map-graticule: #D6C2BE;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: #3A2A26;
+  --text-muted: var(--muted); --text-faded: #9A7A74;
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--muted); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #EDE0DC;
+  --card-deep: #EDE0DC;
+  --fg-1: var(--text); --fg-2: #3A2A26; --fg-3: var(--muted);
+  --border-soft: rgba(214,194,190,0.55);
+}
+
+/* --- Paper Classic (newspaper white + red ink) — 클래식, 강한 텍스트 강조 */
+[data-theme="paper_classic"] {
+  --bg: #FAFAF6;
+  --card: #F2F2EE;
+  --card-hover: #ECECE8;
+  --accent-surface: #F2F2EE;
+  --border: #C8C8C0;
+  --border-light: #DCDCD4;
+  --divider: #C8C8C0;
+
+  --text: #0F0F0F;
+  --muted: #5A5A5A;
+
+  --accent: #C4392B;
+  --up: #2D6B3E;
+  --down: #A03030;
+
+  --map-land: #FAFAF6;
+  --map-water: #E8E8E0;
+  --map-boundary: #0F0F0F;
+  --map-graticule: #C8C8C0;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: #1A1A1A;
+  --text-muted: var(--muted); --text-faded: #8A8A8A;
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--muted); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #ECECE8;
+  --card-deep: #ECECE8;
+  --fg-1: var(--text); --fg-2: #1A1A1A; --fg-3: var(--muted);
+  --border-soft: rgba(200,200,192,0.55);
+}
+
 /* --- Reset --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
