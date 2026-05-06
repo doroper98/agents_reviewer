@@ -137,17 +137,27 @@ def select_lenses(
     return final
 
 
-# Theme 결정도 코드 규칙으로 처리 (Strategy Planner 프롬프트에서 분리).
-# v4.5.0: editorial_cream (cream + terracotta) 디폴트 채택. burgundy_mono 는
-# 위기·분쟁·사고 등 무게감이 필요한 사건 한정. light_mono 는 legacy 보존.
-# 디폴트 cream 의 근거: 평어체·비유·dropcap 등 v4.5.0 인터랙션 패턴이
-# 편집자형 톤이라 cream 배경과 시각적으로 정합 (LG 보고서 벤치마크 차용).
+# v5.0.2 — 7개 테마 풀 (사용자 요청). 카테고리 기반 라우팅 폐기 → 보고서마다 랜덤.
+# SSOT: src/templates/report.css 의 [data-theme="..."] 블록.
+# 모든 테마는 *동일한 레이아웃* — bg/card/text/accent 만 다름.
+ALL_THEMES: tuple[str, ...] = (
+    "editorial_cream",     # warm cream + terracotta
+    "burgundy_mono",       # dark wine + amber gold
+    "slate_steel",         # cool gray + steel blue
+    "forest_sage",         # sage paper + forest green
+    "midnight_indigo",     # deep indigo + sky blue (다크)
+    "dusk_rose",           # dusk paper + deep rose
+    "paper_classic",       # newspaper white + red ink
+)
+
+# legacy: 카테고리 기반 매핑은 보존 (호환). 직접 호출 시 사용 가능하지만
+# select_theme() 은 더 이상 본 매핑을 참조하지 않음.
 _THEME_BY_CATEGORY: dict[str, str] = {
     "tech": "editorial_cream",
     "financial": "editorial_cream",
-    "geopolitical": "burgundy_mono",   # 외교·분쟁·전쟁 — gravitas
-    "accident": "burgundy_mono",       # 재난·사고 — 무게감
-    "policy": "editorial_cream",       # 정책·법안 — 편집 톤
+    "geopolitical": "burgundy_mono",
+    "accident": "burgundy_mono",
+    "policy": "editorial_cream",
     "industry": "editorial_cream",
     "general": "editorial_cream",
 }
@@ -155,6 +165,9 @@ _THEME_BY_CATEGORY: dict[str, str] = {
 
 def select_theme(event_type: str) -> str:
     """event_type → 보고서 테마. LLM 호출 없이 결정.
-    v4.5.0: editorial_cream 디폴트, burgundy_mono 는 위기/분쟁 한정."""
-    category = _classify_event_type(event_type)
-    return _THEME_BY_CATEGORY.get(category, "editorial_cream")
+
+    v5.0.2: 7개 테마 풀에서 *랜덤 선택* (사용자 요청). event_type 무관 —
+    시각적 다양성. random.choice 사용 — 보고서마다 새 테마.
+    """
+    import random
+    return random.choice(ALL_THEMES)
