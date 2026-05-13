@@ -1,21 +1,21 @@
 ---
 tier: 1
-last_synced_with: v4.5.7
+last_synced_with: v5.1.0
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "CHANGELOG.md"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-05
+last_review: 2026-05-13
 ---
 
 # Event Analysis Team — AI Agent System
 
-텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → NarrativeComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템.
+텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → NarrativeComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템. v5.1.0 부터 매일 07:30 KST 자동 일일 브리핑 (`/briefing_on` 으로 구독).
 
 ## Status
-- Version: **v5.0.0** (SSOT: `src/orchestrator.py:VERSION`) — V5 리팩토링 17-Phase 마스터 플랜 완료. 4-Tier 모두 인수 — Editor Pass + DeskEditor + Strategic Mode + Vega-Lite + Capability Registry + Chart Gate + Deterministic Gate + Layout Primitives + Exhibit 번호제 + Word Budget. v4.5.7 호출 경로 byte-equal 보존 — V5 신규 모듈은 모두 opt-in (`V5_*` env flag). 활성화 가이드: [docs/V5_ACTIVATION.md](docs/V5_ACTIVATION.md).
+- Version: **v5.1.0** (SSOT: `src/orchestrator.py:VERSION`) — Daily Briefing Scheduler 추가 (`/briefing_on` 으로 채팅 등록 → 매일 07:30 KST 에 "간밤 산업·지정학·정치·전쟁 이슈" 심층 보고서 자동 송신, in-process asyncio task). v5.0.0 의 V5 리팩토링 17-Phase 마스터 플랜 완료 상태 그대로 유지. 활성화 가이드: [docs/V5_ACTIVATION.md](docs/V5_ACTIVATION.md).
 - **V5 활성화 단계** — 코드는 v5.0.0 이지만 단계적 활성화 권장 (Plan §0.3). `docs/V5_ACTIVATION.md` 의 5-step 절차 따라 한 phase 씩 켜고 회귀 테스트 통과 확인.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
@@ -45,6 +45,8 @@ python -m src.main
 
 ## Recent Changes
 최신 9건 — 전체 [CHANGELOG.md](CHANGELOG.md):
+- **v5.1.0** Daily Briefing Scheduler — 매일 07:30 KST (변경 가능) "간밤 산업·지정학·정치·전쟁" 심층 보고서 자동 생성·배포·텔레그램 송신. `/briefing_on /briefing_off /briefing_status` 명령. 봇 프로세스 안 asyncio task (별도 cron 불요), SQLite 영속 구독, run_date PK 중복 방지. `DAILY_BRIEFING_ENABLED/TIME/TZ` env vars.
+- **v5.0.0** V5 Refactoring 17-Phase 마스터 플랜 완료. 4-Tier 모두 인수. v4.5.7 byte-equal 보존, opt-in `V5_*` env flag.
 - **v4.5.7** ContextAnalyst max_tokens deep 모드 4K → 10K. Somaliland (de facto) 폴리곤·legend viewport 교집합 검사 후 gate. CHART-AP-14 신설.
 - **v4.5.6** hero eyebrow `Analysis Team v4.5.5 · Rev 0` 형식. revision 0 도 항상 표기.
 - **v4.5.5** 보고서 상단에 `system_version + revision` 추적성 노출 (`FullAnalysisResult.system_version`, `revision`). patch_report.py mutate 시 revision +1.

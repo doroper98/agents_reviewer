@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.0.0
+last_synced_with: v5.1.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-05
+last_review: 2026-05-13
 ---
 
 # Changelog
@@ -17,6 +17,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.1.0] — 2026-05-13
+
+### Added — 자동 일일 브리핑 시스템
+
+매일 지정 시각 (기본 07:30 KST) 에 "간밤 산업·지정학·정치·전쟁 이슈" 심층 보고서를
+자동 생성·배포·텔레그램 송신. 별도 cron / systemd timer 없이 봇 프로세스 안 asyncio
+task 로 동작 (watchlist monitor 와 동일 패턴).
+
+**신규 모듈** `src/scheduler/`:
+- `subscriptions.py` — `BriefingSubscriberRegistry` (SQLite CRUD; 구독 + 실행 이력)
+- `daily_briefing.py` — `run_daily_briefing_loop()` background task + `_next_trigger()`
+  / `_build_briefing_prompt()` 순수 함수
+- `db_schema.sql` — `briefing_subscribers` + `briefing_runs` 두 테이블
+  (`run_date` PRIMARY KEY 로 같은 날 중복 트리거 방지)
+
+**신규 텔레그램 명령**:
+- `/briefing_on` — 이 채팅을 일일 브리핑 수신처로 등록 (mode='deep' 고정)
+- `/briefing_off` — 구독 해제
+- `/briefing_status` — 구독 상태 + 스케줄러 활성 여부 + 시각/타임존 표시
+
+**신규 환경변수** (`Config` 에 `AliasChoices` 패턴으로 추가):
+- `DAILY_BRIEFING_ENABLED` — 디폴트 `false`. task 는 항상 살아 있고 구독은 받지만,
+  트리거 시각에 실제 분석 실행 여부를 게이트. `false` 시 스킵 + 로그만.
+- `DAILY_BRIEFING_TIME` — 디폴트 `07:30`. HH:MM (24h), `DAILY_BRIEFING_TZ` 기준.
+- `DAILY_BRIEFING_TZ` — 디폴트 `Asia/Seoul`. IANA tz (예: `UTC`, `Asia/Tokyo`).
+
+### Notes
+
+- 일일 브리핑은 기존 v4.0.0 Tier 4 2-call 파이프라인 (`ContextAnalyst` + `NarrativeComposer`) 을 `mode='deep'` 으로 호출 — composer 프롬프트가 5~7 섹션 + 모순 명시.
+- 브리핑 프롬프트는 ContextAnalyst 가 웹 검색으로 간밤 보도를 직접 확인하도록 명시 (학습 데이터 의존 금지). `mode='deep'` 강제 + 프롬프트에 "심층" 키워드 자연 포함.
+- 봇 재시작 시 별도 복구 호출 불필요 — `BriefingSubscriberRegistry` SQLite 영속성으로 구독자 자연 복구.
+- 같은 날 봇 재시작 + 트리거 시각 통과 케이스에서도 `briefing_runs.run_date` PK 가 중복 분석을 막음.
+- `/status` 응답에 일일 브리핑 활성 여부 + 구독자 수 표시.
+
+### Changed
+
+- `src/orchestrator.py:VERSION` `v5.0.0 → v5.1.0`.
 
 ---
 

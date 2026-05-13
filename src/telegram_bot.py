@@ -25,12 +25,15 @@ from src.orchestrator import Orchestrator
 from src.models import WatchSignal
 from src.watchlist import WatchlistRegistry, run_monitor_loop
 from src.watchlist.monitor import format_telegram_alert
+from src.scheduler import BriefingSubscriberRegistry, run_daily_briefing_loop
 
 logger = logging.getLogger(__name__)
 
 # V3 Step 5-B (v2.9.5): default DB path. Config 에 별도 필드를 추가하지 않음 — 보고서 출력
 # 디렉토리 옆에 둠 (운영 자연스러움 + git ignored).
 DEFAULT_WATCHLIST_DB_NAME = "watchlist.db"
+# v5.1.0 — 일일 브리핑 구독 / 실행 이력 DB. watchlist 와 분리해 관심사 격리.
+DEFAULT_SCHEDULER_DB_NAME = "scheduler.db"
 
 # Track bot start time and analysis count
 _bot_start_time: float = 0.0
@@ -53,6 +56,11 @@ class TelegramBot:
         # V3 Step 5-B (v2.9.5): Watchlist registry — bot 프로세스 안에서 공유.
         db_path = os.path.join(config.report_output_dir, DEFAULT_WATCHLIST_DB_NAME)
         self.watchlist_registry = WatchlistRegistry(db_path)
+        # v5.1.0: Briefing subscription registry — daily scheduler 가 공유.
+        scheduler_db_path = os.path.join(
+            config.report_output_dir, DEFAULT_SCHEDULER_DB_NAME,
+        )
+        self.briefing_registry = BriefingSubscriberRegistry(scheduler_db_path)
         self.orchestrator = Orchestrator(config, watchlist_registry=self.watchlist_registry)
         self._queue: deque[QueueItem] = deque()
         self._is_analyzing: bool = False
@@ -61,6 +69,8 @@ class TelegramBot:
         self._current_task: asyncio.Task | None = None
         # asyncio task handle for the monitor loop — populated in post_init.
         self._monitor_task: asyncio.Task | None = None
+        # v5.1.0: asyncio task handle for the daily briefing scheduler loop.
+        self._briefing_task: asyncio.Task | None = None
         # Application reference for telegram message sending from monitor task.
         self._app: Application | None = None
         global _bot_start_time
@@ -91,6 +101,9 @@ class TelegramBot:
             "/queue — 대기열 확인\n"
             "/watchlist — 활성 감시 신호 목록 (v2.9.5)\n"
             "/fire <signal_id> [direction] — 신호 수동 발화 (v2.9.5)\n"
+            "/briefing_on — 일일 브리핑 구독 (v5.1.0)\n"
+            "/briefing_off — 일일 브리핑 구독 해제\n"
+            "/briefing_status — 일일 브리핑 설정 확인\n"
             "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
@@ -194,6 +207,14 @@ class TelegramBot:
             f"({BUILD_INFO.get('commit_date', '?')}){dirty_mark}\n"
         )
 
+        # v5.1.0 — daily briefing 정보
+        briefing_subs = self.briefing_registry.count()
+        briefing_enabled = "✅" if self.config.daily_briefing_enabled else "❌"
+        briefing_info = (
+            f"  일일 브리핑: {briefing_enabled} {self.config.daily_briefing_time} "
+            f"({self.config.daily_briefing_tz}) · 구독자 {briefing_subs}명"
+        )
+
         status_msg = (
             f"✅ 봇 실행 중 — {VERSION}\n\n"
             f"{build_str}"
@@ -203,6 +224,7 @@ class TelegramBot:
             f"  서버 메모리: {mem_str}\n"
             f"  현재 상태: {analyzing_str}\n"
             f"  대기열: {queue_str}\n"
+            f"{briefing_info}\n"
             f"\n{agents_info}"
         )
 
@@ -335,6 +357,80 @@ class TelegramBot:
                 "[telegram_bot] send_message failed for chat=%d: %s",
                 signal.parent_chat_id, e,
             )
+
+    # ------------------------------------------------------------------
+    # v5.1.0 — Daily Briefing commands
+    # ------------------------------------------------------------------
+
+    async def _briefing_on_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/briefing_on`` — 이 채팅을 일일 브리핑 수신처로 등록 (mode=deep 고정)."""
+        if update.message is None or update.effective_chat is None:
+            return
+        if not self._is_authorized(update.effective_chat.id):
+            await update.message.reply_text("Unauthorized.")
+            return
+        chat_id = update.effective_chat.id
+        newly = self.briefing_registry.subscribe(chat_id, mode="deep")
+        time_str = self.config.daily_briefing_time
+        tz_name = self.config.daily_briefing_tz
+        enabled = self.config.daily_briefing_enabled
+        head = (
+            "✅ 일일 브리핑 구독 완료"
+            if newly
+            else "ℹ 이미 구독 중 (모드 갱신만 적용)"
+        )
+        enabled_str = (
+            "활성"
+            if enabled
+            else "비활성 (서버 .env DAILY_BRIEFING_ENABLED=false)"
+        )
+        await update.message.reply_text(
+            f"{head}\n\n"
+            f"  · 트리거: 매일 {time_str} ({tz_name})\n"
+            f"  · 모드: 🔬 deep (Tier 4 2-call 파이프라인, 5~7 섹션 + 모순 명시)\n"
+            f"  · 분석 범위: 간밤 산업·지정학·정치·전쟁 이슈\n"
+            f"  · 스케줄러 상태: {enabled_str}\n\n"
+            f"해제: /briefing_off"
+        )
+
+    async def _briefing_off_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/briefing_off`` — 이 채팅의 일일 브리핑 구독 해제."""
+        if update.message is None or update.effective_chat is None:
+            return
+        chat_id = update.effective_chat.id
+        removed = self.briefing_registry.unsubscribe(chat_id)
+        if removed:
+            await update.message.reply_text("✅ 일일 브리핑 구독 해제됨.")
+        else:
+            await update.message.reply_text("ℹ 구독 중이 아니었습니다.")
+
+    async def _briefing_status_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/briefing_status`` — 이 채팅의 구독 상태 + 스케줄러 설정."""
+        if update.message is None or update.effective_chat is None:
+            return
+        chat_id = update.effective_chat.id
+        subscribed = self.briefing_registry.is_subscribed(chat_id)
+        total_subs = self.briefing_registry.count()
+        time_str = self.config.daily_briefing_time
+        tz_name = self.config.daily_briefing_tz
+        enabled = self.config.daily_briefing_enabled
+        sub_str = "✅ 구독 중" if subscribed else "❌ 미구독"
+        enabled_str = "✅ 활성" if enabled else "❌ 비활성 (.env)"
+        await update.message.reply_text(
+            f"📒 일일 브리핑 상태\n\n"
+            f"  · 이 채팅: {sub_str}\n"
+            f"  · 전체 구독자 수: {total_subs}\n"
+            f"  · 트리거: 매일 {time_str} ({tz_name})\n"
+            f"  · 스케줄러: {enabled_str}\n"
+            f"  · 모드: 🔬 deep\n\n"
+            f"구독: /briefing_on · 해제: /briefing_off"
+        )
 
     async def _analyze_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -569,6 +665,10 @@ class TelegramBot:
         # V3 Step 5-B (v2.9.5)
         app.add_handler(CommandHandler("watchlist", self._watchlist_command))
         app.add_handler(CommandHandler("fire", self._fire_command))
+        # v5.1.0 — Daily Briefing
+        app.add_handler(CommandHandler("briefing_on", self._briefing_on_command))
+        app.add_handler(CommandHandler("briefing_off", self._briefing_off_command))
+        app.add_handler(CommandHandler("briefing_status", self._briefing_status_command))
         app.add_handler(
             MessageHandler(
                 filters.TEXT & ~filters.COMMAND, self._message_handler
@@ -588,6 +688,8 @@ class TelegramBot:
         않다. ``list_active()`` 호출 자체가 곧 부팅 시점의 활성 신호 스냅샷이며, monitor task 가
         주기적으로 다시 ``list_active()`` 를 호출한다. B 보강 ("WatchlistRegistry.load_active_signals
         패턴") 의 실질 구현.
+
+        v5.1.0: Daily briefing scheduler task 도 함께 기동.
         """
         active_count = self.watchlist_registry.count_active()
         total_count = self.watchlist_registry.count_total()
@@ -606,14 +708,83 @@ class TelegramBot:
         )
         logger.info("[telegram_bot] Watchlist monitor task started")
 
+        # v5.1.0 — Daily briefing scheduler task. enabled=False 라도 task 는 살아 있고
+        # 트리거 시각에 단순 로깅만 — /briefing_on 구독은 항상 가능.
+        sub_count = self.briefing_registry.count()
+        logger.info(
+            "[telegram_bot] Briefing boot: subscribers=%d enabled=%s time=%s tz=%s",
+            sub_count, self.config.daily_briefing_enabled,
+            self.config.daily_briefing_time, self.config.daily_briefing_tz,
+        )
+        self._briefing_task = asyncio.create_task(
+            run_daily_briefing_loop(
+                orchestrator=self.orchestrator,
+                subscribers=self.briefing_registry,
+                send_text_fn=self._send_text_to_chat,
+                send_document_fn=self._send_document_to_chat,
+                time_str=self.config.daily_briefing_time,
+                tz_name=self.config.daily_briefing_tz,
+                enabled=self.config.daily_briefing_enabled,
+            ),
+            name="daily_briefing_scheduler",
+        )
+        logger.info("[telegram_bot] Daily briefing scheduler task started")
+
     async def _on_app_post_shutdown(self, app: Application) -> None:
-        """봇 종료 시 monitor task 정리. WatchlistRegistry SQLite 데이터는 영구 보존."""
-        if self._monitor_task is not None and not self._monitor_task.done():
-            self._monitor_task.cancel()
-            try:
-                await self._monitor_task
-            except asyncio.CancelledError:
-                pass
-            except Exception as e:
-                logger.warning("[telegram_bot] monitor task shutdown error: %s", e)
-            logger.info("[telegram_bot] Watchlist monitor task stopped")
+        """봇 종료 시 background task 정리. SQLite 데이터는 영구 보존."""
+        for task_attr, task_label in (
+            ("_monitor_task", "watchlist monitor"),
+            ("_briefing_task", "daily briefing scheduler"),
+        ):
+            task = getattr(self, task_attr, None)
+            if task is not None and not task.done():
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+                except Exception as e:
+                    logger.warning(
+                        "[telegram_bot] %s task shutdown error: %s", task_label, e,
+                    )
+                logger.info("[telegram_bot] %s task stopped", task_label)
+
+    # ------------------------------------------------------------------
+    # v5.1.0 — Send helpers used by the daily briefing scheduler
+    # ------------------------------------------------------------------
+
+    async def _send_text_to_chat(self, chat_id: int, text: str) -> None:
+        """Send a text message to ``chat_id`` via the bot Application."""
+        if self._app is None:
+            logger.warning(
+                "[telegram_bot] send_text called before app init; skipping (chat=%d)",
+                chat_id,
+            )
+            return
+        try:
+            await self._app.bot.send_message(chat_id=chat_id, text=text)
+        except Exception as e:
+            logger.warning(
+                "[telegram_bot] send_message failed for chat=%d: %s", chat_id, e,
+            )
+
+    async def _send_document_to_chat(
+        self, chat_id: int, file_path: str, caption: str,
+    ) -> None:
+        """Send a document attachment to ``chat_id`` via the bot Application."""
+        if self._app is None:
+            logger.warning(
+                "[telegram_bot] send_document called before app init; skipping (chat=%d)",
+                chat_id,
+            )
+            return
+        try:
+            with open(file_path, "rb") as f:
+                await self._app.bot.send_document(
+                    chat_id=chat_id, document=f,
+                    filename=os.path.basename(file_path), caption=caption,
+                )
+        except Exception as e:
+            logger.warning(
+                "[telegram_bot] send_document failed for chat=%d: %s", chat_id, e,
+            )
