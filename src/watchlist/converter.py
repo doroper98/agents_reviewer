@@ -46,6 +46,7 @@ def convert_watch_signals(
     parent_report_id: str = "",
     parent_chat_id: int = 0,
     default_deadline_days: int = 30,
+    chain_depth: int = 0,
 ) -> list[WatchSignal]:
     """Convert a ScenarioArchitect dict-list into validated WatchSignal models.
 
@@ -83,6 +84,7 @@ def convert_watch_signals(
                 parent_report_url=parent_report_url,
                 parent_report_id=parent_report_id,
                 parent_chat_id=parent_chat_id,
+                chain_depth=chain_depth,
             )
         except Exception:
             # Pydantic validation failed (e.g. invalid direction/deadline) — skip.

@@ -18,6 +18,8 @@ class AnalysisRequest(BaseModel):
     # v3.1.0: 분석 모드. ``token_budget.resolve_mode()`` 가 키워드 → mode 매핑.
     # default 는 standard. fast/deep 은 키워드 또는 명시적 호출 시.
     mode: Literal["fast", "standard", "deep"] = "standard"
+    # v5.1.1: 후속 분석 시 부모 보고서의 맥락 — None 이면 일반 분석.
+    parent_context: "ParentContext | None" = None
 
 
 class ContextAnalysis(BaseModel):
@@ -332,6 +334,8 @@ class Evidence(BaseModel):
     reliability: Reliability = "model_inference"
     timestamp: str = ""
     supports_claims: list[str] = Field(default_factory=list)
+    # v5.1.1: footnote 번호 — 보고서 하단 ol 의 ``#fn-{n}`` anchor 와 정합. 빌더가 부여.
+    fn_index: int | None = None
 
 
 class Claim(BaseModel):
@@ -430,6 +434,8 @@ class WatchSignal(BaseModel):
     parent_chat_id: int = 0  # 알림 송신 대상 (V3 Step 5-B 보강)
     fired: bool = False
     fired_at: str | None = None  # ISO 8601 datetime; None 이면 미발화
+    # v5.1.1: 후속 보고서 체인 깊이. 부모(0) → 자식(1) → 손자(2) 에서 자동 생성 차단.
+    chain_depth: int = 0
 
 
 # ====== V3 Step 6 (v3.1.0) — Compact context (AnalysisBrief) ======
@@ -599,6 +605,29 @@ class ComposedReport(BaseModel):
     embedded_map: dict | None = None
 
 
+class ParentContext(BaseModel):
+    """후속 분석을 트리거한 부모 보고서의 맥락 (v5.1.1).
+
+    Watchlist 신호가 발화될 때 부모 보고서의 시나리오/신호 메타를 자식 분석으로 옮기는 컨테이너.
+    v5.1.0 의 ``narrative_composer.compose_unified`` payload 의 ``followup`` 필드에 주입되어
+    composer 가 부모 시나리오 중 어느 가지가 실현 중인지 판정 + 분기 잇기 작업을 수행.
+
+    체인 방지: ``chain_depth`` 가 ``MAX_CHAIN_DEPTH`` 이상이면 자식 보고서의 새 watch_signals
+    는 DB 등록을 건너뛴다.
+    """
+
+    parent_report_id: str
+    parent_report_url: str = ""
+    parent_event_description: str = ""
+    parent_scenarios: list[dict] = Field(default_factory=list)  # 부모 ComposedReport.scenarios
+    triggering_signal: WatchSignal
+    chain_depth: int = 0  # 부모의 chain_depth 값. 자식 보고서의 신호는 +1 로 등록.
+
+
+# v5.1.1: 자동 후속 체인 상한. 부모(0) → 자식(1) → 손자(2) 에서 정지.
+MAX_CHAIN_DEPTH = 2
+
+
 class FullAnalysisResult(BaseModel):
     """Complete analysis result from all agents."""
 
@@ -620,6 +649,8 @@ class FullAnalysisResult(BaseModel):
     # v3.4.3 — block builder 가 light/burgundy 분기 위해 사용 (synthesize() 초입에 설정).
     # 이 필드 없이 v3.4.0 _payload_map() 이 result.report_theme 읽다가 Pydantic 거부 → 분석 실패.
     report_theme: str = ""
+    # v5.1.1: 후속 보고서일 때만 채워짐 — report.html 의 h1 풋노트 + 상단 헤더 박스 렌더링.
+    parent_context: ParentContext | None = None
     analysis_timestamp: str = Field(
         default_factory=lambda: datetime.now().isoformat()
     )
@@ -635,4 +666,9 @@ class FullAnalysisResult(BaseModel):
     # NOTE (V3 Step 4 / Anti-pattern #10): ``ContextAnalysis.confidence_score`` 등 기존
     # ``confidence_score: float`` 필드들은 v2 호환 목적으로 보존되며 deprecated 상태.
     # 신규 코드는 ``ConfidenceProfile`` (3축) 을 사용. v3.0.0 릴리스 시점에 일괄 정리 예정.
+
+
+# v5.1.1: Forward reference 해결 — AnalysisRequest 가 ParentContext 를 string 참조하므로
+# 양쪽 정의가 완료된 뒤 model_rebuild 호출.
+AnalysisRequest.model_rebuild()
 

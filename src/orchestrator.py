@@ -15,7 +15,7 @@ from src.lens_policy import select_lenses, select_theme
 from src.lenses.registry import get_lens, list_lenses
 from src.models import (
     AnalysisRequest, AnalysisStrategy, AnalyticalFinding, Claim, ConfidenceProfile,
-    Evidence, FullAnalysisResult, JudgmentVerdict,
+    Evidence, FullAnalysisResult, JudgmentVerdict, MAX_CHAIN_DEPTH, ParentContext,
 )
 from src.telemetry import RunTelemetry
 from src.token_budget import AnalysisMode, TokenBudget, resolve_mode
@@ -328,6 +328,9 @@ class Orchestrator:
         """
         evs: list[Evidence] = []
         if result.context and result.context.sources:
+            # v5.1.1: fn_index 는 ``result.context.sources`` 순서와 1:1 매칭 — 보고서 하단
+            # footnotes ol 의 ``id="fn-{n}"`` anchor 와 정합. evidence_table 블록이 ⁽n⁾
+            # 마커로 같은 anchor 를 가리킴.
             for i, src in enumerate(result.context.sources, 1):
                 # source can be a URL or free-text — store as source_url if it looks like URL.
                 if src.startswith(("http://", "https://")):
@@ -337,6 +340,7 @@ class Orchestrator:
                         quote_or_data=src,
                         reliability="secondary",
                         timestamp=result.context.date or "",
+                        fn_index=i,
                     )
                 else:
                     ev = Evidence(
@@ -345,6 +349,7 @@ class Orchestrator:
                         quote_or_data=src[:200],
                         reliability="secondary",
                         timestamp=result.context.date or "",
+                        fn_index=i,
                     )
                 evs.append(ev)
         if not evs:
@@ -717,6 +722,7 @@ class Orchestrator:
         chat_id: int,
         status_callback: StatusCallback = None,
         mode: AnalysisMode | None = None,
+        parent_context: ParentContext | None = None,
     ) -> FullAnalysisResult:
         """v4.0.0 Tier 4: 2-call unified pipeline.
 
@@ -725,6 +731,12 @@ class Orchestrator:
                   보고서 본문 작성을 *단일 LLM 호출*로 모두 수행.
         Phase 3 — HTML 렌더 + Cloudflare Pages 배포.
         Phase 4 — composed_report.watch_signals → SQLite Watchlist.
+
+        v5.1.1 — ``parent_context`` 가 주어지면 후속 보고서 모드:
+        - compose_unified payload 에 followup 필드 주입 → composer 가 부모 시나리오 인지
+        - report.html 의 h1 풋노트 + 상단 부모 헤더 박스 렌더
+        - 새 watch_signals 의 chain_depth = parent.chain_depth + 1 로 등록
+          (``>= MAX_CHAIN_DEPTH`` 면 등록 자체 스킵 — 체인 종결)
 
         legacy 멀티 에이전트 (player/dynamics/chain_reaction/scenario/synthesis_judge/
         quality_inspector/visual_analyst/lens_pool) 는 v4.0.0 부터 호출 안 함.
@@ -745,8 +757,9 @@ class Orchestrator:
             event_description=event_description,
             chat_id=chat_id,
             mode=mode,
+            parent_context=parent_context,
         )
-        result = FullAnalysisResult(request=request)
+        result = FullAnalysisResult(request=request, parent_context=parent_context)
 
         mode_label = {"fast": " ⚡fast", "deep": " 🔬deep"}.get(mode, " 🟢standard")
 
@@ -856,7 +869,7 @@ class Orchestrator:
         stage = self.telemetry.stage_start("unified_composer")
         try:
             result.composed_report = await self.narrative_composer.compose_unified(
-                result.context, mode=mode,
+                result.context, mode=mode, parent_context=parent_context,
             )
         except Exception as e:
             logger.warning("[orchestrator] unified_composer error: %s", e)
@@ -915,7 +928,21 @@ class Orchestrator:
         result.report_url = report_url
 
         # -- Phase 4: Watchlist 등록 (composed_report.watch_signals 에서) --
-        if self.watchlist_registry is not None and result.composed_report.watch_signals:
+        # v5.1.1: 체인 상한 — parent_context.chain_depth + 1 >= MAX_CHAIN_DEPTH 면 등록 스킵.
+        # 손자(depth=2) 보고서가 다시 후속을 자동 트리거하지 못하도록 차단.
+        child_chain_depth = (parent_context.chain_depth + 1) if parent_context is not None else 0
+        chain_at_cap = child_chain_depth >= MAX_CHAIN_DEPTH
+        if chain_at_cap:
+            logger.info(
+                "[orchestrator] Chain depth cap reached (depth=%d, MAX=%d); "
+                "skipping watch_signals registration for this report",
+                child_chain_depth, MAX_CHAIN_DEPTH,
+            )
+        if (
+            self.watchlist_registry is not None
+            and result.composed_report.watch_signals
+            and not chain_at_cap
+        ):
             try:
                 report_id = ""
                 if result.report_path:
@@ -926,13 +953,27 @@ class Orchestrator:
                     parent_report_url=result.report_url or "",
                     parent_report_id=report_id,
                     parent_chat_id=request.chat_id,
+                    chain_depth=child_chain_depth,
                 )
+                # v5.1.1: 부모 메타 등록 — monitor 가 신호 발화 시 ParentContext 즉시 조립용.
+                try:
+                    self.watchlist_registry.register_report_meta(
+                        report_id=report_id,
+                        event_description=event_description,
+                        scenarios=list(result.composed_report.scenarios or []),
+                        chain_depth=child_chain_depth,
+                    )
+                except Exception as meta_err:
+                    logger.warning(
+                        "[orchestrator] register_report_meta failed (계속 진행): %s",
+                        meta_err,
+                    )
                 inserted = sum(
                     1 for sig in signals if self.watchlist_registry.register(sig)
                 )
                 logger.info(
-                    "[orchestrator] Watchlist: %d/%d signals registered (chat=%d)",
-                    inserted, len(signals), request.chat_id,
+                    "[orchestrator] Watchlist: %d/%d signals registered (chat=%d, depth=%d)",
+                    inserted, len(signals), request.chat_id, child_chain_depth,
                 )
                 if inserted:
                     await self._notify(

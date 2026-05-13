@@ -11,6 +11,7 @@ Anti-pattern #11 회피: 본 registry 가 SSOT. ``ScenarioAnalysis.watch_signals
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import sqlite3
@@ -47,6 +48,17 @@ class WatchlistRegistry:
             conn.execute("PRAGMA journal_mode=WAL")
             with open(_SCHEMA_PATH, "r", encoding="utf-8") as f:
                 conn.executescript(f.read())
+            # v5.1.1: 기존 DB 에 chain_depth 컬럼이 없으면 idempotent 마이그레이션.
+            # SQLite 는 ADD COLUMN IF NOT EXISTS 미지원 → PRAGMA 로 체크.
+            existing_cols = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(watchsignals)").fetchall()
+            }
+            if "chain_depth" not in existing_cols:
+                conn.execute(
+                    "ALTER TABLE watchsignals ADD COLUMN chain_depth INTEGER NOT NULL DEFAULT 0"
+                )
+                logger.info("[watchlist] Migrated: added chain_depth column to watchsignals")
         logger.info("[watchlist] Registry initialized at %s", self.db_path)
 
     @contextmanager
@@ -75,8 +87,8 @@ class WatchlistRegistry:
                 INSERT OR IGNORE INTO watchsignals
                 (signal_id, description, measurement, direction, deadline,
                  follow_up_action, parent_report_url, parent_report_id,
-                 parent_chat_id, fired, fired_at, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 parent_chat_id, fired, fired_at, created_at, chain_depth)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     signal.signal_id, signal.description, signal.measurement,
@@ -84,9 +96,63 @@ class WatchlistRegistry:
                     signal.parent_report_url, signal.parent_report_id,
                     signal.parent_chat_id,
                     int(signal.fired), signal.fired_at, created_at,
+                    int(signal.chain_depth),
                 ),
             )
             return cur.rowcount > 0
+
+    # ------------------------------------------------------------------
+    # v5.1.1 — Report metadata (자동 후속 보고서용)
+    # ------------------------------------------------------------------
+
+    def register_report_meta(
+        self,
+        report_id: str,
+        event_description: str,
+        scenarios: list[dict],
+        chain_depth: int = 0,
+    ) -> bool:
+        """보고서의 부모 맥락 메타 등록 — 신호 발화 시 ParentContext 즉시 조립용.
+
+        report_id 가 비어있으면 no-op. 동일 ID 재등록은 REPLACE (재배포 케이스 흡수).
+        """
+        if not report_id:
+            return False
+        created_at = datetime.utcnow().isoformat()
+        try:
+            scenarios_json = json.dumps(scenarios or [], ensure_ascii=False)
+        except (TypeError, ValueError):
+            scenarios_json = "[]"
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO report_meta
+                (report_id, event_description, scenarios_json, chain_depth, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (report_id, event_description, scenarios_json, int(chain_depth), created_at),
+            )
+        return True
+
+    def get_report_meta(self, report_id: str) -> dict | None:
+        """report_id 로 부모 메타 조회. 반환 dict: {event_description, scenarios, chain_depth}."""
+        if not report_id:
+            return None
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM report_meta WHERE report_id = ?", (report_id,)
+            ).fetchone()
+        if row is None:
+            return None
+        try:
+            scenarios = json.loads(row["scenarios_json"] or "[]")
+        except (TypeError, ValueError):
+            scenarios = []
+        return {
+            "event_description": row["event_description"] or "",
+            "scenarios": scenarios if isinstance(scenarios, list) else [],
+            "chain_depth": int(row["chain_depth"] or 0),
+        }
 
     def get(self, signal_id: str) -> WatchSignal | None:
         with self._connect() as conn:
@@ -165,6 +231,11 @@ class WatchlistRegistry:
 
 
 def _row_to_signal(row: sqlite3.Row) -> WatchSignal:
+    # v5.1.1: chain_depth 는 마이그레이션 전 row 에 없을 수 있어 안전 접근.
+    try:
+        depth_val = row["chain_depth"]
+    except (IndexError, KeyError):
+        depth_val = 0
     return WatchSignal(
         signal_id=row["signal_id"],
         description=row["description"],
@@ -177,4 +248,5 @@ def _row_to_signal(row: sqlite3.Row) -> WatchSignal:
         parent_chat_id=int(row["parent_chat_id"] or 0),
         fired=bool(row["fired"]),
         fired_at=row["fired_at"],
+        chain_depth=int(depth_val or 0),
     )

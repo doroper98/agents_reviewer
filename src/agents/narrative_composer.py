@@ -29,6 +29,7 @@ from src.models import (
     ComposedSection,
     ContextAnalysis,
     FullAnalysisResult,
+    ParentContext,
 )
 from src.telemetry import RunTelemetry
 
@@ -330,14 +331,20 @@ class NarrativeComposer:
         self,
         context: ContextAnalysis,
         mode: str = "standard",
+        parent_context: ParentContext | None = None,
     ) -> ComposedReport | None:
         """v4.0.0 Tier 4 — ContextAnalysis 만 받아 *단독 분석 + 작성*.
 
         이전 ``compose()`` 는 7개 분석가 결과를 받아 편집만 했음. 본 메서드는
         composer 가 행위자/구조/시나리오/모순 분석까지 *모두* Opus 4.7 단일 호출에서
         수행. orchestrator 가 v4.0.0 부터 본 경로를 호출.
+
+        v5.1.1 — ``parent_context`` 가 주어지면 payload 에 ``followup`` 필드 주입.
+        composer 가 부모 시나리오 중 어느 가지가 실현 중인지 판정하고, 그 가지에서
+        다시 분기를 생성. 부모와 새 시나리오 간 모순은 봉합하지 말고 contradictions
+        에 명시 (Anti-pattern #5).
         """
-        user_payload = self._build_unified_payload(context, mode)
+        user_payload = self._build_unified_payload(context, mode, parent_context)
         user_message = json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
 
         try:
@@ -356,15 +363,19 @@ class NarrativeComposer:
         composed = self._validate_references(composed, chart_catalog=[])
         logger.info(
             "[unified_composer] Composed: %d sections, headline=%r, "
-            "watch_signals=%d, contradictions=%d, conf=%.2f",
+            "watch_signals=%d, contradictions=%d, conf=%.2f, followup=%s",
             len(composed.sections), composed.headline[:40],
             len(composed.watch_signals), len(composed.contradictions),
-            composed.confidence_score,
+            composed.confidence_score, parent_context is not None,
         )
         return composed
 
     @staticmethod
-    def _build_unified_payload(context: ContextAnalysis, mode: str) -> dict:
+    def _build_unified_payload(
+        context: ContextAnalysis,
+        mode: str,
+        parent_context: ParentContext | None = None,
+    ) -> dict:
         """v4.0.0 Tier 4 — ContextAnalysis + mode → composer 입력.
 
         멀티 에이전트 시절의 풍부한 입력 (players/dynamics/chain_reaction/...) 없이
@@ -372,6 +383,9 @@ class NarrativeComposer:
 
         v4.3.0: ContextAnalyst 가 emit 한 ``recommended_persona`` 를 함께 전달.
         composer 가 톤·프레임·어휘·분석 강도를 *느슨하게* 적용.
+
+        v5.1.1: ``parent_context`` 가 있으면 ``followup`` 필드 추가 — composer 가 부모
+        시나리오 / 발화 신호를 인지하고 분기 잇기 작업 수행.
         """
         payload: dict = {
             "mode": mode,
@@ -388,6 +402,30 @@ class NarrativeComposer:
         }
         if context.recommended_persona:
             payload["persona"] = context.recommended_persona
+        if parent_context is not None:
+            sig = parent_context.triggering_signal
+            payload["followup"] = {
+                "is_followup_report": True,
+                "parent_report_id": parent_context.parent_report_id,
+                "parent_report_url": parent_context.parent_report_url,
+                "parent_event_description": parent_context.parent_event_description[:500],
+                "parent_scenarios": parent_context.parent_scenarios,
+                "triggering_signal": {
+                    "signal_id": sig.signal_id,
+                    "description": sig.description,
+                    "measurement": sig.measurement,
+                    "direction": sig.direction,
+                    "deadline": sig.deadline,
+                    "follow_up_action": sig.follow_up_action,
+                },
+                "chain_depth": parent_context.chain_depth,
+                "instruction": (
+                    "이 보고서는 위 부모 보고서의 후속이다. 부모 시나리오 중 어느 가지가 "
+                    "실현 중인지 판정하고, 그 가지에서 다시 분기를 생성하라. 부모 시나리오와 "
+                    "새 시나리오 간 모순이 있으면 봉합하지 말고 contradictions 에 명시. "
+                    "새 watch_signals 는 부모와 다른 분기점/시간축을 가리킬 것."
+                ),
+            }
         return payload
 
     async def compose(
