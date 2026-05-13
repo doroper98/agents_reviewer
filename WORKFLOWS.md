@@ -1,14 +1,16 @@
 ---
 tier: 3
-last_synced_with: v4.5.7
+last_synced_with: v5.1.0
 ssot_for:
   - "분석 실행 워크플로우 (텔레그램 명령 → 보고서)"
   - "개발 워크플로우"
   - "배포 워크플로우"
+  - "일일 자동 브리핑 워크플로우 (v5.1.0)"
 depends_on:
   - "src/orchestrator.py (파이프라인 단계)"
+  - "src/scheduler/* (v5.1.0)"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-05
+last_review: 2026-05-13
 ---
 
 # WORKFLOWS — Event Analysis Team
@@ -106,6 +108,73 @@ Phase 4: [보고서 합성관] Executive Summary 생성
 ```
 
 봇 재시작 시 별도 복구 호출 불필요 — SQLite 영속성 덕분에 새 `WatchlistRegistry(db_path)` 인스턴스가 active 신호 상태 자연 복구.
+
+## 일일 자동 브리핑 워크플로우 — v5.1.0
+
+별도 cron 없이, 봇 프로세스 안 asyncio task 가 매일 지정 시각 (기본 07:30 KST) 에
+깨어나 구독한 모든 텔레그램 채팅에 "간밤 산업·지정학·정치·전쟁" 심층 보고서를 자동 송신.
+
+### 사용자 사이드 (1회 셋업)
+
+```
+[사용자] 텔레그램에서 /briefing_on
+    ↓
+[telegram_bot] BriefingSubscriberRegistry.subscribe(chat_id, mode='deep')
+    ↓
+[봇] "✅ 일일 브리핑 구독 완료 — 매일 07:30 (Asia/Seoul)" 응답
+    ↓ (이후 자동)
+[매일 07:30 KST] 보고서 자동 수신
+```
+
+### 시스템 사이드 (자동 트리거)
+
+```
+[봇 시작] _on_app_post_init
+    ↓
+asyncio.create_task(run_daily_briefing_loop)
+    ↓
+─── loop ───
+[scheduler] _next_trigger() 로 다음 07:30 KST 계산 → asyncio.sleep
+    ↓
+[scheduler] briefing_runs 테이블에 run_date PK insert (같은 일자 중복 시 skip)
+    ↓
+[scheduler] BriefingSubscriberRegistry.list_all() 순회
+    ↓
+   for chat_id, mode in subscribers:
+       ├── send_text_fn(chat_id, "🌅 일일 브리핑 시작...")
+       ├── Orchestrator.run_analysis(briefing_prompt, chat_id,
+       │                              status_callback, mode='deep')
+       │      ├── ContextAnalyst (Opus 4.7, 웹 검색) → 간밤 보도 수집
+       │      └── NarrativeComposer (Opus 4.7, deep → 5~7 섹션 + 모순 명시)
+       │            └── Cloudflare Pages 배포 (wrangler)
+       ├── 텍스트 보고서 (chunked) → chat_id 송신
+       ├── 용어 정의 (chunked) → chat_id 송신
+       └── 보고서 URL + Markdown URL → chat_id 송신
+    ↓
+[scheduler] briefing_runs.finish_run(run_date, succeeded, failed)
+    ↓
+─── 다음 루프 (다음 07:30 KST 까지 sleep) ───
+```
+
+### 환경변수 게이트
+
+| 변수 | 기본값 | 의미 |
+|------|--------|------|
+| `DAILY_BRIEFING_ENABLED` | `false` | task 는 항상 살아 있고 구독은 받지만, 트리거 시각에 실제 분석 실행 여부 게이트. false 시 스킵 + 로그만. |
+| `DAILY_BRIEFING_TIME` | `07:30` | 24h "HH:MM", `DAILY_BRIEFING_TZ` 기준 |
+| `DAILY_BRIEFING_TZ` | `Asia/Seoul` | IANA tz (예: `UTC`, `America/New_York`, `Asia/Tokyo`) |
+
+### 텔레그램 명령
+
+| 명령 | 동작 |
+|------|------|
+| `/briefing_on` | 이 채팅을 일일 브리핑 수신처로 등록 (deep mode 고정) |
+| `/briefing_off` | 구독 해제 |
+| `/briefing_status` | 구독 상태 + 스케줄러 활성 여부 + 시각/타임존 표시 |
+
+봇 재시작 시 별도 복구 호출 불필요 — `BriefingSubscriberRegistry` SQLite 영속성으로
+구독자 자연 복구. 같은 날 봇 재시작 후 트리거 시각이 이미 지난 경우, `briefing_runs.run_date`
+PRIMARY KEY 가 중복 트리거를 막음.
 
 ## 배포 워크플로우
 

@@ -1,15 +1,15 @@
 ---
 tier: 3
-last_synced_with: v4.5.7
+last_synced_with: v5.1.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
   - "src/* (실제 파일 구성)"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-05
+last_review: 2026-05-13
 ---
 
-# Event Analysis Team — Repository Map (v4.5.7)
+# Event Analysis Team — Repository Map (v5.1.0)
 
 > 파일·디렉토리 책무를 한눈에 보는 지도. 카탈로그성 사실(에이전트 역할 등)은 [docs/CATALOGS.md](CATALOGS.md), 시스템 흐름은 [docs/ARCHITECTURE.md](ARCHITECTURE.md).
 >
@@ -80,6 +80,11 @@ src/
 │   ├── db_schema.sql                 # watchsignals 테이블 + 인덱스
 │   ├── converter.py                  # ScenarioAnalysis.watch_signals → WatchSignal
 │   └── monitor.py                    # asyncio task (1h 주기) + 알림 포맷터
+├── scheduler/           # v5.1.0 — 일일 자동 브리핑 (구독 기반, in-process asyncio)
+│   ├── __init__.py
+│   ├── subscriptions.py              # BriefingSubscriberRegistry (SQLite CRUD + 실행 이력)
+│   ├── db_schema.sql                 # briefing_subscribers + briefing_runs 테이블
+│   └── daily_briefing.py             # run_daily_briefing_loop asyncio task (기본 07:30 KST)
 └── templates/
     ├── report.css          # ✅ Mono 2테마 (burgundy_mono + light_mono) SSOT. v3.5.0 부터 멀티컬러 폐기.
     ├── report.html         # [deprecated] six_act_theater 용

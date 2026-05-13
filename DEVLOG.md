@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v4.5.7
+last_synced_with: v5.1.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -8,7 +8,7 @@ ssot_for:
 depends_on:
   - "GOAL.md (REQ-* 변경 추적)"
   - "CHANGELOG.md (사용자 관점 변경은 그쪽 SSOT)"
-last_review: 2026-05-05
+last_review: 2026-05-13
 ---
 
 # DEVLOG — Event Analysis Team Agent System
@@ -949,3 +949,50 @@ ReportSynthesizer 가 HTML 옆에 ComposedReport JSON 자동 저장.
 [적용 방법 — 운영자]
 charts.js 변경은 정적 자산이라 봇 재기동 불필요. `cp src/templates/static/charts.* reports/`
 + `wrangler pages deploy reports` 만 실행하면 모든 보고서 (기존 포함) 즉시 fix.
+
+---
+
+## v5.1.0 — Daily Briefing Scheduler (2026-05-13)
+
+### 사용자 요청
+"간밤(00~07시) 산업/지정학/정치/전쟁 이슈에 대해 매일 자동으로 보고서를 deep 모드로
+생성하고 아침 07:30 에 자동으로 배포 + 텔레그램 송신."
+
+### 설계 결정
+
+| 항목 | 선택 | 사유 |
+|------|------|------|
+| 스케줄링 | in-process asyncio task | 별도 cron / systemd timer 불요. watchlist monitor 패턴과 일관성. |
+| 구독 모델 | `/briefing_on` 명령 | env var (`DAILY_BRIEFING_CHAT_ID`) 보다 사용자 친화적 — "지금 챗하고 있는 봇이 그 채팅 알 거 아냐" 라는 사용자 멘탈모델에 부합. SQLite 영속화. |
+| Deep 모드 | 기존 v4.0.0 `mode='deep'` 재사용 | v4 부터 mode 가 이미 token_budget 에 정의됨 (`fast/standard/deep`). composer 프롬프트가 deep 시 5~7 섹션 + 모순 명시. 추가 구현 0. |
+| 분석 범위 | 단일 통합 보고서 | 산업/지정학/정치/전쟁 4개 분야를 1개 deep 보고서로 통합. composer 가 자유 형식 (`freeform_essay`) 으로 3~5건 사건 다룸. |
+| 시간대 | KST (Asia/Seoul) 기본 | `DAILY_BRIEFING_TZ` 로 IANA tz 변경 가능 (`zoneinfo`, Python 3.9+). |
+| 같은 날 중복 트리거 방지 | `briefing_runs.run_date` PK | 봇 재시작 + 트리거 시각 통과 케이스에서 atomic guard (`INSERT OR IGNORE`). |
+| Config 패턴 | `Field` + `AliasChoices` | 기존 V5 opt-in flags (`enable_*`) 와 일관 — 동일 변수에 `DAILY_BRIEFING_ENABLED` (대문자 env) + `daily_briefing_enabled` (소문자) 양쪽 alias. |
+
+### 구현 핵심
+
+- **신규 모듈** `src/scheduler/`:
+  - `subscriptions.py` — `BriefingSubscriberRegistry` (SQLite, WAL 모드, sync sqlite3, contextmanager). Watchlist registry 와 동일 패턴.
+  - `daily_briefing.py` — `run_daily_briefing_loop()` background task + 순수 함수 `_next_trigger()` / `_build_briefing_prompt()` (테스트 가능 분리).
+  - `db_schema.sql` — `briefing_subscribers` (chat_id PK, mode AnalysisMode CHECK) + `briefing_runs` (run_date PK).
+
+- **Orchestrator**: 변경 없음. 기존 `run_analysis(event_description, chat_id, status_callback, mode)` 시그니처를 그대로 사용. 일일 브리핑은 `mode='deep'` 전달.
+
+- **TelegramBot 수정**: `_on_app_post_init` 에 `asyncio.create_task(run_daily_briefing_loop)` 추가 (watchlist monitor task 옆). `_on_app_post_shutdown` 에 두 task 모두 정리하는 루프. `_send_text_to_chat` / `_send_document_to_chat` 헬퍼 추가 — scheduler 가 chat_id 로 송신.
+
+- **Config 수정**: `daily_briefing_enabled` (Field+AliasChoices, 디폴트 False), `daily_briefing_time` (기본 "07:30"), `daily_briefing_tz` (기본 "Asia/Seoul") 3개 필드. enabled=False 시 task 는 살아 있고 구독은 받지만 트리거 시각에 분석 실행만 스킵.
+
+### 운영 시나리오
+
+1. 사용자가 텔레그램에서 `/briefing_on` → SQLite `briefing_subscribers` 에 chat_id 등록.
+2. 서버 `.env` 에서 `DAILY_BRIEFING_ENABLED=true` 설정 후 봇 재시작.
+3. 매일 07:30 KST 자동 트리거 → `mode='deep'` 분석 (2-call) → HTML 생성 → Cloudflare 배포 → 구독한 모든 채팅에 보고서.
+4. 분석 도중 산출된 watch_signals 는 v2.9.5 watchlist registry 에도 자동 등록 (`parent_chat_id` 기준).
+
+### 트러블슈팅 / 주의사항
+
+- **잘못된 base branch 사례 (메타 트러블슈팅)**: 작업 초기에 옛 commit 위에서 v3.0.0 → v3.1.0 으로 작업했다가 사용자가 "현재 봇이 v5.0.0 인데?" 라고 지적. main 의 v5.0.x 위에서 다시 작업 — *항상 작업 시작 전 `git log origin/main` 확인할 것*.
+- **타임존**: `zoneinfo.ZoneInfo` 는 Python 3.9+. requirements 의 `>=3.11` 충족.
+- **봇 동시 작업**: 일일 브리핑 실행 중 사용자가 일반 분석 요청 시, 기존 `_queue` 메커니즘은 텔레그램 메시지 핸들러 안에서만 동작 — scheduler 의 분석은 큐를 거치지 않고 직접 orchestrator 호출. 1봇 1동시 분석 가정 운영.
+- **중복 트리거 방지**: 같은 날 봇 재시작 + 트리거 시각 지난 케이스에서 `briefing_runs.run_date` PK 가 atomic guard.

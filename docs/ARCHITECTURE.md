@@ -1,11 +1,12 @@
 ---
 tier: 2
-last_synced_with: v4.5.7
+last_synced_with: v5.1.0
 ssot_for:
-  - "시스템 아키텍처 다이어그램 (v4.5.7 Tier 4)"
+  - "시스템 아키텍처 다이어그램 (v5.1.0 Tier 4)"
   - "2-call 파이프라인 흐름"
   - "Mono 테마 적용 흐름"
   - "Composer-emitted 차트/지도 (v4.2.0 도입, v4.5.7 baseline)"
+  - "자동화 트랙 (watchlist monitor + daily briefing scheduler, v5.1.0)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "src/agents/{context_analyst, narrative_composer}.py"
@@ -13,12 +14,13 @@ depends_on:
   - "src/token_budget.py"
   - "src/lens_policy.py:select_theme"
   - "src/templates/static/charts.js + maps.js"
+  - "src/scheduler/* (v5.1.0)"
   - "docs/MONO_THEME_GUIDE.md"
   - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
-last_review: 2026-05-05
+last_review: 2026-05-13
 ---
 
-# Event Analysis Team — Architecture (v4.5.7)
+# Event Analysis Team — Architecture (v5.1.0)
 
 > 시스템 아키텍처의 SSOT. 다이어그램·데이터 흐름·기술 스택을 한곳에 정리한다.
 > 에이전트·렌즈·블록 카탈로그는 [docs/CATALOGS.md](CATALOGS.md), 데이터 모델 도식은 [docs/DATA_MODELS.md](DATA_MODELS.md). v3 시대의 7-agent / 11-lens / 11-archetype / 5-gate 구조 설명은 본 문서 §10 (Deprecated History) 와 [docs/legacy/](legacy/) 로 분리되어 있다.
@@ -303,6 +305,43 @@ Cloudflare Pages 가 CDN 캐시.
 - 각 에이전트는 입력을 typed 로 받아 typed output 을 반환.
 - Claude CLI 호출 시 `--dangerously-skip-permissions --allowedTools "WebFetch,WebSearch"`.
 - composer 호출 실패 시 graceful fallback — context.summary 만으로 minimal `ComposedReport` 구성 (`orchestrator.py:run_analysis()` 내).
+
+---
+
+## 9.5 자동화 트랙 (in-process asyncio tasks, v5.1.0)
+
+봇 프로세스 (`python -m src.main`) 안에서 메인 폴링 루프와 함께 도는 background asyncio
+task 들. 별도 cron / systemd timer 없이 동작하며 봇 재시작 시 SQLite 영속성으로 자연 복구.
+
+```
+TelegramBot (Application.run_polling)
+    │
+    ├── _on_app_post_init
+    │       ├── asyncio.create_task(run_monitor_loop)            # V3 Step 5-B (v2.9.5)
+    │       │      └── 1h 주기 — watchsignals deadline 자동 발화
+    │       │
+    │       └── asyncio.create_task(run_daily_briefing_loop)     # v5.1.0
+    │              └── 매일 DAILY_BRIEFING_TIME (기본 07:30 KST)
+    │                     ├── briefing_runs.run_date PK 로 dedupe
+    │                     ├── BriefingSubscriberRegistry.list_all() 순회
+    │                     └── per chat_id:
+    │                          Orchestrator.run_analysis(prompt, chat_id, mode='deep')
+    │                          → ContextAnalyst (Opus 4.7, 웹 검색)
+    │                          → NarrativeComposer (Opus 4.7, 5~7 섹션 + 모순 명시)
+    │                          → Cloudflare Pages 배포 → chat 송신
+    │
+    └── _on_app_post_shutdown
+            └── 두 task 모두 cancel (SQLite 데이터는 영속)
+```
+
+| Track | 트리거 | 액션 | 저장소 |
+|-------|--------|------|--------|
+| Watchlist Monitor (v2.9.5) | 1시간 주기 + 사용자 `/fire` | deadline 도래 시 자동 발화 + 텔레그램 알림 | `reports/watchlist.db` (`watchsignals`) |
+| Daily Briefing Scheduler (v5.1.0) | 매일 `DAILY_BRIEFING_TIME` (기본 07:30 KST) | 구독한 채팅에 간밤 산업/지정학/정치/전쟁 deep 보고서 자동 송신 | `reports/scheduler.db` (`briefing_subscribers`, `briefing_runs`) |
+
+일일 브리핑은 기존 v4.0.0 Tier 4 2-call 파이프라인을 `mode='deep'` 으로 호출 — composer 가
+5~7 섹션 + 모순 명시 + 감시 신호 추출. 새 파이프라인 도입 없음. `DAILY_BRIEFING_ENABLED=false`
+시 task 는 살아 있고 구독은 받지만 트리거 시각에 분석 실행만 스킵.
 
 ---
 

@@ -70,6 +70,31 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V5_LAYOUT_TYPESETTER", "ENABLE_LAYOUT_TYPESETTER", "enable_layout_typesetter"),
     )
 
+    # v5.1.0 — Daily Briefing Scheduler.
+    # 매일 ``daily_briefing_time`` (DAILY_BRIEFING_TZ 기준) 에 깨어나
+    # ``/briefing_on`` 으로 구독한 모든 텔레그램 채팅에 "간밤 산업·지정학·정치·전쟁"
+    # 심층 보고서를 자동 송신. 스케줄러 task 는 봇 프로세스 안 asyncio loop 에서
+    # 항상 기동되지만, 트리거 시각에 실제 분석 실행 여부는 ``daily_briefing_enabled``
+    # 가 게이트. enabled=false 시 구독은 받지만 분석은 스킵.
+    daily_briefing_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "DAILY_BRIEFING_ENABLED", "daily_briefing_enabled",
+        ),
+    )
+    daily_briefing_time: str = Field(
+        default="07:30",
+        validation_alias=AliasChoices(
+            "DAILY_BRIEFING_TIME", "daily_briefing_time",
+        ),
+    )
+    daily_briefing_tz: str = Field(
+        default="Asia/Seoul",
+        validation_alias=AliasChoices(
+            "DAILY_BRIEFING_TZ", "daily_briefing_tz",
+        ),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
