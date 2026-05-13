@@ -22,7 +22,7 @@ from telegram.ext import (
 
 from src.config import Config
 from src.orchestrator import Orchestrator
-from src.models import WatchSignal
+from src.models import MAX_CHAIN_DEPTH, ParentContext, WatchSignal
 from src.watchlist import WatchlistRegistry, run_monitor_loop
 from src.watchlist.monitor import format_telegram_alert
 from src.scheduler import BriefingSubscriberRegistry, run_daily_briefing_loop
@@ -42,9 +42,14 @@ _analysis_count: int = 0
 
 @dataclass
 class QueueItem:
-    """A queued analysis request."""
+    """A queued analysis request.
+
+    v5.1.1: ``update`` 가 None 이면 자동 후속 분석 — ``chat_id`` + ``parent_context`` 사용.
+    """
     event_text: str
-    update: Update
+    update: Update | None = None
+    chat_id: int = 0
+    parent_context: ParentContext | None = None
     position: int = 0
 
 
@@ -338,8 +343,17 @@ class TelegramBot:
         except Exception as e:
             logger.warning("[telegram_bot] /fire notify error: %s", e)
 
+    async def _send_to_chat(self, chat_id: int, text: str) -> None:
+        """Bot Application 을 통한 통일 전송 (Update 객체 없는 자동 후속 경로용, v5.1.1)."""
+        if self._app is None or not chat_id:
+            return
+        try:
+            await self._app.bot.send_message(chat_id=chat_id, text=text)
+        except Exception as e:
+            logger.warning("[telegram_bot] send_message failed for chat=%d: %s", chat_id, e)
+
     async def _notify_signal_fired(self, signal: WatchSignal) -> None:
-        """Send signal-fired alert to ``signal.parent_chat_id`` via the bot Application."""
+        """신호 발화 시 ①텔레그램 알림 ②chain_depth < MAX 면 후속 분석 자동 enqueue (v5.1.1)."""
         if self._app is None:
             logger.warning("[telegram_bot] notify called before app init; skipping")
             return
@@ -350,12 +364,82 @@ class TelegramBot:
             )
             return
         text = format_telegram_alert(signal, parent_title=signal.parent_report_id)
+        await self._send_to_chat(signal.parent_chat_id, text)
+
+        # v5.1.1: 자동 후속 분석 트리거 — 부모(0)/자식(1) 발화까지만 자동 후속, 손자(2)+ 차단.
         try:
-            await self._app.bot.send_message(chat_id=signal.parent_chat_id, text=text)
+            await self._maybe_enqueue_followup(signal)
         except Exception as e:
             logger.warning(
-                "[telegram_bot] send_message failed for chat=%d: %s",
-                signal.parent_chat_id, e,
+                "[telegram_bot] followup enqueue error for %s: %s",
+                signal.signal_id, e,
+            )
+
+    async def _maybe_enqueue_followup(self, signal: WatchSignal) -> None:
+        """발화된 신호로부터 ParentContext 를 조립하고 후속 분석을 큐에 추가 (v5.1.1).
+
+        ``signal.chain_depth`` 가 부모의 깊이. 자식 깊이는 +1. ``>= MAX_CHAIN_DEPTH``
+        면 후속 자동 생성을 스킵하고 안내만 송신.
+        """
+        next_depth = signal.chain_depth + 1
+        if next_depth >= MAX_CHAIN_DEPTH:
+            logger.info(
+                "[telegram_bot] signal %s at chain_depth=%d; skip auto-followup (cap=%d)",
+                signal.signal_id, signal.chain_depth, MAX_CHAIN_DEPTH,
+            )
+            await self._send_to_chat(
+                signal.parent_chat_id,
+                f"ℹ️ 신호 `{signal.signal_id}` 의 후속 보고서는 체인 상한"
+                f"(depth={MAX_CHAIN_DEPTH})에 도달해 자동 생성하지 않습니다. "
+                f"필요 시 수동으로 분석을 요청하세요.",
+            )
+            return
+
+        meta = self.watchlist_registry.get_report_meta(signal.parent_report_id) or {}
+        parent_event_desc = meta.get("event_description", "")
+        parent_scenarios = meta.get("scenarios", [])
+
+        parent_context = ParentContext(
+            parent_report_id=signal.parent_report_id,
+            parent_report_url=signal.parent_report_url,
+            parent_event_description=parent_event_desc,
+            parent_scenarios=parent_scenarios,
+            triggering_signal=signal,
+            chain_depth=signal.chain_depth,
+        )
+
+        parent_event_short = (parent_event_desc or signal.parent_report_id)[:300]
+        event_description = (
+            f"[후속 분석] 부모 보고서: {signal.parent_report_id}\n"
+            f"발화된 감시 신호: {signal.description} (방향: {signal.direction})\n"
+            f"원 이벤트: {parent_event_short}"
+        )
+
+        await self._send_to_chat(
+            signal.parent_chat_id,
+            f"🔄 후속 분석 자동 시작 — 부모: {signal.parent_report_id}\n"
+            f"  발화 신호: {signal.description}",
+        )
+
+        if self._is_analyzing:
+            position = len(self._queue) + 1
+            self._queue.append(QueueItem(
+                event_text=event_description,
+                update=None,
+                chat_id=signal.parent_chat_id,
+                parent_context=parent_context,
+                position=position,
+            ))
+            await self._send_to_chat(
+                signal.parent_chat_id,
+                f"📋 후속 분석 대기열 추가 ({position}번째)",
+            )
+        else:
+            await self._run_analysis(
+                update=None,
+                event_text=event_description,
+                chat_id=signal.parent_chat_id,
+                parent_context=parent_context,
             )
 
     # ------------------------------------------------------------------
@@ -501,7 +585,12 @@ class TelegramBot:
         for i, item in enumerate(self._queue):
             item.position = i + 1
 
-        await self._run_analysis(next_item.update, next_item.event_text)
+        await self._run_analysis(
+            update=next_item.update,
+            event_text=next_item.event_text,
+            chat_id=next_item.chat_id or None,
+            parent_context=next_item.parent_context,
+        )
 
     async def _quick_question(self, update: Update, question: str) -> None:
         """Answer a quick question directly via Claude CLI/API."""
@@ -545,97 +634,113 @@ class TelegramBot:
         except Exception as e:
             await msg.edit_text(f"답변 실패: {str(e)[:200]}")
 
-    async def _run_analysis(self, update: Update, event_text: str) -> None:
-        """Execute the analysis pipeline and send report."""
-        if update.message is None or update.effective_chat is None:
-            return
+    async def _run_analysis(
+        self,
+        update: Update | None,
+        event_text: str,
+        chat_id: int | None = None,
+        parent_context: ParentContext | None = None,
+    ) -> None:
+        """Execute the analysis pipeline and send report.
+
+        v5.1.1 two invocation modes:
+        - User-triggered: ``update`` 가 실제 Update. chat_id, reply 모두 update 에서 추출.
+        - Auto follow-up: ``update`` 가 None. ``chat_id`` 와 ``parent_context`` 명시 전달.
+          메시지는 ``self._app.bot.send_message`` 로 송신.
+        """
+        if update is not None:
+            if update.message is None or update.effective_chat is None:
+                return
+            chat_id = update.effective_chat.id
+        else:
+            if not chat_id:
+                logger.warning("[telegram_bot] _run_analysis called without update or chat_id")
+                return
 
         self._is_analyzing = True
         self._current_topic = event_text
         # v3.4.2 — /stop /stopall 이 cancel() 호출할 수 있게 task 핸들 보관.
         self._current_task = asyncio.current_task()
-        chat_id = update.effective_chat.id
+
+        async def send(text: str) -> None:
+            """Update 있으면 reply_text, 없으면 bot.send_message 로 통일 전송."""
+            if update is not None and update.message is not None:
+                try:
+                    await update.message.reply_text(text)
+                except Exception:
+                    pass
+            else:
+                await self._send_to_chat(chat_id, text)
 
         async def status_callback(status: str) -> None:
-            """Send each status as a NEW message (not edit)."""
-            try:
-                await update.message.reply_text(status)
-            except Exception:
-                pass
+            await send(status)
 
         try:
             result = await self.orchestrator.run_analysis(
                 event_description=event_text,
                 chat_id=chat_id,
                 status_callback=status_callback,
+                parent_context=parent_context,
             )
 
-            # Send text report (best effort — don't block report link)
-            try:
-                text_report = self.orchestrator._build_text_report(result)
-                for i in range(0, len(text_report), 3900):
-                    chunk = text_report[i:i+3900]
-                    await update.message.reply_text(chunk)
-            except Exception as e:
-                logger.warning(f"Text report send failed: {e}")
+            # v5.1.1: 텍스트 보고서 청크 + glossary 송신 제거 — 본문 콘텐츠는 보고서 HTML 안에 있음.
+            # 텔레그램에는 URL + 후속 안내만 송신해 노이즈를 줄임.
 
-            # Send glossary (best effort)
-            try:
-                glossary_text = self.orchestrator._build_glossary_text(result)
-                if glossary_text:
-                    for i in range(0, len(glossary_text), 3900):
-                        chunk = glossary_text[i:i+3900]
-                        await update.message.reply_text(chunk)
-            except Exception as e:
-                logger.warning(f"Glossary send failed: {e}")
-
-            # Send report link (must always reach user)
             report_path = result.report_path
+            followup_tag = " (후속)" if parent_context is not None else ""
             if result.report_url and result.report_url.startswith("http"):
                 md_url = result.report_url.replace(".html", ".md")
-                await update.message.reply_text(
-                    f"📊 Full Analysis Report\n\n"
+                await send(
+                    f"📊 Full Analysis Report{followup_tag}\n\n"
                     f"🔗 보고서 링크: {result.report_url}\n"
                     f"🤖 AI 전달용 (Markdown): {md_url}"
                 )
             elif report_path and os.path.isfile(report_path):
                 # Fallback: send file only if Cloudflare upload failed
-                with open(report_path, "rb") as f:
-                    await update.message.reply_document(
-                        document=f,
-                        filename=os.path.basename(report_path),
-                        caption="📊 Full Analysis Report (외부링크 생성 실패 — 파일 첨부)",
-                    )
+                if update is not None and update.message is not None:
+                    with open(report_path, "rb") as f:
+                        await update.message.reply_document(
+                            document=f,
+                            filename=os.path.basename(report_path),
+                            caption=f"📊 Full Analysis Report{followup_tag} (외부링크 생성 실패 — 파일 첨부)",
+                        )
+                elif self._app is not None:
+                    try:
+                        with open(report_path, "rb") as f:
+                            await self._app.bot.send_document(
+                                chat_id=chat_id,
+                                document=f,
+                                filename=os.path.basename(report_path),
+                                caption=f"📊 후속 분석 보고서{followup_tag} (외부링크 생성 실패 — 파일 첨부)",
+                            )
+                    except Exception as e:
+                        logger.warning("[telegram_bot] send_document failed: %s", e)
 
             global _analysis_count
             _analysis_count += 1
             duration = f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
 
             queue_info = f"\n📋 대기열: {len(self._queue)}건 남음" if self._queue else ""
-            await update.message.reply_text(
-                f"✅ 분석 완료 (소요시간: {duration}초){queue_info}"
-            )
+            await send(f"✅ 분석 완료 (소요시간: {duration}초){queue_info}")
 
             # Send index page link as separate message
             if result.report_url and result.report_url.startswith("http"):
                 base_url = result.report_url.rsplit("/", 1)[0]
                 index_url = f"{base_url}/"
-                await update.message.reply_text(
-                    f"📁 전체 보고서 목록: {index_url}"
-                )
+                await send(f"📁 전체 보고서 목록: {index_url}")
 
         except asyncio.CancelledError:
             # v3.4.2 — /stop /stopall 으로 취소됨. 사용자에게 알리고 정상 종료 시그널 전파.
             logger.info("[telegram_bot] Analysis cancelled by /stop or /stopall")
             try:
-                await update.message.reply_text("🛑 분석 중단됨")
+                await send("🛑 분석 중단됨")
             except Exception:
                 pass
             raise
 
         except Exception as e:
             logger.exception("Analysis failed")
-            await update.message.reply_text(f"❌ 분석 실패: {str(e)[:200]}")
+            await send(f"❌ 분석 실패: {str(e)[:200]}")
 
         finally:
             self._is_analyzing = False

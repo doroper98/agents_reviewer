@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</title>
+<title>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}{% if result.parent_context %} (← {{ result.parent_context.parent_report_id }}){% endif %}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 {% if result.visuals and result.visuals.leaflet_config and result.visuals.leaflet_config.enabled %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
@@ -17,8 +17,8 @@
 <!-- HERO -->
 <header class="hero">
   <div class="container">
-    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faded);margin-bottom:8px;font-family:'Noto Serif KR',serif;font-style:italic">Event Analysis Report</div>
-    <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}</h1>
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faded);margin-bottom:8px;font-family:'Noto Serif KR',serif;font-style:italic">Event Analysis Report{% if result.parent_context %} · 후속(Follow-up){% endif %}</div>
+    <h1>{{ result.context.event_name or result.context.event_name_en or 'Analysis' }}{% if result.parent_context %}<a href="#followup-parent" class="title-footnote-mark" title="부모 보고서 참조"><sup>[1]</sup></a>{% endif %}</h1>
     <p class="hero-sub">{{ result.executive_summary if result.executive_summary else '' }}</p>
     <div class="hero-tags">
       {% if result.context.category %}<span>{{ result.context.category }}</span>{% endif %}
@@ -26,6 +26,35 @@
     </div>
   </div>
 </header>
+
+{% if result.parent_context %}
+<!-- ===== FOLLOWUP PARENT REFERENCE (v5.1.1, h1 [1] footnote target) ===== -->
+<section id="followup-parent" class="followup-parent">
+  <div class="container">
+    <div class="followup-parent-box">
+      <div class="followup-parent-mark">[1]</div>
+      <div class="followup-parent-body">
+        <div class="followup-parent-label">← 부모 보고서</div>
+        <div class="followup-parent-id">
+          {% if result.parent_context.parent_report_url %}
+            <a href="{{ result.parent_context.parent_report_url }}" target="_blank" rel="noopener">{{ result.parent_context.parent_report_id }}</a>
+          {% else %}
+            {{ result.parent_context.parent_report_id }}
+          {% endif %}
+        </div>
+        <div class="followup-parent-signal">
+          발화 신호: "{{ result.parent_context.triggering_signal.description }}"
+          → <span class="followup-parent-dir followup-parent-dir-{{ result.parent_context.triggering_signal.direction }}">{{ result.parent_context.triggering_signal.direction }}</span>
+        </div>
+        {% if result.parent_context.parent_event_description %}
+        <div class="followup-parent-event">원 이벤트: {{ result.parent_context.parent_event_description[:200] }}</div>
+        {% endif %}
+        <div class="followup-parent-depth">체인 깊이: {{ result.parent_context.chain_depth + 1 }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
 
 <!-- NAV (dynamic) -->
 <nav class="nav"><div class="nav-inner">
@@ -210,9 +239,11 @@
   </div>
   {% endif %}
 
+  {# v5.1.1: 출처는 본문 인라인 [n] 마커 + 보고서 하단 footnotes 섹션으로 일원화. 상단 박스 제거. #}
   {% if result.context.sources %}
-  <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);font-size:10px;line-height:1.7;color:var(--text-muted)">
-    <b style="color:var(--text-secondary)">출처:</b> {{ result.context.sources|join(' · ') }}
+  <div style="margin-top:14px;font-size:10px;line-height:1.7;color:var(--text-muted)">
+    <span style="color:var(--text-secondary);font-weight:600">참고 출처:</span>
+    {% for src in result.context.sources %}<a href="#fn-{{ loop.index }}" class="fn-ref"><sup>[{{ loop.index }}]</sup></a>{% if not loop.last %} {% endif %}{% endfor %}
   </div>
   {% endif %}
 {% endmacro %}
@@ -380,7 +411,7 @@
     {% set tag_cls = sc.tag or '기본' %}
     {% set prob_str = (sc.probability or '')|string %}
     {% set prob_clean = prob_str.replace('%','').replace(' ','').strip() %}
-    <article class="scenario-card tag-{{ tag_cls }}">
+    <article id="scenario-S{{ loop.index }}" class="scenario-card tag-{{ tag_cls }}">
       <header class="scenario-card-head">
         <span class="scenario-card-num">{{ loop.index }}</span>
         <span class="scenario-card-name">{{ sc.name }}</span>
@@ -442,7 +473,7 @@
 {% macro render_watch_signals(result) %}
   <div class="signal-grid">
     {% for ws in result.scenarios.watch_signals %}
-    <div class="signal-item">
+    <div class="signal-item" id="ws-{{ loop.index }}">
       <div class="signal-icon" style="background:var(--orange-light)">{{ ws.icon or '📊' }}</div>
       <div>
         <h4>{{ ws.signal }}</h4>
@@ -480,15 +511,30 @@
 </section>
 {% endfor %}
 
+{% if result.context and result.context.sources %}
+<!-- ===== FOOTNOTES (v5.1.1, 출처 통합 리스트) ===== -->
+<section id="footnotes" class="footnotes">
+  <div class="footnotes-title">참고 출처</div>
+  <ol class="footnotes-list">
+  {% for src in result.context.sources %}
+    <li id="fn-{{ loop.index }}" class="footnotes-item">
+      {% if src.startswith('http://') or src.startswith('https://') %}
+      <a href="{{ src }}" target="_blank" rel="noopener" class="footnotes-link">{{ src }}</a>
+      {% else %}
+      <span class="footnotes-text">{{ src }}</span>
+      {% endif %}
+    </li>
+  {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
 </main>
 
 <!-- FOOTER -->
 <footer class="footer">
   {% if confidence_text %}
   <div style="max-width:600px;margin:0 auto 10px;color:var(--text-faded);font-size:10px">{{ confidence_text }}</div>
-  {% endif %}
-  {% if result.context and result.context.sources %}
-  <div style="max-width:600px;margin:0 auto 8px">{{ result.context.sources|join(' · ') }}</div>
   {% endif %}
   <div>Generated {{ generated_at }} | Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
   {% if result.report_url and result.report_url.startswith('http') %}
