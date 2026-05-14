@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.1.0
+last_synced_with: v5.1.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-13
+last_review: 2026-05-14
 ---
 
 # Changelog
@@ -17,6 +17,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.1.2] — 2026-05-14
+
+### Changed — Daily Briefing 기본 트리거 시각 07:30 → 06:00 KST
+
+`DAILY_BRIEFING_TIME` 디폴트를 `"07:30"` 에서 `"06:00"` 으로 조정. 시장 개장
+(09:00 KST) · 외교 일정 시작 전에 더 일찍 노출하기 위함. 운영 중인 환경에서
+`.env` 의 `DAILY_BRIEFING_TIME` 으로 override 한 경우 영향 없음 (env 우선).
+
+**수정**:
+- `src/config.py` `daily_briefing_time` Field default `"07:30" → "06:00"`.
+- `src/scheduler/daily_briefing.py` `run_daily_briefing_loop(time_str=...)`
+  default `"07:30" → "06:00"` + `_build_briefing_prompt` 안내 docstring 동기화.
+- `.env.example` `DAILY_BRIEFING_TIME=07:30 → 06:00`.
+- 문서 (`README`, `WORKFLOWS`, `GOAL`, `docs/ARCHITECTURE`, `docs/REPO_MAP`) 의
+  "기본 07:30 KST" 표기 동시 갱신. v5.1.0~v5.1.1 의 출시 디폴트는 GOAL 의
+  REQ-V5-101 노트에 명시 (히스토리 보존).
+- `src/orchestrator.py:VERSION` `v5.1.1 → v5.1.2`.
+
+### Notes
+
+- 기능·구조 변경 없음 — 단일 디폴트 상수 조정. 스케줄러 task / DB 스키마 /
+  텔레그램 명령 / 프롬프트 본문은 모두 그대로.
+- 실행 중인 봇은 재기동 후 다음 트리거가 06:00 으로 잡힘. `/briefing_status`
+  로 시각 확인 가능.
 
 ---
 

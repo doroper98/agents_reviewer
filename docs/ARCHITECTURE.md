@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.1.0
+last_synced_with: v5.1.2
 ssot_for:
   - "시스템 아키텍처 다이어그램 (v5.1.0 Tier 4)"
   - "2-call 파이프라인 흐름"
@@ -17,7 +17,7 @@ depends_on:
   - "src/scheduler/* (v5.1.0)"
   - "docs/MONO_THEME_GUIDE.md"
   - "GOAL.md (REQ-AGT-*, REQ-V3-*)"
-last_review: 2026-05-13
+last_review: 2026-05-14
 ---
 
 # Event Analysis Team — Architecture (v5.1.0)
@@ -321,7 +321,7 @@ TelegramBot (Application.run_polling)
     │       │      └── 1h 주기 — watchsignals deadline 자동 발화
     │       │
     │       └── asyncio.create_task(run_daily_briefing_loop)     # v5.1.0
-    │              └── 매일 DAILY_BRIEFING_TIME (기본 07:30 KST)
+    │              └── 매일 DAILY_BRIEFING_TIME (기본 06:00 KST)
     │                     ├── briefing_runs.run_date PK 로 dedupe
     │                     ├── BriefingSubscriberRegistry.list_all() 순회
     │                     └── per chat_id:
@@ -337,7 +337,7 @@ TelegramBot (Application.run_polling)
 | Track | 트리거 | 액션 | 저장소 |
 |-------|--------|------|--------|
 | Watchlist Monitor (v2.9.5) | 1시간 주기 + 사용자 `/fire` | deadline 도래 시 자동 발화 + 텔레그램 알림 | `reports/watchlist.db` (`watchsignals`) |
-| Daily Briefing Scheduler (v5.1.0) | 매일 `DAILY_BRIEFING_TIME` (기본 07:30 KST) | 구독한 채팅에 간밤 산업/지정학/정치/전쟁 deep 보고서 자동 송신 | `reports/scheduler.db` (`briefing_subscribers`, `briefing_runs`) |
+| Daily Briefing Scheduler (v5.1.0) | 매일 `DAILY_BRIEFING_TIME` (기본 06:00 KST, v5.1.2 부터) | 구독한 채팅에 간밤 산업/지정학/정치/전쟁 deep 보고서 자동 송신 | `reports/scheduler.db` (`briefing_subscribers`, `briefing_runs`) |
 
 일일 브리핑은 기존 v4.0.0 Tier 4 2-call 파이프라인을 `mode='deep'` 으로 호출 — composer 가
 5~7 섹션 + 모순 명시 + 감시 신호 추출. 새 파이프라인 도입 없음. `DAILY_BRIEFING_ENABLED=false`

@@ -996,3 +996,45 @@ charts.js 변경은 정적 자산이라 봇 재기동 불필요. `cp src/templat
 - **타임존**: `zoneinfo.ZoneInfo` 는 Python 3.9+. requirements 의 `>=3.11` 충족.
 - **봇 동시 작업**: 일일 브리핑 실행 중 사용자가 일반 분석 요청 시, 기존 `_queue` 메커니즘은 텔레그램 메시지 핸들러 안에서만 동작 — scheduler 의 분석은 큐를 거치지 않고 직접 orchestrator 호출. 1봇 1동시 분석 가정 운영.
 - **중복 트리거 방지**: 같은 날 봇 재시작 + 트리거 시각 지난 케이스에서 `briefing_runs.run_date` PK 가 atomic guard.
+
+---
+
+## v5.1.2 — Daily Briefing 기본 트리거 시각 07:30 → 06:00 KST (2026-05-14)
+
+### 사용자 요청
+"간밤에 이슈들을 식별하고 보고서 만들어 내는 기능을 어제 만들었는데, 이 부분에
+있어서 시간을 내가 07:30에 만드는것으로 했는데, 06:00 로 조정하자. 너무 늦는거
+같아. 나머지는 변경사항 없어."
+
+### 변경
+
+| 파일 | 수정 |
+|------|------|
+| `src/config.py` | `daily_briefing_time` Field default `"07:30" → "06:00"` |
+| `src/scheduler/daily_briefing.py` | `run_daily_briefing_loop(time_str=...)` default + `_build_briefing_prompt` docstring 동기화 |
+| `.env.example` | `DAILY_BRIEFING_TIME=07:30 → 06:00` |
+| `src/orchestrator.py` | `VERSION = "v5.1.1" → "v5.1.2"` |
+| docs (README / WORKFLOWS / GOAL / docs/ARCHITECTURE / docs/REPO_MAP / CHANGELOG) | "기본 07:30 KST" 표기 갱신 + `last_synced_with` v5.1.2 |
+
+### 메타 트러블슈팅 — 잘못된 base branch (재발)
+
+작업 시작 시 `claude/adjust-report-schedule-1Dcv9` 브랜치가 v5.1.0 *이전* 의
+maplibre 샘플 머지 (`dcaf6af`) 에서 분기되어 있어 `src/scheduler/` 가 존재하지
+않는 상태였음. v5.1.0 DEVLOG §9.J 의 "*항상 작업 시작 전 `git log origin/main`
+확인*" 교훈이 또 재발 — 이번에는 사용자가 `5.1.1 이 최신인가보다` 라고 지적.
+
+해결: `git fetch --all` → `git reset --hard origin/main` (v5.1.1) 후 06:00 변경
+적용. 브랜치는 force push (`--force-with-lease`) 로 정리. 이전 base 의 maplibre
+샘플 work 는 `claude/maplibre-d3-sample-page-CntQY` 에 그대로 보존됨.
+
+### 의사결정
+
+- **운영 영향 없음**: env `DAILY_BRIEFING_TIME` 으로 override 한 환경은 영향 없음
+  (Pydantic settings 가 env 우선). 디폴트 변경만이라 봇 재기동 후 다음 트리거가
+  06:00 으로 자연 적용. 새 의존성·DB 마이그레이션·프롬프트 변경 없음.
+- **시간 선택 (06:00)**: 시장 개장 (09:00 KST) · 외교 일정 시작 전에 더 일찍
+  노출하기 위함. ContextAnalyst 웹 검색 + NarrativeComposer deep 모드의 평균
+  실행 시간 (~10~15분) 을 고려해도 06:30 안에 송신 완료 → 출근 전 확인 가능.
+- **CHANGELOG v5.1.0 본문은 보존**: v5.1.0 출시 시점의 디폴트는 07:30 이었던 게
+  사실. 본문은 "디폴트 07:30" 그대로 두고, REQ-V5-101 (GOAL.md) 에서 "v5.1.2
+  부터 06:00" 노트로 히스토리 표기. DEVLOG append-only 원칙 준수.
