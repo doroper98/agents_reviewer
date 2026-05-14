@@ -40,7 +40,7 @@ SendDocumentFn = Callable[[int, str, str], Awaitable[None]]
 def _build_briefing_prompt(now_local: datetime) -> str:
     """간밤 (전날 자정 ~ 분석 시각) 산업/지정학/정치/전쟁 이슈 종합 분석 프롬프트.
 
-    분석 시각은 보통 07:30 KST 이므로 "간밤" = 전날 자정 ~ 당일 07:00 부근.
+    분석 시각은 보통 06:00 KST 이므로 "간밤" = 전날 자정 ~ 당일 06:00 부근.
     웹 검색은 ContextAnalyst 단계에서 자동 수행됨. "심층" 키워드를 프롬프트에 포함시키지만
     실제 mode 는 호출 시 명시적으로 전달 — 일관성을 위해.
     """
@@ -88,7 +88,7 @@ async def run_daily_briefing_loop(
     subscribers: "BriefingSubscriberRegistry",
     send_text_fn: SendTextFn,
     send_document_fn: SendDocumentFn | None,
-    time_str: str = "07:30",
+    time_str: str = "06:00",
     tz_name: str = "Asia/Seoul",
     enabled: bool = True,
 ) -> None:

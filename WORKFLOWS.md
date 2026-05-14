@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.1.0
+last_synced_with: v5.1.2
 ssot_for:
   - "분석 실행 워크플로우 (텔레그램 명령 → 보고서)"
   - "개발 워크플로우"
@@ -10,7 +10,7 @@ depends_on:
   - "src/orchestrator.py (파이프라인 단계)"
   - "src/scheduler/* (v5.1.0)"
   - "docs/ARCHITECTURE.md"
-last_review: 2026-05-13
+last_review: 2026-05-14
 ---
 
 # WORKFLOWS — Event Analysis Team
@@ -111,7 +111,7 @@ Phase 4: [보고서 합성관] Executive Summary 생성
 
 ## 일일 자동 브리핑 워크플로우 — v5.1.0
 
-별도 cron 없이, 봇 프로세스 안 asyncio task 가 매일 지정 시각 (기본 07:30 KST) 에
+별도 cron 없이, 봇 프로세스 안 asyncio task 가 매일 지정 시각 (기본 06:00 KST) 에
 깨어나 구독한 모든 텔레그램 채팅에 "간밤 산업·지정학·정치·전쟁" 심층 보고서를 자동 송신.
 
 ### 사용자 사이드 (1회 셋업)
@@ -121,9 +121,9 @@ Phase 4: [보고서 합성관] Executive Summary 생성
     ↓
 [telegram_bot] BriefingSubscriberRegistry.subscribe(chat_id, mode='deep')
     ↓
-[봇] "✅ 일일 브리핑 구독 완료 — 매일 07:30 (Asia/Seoul)" 응답
+[봇] "✅ 일일 브리핑 구독 완료 — 매일 06:00 (Asia/Seoul)" 응답
     ↓ (이후 자동)
-[매일 07:30 KST] 보고서 자동 수신
+[매일 06:00 KST] 보고서 자동 수신
 ```
 
 ### 시스템 사이드 (자동 트리거)
@@ -134,7 +134,7 @@ Phase 4: [보고서 합성관] Executive Summary 생성
 asyncio.create_task(run_daily_briefing_loop)
     ↓
 ─── loop ───
-[scheduler] _next_trigger() 로 다음 07:30 KST 계산 → asyncio.sleep
+[scheduler] _next_trigger() 로 다음 06:00 KST 계산 → asyncio.sleep
     ↓
 [scheduler] briefing_runs 테이블에 run_date PK insert (같은 일자 중복 시 skip)
     ↓
@@ -153,7 +153,7 @@ asyncio.create_task(run_daily_briefing_loop)
     ↓
 [scheduler] briefing_runs.finish_run(run_date, succeeded, failed)
     ↓
-─── 다음 루프 (다음 07:30 KST 까지 sleep) ───
+─── 다음 루프 (다음 06:00 KST 까지 sleep) ───
 ```
 
 ### 환경변수 게이트
@@ -161,7 +161,7 @@ asyncio.create_task(run_daily_briefing_loop)
 | 변수 | 기본값 | 의미 |
 |------|--------|------|
 | `DAILY_BRIEFING_ENABLED` | `false` | task 는 항상 살아 있고 구독은 받지만, 트리거 시각에 실제 분석 실행 여부 게이트. false 시 스킵 + 로그만. |
-| `DAILY_BRIEFING_TIME` | `07:30` | 24h "HH:MM", `DAILY_BRIEFING_TZ` 기준 |
+| `DAILY_BRIEFING_TIME` | `06:00` | 24h "HH:MM", `DAILY_BRIEFING_TZ` 기준 |
 | `DAILY_BRIEFING_TZ` | `Asia/Seoul` | IANA tz (예: `UTC`, `America/New_York`, `Asia/Tokyo`) |
 
 ### 텔레그램 명령

@@ -1,13 +1,13 @@
 ---
 tier: 1
-last_synced_with: v5.1.0
+last_synced_with: v5.1.2
 ssot_for:
   - "기능 요구사항 ID 체계 (REQ-*)"
   - "비기능 요구사항 (NFR-*)"
   - "성공 기준 (SC-*)"
   - "향후 작업 (FUT-*)"
 depends_on: []
-last_review: 2026-05-13
+last_review: 2026-05-14
 ---
 
 # Event Analysis Team — Project Goal
@@ -49,7 +49,7 @@ last_review: 2026-05-13
 | REQ-V3-007 | Watchlist | WatchSignal Pydantic 모델 + SQLite 영구 저장 + 봇 재시작 복구 + 봇 프로세스 내 asyncio monitor (1시간 주기 deadline 자동 발화) + `/watchlist`·`/fire` 명령 (Anti-pattern #11) | P0 | ✅ |
 | REQ-V3-008 | Archetype Completion | 보고서 archetype 11종 완성 (decision_brief / timeline_first / scenario_first / mechanism_decomp / industry_value_chain 5종 추가) + `select_archetype()` 4-tier 우선순위 매트릭스 + LLM-matrix 하이브리드 라우팅 + six_act_theater specialty 강등 (suitable_intents 7→2) | P0 | ✅ |
 | REQ-V3-009 | Persona Migration | 페르소나 → lens 이전 (PlayerAnalyst→stakeholder / DynamicsAnalyst→structural / ChainReactionAnalyst→cascade). 페르소나 모듈 보존 + module-level DeprecationWarning. v3.x 동작 보장. | P0 | ✅ |
-| REQ-V5-101 | Daily Briefing | 봇 프로세스 안 asyncio task 로 매일 `DAILY_BRIEFING_TIME` (기본 07:30 KST) 에 "간밤 산업·지정학·정치·전쟁" deep 모드 보고서 자동 생성·배포·텔레그램 송신. `/briefing_on /briefing_off /briefing_status` 명령 + SQLite 구독 영속성 + `briefing_runs.run_date` PK 같은 날 중복 방지. v5.1.0. | P1 | ✅ |
+| REQ-V5-101 | Daily Briefing | 봇 프로세스 안 asyncio task 로 매일 `DAILY_BRIEFING_TIME` (기본 06:00 KST, v5.1.2 부터; v5.1.0~v5.1.1 은 07:30) 에 "간밤 산업·지정학·정치·전쟁" deep 모드 보고서 자동 생성·배포·텔레그램 송신. `/briefing_on /briefing_off /briefing_status` 명령 + SQLite 구독 영속성 + `briefing_runs.run_date` PK 같은 날 중복 방지. v5.1.0. | P1 | ✅ |
 
 ### 비기능 요구사항 (Non-Functional)
 

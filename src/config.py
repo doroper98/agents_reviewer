@@ -83,7 +83,7 @@ class Config(BaseSettings):
         ),
     )
     daily_briefing_time: str = Field(
-        default="07:30",
+        default="06:00",
         validation_alias=AliasChoices(
             "DAILY_BRIEFING_TIME", "daily_briefing_time",
         ),
