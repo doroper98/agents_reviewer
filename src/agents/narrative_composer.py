@@ -176,10 +176,18 @@ SYSTEM_PROMPT = (
     "  되면 생략 (양쪽 모두 같은 말 X).\n\n"
     "[type 별 data 스키마]\n"
     "기존 8종 (Tier 1):\n"
-    "  · donut:   [{label, value:number, note?}]                   비중 비교 (3개 이상, 균등 X)\n"
+    "  · donut:   [{label, value:number, note?}]                   비중 비교 (*반드시 3개 이상, 균등 X*)\n"
+    "             2 segment 도넛은 emit 금지 (CHART-AP-16). '기타' 같은 잡탕 segment 강제로 만들지 말 것 —\n"
+    "             정보 손실 + subtitle 잉여. 비율 카드 또는 본문 한 문장으로 대체.\n"
     "  · bar:     [{label, value:number, note?}]                   순위·분포\n"
-    "  · line:    [{x, y:number, event?}]                          시계열 추이\n"
-    "  · gantt:   [{label, start, end, note?}]                     사건 구간\n"
+    "  · line:    [{x, y:number, event?}]                          시계열 추이 — *지수·환율·금리* 기본\n"
+    "  · candle:  [{date, open, high, low, close, volume?, event?}]   일간 OHLC — *개별주* 전용 (삼성전자 등)\n"
+    "             v5.2.0 신규. composer 가 직접 만들지 말 것 — available_time_series 의 OHLC 데이터만 사용.\n"
+    "  · area:    [{x, y:number, event?}]                          line 의 그라데이션 변형 — *원자재·금* (WTI, 금)\n"
+    "             v5.2.0 신규. line 과 데이터 shape 동일.\n"
+    "  · gantt:   [{label, start, end, note?}]                     *사건 구간* (start ≠ end 가 ≥30%)\n"
+    "             point-in-time 이벤트 모음 (모든 row 가 start==end) 은 emit 금지 (CHART-AP-15).\n"
+    "             그 경우 본문 list 또는 line + event marker (point 에 event 라벨) 로.\n"
     "  · network: {nodes:[{id,label,group?}], links:[{source,target,type?}]}  관계도\n"
     "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자\n"
     "             (value 는 *양수 magnitude 만*. 부호 있는 점수면 bar 로)\n"
@@ -203,12 +211,29 @@ SYSTEM_PROMPT = (
     "    country_code 는 ISO-3166-1 alpha-2 (KR, JP, US, CN, IN 등).\n\n"
     "- 모든 차트는 mono guide 의 45° 패턴 + 단일 액센트. 색은 자동 적용.\n"
     "- *데이터가 비어있으면 차트 자체를 emit 하지 말 것* (charts 배열에 추가 금지).\n"
-    "  · bar/donut/line/gantt/heatmap: data 가 빈 배열이면 emit X\n"
+    "  · bar/donut/line/gantt/heatmap/candle/area: data 가 빈 배열이면 emit X\n"
     "  · network: data.nodes 가 2개 미만이면 emit X\n"
     "  · stacked: data.scenarios 가 빈 배열이면 emit X\n"
     "  · dual_line: left.series 또는 right.series 가 비면 emit X\n"
     "  · forecast: data.actual 이 2개 미만이면 emit X\n"
     "  · 모르는 수치를 *추정해서* 차트 만들지 말 것 — 진짜 출처 데이터만.\n\n"
+
+    "=== 시계열 차트 (v5.2.0) — available_time_series ===\n"
+    "입력에 ``available_time_series`` 가 있으면 orchestrator 가 KRX/FRED/ECOS\n"
+    "에서 fetch 한 *실 OHLC 데이터*. 각 entry 는:\n"
+    "  {instrument, source, code, unit, chart_type, start_date, end_date,\n"
+    "   data: [{date:'YYYY-MM-DD', open, high, low, close, volume?}, ...]}\n\n"
+    "규칙:\n"
+    "  - 시계열 차트 (line/candle/area) 는 *반드시 available_time_series 의 데이터만 사용*.\n"
+    "    composer 가 일간 OHLC 를 추정·생성 금지. 데이터 없으면 차트 X.\n"
+    "  - 각 series 의 chart_type 추천을 *그대로 따름* (line=지수·환율·금리, candle=개별주, area=원자재).\n"
+    "  - data 배열을 차트의 data 필드로 그대로 넘김. 단:\n"
+    "    · line 차트는 [{x: date, y: close}] 형태로 mapping\n"
+    "    · candle 차트는 [{date, open, high, low, close}] 형태 그대로\n"
+    "    · area 차트는 [{x: date, y: close}] 형태로 mapping\n"
+    "  - 이벤트가 있으면 (예: 코스피 8000 돌파 5/15) 해당 data point 에 ``event: '8000 첫 돌파'`` 추가\n"
+    "    — charts.js 가 자동으로 번호 배지 + footnote 로 렌더.\n"
+    "  - 본문에서 명시적으로 인용한 instrument 만 차트로. 데이터 있다고 무조건 차트 만들지 말 것.\n\n"
     "=== 지도 (v4.2.0 — 지리적 사건일 때만) ===\n"
     "- 사건이 *명백히 지리적* 일 때만 (해협 봉쇄 / 무역 회랑 / 분쟁 지역 등).\n"
     "- 보고서 레벨 1개 (top-level ``embedded_map``). 섹션별 지도 없음.\n"
@@ -561,6 +586,14 @@ class NarrativeComposer:
         # 차트 catalog — composer 가 referencing 할 수 있는 차트 목록.
         if chart_catalog:
             payload["available_charts"] = chart_catalog
+
+        # v5.2.0 — 시계열 데이터 (orchestrator 가 market_fetcher 로 채움).
+        # 각 series 가 chart_type ('line' / 'candle' / 'area') 을 추천 — composer 가
+        # 그대로 사용. data 비어있으면 (fetch 실패 / key 없음) 해당 instrument 차트 X.
+        ts = getattr(result.context, "time_series", None) or []
+        ts_with_data = [s for s in ts if (s.get("data") if isinstance(s, dict) else getattr(s, "data", None))]
+        if ts_with_data:
+            payload["available_time_series"] = ts_with_data
 
         return payload
 

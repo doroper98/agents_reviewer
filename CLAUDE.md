@@ -144,6 +144,8 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | `src/token_budget.py` 정책 변경 | [docs/ARCHITECTURE.md §3.1](docs/ARCHITECTURE.md), [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
 | `src/lens_policy.py` 매핑 변경 | [docs/CATALOGS.md §2.1](docs/CATALOGS.md) |
 | `src/templates/static/charts.js` 차트 추가/변경 (v3.2.0) | [CLAUDE.md `Chart System`](CLAUDE.md), `samples/chart_gallery.html`, `src/visual_builder.py:build_chart_payload`, `src/tests/test_chart_builders.py` |
+| `src/tools/market_fetcher.py` 변경 (v5.2.0) | `src/config.py` (API key 필드), `src/models.py:ContextAnalysis` (`instruments_mentioned` / `time_series`), `src/agents/context_analyst.py:SYSTEM_PROMPT` (지원 종목 목록), `src/orchestrator.py` (fetch hook + `_select_market_period`), `tests/test_market_fetcher.py`, `.env.example`, [CLAUDE.md `Market Data Fetcher`](CLAUDE.md). 신규 instrument 추가 시 `INSTRUMENT_REGISTRY` + alias + 회귀 테스트 동시 갱신. |
+| `src/models.py:ComposedSection._drop_invalid_charts` 변경 (v5.2.0) | `src/visual/schemas.py:_TYPE_TO_GUARD` (타입별 가드 SSOT), `tests/regression/test_composed_section_guard.py` (production wiring 회귀), `docs/CHART_RENDERING_ANTIPATTERNS.md` (AP-N 추가 시 함께). 본 validator 가 chart_gate 의 production 진입점 — 디폴트 ON. 위반 차트 silent drop. |
 | `src/agents/narrative_composer.py` 변경 (v3.3.0) | [docs/CATALOGS.md §1](docs/CATALOGS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [src/visual_builder.py:build_chart_catalog](src/visual_builder.py), [src/tests/test_narrative_composer.py](src/tests/test_narrative_composer.py) |
 | `src/templates/archetypes/freeform_essay.html` 변경 (v3.3.0) | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/CATALOGS.md §3](docs/CATALOGS.md) |
 | `src/templates/static/charts.css` 차트 디자인 토큰 변경 | [CLAUDE.md `Chart System`](CLAUDE.md) |
@@ -185,14 +187,16 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.7 확장)
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **14개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **16개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
 - CHART-AP-13: Gantt 차트 시간축 누락 + 행 라벨/note 충돌 (v4.5.4 신설)
 - CHART-AP-14: 보고서와 무관한 지리 annotation 무조건 렌더 (v4.5.7 신설 — Somaliland viewport gating)
+- CHART-AP-15: gantt zero-duration emit (v5.1.2 신설 — point-in-time 이벤트 모음을 gantt 로, `GanttGuard.validate_durations` 추가)
+- CHART-AP-16: donut 2-segment 안티패턴 (v5.1.2 신설 — 정보 손실 + subtitle 잉여 + 렌더러 silent return 빈 카드 회귀, `DonutGuard.validate_segment_count` 추가)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
@@ -227,12 +231,19 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `src/templates/{report.html,report_block.html}` (legacy archetype 용)
 - `src/templates/blocks/` 17종 — composer 가 `embedded_blocks` 로 명시 시만 사용 (현재 실질 미사용)
 
-## Chart System (v4.5.7)
+## Chart System (v5.2.0 wip)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
-- 8종 type: bar / donut / line / gantt / network / stacked / bubble / heatmap (mono guide §5).
+- 13종 type: bar / donut / line / gantt / network / stacked / bubble / heatmap / dual_line / forecast / choropleth / **candle / area** (v5.2.0 신규).
 - 각 차트는 `ComposedSection.charts: list[dict]` 의 dict 1개 — `{type, title, data, note?}`.
 - 렌더링: `freeform_essay.html` 이 chart-card SVG + inline JSON payload emit → `charts.js` 가 스캔/렌더 (mono guide §4 패턴 자동 적용).
-- 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ samples 갱신 ④ 테스트.
+- 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ `src/visual/schemas.py` 의 `_TYPE_TO_GUARD` 에 가드 추가 ④ samples 갱신 ⑤ 회귀 테스트.
+
+## Market Data Fetcher (v5.2.0)
+- ContextAnalyst 가 LLM 출력에 `instruments_mentioned: list[str]` emit → orchestrator 가 `src/tools/market_fetcher.py` 의 `fetch_many` 호출 → `ContextAnalysis.time_series` 채움 → composer 가 candle / line / area 차트로 emit.
+- 3 source: KRX (한국 지수·개별주, 무인증) / FRED (미국 매크로, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 11 종목).
+- Graceful degradation — API key 누락·HTTP fail 시 빈 series + warning log. 보고서는 정상 진행, 해당 instrument 차트만 emit X.
+- 기본 기간 3M (사건 보고서 event-anchored). 사건 일자 = `context.date` 기준. 향후 mode-aware period (daily=1M / historical=3Y) 확장 예정.
+- 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.
 
 ## Map System (v4.5.7)
 - composer 가 `ComposedReport.embedded_map` 에 보고서당 1개 emit (지리적 사건일 때만).

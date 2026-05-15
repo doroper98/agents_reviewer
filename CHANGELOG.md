@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.1.2
+last_synced_with: v5.2.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,161 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.0] — 2026-05-15
+
+Market Data Fetcher + 시계열 차트 (candle/area) + chart_gate production wiring +
+mode-aware period + drawLine 이벤트 마커 통일. 본 릴리스로 CHART-AP-15/16 의
+근본 원인 (시계열 데이터 부재 + 가드 비활성) 둘 다 해소. composer 가 같은 실수
+해도 가드 자동 차단, 진짜 OHLC 로 차트 emit.
+
+운영자 단계: VM 에 `pip install pykrx yfinance` + `.env` 에 `FRED_API_KEY` /
+`ECOS_API_KEY` 추가 + 봇 재시작. 다음 보고서부터 코스피·삼성전자·DXY·국고 10Y·
+미국채 1Y·WTI 등 실 OHLC 자동 차트 emit. `python scripts/verify_market_fetcher.py`
+로 봇 재시작 전 안전망 검증.
+
+### Fixed — chart_gate production wiring (CRITICAL)
+
+이전엔 `run_chart_gate` / `validate_chart_data` 가 정의만 있고 production
+경로에서 *호출 안 됨* (V5 Phase 6 flag 디폴트 OFF 때문). CHART-AP-15/16 가드
+모두 dormant 상태였음 — composer 가 위반 차트 emit 해도 그대로 통과.
+
+- **`src/models.py:ComposedSection._drop_invalid_charts`** — Pydantic
+  `@model_validator(mode="after")` 신설. composer JSON 파싱 직후 *디폴트 ON* 으로
+  각 차트 dict 에 `validate_chart_data` 호출. 위반 차트만 silent drop + warning
+  log. 합법 차트는 절대 안 건드림. validator 자체 raise 도 차트 보존 (composer
+  토큰 12~32K 비용 회피).
+- **`tests/regression/test_composed_section_guard.py`** — 신규 17건 회귀 테스트.
+  AP-15/16 의 실제 회귀 케이스 + 합법 차트 보존 + edge cases.
+
+### Added — drawLine 의 이벤트 마커 통일 (Bloomberg/FT 스타일)
+
+기존 `drawLine` 의 inline event 는 *점선만* 그리고 라벨 X — 어떤 이벤트인지 알
+수 없었음. v5.2.0 에서 candle/area 에 도입한 번호 배지 + footnote 패턴을 line
+에도 적용 (3 type 일관 스타일).
+
+- **`src/templates/static/charts.js:drawLine`** — `data.filter(d=>d.event)`
+  의 legacy dotted-line 만 그리던 블록을 `_renderEventBadgesAndFootnote`
+  호출로 교체.
+
+### Added — Mode-aware period 선택
+
+market_fetcher 가 받는 fetch 기간을 사건/리포트 성격으로 분기:
+
+- **`src/orchestrator.py:_select_market_period`** — 헬퍼 신설.
+  daily briefing 키워드 (간밤/어제/오늘 등) → "1M",
+  historical 키워드 (IMF/외환위기/10년 만에 등) → "3Y",
+  기본 → "3M" (사건 보고서 event-anchored ±30일).
+
+### Added — KRX ISIN 동적 lookup
+
+기존 `_ISIN_MAP` 은 삼성전자/SK하이닉스 2개만 하드코딩. 사용자가 다른 종목
+mention 하면 fetcher 가 빈 결과 반환했음. KRX search endpoint 로 동적 조회.
+
+- **`src/tools/market_fetcher.py:_lookup_isin`** — KRX `finder_stkisu` POST 로
+  6자리 코드 → ISIN 동적 조회. 결과는 `_ISIN_MAP` cache 에 자동 저장.
+  하드코딩 seed 도 NAVER/카카오/현대차/LG화학/삼성SDI/삼성바이오 추가 (8 종목).
+
+### Added — 운영 검증 스크립트
+
+- **`scripts/verify_market_fetcher.py`** — `.env` 의 키로 6 종목 1M fetch 시도.
+  ✅/❌ 표시 + 빈 응답 사유. 봇 재시작 *전* 키 검증용. pykrx/yfinance 설치 상태도 표시.
+
+### Fixed — KRX 우회 (pykrx + Yahoo Finance 하이브리드)
+
+운영 환경 verify 에서 두 차례 KRX 이슈 발견 → 단계적 해결.
+
+- 1차: `src/tools/market_fetcher.py:KRXFetcher` 가 aiohttp 직접 POST → 모든
+  KRX 종목이 `HTTP 400 LOGOUT` 으로 실패. warm-up GET 추가해도 미해결.
+- 2차: **pykrx 로 전환** — 한국 거래소 scraping 표준 라이브러리. 개별주
+  (삼성전자/SK하이닉스) 정상 fetch. requirements.txt 에 `pykrx>=1.0` 추가.
+- 3차: pykrx 의 *지수* endpoint (`get_index_ohlcv`) 가 OTP 인증 우회 실패 →
+  KOSPI/KOSDAQ 만 **Yahoo Finance** (`yfinance`) 로 우회 (`^KS11` / `^KQ11`
+  ticker 무인증 안정). 개별주는 pykrx 그대로. requirements.txt 에 `yfinance>=0.2.40`
+  추가. `INSTRUMENT_REGISTRY` 의 KOSPI/KOSDAQ source `'KRX'` → `'YAHOO'`.
+- 데이터 정합 검증 — pykrx ↔ Yahoo cross-check 로 OHLC/거래량 byte-equal 확인
+  (운영자 매뉴얼 검증).
+
+---
+
+### Added — 시계열 데이터 파이프라인 (B 안)
+
+ContextAnalyst LLM 이 본문에서 다루는 금융 instrument 를 ``instruments_mentioned``
+로 emit → orchestrator 가 KRX / FRED / ECOS 에서 실 OHLC fetch →
+``ContextAnalysis.time_series`` 에 저장 → composer 가 line / candle / area
+차트로 emit. 가짜 데이터 / 추정값 차트 회귀 (CHART-AP-15/16 의 근본 원인) 해소.
+
+- **`src/tools/market_fetcher.py`** (신규) — FRED / ECOS / KRX 3 fetcher 통합.
+  `INSTRUMENT_REGISTRY` 11 종목 (코스피·코스닥·삼성전자·SK하이닉스·DXY·UST 1Y/10Y·
+  WTI·금·국고 10Y·원/달러). `resolve_instrument(query)` 한국어 alias 매칭.
+  `fetch_market_series` / `fetch_many` async API. graceful degradation —
+  API key 없으면 빈 series + warning log (보고서 진행).
+- **`src/models.py`** — `ContextAnalysis.instruments_mentioned`, `time_series`
+  필드 신설.
+- **`src/agents/context_analyst.py`** — SYSTEM_PROMPT 에 `instruments_mentioned`
+  emit 가이드 추가 (지원 종목 + 규칙 명시).
+- **`src/orchestrator.py`** — Phase 1 직후 market_fetch hook. 사건 일자 anchor +
+  3M 기본 기간 + 병렬 fetch. fetch 실패해도 보고서 흐름 영향 X.
+- **`src/agents/narrative_composer.py`** — composer payload 에 `available_time_series`
+  포함 + SYSTEM_PROMPT 에 "시계열 차트 데이터는 반드시 fetched series 만" 규칙.
+- **`src/config.py`** — `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY` 환경변수.
+- **`.env.example`** — 3 키 자리 + 발급 링크.
+
+### Added — Candle / Area 차트 type
+
+`charts.js` 의 11 type 에서 13 type 으로. 두 신규 type 은 시계열 OHLC 차트
+전용이며 *반드시 market_fetcher 데이터로만 emit* (composer 가 추정 금지).
+
+- **`src/templates/static/charts.js`** — `drawCandle` (OHLC body + wick, accent=bull
+  outline / down=bear fill) + `drawArea` (line + gradient) 신규. 공통 헬퍼
+  `_renderEventBadgesAndFootnote` — Bloomberg/FT 풍 번호 배지 (상단 same-Y +
+  가로 cascade + leader line) + HTML footnote (`.chart-card-footnote` 안).
+- **`src/templates/static/charts.css`** — `.chart-card-footnote` / `.chart-note-row`
+  / `.chart-note-num` / `.chart-note-date` / `.chart-note-text` 토큰.
+- **`src/visual/schemas.py`** — `CandleChartGuard` (data ≥2 + OHLC 순서 일관성
+  low≤open≤high / low≤close≤high) + `AreaChartGuard` (line 과 동일 + finite).
+  `_TYPE_TO_GUARD` 에 등록.
+- **`tests/regression/test_chart_correctness.py`** — Candle / Area 가드 회귀 9건.
+- **`tests/test_market_fetcher.py`** — 파서·라우팅·graceful degradation 25건 (모킹 only).
+
+### Notes
+
+- `enable_visual_planner` 등 V5 flag 와 *독립적* — 디폴트 ON. fetcher 는 API key
+  유무로만 분기. 봇 운영자가 `.env` 에 키 추가 → 다음 보고서부터 자동 작동.
+- 이번 commit 으로 CHART-AP-15 (gantt zero-duration) / CHART-AP-16 (donut 2-segment)
+  의 *근본 원인* (= 시계열 데이터 부재로 composer 가 부적합 차트 선택) 해소.
+
+---
+
+### Fixed — donut 2-segment 빈 카드 + gantt zero-duration 빈 차트 회귀
+
+20260515_125106 보고서 ("코스피 8000 돌파") 에서 2건의 차트 type 선택 회귀
+사용자 보고. 둘 다 *데이터 결함이 아니라 type 선택 결함* — composer 가
+부적합한 type 을 골랐고 가드 인프라가 못 잡음.
+
+- **CHART-AP-15** (gantt zero-duration emit): "2026년 5월 코스피 8000 돌파
+  타임라인" gantt — 7개 row 중 6개가 `start == end` (point-in-time 이벤트 모음).
+  본질이 *event sequence* 이지 *duration timeline* 이 아니어서 gantt 부적합.
+  `GanttGuard.validate_durations` 신규 — zero-duration ratio > 70% 면 reject.
+- **CHART-AP-16** (donut 2-segment 안티패턴): "외국인 5월 누적 순매도 구성"
+  donut — `[{반도체:16.8}, {비반도체:3.4}]` 2 segment. "비반도체" 잡탕 segment
+  로 정보 손실 + subtitle 이 같은 비율(83%) 이미 전달 + 렌더러 (`drawDonut`)
+  가 `< 3` 이면 silent return 해서 *제목·부제만 보이는 빈 카드*로 회귀.
+  `DonutGuard.validate_segment_count` 신규 — segment < 3 이면 reject.
+
+**수정**:
+- `src/visual/schemas.py` — `DonutGuard` `min_length=2 → 1` + `validate_segment_count`,
+  `GanttGuard` + `validate_durations`.
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` donut / gantt spec 행에
+  AP-15 / AP-16 명시.
+- `docs/CHART_RENDERING_ANTIPATTERNS.md` AP-15, AP-16 append + `last_synced_with`
+  → v5.1.2 + "누적 16개" 갱신.
+- `CLAUDE.md` Anti-Patterns (차트 렌더링) 섹션 16개 패턴 / AP-15, AP-16 라인 추가.
+- `tests/regression/test_chart_correctness.py` 회귀 테스트 4건 추가.
+- 기존 보고서는 `scripts/patch_report.py 20260515_125106 --remove-chart 2:0
+  --remove-chart 4:0` 로 일회성 정리 (LLM 호출 0).
 
 ---
 

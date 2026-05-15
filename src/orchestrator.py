@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.1.2"
+VERSION = "v5.2.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -76,6 +76,42 @@ BUILD_INFO = _capture_build_info()
 QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게"}
 
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
+
+
+# v5.2.0 — Market data period 선택 헬퍼 (mode-aware).
+# 사건 / 데일리 브리핑 / 역사적 분석 보고서별로 시계열 fetch 기간 분기.
+_HISTORICAL_KEYWORDS = (
+    "10년 만에", "지난 10년", "20년", "5년 만에",
+    "imf", "외환위기", "글로벌 금융위기", "리먼", "코로나 이전",
+    "역사적 회고", "장기 추이", "decade",
+)
+_DAILY_BRIEFING_KEYWORDS = (
+    "간밤", "어제", "오늘 새벽", "daily briefing", "일일 브리핑",
+    "야간", "장 마감", "전일 마감",
+)
+
+
+def _select_market_period(request, context) -> str:
+    """Mode-aware period 선택.
+
+    Returns:
+        "1M" — daily briefing 키워드 매치
+        "3Y" — historical keyword 매치
+        "3M" — 디폴트 (사건 보고서, event-anchored ±30일)
+    """
+    pieces: list[str] = []
+    if request is not None:
+        pieces.append(getattr(request, "event_description", "") or "")
+    if context is not None:
+        pieces.append(getattr(context, "event_name", "") or "")
+        pieces.append(getattr(context, "summary", "") or "")
+        pieces.append(getattr(context, "category", "") or "")
+    blob = " ".join(pieces).lower()
+    if any(kw in blob for kw in _HISTORICAL_KEYWORDS):
+        return "3Y"
+    if any(kw in blob for kw in _DAILY_BRIEFING_KEYWORDS):
+        return "1M"
+    return "3M"
 
 
 class Orchestrator:
@@ -776,6 +812,47 @@ class Orchestrator:
         stage = self.telemetry.stage_start("context_analyst")
         result.context = await self.context_analyst.analyze(request)
         self.telemetry.stage_end(stage)
+
+        # v5.2.0 — Market data fetch hook.
+        # ContextAnalyst 가 emit 한 instruments_mentioned 를 받아 KRX/FRED/ECOS
+        # 에서 실데이터 fetch. fetch 실패해도 보고서 진행 — composer 가
+        # time_series 빈 경우 차트만 생략. API key 누락 시에도 동일 (warning log).
+        try:
+            instruments = list(getattr(result.context, "instruments_mentioned", None) or [])
+            if instruments:
+                from datetime import date
+                from src.tools.market_fetcher import fetch_many
+
+                anchor = None
+                event_date_str = (result.context.date or "").strip()
+                if event_date_str:
+                    try:
+                        anchor = date.fromisoformat(event_date_str[:10])
+                    except ValueError:
+                        anchor = None
+
+                # Mode-aware period 선택 (v5.2.0):
+                #  - daily briefing (간밤 / 어제 / 오늘 키워드) → 1M
+                #  - historical (IMF / 글금위 / 10년 만에 / 역사적 키워드) → 3Y
+                #  - 그 외 (사건 보고서) → 3M (이벤트 ±30일 ≈ 60 영업일)
+                fetch_period = _select_market_period(request, result.context)
+                stage_mf = self.telemetry.stage_start("market_fetch")
+                series_list = await fetch_many(
+                    instruments, period=fetch_period, config=self.config,
+                    anchor_date=anchor,
+                )
+                self.telemetry.stage_end(stage_mf)
+
+                # MarketSeries → dict (Pydantic dump) 로 context.time_series 에 저장.
+                # composer 는 dict 그대로 읽음 (ComposedSection.charts 와 동일 패턴).
+                result.context.time_series = [s.model_dump() for s in series_list]
+                non_empty = sum(1 for s in series_list if s.data)
+                logger.info(
+                    "[orchestrator] market_fetch period=%s: %d instruments requested, %d returned data",
+                    fetch_period, len(instruments), non_empty,
+                )
+        except Exception as _e:  # pragma: no cover  — fetch 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] market_fetch skipped: %s", _e)
 
         # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
         # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로
