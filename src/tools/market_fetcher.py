@@ -277,11 +277,16 @@ class KRXFetcher:
     """KRX (Korea Exchange) — 한국 지수·개별주 OHLC.
 
     KRX 정보데이터시스템 public endpoint. 무인증 (rate limit 있음).
+
+    [세션 처리 — v5.2.0]
+    KRX 는 cookie/session 기반. POST 전에 main page GET 으로 JSESSIONID 등
+    세션 쿠키를 먼저 받아야 함. 안 그러면 HTTP 400 + body "LOGOUT" 으로 실패.
     """
 
     BASE_URL = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+    WARMUP_URL = "http://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd"
     UA = (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/120.0.0.0 Safari/537.36"
     )
@@ -294,12 +299,18 @@ class KRXFetcher:
         end_str = end.strftime("%Y%m%d")
         is_index = len(code) == 4
         if is_index:
+            # 지수 일별 시세 — pykrx 와 동일 payload 구조.
+            idx_market = "1" if code.startswith("1") else "2"  # 1=KOSPI 계열, 2=KOSDAQ 계열
             payload = {
                 "bld": "dbms/MDC/STAT/standard/MDCSTAT00301",
-                "indIdx": "1",
+                "indIdx": idx_market,
                 "indIdx2": code,
                 "strtDd": start_str,
                 "endDd": end_str,
+                "share": "1",
+                "money": "1",
+                "csvxls_isNo": "false",
+                "locale": "ko_KR",
             }
         else:
             isin = _ISIN_MAP.get(code) or await _lookup_isin(code)
@@ -318,15 +329,39 @@ class KRXFetcher:
                 "endDd": end_str,
                 "adjStkPrc_check": "Y",
                 "adjStkPrc": "2",
+                "share": "1",
+                "money": "1",
+                "csvxls_isNo": "false",
+                "locale": "ko_KR",
             }
         headers = {
             "User-Agent": self.UA,
             "Referer": "http://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd",
             "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Origin": "http://data.krx.co.kr",
         }
         try:
             timeout = aiohttp.ClientTimeout(total=30)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
+            # cookie_jar 가 세션 쿠키 (JSESSIONID 등) 를 자동으로 warm-up 응답에서
+            # 가져와 다음 POST 에 첨부. unsafe=True 는 IP 호스트 / 비-canonical
+            # 도메인 처리 호환용 (KRX 는 FQDN 이라 사실 불필요하지만 안전망).
+            jar = aiohttp.CookieJar(unsafe=True)
+            async with aiohttp.ClientSession(timeout=timeout, cookie_jar=jar) as session:
+                # 1) Warm-up GET — 세션 쿠키 확보. 실패해도 본 요청은 시도.
+                try:
+                    async with session.get(
+                        self.WARMUP_URL,
+                        headers={"User-Agent": self.UA},
+                        allow_redirects=True,
+                    ) as warmup:
+                        await warmup.read()
+                except Exception as e:
+                    logger.debug(
+                        "[market_fetcher] KRX warmup failed (계속 시도): %s", e,
+                    )
+                # 2) Main POST
                 async with session.post(
                     self.BASE_URL, data=payload, headers=headers,
                 ) as resp:
