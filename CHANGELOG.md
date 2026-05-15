@@ -50,12 +50,30 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
   - `instrument=""` 면 종전 동작 (모든 이벤트 통과) — backward-compat.
 - **`src/orchestrator.py:VERSION`** `v5.2.2 → v5.2.3`.
 
+### Added — 기존 보고서 소급 패치 스크립트 (`scripts/patch_existing_reports.py`)
+
+v5.2.2 에서 이미 생성·배포된 보고서를 LLM 재호출 없이 v5.2.3 결함 해소 상태로
+끌어올리는 일회용 도구. 두 단계 동시 처리:
+
+1. `reports/charts.js` 를 v5.2.3 의 `src/templates/static/charts.js` 로 덮어쓰기
+   → 결함 #1/#2/#3 (drawLine 로직) 즉시 해소.
+2. `reports/analysis_*.html` 안의 `<script class="chart-payload-inline">`
+   inline JSON 의 `data[].event` 필드를 instrument-aware filter 로 재계산
+   → 결함 #4 (모든 차트 동일 1-5 사건) 해소.
+
+원본은 `*.bak` 로 idempotent 백업. 운영자가 결과 확인 후 `wrangler pages deploy`
+로 재배포. 사용법은 docstring 또는 DEVLOG v5.2.3 §"기존 보고서 소급 패치" 참조.
+
 ### Notes
 
 - chart_gate / chart_critic / market_fetcher 미변경.
 - 데이터 모델 변경 없음.
 - charts.js 의 `drawArea` 는 이미 linearGradient 사용 중이라 변경 불필요 —
   이번 회귀는 `drawLine` 단독.
+- 별도 스크립트 `scripts/patch_report.py` (ComposedReport JSON → ReportSynthesizer
+  재렌더) 와 `scripts/patch_existing_reports.py` (HTML inline JSON 직접 패치)
+  는 다른 용도로 공존. 후자가 더 가벼움 — composer JSON 보존 안 된 보고서에도
+  적용 가능.
 
 ---
 

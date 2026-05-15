@@ -1125,6 +1125,48 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 | `src/templates/static/charts.js` | `drawLine` 의 zones / scalePoint padding / area fill (linearGradient) / end-value 포맷 |
 | `README.md`, `CHANGELOG.md`, `DEVLOG.md` | `last_synced_with` v5.2.3, CHANGELOG `[v5.2.3]` 항목, 본 DEVLOG 항목 |
 
+### 기존 보고서 소급 패치 (`scripts/patch_existing_reports.py`)
+
+사용자 지적: "이미 잘못 된 차트가 들어간 보고서에 대해 패치 적용해서 개선할 수
+있지않나" — v5.2.3 로 봇을 재기동해도 이미 Cloudflare Pages 에 배포된 v5.2.2
+보고서는 그대로 결함을 노출. LLM 재호출 (~$2-3/건) 없이 정적 수정 가능.
+
+핵심 관찰:
+- 보고서는 `<output_dir>/analysis_<ts>.html` 단일 파일 + `<output_dir>/charts.js`
+  공통 정적 자산 형태로 저장 (`ReportSynthesizer._sync_static_assets`,
+  line 1424-1445).
+- 결함 #1/#2/#3 은 charts.js drawLine 함수 로직 결함 — charts.js 한 파일만
+  v5.2.3 새 버전으로 덮어쓰면 모든 보고서가 자동 갱신 (브라우저 새로고침 한 번).
+- 결함 #4 는 보고서 HTML 안에 inline 으로 박힌 chart payload (``<script
+  type="application/json" class="chart-payload-inline">{...}</script>``,
+  `freeform_essay.html:232`) 의 `data[].event` 필드 자체가 v5.2.2 의 잘못된
+  `_attach_event_markers` 출력 그대로라 — HTML 을 직접 다시 써야 함.
+
+스크립트 동작:
+1. `scripts/patch_existing_reports.py reports/` 로 호출.
+2. `reports/charts.js` 를 `src/templates/static/charts.js` (v5.2.3) 로 덮어씀.
+   원본은 `charts.js.bak` 로 백업 (idempotent — 이미 있으면 백업 안 덮음).
+3. `reports/analysis_*.html` 순회. 각 HTML 안의 `chart-payload-inline` script
+   태그를 regex 로 모두 추출 → JSON 파싱 → `title` 에서 instrument 추정
+   (`_INSTRUMENT_TITLE_HINTS` 18종 매핑) → `data[].event` 에 대해 v5.2.3 의
+   `_event_relevant_to` 적용 → 관계 없는 event 만 제거 (그 행의 가격/날짜는
+   보존) → JSON 직렬화 → HTML 재기록. 원본은 `*.html.bak` 백업.
+4. 운영자가 결과 확인 후 직접 `wrangler pages deploy reports/` 로 재배포.
+
+검증 (실제 보고서 시뮬레이션 — 코스피·삼성·하이닉스 3차트 × 4 이벤트):
+- 코스피: 4/4 (지수 차트, 전체 흡수)
+- 삼성전자: 2/4 ("SK하이닉스", "코스피" 명시 이벤트 2개 제거)
+- SK하이닉스: 3/4 ("코스피" 명시 이벤트 1개 제거)
+
+3개 차트가 서로 다른 event 셋 — 사용자 요구 충족.
+
+별도 도구 `scripts/patch_report.py` (v4.4.7) 와 차이:
+- `patch_report.py` 는 ComposedReport JSON 을 ReportSynthesizer 로 재렌더하는
+  무거운 도구. 차트 인덱스 단위로 일부 수정 가능.
+- `patch_existing_reports.py` 는 HTML inline JSON 만 직접 손대는 가벼운 일회용.
+  ComposedReport JSON 보존 안 된 보고서 (`_save_composed_report_json` 가 v4.4.1
+  부터 시작) 또는 batch 처리에 적합.
+
 ### 후속 / 비포함
 
 - `chart_gate` / `chart_critic` / `market_fetcher` 미변경 — 결함이 그쪽에서 비롯
