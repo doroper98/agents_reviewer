@@ -430,16 +430,14 @@ async def main() -> int:
                 return 1
             mutated = True
 
-    # v5.2.0+ — 시계열 차트 자동 보충 (case C 복구).
+    # v5.2.2+ — 시계열 차트 자동 보충 (case C 복구). mockup 수준 quality —
+    # title/subtitle/source/takeaway + 이벤트 마커 자동 부착.
     if args.ensure_time_series:
         from src.orchestrator import _ensure_time_series_chart
         before = sum(
             len(sec.charts or []) for sec in (result.composed_report.sections or [])
         )
-        _ensure_time_series_chart(
-            result.composed_report,
-            getattr(result.context, "time_series", None) or [],
-        )
+        _ensure_time_series_chart(result.composed_report, result.context)
         after = sum(
             len(sec.charts or []) for sec in (result.composed_report.sections or [])
         )
@@ -447,7 +445,7 @@ async def main() -> int:
             print(f"[patch] --ensure-time-series: 시계열 차트 {after - before}개 추가")
             mutated = True
         else:
-            print("[patch] --ensure-time-series: 변경 없음 (이미 시계열 차트 있거나 time_series 비어있음)")
+            print("[patch] --ensure-time-series: 변경 없음 (composer 가 이미 다 박았거나 time_series 비어있음)")
 
     # 수정 사항 있으면 JSON 다시 저장 + revision +1 (v4.5.5).
     # --rerender-only / --edit 만은 데이터 변경 X 라 revision 안 올림.

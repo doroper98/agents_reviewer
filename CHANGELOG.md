@@ -20,6 +20,62 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.2.2] — 2026-05-15
+
+### Enhanced — `_ensure_time_series_chart` hook 을 mockup 수준 quality 로 보강
+
+사용자 피드백: "차트는 적극적으로 박혀도 되지만, *mockup 수준의 정합성과 시인성*
+은 필수." 이전 v5.2.1 hook 은 단순한 fallback 형태 (제목 "코스피 시계열", 이벤트
+마커 없음, takeaway 없음) — 보고서 quality 가 mockup 보다 낮음. 이번 강화로 hook
+이 생성하는 차트도 mockup 과 동일 시각화 정합성 확보.
+
+**시그니처 변경**: `_ensure_time_series_chart(composed, time_series: list)`
+→ `_ensure_time_series_chart(composed, context: ContextAnalysis)` —
+timeline / summary 접근 위해 context 전체 받음. `patch_report.py
+--ensure-time-series` 호출처도 갱신.
+
+**적극 모드** (사용자 요청): composer 가 일부 instrument 만 emit 하고 나머지
+빠뜨린 경우, hook 이 *모든 누락 instrument 를* 차트로 추가. composer 가 박은
+instrument 는 제목 매칭으로 detect → skip (중복 회피).
+
+### 차트 quality enhancement (5종)
+
+1. **이벤트 마커 자동 부착** — `_attach_event_markers` 신규. context.timeline
+   의 각 event 의 date 와 series.data row 의 date 매칭 → row 에 `event`
+   필드 부착. charts.js 가 *자동으로* 번호 배지(❶❷❸) + 하단 footnote 렌더.
+   mockup 의 핵심 시각 정합성.
+2. **사용자 친화 title** — `_format_ts_title`:
+   · Yahoo 지수 → "코스피 종합지수" / "코스닥 종합지수"
+   · KRX 개별주 → "삼성전자 (005930)" / "SK하이닉스 (000660)"
+   · 그 외 → instrument 이름 그대로
+3. **변화율 명시 subtitle** — `_format_ts_subtitle`:
+   "2026-04-15 ~ 2026-05-15 · -4.75% (284,000 → 270,500)" 형태. 사용자가
+   차트 보지 않고도 *수치적 narrative* 파악.
+4. **자동 takeaway** — `_format_ts_takeaway`:
+   · 1순위: `context.summary` 첫 문장 (≤100자)
+   · 2순위 (summary 없으면): 변동성 기반 — "기간 중 최고 X · 최저 Y — 변동폭 Z%"
+5. **출처 표기** — `_format_ts_source`:
+   "Yahoo Finance / 2026-04-15 ~ 2026-05-15 · 일간" — source / period / frequency
+   3중 명시.
+
+### 회귀 테스트 14건 추가 (기존 8건 갱신 + 6건 신규)
+
+- mockup 품질 검증 — title / subtitle / source / takeaway / event markers
+- 적극 모드 검증 — composer 가 일부 instrument 만 emit 했을 때 누락분 보충
+- composer 가 같은 instrument 박았으면 중복 회피
+- 후보 우선순위 (data 많은 순)
+- 모든 no-op edge case (timeline 없음 / data 없음 / sections 없음)
+
+전체 **119/119 통과** (test_market_fetcher 29 + test_chart_correctness 54 +
+test_composed_section_guard 36).
+
+### Notes
+
+기존 보고서 `20260515_230117` 복구: `patch_report.py --ensure-time-series`
+호출 시 새 quality 적용 (이벤트 마커 + 한국어 title + subtitle 변화율 등).
+
+---
+
 ## [v5.2.1] — 2026-05-15
 
 ### Fixed — composer 가 available_time_series 무시하는 case C 회귀

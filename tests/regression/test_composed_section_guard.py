@@ -241,6 +241,16 @@ def _composed_with_charts(charts: list[dict]) -> "ComposedReport":
     )
 
 
+def _make_context(time_series=None, timeline=None, summary="") -> "ContextAnalysis":
+    from src.models import ContextAnalysis
+    return ContextAnalysis(
+        event_name="테스트 사건",
+        summary=summary,
+        timeline=timeline or [],
+        time_series=time_series or [],
+    )
+
+
 def _candle_ts(instrument: str = "삼성전자") -> dict:
     return {
         "instrument": instrument,
@@ -275,7 +285,8 @@ def _line_ts(instrument: str = "코스피") -> dict:
 
 
 def test_ensure_ts_chart_adds_when_composer_skipped() -> None:
-    """case C 회귀 — composer 가 시계열 차트 0개 + time_series 있음."""
+    """case C 회귀 — composer 가 시계열 차트 0개 + time_series 있음.
+    v5.2.2: 적극 모드 — 후보 series *전부* 추가."""
     from src.orchestrator import _ensure_time_series_chart
     composed = _composed_with_charts([
         {"type": "bar", "title": "투자자 매매", "data": [{"label": "외인", "value": -1}]},
@@ -283,30 +294,50 @@ def test_ensure_ts_chart_adds_when_composer_skipped() -> None:
             {"label": "A", "value": 1}, {"label": "B", "value": 1}, {"label": "C", "value": 1},
         ]},
     ])
-    _ensure_time_series_chart(composed, [_candle_ts(), _line_ts()])
-    # sections[0].charts[0] 에 시계열 차트 추가됐어야
+    ctx = _make_context(time_series=[_candle_ts(), _line_ts()])
+    _ensure_time_series_chart(composed, ctx)
+    # 기존 2개 + 신규 2개 (candle + line 모두 추가)
     sec0_charts = composed.sections[0].charts
-    assert len(sec0_charts) == 3   # 기존 2개 + 신규 1개
-    inserted = sec0_charts[0]
-    assert inserted["type"] in {"line", "candle", "area"}
-    # 가장 데이터 많은 series 우선 (둘 다 3 bars 면 첫 series — 삼성전자 candle)
-    assert "data" in inserted and len(inserted["data"]) == 3
+    assert len(sec0_charts) == 4
+    # 새로 박힌 두 개는 시계열 type
+    assert {sec0_charts[0]["type"], sec0_charts[1]["type"]} <= {"line", "candle", "area"}
 
 
-def test_ensure_ts_chart_noop_when_composer_already_emitted() -> None:
-    """composer 가 이미 시계열 차트 박았으면 hook 노op."""
+def test_ensure_ts_chart_noop_when_composer_already_emitted_for_instrument() -> None:
+    """composer 가 같은 instrument 시계열 차트 박았으면 *그 instrument 는* skip.
+    v5.2.2: 단 다른 instrument 는 보충."""
     from src.orchestrator import _ensure_time_series_chart
     pre = [
-        {"type": "candle", "title": "삼성전자", "data": [
+        {"type": "candle", "title": "삼성전자 (005930)", "data": [
             {"date": "2026-05-14", "open": 282000, "high": 299500, "low": 281500, "close": 296000},
             {"date": "2026-05-15", "open": 291000, "high": 296500, "low": 268500, "close": 270500},
         ]},
     ]
     composed = _composed_with_charts(pre)
-    _ensure_time_series_chart(composed, [_candle_ts(), _line_ts()])
+    ctx = _make_context(time_series=[_candle_ts(), _line_ts()])  # 삼성 + 코스피
+    _ensure_time_series_chart(composed, ctx)
+    # 삼성전자 는 composer 박음 → skip / 코스피 는 hook 이 추가 (1개 보충)
+    assert len(composed.sections[0].charts) == 2  # 기존 1 + 코스피 1
+    titles = [c.get("title", "") for c in composed.sections[0].charts]
+    assert any("코스피" in t for t in titles)
+
+
+def test_ensure_ts_chart_noop_when_composer_all_instruments() -> None:
+    """composer 가 *모든* mention 된 instrument 시계열 차트 박으면 hook 노op."""
+    from src.orchestrator import _ensure_time_series_chart
+    pre = [
+        {"type": "candle", "title": "삼성전자 (005930)", "data": [
+            {"date": "2026-05-15", "open": 291000, "high": 296500, "low": 268500, "close": 270500},
+        ]},
+        {"type": "line", "title": "코스피 종합지수", "data": [
+            {"x": "2026-05-15", "y": 7493},
+        ]},
+    ]
+    composed = _composed_with_charts(pre)
+    ctx = _make_context(time_series=[_candle_ts(), _line_ts()])
+    _ensure_time_series_chart(composed, ctx)
     # 변경 없음
-    assert len(composed.sections[0].charts) == 1
-    assert composed.sections[0].charts[0]["title"] == "삼성전자"
+    assert len(composed.sections[0].charts) == 2
 
 
 def test_ensure_ts_chart_noop_when_no_time_series() -> None:
@@ -315,7 +346,7 @@ def test_ensure_ts_chart_noop_when_no_time_series() -> None:
     composed = _composed_with_charts([
         {"type": "bar", "title": "투자자 매매", "data": [{"label": "외인", "value": -1}]},
     ])
-    _ensure_time_series_chart(composed, [])
+    _ensure_time_series_chart(composed, _make_context())
     assert len(composed.sections[0].charts) == 1
 
 
@@ -324,7 +355,7 @@ def test_ensure_ts_chart_noop_when_time_series_data_empty() -> None:
     from src.orchestrator import _ensure_time_series_chart
     empty_ts = [{"instrument": "X", "source": "?", "data": []}]
     composed = _composed_with_charts([])
-    _ensure_time_series_chart(composed, empty_ts)
+    _ensure_time_series_chart(composed, _make_context(time_series=empty_ts))
     assert composed.sections[0].charts == []
 
 
@@ -333,7 +364,7 @@ def test_ensure_ts_chart_noop_when_no_sections() -> None:
     from src.orchestrator import _ensure_time_series_chart
     from src.models import ComposedReport
     composed = ComposedReport(headline="제목", sections=[])
-    _ensure_time_series_chart(composed, [_candle_ts()])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_candle_ts()]))
     assert composed.sections == []
 
 
@@ -341,10 +372,9 @@ def test_ensure_ts_chart_respects_chart_type_for_candle() -> None:
     """series.chart_type=candle 이면 OHLC shape 그대로 유지."""
     from src.orchestrator import _ensure_time_series_chart
     composed = _composed_with_charts([])
-    _ensure_time_series_chart(composed, [_candle_ts()])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_candle_ts()]))
     ch = composed.sections[0].charts[0]
     assert ch["type"] == "candle"
-    # OHLC 필드 보존
     row0 = ch["data"][0]
     assert "open" in row0 and "high" in row0 and "low" in row0 and "close" in row0
 
@@ -353,24 +383,139 @@ def test_ensure_ts_chart_maps_xy_for_line() -> None:
     """series.chart_type=line 이면 {x, y} 형태로 변환."""
     from src.orchestrator import _ensure_time_series_chart
     composed = _composed_with_charts([])
-    _ensure_time_series_chart(composed, [_line_ts()])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_line_ts()]))
     ch = composed.sections[0].charts[0]
     assert ch["type"] == "line"
     row0 = ch["data"][0]
     assert "x" in row0 and "y" in row0
     assert row0["x"] == "2026-05-13"
     assert row0["y"] == 7480
-    # OHLC 필드는 line 차트엔 불필요
     assert "open" not in row0
 
 
-def test_ensure_ts_chart_picks_most_data_rich_series() -> None:
-    """후보 여러 개면 data 가장 많은 series 우선."""
+def test_ensure_ts_chart_priority_data_rich_series_first() -> None:
+    """후보 여러 개면 data 가장 많은 series 가 sections[0].charts[0]."""
     from src.orchestrator import _ensure_time_series_chart
     composed = _composed_with_charts([])
     short = _candle_ts("적은데이터")
     short["data"] = short["data"][:1]  # 1 bar
     long_ = _line_ts("많은데이터")  # 3 bars
-    _ensure_time_series_chart(composed, [short, long_])
-    ch = composed.sections[0].charts[0]
-    assert "많은데이터" in ch["title"]
+    _ensure_time_series_chart(composed, _make_context(time_series=[short, long_]))
+    # 첫번째 차트가 data 많은 쪽
+    assert "많은데이터" in composed.sections[0].charts[0]["title"]
+
+
+# ─── v5.2.2 — mockup 품질 검증 ──────────────────────────────────
+
+
+def test_ts_chart_title_korean_for_index() -> None:
+    """Yahoo 지수 → '코스피 종합지수' 형태."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_line_ts("코스피")]))
+    assert composed.sections[0].charts[0]["title"] == "코스피 종합지수"
+
+
+def test_ts_chart_title_korean_for_stock_with_code() -> None:
+    """KRX 개별주 → '삼성전자 (005930)' 형태."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_candle_ts()]))
+    assert composed.sections[0].charts[0]["title"] == "삼성전자 (005930)"
+
+
+def test_ts_chart_subtitle_includes_pct_change() -> None:
+    """Subtitle 에 변화율 % + 기간 표시."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_candle_ts()]))
+    sub = composed.sections[0].charts[0]["subtitle"]
+    assert "2026-04-15" in sub and "2026-05-15" in sub
+    # 284,000 → 270,500 = -4.75% 정도
+    assert "-" in sub and "%" in sub
+    assert "284,000" in sub or "284" in sub
+
+
+def test_ts_chart_source_display_korean() -> None:
+    """source 가 사용자 노출 형태 — 'Yahoo Finance / ... · 일간'."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_line_ts()]))
+    src = composed.sections[0].charts[0]["source"]
+    assert "Yahoo Finance" in src
+    assert "일간" in src
+
+
+def test_ts_chart_takeaway_from_summary() -> None:
+    """본문 summary 첫 문장이 takeaway 로 활용."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    ctx = _make_context(
+        time_series=[_line_ts()],
+        summary="코스피가 사상 처음 8000선을 돌파한 직후 6% 폭락. 외국인 8조 순매도. 이후 분석.",
+    )
+    _ensure_time_series_chart(composed, ctx)
+    take = composed.sections[0].charts[0]["takeaway"]
+    assert "코스피" in take and "8000" in take
+
+
+def test_ts_chart_takeaway_fallback_to_volatility() -> None:
+    """summary 없으면 변동성 기반 자동 해석."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_line_ts()]))
+    take = composed.sections[0].charts[0]["takeaway"]
+    # 변동폭 표현 포함
+    assert "변동폭" in take or "%" in take
+
+
+def test_ts_chart_event_markers_from_timeline() -> None:
+    """context.timeline 의 date 와 매치되는 row 에 event 필드 자동 부착.
+
+    charts.js 는 event 필드 보고 번호 배지 + footnote 자동 렌더 — mockup 핵심.
+    """
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    ctx = _make_context(
+        time_series=[_line_ts()],
+        timeline=[
+            {"date": "2026-05-13", "event": "외국인 14.5조 순매도 돌파"},
+            {"date": "2026-05-15", "event": "코스피 8000 첫 돌파"},
+        ],
+    )
+    _ensure_time_series_chart(composed, ctx)
+    data = composed.sections[0].charts[0]["data"]
+    # 5/13 row 와 5/15 row 에 event 부착
+    by_date = {d["x"]: d for d in data}
+    assert "event" in by_date["2026-05-13"]
+    assert "14.5조" in by_date["2026-05-13"]["event"]
+    assert "event" in by_date["2026-05-15"]
+    assert "8000" in by_date["2026-05-15"]["event"]
+    # 5/14 row 는 매치 timeline 없으니 event 부착 X
+    assert "event" not in by_date["2026-05-14"]
+
+
+def test_ts_chart_event_markers_candle() -> None:
+    """candle 차트도 동일 — timeline 매칭으로 event 필드 부착."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    ctx = _make_context(
+        time_series=[_candle_ts()],
+        timeline=[
+            {"date": "2026-05-15", "event": "삼전 -8.6% 단일 폭락"},
+        ],
+    )
+    _ensure_time_series_chart(composed, ctx)
+    data = composed.sections[0].charts[0]["data"]
+    by_date = {d["date"]: d for d in data}
+    assert "event" in by_date["2026-05-15"]
+    assert "8.6%" in by_date["2026-05-15"]["event"]
+
+
+def test_ts_chart_no_event_markers_when_timeline_empty() -> None:
+    """timeline 없으면 event 부착 X (회귀 가드)."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, _make_context(time_series=[_line_ts()]))
+    data = composed.sections[0].charts[0]["data"]
+    assert all("event" not in d for d in data)
