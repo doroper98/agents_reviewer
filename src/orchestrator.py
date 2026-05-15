@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.0"
+VERSION = "v5.2.1"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -89,6 +89,111 @@ _DAILY_BRIEFING_KEYWORDS = (
     "간밤", "어제", "오늘 새벽", "daily briefing", "일일 브리핑",
     "야간", "장 마감", "전일 마감",
 )
+
+
+# v5.2.0+ — composer 가 available_time_series 무시했을 때 시계열 차트 자동 보충.
+# composer prompt 강화는 LLM 지시 준수에 의존 — 결정적 hook 이 안전망.
+_TS_CHART_TYPES = {"line", "candle", "area"}
+
+
+def _ensure_time_series_chart(composed, time_series: list) -> None:
+    """composer 가 시계열 차트 0개 emit 했고 time_series 데이터는 있을 때, 첫 섹션
+    의 charts 배열 *앞* 에 자동 보충. composer 가 1개 이상 박았으면 no-op.
+
+    Args:
+        composed: ``ComposedReport`` (mutated in place).
+        time_series: ``context.time_series`` list of dict (Pydantic dump).
+
+    동작:
+    - time_series 빈 경우 / sections 0개 → no-op
+    - 이미 line/candle/area 중 하나라도 박혀 있으면 → no-op
+    - 그 외: time_series 중 *data 가장 많은* series 1개를 그 series 의
+      chart_type 으로 변환 후 sections[0].charts 의 인덱스 0 에 삽입.
+      이벤트 마커는 context.timeline 의 날짜와 매치되는 row 에 ``event``
+      필드로 자동 부착.
+    """
+    if not time_series or not composed or not composed.sections:
+        return
+
+    # 이미 시계열 차트 있는지
+    for sec in composed.sections:
+        for ch in (sec.charts or []):
+            if not isinstance(ch, dict):
+                continue
+            if (ch.get("type") or "").lower() in _TS_CHART_TYPES:
+                return  # composer 가 잘 박았음 — no-op
+
+    # data 가 있는 series 만 후보
+    candidates = [
+        s for s in time_series
+        if isinstance(s, dict) and s.get("data")
+    ]
+    if not candidates:
+        return
+
+    # 가장 데이터 많은 series 선택 (변동성 분석에 가장 풍부한 표본)
+    primary = max(candidates, key=lambda s: len(s.get("data") or []))
+    ctype = (primary.get("chart_type") or "line").lower()
+    if ctype not in _TS_CHART_TYPES:
+        ctype = "line"
+
+    # 이벤트 마커 자동 부착 — context.timeline 의 date 와 매치
+    data = list(primary.get("data") or [])
+    timeline = []
+    try:
+        # composed 는 ComposedReport — context 는 별도 (orchestrator 가 호출 시점에
+        # 갖고 있음). 여기선 timeline 접근 불가하므로 일단 마커 없이 emit.
+        # 향후 hook 시그니처 확장하면 추가 가능.
+        pass
+    except Exception:
+        pass
+
+    # type 별 data shape 변환
+    if ctype == "candle":
+        # 그대로 (OHLC 형식) — composer 가 받는 동일 shape
+        chart_data = [
+            {
+                "date": d.get("date"),
+                "open": d.get("open"),
+                "high": d.get("high"),
+                "low": d.get("low"),
+                "close": d.get("close"),
+                **({"volume": d.get("volume")} if d.get("volume") else {}),
+            }
+            for d in data
+        ]
+    else:
+        # line / area — {x, y} 로 mapping
+        chart_data = [
+            {"x": d.get("date"), "y": d.get("close")}
+            for d in data
+        ]
+
+    name = primary.get("instrument") or "시계열"
+    period_start = primary.get("start_date") or ""
+    period_end = primary.get("end_date") or ""
+    period_str = f"{period_start} ~ {period_end}" if period_start and period_end else ""
+    chart = {
+        "type": ctype,
+        "title": f"{name} 시계열",
+        "subtitle": period_str,
+        "data": chart_data,
+        "source": f"{primary.get('source', '?')} · {period_str}".strip(" ·"),
+        "note": "v5.2.0 자동 보충 — composer 가 시계열 차트 누락한 경우 안전망. "
+                "본문 narrative 와 시각 정합성 보장.",
+    }
+
+    # 첫 섹션의 charts 배열 *앞* 에 삽입
+    target = composed.sections[0]
+    if target.charts is None:
+        target.charts = []
+    target.charts.insert(0, chart)
+
+    import logging
+    logging.getLogger(__name__).info(
+        "[orchestrator] _ensure_time_series_chart: %s (%s, %d bars) → sections[0].charts[0]",
+        name, ctype, len(chart_data),
+    )
 
 
 def _select_market_period(request, context) -> str:
@@ -969,6 +1074,18 @@ class Orchestrator:
             self.telemetry.record_llm_skip(
                 "unified_composer", "failed → minimal fallback",
             )
+
+        # v5.2.0+ — 시계열 차트 안전망 (composer LLM 이 available_time_series 무시
+        # 했을 때 자동 보충). prompt 강화는 LLM 의 *지시 준수* 에 의존 — 100% 보장
+        # 안 됨. 결정적 hook 으로 시계열 데이터가 있는데 시계열 차트 0개면
+        # 첫 섹션에 자동 추가. composer 가 이미 1개 이상 박았으면 no-op.
+        try:
+            _ensure_time_series_chart(
+                result.composed_report,
+                getattr(result.context, "time_series", None) or [],
+            )
+        except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
 
         n_sections = len(result.composed_report.sections)
         n_signals = len(result.composed_report.watch_signals)

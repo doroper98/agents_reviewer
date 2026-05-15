@@ -225,3 +225,152 @@ def test_market_period_historical_keyword_priority() -> None:
     req = AnalysisRequest(event_description="간밤 IMF 비교")
     ctx = ContextAnalysis()
     assert _select_market_period(req, ctx) == "3Y"
+
+
+# ─── _ensure_time_series_chart (v5.2.0+ 결정적 안전망) ──────────────
+
+
+def _composed_with_charts(charts: list[dict]) -> "ComposedReport":
+    from src.models import ComposedReport, ComposedSection
+    return ComposedReport(
+        headline="제목",
+        sections=[
+            ComposedSection(heading="섹션 1", prose="본문", charts=charts),
+            ComposedSection(heading="섹션 2", prose="본문"),
+        ],
+    )
+
+
+def _candle_ts(instrument: str = "삼성전자") -> dict:
+    return {
+        "instrument": instrument,
+        "source": "KRX",
+        "code": "005930",
+        "chart_type": "candle",
+        "unit": "원",
+        "start_date": "2026-04-15",
+        "end_date": "2026-05-15",
+        "data": [
+            {"date": "2026-05-13", "open": 264000, "high": 285500, "low": 263000, "close": 284000},
+            {"date": "2026-05-14", "open": 282000, "high": 299500, "low": 281500, "close": 296000},
+            {"date": "2026-05-15", "open": 291000, "high": 296500, "low": 268500, "close": 270500},
+        ],
+    }
+
+
+def _line_ts(instrument: str = "코스피") -> dict:
+    return {
+        "instrument": instrument,
+        "source": "YAHOO",
+        "code": "^KS11",
+        "chart_type": "line",
+        "start_date": "2026-04-15",
+        "end_date": "2026-05-15",
+        "data": [
+            {"date": "2026-05-13", "open": 7400, "high": 7500, "low": 7380, "close": 7480},
+            {"date": "2026-05-14", "open": 7480, "high": 7600, "low": 7460, "close": 7580},
+            {"date": "2026-05-15", "open": 7580, "high": 8002, "low": 7480, "close": 7493},
+        ],
+    }
+
+
+def test_ensure_ts_chart_adds_when_composer_skipped() -> None:
+    """case C 회귀 — composer 가 시계열 차트 0개 + time_series 있음."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([
+        {"type": "bar", "title": "투자자 매매", "data": [{"label": "외인", "value": -1}]},
+        {"type": "donut", "title": "점유율", "data": [
+            {"label": "A", "value": 1}, {"label": "B", "value": 1}, {"label": "C", "value": 1},
+        ]},
+    ])
+    _ensure_time_series_chart(composed, [_candle_ts(), _line_ts()])
+    # sections[0].charts[0] 에 시계열 차트 추가됐어야
+    sec0_charts = composed.sections[0].charts
+    assert len(sec0_charts) == 3   # 기존 2개 + 신규 1개
+    inserted = sec0_charts[0]
+    assert inserted["type"] in {"line", "candle", "area"}
+    # 가장 데이터 많은 series 우선 (둘 다 3 bars 면 첫 series — 삼성전자 candle)
+    assert "data" in inserted and len(inserted["data"]) == 3
+
+
+def test_ensure_ts_chart_noop_when_composer_already_emitted() -> None:
+    """composer 가 이미 시계열 차트 박았으면 hook 노op."""
+    from src.orchestrator import _ensure_time_series_chart
+    pre = [
+        {"type": "candle", "title": "삼성전자", "data": [
+            {"date": "2026-05-14", "open": 282000, "high": 299500, "low": 281500, "close": 296000},
+            {"date": "2026-05-15", "open": 291000, "high": 296500, "low": 268500, "close": 270500},
+        ]},
+    ]
+    composed = _composed_with_charts(pre)
+    _ensure_time_series_chart(composed, [_candle_ts(), _line_ts()])
+    # 변경 없음
+    assert len(composed.sections[0].charts) == 1
+    assert composed.sections[0].charts[0]["title"] == "삼성전자"
+
+
+def test_ensure_ts_chart_noop_when_no_time_series() -> None:
+    """time_series 비어있으면 hook 노op."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([
+        {"type": "bar", "title": "투자자 매매", "data": [{"label": "외인", "value": -1}]},
+    ])
+    _ensure_time_series_chart(composed, [])
+    assert len(composed.sections[0].charts) == 1
+
+
+def test_ensure_ts_chart_noop_when_time_series_data_empty() -> None:
+    """time_series 항목은 있지만 data 모두 비어있으면 hook 노op."""
+    from src.orchestrator import _ensure_time_series_chart
+    empty_ts = [{"instrument": "X", "source": "?", "data": []}]
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, empty_ts)
+    assert composed.sections[0].charts == []
+
+
+def test_ensure_ts_chart_noop_when_no_sections() -> None:
+    """sections 없으면 hook 노op (방어)."""
+    from src.orchestrator import _ensure_time_series_chart
+    from src.models import ComposedReport
+    composed = ComposedReport(headline="제목", sections=[])
+    _ensure_time_series_chart(composed, [_candle_ts()])
+    assert composed.sections == []
+
+
+def test_ensure_ts_chart_respects_chart_type_for_candle() -> None:
+    """series.chart_type=candle 이면 OHLC shape 그대로 유지."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, [_candle_ts()])
+    ch = composed.sections[0].charts[0]
+    assert ch["type"] == "candle"
+    # OHLC 필드 보존
+    row0 = ch["data"][0]
+    assert "open" in row0 and "high" in row0 and "low" in row0 and "close" in row0
+
+
+def test_ensure_ts_chart_maps_xy_for_line() -> None:
+    """series.chart_type=line 이면 {x, y} 형태로 변환."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    _ensure_time_series_chart(composed, [_line_ts()])
+    ch = composed.sections[0].charts[0]
+    assert ch["type"] == "line"
+    row0 = ch["data"][0]
+    assert "x" in row0 and "y" in row0
+    assert row0["x"] == "2026-05-13"
+    assert row0["y"] == 7480
+    # OHLC 필드는 line 차트엔 불필요
+    assert "open" not in row0
+
+
+def test_ensure_ts_chart_picks_most_data_rich_series() -> None:
+    """후보 여러 개면 data 가장 많은 series 우선."""
+    from src.orchestrator import _ensure_time_series_chart
+    composed = _composed_with_charts([])
+    short = _candle_ts("적은데이터")
+    short["data"] = short["data"][:1]  # 1 bar
+    long_ = _line_ts("많은데이터")  # 3 bars
+    _ensure_time_series_chart(composed, [short, long_])
+    ch = composed.sections[0].charts[0]
+    assert "많은데이터" in ch["title"]

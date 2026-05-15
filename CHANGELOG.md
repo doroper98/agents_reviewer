@@ -20,6 +20,54 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.2.1] — 2026-05-15
+
+### Fixed — composer 가 available_time_series 무시하는 case C 회귀
+
+20260515_230117 보고서 ("삼성전자·SK하이닉스 동반 급락 — 코스피 8000 사상 첫
+돌파 직후 6% 폭락") 진단 결과:
+- ContextAnalyst: `['코스피', '삼성전자', 'SK하이닉스']` 정상 emit
+- orchestrator: 3 종목 모두 61 bars 실 OHLC fetch
+- **composer LLM**: `available_time_series` payload 받았지만 *시계열 차트 0개* —
+  대신 bar / donut / bubble (사건성 차트) 만 emit. 변동성 narrative 인데 핵심
+  시각화 누락.
+
+원인: v5.2.0 의 composer SYSTEM_PROMPT 가 "데이터 있다고 무조건 차트 만들지
+말 것" 룰로 너무 보수적. LLM 이 차트 안 만들어도 되는 신호로 해석.
+
+### Added — orchestrator 결정적 안전망 + composer prompt 강화
+
+- **`src/orchestrator.py:_ensure_time_series_chart`** 신규 — composer 호출 직후
+  실행. composer 가 시계열 차트 0개 emit 했고 `time_series` 데이터는 있을 때,
+  가장 data 많은 series 를 그 series 의 `chart_type` 으로 변환해 sections[0].
+  charts[0] 에 자동 삽입. composer 가 1개 이상 박았으면 no-op.
+- **`src/agents/narrative_composer.py:SYSTEM_PROMPT`** 시계열 차트 섹션 강화:
+  · "★ 강제 규칙 (v5.2.0+, 예외 없음)" 표기로 명시성↑
+  · "available_time_series 가 비어있지 않으면 *반드시 최소 1개* 시계열 차트
+    emit. 0개 emit 절대 금지" 룰 도입
+  · 사건성 보고서 (변동·급등·급락·폭락 narrative) 는 관련 instrument *전부*
+    차트로 (한 종목만 emit 하고 나머지 빠뜨리는 것 금지)
+  · 차트 type 매핑 (지수=line / 개별주=candle / 원자재=area) 명시
+  · "데이터 있다고 무조건 차트 만들지 말 것" 룰은 v5.2.0 이전 거로 명시 정정
+- **`scripts/patch_report.py:--ensure-time-series`** 옵션 신규 — 기존 보고서를
+  사후 복구. orchestrator 의 `_ensure_time_series_chart` 헬퍼 재사용. 회귀
+  보고서 (20260515_230117 같은) 복구용.
+
+### Added — 회귀 테스트 8건 (tests/regression/test_composed_section_guard.py)
+
+- `test_ensure_ts_chart_adds_when_composer_skipped` — case C 회귀 가드
+- `test_ensure_ts_chart_noop_when_composer_already_emitted` — 1개 이상이면 no-op
+- `test_ensure_ts_chart_noop_when_no_time_series` — 데이터 없으면 no-op
+- `test_ensure_ts_chart_noop_when_time_series_data_empty` — 빈 data 만이면 no-op
+- `test_ensure_ts_chart_noop_when_no_sections` — sections 없으면 no-op
+- `test_ensure_ts_chart_respects_chart_type_for_candle` — OHLC shape 보존
+- `test_ensure_ts_chart_maps_xy_for_line` — line/area 는 {x,y} 형태로 변환
+- `test_ensure_ts_chart_picks_most_data_rich_series` — 후보 다중일 때 우선순위
+
+전체 109/109 통과.
+
+---
+
 ## [v5.2.0] — 2026-05-15
 
 Market Data Fetcher + 시계열 차트 (candle/area) + chart_gate production wiring +

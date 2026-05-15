@@ -137,6 +137,13 @@ def parse_args() -> argparse.Namespace:
         help="$EDITOR 로 JSON 직접 편집 (저장 후 재렌더).",
     )
     p.add_argument(
+        "--ensure-time-series",
+        action="store_true",
+        help="(v5.2.0+) context.time_series 가 있는데 composer 가 시계열 차트를 "
+             "0개 박았으면 첫 섹션에 자동 추가. 기존 차트 있으면 no-op. "
+             "20260515_230117 같은 케이스 복구용.",
+    )
+    p.add_argument(
         "--rerender-only",
         action="store_true",
         help="수정 없이 재렌더만 (정적 자산 / 새 charts.js 적용용).",
@@ -422,6 +429,25 @@ async def main() -> int:
             if not patch_set_text(result, field, val):
                 return 1
             mutated = True
+
+    # v5.2.0+ — 시계열 차트 자동 보충 (case C 복구).
+    if args.ensure_time_series:
+        from src.orchestrator import _ensure_time_series_chart
+        before = sum(
+            len(sec.charts or []) for sec in (result.composed_report.sections or [])
+        )
+        _ensure_time_series_chart(
+            result.composed_report,
+            getattr(result.context, "time_series", None) or [],
+        )
+        after = sum(
+            len(sec.charts or []) for sec in (result.composed_report.sections or [])
+        )
+        if after > before:
+            print(f"[patch] --ensure-time-series: 시계열 차트 {after - before}개 추가")
+            mutated = True
+        else:
+            print("[patch] --ensure-time-series: 변경 없음 (이미 시계열 차트 있거나 time_series 비어있음)")
 
     # 수정 사항 있으면 JSON 다시 저장 + revision +1 (v4.5.5).
     # --rerender-only / --edit 만은 데이터 변경 X 라 revision 안 올림.
