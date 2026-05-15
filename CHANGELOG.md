@@ -20,7 +20,58 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## [Unreleased] — v5.2.0 wip: Market Data Fetcher + Candle/Area 차트
+## [Unreleased] — v5.2.0 wip: 후속 (chart_gate wiring + mode-aware period + drawLine 일관성 + KRX ISIN 동적)
+
+### Fixed — chart_gate production wiring (CRITICAL)
+
+이전엔 `run_chart_gate` / `validate_chart_data` 가 정의만 있고 production
+경로에서 *호출 안 됨* (V5 Phase 6 flag 디폴트 OFF 때문). CHART-AP-15/16 가드
+모두 dormant 상태였음 — composer 가 위반 차트 emit 해도 그대로 통과.
+
+- **`src/models.py:ComposedSection._drop_invalid_charts`** — Pydantic
+  `@model_validator(mode="after")` 신설. composer JSON 파싱 직후 *디폴트 ON* 으로
+  각 차트 dict 에 `validate_chart_data` 호출. 위반 차트만 silent drop + warning
+  log. 합법 차트는 절대 안 건드림. validator 자체 raise 도 차트 보존 (composer
+  토큰 12~32K 비용 회피).
+- **`tests/regression/test_composed_section_guard.py`** — 신규 17건 회귀 테스트.
+  AP-15/16 의 실제 회귀 케이스 + 합법 차트 보존 + edge cases.
+
+### Added — drawLine 의 이벤트 마커 통일 (Bloomberg/FT 스타일)
+
+기존 `drawLine` 의 inline event 는 *점선만* 그리고 라벨 X — 어떤 이벤트인지 알
+수 없었음. v5.2.0 에서 candle/area 에 도입한 번호 배지 + footnote 패턴을 line
+에도 적용 (3 type 일관 스타일).
+
+- **`src/templates/static/charts.js:drawLine`** — `data.filter(d=>d.event)`
+  의 legacy dotted-line 만 그리던 블록을 `_renderEventBadgesAndFootnote`
+  호출로 교체.
+
+### Added — Mode-aware period 선택
+
+market_fetcher 가 받는 fetch 기간을 사건/리포트 성격으로 분기:
+
+- **`src/orchestrator.py:_select_market_period`** — 헬퍼 신설.
+  daily briefing 키워드 (간밤/어제/오늘 등) → "1M",
+  historical 키워드 (IMF/외환위기/10년 만에 등) → "3Y",
+  기본 → "3M" (사건 보고서 event-anchored ±30일).
+
+### Added — KRX ISIN 동적 lookup
+
+기존 `_ISIN_MAP` 은 삼성전자/SK하이닉스 2개만 하드코딩. 사용자가 다른 종목
+mention 하면 fetcher 가 빈 결과 반환했음. KRX search endpoint 로 동적 조회.
+
+- **`src/tools/market_fetcher.py:_lookup_isin`** — KRX `finder_stkisu` POST 로
+  6자리 코드 → ISIN 동적 조회. 결과는 `_ISIN_MAP` cache 에 자동 저장.
+  하드코딩 seed 도 NAVER/카카오/현대차/LG화학/삼성SDI/삼성바이오 추가 (8 종목).
+
+### Added — 운영 검증 스크립트
+
+- **`scripts/verify_market_fetcher.py`** — `.env` 의 키로 6 종목 1M fetch 시도.
+  ✅/❌ 표시 + 빈 응답 사유. 봇 재시작 *전* 키 검증용.
+
+---
+
+## [Unreleased — 선행] — v5.2.0 wip: Market Data Fetcher + Candle/Area 차트
 
 ### Added — 시계열 데이터 파이프라인 (B 안)
 

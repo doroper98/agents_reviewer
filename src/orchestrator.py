@@ -78,6 +78,42 @@ QUICK_MODE_KEYWORDS = {"짧게", "간략히", "간략하게", "빠르게", "요�
 StatusCallback = Optional[Callable[[str], Coroutine[Any, Any, None]]]
 
 
+# v5.2.0 — Market data period 선택 헬퍼 (mode-aware).
+# 사건 / 데일리 브리핑 / 역사적 분석 보고서별로 시계열 fetch 기간 분기.
+_HISTORICAL_KEYWORDS = (
+    "10년 만에", "지난 10년", "20년", "5년 만에",
+    "imf", "외환위기", "글로벌 금융위기", "리먼", "코로나 이전",
+    "역사적 회고", "장기 추이", "decade",
+)
+_DAILY_BRIEFING_KEYWORDS = (
+    "간밤", "어제", "오늘 새벽", "daily briefing", "일일 브리핑",
+    "야간", "장 마감", "전일 마감",
+)
+
+
+def _select_market_period(request, context) -> str:
+    """Mode-aware period 선택.
+
+    Returns:
+        "1M" — daily briefing 키워드 매치
+        "3Y" — historical keyword 매치
+        "3M" — 디폴트 (사건 보고서, event-anchored ±30일)
+    """
+    pieces: list[str] = []
+    if request is not None:
+        pieces.append(getattr(request, "event_description", "") or "")
+    if context is not None:
+        pieces.append(getattr(context, "event_name", "") or "")
+        pieces.append(getattr(context, "summary", "") or "")
+        pieces.append(getattr(context, "category", "") or "")
+    blob = " ".join(pieces).lower()
+    if any(kw in blob for kw in _HISTORICAL_KEYWORDS):
+        return "3Y"
+    if any(kw in blob for kw in _DAILY_BRIEFING_KEYWORDS):
+        return "1M"
+    return "3M"
+
+
 class Orchestrator:
     """Coordinates the 4-phase analysis pipeline."""
 
@@ -795,9 +831,11 @@ class Orchestrator:
                     except ValueError:
                         anchor = None
 
-                # 기본 기간: 사건 보고서 → 3M (이벤트 ±30일 ≈ 60 영업일).
-                # daily briefing / historical 분기는 후속 PR 에서 mode-aware 로 확장.
-                fetch_period = "3M"
+                # Mode-aware period 선택 (v5.2.0):
+                #  - daily briefing (간밤 / 어제 / 오늘 키워드) → 1M
+                #  - historical (IMF / 글금위 / 10년 만에 / 역사적 키워드) → 3Y
+                #  - 그 외 (사건 보고서) → 3M (이벤트 ±30일 ≈ 60 영업일)
+                fetch_period = _select_market_period(request, result.context)
                 stage_mf = self.telemetry.stage_start("market_fetch")
                 series_list = await fetch_many(
                     instruments, period=fetch_period, config=self.config,
@@ -810,8 +848,8 @@ class Orchestrator:
                 result.context.time_series = [s.model_dump() for s in series_list]
                 non_empty = sum(1 for s in series_list if s.data)
                 logger.info(
-                    "[orchestrator] market_fetch: %d instruments requested, %d returned data",
-                    len(instruments), non_empty,
+                    "[orchestrator] market_fetch period=%s: %d instruments requested, %d returned data",
+                    fetch_period, len(instruments), non_empty,
                 )
         except Exception as _e:  # pragma: no cover  — fetch 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] market_fetch skipped: %s", _e)

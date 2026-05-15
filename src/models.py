@@ -575,6 +575,67 @@ class ComposedSection(BaseModel):
     """True 시 prose 첫 문단 첫 글자가 dropcap 으로 크게 렌더. 섹션 1~2개 한정.
     남용하면 시각 피로 — 보고서 전체에서 1~2 섹션만 권장."""
 
+    @model_validator(mode="after")
+    def _drop_invalid_charts(self) -> "ComposedSection":
+        """v5.2.0 — composer LLM 출력의 차트별 schema guard (production 진입점).
+
+        ``src/visual/schemas.py`` 의 type 별 Pydantic guard 를 호출해 위반 차트만
+        drop. v5 Phase 6 의 `run_chart_gate` 는 default OFF 인 `enable_visual_planner`
+        뒤에 묶여 있어 실제 production 경로엔 호출되지 않았음 — 본 validator 가
+        Gate A 부분을 *디폴트 ON* 으로 wire up. composer 가 emit 한 ``list[dict]``
+        를 그대로 받아 각 dict 별로 검증.
+
+        설계 원칙:
+        - 합법 차트는 절대 안 건드림 (ok=True 면 그대로 보존)
+        - 위반 차트는 *조용히 drop* + warning log (운영자가 ``tail -f bot.log`` 로 인지)
+        - validate_chart_data 가 raise 해도 차트 보존 (composer 토큰 12K~32K 보호)
+        - type 누락 차트도 보존 (downstream 호환)
+        - charts 비어있거나 schemas 모듈 미설치면 noop
+        """
+        if not self.charts:
+            return self
+        try:
+            from src.visual.schemas import validate_chart_data
+        except ImportError:
+            return self
+        import logging
+        logger = logging.getLogger(__name__)
+        valid: list[dict] = []
+        dropped = 0
+        for ch in self.charts:
+            if not isinstance(ch, dict):
+                continue
+            ctype = (ch.get("type") or "").lower()
+            if not ctype:
+                valid.append(ch)
+                continue
+            try:
+                ok, reason = validate_chart_data(ctype, ch.get("data"))
+            except Exception as e:  # validate_chart_data 자체 버그 — 보고서 회피
+                logger.warning(
+                    "[composed_section] validate_chart_data exception on %r/%r: %s "
+                    "— 차트 보존",
+                    self.heading, ch.get("title"), e,
+                )
+                valid.append(ch)
+                continue
+            if ok:
+                valid.append(ch)
+            else:
+                dropped += 1
+                logger.warning(
+                    "[composed_section] dropped invalid chart in %r: "
+                    "title=%r, type=%s, reason=%s",
+                    self.heading, ch.get("title"), ctype, reason,
+                )
+        if dropped:
+            logger.info(
+                "[composed_section] %r: %d/%d 차트 drop (schema guard)",
+                self.heading, dropped, dropped + len(valid),
+            )
+        self.charts = valid
+        return self
+
 
 class ComposedReport(BaseModel):
     """Opus 4.7 unified composer 산출. v4.0.0 Tier 4 부터 분석 + 작성 단일 호출.

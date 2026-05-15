@@ -302,13 +302,15 @@ class KRXFetcher:
                 "endDd": end_str,
             }
         else:
-            isin = _ISIN_MAP.get(code)
+            isin = _ISIN_MAP.get(code) or await _lookup_isin(code)
             if not isin:
                 logger.warning(
-                    "[market_fetcher] KRX 종목코드 %s 의 ISIN 매핑 없음 — _ISIN_MAP 확장 필요",
+                    "[market_fetcher] KRX 종목코드 %s 의 ISIN 미해결 — _ISIN_MAP 확장 또는 search endpoint 실패",
                     code,
                 )
                 return []
+            # cache 갱신 (다음 호출 빠르게)
+            _ISIN_MAP[code] = isin
             payload = {
                 "bld": "dbms/MDC/STAT/standard/MDCSTAT01701",
                 "isuCd": isin,
@@ -342,12 +344,60 @@ class KRXFetcher:
         return _parse_krx(body)
 
 
-# 종목코드 → ISIN. KRX OHLC API 가 isuCd 로 ISIN 을 요구. 자주 쓰는 종목만 하드코딩;
-# 향후 KRX issue search endpoint 로 동적 조회 가능.
+# 종목코드 → ISIN. KRX OHLC API 가 isuCd 로 ISIN 을 요구. 자주 쓰는 종목 *seed*
+# 하드코딩 + `_lookup_isin` 동적 조회 결과를 cache 로 채움 (v5.2.0).
 _ISIN_MAP: dict[str, str] = {
     "005930": "KR7005930003",   # 삼성전자
     "000660": "KR7000660001",   # SK하이닉스
+    "035420": "KR7035420009",   # NAVER
+    "035720": "KR7035720002",   # 카카오
+    "207940": "KR7207940008",   # 삼성바이오로직스
+    "005380": "KR7005380001",   # 현대차
+    "051910": "KR7051910008",   # LG화학
+    "006400": "KR7006400006",   # 삼성SDI
 }
+
+
+async def _lookup_isin(stock_code: str) -> str | None:
+    """KRX 종목 search endpoint 로 6자리 코드 → ISIN 동적 조회.
+
+    KRX 의 종목 자동완성 API. 무인증, JSON 응답. 실패 시 None.
+    """
+    if not stock_code or len(stock_code) != 6 or not stock_code.isdigit():
+        return None
+    search_url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+    payload = {
+        "bld": "dbms/comm/finder/finder_stkisu",
+        "mktsel": "ALL",
+        "searchText": stock_code,
+    }
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Referer": "http://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd",
+        "X-Requested-With": "XMLHttpRequest",
+    }
+    try:
+        timeout = aiohttp.ClientTimeout(total=15)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(search_url, data=payload, headers=headers) as resp:
+                if resp.status != 200:
+                    return None
+                body = await resp.json(content_type=None)
+    except Exception as e:
+        logger.warning("[market_fetcher] KRX ISIN lookup %s failed: %s", stock_code, e)
+        return None
+    rows = body.get("block1") or body.get("output") or []
+    for r in rows:
+        if (r.get("short_code") or "").endswith(stock_code) or r.get("shotCode") == stock_code:
+            return r.get("full_code") or r.get("isuCd") or None
+    # 마지막 fallback — 첫 row 의 full_code
+    if rows:
+        return rows[0].get("full_code") or rows[0].get("isuCd") or None
+    return None
 
 
 # ─── 파서 (모듈 레벨 — 테스트 용이성) ──────────────────────────

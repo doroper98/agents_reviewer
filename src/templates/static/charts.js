@@ -430,12 +430,19 @@
         .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
         .text(String(d.x).slice(0, 12));
     });
-    // Inline events from data points (legacy support)
-    data.filter(d => d.event).forEach(d => {
-      svg.append('line').attr('x1', x(String(d.x))).attr('x2', x(String(d.x)))
-        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
-        .attr('stroke', t.down).attr('stroke-width', 0.8).attr('stroke-dasharray', '3,3');
-    });
+    // v5.2.0 — Bloomberg/FT 풍 이벤트 번호 배지 + footnote (드림라인 위 점선만 그리던
+    // legacy 처리를 candle/area 와 일관 스타일로 교체). 함수 정의는 아래쪽
+    // _renderEventBadgesAndFootnote 가 hoisted (function declaration).
+    const lineEvents = data
+      .map((d, i) => ({ idxInData: i, dataItem: d, eventLabel: d.event, dateStr: d.x, valueY: y(+d.y) }))
+      .filter(e => e.eventLabel);
+    if (lineEvents.length) {
+      _renderEventBadgesAndFootnote(
+        stage, svg, lineEvents,
+        (item) => x(String(item.x)),
+        zones, t,
+      );
+    }
   }
 
   // ----- GANTT -----
