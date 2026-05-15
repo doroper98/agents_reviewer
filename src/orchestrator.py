@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.1"
+VERSION = "v5.2.2"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -95,62 +95,153 @@ _DAILY_BRIEFING_KEYWORDS = (
 # composer prompt 강화는 LLM 지시 준수에 의존 — 결정적 hook 이 안전망.
 _TS_CHART_TYPES = {"line", "candle", "area"}
 
+# v5.2.2+ — source 표기 매핑 (사용자 노출용)
+_SOURCE_DISPLAY = {
+    "YAHOO": "Yahoo Finance",
+    "KRX": "KRX",
+    "FRED": "FRED",
+    "ECOS": "한국은행 ECOS",
+}
 
-def _ensure_time_series_chart(composed, time_series: list) -> None:
-    """composer 가 시계열 차트 0개 emit 했고 time_series 데이터는 있을 때, 첫 섹션
-    의 charts 배열 *앞* 에 자동 보충. composer 가 1개 이상 박았으면 no-op.
 
-    Args:
-        composed: ``ComposedReport`` (mutated in place).
-        time_series: ``context.time_series`` list of dict (Pydantic dump).
+def _count_existing_ts_charts(composed) -> int:
+    """composer 가 박은 시계열 차트 개수."""
+    n = 0
+    for sec in composed.sections or []:
+        for ch in (sec.charts or []):
+            if isinstance(ch, dict) and (ch.get("type") or "").lower() in _TS_CHART_TYPES:
+                n += 1
+    return n
 
-    동작:
-    - time_series 빈 경우 / sections 0개 → no-op
-    - 이미 line/candle/area 중 하나라도 박혀 있으면 → no-op
-    - 그 외: time_series 중 *data 가장 많은* series 1개를 그 series 의
-      chart_type 으로 변환 후 sections[0].charts 의 인덱스 0 에 삽입.
-      이벤트 마커는 context.timeline 의 날짜와 매치되는 row 에 ``event``
-      필드로 자동 부착.
-    """
-    if not time_series or not composed or not composed.sections:
-        return
 
-    # 이미 시계열 차트 있는지
-    for sec in composed.sections:
+def _composer_instruments(composed) -> set[str]:
+    """composer 가 박은 시계열 차트의 instrument 이름 집합 (제목 기반 추측)."""
+    out: set[str] = set()
+    for sec in composed.sections or []:
         for ch in (sec.charts or []):
             if not isinstance(ch, dict):
                 continue
-            if (ch.get("type") or "").lower() in _TS_CHART_TYPES:
-                return  # composer 가 잘 박았음 — no-op
+            if (ch.get("type") or "").lower() not in _TS_CHART_TYPES:
+                continue
+            title = (ch.get("title") or "")
+            # 가장 흔한 instrument 이름과 매치 — exact match 우선
+            for inst in ("코스피", "코스닥", "삼성전자", "SK하이닉스", "달러인덱스",
+                         "미국채 1Y", "미국채 10Y", "WTI", "금", "국고채 10Y", "원/달러"):
+                if inst in title:
+                    out.add(inst)
+                    break
+    return out
 
-    # data 가 있는 series 만 후보
-    candidates = [
-        s for s in time_series
-        if isinstance(s, dict) and s.get("data")
-    ]
-    if not candidates:
-        return
 
-    # 가장 데이터 많은 series 선택 (변동성 분석에 가장 풍부한 표본)
-    primary = max(candidates, key=lambda s: len(s.get("data") or []))
-    ctype = (primary.get("chart_type") or "line").lower()
+def _attach_event_markers(chart_data: list, timeline: list, ctype: str) -> list:
+    """timeline 의 date 와 매치되는 row 에 ``event`` 필드 부착.
+
+    charts.js 가 ``event`` 필드 보고 번호 배지 + footnote 자동 렌더.
+    date 매핑: 'YYYY-MM-DD' 정확 일치만 인정.
+    """
+    if not timeline:
+        return chart_data
+    idx: dict[str, str] = {}
+    for ev in timeline:
+        if not isinstance(ev, dict):
+            continue
+        date_str = (ev.get("date") or "").strip()
+        if len(date_str) < 10:
+            continue
+        d_iso = date_str[:10]
+        if not (d_iso[:4].isdigit() and d_iso[4] == "-" and d_iso[7] == "-"):
+            continue
+        text = (ev.get("event") or "").strip()
+        if not text:
+            continue
+        idx[d_iso] = text[:60]
+    if not idx:
+        return chart_data
+    out = []
+    for row in chart_data:
+        if not isinstance(row, dict):
+            out.append(row); continue
+        d = (row.get("date") if ctype == "candle" else row.get("x")) or ""
+        d = str(d)[:10]
+        if d in idx:
+            out.append({**row, "event": idx[d]})
+        else:
+            out.append(row)
+    return out
+
+
+def _format_ts_title(name: str, source: str, code: str) -> str:
+    """instrument 별 사용자 노출 title."""
+    if source == "YAHOO" and name in ("코스피", "코스닥"):
+        return f"{name} 종합지수"
+    if source == "KRX" and code and code.isdigit() and len(code) == 6:
+        return f"{name} ({code})"
+    return name
+
+
+def _format_ts_subtitle(data: list, start_date: str, end_date: str, ctype: str) -> str:
+    """변화율 % + 기간."""
+    if not data or len(data) < 2:
+        return f"{start_date} ~ {end_date}".strip(" ~")
+    def _close(d):
+        return d.get("close") if ctype == "candle" else d.get("y", d.get("close"))
+    first = _close(data[0]) or 0
+    last = _close(data[-1]) or 0
+    if first <= 0:
+        return f"{start_date} ~ {end_date}"
+    pct = (last / first - 1) * 100
+    sign = "+" if pct >= 0 else ""
+    period = f"{start_date} ~ {end_date}" if (start_date and end_date) else ""
+    fmt_n = (lambda v: f"{v:,.0f}") if abs(last) >= 1000 else (lambda v: f"{v:.2f}")
+    parts = [p for p in (period, f"{sign}{pct:.2f}% ({fmt_n(first)} → {fmt_n(last)})") if p]
+    return " · ".join(parts)
+
+
+def _format_ts_source(series: dict) -> str:
+    """source 표기 — '한국은행 ECOS / 2026-04-15 ~ 2026-05-15 · 일간'."""
+    src = _SOURCE_DISPLAY.get(series.get("source", ""), series.get("source", "?"))
+    period = f"{series.get('start_date', '')} ~ {series.get('end_date', '')}".strip(" ~")
+    parts = [src, period, "일간"]
+    return " / ".join(p for p in parts if p)
+
+
+def _format_ts_takeaway(data: list, ctype: str, context) -> str:
+    """본문 narrative 우선, 없으면 변동성 기반 자동 해석."""
+    # 1순위: context.summary 의 첫 문장 (≤100자)
+    summary = (getattr(context, "summary", "") or "").strip()
+    if summary:
+        first = summary.split(".")[0].strip()
+        if 10 <= len(first) <= 100:
+            return first
+    # 2순위: 데이터 기반 변동성
+    if not data:
+        return ""
+    def _close(d):
+        return d.get("close") if ctype == "candle" else d.get("y", d.get("close"))
+    closes = [_close(d) or 0 for d in data]
+    closes = [c for c in closes if c > 0]
+    if len(closes) < 2:
+        return ""
+    hi, lo = max(closes), min(closes)
+    if lo <= 0:
+        return ""
+    range_pct = (hi - lo) / lo * 100
+    fmt_n = (lambda v: f"{v:,.0f}") if hi >= 1000 else (lambda v: f"{v:.2f}")
+    return f"기간 중 최고 {fmt_n(hi)} · 최저 {fmt_n(lo)} — 변동폭 {range_pct:.1f}%"
+
+
+def _build_ts_chart(series: dict, context) -> dict:
+    """단일 series → mockup 수준 chart dict.
+
+    mockup 수준 = title + subtitle + source + takeaway + event markers + 적절한 data shape.
+    """
+    raw_data = list(series.get("data") or [])
+    ctype = (series.get("chart_type") or "line").lower()
     if ctype not in _TS_CHART_TYPES:
         ctype = "line"
 
-    # 이벤트 마커 자동 부착 — context.timeline 의 date 와 매치
-    data = list(primary.get("data") or [])
-    timeline = []
-    try:
-        # composed 는 ComposedReport — context 는 별도 (orchestrator 가 호출 시점에
-        # 갖고 있음). 여기선 timeline 접근 불가하므로 일단 마커 없이 emit.
-        # 향후 hook 시그니처 확장하면 추가 가능.
-        pass
-    except Exception:
-        pass
-
-    # type 별 data shape 변환
+    # data shape 변환
     if ctype == "candle":
-        # 그대로 (OHLC 형식) — composer 가 받는 동일 shape
         chart_data = [
             {
                 "date": d.get("date"),
@@ -160,39 +251,75 @@ def _ensure_time_series_chart(composed, time_series: list) -> None:
                 "close": d.get("close"),
                 **({"volume": d.get("volume")} if d.get("volume") else {}),
             }
-            for d in data
+            for d in raw_data
         ]
     else:
-        # line / area — {x, y} 로 mapping
-        chart_data = [
-            {"x": d.get("date"), "y": d.get("close")}
-            for d in data
-        ]
+        chart_data = [{"x": d.get("date"), "y": d.get("close")} for d in raw_data]
 
-    name = primary.get("instrument") or "시계열"
-    period_start = primary.get("start_date") or ""
-    period_end = primary.get("end_date") or ""
-    period_str = f"{period_start} ~ {period_end}" if period_start and period_end else ""
-    chart = {
+    # 이벤트 마커 자동 부착 (charts.js 가 번호 배지 + footnote 로 렌더)
+    timeline = list(getattr(context, "timeline", None) or [])
+    chart_data = _attach_event_markers(chart_data, timeline, ctype)
+
+    name = series.get("instrument", "시계열")
+    return {
         "type": ctype,
-        "title": f"{name} 시계열",
-        "subtitle": period_str,
+        "title": _format_ts_title(name, series.get("source", ""), series.get("code", "")),
+        "subtitle": _format_ts_subtitle(chart_data, series.get("start_date", ""),
+                                         series.get("end_date", ""), ctype),
         "data": chart_data,
-        "source": f"{primary.get('source', '?')} · {period_str}".strip(" ·"),
-        "note": "v5.2.0 자동 보충 — composer 가 시계열 차트 누락한 경우 안전망. "
-                "본문 narrative 와 시각 정합성 보장.",
+        "source": _format_ts_source(series),
+        "takeaway": _format_ts_takeaway(chart_data, ctype, context),
     }
 
-    # 첫 섹션의 charts 배열 *앞* 에 삽입
+
+def _ensure_time_series_chart(composed, context) -> None:
+    """v5.2.2 — composer 가 시계열 차트 누락 시 mockup 수준으로 자동 보충.
+
+    설계:
+    - context.time_series 중 ``data`` 가 있는 series 만 후보
+    - composer 가 이미 박은 instrument 는 *skip* (중복 회피)
+    - 누락된 series 마다 mockup 수준 차트 (title / subtitle / source /
+      takeaway / 이벤트 마커 자동) 를 생성
+    - 차트는 ``sections[0].charts`` 앞쪽에 우선 삽입 (data 많은 순)
+
+    Args:
+        composed: ``ComposedReport`` (mutated in place)
+        context: ``ContextAnalysis`` (time_series / timeline / summary 접근)
+    """
+    if composed is None or not composed.sections:
+        return
+    time_series = list(getattr(context, "time_series", None) or [])
+    if not time_series:
+        return
+
+    candidates = [
+        s for s in time_series
+        if isinstance(s, dict) and s.get("data")
+    ]
+    if not candidates:
+        return
+
+    # composer 가 이미 박은 instrument 제외 (중복 회피)
+    composer_names = _composer_instruments(composed)
+    to_add = [s for s in candidates if s.get("instrument") not in composer_names]
+    if not to_add:
+        return  # composer 가 다 박았으면 no-op
+
+    # data 많은 순 (가장 정보 풍부한 series 가 첫 섹션)
+    to_add.sort(key=lambda s: -len(s.get("data") or []))
+
+    # 첫 섹션 앞쪽에 모두 삽입 (사용자: '적극적이어도 OK, 단 mockup 품질')
     target = composed.sections[0]
     if target.charts is None:
         target.charts = []
-    target.charts.insert(0, chart)
+    new_charts = [_build_ts_chart(s, context) for s in to_add]
+    target.charts = new_charts + list(target.charts)
 
     import logging
+    names = ", ".join(s.get("instrument", "?") for s in to_add)
     logging.getLogger(__name__).info(
-        "[orchestrator] _ensure_time_series_chart: %s (%s, %d bars) → sections[0].charts[0]",
-        name, ctype, len(chart_data),
+        "[orchestrator] _ensure_time_series_chart: +%d 차트 (%s) → sections[0].charts (mockup-quality)",
+        len(to_add), names,
     )
 
 
@@ -1078,12 +1205,11 @@ class Orchestrator:
         # v5.2.0+ — 시계열 차트 안전망 (composer LLM 이 available_time_series 무시
         # 했을 때 자동 보충). prompt 강화는 LLM 의 *지시 준수* 에 의존 — 100% 보장
         # 안 됨. 결정적 hook 으로 시계열 데이터가 있는데 시계열 차트 0개면
-        # 첫 섹션에 자동 추가. composer 가 이미 1개 이상 박았으면 no-op.
+        # 첫 섹션에 자동 추가. composer 가 이미 박은 instrument 는 skip (중복 회피).
+        # v5.2.2 — context 전체를 전달 (timeline 매칭으로 이벤트 마커 자동 부착,
+        # summary 로 takeaway 자동 생성 — mockup 수준 quality).
         try:
-            _ensure_time_series_chart(
-                result.composed_report,
-                getattr(result.context, "time_series", None) or [],
-            )
+            _ensure_time_series_chart(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
 
