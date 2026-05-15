@@ -20,6 +20,38 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [Unreleased] — 차트 가드 강화 (CHART-AP-15, CHART-AP-16)
+
+### Fixed — donut 2-segment 빈 카드 + gantt zero-duration 빈 차트 회귀
+
+20260515_125106 보고서 ("코스피 8000 돌파") 에서 2건의 차트 type 선택 회귀
+사용자 보고. 둘 다 *데이터 결함이 아니라 type 선택 결함* — composer 가
+부적합한 type 을 골랐고 가드 인프라가 못 잡음.
+
+- **CHART-AP-15** (gantt zero-duration emit): "2026년 5월 코스피 8000 돌파
+  타임라인" gantt — 7개 row 중 6개가 `start == end` (point-in-time 이벤트 모음).
+  본질이 *event sequence* 이지 *duration timeline* 이 아니어서 gantt 부적합.
+  `GanttGuard.validate_durations` 신규 — zero-duration ratio > 70% 면 reject.
+- **CHART-AP-16** (donut 2-segment 안티패턴): "외국인 5월 누적 순매도 구성"
+  donut — `[{반도체:16.8}, {비반도체:3.4}]` 2 segment. "비반도체" 잡탕 segment
+  로 정보 손실 + subtitle 이 같은 비율(83%) 이미 전달 + 렌더러 (`drawDonut`)
+  가 `< 3` 이면 silent return 해서 *제목·부제만 보이는 빈 카드*로 회귀.
+  `DonutGuard.validate_segment_count` 신규 — segment < 3 이면 reject.
+
+**수정**:
+- `src/visual/schemas.py` — `DonutGuard` `min_length=2 → 1` + `validate_segment_count`,
+  `GanttGuard` + `validate_durations`.
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` donut / gantt spec 행에
+  AP-15 / AP-16 명시.
+- `docs/CHART_RENDERING_ANTIPATTERNS.md` AP-15, AP-16 append + `last_synced_with`
+  → v5.1.2 + "누적 16개" 갱신.
+- `CLAUDE.md` Anti-Patterns (차트 렌더링) 섹션 16개 패턴 / AP-15, AP-16 라인 추가.
+- `tests/regression/test_chart_correctness.py` 회귀 테스트 4건 추가.
+- 기존 보고서는 `scripts/patch_report.py 20260515_125106 --remove-chart 2:0
+  --remove-chart 4:0` 로 일회성 정리 (LLM 호출 0).
+
+---
+
 ## [v5.1.2] — 2026-05-14
 
 ### Changed — Daily Briefing 기본 트리거 시각 07:30 → 06:00 KST

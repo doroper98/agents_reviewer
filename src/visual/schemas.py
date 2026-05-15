@@ -177,6 +177,34 @@ class GanttGuard(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def validate_durations(self) -> "GanttGuard":
+        """CHART-AP-15: gantt 는 *기간* 차트. point-in-time 이벤트 모음이면 부적합.
+
+        zero-duration ratio (start == end 인 row 비율) > 0.7 이면 거절.
+        gantt 본질이 duration 시각화인데 모든 행이 점이면 막대 폭 ≈ 0px →
+        라벨만 떠 있는 빈 차트로 보임. timeline_strip / line + event marker /
+        본문 list 로 대체.
+        """
+        zero_count = 0
+        for r in self.rows:
+            t_start = parse_time(r.start)
+            t_end = parse_time(r.end)
+            if t_start is not None and t_end is not None:
+                # parse_time 은 datetime 반환 — timedelta 의 total_seconds() 비교.
+                # 일/월 단위 정밀도 차이 무시: 같은 날(또는 미만)이면 zero-duration.
+                if abs((t_end - t_start).total_seconds()) < 86400:
+                    zero_count += 1
+        ratio = zero_count / len(self.rows)
+        if ratio > 0.7:
+            raise ValueError(
+                f"CHART-AP-15 가드: gantt zero-duration ratio {ratio:.0%} > 70% "
+                f"({zero_count}/{len(self.rows)} rows). gantt 는 *기간* 차트이므로 "
+                "point-in-time 이벤트 모음에는 부적합. timeline_strip / "
+                "line + event marker / 본문 list 로 대체할 것."
+            )
+        return self
+
 
 # ─── Network (CHART-AP-7 + AP-1) ──────────────────────────────────────
 
@@ -320,7 +348,9 @@ class DonutSlice(BaseModel):
 
 
 class DonutGuard(BaseModel):
-    data: list[DonutSlice] = Field(min_length=2)   # 1조각 도넛은 의미 X
+    # CHART-AP-16 가 ≥3 강제 — 여기선 비어있지 않게만 막고, 정확한 메시지는
+    # validate_segment_count 에서 발생시킴 (field 레벨 "too_short" 가 AP 번호를 가림).
+    data: list[DonutSlice] = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_finite_positive(self) -> "DonutGuard":
@@ -334,6 +364,22 @@ class DonutGuard(BaseModel):
         total = sum(s.value for s in self.data)
         if total <= 0:
             raise ValueError("CHART-AP-7 가드: donut 총합 0 — 차트 의미 없음")
+        return self
+
+    @model_validator(mode="after")
+    def validate_segment_count(self) -> "DonutGuard":
+        """CHART-AP-16: 도넛 segment < 3 = 정보 손실 + subtitle 잉여.
+
+        2 segment 도넛은 (a) "기타" 같은 잡탕 segment 가 강제로 생기거나,
+        (b) subtitle 의 % 표현이 같은 정보를 이미 전달함. 둘 다 비율 카드 또는
+        본문 한 문장으로 대체. 1 segment 는 도넛 자체가 의미 없음.
+        """
+        if len(self.data) < 3:
+            raise ValueError(
+                f"CHART-AP-16 가드: donut segment {len(self.data)} 개 — 3 미만은 "
+                "정보 손실 (잡탕 'others' segment) + subtitle 잉여. "
+                "비율 카드 또는 본문 한 문장으로 대체할 것."
+            )
         return self
 
 

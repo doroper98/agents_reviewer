@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.5.7
+last_synced_with: v5.1.2
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -20,7 +20,7 @@ last_review: 2026-05-05
 > 본 문서의 체크리스트 위반 여부 *반드시* 점검. 회귀 1건 발견 시 본 문서에 항목
 > 추가 (append-only) — 같은 실수 반복 방지의 SSOT.
 >
-> **번호 정책**: 본 문서의 CHART-AP-N 번호는 *부여된 순서대로 영구 보존*. 24ba563 commit 의 메시지가 신규 항목 ("보고서와 무관한 지리 annotation") 을 'CHART-AP-13' 으로 표기했으나 v4.5.4 에서 이미 같은 번호 (Gantt 시간축) 가 부여되어 *번호 충돌* 이 발생했음. [REFACTOR_V5_PLAN.md §3.7](../REFACTOR_V5_PLAN.md) 의 정본 표기에 따라 Phase 0 (v4.5.7 baseline SSOT Repair) 에서 후자를 **CHART-AP-14** 로 정정함. 누적 14개.
+> **번호 정책**: 본 문서의 CHART-AP-N 번호는 *부여된 순서대로 영구 보존*. 24ba563 commit 의 메시지가 신규 항목 ("보고서와 무관한 지리 annotation") 을 'CHART-AP-13' 으로 표기했으나 v4.5.4 에서 이미 같은 번호 (Gantt 시간축) 가 부여되어 *번호 충돌* 이 발생했음. [REFACTOR_V5_PLAN.md §3.7](../REFACTOR_V5_PLAN.md) 의 정본 표기에 따라 Phase 0 (v4.5.7 baseline SSOT Repair) 에서 후자를 **CHART-AP-14** 로 정정함. 누적 16개 (v5.1.2 — AP-15/AP-16 추가).
 
 ---
 
@@ -356,6 +356,88 @@ composer 가 `{x: 0.6, y: 0.7}` (0~1) 가정 emit 시 OK 지만, `{x: 60, y: 70}
 - start === end 면 0.4 단위 폭 부여 (점이 아니라 짧은 bar).
 - 막대 최소 폭 2 → 6px.
 - note placement: 막대 폭 ≥ 60px 이면 *내부* 흰글자, 아니면 *외부 우측*.
+
+---
+
+## CHART-AP-15: gantt zero-duration emit (point-in-time 이벤트 모음을 gantt 로)
+
+**증상**: gantt 차트로 emit 됐지만 모든 row 의 `start == end` (단일 시점 이벤트들의
+나열). 막대 폭 ≈ 0 → row 라벨만 일렬로 떠 있는 *빈 차트*. v4.5.4 의 fallback
+(0.4 단위 / 최소 6px) 으로 시각적으로는 막대가 보이지만, 본질적으로 *기간*
+차트인 gantt 의 의미를 잃음. 사용자가 "왜 다 똑같은 점만 찍혀 있나" 라고
+인지함. CHART-AP-13 의 시간축 fix 와 별개의 *type 선택* 회귀.
+
+**최초 사례**: 20260515_125106 보고서 ("코스피 8000 돌파") — section 4 의
+"2026년 5월 코스피 8000 돌파 타임라인" gantt. 7개 row 중 6개가 zero-duration
+(예: `{label:"코스피 +4.32%", start:"2026-05-11", end:"2026-05-11"}`). 이건 본질이
+*event sequence* (시점 마커들의 나열) 이지 *duration timeline* 이 아님. 사용자
+인용: "타임라인이라고 했는데 막대가 다 뭉쳐있다."
+
+**원인**:
+- composer prompt 의 gantt spec 이 `[{label, start, end, note?}] 사건 구간` 으로만
+  적혀 있어, *기간* 의도가 약함. composer 가 "타임라인" 키워드 만 보고 gantt 를
+  선택.
+- `GanttGuard` 가 start ≤ end 만 검증 — zero-duration ratio 는 검증 X. point-in-time
+  데이터가 그대로 통과.
+
+**검증 체크리스트**:
+- [ ] gantt 의 `start != end` row 가 *전체의 30% 이상* 인가? (아니면 type 부적합)
+- [ ] composer prompt 에 "point-in-time 이벤트 모음은 gantt 금지, line + event
+      marker 또는 본문 list 로" 명시되어 있는가?
+- [ ] `GanttGuard.validate_durations` 가 zero-duration ratio > 0.7 거절하는가?
+- [ ] 사용자 keyword "타임라인" 이 항상 gantt 로 매핑되지 않는가? (event sequence
+      는 line / list)
+
+**Fix (v5.1.2)**:
+- `GanttGuard.validate_durations` 신규 — zero-duration ratio > 0.7 면 reject 메시지
+  "CHART-AP-15 가드: gantt zero-duration ratio X% > 70%".
+- `narrative_composer` 의 gantt spec 행에 *point-in-time 모음 emit 금지* 명시 +
+  대안 (line + event marker / 본문 list) 안내.
+- `tests/regression/test_chart_correctness.py::test_gantt_guard_rejects_all_zero_duration`
+  로 회귀 가드.
+- 본 보고서는 `patch_report.py 20260515_125106 --remove-chart 4:0` 로 일회성 제거.
+
+---
+
+## CHART-AP-16: donut 2-segment 안티패턴 (정보 손실 + subtitle 잉여)
+
+**증상**: donut 차트로 emit 됐지만 segment 가 단 2개 — 보통 한쪽이 "기타" /
+"비-X" 같은 *잡탕 segment*. 정보 손실 (잡탕 segment 내부 구성이 사라짐) + subtitle
+이 이미 같은 비율 (예: "X 가 83%") 을 텍스트로 전달 → 차트 자체가 잉여. 더
+나쁜 건, 렌더러 (`drawDonut`) 가 `data.length < 3` 이면 silently return 해서
+*제목·부제·출처는 그대로 보이는데 도넛 그래픽만 사라진 빈 카드*가 됨. 사용자가
+"차트가 안 보인다" 로 인지.
+
+**최초 사례**: 20260515_125106 보고서 ("코스피 8000 돌파") — section 2 의
+"외국인 5월 누적 순매도 구성" donut. data 가 `[{반도체:16.8}, {비반도체:3.4}]`
+2 segment. "비반도체" 안에 금융 / 화학 / 자동차 등이 다 뭉쳐 정보 손실.
+subtitle 이 이미 "20.2조원 중 16.8조원(83%)이 반도체" 라고 같은 비율을
+전달하고 있었음. 게다가 렌더러가 silent return → 사용자에겐 빈 카드.
+
+**원인**:
+- `DonutGuard.data: list[DonutSlice] = Field(min_length=2)` 와 `drawDonut` 의
+  `if (data.length < 3) return` 사이 *불일치*. 가드는 통과시키고 렌더러는
+  drop → 빈 카드 회귀.
+- composer prompt 의 donut spec 이 "(3개 이상, 균등 X)" 라고 *주석* 만 있고
+  강제 체크는 없음 — composer 가 "구성" 단어 보면 자동으로 도넛 선택.
+
+**검증 체크리스트**:
+- [ ] donut segment 가 *반드시* 3 개 이상인가? (`DonutGuard.validate_segment_count`)
+- [ ] composer prompt 에 "2 segment 도넛 emit 금지, 비율 카드 또는 본문 한 문장
+      으로 대체" 명시?
+- [ ] `DonutGuard` 의 `min_length` 와 `drawDonut` 의 `length < N` 가드가 *동일
+      값* 인가? (mismatch 가 빈 카드 회귀의 원인)
+- [ ] subtitle 이 이미 같은 비율 (%) 을 표현하면 chart_critic 의 Q2 (takeaway
+      중복) 로 drop 되는가?
+
+**Fix (v5.1.2)**:
+- `DonutGuard.data` `min_length=2 → 3` + `validate_segment_count` 신규.
+  메시지: "CHART-AP-16 가드: donut segment N 개 — 3 미만은 정보 손실".
+- `narrative_composer` donut spec 에 "2 segment 도넛 emit 금지" 명시.
+- `tests/regression/test_chart_correctness.py::test_donut_guard_rejects_two_slices`
+  로 회귀 가드.
+- 본 보고서는 `patch_report.py 20260515_125106 --remove-chart 2:0` 로 제거.
+  subtitle 이 이미 충분한 정보 전달.
 
 ---
 

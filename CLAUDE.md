@@ -185,14 +185,16 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - DEVLOG 과거 항목 수정 금지 (append-only). 정정은 새 항목으로
 - GOAL 의 REQ-* 삭제 금지. deprecated 마킹만
 
-## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v4.5.7 확장)
+## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **14개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **16개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
 - CHART-AP-13: Gantt 차트 시간축 누락 + 행 라벨/note 충돌 (v4.5.4 신설)
 - CHART-AP-14: 보고서와 무관한 지리 annotation 무조건 렌더 (v4.5.7 신설 — Somaliland viewport gating)
+- CHART-AP-15: gantt zero-duration emit (v5.1.2 신설 — point-in-time 이벤트 모음을 gantt 로, `GanttGuard.validate_durations` 추가)
+- CHART-AP-16: donut 2-segment 안티패턴 (v5.1.2 신설 — 정보 손실 + subtitle 잉여 + 렌더러 silent return 빈 카드 회귀, `DonutGuard.validate_segment_count` 추가)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 

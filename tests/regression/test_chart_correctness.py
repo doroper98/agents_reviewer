@@ -146,6 +146,7 @@ def test_donut_guard_rejects_negative_value() -> None:
         DonutGuard(data=[
             {"label": "A", "value": -5},
             {"label": "B", "value": 10},
+            {"label": "C", "value": 8},
         ])
 
 
@@ -154,6 +155,7 @@ def test_donut_guard_rejects_total_zero() -> None:
         DonutGuard(data=[
             {"label": "A", "value": 0},
             {"label": "B", "value": 0},
+            {"label": "C", "value": 0},
         ])
 
 
@@ -161,6 +163,72 @@ def test_donut_guard_rejects_single_slice() -> None:
     """1조각 도넛은 의미 X."""
     with pytest.raises(Exception):
         DonutGuard(data=[{"label": "A", "value": 100}])
+
+
+# AP-16 — Donut 2-segment 안티패턴
+def test_donut_guard_rejects_two_slices() -> None:
+    """CHART-AP-16: 2-segment 도넛은 정보 손실 + subtitle 잉여.
+
+    20260515_125106 보고서 ("외국인 5월 누적 순매도 구성") 의 회귀 케이스.
+    [{반도체:16.8}, {비반도체:3.4}] — '비반도체' 잡탕 segment.
+    """
+    with pytest.raises(Exception, match="CHART-AP-16"):
+        DonutGuard(data=[
+            {"label": "반도체", "value": 16.8},
+            {"label": "비반도체", "value": 3.4},
+        ])
+
+
+def test_donut_guard_passes_three_slices() -> None:
+    """3 segment 이상이면 통과."""
+    g = DonutGuard(data=[
+        {"label": "반도체", "value": 16.8},
+        {"label": "금융", "value": 1.2},
+        {"label": "화학·자동차·기타", "value": 2.2},
+    ])
+    assert len(g.data) == 3
+
+
+# AP-15 — Gantt zero-duration emit
+def test_gantt_guard_rejects_all_zero_duration() -> None:
+    """CHART-AP-15: 모든 row 가 start==end 인 gantt 는 부적합.
+
+    20260515_125106 보고서 ("코스피 8000 돌파 타임라인") 의 회귀 케이스.
+    7 row 중 6 이 zero-duration (point-in-time 이벤트 모음). 본질이
+    event sequence 이지 duration timeline 이 아님 — line+marker 또는 list 로.
+    """
+    with pytest.raises(Exception, match="CHART-AP-15"):
+        GanttGuard(rows=[
+            {"label": "7000 돌파", "start": "2026-05-06", "end": "2026-05-06"},
+            {"label": "개인 12.8조 순매수", "start": "2026-05-08", "end": "2026-05-08"},
+            {"label": "+4.32% 7822", "start": "2026-05-11", "end": "2026-05-11"},
+            {"label": "AI 국민배당금", "start": "2026-05-12", "end": "2026-05-12"},
+            {"label": "외인 14.5조 순매도", "start": "2026-05-13", "end": "2026-05-13"},
+            {"label": "옵션만기 5조+", "start": "2026-05-14", "end": "2026-05-14"},
+            {"label": "8000 돌파", "start": "2026-05-15", "end": "2026-05-15"},
+        ])
+
+
+def test_gantt_guard_accepts_majority_real_durations() -> None:
+    """기간 row 가 다수면 통과 — 1개 zero-duration 은 OK (range marker)."""
+    g = GanttGuard(rows=[
+        {"label": "Phase 1", "start": "2024", "end": "2025"},
+        {"label": "Phase 2", "start": "2025", "end": "2026"},
+        {"label": "Milestone", "start": "2025-06", "end": "2025-06"},  # zero-duration 1개
+        {"label": "Phase 3", "start": "2026", "end": "2027"},
+    ])
+    assert len(g.rows) == 4
+
+
+def test_gantt_guard_rejects_at_threshold() -> None:
+    """zero-duration ratio = 0.75 (3/4) 이면 거절 (> 0.7 임계)."""
+    with pytest.raises(Exception, match="CHART-AP-15"):
+        GanttGuard(rows=[
+            {"label": "Phase 1", "start": "2024", "end": "2026"},  # 기간
+            {"label": "Event A", "start": "2026-03", "end": "2026-03"},
+            {"label": "Event B", "start": "2026-06", "end": "2026-06"},
+            {"label": "Event C", "start": "2026-09", "end": "2026-09"},
+        ])
 
 
 # AP-1 — StackedBar
