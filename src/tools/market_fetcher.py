@@ -58,7 +58,7 @@ class InstrumentSpec:
     """instrument 별 fetch 라우팅 + 표시 메타."""
 
     name: str                       # 표시명 (보고서/차트에 노출)
-    source: Literal["KRX", "FRED", "ECOS"]
+    source: Literal["KRX", "FRED", "ECOS", "YAHOO"]
     code: str                       # source 별 ticker / series id
     chart_type: Literal["line", "candle", "area"] = "line"
     unit: str = ""                  # "%", "원", "$" 등
@@ -66,18 +66,19 @@ class InstrumentSpec:
 
 
 INSTRUMENT_REGISTRY: dict[str, InstrumentSpec] = {
-    # ── KRX 지수 ──
+    # ── 지수 (Yahoo Finance — pykrx index endpoint 가 OTP 인증 우회 실패 사례
+    #         보고 후 v5.2.1 부터 yfinance 로 전환. ^KS11 / ^KQ11 ticker 안정) ──
     "KOSPI": InstrumentSpec(
-        name="코스피", source="KRX", code="1001",
+        name="코스피", source="YAHOO", code="^KS11",
         chart_type="line",
         aliases=("코스피", "KOSPI", "한국 증시 종합", "한국증시", "한국 증시"),
     ),
     "KOSDAQ": InstrumentSpec(
-        name="코스닥", source="KRX", code="2001",
+        name="코스닥", source="YAHOO", code="^KQ11",
         chart_type="line",
         aliases=("코스닥", "KOSDAQ"),
     ),
-    # ── KRX 개별주 ──
+    # ── KRX 개별주 (pykrx — get_market_ohlcv 작동 확인) ──
     "005930": InstrumentSpec(
         name="삼성전자", source="KRX", code="005930",
         chart_type="candle", unit="원",
@@ -322,6 +323,58 @@ class KRXFetcher:
 
         if df is None or getattr(df, "empty", True):
             return []
+        return _df_to_ohlc(df)
+
+
+class YahooFetcher:
+    """Yahoo Finance — 지수 / 글로벌 ticker (v5.2.1+).
+
+    pykrx 의 index endpoint 가 OTP 우회 실패하는 환경 (사용자 운영 VM 보고 확인)
+    대응. ``^KS11`` (KOSPI) / ``^KQ11`` (KOSDAQ) 같은 Yahoo ticker 가 무인증 ·
+    안정적. yfinance 라이브러리 사용 (asyncio.to_thread wrap).
+
+    설치: ``pip install yfinance`` (``requirements.txt`` 포함, v5.2.1+).
+    """
+
+    def __init__(self, api_key: str = "") -> None:
+        self.api_key = api_key  # forward-compat
+
+    async def fetch(self, code: str, start: date, end: date) -> list[OHLCBar]:
+        try:
+            import yfinance as yf  # type: ignore[import-not-found]
+        except ImportError:
+            logger.warning(
+                "[market_fetcher] yfinance 미설치 — `pip install yfinance` 후 "
+                "봇 재시작 필요 (Yahoo %s 스킵)",
+                code,
+            )
+            return []
+
+        # yfinance 의 end 파라미터는 *exclusive* 라 +1일 (마지막 날짜 포함되게).
+        end_exclusive = (end + timedelta(days=1)).isoformat()
+        try:
+            df = await asyncio.to_thread(
+                yf.download,
+                code,
+                start=start.isoformat(),
+                end=end_exclusive,
+                progress=False,
+                auto_adjust=True,
+                threads=False,
+            )
+        except Exception as e:
+            logger.warning("[market_fetcher] Yahoo %s fetch error: %s", code, e)
+            return []
+
+        if df is None or getattr(df, "empty", True):
+            return []
+        # yfinance 2.x 는 MultiIndex 컬럼 (single ticker 일 때도) 반환 — flatten.
+        try:
+            if hasattr(df.columns, "nlevels") and df.columns.nlevels > 1:
+                df = df.copy()
+                df.columns = df.columns.get_level_values(0)
+        except Exception:
+            pass
         return _df_to_ohlc(df)
 
 
@@ -572,13 +625,15 @@ async def fetch_market_series(
     ecos_key = getattr(config, "ecos_api_key", "") if config else ""
     krx_key = getattr(config, "krx_api_key", "") if config else ""
 
-    fetcher: FREDFetcher | ECOSFetcher | KRXFetcher
+    fetcher: FREDFetcher | ECOSFetcher | KRXFetcher | YahooFetcher
     if spec.source == "FRED":
         fetcher = FREDFetcher(fred_key)
     elif spec.source == "ECOS":
         fetcher = ECOSFetcher(ecos_key)
     elif spec.source == "KRX":
         fetcher = KRXFetcher(krx_key)
+    elif spec.source == "YAHOO":
+        fetcher = YahooFetcher()
     else:
         return MarketSeries(
             instrument=spec.name, source=spec.source, code=spec.code,
@@ -631,6 +686,7 @@ __all__ = [
     "FREDFetcher",
     "ECOSFetcher",
     "KRXFetcher",
+    "YahooFetcher",
     "resolve_instrument",
     "period_to_dates",
     "fetch_market_series",

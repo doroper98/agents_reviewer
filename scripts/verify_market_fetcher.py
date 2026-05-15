@@ -42,6 +42,11 @@ async def main() -> int:
         pykrx_ok = True
     except ImportError:
         pykrx_ok = False
+    try:
+        import yfinance  # noqa: F401
+        yf_ok = True
+    except ImportError:
+        yf_ok = False
 
     print("=" * 70)
     print(" Market Fetcher 검증 — 1M 기간 fetch")
@@ -50,6 +55,7 @@ async def main() -> int:
     print(f" ECOS_API_KEY : {'설정됨' if config.ecos_api_key else '⚠️ 비어있음'}")
     print(f" KRX_API_KEY  : {'설정됨' if config.krx_api_key else '(무인증 — 정상)'}")
     print(f" pykrx        : {'설치됨' if pykrx_ok else '⚠️ 미설치 (pip install pykrx)'}")
+    print(f" yfinance     : {'설치됨' if yf_ok else '⚠️ 미설치 (pip install yfinance)'}")
     print("=" * 70)
 
     series_list = await fetch_many(INSTRUMENTS, period="1M", config=config)
@@ -80,7 +86,8 @@ async def main() -> int:
             "\n실패한 종목이 있으면:\n"
             " - ❌ FRED 종목: .env 의 FRED_API_KEY 확인 (https://fred.stlouisfed.org/docs/api/api_key.html)\n"
             " - ❌ ECOS 종목: .env 의 ECOS_API_KEY 확인 (https://ecos.bok.or.kr/api/)\n"
-            " - ❌ KRX 종목: `pip install pykrx` 후 재실행 (v5.2.0 부터 pykrx 의존)\n"
+            " - ❌ KRX 종목 (개별주): `pip install pykrx` 후 재실행\n"
+            " - ❌ KOSPI/KOSDAQ 지수: `pip install yfinance` 후 재실행 (v5.2.1+)\n"
             " - bot.log 에서 [market_fetcher] warning 라인 검색"
         )
     return 0 if fail == 0 else 1

@@ -30,10 +30,11 @@ from src.tools.market_fetcher import (
 
 
 def test_resolve_exact_registry_key() -> None:
+    """v5.2.1 — KOSPI 지수는 Yahoo 로 라우팅 (pykrx index 우회)."""
     spec = resolve_instrument("KOSPI")
     assert spec is not None
-    assert spec.source == "KRX"
-    assert spec.code == "1001"
+    assert spec.source == "YAHOO"
+    assert spec.code == "^KS11"
 
 
 def test_resolve_korean_alias() -> None:
@@ -262,7 +263,7 @@ def test_fetch_many_empty_input() -> None:
 
 
 def test_registry_all_sources_valid() -> None:
-    valid_sources = {"KRX", "FRED", "ECOS"}
+    valid_sources = {"KRX", "FRED", "ECOS", "YAHOO"}
     for key, spec in INSTRUMENT_REGISTRY.items():
         assert spec.source in valid_sources, f"{key}: bad source {spec.source}"
         assert spec.chart_type in {"line", "candle", "area"}, f"{key}: bad chart_type"
@@ -283,3 +284,26 @@ def test_registry_chart_type_convention() -> None:
     assert resolve_instrument("WTI").chart_type == "area"
     assert resolve_instrument("금").chart_type == "area"
     assert resolve_instrument("국고 10년").chart_type == "line"
+
+
+def test_kospi_routed_to_yahoo() -> None:
+    """v5.2.1 — 지수는 Yahoo Finance 로 (pykrx index 우회)."""
+    spec = resolve_instrument("코스피")
+    assert spec is not None
+    assert spec.source == "YAHOO"
+    assert spec.code == "^KS11"
+
+
+def test_kosdaq_routed_to_yahoo() -> None:
+    spec = resolve_instrument("코스닥")
+    assert spec is not None
+    assert spec.source == "YAHOO"
+    assert spec.code == "^KQ11"
+
+
+def test_samsung_still_krx() -> None:
+    """개별주는 pykrx 그대로."""
+    spec = resolve_instrument("삼성전자")
+    assert spec is not None
+    assert spec.source == "KRX"
+    assert spec.code == "005930"
