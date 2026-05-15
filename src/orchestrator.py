@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.2"
+VERSION = "v5.2.3"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -133,11 +133,65 @@ def _composer_instruments(composed) -> set[str]:
     return out
 
 
-def _attach_event_markers(chart_data: list, timeline: list, ctype: str) -> list:
+# v5.2.3 — instrument-aware event filtering 키 워드 셋.
+# 동일 timeline 을 모든 차트에 균등 부착하던 v5.2.2 회귀의 안전망. 차트마다
+# instrument 와 관련 있는 이벤트만 골라 부착 — 사용자 노출 footnote/배지가
+# 차트별로 다르게 보이도록.
+_INDEX_INSTRUMENTS = ("코스피", "코스닥", "다우", "나스닥", "S&P 500", "닛케이", "항생")
+
+# 사건 텍스트가 알려진 자산 중 하나라도 명시했는지 판정용. 여기 안 잡히는
+# 일반 시장 이벤트는 모든 개별 자산 차트가 흡수 (정보 손실 방지).
+_KNOWN_INSTRUMENTS_LC = tuple(s.lower() for s in (
+    "코스피", "코스닥",
+    "삼성전자", "SK하이닉스", "TSMC", "엔비디아", "마이크론",
+    "달러인덱스", "원/달러", "엔/달러", "유로/달러", "위안/달러",
+    "WTI", "브렌트유", "두바이", "천연가스",
+    "금", "은", "구리", "철광석",
+    "미국채 1Y", "미국채 2Y", "미국채 10Y", "미국채 30Y",
+    "국고채 3Y", "국고채 10Y",
+    "비트코인", "이더리움",
+))
+
+
+def _event_mentions_any_instrument(text_lower: str) -> bool:
+    """Event 텍스트가 알려진 instrument 중 하나라도 언급하는지."""
+    return any(inst in text_lower for inst in _KNOWN_INSTRUMENTS_LC)
+
+
+def _event_relevant_to(text: str, instrument: str) -> bool:
+    """v5.2.3 — 이 이벤트가 이 차트의 instrument 에 관련 있는지.
+
+    규칙:
+    1) 자기 instrument 이름이 명시된 이벤트 → 부착.
+    2) 지수/벤치마크 차트 (코스피·코스닥 등) → 모든 이벤트 흡수 (시장 풍향
+       자체가 지수 차트의 컨텍스트).
+    3) 개별 자산 차트 → 어떤 instrument 도 명시 안 된 '일반 시장 이벤트' 도
+       흡수 (예: '외국인 5.3조원 순매도' 는 종목 mention 없지만 종목 영향).
+    4) 그 외 (다른 instrument 가 명시된 이벤트) → 스킵.
+    """
+    if not text or not instrument:
+        return False
+    text_l = text.lower()
+    inst_l = instrument.lower()
+    if inst_l in text_l:
+        return True
+    if instrument in _INDEX_INSTRUMENTS:
+        return True
+    return not _event_mentions_any_instrument(text_l)
+
+
+def _attach_event_markers(
+    chart_data: list, timeline: list, ctype: str, instrument: str = "",
+) -> list:
     """timeline 의 date 와 매치되는 row 에 ``event`` 필드 부착.
 
     charts.js 가 ``event`` 필드 보고 번호 배지 + footnote 자동 렌더.
     date 매핑: 'YYYY-MM-DD' 정확 일치만 인정.
+
+    v5.2.3 — ``instrument`` 매개변수 추가. 차트의 instrument 와 관련 있는
+    이벤트만 통과시켜, 같은 timeline 을 모든 차트에 균등 부착하던 v5.2.2
+    회귀 (사용자 노출 결함: KOSPI/삼성/하이닉스 차트가 동일 1-5 번호 + 동일
+    풋노트) 를 해결. instrument="" 면 종전처럼 모든 이벤트 통과.
     """
     if not timeline:
         return chart_data
@@ -153,6 +207,8 @@ def _attach_event_markers(chart_data: list, timeline: list, ctype: str) -> list:
             continue
         text = (ev.get("event") or "").strip()
         if not text:
+            continue
+        if instrument and not _event_relevant_to(text, instrument):
             continue
         idx[d_iso] = text[:60]
     if not idx:
@@ -257,10 +313,10 @@ def _build_ts_chart(series: dict, context) -> dict:
         chart_data = [{"x": d.get("date"), "y": d.get("close")} for d in raw_data]
 
     # 이벤트 마커 자동 부착 (charts.js 가 번호 배지 + footnote 로 렌더)
+    # v5.2.3 — instrument 를 넘겨 차트별 distinct footnote 보장.
     timeline = list(getattr(context, "timeline", None) or [])
-    chart_data = _attach_event_markers(chart_data, timeline, ctype)
-
     name = series.get("instrument", "시계열")
+    chart_data = _attach_event_markers(chart_data, timeline, ctype, instrument=name)
     return {
         "type": ctype,
         "title": _format_ts_title(name, series.get("source", ""), series.get("code", "")),
