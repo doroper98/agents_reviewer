@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.1.2
+last_synced_with: v5.2.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -20,7 +20,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## [Unreleased] — v5.2.0 wip: 후속 (chart_gate wiring + mode-aware period + drawLine 일관성 + KRX ISIN 동적)
+## [v5.2.0] — 2026-05-15
+
+Market Data Fetcher + 시계열 차트 (candle/area) + chart_gate production wiring +
+mode-aware period + drawLine 이벤트 마커 통일. 본 릴리스로 CHART-AP-15/16 의
+근본 원인 (시계열 데이터 부재 + 가드 비활성) 둘 다 해소. composer 가 같은 실수
+해도 가드 자동 차단, 진짜 OHLC 로 차트 emit.
+
+운영자 단계: VM 에 `pip install pykrx yfinance` + `.env` 에 `FRED_API_KEY` /
+`ECOS_API_KEY` 추가 + 봇 재시작. 다음 보고서부터 코스피·삼성전자·DXY·국고 10Y·
+미국채 1Y·WTI 등 실 OHLC 자동 차트 emit. `python scripts/verify_market_fetcher.py`
+로 봇 재시작 전 안전망 검증.
 
 ### Fixed — chart_gate production wiring (CRITICAL)
 
@@ -67,11 +77,24 @@ mention 하면 fetcher 가 빈 결과 반환했음. KRX search endpoint 로 동�
 ### Added — 운영 검증 스크립트
 
 - **`scripts/verify_market_fetcher.py`** — `.env` 의 키로 6 종목 1M fetch 시도.
-  ✅/❌ 표시 + 빈 응답 사유. 봇 재시작 *전* 키 검증용.
+  ✅/❌ 표시 + 빈 응답 사유. 봇 재시작 *전* 키 검증용. pykrx/yfinance 설치 상태도 표시.
+
+### Fixed — KRX 우회 (pykrx + Yahoo Finance 하이브리드)
+
+운영 환경 verify 에서 두 차례 KRX 이슈 발견 → 단계적 해결.
+
+- 1차: `src/tools/market_fetcher.py:KRXFetcher` 가 aiohttp 직접 POST → 모든
+  KRX 종목이 `HTTP 400 LOGOUT` 으로 실패. warm-up GET 추가해도 미해결.
+- 2차: **pykrx 로 전환** — 한국 거래소 scraping 표준 라이브러리. 개별주
+  (삼성전자/SK하이닉스) 정상 fetch. requirements.txt 에 `pykrx>=1.0` 추가.
+- 3차: pykrx 의 *지수* endpoint (`get_index_ohlcv`) 가 OTP 인증 우회 실패 →
+  KOSPI/KOSDAQ 만 **Yahoo Finance** (`yfinance`) 로 우회 (`^KS11` / `^KQ11`
+  ticker 무인증 안정). 개별주는 pykrx 그대로. requirements.txt 에 `yfinance>=0.2.40`
+  추가. `INSTRUMENT_REGISTRY` 의 KOSPI/KOSDAQ source `'KRX'` → `'YAHOO'`.
+- 데이터 정합 검증 — pykrx ↔ Yahoo cross-check 로 OHLC/거래량 byte-equal 확인
+  (운영자 매뉴얼 검증).
 
 ---
-
-## [Unreleased — 선행] — v5.2.0 wip: Market Data Fetcher + Candle/Area 차트
 
 ### Added — 시계열 데이터 파이프라인 (B 안)
 
@@ -121,8 +144,6 @@ ContextAnalyst LLM 이 본문에서 다루는 금융 instrument 를 ``instrument
   의 *근본 원인* (= 시계열 데이터 부재로 composer 가 부적합 차트 선택) 해소.
 
 ---
-
-## [Unreleased — 선행] — 차트 가드 강화 (CHART-AP-15, CHART-AP-16)
 
 ### Fixed — donut 2-segment 빈 카드 + gantt zero-duration 빈 차트 회귀
 

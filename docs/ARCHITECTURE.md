@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.1.2
+last_synced_with: v5.2.0
 ssot_for:
   - "시스템 아키텍처 다이어그램 (v5.1.0 Tier 4)"
   - "2-call 파이프라인 흐름"
