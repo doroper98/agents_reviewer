@@ -43,6 +43,15 @@ class ContextAnalysis(BaseModel):
     # 톤·프레임·어휘 수준을 *느슨하게* 적용. 비어있으면 composer 의 디폴트 동작.
     recommended_persona: dict = Field(default_factory=dict)
 
+    # v5.2.0 — 시계열 데이터 흐름.
+    # LLM 이 본문에서 다루는 금융 instrument 를 추출 (예: "코스피", "삼성전자",
+    # "달러인덱스", "WTI"). orchestrator 가 이 list 를 받아 src.tools.market_fetcher
+    # 로 실데이터 fetch → time_series 에 저장. composer 가 그 데이터를 받아
+    # line / candle / area 차트로 emit. fetch 실패해도 보고서 정상 진행 —
+    # composer 는 time_series 가 비어있으면 차트 생략.
+    instruments_mentioned: list[str] = Field(default_factory=list)
+    time_series: list[dict] = Field(default_factory=list)
+
 
 class PlayerAnalysis(BaseModel):
     """ACT II: Player identification and strategy analysis."""

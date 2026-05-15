@@ -31,8 +31,10 @@ from src.visual.sanity_check import (
     visual_sanity_check_svg,
 )
 from src.visual.schemas import (
+    AreaChartGuard,
     BarChartGuard,
     BubbleChartGuard,
+    CandleChartGuard,
     DonutGuard,
     GanttGuard,
     HeatmapGuard,
@@ -507,3 +509,98 @@ def test_run_chart_gate_allows_experimental_with_must_have() -> None:
     )
     # Gate A 는 통과 (must_have). 그 후 다른 게이트 결과에 따라.
     assert result.gate_results.get("gate_a", {}).get("passed") is True
+
+
+# ─── v5.2.0 Candle / Area 가드 ──────────────────────────────────
+
+
+def test_candle_guard_rejects_single_bar() -> None:
+    with pytest.raises(Exception):
+        CandleChartGuard(data=[
+            {"date": "2026-05-15", "open": 100, "high": 110, "low": 95, "close": 105},
+        ])
+
+
+def test_candle_guard_rejects_negative_price() -> None:
+    with pytest.raises(Exception, match="CHART-AP-3"):
+        CandleChartGuard(data=[
+            {"date": "2026-05-14", "open": 100, "high": 110, "low": 95, "close": 105},
+            {"date": "2026-05-15", "open": -1, "high": 110, "low": 95, "close": 105},
+        ])
+
+
+def test_candle_guard_rejects_inverted_ohlc() -> None:
+    """low > open / high < close 등 OHLC 순서 위반."""
+    with pytest.raises(Exception, match="CHART-AP-3"):
+        CandleChartGuard(data=[
+            {"date": "2026-05-14", "open": 100, "high": 110, "low": 95, "close": 105},
+            # close 가 high 보다 큼 — 위반
+            {"date": "2026-05-15", "open": 105, "high": 110, "low": 100, "close": 120},
+        ])
+
+
+def test_candle_guard_accepts_realistic_ohlc() -> None:
+    """삼성전자 같은 정상 OHLC."""
+    g = CandleChartGuard(data=[
+        {"date": "2026-05-13", "open": 92000, "high": 93500, "low": 91500, "close": 93000, "volume": 12_000_000},
+        {"date": "2026-05-14", "open": 93000, "high": 94200, "low": 92800, "close": 94000, "volume": 15_500_000},
+        {"date": "2026-05-15", "open": 94000, "high": 95000, "low": 93500, "close": 93800, "volume": 18_000_000},
+    ])
+    assert len(g.data) == 3
+    assert g.data[0].close == 93000
+
+
+def test_candle_guard_doji_passes() -> None:
+    """open == close (도지 캔들) 도 정상 케이스."""
+    g = CandleChartGuard(data=[
+        {"date": "2026-05-14", "open": 100, "high": 105, "low": 98, "close": 100},
+        {"date": "2026-05-15", "open": 100, "high": 102, "low": 99, "close": 100},
+    ])
+    assert len(g.data) == 2
+
+
+def test_area_guard_rejects_single_point() -> None:
+    with pytest.raises(Exception):
+        AreaChartGuard(data=[{"x": "2026-05-15", "y": 85.4}])
+
+
+def test_area_guard_rejects_nan_y() -> None:
+    with pytest.raises(Exception, match="CHART-AP-3"):
+        AreaChartGuard(data=[
+            {"x": "2026-05-14", "y": 85.0},
+            {"x": "2026-05-15", "y": float("nan")},
+        ])
+
+
+def test_area_guard_accepts_realistic() -> None:
+    """WTI 같은 정상 시계열."""
+    g = AreaChartGuard(data=[
+        {"x": "2026-05-01", "y": 78.0},
+        {"x": "2026-05-08", "y": 82.5},
+        {"x": "2026-05-15", "y": 85.4},
+    ])
+    assert len(g.data) == 3
+
+
+def test_validate_chart_data_candle_pass() -> None:
+    ok, _ = validate_chart_data("candle", [
+        {"date": "2026-05-14", "open": 100, "high": 110, "low": 95, "close": 105},
+        {"date": "2026-05-15", "open": 105, "high": 115, "low": 100, "close": 112},
+    ])
+    assert ok
+
+
+def test_validate_chart_data_area_pass() -> None:
+    ok, _ = validate_chart_data("area", [
+        {"x": "2026-05-14", "y": 85.0},
+        {"x": "2026-05-15", "y": 85.4},
+    ])
+    assert ok
+
+
+def test_validate_chart_data_candle_fail_propagates() -> None:
+    ok, reason = validate_chart_data("candle", [
+        {"date": "2026-05-15", "open": 100, "high": 90, "low": 95, "close": 105},  # high < low/open
+    ])
+    assert not ok
+    assert "CHART-AP" in reason or "Candle" in reason or "candle" in reason

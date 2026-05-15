@@ -21,6 +21,25 @@ class Config(BaseSettings):
     model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True
 
+    # v5.2.0 — Market data fetcher API keys (src/tools/market_fetcher.py).
+    # 셋 다 비어있어도 보고서 정상 진행 — 차트만 빈 series 로 emit. 각 키는
+    # 무료 발급:
+    #   FRED: https://fred.stlouisfed.org/docs/api/api_key.html (DXY/UST/WTI/금)
+    #   ECOS: https://ecos.bok.or.kr/api/ (국고채/환율 한국 macro)
+    #   KRX:  현재 미사용 (data.krx.co.kr public endpoint 무인증)
+    fred_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("FRED_API_KEY", "fred_api_key"),
+    )
+    ecos_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("ECOS_API_KEY", "ecos_api_key"),
+    )
+    krx_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("KRX_API_KEY", "krx_api_key"),
+    )
+
     # V5 Phase 1A — ResearchDirector opt-in.
     # 켜져 있으면 orchestrator 가 Phase 1 (ContextAnalyst) 직후에 ResearchDirector
     # 를 호출해 AnalysisBrief 를 emit. 꺼져 있으면 design_via_heuristics 의

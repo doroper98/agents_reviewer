@@ -20,7 +20,58 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## [Unreleased] — 차트 가드 강화 (CHART-AP-15, CHART-AP-16)
+## [Unreleased] — v5.2.0 wip: Market Data Fetcher + Candle/Area 차트
+
+### Added — 시계열 데이터 파이프라인 (B 안)
+
+ContextAnalyst LLM 이 본문에서 다루는 금융 instrument 를 ``instruments_mentioned``
+로 emit → orchestrator 가 KRX / FRED / ECOS 에서 실 OHLC fetch →
+``ContextAnalysis.time_series`` 에 저장 → composer 가 line / candle / area
+차트로 emit. 가짜 데이터 / 추정값 차트 회귀 (CHART-AP-15/16 의 근본 원인) 해소.
+
+- **`src/tools/market_fetcher.py`** (신규) — FRED / ECOS / KRX 3 fetcher 통합.
+  `INSTRUMENT_REGISTRY` 11 종목 (코스피·코스닥·삼성전자·SK하이닉스·DXY·UST 1Y/10Y·
+  WTI·금·국고 10Y·원/달러). `resolve_instrument(query)` 한국어 alias 매칭.
+  `fetch_market_series` / `fetch_many` async API. graceful degradation —
+  API key 없으면 빈 series + warning log (보고서 진행).
+- **`src/models.py`** — `ContextAnalysis.instruments_mentioned`, `time_series`
+  필드 신설.
+- **`src/agents/context_analyst.py`** — SYSTEM_PROMPT 에 `instruments_mentioned`
+  emit 가이드 추가 (지원 종목 + 규칙 명시).
+- **`src/orchestrator.py`** — Phase 1 직후 market_fetch hook. 사건 일자 anchor +
+  3M 기본 기간 + 병렬 fetch. fetch 실패해도 보고서 흐름 영향 X.
+- **`src/agents/narrative_composer.py`** — composer payload 에 `available_time_series`
+  포함 + SYSTEM_PROMPT 에 "시계열 차트 데이터는 반드시 fetched series 만" 규칙.
+- **`src/config.py`** — `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY` 환경변수.
+- **`.env.example`** — 3 키 자리 + 발급 링크.
+
+### Added — Candle / Area 차트 type
+
+`charts.js` 의 11 type 에서 13 type 으로. 두 신규 type 은 시계열 OHLC 차트
+전용이며 *반드시 market_fetcher 데이터로만 emit* (composer 가 추정 금지).
+
+- **`src/templates/static/charts.js`** — `drawCandle` (OHLC body + wick, accent=bull
+  outline / down=bear fill) + `drawArea` (line + gradient) 신규. 공통 헬퍼
+  `_renderEventBadgesAndFootnote` — Bloomberg/FT 풍 번호 배지 (상단 same-Y +
+  가로 cascade + leader line) + HTML footnote (`.chart-card-footnote` 안).
+- **`src/templates/static/charts.css`** — `.chart-card-footnote` / `.chart-note-row`
+  / `.chart-note-num` / `.chart-note-date` / `.chart-note-text` 토큰.
+- **`src/visual/schemas.py`** — `CandleChartGuard` (data ≥2 + OHLC 순서 일관성
+  low≤open≤high / low≤close≤high) + `AreaChartGuard` (line 과 동일 + finite).
+  `_TYPE_TO_GUARD` 에 등록.
+- **`tests/regression/test_chart_correctness.py`** — Candle / Area 가드 회귀 9건.
+- **`tests/test_market_fetcher.py`** — 파서·라우팅·graceful degradation 25건 (모킹 only).
+
+### Notes
+
+- `enable_visual_planner` 등 V5 flag 와 *독립적* — 디폴트 ON. fetcher 는 API key
+  유무로만 분기. 봇 운영자가 `.env` 에 키 추가 → 다음 보고서부터 자동 작동.
+- 이번 commit 으로 CHART-AP-15 (gantt zero-duration) / CHART-AP-16 (donut 2-segment)
+  의 *근본 원인* (= 시계열 데이터 부재로 composer 가 부적합 차트 선택) 해소.
+
+---
+
+## [Unreleased — 선행] — 차트 가드 강화 (CHART-AP-15, CHART-AP-16)
 
 ### Fixed — donut 2-segment 빈 카드 + gantt zero-duration 빈 차트 회귀
 

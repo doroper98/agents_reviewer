@@ -777,6 +777,45 @@ class Orchestrator:
         result.context = await self.context_analyst.analyze(request)
         self.telemetry.stage_end(stage)
 
+        # v5.2.0 — Market data fetch hook.
+        # ContextAnalyst 가 emit 한 instruments_mentioned 를 받아 KRX/FRED/ECOS
+        # 에서 실데이터 fetch. fetch 실패해도 보고서 진행 — composer 가
+        # time_series 빈 경우 차트만 생략. API key 누락 시에도 동일 (warning log).
+        try:
+            instruments = list(getattr(result.context, "instruments_mentioned", None) or [])
+            if instruments:
+                from datetime import date
+                from src.tools.market_fetcher import fetch_many
+
+                anchor = None
+                event_date_str = (result.context.date or "").strip()
+                if event_date_str:
+                    try:
+                        anchor = date.fromisoformat(event_date_str[:10])
+                    except ValueError:
+                        anchor = None
+
+                # 기본 기간: 사건 보고서 → 3M (이벤트 ±30일 ≈ 60 영업일).
+                # daily briefing / historical 분기는 후속 PR 에서 mode-aware 로 확장.
+                fetch_period = "3M"
+                stage_mf = self.telemetry.stage_start("market_fetch")
+                series_list = await fetch_many(
+                    instruments, period=fetch_period, config=self.config,
+                    anchor_date=anchor,
+                )
+                self.telemetry.stage_end(stage_mf)
+
+                # MarketSeries → dict (Pydantic dump) 로 context.time_series 에 저장.
+                # composer 는 dict 그대로 읽음 (ComposedSection.charts 와 동일 패턴).
+                result.context.time_series = [s.model_dump() for s in series_list]
+                non_empty = sum(1 for s in series_list if s.data)
+                logger.info(
+                    "[orchestrator] market_fetch: %d instruments requested, %d returned data",
+                    len(instruments), non_empty,
+                )
+        except Exception as _e:  # pragma: no cover  — fetch 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] market_fetch skipped: %s", _e)
+
         # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
         # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로
         # ContextAnalysis 를 입력으로 사용. EvidencePack 은 *측정 + 향후 Phase 의

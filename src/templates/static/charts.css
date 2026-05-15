@@ -402,3 +402,40 @@
 .heatmap-cell.s-med{background: rgba(201, 168, 76, .65)}     /* gold   */
 .heatmap-cell.s-high{background: rgba(199, 107, 30, .75)}    /* orange */
 .heatmap-cell.s-crit{background: rgba(189, 50, 39, .85)}     /* red    */
+
+/* ============================================================
+   v5.2.0 — chart-card-footnote (candle/area 의 이벤트 번호 주석)
+   charts.js 가 동적 생성. 카드 안 stage 바로 아래, takeaway/source 위.
+   ============================================================ */
+.chart-card-footnote{
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border, rgba(120,90,70,0.25));
+  display: flex; flex-direction: column;
+  gap: 3px;
+}
+.chart-card-footnote:empty{ display: none; }
+.chart-note-row{
+  display: grid;
+  grid-template-columns: 18px 44px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 10px;
+  color: var(--text-muted, var(--muted));
+  line-height: 1.4;
+}
+.chart-note-num{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px;
+  background: var(--accent);
+  color: var(--bg, var(--card));
+  border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  line-height: 1;
+}
+.chart-note-date{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-faded, var(--muted));
+}
+.chart-note-text{ color: var(--text); }

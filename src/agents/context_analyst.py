@@ -81,9 +81,25 @@ SYSTEM_PROMPT = (
     '    "vocabulary": "디폴트 그대로 권장",\n'
     '    "analytical_pressure": "디폴트 그대로 권장",\n'
     '    "override_reason": "디폴트 따를 때는 빈 문자열, override 시 사유 한 줄"\n'
-    "  }\n"
+    "  },\n"
+    '  "instruments_mentioned": ["코스피", "삼성전자", "WTI"]\n'
     "}\n"
-    "```"
+    "```\n\n"
+    "=== instruments_mentioned (v5.2.0 신설) ===\n"
+    "사건이 *금융 시장* 과 직간접 관계가 있을 때, 본문에서 참조될 가능성이 높은\n"
+    "instrument 의 한글 명을 list 로 emit. orchestrator 가 이 list 를 받아 실데이터\n"
+    "(KRX / FRED / ECOS) 를 fetch 해서 composer 가 *진짜 차트* 를 그릴 수 있게 함.\n\n"
+    "지원 instrument (한글로 적을 것):\n"
+    "  - 한국 지수:   '코스피', '코스닥'\n"
+    "  - 한국 개별주: '삼성전자', 'SK하이닉스'  (확장: 6자리 종목코드)\n"
+    "  - 미국 매크로: '달러인덱스', '미국채 1Y', '미국채 10Y', 'WTI', '금'\n"
+    "  - 한국 매크로: '국고채 10Y', '원/달러 환율'\n\n"
+    "규칙:\n"
+    "  - 본문이 *실제로 다루는* instrument 만 추가. '주변 언급' 까지 포함 X.\n"
+    "  - 코스피 8000 돌파 같은 사건이면 ['코스피', '삼성전자'] 정도. 무리해서 6개 채우지 말 것.\n"
+    "  - 사건이 금융과 무관하면 (예: 자연재해 / 외교 회담) 빈 list [].\n"
+    "  - 미등록 종목은 무시됨 (warning log). 추가 종목 필요하면 src/tools/market_fetcher.py 의\n"
+    "    INSTRUMENT_REGISTRY 확장 후 사용."
 )
 
 

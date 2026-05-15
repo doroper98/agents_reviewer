@@ -1053,6 +1053,256 @@
     AU: '036', NZ: '554', ZA: '710', NG: '566'
   };
 
+  // ============================================================
+  // v5.2.0 — CANDLE / AREA (시계열 OHLC 차트)
+  //
+  // market_fetcher 로 fetch 한 실데이터를 받아 그림. event 마커는 mockup 의
+  // Bloomberg/FT 스타일 — 차트 상단 같은 Y 베이스라인 번호 배지 + 가로 cascade
+  // + leader line + 카드 하단 HTML footnote (chart-card-footnote 안에 채움).
+  // ============================================================
+
+  function _renderEventBadgesAndFootnote(stage, svg, events, xFn, zones, t) {
+    // events: [{idxInData, dataItem, eventLabel, dateStr, valueY}], xFn(item) -> px
+    if (!events || !events.length) {
+      // 기존 footnote 비우기 (재렌더 시)
+      const card = stage.parentElement;
+      if (card) {
+        const foot = card.querySelector('.chart-card-footnote');
+        if (foot) foot.innerHTML = '';
+      }
+      return;
+    }
+    const naturalX = events.map(e => xFn(e.dataItem));
+    const badgeY = zones.data.y - 14;
+    const badgeR = 6;
+    const minSpacing = 14;
+    const badgeXs = new Array(events.length);
+
+    // Pass 1 — 오른쪽 → 왼쪽 캐스케이드
+    for (let i = events.length - 1; i >= 0; i--) {
+      let bx = naturalX[i];
+      if (i < events.length - 1 && bx > badgeXs[i + 1] - minSpacing) {
+        bx = badgeXs[i + 1] - minSpacing;
+      }
+      badgeXs[i] = bx;
+    }
+    // Pass 2 — 왼쪽 가장자리 보호
+    const minBx = zones.data.x + badgeR;
+    for (let i = 0; i < events.length; i++) {
+      const prevBx = i > 0 ? badgeXs[i - 1] : minBx - minSpacing;
+      if (badgeXs[i] < prevBx + minSpacing) badgeXs[i] = prevBx + minSpacing;
+    }
+
+    // Draw
+    events.forEach((ev, idx) => {
+      const ex = naturalX[idx];
+      const bx = badgeXs[idx];
+
+      // 1) 수직 가이드 라인 (실제 이벤트 x)
+      svg.append('line').attr('x1', ex).attr('x2', ex)
+         .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+         .attr('stroke', t.accent).attr('stroke-opacity', 0.30)
+         .attr('stroke-width', 0.8).attr('stroke-dasharray', '3,3');
+
+      // 2) 데이터 포인트 점 (가능하면)
+      if (ev.valueY != null && isFinite(ev.valueY)) {
+        svg.append('circle').attr('cx', ex).attr('cy', ev.valueY)
+           .attr('r', 2.5).attr('fill', t.accent)
+           .attr('stroke', t.bg).attr('stroke-width', 1.2);
+      }
+
+      // 3) Leader line — 시프트된 배지만
+      if (Math.abs(bx - ex) > 1) {
+        svg.append('line').attr('x1', bx).attr('x2', ex)
+           .attr('y1', badgeY + badgeR).attr('y2', zones.data.y - 1)
+           .attr('stroke', t.accent).attr('stroke-opacity', 0.45)
+           .attr('stroke-width', 0.7);
+      }
+
+      // 4) 번호 배지
+      svg.append('circle').attr('cx', bx).attr('cy', badgeY)
+         .attr('r', badgeR).attr('fill', t.accent);
+      svg.append('text').attr('x', bx).attr('y', badgeY + 3.2)
+         .attr('text-anchor', 'middle')
+         .attr('font-family', 'JetBrains Mono, monospace')
+         .attr('font-size', 8).attr('font-weight', 700)
+         .attr('fill', t.bg)
+         .text(idx + 1);
+    });
+
+    // 5) HTML footnote — chart-card 안에 .chart-card-footnote div 채우기.
+    //    재렌더 시 innerHTML 만 갱신 (DOM duplicate 회피).
+    const card = stage.parentElement;
+    if (!card) return;
+    let foot = card.querySelector('.chart-card-footnote');
+    if (!foot) {
+      foot = document.createElement('div');
+      foot.className = 'chart-card-footnote';
+      const note = card.querySelector('.chart-card-note');
+      if (note) card.insertBefore(foot, note);
+      else card.appendChild(foot);
+    }
+    foot.innerHTML = events.map((ev, i) => {
+      const date = String(ev.dateStr || '').replace(/^\d{4}-/, '');  // YYYY-MM-DD → MM-DD
+      const label = String(ev.eventLabel || '').replace(/[<>]/g, '');  // strip basic html
+      return `<div class="chart-note-row">`
+        + `<span class="chart-note-num">${i + 1}</span>`
+        + `<span class="chart-note-date">${date}</span>`
+        + `<span class="chart-note-text">${label}</span>`
+        + `</div>`;
+    }).join('');
+  }
+
+  function drawCandle(stage, payload, t) {
+    const raw = (payload.data || []).filter(d =>
+      isFinite(+d.close) && isFinite(+d.open)
+      && isFinite(+d.high) && isFinite(+d.low)
+    );
+    if (raw.length < 2) return;
+    const W = 760;
+    const eventsCount = raw.filter(d => d.event).length;
+    const H = 320;
+    const zones = computeZones(W, H, {
+      left: 60, right: 60,
+      top: eventsCount ? 30 : 18,
+      bottom: 30,
+    });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    const x = d3.scaleBand()
+      .domain(raw.map(d => String(d.date)))
+      .range([zones.data.x, zones.data.x + zones.data.w])
+      .padding(0.25);
+    const yMin = d3.min(raw, d => +d.low);
+    const yMax = d3.max(raw, d => +d.high);
+    const yPad = (yMax - yMin) * 0.06 || 1;
+    const y = d3.scaleLinear()
+      .domain([yMin - yPad, yMax + yPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+
+    // Y grid + labels
+    y.ticks(5).forEach(v => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', y(v)).attr('y2', y(v))
+        .attr('stroke', t.muted).attr('stroke-opacity', 0.18).attr('stroke-width', 0.5);
+      svg.append('text').attr('x', zones.data.x - 6).attr('y', y(v) + 3).attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+        .text(v >= 1000 ? d3.format(',.0f')(v) : d3.format('.2f')(v));
+    });
+
+    // Candles — body + wick. accent = bull (close>=open), down = bear.
+    raw.forEach(d => {
+      const cx = x(String(d.date)) + x.bandwidth() / 2;
+      const bw = Math.max(2, x.bandwidth() - 1);
+      const up = +d.close >= +d.open;
+      const col = up ? t.accent : (t.down || '#C45C4C');
+      // wick
+      svg.append('line').attr('x1', cx).attr('x2', cx)
+        .attr('y1', y(+d.high)).attr('y2', y(+d.low))
+        .attr('stroke', col).attr('stroke-width', 0.9);
+      // body — bull 은 outline, bear 는 fill (mono guide 정합)
+      const yTop = Math.min(y(+d.open), y(+d.close));
+      const bodyH = Math.max(1, Math.abs(y(+d.close) - y(+d.open)));
+      svg.append('rect').attr('x', cx - bw / 2).attr('y', yTop)
+        .attr('width', bw).attr('height', bodyH)
+        .attr('fill', up ? 'none' : col)
+        .attr('stroke', col).attr('stroke-width', 1);
+    });
+
+    // X labels — sparse, MM-DD
+    const step = Math.max(1, Math.ceil(raw.length / 7));
+    raw.forEach((d, i) => {
+      if (i % step !== 0 && i !== raw.length - 1) return;
+      const cx = x(String(d.date)) + x.bandwidth() / 2;
+      svg.append('text').attr('x', cx).attr('y', zones.data.y + zones.data.h + 16)
+        .attr('text-anchor', 'middle')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+        .text(String(d.date).slice(5));
+    });
+
+    // Event 배지 + footnote
+    const events = raw
+      .map((d, i) => ({ idxInData: i, dataItem: d, eventLabel: d.event, dateStr: d.date, valueY: y(+d.close) }))
+      .filter(e => e.eventLabel);
+    _renderEventBadgesAndFootnote(
+      stage, svg, events,
+      (item) => x(String(item.date)) + x.bandwidth() / 2,
+      zones, t,
+    );
+  }
+
+  function drawArea(stage, payload, t) {
+    // data shape: [{x, y, event?}]  — line 과 동일하지만 gradient fill 강조.
+    const data = (payload.data || []).filter(d => isFinite(+d.y));
+    if (data.length < 2) return;
+    const W = 760, H = 320;
+    const eventsCount = data.filter(d => d.event).length;
+    const zones = computeZones(W, H, {
+      left: 60, right: 60,
+      top: eventsCount ? 30 : 18,
+      bottom: 30,
+    });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    const x = d3.scalePoint().domain(data.map(d => String(d.x)))
+      .range([zones.data.x, zones.data.x + zones.data.w]).padding(0.05);
+    const yExtent = d3.extent(data, d => +d.y);
+    const yPad = (yExtent[1] - yExtent[0]) * 0.10 || 1;
+    const y = d3.scaleLinear().domain([yExtent[0] - yPad, yExtent[1] + yPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+
+    // Y grid + labels
+    y.ticks(5).forEach(v => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', y(v)).attr('y2', y(v))
+        .attr('stroke', t.muted).attr('stroke-opacity', 0.18).attr('stroke-width', 0.5);
+      svg.append('text').attr('x', zones.data.x - 6).attr('y', y(v) + 3).attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+        .text(v >= 1000 ? d3.format(',.0f')(v) : d3.format('.2f')(v));
+    });
+
+    // Gradient fill
+    const gradId = `grad-area-${stage.getAttribute('data-chart-id') || Math.random().toString(36).slice(2,8)}`;
+    const grad = svg.append('defs').append('linearGradient')
+      .attr('id', gradId).attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
+
+    const lineGen = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    const areaGen = d3.area().x(d => x(String(d.x)))
+      .y0(zones.data.y + zones.data.h).y1(d => y(+d.y)).curve(d3.curveMonotoneX);
+    svg.append('path').attr('d', areaGen(data)).attr('fill', `url(#${gradId})`);
+    svg.append('path').attr('d', lineGen(data)).attr('fill', 'none')
+      .attr('stroke', t.text).attr('stroke-width', 1.4);
+
+    // End marker
+    const last = data[data.length - 1];
+    svg.append('circle').attr('cx', x(String(last.x))).attr('cy', y(+last.y))
+      .attr('r', 3.5).attr('fill', t.accent);
+
+    // X labels (sparse)
+    const step = Math.max(1, Math.ceil(data.length / 7));
+    data.forEach((d, i) => {
+      if (i % step !== 0 && i !== data.length - 1) return;
+      svg.append('text').attr('x', x(String(d.x))).attr('y', zones.data.y + zones.data.h + 16)
+        .attr('text-anchor', 'middle')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+        .text(String(d.x).slice(-5));
+    });
+
+    // Event 배지 + footnote
+    const events = data
+      .map((d, i) => ({ idxInData: i, dataItem: d, eventLabel: d.event, dateStr: d.x, valueY: y(+d.y) }))
+      .filter(e => e.eventLabel);
+    _renderEventBadgesAndFootnote(
+      stage, svg, events,
+      (item) => x(String(item.x)),
+      zones, t,
+    );
+  }
+
   async function drawChoropleth(stage, payload, t) {
     const data = (payload.data || []).filter(d => d.country_code && isFinite(+d.value));
     if (!data.length) return;
@@ -1163,6 +1413,8 @@
     bar: drawBar, donut: drawDonut, line: drawLine, gantt: drawGantt,
     network: drawNetwork, stacked: drawStacked, bubble: drawBubble, heatmap: drawHeatmap,
     dual_line: drawDualLine, forecast: drawForecast, choropleth: drawChoropleth,
+    // v5.2.0 — 시계열 OHLC 차트 (market_fetcher 데이터)
+    candle: drawCandle, area: drawArea,
   };
 
   async function renderStage(stage, idx) {

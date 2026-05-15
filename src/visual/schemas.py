@@ -286,6 +286,74 @@ class LinePoint(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class AreaPoint(LinePoint):
+    """Area 차트는 line 과 동일 schema (gradient fill 만 다름)."""
+    pass
+
+
+class OHLCBar(BaseModel):
+    """v5.2.0 — Candle 차트의 일간 OHLC."""
+
+    date: Any
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float | None = None
+    event: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CandleChartGuard(BaseModel):
+    """v5.2.0 — Candle 차트 가드.
+
+    검증:
+    - data ≥ 2 (1점 candle 은 의미 X)
+    - OHLC 모두 finite, ≥0
+    - low ≤ open ≤ high  /  low ≤ close ≤ high (intra-day 순서 일관성)
+    """
+
+    data: list[OHLCBar] = Field(min_length=2)
+
+    @model_validator(mode="after")
+    def validate_ohlc_consistency(self) -> "CandleChartGuard":
+        for i, b in enumerate(self.data):
+            for fld_name, v in (("open", b.open), ("high", b.high),
+                                ("low", b.low), ("close", b.close)):
+                if not math.isfinite(v):
+                    raise ValueError(
+                        f"CHART-AP-3 가드: candle row {i} {fld_name} NaN/inf"
+                    )
+                if v < 0:
+                    raise ValueError(
+                        f"CHART-AP-3 가드: candle row {i} {fld_name} 음수 — {v}"
+                    )
+            if not (b.low <= b.open <= b.high):
+                raise ValueError(
+                    f"CHART-AP-3 가드: candle row {i} low≤open≤high 위반 "
+                    f"({b.low}/{b.open}/{b.high})"
+                )
+            if not (b.low <= b.close <= b.high):
+                raise ValueError(
+                    f"CHART-AP-3 가드: candle row {i} low≤close≤high 위반 "
+                    f"({b.low}/{b.close}/{b.high})"
+                )
+        return self
+
+
+class AreaChartGuard(BaseModel):
+    """v5.2.0 — Area 차트 가드 (line 과 동일 + finite)."""
+
+    data: list[AreaPoint] = Field(min_length=2)
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "AreaChartGuard":
+        if not all(math.isfinite(p.y) for p in self.data):
+            raise ValueError("CHART-AP-3 가드: area y 에 NaN/inf")
+        return self
+
+
 class LineChartGuard(BaseModel):
     data: list[LinePoint] = Field(min_length=2)
 
@@ -396,6 +464,9 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "heatmap":      HeatmapGuard,
     "gantt":        GanttGuard,
     "network":      NetworkGuard,
+    # v5.2.0 — 시계열 OHLC 차트
+    "candle":       CandleChartGuard,
+    "area":         AreaChartGuard,
 }
 
 
