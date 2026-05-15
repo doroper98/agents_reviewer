@@ -274,109 +274,96 @@ class ECOSFetcher:
 
 
 class KRXFetcher:
-    """KRX (Korea Exchange) — 한국 지수·개별주 OHLC.
+    """KRX (Korea Exchange) — pykrx 기반 (v5.2.0+).
 
-    KRX 정보데이터시스템 public endpoint. 무인증 (rate limit 있음).
+    pykrx 는 한국 거래소 데이터 scraping 의 사실상 표준. KRX 정보데이터시스템의
+    세션 / cookie / payload quirks 를 모두 처리. 동기 API 라 ``asyncio.to_thread``
+    로 wrap.
 
-    [세션 처리 — v5.2.0]
-    KRX 는 cookie/session 기반. POST 전에 main page GET 으로 JSESSIONID 등
-    세션 쿠키를 먼저 받아야 함. 안 그러면 HTTP 400 + body "LOGOUT" 으로 실패.
+    설치: ``pip install pykrx`` (``requirements.txt`` 에 포함, v5.2.0+).
+    미설치 시 빈 series + warning log (graceful degradation, 보고서 진행).
+
+    [이전 버전 (직접 aiohttp 호출) 폐기 사유]
+    aiohttp 로 동일 endpoint 호출 시 ``HTTP 400 LOGOUT`` 반환 (운영 환경 검증).
+    warm-up GET, 헤더 보강, payload 변형 모두 시도했으나 해결 X. pykrx 는
+    requests 기반 + 자체 세션 관리로 안정 동작 — 의존성 추가가 더 실용적.
     """
 
-    BASE_URL = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-    WARMUP_URL = "http://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd"
-    UA = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    )
-
     def __init__(self, api_key: str = "") -> None:
-        self.api_key = api_key  # forward-compat, 현재 미사용
+        self.api_key = api_key  # forward-compat, 미사용
 
     async def fetch(self, code: str, start: date, end: date) -> list[OHLCBar]:
+        try:
+            from pykrx import stock  # type: ignore[import-not-found]
+        except ImportError:
+            logger.warning(
+                "[market_fetcher] pykrx 미설치 — `pip install pykrx` 후 봇 재시작 필요 "
+                "(KRX %s 스킵)",
+                code,
+            )
+            return []
+
         start_str = start.strftime("%Y%m%d")
         end_str = end.strftime("%Y%m%d")
         is_index = len(code) == 4
-        if is_index:
-            # 지수 일별 시세 — pykrx 와 동일 payload 구조.
-            idx_market = "1" if code.startswith("1") else "2"  # 1=KOSPI 계열, 2=KOSDAQ 계열
-            payload = {
-                "bld": "dbms/MDC/STAT/standard/MDCSTAT00301",
-                "indIdx": idx_market,
-                "indIdx2": code,
-                "strtDd": start_str,
-                "endDd": end_str,
-                "share": "1",
-                "money": "1",
-                "csvxls_isNo": "false",
-                "locale": "ko_KR",
-            }
-        else:
-            isin = _ISIN_MAP.get(code) or await _lookup_isin(code)
-            if not isin:
-                logger.warning(
-                    "[market_fetcher] KRX 종목코드 %s 의 ISIN 미해결 — _ISIN_MAP 확장 또는 search endpoint 실패",
-                    code,
-                )
-                return []
-            # cache 갱신 (다음 호출 빠르게)
-            _ISIN_MAP[code] = isin
-            payload = {
-                "bld": "dbms/MDC/STAT/standard/MDCSTAT01701",
-                "isuCd": isin,
-                "strtDd": start_str,
-                "endDd": end_str,
-                "adjStkPrc_check": "Y",
-                "adjStkPrc": "2",
-                "share": "1",
-                "money": "1",
-                "csvxls_isNo": "false",
-                "locale": "ko_KR",
-            }
-        headers = {
-            "User-Agent": self.UA,
-            "Referer": "http://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd",
-            "X-Requested-With": "XMLHttpRequest",
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Origin": "http://data.krx.co.kr",
-        }
+
         try:
-            timeout = aiohttp.ClientTimeout(total=30)
-            # cookie_jar 가 세션 쿠키 (JSESSIONID 등) 를 자동으로 warm-up 응답에서
-            # 가져와 다음 POST 에 첨부. unsafe=True 는 IP 호스트 / 비-canonical
-            # 도메인 처리 호환용 (KRX 는 FQDN 이라 사실 불필요하지만 안전망).
-            jar = aiohttp.CookieJar(unsafe=True)
-            async with aiohttp.ClientSession(timeout=timeout, cookie_jar=jar) as session:
-                # 1) Warm-up GET — 세션 쿠키 확보. 실패해도 본 요청은 시도.
-                try:
-                    async with session.get(
-                        self.WARMUP_URL,
-                        headers={"User-Agent": self.UA},
-                        allow_redirects=True,
-                    ) as warmup:
-                        await warmup.read()
-                except Exception as e:
-                    logger.debug(
-                        "[market_fetcher] KRX warmup failed (계속 시도): %s", e,
-                    )
-                # 2) Main POST
-                async with session.post(
-                    self.BASE_URL, data=payload, headers=headers,
-                ) as resp:
-                    if resp.status != 200:
-                        text = await resp.text()
-                        logger.warning(
-                            "[market_fetcher] KRX %s HTTP %d: %s",
-                            code, resp.status, text[:200],
-                        )
-                        return []
-                    body = await resp.json(content_type=None)
+            if is_index:
+                df = await asyncio.to_thread(
+                    stock.get_index_ohlcv, start_str, end_str, code,
+                )
+            else:
+                df = await asyncio.to_thread(
+                    stock.get_market_ohlcv, start_str, end_str, code,
+                )
         except Exception as e:
-            logger.warning("[market_fetcher] KRX %s fetch error: %s", code, e)
+            logger.warning("[market_fetcher] KRX %s pykrx error: %s", code, e)
             return []
-        return _parse_krx(body)
+
+        if df is None or getattr(df, "empty", True):
+            return []
+        return _df_to_ohlc(df)
+
+
+def _df_to_ohlc(df) -> list[OHLCBar]:
+    """pandas DataFrame (pykrx 응답) → list[OHLCBar].
+
+    pykrx 는 한국어 컬럼명 ('시가', '고가', '저가', '종가', '거래량') 사용.
+    fallback 으로 영문 컬럼도 처리.
+    """
+    bars: list[OHLCBar] = []
+    cols = list(df.columns)
+    col_open = "시가" if "시가" in cols else ("Open" if "Open" in cols else None)
+    col_high = "고가" if "고가" in cols else ("High" if "High" in cols else None)
+    col_low = "저가" if "저가" in cols else ("Low" if "Low" in cols else None)
+    col_close = "종가" if "종가" in cols else ("Close" if "Close" in cols else None)
+    col_volume = (
+        "거래량" if "거래량" in cols
+        else ("Volume" if "Volume" in cols else None)
+    )
+    if not (col_open and col_high and col_low and col_close):
+        logger.warning(
+            "[market_fetcher] KRX DataFrame 컬럼 인식 실패: %s", cols,
+        )
+        return []
+
+    for date_idx, row in df.iterrows():
+        try:
+            d_iso = (
+                date_idx.strftime("%Y-%m-%d")
+                if hasattr(date_idx, "strftime") else str(date_idx)
+            )
+            o = float(row[col_open])
+            h = float(row[col_high])
+            l = float(row[col_low])
+            c = float(row[col_close])
+            if c <= 0:
+                continue
+            v = float(row[col_volume]) if col_volume else None
+            bars.append(OHLCBar(date=d_iso, open=o, high=h, low=l, close=c, volume=v))
+        except (ValueError, TypeError, KeyError):
+            continue
+    return bars
 
 
 # 종목코드 → ISIN. KRX OHLC API 가 isuCd 로 ISIN 을 요구. 자주 쓰는 종목 *seed*

@@ -7,3 +7,5 @@ plotly>=5.18
 python-dotenv>=1.0
 aiohttp>=3.9
 requests>=2.31
+# v5.2.0 — KRX (한국 거래소) 데이터 scraping. pandas + numpy transitive (~50MB).
+pykrx>=1.0

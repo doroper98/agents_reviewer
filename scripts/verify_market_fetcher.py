@@ -36,12 +36,20 @@ INSTRUMENTS = [
 async def main() -> int:
     config = get_config()
 
+    # pykrx 설치 확인 — KRX 종목은 pykrx 가 필수.
+    try:
+        import pykrx  # noqa: F401
+        pykrx_ok = True
+    except ImportError:
+        pykrx_ok = False
+
     print("=" * 70)
     print(" Market Fetcher 검증 — 1M 기간 fetch")
     print("=" * 70)
     print(f" FRED_API_KEY : {'설정됨' if config.fred_api_key else '⚠️ 비어있음'}")
     print(f" ECOS_API_KEY : {'설정됨' if config.ecos_api_key else '⚠️ 비어있음'}")
     print(f" KRX_API_KEY  : {'설정됨' if config.krx_api_key else '(무인증 — 정상)'}")
+    print(f" pykrx        : {'설치됨' if pykrx_ok else '⚠️ 미설치 (pip install pykrx)'}")
     print("=" * 70)
 
     series_list = await fetch_many(INSTRUMENTS, period="1M", config=config)
@@ -72,7 +80,7 @@ async def main() -> int:
             "\n실패한 종목이 있으면:\n"
             " - ❌ FRED 종목: .env 의 FRED_API_KEY 확인 (https://fred.stlouisfed.org/docs/api/api_key.html)\n"
             " - ❌ ECOS 종목: .env 의 ECOS_API_KEY 확인 (https://ecos.bok.or.kr/api/)\n"
-            " - ❌ KRX 종목: 네트워크 (data.krx.co.kr) 접근 확인 — 방화벽/프록시\n"
+            " - ❌ KRX 종목: `pip install pykrx` 후 재실행 (v5.2.0 부터 pykrx 의존)\n"
             " - bot.log 에서 [market_fetcher] warning 라인 검색"
         )
     return 0 if fail == 0 else 1
