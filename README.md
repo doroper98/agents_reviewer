@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v5.2.3
+last_synced_with: v5.2.5
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:
@@ -15,7 +15,7 @@ last_review: 2026-05-15
 텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 → NarrativeComposer Opus 4.7) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템. v5.1.0 부터 매일 06:00 KST 자동 일일 브리핑 (`/briefing_on` 으로 구독). v5.2.0 부터 KRX / FRED / ECOS / Yahoo Finance 실 OHLC 시계열로 candle / line / area 금융 차트 자동 emit.
 
 ## Status
-- Version: **v5.2.3** (SSOT: `src/orchestrator.py:VERSION`) — KOSPI 보고서 차트 4건 결함 패치 (drawLine gradient fill / right padding / end-value 반올림 / `_attach_event_markers` instrument-aware filtering). 이전 v5.2.x Market Data Fetcher (KRX 개별주 via pykrx + KOSPI/KOSDAQ 지수 via Yahoo Finance + FRED 미국 매크로 + ECOS 한국 매크로) + 시계열 차트 type 2종 (candle / area) + chart_gate production wiring + mode-aware market period 상태 유지. 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` 추가 시 다음 보고서부터 실 OHLC 차트 자동 emit. 활성화 가이드: [docs/V5_ACTIVATION.md](docs/V5_ACTIVATION.md).
+- Version: **v5.2.5** (SSOT: `src/orchestrator.py:VERSION`) — compact-strip (key_figures inline 한 줄 sparkline strip) 회생 + grid overflow root-fix + 모크업 (`samples/market_charts_mockup.html` §2) 양식 정렬 + 셀 사이 세로 separator + 모바일 stack 명시 설계. 이전 v5.2.4 standalone 모드 (`report_synthesizer` 정적 자산 인라이닝) + v5.2.3 KOSPI 차트 4건 결함 패치 (drawLine gradient fill / right padding / end-value 반올림 / `_attach_event_markers` instrument-aware filtering) + v5.2.x Market Data Fetcher (KRX 개별주 via pykrx + KOSPI/KOSDAQ 지수 via Yahoo Finance + FRED 미국 매크로 + ECOS 한국 매크로) + 시계열 차트 type 2종 (candle / area) + chart_gate production wiring + mode-aware market period 상태 유지. 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` 추가 시 다음 보고서부터 실 OHLC 차트 자동 emit. 활성화 가이드: [docs/V5_ACTIVATION.md](docs/V5_ACTIVATION.md).
 - **V5 활성화 단계** — 코드는 v5.0.0 이지만 단계적 활성화 권장 (Plan §0.3). `docs/V5_ACTIVATION.md` 의 5-step 절차 따라 한 phase 씩 켜고 회귀 테스트 통과 확인.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
