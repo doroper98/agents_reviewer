@@ -30,48 +30,81 @@ _JS = _REPO_ROOT / "src" / "templates" / "static" / "charts.js"
 _TPL = _REPO_ROOT / "src" / "templates" / "archetypes" / "freeform_essay.html"
 
 
-def test_compact_strip_css_uses_minmax_zero_fr_root_fix() -> None:
-    """ROOT-FIX 1: grid track 의 minimum 이 0 이어야 flex 자식이 셀 확장 못함."""
-    css = _CSS.read_text(encoding="utf-8")
-    assert ".compact-strip {" in css, "compact-strip CSS 누락"
-    # 핵심: minmax(0, 1fr) — auto/220px 등 콘텐츠 기반 min 은 회귀
-    assert "minmax(0, 1fr)" in css, (
-        "compact-strip grid-template-columns 의 minmax min 이 0 이어야 함. "
-        "minmax(220px, 1fr) 같은 회귀가 들어가면 274px 콘텐츠가 셀을 확장 → "
-        "옆 셀 침범 (v5.2.4 P0-Patch7 의 첫 catch)."
-    )
+def test_compact_strip_css_breaks_out_of_narrow_container() -> None:
+    """ROOT-FIX: 모크업 (samples/market_charts_mockup.html) 의 wider context 재현.
 
-
-def test_compact_strip_css_flex_children_have_min_width_zero() -> None:
-    """ROOT-FIX 2~3: row + value/change/spark 의 min-width:0 가 모두 있어야.
-
-    하나라도 빠지면 해당 자식이 콘텐츠로 셀을 부풀려서 옆 셀 침범 회귀.
+    .freeform-section .container 는 max-width 780px → 752px / 3 cols = 244px 셀
+    로 모크업 콘텐츠 274px 가 안 들어감. strip 만 viewport 폭 (max 1100px) 으로
+    break-out 시켜 모크업 1200px wrap 의 시각 정합 회복. ``left:50% + translateX``
+    조합 + ``width: min(1100px, ...)`` 가 모두 있어야.
     """
     css = _CSS.read_text(encoding="utf-8")
-    # 단순 substring 으로 4개 .compact-* selector 가 min-width:0 갖고 있는지 확인
-    for selector in (
-        ".compact-row {",
-        ".compact-row .compact-value {",
-        ".compact-row .compact-change {",
-        ".compact-row .compact-spark {",
-    ):
-        idx = css.find(selector)
-        assert idx >= 0, f"{selector} 누락"
-        # 다음 `}` 까지가 해당 selector 의 declaration block
-        block = css[idx : css.find("}", idx)]
-        assert "min-width: 0" in block, (
-            f"{selector} declaration 에 min-width: 0 없음 — overflow 회귀."
-        )
-
-
-def test_compact_strip_css_sparkline_overflow_hidden() -> None:
-    """spark 가 squeeze 시 SVG 가 옆 셀로 escape 못하도록 overflow:hidden 명시."""
-    css = _CSS.read_text(encoding="utf-8")
-    idx = css.find(".compact-row .compact-spark {")
+    idx = css.find(".compact-strip {")
+    assert idx >= 0
     block = css[idx : css.find("}", idx)]
-    assert "overflow: hidden" in block, (
-        "compact-spark 에 overflow: hidden 없음 — sparkline SVG 가 옆 셀 침범 위험."
+    assert "min(1100px," in block, (
+        ".compact-strip 의 width 가 min(1100px, ...) 아니면 break-out 안 됨 "
+        "— 모크업 wider context 재현 불가."
     )
+    assert "left: 50%" in block and "translateX(-50%)" in block, (
+        ".compact-strip 의 viewport 중앙 정렬 (left:50% + translateX) 누락 "
+        "— breakout 이 .container 왼쪽 정렬 상태로 어긋남."
+    )
+    assert "minmax(0, 1fr)" in block, (
+        "grid-template-columns 의 minmax min 이 0 이어야 셀이 콘텐츠로 부풀지 않음 "
+        "— 회귀 차단의 safety net."
+    )
+
+
+def test_compact_strip_css_mockup_values_preserved() -> None:
+    """모크업 (market_charts_mockup.html L121~124) 의 값을 글자 그대로 보존.
+
+    사용자 명시 요청: "이 유첨 양식이랑 동일하게 적용". 회귀 시 lock 만으로
+    값 drift 차단.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    name_block = css[css.find(".compact-row .compact-name {"):]
+    name_block = name_block[: name_block.find("}")]
+    assert "width: 64px" in name_block and "flex-shrink: 0" in name_block, (
+        ".compact-name 모크업 값 (width:64px, flex-shrink:0) 보존 안 됨."
+    )
+    value_block = css[css.find(".compact-row .compact-value {"):]
+    value_block = value_block[: value_block.find("}")]
+    assert "min-width: 70px" in value_block, ".compact-value min-width:70px 회귀."
+    chg_block = css[css.find(".compact-row .compact-change {"):]
+    chg_block = chg_block[: chg_block.find("}")]
+    assert "min-width: 50px" in chg_block, ".compact-change min-width:50px 회귀."
+    spark_block = css[css.find(".compact-row .compact-spark {"):]
+    spark_block = spark_block[: spark_block.find("}")]
+    assert "flex: 1" in spark_block and "min-width: 60px" in spark_block, (
+        ".compact-spark 모크업 값 (flex:1, min-width:60px) 보존 안 됨."
+    )
+    assert "overflow: hidden" in spark_block, (
+        ".compact-spark 의 overflow:hidden 누락 — squeeze 시 SVG escape 위험."
+    )
+
+
+def test_compact_strip_css_row_min_width_zero_safety() -> None:
+    """`.compact-row { min-width: 0 }` — break-out 이 동작 안 하는 edge case
+    (viewport < 모크업 wrap) 에서도 행이 grid cell 폭에 conform 하도록."""
+    css = _CSS.read_text(encoding="utf-8")
+    idx = css.find(".compact-row {")
+    block = css[idx : css.find("}", idx)]
+    assert "min-width: 0" in block, (
+        ".compact-row min-width:0 누락 — break-out 이 작동 안 하는 edge case 에서 "
+        "flex auto min-content 가 grid cell 강제 확장 → overflow 회귀."
+    )
+
+
+def test_compact_strip_css_responsive_fallback() -> None:
+    """좁은 viewport (모크업 wrap 미만) 에선 cols 자동 축소.
+
+    920px ↓ → 2 cols, 600px ↓ → 1 col. 콘텐츠가 셀에 못 들어가는 viewport 에선
+    overflow 보다 stack 이 항상 더 가독성 좋음.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    assert "max-width: 920px" in css, "920px breakpoint 누락 — 2-col fallback 회귀."
+    assert "max-width: 600px" in css, "600px breakpoint 누락 — 1-col stack fallback 회귀."
 
 
 def test_charts_js_has_sparkline_renderer() -> None:
