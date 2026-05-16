@@ -1430,6 +1430,97 @@
   }
 
   // ============================================================
+  // Sparkline — compact strip (v5.2.5)
+  //
+  // 22px 인라인 sparkline. 풀 카드 (180px stage + axes + labels) 와 달리
+  // 축·라벨·이벤트 마커 없이 단순 monotone line + 끝점 dot 만. 첫·끝 close
+  // 비교로 up/down 색 자동.
+  //
+  // Layout 안정 후 그리기 (rAF 2회 + ResizeObserver). 0px width 에서 그리면
+  // viewBox 가 작아져 컨테이너에 stretch 되는 회귀 (v5.2.4 P0-Patch7 의 첫
+  // catch) 를 차단.
+  // ============================================================
+  function drawSparkline(svg, data, color) {
+    const rect = svg.getBoundingClientRect();
+    let W = rect.width || svg.clientWidth || (svg.parentElement ? svg.parentElement.clientWidth : 0);
+    let H = rect.height || svg.clientHeight || 22;
+    if (!W || W < 20) W = 100;
+    if (!H || H < 8)  H = 22;
+    svg.innerHTML = '';
+    svg.removeAttribute('preserveAspectRatio');
+    const sel = d3.select(svg).attr('viewBox', `0 0 ${W} ${H}`);
+    if (!data || data.length < 2) return;
+    const closes = data
+      .map(d => (d.y != null ? +d.y : (d.close != null ? +d.close : NaN)))
+      .filter(v => Number.isFinite(v));
+    if (closes.length < 2) return;
+    const min = Math.min(...closes);
+    const max = Math.max(...closes);
+    const rng = max - min || 1;
+    const pad = 2;
+    const x = i => pad + (i / (closes.length - 1)) * (W - 2 * pad);
+    const y = v => H - pad - ((v - min) / rng) * (H - 2 * pad);
+    const line = d3.line()
+      .x((_, i) => x(i))
+      .y(d => y(d))
+      .curve(d3.curveMonotoneX);
+    sel.append('path')
+      .attr('d', line(closes))
+      .attr('fill', 'none')
+      .attr('stroke', color)
+      .attr('stroke-width', 1.2);
+    sel.append('circle')
+      .attr('cx', x(closes.length - 1))
+      .attr('cy', y(closes[closes.length - 1]))
+      .attr('r', 1.8)
+      .attr('fill', color);
+  }
+
+  function _drawAllSparklines(sparks) {
+    const cs = getComputedStyle(document.documentElement);
+    const cssVar = name => cs.getPropertyValue(name).trim();
+    const upColor = cssVar('--up') || '#4A6B3E';
+    const downColor = cssVar('--down') || '#8B2A2A';
+    const mutedColor = cssVar('--muted') || '#6B5C4A';
+    sparks.forEach(svg => {
+      const row = svg.closest('.compact-row');
+      if (!row) return;
+      const script = row.querySelector('script.chart-payload-inline');
+      if (!script) return;
+      let payload;
+      try { payload = JSON.parse(script.textContent); }
+      catch (e) { console.warn('[sparkline] payload parse fail', e); return; }
+      const data = payload.data || [];
+      if (data.length < 2) return;
+      const first = (data[0].y != null ? +data[0].y : +data[0].close);
+      const last = (data[data.length - 1].y != null
+        ? +data[data.length - 1].y
+        : +data[data.length - 1].close);
+      let color = mutedColor;
+      if (Number.isFinite(first) && Number.isFinite(last)) {
+        color = last >= first ? upColor : downColor;
+      }
+      try { drawSparkline(svg, data, color); }
+      catch (e) { console.warn('[sparkline] render error', e); }
+    });
+  }
+
+  function renderSparklines() {
+    const sparks = document.querySelectorAll('svg.sparkline');
+    if (!sparks.length) return;
+    const drawAll = () => _drawAllSparklines(sparks);
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(drawAll));
+    } else {
+      setTimeout(drawAll, 0);
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => drawAll());
+      sparks.forEach(s => { const row = s.closest('.compact-row'); if (row) ro.observe(row); });
+    }
+  }
+
+  // ============================================================
   // Dispatcher
   // ============================================================
   const RENDERERS = {
@@ -1462,6 +1553,8 @@
   function init() {
     const stages = document.querySelectorAll('.chart-card-stage[data-chart-type]');
     stages.forEach((stage, i) => renderStage(stage, i));
+    // v5.2.5 — compact strip sparkline 렌더 (별도 selector svg.sparkline).
+    renderSparklines();
   }
 
   if (document.readyState === 'loading') {

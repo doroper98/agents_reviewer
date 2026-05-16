@@ -187,10 +187,37 @@
     {% endif %}
     {% if sec.pull_quote %}<div class="freeform-pullquote">{{ sec.pull_quote | strip_md }}</div>{% endif %}
 
+    {# v5.2.5 — role=compact 차트 한 줄 strip (key_figures inline).
+       모크업 §2 (samples/market_charts_mockup.html). 풀 카드 안 박고 sparkline
+       만. 동일 섹션 안에 role=compact 와 일반 차트가 섞여 있어도 strip 은
+       *별도 블록* 으로 풀 차트 *앞* 에 한 번만 emit. #}
+    {% set _compact_split = namespace(c=[], f=[]) %}
+    {% for ch in (sec.charts or []) %}
+      {% if ch.role == 'compact' and ch.data and (ch.data | length) >= 2 %}
+        {% set _compact_split.c = _compact_split.c + [ch] %}
+      {% else %}
+        {% set _compact_split.f = _compact_split.f + [ch] %}
+      {% endif %}
+    {% endfor %}
+    {% if _compact_split.c %}
+    <div class="compact-strip">
+      {% for ch in _compact_split.c %}
+      {% set _cdir = 'up' if (ch.change_day_pct or 0) >= 0 else 'down' %}
+      <div class="compact-row" data-chart-id="ch-s{{ loop.index0 }}-c{{ loop.index }}">
+        <span class="compact-name">{{ (ch.instrument or ch.title or '') | strip_md }}</span>
+        <span class="compact-value">{{ (ch.last_value_formatted or '') | strip_md }}</span>
+        <span class="compact-change {{ _cdir }}">{{ (ch.change_day_pct_formatted or '') | strip_md }}</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{{ ch | tojson }}</script>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     {# v4.4.0 — composer 가 inline 으로 emit 한 차트 데이터 (sec.charts: list[dict]).
        schema (Tier 1+2): {type, title, subtitle?, data, annotations?, source?, takeaway?, note?}.
        data 비어있으면 chart-card 자체를 emit 하지 않음 (빈 frame 회귀 차단). #}
-    {% for ch in (sec.charts or []) %}
+    {% for ch in _compact_split.f %}
       {# data 검증: type 별로 빈 데이터 체크. composer 가 잘못 emit 했어도 화면에 빈 차트 안 박힘 #}
       {% set has_data = false %}
       {% if ch.data %}

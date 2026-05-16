@@ -439,3 +439,102 @@
   font-size: 9px; color: var(--text-faded, var(--muted));
 }
 .chart-note-text{ color: var(--text); }
+
+/* ============================================================
+ * Compact Strip — key_figures inline (v5.2.5)
+ *
+ * 모크업 §2 (samples 의 market_charts_mockup.html) 의 "한 눈에 보기" 영역.
+ * role="compact" 차트는 풀 카드 (180px stage + axes + takeaway + sources)
+ * 대신 한 줄 [name | value | change | sparkline] 으로 압축 렌더.
+ *
+ * ROOT-FIX (overflow 회귀 해결):
+ * 이전 구현은 ``grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))``
+ * + flex children 의 고정 min-width (name 64 + value 70 + change 50 +
+ * spark 60 + gap 30 = 274px). flex 컨테이너의 default ``min-width: auto``
+ * 가 grid track 의 220px 제약을 깨고 자식 합산 min-content 로 셀을 강제
+ * 확장 → 3 셀이 752px 컨테이너 (.container max 780 − padding 14×2) 를 넘쳐
+ * 옆 셀 콘텐츠를 침범 → 라벨이 옆 sparkline 위에 겹쳐 보임 (사용자 회귀
+ * 1번째 catch).
+ *
+ * 해결책 3단:
+ *   (1) ``minmax(0, 1fr)`` — grid track 의 최소가 콘텐츠가 아닌 0 px,
+ *       자식이 셀을 부풀리지 못함.
+ *   (2) ``.compact-row { min-width: 0 }`` — flex 컨테이너 자신을 grid
+ *       cell 폭에 순응시킴 (flex 의 auto min-content 차단).
+ *   (3) value / change / spark 의 ``min-width: 0`` + spark 의
+ *       ``flex: 1 1 0`` + ``overflow: hidden`` — squeeze 가 발생해도
+ *       sparkline 이 절대 옆 셀로 escape 못함.
+ * ============================================================ */
+.compact-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border, rgba(125,98,76,0.25));
+  background: var(--card-deep, var(--card, transparent));
+}
+.compact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  min-width: 0;
+}
+.compact-row .compact-name {
+  flex: 0 0 auto;
+  max-width: 80px;
+  min-width: 0;
+  color: var(--muted, var(--fg-3));
+  font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.compact-row .compact-value {
+  flex: 0 0 auto;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--text, var(--fg-1));
+  white-space: nowrap;
+}
+.compact-row .compact-change {
+  flex: 0 0 auto;
+  min-width: 0;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.compact-row .compact-change.up { color: var(--up, #4A6B3E); }
+.compact-row .compact-change.down { color: var(--down, #8B2A2A); }
+.compact-row .compact-spark {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.compact-row .compact-spark svg.sparkline {
+  display: block;
+  width: 100%;
+  height: 22px;
+}
+.compact-strip > .compact-row:not(:nth-child(3n)):not(:last-child) {
+  border-right: 1px solid var(--border, rgba(125,98,76,0.25));
+  padding-right: 8px;
+}
+@media (max-width: 960px) {
+  .compact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .compact-strip > .compact-row { border-right: none !important; padding-right: 0 !important; }
+  .compact-strip > .compact-row:nth-child(odd):not(:last-child) {
+    border-right: 1px solid var(--border, rgba(125,98,76,0.25)) !important;
+    padding-right: 8px !important;
+  }
+}
+@media (max-width: 640px) {
+  .compact-strip { grid-template-columns: 1fr; padding: 10px; }
+  .compact-strip > .compact-row { border-right: none !important; padding-right: 0 !important; }
+  .compact-strip > .compact-row:not(:last-child) {
+    border-bottom: 1px solid var(--border, rgba(125,98,76,0.25));
+    padding-bottom: 8px;
+  }
+}
