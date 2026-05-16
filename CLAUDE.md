@@ -83,6 +83,7 @@ tail -30 bot.log                          # "Application started" 확인
 ```
 
 **필수 안내 사항:**
+- 처음 clone 후 1회: `git config core.hooksPath .githooks` (commit-msg hook 활성화 — Execution Rule #12). 미설정 시 hook 작동 안 함.
 - venv 가 없으면 `python -m venv venv && source venv/bin/activate && pip install -r requirements.txt` 후 진행
 - `.env` 변경 시 (env flag 추가 등) 재시작 *반드시* 필요. config 는 startup 시점 1회만 로드
 - systemd 서비스로 등록되어 있다면 `sudo systemctl restart agents-reviewer` 한 줄로 대체 가능 — 없으면 위 4단계
@@ -127,6 +128,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 9. claim 에 evidence 1 개 이상 강제 (`Claim.must_have_evidence` Pydantic validator). 빌더가 빈 evidence 로 Claim 생성 시도 금지 — Anti-pattern #4. 데이터가 없으면 finding 자체를 생성하지 말 것.
 10. Synthesis Judge 는 모순을 봉합하지 않고 드러낸다. 모순은 `JudgmentVerdict.contradictions` 필드에 명시 — Anti-pattern #5. 어느 쪽 채택했는지 `resolution` 에 적되, 패배한 입장은 `counter_hypothesis` 로 보존.
 11. 신규 문서는 [DOCS_GOVERNANCE_V3.md](DOCS_GOVERNANCE_V3.md) 의 YAML 헤더 규약 + SSOT 매트릭스를 따름. 사실은 한 곳에만 적고 다른 곳은 링크.
+12. **커밋 메시지의 `vX.Y.Z:` prefix 는 `src/orchestrator.py:VERSION` 상수와 반드시 일치**. 메시지에만 새 버전 박고 상수 안 올리면 배포된 봇이 옛 버전을 계속 표기하는 회귀 (v5.2.5 까지 3회 반복) — `.githooks/commit-msg` 가 mismatch 시 커밋을 reject 한다. 활성화는 clone 직후 1회: `git config core.hooksPath .githooks`. `--no-verify` 우회 금지. 정말 우회해야 하면 `SKIP_VERSION_CHECK=1 git commit ...` (rebase / cherry-pick 같은 ops 한정).
 
 ## Change Propagation Matrix
 **코드를 변경했다면 같은 커밋에서 아래의 문서도 함께 갱신한다.** SSOT 매트릭스는 [DOCS_GOVERNANCE_V3.md §3](DOCS_GOVERNANCE_V3.md).

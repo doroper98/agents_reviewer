@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.3"
+VERSION = "v5.2.5"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -115,12 +115,23 @@ def _count_existing_ts_charts(composed) -> int:
 
 
 def _composer_instruments(composed) -> set[str]:
-    """composer 가 박은 시계열 차트의 instrument 이름 집합 (제목 기반 추측)."""
+    """composer 가 박은 시계열 차트의 instrument 이름 집합 (title / instrument 필드 기반).
+
+    v5.2.5 — compact strip row (role='compact') 의 ``instrument`` 필드도 함께
+    집계. _ensure_market_strip 이 먼저 박은 instrument 는 _ensure_time_series_chart
+    가 풀 차트로 중복 emit 안 함.
+    """
     out: set[str] = set()
     for sec in composed.sections or []:
         for ch in (sec.charts or []):
             if not isinstance(ch, dict):
                 continue
+            # compact strip row — instrument 필드 직접 사용
+            if ch.get("role") == "compact":
+                inst = ch.get("instrument")
+                if inst:
+                    out.add(inst)
+                    continue
             if (ch.get("type") or "").lower() not in _TS_CHART_TYPES:
                 continue
             title = (ch.get("title") or "")
@@ -326,6 +337,115 @@ def _build_ts_chart(series: dict, context) -> dict:
         "source": _format_ts_source(series),
         "takeaway": _format_ts_takeaway(chart_data, ctype, context),
     }
+
+
+def _format_compact_value(last_close: float, instrument: str) -> str:
+    """compact strip 의 ``last_value_formatted`` — 값 자릿수/통화 기호 자동.
+
+    - 금리·이율 (instrument 에 'Y' / '금리' / '%' 포함) → "4.52%"
+    - 환율 / 지수 (1000 미만) → "105.58"
+    - 큰 통화 단위 (BTC 등 5자리↑) → "$72,273"
+    - 한국 종목 (코스피·코스닥·삼성전자 등) → "{:,.0f}"
+    """
+    name = (instrument or "")
+    if not isinstance(last_close, (int, float)) or last_close != last_close:
+        return ""
+    is_rate = ("Y" in name and "유가" not in name) or "금리" in name or "%" in name
+    if is_rate:
+        return f"{last_close:.2f}%"
+    if "비트코인" in name or "BTC" in name.upper():
+        return f"${last_close:,.0f}"
+    if abs(last_close) >= 1000:
+        return f"{last_close:,.0f}"
+    return f"{last_close:.2f}"
+
+
+def _build_compact_strip_row(series: dict) -> dict | None:
+    """단일 time_series → compact strip row payload (role='compact').
+
+    payload schema (freeform_essay 의 `.compact-row` 가 읽는 필드):
+      - instrument, last_value_formatted, change_day_pct, change_day_pct_formatted
+      - data: [{x, y}, ...]  (sparkline 그릴 series)
+      - role: 'compact'      (template 분기 키)
+      - type: 'line'         (model validator 의 type guard 통과용)
+      - title, subtitle, source, takeaway — strip 자체엔 안 보이지만 payload
+        에 보존 (downstream patch / debug 용).
+
+    ``data`` 가 2 점 미만이면 ``None`` 반환 — strip row 자체를 emit 하지 않음.
+    """
+    raw = list(series.get("data") or [])
+    closes = [d.get("close") for d in raw if isinstance(d.get("close"), (int, float))]
+    if len(closes) < 2:
+        return None
+    last_close = closes[-1]
+    first_close = closes[0]
+    name = series.get("instrument") or series.get("name") or "시계열"
+    chart_data = [{"x": d.get("date"), "y": d.get("close")} for d in raw]
+    # change_day_pct: 마지막 vs 직전 종가. carry-day 부재 시 첫 vs 끝 fallback.
+    if len(closes) >= 2:
+        change_day_pct = (closes[-1] / closes[-2] - 1) * 100 if closes[-2] else 0.0
+    else:
+        change_day_pct = 0.0
+    sign = "+" if change_day_pct >= 0 else ""
+    period_pct = (last_close / first_close - 1) * 100 if first_close else 0.0
+    period_sign = "+" if period_pct >= 0 else ""
+    start = series.get("start_date", "")
+    end = series.get("end_date", "")
+    period = f"{start} ~ {end}".strip(" ~")
+    fmt_n = (lambda v: f"{v:,.0f}") if abs(last_close) >= 1000 else (lambda v: f"{v:.2f}")
+    subtitle_parts = [p for p in (period, f"{period_sign}{period_pct:.2f}% ({fmt_n(first_close)} → {fmt_n(last_close)})") if p]
+    src = _SOURCE_DISPLAY.get(series.get("source", ""), series.get("source", "?"))
+    source_text = " / ".join(p for p in (src, period, "일간") if p)
+    return {
+        "type": "line",
+        "role": "compact",
+        "instrument": name,
+        "title": name,
+        "subtitle": " · ".join(subtitle_parts),
+        "last_value_formatted": _format_compact_value(last_close, name),
+        "change_day_pct": round(change_day_pct, 2),
+        "change_day_pct_formatted": f"{sign}{change_day_pct:.2f}%",
+        "data": chart_data,
+        "source": source_text,
+        "takeaway": "",
+    }
+
+
+def _ensure_market_strip(composed, context) -> None:
+    """v5.2.5 — 시계열 instrument 3개↑ 면 sections[0] 앞에 compact strip 자동 emit.
+
+    설계:
+    - composer 가 박은 풀 차트는 *그대로 보존* — strip 은 *추가 컨텍스트* (별도 row).
+    - 시계열 데이터가 있는 instrument 전체 (data 보유) 를 strip row 로 변환.
+    - 3개 미만이면 emit 안 함 (1~2개는 풀 차트 1개로 충분, strip 시각 비용만 큼).
+    - 이미 sections[0].charts 에 role='compact' 박혀 있으면 skip (idempotent).
+
+    Args:
+        composed: ComposedReport (mutated in place)
+        context: ContextAnalysis (.time_series 읽음)
+    """
+    if composed is None or not composed.sections:
+        return
+    time_series = list(getattr(context, "time_series", None) or [])
+    candidates = [s for s in time_series if isinstance(s, dict) and s.get("data")]
+    if len(candidates) < 3:
+        return
+    target = composed.sections[0]
+    if target.charts is None:
+        target.charts = []
+    if any(isinstance(c, dict) and c.get("role") == "compact" for c in target.charts):
+        return  # 이미 strip 박혀 있음
+    rows = [_build_compact_strip_row(s) for s in candidates]
+    rows = [r for r in rows if r is not None]
+    if not rows:
+        return
+    target.charts = rows + list(target.charts)
+    import logging
+    names = ", ".join(r.get("instrument", "?") for r in rows)
+    logging.getLogger(__name__).info(
+        "[orchestrator] _ensure_market_strip: +%d compact rows (%s) → sections[0].charts",
+        len(rows), names,
+    )
 
 
 def _ensure_time_series_chart(composed, context) -> None:
@@ -1264,6 +1384,12 @@ class Orchestrator:
         # 첫 섹션에 자동 추가. composer 가 이미 박은 instrument 는 skip (중복 회피).
         # v5.2.2 — context 전체를 전달 (timeline 매칭으로 이벤트 마커 자동 부착,
         # summary 로 takeaway 자동 생성 — mockup 수준 quality).
+        # v5.2.5 — instrument 3개↑ 면 compact strip 으로 먼저 한 줄 요약. 그 다음
+        # _ensure_time_series_chart 가 *나머지* 풀 차트 보충 (instrument 중복 회피).
+        try:
+            _ensure_market_strip(result.composed_report, result.context)
+        except Exception as _e:  # pragma: no cover
+            logger.warning("[orchestrator] _ensure_market_strip skipped: %s", _e)
         try:
             _ensure_time_series_chart(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X

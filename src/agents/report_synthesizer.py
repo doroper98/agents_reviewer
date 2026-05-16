@@ -30,6 +30,39 @@ KST = timezone(timedelta(hours=9))
 STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css", "maps.js", "maps.css")
 
 
+def _inline_static_assets(html: str) -> str:
+    """`<link href="X.css">` / `<script src="X.js">` 를 inline content 로 치환."""
+    for asset in STATIC_ASSETS:
+        src = os.path.join(STATIC_DIR, asset)
+        if not os.path.exists(src):
+            continue
+        with open(src, "r", encoding="utf-8") as f:
+            content = f.read()
+        if asset.endswith(".css"):
+            patterns = [
+                f'<link rel="stylesheet" href="{asset}">',
+                f"<link rel='stylesheet' href='{asset}'>",
+                f'<link href="{asset}" rel="stylesheet">',
+            ]
+            replacement = f"<style>\n{content}\n</style>"
+            for p in patterns:
+                if p in html:
+                    html = html.replace(p, replacement, 1)
+                    break
+        elif asset.endswith(".js"):
+            patterns = [
+                f'<script src="{asset}"></script>',
+                f"<script src='{asset}'></script>",
+                f'<script src="{asset}" defer></script>',
+            ]
+            replacement = f"<script>\n{content}\n</script>"
+            for p in patterns:
+                if p in html:
+                    html = html.replace(p, replacement, 1)
+                    break
+    return html
+
+
 class ReportSynthesizer:
     """Generates HTML reports from analysis results.
 
@@ -948,6 +981,7 @@ class ReportSynthesizer:
         archetype: ReportArchetype | None = None,
         *,
         report_id: str | None = None,
+        standalone: bool = False,
     ) -> str:
         """Render HTML report, upload to Cloudflare, return URL or filepath.
 
@@ -1080,6 +1114,9 @@ class ReportSynthesizer:
                 archetype_id=archetype.archetype_id,
                 archetype_name=archetype.name,
             )
+
+        if standalone:
+            html = _inline_static_assets(html)
 
         # Save HTML to file
         output_dir = self.config.report_output_dir

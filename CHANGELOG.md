@@ -431,6 +431,79 @@ V5 활성화 후속 작업 (각 phase 별 회귀 테스트 통과율 baseline �
 
 ---
 
+## [v5.2.5] — 2026-05-16
+
+### compact-strip (key_figures inline) 회생 + overflow root-fix + 모크업 양식 정렬
+
+사용자 catch 3건 (overflow → 모크업 정합 → 시각 분리·모바일) 을 한 번에 정리.
+이전 보고서 HTML (사용자 사전 push) 에는 있었으나 repo 에 미커밋 상태였던
+`.compact-strip` 구현체를 회생시키며 v5.2.4 P0-Patch7 의 grid overflow 회귀를
+근본 차원에서 fix.
+
+**근본 원인 (회귀 1):** v5.2.4 의 `grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))`
++ flex children 의 고정 min-width 합 (name 64 + value 70 + change 50 + spark 60 +
+gap 30 = 274px). flex 컨테이너의 default `min-width: auto` 가 grid track 의
+220px 제약을 깨고 자식 합산 min-content 로 셀을 강제 확장 → 3 셀이 .freeform-section
+.container (max 780px) 의 752px 를 넘쳐 옆 셀 콘텐츠를 침범. 라벨이 옆 sparkline
+위에 겹쳐 보임.
+
+**3-단 fix:**
+1. `width: min(1100px, calc(100vw - 48px))` + `left: 50%` + `transform: translateX(-50%)`
+   — strip 만 .container 의 780px 를 escape, 모크업 (`samples/market_charts_mockup.html`
+   §2) 의 1200px wider context 재현. 모크업 CSS 값 (name 64fixed / value min 70 /
+   change min 50 / spark flex 1 min 60) 글자 그대로 보존.
+2. `.compact-row { min-width: 0 }` + `grid-template-columns: repeat(3, minmax(0, 1fr))`
+   — break-out 동작 안 하는 edge case 의 safety net.
+3. responsive (≤920 → 2 cols, ≤600 → 1 col stack) — 모크업 wrap 미만 viewport
+   에서 overflow 보다 stack 이 항상 더 가독성 좋음.
+
+**시각 분리 강화 (사용자 catch 3):**
+- col gap 10 → 24px + 셀 사이 세로 separator (`::after` pseudo, 1px line)
+- 행 내부 gap 10 → 8px (라벨+수치 그룹 더 묶음) + `.compact-spark margin-left: 6px`
+  ([라벨+수치] 그룹 ↔ sparkline 시각 분리)
+
+**모바일 명시 설계 (≤600px):**
+- 1-col stack + 각 row 가 padding 10 + border-bottom 으로 독립 ticker 단위
+- `:first-child` / `:last-child` padding·border reset
+- name/value/change 폭 축소 (64/70/50 → 56/60/44) — 좁은 viewport fit
+
+### 회생된 구현체 (repo 누락분)
+
+- `charts.css` — `.compact-strip` / `.compact-row` 전체 CSS + 반응형
+- `charts.js` — `drawSparkline` + `renderSparklines` (rAF×2 + ResizeObserver
+  로 layout settle 후 그림) + `init()` 의 `renderSparklines()` 호출
+- `freeform_essay.html` — `sec.charts` 를 `role='compact'` / 일반으로 namespace
+  분기. compact 는 strip 으로 모아 prose 직후 1회만 emit
+- `orchestrator.py` — `_format_compact_value` (rate/통화/일반 분기) +
+  `_build_compact_strip_row` + `_ensure_market_strip` (instrument 3개↑ 면
+  sections[0] 앞에 strip 자동 emit, idempotent) + `_composer_instruments` 가
+  role='compact' 도 dedupe 집합에 포함
+
+### 회귀 가드 (`tests/regression/test_compact_strip.py` — 15 tests)
+
+- break-out width/left/translateX 동시 lock
+- 모크업 §2 의 4 값 (name 64 / value 70 / change 50 / spark 60 + flex:1 +
+  overflow:hidden) 글자 그대로 lock
+- `.compact-row { min-width: 0 }` safety lock
+- 920/600 breakpoint lock
+- 세로 separator (`::after` selector + content/background) lock
+- `.compact-spark margin-left` (그룹 분리) lock
+- mobile 1-col stack 에서 `border-bottom` + `:last-child` reset 동시 lock
+- `_ensure_market_strip` threshold-3 + idempotency + `_composer_instruments`
+  role='compact' dedupe
+
+---
+
+## [v5.2.4] — 2026-05-15
+
+### Standalone HTML 모드 — report_synthesizer 정적 자산 인라이닝
+
+`<link href="charts.css">` / `<script src="charts.js">` 를 빌드 시점에 inline
+`<style>` / `<script>` 로 치환. Cloudflare Pages 외 환경 (이메일 첨부, 로컬
+열기) 에서도 차트가 정상 렌더.
+
+---
+
 ## [v4.5.7 이전 — V5 리팩토링 진행 중 단계]
 
 V5 리팩토링 (REFACTOR_V5_PLAN.md) Tier 1 (토대) 진행:
