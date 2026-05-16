@@ -7,10 +7,11 @@
 # 설치 후 ``source ~/.bashrc`` 또는 새 터미널 / 재접속.
 #
 # 단축어:
-#   bot         — 상태 확인 (봇이 떠있는지 한 줄)
-#   bot-up      — 봇 켜기 (이미 떠있으면 죽이고 다시 켬 — 중복 차단)
-#   bot-log     — 봇 로그 실시간 (Ctrl-C 로 빠짐)
-#   bot-cancel  — 진행 중인 분석만 취소 (봇 본체는 유지)
+#   bot          — 상태 확인 (봇이 떠있는지 한 줄)
+#   bot-up       — 봇 켜기 / 재배포 (git pull + 중복 차단 일괄)
+#   bot-log      — 봇 로그 실시간 (Ctrl-C 로 빠짐)
+#   bot-cancel   — 진행 중인 분석만 취소 (봇 본체는 유지)
+#   bot-version  — 지금 코드의 VERSION 상수 한 줄로 (서버 봇이 몇 버전인지)
 set -e
 
 RC=~/.bashrc
@@ -30,6 +31,7 @@ alias bot='ps aux | grep -E "src.main|claude.*dangerously" | grep -v grep || ech
 alias bot-up='pkill -f "src.main" 2>/dev/null; sleep 2; cd ~/agents_reviewer && git pull && source venv/bin/activate && nohup python -m src.main > bot.log 2>&1 & disown && sleep 3 && echo "✓ 봇 켜짐" && tail -20 bot.log'
 alias bot-log='tail -f ~/agents_reviewer/bot.log'
 alias bot-cancel='pkill -f "claude.*--dangerously-skip-permissions" && echo "✓ 진행 중 분석만 취소 (봇은 살아있음)" || echo "✗ 취소할 분석이 없음"'
+alias bot-version='grep -E "^VERSION\s*=" ~/agents_reviewer/src/orchestrator.py | sed -E "s/.*\"([^\"]+)\".*/현재 코드: \1/"'
 # <<< agents_reviewer bot aliases <<<
 EOF
 
@@ -38,7 +40,8 @@ echo "  source ~/.bashrc                  # 같은 터미널에서 즉시 활성
 echo "  exit && 재접속                     # 새로 SSH"
 echo ""
 echo "단축어:"
-echo "  bot         — 봇이 떠있는지 한 줄로"
-echo "  bot-up      — 봇 켜기 (중복 자동 차단 + git pull 포함)"
-echo "  bot-log     — 로그 실시간 보기 (Ctrl-C 로 빠짐)"
-echo "  bot-cancel  — 진행 중인 분석만 취소"
+echo "  bot          — 봇이 떠있는지 한 줄로"
+echo "  bot-up       — 봇 켜기 / 재배포 (git pull + 중복 자동 차단)"
+echo "  bot-log      — 로그 실시간 보기 (Ctrl-C 로 빠짐)"
+echo "  bot-cancel   — 진행 중인 분석만 취소"
+echo "  bot-version  — 지금 코드의 VERSION 한 줄로"
