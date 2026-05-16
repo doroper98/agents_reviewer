@@ -12,6 +12,7 @@
 #   bot-log      — 봇 로그 실시간 (Ctrl-C 로 빠짐)
 #   bot-cancel   — 진행 중인 분석만 취소 (봇 본체는 유지)
 #   bot-version  — 지금 코드의 VERSION 상수 한 줄로 (서버 봇이 몇 버전인지)
+#   botz         — 단축어 목록 + 설명 cheatsheet (외우기 싫을 때)
 set -e
 
 RC=~/.bashrc
@@ -32,6 +33,23 @@ alias bot-up='pkill -f "src.main" 2>/dev/null; sleep 2; cd ~/agents_reviewer && 
 alias bot-log='tail -f ~/agents_reviewer/bot.log'
 alias bot-cancel='pkill -f "claude.*--dangerously-skip-permissions" && echo "✓ 진행 중 분석만 취소 (봇은 살아있음)" || echo "✗ 취소할 분석이 없음"'
 alias bot-version='grep -E "^VERSION\s*=" ~/agents_reviewer/src/orchestrator.py | sed -E "s/.*\"([^\"]+)\".*/현재 코드: \1/"'
+# botz — cheatsheet (alias 가 아니라 function 으로, 여러 줄 출력 + 색상)
+botz() {
+  cat <<'__BOTZ__'
+
+봇 단축어 (agents_reviewer)
+─────────────────────────────────────────────
+  bot          상태 확인 (떠있는지 한 줄)
+  bot-up       봇 켜기 / 재배포 (git pull + 중복 차단)
+  bot-log      로그 실시간 보기 (Ctrl-C 로 빠짐)
+  bot-cancel   진행 중인 분석만 취소 (봇 본체 유지)
+  bot-version  지금 코드의 VERSION 한 줄로
+  botz         이 cheatsheet 다시 보기
+─────────────────────────────────────────────
+재배포 흐름: PR 머지 → bot-up → bot-version 으로 확인
+
+__BOTZ__
+}
 # <<< agents_reviewer bot aliases <<<
 EOF
 
@@ -45,3 +63,4 @@ echo "  bot-up       — 봇 켜기 / 재배포 (git pull + 중복 자동 차단
 echo "  bot-log      — 로그 실시간 보기 (Ctrl-C 로 빠짐)"
 echo "  bot-cancel   — 진행 중인 분석만 취소"
 echo "  bot-version  — 지금 코드의 VERSION 한 줄로"
+echo "  botz         — 위 5개 단축어 cheatsheet 다시 보기"
