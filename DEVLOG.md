@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.1.0
+last_synced_with: v5.2.3
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -8,7 +8,7 @@ ssot_for:
 depends_on:
   - "GOAL.md (REQ-* 변경 추적)"
   - "CHANGELOG.md (사용자 관점 변경은 그쪽 SSOT)"
-last_review: 2026-05-13
+last_review: 2026-05-15
 ---
 
 # DEVLOG — Event Analysis Team Agent System
@@ -1038,3 +1038,142 @@ maplibre 샘플 머지 (`dcaf6af`) 에서 분기되어 있어 `src/scheduler/` �
 - **CHANGELOG v5.1.0 본문은 보존**: v5.1.0 출시 시점의 디폴트는 07:30 이었던 게
   사실. 본문은 "디폴트 07:30" 그대로 두고, REQ-V5-101 (GOAL.md) 에서 "v5.1.2
   부터 06:00" 노트로 히스토리 표기. DEVLOG append-only 원칙 준수.
+
+---
+
+## v5.2.3 — KOSPI 보고서 (analysis_20260515_230117) 차트 4건 결함 패치 (2026-05-15)
+
+### 보고된 결함 (사용자 — 모바일 스크린샷 3장)
+
+- **#1 영역 fill 그라데이션 누락** — line 차트의 area fill 이 단색·평탄.
+- **#2 차트 좌측 치우침** — line/area 가 캔버스의 좌측 ~85% 만 차지, 우측 ~15% 가
+  공백. "왜 7493 같은 라벨도 우측에 어색하게 떠 있나" 와 결합돼 발견.
+- **#3 우측 끝 값 "7493.180175125"** — 부동소수점 값이 그대로 텍스트화돼 노출.
+- **#4 3개 차트가 동일한 1-5 번호 + 동일 풋노트** — 코스피·삼성전자·SK하이닉스
+  3개 차트의 우상단 번호 배지와 하단 풋노트가 1자도 차이 없이 같음. "차트마다
+  관련 사건만 떠야 하는 거 아니냐" 가 사용자 지적.
+
+### 메타 — 잘못된 base branch (재발 2회차)
+
+이번에도 작업 시작 시 *stale base* 위에서 분석을 시작. `src/templates/report.html`
+의 `drawLineChart` 인라인 Canvas JS 를 패치하고 v3.0.1 으로 VERSION 도 깎은 채
+push 까지 완료한 다음 사용자가 "지금 버전이 5.2.0인데???" 로 지적해 발견. 실제
+main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/charts.js`
+(d3 기반) + `src/agents/chart_critic.py` + `src/visual/chart_gate.py` +
+`src/tools/market_fetcher.py` 로 통째 이전돼 있었음. 내 v3.0.1 패치는 v5.2.x 가
+이미 더 이상 사용 안 하는 *legacy Canvas 경로* 만 건드린 무의미 작업.
+
+- v5.1.0 DEVLOG §9.J 의 "*항상 작업 시작 전 `git log origin/main` 확인*" 교훈이
+  3회차로 재발. **작업 시작 전 origin 의 `VERSION` 과 main commit 둘 다 확인하는
+  rule** 을 향후 모든 long-running agent 세션에 강제할 것.
+- 해결: 잘못된 v3.0.1 커밋이 들어간 `claude/fix-kospi-chart-issues-8UDEF` 브랜치
+  통째 폐기. `claude/fix-kospi-charts-v522` 신규 브랜치를 origin/main (v5.2.2)
+  base 에서 분기해서 처음부터 다시.
+
+### 결함별 근본 원인 (v5.2.2 기준)
+
+| # | 위치 | 원인 |
+|---|------|------|
+| 1 | `src/templates/static/charts.js drawLine`, line 417 | `svg.append('path').attr('d', area(data)).attr('fill', t.accent).attr('fill-opacity', 0.10)` — 단색·평탄 fill, 알파 0.10. 같은 파일의 `drawArea` (line 1273-1283) 는 이미 `linearGradient` 사용 — 두 함수가 시각 언어 일관 안 됨. SSOT 위반 (gradient 가 기대 동작). |
+| 2 | `drawLine`, line 388 + 392 | `computeZones(W, H, { left: 60, right: 110 })` → 우측 110px 빈 공간 (좌측 60 대비 거의 2배). `scalePoint(...).padding(0.1)` 이 추가로 양 끝 5%씩 빔. 결과적으로 데이터 시각화가 캔버스 폭 ~75% 만 차지. `placeEndLabel` 의 가장 긴 후보(120px) 라도 좌측 candidate 가 있어 110 은 과도. |
+| 3 | `drawLine`, line 423 | `placeEndLabel(svg, x(...), y(+last.y), String(last.y), t, ...)`. `String(last.y)` 가 `last.y` 의 toString — 7493.180175125 라면 그대로 "7493.180175125". 같은 함수의 Y 라벨은 `d3.format('.0f')(v)` 로 정수 처리 — end-value 라벨만 포맷 규칙에서 누락. |
+| 4 | `src/orchestrator.py _attach_event_markers`, line 136-170 | `timeline` 의 모든 이벤트를 *모든* chart_data row 에 단순 매칭. 차트의 instrument 와 무관. `_build_ts_chart` 가 코스피/삼성/하이닉스 series 각각에 동일 `_attach_event_markers(chart_data, timeline, ctype)` 를 호출 → 3개 차트 모두 같은 5개 사건이 같은 날짜에 박힘 → charts.js `_renderEventBadgesAndFootnote` 가 같은 1-5 번호 배지 + 같은 footnote 5줄을 렌더. |
+
+### 패치
+
+**`src/templates/static/charts.js drawLine`** (line 384-460 부근):
+- `computeZones` 의 `right: 110 → 70`. data zone 우측 ~85% 위치 → ~92% 로 확장.
+- `scalePoint(...).padding(0.1) → padding(0.04)`. 양 끝 cropped 인상 완화.
+- area fill 을 `linearGradient` 로 교체 (stop 0%=alpha 0.28, 100%=alpha 0.02).
+  `gradId` 는 `data-chart-id` 또는 random suffix — 한 페이지 내 중복 방지.
+- end-value text 를 `Math.abs(lastY) >= 1000 ? d3.format(',.0f') : d3.format(',.2f')`
+  로 포맷. Y 라벨과 일치.
+
+**`src/orchestrator.py`**:
+- `_INDEX_INSTRUMENTS` 튜플 신규 — 지수/벤치마크 정의 (코스피·코스닥·다우·나스닥
+  ·S&P 500·닛케이·항생).
+- `_KNOWN_INSTRUMENTS_LC` 튜플 — substring 매칭용 알려진 자산 명단 (소문자).
+- `_event_mentions_any_instrument(text_lower)`, `_event_relevant_to(text, instrument)`
+  헬퍼 신규.
+- `_attach_event_markers(chart_data, timeline, ctype, instrument="")` —
+  `instrument` 매개변수 추가, 필터링 4단계:
+  1. 자기 instrument 명시 → 부착
+  2. 지수/벤치마크 차트 → 모든 이벤트 흡수
+  3. 어떤 instrument 도 명시 안 된 일반 시장 이벤트 → 개별 자산 차트도 흡수
+  4. 그 외 → 스킵
+- `_build_ts_chart` 가 `instrument=name` 을 `_attach_event_markers` 에 전달.
+- `instrument=""` 호출 시 backward-compat — 종전처럼 모든 이벤트 통과.
+
+**`src/orchestrator.py:VERSION`** `v5.2.2 → v5.2.3`.
+
+### 검증
+
+- `python -m py_compile src/orchestrator.py` → pass.
+- `node -e "new Function(charts.js)"` → parse pass.
+- `_attach_event_markers` 단위 검증 (사용자 보고서의 실제 5개 timeline 이벤트로):
+  - KOSPI: 5/5 (모든 이벤트, 지수 차트라 흡수)
+  - 삼성전자: 3/5 (05-07 일반시장 fallback, 05-12 일반시장 fallback, 05-14 "삼성전자" mention)
+  - SK하이닉스: 4/5 (05-07 일반시장 fallback, 05-11 "SK하이닉스" mention, 05-12 일반시장 fallback, 05-14 "SK하이닉스" mention)
+  - 3개 차트가 서로 다른 events 셋을 가지게 됨 — 사용자 요구 충족.
+  - `instrument=""` 호출 시 5/5 (backward-compat 유지).
+
+### 변경된 파일
+
+| 파일 | 변경 |
+|------|------|
+| `src/orchestrator.py` | `VERSION` v5.2.2 → v5.2.3, `_INDEX_INSTRUMENTS` / `_KNOWN_INSTRUMENTS_LC` / `_event_mentions_any_instrument` / `_event_relevant_to` 신규, `_attach_event_markers` 시그니처에 `instrument` 추가, `_build_ts_chart` 가 instrument 전달 |
+| `src/templates/static/charts.js` | `drawLine` 의 zones / scalePoint padding / area fill (linearGradient) / end-value 포맷 |
+| `README.md`, `CHANGELOG.md`, `DEVLOG.md` | `last_synced_with` v5.2.3, CHANGELOG `[v5.2.3]` 항목, 본 DEVLOG 항목 |
+
+### 기존 보고서 소급 패치 (`scripts/patch_existing_reports.py`)
+
+사용자 지적: "이미 잘못 된 차트가 들어간 보고서에 대해 패치 적용해서 개선할 수
+있지않나" — v5.2.3 로 봇을 재기동해도 이미 Cloudflare Pages 에 배포된 v5.2.2
+보고서는 그대로 결함을 노출. LLM 재호출 (~$2-3/건) 없이 정적 수정 가능.
+
+핵심 관찰:
+- 보고서는 `<output_dir>/analysis_<ts>.html` 단일 파일 + `<output_dir>/charts.js`
+  공통 정적 자산 형태로 저장 (`ReportSynthesizer._sync_static_assets`,
+  line 1424-1445).
+- 결함 #1/#2/#3 은 charts.js drawLine 함수 로직 결함 — charts.js 한 파일만
+  v5.2.3 새 버전으로 덮어쓰면 모든 보고서가 자동 갱신 (브라우저 새로고침 한 번).
+- 결함 #4 는 보고서 HTML 안에 inline 으로 박힌 chart payload (``<script
+  type="application/json" class="chart-payload-inline">{...}</script>``,
+  `freeform_essay.html:232`) 의 `data[].event` 필드 자체가 v5.2.2 의 잘못된
+  `_attach_event_markers` 출력 그대로라 — HTML 을 직접 다시 써야 함.
+
+스크립트 동작:
+1. `scripts/patch_existing_reports.py reports/` 로 호출.
+2. `reports/charts.js` 를 `src/templates/static/charts.js` (v5.2.3) 로 덮어씀.
+   원본은 `charts.js.bak` 로 백업 (idempotent — 이미 있으면 백업 안 덮음).
+3. `reports/analysis_*.html` 순회. 각 HTML 안의 `chart-payload-inline` script
+   태그를 regex 로 모두 추출 → JSON 파싱 → `title` 에서 instrument 추정
+   (`_INSTRUMENT_TITLE_HINTS` 18종 매핑) → `data[].event` 에 대해 v5.2.3 의
+   `_event_relevant_to` 적용 → 관계 없는 event 만 제거 (그 행의 가격/날짜는
+   보존) → JSON 직렬화 → HTML 재기록. 원본은 `*.html.bak` 백업.
+4. 운영자가 결과 확인 후 직접 `wrangler pages deploy reports/` 로 재배포.
+
+검증 (실제 보고서 시뮬레이션 — 코스피·삼성·하이닉스 3차트 × 4 이벤트):
+- 코스피: 4/4 (지수 차트, 전체 흡수)
+- 삼성전자: 2/4 ("SK하이닉스", "코스피" 명시 이벤트 2개 제거)
+- SK하이닉스: 3/4 ("코스피" 명시 이벤트 1개 제거)
+
+3개 차트가 서로 다른 event 셋 — 사용자 요구 충족.
+
+별도 도구 `scripts/patch_report.py` (v4.4.7) 와 차이:
+- `patch_report.py` 는 ComposedReport JSON 을 ReportSynthesizer 로 재렌더하는
+  무거운 도구. 차트 인덱스 단위로 일부 수정 가능.
+- `patch_existing_reports.py` 는 HTML inline JSON 만 직접 손대는 가벼운 일회용.
+  ComposedReport JSON 보존 안 된 보고서 (`_save_composed_report_json` 가 v4.4.1
+  부터 시작) 또는 batch 처리에 적합.
+
+### 후속 / 비포함
+
+- `chart_gate` / `chart_critic` / `market_fetcher` 미변경 — 결함이 그쪽에서 비롯
+  되지 않음.
+- 시각적 회귀 테스트 자동화 부재 — 현재는 코드 parse + filter 단위 검증까지.
+- `drawArea` / `drawCandle` 도 `_attach_event_markers` 의 출력에 의존하므로 이번
+  filter 변경의 혜택을 동일하게 받음 (코드 수정 불필요).
+- LLM `visual_analyst.chart_config.charts[]` (legacy Canvas) 경로는 v5.2.x 에서
+  `report.html:124-134` "Legacy Canvas Charts" 섹션으로 보존 — deep 모드에서만
+  보조 출력. 본 패치 범위 밖.

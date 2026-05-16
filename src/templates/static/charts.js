@@ -385,11 +385,16 @@
     const data = (payload.data || []).filter(d => isFinite(+d.y));
     if (data.length < 2) return;
     const W = 760, H = 320;
-    const zones = computeZones(W, H, { left: 60, right: 110 });
+    // v5.2.3 — right padding 110 → 70: placeEndLabel 후보가 좌측으로도 떨어질
+    // 수 있어 110 은 과도. line/area 가 캔버스 우측 ~14% 비워두는 시각적
+    // 좌측 치우침을 해소.
+    const zones = computeZones(W, H, { left: 60, right: 70 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
 
-    const x = d3.scalePoint().domain(data.map(d => String(d.x))).range([zones.data.x, zones.data.x + zones.data.w]).padding(0.1);
+    // v5.2.3 — scalePoint padding 0.10 → 0.04: 첫·마지막 점이 plot 끝에서
+    // 5% 안쪽으로 들어와 좌우 cropped 처럼 보이던 현상 완화.
+    const x = d3.scalePoint().domain(data.map(d => String(d.x))).range([zones.data.x, zones.data.x + zones.data.w]).padding(0.04);
     const yExtent = d3.extent(data, d => +d.y);
     const yPad = (yExtent[1] - yExtent[0]) * 0.1 || 1;
     const y = d3.scaleLinear().domain([yExtent[0] - yPad, yExtent[1] + yPad])
@@ -410,17 +415,28 @@
     const occupancy = renderAnnotations(svg, payload, zones, t,
       (xv) => x(String(xv)), (yv) => y(+yv));
 
-    // Area fill + line
+    // v5.2.3 — Area fill 은 linearGradient (drawArea 와 일관). 이전 단색 0.10
+    // 평탄 fill 은 그라데이션이 아니라는 사용자 지적의 직접 원인.
+    const gradId = `grad-line-${stage.getAttribute('data-chart-id') || Math.random().toString(36).slice(2,8)}`;
+    const grad = svg.append('defs').append('linearGradient')
+      .attr('id', gradId).attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
+
     const line = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
     const area = d3.area().x(d => x(String(d.x))).y0(zones.data.y + zones.data.h)
       .y1(d => y(+d.y)).curve(d3.curveMonotoneX);
-    svg.append('path').attr('d', area(data)).attr('fill', t.accent).attr('fill-opacity', 0.10);
+    svg.append('path').attr('d', area(data)).attr('fill', `url(#${gradId})`);
     svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', t.text).attr('stroke-width', 1.4);
 
     // End marker + label
+    // v5.2.3 — last.y 부동소수점 그대로 (e.g. "7493.180175125") 노출되던
+    // 회귀 수정. Y 라벨과 동일한 format 규칙 (`.0f` for >=1000, `.2f` otherwise).
     const last = data[data.length - 1];
-    svg.append('circle').attr('cx', x(String(last.x))).attr('cy', y(+last.y)).attr('r', 3.5).attr('fill', t.accent);
-    placeEndLabel(svg, x(String(last.x)), y(+last.y), String(last.y), t, occupancy, zones, t.accent);
+    const lastY = +last.y;
+    const lastText = Math.abs(lastY) >= 1000 ? d3.format(',.0f')(lastY) : d3.format(',.2f')(lastY);
+    svg.append('circle').attr('cx', x(String(last.x))).attr('cy', y(lastY)).attr('r', 3.5).attr('fill', t.accent);
+    placeEndLabel(svg, x(String(last.x)), y(lastY), lastText, t, occupancy, zones, t.accent);
 
     // x labels (sparse)
     const step = Math.max(1, Math.ceil(data.length / 7));

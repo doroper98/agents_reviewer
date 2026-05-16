@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.2.0
+last_synced_with: v5.2.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-14
+last_review: 2026-05-15
 ---
 
 # Changelog
@@ -17,6 +17,63 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.3] — 2026-05-15
+
+### Fixed — KOSPI 보고서 (analysis_20260515_230117) 차트 렌더링 4건 결함
+
+사용자 보고: 코스피 line 차트의 영역(area) fill 그라데이션 누락 / 차트가 좌측
+치우침 / 우측 끝 값 라벨이 부동소수점 그대로 노출 ("7493.180175125") /
+3개 차트(코스피·삼성전자·SK하이닉스) 가 동일한 1-5 번호 마커와 동일한 풋노트.
+
+- **`src/templates/static/charts.js` `drawLine`** — area fill 을 단색
+  (`fill: t.accent, fill-opacity: 0.10`) 에서 `linearGradient` (상단 alpha 0.28
+  → 하단 0.02) 로 교체. `drawArea` 의 그라데이션 정의와 동일 패턴 — 두 함수
+  시각 언어 일관성 회복. (결함 #1)
+- **`src/templates/static/charts.js` `drawLine`** — `computeZones` 의
+  `right: 110 → 70`, `scalePoint` 의 `padding: 0.1 → 0.04`. 우측 110px 가
+  빈 채로 남아 차트가 왼쪽 치우치는 인상을 주던 현상 해소. `placeEndLabel`
+  후보 위치들이 좌측으로도 떨어질 수 있어 110 은 과도. (결함 #2)
+- **`src/templates/static/charts.js` `drawLine`** — `placeEndLabel(...
+  String(last.y) ...)` 의 raw float 전달 → `Math.abs(lastY) >= 1000` 이면
+  `d3.format(',.0f')` 로 정수 천단위, 그 외엔 `d3.format(',.2f')` 로 소수
+  2자리. Y 라벨 포맷 규칙과 일치. (결함 #3)
+- **`src/orchestrator.py` `_attach_event_markers`** — `instrument` 매개변수
+  추가. `context.timeline` 전체를 모든 차트에 균등 부착하던 v5.2.2 회귀
+  수정. 차트별 필터링 규칙:
+  - 지수/벤치마크 차트 (코스피·코스닥 등) → 모든 이벤트 흡수
+  - 자기 instrument 이름 명시된 이벤트 → 부착
+  - 어떤 instrument 도 명시 안 된 일반 시장 이벤트 → 개별 자산 차트도 흡수
+  - 그 외 (다른 instrument 가 명시된 이벤트) → 스킵
+  - `instrument=""` 면 종전 동작 (모든 이벤트 통과) — backward-compat.
+- **`src/orchestrator.py:VERSION`** `v5.2.2 → v5.2.3`.
+
+### Added — 기존 보고서 소급 패치 스크립트 (`scripts/patch_existing_reports.py`)
+
+v5.2.2 에서 이미 생성·배포된 보고서를 LLM 재호출 없이 v5.2.3 결함 해소 상태로
+끌어올리는 일회용 도구. 두 단계 동시 처리:
+
+1. `reports/charts.js` 를 v5.2.3 의 `src/templates/static/charts.js` 로 덮어쓰기
+   → 결함 #1/#2/#3 (drawLine 로직) 즉시 해소.
+2. `reports/analysis_*.html` 안의 `<script class="chart-payload-inline">`
+   inline JSON 의 `data[].event` 필드를 instrument-aware filter 로 재계산
+   → 결함 #4 (모든 차트 동일 1-5 사건) 해소.
+
+원본은 `*.bak` 로 idempotent 백업. 운영자가 결과 확인 후 `wrangler pages deploy`
+로 재배포. 사용법은 docstring 또는 DEVLOG v5.2.3 §"기존 보고서 소급 패치" 참조.
+
+### Notes
+
+- chart_gate / chart_critic / market_fetcher 미변경.
+- 데이터 모델 변경 없음.
+- charts.js 의 `drawArea` 는 이미 linearGradient 사용 중이라 변경 불필요 —
+  이번 회귀는 `drawLine` 단독.
+- 별도 스크립트 `scripts/patch_report.py` (ComposedReport JSON → ReportSynthesizer
+  재렌더) 와 `scripts/patch_existing_reports.py` (HTML inline JSON 직접 패치)
+  는 다른 용도로 공존. 후자가 더 가벼움 — composer JSON 보존 안 된 보고서에도
+  적용 가능.
 
 ---
 
