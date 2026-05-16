@@ -465,9 +465,10 @@
 .compact-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  /* col gap = 24px (셀 사이 호흡), row gap = 12px (wrap 됐을 때만 보임) */
+  gap: 12px 24px;
   margin: 18px auto;
-  padding: 14px;
+  padding: 18px 22px;
   border-radius: 8px;
   border: 1px solid var(--border, rgba(125,98,76,0.25));
   background: var(--card-deep, var(--card, transparent));
@@ -480,9 +481,24 @@
 .compact-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  /* 행 내부 호흡: name ↔ value ↔ change 는 8px 로 묶고, spark 는 margin-left
+     로 별도 6px 추가 (그룹 분리). */
+  gap: 8px;
   font-size: 11px;
   min-width: 0;
+  position: relative;     /* ::after separator 기준점 */
+}
+/* 세로 구분선 — 셀 사이 24px col-gap 의 중앙 (12px) 에 1px 선.
+   3-col (desktop) 기준: 매 3n 번째 (오른쪽 가장자리) 와 마지막 셀 제외. */
+.compact-strip > .compact-row:not(:nth-child(3n)):not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -12px;            /* col-gap (24px) 의 절반 */
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--border, rgba(125,98,76,0.30));
+  pointer-events: none;
 }
 .compact-row .compact-name {
   color: var(--muted, var(--fg-3));
@@ -511,6 +527,8 @@
 .compact-row .compact-spark {
   flex: 1;
   min-width: 60px;
+  /* [name/value/change] 그룹 과 sparkline 사이 호흡 추가 (gap 8 위에 +6) */
+  margin-left: 6px;
   overflow: hidden;
 }
 .compact-row .compact-spark svg.sparkline {
@@ -518,10 +536,43 @@
   width: 100%;
   height: 22px;
 }
-/* responsive — 셀 폭이 콘텐츠 min (~280px) 미만 가능한 viewport 에선 cols 축소. */
+/* ── responsive ──────────────────────────────────────────────
+ * tablet (≤920px): 3 cols 셀 폭이 콘텐츠 (≈275px) 미만이라 2 cols 로 축소.
+ *   separator 는 nth-child(2n) 기준으로 재배치 (모든 짝수 cell 오른쪽 = 행 끝).
+ * mobile (≤600px): 1 col stack. 세로 separator 폐기, 대신 행 사이 border-bottom
+ *   으로 ticker 분리 명시. width 도 viewport 더 가깝게.
+ * ──────────────────────────────────────────────────────────── */
 @media (max-width: 920px) {
-  .compact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .compact-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 22px;
+  }
+  /* 3-col separator 비활성 + 2-col 패턴 재활성 */
+  .compact-strip > .compact-row::after { display: none; }
+  .compact-strip > .compact-row:not(:nth-child(2n)):not(:last-child)::after {
+    display: block;
+    right: -11px;
+  }
 }
 @media (max-width: 600px) {
-  .compact-strip { grid-template-columns: 1fr; padding: 10px; }
+  .compact-strip {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 14px 16px;
+    width: calc(100vw - 24px);
+  }
+  .compact-strip > .compact-row::after { display: none !important; }
+  .compact-strip > .compact-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border, rgba(125,98,76,0.25));
+  }
+  .compact-strip > .compact-row:first-child { padding-top: 0; }
+  .compact-strip > .compact-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  /* 좁은 mobile 에서 name 너비 축소 — 5~6 글자 한국어 라벨 기준 */
+  .compact-row .compact-name { width: 56px; font-size: 10.5px; }
+  .compact-row .compact-value { min-width: 60px; font-size: 12px; }
+  .compact-row .compact-change { min-width: 44px; }
 }

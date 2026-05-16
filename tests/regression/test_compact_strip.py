@@ -107,6 +107,62 @@ def test_compact_strip_css_responsive_fallback() -> None:
     assert "max-width: 600px" in css, "600px breakpoint 누락 — 1-col stack fallback 회귀."
 
 
+def test_compact_strip_css_has_vertical_separator_between_cells() -> None:
+    """셀 사이 세로 구분선 (::after pseudo) — Bloomberg/FT 스타일.
+
+    사용자 catch 2번째: "너무 구분이 안가. 가로로 뭔가 계속 나열만 되어 있으니까".
+    gap 만으로는 시각 구분 부족 → ::after 로 1px line 명시.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    # 3-col separator selector + ::after content
+    sep_sel = ".compact-strip > .compact-row:not(:nth-child(3n)):not(:last-child)::after"
+    assert sep_sel in css, (
+        f"세로 separator selector ({sep_sel}) 누락 — 셀 시각 구분 회귀."
+    )
+    # ::after 가 실제로 1px line 그리는지 — content: '' + width 또는 background 존재
+    idx = css.find(sep_sel)
+    block = css[idx : css.find("}", idx)]
+    assert "content:" in block and "background:" in block, (
+        "::after 가 빈 content + background 가져야 1px line 그림."
+    )
+
+
+def test_compact_strip_css_internal_row_grouping() -> None:
+    """행 내부: [name | value | change] 그룹 vs [sparkline] 사이 시각 호흡.
+
+    사용자 catch: "간격에 대한 고려도 없고" — gap 8px 외에 sparkline 앞에 추가
+    margin-left 6px 로 그룹 분리.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    spark_block = css[css.find(".compact-row .compact-spark {"):]
+    spark_block = spark_block[: spark_block.find("}")]
+    assert "margin-left:" in spark_block, (
+        ".compact-spark 의 margin-left 누락 — [라벨+수치] 그룹 과 sparkline "
+        "사이 호흡 부재. 모든 필드가 같은 gap 으로 나열되어 그룹 인식 어려움."
+    )
+
+
+def test_compact_strip_css_mobile_stacked_with_row_separators() -> None:
+    """≤600px viewport 1-col stack 에서 행 사이 border-bottom 으로 ticker 분리.
+
+    세로 stack 일 때 ::after 세로선은 의미 없음 → 행 간 horizontal divider 로
+    각 ticker 가 독립 단위로 보이도록.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    # @media (max-width: 600px) 블록 안에 .compact-row 가 border-bottom 갖고 있는지
+    mobile_idx = css.find("@media (max-width: 600px)")
+    assert mobile_idx >= 0
+    # 해당 media query 블록의 끝까지 (다음 '}' 두번 닫히는 지점) — 간단히 다음 1500자만 검사
+    mobile_block = css[mobile_idx : mobile_idx + 2000]
+    assert "border-bottom" in mobile_block, (
+        "mobile 1-col stack 에서 .compact-row border-bottom 누락 — ticker 분리 안 됨."
+    )
+    assert "border-bottom: none" in mobile_block, (
+        "마지막 행 :last-child 의 border-bottom: none reset 누락 — 마지막 ticker "
+        "밑에 불필요한 선 잔존."
+    )
+
+
 def test_charts_js_has_sparkline_renderer() -> None:
     """drawSparkline + renderSparklines + init() 호출 3종 모두 존재해야."""
     js = _JS.read_text(encoding="utf-8")
