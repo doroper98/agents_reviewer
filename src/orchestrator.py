@@ -35,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.6"
+VERSION = "v5.2.7"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -272,29 +272,41 @@ def _format_ts_source(series: dict) -> str:
     return " / ".join(p for p in parts if p)
 
 
-def _format_ts_takeaway(data: list, ctype: str, context) -> str:
-    """본문 narrative 우선, 없으면 변동성 기반 자동 해석."""
-    # 1순위: context.summary 의 첫 문장 (≤100자)
-    summary = (getattr(context, "summary", "") or "").strip()
-    if summary:
-        first = summary.split(".")[0].strip()
-        if 10 <= len(first) <= 100:
-            return first
-    # 2순위: 데이터 기반 변동성
+def _format_ts_takeaway(
+    data: list, ctype: str, context, *, instrument: str = "",
+) -> str:
+    """차트별 데이터 기반 takeaway — 결정적, 절단 불가, 차트마다 다름.
+
+    v5.2.7 — 이전 구현은 ``context.summary.split(".")[0]`` 을 1순위로 두어
+    두 회귀 동시 유발: ① 모든 차트가 동일 문장 (summary 는 보고서 전역 1개),
+    ② 소수점에서 문장 절단 ("...5월 15일 4.52%로" → "...5월 15일 4"). 두
+    경로 모두 제거. summary 인자 (``context``) 는 시그니처 호환용으로 남기되
+    참조 안 함.
+
+    공식: ``{instrument} 가 기간 중 {hi}~{lo}, 마지막 {last}({sign}{pct}%).
+    변동폭 {range_pct}%.`` — subtitle 의 시점 변화율과 겹치지 않게 *범위* 와
+    *현재 위치* 에 초점.
+    """
     if not data:
         return ""
     def _close(d):
         return d.get("close") if ctype == "candle" else d.get("y", d.get("close"))
-    closes = [_close(d) or 0 for d in data]
-    closes = [c for c in closes if c > 0]
+    closes = [c for c in (_close(d) for d in data) if isinstance(c, (int, float)) and c > 0]
     if len(closes) < 2:
         return ""
     hi, lo = max(closes), min(closes)
-    if lo <= 0:
-        return ""
+    last = closes[-1]
+    first = closes[0]
     range_pct = (hi - lo) / lo * 100
+    pct_change = (last / first - 1) * 100 if first > 0 else 0.0
+    sign = "+" if pct_change >= 0 else ""
+    direction = "상승" if pct_change > 0.1 else ("하락" if pct_change < -0.1 else "횡보")
     fmt_n = (lambda v: f"{v:,.0f}") if hi >= 1000 else (lambda v: f"{v:.2f}")
-    return f"기간 중 최고 {fmt_n(hi)} · 최저 {fmt_n(lo)} — 변동폭 {range_pct:.1f}%"
+    name = (instrument or "").strip() or "값"
+    return (
+        f"{name} 기간 중 {fmt_n(lo)}~{fmt_n(hi)} 사이 {direction} — "
+        f"마지막 {fmt_n(last)} ({sign}{pct_change:.2f}%), 변동폭 {range_pct:.1f}%"
+    )
 
 
 def _build_ts_chart(series: dict, context) -> dict:
@@ -335,7 +347,7 @@ def _build_ts_chart(series: dict, context) -> dict:
                                          series.get("end_date", ""), ctype),
         "data": chart_data,
         "source": _format_ts_source(series),
-        "takeaway": _format_ts_takeaway(chart_data, ctype, context),
+        "takeaway": _format_ts_takeaway(chart_data, ctype, context, instrument=name),
     }
 
 

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.6
+last_synced_with: v5.2.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.7] — 2026-05-16
+
+### Fixed — 시계열 차트 takeaway 가 모든 차트에서 동일 + 소수점에서 절단되던 회귀
+
+사용자 보고 (`analysis_20260516_230827`): DXY 차트의 takeaway 가
+`"미국 10년물 국채 금리가 5월 15일 4"` 로 표시 — ① DXY 차트인데 미국채
+얘기 (모든 시계열 차트가 같은 takeaway), ② 중간에서 끊김.
+
+- **원인**: `src/orchestrator.py:_format_ts_takeaway` 가
+  `context.summary.split(".")[0]` 을 1순위로 반환. 두 회귀 동시 유발:
+  ① `context.summary` 는 보고서 전역 1개라 모든 차트가 같은 문장,
+  ② `"4.52%"` 의 `.` 에서 split 되어 `"4"` 까지만 추출.
+- **수정**: 전역 summary 경로 *제거*. 데이터 기반 결정적 takeaway 로 단일화 —
+  `{instrument} 기간 중 {lo}~{hi} 사이 {상승/하락/횡보} — 마지막 {last}
+  ({±N.NN}%), 변동폭 {N.N}%`. 차트마다 instrument + data 다르므로 자연히
+  per-chart 차별화. 소수점 split 같은 절단 경로 없음.
+- **기존 보고서 retro-fix**: `scripts/patch_report.py` 에
+  `--regenerate-ts-takeaways` 플래그 추가. 시계열 차트 (line/area/candle) 의
+  takeaway 만 새 로직으로 재계산 (LLM 호출 X). composer-emitted 비-시계열
+  (network/donut/gantt) 은 건드리지 않음.
+- **회귀 가드**: `tests/regression/test_ts_takeaway.py` 신규 — 소수점 절단 /
+  차트별 차별화 / direction & range 키워드 / candle close 필드 / summary
+  독립성 6종 검증.
+
+### 사용법 (배포된 보고서 retro-fix)
+
+```bash
+# 예: analysis_20260516_230827 의 takeaway 재생성 + 재배포
+python scripts/patch_report.py 20260516_230827 --regenerate-ts-takeaways
+```
 
 ---
 

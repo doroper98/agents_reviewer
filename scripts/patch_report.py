@@ -144,6 +144,15 @@ def parse_args() -> argparse.Namespace:
              "20260515_230117 같은 케이스 복구용.",
     )
     p.add_argument(
+        "--regenerate-ts-takeaways",
+        action="store_true",
+        help="(v5.2.7+) 시계열 차트 (line/area/candle) 의 takeaway 필드만 "
+             "현재 _format_ts_takeaway 로직으로 재계산. v5.2.6 이전 보고서가 "
+             "모든 차트에 동일 takeaway (전역 summary 의 소수점 절단 회귀) "
+             "박혔던 케이스 복구용. composer-emitted 비-시계열 차트 (network/"
+             "donut/gantt 등) 의 takeaway 는 건드리지 않음.",
+    )
+    p.add_argument(
         "--rerender-only",
         action="store_true",
         help="수정 없이 재렌더만 (정적 자산 / 새 charts.js 적용용).",
@@ -428,6 +437,30 @@ async def main() -> int:
         if val is not None:
             if not patch_set_text(result, field, val):
                 return 1
+            mutated = True
+
+    # v5.2.7 — 시계열 차트 takeaway 만 재계산 (모든 차트 동일 takeaway +
+    # 소수점 절단 회귀 retro fix). composer-emitted 비-시계열 차트는 skip.
+    if args.regenerate_ts_takeaways:
+        from src.orchestrator import _format_ts_takeaway
+        ts_types = {"line", "area", "candle"}
+        n_updated = 0
+        for sec in (result.composed_report.sections or []) if result.composed_report else []:
+            for ch in (sec.charts or []):
+                ctype = (ch.get("type") or "").lower()
+                if ctype not in ts_types:
+                    continue
+                data = ch.get("data") or []
+                if not data:
+                    continue
+                instrument = (ch.get("title") or "").split(" (")[0].strip()
+                old = (ch.get("takeaway") or "").strip()
+                new = _format_ts_takeaway(data, ctype, result.context, instrument=instrument)
+                if new and new != old:
+                    ch["takeaway"] = new
+                    n_updated += 1
+        print(f"[patch] --regenerate-ts-takeaways: 시계열 차트 takeaway {n_updated}개 갱신")
+        if n_updated > 0:
             mutated = True
 
     # v5.2.2+ — 시계열 차트 자동 보충 (case C 복구). mockup 수준 quality —
