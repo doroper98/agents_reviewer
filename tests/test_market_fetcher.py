@@ -294,6 +294,21 @@ def test_kospi_routed_to_yahoo() -> None:
     assert spec.code == "^KS11"
 
 
+def test_dxy_routed_to_yahoo_ice_ticker() -> None:
+    """v5.2.6 — DXY 는 진짜 ICE 달러인덱스 (Yahoo DX-Y.NYB) 로 가져온다.
+
+    이전엔 FRED/DTWEXBGS (Fed Broad TWI, 2006-01=100, 117~125 레인지) 를
+    "DXY" 로 라벨링해 시장 통념과 충돌. ICE U.S. Dollar Index
+    (1973-03=100, 6-통화 고정 바스켓, 99~110 레인지) 로 교체.
+    """
+    spec = resolve_instrument("달러인덱스")
+    assert spec is not None
+    assert spec.source == "YAHOO"
+    assert spec.code == "DX-Y.NYB"
+    # DTWEXBGS 회귀 방지 — Fed Broad TWI 는 DXY 가 아니다.
+    assert spec.code != "DTWEXBGS"
+
+
 def test_kosdaq_routed_to_yahoo() -> None:
     spec = resolve_instrument("코스닥")
     assert spec is not None

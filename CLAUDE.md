@@ -242,7 +242,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 
 ## Market Data Fetcher (v5.2.0)
 - ContextAnalyst 가 LLM 출력에 `instruments_mentioned: list[str]` emit → orchestrator 가 `src/tools/market_fetcher.py` 의 `fetch_many` 호출 → `ContextAnalysis.time_series` 채움 → composer 가 candle / line / area 차트로 emit.
-- 3 source: KRX (한국 지수·개별주, 무인증) / FRED (미국 매크로, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 11 종목).
+- 4 source: KRX (한국 개별주, 무인증) / YAHOO (지수 · DXY — `^KS11`/`^KQ11`/`DX-Y.NYB`, 무인증) / FRED (미국 매크로 — UST/WTI/금, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 11 종목). v5.2.6 — DXY 는 FRED/DTWEXBGS (Fed Broad TWI, 117~125 레인지의 다른 지수) 에서 Yahoo/DX-Y.NYB (진짜 ICE DXY, 99~110 레인지) 로 교체.
 - Graceful degradation — API key 누락·HTTP fail 시 빈 series + warning log. 보고서는 정상 진행, 해당 instrument 차트만 emit X.
 - 기본 기간 3M (사건 보고서 event-anchored). 사건 일자 = `context.date` 기준. 향후 mode-aware period (daily=1M / historical=3Y) 확장 예정.
 - 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.

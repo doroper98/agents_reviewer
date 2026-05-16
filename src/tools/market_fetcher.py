@@ -12,7 +12,7 @@ v5.2.0 — 시계열 데이터 수집. ContextAnalyst 가 LLM 출력에 ``instru
 | KOSDAQ               | KRX    | 2001 (index)          | line     |
 | 삼성전자              | KRX    | 005930                | candle   |
 | SK하이닉스            | KRX    | 000660                | candle   |
-| 달러인덱스 (DXY)      | FRED   | DTWEXBGS              | line     |
+| 달러인덱스 (DXY)      | YAHOO  | DX-Y.NYB              | line     |
 | 미국채 1Y             | FRED   | DGS1                  | line     |
 | 미국채 10Y            | FRED   | DGS10                 | line     |
 | WTI 유가              | FRED   | DCOILWTICO            | area     |
@@ -90,8 +90,13 @@ INSTRUMENT_REGISTRY: dict[str, InstrumentSpec] = {
         aliases=("SK하이닉스", "SK 하이닉스", "하이닉스"),
     ),
     # ── FRED 매크로 ──
+    # v5.2.6 — DXY 라우팅을 FRED/DTWEXBGS → Yahoo/DX-Y.NYB 로 교체.
+    # DTWEXBGS 는 Fed Broad Trade-Weighted Index (2006-01=100, 26개국 가중,
+    # 최근 117~125 레인지) 로 시장 통념의 DXY (ICE U.S. Dollar Index,
+    # 1973-03=100, 6-통화 고정 바스켓, 최근 99~110 레인지) 와 다른 지수.
+    # DXY-Y.NYB 는 ICE DXY 의 Yahoo 티커 — 진짜 달러인덱스 값.
     "DXY": InstrumentSpec(
-        name="달러인덱스", source="FRED", code="DTWEXBGS",
+        name="달러인덱스", source="YAHOO", code="DX-Y.NYB",
         chart_type="line",
         aliases=("달러인덱스", "달러 인덱스", "DXY"),
     ),

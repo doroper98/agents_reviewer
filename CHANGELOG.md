@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.2.3
+last_synced_with: v5.2.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-15
+last_review: 2026-05-16
 ---
 
 # Changelog
@@ -17,6 +17,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.6] — 2026-05-16
+
+### Fixed — 달러인덱스(DXY) 가 ICE 가 아닌 Fed Broad TWI 를 가져오던 회귀
+
+사용자 보고 (`analysis_20260516_230827`): 달러인덱스 차트가 `117.54 → 118.04`
+로 표시 — 시장 통념의 DXY (최근 99~110) 와 ~15~20pt 어긋남.
+
+- **원인**: `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY["DXY"]` 가
+  FRED 시리즈 `DTWEXBGS` (Nominal Broad U.S. Dollar Index, 2006-01=100,
+  26개국 가중 — CNY·MXN 비중 큼, 최근 117~125 레인지) 를 가져와 "달러인덱스"
+  로 라벨링. 시장에서 통용되는 DXY 는 **ICE U.S. Dollar Index**
+  (1973-03=100, EUR 57.6 / JPY 13.6 / GBP 11.9 / CAD 9.1 / SEK 4.2 /
+  CHF 3.6 6-통화 고정 바스켓, 최근 99~110 레인지) 로 완전히 다른 지수.
+  FRED 무료 API 엔 ICE DXY 가 없음 (ICE 독점) — 가장 가까웠던 `DTWEXM`
+  (Major TWI) 도 2019-12 단종.
+- **수정**: DXY 라우팅을 Yahoo Finance 의 `DX-Y.NYB` 티커 (ICE U.S. Dollar
+  Index 의 표준 Yahoo 심볼) 로 교체. `_TYPE_TO_GUARD` / chart_type 변경 없음
+  (계속 line). Yahoo 인프라는 이미 v5.2.1 부터 코스피 (`^KS11`) / 코스닥
+  (`^KQ11`) 용으로 가동 중이라 추가 의존성 없음.
+- **회귀 가드**: `tests/test_market_fetcher.py:test_dxy_routed_to_yahoo_ice_ticker`
+  추가 — `DTWEXBGS` 회귀 차단 + `DX-Y.NYB` 명시.
+- **기존 보고서 영향**: `analysis_20260516_230827` 의 117.54 → 118.04 수치는
+  DTWEXBGS 입장에선 올바른 값이지만 "달러인덱스" 라벨이 잘못됐던 것. 신규
+  보고서부터 진짜 ICE DXY 값으로 표기. 기존 배포된 HTML 은 retroactive 패치
+  불가 — 사용자가 동일 사건을 재분석하면 갱신됨.
 
 ---
 
