@@ -27,6 +27,7 @@ last_review: 2026-05-15
 git clone https://github.com/doroper98/agents_reviewer.git
 cd agents_reviewer && python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
+git config core.hooksPath .githooks  # commit-msg hook 활성화 (Execution Rule #12)
 cp .env.example .env  # 환경변수 입력
 python -m src.main
 ```

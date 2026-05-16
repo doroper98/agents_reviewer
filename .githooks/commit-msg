@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""commit-msg hook — VERSION 상수 sync 가드.
+
+원칙 (CLAUDE.md Execution Rule #12):
+  커밋 메시지 subject 가 ``vX.Y.Z:`` 로 시작하면 ``src/orchestrator.py:VERSION``
+  도 동일 값이어야 함. 회귀 차단의 SSOT 메커니즘.
+
+배경 (왜 만들었나):
+  v5.2.5 까지 3번 연속 같은 회귀 — Claude 가 커밋 메시지엔 새 버전을 박고
+  VERSION 상수는 안 올림. 배포된 봇이 계속 옛 버전을 보고. 사용자가
+  3회 catch 후 hard rule 화 요청.
+
+활성화 (1회만):
+  git config core.hooksPath .githooks
+
+예외 (rule bypass):
+  ``--no-verify`` 사용 금지 (CLAUDE.md Git Safety Protocol). 정말 우회해야
+  할 때만 ``SKIP_VERSION_CHECK=1 git commit`` 사용.
+"""
+from __future__ import annotations
+
+import os
+import re
+import sys
+from pathlib import Path
+
+
+def main() -> int:
+    if os.environ.get("SKIP_VERSION_CHECK") == "1":
+        return 0
+
+    if len(sys.argv) < 2:
+        return 0  # 비정상 호출 — git 이 안 부른 경우. fail-safe.
+
+    msg_path = Path(sys.argv[1])
+    try:
+        subject = msg_path.read_text(encoding="utf-8").splitlines()[0]
+    except (OSError, IndexError):
+        return 0
+
+    # ``vX.Y.Z: 메시지`` 또는 ``vX.Y.Z.W: 메시지`` 패턴만 검사 (그 외 prefix 는
+    # release 가 아닌 fix / docs 등 — VERSION bump 불요).
+    m = re.match(r"^(v\d+\.\d+\.\d+(?:\.\d+)?)\s*:", subject)
+    if not m:
+        return 0
+    declared = m.group(1)
+
+    repo_root = Path(__file__).resolve().parent.parent
+    orch = repo_root / "src" / "orchestrator.py"
+    if not orch.exists():
+        print(f"[commit-msg] skip — {orch} 없음", file=sys.stderr)
+        return 0
+
+    actual_m = re.search(
+        r'^VERSION\s*=\s*"([^"]+)"',
+        orch.read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )
+    if not actual_m:
+        print(
+            "[commit-msg] ERROR — src/orchestrator.py:VERSION 상수 못 찾음.\n"
+            "  형식: `VERSION = \"vX.Y.Z\"` (정규식 ^VERSION\\s*=\\s*\"([^\"]+)\").",
+            file=sys.stderr,
+        )
+        return 1
+    actual = actual_m.group(1)
+
+    if declared != actual:
+        print(
+            "\n┏━━ commit-msg hook ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n"
+            f"┃ ERROR: 커밋 메시지의 버전 prefix 와 VERSION 상수가 다름.\n"
+            "┃\n"
+            f"┃   커밋 메시지 subject : {declared}: ...\n"
+            f"┃   VERSION 상수        : {actual}\n"
+            "┃\n"
+            "┃ 조치:\n"
+            f"┃   1. src/orchestrator.py:VERSION 을 \"{declared}\" 로 갱신\n"
+            "┃   2. README.md 의 `last_synced_with` + Status entry 갱신\n"
+            "┃   3. CHANGELOG.md 에 새 entry 추가\n"
+            "┃   4. 다시 커밋\n"
+            "┃\n"
+            "┃ (CLAUDE.md Execution Rule #12 + Change Propagation Matrix)\n"
+            "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n",
+            file=sys.stderr,
+        )
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
