@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.8
+last_synced_with: v5.2.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,73 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.9] — 2026-05-17
+
+### Refactored — 본문 문체 SSOT 통합 + persona 채널 폐기 + dead persona 7개 모듈 청소
+
+**문제**: composer (`src/agents/narrative_composer.py:SYSTEM_PROMPT`) 와
+context (`src/agents/context_analyst.py:SYSTEM_PROMPT`) 사이에 문체·어휘
+규칙이 *3중 중복* 되어 있었음. 또한 v4.3.0 의 `recommended_persona` dict
+채널은 context 가 "디폴트 그대로 권장" 으로 emit 하고 composer 가 "느슨하게
+적용 / 영감용" 으로 받아 *사실상 dead channel*. 더해서 음슴체 (context) vs
+평어체 (composer) 의 어조 충돌 위험. 마지막으로 v4.0.0 부터 호출되지 않던
+dead persona 7개 agent 모듈이 5년 가까이 보존되어 있었음.
+
+**변경**:
+- **본문 문체 SSOT 신설** — [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md)
+  를 v5.2.9 부터 *보고서 본문 문체 SSOT* 로 재포지셔닝 (이전엔 abhinavbwj
+  기반 색·타이포·레이아웃 가이드, v4.5.0 부터 stale). 색·타이포는
+  [MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md) 로 위임.
+- **persona dict 채널 폐기**:
+  - `src/models.py:ContextAnalysis.recommended_persona` 필드 삭제
+  - `src/state/models.py` 의 `EvidencePack.recommended_persona`,
+    `AnalysisBrief.recommended_persona` 필드 삭제
+  - `src/state/compaction.py`, `src/agents/research_director.py` 의 persona
+    복사·기본값 라인 삭제
+  - `src/agents/context_analyst.py:SYSTEM_PROMPT` 의 "페르소나 권장" 섹션
+    + JSON 출력 스키마 안의 `recommended_persona` 필드 삭제. "출력의 위치"
+    섹션 신설 — "당신 출력은 내부 분석 메모. composer 가 평어체 본문으로
+    재작성한다" 명시 (음슴 vs 평어 충돌 해소).
+  - `src/agents/narrative_composer.py:SYSTEM_PROMPT` 의 "페르소나 적용"
+    섹션 + `_build_payload` 의 `payload["persona"]` 주입 삭제
+- **본문 문체 톤 온건화** (사용자 요청 — "지금보다 평이/친절/덜 극적"):
+  - 수사적 질문 *1 섹션당 1~2회* → *보고서당 0~1회*
+  - lede 예시 교체: "35년의 봉인이 한 번에 풀렸다 / 무대 위에 올랐다" 같은
+    극적 톤 → "9월 27일, 미국은 베르베라항 사용권 확보를 공식 발표했다.
+    35년 만의 외교 신호다." 같은 평이한 톤
+  - 신문 표제어 ban 리스트 신설 (봉인 / 무대 위에 / 변곡점 / 거대한 파장 /
+    격동의 / 운명의 / 칼끝 / 풍전등화 / 백척간두 / 일촉즉발)
+  - 보수 표현 의무화 — 추정·예측 영역에서 "~로 보인다 / ~할 가능성"
+  - editorial 컴포넌트 빈도 (lede / analogy / fact_grid / dropcap /
+    pull_quote / kicker) 전부 절제 방향으로 가이드 통합
+- **dead persona 7개 모듈 + 그 테스트 삭제**:
+  - `src/agents/{player,dynamics,chain_reaction,scenario,visual,
+    quality_inspector,synthesis_judge}_analyst.py` 또는 `_judge.py` 7개 파일
+  - `src/tests/test_quality_gates.py` (QualityInspector/SynthesisJudge 테스트)
+  - `src/orchestrator.py` 의 7개 import + 인스턴스화 + `_wire_telemetry`
+    의 list iteration 정리
+  - `src/agents/__init__.py` 의 deprecated 7종 + lens 별칭 3종 export 정리
+- **dead flag 6종 삭제** — `src/token_budget.py` 의
+  `use_llm_quality_gate / use_llm_narrative_plan / use_llm_executive_summary /
+  use_llm_visuals / use_llm_synthesis / use_legacy_personas`. v4.0.0 부터 모든
+  mode 에서 False 였고 호출하던 agent 가 삭제됨. `allow_meta_lenses` 는
+  `lens_policy` 가 검사하므로 보존. `src/tests/test_token_optimization.py`
+  의 dead flag assertion / `TestDeprecatedPersonasGated` /
+  `TestSynthesisJudgeGating` 블록 삭제.
+- **사용자 노출 문구 일반화** — `src/telegram_bot.py:286` 의 "ScenarioArchitect 의
+  watch_signals" → "보고서의 watch_signals" (dead agent 이름 사용자 노출 제거).
+
+**영향**:
+- 보고서 본문 톤이 신문 칼럼 흉내에서 *친절한 편집자의 차분한 설명* 으로
+  shift. 극적 형용사·수사적 질문·editorial 컴포넌트 빈도 모두 절제됨.
+- 어휘·어조 규칙이 한 곳 ([REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md))
+  에 모임. 향후 문체 변경은 SSOT 한 곳만 손대면 됨 (anti-pattern #1 해소).
+- 코드베이스 ~2000 줄 감소 (dead agent + dead test + dead flag).
+- 호출 경로 변경 없음 — composer 와 context 의 입력/출력 형태는 그대로,
+  단지 persona 필드 하나가 사라짐 (downstream 코드 미사용).
 
 ---
 

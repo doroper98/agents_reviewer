@@ -9,11 +9,11 @@ depends_on:
 last_review: 2026-05-14
 ---
 
-# Event Analysis Team — Repository Map (v5.1.0)
+# Event Analysis Team — Repository Map (v5.2.9)
 
 > 파일·디렉토리 책무를 한눈에 보는 지도. 카탈로그성 사실(에이전트 역할 등)은 [docs/CATALOGS.md](CATALOGS.md), 시스템 흐름은 [docs/ARCHITECTURE.md](ARCHITECTURE.md).
 >
-> **v4.0.0 Tier 4 부터 `[deprecated]` 표시 모듈은 코드 보존하되 호출 안 됨**. cleanup commit 시 일괄 제거 예정.
+> **v5.2.9: dead persona 7개 모듈 (`player_analyst / dynamics_analyst / chain_reaction_analyst / scenario_architect / visual_analyst / quality_inspector / synthesis_judge`) 삭제**. v4.0.0 부터 호출 안 되던 dead code 정리. lens 11종과 archetype 11종은 `[deprecated]` 표시 유지 — registry 만 import, 호출 경로 없음.
 >
 > **v4.5.7 baseline 추가 항목**: root `REFACTOR_V5_PLAN.md` (V5 마스터 플랜), `docs/legacy/` (v3 시대 SSOT 이전 디렉토리, Phase 0 SSOT Repair 에서 신설), `docs/legacy/REFACTOR_V3_PLAN.md` (v3 마스터 플랜 본문), `docs/legacy/README.md` (legacy 인덱스). root 의 `REFACTOR_V3_PLAN.md` 는 redirect stub.
 >
@@ -33,19 +33,13 @@ src/
 ├── telemetry.py         # LLM 호출 / 단계별 elapsed 기록
 ├── visual_builder.py    # [deprecated v4.2.0] build_chart_payload / build_map_payload — composer 가 직접 emit
 ├── brief_builder.py     # [deprecated] FullAnalysisResult 압축. 호출 안 됨
-├── agents/              # v4.2.0: 살아있는 에이전트 2개 (나머지 보존)
+├── agents/              # v5.2.9: dead persona 7개 모듈 삭제. 살아있는 에이전트만 남음.
 │   ├── __init__.py
 │   ├── base.py                   # BaseAgent (Claude CLI/API wrapper)
 │   ├── context_analyst.py        # ✅ Opus 4.7 (v4.1.0) — 사실/타임라인/출처 수집
-│   ├── narrative_composer.py     # ✅ Opus 4.7 — UnifiedComposer (단일 호출)
+│   ├── narrative_composer.py     # ✅ Opus 4.7 — NarrativeComposer (단일 호출)
 │   ├── report_synthesizer.py     # ✅ HTML 렌더 + Cloudflare 배포 (LLM 거의 0)
-│   ├── player_analyst.py         # [deprecated v4.0.0]
-│   ├── dynamics_analyst.py       # [deprecated v4.0.0]
-│   ├── chain_reaction_analyst.py # [deprecated v4.0.0]
-│   ├── scenario_architect.py     # [deprecated v4.0.0]
-│   ├── visual_analyst.py         # [deprecated v4.0.0]
-│   ├── quality_inspector.py      # [deprecated v4.0.0] Gate 1/2
-│   └── synthesis_judge.py        # [deprecated v4.0.0]
+│   └── research_director.py      # ✅ V5 Phase 1A (opt-in, Config.enable_research_director)
 ├── archetypes/          # v4.0.0: freeform_essay 만 사용. 11종은 deprecated.
 │   ├── __init__.py
 │   ├── base.py                       # ReportArchetype Protocol

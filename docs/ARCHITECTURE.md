@@ -51,8 +51,8 @@ flowchart TD
     P3 --> P4["Phase 4 — Watchlist Registry (코드, SQLite)<br/>composed_report.watch_signals INSERT"]
     P4 --> OUT["보고서 URL + 텔레그램 알림"]
 
-    %% Deprecated 모듈은 호출 안 됨
-    DEPR["[Deprecated, v4.0.0 부터 호출 안 됨]<br/>player/dynamics/chain_reaction/scenario/<br/>visual/quality_inspector/synthesis_judge/<br/>lenses 11종 / archetypes (freeform_essay 외)"]
+    %% Deprecated / Removed 모듈
+    DEPR["[Removed, v5.2.9]<br/>player/dynamics/chain_reaction/scenario/<br/>visual/quality_inspector/synthesis_judge<br/>—— 7개 파일 삭제<br/>[Deprecated, 모듈 보존]<br/>lenses 11종 / archetypes (freeform_essay 외)"]
     style DEPR stroke-dasharray: 5 5,opacity:0.5
 ```
 
@@ -96,7 +96,7 @@ flowchart LR
 | 검색 | WebFetch / WebSearch 허용 |
 | max_tokens | fast 4096 · standard 4096 · deep 10000 (v4.5.7 — `BaseAgent._max_tokens_override`) |
 | 입력 | `AnalysisRequest` (event_description, chat_id, mode) |
-| 출력 | `ContextAnalysis` (event_name, category, summary, timeline, key_figures, sources, recommended_persona) |
+| 출력 | `ContextAnalysis` (event_name, category, summary, timeline, key_figures, sources, instruments_mentioned, time_series) |
 | 책무 | 사건의 사실 / 타임라인 / 핵심 수치 / 출처 URL 만 수집. 분석 / 결론 / 시나리오는 *작성하지 않는다*. |
 
 v4.1.0 에서 ContextAnalyst 가 Opus 4.7 로 상향된 이유는 *2-call 파이프라인에서 context 가 composer 가 보는 유일한 사실 입력* 이기 때문이다. 사실 추출 품질 = 보고서 품질의 상한.

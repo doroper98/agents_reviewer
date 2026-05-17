@@ -22,20 +22,13 @@ from src.token_budget import AnalysisMode, TokenBudget, resolve_mode
 from src.visual_builder import needs_advanced_visuals
 from src.watchlist import WatchlistRegistry, convert_watch_signals
 from src.agents.context_analyst import ContextAnalyst
-from src.agents.player_analyst import PlayerAnalyst
-from src.agents.dynamics_analyst import DynamicsAnalyst
-from src.agents.chain_reaction_analyst import ChainReactionAnalyst
-from src.agents.scenario_architect import ScenarioArchitect
-from src.agents.visual_analyst import VisualAnalyst
 from src.agents.report_synthesizer import ReportSynthesizer
-from src.agents.quality_inspector import QualityInspector
-from src.agents.synthesis_judge import SynthesisJudge
 from src.agents.narrative_composer import NarrativeComposer
 from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.8"
+VERSION = "v5.2.9"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -544,18 +537,11 @@ class Orchestrator:
     ) -> None:
         self.config = config
         self.context_analyst = ContextAnalyst(config)
-        # v3.1.0: legacy persona 인스턴스는 보존하지만 fast/standard 에서는 호출하지 않음.
-        # deep 모드에서만 6막 보고서 풍부 데이터 보존을 위해 호출 (FUT-LEGACY-001).
-        self.player_analyst = PlayerAnalyst(config)
-        self.dynamics_analyst = DynamicsAnalyst(config)
-        self.chain_reaction_analyst = ChainReactionAnalyst(config)
-        self.scenario_architect = ScenarioArchitect(config)
-        self.visual_analyst = VisualAnalyst(config)
+        # v5.2.9: 분석 페르소나 7개 모듈 (PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst
+        # /ScenarioArchitect/VisualAnalyst/QualityInspector/SynthesisJudge) 폐기.
+        # v4.0.0 부터 호출되지 않던 dead code 정리.
         self.report_synthesizer = ReportSynthesizer(config)
-        # V3 Step 4 (v2.8.0)
-        self.quality_inspector = QualityInspector(config)
-        self.synthesis_judge = SynthesisJudge(config)
-        # v3.3.0 — freeform editorial pass (Opus 4.7). deep 모드만 호출.
+        # v3.3.0 — freeform editorial pass (Opus 4.7). 본 시스템의 단일 본문 작성 agent.
         self.narrative_composer = NarrativeComposer(config)
         # V5 Phase 1A — ResearchDirector. opt-in flag 가 꺼진 환경에서도 인스턴스는
         # 만들어 두지만 호출은 Config.enable_research_director 가 True 일 때만.
@@ -575,11 +561,7 @@ class Orchestrator:
 
     def _wire_telemetry(self) -> None:
         """현재 ``self.telemetry`` 를 모든 BaseAgent 후속에 전파."""
-        for agent in (
-            self.context_analyst, self.player_analyst, self.dynamics_analyst,
-            self.chain_reaction_analyst, self.scenario_architect, self.visual_analyst,
-        ):
-            agent.telemetry = self.telemetry
+        self.context_analyst.telemetry = self.telemetry
         # narrative_composer 는 BaseAgent 가 아니지만 telemetry 속성 보유.
         self.narrative_composer.telemetry = self.telemetry
 

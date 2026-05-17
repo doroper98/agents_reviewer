@@ -82,7 +82,6 @@ def compact_to_evidence_pack(
         contradictions=[],
         source_index=source_index,
         category="",
-        recommended_persona={},
     )
 
 
@@ -106,7 +105,6 @@ def evidence_pack_from_context_analysis(
         context.timeline (list[dict])    → EvidencePack.timeline
         context.key_figures (list[dict]) → EvidencePack.claims (각 수치 → Claim)
         context.sources (list[str])      → EvidencePack.source_index + Claim.source_ids
-        context.recommended_persona      → EvidencePack.recommended_persona
     """
     # source_index 먼저 구축.
     source_index: dict[str, str] = {}
@@ -179,7 +177,6 @@ def evidence_pack_from_context_analysis(
         contradictions=[],    # v4.5.7 에선 ComposedReport 가 발견. EvidencePack 으론 비어 있음.
         source_index=source_index,
         category=str(getattr(context, "category", "") or ""),
-        recommended_persona=dict(getattr(context, "recommended_persona", {}) or {}),
     )
 
 

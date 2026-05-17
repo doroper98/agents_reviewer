@@ -1,25 +1,33 @@
 ---
 tier: 2
-last_synced_with: v4.5.7
+last_synced_with: v5.2.9
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
   - "src/agents/narrative_composer.py:SYSTEM_PROMPT"
-  - "src/agents/context_analyst.py:SYSTEM_PROMPT (recommended_persona 가이드)"
+  - "src/agents/context_analyst.py:SYSTEM_PROMPT"
   - "src/agents/report_synthesizer.py:_format_structured_text (fallback 변환)"
+  - "docs/REPORT_STYLE_GUIDE.md (본문 문체 SSOT — v5.2.9 부터)"
   - "docs/CHART_RENDERING_ANTIPATTERNS.md (코드/렌더링 anti-pattern 별도)"
-last_review: 2026-05-05
+last_review: 2026-05-17
 ---
 
 # Report Writing Anti-Patterns
 
-> composer SYSTEM_PROMPT / context_analyst persona 가이드 / 보고서 본문 출력에서
+> composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 보고서 본문 출력에서
 > 발견된 *글쓰기 회귀* 모음. CHART_RENDERING_ANTIPATTERNS.md 가 *시각화 코드*
 > 회귀 (charts.js / maps.js) SSOT 라면, 본 문서는 *언어/구조* 회귀 SSOT.
 >
-> composer prompt 변경 / persona 가이드 변경 / 새 보고서 검증 시 본 문서의
+> composer prompt 변경 / STYLE_GUIDE 변경 / 새 보고서 검증 시 본 문서의
 > 체크리스트 위반 여부 *반드시* 점검. 회귀 1건 발견 시 본 문서에 항목 추가
 > (append-only) — 같은 실수 반복 방지.
+>
+> **v5.2.9 — persona dict 채널 폐기**: v4.3.0~v5.2.8 의 `recommended_persona`
+> 채널이 사실상 dead 였음을 식별 (composer 의 "느슨하게 적용 / 영감용" + context 의
+> "디폴트 그대로 권장" 으로 인해). 본문 문체 SSOT 를 [REPORT_STYLE_GUIDE.md](REPORT_STYLE_GUIDE.md)
+> 로 통합. 본 문서의 "persona 가이드와 정합" 류 체크리스트 항목은 "STYLE_GUIDE
+> 와 정합" 으로 의미 전환 — 본문은 *과거 기록 보존* 차원에서 그대로 유지하되,
+> 신규 항목 작성 시 persona 언급 없이 STYLE_GUIDE 만 가리키면 된다.
 
 ---
 

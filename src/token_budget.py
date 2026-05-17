@@ -41,27 +41,19 @@ class TokenBudget:
     - ``max_llm_calls``: 본 사건에서 허용되는 최대 LLM 호출 수 (소프트 가드 — telemetry 가
       초과 시 경고). orchestrator 는 이 값을 직접 강제하지 않으나, 테스트가 검증.
     - ``max_lenses``: lens pool 에서 실행할 최대 lens 수
-    - ``use_llm_quality_gate``: gate_1 LLM judge 활성화 여부
-    - ``use_llm_narrative_plan``: ReportSynthesizer 의 narrative plan LLM 호출 여부
-    - ``use_llm_executive_summary``: deterministic summary 실패 시 LLM 으로 폴백할지
-    - ``use_llm_visuals``: VisualAnalyst LLM 호출 여부 (False 면 deterministic 만)
-    - ``use_llm_synthesis``: SynthesisJudge 의 LLM synthesis 활성화 여부
-    - ``use_legacy_personas``: PlayerAnalyst/DynamicsAnalyst/ChainReactionAnalyst 호출 여부
-      (deep 에서만 True — fast/standard 는 lens pool 로 대체)
-    - ``allow_meta_lenses``: red_team / pre_mortem 자동 추가 여부
-    - ``use_llm_narrative_composer``: v3.3.0 freeform editorial pass (Opus 4.7) 활성화
-      (deep 에서만 True). 성공 시 archetype 이 ``freeform_essay`` 로 라우팅된다.
+    - ``allow_meta_lenses``: red_team / pre_mortem 자동 추가 여부 (lens_policy 검사)
+    - ``use_llm_narrative_composer``: v3.3.0 freeform editorial pass (Opus 4.7) 활성화.
+      v4.0.0 부터 모든 모드 True (단일 본문 작성 경로).
+
+    v5.2.9: dead flag 6종 (use_llm_quality_gate / use_llm_narrative_plan /
+    use_llm_executive_summary / use_llm_visuals / use_llm_synthesis /
+    use_legacy_personas) 삭제. v4.0.0 부터 모든 모드 False 였고, 호출되는 dead
+    agent 가 함께 폐기됨.
     """
 
     mode: AnalysisMode
     max_llm_calls: int
     max_lenses: int
-    use_llm_quality_gate: bool
-    use_llm_narrative_plan: bool
-    use_llm_executive_summary: bool
-    use_llm_visuals: bool
-    use_llm_synthesis: bool
-    use_legacy_personas: bool
     allow_meta_lenses: bool
     use_llm_narrative_composer: bool = False
 
@@ -70,17 +62,11 @@ class TokenBudget:
         """mode 키워드 → 정책 dataclass.
 
         v4.0.0 Tier 4: 멀티 에이전트 파이프라인 폐기. 모든 모드는 동일한 2-call
-        파이프라인 (ContextAnalyst + UnifiedComposer). mode 는 composer 프롬프트의
+        파이프라인 (ContextAnalyst + NarrativeComposer). mode 는 composer 프롬프트의
         분석 깊이 지시 (fast 3~4 섹션 / standard 4~6 / deep 5~7 + 모순 필수) 에만
-        영향. 다른 budget 플래그는 모두 비활성 (호출 안 됨).
+        영향.
         """
         common = dict(
-            use_llm_quality_gate=False,
-            use_llm_narrative_plan=False,
-            use_llm_executive_summary=False,
-            use_llm_visuals=False,
-            use_llm_synthesis=False,
-            use_legacy_personas=False,
             allow_meta_lenses=False,
             use_llm_narrative_composer=True,
         )

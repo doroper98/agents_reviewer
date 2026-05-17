@@ -42,7 +42,7 @@ V5 Phase 1A 부터 추가 가능한 에이전트:
 
 3. **ResearchDirector** (Opus 4.7, MAX_TOKENS=6000) — `Config.enable_research_director` 가 켜진 환경 (env: `V5_RESEARCH_DIRECTOR=1`) 에서만 호출. 사용자 질의 + EvidencePack 을 받아 AnalysisBrief (분석 설계도 — thesis / selected_methods / report_shape / visual_constraints / strategic_hint) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 꺼진 환경에선 `design_via_heuristics` 결정적 fallback 이 LLM 호출 없이 동일 형태로 emit. 9종 method SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](docs/RESEARCH_DIRECTOR_METHODS.md).
 
-> legacy 7-agent (PlayerAnalyst, DynamicsAnalyst, ChainReactionAnalyst, ScenarioArchitect, SynthesisJudge, QualityInspector, VisualAnalyst) + 11-lens pool + 11-archetype matrix 는 **v4.0.0 부터 호출 안 함**. 모듈은 보존 (cleanup commit 미정).
+> legacy 7-agent (PlayerAnalyst, DynamicsAnalyst, ChainReactionAnalyst, ScenarioArchitect, SynthesisJudge, QualityInspector, VisualAnalyst) 는 v4.0.0 부터 호출 안 됐고 **v5.2.9 에서 모듈 자체가 삭제됨**. 11-lens pool + 11-archetype matrix 는 모듈 보존 (lens registry 가 `src/orchestrator.py:get_lens` 에서 import 되지만 호출 경로 없음).
 
 세부 카탈로그는 [docs/CATALOGS.md §1](docs/CATALOGS.md). 이 문서는 카탈로그를 사본으로 갖지 않는다 (SSOT 단일 출처).
 
@@ -149,6 +149,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | `src/tools/market_fetcher.py` 변경 (v5.2.0) | `src/config.py` (API key 필드), `src/models.py:ContextAnalysis` (`instruments_mentioned` / `time_series`), `src/agents/context_analyst.py:SYSTEM_PROMPT` (지원 종목 목록), `src/orchestrator.py` (fetch hook + `_select_market_period`), `tests/test_market_fetcher.py`, `.env.example`, [CLAUDE.md `Market Data Fetcher`](CLAUDE.md). 신규 instrument 추가 시 `INSTRUMENT_REGISTRY` + alias + 회귀 테스트 동시 갱신. |
 | `src/models.py:ComposedSection._drop_invalid_charts` 변경 (v5.2.0) | `src/visual/schemas.py:_TYPE_TO_GUARD` (타입별 가드 SSOT), `tests/regression/test_composed_section_guard.py` (production wiring 회귀), `docs/CHART_RENDERING_ANTIPATTERNS.md` (AP-N 추가 시 함께). 본 validator 가 chart_gate 의 production 진입점 — 디폴트 ON. 위반 차트 silent drop. |
 | `src/agents/narrative_composer.py` 변경 (v3.3.0) | [docs/CATALOGS.md §1](docs/CATALOGS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [src/visual_builder.py:build_chart_catalog](src/visual_builder.py), [src/tests/test_narrative_composer.py](src/tests/test_narrative_composer.py) |
+| `src/agents/narrative_composer.py:SYSTEM_PROMPT` 또는 `src/agents/context_analyst.py:SYSTEM_PROMPT` 의 어조·어휘 가이드 변경 (v5.2.9 신설) | [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) (본문 문체 SSOT — 한 곳에만 적기, anti-pattern #1), [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md) (회귀 시 새 WRITE-AP-N append). 두 SYSTEM_PROMPT 와 STYLE_GUIDE 의 어휘 표·ban 리스트·빈도 가이드는 *항상 정합* 해야 — drift 발견 시 STYLE_GUIDE 가 정본 |
 | `src/templates/archetypes/freeform_essay.html` 변경 (v3.3.0) | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/CATALOGS.md §3](docs/CATALOGS.md) |
 | `src/templates/static/charts.css` 차트 디자인 토큰 변경 | [CLAUDE.md `Chart System`](CLAUDE.md) |
 | `src/visual_builder.py:build_chart_payload` 차트 매핑 변경 | [CHANGELOG.md `차트 매트릭스`](CHANGELOG.md) |
@@ -203,7 +204,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
-**composer SYSTEM_PROMPT / persona 가이드 / 본문 출력 변경 시 반드시 점검.**
+**composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
 SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 8개 패턴 누적:
 - WRITE-AP-1~7: 기존 (마크다운 raw / 용어 풀이 / 지도 후행 / 진부 연결어 / 추정 단정 / 모순 봉합 / 서수 모호)
 - WRITE-AP-8: max_tokens 한도로 보고서 본문 중간 절단 (v4.5.4 신설 — 단일 8K 한도 회귀)
@@ -211,7 +212,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 
 ## Key Directories (v4.5.7 — 호출되는 것만)
-- `src/agents/` — 살아있는 에이전트 2개 (`context_analyst.py`, `narrative_composer.py`). 나머지 7개 파일은 보존하되 호출 안 됨.
+- `src/agents/` — 살아있는 에이전트: `context_analyst.py` (사실 수집) + `narrative_composer.py` (본문 작성) + `report_synthesizer.py` (HTML 렌더) + `research_director.py` (V5 Phase 1A, opt-in). v5.2.9 에서 dead persona 7개 모듈 삭제.
 - `src/templates/archetypes/freeform_essay.html` — 유일하게 사용되는 보고서 템플릿
 - `src/templates/report.css` — mono 3테마 (editorial_cream + burgundy_mono + light_mono) 정의 SSOT (v4.5.0 부터 editorial_cream 디폴트, burgundy_mono 위기·분쟁 한정)
 - `src/templates/static/` — d3.v7.min.js / charts.js / maps.js / charts.css / maps.css (보고서 dir 로 동기화)
@@ -226,12 +227,18 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `reports/` — 생성된 HTML 보고서 (git ignored)
 
 ### Deprecated 모듈 (호출 안 됨, 파일 보존)
-- `src/agents/{player,dynamics,chain_reaction,scenario,visual,quality_inspector,synthesis_judge}_*.py`
-- `src/lenses/` (전체 11종)
+- `src/lenses/` (전체 11종) — registry 만 import, 호출 경로 없음
 - `src/archetypes/` (freeform_essay 외 11종)
 - `src/visual_builder.py` (build_chart_payload / build_map_payload — composer 가 직접 emit 으로 대체)
 - `src/templates/{report.html,report_block.html}` (legacy archetype 용)
 - `src/templates/blocks/` 17종 — composer 가 `embedded_blocks` 로 명시 시만 사용 (현재 실질 미사용)
+
+### Removed 모듈 (v5.2.9 — 5년 가까이 dead code 정리)
+- `src/agents/{player,dynamics,chain_reaction,scenario,visual,quality_inspector,synthesis_judge}_*.py` 7개 파일 삭제
+- `src/tests/test_quality_gates.py` 삭제 (QualityInspector / SynthesisJudge 테스트)
+- `src/models.py:ContextAnalysis.recommended_persona` 필드 삭제 — persona dict 채널 (v4.3.0) 폐기
+- `src/state/models.py:EvidencePack.recommended_persona`, `AnalysisBrief.recommended_persona` 필드 삭제
+- `src/token_budget.py` 의 dead flag 6종 (`use_llm_quality_gate / use_llm_narrative_plan / use_llm_executive_summary / use_llm_visuals / use_llm_synthesis / use_legacy_personas`) 삭제. 본문 문체 SSOT 는 [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) 로 통합.
 
 ## Chart System (v5.2.0 wip)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.

@@ -37,12 +37,6 @@ class ContextAnalysis(BaseModel):
     glossary: list[dict] = Field(default_factory=list)
     confidence_score: float = 0.0
 
-    # v4.3.0 — ContextAnalyst 가 사실을 본 뒤 case-by-case 로 추천하는 페르소나.
-    # 5개 구성요소: tone / numeric_principle / frameworks / vocabulary /
-    # analytical_pressure (+선택 override_reason). composer 가 본문 작성 시
-    # 톤·프레임·어휘 수준을 *느슨하게* 적용. 비어있으면 composer 의 디폴트 동작.
-    recommended_persona: dict = Field(default_factory=dict)
-
     # v5.2.0 — 시계열 데이터 흐름.
     # LLM 이 본문에서 다루는 금융 instrument 를 추출 (예: "코스피", "삼성전자",
     # "달러인덱스", "WTI"). orchestrator 가 이 list 를 받아 src.tools.market_fetcher

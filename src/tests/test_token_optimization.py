@@ -46,33 +46,29 @@ class _StubConfig:
 
 
 class TestTokenBudget:
+    """v5.2.9: 모든 mode 동일하게 2-call (context + composer). max_llm_calls=2,
+    max_lenses=0. dead flag 6종 (quality_gate/narrative_plan/executive_summary/
+    visuals/synthesis/legacy_personas) 삭제."""
+
     def test_fast_mode_caps(self) -> None:
         b = TokenBudget.for_mode("fast")
-        assert b.max_llm_calls == 4
-        assert b.max_lenses == 1
-        assert not b.use_llm_quality_gate
-        assert not b.use_llm_narrative_plan
-        assert not b.use_llm_visuals
-        assert not b.use_legacy_personas
+        assert b.max_llm_calls == 2
+        assert b.max_lenses == 0
+        assert not b.allow_meta_lenses
+        assert b.use_llm_narrative_composer
 
     def test_standard_mode_caps(self) -> None:
         b = TokenBudget.for_mode("standard")
-        assert b.max_llm_calls == 7
-        assert b.max_lenses == 2
-        assert not b.use_llm_quality_gate
-        assert not b.use_llm_narrative_plan
-        assert not b.use_llm_visuals
-        assert not b.use_legacy_personas
+        assert b.max_llm_calls == 2
+        assert b.max_lenses == 0
+        assert not b.allow_meta_lenses
+        assert b.use_llm_narrative_composer
 
     def test_deep_mode_caps(self) -> None:
         b = TokenBudget.for_mode("deep")
-        # v3.3.0: +1 for narrative_composer (Opus 4.7).
-        assert b.max_llm_calls == 13
-        assert b.max_lenses == 4
-        assert b.use_llm_quality_gate
-        assert b.use_llm_narrative_plan
-        assert b.use_llm_visuals
-        assert b.use_legacy_personas
+        assert b.max_llm_calls == 2
+        assert b.max_lenses == 0
+        assert not b.allow_meta_lenses
         assert b.use_llm_narrative_composer
 
     def test_resolve_mode_keywords(self) -> None:
@@ -258,23 +254,6 @@ class TestDeterministicSummary:
 
 
 # ----------------------------------------------------------------------
-# 6. Deprecated personas not invoked in fast/standard
-# ----------------------------------------------------------------------
-
-
-class TestDeprecatedPersonasGated:
-    def test_orchestrator_skips_personas_for_fast_standard(self) -> None:
-        """orchestrator 가 fast/standard 에서 player/dynamics/chain_reaction 페르소나
-        호출을 건너뛰는지 검증. 전체 orchestrator 를 호출하면 LLM 이 발화하므로,
-        ``budget.use_legacy_personas`` 플래그만 검사 (실제 호출 분기 코드는 본 플래그를 따름).
-        """
-        from src.token_budget import TokenBudget
-        for mode in ("fast", "standard"):
-            assert not TokenBudget.for_mode(mode).use_legacy_personas
-        assert TokenBudget.for_mode("deep").use_legacy_personas
-
-
-# ----------------------------------------------------------------------
 # 7. ReportSynthesizer narrative plan gating
 # ----------------------------------------------------------------------
 
@@ -296,50 +275,6 @@ class TestNarrativePlanGating:
         )
         plan = rs._default_narrative_plan(result)
         assert plan.sections, "default plan must produce at least one section"
-
-
-# ----------------------------------------------------------------------
-# 8. SynthesisJudge gating
-# ----------------------------------------------------------------------
-
-
-class TestSynthesisJudgeGating:
-    def test_fast_uses_heuristic_only(self) -> None:
-        from src.agents.synthesis_judge import SynthesisJudge
-
-        cfg = _StubConfig()
-        sj = SynthesisJudge(cfg)  # type: ignore[arg-type]
-        sj.use_llm_synthesis = False
-        sj.allow_llm_on_low_confidence = False
-        # No contradictions, high confidence → no LLM call.
-        confidence = ConfidenceProfile(
-            source_diversity=0.8, data_freshness=0.8, expert_consensus=0.8,
-        )
-        assert not sj._should_call_llm([], confidence)
-
-    def test_standard_calls_llm_on_contradictions(self) -> None:
-        from src.agents.synthesis_judge import SynthesisJudge
-
-        cfg = _StubConfig()
-        sj = SynthesisJudge(cfg)  # type: ignore[arg-type]
-        sj.use_llm_synthesis = False
-        sj.allow_llm_on_low_confidence = True
-        confidence = ConfidenceProfile(
-            source_diversity=0.8, data_freshness=0.8, expert_consensus=0.8,
-        )
-        # Contradictions exist → LLM should be called.
-        assert sj._should_call_llm([{"lens_a": "x", "lens_b": "y"}], confidence)
-
-    def test_deep_always_calls_llm(self) -> None:
-        from src.agents.synthesis_judge import SynthesisJudge
-
-        cfg = _StubConfig()
-        sj = SynthesisJudge(cfg)  # type: ignore[arg-type]
-        sj.use_llm_synthesis = True
-        confidence = ConfidenceProfile(
-            source_diversity=1.0, data_freshness=1.0, expert_consensus=1.0,
-        )
-        assert sj._should_call_llm([], confidence)
 
 
 # ----------------------------------------------------------------------

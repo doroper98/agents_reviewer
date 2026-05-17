@@ -184,7 +184,6 @@ def _default_brief() -> AnalysisBrief:
         ),
         actors_summary=[],
         strategic_hint=False,
-        recommended_persona={},
     )
 
 
@@ -330,7 +329,6 @@ def design_via_heuristics(user_request: str, mode: str = "standard") -> Analysis
         ),
         actors_summary=[],
         strategic_hint=strategic_hint,
-        recommended_persona={},
     )
 
 

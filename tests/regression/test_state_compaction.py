@@ -230,11 +230,9 @@ def test_evidence_pack_from_context_analysis_basic() -> None:
         timeline = [{"date": "2026-05-01", "event": "이벤트 1", "impact": "영향 A"}]
         key_figures = [{"label": "지표", "value": 100, "context": "맥락"}]
         sources = ["https://example.com/1", "https://example.com/2"]
-        recommended_persona = {"tone": "analytic"}
 
     pack = evidence_pack_from_context_analysis(_MockContext())
     assert pack.category == "geopolitical"
-    assert pack.recommended_persona == {"tone": "analytic"}
     assert len(pack.source_index) >= 2
     assert len(pack.timeline) == 1
     assert pack.timeline[0].what == "이벤트 1"
@@ -250,7 +248,6 @@ def test_evidence_pack_from_empty_context() -> None:
         timeline = []
         key_figures = []
         sources = []
-        recommended_persona = {}
 
     pack = evidence_pack_from_context_analysis(_MockContext())
     assert isinstance(pack, EvidencePack)

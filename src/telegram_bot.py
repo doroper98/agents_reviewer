@@ -283,7 +283,7 @@ class TelegramBot:
         if not signals:
             await update.message.reply_text(
                 "📒 활성 감시 신호 없음.\n"
-                "분석을 실행하면 ScenarioArchitect 의 watch_signals 가 자동 등록됨."
+                "분석을 실행하면 보고서의 watch_signals 가 자동 등록됨."
             )
             return
         lines = [f"📒 활성 감시 신호 {len(signals)}건:"]

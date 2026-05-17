@@ -130,8 +130,6 @@ class EvidencePack(BaseModel):
     source_index: dict[str, str] = Field(default_factory=dict)
     # 사건 카테고리 — select_theme() 의 입력.
     category: str = ""
-    # ContextAnalyst 가 추천한 페르소나 (v4.3.0 보존).
-    recommended_persona: dict = Field(default_factory=dict)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -288,9 +286,6 @@ class AnalysisBrief(BaseModel):
     actors_summary: list[str] = Field(default_factory=list)
     # Phase 8 라우팅 신호.
     strategic_hint: bool = False
-    # Phase 1A 가 ContextAnalyst 의 recommended_persona 를 직접 사용 시
-    # AnalysisBrief 로 함께 전달.
-    recommended_persona: dict = Field(default_factory=dict)
     # 보고서 모드 (analytical / strategic 의 V5 분기).
     report_mode: Literal[
         "situation", "forecast", "strategy", "technical", "market", "policy",
