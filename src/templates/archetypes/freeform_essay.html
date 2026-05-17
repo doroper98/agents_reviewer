@@ -66,6 +66,25 @@
 .freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px}
 .freeform-fact-sublabel{font-size:11px;color:var(--fg-3,var(--muted));line-height:1.4}
 .freeform-prose.has-dropcap p:first-child::first-letter{font-family:'Newsreader','Noto Serif KR',serif;float:left;font-size:54px;font-weight:900;line-height:0.9;padding:6px 10px 0 0;color:var(--accent,#B05A38)}
+/* v5.2.12 — 모순 섹션 prose 화 (본문 톤). 강조 위계 3단: base / claim / accent */
+.contradiction-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400}
+.contradiction-prose p{margin:0 0 18px}
+.contradiction-prose .ct-claim{color:var(--fg-1,#F0E2CC);font-weight:600}
+.contradiction-prose .ct-accent{color:var(--accent,#C9A84C);font-weight:600}
+.contradiction-prose .ct-evidence{display:block;margin-top:-6px;margin-bottom:14px;font-size:12px;color:var(--fg-3,#A89880);line-height:1.6}
+.contradiction-prose .ct-evidence::before{content:"근거 충돌: ";font-weight:600;color:var(--fg-3,#A89880)}
+.contradiction-prose .ct-resolve{display:block;margin-top:8px;padding:4px 0 4px 14px;border-left:2px solid var(--accent,#C9A84C);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:15px;color:var(--fg-1,#F0E2CC);line-height:1.7}
+.contradiction-prose .ct-resolve::before{content:"분석가의 정리 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);font-weight:700;margin-right:6px}
+/* v5.2.12 — 감시 신호 chart-card 화. charts.css 의 토큰 (--card, --border-light, --shadow) 차용. */
+.signal-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}
+.signal-card{background:var(--card,var(--bg-2));border:1px solid var(--border-light,var(--border-soft,rgba(125,98,76,0.25)));border-radius:10px;padding:16px 18px 14px;box-shadow:var(--shadow,0 2px 12px rgba(0,0,0,0.20))}
+.signal-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.signal-card-title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14.5px;color:var(--text-primary,var(--fg-1));letter-spacing:-.2px;line-height:1.4}
+.signal-card-deadline{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--accent,#C9A84C);letter-spacing:0.6px;flex-shrink:0;white-space:nowrap}
+.signal-card-desc{font-size:13px;color:var(--text-2,var(--fg-2));line-height:1.65;margin-bottom:6px}
+.signal-card-takeaway{margin-top:8px;padding:8px 12px;background:rgba(212,168,88,0.08);border-left:3px solid var(--accent,#C9A84C);border-radius:0 4px 4px 0;font-size:12.5px;line-height:1.6;color:var(--text,var(--fg-1))}
+[data-theme="editorial_cream"] .signal-card-takeaway{background:rgba(176,90,56,0.07)}
+.signal-card-takeaway-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-right:6px}
 /* TOC — 보고서 상단 (hero 직후, 지도 다음) */
 .freeform-toc{padding:20px 0;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
 .freeform-toc .container{max-width:780px}
@@ -288,36 +307,46 @@
 </section>
 {% endif %}
 
-{# v4.0.0 — composer 가 emit 한 모순 / 감시 신호 / 신뢰도 노출 #}
+{# v5.2.12 — 모순: 본문 prose 톤으로 서술화. composer 의 4-필드 (side_a/side_b/evidence/resolution) 를
+   "한쪽은 X. 반면 다른 쪽은 Y." 패턴으로 자연스럽게 결합, 강조는 accent/claim 위계로. #}
 {% if composed and composed.contradictions %}
 <section class="freeform-section fade-in">
   <div class="container">
     <div class="freeform-kicker">반대 관점 / 모순</div>
     <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
-    {% for c in composed.contradictions %}
-    <div style="background:rgba(212,168,88,0.06);border-left:3px dashed var(--accent,#D4A858);border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:12px">
-      <div style="font-size:13px;line-height:1.7;color:var(--fg-1,#F0E2CC);margin-bottom:6px"><strong>관점 A:</strong> {{ c.side_a | strip_md }}</div>
-      <div style="font-size:13px;line-height:1.7;color:var(--fg-1,#F0E2CC);margin-bottom:6px"><strong>관점 B:</strong> {{ c.side_b | strip_md }}</div>
-      {% if c.evidence %}<div style="font-size:11.5px;color:var(--fg-3,#A89880);margin-bottom:4px">근거 충돌: {{ c.evidence | strip_md }}</div>{% endif %}
-      {% if c.resolution %}<div style="font-size:12.5px;color:var(--accent,#D4A858);margin-top:6px;font-style:italic">→ {{ c.resolution | strip_md }}</div>{% endif %}
+    <div class="contradiction-prose">
+      {% for c in composed.contradictions %}
+      <p>
+        <span class="ct-claim">{{ c.side_a | strip_md }}</span>
+        반면 <span class="ct-claim">{{ c.side_b | strip_md }}</span>
+        {% if c.evidence %}<span class="ct-evidence">{{ c.evidence | strip_md }}</span>{% endif %}
+        {% if c.resolution %}<span class="ct-resolve">{{ c.resolution | strip_md }}</span>{% endif %}
+      </p>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
 </section>
 {% endif %}
 
+{# v5.2.12 — 신호: chart-card 톤 (--card / --border-light / --shadow). deadline 은 우측 mono. #}
 {% if composed and composed.watch_signals %}
 <section class="freeform-section fade-in">
   <div class="container">
     <div class="freeform-kicker">앞으로 무엇을 볼까</div>
     <h2 class="freeform-heading">감시 신호</h2>
-    <div style="display:grid;grid-template-columns:1fr;gap:10px">
+    <div class="signal-grid">
       {% for s in composed.watch_signals %}
-      <div style="background:rgba(0,0,0,0.18);border:1px solid var(--border-soft,rgba(125,98,76,0.25));border-left:3px solid var(--accent,#D4A858);border-radius:6px;padding:12px 14px">
-        <div style="font-size:13px;font-weight:700;color:var(--fg-1,#F0E2CC);margin-bottom:4px">{% if s.icon %}{{ s.icon }} {% endif %}{{ s.signal | strip_md }}</div>
-        {% if s.description %}<div style="font-size:12.5px;color:var(--fg-2,#D4C4AA);line-height:1.6;margin-bottom:4px">{{ s.description | strip_md }}</div>{% endif %}
-        {% if s.indicates %}<div style="font-size:11.5px;color:var(--accent,#D4A858);margin-bottom:2px">→ {{ s.indicates | strip_md }}</div>{% endif %}
-        {% if s.deadline %}<div style="font-size:10.5px;color:var(--fg-3,#A89880)">{{ s.deadline | strip_md }}</div>{% endif %}
+      <div class="signal-card">
+        <div class="signal-card-head">
+          <div class="signal-card-title">{% if s.icon %}{{ s.icon }} {% endif %}{{ s.signal | strip_md }}</div>
+          {% if s.deadline %}<div class="signal-card-deadline">{{ s.deadline | strip_md }}</div>{% endif %}
+        </div>
+        {% if s.description %}<div class="signal-card-desc">{{ s.description | strip_md }}</div>{% endif %}
+        {% if s.indicates %}
+        <div class="signal-card-takeaway">
+          <span class="signal-card-takeaway-label">시사</span>{{ s.indicates | strip_md }}
+        </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

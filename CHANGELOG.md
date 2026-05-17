@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.11
+last_synced_with: v5.2.12
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.12] — 2026-05-17
+
+### Changed — 모순·신호 섹션 재디자인 (`freeform_essay.html`)
+
+보고서 말미의 두 섹션이 본문과 톤이 따로 놀던 문제 정리. 모델 (`ComposedReport.contradictions`,
+`watch_signals`) 은 변경 없음 — 템플릿 레이어 단독 변경.
+
+**모순 (`composed.contradictions`)**: 카드 + "관점 A:/B:" 라벨 + 좌측 점선 보더로
+정형 박스화돼 있던 렌더 → 본문 prose 와 동일한 톤의 서술형 단락으로 변환. composer
+의 4-필드 (`side_a / side_b / evidence / resolution`) 는 그대로 받되 "한쪽은 X.
+반면 다른 쪽은 Y." 패턴으로 한 단락에 결합. 강조 위계 3단:
+- base: `--fg-2`
+- claim (충돌하는 단언): `--fg-1` + bold (`.ct-claim`)
+- accent (핵심 수치): `--accent` + bold (`.ct-accent`) — 본문 `<em>` 톤과 일치
+- resolution: 단락 끝에 가는 accent 좌측 보더 + Newsreader italic, "분석가의
+  정리" uppercase 라벨이 자동 prefix (`.ct-resolve`)
+
+**신호 (`composed.watch_signals`)**: 어두운 카드 (`rgba(0,0,0,0.18)` 배경 + 좌측
+accent 보더) → `chart-card` 와 동일 토큰 (`--card` / `--border-light` / 10px
+round / `--shadow`). 내부 구조도 차트 카드 톤:
+- 제목: Noto Serif KR 14.5px (`.chart-card-title` 톤)
+- `deadline`: 우측 mono accent 칩
+- `indicates`: `chart-card-takeaway` 클론 — 옅은 accent 배경 + accent 좌측 보더 +
+  "시사" uppercase 라벨
+
+WRITE-AP / CHART-AP 신규 항목 없음 (회귀가 아닌 의도적 디자인 개선).
 
 ---
 
