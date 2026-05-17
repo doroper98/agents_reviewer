@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.10
+last_synced_with: v5.2.11
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.11] — 2026-05-17
+
+### Fixed — 가로 막대 + 간트 차트 가독성/직관성 회귀
+
+**문제 1 — 간트 풀폭 회귀**: 같은 월(예: `2026-05-09`, `2026-05-15`, `2026-05-21`)
+안의 모든 이벤트가 day-precision 무시로 동일 시점으로 collapse 되고, 그 결과
+zero-duration 폴백 `+0.4` (≈5개월) 가 일제히 발동해 *모든 막대가 데이터 영역
+풀폭*으로 렌더되던 회귀. composer 가 day-precision ISO 로 emit 해도 JS 가
+month 단위로만 파싱하던 게 근본 원인. CHART-AP-15 가드는 모든-행 zero-duration
+케이스만 잡았기에 (3 point + 1 range 같은) mixed 케이스는 통과해 회귀가 잔존.
+
+**Fix**:
+- `drawGantt.parseTime` 에 day-precision 분기 추가: `YYYY-MM-DD` 도 파싱.
+  encoding `y + ((m-1)*31 + (day-1)) / 372` — month-only 입력과 호환.
+- zero-duration 폴백 `+0.4` 제거. 막대 시각적 minimum 은 기존 `Math.max(6, …)`
+  pixel floor 가 보장.
+- axis tick 단위/포맷 자동: span ≥ 4 yr → 연도 / 0.4 ≤ span < 4 → `YYYY-MM` /
+  span < 0.4 → `MM-DD`. 이전엔 `2026.4` 같은 분수 연도 라벨이라 5월/4월 직관 X.
+- annotation `vline.x`/`band.x_*` 도 `parseTime` 통과시켜 day-precision 지원.
+
+**문제 2 — 가로 막대 라벨 포맷 불일치 + 시인성**: 값 라벨이 `String(d.value)`
+raw 라 `13567` 그대로 찍히는 반면 x축 tick 은 `d3.format(',')` → `13,567`.
+같은 차트 안에서 *포맷 불일치*. 또 22자 이상 라벨은 무음 truncate (잘림 인지
+불가) + 값 0/극소이면 막대가 0px 로 사라져 빈 행처럼 보임.
+
+**Fix**:
+- 값 포맷 통일 헬퍼 `fmt(v)` 도입 — 천 단위 separator + |v| 규모별 소수점 자동
+  (≥100 정수 / ≥10 `.1f` / 그 외 `.2f`). 부호 보존. 막대 라벨 + 축 tick 양쪽에
+  동일 적용.
+- 라벨 22자 초과 시 ellipsis `…` 부착.
+- 막대 최소 너비 `Math.max(2, x1 - x0)` floor — 0/극소값도 시각적 흔적 보장.
+
+**Files**:
+- `src/templates/static/charts.js` — `drawBar` / `drawGantt` (`parseTime` 포함)
+- `src/orchestrator.py:VERSION` → v5.2.11
+
+### Known limitations (다음 회차)
+- 가로 막대 음수는 여전히 magnitude 기반 (label 에 부호만 표시). 진짜 diverging
+  bar (0 기준 좌·우 양방향) 는 미지원 — `BarChartGuard` 에서 reject 하거나
+  렌더 분기 추가는 별도 작업.
+- 간트 `BarRow.group` 필드는 schema 에만 있고 렌더 미사용 (dead field) — 그룹별
+  색 구분 미구현. 본 회차 범위 밖.
 
 ---
 

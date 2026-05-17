@@ -289,6 +289,19 @@
     const idp = (n) => `${prefix}-${n}`;
     const max = d3.max(data, d => Math.abs(+d.value)) || 1;
     const xScale = (v) => zones.data.x + (Math.abs(+v) / max) * zones.data.w;
+    // v5.2.11: 값 포맷 통일 — 축 tick 과 막대 라벨이 같은 포맷. 천 단위 구분 +
+    // |v| 규모별 소수점 자동 (≥100 정수 / ≥10 .1f / 그 외 .2f). 부호 보존.
+    const fmt = (v) => {
+      const av = Math.abs(+v);
+      if (av >= 100) return d3.format(',.0f')(+v);
+      if (av >= 10) return d3.format(',.1f')(+v);
+      return d3.format(',.2f')(+v);
+    };
+    // v5.2.11: 라벨 22자 초과면 ellipsis (이전엔 무음 truncate — 잘림 인지 X).
+    const truncLabel = (s) => {
+      const str = String(s || '');
+      return str.length > 22 ? str.slice(0, 21) + '…' : str;
+    };
 
     // Bars + smart label placement
     data.forEach((d, i) => {
@@ -298,12 +311,15 @@
       const fill = i === 0 ? t.accent : `url(#${idp(PATTERN_SEQ[(i - 1) % PATTERN_SEQ.length])})`;
       svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 13).attr('text-anchor', 'end')
         .attr('fill', t.text).attr('font-family', 'Noto Sans KR').attr('font-size', 11)
-        .text(String(d.label || '').slice(0, 22));
-      svg.append('rect').attr('x', x0).attr('y', y).attr('width', x1 - x0).attr('height', 16)
+        .text(truncLabel(d.label));
+      // v5.2.11: 0/극소값도 시각적 흔적 — 최소 2px 너비 floor (이전엔 막대가 사라져
+      // 빈 행처럼 보임).
+      const barW = Math.max(2, x1 - x0);
+      svg.append('rect').attr('x', x0).attr('y', y).attr('width', barW).attr('height', 16)
         .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', i === 0 ? 0 : 0.4);
-      // Smart label: if not enough room outside (right of bar), place INSIDE bar
-      // right-aligned with bg color (JPM 풍 inverse). Label width estimate: chars * 7.
-      const labelText = String(d.value);
+      // v5.2.11: 값 라벨도 fmt 적용. 이전엔 raw String(d.value) → "13567",
+      // 축은 "13,567" → 같은 차트 안에서 포맷 불일치 회귀.
+      const labelText = fmt(d.value);
       const labelW = labelText.length * 7 + 4;
       if (x1 + 6 + labelW <= zones.W - 4) {
         // Outside, right of bar
@@ -324,7 +340,7 @@
       }
     });
 
-    // X axis
+    // X axis — fmt 로 막대 라벨과 동일 포맷.
     svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
       .attr('y1', H - zones.bottom + 4).attr('y2', H - zones.bottom + 4)
       .attr('stroke', t.muted).attr('stroke-opacity', 0.4).attr('stroke-width', 0.5);
@@ -332,7 +348,7 @@
       const x = zones.data.x + p * zones.data.w;
       svg.append('text').attr('x', x).attr('y', H - zones.bottom + 18).attr('text-anchor', 'middle')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
-        .text(d3.format(max >= 100 ? ',' : '.1f')(p * max));
+        .text(fmt(p * max));
     });
 
     // Annotations: hline (=vertical reference line on x axis), band (vertical region), vline (rare for bar)
@@ -473,47 +489,96 @@
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
 
-    // v4.5.4 (CHART-AP-13): 시간축 자동 추가. 이전엔 X축 자체가 안 그려져
-    // 사용자가 막대 위치만 보고 시점 추정 불가. 또한 start/end 같으면 막대 폭 0
-    // → note 가 행 라벨과 동일 X 위치에 그려져 글자 겹침.
-    // 입력 정규화: numeric 또는 'YYYY' / 'YYYY-MM' 문자열 둘 다 지원.
+    // v5.2.11 (CHART-AP-13 + AP-17 신설): parseTime 가 day-precision 까지.
+    // 이전엔 'YYYY-MM-DD' 의 day 부분이 silent 무시 → 같은 월 안의 모든 이벤트가
+    // 같은 시점으로 collapse → start==end 폴백 +0.4 (≈5개월) 가 발동 →
+    // 모든 막대가 데이터 영역 *풀폭* 으로 렌더되던 회귀. encoding:
+    // y + ((m-1)*31 + (day-1)) / 372 — month-only 입력 호환 (372/12 = 31).
     function parseTime(v) {
       if (typeof v === 'number') return v;
       const s = String(v || '').trim();
-      const yMatch = s.match(/^(\d{4})/);
-      if (yMatch) {
-        const y = +yMatch[1];
-        const m = s.match(/^\d{4}[-./](\d{1,2})/);
-        return y + (m ? (+m[1] - 1) / 12 : 0);
+      const dMatch = s.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+      if (dMatch) {
+        return +dMatch[1] + ((+dMatch[2] - 1) * 31 + (+dMatch[3] - 1)) / 372;
       }
+      const mMatch = s.match(/^(\d{4})[-./](\d{1,2})/);
+      if (mMatch) return +mMatch[1] + (+mMatch[2] - 1) / 12;
+      const yMatch = s.match(/^(\d{4})/);
+      if (yMatch) return +yMatch[1];
       const n = +s;
       return isNaN(n) ? 0 : n;
     }
     const starts = data.map(d => parseTime(d.start));
+    // v5.2.11: zero-duration 폴백 +0.4 제거. 막대 폭 visibility 는 아래의
+    // Math.max(6, ...) floor 가 보장. day-precision 시대에 +0.4 는 풀폭 회귀의
+    // 원인 (CHART-AP-13 후속 — AP-15 가드를 우회한 케이스도 잡힘).
     const ends = data.map((d, i) => {
       const e = parseTime(d.end);
-      return e > starts[i] ? e : starts[i] + 0.4;  // start === end 면 0.4 단위 폭
+      return e > starts[i] ? e : starts[i];
     });
     const min = Math.min(...starts);
-    const max = Math.max(...ends);
-    const span = Math.max(0.1, max - min);
+    const maxRaw = Math.max(...ends);
+    const span = Math.max(1 / 372, maxRaw - min);  // 최소 1일 span (붕괴 방지)
+    const max = min + span;
     const xScale = d3.scaleLinear()
       .domain([min - span * 0.02, max + span * 0.02])
       .range([zones.data.x, zones.data.x + zones.data.w]);
 
-    // 시간축 (하단). 정수 연도면 정수 tick, 아니면 d3 자동.
+    // v5.2.11: span 에 따라 tick 단위/포맷 자동.
+    // - span ≥ 4 yr: 연도 정수
+    // - 0.4 ≤ span < 4: 월 boundary ("YYYY-MM")
+    // - span < 0.4: 일 단위 ("MM-DD") — 사건성 보고서 (수주 단위 timeline)
+    let ticksFinal = [];
+    let fmtTick;
+    if (span >= 4) {
+      const lo = Math.ceil(min), hi = Math.floor(max);
+      for (let y = lo; y <= hi; y++) ticksFinal.push(y);
+      fmtTick = (v) => String(Math.round(v));
+    } else if (span >= 0.4) {
+      const yLo = Math.floor(min), yHi = Math.ceil(max);
+      const all = [];
+      for (let y = yLo; y <= yHi; y++) {
+        for (let m = 0; m < 12; m++) {
+          const tv = y + m / 12;
+          if (tv >= min - 0.01 && tv <= max + 0.01) all.push(tv);
+        }
+      }
+      const step = Math.max(1, Math.ceil(all.length / 7));
+      ticksFinal = all.filter((_, i) => i % step === 0);
+      fmtTick = (v) => {
+        const y = Math.floor(v + 1e-6);
+        let m = Math.round((v - y) * 12) + 1;
+        let yy = y;
+        if (m > 12) { m = 1; yy++; }
+        return `${yy}-${String(m).padStart(2, '0')}`;
+      };
+    } else {
+      const totalDays = span * 372;
+      const stepDays = Math.max(1, Math.ceil(totalDays / 6));
+      const startY = Math.floor(min + 1e-6);
+      const startUnits = Math.round((min - startY) * 372);
+      for (let off = 0; off <= totalDays + 0.5; off += stepDays) {
+        ticksFinal.push(startY + (startUnits + off) / 372);
+      }
+      fmtTick = (v) => {
+        const y = Math.floor(v + 1e-6);
+        const units = Math.round((v - y) * 372);
+        const m = Math.floor(units / 31) + 1;
+        const day = (units % 31) + 1;
+        return `${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      };
+    }
+
+    // 시간축 (하단)
     const axisG = svg.append('g').attr('class', 'axis-x')
       .attr('transform', `translate(0, ${zones.data.y + zones.data.h + 4})`);
-    const tickCount = Math.min(8, Math.max(3, Math.round(span * 1.2)));
-    const ticks = xScale.ticks(tickCount).filter(v => Math.abs(v - Math.round(v)) < 0.001 || tickCount > 6);
-    const ticksFinal = ticks.length >= 2 ? ticks : xScale.ticks(tickCount);
     ticksFinal.forEach(tick => {
       const x = xScale(tick);
       axisG.append('line').attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', 4)
         .attr('stroke', t.muted).attr('stroke-width', 0.7);
       axisG.append('text').attr('x', x).attr('y', 16).attr('text-anchor', 'middle')
         .attr('fill', t.muted).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-        .text(Number.isInteger(tick) ? String(tick) : tick.toFixed(1));
+        .text(fmtTick(tick));
     });
     // 가로 격자 (가벼운)
     ticksFinal.forEach(tick => {
@@ -551,7 +616,10 @@
           .text(noteText);
       }
     });
-    renderAnnotations(svg, payload, zones, t, xScale, null);
+    // v5.2.11: annotation 의 시간 x 도 parseTime 통과시켜 day-precision 지원.
+    // 이전엔 vline/band 의 'YYYY-MM-DD' 가 raw 로 d3 linear scale 에 들어가 NaN.
+    const annXScale = (v) => xScale(typeof v === 'number' ? v : parseTime(v));
+    renderAnnotations(svg, payload, zones, t, annXScale, null);
   }
 
   // ----- NETWORK (radial static) -----
