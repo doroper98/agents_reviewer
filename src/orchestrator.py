@@ -28,7 +28,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.9"
+VERSION = "v5.2.10"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -344,6 +344,49 @@ def _build_ts_chart(series: dict, context) -> dict:
     }
 
 
+def _compact_period_label(start_date: str, end_date: str, n_points: int) -> str:
+    """compact strip 의 ``period_label`` — 기간을 짧은 라벨 ("1W"/"3M"/"1Y") 로.
+
+    start_date / end_date 가 ISO (YYYY-MM-DD) 면 일수 차이로 분류. 파싱 실패 또는
+    빈 문자열이면 ``n_points`` (data 포인트 수) 로 fallback — 일간 데이터 가정.
+    """
+    from datetime import date as _date
+
+    days: int | None = None
+    try:
+        if start_date and end_date:
+            s = _date.fromisoformat(str(start_date)[:10])
+            e = _date.fromisoformat(str(end_date)[:10])
+            days = (e - s).days
+    except (ValueError, TypeError):
+        days = None
+    if days is None or days <= 0:
+        if n_points >= 2:
+            days = n_points - 1  # 1일 데이터 1포인트 가정
+        else:
+            return ""
+    if days <= 1:
+        return "24H"
+    if days <= 3:
+        return f"{days}D"
+    if days <= 10:
+        return "1W"
+    if days <= 21:
+        return "2W"
+    if days <= 45:
+        return "1M"
+    if days <= 100:
+        return "3M"
+    if days <= 200:
+        return "6M"
+    if days <= 400:
+        return "1Y"
+    if days <= 800:
+        return "2Y"
+    years = max(2, round(days / 365))
+    return f"{years}Y"
+
+
 def _format_compact_value(last_close: float, instrument: str) -> str:
     """compact strip 의 ``last_value_formatted`` — 값 자릿수/통화 기호 자동.
 
@@ -410,6 +453,7 @@ def _build_compact_strip_row(series: dict) -> dict | None:
         "last_value_formatted": _format_compact_value(last_close, name),
         "change_day_pct": round(change_day_pct, 2),
         "change_day_pct_formatted": f"{sign}{change_day_pct:.2f}%",
+        "period_label": _compact_period_label(start, end, len(chart_data)),
         "data": chart_data,
         "source": source_text,
         "takeaway": "",

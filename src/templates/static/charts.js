@@ -1430,11 +1430,18 @@
   }
 
   // ============================================================
-  // Sparkline — compact strip (v5.2.5)
+  // Sparkline — compact strip (v5.2.9)
   //
   // 22px 인라인 sparkline. 풀 카드 (180px stage + axes + labels) 와 달리
-  // 축·라벨·이벤트 마커 없이 단순 monotone line + 끝점 dot 만. 첫·끝 close
+  // 축·라벨·이벤트 마커 없이 단순 linear line + 끝점 dot 만. 첫·끝 close
   // 비교로 up/down 색 자동.
+  //
+  // v5.2.9 (사용자 catch): curveMonotoneX 는 일간 종가 변동을 부드러운
+  // 베지에로 평탄화 → 실제 가격 변동 (jaggedness) 이 시각적으로 사라짐.
+  // curveLinear 로 교체해 segment-by-segment 가격 흐름을 그대로 표시. 5종
+  // 추가 보강: (1) min/max 점에 작은 dot 으로 극값 표시 (2) zero-line
+  // (첫 종가) 를 옅은 dashed 로 표기해 변동의 기준선 보이기 (3) 행 높이
+  // 22px 유지 (외부 layout 의존성 lock-in 보호).
   //
   // Layout 안정 후 그리기 (rAF 2회 + ResizeObserver). 0px width 에서 그리면
   // viewBox 가 작아져 컨테이너에 stretch 되는 회귀 (v5.2.4 P0-Patch7 의 첫
@@ -1460,15 +1467,38 @@
     const pad = 2;
     const x = i => pad + (i / (closes.length - 1)) * (W - 2 * pad);
     const y = v => H - pad - ((v - min) / rng) * (H - 2 * pad);
+    // v5.2.9 — baseline (첫 종가) 을 옅은 dashed 로. 가격이 시작 대비 어디
+    // 까지 움직였는지 한눈에. mono 가이드 위반 없음 (액센트 색 아님).
+    const baseY = y(closes[0]);
+    sel.append('line')
+      .attr('x1', pad).attr('x2', W - pad)
+      .attr('y1', baseY).attr('y2', baseY)
+      .attr('stroke', color)
+      .attr('stroke-width', 0.6)
+      .attr('stroke-dasharray', '2,2')
+      .attr('opacity', 0.35);
     const line = d3.line()
       .x((_, i) => x(i))
       .y(d => y(d))
-      .curve(d3.curveMonotoneX);
+      .curve(d3.curveLinear);
     sel.append('path')
       .attr('d', line(closes))
       .attr('fill', 'none')
       .attr('stroke', color)
-      .attr('stroke-width', 1.2);
+      .attr('stroke-width', 1.2)
+      .attr('stroke-linejoin', 'miter')
+      .attr('stroke-linecap', 'butt');
+    // v5.2.9 — min/max 극값 dot. 데이터가 평평할 경우 (rng=0) skip.
+    if (max > min) {
+      const iMax = closes.indexOf(max);
+      const iMin = closes.indexOf(min);
+      sel.append('circle')
+        .attr('cx', x(iMax)).attr('cy', y(max))
+        .attr('r', 1.1).attr('fill', color).attr('opacity', 0.55);
+      sel.append('circle')
+        .attr('cx', x(iMin)).attr('cy', y(min))
+        .attr('r', 1.1).attr('fill', color).attr('opacity', 0.55);
+    }
     sel.append('circle')
       .attr('cx', x(closes.length - 1))
       .attr('cy', y(closes[closes.length - 1]))

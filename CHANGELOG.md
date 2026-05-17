@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.9
+last_synced_with: v5.2.10
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.10] — 2026-05-17
+
+### Fixed — compact strip sparkline 가격 흐름 가독성 + sparkline 기간 라벨 노출
+
+**문제 1 — 너무 부드러운 곡선**: compact strip 의 sparkline 이
+`d3.curveMonotoneX` 베지에 보간을 써서 일간 종가 변동을 *평탄화*. 실제
+가격 흐름의 jaggedness 가 시각적으로 사라져 "그냥 우상향/우하향 곡선" 으로
+밖에 안 보임. 사용자 catch: "가격 흐름이 너무 부드러운 곡선으로만 보이는걸
+실제 가격 흐름을 알 수 있는 라인 형태로 보완".
+
+**문제 2 — 기간 부재**: sparkline 옆에 라벨/축이 없어 표시된 기간이
+지난 24h 인지, 1W 인지, 3M 인지 알 수 없음. 사용자 catch: "조그맣게 기간을
+표현해주고".
+
+**Fix**:
+- `src/templates/static/charts.js` `drawSparkline`:
+  - `d3.curveMonotoneX` → `d3.curveLinear` — 일간 종가 사이를 직선 segment
+    로 연결. 베지에 평탄화 제거 → 실제 가격 흐름 (변동성·반전점·급등락)
+    그대로 표시. `stroke-linejoin: miter` 로 꺾임도 sharp.
+  - **baseline (시작 종가) dashed line** — 옅은 0.6px dashed, opacity 0.35.
+    가격이 시작 대비 어디까지 움직였는지 한눈에 보이는 zero-line. mono
+    가이드 위반 없음 (line color 와 동일, 액센트 색 X).
+  - **min/max 극값 dot** — 기간 내 최고/최저 close 에 1.1px dot (opacity
+    0.55). 변동의 진폭을 즉시 인지.
+- `src/orchestrator.py:_compact_period_label` (신규) — start/end_date 일수
+  차이로 짧은 라벨 (`24H` / `1W` / `2W` / `1M` / `3M` / `6M` / `1Y` / `2Y`
+  / `{n}Y`) 분류. start/end 파싱 실패 시 data 포인트 수로 fallback.
+- `src/orchestrator.py:_build_compact_strip_row` — payload 에
+  `period_label` 필드 추가.
+- `src/templates/archetypes/freeform_essay.html` — compact-row 안에
+  `<span class="compact-period">` 삽입 (change 와 spark 사이).
+- `src/templates/static/charts.css` — `.compact-row .compact-period` 규칙
+  (9.5px / muted / monospace / uppercase / letter-spacing 0.4). 모바일
+  ≤600px 분기에서 9px 로 축소.
+- `tests/regression/test_compact_strip.py` — 6 신규 회귀: 버킷 정확도 +
+  fallback + payload field + template span + CSS 규칙 + curveLinear lock.
+
+**영향**: 시계열 instrument 3개↑ 보고서 (자동 trigger) 의 strip sparkline
+시각이 즉시 변경. 풀 차트 / 본문 문체 / VM 운영 절차 무영향.
 
 ---
 
