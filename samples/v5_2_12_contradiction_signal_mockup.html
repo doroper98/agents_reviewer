@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모크업 — 모순 · 신호 섹션 리디자인</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   테마 변수 — report.css 의 burgundy_mono + editorial_cream 발췌
+   ============================================================ */
+[data-theme="burgundy_mono"]{
+  --bg: #2A0F18;
+  --card: #371721;
+  --bg-1: #2A0F18;
+  --bg-2: #371721;
+  --bg-3: #1A0810;
+  --card-deep: #1A0810;
+  --border: #5A2832;
+  --border-light: #371721;
+  --border-soft: rgba(90,40,50,0.4);
+  --text: #F0E2CC;
+  --text-2: #D4C4AA;
+  --text-3: #A89880;
+  --text-primary: #F0E2CC;
+  --text-muted: #A89880;
+  --muted: #A89880;
+  --fg-1: #F0E2CC;
+  --fg-2: #D4C4AA;
+  --fg-3: #A89880;
+  --accent: #D4A858;
+  --shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+[data-theme="editorial_cream"]{
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --bg-1: #F2EBDB;
+  --bg-2: #ECE3D0;
+  --bg-3: #E5DBC4;
+  --card-deep: #E5DBC4;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --border-soft: rgba(212,200,176,0.55);
+  --text: #2B1F18;
+  --text-2: #4A372C;
+  --text-3: #7A6450;
+  --text-primary: #2B1F18;
+  --text-muted: #7A6450;
+  --muted: #7A6450;
+  --fg-1: #2B1F18;
+  --fg-2: #4A372C;
+  --fg-3: #7A6450;
+  --accent: #B05A38;
+  --shadow: 0 2px 8px rgba(80,50,30,0.10);
+}
+
+body{margin:0;font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;background:#1a1a1a;color:#ddd}
+.mock-shell{padding:0}
+.mock-bar{position:sticky;top:0;background:#0b0b0b;border-bottom:1px solid #333;padding:14px 24px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#999;z-index:20}
+.mock-bar strong{color:#fff;margin-right:14px}
+.mock-bar code{background:#222;padding:2px 8px;border-radius:3px;color:#D4A858}
+
+.theme-pane{padding:48px 0}
+.theme-pane[data-theme="burgundy_mono"]{background:var(--bg)}
+.theme-pane[data-theme="editorial_cream"]{background:var(--bg)}
+
+.theme-label{max-width:1280px;margin:0 auto 24px;padding:0 24px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border-soft);padding-bottom:14px}
+.theme-label-name{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.8px;text-transform:uppercase}
+.theme-label-note{font-size:11.5px;color:var(--text-3);font-family:'IBM Plex Mono',monospace}
+
+.compare-grid{max-width:1280px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.compare-col{background:var(--bg-1);border:1px solid var(--border-soft);border-radius:8px;padding:0;overflow:hidden}
+.compare-tag{padding:10px 18px;border-bottom:1px solid var(--border-soft);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:600}
+.compare-tag.before{color:#888;background:rgba(0,0,0,0.15)}
+.compare-tag.after{color:var(--accent);background:rgba(212,168,88,0.08)}
+[data-theme="editorial_cream"] .compare-tag.before{background:rgba(0,0,0,0.04);color:var(--text-3)}
+[data-theme="editorial_cream"] .compare-tag.after{background:rgba(176,90,56,0.07)}
+
+/* ============================================================
+   freeform_essay.html 의 스타일 사본 (모순/신호 섹션 렌더용)
+   ============================================================ */
+.freeform-section{padding:28px 22px;border-bottom:none}
+.freeform-section .container{max-width:780px;margin:0 auto}
+.freeform-kicker{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.freeform-heading{font-family:'Newsreader','Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1);margin:0 0 16px}
+.freeform-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2);font-weight:400}
+.freeform-prose p{margin:0 0 16px}
+.freeform-prose strong, .freeform-prose b{color:var(--fg-1);font-weight:600}
+.freeform-prose em, .freeform-prose i{color:var(--accent);font-style:normal}
+
+/* ============================================================
+   AFTER — 모순 (서술형 prose, 강조 컬러는 유지)
+   ============================================================ */
+.contradiction-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2);font-weight:400}
+.contradiction-prose p{margin:0 0 18px}
+.contradiction-prose .ct-claim{color:var(--fg-1);font-weight:600}
+.contradiction-prose .ct-accent{color:var(--accent);font-weight:600}
+/* resolution 은 단락 안에 자연스럽게 들어가되, 결론 줄에는 좌측 가는 보더로 시각 단서 */
+.contradiction-prose .ct-resolve{
+  display:block;margin-top:-6px;padding:4px 0 0 14px;
+  border-left:2px solid var(--accent);
+  font-family:'Newsreader','Noto Serif KR',serif;
+  font-style:italic;font-size:15px;color:var(--fg-1);line-height:1.7;
+}
+.contradiction-prose .ct-resolve::before{content:"분석가의 정리 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-right:6px;font-style:normal}
+.contradiction-prose .ct-evidence{font-size:12px;color:var(--fg-3);margin-top:-10px;margin-bottom:18px;padding-left:0}
+.contradiction-prose .ct-evidence::before{content:"근거 충돌: ";font-weight:600;color:var(--fg-3)}
+
+/* ============================================================
+   AFTER — 신호 (chart-card 형태)
+   charts.css 의 .chart-card / .chart-card-title / .chart-card-takeaway
+   톤을 그대로 차용
+   ============================================================ */
+.signal-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}
+.signal-card{
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 16px 18px 14px;
+  box-shadow: var(--shadow);
+}
+.signal-card-head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin-bottom:6px;
+}
+.signal-card-title{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 700; font-size: 14.5px;
+  color: var(--text-primary);
+  letter-spacing: -.2px;
+  line-height:1.4;
+}
+.signal-card-icon{
+  font-size:12px;
+  color:var(--accent);
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  letter-spacing:0.6px;
+  flex-shrink:0;
+  white-space:nowrap;
+}
+.signal-card-desc{
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.signal-card-takeaway{
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(212,168,88,0.08);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+}
+[data-theme="editorial_cream"] .signal-card-takeaway{
+  background: rgba(176,90,56,0.07);
+}
+.signal-card-takeaway-label{
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: 6px;
+}
+.signal-card-meta{
+  display:flex;gap:14px;margin-top:10px;padding-top:10px;
+  border-top:1px dashed var(--border-soft);
+  font-size:10.5px;color:var(--text-muted);
+  line-height:1.5;
+}
+.signal-card-meta strong{
+  color: var(--accent); font-weight: 700;
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  margin-right: 4px;
+}
+
+/* ============================================================
+   BEFORE — 현행 모순 카드 (참고용, freeform_essay.html L298 인라인)
+   ============================================================ */
+.legacy-contradiction{background:rgba(212,168,88,0.06);border-left:3px dashed var(--accent);border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:12px}
+.legacy-contradiction .row{font-size:13px;line-height:1.7;color:var(--fg-1);margin-bottom:6px}
+.legacy-contradiction .ev{font-size:11.5px;color:var(--fg-3);margin-bottom:4px}
+.legacy-contradiction .res{font-size:12.5px;color:var(--accent);margin-top:6px;font-style:italic}
+
+/* BEFORE — 현행 신호 카드 (참고용, freeform_essay.html L316 인라인) */
+.legacy-signal{background:rgba(0,0,0,0.18);border:1px solid var(--border-soft);border-left:3px solid var(--accent);border-radius:6px;padding:12px 14px;margin-bottom:10px}
+[data-theme="editorial_cream"] .legacy-signal{background:rgba(0,0,0,0.04)}
+.legacy-signal .t{font-size:13px;font-weight:700;color:var(--fg-1);margin-bottom:4px}
+.legacy-signal .d{font-size:12.5px;color:var(--fg-2);line-height:1.6;margin-bottom:4px}
+.legacy-signal .i{font-size:11.5px;color:var(--accent);margin-bottom:2px}
+.legacy-signal .dl{font-size:10.5px;color:var(--fg-3)}
+</style>
+</head>
+<body>
+
+<div class="mock-bar">
+  <strong>모크업</strong>
+  보고서 말미의 <code>contradictions</code> · <code>watch_signals</code> 섹션 리디자인
+  · 두 테마 × Before/After 비교
+</div>
+
+<!-- ============================================================
+     PANE 1 — burgundy_mono (다크)
+     ============================================================ -->
+<div class="theme-pane" data-theme="burgundy_mono">
+  <div class="theme-label">
+    <div class="theme-label-name">burgundy_mono · dark</div>
+    <div class="theme-label-note">--bg #2A0F18 · --card #371721 · --accent #D4A858</div>
+  </div>
+
+  <div class="compare-grid">
+    <!-- === BEFORE === -->
+    <div class="compare-col">
+      <div class="compare-tag before">BEFORE — 현재 렌더링</div>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">반대 관점 / 모순</div>
+          <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
+
+          <div class="legacy-contradiction">
+            <div class="row"><strong>관점 A:</strong> 미국 측은 이번 합의가 관세 인하의 즉시 효과로 한국의 대미 수출 흑자를 줄일 것이라고 주장한다.</div>
+            <div class="row"><strong>관점 B:</strong> 한국 산업통상부는 같은 합의가 자동차 부품 ROO 강화로 실질 부담만 늘렸다고 반박한다.</div>
+            <div class="ev">근거 충돌: USTR 보도자료는 평균 관세 1.8%p 인하를 강조하나, KITA 시뮬레이션은 ROO 기준 미달 품목이 14% 라며 순효과를 음(-)으로 추정.</div>
+            <div class="res">→ 양측 모두 측정 시점이 다르다 — 첫 12개월 효과는 미국 셈법이 맞고, 24개월 이후는 한국 셈법이 맞는다.</div>
+          </div>
+
+          <div class="legacy-contradiction">
+            <div class="row"><strong>관점 A:</strong> 환율은 합의 발표 직후 강세로 반응했고, 시장은 이를 우호적 신호로 해석했다.</div>
+            <div class="row"><strong>관점 B:</strong> 그러나 동일 시점의 채권 시장은 정반대 — 10년물 금리가 22bp 상승하며 재정 우려를 가격에 반영했다.</div>
+            <div class="res">→ 두 자산 클래스가 정반대 신호를 보낸다. 어느 한쪽으로 봉합하지 말고 두 시그널의 비대칭을 기록한다.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">앞으로 무엇을 볼까</div>
+          <h2 class="freeform-heading">감시 신호</h2>
+
+          <div class="legacy-signal">
+            <div class="t">◆ 1월 미국 PCE 디플레이터 발표 (1/31)</div>
+            <div class="d">2.3% 를 상회하면 Fed 의 6월 인하 베팅이 90%에서 50% 아래로 후퇴할 가능성. 원/달러는 즉시 1,420 부근 재진입 압력.</div>
+            <div class="i">→ 인하 베팅 후퇴 = 신흥국 자본 유출 신호의 1차 트리거</div>
+            <div class="dl">2026-01-31 22:30 KST</div>
+          </div>
+
+          <div class="legacy-signal">
+            <div class="t">◆ KITA 의 ROO 미달 품목 월간 리포트</div>
+            <div class="d">2월 말 발표분에서 미달 비율이 16% 를 넘으면 한국 측 시뮬레이션이 검증되는 셈. 산업부의 재협상 카드가 가시화될 분기점.</div>
+            <div class="i">→ 14% → 16% 가 핵심 경계선</div>
+            <div class="dl">2026-02-28</div>
+          </div>
+
+          <div class="legacy-signal">
+            <div class="t">◆ 10년물-2년물 스프레드 -20bp 돌파</div>
+            <div class="d">현재 -8bp. 더 깊은 역전은 재정 우려가 실수요로 가격되고 있다는 신호. 환율 우호 신호와의 디커플링을 확정.</div>
+            <div class="i">→ 자산 클래스 간 신호 비대칭의 결정적 증거</div>
+            <div class="dl">상시 모니터</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- === AFTER === -->
+    <div class="compare-col">
+      <div class="compare-tag after">AFTER — 제안</div>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">반대 관점 / 모순</div>
+          <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
+
+          <div class="contradiction-prose">
+            <p>
+              관세 효과를 두고 양측의 셈법이 정반대다. <span class="ct-claim">미국 측은 이번 합의가 평균 관세 1.8%p 인하의 즉시 효과로 한국의 대미 수출 흑자를 줄일 것이라고 주장</span>한다. 반면 <span class="ct-claim">한국 산업통상부는 같은 합의가 자동차 부품 ROO 강화로 실질 부담만 늘렸다고 반박</span>하며, KITA 시뮬레이션상 ROO 기준 미달 품목이 <span class="ct-accent">14%</span>에 달한다는 점을 근거로 든다. 한쪽은 USTR 보도자료의 단순 평균을, 다른 쪽은 품목별 가중을 본다.
+              <span class="ct-resolve">측정 시점이 다르다. 첫 12개월 효과는 미국 셈법이 맞고, 24개월 이후는 한국 셈법이 맞는다 — 어느 쪽도 틀리지 않았다는 사실이 가장 불편하다.</span>
+            </p>
+
+            <p>
+              두 번째 충돌은 같은 시점의 두 자산 시장이 정반대 신호를 보낸 데서 비롯된다. <span class="ct-claim">환율은 합의 발표 직후 강세로 반응했고 시장은 이를 우호적 신호로 해석</span>했지만, <span class="ct-claim">동일 시점의 채권 시장은 정반대 — 10년물 금리가 <span class="ct-accent">22bp</span> 상승</span>하며 재정 우려를 가격에 반영했다.
+              <span class="ct-resolve">두 자산 클래스가 정반대 신호를 보낸다. 어느 한쪽으로 봉합하지 말고 두 시그널의 비대칭 자체를 기록한다.</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">앞으로 무엇을 볼까</div>
+          <h2 class="freeform-heading">감시 신호</h2>
+
+          <div class="signal-grid">
+            <div class="signal-card">
+              <div class="signal-card-head">
+                <div class="signal-card-title">1월 미국 PCE 디플레이터 발표</div>
+                <div class="signal-card-icon">2026-01-31</div>
+              </div>
+              <div class="signal-card-desc">2.3% 를 상회하면 Fed 의 6월 인하 베팅이 90%에서 50% 아래로 후퇴할 가능성. 원/달러는 즉시 1,420 부근 재진입 압력.</div>
+              <div class="signal-card-takeaway">
+                <span class="signal-card-takeaway-label">시사</span>인하 베팅 후퇴 = 신흥국 자본 유출 신호의 1차 트리거.
+              </div>
+              <div class="signal-card-meta">
+                <span><strong>발표</strong>2026-01-31 22:30 KST</span>
+                <span><strong>임계</strong>headline 2.3% / core 2.8%</span>
+              </div>
+            </div>
+
+            <div class="signal-card">
+              <div class="signal-card-head">
+                <div class="signal-card-title">KITA 의 ROO 미달 품목 월간 리포트</div>
+                <div class="signal-card-icon">2026-02-28</div>
+              </div>
+              <div class="signal-card-desc">2월 말 발표분에서 미달 비율이 16% 를 넘으면 한국 측 시뮬레이션이 검증되는 셈. 산업부의 재협상 카드가 가시화될 분기점.</div>
+              <div class="signal-card-takeaway">
+                <span class="signal-card-takeaway-label">시사</span>14% → 16% 가 핵심 경계선.
+              </div>
+              <div class="signal-card-meta">
+                <span><strong>발표</strong>월간 / 매월 말</span>
+                <span><strong>임계</strong>16% 초과 시 재협상 카드</span>
+              </div>
+            </div>
+
+            <div class="signal-card">
+              <div class="signal-card-head">
+                <div class="signal-card-title">10년물-2년물 스프레드 -20bp 돌파</div>
+                <div class="signal-card-icon">상시</div>
+              </div>
+              <div class="signal-card-desc">현재 -8bp. 더 깊은 역전은 재정 우려가 실수요로 가격되고 있다는 신호. 환율 우호 신호와의 디커플링을 확정.</div>
+              <div class="signal-card-takeaway">
+                <span class="signal-card-takeaway-label">시사</span>자산 클래스 간 신호 비대칭의 결정적 증거.
+              </div>
+              <div class="signal-card-meta">
+                <span><strong>모니터</strong>일중 / 종가 기준</span>
+                <span><strong>임계</strong>-20bp 돌파</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANE 2 — editorial_cream (라이트)
+     ============================================================ -->
+<div class="theme-pane" data-theme="editorial_cream">
+  <div class="theme-label">
+    <div class="theme-label-name">editorial_cream · light</div>
+    <div class="theme-label-note">--bg #F2EBDB · --card #ECE3D0 · --accent #B05A38</div>
+  </div>
+
+  <div class="compare-grid">
+    <!-- === BEFORE === -->
+    <div class="compare-col">
+      <div class="compare-tag before">BEFORE — 현재 렌더링</div>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">반대 관점 / 모순</div>
+          <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
+
+          <div class="legacy-contradiction">
+            <div class="row"><strong>관점 A:</strong> 미국 측은 이번 합의가 관세 인하의 즉시 효과로 한국의 대미 수출 흑자를 줄일 것이라고 주장한다.</div>
+            <div class="row"><strong>관점 B:</strong> 한국 산업통상부는 같은 합의가 자동차 부품 ROO 강화로 실질 부담만 늘렸다고 반박한다.</div>
+            <div class="ev">근거 충돌: USTR 보도자료는 평균 관세 1.8%p 인하를 강조하나, KITA 시뮬레이션은 ROO 기준 미달 품목이 14% 라며 순효과를 음(-)으로 추정.</div>
+            <div class="res">→ 양측 모두 측정 시점이 다르다 — 첫 12개월 효과는 미국 셈법이 맞고, 24개월 이후는 한국 셈법이 맞는다.</div>
+          </div>
+
+          <div class="legacy-contradiction">
+            <div class="row"><strong>관점 A:</strong> 환율은 합의 발표 직후 강세로 반응했고, 시장은 이를 우호적 신호로 해석했다.</div>
+            <div class="row"><strong>관점 B:</strong> 그러나 동일 시점의 채권 시장은 정반대 — 10년물 금리가 22bp 상승하며 재정 우려를 가격에 반영했다.</div>
+            <div class="res">→ 두 자산 클래스가 정반대 신호를 보낸다. 어느 한쪽으로 봉합하지 말고 두 시그널의 비대칭을 기록한다.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">앞으로 무엇을 볼까</div>
+          <h2 class="freeform-heading">감시 신호</h2>
+
+          <div class="legacy-signal">
+            <div class="t">◆ 1월 미국 PCE 디플레이터 발표 (1/31)</div>
+            <div class="d">2.3% 를 상회하면 Fed 의 6월 인하 베팅이 90%에서 50% 아래로 후퇴할 가능성. 원/달러는 즉시 1,420 부근 재진입 압력.</div>
+            <div class="i">→ 인하 베팅 후퇴 = 신흥국 자본 유출 신호의 1차 트리거</div>
+            <div class="dl">2026-01-31 22:30 KST</div>
+          </div>
+
+          <div class="legacy-signal">
+            <div class="t">◆ KITA 의 ROO 미달 품목 월간 리포트</div>
+            <div class="d">2월 말 발표분에서 미달 비율이 16% 를 넘으면 한국 측 시뮬레이션이 검증되는 셈. 산업부의 재협상 카드가 가시화될 분기점.</div>
+            <div class="i">→ 14% → 16% 가 핵심 경계선</div>
+            <div class="dl">2026-02-28</div>
+          </div>
+
+          <div class="legacy-signal">
+            <div class="t">◆ 10년물-2년물 스프레드 -20bp 돌파</div>
+            <div class="d">현재 -8bp. 더 깊은 역전은 재정 우려가 실수요로 가격되고 있다는 신호. 환율 우호 신호와의 디커플링을 확정.</div>
+            <div class="i">→ 자산 클래스 간 신호 비대칭의 결정적 증거</div>
+            <div class="dl">상시 모니터</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- === AFTER === -->
+    <div class="compare-col">
+      <div class="compare-tag after">AFTER — 제안</div>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">반대 관점 / 모순</div>
+          <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
+
+          <div class="contradiction-prose">
+            <p>
+              관세 효과를 두고 양측의 셈법이 정반대다. <span class="ct-claim">미국 측은 이번 합의가 평균 관세 1.8%p 인하의 즉시 효과로 한국의 대미 수출 흑자를 줄일 것이라고 주장</span>한다. 반면 <span class="ct-claim">한국 산업통상부는 같은 합의가 자동차 부품 ROO 강화로 실질 부담만 늘렸다고 반박</span>하며, KITA 시뮬레이션상 ROO 기준 미달 품목이 <span class="ct-accent">14%</span>에 달한다는 점을 근거로 든다. 한쪽은 USTR 보도자료의 단순 평균을, 다른 쪽은 품목별 가중을 본다.
+              <span class="ct-resolve">측정 시점이 다르다. 첫 12개월 효과는 미국 셈법이 맞고, 24개월 이후는 한국 셈법이 맞는다 — 어느 쪽도 틀리지 않았다는 사실이 가장 불편하다.</span>
+            </p>
+
+            <p>
+              두 번째 충돌은 같은 시점의 두 자산 시장이 정반대 신호를 보낸 데서 비롯된다. <span class="ct-claim">환율은 합의 발표 직후 강세로 반응했고 시장은 이를 우호적 신호로 해석</span>했지만, <span class="ct-claim">동일 시점의 채권 시장은 정반대 — 10년물 금리가 <span class="ct-accent">22bp</span> 상승</span>하며 재정 우려를 가격에 반영했다.
+              <span class="ct-resolve">두 자산 클래스가 정반대 신호를 보낸다. 어느 한쪽으로 봉합하지 말고 두 시그널의 비대칭 자체를 기록한다.</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="freeform-section">
+        <div class="container">
+          <div class="freeform-kicker">앞으로 무엇을 볼까</div>
+          <h2 class="freeform-heading">감시 신호</h2>
+
+          <div class="signal-grid">
+            <div class="signal-card">
+              <div class="signal-card-head">
+                <div class="signal-card-title">1월 미국 PCE 디플레이터 발표</div>
+                <div class="signal-card-icon">2026-01-31</div>
+              </div>
+              <div class="signal-card-desc">2.3% 를 상회하면 Fed 의 6월 인하 베팅이 90%에서 50% 아래로 후퇴할 가능성. 원/달러는 즉시 1,420 부근 재진입 압력.</div>
+              <div class="signal-card-takeaway">
+                <span class="signal-card-takeaway-label">시사</span>인하 베팅 후퇴 = 신흥국 자본 유출 신호의 1차 트리거.
+              </div>
+              <div class="signal-card-meta">
+                <span><strong>발표</strong>2026-01-31 22:30 KST</span>
+                <span><strong>임계</strong>headline 2.3% / core 2.8%</span>
+              </div>
+            </div>
+
+            <div class="signal-card">
+              <div class="signal-card-head">
+                <div class="signal-card-title">KITA 의 ROO 미달 품목 월간 리포트</div>
+                <div class="signal-card-icon">2026-02-28</div>
+              </div>
+              <div class="signal-card-desc">2월 말 발표분에서 미달 비율이 16% 를 넘으면 한국 측 시뮬레이션이 검증되는 셈. 산업부의 재협상 카드가 가시화될 분기점.</div>
+              <div class="signal-card-takeaway">
+                <span class="signal-card-takeaway-label">시사</span>14% → 16% 가 핵심 경계선.
+              </div>
+              <div class="signal-card-meta">
+                <span><strong>발표</strong>월간 / 매월 말</span>
+                <span><strong>임계</strong>16% 초과 시 재협상 카드</span>
+              </div>
+            </div>
+
+            <div class="signal-card">
+              <div class="signal-card-head">
+                <div class="signal-card-title">10년물-2년물 스프레드 -20bp 돌파</div>
+                <div class="signal-card-icon">상시</div>
+              </div>
+              <div class="signal-card-desc">현재 -8bp. 더 깊은 역전은 재정 우려가 실수요로 가격되고 있다는 신호. 환율 우호 신호와의 디커플링을 확정.</div>
+              <div class="signal-card-takeaway">
+                <span class="signal-card-takeaway-label">시사</span>자산 클래스 간 신호 비대칭의 결정적 증거.
+              </div>
+              <div class="signal-card-meta">
+                <span><strong>모니터</strong>일중 / 종가 기준</span>
+                <span><strong>임계</strong>-20bp 돌파</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
