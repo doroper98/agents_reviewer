@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>v5.2.11 — 가로 막대 + 간트 차트 모크업</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  :root {
+    --bg: #F4ECD8;
+    --card: #EFE5CC;
+    --card-deep: #E6DAB8;
+    --text: #2E2418;
+    --muted: #8A7553;
+    --accent: #A8412A;
+    --border: #C8B98E;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    margin: 0;
+    padding: 32px 24px 80px;
+    line-height: 1.6;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+  h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 24px; font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.5px;
+  }
+  .subhead {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+  h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 17px; font-weight: 700;
+    margin: 28px 0 4px;
+  }
+  .section-note {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px 14px;
+    margin: 0 0 22px;
+  }
+  .chart-card-title {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700; font-size: 14px;
+    margin-bottom: 3px;
+    letter-spacing: -0.3px;
+  }
+  .chart-card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+  .chart-card-stage {
+    background: var(--card-deep);
+    border-radius: 8px;
+    padding: 12px 10px;
+  }
+  .chart-card-stage svg {
+    display: block; width: 100%; height: auto;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .chart-card-source {
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1px dotted var(--border);
+    font-size: 11px; color: var(--muted);
+  }
+  .chart-card-takeaway {
+    margin-top: 8px; font-size: 12px;
+    color: var(--text);
+  }
+  .chart-card-takeaway-label {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-right: 6px;
+  }
+  .fix-note {
+    background: rgba(168, 65, 42, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    margin: 10px 0 18px;
+  }
+  .fix-note strong { color: var(--accent); }
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 1px 4px; border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>v5.2.11 — 가로 막대 + 간트 차트 모크업</h1>
+<div class="subhead">
+  Mono editorial_cream 테마. 본 페이지는 <code>src/templates/static/charts.js</code> 의
+  fix 후 <code>drawBar</code> / <code>drawGantt</code> 로직을 동일하게 미러한 self-contained 페이지.
+</div>
+
+<!-- ============================================================
+     BAR — Variant A: 순위형 다양한 규모
+============================================================ -->
+<h2>① 가로 막대 — 순위형 (다양한 값 규모)</h2>
+<div class="section-note">|v|≥100 정수 / ≥10 .1f / 그 외 .2f · 천 단위 separator 적용</div>
+<div class="fix-note">
+  <strong>Fix 데모</strong>: 값 라벨이 축 tick 과 같은 포맷 (이전 raw <code>13567</code> →
+  통일 <code>13,567</code>). 22자 초과 라벨은 ellipsis. 0값 막대도 2px floor 로 시각적 흔적.
+</div>
+<div class="chart-card">
+  <div class="chart-card-title">2025 KOSPI 상승률 상위 5종목</div>
+  <div class="chart-card-subtitle">단위 — 연간 누적 상승률(%)</div>
+  <div class="chart-card-stage" data-mock="bar1"><svg></svg></div>
+  <div class="chart-card-source">출처: KRX 종가 / 2026-04 기준 · N=5</div>
+  <div class="chart-card-takeaway">
+    <span class="chart-card-takeaway-label">Takeaway</span>
+    상위 1종목과 5종목 간 격차가 4배 이상 — 시장 폭(breadth) 좁음.
+  </div>
+</div>
+
+<!-- ============================================================
+     BAR — Variant B: 큰 절대값 + 라벨 truncation
+============================================================ -->
+<h2>② 가로 막대 — 천 단위 + ellipsis</h2>
+<div class="section-note">22자 초과 라벨은 ellipsis. 천 단위 separator 자동.</div>
+<div class="chart-card">
+  <div class="chart-card-title">주요 정유사 분기 매출 (조원)</div>
+  <div class="chart-card-subtitle">2026 Q1 — 22자 넘는 종목명은 끝에 … 부착</div>
+  <div class="chart-card-stage" data-mock="bar2"><svg></svg></div>
+  <div class="chart-card-source">출처: 사업보고서 / 2026 Q1 · N=5</div>
+</div>
+
+<!-- ============================================================
+     GANTT — Variant A: 사용자 스크린샷 케이스 (day-precision)
+============================================================ -->
+<h2>③ 간트 — day-precision 사건 timeline</h2>
+<div class="section-note">사용자 스크린샷 회귀 케이스 재현. start/end 가 day 단위로 정확히 반영.</div>
+<div class="fix-note">
+  <strong>Fix 데모</strong>: <code>'2026-05-09'</code> 같은 day-precision ISO 가 day 단위로
+  파싱. 1일짜리 이벤트는 ~3% 폭 (6px floor 적용), 18일 이벤트는 ~53% 폭. axis 는
+  <code>MM-DD</code> 포맷. 이전엔 모두 풀폭 + <code>2026.4</code> 같은 분수 연도.
+</div>
+<div class="chart-card">
+  <div class="chart-card-title">주말 ~ 파업 개시까지 4일 일정표</div>
+  <div class="chart-card-subtitle">노사 협상 창은 21일 새벽까지</div>
+  <div class="chart-card-stage" data-mock="gantt1"><svg></svg></div>
+  <div class="chart-card-source">출처: namu.wiki, MBC 보도 종합 / 2026-05-16 기준</div>
+</div>
+
+<!-- ============================================================
+     GANTT — Variant B: 거시 timeline (월 단위)
+============================================================ -->
+<h2>④ 간트 — 월 단위 거시 timeline</h2>
+<div class="section-note">span 0.4 ~ 4 year → axis 는 YYYY-MM 포맷 자동.</div>
+<div class="chart-card">
+  <div class="chart-card-title">Fed 금리 인하 사이클 vs KOSPI 박스권</div>
+  <div class="chart-card-subtitle">2024-09 첫 인하 후 14개월 — 매크로 단계</div>
+  <div class="chart-card-stage" data-mock="gantt2"><svg></svg></div>
+  <div class="chart-card-source">출처: Federal Reserve, KRX / 2026-04 기준</div>
+</div>
+
+<!-- ============================================================
+     GANTT — Variant C: 연 단위 거시 timeline
+============================================================ -->
+<h2>⑤ 간트 — 연 단위 (매크로 사이클)</h2>
+<div class="section-note">span ≥ 4 year → axis 는 연도 정수.</div>
+<div class="chart-card">
+  <div class="chart-card-title">디스플레이 산업 세대 전환</div>
+  <div class="chart-card-subtitle">LCD → OLED → MicroLED 양산 시점</div>
+  <div class="chart-card-stage" data-mock="gantt3"><svg></svg></div>
+  <div class="chart-card-source">출처: DSCC, Omdia / 2026 추정</div>
+</div>
+
+</div>
+
+<script>
+/* ============================================================
+   v5.2.11 drawBar + drawGantt 미러 — src/templates/static/charts.js
+   의 production 로직을 self-contained 로 inlined. 이 모크업이
+   "참조 구현" 이 되어선 안 됨 (SSOT 는 charts.js).
+============================================================ */
+(function () {
+  const PATTERN_SEQ = ['hatch-tight', 'hatch-wide', 'dots', 'accent-hatch'];
+
+  function readTheme() {
+    const cs = getComputedStyle(document.documentElement);
+    const r = (n) => cs.getPropertyValue(n).trim();
+    return {
+      bg: r('--bg') || '#F4ECD8',
+      card: r('--card') || '#EFE5CC',
+      text: r('--text') || '#2E2418',
+      muted: r('--muted') || '#8A7553',
+      accent: r('--accent') || '#A8412A',
+    };
+  }
+
+  function definePatterns(svg, t, prefix) {
+    const defs = svg.append('defs');
+    const id = (n) => `${prefix}-${n}`;
+    defs.append('pattern').attr('id', id('hatch-tight')).attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 2.4).attr('height', 2.4).attr('patternTransform', 'rotate(45)')
+      .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 2.4)
+      .attr('stroke', t.text).attr('stroke-width', 0.85);
+    defs.append('pattern').attr('id', id('hatch-wide')).attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 3.8).attr('height', 3.8).attr('patternTransform', 'rotate(45)')
+      .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 3.8)
+      .attr('stroke', t.text).attr('stroke-width', 0.7);
+    defs.append('pattern').attr('id', id('dots')).attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 2.4).attr('height', 2.4)
+      .append('circle').attr('cx', 1.2).attr('cy', 1.2).attr('r', 0.22).attr('fill', t.text);
+    defs.append('pattern').attr('id', id('accent-hatch')).attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 3.0).attr('height', 3.0).attr('patternTransform', 'rotate(45)')
+      .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 3.0)
+      .attr('stroke', t.accent).attr('stroke-width', 1.0);
+  }
+
+  function computeZones(W, H, opts) {
+    opts = opts || {};
+    const left = opts.left || 60, right = opts.right || 60;
+    const top = opts.top || 20, bottom = opts.bottom || 30;
+    return {
+      W, H, left, right, top, bottom,
+      data: { x: left, y: top, w: W - left - right, h: H - top - bottom },
+    };
+  }
+
+  // ----- BAR (horizontal) — v5.2.11 fix -----
+  function drawBar(stage, payload) {
+    const t = readTheme();
+    const data = (payload.data || []).filter(d => isFinite(+d.value));
+    if (!data.length) return;
+    const W = 720, rowH = 28;
+    const H = 56 + 32 + (data.length * rowH) + 16;
+    const zones = computeZones(W, H, { left: 160, right: 60 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const prefix = `b-${Math.random().toString(36).slice(2, 6)}`;
+    definePatterns(svg, t, prefix);
+    const idp = (n) => `${prefix}-${n}`;
+    const max = d3.max(data, d => Math.abs(+d.value)) || 1;
+    const xScale = (v) => zones.data.x + (Math.abs(+v) / max) * zones.data.w;
+    const fmt = (v) => {
+      const av = Math.abs(+v);
+      if (av >= 100) return d3.format(',.0f')(+v);
+      if (av >= 10) return d3.format(',.1f')(+v);
+      return d3.format(',.2f')(+v);
+    };
+    const truncLabel = (s) => {
+      const str = String(s || '');
+      return str.length > 22 ? str.slice(0, 21) + '…' : str;
+    };
+
+    data.forEach((d, i) => {
+      const y = zones.data.y + 4 + i * rowH;
+      const x0 = zones.data.x;
+      const x1 = xScale(d.value);
+      const fill = i === 0 ? t.accent : `url(#${idp(PATTERN_SEQ[(i - 1) % PATTERN_SEQ.length])})`;
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 13).attr('text-anchor', 'end')
+        .attr('fill', t.text).attr('font-family', 'Noto Sans KR').attr('font-size', 11)
+        .text(truncLabel(d.label));
+      const barW = Math.max(2, x1 - x0);
+      svg.append('rect').attr('x', x0).attr('y', y).attr('width', barW).attr('height', 16)
+        .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', i === 0 ? 0 : 0.4);
+      const labelText = fmt(d.value);
+      const labelW = labelText.length * 7 + 4;
+      if (x1 + 6 + labelW <= zones.W - 4) {
+        svg.append('text').attr('x', x1 + 6).attr('y', y + 12)
+          .attr('font-family', 'Noto Serif KR').attr('font-size', 11).attr('font-weight', 700)
+          .attr('fill', t.text).text(labelText);
+      } else if (x1 - x0 > labelW + 8) {
+        const insideColor = i === 0 ? t.bg : t.text;
+        svg.append('text').attr('x', x1 - 4).attr('y', y + 12).attr('text-anchor', 'end')
+          .attr('font-family', 'Noto Serif KR').attr('font-size', 11).attr('font-weight', 700)
+          .attr('fill', insideColor).text(labelText);
+      } else {
+        svg.append('text').attr('x', zones.W - 4).attr('y', y + 12).attr('text-anchor', 'end')
+          .attr('font-family', 'Noto Serif KR').attr('font-size', 11).attr('font-weight', 700)
+          .attr('fill', t.text).text(labelText);
+      }
+    });
+
+    svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+      .attr('y1', H - zones.bottom + 4).attr('y2', H - zones.bottom + 4)
+      .attr('stroke', t.muted).attr('stroke-opacity', 0.4).attr('stroke-width', 0.5);
+    [0, 0.25, 0.5, 0.75, 1].forEach(p => {
+      const x = zones.data.x + p * zones.data.w;
+      svg.append('text').attr('x', x).attr('y', H - zones.bottom + 18).attr('text-anchor', 'middle')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
+        .text(fmt(p * max));
+    });
+  }
+
+  // ----- GANTT — v5.2.11 fix -----
+  function drawGantt(stage, payload) {
+    const t = readTheme();
+    const data = (payload.data || []);
+    if (!data.length) return;
+    const W = 720, rowH = 26, axisH = 28;
+    const H = 48 + axisH + (data.length * rowH) + 8;
+    const zones = computeZones(W, H, { left: 170, right: 80, top: 28, bottom: axisH + 8 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    function parseTime(v) {
+      if (typeof v === 'number') return v;
+      const s = String(v || '').trim();
+      const dMatch = s.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+      if (dMatch) return +dMatch[1] + ((+dMatch[2] - 1) * 31 + (+dMatch[3] - 1)) / 372;
+      const mMatch = s.match(/^(\d{4})[-./](\d{1,2})/);
+      if (mMatch) return +mMatch[1] + (+mMatch[2] - 1) / 12;
+      const yMatch = s.match(/^(\d{4})/);
+      if (yMatch) return +yMatch[1];
+      const n = +s;
+      return isNaN(n) ? 0 : n;
+    }
+    const starts = data.map(d => parseTime(d.start));
+    const ends = data.map((d, i) => {
+      const e = parseTime(d.end);
+      return e > starts[i] ? e : starts[i];
+    });
+    const min = Math.min(...starts);
+    const maxRaw = Math.max(...ends);
+    const span = Math.max(1 / 372, maxRaw - min);
+    const max = min + span;
+    const xScale = d3.scaleLinear()
+      .domain([min - span * 0.02, max + span * 0.02])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+
+    let ticksFinal = [];
+    let fmtTick;
+    if (span >= 4) {
+      const lo = Math.ceil(min), hi = Math.floor(max);
+      for (let y = lo; y <= hi; y++) ticksFinal.push(y);
+      fmtTick = (v) => String(Math.round(v));
+    } else if (span >= 0.4) {
+      const yLo = Math.floor(min), yHi = Math.ceil(max);
+      const all = [];
+      for (let y = yLo; y <= yHi; y++) {
+        for (let m = 0; m < 12; m++) {
+          const tv = y + m / 12;
+          if (tv >= min - 0.01 && tv <= max + 0.01) all.push(tv);
+        }
+      }
+      const step = Math.max(1, Math.ceil(all.length / 7));
+      ticksFinal = all.filter((_, i) => i % step === 0);
+      fmtTick = (v) => {
+        const y = Math.floor(v + 1e-6);
+        let m = Math.round((v - y) * 12) + 1;
+        let yy = y;
+        if (m > 12) { m = 1; yy++; }
+        return `${yy}-${String(m).padStart(2, '0')}`;
+      };
+    } else {
+      const totalDays = span * 372;
+      const stepDays = Math.max(1, Math.ceil(totalDays / 6));
+      const startY = Math.floor(min + 1e-6);
+      const startUnits = Math.round((min - startY) * 372);
+      for (let off = 0; off <= totalDays + 0.5; off += stepDays) {
+        ticksFinal.push(startY + (startUnits + off) / 372);
+      }
+      fmtTick = (v) => {
+        const y = Math.floor(v + 1e-6);
+        const units = Math.round((v - y) * 372);
+        const m = Math.floor(units / 31) + 1;
+        const day = (units % 31) + 1;
+        return `${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      };
+    }
+
+    const axisG = svg.append('g').attr('class', 'axis-x')
+      .attr('transform', `translate(0, ${zones.data.y + zones.data.h + 4})`);
+    ticksFinal.forEach(tick => {
+      const x = xScale(tick);
+      axisG.append('line').attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', 4)
+        .attr('stroke', t.muted).attr('stroke-width', 0.7);
+      axisG.append('text').attr('x', x).attr('y', 16).attr('text-anchor', 'middle')
+        .attr('fill', t.muted).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+        .text(fmtTick(tick));
+    });
+    ticksFinal.forEach(tick => {
+      const x = xScale(tick);
+      svg.append('line').attr('x1', x).attr('x2', x)
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.muted).attr('stroke-width', 0.4).attr('stroke-opacity', 0.25)
+        .attr('stroke-dasharray', '2,3');
+    });
+
+    data.forEach((d, i) => {
+      const y = zones.data.y + 6 + i * rowH;
+      const label = String(d.label || '').slice(0, 25);
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 11).attr('text-anchor', 'end')
+        .attr('fill', t.text).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+        .attr('font-weight', 600)
+        .text(label);
+      const x0 = xScale(starts[i]);
+      const x1 = xScale(ends[i]);
+      const barW = Math.max(6, x1 - x0);
+      svg.append('rect').attr('x', x0).attr('y', y).attr('width', barW).attr('height', 14)
+        .attr('fill', t.accent).attr('rx', 2);
+      if (d.note) {
+        const noteText = String(d.note).slice(0, 22);
+        const inside = barW >= 60;
+        svg.append('text')
+          .attr('x', inside ? x0 + 6 : x1 + 6)
+          .attr('y', y + 11)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 9)
+          .attr('fill', inside ? t.bg : t.muted)
+          .attr('font-weight', inside ? 600 : 400)
+          .text(noteText);
+      }
+    });
+  }
+
+  /* ====== Mock payloads ====== */
+  const PAYLOADS = {
+    bar1: {
+      data: [
+        { label: '한화시스템',           value: 187.4 },
+        { label: 'HD현대일렉트릭',       value: 142.8 },
+        { label: '삼성중공업',           value: 96.3 },
+        { label: '두산에너빌리티',       value: 61.7 },
+        { label: '한미반도체',           value: 42.9 },
+      ],
+    },
+    bar2: {
+      data: [
+        { label: 'SK이노베이션 환경에너지 부문', value: 13567 },  // 23 chars — ellipsis
+        { label: 'GS칼텍스',                       value: 11240 },
+        { label: 'HD현대오일뱅크',                 value: 9852 },
+        { label: 'S-OIL',                          value: 8124 },
+        { label: '극동유화',                       value: 47 },   // small — 2px floor
+      ],
+    },
+    gantt1: {
+      // 사용자 스크린샷 회귀 케이스 — day-precision
+      data: [
+        { label: '주말 막판 중재',       start: '2026-05-09', end: '2026-05-10',
+          note: '사후조정 결렬 후 비공식 중재' },
+        { label: '월요일 개장 충격 반영', start: '2026-05-15', end: '2026-05-15',
+          note: '5/15 캠다운 반영' },
+        { label: '협상 마지막 창',       start: '2026-05-21', end: '2026-05-22',
+          note: '타결 또는 결렬 분기' },
+        { label: '총파업 (예정)',        start: '2026-05-25', end: '2026-06-12',
+          note: '18일간 강행 시' },
+      ],
+    },
+    gantt2: {
+      data: [
+        { label: 'Fed 1차 인하 사이클',  start: '2024-09', end: '2025-03', note: '4회 누적 100bp' },
+        { label: '관망 보합',            start: '2025-03', end: '2025-09', note: '연속 동결' },
+        { label: '2차 인하 시작',        start: '2025-09', end: '2026-02', note: '추가 75bp' },
+        { label: 'KOSPI 박스권',         start: '2024-11', end: '2025-12', note: '2,400 ~ 2,700' },
+      ],
+    },
+    gantt3: {
+      data: [
+        { label: 'LCD 주력',     start: '2008', end: '2019', note: '11년 사이클' },
+        { label: 'OLED 양산',    start: '2017', end: '2027', note: 'TV·모바일 양면 확장' },
+        { label: 'QD-OLED',      start: '2022', end: '2028', note: '삼성D 단독' },
+        { label: 'MicroLED 양산',start: '2025', end: '2032', note: '대형부터 단계 진입' },
+      ],
+    },
+  };
+
+  function init() {
+    document.querySelectorAll('.chart-card-stage[data-mock]').forEach(stage => {
+      const key = stage.getAttribute('data-mock');
+      const payload = PAYLOADS[key];
+      if (!payload) return;
+      if (key.startsWith('bar')) drawBar(stage, payload);
+      else if (key.startsWith('gantt')) drawGantt(stage, payload);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
