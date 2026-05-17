@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.2.7
+last_synced_with: v5.2.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-16
+last_review: 2026-05-17
 ---
 
 # Changelog
@@ -17,6 +17,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.8] — 2026-05-17
+
+### Fixed — compact-strip 이 데스크탑/태블릿에서 본문 좌우를 넘어가던 회귀
+
+사용자 보고: 콤팩트 스트립 차트가 데스크탑·태블릿 뷰포트에서 보고서 본문
+(`.container` max 960px) 의 좌우 폭을 **넘어서서** 렌더링.
+
+- **원인**: v5.2.5~v5.2.7 의 `.compact-strip` 이 의도적으로 break-out —
+  `width: min(1100px, calc(100vw - 48px))` + `position: relative; left: 50%;
+  transform: translateX(-50%)` 로 본문 폭을 escape 해 viewport 폭까지 확장.
+  당시엔 모크업(1200px wrap)의 시각 정합 우선이었으나 사용자 시점에선
+  본문과 분리된 폭이 부자연스러움.
+- **수정**: break-out 제거 → `width: 100%; max-width: 100%;
+  box-sizing: border-box` 로 본문 폭에 conform. grid `repeat(3, ...)` →
+  `repeat(2, ...)` 으로 desktop/tablet 공통 2-col. 920px 미디어쿼리 분기
+  삭제 (base 가 이미 2-col). 모바일(≤600px) 1-col stack 은 유지.
+- **차트 수 가변 처리**: 2-col grid 의 자연 wrap — 3개 → 2x2 (마지막 1셀),
+  5개 → 2x3 (마지막 1셀), 7개 → 2x4 (마지막 1셀) 등. odd N 의 마지막 왼쪽
+  셀은 `:last-child` 로 separator 자동 제외.
+- **세로 구분선**: nth-child(3n) → nth-child(2n) 기준으로 재배치.
+- **회귀 가드**: `tests/regression/test_compact_strip.py` 의
+  `test_compact_strip_css_breaks_out_of_narrow_container` 를
+  `test_compact_strip_css_stays_within_container_width` 로 반전 + 신규
+  `test_compact_strip_css_two_column_grid_on_desktop_tablet` 추가.
+  16/16 통과.
 
 ---
 
