@@ -519,6 +519,21 @@
 }
 .compact-row .compact-change.up { color: var(--up, #4A6B3E); }
 .compact-row .compact-change.down { color: var(--down, #8B2A2A); }
+/* sparkline 기간 — 24H/1W/3M/1Y 등 짧은 라벨. sparkline 직전에 muted 톤으로.
+   사용자 catch (v5.2.9): "기간이 얼마나 되는지 안적혀 있으니까 그게 지난 24h
+   인지, 1 week 인지 전혀 모르겠어". */
+.compact-row .compact-period {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--muted, var(--fg-3));
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  min-width: 24px;
+  letter-spacing: 0.4px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.75;
+}
 .compact-row .compact-spark {
   flex: 1;
   min-width: 60px;
@@ -555,4 +570,5 @@
   .compact-row .compact-name { width: 56px; font-size: 10.5px; }
   .compact-row .compact-value { min-width: 60px; font-size: 12px; }
   .compact-row .compact-change { min-width: 44px; }
+  .compact-row .compact-period { min-width: 22px; font-size: 9px; }
 }

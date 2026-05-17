@@ -295,6 +295,107 @@ def test_ensure_market_strip_idempotent() -> None:
     assert len(composed.sections[0].charts) == 3, "중복 emit 됨"
 
 
+def test_compact_period_label_buckets() -> None:
+    """v5.2.9 — _compact_period_label 의 일수 버킷 (24H/1W/3M/1Y 등).
+
+    사용자 catch: "기간이 얼마나 되는지 안적혀 있으니까 그게 지난 24h 인지,
+    1 week 인지 전혀 모르겠어". 회귀 시 버킷 경계 drift 차단.
+    """
+    from src.orchestrator import _compact_period_label
+    assert _compact_period_label("2026-05-16", "2026-05-17", 2) == "24H"
+    assert _compact_period_label("2026-05-15", "2026-05-17", 3) == "2D"
+    assert _compact_period_label("2026-05-10", "2026-05-17", 7) == "1W"
+    assert _compact_period_label("2026-05-01", "2026-05-17", 16) == "2W"
+    assert _compact_period_label("2026-04-17", "2026-05-17", 22) == "1M"
+    assert _compact_period_label("2026-02-17", "2026-05-17", 65) == "3M"
+    assert _compact_period_label("2025-11-17", "2026-05-17", 130) == "6M"
+    assert _compact_period_label("2025-05-17", "2026-05-17", 250) == "1Y"
+    assert _compact_period_label("2024-05-17", "2026-05-17", 500) == "2Y"
+    assert _compact_period_label("2023-05-17", "2026-05-17", 750) == "3Y"
+
+
+def test_compact_period_label_fallback_on_missing_dates() -> None:
+    """start/end_date 파싱 실패 시 n_points 로 fallback. 0/1 포인트면 ''."""
+    from src.orchestrator import _compact_period_label
+    # 빈 / 파싱 불가 → n_points 로 일수 추정
+    assert _compact_period_label("", "", 7) == "1W"
+    assert _compact_period_label("bad", "date", 23) == "1M"
+    # 데이터 없으면 빈 라벨
+    assert _compact_period_label("", "", 0) == ""
+    assert _compact_period_label("", "", 1) == ""
+
+
+def test_build_compact_strip_row_emits_period_label() -> None:
+    """v5.2.9 — _build_compact_strip_row 가 period_label 필드 emit.
+
+    template 의 `.compact-period` 가 읽음. 누락 시 사용자가 sparkline 기간을
+    인지 못함 — 회귀 차단.
+    """
+    from src.orchestrator import _build_compact_strip_row
+    row = _build_compact_strip_row({
+        "instrument": "코스피", "source": "YAHOO",
+        "start_date": "2026-02-17", "end_date": "2026-05-17",
+        "data": [{"date": "2026-02-17", "close": 3000.0},
+                 {"date": "2026-05-17", "close": 3200.0}],
+    })
+    assert row is not None
+    assert "period_label" in row, (
+        "compact strip row 가 period_label 필드 누락 — sparkline 기간 표시 불가."
+    )
+    assert row["period_label"] == "3M"
+
+
+def test_freeform_template_emits_compact_period_span() -> None:
+    """v5.2.9 — freeform_essay 가 compact-row 안에 ``.compact-period`` span 을
+    emit. CSS / payload 모두 갖췄어도 template 분기가 빠지면 화면에 안 보임."""
+    tpl = _TPL.read_text(encoding="utf-8")
+    assert "class=\"compact-period\"" in tpl, (
+        "freeform_essay.html 의 compact-row 가 compact-period span 누락 — "
+        "사용자가 sparkline 기간 (24H/1W/3M/1Y) 알 수 없음."
+    )
+    assert "ch.period_label" in tpl, (
+        "freeform_essay 가 ch.period_label 읽지 않음 — payload 가 있어도 "
+        "template 출력 안 됨."
+    )
+
+
+def test_compact_strip_css_has_period_rules() -> None:
+    """v5.2.9 — `.compact-row .compact-period` CSS 규칙 존재.
+
+    font / min-width / muted color 가 빠지면 다른 셀과 시각 호흡 깨짐.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    sel = ".compact-row .compact-period {"
+    assert sel in css, ".compact-period CSS 규칙 누락 — 기간 라벨 스타일링 없음."
+    block = css[css.find(sel):]
+    block = block[: block.find("}")]
+    assert "min-width:" in block, ".compact-period min-width 누락 — 좁아져서 wrap 위험."
+    # muted color 인지 (var(--muted) 또는 fg-3)
+    assert "muted" in block or "fg-3" in block, (
+        ".compact-period 가 muted 톤 아님 — primary 톤이면 sparkline 보다 시선 과다."
+    )
+
+
+def test_sparkline_uses_linear_curve_not_monotone() -> None:
+    """v5.2.9 — sparkline 이 curveLinear 사용. curveMonotoneX 는 일간 종가 변동
+    을 베지에로 평탄화 → 실제 가격 흐름 (jaggedness) 이 시각적으로 사라짐.
+
+    사용자 catch: "가격 흐름이 너무 부드러운 곡선으로만 보이는걸 실제 가격
+    흐름을 알 수 있는 라인 형태로 보완". 회귀 시 curve 함수 drift 차단.
+    """
+    js = _JS.read_text(encoding="utf-8")
+    spark_idx = js.find("function drawSparkline")
+    assert spark_idx >= 0
+    spark_block = js[spark_idx : js.find("\n  }", spark_idx) + 4]
+    assert "d3.curveLinear" in spark_block, (
+        "drawSparkline 이 curveLinear 안 씀 — 부드러운 곡선으로 실제 가격 변동 "
+        "사라짐 회귀. monotone/cardinal/basis 등 smoothing curve 금지."
+    )
+    assert "d3.curveMonotoneX" not in spark_block, (
+        "drawSparkline 에 curveMonotoneX 잔존 — v5.2.9 fix 의 회귀."
+    )
+
+
 def test_composer_instruments_picks_up_compact_role() -> None:
     """_composer_instruments 가 compact strip row 도 dedupe 집합에 포함해야
     _ensure_time_series_chart 가 같은 instrument 풀 차트로 중복 emit 안 함."""

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compact Strip Sparkline · v5.2.10 mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100%; }
+body {
+  font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+  font-size: 13px; line-height: 1.6;
+  background: #1a1a1a; color: #f0f0f0;
+}
+
+/* ── 상단 헤더 ─────────────────────────────────────────── */
+.head {
+  position: sticky; top: 0; z-index: 30;
+  background: #0d0d0d; border-bottom: 1px solid #2a2a2a;
+  padding: 14px 28px;
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+}
+.head h1 {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 18px; font-weight: 800; letter-spacing: 0.3px;
+}
+.head .ver {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: #888; letter-spacing: 1px;
+}
+.head .tag {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #d4c8b0; padding: 2px 8px; border: 1px solid #444; border-radius: 3px;
+}
+.head .desc {
+  flex-basis: 100%; font-size: 11.5px; color: #aaa; margin-top: 4px;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+}
+
+/* ── 비교 그리드 (BEFORE / AFTER, editorial / burgundy) ── */
+.compare-bar {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  background: #0d0d0d; border-bottom: 1px solid #2a2a2a;
+}
+.compare-bar > div {
+  padding: 9px 14px; font-size: 10.5px; letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 700;
+  color: #f5f5f5; border-right: 1px solid #2a2a2a;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+}
+.compare-bar > div:last-child { border-right: none; }
+.compare-bar > div small {
+  display: block; font-family: 'IBM Plex Sans KR', sans-serif;
+  font-size: 9px; letter-spacing: 0.8px; color: #888; font-weight: 400;
+  margin-top: 2px; text-transform: none;
+}
+
+.compare-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  min-height: calc(100vh - 80px);
+}
+.col { border-right: 1px solid #2a2a2a; overflow: hidden; }
+.col:last-child { border-right: none; }
+.col-inner { padding: 22px 24px 40px; background: var(--bg); color: var(--text); min-height: 100%; }
+
+/* ── 테마 토큰 (v4.5.0 mono) ──────────────────────────── */
+.editorial {
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-deep: #E6DBC1;
+  --text: #1F1814;
+  --muted: #6B5C4A;
+  --border: #D4C8B0;
+  --up: #4A6B3E;
+  --down: #8B2A2A;
+}
+.burgundy {
+  --bg: #2A0F18;
+  --card: #371721;
+  --card-deep: #4A1F2A;
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+  --border: #5A2832;
+  --up: #8FAE7F;
+  --down: #D6726E;
+}
+
+/* ── 섹션 라벨 ───────────────────────────────────────── */
+.section-label {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; font-style: italic;
+  margin: 8px 0 6px;
+}
+.section-label.first { margin-top: 0; }
+.section-sub {
+  font-size: 10.5px; color: var(--muted);
+  margin-bottom: 14px; line-height: 1.55;
+}
+.section-sub b { color: var(--text); font-weight: 600; }
+
+/* ============================================================
+ * Compact Strip — production CSS 인라인 미러
+ * SSOT: src/templates/static/charts.css (v5.2.10)
+ * ============================================================ */
+.compact-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 0 0 22px;
+  padding: 18px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border, rgba(125,98,76,0.25));
+  background: var(--card-deep, var(--card, transparent));
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.compact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  min-width: 0;
+  position: relative;
+}
+.compact-strip > .compact-row:not(:nth-child(2n)):not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -12px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--border, rgba(125,98,76,0.30));
+  pointer-events: none;
+}
+.compact-row .compact-name {
+  color: var(--muted, var(--fg-3));
+  width: 64px;
+  flex-shrink: 0;
+  font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.compact-row .compact-value {
+  font-weight: 700;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  min-width: 70px;
+  color: var(--text, var(--fg-1));
+  white-space: nowrap;
+}
+.compact-row .compact-change {
+  font-size: 10px;
+  min-width: 50px;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+.compact-row .compact-change.up { color: var(--up, #4A6B3E); }
+.compact-row .compact-change.down { color: var(--down, #8B2A2A); }
+.compact-row .compact-period {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--muted, var(--fg-3));
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  min-width: 24px;
+  letter-spacing: 0.4px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+.compact-row .compact-spark {
+  flex: 1;
+  min-width: 60px;
+  margin-left: 6px;
+  overflow: hidden;
+}
+.compact-row .compact-spark svg.sparkline {
+  display: block;
+  width: 100%;
+  height: 22px;
+}
+
+/* ── 비교용 토글 ─────────────────────────────────────── */
+.toggle-row {
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 16px;
+  font-size: 11px; color: var(--muted);
+}
+.toggle-row button {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+.toggle-row button.active {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+}
+.toggle-row button:hover:not(.active) {
+  background: var(--card);
+}
+
+/* ── footer 메모 ─────────────────────────────────────── */
+.foot {
+  background: #0d0d0d; color: #888;
+  font-size: 11px; line-height: 1.7;
+  padding: 16px 28px;
+  border-top: 1px solid #2a2a2a;
+}
+.foot code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px; color: #d4c8b0;
+  background: #1a1a1a; padding: 1px 5px; border-radius: 2px;
+}
+
+/* ── responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-bar { grid-template-columns: 1fr; }
+  .col { border-right: none; border-bottom: 1px solid #2a2a2a; }
+}
+@media (max-width: 600px) {
+  .compact-strip {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 14px 16px;
+  }
+  .compact-strip > .compact-row::after { display: none !important; }
+  .compact-strip > .compact-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border, rgba(125,98,76,0.25));
+  }
+  .compact-strip > .compact-row:first-child { padding-top: 0; }
+  .compact-strip > .compact-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .compact-row .compact-name { width: 56px; font-size: 10.5px; }
+  .compact-row .compact-value { min-width: 60px; font-size: 12px; }
+  .compact-row .compact-change { min-width: 44px; }
+  .compact-row .compact-period { min-width: 22px; font-size: 9px; }
+}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Compact Strip Sparkline</h1>
+  <span class="ver">v5.2.10</span>
+  <span class="tag">mockup</span>
+  <div class="desc">
+    v5.2.10 — curveLinear (실제 가격 흐름) + baseline dashed + min/max dot + period label.
+    이전 v5.2.5~v5.2.9 의 curveMonotoneX (베지에 평탄화) 와 비교.
+  </div>
+</div>
+
+<div class="compare-bar">
+  <div>Editorial Cream <small>디폴트 테마 — 일반 보고서</small></div>
+  <div>Burgundy Mono <small>위기·분쟁 한정 테마</small></div>
+</div>
+
+<div class="compare-grid">
+
+  <!-- ──────────────── editorial_cream ──────────────── -->
+  <div class="col editorial">
+    <div class="col-inner">
+      <div class="toggle-row">
+        <span>곡선 형태:</span>
+        <button data-curve="linear" class="active" data-col="editorial">curveLinear (v5.2.10)</button>
+        <button data-curve="monotone" data-col="editorial">curveMonotoneX (v5.2.9)</button>
+      </div>
+
+      <div class="section-label first">Use case A — 3개월 시계열 (디폴트)</div>
+      <div class="section-sub">
+        instruments_mentioned 가 3개 이상이면 sections[0] 앞에 자동 emit.
+        <b>period_label</b> 이 sparkline 옆에 작게 표시되어 기간을 즉시 인지.
+      </div>
+      <div class="compact-strip" id="strip-editorial-3m"></div>
+
+      <div class="section-label">Use case B — 다양한 기간 혼합</div>
+      <div class="section-sub">
+        24H (당일 분봉) / 1W / 1M / 3M / 1Y. 각 row 가 자기 sparkline 의 실 기간을 라벨로 노출.
+      </div>
+      <div class="compact-strip" id="strip-editorial-mixed"></div>
+
+      <div class="section-label">Use case C — 시각 요소 분해</div>
+      <div class="section-sub">
+        ① 직선 segment 라인 (curveLinear) · ② 시작 종가 baseline (dashed) ·
+        ③ min/max 극값 dot (faded) · ④ 끝점 dot (solid) · ⑤ period label.
+      </div>
+      <div class="compact-strip" id="strip-editorial-decomp"></div>
+    </div>
+  </div>
+
+  <!-- ──────────────── burgundy_mono ──────────────── -->
+  <div class="col burgundy">
+    <div class="col-inner">
+      <div class="toggle-row">
+        <span>곡선 형태:</span>
+        <button data-curve="linear" class="active" data-col="burgundy">curveLinear (v5.2.10)</button>
+        <button data-curve="monotone" data-col="burgundy">curveMonotoneX (v5.2.9)</button>
+      </div>
+
+      <div class="section-label first">Use case A — 3개월 시계열 (디폴트)</div>
+      <div class="section-sub">
+        위기·분쟁 보고서에서 같은 시계열 instruments 가 burgundy 테마로 렌더된 모습.
+        <b>--up</b> / <b>--down</b> 토큰만 다르고 layout / sparkline 알고리즘은 동일.
+      </div>
+      <div class="compact-strip" id="strip-burgundy-3m"></div>
+
+      <div class="section-label">Use case B — 다양한 기간 혼합</div>
+      <div class="section-sub">
+        24H / 1W / 1M / 3M / 1Y — 위기 시점의 변동성 시각화 (FX·금·채권 spike).
+      </div>
+      <div class="compact-strip" id="strip-burgundy-mixed"></div>
+
+      <div class="section-label">Use case D — odd count 자연 wrap</div>
+      <div class="section-sub">
+        instrument 수 5개 → 2-col grid 자연 wrap (2x3, 마지막 1셀).
+        세로 separator 는 nth-child(2n) 와 :last-child 제외 selector 로 정확히.
+      </div>
+      <div class="compact-strip" id="strip-burgundy-odd"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  SSOT — sparkline 렌더러 <code>src/templates/static/charts.js</code> <code>drawSparkline()</code> · CSS <code>src/templates/static/charts.css</code> <code>.compact-strip</code> · payload <code>src/orchestrator.py</code> <code>_build_compact_strip_row()</code> · 회귀 <code>tests/regression/test_compact_strip.py</code> (22 cases).
+</div>
+
+<script>
+// ============================================================
+// 가격 시계열 생성기 — 결정적 random walk (seeded).
+// 실제 운영 데이터를 흉내내는 합리적 변동성 (daily vol 0.5~2%).
+// ============================================================
+function seededWalk(seed, n, start, dailyVol, drift) {
+  let s = seed * 9301 + 49297;
+  function rand() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
+  function gauss() {
+    // Box-Muller — 두 uniform → 표준정규
+    const u = Math.max(rand(), 1e-9), v = rand();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  const out = [start];
+  let v = start;
+  for (let i = 1; i < n; i++) {
+    const r = drift + dailyVol * gauss();
+    v = v * (1 + r);
+    out.push(v);
+  }
+  return out;
+}
+
+function fmtNumber(v, instrument) {
+  const name = instrument || '';
+  const isRate = (name.indexOf('Y') >= 0 && name.indexOf('유가') < 0) || name.indexOf('금리') >= 0;
+  if (isRate) return v.toFixed(2) + '%';
+  if (name.indexOf('비트') >= 0 || name.toUpperCase().indexOf('BTC') >= 0)
+    return '$' + Math.round(v).toLocaleString();
+  if (Math.abs(v) >= 1000) return Math.round(v).toLocaleString();
+  return v.toFixed(2);
+}
+
+function fmtPct(closes) {
+  if (closes.length < 2) return { txt: '', dir: 'up' };
+  const last = closes[closes.length - 1], prev = closes[closes.length - 2];
+  const pct = (last / prev - 1) * 100;
+  const sign = pct >= 0 ? '+' : '';
+  return { txt: sign + pct.toFixed(2) + '%', dir: pct >= 0 ? 'up' : 'down' };
+}
+
+function periodLabel(days) {
+  if (days <= 1) return '24H';
+  if (days <= 3) return days + 'D';
+  if (days <= 10) return '1W';
+  if (days <= 21) return '2W';
+  if (days <= 45) return '1M';
+  if (days <= 100) return '3M';
+  if (days <= 200) return '6M';
+  if (days <= 400) return '1Y';
+  if (days <= 800) return '2Y';
+  return Math.max(2, Math.round(days / 365)) + 'Y';
+}
+
+// ============================================================
+// sparkline 렌더 — src/templates/static/charts.js:drawSparkline 미러
+// ============================================================
+function drawSparkline(svg, closes, color, curveType) {
+  svg.innerHTML = '';
+  const rect = svg.getBoundingClientRect();
+  let W = rect.width || 200;
+  let H = rect.height || 22;
+  if (W < 20) W = 200;
+  const sel = d3.select(svg).attr('viewBox', '0 0 ' + W + ' ' + H);
+  if (!closes || closes.length < 2) return;
+  const min = Math.min.apply(null, closes);
+  const max = Math.max.apply(null, closes);
+  const rng = max - min || 1;
+  const pad = 2;
+  const x = i => pad + (i / (closes.length - 1)) * (W - 2 * pad);
+  const y = v => H - pad - ((v - min) / rng) * (H - 2 * pad);
+
+  // v5.2.10 — baseline (시작 종가) dashed
+  const baseY = y(closes[0]);
+  sel.append('line')
+    .attr('x1', pad).attr('x2', W - pad)
+    .attr('y1', baseY).attr('y2', baseY)
+    .attr('stroke', color)
+    .attr('stroke-width', 0.6)
+    .attr('stroke-dasharray', '2,2')
+    .attr('opacity', 0.35);
+
+  const curve = curveType === 'monotone' ? d3.curveMonotoneX : d3.curveLinear;
+  const line = d3.line()
+    .x((_, i) => x(i))
+    .y(d => y(d))
+    .curve(curve);
+  sel.append('path')
+    .attr('d', line(closes))
+    .attr('fill', 'none')
+    .attr('stroke', color)
+    .attr('stroke-width', 1.2)
+    .attr('stroke-linejoin', 'miter')
+    .attr('stroke-linecap', 'butt');
+
+  // v5.2.10 — min/max dot
+  if (max > min) {
+    const iMax = closes.indexOf(max);
+    const iMin = closes.indexOf(min);
+    sel.append('circle').attr('cx', x(iMax)).attr('cy', y(max))
+      .attr('r', 1.1).attr('fill', color).attr('opacity', 0.55);
+    sel.append('circle').attr('cx', x(iMin)).attr('cy', y(min))
+      .attr('r', 1.1).attr('fill', color).attr('opacity', 0.55);
+  }
+  // 끝점 solid dot
+  sel.append('circle')
+    .attr('cx', x(closes.length - 1)).attr('cy', y(closes[closes.length - 1]))
+    .attr('r', 1.8).attr('fill', color);
+}
+
+// ============================================================
+// row + strip 빌더
+// ============================================================
+function buildRow(strip, instrument, closes, periodDays) {
+  const row = document.createElement('div');
+  row.className = 'compact-row';
+  const last = closes[closes.length - 1];
+  const { txt, dir } = fmtPct(closes);
+
+  row.innerHTML =
+    '<span class="compact-name">' + instrument + '</span>' +
+    '<span class="compact-value">' + fmtNumber(last, instrument) + '</span>' +
+    '<span class="compact-change ' + dir + '">' + txt + '</span>' +
+    '<span class="compact-period">' + periodLabel(periodDays) + '</span>' +
+    '<span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>';
+  row._closes = closes;  // re-render 시 재사용
+  strip.appendChild(row);
+  return row;
+}
+
+// 데이터 정의 (seed / N / 시작값 / vol / drift) — 결정적
+const DATASETS = {
+  threeMonth: [
+    { name: '코스피',     seed: 7,   n: 65, start: 3150,    vol: 0.011, drift: 0.0005,  period: 90 },
+    { name: '코스닥',     seed: 11,  n: 65, start: 1050,    vol: 0.014, drift: -0.0003, period: 90 },
+    { name: '미국채 10Y', seed: 19,  n: 65, start: 4.32,    vol: 0.008, drift: 0.0006,  period: 90 },
+    { name: '달러인덱스', seed: 23,  n: 65, start: 104.8,   vol: 0.0045, drift: 0.0002, period: 90 },
+    { name: 'WTI 유가',   seed: 29,  n: 65, start: 78.4,    vol: 0.018, drift: -0.0008, period: 90 },
+    { name: '비트코인',   seed: 31,  n: 65, start: 68500,   vol: 0.025, drift: 0.0014,  period: 90 },
+  ],
+  mixed: [
+    { name: '삼성전자',   seed: 41,  n: 24,  start: 73200,  vol: 0.006, drift: 0.0002,  period: 1 },   // 24H 분봉
+    { name: '코스피',     seed: 43,  n: 7,   start: 3180,   vol: 0.012, drift: 0.0008,  period: 7 },   // 1W
+    { name: 'WTI 유가',   seed: 47,  n: 22,  start: 76.5,   vol: 0.018, drift: -0.001,  period: 30 },  // 1M
+    { name: '달러인덱스', seed: 53,  n: 65,  start: 105.2,  vol: 0.0048, drift: 0.0001, period: 90 },  // 3M
+    { name: '미국채 10Y', seed: 59,  n: 250, start: 4.18,   vol: 0.007, drift: 0.0005,  period: 365 }, // 1Y
+    { name: '금',         seed: 61,  n: 250, start: 2680,   vol: 0.008, drift: 0.0011,  period: 365 }, // 1Y
+  ],
+  decomp: [
+    { name: 'KOSPI 200',  seed: 67,  n: 65, start: 420,     vol: 0.013, drift: 0.0006,  period: 90 },
+    { name: '엔/달러',    seed: 71,  n: 65, start: 156.3,   vol: 0.005, drift: 0.0003,  period: 90 },
+    { name: '유로/달러',  seed: 73,  n: 65, start: 1.082,   vol: 0.004, drift: -0.0001, period: 90 },
+    { name: '구리',       seed: 79,  n: 65, start: 9420,    vol: 0.012, drift: -0.0004, period: 90 },
+  ],
+  odd: [
+    { name: '코스피',     seed: 83,  n: 65, start: 3120,    vol: 0.013, drift: -0.0006, period: 90 },
+    { name: '달러인덱스', seed: 89,  n: 65, start: 106.1,   vol: 0.005, drift: 0.0008,  period: 90 },
+    { name: '미국채 10Y', seed: 97,  n: 65, start: 4.45,    vol: 0.009, drift: 0.0011,  period: 90 },
+    { name: '금',         seed: 101, n: 65, start: 2720,    vol: 0.009, drift: 0.0009,  period: 90 },
+    { name: 'WTI 유가',   seed: 103, n: 65, start: 82.3,    vol: 0.020, drift: 0.0015,  period: 90 },
+  ],
+};
+
+// 행 풀: { stripId, dataset } → rows[]
+const STRIPS = [
+  { id: 'strip-editorial-3m',     dataset: 'threeMonth', col: 'editorial' },
+  { id: 'strip-editorial-mixed',  dataset: 'mixed',      col: 'editorial' },
+  { id: 'strip-editorial-decomp', dataset: 'decomp',     col: 'editorial' },
+  { id: 'strip-burgundy-3m',      dataset: 'threeMonth', col: 'burgundy'  },
+  { id: 'strip-burgundy-mixed',   dataset: 'mixed',      col: 'burgundy'  },
+  { id: 'strip-burgundy-odd',     dataset: 'odd',        col: 'burgundy'  },
+];
+
+function colorFor(strip, dir) {
+  // strip 의 closest .col 에서 CSS var 읽기 — 테마 자동 매칭
+  const col = strip.closest('.col');
+  if (!col) return dir === 'up' ? '#4A6B3E' : '#8B2A2A';
+  const cs = getComputedStyle(col);
+  const u = cs.getPropertyValue('--up').trim() || '#4A6B3E';
+  const d = cs.getPropertyValue('--down').trim() || '#8B2A2A';
+  return dir === 'up' ? u : d;
+}
+
+function renderStrip(stripConf, curveType) {
+  const strip = document.getElementById(stripConf.id);
+  if (!strip) return;
+  strip.innerHTML = '';
+  const items = DATASETS[stripConf.dataset];
+  items.forEach(item => {
+    const closes = seededWalk(item.seed, item.n, item.start, item.vol, item.drift);
+    const row = buildRow(strip, item.name, closes, item.period);
+    const { dir } = fmtPct(closes);
+    const svg = row.querySelector('svg.sparkline');
+    // first frame 에 width 안 잡힐 수도 있어서 rAF 두 번
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      drawSparkline(svg, closes, colorFor(strip, dir), curveType);
+    }));
+  });
+}
+
+// curve 상태 — col 별 독립
+const CURVE_STATE = { editorial: 'linear', burgundy: 'linear' };
+
+function renderAll() {
+  STRIPS.forEach(s => renderStrip(s, CURVE_STATE[s.col]));
+}
+
+// 토글 핸들러
+document.querySelectorAll('.toggle-row button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const col = btn.dataset.col;
+    const curve = btn.dataset.curve;
+    CURVE_STATE[col] = curve;
+    // 같은 col 의 버튼 active state 갱신
+    document.querySelectorAll('.toggle-row button[data-col="' + col + '"]').forEach(b => {
+      b.classList.toggle('active', b.dataset.curve === curve);
+    });
+    // 해당 col 의 strip 만 다시 렌더
+    STRIPS.filter(s => s.col === col).forEach(s => renderStrip(s, curve));
+  });
+});
+
+// 첫 렌더 + resize 대응
+renderAll();
+window.addEventListener('resize', renderAll);
+</script>
+
+</body>
+</html>
