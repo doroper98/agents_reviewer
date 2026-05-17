@@ -1,8 +1,8 @@
-"""compact-strip 렌더링 + overflow root-fix 회귀 가드 (v5.2.5).
+"""compact-strip 렌더링 + 본문 폭 정렬 회귀 가드 (v5.2.8).
 
 기능 SSOT (CLAUDE.md Change Propagation Matrix 의 다음 갱신 시 함께):
 - ``src/templates/static/charts.css`` — `.compact-strip` / `.compact-row` 의
-  ROOT-FIX 주석 + min-width:0 + minmax(0, 1fr).
+  2-col grid + 본문 폭 conform + min-width:0 + minmax(0, 1fr).
 - ``src/templates/static/charts.js`` — `drawSparkline` + `renderSparklines` +
   `init()` 의 `renderSparklines()` 호출.
 - ``src/templates/archetypes/freeform_essay.html`` — `_compact_split` 분기.
@@ -12,8 +12,11 @@
 본 회귀의 catch:
 1. v5.2.4 P0-Patch7 의 `minmax(220px, 1fr)` 회귀 — flex 자식 min-width 합산
    274px > 220px → 셀 강제 확장 → 옆 셀 침범. 본 테스트는 fix 키워드를 lock.
-2. `role='compact'` payload 가 일반 chart-card 로 잘못 emit 되는 회귀.
-3. `_ensure_market_strip` 이 idempotent 하지 않으면 중복 emit (스트립 다수).
+2. v5.2.5~v5.2.7 의 break-out 회귀 — ``width: min(1100px, ...)`` +
+   ``translateX(-50%)`` 로 본문 좌우를 넘어서는 동작. v5.2.8 에서 본문 폭 안에
+   가두는 설계로 반전. 회귀 시 본 테스트가 catch.
+3. `role='compact'` payload 가 일반 chart-card 로 잘못 emit 되는 회귀.
+4. `_ensure_market_strip` 이 idempotent 하지 않으면 중복 emit (스트립 다수).
 """
 
 from __future__ import annotations
@@ -30,29 +33,57 @@ _JS = _REPO_ROOT / "src" / "templates" / "static" / "charts.js"
 _TPL = _REPO_ROOT / "src" / "templates" / "archetypes" / "freeform_essay.html"
 
 
-def test_compact_strip_css_breaks_out_of_narrow_container() -> None:
-    """ROOT-FIX: 모크업 (samples/market_charts_mockup.html) 의 wider context 재현.
+def test_compact_strip_css_stays_within_container_width() -> None:
+    """v5.2.8: strip 은 본문 ``.container`` (max 960px) 폭 안에 머무른다.
 
-    .freeform-section .container 는 max-width 780px → 752px / 3 cols = 244px 셀
-    로 모크업 콘텐츠 274px 가 안 들어감. strip 만 viewport 폭 (max 1100px) 으로
-    break-out 시켜 모크업 1200px wrap 의 시각 정합 회복. ``left:50% + translateX``
-    조합 + ``width: min(1100px, ...)`` 가 모두 있어야.
+    v5.2.5~v5.2.7 의 break-out (``width: min(1100px, ...)`` +
+    ``translateX(-50%)``) 은 데스크탑/태블릿에서 본문 좌우를 넘어가는 회귀.
+    본 테스트가 다음을 강제:
+    1. ``width: 100%`` + ``max-width: 100%`` + ``box-sizing: border-box`` —
+       본문 폭에 conform.
+    2. ``translateX(-50%)`` / ``left: 50%`` / ``min(1100px,`` 금지 — break-out
+       회귀 차단.
+    3. ``minmax(0, 1fr)`` — 셀이 콘텐츠로 부풀지 않도록 safety net.
     """
     css = _CSS.read_text(encoding="utf-8")
     idx = css.find(".compact-strip {")
     assert idx >= 0
     block = css[idx : css.find("}", idx)]
-    assert "min(1100px," in block, (
-        ".compact-strip 의 width 가 min(1100px, ...) 아니면 break-out 안 됨 "
-        "— 모크업 wider context 재현 불가."
+    assert "width: 100%" in block, (
+        ".compact-strip width:100% 누락 — 본문 폭 conform 안 됨."
     )
-    assert "left: 50%" in block and "translateX(-50%)" in block, (
-        ".compact-strip 의 viewport 중앙 정렬 (left:50% + translateX) 누락 "
-        "— breakout 이 .container 왼쪽 정렬 상태로 어긋남."
+    assert "max-width: 100%" in block, (
+        ".compact-strip max-width:100% 누락 — 본문보다 더 넓어질 위험."
+    )
+    assert "box-sizing: border-box" in block, (
+        ".compact-strip box-sizing:border-box 누락 — padding 이 폭 계산에 빠지면 "
+        "본문 폭 overflow 회귀."
+    )
+    assert "min(1100px," not in block, (
+        "v5.2.5~v5.2.7 break-out 잔존 — width:min(1100px, ...) 제거 필요."
+    )
+    assert "translateX(-50%)" not in block and "left: 50%" not in block, (
+        "v5.2.5~v5.2.7 break-out 잔존 — translateX/left:50% 제거 필요."
     )
     assert "minmax(0, 1fr)" in block, (
         "grid-template-columns 의 minmax min 이 0 이어야 셀이 콘텐츠로 부풀지 않음 "
         "— 회귀 차단의 safety net."
+    )
+
+
+def test_compact_strip_css_two_column_grid_on_desktop_tablet() -> None:
+    """v5.2.8: desktop/tablet 공통 2-col grid. 차트 수 N 가변 (3/5/7…) 은 grid
+    자연 wrap 으로 처리 — 마지막 행에 odd cell 1 개 남는 형태가 정상 동작.
+
+    이전 (v5.2.5~v5.2.7) 의 3-col 은 본문 폭 안에서 셀이 너무 좁아 sparkline
+    표시 불가. 2-col × ~454px 셀 이 본문 폭 932px 안의 최적 비율.
+    """
+    css = _CSS.read_text(encoding="utf-8")
+    idx = css.find(".compact-strip {")
+    block = css[idx : css.find("}", idx)]
+    assert "repeat(2, minmax(0, 1fr))" in block, (
+        ".compact-strip grid 가 repeat(2, ...) 가 아니면 본문 폭 안에서 sparkline "
+        "표시 불가 — v5.2.5~v5.2.7 3-col 회귀."
     )
 
 
@@ -97,29 +128,24 @@ def test_compact_strip_css_row_min_width_zero_safety() -> None:
 
 
 def test_compact_strip_css_responsive_fallback() -> None:
-    """좁은 viewport (모크업 wrap 미만) 에선 cols 자동 축소.
-
-    920px ↓ → 2 cols, 600px ↓ → 1 col. 콘텐츠가 셀에 못 들어가는 viewport 에선
-    overflow 보다 stack 이 항상 더 가독성 좋음.
-    """
+    """좁은 viewport 에서 cols 축소. v5.2.8: desktop/tablet 모두 2-col 이 base
+    이므로 분기는 600px (1-col stack) 만. 920px 분기는 더 이상 의미 없음."""
     css = _CSS.read_text(encoding="utf-8")
-    assert "max-width: 920px" in css, "920px breakpoint 누락 — 2-col fallback 회귀."
     assert "max-width: 600px" in css, "600px breakpoint 누락 — 1-col stack fallback 회귀."
 
 
 def test_compact_strip_css_has_vertical_separator_between_cells() -> None:
     """셀 사이 세로 구분선 (::after pseudo) — Bloomberg/FT 스타일.
 
-    사용자 catch 2번째: "너무 구분이 안가. 가로로 뭔가 계속 나열만 되어 있으니까".
-    gap 만으로는 시각 구분 부족 → ::after 로 1px line 명시.
+    사용자 catch (v5.2.5): "너무 구분이 안가. 가로로 뭔가 계속 나열만 되어 있으니까".
+    gap 만으로는 시각 구분 부족 → ::after 로 1px line 명시. v5.2.8 부터 2-col
+    기준 selector (nth-child(2n) 제외).
     """
     css = _CSS.read_text(encoding="utf-8")
-    # 3-col separator selector + ::after content
-    sep_sel = ".compact-strip > .compact-row:not(:nth-child(3n)):not(:last-child)::after"
+    sep_sel = ".compact-strip > .compact-row:not(:nth-child(2n)):not(:last-child)::after"
     assert sep_sel in css, (
         f"세로 separator selector ({sep_sel}) 누락 — 셀 시각 구분 회귀."
     )
-    # ::after 가 실제로 1px line 그리는지 — content: '' + width 또는 background 존재
     idx = css.find(sep_sel)
     block = css[idx : css.find("}", idx)]
     assert "content:" in block and "background:" in block, (

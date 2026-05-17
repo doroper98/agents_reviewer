@@ -441,42 +441,36 @@
 .chart-note-text{ color: var(--text); }
 
 /* ============================================================
- * Compact Strip — key_figures inline (v5.2.5)
+ * Compact Strip — key_figures inline (v5.2.8)
  *
- * SSOT: samples/market_charts_mockup.html §2. role="compact" 차트는 풀 카드
- * (180px stage + axes + takeaway + sources) 대신 한 줄
- * [name | value | change | sparkline] 으로 압축 렌더.
+ * role="compact" 차트는 풀 카드 (180px stage + axes + takeaway + sources) 대신
+ * 한 줄 [name | value | change | sparkline] 으로 압축 렌더.
  *
- * 모크업과의 단 하나 차이: 모크업은 1200px ``.wrap`` 안에 있어 3 cols × ~390px
- * 셀로 콘텐츠 (name 64 + value 70 + change 50 + spark 60 + gap 30 = 274px) 가
- * 여유롭게 들어감. 그러나 production 의 ``.freeform-section .container`` 는
- * max-width 780px (article 가독성 우선) → 752px / 3 = 244px 셀 → 274px 콘텐츠가
- * 옆 셀 침범. 이전 패치 회귀의 근본 원인.
+ * 폭 정책 (v5.2.8 변경): strip 은 본문 ``.container`` (max 960px) 폭 안에
+ * 머무른다. 이전 (v5.2.5~v5.2.7) 의 ``width: min(1100px, ...)`` +
+ * ``translateX(-50%)`` break-out 은 데스크탑/태블릿에서 본문 좌우를 넘어가서
+ * 시각 불일치 회귀. 본문 폭 932px (max 960 - padding 28) / 2-col × ~454px 셀
+ * 이면 모크업 콘텐츠 (name 64 + value 70 + change 50 + spark min 60 + gap 24)
+ * 가 여유롭게 들어가고 sparkline 도 ≥180px 확보.
  *
- * ROOT-FIX (v5.2.5+): strip *만* .container 의 780px 제약을 escape — viewport
- * 가 허용하는 한 모크업의 1100~1200px wider context 를 재현. ``width: min()``
- * + ``left: 50%; transform: translateX(-50%)`` 로 viewport 중앙 정렬. 좁은
- * viewport (모크업 wrap 미만) 는 grid cols 축소로 자연 fallback.
- *
- * 모크업 값 그대로 (name 64 fixed / value min 70 / change min 50 / spark
- * flex 1 min 60). 이 값들은 ≥ ~290px 셀에서 정상 동작. 셀이 더 좁아질 만한
- * viewport 범위는 responsive 분기로 cols 자체를 줄여서 회피.
+ * Grid 정책: desktop/tablet 공통 2-col. 차트 수 N 에 대해 자연 wrap —
+ * 3개 → 2x2 (마지막 1셀), 5개 → 2x3 (마지막 1셀), 7개 → 2x4 (마지막 1셀) 등.
+ * 모바일 (≤600px) 만 1-col stack.
  * ============================================================ */
 .compact-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  /* col gap = 24px (셀 사이 호흡), row gap = 12px (wrap 됐을 때만 보임) */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* col gap = 24px (셀 사이 호흡), row gap = 12px */
   gap: 12px 24px;
-  margin: 18px auto;
+  margin: 18px 0;
   padding: 18px 22px;
   border-radius: 8px;
   border: 1px solid var(--border, rgba(125,98,76,0.25));
   background: var(--card-deep, var(--card, transparent));
-  /* ── break-out from narrow .container (max 780px) ────────── */
-  width: min(1100px, calc(100vw - 48px));
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  /* 본문 폭 (.container) 안에 머무름. break-out 금지. */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .compact-row {
   display: flex;
@@ -489,8 +483,9 @@
   position: relative;     /* ::after separator 기준점 */
 }
 /* 세로 구분선 — 셀 사이 24px col-gap 의 중앙 (12px) 에 1px 선.
-   3-col (desktop) 기준: 매 3n 번째 (오른쪽 가장자리) 와 마지막 셀 제외. */
-.compact-strip > .compact-row:not(:nth-child(3n)):not(:last-child)::after {
+   2-col 기준: 짝수 번째 (오른쪽 셀) 와 마지막 셀 제외. odd N 의 마지막
+   왼쪽 셀은 :last-child 룰로 자연스럽게 separator 안 그림. */
+.compact-strip > .compact-row:not(:nth-child(2n)):not(:last-child)::after {
   content: '';
   position: absolute;
   right: -12px;            /* col-gap (24px) 의 절반 */
@@ -537,29 +532,14 @@
   height: 22px;
 }
 /* ── responsive ──────────────────────────────────────────────
- * tablet (≤920px): 3 cols 셀 폭이 콘텐츠 (≈275px) 미만이라 2 cols 로 축소.
- *   separator 는 nth-child(2n) 기준으로 재배치 (모든 짝수 cell 오른쪽 = 행 끝).
- * mobile (≤600px): 1 col stack. 세로 separator 폐기, 대신 행 사이 border-bottom
- *   으로 ticker 분리 명시. width 도 viewport 더 가깝게.
+ * desktop/tablet 공통 2-col 이 base. mobile (≤600px) 만 1-col stack 으로
+ * 전환 — 세로 separator 폐기, 대신 행 사이 border-bottom 으로 ticker 분리.
  * ──────────────────────────────────────────────────────────── */
-@media (max-width: 920px) {
-  .compact-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 22px;
-  }
-  /* 3-col separator 비활성 + 2-col 패턴 재활성 */
-  .compact-strip > .compact-row::after { display: none; }
-  .compact-strip > .compact-row:not(:nth-child(2n)):not(:last-child)::after {
-    display: block;
-    right: -11px;
-  }
-}
 @media (max-width: 600px) {
   .compact-strip {
     grid-template-columns: 1fr;
     gap: 0;
     padding: 14px 16px;
-    width: calc(100vw - 24px);
   }
   .compact-strip > .compact-row::after { display: none !important; }
   .compact-strip > .compact-row {
