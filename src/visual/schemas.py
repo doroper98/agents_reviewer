@@ -451,6 +451,318 @@ class DonutGuard(BaseModel):
         return self
 
 
+# ─── v5.2.14 — production 가드 보강 3종 (dual_line / forecast / choropleth) ─
+
+
+class XYSeriesPoint(BaseModel):
+    x: float | str | int
+    y: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_y_finite(self) -> "XYSeriesPoint":
+        if not math.isfinite(self.y):
+            raise ValueError(f"CHART-AP-3 가드: y NaN/inf — x={self.x}")
+        return self
+
+
+class DualLineAxis(BaseModel):
+    label: str
+    unit: str = ""
+    series: list[XYSeriesPoint] = Field(min_length=2)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class DualLineGuard(BaseModel):
+    """dual_line: 두 시리즈의 동조/괴리 비교.
+
+    composer SYSTEM_PROMPT: left/right 각각 {label, unit, series: [{x, y}]}.
+    각 series ≥2 포인트, ≤200 포인트.
+    """
+    left: DualLineAxis
+    right: DualLineAxis
+
+    @model_validator(mode="after")
+    def validate_size(self) -> "DualLineGuard":
+        for side, axis in (("left", self.left), ("right", self.right)):
+            if len(axis.series) > 200:
+                raise ValueError(
+                    f"CHART-AP-7 가드: dual_line {side}.series {len(axis.series)} "
+                    f"포인트 — 200 초과는 line 가시성 손상"
+                )
+        return self
+
+
+class ForecastActual(BaseModel):
+    x: float | str | int
+    y: float
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ForecastFuture(BaseModel):
+    x: float | str | int
+    mid: float
+    low: float
+    high: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_band(self) -> "ForecastFuture":
+        for fld_name in ("mid", "low", "high"):
+            v = getattr(self, fld_name)
+            if not math.isfinite(v):
+                raise ValueError(
+                    f"CHART-AP-3 가드: forecast {fld_name} NaN/inf — x={self.x}"
+                )
+        if not (self.low <= self.mid <= self.high):
+            raise ValueError(
+                f"CHART-AP-3 가드: forecast x={self.x} low≤mid≤high 위반 "
+                f"(low={self.low}, mid={self.mid}, high={self.high})"
+            )
+        return self
+
+
+class ForecastGuard(BaseModel):
+    """forecast: 실측 + 예측 + 신뢰구간.
+
+    composer SYSTEM_PROMPT: {actual: [{x, y}], forecast: [{x, mid, low, high}], fork_at}.
+    actual ≥2, forecast ≥1, low ≤ mid ≤ high.
+    """
+    actual: list[ForecastActual] = Field(min_length=2)
+    forecast: list[ForecastFuture] = Field(min_length=1)
+    fork_at: str | float | int | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+# ISO-3166-1 alpha-2 country code (느슨한 — 2 대문자만 검증, 사전 매칭 X)
+_ISO_ALPHA2 = re.compile(r"^[A-Z]{2}$")
+
+
+class ChoroplethRow(BaseModel):
+    country_code: str
+    value: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "ChoroplethRow":
+        if not _ISO_ALPHA2.match(self.country_code):
+            raise ValueError(
+                f"CHART-AP-3 가드: choropleth country_code "
+                f"'{self.country_code}' — ISO-3166-1 alpha-2 (2 대문자) 필요"
+            )
+        if not math.isfinite(self.value):
+            raise ValueError(
+                f"CHART-AP-3 가드: choropleth value NaN/inf — {self.country_code}"
+            )
+        return self
+
+
+class ChoroplethGuard(BaseModel):
+    """choropleth: 국가별 색농도 지도.
+
+    composer SYSTEM_PROMPT: [{country_code:"KR", value:12.4}, ...].
+    ≥3 국가 (그 미만은 bar 가 적절).
+    """
+    data: list[ChoroplethRow] = Field(min_length=3)
+
+
+# ─── v5.2.14 — 신규 7종 (FT/Economist 스타일) ─────────────────────────────
+
+
+class ScatterPoint(BaseModel):
+    label: str = Field(min_length=1)
+    x: float
+    y: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "ScatterPoint":
+        for fld in ("x", "y"):
+            v = getattr(self, fld)
+            if not math.isfinite(v):
+                raise ValueError(f"CHART-AP-3 가드: scatter {fld} NaN/inf — {self.label}")
+        return self
+
+
+class ScatterGuard(BaseModel):
+    """scatter: 라벨 산점도 (FT 좌측 스타일).
+
+    [{label, x, y}]. ≥3 포인트 (그 미만은 본문 한 줄로 충분).
+    bubble 과 구분: bubble 은 size 인코딩 있음, scatter 는 균일.
+    """
+    data: list[ScatterPoint] = Field(min_length=3)
+
+
+class StackedAreaSeries(BaseModel):
+    name: str = Field(min_length=1)
+    values: list[XYSeriesPoint] = Field(min_length=5)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StackedAreaGuard(BaseModel):
+    """stacked_area: 시계열 누적 영역 (FT 우측 스타일).
+
+    {series: [{name, values: [{x, y}]}]}.
+    ≤5 시리즈, 각 시리즈 ≥5 포인트, 모든 시리즈 x 축 정합.
+    """
+    series: list[StackedAreaSeries] = Field(min_length=2, max_length=5)
+
+    @model_validator(mode="after")
+    def validate_x_alignment(self) -> "StackedAreaGuard":
+        if not self.series:
+            return self
+        xs_ref = [p.x for p in self.series[0].values]
+        for s in self.series[1:]:
+            xs = [p.x for p in s.values]
+            if xs != xs_ref:
+                raise ValueError(
+                    f"CHART-AP-3 가드: stacked_area 시리즈 '{s.name}' 의 x 축이 "
+                    f"기준 시리즈와 불일치 — 모든 시리즈가 동일한 x 격자 필요"
+                )
+        return self
+
+
+class LollipopRow(BaseModel):
+    label: str = Field(min_length=1)
+    value: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_value(self) -> "LollipopRow":
+        if not math.isfinite(self.value):
+            raise ValueError(f"CHART-AP-3 가드: lollipop value NaN/inf — {self.label}")
+        return self
+
+
+class LollipopGuard(BaseModel):
+    """lollipop: bar 의 우아한 대안.
+
+    [{label, value}]. 8-15 항목 (그 미만이면 bar, 초과면 본문 + heatmap).
+    """
+    data: list[LollipopRow] = Field(min_length=8, max_length=15)
+
+
+class SlopeItem(BaseModel):
+    label: str = Field(min_length=1)
+    a: float
+    b: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "SlopeItem":
+        for fld in ("a", "b"):
+            v = getattr(self, fld)
+            if not math.isfinite(v):
+                raise ValueError(f"CHART-AP-3 가드: slope {fld} NaN/inf — {self.label}")
+        return self
+
+
+class SlopeGuard(BaseModel):
+    """slope (slopegraph): 2 시점 비교, 순위 변화.
+
+    {left_label, right_label, items: [{label, a, b}]}. 3-10 항목.
+    """
+    left_label: str = Field(min_length=1)
+    right_label: str = Field(min_length=1)
+    items: list[SlopeItem] = Field(min_length=3, max_length=10)
+
+
+class SmallMultiplesPanel(BaseModel):
+    label: str = Field(min_length=1)
+    series: list[XYSeriesPoint] = Field(min_length=5)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class SmallMultiplesGuard(BaseModel):
+    """small_multiples: 같은 차트 4-9면 그리드.
+
+    {panels: [{label, series: [{x, y}]}]}.
+    """
+    panels: list[SmallMultiplesPanel] = Field(min_length=4, max_length=9)
+
+
+class WaterfallRow(BaseModel):
+    label: str = Field(min_length=1)
+    value: float
+    type: str  # 'total' | 'pos' | 'neg'
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "WaterfallRow":
+        if not math.isfinite(self.value):
+            raise ValueError(f"CHART-AP-3 가드: waterfall value NaN/inf — {self.label}")
+        if self.type not in ("total", "pos", "neg"):
+            raise ValueError(
+                f"CHART-AP-3 가드: waterfall type '{self.type}' — "
+                f"'total'|'pos'|'neg' 중 하나여야 함"
+            )
+        return self
+
+
+class WaterfallGuard(BaseModel):
+    """waterfall: 증감 누적 분해 (P&L 스타일).
+
+    [{label, value, type}]. 첫·끝 row 는 반드시 type='total'.
+    중간 row 는 pos/neg. ≥3 항목.
+    """
+    data: list[WaterfallRow] = Field(min_length=3)
+
+    @model_validator(mode="after")
+    def validate_endpoints(self) -> "WaterfallGuard":
+        if self.data[0].type != "total":
+            raise ValueError(
+                "CHART-AP-3 가드: waterfall 첫 row 는 type='total' 이어야 함 "
+                "(시작값)"
+            )
+        if self.data[-1].type != "total":
+            raise ValueError(
+                "CHART-AP-3 가드: waterfall 마지막 row 는 type='total' 이어야 함 "
+                "(종료값)"
+            )
+        return self
+
+
+class RangeBarRow(BaseModel):
+    label: str = Field(min_length=1)
+    low: float
+    high: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "RangeBarRow":
+        for fld in ("low", "high"):
+            v = getattr(self, fld)
+            if not math.isfinite(v):
+                raise ValueError(f"CHART-AP-3 가드: range_bar {fld} NaN/inf — {self.label}")
+        if self.low >= self.high:
+            raise ValueError(
+                f"CHART-AP-3 가드: range_bar '{self.label}' low >= high "
+                f"(low={self.low}, high={self.high}) — 의미 있는 갭 필요"
+            )
+        return self
+
+
+class RangeBarGuard(BaseModel):
+    """range_bar (dumbbell): 두 값 사이 갭.
+
+    [{label, low, high}]. low < high, 3-15 항목.
+    """
+    data: list[RangeBarRow] = Field(min_length=3, max_length=15)
+
+
 # ─── Type → Guard 매핑 ────────────────────────────────────────────────
 
 
@@ -467,6 +779,18 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     # v5.2.0 — 시계열 OHLC 차트
     "candle":       CandleChartGuard,
     "area":         AreaChartGuard,
+    # v5.2.14 — production 가드 보강 3종
+    "dual_line":    DualLineGuard,
+    "forecast":     ForecastGuard,
+    "choropleth":   ChoroplethGuard,
+    # v5.2.14 — 신규 7종 (FT/Economist 스타일)
+    "scatter":      ScatterGuard,
+    "stacked_area": StackedAreaGuard,
+    "lollipop":     LollipopGuard,
+    "slope":        SlopeGuard,
+    "small_multiples": SmallMultiplesGuard,
+    "waterfall":    WaterfallGuard,
+    "range_bar":    RangeBarGuard,
 }
 
 
@@ -509,8 +833,39 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "stacked 는 {categories, series} dict 형식 필요"
+        elif chart_type == "dual_line":
+            # {left: {...}, right: {...}}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "dual_line 는 {left, right} dict 형식 필요"
+        elif chart_type == "forecast":
+            # {actual, forecast, fork_at}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "forecast 는 {actual, forecast, fork_at} dict 형식 필요"
+        elif chart_type == "stacked_area":
+            # {series: [{name, values}]}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "stacked_area 는 {series: [...]} dict 형식 필요"
+        elif chart_type == "slope":
+            # {left_label, right_label, items}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "slope 는 {left_label, right_label, items} dict 형식 필요"
+        elif chart_type == "small_multiples":
+            # {panels: [{label, series}]}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "small_multiples 는 {panels: [...]} dict 형식 필요"
         else:
-            # bar / line / donut / bubble / heatmap — list[dict]
+            # bar / line / donut / bubble / heatmap / choropleth / scatter /
+            # lollipop / waterfall / range_bar — list[dict]
             if isinstance(data, list):
                 guard(data=data)  # type: ignore[arg-type]
             else:
