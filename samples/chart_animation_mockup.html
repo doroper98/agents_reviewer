@@ -1550,21 +1550,60 @@ function renderSankey(stage) {
 
   const availH = H - M.t - M.b;
   const colMap = d3.group(nodes, n => n.col);
-  // globalMax = 컬럼 totalValue 중 최댓값. cap 비율로 스케일.
   const globalMax = d3.max(Array.from(colMap.values()),
     cnodes => d3.sum(cnodes, n => Math.max(n.inValue, n.outValue)));
-  const scale = (availH * MAX_NODE_H_RATIO) / globalMax;
+  const baseScale = (availH * MAX_NODE_H_RATIO) / globalMax;
 
-  colMap.forEach((cnodes, col) => {
-    cnodes.sort((a, b) => Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue));
+  // ─── 원칙 1 — Anchor 압축 ─────────────────────────────────────────
+  // cardinality==1 + value==globalMax 노드는 추가 cap (다른 컬럼의 75%).
+  function nodeScale(n, cnodesInCol) {
+    if (cnodesInCol.length === 1 &&
+        Math.abs(Math.max(n.inValue, n.outValue) - globalMax) < 1e-6) {
+      return baseScale * 0.75;  // anchor 압축
+    }
+    return baseScale;
+  }
+
+  // ─── 원칙 2-4 — 컬럼 순차 처리, 부모 y 정합 ──────────────────────
+  // col 0: value sort + 중앙 정렬 (시작점 — 부모 없음)
+  // col 1+: expectedY = Σ(source.y_center × value) / Σ(value) 기준 sort,
+  //         컬럼 시작 y 도 expectedY 평균에 맞춤 (clamp 만 영역 밖 방지).
+  const colKeys = Array.from(colMap.keys()).sort((a, b) => a - b);
+  colKeys.forEach((col, idx) => {
+    const cnodes = colMap.get(col);
+    // 높이 계산
     cnodes.forEach(n => {
       const v = Math.max(n.inValue, n.outValue);
-      n.height = Math.max(8, v * scale);
+      n.height = Math.max(8, v * nodeScale(n, cnodes));
     });
     const nodesH = d3.sum(cnodes, n => n.height);
     const totalPad = (cnodes.length - 1) * MIN_NODE_PAD;
-    // 중앙 정렬 — 작은 column 은 자동으로 더 짧고 중앙에 모임
-    const colStart = M.t + (availH - nodesH - totalPad) / 2;
+    const totalH = nodesH + totalPad;
+
+    let colStart;
+    if (idx === 0) {
+      // 첫 컬럼: value 정렬 + 중앙 정렬 (부모 없으니 fallback)
+      cnodes.sort((a, b) => Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue));
+      colStart = M.t + (availH - totalH) / 2;
+    } else {
+      // 부모 y 정합 — expectedY 계산
+      cnodes.forEach(n => {
+        let sumYV = 0, sumV = 0;
+        links.filter(l => l.target === n.id).forEach(l => {
+          const src = nodeById.get(l.source);
+          const srcCenter = (src.y0 + src.y1) / 2;
+          sumYV += srcCenter * l.value;
+          sumV += l.value;
+        });
+        n.expectedY = sumV > 0 ? sumYV / sumV : M.t + availH / 2;
+      });
+      cnodes.sort((a, b) => a.expectedY - b.expectedY);
+      // 컬럼 시작 y = expectedY 평균 - 컬럼 절반 (clamp 영역 안)
+      const meanExpY = d3.mean(cnodes, n => n.expectedY);
+      colStart = meanExpY - totalH / 2;
+      colStart = Math.max(M.t, Math.min(M.t + availH - totalH, colStart));
+    }
+
     let y = colStart;
     cnodes.forEach(n => {
       n.x0 = M.l + col * colWidth + 8;

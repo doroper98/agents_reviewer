@@ -1855,25 +1855,63 @@
     const colWidth = zones.data.w / (maxCol + 1);
     const nodeWidth = 9;
     const MIN_NODE_PAD = 18;
-    const MAX_NODE_H_RATIO = 0.50;  // 어떤 노드도 가용 높이의 50% 못 넘음
+    const MAX_NODE_H_RATIO = 0.50;
 
-    // globalMax 기반 scale + 컬럼별 중앙 정렬 (작은 column 자동 짧음).
+    // v5.3.0 sankey 시각 균형 4원칙:
+    // 1. Anchor 압축: cardinality==1 + value==globalMax 노드는 75% 추가 cap
+    // 2. Source-weighted ordering: col 1+ 정렬을 incoming source y 가중평균으로
+    // 3. 분기 V 분산: 원칙 2 의 자연 결과
+    // 4. Column y-positioning: col 시작 y 를 expectedY 평균에 맞춤
     const colMap = d3.group(nodes, n => n.col);
     const globalMax = d3.max(Array.from(colMap.values()),
       cnodes => d3.sum(cnodes, n => Math.max(n.inValue, n.outValue))) || 1;
-    const scale = (zones.data.h * MAX_NODE_H_RATIO) / globalMax;
+    const baseScale = (zones.data.h * MAX_NODE_H_RATIO) / globalMax;
 
-    colMap.forEach((cnodes, col) => {
-      cnodes.sort((a, b) =>
-        (Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue)));
+    function nodeScale(n, cnodesInCol) {
+      // 원칙 1: 한 컬럼 한 노드인 globalMax value 노드 추가 cap
+      if (cnodesInCol.length === 1 &&
+          Math.abs(Math.max(n.inValue, n.outValue) - globalMax) < 1e-6) {
+        return baseScale * 0.75;
+      }
+      return baseScale;
+    }
+
+    const colKeys = Array.from(colMap.keys()).sort((a, b) => a - b);
+    colKeys.forEach((col, idx) => {
+      const cnodes = colMap.get(col);
       cnodes.forEach(n => {
         const v = Math.max(n.inValue, n.outValue);
-        n.height = Math.max(6, v * scale);
+        n.height = Math.max(6, v * nodeScale(n, cnodes));
       });
       const nodesH = d3.sum(cnodes, n => n.height);
       const totalPad = (cnodes.length - 1) * MIN_NODE_PAD;
-      // 중앙 정렬 — 작은 column 은 자동으로 더 짧고 중앙에 모임
-      const colStart = zones.data.y + (zones.data.h - nodesH - totalPad) / 2;
+      const totalH = nodesH + totalPad;
+
+      let colStart;
+      if (idx === 0) {
+        // 첫 컬럼: value 정렬 + 중앙 정렬 (부모 없음 → fallback)
+        cnodes.sort((a, b) =>
+          (Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue)));
+        colStart = zones.data.y + (zones.data.h - totalH) / 2;
+      } else {
+        // 원칙 2 + 4: expectedY = Σ(src.y_center × value) / Σ(value)
+        cnodes.forEach(n => {
+          let sumYV = 0, sumV = 0;
+          validLinks.filter(l => l.target === n.id).forEach(l => {
+            const src = nodeById.get(l.source);
+            const srcCenter = (src.y0 + src.y1) / 2;
+            sumYV += srcCenter * l.value;
+            sumV += l.value;
+          });
+          n.expectedY = sumV > 0 ? sumYV / sumV : zones.data.y + zones.data.h / 2;
+        });
+        cnodes.sort((a, b) => a.expectedY - b.expectedY);
+        const meanExpY = d3.mean(cnodes, n => n.expectedY);
+        colStart = meanExpY - totalH / 2;
+        colStart = Math.max(zones.data.y,
+          Math.min(zones.data.y + zones.data.h - totalH, colStart));
+      }
+
       let y = colStart;
       cnodes.forEach(n => {
         n.x0 = zones.data.x + col * colWidth + 8;
