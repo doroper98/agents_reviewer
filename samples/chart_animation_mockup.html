@@ -260,12 +260,140 @@
     <div class="chart-card-stage"></div>
   </div>
 
+  <div class="spacer">━━━ Part B: production 빠진 6종 ━━━</div>
+
+  <!-- 9. Stacked Bar -->
+  <h2>9. Stacked Bar — 누적 막대 (카테고리별 stagger)</h2>
+  <div class="section-note">각 카테고리 안에서 아래 segment 부터 차례로 자라남.</div>
+  <div class="chart-card" data-chart-type="stacked">
+    <div class="chart-card-title">분기별 지역 매출 구성</div>
+    <div class="chart-card-note">단위: 억 USD</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 10. Heatmap -->
+  <h2>10. Heatmap — 셀 fade-in (좌상 → 우하 wave)</h2>
+  <div class="section-note">대각선 방향 wave 로 셀이 페이드 인. 시간 대비 강도 패턴 가시화.</div>
+  <div class="chart-card" data-chart-type="heatmap">
+    <div class="chart-card-title">요일×시간 활동량</div>
+    <div class="chart-card-note">밀도 (어두울수록 높음)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 11. Dual Line -->
+  <h2>11. Dual Line — 두 시리즈 dashoffset (slight stagger)</h2>
+  <div class="section-note">두 선이 60ms 간격으로 같은 방향으로 그어짐.</div>
+  <div class="chart-card" data-chart-type="dual_line">
+    <div class="chart-card-title">2국 금리 추이</div>
+    <div class="chart-card-note">실선: 한국 / 점선: 미국</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 12. Forecast -->
+  <h2>12. Forecast — 실측 → 점선 예측 + 신뢰구간 fade</h2>
+  <div class="section-note">실측선 먼저 → 점선 예측선 → 신뢰구간 영역 fade-in.</div>
+  <div class="chart-card" data-chart-type="forecast">
+    <div class="chart-card-title">GDP 성장률 전망</div>
+    <div class="chart-card-note">2024 실측 → 2026 예측 ±1σ</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <div class="spacer">↓ 더 스크롤 ↓</div>
+
+  <!-- 13. Area -->
+  <h2>13. Area — 영역 sweep reveal (clip rect 확장)</h2>
+  <div class="section-note">clip-path 가 왼쪽에서 오른쪽으로 펼쳐지며 영역이 드러남.</div>
+  <div class="chart-card" data-chart-type="area">
+    <div class="chart-card-title">유가 일봉 (단일 시리즈)</div>
+    <div class="chart-card-note">WTI $/bbl</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 14. Choropleth -->
+  <h2>14. Choropleth — 베이스맵 fade → 국가별 stagger fill</h2>
+  <div class="section-note">국경 페이드 인 후, 값 순서로 국가가 색칠됨.</div>
+  <div class="chart-card" data-chart-type="choropleth">
+    <div class="chart-card-title">지역별 지표</div>
+    <div class="chart-card-note">색이 진할수록 높은 값 (예시)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <div class="spacer">━━━ Part C: 신규 7종 (FT/Economist 스타일) ━━━</div>
+
+  <!-- 15. Scatter -->
+  <h2>15. Scatter — 라벨 산점도 (FT 좌측 스타일)</h2>
+  <div class="section-note">점이 위치로 fade + scale-up, 라벨은 짧은 지연 후 페이드 인.</div>
+  <div class="chart-card" data-chart-type="scatter">
+    <div class="chart-card-title">국가별 AI 수용도</div>
+    <div class="chart-card-note">% 'excited' vs % 'nervous' (예시)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 16. Stacked Area -->
+  <h2>16. Stacked Area — 시계열 누적 영역 (FT 우측 스타일)</h2>
+  <div class="section-note">각 레이어가 아래부터 위로 차례로 sweep reveal.</div>
+  <div class="chart-card" data-chart-type="stacked_area">
+    <div class="chart-card-title">지역별 점유율 변화</div>
+    <div class="chart-card-note">2021-2025 분기별 (%)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <div class="spacer">↓ 더 스크롤 ↓</div>
+
+  <!-- 17. Lollipop -->
+  <h2>17. Lollipop — bar 의 우아한 대안 (stem 그리기 + dot pop)</h2>
+  <div class="section-note">stem 이 stroke-dashoffset 으로 그어진 후 dot 이 r=0→r 로 등장.</div>
+  <div class="chart-card" data-chart-type="lollipop">
+    <div class="chart-card-title">국가별 1인당 GDP</div>
+    <div class="chart-card-note">상위 10개국 (예시)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 18. Slope -->
+  <h2>18. Slope (slopegraph) — 두 시점 비교, 순위 변화</h2>
+  <div class="section-note">좌측 점 등장 → 우측 점 등장 → 연결선 dashoffset 으로 그어짐.</div>
+  <div class="chart-card" data-chart-type="slope">
+    <div class="chart-card-title">분야별 점유율 변화</div>
+    <div class="chart-card-note">2020 → 2025</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 19. Small Multiples -->
+  <h2>19. Small Multiples — 같은 차트 4면 그리드 비교</h2>
+  <div class="section-note">4개의 미니 line 이 0.1초 간격으로 순차 등장.</div>
+  <div class="chart-card" data-chart-type="small_multiples">
+    <div class="chart-card-title">4개국 인플레이션 추이</div>
+    <div class="chart-card-note">2022-2026 월별 (%)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <div class="spacer">↓ 마지막 두 개 ↓</div>
+
+  <!-- 20. Waterfall -->
+  <h2>20. Waterfall — 증감 누적 분해 (P&L 스타일)</h2>
+  <div class="section-note">각 막대가 이전 baseline 에서 자라남. +/- 색 분리.</div>
+  <div class="chart-card" data-chart-type="waterfall">
+    <div class="chart-card-title">영업이익 brücke</div>
+    <div class="chart-card-note">2024 → 2025 (억 원)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
+  <!-- 21. Range Bar (Dumbbell) -->
+  <h2>21. Range Bar (Dumbbell) — 두 값 사이 갭</h2>
+  <div class="section-note">연결선 dashoffset → 좌측 점 → 우측 점 순서.</div>
+  <div class="chart-card" data-chart-type="range_bar">
+    <div class="chart-card-title">국가별 남녀 임금 격차</div>
+    <div class="chart-card-note">2024 (USD/시간, 예시)</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
   <p style="margin-top: 40px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
     <strong>검토 포인트:</strong>
     (1) entry 속도가 스크롤 흐름을 방해하지 않는가
     (2) ambient drift 가 mono 톤(신문/잡지) 과 충돌하지 않는가
     (3) 차트 종류별 모션 metaphor 가 일관된가
     (4) motion off 시 즉시 정적 렌더가 깔끔한가
+    (5) <strong>신규 7종</strong>: scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar 가 mono 톤에 어울리는가, production 도입 가치가 있는가
   </p>
 </div>
 
@@ -787,11 +915,564 @@ function renderGantt(stage) {
 }
 
 // ============================================================
+// 9. STACKED BAR
+// ============================================================
+function renderStacked(stage) {
+  const W = stage.clientWidth || 800, H = 240, M = { t: 14, r: 14, b: 32, l: 40 };
+  const cats = ['2024 Q1', '2024 Q2', '2024 Q3', '2024 Q4', '2025 Q1'];
+  const series = [
+    { name: '아시아', cls: 'hatch-tight', vals: [42, 46, 51, 55, 58] },
+    { name: '유럽', cls: 'hatch-wide', vals: [28, 27, 26, 25, 24] },
+    { name: '북미', cls: 'dot-fill', vals: [22, 24, 21, 19, 18] },
+    { name: '기타', cls: 'neutral-fill', vals: [10, 9, 8, 8, 7] },
+  ];
+  const data = [];
+  cats.forEach((k, i) => {
+    let y0 = 0;
+    series.forEach((s, j) => {
+      data.push({ k, name: s.name, cls: s.cls, y0, y1: y0 + s.vals[i], catIdx: i, segIdx: j });
+      y0 += s.vals[i];
+    });
+  });
+  const max = d3.max(cats.map((_, i) => series.reduce((a, s) => a + s.vals[i], 0)));
+
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleBand().domain(cats).range([M.l, W - M.r]).padding(0.35);
+  const y = d3.scaleLinear().domain([0, max]).nice().range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`).call(d3.axisBottom(x));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5));
+
+  const bars = svg.append('g').selectAll('rect').data(data).enter().append('rect')
+    .attr('class', d => d.cls)
+    .attr('x', d => x(d.k)).attr('width', x.bandwidth())
+    .attr('y', H - M.b).attr('height', 0);
+
+  return () => {
+    if (!motionOn()) { bars.attr('y', d => y(d.y1)).attr('height', d => y(d.y0) - y(d.y1)); return; }
+    bars.transition()
+      .delay(d => d.catIdx * 80 + d.segIdx * 60)
+      .duration(DUR_GROW).ease(EASE)
+      .attr('y', d => y(d.y1))
+      .attr('height', d => y(d.y0) - y(d.y1));
+  };
+}
+
+// ============================================================
+// 10. HEATMAP
+// ============================================================
+function renderHeatmap(stage) {
+  const W = stage.clientWidth || 800, H = 240, M = { t: 24, r: 14, b: 28, l: 50 };
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  const hours = d3.range(24);
+  const data = [];
+  days.forEach((d, di) => hours.forEach(h => {
+    const v = (Math.sin(h / 4 + di) + 1) / 2 * (h > 8 && h < 22 ? 1 : 0.3) + Math.random() * 0.15;
+    data.push({ d, h, v, di });
+  }));
+  const cw = (W - M.l - M.r) / 24, ch = (H - M.t - M.b) / 7;
+  const color = d3.scaleLinear().domain([0, 1]).range(['#EFE5CC', '#2E2418']);
+
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  svg.append('g').selectAll('text').data(hours.filter(h => h % 3 === 0)).enter().append('text')
+    .attr('x', h => M.l + h * cw + cw / 2).attr('y', M.t - 6)
+    .attr('text-anchor', 'middle').attr('font-size', 10).attr('fill', MUTED).text(h => `${h}시`);
+  svg.append('g').selectAll('text').data(days).enter().append('text')
+    .attr('x', M.l - 6).attr('y', (d, i) => M.t + i * ch + ch / 2 + 3)
+    .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', MUTED).text(d => d);
+
+  const cells = svg.append('g').selectAll('rect').data(data).enter().append('rect')
+    .attr('x', d => M.l + d.h * cw).attr('y', d => M.t + d.di * ch)
+    .attr('width', cw - 1).attr('height', ch - 1)
+    .attr('fill', d => color(d.v));
+
+  return () => {
+    if (!motionOn()) return;
+    cells.style('opacity', 0)
+      .transition().delay(d => (d.h + d.di * 2) * 15).duration(400).ease(EASE).style('opacity', 1);
+  };
+}
+
+// ============================================================
+// 11. DUAL LINE
+// ============================================================
+function renderDualLine(stage) {
+  const W = stage.clientWidth || 800, H = 220, M = { t: 14, r: 14, b: 28, l: 40 };
+  const data = d3.range(48).map(i => ({
+    x: i,
+    a: 2.0 + Math.sin(i / 8) * 0.6 + i * 0.02,
+    b: 4.5 + Math.cos(i / 9) * 0.5 - i * 0.01,
+  }));
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([0, 47]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([1, 6]).range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x).ticks(6).tickFormat(d => `M${d + 1}`));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5));
+
+  const lineGen = key => d3.line().x(d => x(d.x)).y(d => y(d[key])).curve(d3.curveMonotoneX);
+  const pathA = svg.append('path').datum(data).attr('fill', 'none')
+    .attr('stroke', TXT).attr('stroke-width', 1.8).attr('d', lineGen('a'));
+  const pathB = svg.append('path').datum(data).attr('fill', 'none')
+    .attr('stroke', ACCENT).attr('stroke-width', 1.6).attr('stroke-dasharray', '4 3').attr('d', lineGen('b'));
+
+  return () => {
+    drawStroke(pathA, DUR_DRAW, 0);
+    // for dashed line, dashoffset trick still works but the dash pattern returns at end
+    drawStroke(pathB, DUR_DRAW, 120);
+  };
+}
+
+// ============================================================
+// 12. FORECAST
+// ============================================================
+function renderForecast(stage) {
+  const W = stage.clientWidth || 800, H = 240, M = { t: 14, r: 14, b: 28, l: 40 };
+  const hist = d3.range(36).map(i => ({ x: i, y: 2.5 + Math.sin(i / 6) * 0.4 + i * 0.015 }));
+  const fc = d3.range(36, 60).map(i => ({
+    x: i,
+    y: 3.0 + Math.sin(i / 6) * 0.3 + (i - 36) * 0.02,
+    lo: 2.6 + Math.sin(i / 6) * 0.3 + (i - 36) * 0.015,
+    hi: 3.4 + Math.sin(i / 6) * 0.3 + (i - 36) * 0.025,
+  }));
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([0, 59]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([1.5, 4.5]).range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x).ticks(6).tickFormat(d => `'${20 + Math.floor(d / 12)}`));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5));
+
+  // forecast band
+  const area = d3.area().x(d => x(d.x)).y0(d => y(d.lo)).y1(d => y(d.hi)).curve(d3.curveMonotoneX);
+  const bandPath = svg.append('path').datum(fc).attr('fill', ACCENT).attr('fill-opacity', 0).attr('d', area);
+
+  const lineGen = d3.line().x(d => x(d.x)).y(d => y(d.y)).curve(d3.curveMonotoneX);
+  const histPath = svg.append('path').datum(hist).attr('fill', 'none')
+    .attr('stroke', TXT).attr('stroke-width', 1.8).attr('d', lineGen);
+  const fcPath = svg.append('path').datum([hist[hist.length - 1], ...fc]).attr('fill', 'none')
+    .attr('stroke', ACCENT).attr('stroke-width', 1.6).attr('stroke-dasharray', '4 3').attr('d', lineGen);
+
+  return () => {
+    if (!motionOn()) { bandPath.attr('fill-opacity', 0.18); return; }
+    drawStroke(histPath, 700);
+    drawStroke(fcPath, 700, 700);
+    bandPath.transition().delay(1300).duration(400).attr('fill-opacity', 0.18);
+  };
+}
+
+// ============================================================
+// 13. AREA (sweep reveal via clip-path)
+// ============================================================
+function renderArea(stage) {
+  const W = stage.clientWidth || 800, H = 220, M = { t: 14, r: 14, b: 28, l: 40 };
+  const data = d3.range(60).map(i => ({ x: i, y: 70 + Math.sin(i / 7) * 8 + i * 0.15 + Math.random() * 2 }));
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([0, 59]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([60, 90]).range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`).call(d3.axisBottom(x).ticks(6));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5));
+
+  const clipId = `clip-area-${Math.random().toString(36).slice(2, 7)}`;
+  const clipRect = svg.append('defs').append('clipPath').attr('id', clipId)
+    .append('rect').attr('x', M.l).attr('y', 0).attr('height', H);
+
+  const area = d3.area().x(d => x(d.x)).y0(y(60)).y1(d => y(d.y)).curve(d3.curveMonotoneX);
+  svg.append('path').datum(data).attr('fill', TXT).attr('fill-opacity', 0.18)
+    .attr('clip-path', `url(#${clipId})`).attr('d', area);
+  const line = d3.line().x(d => x(d.x)).y(d => y(d.y)).curve(d3.curveMonotoneX);
+  svg.append('path').datum(data).attr('fill', 'none').attr('stroke', TXT).attr('stroke-width', 1.5)
+    .attr('clip-path', `url(#${clipId})`).attr('d', line);
+
+  return () => {
+    if (!motionOn()) { clipRect.attr('width', W - M.l - M.r); return; }
+    clipRect.attr('width', 0)
+      .transition().duration(900).ease(EASE).attr('width', W - M.l - M.r);
+  };
+}
+
+// ============================================================
+// 14. CHOROPLETH
+// ============================================================
+async function renderChoropleth(stage) {
+  const W = stage.clientWidth || 800, H = 360;
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const world = await loadWorld();
+  const land = topojson.feature(world, world.objects.countries);
+  const projection = d3.geoNaturalEarth1().fitSize([W, H], land);
+  const path = d3.geoPath(projection);
+
+  // pseudo data — random value per country
+  const valueMap = new Map();
+  land.features.forEach(f => valueMap.set(f.id, Math.random()));
+  const color = d3.scaleSequential(t => d3.interpolateRgb('#EFE5CC', ACCENT)(t)).domain([0, 1]);
+
+  const baseG = svg.append('g');
+  const countries = baseG.selectAll('path').data(land.features).enter().append('path')
+    .attr('d', path)
+    .attr('fill', '#EFE5CC').attr('stroke', BORDER).attr('stroke-width', 0.4)
+    .each(function (d) { d._val = valueMap.get(d.id); });
+
+  return () => {
+    if (!motionOn()) { countries.attr('fill', d => color(d._val)); return; }
+    countries.style('opacity', 0)
+      .transition().duration(300).ease(EASE).style('opacity', 1)
+      .transition().delay((d, i) => i * 8).duration(500).ease(EASE)
+      .attr('fill', d => color(d._val));
+  };
+}
+
+// ============================================================
+// 15. SCATTER (라벨 산점도)
+// ============================================================
+function renderScatter(stage) {
+  const W = stage.clientWidth || 800, H = 280, M = { t: 14, r: 14, b: 36, l: 50 };
+  const data = [
+    { k: 'New Zealand', x: 44, y: 66 }, { k: 'US', x: 38, y: 64 }, { k: 'UK', x: 39, y: 63 },
+    { k: 'Sweden', x: 40, y: 56 }, { k: 'Singapore', x: 62, y: 56 },
+    { k: 'Turkey', x: 65, y: 53 }, { k: 'Chile', x: 58, y: 50 }, { k: 'Belgium', x: 35, y: 51 },
+    { k: 'Global avg', x: 60, y: 50 }, { k: 'Spain', x: 53, y: 48 }, { k: 'Brazil', x: 62, y: 47 },
+    { k: 'Italy', x: 53, y: 44 }, { k: 'South Korea', x: 70, y: 41 },
+    { k: 'Poland', x: 46, y: 38 }, { k: 'China', x: 80, y: 34, accent: true }, { k: 'Japan', x: 48, y: 26 },
+  ];
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([30, 85]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([20, 70]).range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x).ticks(6).tickFormat(d => `${d}%`));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).ticks(5).tickFormat(d => `${d}%`));
+  svg.append('text').attr('x', W / 2).attr('y', H - 6)
+    .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', MUTED).text("% 'excited'");
+  svg.append('text').attr('transform', `rotate(-90)`).attr('x', -H / 2).attr('y', 12)
+    .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', MUTED).text("% 'nervous'");
+
+  const g = svg.append('g').selectAll('g.pt').data(data).enter().append('g').attr('class', 'pt')
+    .attr('transform', d => `translate(${x(d.x)}, ${y(d.y)})`);
+  const dots = g.append('circle').attr('r', 0)
+    .attr('fill', d => d.accent ? ACCENT : TXT).attr('fill-opacity', 0.85);
+  const labels = g.append('text').attr('x', 8).attr('y', 4).attr('font-size', 10)
+    .attr('fill', d => d.accent ? ACCENT : TXT).text(d => d.k).style('opacity', 0);
+
+  return () => {
+    if (!motionOn()) { dots.attr('r', 5); labels.style('opacity', 1); return; }
+    dots.transition().delay((d, i) => i * 35).duration(380).ease(d3.easeBackOut.overshoot(1.4)).attr('r', 5);
+    labels.transition().delay((d, i) => 200 + i * 35).duration(300).style('opacity', 1);
+  };
+}
+
+// ============================================================
+// 16. STACKED AREA (FT 우측 스타일)
+// ============================================================
+function renderStackedArea(stage) {
+  const W = stage.clientWidth || 800, H = 280, M = { t: 14, r: 14, b: 32, l: 40 };
+  const keys = ['Other', 'Unaffiliated', 'US', 'Europe', 'China'];
+  const palette = { Other: '#E6DAB8', Unaffiliated: '#8A7553', US: '#2E2418', Europe: '#C8B98E', China: ACCENT };
+  const N = 60;
+  const data = d3.range(N).map(i => {
+    const t = i / (N - 1);
+    return {
+      x: i,
+      US: 50 - t * 35 + Math.random() * 4,
+      Europe: 20 - t * 12 + Math.random() * 3,
+      China: 3 + t * 12 + Math.random() * 3,
+      Unaffiliated: 22 + t * 28 + Math.random() * 4,
+      Other: 5 + t * 7 + Math.random() * 2,
+    };
+  });
+  const stack = d3.stack().keys(keys).order(d3.stackOrderNone)(data);
+
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([0, N - 1]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([0, 100]).range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x).ticks(5).tickFormat(d => `${2021 + Math.floor(d / 15)}`));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).ticks(5).tickFormat(d => `${d}`));
+
+  // per-layer clip
+  const layers = svg.selectAll('g.layer').data(stack).enter().append('g').attr('class', 'layer');
+  const clipIds = [];
+  layers.each(function (d, i) {
+    const cid = `clip-sa-${Math.random().toString(36).slice(2, 7)}-${i}`;
+    clipIds.push(cid);
+    svg.append('defs').append('clipPath').attr('id', cid)
+      .append('rect').attr('x', M.l).attr('y', 0).attr('width', 0).attr('height', H)
+      .attr('data-clip-id', cid);
+    const area = d3.area().x(p => x(p.data.x)).y0(p => y(p[0])).y1(p => y(p[1])).curve(d3.curveMonotoneX);
+    d3.select(this).append('path').datum(d).attr('fill', palette[d.key]).attr('d', area)
+      .attr('clip-path', `url(#${cid})`);
+  });
+
+  // legend
+  const legend = svg.append('g').attr('transform', `translate(${M.l + 8}, ${M.t + 6})`);
+  keys.slice().reverse().forEach((k, i) => {
+    const row = legend.append('g').attr('transform', `translate(${i * 90}, 0)`);
+    row.append('rect').attr('width', 10).attr('height', 10).attr('fill', palette[k]);
+    row.append('text').attr('x', 14).attr('y', 9).attr('font-size', 10).attr('fill', TXT).text(k);
+  });
+
+  return () => {
+    if (!motionOn()) {
+      clipIds.forEach(cid => svg.select(`rect[data-clip-id="${cid}"]`).attr('width', W - M.l - M.r));
+      return;
+    }
+    clipIds.forEach((cid, i) => {
+      svg.select(`rect[data-clip-id="${cid}"]`)
+        .transition().delay(i * 200).duration(700).ease(EASE).attr('width', W - M.l - M.r);
+    });
+  };
+}
+
+// ============================================================
+// 17. LOLLIPOP
+// ============================================================
+function renderLollipop(stage) {
+  const W = stage.clientWidth || 800, H = 260, M = { t: 14, r: 14, b: 28, l: 90 };
+  const data = [
+    { k: 'Luxembourg', v: 132 }, { k: 'Switzerland', v: 102 },
+    { k: 'Norway', v: 89 }, { k: 'Ireland', v: 84 }, { k: 'US', v: 76 },
+    { k: 'Singapore', v: 73 }, { k: 'Denmark', v: 68 }, { k: 'Australia', v: 61 },
+    { k: 'Germany', v: 53 }, { k: 'Korea', v: 35 },
+  ];
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([0, d3.max(data, d => d.v) * 1.1]).range([M.l, W - M.r]);
+  const y = d3.scaleBand().domain(data.map(d => d.k)).range([M.t, H - M.b]).padding(0.4);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(0,${M.t})`)
+    .call(d3.axisTop(x).tickSize(-(H - M.t - M.b)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x).ticks(5).tickFormat(d => `$${d}K`));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y));
+
+  const stems = svg.append('g').selectAll('line').data(data).enter().append('line')
+    .attr('x1', x(0)).attr('y1', d => y(d.k) + y.bandwidth() / 2)
+    .attr('x2', d => x(d.v)).attr('y2', d => y(d.k) + y.bandwidth() / 2)
+    .attr('stroke', MUTED).attr('stroke-width', 1.2);
+  const dots = svg.append('g').selectAll('circle').data(data).enter().append('circle')
+    .attr('cx', d => x(d.v)).attr('cy', d => y(d.k) + y.bandwidth() / 2)
+    .attr('r', 0).attr('fill', (d, i) => i === 0 ? ACCENT : TXT);
+
+  return () => {
+    if (!motionOn()) { dots.attr('r', 6); return; }
+    drawStroke(stems, 500, 0);
+    dots.transition().delay((d, i) => 500 + i * 40).duration(280).ease(d3.easeBackOut.overshoot(1.5)).attr('r', 6);
+  };
+}
+
+// ============================================================
+// 18. SLOPE
+// ============================================================
+function renderSlope(stage) {
+  const W = stage.clientWidth || 800, H = 280, M = { t: 28, r: 110, b: 32, l: 110 };
+  const data = [
+    { k: '제조', a: 28, b: 22 }, { k: 'IT', a: 14, b: 24 },
+    { k: '금융', a: 18, b: 16 }, { k: '에너지', a: 12, b: 14 },
+    { k: '의료', a: 8, b: 12 }, { k: '운송', a: 10, b: 8 },
+    { k: '기타', a: 10, b: 4 },
+  ];
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const y = d3.scaleLinear().domain([0, 32]).range([H - M.b, M.t]);
+  const xA = M.l, xB = W - M.r;
+
+  svg.append('text').attr('x', xA).attr('y', M.t - 10).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 700).attr('fill', TXT).text('2020');
+  svg.append('text').attr('x', xB).attr('y', M.t - 10).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 700).attr('fill', TXT).text('2025');
+
+  const lines = svg.append('g').selectAll('line').data(data).enter().append('line')
+    .attr('x1', xA).attr('y1', d => y(d.a))
+    .attr('x2', xB).attr('y2', d => y(d.b))
+    .attr('stroke', d => d.b > d.a ? ACCENT : MUTED).attr('stroke-width', 1.4);
+
+  const ptsA = svg.append('g').selectAll('circle').data(data).enter().append('circle')
+    .attr('cx', xA).attr('cy', d => y(d.a)).attr('r', 0).attr('fill', TXT);
+  const ptsB = svg.append('g').selectAll('circle').data(data).enter().append('circle')
+    .attr('cx', xB).attr('cy', d => y(d.b)).attr('r', 0).attr('fill', d => d.b > d.a ? ACCENT : TXT);
+
+  svg.append('g').selectAll('text').data(data).enter().append('text')
+    .attr('x', xA - 10).attr('y', d => y(d.a) + 4).attr('text-anchor', 'end')
+    .attr('font-size', 11).attr('fill', TXT).text(d => `${d.k} ${d.a}%`);
+  svg.append('g').selectAll('text').data(data).enter().append('text')
+    .attr('x', xB + 10).attr('y', d => y(d.b) + 4).attr('font-size', 11)
+    .attr('fill', d => d.b > d.a ? ACCENT : TXT).text(d => `${d.b}%`);
+
+  return () => {
+    if (!motionOn()) { ptsA.attr('r', 4); ptsB.attr('r', 4); return; }
+    ptsA.transition().delay((d, i) => i * 40).duration(280).ease(d3.easeBackOut.overshoot(1.4)).attr('r', 4);
+    ptsB.transition().delay((d, i) => 280 + i * 40).duration(280).ease(d3.easeBackOut.overshoot(1.4)).attr('r', 4);
+    drawStroke(lines, 600, 480);
+  };
+}
+
+// ============================================================
+// 19. SMALL MULTIPLES (4면 그리드)
+// ============================================================
+function renderSmallMultiples(stage) {
+  const W = stage.clientWidth || 800, H = 280, M = { t: 24, r: 14, b: 24, l: 30 };
+  const countries = [
+    { name: 'KR', data: d3.range(48).map(i => ({ x: i, y: 3 + Math.sin(i / 6) * 2 + (i / 24) })) },
+    { name: 'US', data: d3.range(48).map(i => ({ x: i, y: 5 + Math.cos(i / 5) * 1.5 - (i / 30) })) },
+    { name: 'EU', data: d3.range(48).map(i => ({ x: i, y: 4 + Math.sin(i / 8) * 1.8 })) },
+    { name: 'JP', data: d3.range(48).map(i => ({ x: i, y: 1 + Math.sin(i / 4) * 0.5 + (i / 50) })) },
+  ];
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const cols = 2, rows = 2;
+  const cellW = (W - M.l - M.r) / cols, cellH = (H - M.t - M.b) / rows;
+  const paths = [];
+
+  countries.forEach((c, idx) => {
+    const cx = M.l + (idx % cols) * cellW;
+    const cy = M.t + Math.floor(idx / cols) * cellH;
+    const x = d3.scaleLinear().domain([0, 47]).range([cx + 4, cx + cellW - 8]);
+    const y = d3.scaleLinear().domain([0, 8]).range([cy + cellH - 14, cy + 6]);
+    svg.append('rect').attr('x', cx).attr('y', cy).attr('width', cellW - 4).attr('height', cellH - 4)
+      .attr('fill', 'none').attr('stroke', BORDER).attr('stroke-width', 0.6);
+    svg.append('text').attr('x', cx + 6).attr('y', cy + 14).attr('font-size', 11).attr('font-weight', 700).attr('fill', TXT).text(c.name);
+    const line = d3.line().x(d => x(d.x)).y(d => y(d.y)).curve(d3.curveMonotoneX);
+    const p = svg.append('path').datum(c.data).attr('fill', 'none')
+      .attr('stroke', TXT).attr('stroke-width', 1.4).attr('d', line);
+    paths.push(p);
+  });
+
+  return () => {
+    paths.forEach((p, i) => drawStroke(p, 700, i * 100));
+  };
+}
+
+// ============================================================
+// 20. WATERFALL
+// ============================================================
+function renderWaterfall(stage) {
+  const W = stage.clientWidth || 800, H = 260, M = { t: 14, r: 14, b: 50, l: 50 };
+  const items = [
+    { k: '2024 영업이익', v: 100, type: 'total' },
+    { k: '매출 증가', v: 28, type: 'pos' },
+    { k: '원가 상승', v: -14, type: 'neg' },
+    { k: '판관비 절감', v: 8, type: 'pos' },
+    { k: '환차익', v: 5, type: 'pos' },
+    { k: '일회성 손실', v: -11, type: 'neg' },
+    { k: '2025 영업이익', v: 116, type: 'total' },
+  ];
+  let running = 0;
+  items.forEach(it => {
+    if (it.type === 'total') {
+      it.y0 = 0; it.y1 = it.v; running = it.v;
+    } else {
+      if (it.v >= 0) { it.y0 = running; it.y1 = running + it.v; running = it.y1; }
+      else { it.y0 = running + it.v; it.y1 = running; running = it.y0; }
+    }
+  });
+
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleBand().domain(items.map(d => d.k)).range([M.l, W - M.r]).padding(0.3);
+  const y = d3.scaleLinear().domain([0, d3.max(items, d => d.y1) * 1.1]).range([H - M.b, M.t]);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(${M.l},0)`)
+    .call(d3.axisLeft(y).tickSize(-(W - M.l - M.r)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x)).selectAll('text').attr('transform', 'rotate(-25)').style('text-anchor', 'end');
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5));
+
+  const bars = svg.append('g').selectAll('rect').data(items).enter().append('rect')
+    .attr('x', d => x(d.k)).attr('width', x.bandwidth())
+    .attr('fill', d => d.type === 'total' ? TXT : (d.type === 'pos' ? ACCENT : MUTED))
+    .attr('fill-opacity', d => d.type === 'total' ? 1 : 0.8)
+    .attr('y', d => y((d.y0 + d.y1) / 2)).attr('height', 0);
+
+  // connector lines
+  const connectors = svg.append('g').selectAll('line').data(items.slice(0, -1)).enter().append('line')
+    .attr('x1', d => x(d.k) + x.bandwidth()).attr('y1', d => y(d.y1))
+    .attr('x2', (d, i) => x(items[i + 1].k)).attr('y2', d => y(d.y1))
+    .attr('stroke', MUTED).attr('stroke-dasharray', '2 3').attr('stroke-width', 0.8);
+
+  return () => {
+    if (!motionOn()) {
+      bars.attr('y', d => y(d.y1)).attr('height', d => y(d.y0) - y(d.y1));
+      return;
+    }
+    bars.transition().delay((d, i) => i * 120).duration(450).ease(EASE)
+      .attr('y', d => y(d.y1)).attr('height', d => y(d.y0) - y(d.y1));
+    connectors.style('opacity', 0).transition().delay((d, i) => i * 120 + 350).duration(200).style('opacity', 1);
+  };
+}
+
+// ============================================================
+// 21. RANGE BAR (Dumbbell)
+// ============================================================
+function renderRangeBar(stage) {
+  const W = stage.clientWidth || 800, H = 280, M = { t: 14, r: 70, b: 28, l: 90 };
+  const data = [
+    { k: 'Iceland', male: 28, female: 25 },
+    { k: 'Sweden', male: 32, female: 27 },
+    { k: 'Norway', male: 34, female: 28 },
+    { k: 'Germany', male: 30, female: 23 },
+    { k: 'France', male: 27, female: 22 },
+    { k: 'UK', male: 29, female: 22 },
+    { k: 'US', male: 33, female: 24 },
+    { k: 'Japan', male: 28, female: 18 },
+    { k: 'Korea', male: 25, female: 15 },
+  ];
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([10, 40]).range([M.l, W - M.r]);
+  const y = d3.scaleBand().domain(data.map(d => d.k)).range([M.t, H - M.b]).padding(0.45);
+
+  svg.append('g').attr('class', 'grid').attr('transform', `translate(0,${M.t})`)
+    .call(d3.axisTop(x).tickSize(-(H - M.t - M.b)).tickFormat(''));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - M.b})`)
+    .call(d3.axisBottom(x).ticks(6).tickFormat(d => `$${d}`));
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(${M.l},0)`).call(d3.axisLeft(y));
+
+  // legend
+  svg.append('circle').attr('cx', W - M.r + 12).attr('cy', M.t + 8).attr('r', 4).attr('fill', TXT);
+  svg.append('text').attr('x', W - M.r + 20).attr('y', M.t + 11).attr('font-size', 10).attr('fill', TXT).text('남');
+  svg.append('circle').attr('cx', W - M.r + 12).attr('cy', M.t + 24).attr('r', 4).attr('fill', ACCENT);
+  svg.append('text').attr('x', W - M.r + 20).attr('y', M.t + 27).attr('font-size', 10).attr('fill', ACCENT).text('여');
+
+  const connectors = svg.append('g').selectAll('line').data(data).enter().append('line')
+    .attr('x1', d => x(d.female)).attr('y1', d => y(d.k) + y.bandwidth() / 2)
+    .attr('x2', d => x(d.male)).attr('y2', d => y(d.k) + y.bandwidth() / 2)
+    .attr('stroke', MUTED).attr('stroke-width', 1.4);
+  const dotsM = svg.append('g').selectAll('circle.m').data(data).enter().append('circle').attr('class', 'm')
+    .attr('cx', d => x(d.male)).attr('cy', d => y(d.k) + y.bandwidth() / 2).attr('r', 0).attr('fill', TXT);
+  const dotsF = svg.append('g').selectAll('circle.f').data(data).enter().append('circle').attr('class', 'f')
+    .attr('cx', d => x(d.female)).attr('cy', d => y(d.k) + y.bandwidth() / 2).attr('r', 0).attr('fill', ACCENT);
+
+  return () => {
+    if (!motionOn()) { dotsM.attr('r', 6); dotsF.attr('r', 6); return; }
+    drawStroke(connectors, 500, 0);
+    dotsM.transition().delay((d, i) => 400 + i * 30).duration(260).ease(d3.easeBackOut.overshoot(1.4)).attr('r', 6);
+    dotsF.transition().delay((d, i) => 500 + i * 30).duration(260).ease(d3.easeBackOut.overshoot(1.4)).attr('r', 6);
+  };
+}
+
+// ============================================================
 // 디스패처 + IntersectionObserver
 // ============================================================
 const RENDERERS = {
   line: renderLine, bar: renderBar, candle: renderCandle, bubble: renderBubble,
   network: renderNetwork, map: renderMap, donut: renderDonut, gantt: renderGantt,
+  // production 빠진 6종
+  stacked: renderStacked, heatmap: renderHeatmap, dual_line: renderDualLine,
+  forecast: renderForecast, area: renderArea, choropleth: renderChoropleth,
+  // 신규 7종 (FT/Economist 스타일)
+  scatter: renderScatter, stacked_area: renderStackedArea, lollipop: renderLollipop,
+  slope: renderSlope, small_multiples: renderSmallMultiples,
+  waterfall: renderWaterfall, range_bar: renderRangeBar,
 };
 
 const cards = document.querySelectorAll('.chart-card');
