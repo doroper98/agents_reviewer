@@ -409,3 +409,154 @@ def test_composer_instruments_picks_up_compact_role() -> None:
     seen = _composer_instruments(composed)
     assert "미국채 10Y" in seen
     assert "달러인덱스" in seen
+
+
+# ─── v5.2.13 — 풀 카드 보장 회귀 가드 ────────────────────────────────────────
+
+
+def _mk_ts_series(name: str, source: str, chart_type: str, code: str = "") -> dict:
+    """헬퍼 — instrument 별 시계열 series dict (2-point OHLC)."""
+    return {
+        "instrument": name, "source": source, "chart_type": chart_type, "code": code,
+        "start_date": "2026-02-17", "end_date": "2026-05-17",
+        "data": [
+            {"date": "2026-02-17", "close": 100.0, "open": 100, "high": 101, "low": 99},
+            {"date": "2026-05-17", "close": 110.0, "open": 109, "high": 112, "low": 108},
+        ],
+    }
+
+
+def test_count_existing_ts_charts_excludes_compact_strip() -> None:
+    """v5.2.13 — _count_existing_ts_charts 가 strip row (role='compact') 를 제외.
+
+    strip 의 type 도 ``line`` 이지만 sparkline 용 다른 시각 역할. 분자에 포함하면
+    풀 카드 보장 (fallback 강제 emit 조건 = 0) 판정에서 v5.2.5 회귀가 영구화된다.
+    """
+    from src.orchestrator import _count_existing_ts_charts
+    composed = SimpleNamespace(sections=[SimpleNamespace(charts=[
+        {"role": "compact", "type": "line", "instrument": "코스피",
+         "data": [{"x": "d", "y": 1}]},
+        {"role": "compact", "type": "line", "instrument": "삼성전자",
+         "data": [{"x": "d", "y": 1}]},
+    ])])
+    assert _count_existing_ts_charts(composed) == 0, (
+        "compact strip row 가 풀 카드 카운트에 포함됨 — fallback 강제 emit 조건 "
+        "(==0) 판정 깨짐. v5.2.13 fix 의 회귀."
+    )
+    # 풀 카드 1 개 추가 → 카운트 1
+    composed.sections[0].charts.append(
+        {"type": "candle", "title": "삼성전자 (005930)",
+         "data": [{"date": "2026-02-17", "open": 70000, "high": 71000,
+                   "low": 69500, "close": 70500}]}
+    )
+    assert _count_existing_ts_charts(composed) == 1
+    # 비-시계열 (bar 등) 은 카운트 X
+    composed.sections[0].charts.append({"type": "bar", "data": [{"label": "x", "value": 1}]})
+    assert _count_existing_ts_charts(composed) == 1
+
+
+def test_ensure_time_series_chart_guarantees_full_card_when_composer_emits_zero() -> None:
+    """v5.2.13 — composer 풀 카드 0 + strip 3+ 일 때 fallback 이 ≥1 풀 카드 강제.
+
+    사용자 catch (v5.2.5 회귀): '차트 관련 정보가 컴팩트 스트립 차트만 계속 나옴'.
+    원인: _ensure_market_strip 이 모든 instrument 를 compact row 로 박은 후
+    _composer_instruments 가 모두 covered 로 반환 → fallback 의 dedupe 가 모든
+    instrument 를 잘라 no-op → 사용자가 strip 만 봄.
+
+    본 테스트는 fallback 이 풀 카드 ≥1 보장하는지 lock. 회귀 시 catch.
+    """
+    from src.orchestrator import (
+        _ensure_market_strip, _ensure_time_series_chart, _count_existing_ts_charts,
+    )
+    context = SimpleNamespace(
+        time_series=[
+            _mk_ts_series("코스피", "YAHOO", "line"),
+            _mk_ts_series("삼성전자", "KRX", "candle", "005930"),
+            _mk_ts_series("SK하이닉스", "KRX", "candle", "000660"),
+            _mk_ts_series("WTI", "FRED", "area"),
+        ],
+        timeline=[], summary="", category="financial",
+    )
+    composed = SimpleNamespace(sections=[SimpleNamespace(heading="첫 섹션", charts=[])])
+    _ensure_market_strip(composed, context)
+    _ensure_time_series_chart(composed, context)
+    full_n = _count_existing_ts_charts(composed)
+    strip_n = sum(1 for c in composed.sections[0].charts if c.get("role") == "compact")
+    assert full_n >= 1, (
+        f"composer 풀 카드 0 + 4 instruments strip 후 풀 카드 = {full_n}. "
+        "v5.2.13 fix 가 풀 카드 ≥1 강제 보장 실패 — 사용자가 strip 만 보게됨."
+    )
+    assert strip_n >= 1, "strip 도 함께 보존되어야 — 풀 카드와 분리된 시각 역할."
+
+
+def test_ensure_time_series_chart_preserves_composer_full_card() -> None:
+    """v5.2.13 — composer 가 풀 카드 1 개 emit 했으면 fallback 이 *추가 풀 카드*
+    안 박음. strip 는 별개 시각 역할로 동시 존재 OK.
+
+    composer 의 emit 의도 (narrative 핵심 instrument 만 강조) 보존. 모든 instrument
+    풀 카드는 시각 혼잡 — strip 의 at-a-glance 역할과 중복.
+    """
+    from src.orchestrator import (
+        _ensure_market_strip, _ensure_time_series_chart, _count_existing_ts_charts,
+    )
+    context = SimpleNamespace(
+        time_series=[
+            _mk_ts_series("코스피", "YAHOO", "line"),
+            _mk_ts_series("삼성전자", "KRX", "candle", "005930"),
+            _mk_ts_series("SK하이닉스", "KRX", "candle", "000660"),
+            _mk_ts_series("WTI", "FRED", "area"),
+        ],
+        timeline=[], summary="", category="financial",
+    )
+    composer_candle = {
+        "type": "candle", "title": "삼성전자 (005930)",
+        "data": [{"date": "2026-02-17", "open": 70000, "high": 71000,
+                  "low": 69500, "close": 70500}],
+    }
+    composed = SimpleNamespace(sections=[
+        SimpleNamespace(heading="첫 섹션", charts=[composer_candle])
+    ])
+    _ensure_market_strip(composed, context)
+    _ensure_time_series_chart(composed, context)
+    full_n = _count_existing_ts_charts(composed)
+    assert full_n == 1, (
+        f"composer 풀 candle 1 + fallback 후 풀 카드 = {full_n}. fallback 이 "
+        "composer 의도 무시하고 추가 풀 카드 박음 — 시각 혼잡 회귀."
+    )
+
+
+def test_ensure_time_series_chart_force_picks_data_richest() -> None:
+    """v5.2.13 — 풀 카드 강제 emit 시 *data 가 가장 풍부한 series* 선택.
+
+    여러 instrument 중 어떤 걸 강제 풀 카드로 만들지의 결정 규칙 lock. data
+    포인트가 많은 series 가 더 정보 풍부 → 사용자 시각적 가치 큼.
+    """
+    from src.orchestrator import _ensure_market_strip, _ensure_time_series_chart
+    # 코스피 = 5점, 삼성 = 10점, 하이닉스 = 3점 → 삼성이 풀 카드로 선택
+    def _series(name, src, ctype, n_points, code=""):
+        return {
+            "instrument": name, "source": src, "chart_type": ctype, "code": code,
+            "start_date": "2026-02-17", "end_date": "2026-05-17",
+            "data": [{"date": f"2026-05-{i+1:02d}", "close": 100 + i,
+                      "open": 100 + i, "high": 101 + i, "low": 99 + i}
+                     for i in range(n_points)],
+        }
+    context = SimpleNamespace(
+        time_series=[
+            _series("코스피", "YAHOO", "line", 5),
+            _series("삼성전자", "KRX", "candle", 10, "005930"),
+            _series("SK하이닉스", "KRX", "candle", 3, "000660"),
+        ],
+        timeline=[], summary="", category="financial",
+    )
+    composed = SimpleNamespace(sections=[SimpleNamespace(heading="첫 섹션", charts=[])])
+    _ensure_market_strip(composed, context)
+    _ensure_time_series_chart(composed, context)
+    full_cards = [c for c in composed.sections[0].charts if c.get("role") != "compact"]
+    assert len(full_cards) >= 1
+    # 첫 (가장 앞쪽) 풀 카드의 instrument 가 삼성전자여야
+    primary_title = (full_cards[0].get("title") or "")
+    assert "삼성전자" in primary_title, (
+        f"data 가장 풍부한 instrument (삼성전자, 10 points) 가 풀 카드 강제 대상 "
+        f"이어야. 실제 첫 풀 카드 title = {primary_title!r}"
+    )
