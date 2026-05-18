@@ -407,6 +407,46 @@ def _check_chart_count_exceeded(
     return count > limit, count, limit
 
 
+def _check_chart_type_monotony(
+    composed: dict[str, Any], mode: str
+) -> tuple[bool, int, int]:
+    """v5.2.14 Layer 4 — chart type diversity 쿼터.
+
+    캔들 회귀 (production 13종 중 70% 가 bar/line/donut) 차단의 SSOT.
+    한 보고서 안에 충분한 차트가 있는데도 type 다양성이 부족하면 soft fail.
+
+    임계:
+        fast       : skip (1-2 차트는 자연스레 monotony)
+        standard   : charts ≥ 3 + distinct types < 2 → soft fail
+        deep       : charts ≥ 5 + distinct types < 3 → soft fail
+
+    Returns:
+        (flag, chart_count, distinct_types)
+    """
+    exhibits = composed.get("exhibits") or composed.get("charts") or []
+    if not isinstance(exhibits, list):
+        sections = composed.get("sections") or []
+        exhibits = []
+        for s in sections:
+            if isinstance(s, dict):
+                exhibits.extend(s.get("charts") or [])
+    types: list[str] = []
+    for ch in exhibits:
+        if isinstance(ch, dict):
+            t = ch.get("type")
+            if isinstance(t, str) and t:
+                types.append(t)
+    chart_count = len(types)
+    distinct = len(set(types))
+    if mode == "fast":
+        return False, chart_count, distinct
+    if mode == "standard" and chart_count >= 3 and distinct < 2:
+        return True, chart_count, distinct
+    if mode == "deep" and chart_count >= 5 and distinct < 3:
+        return True, chart_count, distinct
+    return False, chart_count, distinct
+
+
 def _check_watch_signal_all_ambiguous(composed: dict[str, Any]) -> tuple[bool, int]:
     signals = composed.get("watch_signals") or []
     if not signals:
@@ -545,6 +585,14 @@ def run_deterministic_gate(
     if stale_ratio > SOFT_STALE_RATIO_THRESHOLD:
         soft.append(f"stale_source_ratio({stale_ratio:.0%}>{int(SOFT_STALE_RATIO_THRESHOLD*100)}%)")
 
+    # ─── Soft 6: chart_type_monotony (v5.2.14 Layer 4)
+    mono_flag, mono_count, mono_distinct = _check_chart_type_monotony(composed, mode)
+    metrics["chart_distinct_types"] = mono_distinct
+    if mono_flag:
+        soft.append(
+            f"chart_type_monotony({mono_distinct} distinct of {mono_count} charts, mode={mode})"
+        )
+
     # ─── 결정 ──────────────────────────────────────────────────────
     if hard:
         return DeterministicGateResult(
@@ -606,4 +654,6 @@ SOFT_FAIL_RULES: list[str] = [
     "heading_pattern_repetitive",
     "watch_signal_all_ambiguous",
     "stale_source_ratio",
+    # v5.2.14 — Layer 4 of 5-Layer Usage Guarantee. 차트 type collapse 차단.
+    "chart_type_monotony",
 ]
