@@ -1518,6 +1518,9 @@ class Orchestrator:
                         ct = ch.get("type")
                         if isinstance(ct, str) and ct:
                             emitted_types.append(ct)
+            # embedded_map 도 시각화 채널 → starvation 분모 포함
+            if getattr(result, "embedded_map", None):
+                emitted_types.append("map")
             if self.telemetry is not None:
                 self.telemetry.record_chart_types(emitted_types)
             append_run(event=event_name, mode=mode, chart_types=emitted_types)

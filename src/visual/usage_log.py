@@ -31,13 +31,15 @@ from typing import Iterable
 logger = logging.getLogger(__name__)
 
 
-# Production 차트 13종 SSOT — 캔들 회귀 방지 목적의 starvation 점검 대상.
+# Production 차트 14종 SSOT — 캔들 회귀 방지 목적의 starvation 점검 대상.
+# 13종 (ComposedSection.charts) + 1종 (ComposedReport.embedded_map). map 은
+# 별도 채널이지만 사용자 관점의 시각화 type 이므로 starvation 분모에 포함.
 # 신규 type 추가 시 본 리스트와 ``src/visual/schemas.py:_TYPE_TO_GUARD``,
 # ``docs/VISUAL_CAPABILITY_REGISTRY.yaml`` 함께 갱신.
 KNOWN_CHART_TYPES: tuple[str, ...] = (
     "bar", "donut", "line", "gantt", "network", "stacked",
     "bubble", "heatmap", "dual_line", "forecast", "choropleth",
-    "candle", "area",
+    "candle", "area", "map",
 )
 
 # 누적 N 보고서 동안 0회 emit 시 starved 로 표시. 운영 경험으로 조정.
