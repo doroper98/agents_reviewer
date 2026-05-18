@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.5.7
+last_synced_with: v5.3.0
 ssot_for:
   - "에이전트 카탈로그 (mirror of src/agents/*)"
   - "Mode 별 정책 (mirror of src/token_budget.py)"
@@ -11,7 +11,7 @@ depends_on:
   - "src/agents/narrative_composer.py:MAX_TOKENS_BY_MODE (v4.5.4)"
   - "src/lens_policy.py:select_theme (테마 결정)"
   - "src/templates/static/charts.js (d3 렌더 SSOT)"
-last_review: 2026-05-05
+last_review: 2026-05-18
 ---
 
 # Catalogs — Agents · Charts · Maps (v4.5.7)
@@ -260,32 +260,72 @@ ReportSynthesizer.synthesize(result, theme, archetype)
 
 ---
 
-## 6. d3 Chart Library — v3.2.0 도입
+## 6. d3 Chart Library — v5.3.0
 
-`src/templates/static/charts.js` 의 9종 d3 차트 미러. 차트 SSOT 는 코드. 본 표는 사람-친화 가이드.
+`src/templates/static/charts.js` 의 d3 차트 미러. SSOT 는 코드 (`RENDERERS` dict). 본 표는 사람-친화 가이드.
 
-| 차트 ID (charts.js fn) | 용도 | 입력 데이터 (visual_builder 빌더) |
-|---|---|---|
-| `drawScenarioBar` | 시나리오 확률 가로 막대 (gradient + tag 색띠) | `[{name, tag, prob, note?}]` ← `build_scenario_chart_data` |
-| `drawKeyFiguresDonut` | 핵심 수치 도넛 (중심에 카운트) | `[{label, value, context?}]` ← `build_key_figures_chart_data` |
-| `drawSeverityHeatmap` | 인과 사슬 위험도 (CSS 기반, PDF 안전) | `[{title, severity}]` ← `build_severity_chart_data` |
-| `drawConfidenceTriple` | 신뢰도 3축 막대 | `{source_diversity, data_freshness, expert_consensus}` ← `build_confidence_chart_data` |
-| `drawTimeseriesLine` | 시계열 라인 (area gradient + 진입 애니메이션) | `{label, points: [{x, y}], unit?}` |
-| `drawStackedBar` | 누적 막대 (시나리오 × 행위자) | `{scenarios: [{name, segments: [{label, value, color?}]}]}` ← `build_stacked_chart_data` |
-| `drawBubble` | 리스크 매트릭스 (확률 × 영향 4사분면) | `[{label, x, y, size, color?, note?}]` ← `build_bubble_chart_data` |
-| `drawGantt` | 간트 타임라인 | `[{label, start, end, color?, note?}]` ← `build_gantt_chart_data` |
-| `drawNetwork` | 행위자 force-directed 그래프 (대립=점선) | `{nodes: [{id, label, group}], links: [{source, target, type}]}` ← `build_network_chart_data` |
+v3.2.0 의 9종 `drawScenarioBar/drawKeyFiguresDonut/...` 표는 폐기 — v4.0.0 부터 composer 가 데이터를 직접 emit 하는 mono-themed 렌더러로 전환. 이전 표의 ID 는 더 이상 호출 안 됨 (visual_builder.py 일부 함수도 deprecated).
 
-### 6.1 자동 차트 매트릭스
-보고서가 데이터 가용성에 따라 자동 생성하는 차트 매핑은 [docs/ARCHITECTURE.md §5.2](ARCHITECTURE.md). 모든 차트 데이터는 결정적 (LLM 호출 0).
+### 6.1 차트 type 카탈로그 (v5.3.0 — 21종 + 1 embedded_map)
 
-### 6.2 차트 추가 절차
-1. `src/templates/static/charts.js` 에 `drawXxx` 함수 + auto-init 분기 + API export
-2. `src/visual_builder.py` 에 `build_xxx_chart_data()` 추가 + `build_chart_payload()` 결합
-3. `src/templates/report.html` + `src/templates/report_block.html` dashboard 섹션에 SVG 컨테이너
-4. `samples/chart_gallery.html` 시연 추가
-5. `src/tests/test_chart_builders.py` 검증 테스트 추가
-6. 본 §6 표 + CHANGELOG 매트릭스 갱신
+| # | type | charts.js fn | 데이터 shape | capability tier | 용도 |
+|---|------|-------------|------------|----------------|------|
+| 1 | `bar` | `drawBar` | `[{label, value, note?}]` | safe | 카테고리 순위/크기 (≤8) |
+| 2 | `donut` | `drawDonut` | `[{label, value, note?}]` (≥3) | safe | 단일 시점 구성비 (CHART-AP-16 2-segment 금지) |
+| 3 | `line` | `drawLine` | `[{x, y, event?}]` | safe | 시계열 단일 시리즈 |
+| 4 | `gantt` | `drawGantt` | `[{label, start, end, note?}]` | safe | 사건 구간 (CHART-AP-15 zero-duration 금지) |
+| 5 | `network` | `drawNetwork` | `{nodes, links}` | guarded | 관계도 (d3-force) |
+| 6 | `stacked` | `drawStacked` | `{scenarios: [{name, segments}]}` | safe | 이산 시점 구성비 |
+| 7 | `bubble` | `drawBubble` | `[{label, x, y, size?}]` | safe | 확률 × 영향 (3-variable) |
+| 8 | `heatmap` | `drawHeatmap` | `[{title, severity}]` | safe | 위험도 격자 |
+| 9 | `dual_line` | `drawDualLine` | `{left, right}` (좌·우 y축) | safe | 두 metric 동조/괴리 |
+| 10 | `forecast` | `drawForecast` | `{actual, forecast, fork_at}` | safe | 실측 + 예측 + 신뢰구간 |
+| 11 | `choropleth` | `drawChoropleth` | `[{country_code, value}]` | guarded | 지역별 강도 분포 (TopoJSON) |
+| 12 | `candle` | `drawCandle` | `[{date, open, high, low, close}]` | safe | 개별주 일봉 (OHLC, v5.2.0+) |
+| 13 | `area` | `drawArea` | `[{x, y, event?}]` | safe | 누적·부피성 시계열 |
+| 14 | `scatter` | `drawScatter` | `[{label, x, y, accent?}]` | guarded | 라벨 산점도 (v5.3.0, FT 좌측 스타일) |
+| 15 | `stacked_area` | `drawStackedArea` | `{series: [{name, values}]}` | guarded | 시계열 누적 영역 (v5.3.0, FT 우측 스타일) |
+| 16 | `lollipop` | `drawLollipop` | `[{label, value}]` (8-15) | guarded | bar 의 우아한 대안 (v5.3.0) |
+| 17 | `slope` | `drawSlope` | `{left_label, right_label, items}` | guarded | 2 시점 비교·순위 역전 (v5.3.0) |
+| 18 | `small_multiples` | `drawSmallMultiples` | `{panels: [{label, series}]}` | guarded | 4-9 패널 그리드 비교 (v5.3.0) |
+| 19 | `waterfall` | `drawWaterfall` | `[{label, value, type}]` (첫·끝 total) | guarded | P&L 1차원 분해 (v5.3.0) |
+| 20 | `range_bar` | `drawRangeBar` | `[{label, low, high}]` (low<high) | guarded | Dumbbell (두 값 갭, v5.3.0) |
+| 21 | `sankey` | `drawSankey` | `{nodes, links}` (DAG, 2-12 노드) | guarded | 다단계 재무 분해·자본 배분 (v5.3.0) |
+| (map) | (maps.js) | `renderMap` | `{markers, routes?}` | guarded | `ComposedReport.embedded_map` 별도 채널 |
+
+**capability tier**: SSOT 는 [docs/VISUAL_CAPABILITY_REGISTRY.yaml](VISUAL_CAPABILITY_REGISTRY.yaml). safe = VisualPlanner 자유 emit, guarded = chart_critic + Visual Sanity Gate C 통과 필수.
+
+### 6.2 차트 type 결정 트리
+
+composer 의 차트 선택은 SYSTEM_PROMPT 안의 결정 트리 (v5.3.0 신설) 가 SSOT. 코드: `src/agents/narrative_composer.py:SYSTEM_PROMPT`. 사람-친화 요약:
+
+1. 시간축 있음? → line / area / candle / forecast / dual_line / stacked_area / small_multiples
+2. 지리 데이터? → embedded_map / choropleth
+3. 카테고리 비교? → bar / lollipop / slope / range_bar / waterfall / sankey (다단계 분해)
+4. 구성비? → donut / stacked
+5. 다차원 관계? → bubble / scatter / network
+6. 2D 격자? → heatmap
+7. 일정? → gantt
+
+### 6.3 자동 차트 매트릭스
+ResearchDirector 의 `_DEFAULT_REQUIRED_EXHIBITS` 가 9 method 별 자동 추천 type 보유 (SSOT: `src/agents/research_director.py`). 예:
+- `scenario_tree` → bubble
+- `transmission_channel` → sankey (v5.3.0 부터, 이전엔 bar)
+- `stakeholder_matrix` → network
+- `fault_tree` → waterfall (v5.3.0 신설)
+- `pre_mortem` → scatter (v5.3.0 신설)
+
+### 6.4 신규 차트 추가 절차 (v5.3.0 — 7단계, 5-Layer Usage Guarantee 정합)
+
+1. `src/templates/static/charts.js` 의 `RENDERERS` dict 에 `drawXxx` 함수 추가
+2. `src/visual/schemas.py` 의 `_TYPE_TO_GUARD` 에 `XxxGuard` Pydantic 가드 추가 + `validate_chart_data` 디스패처 분기
+3. `src/agents/narrative_composer.py:SYSTEM_PROMPT` 의 type 별 data 스키마 + 결정 트리 + emit-X 가드 갱신
+4. `docs/VISUAL_CAPABILITY_REGISTRY.yaml` 에 entry 추가 (safe / guarded / experimental)
+5. `src/visual/usage_log.py:KNOWN_CHART_TYPES` 에 type 추가 (Layer 1 starvation 분모)
+6. `tests/regression/fixtures/chart_type_scenarios.yaml` 에 시나리오 (data_shape / scenario / sample_prompt / negative_examples) 추가
+7. 회귀 테스트 (test_chart_correctness / test_chart_type_diversity / test_capability_registry)
+
+CLAUDE.md `Chart System` 섹션의 절차와 동일 — 두 곳이 정합 유지.
 
 ---
 

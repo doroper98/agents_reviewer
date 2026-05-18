@@ -387,6 +387,17 @@
     <div class="chart-card-stage"></div>
   </div>
 
+  <div class="spacer">━━━ Part D: Sankey (재무·수익성 분석) ━━━</div>
+
+  <!-- 22. Sankey -->
+  <h2>22. Sankey — 다단계 흐름 분해 (재무제표 / 자본 배분)</h2>
+  <div class="section-note">링크가 좌→우 순차로 그어짐. 적자 flow 는 빨간색 자동.</div>
+  <div class="chart-card" data-chart-type="sankey">
+    <div class="chart-card-title">로보택시 매출 분해 (FT 스타일 예시)</div>
+    <div class="chart-card-note">거리 점유율 → 필요 대수 → 매출 → segment → 영업이익/적자</div>
+    <div class="chart-card-stage"></div>
+  </div>
+
   <p style="margin-top: 40px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
     <strong>검토 포인트:</strong>
     (1) entry 속도가 스크롤 흐름을 방해하지 않는가
@@ -1461,6 +1472,151 @@ function renderRangeBar(stage) {
 }
 
 // ============================================================
+// 22. SANKEY (재무·수익성 분석)
+// ============================================================
+function renderSankey(stage) {
+  const W = stage.clientWidth || 800, H = 420;
+  // 사용자가 보낸 FT 이미지를 모티브로 한 robotaxi 매출 분해 (값 단순화)
+  const nodes = [
+    { id: 'rh', label: '시·RH', value: 84 },
+    { id: 'priv', label: '자가용', value: 70 },
+    { id: 'scoot', label: '스쿠터', value: 25 },
+    { id: 'subway', label: '지하철', value: 18 },
+    { id: 'robo', label: '로보택시 거리', value: 209 },
+    { id: 'rev', label: '총 운임매출 $117B', value: 117, accent: true },
+    { id: 'ops', label: '운영사', value: 90 },
+    { id: 'ai', label: 'AI 라이센싱', value: 9 },
+    { id: 'foun', label: '차량 파운드리', value: 14 },
+    { id: 'op_profit', label: '운영사 영업이익 $27B', value: 27, accent: true },
+    { id: 'ai_profit', label: 'AI 영업이익 $5B', value: 5, accent: true },
+    { id: 'foun_loss', label: '파운드리 적자 -$0.13B', value: 0.13 },
+  ];
+  const links = [
+    { source: 'rh', target: 'robo', value: 78 },
+    { source: 'priv', target: 'robo', value: 60 },
+    { source: 'scoot', target: 'robo', value: 25 },
+    { source: 'subway', target: 'robo', value: 18 },
+    { source: 'robo', target: 'rev', value: 209 },
+    { source: 'rev', target: 'ops', value: 90 },
+    { source: 'rev', target: 'ai', value: 9 },
+    { source: 'rev', target: 'foun', value: 14 },
+    { source: 'ops', target: 'op_profit', value: 27 },
+    { source: 'ai', target: 'ai_profit', value: 5 },
+    { source: 'foun', target: 'foun_loss', value: 0.13, negative: true },
+  ];
+  const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+
+  // Layout
+  const nodeById = new Map(nodes.map(n => [n.id, n]));
+  nodes.forEach(n => { n.inValue = 0; n.outValue = 0; n.col = 0; });
+  const adj = new Map(nodes.map(n => [n.id, []]));
+  const inDeg = new Map(nodes.map(n => [n.id, 0]));
+  links.forEach(l => {
+    adj.get(l.source).push(l.target);
+    inDeg.set(l.target, (inDeg.get(l.target) || 0) + 1);
+    nodeById.get(l.source).outValue += l.value;
+    nodeById.get(l.target).inValue += l.value;
+  });
+  const queue = nodes.filter(n => inDeg.get(n.id) === 0);
+  let head = 0;
+  while (head < queue.length) {
+    const n = queue[head++];
+    adj.get(n.id).forEach(tid => {
+      const tgt = nodeById.get(tid);
+      tgt.col = Math.max(tgt.col, n.col + 1);
+      inDeg.set(tid, inDeg.get(tid) - 1);
+      if (inDeg.get(tid) === 0) queue.push(tgt);
+    });
+  }
+  const maxCol = d3.max(nodes, n => n.col);
+  const M = { l: 70, r: 110, t: 20, b: 20 };
+  const colWidth = (W - M.l - M.r) / (maxCol + 1);
+  const nodeWidth = 14;
+  const nodePad = 8;
+  const cols = d3.group(nodes, n => n.col);
+  cols.forEach(cnodes => {
+    cnodes.sort((a, b) => Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue));
+    const total = d3.sum(cnodes, n => Math.max(n.inValue, n.outValue));
+    const availH = H - M.t - M.b - (cnodes.length - 1) * nodePad;
+    let y = M.t;
+    cnodes.forEach(n => {
+      const v = Math.max(n.inValue, n.outValue);
+      n.height = Math.max(4, (v / total) * availH);
+      n.x0 = M.l + n.col * colWidth + 8;
+      n.x1 = n.x0 + nodeWidth;
+      n.y0 = y; n.y1 = y + n.height;
+      y += n.height + nodePad;
+    });
+  });
+  nodes.forEach(n => {
+    n.outLinks = links.filter(l => l.source === n.id);
+    n.inLinks = links.filter(l => l.target === n.id);
+    n.outLinks.sort((a, b) => nodeById.get(a.target).y0 - nodeById.get(b.target).y0);
+    n.inLinks.sort((a, b) => nodeById.get(a.source).y0 - nodeById.get(b.source).y0);
+    let sy = n.y0;
+    n.outLinks.forEach(l => {
+      const slice = (l.value / Math.max(n.outValue, 1e-9)) * n.height;
+      l._sy0 = sy; l._sy1 = sy + slice; sy += slice;
+    });
+    let ty = n.y0;
+    n.inLinks.forEach(l => {
+      const slice = (l.value / Math.max(n.inValue, 1e-9)) * n.height;
+      l._ty0 = ty; l._ty1 = ty + slice; ty += slice;
+    });
+  });
+
+  // Links — Bezier filled regions (entry: opacity fade-in)
+  const linkPaths = svg.append('g').selectAll('path').data(links).enter().append('path')
+    .attr('d', l => {
+      const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
+      const x1 = src.x1, x2 = tgt.x0, midX = (x1 + x2) / 2;
+      return `M ${x1},${l._sy0} C ${midX},${l._sy0} ${midX},${l._ty0} ${x2},${l._ty0}
+              L ${x2},${l._ty1} C ${midX},${l._ty1} ${midX},${l._sy1} ${x1},${l._sy1} Z`;
+    })
+    .attr('fill', l => l.negative ? '#C9837A' : TXT)
+    .attr('fill-opacity', l => l.negative ? 0.45 : 0.22)
+    .attr('stroke', 'none');
+
+  // Nodes
+  const nodeRects = svg.append('g').selectAll('rect').data(nodes).enter().append('rect')
+    .attr('x', n => n.x0).attr('y', n => n.y0)
+    .attr('width', n => n.x1 - n.x0).attr('height', n => n.height)
+    .attr('fill', n => n.accent ? ACCENT : TXT)
+    .attr('fill-opacity', n => n.accent ? 1 : 0.85);
+
+  // Labels
+  nodes.forEach(n => {
+    const isFirst = n.col === 0, isLast = n.col === maxCol;
+    if (isFirst) {
+      svg.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 + 4)
+        .attr('text-anchor', 'end').attr('font-size', 11).attr('fill', TXT)
+        .text(n.label);
+    } else if (isLast) {
+      svg.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 + 4)
+        .attr('font-size', 11).attr('fill', n.accent ? ACCENT : TXT)
+        .attr('font-weight', 600).text(n.label);
+    } else {
+      svg.append('text').attr('x', n.x0 + nodeWidth / 2).attr('y', n.y0 - 4)
+        .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', TXT)
+        .attr('font-weight', 600).text(n.label);
+    }
+  });
+
+  return () => {
+    if (!motionOn()) return;
+    // Links draw left→right (group by source column)
+    linkPaths.style('opacity', 0)
+      .transition()
+      .delay(l => nodeById.get(l.source).col * 150)
+      .duration(500).ease(EASE).style('opacity', 1);
+    nodeRects.style('opacity', 0)
+      .transition()
+      .delay(n => n.col * 150 + 100)
+      .duration(350).ease(EASE).style('opacity', 1);
+  };
+}
+
+// ============================================================
 // 디스패처 + IntersectionObserver
 // ============================================================
 const RENDERERS = {
@@ -1473,6 +1629,8 @@ const RENDERERS = {
   scatter: renderScatter, stacked_area: renderStackedArea, lollipop: renderLollipop,
   slope: renderSlope, small_multiples: renderSmallMultiples,
   waterfall: renderWaterfall, range_bar: renderRangeBar,
+  // v5.3.0 — Sankey (재무 분해)
+  sankey: renderSankey,
 };
 
 const cards = document.querySelectorAll('.chart-card');

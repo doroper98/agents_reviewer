@@ -373,9 +373,10 @@ _DEFAULT_REQUIRED_EXHIBITS: dict[str, list[dict[str, str]]] = {
         "fallback_form": "fact_grid",
     }],
     "transmission_channel": [{
-        "description": "전이 채널 단계별 영향 비교",
-        "visual_type_hint": "bar",
-        "why_required": "한 충격이 단계별로 어떻게 증폭되는지 정량 추적.",
+        # v5.3.0 — sankey 가 다단계 분배에 더 적합. bar 는 1차원 비교만 가능.
+        "description": "전이 채널 단계별 흐름 분해 (매출→segment→비용→이익 같은)",
+        "visual_type_hint": "sankey",
+        "why_required": "한 입력이 다단계 노드로 어떻게 갈라지고 흡수되는지 정량 추적.",
         "fallback_form": "table",
     }],
     "stakeholder_matrix": [{

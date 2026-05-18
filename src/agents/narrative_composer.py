@@ -116,7 +116,7 @@ SYSTEM_PROMPT = (
     "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식 (v4.4.0):\n"
     "  ```json\n"
     "  {\n"
-    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar\",\n'
+    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey\",\n'
     '    \"title\": \"차트 제목\",\n'
     '    \"subtitle\": \"한 줄 thesis — 제목과 다른 결론. 예: 동진 7.9는 OP 기준, 회계는 23.08\",\n'
     '    \"data\": [...],            // type 별 스키마 (아래 참조)\n'
@@ -201,6 +201,15 @@ SYSTEM_PROMPT = (
     "  · range_bar: [{label, low:number, high:number}]                     두 값 사이 갭 (Dumbbell)\n"
     "              low < high 강제. 3-15 항목. 남녀 임금격차, min-max 범위 등.\n"
     "              + optional: low_label, high_label (legend)\n\n"
+    "  · sankey:   {nodes:[{id, label, accent?:bool, value_label?:str}],   다단계 흐름 분해 (재무·수익성 분석)\n"
+    "              links:[{source, target, value:number, negative?:bool}]}\n"
+    "              재무제표 brücke (매출→COGS/판관비/R&D→영업이익), 세그먼트 매출\n"
+    "              분해 (총매출→사업부→지역→마진), 자본 배분 (영업CF→배당/자사주/\n"
+    "              CAPEX/M&A), EBITDA bridge 등. waterfall 보다 multi-stage 분배에\n"
+    "              강함 (waterfall 은 1차원 시퀀스).\n"
+    "              가드: 노드 2-12, 링크 ≥1, source/target 가 nodes.id 존재,\n"
+    "              self-loop 금지, DAG (순환 금지). 적자/손실 flow 는 negative=true\n"
+    "              (빨간 색 자동). accent=true 면 강조 노드 (보통 최종 이익 노드).\n\n"
     "- 모든 차트는 mono guide 의 45° 패턴 + 단일 액센트. 색은 자동 적용.\n"
     "- *데이터가 비어있으면 차트 자체를 emit 하지 말 것* (charts 배열에 추가 금지).\n"
     "  · bar/donut/line/gantt/heatmap/candle/area: data 가 빈 배열이면 emit X\n"
@@ -215,6 +224,7 @@ SYSTEM_PROMPT = (
     "  · small_multiples: panels 가 4 미만 또는 9 초과면 emit X\n"
     "  · waterfall: 첫·끝 row 가 type='total' 이 아니면 emit X\n"
     "  · range_bar: 임의 row 의 low >= high 면 emit X\n"
+    "  · sankey: nodes <2 또는 >12, links <1, 참조 깨짐 (source/target 미존재), self-loop, 순환 그래프면 emit X\n"
     "  · 모르는 수치를 *추정해서* 차트 만들지 말 것 — 진짜 출처 데이터만.\n\n"
 
     "[차트 type 결정 트리 — v5.2.14 신설]\n"
@@ -235,7 +245,8 @@ SYSTEM_PROMPT = (
     "     ├─ 카테고리 8-15, 격차 강조 → lollipop (bar 의 우아한 대안)\n"
     "     ├─ 2 시점 비교 (같은 카테고리 a vs b) → slope\n"
     "     ├─ 두 값 갭 (low/high) → range_bar (Dumbbell)\n"
-    "     └─ 시작값 → 증감 → 종료값 분해 → waterfall (P&L 스타일)\n"
+    "     ├─ 시작값 → 증감 → 종료값 1차원 분해 → waterfall (P&L 스타일)\n"
+    "     └─ 다단계 N→M 흐름 분배 (매출→segment→비용→이익) → sankey (재무 분해)\n"
     "  4. 구성비?\n"
     "     ├─ 단일 시점, 3-6 segment → donut (≤2 면 본문, ≥7 이면 bar)\n"
     "     └─ 이산 시점 다중 (4분기 등) → stacked\n"

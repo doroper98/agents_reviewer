@@ -1789,6 +1789,167 @@
       .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
   }
 
+  // ----- SANKEY (재무 분해 / 자본 배분 / 매출 → segment → 비용 → 이익) -----
+  // 외부 d3-sankey 의존 없는 minimal layout — DAG 흐름.
+  // 노드 자동 column 할당 (longest path), 각 column 내 vertical layout 은
+  // value 비례 + 인접 padding. 링크는 source.x1 → target.x0 의 cubic Bezier.
+  function drawSankey(stage, payload, t) {
+    const data = payload.data || {};
+    const nodes = (data.nodes || []).map(n => ({ ...n }));
+    const links = (data.links || []).map(l => ({ ...l }));
+    if (nodes.length < 2 || links.length < 1) return;
+    const W = 760;
+    const H = Math.max(320, Math.min(560, 60 + nodes.length * 28));
+    const zones = computeZones(W, H, { left: 8, right: 8, top: 28, bottom: 24 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    const nodeById = new Map(nodes.map(n => [n.id, n]));
+    nodes.forEach(n => { n.inValue = 0; n.outValue = 0; n.col = 0; });
+    // 유효 링크만 (참조 가능)
+    const validLinks = links.filter(l => {
+      const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
+      if (!src || !tgt) return false;
+      const v = +l.value;
+      if (!isFinite(v) || v <= 0) return false;
+      src.outValue += v;
+      tgt.inValue += v;
+      return true;
+    });
+    if (!validLinks.length) return;
+
+    // column 할당 — topological BFS (가장 긴 경로)
+    const adj = new Map(nodes.map(n => [n.id, []]));
+    const inDeg = new Map(nodes.map(n => [n.id, 0]));
+    validLinks.forEach(l => {
+      adj.get(l.source).push(l.target);
+      inDeg.set(l.target, (inDeg.get(l.target) || 0) + 1);
+    });
+    const queue = nodes.filter(n => inDeg.get(n.id) === 0);
+    let head = 0;
+    while (head < queue.length) {
+      const n = queue[head++];
+      (adj.get(n.id) || []).forEach(tid => {
+        const tgt = nodeById.get(tid);
+        tgt.col = Math.max(tgt.col, n.col + 1);
+        inDeg.set(tid, inDeg.get(tid) - 1);
+        if (inDeg.get(tid) === 0) queue.push(tgt);
+      });
+    }
+    const maxCol = d3.max(nodes, n => n.col);
+    if (maxCol < 1) return;  // 단일 컬럼 sankey 는 의미 X
+
+    const colWidth = zones.data.w / (maxCol + 1);
+    const nodeWidth = 14;
+    const nodePad = 10;
+
+    // column 별 vertical layout
+    const colMap = d3.group(nodes, n => n.col);
+    colMap.forEach((cnodes, col) => {
+      // value 정렬 — 가장 큰 노드 위로
+      cnodes.sort((a, b) =>
+        (Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue)));
+      const totalValue = d3.sum(cnodes, n => Math.max(n.inValue, n.outValue)) || 1;
+      const availH = zones.data.h - (cnodes.length - 1) * nodePad;
+      let y = zones.data.y;
+      cnodes.forEach((n) => {
+        const v = Math.max(n.inValue, n.outValue);
+        n.height = Math.max(4, (v / totalValue) * availH);
+        n.x0 = zones.data.x + col * colWidth + 8;
+        n.x1 = n.x0 + nodeWidth;
+        n.y0 = y;
+        n.y1 = y + n.height;
+        y += n.height + nodePad;
+      });
+    });
+
+    // 링크 slice 할당 — 각 노드의 outgoing/incoming 을 target/source y 기준 정렬
+    nodes.forEach(n => {
+      n.outLinks = validLinks.filter(l => l.source === n.id);
+      n.inLinks = validLinks.filter(l => l.target === n.id);
+      n.outLinks.sort((a, b) => nodeById.get(a.target).y0 - nodeById.get(b.target).y0);
+      n.inLinks.sort((a, b) => nodeById.get(a.source).y0 - nodeById.get(b.source).y0);
+      let sy = n.y0;
+      n.outLinks.forEach(l => {
+        const slice = (+l.value / Math.max(n.outValue, 1e-9)) * n.height;
+        l._sy0 = sy; l._sy1 = sy + slice; sy += slice;
+      });
+      let ty = n.y0;
+      n.inLinks.forEach(l => {
+        const slice = (+l.value / Math.max(n.inValue, 1e-9)) * n.height;
+        l._ty0 = ty; l._ty1 = ty + slice; ty += slice;
+      });
+    });
+
+    // 링크 그리기 — source.x1 → target.x0 의 4-point cubic Bezier 채워진 영역
+    const linkG = svg.append('g').attr('class', 'sankey-links');
+    validLinks.forEach(l => {
+      const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
+      const x1 = src.x1, x2 = tgt.x0;
+      const midX = (x1 + x2) / 2;
+      const path = [
+        `M ${x1},${l._sy0}`,
+        `C ${midX},${l._sy0} ${midX},${l._ty0} ${x2},${l._ty0}`,
+        `L ${x2},${l._ty1}`,
+        `C ${midX},${l._ty1} ${midX},${l._sy1} ${x1},${l._sy1}`,
+        `Z`,
+      ].join(' ');
+      // 적자 / negative flow 는 down 색 (mono 의 보존된 빨간 액센트), 일반 흐름은 text 색
+      const isNeg = l.negative === true || (+l.value < 0);
+      const fill = isNeg ? (t.down || t.accent) : t.text;
+      linkG.append('path').attr('d', path).attr('fill', fill)
+        .attr('fill-opacity', isNeg ? 0.35 : 0.22).attr('stroke', 'none');
+    });
+
+    // 노드 그리기
+    const nodeG = svg.append('g').attr('class', 'sankey-nodes');
+    nodes.forEach(n => {
+      nodeG.append('rect')
+        .attr('x', n.x0).attr('y', n.y0)
+        .attr('width', n.x1 - n.x0).attr('height', n.height)
+        .attr('fill', n.accent ? t.accent : t.text)
+        .attr('fill-opacity', n.accent ? 1 : 0.85);
+      // 라벨 — 첫 컬럼은 노드 왼쪽 / 마지막 컬럼은 노드 오른쪽 / 그 외는 위쪽
+      const labelText = String(n.label || n.id);
+      const valueText = n.value_label || (n.outValue > 0
+        ? d3.format(',.1f')(n.outValue)
+        : (n.inValue > 0 ? d3.format(',.1f')(n.inValue) : ''));
+      const isFirst = n.col === 0;
+      const isLast = n.col === maxCol;
+      if (isFirst) {
+        nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 - 2)
+          .attr('text-anchor', 'end').attr('font-size', 11)
+          .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
+          .attr('font-weight', 600).text(labelText);
+        if (valueText) {
+          nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 + 12)
+            .attr('text-anchor', 'end').attr('font-size', 10)
+            .attr('fill', t.muted).text(valueText);
+        }
+      } else if (isLast) {
+        nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 - 2)
+          .attr('font-size', 11).attr('font-family', 'Noto Sans KR')
+          .attr('fill', n.accent ? t.accent : t.text)
+          .attr('font-weight', 600).text(labelText);
+        if (valueText) {
+          nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 + 12)
+            .attr('font-size', 10).attr('fill', t.muted).text(valueText);
+        }
+      } else {
+        // 중간 컬럼 — 라벨은 노드 위쪽
+        nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y0 - 6)
+          .attr('text-anchor', 'middle').attr('font-size', 11)
+          .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
+          .attr('font-weight', 600).text(labelText);
+        if (valueText) {
+          nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y1 + 14)
+            .attr('text-anchor', 'middle').attr('font-size', 10)
+            .attr('fill', t.muted).text(valueText);
+        }
+      }
+    });
+  }
+
   // ----- RANGE BAR (Dumbbell) -----
   function drawRangeBar(stage, payload, t) {
     const data = (payload.data || []).filter(d => isFinite(+d.low) && isFinite(+d.high) && +d.low < +d.high);
@@ -1948,6 +2109,8 @@
     scatter: drawScatter, stacked_area: drawStackedArea, lollipop: drawLollipop,
     slope: drawSlope, small_multiples: drawSmallMultiples,
     waterfall: drawWaterfall, range_bar: drawRangeBar,
+    // v5.3.0 — Sankey (재무 분해 / 자본 배분). orphan 해결.
+    sankey: drawSankey,
   };
 
   async function renderStage(stage, idx) {
@@ -1969,11 +2132,109 @@
     catch (e) { console.warn('[charts] render error for', type, e); }
   }
 
+  // ============================================================
+  // v5.3.0 — Entry Animation Framework
+  //
+  // IntersectionObserver 로 차트 카드가 뷰포트 진입 시점에 renderStage 호출,
+  // SVG 생성 직후 _applyEntryAnimation 으로 stroke-dashoffset 그리기 +
+  // rect/circle stagger 등장. prefers-reduced-motion 시 즉시 정적 렌더.
+  //
+  // CHART-AP-18 (motion regression) 방지:
+  // - duration ≤ 700ms (스크롤 속도 방해 차단)
+  // - 1회 재생 후 unobserve (반복 재생 X)
+  // - IntersectionObserver 미지원 브라우저 → backward-compat 즉시 렌더
+  // ============================================================
+
+  function _motionEnabled() {
+    if (!window.matchMedia) return true;
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function _applyEntryAnimation(stage) {
+    if (!_motionEnabled()) return;
+    const svg = d3.select(stage).select('svg');
+    if (svg.empty()) return;
+
+    // (1) Path 그리기 — stroke-dashoffset 트릭. fill=none + stroke 있는 path 만.
+    svg.selectAll('path').each(function () {
+      const node = this;
+      const sel = d3.select(node);
+      const stroke = sel.attr('stroke');
+      if (!stroke || stroke === 'none') return;
+      const fill = sel.attr('fill');
+      if (fill && fill !== 'none' && fill !== 'transparent') return;
+      let len;
+      try { len = node.getTotalLength(); } catch (e) { return; }
+      if (!isFinite(len) || len < 4 || len > 8000) return;
+      sel.attr('stroke-dasharray', `${len} ${len}`)
+        .attr('stroke-dashoffset', len)
+        .transition().duration(700).ease(d3.easeCubicOut)
+        .attr('stroke-dashoffset', 0)
+        .on('end', function () {
+          // dasharray 제거 → 점선/실선 원래 패턴 복원 (dual_line/forecast 의 dashed 보존)
+          const origDashArr = sel.attr('data-orig-dasharray');
+          d3.select(this).attr('stroke-dasharray', origDashArr || null);
+        });
+    });
+
+    // (2) Rect 등장 — fade-in stagger. clipPath / 배경 / decorative 는 skip.
+    let rectIdx = 0;
+    svg.selectAll('rect').each(function () {
+      const node = this;
+      const parent = node.parentNode;
+      if (parent && parent.tagName === 'clipPath') return;
+      const w = parseFloat(node.getAttribute('width') || '0');
+      const h = parseFloat(node.getAttribute('height') || '0');
+      if (w < 3 || h < 3) return;
+      const fill = node.getAttribute('fill');
+      // 배경 (W 전체 폭 + bg 컬러) 스킵 — 사용자 인지에 깜빡임 회피
+      const vbAttr = svg.attr('viewBox');
+      if (vbAttr) {
+        const parts = vbAttr.split(/\s+/);
+        const vbW = parseFloat(parts[2] || '0');
+        if (w >= vbW * 0.95 && h >= 1) return;
+      }
+      d3.select(node).style('opacity', 0)
+        .transition().delay((rectIdx++) * 20).duration(380).ease(d3.easeCubicOut)
+        .style('opacity', 1);
+    });
+
+    // (3) Circle 등장 — r=0 → r 확장. r ≥1.5 만 (decorative 작은 dot 제외).
+    svg.selectAll('circle').each(function () {
+      const node = this;
+      const r = parseFloat(node.getAttribute('r') || '0');
+      if (r < 1.5) return;
+      d3.select(node).attr('r', 0)
+        .transition().duration(440).ease(d3.easeBackOut.overshoot(1.3))
+        .attr('r', r);
+    });
+  }
+
   function init() {
     const stages = document.querySelectorAll('.chart-card-stage[data-chart-type]');
-    stages.forEach((stage, i) => renderStage(stage, i));
-    // v5.2.5 — compact strip sparkline 렌더 (별도 selector svg.sparkline).
+    // v5.2.5 — compact strip sparkline 은 항상 즉시 렌더 (작아서 애니 의미 없음).
     renderSparklines();
+
+    // IntersectionObserver 미지원 브라우저 → backward-compat 즉시 렌더.
+    if (!window.IntersectionObserver || !stages.length) {
+      stages.forEach((stage, i) => renderStage(stage, i));
+      return;
+    }
+    const io = new IntersectionObserver(async (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const stage = entry.target;
+        const idx = parseInt(stage.dataset.animIdx || '0', 10);
+        io.unobserve(stage);
+        await renderStage(stage, idx);
+        // 다음 RAF 틱에 애니메이션 적용 (SVG DOM 안착 후)
+        requestAnimationFrame(() => _applyEntryAnimation(stage));
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    stages.forEach((stage, i) => {
+      stage.dataset.animIdx = String(i);
+      io.observe(stage);
+    });
   }
 
   if (document.readyState === 'loading') {

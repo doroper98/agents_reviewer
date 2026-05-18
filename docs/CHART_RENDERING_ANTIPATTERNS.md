@@ -476,6 +476,46 @@ collapse 한 회귀.
 
 ---
 
+## CHART-AP-18: 차트 entry 애니메이션의 motion 회귀 (v5.3.0 신설)
+
+**증상**: entry 애니메이션이 (a) 스크롤 속도를 방해 / jank 유발, (b) editorial
+mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
+`prefers-reduced-motion: reduce` 사용자의 접근성 요구 무시, (d) 한 번 본 차트
+가 다시 viewport 진입 시 반복 재생되어 산만, (e) 모바일에서 ambient drift
+(bubble/network 부유) RAF 가 스크롤 perf 잠식.
+
+**근본 원인** (v5.3.0 도입 시 가능한 회귀):
+- duration 이 700ms 초과 — 스크롤 빠르게 내리면 다음 차트 도착 전 transition
+  미완성 (사용자가 정적 SVG 만 볼 가능성)
+- bounce 강도가 너무 큼 (overshoot > 1.5) — 신문 톤에서 "재밌는" 느낌이
+  과해 editorial 합 깨짐
+- 반복 재생 — IntersectionObserver `unobserve` 안 하고 두번째 진입에 재생
+- `prefers-reduced-motion` 미체크 — `_motionEnabled()` 가 거짓이어도 그냥 진행
+- ambient (bubble/network 의 부유) 가 viewport 밖에서도 RAF 돌아 모바일
+  배터리 + scroll FPS 잠식
+
+**검증 체크리스트**:
+- [ ] duration ≤ 700ms (각 transition 시간 + delay 합산 기준)
+- [ ] easing 은 `easeCubicOut` 또는 `easeBackOut(<=1.4)` — `easeElasticOut`
+      금지 (mono 톤 충돌)
+- [ ] `_motionEnabled()` 가 `prefers-reduced-motion` 점검 후 false 면 즉시
+      return (정적 렌더로 fallback)
+- [ ] `IntersectionObserver` 가 `unobserve(stage)` 호출 (1회 재생 후 멈춤)
+- [ ] backward-compat: IntersectionObserver 미지원 브라우저 → 즉시 렌더
+      (애니메이션 X)
+- [ ] ambient drift (만약 도입 시) 는 viewport 밖일 때 RAF pause
+
+**Fix (v5.3.0)**:
+- `charts.js:_applyEntryAnimation` 의 path/rect/circle 별 transition 700ms
+  / 380ms / 440ms 상한 강제.
+- `_motionEnabled()` = `window.matchMedia('(prefers-reduced-motion: reduce)')`
+  체크.
+- `IntersectionObserver` `rootMargin: '0px 0px -8% 0px', threshold: 0.12` +
+  `unobserve` 직후 호출.
+- ambient drift 는 본 PR 미도입 (검토 후 별도 PR 시 RAF pause 가드 필수).
+
+---
+
 ## 회귀 발견 시 — 표준 프로토콜
 
 1. 본 문서의 9 패턴 중 어디에 해당하는지 분류

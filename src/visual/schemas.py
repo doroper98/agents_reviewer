@@ -763,6 +763,100 @@ class RangeBarGuard(BaseModel):
     data: list[RangeBarRow] = Field(min_length=3, max_length=15)
 
 
+# ─── v5.3.0 — Sankey (재무 분해 / 자본 배분) ─────────────────────────────
+
+
+class SankeyNode(BaseModel):
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    accent: bool = False
+    value_label: str | None = None  # 옵션 — 노드 옆에 표시될 caption (예: "$117B")
+
+    model_config = ConfigDict(extra="allow")
+
+
+class SankeyLink(BaseModel):
+    source: str = Field(min_length=1)
+    target: str = Field(min_length=1)
+    value: float
+    negative: bool = False  # 적자 / 손실 flow (사용자 이미지의 빨간 흐름)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_value(self) -> "SankeyLink":
+        if not math.isfinite(self.value):
+            raise ValueError(
+                f"CHART-AP-3 가드: sankey link {self.source}→{self.target} "
+                f"value NaN/inf"
+            )
+        if self.source == self.target:
+            raise ValueError(
+                f"CHART-AP-3 가드: sankey self-loop 금지 "
+                f"({self.source}→{self.target})"
+            )
+        return self
+
+
+class SankeyGuard(BaseModel):
+    """sankey: 다단계 흐름 분해 (재무제표 / 자본 배분 / 수익성 분석).
+
+    {nodes: [{id, label, accent?, value_label?}],
+     links: [{source, target, value, negative?}]}.
+
+    가드:
+    - 노드 2-12 (그 미만은 본문 한 문장, 초과는 시각 피로 — 본 가드는 12 강제)
+    - 링크 ≥1
+    - 모든 link 의 source/target 이 nodes.id 안에 존재 (참조 무결성)
+    - self-loop 금지
+    - DAG 구조 (순환 금지)
+
+    재무 분해 예시:
+    - 손익계산서: 매출 → COGS / 판관비 / R&D / 영업이익
+    - 세그먼트: 총매출 → 사업부 → 지역 → 마진
+    - 자본 배분: 영업CF → 배당 / 자사주 / CAPEX / M&A
+    """
+    nodes: list[SankeyNode] = Field(min_length=2, max_length=12)
+    links: list[SankeyLink] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_link_references(self) -> "SankeyGuard":
+        node_ids = {n.id for n in self.nodes}
+        for l in self.links:
+            if l.source not in node_ids:
+                raise ValueError(
+                    f"CHART-AP-1 가드: sankey link source '{l.source}' 가 "
+                    f"nodes 에 미존재"
+                )
+            if l.target not in node_ids:
+                raise ValueError(
+                    f"CHART-AP-1 가드: sankey link target '{l.target}' 가 "
+                    f"nodes 에 미존재"
+                )
+        # 순환 감지 — BFS 로 토폴로지 정렬 시도, 모든 노드 처리 못 하면 순환 존재
+        from collections import defaultdict, deque
+        in_deg: dict[str, int] = defaultdict(int)
+        adj: dict[str, list[str]] = defaultdict(list)
+        for l in self.links:
+            adj[l.source].append(l.target)
+            in_deg[l.target] += 1
+        q = deque(n.id for n in self.nodes if in_deg[n.id] == 0)
+        seen = 0
+        while q:
+            cur = q.popleft()
+            seen += 1
+            for nxt in adj[cur]:
+                in_deg[nxt] -= 1
+                if in_deg[nxt] == 0:
+                    q.append(nxt)
+        if seen < len(self.nodes):
+            raise ValueError(
+                "CHART-AP-3 가드: sankey 가 순환 그래프 — DAG 만 허용. "
+                "재무 분해는 단방향 흐름이어야 함."
+            )
+        return self
+
+
 # ─── Type → Guard 매핑 ────────────────────────────────────────────────
 
 
@@ -791,6 +885,8 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "small_multiples": SmallMultiplesGuard,
     "waterfall":    WaterfallGuard,
     "range_bar":    RangeBarGuard,
+    # v5.3.0 — Sankey (재무 분해 / 자본 배분). registry orphan 해결.
+    "sankey":       SankeyGuard,
 }
 
 
@@ -863,6 +959,12 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "small_multiples 는 {panels: [...]} dict 형식 필요"
+        elif chart_type == "sankey":
+            # {nodes: [{id, label, ...}], links: [{source, target, value, ...}]}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "sankey 는 {nodes, links} dict 형식 필요"
         else:
             # bar / line / donut / bubble / heatmap / choropleth / scatter /
             # lollipop / waterfall / range_bar — list[dict]

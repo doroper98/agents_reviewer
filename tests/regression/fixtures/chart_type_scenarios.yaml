@@ -236,6 +236,17 @@ scenarios:
       - "단순 비교 (분해 X) → bar"
       - "시계열 → line"
 
+  - id: sankey
+    status: active
+    data_shape: "DAG 흐름 그래프 — {nodes: [{id, label}], links: [{source, target, value}]}"
+    scenario: "재무제표 brücke (매출→COGS/판관비→영업이익), 세그먼트 분해, 자본 배분"
+    sample_prompt: "Apple 의 2024 Q4 매출 분해 — 제품별, 지역별, 마진까지"
+    expected_chart_type: sankey
+    negative_examples:
+      - "1차원 시퀀스 (시작→증감→끝) → waterfall"
+      - "관계도 (양방향, 흐름량 무의미) → network"
+      - "노드 >12 → 본문 또는 nested bar"
+
   - id: range_bar
     status: active
     data_shape: "카테고리 × 2 값 (min/max 또는 두 시점)"
@@ -251,9 +262,9 @@ scenarios:
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 21
-  active_count: 21     # production 활성 (v5.3.0) — 20 chart types + map
-  pending_count: 0     # 신규 7종 모두 v5.3.0 활성화 완료
+  total_scenarios: 22
+  active_count: 22     # production 활성 (v5.3.0) — 21 chart types + map (sankey 포함)
+  pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"
     - "Layer 1 starvation alarm 의 의도된 분모 (KNOWN_CHART_TYPES 와 1:1)"

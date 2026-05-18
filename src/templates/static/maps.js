@@ -294,6 +294,47 @@
     }
   }
 
+  // v5.3.0 — entry 애니메이션. 베이스맵 fade-in → 경로 dashoffset 그리기 →
+  // 마커 r grow. prefers-reduced-motion 시 즉시 정적 렌더.
+  function _motionEnabled() {
+    if (!window.matchMedia) return true;
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  function _applyMapEntryAnimation(container) {
+    if (!_motionEnabled()) return;
+    const svg = d3.select(container).select('svg');
+    if (svg.empty()) return;
+    // 베이스맵 (국가 경계 path with fill) 페이드 인
+    svg.selectAll('path').each(function () {
+      const node = this, sel = d3.select(node);
+      const fill = sel.attr('fill');
+      if (fill && fill !== 'none' && fill !== 'transparent') {
+        sel.style('opacity', 0)
+          .transition().duration(300).ease(d3.easeCubicOut)
+          .style('opacity', 1);
+      } else {
+        // 경로 arc — dashoffset 그리기
+        let len;
+        try { len = node.getTotalLength(); } catch (e) { return; }
+        if (!isFinite(len) || len < 4 || len > 8000) return;
+        sel.attr('stroke-dasharray', `${len} ${len}`)
+          .attr('stroke-dashoffset', len)
+          .transition().delay(280).duration(700).ease(d3.easeCubicOut)
+          .attr('stroke-dashoffset', 0)
+          .on('end', function () { d3.select(this).attr('stroke-dasharray', null); });
+      }
+    });
+    // 마커 r grow
+    svg.selectAll('circle').each(function () {
+      const node = this;
+      const r = parseFloat(node.getAttribute('r') || '0');
+      if (r < 1.5) return;
+      d3.select(node).attr('r', 0)
+        .transition().delay(700).duration(320).ease(d3.easeBackOut.overshoot(1.4))
+        .attr('r', r);
+    });
+  }
+
   function init() {
     const container = document.getElementById('freeform-map');
     if (!container) return;
@@ -303,7 +344,25 @@
     try { payload = JSON.parse(script.textContent); }
     catch (e) { console.warn('[map] payload parse fail', e); return; }
     if (!payload || !(payload.markers || []).length) return;
-    renderMap(container, payload);
+
+    // IntersectionObserver 가 있으면 viewport 진입 시 렌더 + 애니메이션.
+    // 미지원 브라우저는 backward-compat 즉시 렌더 (애니메이션 X).
+    if (!window.IntersectionObserver) {
+      renderMap(container, payload);
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        io.unobserve(container);
+        renderMap(container, payload);
+        // renderMap 은 fetch (TopoJSON) 까지 포함 → fetch 끝나면 SVG 안착.
+        // 추가 setTimeout 으로 안착 보장 후 애니메이션.
+        setTimeout(() => _applyMapEntryAnimation(container), 50);
+        break;
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    io.observe(container);
   }
 
   if (document.readyState === 'loading') {

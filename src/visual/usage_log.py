@@ -47,6 +47,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     # v5.3.0 — FT/Economist 스타일 신규 7종
     "scatter", "stacked_area", "lollipop", "slope",
     "small_multiples", "waterfall", "range_bar",
+    # v5.3.0 — Sankey (재무 분해 / 자본 배분, registry orphan 해결)
+    "sankey",
     # embedded_map (별도 채널)
     "map",
 )
