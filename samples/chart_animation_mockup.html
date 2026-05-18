@@ -415,6 +415,7 @@
 const TXT = '#2E2418';
 const MUTED = '#8A7553';
 const ACCENT = '#A8412A';
+const BG = '#F4ECD8';  // sankey in-flow 라벨 cut-out 용
 const BORDER = '#C8B98E';
 
 const DUR_DRAW = 800;
@@ -1537,8 +1538,14 @@ function renderSankey(stage) {
   const maxCol = d3.max(nodes, n => n.col);
   const M = { l: 70, r: 110, t: 20, b: 20 };
   const colWidth = (W - M.l - M.r) / (maxCol + 1);
-  const nodeWidth = 14;
-  const nodePad = 8;
+  // v5.3.0 hierarchy: node 폭 14→9 (덜 dominant), pad 8→6 (밀도 ↑).
+  const nodeWidth = 9;
+  const nodePad = 6;
+  // opacity 단계: 흐름이 주인공 / 노드는 정류장 / accent 만 최종 강조.
+  const FLOW_OP = 0.50;
+  const NODE_OP = 0.78;
+  const ACCENT_OP = 1.00;
+  const NEG_OP = 0.55;
   const cols = d3.group(nodes, n => n.col);
   cols.forEach(cnodes => {
     cnodes.sort((a, b) => Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue));
@@ -1571,7 +1578,8 @@ function renderSankey(stage) {
     });
   });
 
-  // Links — Bezier filled regions (entry: opacity fade-in)
+  // Links — 단일 hue (TXT), opacity 만 차이. 적자 flow 는 빨간(C9837A).
+  // 흐름이 주인공 — opacity 0.22 → 0.50 으로 진하게.
   const linkPaths = svg.append('g').selectAll('path').data(links).enter().append('path')
     .attr('d', l => {
       const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
@@ -1580,31 +1588,58 @@ function renderSankey(stage) {
               L ${x2},${l._ty1} C ${midX},${l._ty1} ${midX},${l._sy1} ${x1},${l._sy1} Z`;
     })
     .attr('fill', l => l.negative ? '#C9837A' : TXT)
-    .attr('fill-opacity', l => l.negative ? 0.45 : 0.22)
+    .attr('fill-opacity', l => l.negative ? NEG_OP : FLOW_OP)
     .attr('stroke', 'none');
 
-  // Nodes
+  // In-flow 라벨 (cut-out — BG 색으로 흐름과 대비). 노드보다 *먼저* (아래에) 그려야
+  // 노드가 라벨을 덮을 일 없음 — 단, 노드 폭이 9px 라 거의 안 겹침. 노드 *위* 에
+  // 그려서 라벨이 또렷하게.
+  const flowLabels = [];
+  links.forEach(l => {
+    const sH = Math.min(l._sy1 - l._sy0, l._ty1 - l._ty0);
+    const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
+    const flowW = tgt.x0 - src.x1;
+    if (sH >= 22 && flowW >= 80) {
+      const midX = (src.x1 + tgt.x0) / 2;
+      const midY = (l._sy0 + l._sy1 + l._ty0 + l._ty1) / 4;
+      flowLabels.push({
+        x: midX, y: midY,
+        text: d3.format(',.1f')(l.value),
+        negative: l.negative === true,
+      });
+    }
+  });
+
+  // Nodes — 같은 hue (TXT), opacity 단계만. accent 색 X — 단일 hue 유지.
   const nodeRects = svg.append('g').selectAll('rect').data(nodes).enter().append('rect')
     .attr('x', n => n.x0).attr('y', n => n.y0)
     .attr('width', n => n.x1 - n.x0).attr('height', n => n.height)
-    .attr('fill', n => n.accent ? ACCENT : TXT)
-    .attr('fill-opacity', n => n.accent ? 1 : 0.85);
+    .attr('fill', TXT)
+    .attr('fill-opacity', n => n.accent ? ACCENT_OP : NODE_OP);
 
-  // Labels
+  // In-flow 라벨 그리기 (노드 위로 올라옴)
+  const flowLabelEls = svg.append('g').selectAll('text').data(flowLabels).enter().append('text')
+    .attr('x', d => d.x).attr('y', d => d.y + 3)
+    .attr('text-anchor', 'middle').attr('font-size', 10)
+    .attr('font-family', 'Noto Serif KR').attr('font-weight', 700)
+    .attr('fill', BG).text(d => d.text);
+
+  // 노드 라벨 — accent 만 weight 700, 일반은 500 (정류장 격하).
   nodes.forEach(n => {
     const isFirst = n.col === 0, isLast = n.col === maxCol;
+    const weight = n.accent ? 700 : 500;
     if (isFirst) {
       svg.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 + 4)
         .attr('text-anchor', 'end').attr('font-size', 11).attr('fill', TXT)
-        .text(n.label);
+        .attr('font-weight', weight).text(n.label);
     } else if (isLast) {
       svg.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 + 4)
-        .attr('font-size', 11).attr('fill', n.accent ? ACCENT : TXT)
-        .attr('font-weight', 600).text(n.label);
+        .attr('font-size', 11).attr('fill', TXT)
+        .attr('font-weight', weight).text(n.label);
     } else {
       svg.append('text').attr('x', n.x0 + nodeWidth / 2).attr('y', n.y0 - 4)
         .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', TXT)
-        .attr('font-weight', 600).text(n.label);
+        .attr('font-weight', weight).text(n.label);
     }
   });
 
@@ -1619,6 +1654,9 @@ function renderSankey(stage) {
       .transition()
       .delay(n => n.col * 150 + 100)
       .duration(350).ease(EASE).style('opacity', 1);
+    // In-flow 라벨은 흐름이 안착된 후 살짝 늦게.
+    flowLabelEls.style('opacity', 0)
+      .transition().delay(800).duration(300).ease(EASE).style('opacity', 1);
   };
 }
 

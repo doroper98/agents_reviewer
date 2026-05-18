@@ -1840,8 +1840,9 @@
     if (maxCol < 1) return;  // 단일 컬럼 sankey 는 의미 X
 
     const colWidth = zones.data.w / (maxCol + 1);
-    const nodeWidth = 14;
-    const nodePad = 10;
+    // v5.3.0 — node 폭 14 → 9 (덜 dominant), pad 10 → 7 (밀도 ↑)
+    const nodeWidth = 9;
+    const nodePad = 7;
 
     // column 별 vertical layout
     const colMap = d3.group(nodes, n => n.col);
@@ -1882,7 +1883,15 @@
     });
 
     // 링크 그리기 — source.x1 → target.x0 의 4-point cubic Bezier 채워진 영역
+    // v5.3.0 hierarchy: flow 가 주인공 (opacity 0.50), node 는 정류장 (0.78),
+    // accent node 만 최종 강조 (1.00). 모두 같은 hue (t.text) — mono 유지.
+    const FLOW_OPACITY = 0.50;
+    const NODE_OPACITY = 0.78;
+    const ACCENT_OPACITY = 1.00;
+    const NEG_OPACITY = 0.55;
+
     const linkG = svg.append('g').attr('class', 'sankey-links');
+    const inFlowLabels = [];
     validLinks.forEach(l => {
       const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
       const x1 = src.x1, x2 = tgt.x0;
@@ -1894,33 +1903,57 @@
         `C ${midX},${l._ty1} ${midX},${l._sy1} ${x1},${l._sy1}`,
         `Z`,
       ].join(' ');
-      // 적자 / negative flow 는 down 색 (mono 의 보존된 빨간 액센트), 일반 흐름은 text 색
       const isNeg = l.negative === true || (+l.value < 0);
       const fill = isNeg ? (t.down || t.accent) : t.text;
       linkG.append('path').attr('d', path).attr('fill', fill)
-        .attr('fill-opacity', isNeg ? 0.35 : 0.22).attr('stroke', 'none');
+        .attr('fill-opacity', isNeg ? NEG_OPACITY : FLOW_OPACITY)
+        .attr('stroke', 'none');
+      // v5.3.0 — 큰 흐름에 in-flow 라벨 (cut-out 효과, t.bg 색으로 대비).
+      // 흐름 두께 ≥22px 이고 너비 ≥80px 일 때만 — 좁은 흐름엔 안 박음.
+      const sHeight = Math.min(l._sy1 - l._sy0, l._ty1 - l._ty0);
+      const flowW = x2 - x1;
+      if (sHeight >= 22 && flowW >= 80) {
+        const midY = (l._sy0 + l._sy1 + l._ty0 + l._ty1) / 4;
+        inFlowLabels.push({
+          x: midX, y: midY,
+          text: l.value_label || d3.format(',.1f')(+l.value),
+          negative: isNeg,
+        });
+      }
     });
 
-    // 노드 그리기
+    // v5.3.0 — in-flow 라벨 (큰 흐름 안에). cut-out 효과: t.bg 색으로 흐름과 대비.
+    // 노드보다 *아래* 그려야 노드가 라벨 위로 안 덮음 — 노드 그리기 전에.
+    const flowLabelG = svg.append('g').attr('class', 'sankey-flow-labels');
+    inFlowLabels.forEach(fl => {
+      flowLabelG.append('text').attr('x', fl.x).attr('y', fl.y + 3)
+        .attr('text-anchor', 'middle').attr('font-size', 10)
+        .attr('font-family', 'Noto Serif KR').attr('font-weight', 700)
+        .attr('fill', t.bg).text(fl.text);
+    });
+
+    // 노드 그리기 — 흐름과 같은 hue (t.text), opacity 만 단계적으로 진하게.
     const nodeG = svg.append('g').attr('class', 'sankey-nodes');
     nodes.forEach(n => {
       nodeG.append('rect')
         .attr('x', n.x0).attr('y', n.y0)
         .attr('width', n.x1 - n.x0).attr('height', n.height)
-        .attr('fill', n.accent ? t.accent : t.text)
-        .attr('fill-opacity', n.accent ? 1 : 0.85);
-      // 라벨 — 첫 컬럼은 노드 왼쪽 / 마지막 컬럼은 노드 오른쪽 / 그 외는 위쪽
+        .attr('fill', t.text)  // 단일 hue — accent 도 같은 색, opacity 만 차이
+        .attr('fill-opacity', n.accent ? ACCENT_OPACITY : NODE_OPACITY);
+      // 라벨 — 첫 컬럼은 노드 왼쪽 / 마지막 컬럼은 노드 오른쪽 / 그 외는 위쪽.
+      // accent 노드는 weight 700, 일반은 500 (이전 600 → 정류장 격하).
       const labelText = String(n.label || n.id);
       const valueText = n.value_label || (n.outValue > 0
         ? d3.format(',.1f')(n.outValue)
         : (n.inValue > 0 ? d3.format(',.1f')(n.inValue) : ''));
       const isFirst = n.col === 0;
       const isLast = n.col === maxCol;
+      const labelWeight = n.accent ? 700 : 500;
       if (isFirst) {
         nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 - 2)
           .attr('text-anchor', 'end').attr('font-size', 11)
           .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
-          .attr('font-weight', 600).text(labelText);
+          .attr('font-weight', labelWeight).text(labelText);
         if (valueText) {
           nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 + 12)
             .attr('text-anchor', 'end').attr('font-size', 10)
@@ -1929,8 +1962,8 @@
       } else if (isLast) {
         nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 - 2)
           .attr('font-size', 11).attr('font-family', 'Noto Sans KR')
-          .attr('fill', n.accent ? t.accent : t.text)
-          .attr('font-weight', 600).text(labelText);
+          .attr('fill', t.text)
+          .attr('font-weight', labelWeight).text(labelText);
         if (valueText) {
           nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 + 12)
             .attr('font-size', 10).attr('fill', t.muted).text(valueText);
@@ -1940,7 +1973,7 @@
         nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y0 - 6)
           .attr('text-anchor', 'middle').attr('font-size', 11)
           .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
-          .attr('font-weight', 600).text(labelText);
+          .attr('font-weight', labelWeight).text(labelText);
         if (valueText) {
           nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y1 + 14)
             .attr('text-anchor', 'middle').attr('font-size', 10)
