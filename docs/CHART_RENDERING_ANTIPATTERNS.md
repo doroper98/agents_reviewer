@@ -441,6 +441,41 @@ subtitle 이 이미 "20.2조원 중 16.8조원(83%)이 반도체" 라고 같은 
 
 ---
 
+## CHART-AP-17: 차트 type starvation (신설 type 이 production 에서 거의 emit X)
+
+**증상**: 새 chart type 을 production 에 wiring 했는데도 (composer 프롬프트,
+가드, charts.js 모두 정합) 보고서에 거의 등장 안 함. 캔들 차트가 v5.2.0 에
+추가됐으나 v5.3.0 직전까지 production 13종 중 약 70% 가 bar/line/donut 으로
+collapse 한 회귀.
+
+**근본 원인** (v5.2.0 사례):
+- 새 type 의 자연 수요 부족 — 대부분의 보고서가 지수/환율/금리 (line) 또는
+  국가별 비교 (bar) 였고, 개별주 사건 (candle 의 자연 영토) 은 드물었음.
+- composer SYSTEM_PROMPT 가 새 type 을 *한 줄 설명* 만 박아두고 "언제
+  쓰는지" 의 negative constraint (다른 type 금지 조건) 부재.
+- 사용량 텔레메트리 부재 → 회귀를 *측정* 할 수 없어 한참 후에 발견.
+- `_DEFAULT_REQUIRED_EXHIBITS` 에 새 type 가 매핑 안 됨 → research_director
+  가 자동으로 요구하지 않음.
+
+**검증 체크리스트** (v5.3.0 5-Layer Usage Guarantee):
+- [ ] **Layer 1** — `src/visual/usage_log.py:KNOWN_CHART_TYPES` 에 새 type 등재
+- [ ] **Layer 2** — composer SYSTEM_PROMPT 결정 트리에 *negative constraint*
+      포함 (예 "OHLC 있음 → candle, LINE 금지")
+- [ ] **Layer 3** — `_DEFAULT_REQUIRED_EXHIBITS` 의 method 중 하나가 새 type
+      를 `visual_type_hint` 로 명시
+- [ ] **Layer 4** — `deterministic_gate._check_chart_type_monotony` 가
+      standard ≥3 차트에 distinct <2 면 soft fail
+- [ ] **Layer 5** — `tests/regression/fixtures/chart_type_scenarios.yaml`
+      에 sample_prompt + negative_examples 포함된 시나리오 항목
+
+**Fix (v5.3.0)**:
+- 5-Layer Usage Guarantee 동시 도입 (위 5 항목 모두).
+- `tests/regression/test_chart_type_diversity.py` 가 active set ↔
+  `KNOWN_CHART_TYPES` 1:1 매칭 강제 — 신규 type 도입 시 fixture 갱신 PR
+  체크리스트 강제 (drift 즉시 fail).
+
+---
+
 ## 회귀 발견 시 — 표준 프로토콜
 
 1. 본 문서의 9 패턴 중 어디에 해당하는지 분류

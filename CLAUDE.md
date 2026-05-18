@@ -26,7 +26,7 @@ last_review: 2026-05-05
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
 - Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
-- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, 8종 type)
+- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **20종 type** — v5.3.0 부터 FT/Economist 스타일 신규 7종 포함)
 - Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
 - Theme: 7종 풀 (editorial_cream / burgundy_mono / slate_steel / forest_sage / midnight_indigo / dusk_rose / paper_classic). v5.0.2 부터 보고서마다 `random.choice` 로 선택 (event_type 무관, 시각 다양성 목적). 모든 테마는 *동일 레이아웃* — bg/card/text/accent 만 다름. SSOT 는 [src/lens_policy.py:ALL_THEMES](src/lens_policy.py) + [src/templates/report.css](src/templates/report.css) 의 `[data-theme="..."]` 블록. legacy `light_mono` CSS 는 보존되었으나 풀에서 빠짐 — 직접 지정 시만 사용 가능.
 - Font: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. Noto Serif KR 한국어 폴백.
@@ -109,7 +109,7 @@ tail -f bot.log
 
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
-- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type 8종 (bar/donut/line/gantt/network/stacked/bubble/heatmap). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid).
+- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **20종** (v5.3.0 부터). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 신규 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). 신규 7종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수.
 - **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6).
 - **폰트**: Noto Serif KR (숫자/타이틀), Noto Sans KR (라벨/본문/지도 라벨)
 - **색**: 큰 숫자에 액센트 색 금지 → `--text` 만 (mono guide §3.3)
@@ -192,7 +192,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **16개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **17개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -200,6 +200,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-14: 보고서와 무관한 지리 annotation 무조건 렌더 (v4.5.7 신설 — Somaliland viewport gating)
 - CHART-AP-15: gantt zero-duration emit (v5.1.2 신설 — point-in-time 이벤트 모음을 gantt 로, `GanttGuard.validate_durations` 추가)
 - CHART-AP-16: donut 2-segment 안티패턴 (v5.1.2 신설 — 정보 손실 + subtitle 잉여 + 렌더러 silent return 빈 카드 회귀, `DonutGuard.validate_segment_count` 추가)
+- CHART-AP-17: 차트 type starvation (v5.3.0 신설 — 캔들 회귀 교훈. 새 type 의 production wiring 만으로는 부족 — 5-Layer Usage Guarantee 필요)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
@@ -240,12 +241,21 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `src/state/models.py:EvidencePack.recommended_persona`, `AnalysisBrief.recommended_persona` 필드 삭제
 - `src/token_budget.py` 의 dead flag 6종 (`use_llm_quality_gate / use_llm_narrative_plan / use_llm_executive_summary / use_llm_visuals / use_llm_synthesis / use_legacy_personas`) 삭제. 본문 문체 SSOT 는 [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) 로 통합.
 
-## Chart System (v5.2.0 wip)
+## Chart System (v5.3.0)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
-- 13종 type: bar / donut / line / gantt / network / stacked / bubble / heatmap / dual_line / forecast / choropleth / **candle / area** (v5.2.0 신규).
+- **20종 type**:
+  - 기존 13종 (v5.2.13 까지): bar / donut / line / gantt / network / stacked / bubble / heatmap / dual_line / forecast / choropleth / candle / area
+  - v5.3.0 신규 7종 (FT/Economist 스타일, **guarded** tier): scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar
 - 각 차트는 `ComposedSection.charts: list[dict]` 의 dict 1개 — `{type, title, data, note?}`.
 - 렌더링: `freeform_essay.html` 이 chart-card SVG + inline JSON payload emit → `charts.js` 가 스캔/렌더 (mono guide §4 패턴 자동 적용).
-- 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ `src/visual/schemas.py` 의 `_TYPE_TO_GUARD` 에 가드 추가 ④ samples 갱신 ⑤ 회귀 테스트.
+- **차트 type 결정 트리** — composer SYSTEM_PROMPT 의 결정 트리 (v5.3.0 신설). LLM 의 line/bar default bias 차단 (negative constraint 패턴).
+- **5-Layer Usage Guarantee** (v5.3.0 — 캔들 회귀 차단):
+  ① telemetry (`src/visual/usage_log.py`) — type emit JSONL 영구 기록, starvation alarm
+  ② 결정 트리 (SYSTEM_PROMPT)
+  ③ method × exhibit 매트릭스 (`research_director.py:_DEFAULT_REQUIRED_EXHIBITS` — fault_tree→waterfall, pre_mortem→scatter)
+  ④ 다양성 쿼터 (`deterministic_gate.py:chart_type_monotony` soft fail — standard ≥3 차트에 distinct <2 면 hold)
+  ⑤ 회귀 fixture (`tests/regression/fixtures/chart_type_scenarios.yaml` — 21 시나리오 SSOT, `KNOWN_CHART_TYPES` 와 1:1)
+- 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ `src/visual/schemas.py` 의 `_TYPE_TO_GUARD` 에 가드 추가 ④ `docs/VISUAL_CAPABILITY_REGISTRY.yaml` 등록 ⑤ `src/visual/usage_log.py:KNOWN_CHART_TYPES` 추가 ⑥ `tests/regression/fixtures/chart_type_scenarios.yaml` 시나리오 추가 ⑦ 회귀 테스트.
 
 ## Market Data Fetcher (v5.2.0)
 - ContextAnalyst 가 LLM 출력에 `instruments_mentioned: list[str]` emit → orchestrator 가 `src/tools/market_fetcher.py` 의 `fetch_many` 호출 → `ContextAnalysis.time_series` 채움 → composer 가 candle / line / area 차트로 emit.

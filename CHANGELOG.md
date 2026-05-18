@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.2.13
+last_synced_with: v5.3.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-17
+last_review: 2026-05-18
 ---
 
 # Changelog
@@ -17,6 +17,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.3.0] — 2026-05-18
+
+### Added — FT/Economist 스타일 신규 7종 차트 + 5-Layer Usage Guarantee
+
+**개요**: 캔들 회귀 (v5.2.0 에 추가했으나 production 13종 중 약 70% 가
+bar/line/donut 으로 collapse) 의 교훈으로 두 가지를 동시 도입.
+
+#### Part 1 — 신규 7종 차트 (FT/Economist 스타일)
+
+기존 13종에 7종 추가. 모두 `guarded` tier 로 시작 (chart_critic 통과율 측정
+후 `safe` 승격 검토).
+
+- **scatter** — 라벨 산점도 (FT 좌측 스타일). bubble 과 구분 — size 인코딩 X.
+- **stacked_area** — 시계열 누적 영역 (FT 우측 스타일). 점유율 연속 변화.
+- **lollipop** — bar 의 우아한 대안. 8-15 항목.
+- **slope** — 2 시점 비교, 순위 역전. 3-10 항목.
+- **small_multiples** — 4-9 패널 그리드 비교.
+- **waterfall** — 증감 누적 분해 (P&L brücke). 첫·끝 row `type='total'` 강제.
+- **range_bar** — Dumbbell. 두 값 사이 갭 (남녀 임금격차 등).
+
+#### Part 2 — 5-Layer Usage Guarantee (회귀 방지 안전망)
+
+- **Layer 1** — `src/visual/usage_log.py` (신규). 보고서당 emit chart type 을
+  JSONL 영구 기록. 누적 ≥10 보고서에서 0회 emit type 을 WARNING 으로 표면화.
+  CLI: `python -m src.visual.usage_log analyze`.
+- **Layer 2** — `narrative_composer.py:SYSTEM_PROMPT` 에 차트 type 결정 트리
+  + 반-편향 가드 추가. "시계열 + OHLC → candle (LINE 금지)" 같은 negative
+  constraint 로 LLM 의 line/bar default bias 차단.
+- **Layer 3** — `research_director.py:_DEFAULT_REQUIRED_EXHIBITS` 의 빈 method
+  채움: `fault_tree → waterfall`, `pre_mortem → scatter`. 신규 type 에 자동
+  수요 부여.
+- **Layer 4** — `deterministic_gate.py` 에 `chart_type_monotony` soft fail
+  추가 (SOFT_FAIL_RULES 5 → 6). standard ≥3 차트 + distinct <2, deep ≥5 차트
+  + distinct <3 면 DeskEditor 가 hold 받아 type 다양화 지시.
+- **Layer 5** — `tests/regression/fixtures/chart_type_scenarios.yaml` (신규).
+  21 시나리오 (20 차트 type + map) SSOT. `KNOWN_CHART_TYPES` 와 1:1 매칭.
+
+#### Part 3 — Pydantic 가드 보강
+
+`src/visual/schemas.py:_TYPE_TO_GUARD` 11 → 21 entries. 신규 7종 +
+production 가드 없던 3종 (`dual_line/forecast/choropleth`) 추가.
+
+#### Part 4 — Capability Registry 갱신
+
+`docs/VISUAL_CAPABILITY_REGISTRY.yaml` 분포: safe 11 / guarded 10 (3→10) /
+experimental 2 / 총 23 (was 16). 신규 7종 모두 `d3_custom` + `guarded`.
+
+#### 모크업 (검토용)
+
+`samples/chart_animation_mockup.html` — 21종 entry 애니메이션 모크업.
+IntersectionObserver 트리거, motion off / ambient drift 토글. production
+이식은 본 PR *제외* — 모크업으로 검토 후 별도 PR 권장.
 
 ---
 

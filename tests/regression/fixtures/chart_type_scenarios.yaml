@@ -18,8 +18,9 @@
 #   expected_chart_type — composer 가 emit 해야 할 type (id 와 동일하나 명시)
 #   negative_examples   — 헷갈리지만 *이 type 이 아닌* 시나리오 (decision tree 가드용)
 #
-# 21종 = production 13종 (v5.2.13 시점) + 신규 7종 (v5.3.0 도입 예정).
-# 신규 7종은 status: pending 으로 표시 — production 도입 PR 에서 활성화.
+# 21종 = production 20 chart types + 1 embedded_map (v5.3.0 에 모두 active).
+# 7종 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall /
+# range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화.
 
 scenarios:
 
@@ -172,11 +173,11 @@ scenarios:
       - "경로/이동 → map"
 
   # ─────────────────────────────────────────────────────────────
-  # 신규 7종 (v5.3.0 도입 예정 — Step 4 에서 production 활성화)
+  # 신규 7종 (v5.3.0 활성 — FT/Economist 스타일)
   # ─────────────────────────────────────────────────────────────
 
   - id: scatter
-    status: pending
+    status: active
     data_shape: "라벨 있는 2D 점 (size 인코딩 없음)"
     scenario: "그룹 내 위치 비교, 이상치 식별 (FT 좌측 스타일)"
     sample_prompt: "각국 AI 수용도 — '들뜸' vs '불안'"
@@ -186,7 +187,7 @@ scenarios:
       - "라벨 없음 또는 무의미 → 본문"
 
   - id: stacked_area
-    status: pending
+    status: active
     data_shape: "시계열 × 카테고리 (≤5 시리즈), 합 의미 (점유율 등)"
     scenario: "시장점유율 연속 변화, 에너지 믹스 추이 (FT 우측)"
     sample_prompt: "지난 5년 AI 모델 다운로드 지역별 점유율"
@@ -196,7 +197,7 @@ scenarios:
       - "시리즈 >5 → small_multiples"
 
   - id: lollipop
-    status: pending
+    status: active
     data_shape: "카테고리 8-15개 + 단일 measure"
     scenario: "bar 의 우아한 대안 — 격차 강조, 깔끔한 시각"
     sample_prompt: "OECD 국가별 1인당 GDP 순위"
@@ -206,7 +207,7 @@ scenarios:
       - "시계열 → line"
 
   - id: slope
-    status: pending
+    status: active
     data_shape: "2 시점 × 여러 카테고리 (≤10)"
     scenario: "순위 역전, 두 시점 사이의 증감"
     sample_prompt: "2020 vs 2025 산업별 점유율 변화"
@@ -216,7 +217,7 @@ scenarios:
       - "단일 카테고리 → 본문"
 
   - id: small_multiples
-    status: pending
+    status: active
     data_shape: "같은 구조의 4-9개 그룹 (시계열 또는 분포)"
     scenario: "여러 그룹의 동일 지표 추이 비교 (4국 인플레이션)"
     sample_prompt: "G4 국가별 인플레이션 5년 추이 비교"
@@ -226,7 +227,7 @@ scenarios:
       - "그룹 ≤3 → dual_line 또는 단일 line"
 
   - id: waterfall
-    status: pending
+    status: active
     data_shape: "시작값 + 증감 항목들 + 종료값"
     scenario: "변화 분해 (P&L, GDP 기여도, 영업이익 brücke)"
     sample_prompt: "삼성전자 작년→올해 영업이익 변동 분해"
@@ -236,7 +237,7 @@ scenarios:
       - "시계열 → line"
 
   - id: range_bar
-    status: pending
+    status: active
     data_shape: "카테고리 × 2 값 (min/max 또는 두 시점)"
     scenario: "격차·범위 시각화 (남녀 임금, 최저-최고 임금)"
     sample_prompt: "OECD 국가별 남녀 임금격차"
@@ -251,8 +252,8 @@ scenarios:
 
 metadata:
   total_scenarios: 21
-  active_count: 14     # production 활성 (v5.2.13 기준) — 13 chart types + map
-  pending_count: 7     # v5.3.0 에 활성화 예정 (신규 7종)
+  active_count: 21     # production 활성 (v5.3.0) — 20 chart types + map
+  pending_count: 0     # 신규 7종 모두 v5.3.0 활성화 완료
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"
     - "Layer 1 starvation alarm 의 의도된 분모 (KNOWN_CHART_TYPES 와 1:1)"
