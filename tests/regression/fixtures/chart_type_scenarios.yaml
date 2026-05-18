@@ -1,0 +1,271 @@
+# Chart Type Scenarios — Layer 5 of 5-Layer Usage Guarantee (v5.2.14)
+#
+# 캔들 회귀 (v5.2.0 에 추가했으나 거의 emit X) 교훈으로 신설. 각 chart type 에 대해
+# "이런 데이터/시나리오면 이 type 이 emit 되어야 한다" 는 결정 기준을 코드로 박는다.
+#
+# 본 fixture 의 역할:
+#   1. 각 type 의 사용 시나리오를 인간이 읽을 수 있게 기록 (SSOT)
+#   2. test_chart_type_diversity.py 가 production 의 KNOWN_CHART_TYPES 와
+#      본 yaml 의 expected_chart_type 분포가 일치하는지 검증 (Layer 1 의
+#      starvation alarm 의 의도된 분모)
+#   3. 향후 composer SYSTEM_PROMPT 의 결정 트리 변경 시 회귀 게이트
+#
+# 항목 의미:
+#   id                  — 차트 type 식별. KNOWN_CHART_TYPES 의 element 그대로
+#   data_shape          — composer 에게 제공되는 데이터의 형태 (한 문장)
+#   scenario            — 이 type 이 자연스럽게 선택되어야 할 사건의 예시
+#   sample_prompt       — 사용자가 텔레그램으로 보낼 법한 메시지 예시
+#   expected_chart_type — composer 가 emit 해야 할 type (id 와 동일하나 명시)
+#   negative_examples   — 헷갈리지만 *이 type 이 아닌* 시나리오 (decision tree 가드용)
+#
+# 21종 = production 20 chart types + 1 embedded_map (v5.3.0 에 모두 active).
+# 7종 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall /
+# range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화.
+
+scenarios:
+
+  # ─────────────────────────────────────────────────────────────
+  # Production 13종 (v5.2.13 기준 wired)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: line
+    status: active
+    data_shape: "단일 시계열, 연속값, ≥10 포인트"
+    scenario: "환율·지수·금리 등 지표의 추세 시각화"
+    sample_prompt: "최근 3개월 원달러 환율 흐름 분석해줘"
+    expected_chart_type: line
+    negative_examples:
+      - "OHLC 데이터 있음 → candle"
+      - "두 단위 다른 시리즈 → dual_line"
+      - "예측 + 신뢰구간 → forecast"
+
+  - id: bar
+    status: active
+    data_shape: "카테고리 ≤8개 + 단일 measure"
+    scenario: "카테고리별 순위/크기 비교 (시간축 무관)"
+    sample_prompt: "주요국 GDP 비교 보고서"
+    expected_chart_type: bar
+    negative_examples:
+      - "시계열 (>12 포인트) → line"
+      - "카테고리 >15개 → lollipop"
+      - "구성비 합=100% → donut/stacked"
+
+  - id: candle
+    status: active
+    data_shape: "OHLC 시계열 — open/high/low/close 4값"
+    scenario: "개별주 일봉 (삼성전자 등 단일 종목 사건)"
+    sample_prompt: "삼성전자 어제 급락 원인 분석"
+    expected_chart_type: candle
+    negative_examples:
+      - "지수 KOSPI/S&P500 → line (집계 지수는 OHLC 의미 약함)"
+      - "환율·금리 → line"
+      - "OHLC 데이터 부재 → line"
+
+  - id: bubble
+    status: active
+    data_shape: "3-variable (x, y, size) — size 가 의미 있어야"
+    scenario: "다차원 위상 비교 (GDP × 무역의존도 × 인구)"
+    sample_prompt: "글로벌 무역의존도와 인구·경제규모의 상관"
+    expected_chart_type: bubble
+    negative_examples:
+      - "size 인코딩 불필요 (점 크기 균일) → scatter (신규)"
+      - "2-variable 만 → scatter 또는 line"
+
+  - id: network
+    status: active
+    data_shape: "노드-엣지 그래프 (관계 데이터)"
+    scenario: "행위자 간 협력/경쟁/공급망 관계도"
+    sample_prompt: "이번 외교 분쟁의 행위자 관계 분석"
+    expected_chart_type: network
+    negative_examples:
+      - "노드 >20개 (혼잡) → 카테고리 bar 로 분해"
+      - "시간축 있음 → 시계열 차트로"
+
+  - id: map
+    status: active
+    data_shape: "지리 좌표 (lon/lat) + 경로 또는 마커"
+    scenario: "무역 경로, 군사 이동, 분쟁 위치"
+    sample_prompt: "호르무즈 해협 봉쇄 시나리오와 우회 경로"
+    expected_chart_type: map
+    negative_examples:
+      - "지리 데이터 없음 → emit X (no_charts)"
+      - "지역별 강도 → choropleth"
+
+  - id: donut
+    status: active
+    data_shape: "카테고리 3-6개, 합=100% 또는 의미 있는 부분합"
+    scenario: "단일 시점의 구성비 (시장점유율, 에너지 믹스)"
+    sample_prompt: "2025년 한국 발전원 비중"
+    expected_chart_type: donut
+    negative_examples:
+      - "카테고리 ≤2 → 본문 텍스트로 (CHART-AP-16)"
+      - "카테고리 >6 → bar"
+      - "시점 다중 → stacked 또는 stacked_area"
+
+  - id: gantt
+    status: active
+    data_shape: "이벤트들의 (task, start, end) — end > start"
+    scenario: "프로젝트 일정, 정책 타임라인, 단계별 기간"
+    sample_prompt: "K-방산 수출 사업의 단계별 일정"
+    expected_chart_type: gantt
+    negative_examples:
+      - "point-in-time 이벤트 (start==end) → 본문 + timeline (CHART-AP-15)"
+      - "task 1개 → bar 또는 본문"
+
+  - id: stacked
+    status: active
+    data_shape: "이산 카테고리 × 시리즈 ≤5, 카테고리별 합 의미"
+    scenario: "분기/연도별 지역 또는 부문 구성 변화 (이산 시점)"
+    sample_prompt: "분기별 지역 매출 구성 변화 (4분기)"
+    expected_chart_type: stacked
+    negative_examples:
+      - "시점이 연속 (>10 포인트) → stacked_area"
+      - "단일 시리즈 → bar"
+
+  - id: heatmap
+    status: active
+    data_shape: "2D 격자 (≥4×4) + 강도값"
+    scenario: "요일×시간 활동, 상관행렬, 행렬형 강도 패턴"
+    sample_prompt: "주식시장 요일·시간별 변동성"
+    expected_chart_type: heatmap
+    negative_examples:
+      - "격자 <4×4 → 본문 또는 bar 매트릭스"
+      - "1D 데이터 → bar/line"
+
+  - id: dual_line
+    status: active
+    data_shape: "시계열 × 2 시리즈 (서로 다른 단위 또는 비교 중심)"
+    scenario: "두 변수의 동조 또는 괴리 (금리 vs 환율)"
+    sample_prompt: "한미 금리차와 원달러 환율의 관계"
+    expected_chart_type: dual_line
+    negative_examples:
+      - "시리즈 ≥3 → stacked_area 또는 small_multiples"
+      - "같은 단위 1 시리즈 → line"
+
+  - id: forecast
+    status: active
+    data_shape: "과거값 + 미래 예측값 + 신뢰구간 (lo/hi)"
+    scenario: "GDP 전망, 인플레이션 예측, 시나리오 분석"
+    sample_prompt: "내년 한국 GDP 성장률 전망"
+    expected_chart_type: forecast
+    negative_examples:
+      - "신뢰구간 데이터 없음 → line"
+      - "과거만 → line"
+
+  - id: area
+    status: active
+    data_shape: "단일 시계열, 누적/부피 강조"
+    scenario: "거래량, 누적 강수량, 채굴량 등 부피성 시계열"
+    sample_prompt: "지난 1년 비트코인 거래량 추이"
+    expected_chart_type: area
+    negative_examples:
+      - "음수 포함 → line (area 는 baseline 0 가정)"
+      - "여러 시리즈 합 의미 → stacked_area"
+
+  - id: choropleth
+    status: active
+    data_shape: "지역/국가 식별자 + 값 (강도)"
+    scenario: "국가별/지역별 지표 분포 (선거, 인구밀도)"
+    sample_prompt: "유럽 각국 인플레이션 비교"
+    expected_chart_type: choropleth
+    negative_examples:
+      - "지역 ≤5 → bar (지도가 과잉)"
+      - "경로/이동 → map"
+
+  # ─────────────────────────────────────────────────────────────
+  # 신규 7종 (v5.3.0 활성 — FT/Economist 스타일)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: scatter
+    status: active
+    data_shape: "라벨 있는 2D 점 (size 인코딩 없음)"
+    scenario: "그룹 내 위치 비교, 이상치 식별 (FT 좌측 스타일)"
+    sample_prompt: "각국 AI 수용도 — '들뜸' vs '불안'"
+    expected_chart_type: scatter
+    negative_examples:
+      - "size 인코딩 필요 → bubble"
+      - "라벨 없음 또는 무의미 → 본문"
+
+  - id: stacked_area
+    status: active
+    data_shape: "시계열 × 카테고리 (≤5 시리즈), 합 의미 (점유율 등)"
+    scenario: "시장점유율 연속 변화, 에너지 믹스 추이 (FT 우측)"
+    sample_prompt: "지난 5년 AI 모델 다운로드 지역별 점유율"
+    expected_chart_type: stacked_area
+    negative_examples:
+      - "시점이 이산 → stacked (막대)"
+      - "시리즈 >5 → small_multiples"
+
+  - id: lollipop
+    status: active
+    data_shape: "카테고리 8-15개 + 단일 measure"
+    scenario: "bar 의 우아한 대안 — 격차 강조, 깔끔한 시각"
+    sample_prompt: "OECD 국가별 1인당 GDP 순위"
+    expected_chart_type: lollipop
+    negative_examples:
+      - "카테고리 ≤6 → bar (lollipop 가 과잉)"
+      - "시계열 → line"
+
+  - id: slope
+    status: active
+    data_shape: "2 시점 × 여러 카테고리 (≤10)"
+    scenario: "순위 역전, 두 시점 사이의 증감"
+    sample_prompt: "2020 vs 2025 산업별 점유율 변화"
+    expected_chart_type: slope
+    negative_examples:
+      - "시점 ≥3 → small_multiples 또는 line"
+      - "단일 카테고리 → 본문"
+
+  - id: small_multiples
+    status: active
+    data_shape: "같은 구조의 4-9개 그룹 (시계열 또는 분포)"
+    scenario: "여러 그룹의 동일 지표 추이 비교 (4국 인플레이션)"
+    sample_prompt: "G4 국가별 인플레이션 5년 추이 비교"
+    expected_chart_type: small_multiples
+    negative_examples:
+      - "그룹 >9 → 본문 + heatmap"
+      - "그룹 ≤3 → dual_line 또는 단일 line"
+
+  - id: waterfall
+    status: active
+    data_shape: "시작값 + 증감 항목들 + 종료값"
+    scenario: "변화 분해 (P&L, GDP 기여도, 영업이익 brücke)"
+    sample_prompt: "삼성전자 작년→올해 영업이익 변동 분해"
+    expected_chart_type: waterfall
+    negative_examples:
+      - "단순 비교 (분해 X) → bar"
+      - "시계열 → line"
+
+  - id: sankey
+    status: active
+    data_shape: "DAG 흐름 그래프 — {nodes: [{id, label}], links: [{source, target, value}]}"
+    scenario: "재무제표 brücke (매출→COGS/판관비→영업이익), 세그먼트 분해, 자본 배분"
+    sample_prompt: "Apple 의 2024 Q4 매출 분해 — 제품별, 지역별, 마진까지"
+    expected_chart_type: sankey
+    negative_examples:
+      - "1차원 시퀀스 (시작→증감→끝) → waterfall"
+      - "관계도 (양방향, 흐름량 무의미) → network"
+      - "노드 >12 → 본문 또는 nested bar"
+
+  - id: range_bar
+    status: active
+    data_shape: "카테고리 × 2 값 (min/max 또는 두 시점)"
+    scenario: "격차·범위 시각화 (남녀 임금, 최저-최고 임금)"
+    sample_prompt: "OECD 국가별 남녀 임금격차"
+    expected_chart_type: range_bar
+    negative_examples:
+      - "값 ≥3 → small_multiples 또는 stacked"
+      - "단일 값 → bar"
+
+# ─────────────────────────────────────────────────────────────
+# 메타데이터 — test_chart_type_diversity.py 가 검증
+# ─────────────────────────────────────────────────────────────
+
+metadata:
+  total_scenarios: 22
+  active_count: 22     # production 활성 (v5.3.0) — 21 chart types + map (sankey 포함)
+  pending_count: 0
+  ssot_for:
+    - "각 chart type 의 자연스러운 사용 시나리오"
+    - "Layer 1 starvation alarm 의 의도된 분모 (KNOWN_CHART_TYPES 와 1:1)"
+    - "Layer 2 composer SYSTEM_PROMPT 결정 트리의 reference"

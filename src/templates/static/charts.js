@@ -1512,6 +1512,576 @@
   // 22px 유지 (외부 layout 의존성 lock-in 보호).
   //
   // Layout 안정 후 그리기 (rAF 2회 + ResizeObserver). 0px width 에서 그리면
+  // ============================================================
+  // v5.2.14 신규 7종 (FT/Economist 스타일)
+  // ============================================================
+
+  // ----- SCATTER (라벨 산점도) -----
+  function drawScatter(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.x) && isFinite(+d.y));
+    if (data.length < 3) return;
+    const W = 720, H = 360;
+    const zones = computeZones(W, H, { left: 60, right: 30, top: 30, bottom: 40 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const xExt = d3.extent(data, d => +d.x), yExt = d3.extent(data, d => +d.y);
+    const xPad = (xExt[1] - xExt[0]) * 0.08 || 1;
+    const yPad = (yExt[1] - yExt[0]) * 0.08 || 1;
+    const xScale = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    const yScale = d3.scaleLinear().domain([yExt[0] - yPad, yExt[1] + yPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    // grid
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.4).attr('stroke-dasharray', '2 3');
+    });
+    // axes
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h})`)
+      .call(d3.axisBottom(xScale).ticks(6))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    // labels (axis)
+    if (payload.x_label) {
+      svg.append('text').attr('x', W / 2).attr('y', H - 8).attr('text-anchor', 'middle')
+        .attr('font-size', 11).attr('fill', t.muted).text(payload.x_label);
+    }
+    if (payload.y_label) {
+      svg.append('text').attr('transform', `rotate(-90)`).attr('x', -H / 2).attr('y', 14)
+        .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', t.muted).text(payload.y_label);
+    }
+    // points + labels
+    data.forEach(d => {
+      const cx = xScale(+d.x), cy = yScale(+d.y);
+      const isAccent = !!d.accent;
+      svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 5)
+        .attr('fill', isAccent ? t.accent : t.text).attr('fill-opacity', 0.85);
+      svg.append('text').attr('x', cx + 8).attr('y', cy + 4).attr('font-size', 10)
+        .attr('font-family', 'Noto Sans KR').attr('fill', isAccent ? t.accent : t.text)
+        .text(String(d.label || ''));
+    });
+  }
+
+  // ----- STACKED AREA (시계열 누적) -----
+  function drawStackedArea(stage, payload, t) {
+    const series = (payload.data && payload.data.series) || payload.series || [];
+    if (!series.length || series.length > 5) return;
+    if (!series[0].values || series[0].values.length < 5) return;
+    const W = 720, H = 320;
+    const zones = computeZones(W, H, { left: 50, right: 30, top: 50, bottom: 36 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const prefix = stage.getAttribute('data-chart-id') || 'pat';
+    definePatterns(svg, t, prefix);
+    const xs = series[0].values.map(p => p.x);
+    const isNumX = xs.every(v => isFinite(+v));
+    const xScale = isNumX
+      ? d3.scaleLinear().domain(d3.extent(xs.map(v => +v))).range([zones.data.x, zones.data.x + zones.data.w])
+      : d3.scalePoint().domain(xs.map(String)).range([zones.data.x, zones.data.x + zones.data.w]);
+    // build stacked dataset: for each x index, sum series in order
+    const stackData = xs.map((x, i) => {
+      const row = { x };
+      series.forEach(s => { row[s.name] = +(s.values[i] && s.values[i].y) || 0; });
+      return row;
+    });
+    const stack = d3.stack().keys(series.map(s => s.name))(stackData);
+    const yMax = d3.max(stack[stack.length - 1], d => d[1]);
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([zones.data.y + zones.data.h, zones.data.y]);
+    const area = d3.area()
+      .x((d, i) => isNumX ? xScale(+xs[i]) : xScale(String(xs[i])))
+      .y0(d => yScale(d[0])).y1(d => yScale(d[1]))
+      .curve(d3.curveMonotoneX);
+    // grid
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    // layers
+    const idp = (n) => `${prefix}-${n}`;
+    stack.forEach((layer, i) => {
+      const fill = i === stack.length - 1 ? t.accent : `url(#${idp(PATTERN_SEQ[i % PATTERN_SEQ.length])})`;
+      svg.append('path').datum(layer).attr('fill', fill).attr('d', area)
+        .attr('stroke', t.bg).attr('stroke-width', 0.5);
+    });
+    // axes
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h})`)
+      .call(isNumX ? d3.axisBottom(xScale).ticks(6) : d3.axisBottom(xScale))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    // legend (top)
+    const lg = svg.append('g').attr('transform', `translate(${zones.data.x},${zones.data.y - 24})`);
+    series.forEach((s, i) => {
+      const fill = i === stack.length - 1 ? t.accent : `url(#${idp(PATTERN_SEQ[i % PATTERN_SEQ.length])})`;
+      const g = lg.append('g').attr('transform', `translate(${i * 110},0)`);
+      g.append('rect').attr('width', 10).attr('height', 10).attr('fill', fill);
+      g.append('text').attr('x', 14).attr('y', 9).attr('font-size', 10).attr('fill', t.text).text(s.name);
+    });
+  }
+
+  // ----- LOLLIPOP (bar 의 우아한 대안) -----
+  function drawLollipop(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.value));
+    if (data.length < 8 || data.length > 15) return;
+    const W = 720, rowH = 26;
+    const H = 50 + data.length * rowH + 30;
+    const zones = computeZones(W, H, { left: 160, right: 60, top: 24, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const max = d3.max(data, d => Math.abs(+d.value)) || 1;
+    const xScale = d3.scaleLinear().domain([0, max * 1.1])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    // grid
+    xScale.ticks(5).forEach(xt => {
+      svg.append('line').attr('x1', xScale(xt)).attr('x2', xScale(xt))
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    data.forEach((d, i) => {
+      const y = zones.data.y + 14 + i * rowH;
+      const xv = xScale(+d.value);
+      const isAccent = i === 0;
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 4).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text)
+        .text(String(d.label || '').slice(0, 22));
+      svg.append('line').attr('x1', zones.data.x).attr('x2', xv).attr('y1', y).attr('y2', y)
+        .attr('stroke', t.muted).attr('stroke-width', 1.2);
+      svg.append('circle').attr('cx', xv).attr('cy', y).attr('r', 6)
+        .attr('fill', isAccent ? t.accent : t.text);
+      svg.append('text').attr('x', xv + 10).attr('y', y + 4).attr('font-size', 11)
+        .attr('font-family', 'Noto Serif KR').attr('font-weight', 700).attr('fill', t.text)
+        .text(d3.format(',.1f')(+d.value));
+    });
+    // x axis
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h + 4})`)
+      .call(d3.axisBottom(xScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
+  }
+
+  // ----- SLOPE (slopegraph) -----
+  function drawSlope(stage, payload, t) {
+    const items = (payload.data && payload.data.items) || payload.items || [];
+    const leftLabel = (payload.data && payload.data.left_label) || payload.left_label || '';
+    const rightLabel = (payload.data && payload.data.right_label) || payload.right_label || '';
+    if (items.length < 3 || items.length > 10) return;
+    const W = 640, H = 360;
+    const zones = computeZones(W, H, { left: 130, right: 130, top: 50, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const vals = items.flatMap(d => [+d.a, +d.b]);
+    const yScale = d3.scaleLinear().domain([d3.min(vals), d3.max(vals)]).nice()
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    const xA = zones.data.x, xB = zones.data.x + zones.data.w;
+    // axis headers
+    svg.append('text').attr('x', xA).attr('y', zones.data.y - 18).attr('text-anchor', 'middle')
+      .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.text).text(leftLabel);
+    svg.append('text').attr('x', xB).attr('y', zones.data.y - 18).attr('text-anchor', 'middle')
+      .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.text).text(rightLabel);
+    items.forEach(it => {
+      const yA = yScale(+it.a), yB = yScale(+it.b);
+      const rising = +it.b > +it.a;
+      const stroke = rising ? t.accent : t.muted;
+      svg.append('line').attr('x1', xA).attr('y1', yA).attr('x2', xB).attr('y2', yB)
+        .attr('stroke', stroke).attr('stroke-width', 1.4);
+      svg.append('circle').attr('cx', xA).attr('cy', yA).attr('r', 4).attr('fill', t.text);
+      svg.append('circle').attr('cx', xB).attr('cy', yB).attr('r', 4)
+        .attr('fill', rising ? t.accent : t.text);
+      svg.append('text').attr('x', xA - 10).attr('y', yA + 4).attr('text-anchor', 'end')
+        .attr('font-size', 11).attr('fill', t.text)
+        .text(`${it.label} ${d3.format(',.1f')(+it.a)}`);
+      svg.append('text').attr('x', xB + 10).attr('y', yB + 4).attr('font-size', 11)
+        .attr('fill', rising ? t.accent : t.text).text(d3.format(',.1f')(+it.b));
+    });
+  }
+
+  // ----- SMALL MULTIPLES (4-9 면 그리드) -----
+  function drawSmallMultiples(stage, payload, t) {
+    const panels = (payload.data && payload.data.panels) || payload.panels || [];
+    if (panels.length < 4 || panels.length > 9) return;
+    const W = 720, H = 360;
+    const cols = panels.length <= 4 ? 2 : 3;
+    const rows = Math.ceil(panels.length / cols);
+    const padX = 12, padY = 12;
+    const cellW = (W - padX * (cols + 1)) / cols;
+    const cellH = (H - padY * (rows + 1)) / rows;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // shared y domain
+    const allVals = panels.flatMap(p => (p.series || []).map(d => +d.y).filter(isFinite));
+    const yDomain = d3.extent(allVals);
+    panels.forEach((p, idx) => {
+      const cx = padX + (idx % cols) * (cellW + padX);
+      const cy = padY + Math.floor(idx / cols) * (cellH + padY);
+      svg.append('rect').attr('x', cx).attr('y', cy).attr('width', cellW).attr('height', cellH)
+        .attr('fill', 'none').attr('stroke', t.border).attr('stroke-width', 0.6);
+      svg.append('text').attr('x', cx + 8).attr('y', cy + 16).attr('font-size', 12)
+        .attr('font-weight', 700).attr('fill', t.text).text(String(p.label || ''));
+      const data = (p.series || []).filter(d => isFinite(+d.y));
+      if (data.length < 2) return;
+      const xs = data.map(d => d.x);
+      const xExt = d3.extent(xs.map(v => +v));
+      const xScale = d3.scaleLinear().domain(xExt).range([cx + 8, cx + cellW - 8]);
+      const yScale = d3.scaleLinear().domain(yDomain).range([cy + cellH - 12, cy + 24]);
+      const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveMonotoneX);
+      svg.append('path').datum(data).attr('fill', 'none')
+        .attr('stroke', t.text).attr('stroke-width', 1.4).attr('d', line);
+    });
+  }
+
+  // ----- WATERFALL (P&L 스타일) -----
+  function drawWaterfall(stage, payload, t) {
+    const items = (payload.data || []).slice();
+    if (items.length < 3) return;
+    if (items[0].type !== 'total' || items[items.length - 1].type !== 'total') return;
+    // compute baselines
+    let running = 0;
+    items.forEach(it => {
+      if (it.type === 'total') { it.y0 = 0; it.y1 = +it.value; running = +it.value; }
+      else if (+it.value >= 0) { it.y0 = running; it.y1 = running + (+it.value); running = it.y1; }
+      else { it.y0 = running + (+it.value); it.y1 = running; running = it.y0; }
+    });
+    const W = 720, H = 360;
+    const zones = computeZones(W, H, { left: 60, right: 30, top: 24, bottom: 80 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const xScale = d3.scaleBand().domain(items.map((d, i) => i)).range([zones.data.x, zones.data.x + zones.data.w]).padding(0.3);
+    const yMax = d3.max(items, d => Math.max(d.y0, d.y1)) * 1.1;
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([zones.data.y + zones.data.h, zones.data.y]);
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    items.forEach((it, i) => {
+      const fill = it.type === 'total' ? t.text : (it.type === 'pos' ? t.accent : t.muted);
+      svg.append('rect').attr('x', xScale(i)).attr('width', xScale.bandwidth())
+        .attr('y', yScale(it.y1)).attr('height', yScale(it.y0) - yScale(it.y1))
+        .attr('fill', fill).attr('fill-opacity', it.type === 'total' ? 1 : 0.85);
+      // value label above bar
+      svg.append('text').attr('x', xScale(i) + xScale.bandwidth() / 2)
+        .attr('y', yScale(it.y1) - 4).attr('text-anchor', 'middle')
+        .attr('font-size', 10).attr('font-weight', 700).attr('fill', t.text)
+        .text(d3.format(',.0f')(+it.value));
+      // connector to next
+      if (i < items.length - 1) {
+        svg.append('line').attr('x1', xScale(i) + xScale.bandwidth())
+          .attr('x2', xScale(i + 1))
+          .attr('y1', yScale(it.y1)).attr('y2', yScale(it.y1))
+          .attr('stroke', t.muted).attr('stroke-dasharray', '2 3').attr('stroke-width', 0.8);
+      }
+    });
+    // x labels (rotated)
+    items.forEach((it, i) => {
+      svg.append('text').attr('x', xScale(i) + xScale.bandwidth() / 2)
+        .attr('y', zones.data.y + zones.data.h + 14)
+        .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', t.muted)
+        .attr('transform', `rotate(-25 ${xScale(i) + xScale.bandwidth() / 2},${zones.data.y + zones.data.h + 14})`)
+        .text(String(it.label || '').slice(0, 18));
+    });
+    // y axis
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+  }
+
+  // ----- SANKEY (재무 분해 / 자본 배분 / 매출 → segment → 비용 → 이익) -----
+  // 외부 d3-sankey 의존 없는 minimal layout — DAG 흐름.
+  // 노드 자동 column 할당 (longest path), 각 column 내 vertical layout 은
+  // value 비례 + 인접 padding. 링크는 source.x1 → target.x0 의 cubic Bezier.
+  function drawSankey(stage, payload, t) {
+    const data = payload.data || {};
+    const nodes = (data.nodes || []).map(n => ({ ...n }));
+    const links = (data.links || []).map(l => ({ ...l }));
+    if (nodes.length < 2 || links.length < 1) return;
+    const W = 760;
+    const H = Math.max(320, Math.min(560, 60 + nodes.length * 28));
+    const zones = computeZones(W, H, { left: 8, right: 8, top: 28, bottom: 24 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    const nodeById = new Map(nodes.map(n => [n.id, n]));
+    nodes.forEach(n => { n.inValue = 0; n.outValue = 0; n.col = 0; });
+    // 유효 링크만 (참조 가능)
+    const validLinks = links.filter(l => {
+      const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
+      if (!src || !tgt) return false;
+      const v = +l.value;
+      if (!isFinite(v) || v <= 0) return false;
+      src.outValue += v;
+      tgt.inValue += v;
+      return true;
+    });
+    if (!validLinks.length) return;
+
+    // column 할당 — topological BFS (가장 긴 경로)
+    const adj = new Map(nodes.map(n => [n.id, []]));
+    const inDeg = new Map(nodes.map(n => [n.id, 0]));
+    validLinks.forEach(l => {
+      adj.get(l.source).push(l.target);
+      inDeg.set(l.target, (inDeg.get(l.target) || 0) + 1);
+    });
+    const queue = nodes.filter(n => inDeg.get(n.id) === 0);
+    let head = 0;
+    while (head < queue.length) {
+      const n = queue[head++];
+      (adj.get(n.id) || []).forEach(tid => {
+        const tgt = nodeById.get(tid);
+        tgt.col = Math.max(tgt.col, n.col + 1);
+        inDeg.set(tid, inDeg.get(tid) - 1);
+        if (inDeg.get(tid) === 0) queue.push(tgt);
+      });
+    }
+    const maxCol = d3.max(nodes, n => n.col);
+    if (maxCol < 1) return;  // 단일 컬럼 sankey 는 의미 X
+
+    // v5.3.0 — sankey 전용 default palette (MONO_THEME_GUIDE 의 sankey 예외).
+    // composer 가 node.color 박았으면 그것 사용, 없으면 column index 기반 fallback.
+    const SANKEY_PAL = [
+      '#5A7A9B', '#4C7C7A', '#A88A4C', '#9C6049',
+      '#8A7553', '#6C5E8E', '#7E956D', '#B07159',
+    ];
+    nodes.forEach((n, i) => {
+      if (!n.color) {
+        // anchor (첫 컬럼이 아니면서 column 안의 max value 노드) 는 t.text 로
+        n.color = n.accent ? (t.accent || t.text) : SANKEY_PAL[i % SANKEY_PAL.length];
+      }
+    });
+
+    const colWidth = zones.data.w / (maxCol + 1);
+    const nodeWidth = 9;
+    const MIN_NODE_PAD = 18;
+    const MAX_NODE_H_RATIO = 0.50;
+
+    // v5.3.0 sankey 시각 균형 4원칙:
+    // 1. Anchor 압축: cardinality==1 + value==globalMax 노드는 75% 추가 cap
+    // 2. Source-weighted ordering: col 1+ 정렬을 incoming source y 가중평균으로
+    // 3. 분기 V 분산: 원칙 2 의 자연 결과
+    // 4. Column y-positioning: col 시작 y 를 expectedY 평균에 맞춤
+    const colMap = d3.group(nodes, n => n.col);
+    const globalMax = d3.max(Array.from(colMap.values()),
+      cnodes => d3.sum(cnodes, n => Math.max(n.inValue, n.outValue))) || 1;
+    const baseScale = (zones.data.h * MAX_NODE_H_RATIO) / globalMax;
+
+    function nodeScale(n, cnodesInCol) {
+      // 원칙 1: 한 컬럼 한 노드인 globalMax value 노드 추가 cap
+      if (cnodesInCol.length === 1 &&
+          Math.abs(Math.max(n.inValue, n.outValue) - globalMax) < 1e-6) {
+        return baseScale * 0.75;
+      }
+      return baseScale;
+    }
+
+    const colKeys = Array.from(colMap.keys()).sort((a, b) => a - b);
+    colKeys.forEach((col, idx) => {
+      const cnodes = colMap.get(col);
+      cnodes.forEach(n => {
+        const v = Math.max(n.inValue, n.outValue);
+        n.height = Math.max(6, v * nodeScale(n, cnodes));
+      });
+      const nodesH = d3.sum(cnodes, n => n.height);
+      const totalPad = (cnodes.length - 1) * MIN_NODE_PAD;
+      const totalH = nodesH + totalPad;
+
+      let colStart;
+      if (idx === 0) {
+        // 첫 컬럼: value 정렬 + 중앙 정렬 (부모 없음 → fallback)
+        cnodes.sort((a, b) =>
+          (Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue)));
+        colStart = zones.data.y + (zones.data.h - totalH) / 2;
+      } else {
+        // 원칙 2 + 4: expectedY = Σ(src.y_center × value) / Σ(value)
+        cnodes.forEach(n => {
+          let sumYV = 0, sumV = 0;
+          validLinks.filter(l => l.target === n.id).forEach(l => {
+            const src = nodeById.get(l.source);
+            const srcCenter = (src.y0 + src.y1) / 2;
+            sumYV += srcCenter * l.value;
+            sumV += l.value;
+          });
+          n.expectedY = sumV > 0 ? sumYV / sumV : zones.data.y + zones.data.h / 2;
+        });
+        cnodes.sort((a, b) => a.expectedY - b.expectedY);
+        const meanExpY = d3.mean(cnodes, n => n.expectedY);
+        colStart = meanExpY - totalH / 2;
+        colStart = Math.max(zones.data.y,
+          Math.min(zones.data.y + zones.data.h - totalH, colStart));
+      }
+
+      let y = colStart;
+      cnodes.forEach(n => {
+        n.x0 = zones.data.x + col * colWidth + 8;
+        n.x1 = n.x0 + nodeWidth;
+        n.y0 = y;
+        n.y1 = y + n.height;
+        y += n.height + MIN_NODE_PAD;
+      });
+    });
+
+    // 링크 slice 할당 — 각 노드의 outgoing/incoming 을 target/source y 기준 정렬
+    nodes.forEach(n => {
+      n.outLinks = validLinks.filter(l => l.source === n.id);
+      n.inLinks = validLinks.filter(l => l.target === n.id);
+      n.outLinks.sort((a, b) => nodeById.get(a.target).y0 - nodeById.get(b.target).y0);
+      n.inLinks.sort((a, b) => nodeById.get(a.source).y0 - nodeById.get(b.source).y0);
+      let sy = n.y0;
+      n.outLinks.forEach(l => {
+        const slice = (+l.value / Math.max(n.outValue, 1e-9)) * n.height;
+        l._sy0 = sy; l._sy1 = sy + slice; sy += slice;
+      });
+      let ty = n.y0;
+      n.inLinks.forEach(l => {
+        const slice = (+l.value / Math.max(n.inValue, 1e-9)) * n.height;
+        l._ty0 = ty; l._ty1 = ty + slice; ty += slice;
+      });
+    });
+
+    // 링크 그리기 — source.x1 → target.x0 의 4-point cubic Bezier 채워진 영역
+    // v5.3.0 sankey 예외: flow color = source.color (mono 의 단일 hue 규약을
+    // sankey 에 한해 완화). 흐름 추적 직관성 우선.
+    const FLOW_OPACITY = 0.55;
+    const NODE_OPACITY = 0.85;
+    const ACCENT_OPACITY = 1.00;
+    const NEG_OPACITY = 0.55;
+
+    const linkG = svg.append('g').attr('class', 'sankey-links');
+    const inFlowLabels = [];
+    validLinks.forEach(l => {
+      const src = nodeById.get(l.source), tgt = nodeById.get(l.target);
+      const x1 = src.x1, x2 = tgt.x0;
+      const midX = (x1 + x2) / 2;
+      const path = [
+        `M ${x1},${l._sy0}`,
+        `C ${midX},${l._sy0} ${midX},${l._ty0} ${x2},${l._ty0}`,
+        `L ${x2},${l._ty1}`,
+        `C ${midX},${l._ty1} ${midX},${l._sy1} ${x1},${l._sy1}`,
+        `Z`,
+      ].join(' ');
+      const isNeg = l.negative === true || (+l.value < 0);
+      // flow color = source 노드 색 (적자만 t.down 빨강)
+      const fill = isNeg ? (t.down || '#C9837A') : src.color;
+      linkG.append('path').attr('d', path).attr('fill', fill)
+        .attr('fill-opacity', isNeg ? NEG_OPACITY : FLOW_OPACITY)
+        .attr('stroke', 'none');
+      // v5.3.0 — 큰 흐름에 in-flow 라벨 (cut-out 효과, t.bg 색으로 대비).
+      // 흐름 두께 ≥22px 이고 너비 ≥80px 일 때만 — 좁은 흐름엔 안 박음.
+      const sHeight = Math.min(l._sy1 - l._sy0, l._ty1 - l._ty0);
+      const flowW = x2 - x1;
+      if (sHeight >= 22 && flowW >= 80) {
+        const midY = (l._sy0 + l._sy1 + l._ty0 + l._ty1) / 4;
+        inFlowLabels.push({
+          x: midX, y: midY,
+          text: l.value_label || d3.format(',.1f')(+l.value),
+          negative: isNeg,
+        });
+      }
+    });
+
+    // v5.3.0 — in-flow 라벨 (큰 흐름 안에). cut-out 효과: t.bg 색으로 흐름과 대비.
+    // 노드보다 *아래* 그려야 노드가 라벨 위로 안 덮음 — 노드 그리기 전에.
+    const flowLabelG = svg.append('g').attr('class', 'sankey-flow-labels');
+    inFlowLabels.forEach(fl => {
+      flowLabelG.append('text').attr('x', fl.x).attr('y', fl.y + 3)
+        .attr('text-anchor', 'middle').attr('font-size', 10)
+        .attr('font-family', 'Noto Serif KR').attr('font-weight', 700)
+        .attr('fill', t.bg).text(fl.text);
+    });
+
+    // 노드 그리기 — node.color (palette 또는 composer 지정). accent 는 opacity 1.0.
+    const nodeG = svg.append('g').attr('class', 'sankey-nodes');
+    nodes.forEach(n => {
+      nodeG.append('rect')
+        .attr('x', n.x0).attr('y', n.y0)
+        .attr('width', n.x1 - n.x0).attr('height', n.height)
+        .attr('fill', n.color)
+        .attr('fill-opacity', n.accent ? ACCENT_OPACITY : NODE_OPACITY);
+      // 라벨 — 첫 컬럼은 노드 왼쪽 / 마지막 컬럼은 노드 오른쪽 / 그 외는 위쪽.
+      // accent 노드는 weight 700, 일반은 500 (이전 600 → 정류장 격하).
+      const labelText = String(n.label || n.id);
+      const valueText = n.value_label || (n.outValue > 0
+        ? d3.format(',.1f')(n.outValue)
+        : (n.inValue > 0 ? d3.format(',.1f')(n.inValue) : ''));
+      const isFirst = n.col === 0;
+      const isLast = n.col === maxCol;
+      const labelWeight = n.accent ? 700 : 500;
+      if (isFirst) {
+        nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 - 2)
+          .attr('text-anchor', 'end').attr('font-size', 11)
+          .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
+          .attr('font-weight', labelWeight).text(labelText);
+        if (valueText) {
+          nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 + 12)
+            .attr('text-anchor', 'end').attr('font-size', 10)
+            .attr('fill', t.muted).text(valueText);
+        }
+      } else if (isLast) {
+        nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 - 2)
+          .attr('font-size', 11).attr('font-family', 'Noto Sans KR')
+          .attr('fill', t.text)
+          .attr('font-weight', labelWeight).text(labelText);
+        if (valueText) {
+          nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 + 12)
+            .attr('font-size', 10).attr('fill', t.muted).text(valueText);
+        }
+      } else {
+        // 중간 컬럼 — 라벨은 노드 위쪽
+        nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y0 - 6)
+          .attr('text-anchor', 'middle').attr('font-size', 11)
+          .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
+          .attr('font-weight', labelWeight).text(labelText);
+        if (valueText) {
+          nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y1 + 14)
+            .attr('text-anchor', 'middle').attr('font-size', 10)
+            .attr('fill', t.muted).text(valueText);
+        }
+      }
+    });
+  }
+
+  // ----- RANGE BAR (Dumbbell) -----
+  function drawRangeBar(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.low) && isFinite(+d.high) && +d.low < +d.high);
+    if (data.length < 3 || data.length > 15) return;
+    const W = 720, rowH = 26;
+    const H = 50 + data.length * rowH + 40;
+    const zones = computeZones(W, H, { left: 140, right: 60, top: 24, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const lo = d3.min(data, d => +d.low), hi = d3.max(data, d => +d.high);
+    const pad = (hi - lo) * 0.05 || 1;
+    const xScale = d3.scaleLinear().domain([lo - pad, hi + pad])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    xScale.ticks(6).forEach(xt => {
+      svg.append('line').attr('x1', xScale(xt)).attr('x2', xScale(xt))
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    data.forEach((d, i) => {
+      const y = zones.data.y + 14 + i * rowH;
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 4).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text)
+        .text(String(d.label || '').slice(0, 18));
+      svg.append('line').attr('x1', xScale(+d.low)).attr('x2', xScale(+d.high))
+        .attr('y1', y).attr('y2', y).attr('stroke', t.muted).attr('stroke-width', 1.4);
+      svg.append('circle').attr('cx', xScale(+d.low)).attr('cy', y).attr('r', 5).attr('fill', t.text);
+      svg.append('circle').attr('cx', xScale(+d.high)).attr('cy', y).attr('r', 5).attr('fill', t.accent);
+    });
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h + 4})`)
+      .call(d3.axisBottom(xScale).ticks(6))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
+    // legend
+    const lg = svg.append('g').attr('transform', `translate(${W - 120},${10})`);
+    lg.append('circle').attr('cx', 0).attr('cy', 4).attr('r', 4).attr('fill', t.text);
+    lg.append('text').attr('x', 8).attr('y', 8).attr('font-size', 10).attr('fill', t.text).text(payload.low_label || 'low');
+    lg.append('circle').attr('cx', 60).attr('cy', 4).attr('r', 4).attr('fill', t.accent);
+    lg.append('text').attr('x', 68).attr('y', 8).attr('font-size', 10).attr('fill', t.accent).text(payload.high_label || 'high');
+  }
+
+  // ============================================================
   // viewBox 가 작아져 컨테이너에 stretch 되는 회귀 (v5.2.4 P0-Patch7 의 첫
   // catch) 를 차단.
   // ============================================================
@@ -1627,6 +2197,12 @@
     dual_line: drawDualLine, forecast: drawForecast, choropleth: drawChoropleth,
     // v5.2.0 — 시계열 OHLC 차트 (market_fetcher 데이터)
     candle: drawCandle, area: drawArea,
+    // v5.2.14 — FT/Economist 스타일 신규 7종
+    scatter: drawScatter, stacked_area: drawStackedArea, lollipop: drawLollipop,
+    slope: drawSlope, small_multiples: drawSmallMultiples,
+    waterfall: drawWaterfall, range_bar: drawRangeBar,
+    // v5.3.0 — Sankey (재무 분해 / 자본 배분). orphan 해결.
+    sankey: drawSankey,
   };
 
   async function renderStage(stage, idx) {
@@ -1648,11 +2224,109 @@
     catch (e) { console.warn('[charts] render error for', type, e); }
   }
 
+  // ============================================================
+  // v5.3.0 — Entry Animation Framework
+  //
+  // IntersectionObserver 로 차트 카드가 뷰포트 진입 시점에 renderStage 호출,
+  // SVG 생성 직후 _applyEntryAnimation 으로 stroke-dashoffset 그리기 +
+  // rect/circle stagger 등장. prefers-reduced-motion 시 즉시 정적 렌더.
+  //
+  // CHART-AP-18 (motion regression) 방지:
+  // - duration ≤ 700ms (스크롤 속도 방해 차단)
+  // - 1회 재생 후 unobserve (반복 재생 X)
+  // - IntersectionObserver 미지원 브라우저 → backward-compat 즉시 렌더
+  // ============================================================
+
+  function _motionEnabled() {
+    if (!window.matchMedia) return true;
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function _applyEntryAnimation(stage) {
+    if (!_motionEnabled()) return;
+    const svg = d3.select(stage).select('svg');
+    if (svg.empty()) return;
+
+    // (1) Path 그리기 — stroke-dashoffset 트릭. fill=none + stroke 있는 path 만.
+    svg.selectAll('path').each(function () {
+      const node = this;
+      const sel = d3.select(node);
+      const stroke = sel.attr('stroke');
+      if (!stroke || stroke === 'none') return;
+      const fill = sel.attr('fill');
+      if (fill && fill !== 'none' && fill !== 'transparent') return;
+      let len;
+      try { len = node.getTotalLength(); } catch (e) { return; }
+      if (!isFinite(len) || len < 4 || len > 8000) return;
+      sel.attr('stroke-dasharray', `${len} ${len}`)
+        .attr('stroke-dashoffset', len)
+        .transition().duration(700).ease(d3.easeCubicOut)
+        .attr('stroke-dashoffset', 0)
+        .on('end', function () {
+          // dasharray 제거 → 점선/실선 원래 패턴 복원 (dual_line/forecast 의 dashed 보존)
+          const origDashArr = sel.attr('data-orig-dasharray');
+          d3.select(this).attr('stroke-dasharray', origDashArr || null);
+        });
+    });
+
+    // (2) Rect 등장 — fade-in stagger. clipPath / 배경 / decorative 는 skip.
+    let rectIdx = 0;
+    svg.selectAll('rect').each(function () {
+      const node = this;
+      const parent = node.parentNode;
+      if (parent && parent.tagName === 'clipPath') return;
+      const w = parseFloat(node.getAttribute('width') || '0');
+      const h = parseFloat(node.getAttribute('height') || '0');
+      if (w < 3 || h < 3) return;
+      const fill = node.getAttribute('fill');
+      // 배경 (W 전체 폭 + bg 컬러) 스킵 — 사용자 인지에 깜빡임 회피
+      const vbAttr = svg.attr('viewBox');
+      if (vbAttr) {
+        const parts = vbAttr.split(/\s+/);
+        const vbW = parseFloat(parts[2] || '0');
+        if (w >= vbW * 0.95 && h >= 1) return;
+      }
+      d3.select(node).style('opacity', 0)
+        .transition().delay((rectIdx++) * 20).duration(380).ease(d3.easeCubicOut)
+        .style('opacity', 1);
+    });
+
+    // (3) Circle 등장 — r=0 → r 확장. r ≥1.5 만 (decorative 작은 dot 제외).
+    svg.selectAll('circle').each(function () {
+      const node = this;
+      const r = parseFloat(node.getAttribute('r') || '0');
+      if (r < 1.5) return;
+      d3.select(node).attr('r', 0)
+        .transition().duration(440).ease(d3.easeBackOut.overshoot(1.3))
+        .attr('r', r);
+    });
+  }
+
   function init() {
     const stages = document.querySelectorAll('.chart-card-stage[data-chart-type]');
-    stages.forEach((stage, i) => renderStage(stage, i));
-    // v5.2.5 — compact strip sparkline 렌더 (별도 selector svg.sparkline).
+    // v5.2.5 — compact strip sparkline 은 항상 즉시 렌더 (작아서 애니 의미 없음).
     renderSparklines();
+
+    // IntersectionObserver 미지원 브라우저 → backward-compat 즉시 렌더.
+    if (!window.IntersectionObserver || !stages.length) {
+      stages.forEach((stage, i) => renderStage(stage, i));
+      return;
+    }
+    const io = new IntersectionObserver(async (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const stage = entry.target;
+        const idx = parseInt(stage.dataset.animIdx || '0', 10);
+        io.unobserve(stage);
+        await renderStage(stage, idx);
+        // 다음 RAF 틱에 애니메이션 적용 (SVG DOM 안착 후)
+        requestAnimationFrame(() => _applyEntryAnimation(stage));
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    stages.forEach((stage, i) => {
+      stage.dataset.animIdx = String(i);
+      io.observe(stage);
+    });
   }
 
   if (document.readyState === 'loading') {

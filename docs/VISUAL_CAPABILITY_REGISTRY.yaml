@@ -124,6 +124,60 @@ visual_capabilities:
     added_in: phase_2
     notes: "d3-sankey plugin. 노드 수 ≤ 12 권장 (시각 피로 차단)."
 
+  # ─── v5.2.14 신규 7종 (FT/Economist 스타일) ──────────────────────────
+  # 도입 시점에는 모두 guarded — 회귀 데이터 (Layer 1 telemetry) 충분히
+  # 축적되고 chart_critic 통과율 측정 후 safe 승격 가능.
+  # 모두 d3_custom (Vega-Lite 직접 지원 미흡 또는 라벨/주석 제어 필요).
+
+  scatter:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, x, y]
+    added_in: v5_2_14
+    notes: "라벨 산점도 (FT 좌측 스타일). bubble 과 구분 — size 인코딩 없음."
+
+  stacked_area:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [series_name, time, value]
+    added_in: v5_2_14
+    notes: "시계열 점유율 변화 (FT 우측 스타일). ≤5 시리즈, 각 ≥5 포인트."
+
+  lollipop:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, value]
+    added_in: v5_2_14
+    notes: "bar 의 우아한 대안. 8-15 항목 (그 미만은 bar 가 적절)."
+
+  slope:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, value_a, value_b]
+    added_in: v5_2_14
+    notes: "2 시점 비교, 순위 역전. 3-10 항목."
+
+  small_multiples:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [panel_label, x, y]
+    added_in: v5_2_14
+    notes: "4-9 panel × 각 ≥5 포인트. 같은 구조 반복 비교."
+
+  waterfall:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, value, type]
+    added_in: v5_2_14
+    notes: "증감 분해 (P&L brücke). 첫·끝 row type='total' 강제."
+
+  range_bar:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, low, high]
+    added_in: v5_2_14
+    notes: "Dumbbell — low<high 강제, 3-15 항목."
+
   # ─── Tier — experimental (2종): 기본 forbidden, must_have 시만 ─────────
 
   chord:
@@ -160,6 +214,6 @@ visual_capabilities:
 # ─── 분포 (test_capability_registry 가 자동 검증) ─────────────────────────
 distribution:
   safe:         11
-  guarded:      3
+  guarded:      10   # v5.2.14: 3 (choropleth/network/sankey) + 7 신규 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar)
   experimental: 2
-total: 16
+total: 23

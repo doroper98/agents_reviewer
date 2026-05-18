@@ -373,9 +373,10 @@ _DEFAULT_REQUIRED_EXHIBITS: dict[str, list[dict[str, str]]] = {
         "fallback_form": "fact_grid",
     }],
     "transmission_channel": [{
-        "description": "전이 채널 단계별 영향 비교",
-        "visual_type_hint": "bar",
-        "why_required": "한 충격이 단계별로 어떻게 증폭되는지 정량 추적.",
+        # v5.3.0 — sankey 가 다단계 분배에 더 적합. bar 는 1차원 비교만 가능.
+        "description": "전이 채널 단계별 흐름 분해 (매출→segment→비용→이익 같은)",
+        "visual_type_hint": "sankey",
+        "why_required": "한 입력이 다단계 노드로 어떻게 갈라지고 흡수되는지 정량 추적.",
         "fallback_form": "table",
     }],
     "stakeholder_matrix": [{
@@ -408,8 +409,22 @@ _DEFAULT_REQUIRED_EXHIBITS: dict[str, list[dict[str, str]]] = {
         "why_required": "가설 경쟁 분석의 핵심 시각화.",
         "fallback_form": "table",
     }],
-    "fault_tree": [],
-    "pre_mortem": [],
+    "fault_tree": [{
+        # v5.2.14 Layer 3 — waterfall 이 자연 적합 (실패 요인 누적 분해).
+        # 신규 type 도입 시 자동 수요 보장의 SSOT.
+        "description": "실패 요인별 누적 분해",
+        "visual_type_hint": "waterfall",
+        "why_required": "fault_tree 의 핵심 산출 — 시작값에서 각 요인으로 분해되는 형태.",
+        "fallback_form": "table",
+    }],
+    "pre_mortem": [{
+        # v5.2.14 Layer 3 — scatter 가 실패 모드 시각화에 적합
+        # (가능성 × 영향, 단 size 인코딩 불필요).
+        "description": "실패 모드 가능성 × 영향 산점도",
+        "visual_type_hint": "scatter",
+        "why_required": "pre_mortem 의 'what could go wrong' 을 정량 위상으로.",
+        "fallback_form": "fact_grid",
+    }],
 }
 
 

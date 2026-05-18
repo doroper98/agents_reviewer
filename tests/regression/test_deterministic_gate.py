@@ -41,13 +41,19 @@ def test_hard_fail_rules_count_is_11() -> None:
     assert set(HARD_FAIL_RULES) == expected
 
 
-def test_soft_fail_rules_count_is_5() -> None:
-    """Plan §15.5 의 5종 Soft fail 모두 명시."""
-    assert len(SOFT_FAIL_RULES) == 5
+def test_soft_fail_rules_count_is_6() -> None:
+    """v5.2.14 — 6종 Soft fail. Plan §15.5 의 5종 + Layer 4 의 chart_type_monotony.
+
+    Layer 4 (chart_type_monotony) 는 캔들 회귀 (한 보고서가 bar/line 일색)
+    차단의 SSOT. standard mode ≥3 차트 시 distinct ≥2, deep mode ≥5 차트 시
+    distinct ≥3 강제.
+    """
+    assert len(SOFT_FAIL_RULES) == 6
     expected = {
         "asymmetry_gini", "chart_count_exceeded",
         "heading_pattern_repetitive", "watch_signal_all_ambiguous",
         "stale_source_ratio",
+        "chart_type_monotony",  # v5.2.14
     }
     assert set(SOFT_FAIL_RULES) == expected
 
@@ -314,6 +320,65 @@ def test_soft_4_watch_signal_all_ambiguous() -> None:
     result = run_deterministic_gate(composed, mode="deep")
     if result.decision != "kill":
         assert any("watch_signal_all_ambiguous" in s for s in result.soft_failures)
+
+
+# Soft 6: chart_type_monotony (v5.2.14 Layer 4)
+def test_soft_6_chart_type_monotony_standard() -> None:
+    """standard ≥3 차트 + distinct types <2 면 monotony soft fail.
+
+    캔들 회귀 (production 13종 중 70% 가 bar/line/donut) 방지.
+    """
+    composed = _clean_composed()
+    composed["exhibits"] = [
+        {"type": "bar", "title": "c1", "source_ids": ["S-001"]},
+        {"type": "bar", "title": "c2", "source_ids": ["S-001"]},
+        {"type": "bar", "title": "c3", "source_ids": ["S-001"]},
+    ]
+    result = run_deterministic_gate(composed, mode="standard")
+    if result.decision != "kill":
+        assert any("chart_type_monotony" in s for s in result.soft_failures)
+        assert result.metrics["chart_distinct_types"] == 1
+
+
+def test_soft_6_chart_type_monotony_deep() -> None:
+    """deep ≥5 차트 + distinct types <3 면 monotony soft fail."""
+    composed = _clean_composed()
+    composed["exhibits"] = [
+        {"type": "bar", "title": "c1", "source_ids": ["S-001"]},
+        {"type": "bar", "title": "c2", "source_ids": ["S-001"]},
+        {"type": "line", "title": "c3", "source_ids": ["S-001"]},
+        {"type": "line", "title": "c4", "source_ids": ["S-001"]},
+        {"type": "line", "title": "c5", "source_ids": ["S-001"]},
+    ]
+    result = run_deterministic_gate(composed, mode="deep")
+    if result.decision != "kill":
+        assert any("chart_type_monotony" in s for s in result.soft_failures)
+        assert result.metrics["chart_distinct_types"] == 2
+
+
+def test_soft_6_chart_type_monotony_pass_when_diverse() -> None:
+    """type 다양하면 monotony soft fail 안 떠야."""
+    composed = _clean_composed()
+    composed["exhibits"] = [
+        {"type": "bar", "title": "c1", "source_ids": ["S-001"]},
+        {"type": "line", "title": "c2", "source_ids": ["S-001"]},
+        {"type": "donut", "title": "c3", "source_ids": ["S-001"]},
+    ]
+    result = run_deterministic_gate(composed, mode="standard")
+    if result.decision != "kill":
+        assert not any("chart_type_monotony" in s for s in result.soft_failures)
+
+
+def test_soft_6_chart_type_monotony_fast_skip() -> None:
+    """fast mode 는 monotony 검증 안 함 (1-2 차트는 자연스레 단조)."""
+    composed = _clean_composed()
+    composed["exhibits"] = [
+        {"type": "bar", "title": "c1", "source_ids": ["S-001"]},
+        {"type": "bar", "title": "c2", "source_ids": ["S-001"]},
+    ]
+    result = run_deterministic_gate(composed, mode="fast")
+    if result.decision != "kill":
+        assert not any("chart_type_monotony" in s for s in result.soft_failures)
 
 
 # ─── 다중 Hard fail 시 모두 보고 ─────────────────────────────────────

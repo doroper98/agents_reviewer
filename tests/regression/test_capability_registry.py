@@ -43,16 +43,21 @@ def test_registry_loads_without_error() -> None:
 
 
 def test_registry_distribution_matches_plan_9_3() -> None:
-    """Plan §9.3 의 정본 분포 — safe 11 / guarded 3 / experimental 2 (총 16)."""
+    """v5.2.14 정본 분포 — safe 11 / guarded 10 / experimental 2 (총 23).
+
+    v5.2.14 변경: Plan §9.3 의 원본 (safe 11 / guarded 3 / experimental 2 / 총 16)
+    에서 FT/Economist 스타일 신규 7종을 guarded 로 추가 → guarded 10 / 총 23.
+    신규 type 의 chart_critic 통과율이 충분히 측정되면 safe 승격 검토.
+    """
     safe = list_safe_types()
     guarded = list_guarded_types()
     experimental = list_experimental_types()
     total = list_all_types()
 
     assert len(safe) == 11, f"safe types: 11 expected, got {len(safe)}: {safe}"
-    assert len(guarded) == 3, f"guarded types: 3 expected, got {len(guarded)}: {guarded}"
+    assert len(guarded) == 10, f"guarded types: 10 expected, got {len(guarded)}: {guarded}"
     assert len(experimental) == 2, f"experimental types: 2 expected, got {len(experimental)}"
-    assert len(total) == 16, f"total: 16 expected, got {len(total)}"
+    assert len(total) == 23, f"total: 23 expected, got {len(total)}"
 
 
 def test_registry_safe_types_match_plan_9_3() -> None:
@@ -69,8 +74,13 @@ def test_registry_safe_types_match_plan_9_3() -> None:
 
 
 def test_registry_guarded_types_match_plan_9_3() -> None:
-    """Plan §9.3 의 정본 — guarded 3종 (choropleth / network / sankey)."""
-    expected_guarded = {"choropleth", "network", "sankey"}
+    """v5.2.14 정본 — guarded 10종 (3 원본 + 7 FT/Economist 신규)."""
+    expected_guarded = {
+        "choropleth", "network", "sankey",
+        # v5.2.14 — FT/Economist 스타일 신규 7종
+        "scatter", "stacked_area", "lollipop", "slope",
+        "small_multiples", "waterfall", "range_bar",
+    }
     assert set(list_guarded_types()) == expected_guarded
 
 
@@ -85,9 +95,9 @@ def test_registry_distribution_section_consistent() -> None:
     reg = load_registry()
     declared = reg.get("distribution", {})
     assert declared.get("safe") == 11
-    assert declared.get("guarded") == 3
+    assert declared.get("guarded") == 10
     assert declared.get("experimental") == 2
-    assert reg.get("total") == 16
+    assert reg.get("total") == 23
 
 
 def test_each_capability_has_required_fields() -> None:
