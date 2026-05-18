@@ -28,7 +28,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.2.12"
+VERSION = "v5.2.13"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -98,11 +98,20 @@ _SOURCE_DISPLAY = {
 
 
 def _count_existing_ts_charts(composed) -> int:
-    """composer 가 박은 시계열 차트 개수."""
+    """composer (또는 fallback) 가 박은 *풀 카드* 시계열 차트 개수.
+
+    v5.2.13 — strip row (``role='compact'``) 는 제외. strip 의 ``type`` 도 ``line``
+    이지만 sparkline 만 그리는 다른 시각 역할 — 풀 카드 보장 (fallback 의
+    강제 emit 조건) 판정에 strip 을 분자로 세면 v5.2.5 회귀가 영구화된다.
+    """
     n = 0
     for sec in composed.sections or []:
         for ch in (sec.charts or []):
-            if isinstance(ch, dict) and (ch.get("type") or "").lower() in _TS_CHART_TYPES:
+            if not isinstance(ch, dict):
+                continue
+            if ch.get("role") == "compact":
+                continue
+            if (ch.get("type") or "").lower() in _TS_CHART_TYPES:
                 n += 1
     return n
 
@@ -526,9 +535,39 @@ def _ensure_time_series_chart(composed, context) -> None:
 
     # composer 가 이미 박은 instrument 제외 (중복 회피)
     composer_names = _composer_instruments(composed)
+
+    # v5.2.13 — 풀 카드 보장 (사용자 사례: '컴팩트 스트립만 계속 나옴').
+    # composer 가 SYSTEM_PROMPT 의 "시계열 차트 1개 이상 emit 강제 규칙" 을
+    # 어기고 풀 카드를 0 개 emit 했고, _ensure_market_strip 이 3+ instrument
+    # 를 compact row 로 박은 경우, v5.2.5 의 _composer_instruments (strip 도
+    # covered 로 인정) 가 dedupe 집합으로 *모든 instrument* 를 반환 → fallback
+    # 이 no-op → 사용자가 strip 만 본다. _drop_invalid_charts validator 가
+    # composer 의 candle/line/area 를 silent drop 한 케이스도 동일 결과.
+    #
+    # 안전망: composer 의 *유효 풀 카드* (role!='compact' + type in TS) 가
+    # 0 이면, 가장 정보 풍부한 series 1개를 strip dedupe 우회로 풀 카드 강제.
+    # 1개만 강제 — 모든 instrument 풀 카드는 strip 의 at-a-glance 역할과
+    # 중복돼 시각 혼잡 (사용자 사례 v5.2.5 의 origin).
+    forced_inst: str | None = None
+    if _count_existing_ts_charts(composed) == 0:
+        primary_pool = sorted(candidates, key=lambda s: -len(s.get("data") or []))
+        primary = primary_pool[0]
+        forced_inst = primary.get("instrument")
+        target = composed.sections[0]
+        if target.charts is None:
+            target.charts = []
+        target.charts = [_build_ts_chart(primary, context)] + list(target.charts)
+        import logging
+        logging.getLogger(__name__).info(
+            "[orchestrator] _ensure_time_series_chart: 풀 카드 0 → primary '%s' "
+            "(%d points) 강제 추가 (strip dedupe 우회)",
+            forced_inst, len(primary.get("data") or []),
+        )
+        composer_names = composer_names | {forced_inst}
+
     to_add = [s for s in candidates if s.get("instrument") not in composer_names]
     if not to_add:
-        return  # composer 가 다 박았으면 no-op
+        return  # composer (또는 forced primary) 가 다 박았으면 no-op
 
     # data 많은 순 (가장 정보 풍부한 series 가 첫 섹션)
     to_add.sort(key=lambda s: -len(s.get("data") or []))

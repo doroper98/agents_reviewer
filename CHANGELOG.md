@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.12
+last_synced_with: v5.2.13
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.2.13] — 2026-05-18
+
+### Fixed — 컴팩트 스트립만 나오고 풀 차트가 누락되던 회귀 (사용자 catch)
+
+**증상**: 시계열 데이터가 충분히 fetch 된 보고서에서 *compact strip 차트만*
+계속 보이고, 캔들·라인·area 같은 정식 풀 카드 차트는 누락. 사용자 노출 결함.
+
+**근본 원인** (v5.2.5 회귀): `src/orchestrator.py:_composer_instruments` 가
+strip row (role='compact') 를 *composer 가 박은 instrument 집합* 으로 인정하도록
+변경됐는데 (instrument 중복 emit 회피 목적), 부작용으로:
+1. composer 가 SYSTEM_PROMPT 의 "시계열 차트 1개 이상 emit 강제 규칙" 을 어기고
+   풀 카드를 0 개 emit
+2. `_ensure_market_strip` 이 3+ instrument 를 compact row 로 박음
+3. `_composer_instruments` 가 *모든* instrument 를 covered 로 반환
+4. `_ensure_time_series_chart` fallback 의 dedupe 가 모든 instrument 잘라 no-op
+5. 결과: 사용자가 strip 만 봄 (풀 카드 0)
+
+`_drop_invalid_charts` validator 가 composer 의 candle/line/area 를 silent drop 한
+케이스도 동일 결과 (drop 후 풀 카드 0 → strip 만 남음 → fallback 막힘).
+
+**Fix**:
+- `_count_existing_ts_charts` (`orchestrator.py:100-117`) 가 strip row
+  (role='compact') 를 제외하도록 수정. strip 의 type 도 ``line`` 이지만 sparkline
+  용 다른 시각 역할 — 풀 카드 보장 판정의 분자에 포함하면 회귀가 영구화.
+- `_ensure_time_series_chart` (`orchestrator.py:500-573`) 에 *풀 카드 ≥1 보장*
+  안전망 추가. composer 의 유효 풀 카드가 0 이면 data 가 가장 풍부한 series 1개를
+  strip dedupe 우회로 풀 카드 강제 추가. 1개만 강제 — 모든 instrument 풀 카드는
+  strip 의 at-a-glance 역할과 중복돼 시각 혼잡 (v5.2.5 의 origin).
+
+**회귀 가드** (`tests/regression/test_compact_strip.py`):
+- `test_count_existing_ts_charts_excludes_compact_strip` — strip row 가 풀 카드
+  카운트에서 빠지는지 lock
+- `test_ensure_time_series_chart_guarantees_full_card_when_composer_emits_zero` —
+  사용자 사례 재현 + 풀 카드 ≥1 보장 lock
+- `test_ensure_time_series_chart_preserves_composer_full_card` — composer 가
+  풀 카드 emit 했으면 fallback 이 추가 풀 카드 안 박는지 lock (시각 혼잡 방지)
+- `test_ensure_time_series_chart_force_picks_data_richest` — 강제 emit 시 data 가
+  가장 풍부한 instrument 선택 규칙 lock
+
+기존 `test_composer_instruments_picks_up_compact_role` 은 그대로 유지 — strip 도
+dedupe 집합에 포함하는 것 *자체는* 정합 (instrument 중복 emit 회피 의도). 이번
+fix 는 그 결과로 fallback 이 막히는 *별개의* 안전망 누락만 메움.
+
+비-시계열 차트 (donut/bar/gantt/network/bubble/heatmap/stacked/dual_line/forecast/
+choropleth) 는 composer 가 직접 결정 — fallback 없음 (의도된 동작). 시계열만
+fetch 된 데이터를 자동으로 다루는 v5.2.0 약속 영역.
 
 ---
 
