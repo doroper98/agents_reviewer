@@ -393,8 +393,8 @@
   <h2>22. Sankey — 다단계 흐름 분해 (재무제표 / 자본 배분)</h2>
   <div class="section-note">링크가 좌→우 순차로 그어짐. 적자 flow 는 빨간색 자동.</div>
   <div class="chart-card" data-chart-type="sankey">
-    <div class="chart-card-title">로보택시 매출 분해 (FT 스타일 예시)</div>
-    <div class="chart-card-note">거리 점유율 → 필요 대수 → 매출 → segment → 영업이익/적자</div>
+    <div class="chart-card-title">삼성전자 2024 연간 손익계산서 분해 (예시)</div>
+    <div class="chart-card-note">사업부 → 매출 300.9조 → 원가/이익 분해 → 영업이익 32.7조 → 법인세/당기순이익. 단위: 조원. 영업외 손익 단순화.</div>
     <div class="chart-card-stage"></div>
   </div>
 
@@ -1475,34 +1475,40 @@ function renderRangeBar(stage) {
 // 22. SANKEY (재무·수익성 분석)
 // ============================================================
 function renderSankey(stage) {
-  const W = stage.clientWidth || 800, H = 420;
-  // 사용자가 보낸 FT 이미지를 모티브로 한 robotaxi 매출 분해 (값 단순화)
+  const W = stage.clientWidth || 800, H = 460;
+  // 삼성전자 2024 연간 손익계산서 분해 (단위: 조원, 실제 발표값 근사치).
+  // 보존성: segment 합산 = 매출 = 매출원가 + 매출총이익,
+  //         매출총이익 = 판관비 + 영업이익,
+  //         영업이익 = 법인세 + 당기순이익 (영업외 손익 단순화).
   const nodes = [
-    { id: 'rh', label: '시·RH', value: 84 },
-    { id: 'priv', label: '자가용', value: 70 },
-    { id: 'scoot', label: '스쿠터', value: 25 },
-    { id: 'subway', label: '지하철', value: 18 },
-    { id: 'robo', label: '로보택시 거리', value: 209 },
-    { id: 'rev', label: '총 운임매출 $117B', value: 117, accent: true },
-    { id: 'ops', label: '운영사', value: 90 },
-    { id: 'ai', label: 'AI 라이센싱', value: 9 },
-    { id: 'foun', label: '차량 파운드리', value: 14 },
-    { id: 'op_profit', label: '운영사 영업이익 $27B', value: 27, accent: true },
-    { id: 'ai_profit', label: 'AI 영업이익 $5B', value: 5, accent: true },
-    { id: 'foun_loss', label: '파운드리 적자 -$0.13B', value: 0.13 },
+    // 좌측 — 사업부
+    { id: 'ds',     label: 'DS (반도체) 111.5',         value: 111.5 },
+    { id: 'dx',     label: 'DX (모바일·가전·DP) 174.9', value: 174.9 },
+    { id: 'harman', label: 'Harman 14.5',               value: 14.5 },
+    // 중앙 — 매출 anchor
+    { id: 'rev',    label: '매출 300.9조',              value: 300.9, accent: true },
+    // 우측 — P&L 분해
+    { id: 'cogs',   label: '매출원가 209.0',            value: 209.0 },
+    { id: 'gp',     label: '매출총이익 91.9',           value: 91.9 },
+    { id: 'sgna',   label: '판관비 58.4',               value: 58.4 },
+    { id: 'op',     label: '영업이익 33.5',             value: 33.5, accent: true },
+    { id: 'tax',    label: '법인세 9.7',                value: 9.7 },
+    { id: 'ni',     label: '당기순이익 23.8',           value: 23.8, accent: true },
   ];
   const links = [
-    { source: 'rh', target: 'robo', value: 78 },
-    { source: 'priv', target: 'robo', value: 60 },
-    { source: 'scoot', target: 'robo', value: 25 },
-    { source: 'subway', target: 'robo', value: 18 },
-    { source: 'robo', target: 'rev', value: 209 },
-    { source: 'rev', target: 'ops', value: 90 },
-    { source: 'rev', target: 'ai', value: 9 },
-    { source: 'rev', target: 'foun', value: 14 },
-    { source: 'ops', target: 'op_profit', value: 27 },
-    { source: 'ai', target: 'ai_profit', value: 5 },
-    { source: 'foun', target: 'foun_loss', value: 0.13, negative: true },
+    // 사업부 → 매출 (합산)
+    { source: 'ds',     target: 'rev',  value: 111.5 },
+    { source: 'dx',     target: 'rev',  value: 174.9 },
+    { source: 'harman', target: 'rev',  value: 14.5 },
+    // 매출 → 매출원가 + 매출총이익
+    { source: 'rev',    target: 'cogs', value: 209.0 },
+    { source: 'rev',    target: 'gp',   value: 91.9 },
+    // 매출총이익 → 판관비 + 영업이익
+    { source: 'gp',     target: 'sgna', value: 58.4 },
+    { source: 'gp',     target: 'op',   value: 33.5 },
+    // 영업이익 → 법인세 + 당기순이익
+    { source: 'op',     target: 'tax',  value: 9.7 },
+    { source: 'op',     target: 'ni',   value: 23.8 },
   ];
   const svg = d3.select(stage).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
 
