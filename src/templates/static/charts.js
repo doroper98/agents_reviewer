@@ -1839,28 +1839,48 @@
     const maxCol = d3.max(nodes, n => n.col);
     if (maxCol < 1) return;  // 단일 컬럼 sankey 는 의미 X
 
-    const colWidth = zones.data.w / (maxCol + 1);
-    // v5.3.0 — node 폭 14 → 9 (덜 dominant), pad 10 → 7 (밀도 ↑)
-    const nodeWidth = 9;
-    const nodePad = 7;
+    // v5.3.0 — sankey 전용 default palette (MONO_THEME_GUIDE 의 sankey 예외).
+    // composer 가 node.color 박았으면 그것 사용, 없으면 column index 기반 fallback.
+    const SANKEY_PAL = [
+      '#5A7A9B', '#4C7C7A', '#A88A4C', '#9C6049',
+      '#8A7553', '#6C5E8E', '#7E956D', '#B07159',
+    ];
+    nodes.forEach((n, i) => {
+      if (!n.color) {
+        // anchor (첫 컬럼이 아니면서 column 안의 max value 노드) 는 t.text 로
+        n.color = n.accent ? (t.accent || t.text) : SANKEY_PAL[i % SANKEY_PAL.length];
+      }
+    });
 
-    // column 별 vertical layout
+    const colWidth = zones.data.w / (maxCol + 1);
+    const nodeWidth = 9;
+    const MIN_NODE_PAD = 18;
+    const MAX_NODE_H_RATIO = 0.50;  // 어떤 노드도 가용 높이의 50% 못 넘음
+
+    // globalMax 기반 scale + 컬럼별 중앙 정렬 (작은 column 자동 짧음).
     const colMap = d3.group(nodes, n => n.col);
+    const globalMax = d3.max(Array.from(colMap.values()),
+      cnodes => d3.sum(cnodes, n => Math.max(n.inValue, n.outValue))) || 1;
+    const scale = (zones.data.h * MAX_NODE_H_RATIO) / globalMax;
+
     colMap.forEach((cnodes, col) => {
-      // value 정렬 — 가장 큰 노드 위로
       cnodes.sort((a, b) =>
         (Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue)));
-      const totalValue = d3.sum(cnodes, n => Math.max(n.inValue, n.outValue)) || 1;
-      const availH = zones.data.h - (cnodes.length - 1) * nodePad;
-      let y = zones.data.y;
-      cnodes.forEach((n) => {
+      cnodes.forEach(n => {
         const v = Math.max(n.inValue, n.outValue);
-        n.height = Math.max(4, (v / totalValue) * availH);
+        n.height = Math.max(6, v * scale);
+      });
+      const nodesH = d3.sum(cnodes, n => n.height);
+      const totalPad = (cnodes.length - 1) * MIN_NODE_PAD;
+      // 중앙 정렬 — 작은 column 은 자동으로 더 짧고 중앙에 모임
+      const colStart = zones.data.y + (zones.data.h - nodesH - totalPad) / 2;
+      let y = colStart;
+      cnodes.forEach(n => {
         n.x0 = zones.data.x + col * colWidth + 8;
         n.x1 = n.x0 + nodeWidth;
         n.y0 = y;
         n.y1 = y + n.height;
-        y += n.height + nodePad;
+        y += n.height + MIN_NODE_PAD;
       });
     });
 
@@ -1883,10 +1903,10 @@
     });
 
     // 링크 그리기 — source.x1 → target.x0 의 4-point cubic Bezier 채워진 영역
-    // v5.3.0 hierarchy: flow 가 주인공 (opacity 0.50), node 는 정류장 (0.78),
-    // accent node 만 최종 강조 (1.00). 모두 같은 hue (t.text) — mono 유지.
-    const FLOW_OPACITY = 0.50;
-    const NODE_OPACITY = 0.78;
+    // v5.3.0 sankey 예외: flow color = source.color (mono 의 단일 hue 규약을
+    // sankey 에 한해 완화). 흐름 추적 직관성 우선.
+    const FLOW_OPACITY = 0.55;
+    const NODE_OPACITY = 0.85;
     const ACCENT_OPACITY = 1.00;
     const NEG_OPACITY = 0.55;
 
@@ -1904,7 +1924,8 @@
         `Z`,
       ].join(' ');
       const isNeg = l.negative === true || (+l.value < 0);
-      const fill = isNeg ? (t.down || t.accent) : t.text;
+      // flow color = source 노드 색 (적자만 t.down 빨강)
+      const fill = isNeg ? (t.down || '#C9837A') : src.color;
       linkG.append('path').attr('d', path).attr('fill', fill)
         .attr('fill-opacity', isNeg ? NEG_OPACITY : FLOW_OPACITY)
         .attr('stroke', 'none');
@@ -1932,13 +1953,13 @@
         .attr('fill', t.bg).text(fl.text);
     });
 
-    // 노드 그리기 — 흐름과 같은 hue (t.text), opacity 만 단계적으로 진하게.
+    // 노드 그리기 — node.color (palette 또는 composer 지정). accent 는 opacity 1.0.
     const nodeG = svg.append('g').attr('class', 'sankey-nodes');
     nodes.forEach(n => {
       nodeG.append('rect')
         .attr('x', n.x0).attr('y', n.y0)
         .attr('width', n.x1 - n.x0).attr('height', n.height)
-        .attr('fill', t.text)  // 단일 hue — accent 도 같은 색, opacity 만 차이
+        .attr('fill', n.color)
         .attr('fill-opacity', n.accent ? ACCENT_OPACITY : NODE_OPACITY);
       // 라벨 — 첫 컬럼은 노드 왼쪽 / 마지막 컬럼은 노드 오른쪽 / 그 외는 위쪽.
       // accent 노드는 weight 700, 일반은 500 (이전 600 → 정류장 격하).
