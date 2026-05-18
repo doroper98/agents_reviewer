@@ -1512,6 +1512,323 @@
   // 22px 유지 (외부 layout 의존성 lock-in 보호).
   //
   // Layout 안정 후 그리기 (rAF 2회 + ResizeObserver). 0px width 에서 그리면
+  // ============================================================
+  // v5.2.14 신규 7종 (FT/Economist 스타일)
+  // ============================================================
+
+  // ----- SCATTER (라벨 산점도) -----
+  function drawScatter(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.x) && isFinite(+d.y));
+    if (data.length < 3) return;
+    const W = 720, H = 360;
+    const zones = computeZones(W, H, { left: 60, right: 30, top: 30, bottom: 40 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const xExt = d3.extent(data, d => +d.x), yExt = d3.extent(data, d => +d.y);
+    const xPad = (xExt[1] - xExt[0]) * 0.08 || 1;
+    const yPad = (yExt[1] - yExt[0]) * 0.08 || 1;
+    const xScale = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    const yScale = d3.scaleLinear().domain([yExt[0] - yPad, yExt[1] + yPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    // grid
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.4).attr('stroke-dasharray', '2 3');
+    });
+    // axes
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h})`)
+      .call(d3.axisBottom(xScale).ticks(6))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    // labels (axis)
+    if (payload.x_label) {
+      svg.append('text').attr('x', W / 2).attr('y', H - 8).attr('text-anchor', 'middle')
+        .attr('font-size', 11).attr('fill', t.muted).text(payload.x_label);
+    }
+    if (payload.y_label) {
+      svg.append('text').attr('transform', `rotate(-90)`).attr('x', -H / 2).attr('y', 14)
+        .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', t.muted).text(payload.y_label);
+    }
+    // points + labels
+    data.forEach(d => {
+      const cx = xScale(+d.x), cy = yScale(+d.y);
+      const isAccent = !!d.accent;
+      svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 5)
+        .attr('fill', isAccent ? t.accent : t.text).attr('fill-opacity', 0.85);
+      svg.append('text').attr('x', cx + 8).attr('y', cy + 4).attr('font-size', 10)
+        .attr('font-family', 'Noto Sans KR').attr('fill', isAccent ? t.accent : t.text)
+        .text(String(d.label || ''));
+    });
+  }
+
+  // ----- STACKED AREA (시계열 누적) -----
+  function drawStackedArea(stage, payload, t) {
+    const series = (payload.data && payload.data.series) || payload.series || [];
+    if (!series.length || series.length > 5) return;
+    if (!series[0].values || series[0].values.length < 5) return;
+    const W = 720, H = 320;
+    const zones = computeZones(W, H, { left: 50, right: 30, top: 50, bottom: 36 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const prefix = stage.getAttribute('data-chart-id') || 'pat';
+    definePatterns(svg, t, prefix);
+    const xs = series[0].values.map(p => p.x);
+    const isNumX = xs.every(v => isFinite(+v));
+    const xScale = isNumX
+      ? d3.scaleLinear().domain(d3.extent(xs.map(v => +v))).range([zones.data.x, zones.data.x + zones.data.w])
+      : d3.scalePoint().domain(xs.map(String)).range([zones.data.x, zones.data.x + zones.data.w]);
+    // build stacked dataset: for each x index, sum series in order
+    const stackData = xs.map((x, i) => {
+      const row = { x };
+      series.forEach(s => { row[s.name] = +(s.values[i] && s.values[i].y) || 0; });
+      return row;
+    });
+    const stack = d3.stack().keys(series.map(s => s.name))(stackData);
+    const yMax = d3.max(stack[stack.length - 1], d => d[1]);
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([zones.data.y + zones.data.h, zones.data.y]);
+    const area = d3.area()
+      .x((d, i) => isNumX ? xScale(+xs[i]) : xScale(String(xs[i])))
+      .y0(d => yScale(d[0])).y1(d => yScale(d[1]))
+      .curve(d3.curveMonotoneX);
+    // grid
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    // layers
+    const idp = (n) => `${prefix}-${n}`;
+    stack.forEach((layer, i) => {
+      const fill = i === stack.length - 1 ? t.accent : `url(#${idp(PATTERN_SEQ[i % PATTERN_SEQ.length])})`;
+      svg.append('path').datum(layer).attr('fill', fill).attr('d', area)
+        .attr('stroke', t.bg).attr('stroke-width', 0.5);
+    });
+    // axes
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h})`)
+      .call(isNumX ? d3.axisBottom(xScale).ticks(6) : d3.axisBottom(xScale))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    // legend (top)
+    const lg = svg.append('g').attr('transform', `translate(${zones.data.x},${zones.data.y - 24})`);
+    series.forEach((s, i) => {
+      const fill = i === stack.length - 1 ? t.accent : `url(#${idp(PATTERN_SEQ[i % PATTERN_SEQ.length])})`;
+      const g = lg.append('g').attr('transform', `translate(${i * 110},0)`);
+      g.append('rect').attr('width', 10).attr('height', 10).attr('fill', fill);
+      g.append('text').attr('x', 14).attr('y', 9).attr('font-size', 10).attr('fill', t.text).text(s.name);
+    });
+  }
+
+  // ----- LOLLIPOP (bar 의 우아한 대안) -----
+  function drawLollipop(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.value));
+    if (data.length < 8 || data.length > 15) return;
+    const W = 720, rowH = 26;
+    const H = 50 + data.length * rowH + 30;
+    const zones = computeZones(W, H, { left: 160, right: 60, top: 24, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const max = d3.max(data, d => Math.abs(+d.value)) || 1;
+    const xScale = d3.scaleLinear().domain([0, max * 1.1])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    // grid
+    xScale.ticks(5).forEach(xt => {
+      svg.append('line').attr('x1', xScale(xt)).attr('x2', xScale(xt))
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    data.forEach((d, i) => {
+      const y = zones.data.y + 14 + i * rowH;
+      const xv = xScale(+d.value);
+      const isAccent = i === 0;
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 4).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text)
+        .text(String(d.label || '').slice(0, 22));
+      svg.append('line').attr('x1', zones.data.x).attr('x2', xv).attr('y1', y).attr('y2', y)
+        .attr('stroke', t.muted).attr('stroke-width', 1.2);
+      svg.append('circle').attr('cx', xv).attr('cy', y).attr('r', 6)
+        .attr('fill', isAccent ? t.accent : t.text);
+      svg.append('text').attr('x', xv + 10).attr('y', y + 4).attr('font-size', 11)
+        .attr('font-family', 'Noto Serif KR').attr('font-weight', 700).attr('fill', t.text)
+        .text(d3.format(',.1f')(+d.value));
+    });
+    // x axis
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h + 4})`)
+      .call(d3.axisBottom(xScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
+  }
+
+  // ----- SLOPE (slopegraph) -----
+  function drawSlope(stage, payload, t) {
+    const items = (payload.data && payload.data.items) || payload.items || [];
+    const leftLabel = (payload.data && payload.data.left_label) || payload.left_label || '';
+    const rightLabel = (payload.data && payload.data.right_label) || payload.right_label || '';
+    if (items.length < 3 || items.length > 10) return;
+    const W = 640, H = 360;
+    const zones = computeZones(W, H, { left: 130, right: 130, top: 50, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const vals = items.flatMap(d => [+d.a, +d.b]);
+    const yScale = d3.scaleLinear().domain([d3.min(vals), d3.max(vals)]).nice()
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    const xA = zones.data.x, xB = zones.data.x + zones.data.w;
+    // axis headers
+    svg.append('text').attr('x', xA).attr('y', zones.data.y - 18).attr('text-anchor', 'middle')
+      .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.text).text(leftLabel);
+    svg.append('text').attr('x', xB).attr('y', zones.data.y - 18).attr('text-anchor', 'middle')
+      .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.text).text(rightLabel);
+    items.forEach(it => {
+      const yA = yScale(+it.a), yB = yScale(+it.b);
+      const rising = +it.b > +it.a;
+      const stroke = rising ? t.accent : t.muted;
+      svg.append('line').attr('x1', xA).attr('y1', yA).attr('x2', xB).attr('y2', yB)
+        .attr('stroke', stroke).attr('stroke-width', 1.4);
+      svg.append('circle').attr('cx', xA).attr('cy', yA).attr('r', 4).attr('fill', t.text);
+      svg.append('circle').attr('cx', xB).attr('cy', yB).attr('r', 4)
+        .attr('fill', rising ? t.accent : t.text);
+      svg.append('text').attr('x', xA - 10).attr('y', yA + 4).attr('text-anchor', 'end')
+        .attr('font-size', 11).attr('fill', t.text)
+        .text(`${it.label} ${d3.format(',.1f')(+it.a)}`);
+      svg.append('text').attr('x', xB + 10).attr('y', yB + 4).attr('font-size', 11)
+        .attr('fill', rising ? t.accent : t.text).text(d3.format(',.1f')(+it.b));
+    });
+  }
+
+  // ----- SMALL MULTIPLES (4-9 면 그리드) -----
+  function drawSmallMultiples(stage, payload, t) {
+    const panels = (payload.data && payload.data.panels) || payload.panels || [];
+    if (panels.length < 4 || panels.length > 9) return;
+    const W = 720, H = 360;
+    const cols = panels.length <= 4 ? 2 : 3;
+    const rows = Math.ceil(panels.length / cols);
+    const padX = 12, padY = 12;
+    const cellW = (W - padX * (cols + 1)) / cols;
+    const cellH = (H - padY * (rows + 1)) / rows;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // shared y domain
+    const allVals = panels.flatMap(p => (p.series || []).map(d => +d.y).filter(isFinite));
+    const yDomain = d3.extent(allVals);
+    panels.forEach((p, idx) => {
+      const cx = padX + (idx % cols) * (cellW + padX);
+      const cy = padY + Math.floor(idx / cols) * (cellH + padY);
+      svg.append('rect').attr('x', cx).attr('y', cy).attr('width', cellW).attr('height', cellH)
+        .attr('fill', 'none').attr('stroke', t.border).attr('stroke-width', 0.6);
+      svg.append('text').attr('x', cx + 8).attr('y', cy + 16).attr('font-size', 12)
+        .attr('font-weight', 700).attr('fill', t.text).text(String(p.label || ''));
+      const data = (p.series || []).filter(d => isFinite(+d.y));
+      if (data.length < 2) return;
+      const xs = data.map(d => d.x);
+      const xExt = d3.extent(xs.map(v => +v));
+      const xScale = d3.scaleLinear().domain(xExt).range([cx + 8, cx + cellW - 8]);
+      const yScale = d3.scaleLinear().domain(yDomain).range([cy + cellH - 12, cy + 24]);
+      const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveMonotoneX);
+      svg.append('path').datum(data).attr('fill', 'none')
+        .attr('stroke', t.text).attr('stroke-width', 1.4).attr('d', line);
+    });
+  }
+
+  // ----- WATERFALL (P&L 스타일) -----
+  function drawWaterfall(stage, payload, t) {
+    const items = (payload.data || []).slice();
+    if (items.length < 3) return;
+    if (items[0].type !== 'total' || items[items.length - 1].type !== 'total') return;
+    // compute baselines
+    let running = 0;
+    items.forEach(it => {
+      if (it.type === 'total') { it.y0 = 0; it.y1 = +it.value; running = +it.value; }
+      else if (+it.value >= 0) { it.y0 = running; it.y1 = running + (+it.value); running = it.y1; }
+      else { it.y0 = running + (+it.value); it.y1 = running; running = it.y0; }
+    });
+    const W = 720, H = 360;
+    const zones = computeZones(W, H, { left: 60, right: 30, top: 24, bottom: 80 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const xScale = d3.scaleBand().domain(items.map((d, i) => i)).range([zones.data.x, zones.data.x + zones.data.w]).padding(0.3);
+    const yMax = d3.max(items, d => Math.max(d.y0, d.y1)) * 1.1;
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([zones.data.y + zones.data.h, zones.data.y]);
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    items.forEach((it, i) => {
+      const fill = it.type === 'total' ? t.text : (it.type === 'pos' ? t.accent : t.muted);
+      svg.append('rect').attr('x', xScale(i)).attr('width', xScale.bandwidth())
+        .attr('y', yScale(it.y1)).attr('height', yScale(it.y0) - yScale(it.y1))
+        .attr('fill', fill).attr('fill-opacity', it.type === 'total' ? 1 : 0.85);
+      // value label above bar
+      svg.append('text').attr('x', xScale(i) + xScale.bandwidth() / 2)
+        .attr('y', yScale(it.y1) - 4).attr('text-anchor', 'middle')
+        .attr('font-size', 10).attr('font-weight', 700).attr('fill', t.text)
+        .text(d3.format(',.0f')(+it.value));
+      // connector to next
+      if (i < items.length - 1) {
+        svg.append('line').attr('x1', xScale(i) + xScale.bandwidth())
+          .attr('x2', xScale(i + 1))
+          .attr('y1', yScale(it.y1)).attr('y2', yScale(it.y1))
+          .attr('stroke', t.muted).attr('stroke-dasharray', '2 3').attr('stroke-width', 0.8);
+      }
+    });
+    // x labels (rotated)
+    items.forEach((it, i) => {
+      svg.append('text').attr('x', xScale(i) + xScale.bandwidth() / 2)
+        .attr('y', zones.data.y + zones.data.h + 14)
+        .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', t.muted)
+        .attr('transform', `rotate(-25 ${xScale(i) + xScale.bandwidth() / 2},${zones.data.y + zones.data.h + 14})`)
+        .text(String(it.label || '').slice(0, 18));
+    });
+    // y axis
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+  }
+
+  // ----- RANGE BAR (Dumbbell) -----
+  function drawRangeBar(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.low) && isFinite(+d.high) && +d.low < +d.high);
+    if (data.length < 3 || data.length > 15) return;
+    const W = 720, rowH = 26;
+    const H = 50 + data.length * rowH + 40;
+    const zones = computeZones(W, H, { left: 140, right: 60, top: 24, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const lo = d3.min(data, d => +d.low), hi = d3.max(data, d => +d.high);
+    const pad = (hi - lo) * 0.05 || 1;
+    const xScale = d3.scaleLinear().domain([lo - pad, hi + pad])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    xScale.ticks(6).forEach(xt => {
+      svg.append('line').attr('x1', xScale(xt)).attr('x2', xScale(xt))
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    data.forEach((d, i) => {
+      const y = zones.data.y + 14 + i * rowH;
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', y + 4).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text)
+        .text(String(d.label || '').slice(0, 18));
+      svg.append('line').attr('x1', xScale(+d.low)).attr('x2', xScale(+d.high))
+        .attr('y1', y).attr('y2', y).attr('stroke', t.muted).attr('stroke-width', 1.4);
+      svg.append('circle').attr('cx', xScale(+d.low)).attr('cy', y).attr('r', 5).attr('fill', t.text);
+      svg.append('circle').attr('cx', xScale(+d.high)).attr('cy', y).attr('r', 5).attr('fill', t.accent);
+    });
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h + 4})`)
+      .call(d3.axisBottom(xScale).ticks(6))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
+    // legend
+    const lg = svg.append('g').attr('transform', `translate(${W - 120},${10})`);
+    lg.append('circle').attr('cx', 0).attr('cy', 4).attr('r', 4).attr('fill', t.text);
+    lg.append('text').attr('x', 8).attr('y', 8).attr('font-size', 10).attr('fill', t.text).text(payload.low_label || 'low');
+    lg.append('circle').attr('cx', 60).attr('cy', 4).attr('r', 4).attr('fill', t.accent);
+    lg.append('text').attr('x', 68).attr('y', 8).attr('font-size', 10).attr('fill', t.accent).text(payload.high_label || 'high');
+  }
+
+  // ============================================================
   // viewBox 가 작아져 컨테이너에 stretch 되는 회귀 (v5.2.4 P0-Patch7 의 첫
   // catch) 를 차단.
   // ============================================================
@@ -1627,6 +1944,10 @@
     dual_line: drawDualLine, forecast: drawForecast, choropleth: drawChoropleth,
     // v5.2.0 — 시계열 OHLC 차트 (market_fetcher 데이터)
     candle: drawCandle, area: drawArea,
+    // v5.2.14 — FT/Economist 스타일 신규 7종
+    scatter: drawScatter, stacked_area: drawStackedArea, lollipop: drawLollipop,
+    slope: drawSlope, small_multiples: drawSmallMultiples,
+    waterfall: drawWaterfall, range_bar: drawRangeBar,
   };
 
   async function renderStage(stage, idx) {
