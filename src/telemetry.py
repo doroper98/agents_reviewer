@@ -5,12 +5,17 @@
 
 본 모듈은 process-local. 텔레그램 봇 멀티-요청 환경에서는 사건당 ``RunTelemetry`` 인스턴스를
 새로 만들어 사용 (orchestrator 가 책임).
+
+v5.2.14 — 차트 type usage 추적 추가 (chart starvation 회귀 방지, 캔들 회귀 교훈).
+``emitted_chart_types`` 와 ``record_chart_types()`` 가 보고서당 emit 된 type 분포를
+기록. ``src/visual/usage_log.py`` 가 영구 JSONL 로 누적 저장.
 """
 
 from __future__ import annotations
 
 import logging
 import time
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -56,6 +61,7 @@ class RunTelemetry:
     skipped_llm_steps: list[str] = field(default_factory=list)
     llm_calls: list[LLMCallRecord] = field(default_factory=list)
     stages: list[StageTiming] = field(default_factory=list)
+    emitted_chart_types: list[str] = field(default_factory=list)
     start_ts: float = field(default_factory=time.time)
 
     # ------------------------------------------------------------------
@@ -91,6 +97,14 @@ class RunTelemetry:
 
     def stage_end(self, stage: StageTiming) -> None:
         stage.end_ts = time.time()
+
+    def record_chart_types(self, chart_types: list[str]) -> None:
+        """Composer 가 emit 한 chart type 목록 누적.
+
+        Orchestrator 가 composed_report 의 모든 section.charts 순회 후 1회 호출.
+        Starvation alarm 의 SSOT — type 별 0회 감지 시 ``usage_log`` 가 경고.
+        """
+        self.emitted_chart_types.extend(chart_types)
 
     # ------------------------------------------------------------------
     # Summary
@@ -131,6 +145,10 @@ class RunTelemetry:
             f"({c.elapsed_ms} ms)"
             for c in self.llm_calls
         ]
+        chart_dist = Counter(self.emitted_chart_types)
+        chart_line = ", ".join(
+            f"{t}={n}" for t, n in chart_dist.most_common()
+        ) or "(none)"
         logger.info(
             "[telemetry] efficiency summary\n"
             "  event: %s\n"
@@ -142,6 +160,7 @@ class RunTelemetry:
             "  total_input_chars: %d (avg/call=%d)\n"
             "  total_output_chars: %d (avg/call=%d)\n"
             "  total_duration_ms: %d\n"
+            "  chart_types: %s\n"
             "  llm_calls:\n%s\n"
             "  stages:\n%s",
             self.event_name or "(unknown)",
@@ -153,6 +172,7 @@ class RunTelemetry:
             self.total_input_chars, per_call_avg_in,
             self.total_output_chars, per_call_avg_out,
             self.total_duration_ms,
+            chart_line,
             "\n".join(agent_lines) or "    (none)",
             "\n".join(stage_lines) or "    (none)",
         )

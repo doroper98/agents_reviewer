@@ -1506,6 +1506,25 @@ class Orchestrator:
         self.telemetry.stage_end(stage)
         result.report_url = report_url
 
+        # v5.2.14 — chart type usage 추적 (캔들 starvation 회귀 방지).
+        # composed.sections 의 모든 charts 를 순회해 type 수집 → telemetry +
+        # 영구 JSONL. ``warn_if_starved`` 가 누적 N 보고서 동안 0회 emit type 감지.
+        try:
+            from src.visual.usage_log import append_run, warn_if_starved
+            emitted_types: list[str] = []
+            for sec in (result.sections or []):
+                for ch in (sec.charts or []):
+                    if isinstance(ch, dict):
+                        ct = ch.get("type")
+                        if isinstance(ct, str) and ct:
+                            emitted_types.append(ct)
+            if self.telemetry is not None:
+                self.telemetry.record_chart_types(emitted_types)
+            append_run(event=event_name, mode=mode, chart_types=emitted_types)
+            warn_if_starved()
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[orchestrator] chart usage tracking fail: %s", e)
+
         # -- Phase 4: Watchlist 등록 (composed_report.watch_signals 에서) --
         # v5.1.1: 체인 상한 — parent_context.chain_depth + 1 >= MAX_CHAIN_DEPTH 면 등록 스킵.
         # 손자(depth=2) 보고서가 다시 후속을 자동 트리거하지 못하도록 차단.
