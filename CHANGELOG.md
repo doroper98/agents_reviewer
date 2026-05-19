@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.3.1
+last_synced_with: v5.3.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.3.2] — 2026-05-19
+
+### Changed — 감시 신호 섹션 editorial epilogue 화
+
+**배경**: 보고서 말미의 "감시 신호" 카드가 essay 의 완결성을 해친다는 피드백.
+v5.2.12 의 chart-card 화 (border + shadow + accent "시사" takeaway 박스) 가
+본문 prose 와 시각적으로 단절되어, 산문 → 모순 → 분석가의 한계 로 흘러야 할
+마지막 호흡 직전에 "표" 처럼 끼어드는 회귀가 있었음. kicker "앞으로 무엇을
+볼까" + H2 "감시 신호" 라벨도 사무적·시스템 출력 어조라 editorial 톤과 불일치.
+
+**변경**:
+- 별개 H2 폐기 (kicker + heading 모두). 모순 섹션 마지막 호흡의 연장선으로
+  자연스럽게 흘러가도록 (단, watch_signals 가 contradictions 없이도 단독으로
+  올 수 있으니 conditional section block 자체는 유지)
+- chart-card / takeaway 박스 폐기. 대신 lede 한 문단 + row 기반 list:
+  - **lede** (italic serif, accent strong) — "본 분석의 가정이 다음 N개
+    지점에서 시험된다. 한 곳이라도 반대 방향으로 움직이면 결론은 다시
+    작성되어야 한다." — 신호 개수는 `composed.watch_signals | length` 로 동적
+  - **deadline** (좌측 108px 고정, mono italic, accent) | **body** (우측 1fr)
+  - **signal** (Newsreader serif, fg-1) → **desc** (sans, fg-2) →
+    **시사 —** (italic + accent 2px border-left + uppercase mono prefix) —
+    contradiction-prose 의 `.ct-resolve` 와 같은 시각 어휘로 본문 통일
+  - row 사이 `border-soft` 가로 divider (chart-card 의 box 반복 회피)
+- 모바일 (≤640px): deadline 을 본문 위로 올려 한 컬럼 (`no-deadline` row 와
+  같은 grid-template-columns:1fr). signal 15px / lede 15.5px 로 축소
+- `.signal-grid / .signal-card / .signal-card-head / .signal-card-title /
+  .signal-card-deadline / .signal-card-desc / .signal-card-takeaway /
+  .signal-card-takeaway-label` 클래스 전체 폐기 → `.epilogue-watch-lede /
+  .epilogue-watch-list / .epilogue-watch-row / .epilogue-watch-deadline /
+  .epilogue-watch-signal / .epilogue-watch-desc / .epilogue-watch-indicates`
+
+**무영향 (데이터 계약)**:
+- `composed.watch_signals: list[dict]` (ScenarioAnalysis.watch_signals → ComposedReport.watch_signals → 모델 SSOT) Pydantic 변경 없음
+- `convert_watch_signals()` → `WatchlistRegistry` SQLite INSERT 경로 변경 없음 — 후속 보고서 자동 트리거 (v5.1.1) 그대로 작동
+- composer SYSTEM_PROMPT 의 watch_signals emit 지시 변경 없음 — 같은 데이터를 다른 렌더링으로만 보여줌
+
+**모크업**: `samples/watch_signals_redesign_compare.html` (editorial_cream 테마,
+같은 watch_signals 3개 데이터로 좌측 v5.3.1 production / 우측 본 안 비교).
+
+**파일**:
+- `src/templates/archetypes/freeform_essay.html` — line 78-87 (signal CSS) →
+  epilogue-watch CSS, line 331-355 (signal section) → epilogue 섹션. 모바일
+  media query 에 epilogue 규칙 추가.
 
 ---
 
