@@ -14,6 +14,8 @@ last_review: 2026-05-05
 
 # CLAUDE.md — Event Analysis Team Agent System
 
+> **🔴 운영 모드 SSOT — 절대 잊지 말 것.** 이 봇은 **Claude Code CLI 구독 플랜** 으로 돈다. `.env` 의 `ANTHROPIC_API_KEY` 는 *빈 값이 정상*. [src/config.py:131-135](src/config.py) 의 `_select_mode` 가 키가 비어있으면 자동으로 `use_cli_mode=True` 선택. `bot.log` 의 `WARNING: ANTHROPIC_API_KEY is not set` 은 [src/main.py:29](src/main.py) 가 무조건 찍는 노이즈 — 무시. 사용자에게 "API 키 채우라" 같은 조언 절대 금지. 사용자가 명시적으로 "API 로 바꿔달라" 라고 하지 않는 한 키 채우라고 하지 말 것.
+
 ## Project Overview
 텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 + NarrativeComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
