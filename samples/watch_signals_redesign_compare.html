@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>감시 신호 리디자인 — Before / After 비교</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────────────
+   editorial_cream 테마 토큰 — src/templates/report.css 발췌 (byte-equal)
+   ───────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --text: #1F1814;
+  --muted: #6B5C4A;
+  --accent: #B05A38;     /* terracotta */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+  --radius: 6px;
+}
+
+/* ─── 모크업 페이지 셸 ─── */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #E0D5BC;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  color: var(--fg-1);
+}
+.mockup-header {
+  padding: 36px 28px 24px;
+  background: #1F1814;
+  color: #F2EBDB;
+  border-bottom: 3px solid var(--accent);
+}
+.mockup-header h1 {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  letter-spacing: -0.4px;
+}
+.mockup-header p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #D4C4AA;
+  max-width: 880px;
+}
+.mockup-header code {
+  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(176,90,56,0.18);
+  color: #F2C9A8;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+@media (max-width: 980px) {
+  .compare-grid { grid-template-columns: 1fr; }
+}
+.compare-col {
+  background: var(--bg-1);
+  min-height: 100vh;
+}
+.compare-label {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 12px 24px;
+  background: rgba(31,24,20,0.96);
+  color: #F2EBDB;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--accent);
+}
+.compare-label .tag {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-right: 10px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+.compare-label.before .tag { background: #6B5C4A; color: #F2EBDB; }
+.compare-label.after  .tag { background: var(--accent); color: #F2EBDB; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   freeform_essay.html 의 실제 토큰 — byte-equal 발췌
+   주변 맥락 (contradictions tail + closing) 도 함께 보여 단절감 비교.
+   ───────────────────────────────────────────────────────────────────── */
+.freeform-section{padding:32px 0;border-bottom:1px solid var(--border-soft)}
+.freeform-section .container{max-width:780px;padding:0 28px;margin:0 auto}
+.freeform-kicker{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.freeform-heading{font-family:'Newsreader','Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1);margin:0 0 16px}
+
+/* 모순 섹션 (마지막 본문 — 감시 신호 직전) */
+.contradiction-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2);font-weight:400}
+.contradiction-prose p{margin:0 0 18px}
+.contradiction-prose .ct-claim{color:var(--fg-1);font-weight:600}
+.contradiction-prose .ct-evidence{display:block;margin-top:-6px;margin-bottom:14px;font-size:12px;color:var(--fg-3);line-height:1.6}
+.contradiction-prose .ct-evidence::before{content:"근거 충돌: ";font-weight:600}
+.contradiction-prose .ct-resolve{display:block;margin-top:8px;padding:4px 0 4px 14px;border-left:2px solid var(--accent);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:15px;color:var(--fg-1);line-height:1.7}
+.contradiction-prose .ct-resolve::before{content:"분석가의 정리 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-right:6px}
+
+/* closing 섹션 */
+.freeform-closing{padding:32px 0 48px;background:var(--bg-3)}
+.freeform-closing .container{max-width:780px;padding:0 28px;margin:0 auto}
+.freeform-closing-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.freeform-closing-body{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2);font-style:italic}
+
+/* ─────────────────────────────────────────────────────────────────────
+   BEFORE — 현재 production (src/templates/archetypes/freeform_essay.html:331-355)
+   v5.2.12 의 chart-card 화 + "시사" takeaway 박스.
+   ───────────────────────────────────────────────────────────────────── */
+.signal-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}
+.signal-card{background:var(--card);border:1px solid var(--border-light);border-radius:10px;padding:16px 18px 14px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.signal-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.signal-card-title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14.5px;color:var(--fg-1);letter-spacing:-.2px;line-height:1.4}
+.signal-card-deadline{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:0.6px;flex-shrink:0;white-space:nowrap}
+.signal-card-desc{font-size:13px;color:var(--fg-2);line-height:1.65;margin-bottom:6px}
+.signal-card-takeaway{margin-top:8px;padding:8px 12px;background:rgba(176,90,56,0.07);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;font-size:12.5px;line-height:1.6;color:var(--fg-1)}
+.signal-card-takeaway-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-right:6px}
+
+/* ─────────────────────────────────────────────────────────────────────
+   AFTER — option 1 editorial epilogue 화
+   별개 H2 폐기. 모순 섹션 마지막 호흡 → 산문형 epilogue 로 흘러가도록.
+   ───────────────────────────────────────────────────────────────────── */
+.epilogue-watch{
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-soft);
+}
+.epilogue-watch-lede{
+  font-family:'Newsreader','Noto Serif KR',serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--fg-1);
+  font-style: italic;
+  margin: 0 0 22px;
+  font-weight: 400;
+}
+.epilogue-watch-lede strong{
+  font-style: normal;
+  font-weight: 700;
+  color: var(--accent);
+}
+.epilogue-watch-list{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.epilogue-watch-row{
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 18px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.epilogue-watch-row:last-child{
+  border-bottom: 1px solid var(--border-soft);
+}
+.epilogue-watch-deadline{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.4px;
+  line-height: 1.5;
+  padding-top: 4px;
+  white-space: nowrap;
+}
+.epilogue-watch-deadline-rel{
+  display: block;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-weight: 400;
+  font-size: 10.5px;
+  color: var(--fg-3);
+  letter-spacing: 0.2px;
+  margin-top: 2px;
+}
+.epilogue-watch-body{}
+.epilogue-watch-signal{
+  font-family:'Newsreader','Noto Serif KR',serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg-1);
+  line-height: 1.4;
+  margin: 0 0 6px;
+}
+.epilogue-watch-desc{
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--fg-2);
+  margin: 0;
+}
+.epilogue-watch-indicates{
+  display: block;
+  margin-top: 8px;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+  font-family:'Newsreader','Noto Serif KR',serif;
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--fg-1);
+}
+.epilogue-watch-indicates::before{
+  content: "시사 — ";
+  font-style: normal;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+@media (max-width: 640px){
+  .epilogue-watch-row{ grid-template-columns: 1fr; gap: 6px; }
+  .epilogue-watch-deadline{ padding-top: 0; }
+  .epilogue-watch-deadline-rel{ display: inline; margin-left: 6px; }
+}
+
+/* 모크업 주석 — 비교용 메모 박스 */
+.compare-note{
+  margin: 0 28px 24px;
+  padding: 14px 18px;
+  background: rgba(176,90,56,0.07);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+.compare-note strong{
+  color: var(--accent);
+  font-weight: 700;
+}
+.compare-note ul{
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.compare-note li{ margin-bottom: 3px; }
+
+/* footer */
+.mockup-footer{
+  padding: 24px 28px;
+  background: #1F1814;
+  color: #A89880;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+.mockup-footer code{ color: #F2C9A8; }
+</style>
+</head>
+<body>
+
+<header class="mockup-header">
+  <h1>감시 신호 섹션 리디자인 — Before / After</h1>
+  <p>
+    같은 <code>composed.watch_signals</code> 데이터 (3개, 실제 composer emit 형태)
+    를 두 가지 렌더링으로 비교. 좌측은 현행 <code>freeform_essay.html:331-355</code>
+    (v5.2.12 chart-card 화). 우측은 option 1 — 별개 H2 폐기, 모순 섹션 뒤
+    epilogue 산문화. 두 컬럼 모두 직전·직후 맥락 (모순 마지막 호흡 → 감시 신호 →
+    closing) 을 함께 보여 단절감을 비교.
+  </p>
+</header>
+
+<div class="compare-grid">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       BEFORE — 현재 production
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="compare-col">
+    <div class="compare-label before"><span class="tag">BEFORE</span> v5.3.1 production (freeform_essay.html:331-355)</div>
+
+    <div class="compare-note">
+      <strong>현행의 마찰점.</strong>
+      <ul>
+        <li>kicker "앞으로 무엇을 볼까" + H2 "감시 신호" 가 별개 섹션을 선언 — essay 흐름 끊김</li>
+        <li>chart-card 톤 (border + shadow + "시사" accent 박스) 이 본문 prose 와 시각 단절</li>
+        <li>3개 카드의 box 반복이 산문 마지막 호흡 직전에 "표" 처럼 끼어듦</li>
+      </ul>
+    </div>
+
+    <!-- 모순 섹션 마지막 단락 (감시 신호 직전 맥락) -->
+    <section class="freeform-section">
+      <div class="container">
+        <div class="freeform-kicker">관점 충돌</div>
+        <h2 class="freeform-heading">모순</h2>
+        <div class="contradiction-prose">
+          <p>
+            HBM 점유율 격차가 <span class="ct-claim">2026 년 중반에 닫힌다</span> 는
+            증권가 컨센서스가 있는 반면, 엔비디아 검증 일정과 12-hi 수율 데이터를 보면
+            <span class="ct-claim">격차가 오히려 굳어진다</span> 는 해석도 가능하다.
+            <span class="ct-evidence">메리츠 4월 리포트는 2026 H2 SK 격차 5%p 미만 — 반면 TechInsights 의 4월 분해보고서는 양산 수율 격차 12%p</span>
+            <span class="ct-resolve">본 보고서는 후자에 무게를 둔다. 수율 격차는 ASP 협상력으로 환산되는 시간 변수이고, 컨센서스는 그 환산을 생략했다.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 감시 신호 섹션 — production 코드와 byte-equal -->
+    <section class="freeform-section">
+      <div class="container">
+        <div class="freeform-kicker">앞으로 무엇을 볼까</div>
+        <h2 class="freeform-heading">감시 신호</h2>
+        <div class="signal-grid">
+
+          <div class="signal-card">
+            <div class="signal-card-head">
+              <div class="signal-card-title">HBM3E 12-hi 양산 수율 발표</div>
+              <div class="signal-card-deadline">2026-06-15</div>
+            </div>
+            <div class="signal-card-desc">엔비디아 검증 통과 이후 양산 수율 70% 돌파 여부. 4월 컨퍼런스에서 '연내 도달 가능' 언급, 6월 발표가 그 자기검증.</div>
+            <div class="signal-card-takeaway">
+              <span class="signal-card-takeaway-label">시사</span>통과 시 HBM ASP 의 추가 인하 압력 차단. 미달 시 SK하이닉스 점유율 격차 2026 년까지 굳어짐.
+            </div>
+          </div>
+
+          <div class="signal-card">
+            <div class="signal-card-head">
+              <div class="signal-card-title">미 상무부 K-칩스 보조금 최종안</div>
+              <div class="signal-card-deadline">2026-07-31</div>
+            </div>
+            <div class="signal-card-desc">1차 약정 6.6B 중 회수·재배분 조항 발효 여부. 미 의회 4월 청문회에서 '동맹국 차별 시정' 압박.</div>
+            <div class="signal-card-takeaway">
+              <span class="signal-card-takeaway-label">시사</span>축소·재배분 시 텍사스 fab 2단계 재무 모델 흔들림. 본 분석의 capex 추정 23B → 28B 재산정.
+            </div>
+          </div>
+
+          <div class="signal-card">
+            <div class="signal-card-head">
+              <div class="signal-card-title">원·달러 1,380 돌파</div>
+              <div class="signal-card-deadline">2026-08-30</div>
+            </div>
+            <div class="signal-card-desc">DXY 가 109 위에서 마감 + 한국 외환보유고 3,900 억 달러 미만 동시 발생 시.</div>
+            <div class="signal-card-takeaway">
+              <span class="signal-card-takeaway-label">시사</span>원화 약세 수혜 가설 대신 외인 자금 이탈이 KOSPI 의 더 큰 변수가 됨. §3 의 '약달러 → 코스피 +' 시나리오 reject.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- closing -->
+    <section class="freeform-closing">
+      <div class="container">
+        <div class="freeform-closing-label">신뢰도 (72%)</div>
+        <div class="freeform-closing-body" style="margin-bottom:14px">주요 출처 3건 (메리츠·TechInsights·DART) 모두 12-hi 수율 격차를 인정. 단, ASP 환산은 분석가 해석.</div>
+        <div class="freeform-closing-label">분석가의 한계</div>
+        <div class="freeform-closing-body">엔비디아 내부 검증 데이터는 비공개. 본 분석은 공개 인터뷰 발언 + 양산 라인 사진 분석에 의존.</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       AFTER — option 1 editorial epilogue
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="compare-col">
+    <div class="compare-label after"><span class="tag">AFTER</span> option 1 — editorial epilogue (별개 H2 폐기)</div>
+
+    <div class="compare-note">
+      <strong>설계 의도.</strong>
+      <ul>
+        <li>별개 H2 폐기 → 모순 섹션 마지막 호흡의 연장선으로 흘러감</li>
+        <li>card border/shadow/takeaway 박스 제거 → 산문 톤 일관 유지</li>
+        <li>deadline 을 절대일 + 상대일 (D-N) 두 줄로 — mono italic, 좌측 고정폭</li>
+        <li>"시사" 는 contradiction 의 <code>ct-resolve</code> 와 같은 italic + accent border-left 패턴 — 본문 어휘와 통일</li>
+        <li><strong>데이터 계약 변경 없음</strong> — <code>composed.watch_signals</code> Pydantic 그대로, SQLite 등록 경로 무영향</li>
+      </ul>
+    </div>
+
+    <!-- 모순 섹션 — 같은 본문 -->
+    <section class="freeform-section" style="border-bottom:none">
+      <div class="container">
+        <div class="freeform-kicker">관점 충돌</div>
+        <h2 class="freeform-heading">모순</h2>
+        <div class="contradiction-prose">
+          <p>
+            HBM 점유율 격차가 <span class="ct-claim">2026 년 중반에 닫힌다</span> 는
+            증권가 컨센서스가 있는 반면, 엔비디아 검증 일정과 12-hi 수율 데이터를 보면
+            <span class="ct-claim">격차가 오히려 굳어진다</span> 는 해석도 가능하다.
+            <span class="ct-evidence">메리츠 4월 리포트는 2026 H2 SK 격차 5%p 미만 — 반면 TechInsights 의 4월 분해보고서는 양산 수율 격차 12%p</span>
+            <span class="ct-resolve">본 보고서는 후자에 무게를 둔다. 수율 격차는 ASP 협상력으로 환산되는 시간 변수이고, 컨센서스는 그 환산을 생략했다.</span>
+          </p>
+
+          <!-- ✱ AFTER: H2 없이 epilogue 가 같은 섹션 안에서 흘러나옴 -->
+          <div class="epilogue-watch">
+            <p class="epilogue-watch-lede">
+              앞으로 <strong>약 14주</strong>, 다음 세 지점이 본 분석의 가정을 시험한다.
+              한 곳이라도 반대 방향으로 움직이면 본문 §3 의 결론은 다시 작성되어야 한다.
+            </p>
+
+            <div class="epilogue-watch-list">
+
+              <div class="epilogue-watch-row">
+                <div class="epilogue-watch-deadline">
+                  2026-06-15
+                  <span class="epilogue-watch-deadline-rel">D-27</span>
+                </div>
+                <div class="epilogue-watch-body">
+                  <div class="epilogue-watch-signal">HBM3E 12-hi 양산 수율 발표</div>
+                  <p class="epilogue-watch-desc">
+                    엔비디아 검증 통과 이후 양산 수율 70% 돌파 여부. 4월 컨퍼런스에서 '연내 도달 가능' 언급, 6월 발표가 그 자기검증.
+                  </p>
+                  <span class="epilogue-watch-indicates">
+                    통과 시 HBM ASP 의 추가 인하 압력 차단. 미달 시 SK하이닉스 점유율 격차 2026 년까지 굳어짐.
+                  </span>
+                </div>
+              </div>
+
+              <div class="epilogue-watch-row">
+                <div class="epilogue-watch-deadline">
+                  2026-07-31
+                  <span class="epilogue-watch-deadline-rel">D-73</span>
+                </div>
+                <div class="epilogue-watch-body">
+                  <div class="epilogue-watch-signal">미 상무부 K-칩스 보조금 최종안</div>
+                  <p class="epilogue-watch-desc">
+                    1차 약정 6.6B 중 회수·재배분 조항 발효 여부. 미 의회 4월 청문회에서 '동맹국 차별 시정' 압박.
+                  </p>
+                  <span class="epilogue-watch-indicates">
+                    축소·재배분 시 텍사스 fab 2단계 재무 모델 흔들림. 본 분석의 capex 추정 23B → 28B 재산정.
+                  </span>
+                </div>
+              </div>
+
+              <div class="epilogue-watch-row">
+                <div class="epilogue-watch-deadline">
+                  2026-08-30
+                  <span class="epilogue-watch-deadline-rel">D-103</span>
+                </div>
+                <div class="epilogue-watch-body">
+                  <div class="epilogue-watch-signal">원·달러 1,380 돌파</div>
+                  <p class="epilogue-watch-desc">
+                    DXY 가 109 위에서 마감 + 한국 외환보유고 3,900 억 달러 미만 동시 발생 시.
+                  </p>
+                  <span class="epilogue-watch-indicates">
+                    원화 약세 수혜 가설 대신 외인 자금 이탈이 KOSPI 의 더 큰 변수가 됨. §3 의 '약달러 → 코스피 +' 시나리오 reject.
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- closing — 동일 -->
+    <section class="freeform-closing">
+      <div class="container">
+        <div class="freeform-closing-label">신뢰도 (72%)</div>
+        <div class="freeform-closing-body" style="margin-bottom:14px">주요 출처 3건 (메리츠·TechInsights·DART) 모두 12-hi 수율 격차를 인정. 단, ASP 환산은 분석가 해석.</div>
+        <div class="freeform-closing-label">분석가의 한계</div>
+        <div class="freeform-closing-body">엔비디아 내부 검증 데이터는 비공개. 본 분석은 공개 인터뷰 발언 + 양산 라인 사진 분석에 의존.</div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<footer class="mockup-footer">
+  mockup · editorial_cream theme · same <code>composed.watch_signals</code> data · Pydantic schema unchanged · SQLite watchlist registry path unaffected
+</footer>
+
+</body>
+</html>

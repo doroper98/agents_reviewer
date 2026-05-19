@@ -75,16 +75,21 @@
 .contradiction-prose .ct-evidence::before{content:"근거 충돌: ";font-weight:600;color:var(--fg-3,#A89880)}
 .contradiction-prose .ct-resolve{display:block;margin-top:8px;padding:4px 0 4px 14px;border-left:2px solid var(--accent,#C9A84C);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:15px;color:var(--fg-1,#F0E2CC);line-height:1.7}
 .contradiction-prose .ct-resolve::before{content:"분석가의 정리 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);font-weight:700;margin-right:6px}
-/* v5.2.12 — 감시 신호 chart-card 화. charts.css 의 토큰 (--card, --border-light, --shadow) 차용. */
-.signal-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}
-.signal-card{background:var(--card,var(--bg-2));border:1px solid var(--border-light,var(--border-soft,rgba(125,98,76,0.25)));border-radius:10px;padding:16px 18px 14px;box-shadow:var(--shadow,0 2px 12px rgba(0,0,0,0.20))}
-.signal-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
-.signal-card-title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14.5px;color:var(--text-primary,var(--fg-1));letter-spacing:-.2px;line-height:1.4}
-.signal-card-deadline{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--accent,#C9A84C);letter-spacing:0.6px;flex-shrink:0;white-space:nowrap}
-.signal-card-desc{font-size:13px;color:var(--text-2,var(--fg-2));line-height:1.65;margin-bottom:6px}
-.signal-card-takeaway{margin-top:8px;padding:8px 12px;background:rgba(212,168,88,0.08);border-left:3px solid var(--accent,#C9A84C);border-radius:0 4px 4px 0;font-size:12.5px;line-height:1.6;color:var(--text,var(--fg-1))}
-[data-theme="editorial_cream"] .signal-card-takeaway{background:rgba(176,90,56,0.07)}
-.signal-card-takeaway-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-right:6px}
+/* v5.3.2 — 감시 신호 editorial epilogue 화. chart-card / takeaway 박스 폐기.
+   contradiction-prose 의 ct-resolve 패턴과 시각 어휘 통일 (italic + accent border-left).
+   별개 H2 폐기 — lede 한 문단 + deadline 좌측 mono + signal/desc/시사 우측 산문.
+   같은 composed.watch_signals 데이터 (Pydantic 무변경, SQLite 등록 경로 무영향). */
+.epilogue-watch-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:17px;line-height:1.65;color:var(--fg-1);font-style:italic;margin:0 0 22px;font-weight:400}
+.epilogue-watch-lede strong{font-style:normal;font-weight:700;color:var(--accent)}
+.epilogue-watch-list{display:flex;flex-direction:column}
+.epilogue-watch-row{display:grid;grid-template-columns:108px 1fr;gap:18px;padding:16px 0;border-top:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.epilogue-watch-row:last-child{border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.epilogue-watch-row.no-deadline{grid-template-columns:1fr}
+.epilogue-watch-deadline{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:0.4px;line-height:1.5;padding-top:4px;white-space:nowrap}
+.epilogue-watch-signal{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--fg-1);line-height:1.4;margin:0 0 6px}
+.epilogue-watch-desc{font-size:13.5px;line-height:1.7;color:var(--fg-2);margin:0}
+.epilogue-watch-indicates{display:block;margin-top:8px;padding-left:14px;border-left:2px solid var(--accent);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:13.5px;line-height:1.65;color:var(--fg-1)}
+.epilogue-watch-indicates::before{content:"시사 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-right:4px}
 /* TOC — 보고서 상단 (hero 직후, 지도 다음) */
 .freeform-toc{padding:20px 0;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
 .freeform-toc .container{max-width:780px}
@@ -115,6 +120,11 @@
   .freeform-fact-grid[data-cols="6"] .freeform-fact-tile{padding:8px 6px}
   .freeform-fact-grid[data-cols="5"] .freeform-fact-value,
   .freeform-fact-grid[data-cols="6"] .freeform-fact-value{font-size:13px}
+  /* v5.3.2 — epilogue watch 모바일 대응. deadline 을 본문 위로 올려 한 컬럼. */
+  .epilogue-watch-row{grid-template-columns:1fr;gap:6px}
+  .epilogue-watch-deadline{padding-top:0;font-size:11px}
+  .epilogue-watch-lede{font-size:15.5px}
+  .epilogue-watch-signal{font-size:15px}
 }
 </style>
 </head>
@@ -328,25 +338,26 @@
 </section>
 {% endif %}
 
-{# v5.2.12 — 신호: chart-card 톤 (--card / --border-light / --shadow). deadline 은 우측 mono. #}
+{# v5.3.2 — 감시 신호 editorial epilogue 화. 별개 H2 (kicker "앞으로 무엇을 볼까" + heading
+   "감시 신호") 폐기 — essay 마지막 호흡과 단절감 해소. chart-card / takeaway 박스 제거,
+   contradiction-prose 의 ct-resolve 와 같은 italic + accent border-left 어휘로 통일.
+   composed.watch_signals 데이터 계약 무변경 — convert_watch_signals() / SQLite 등록 경로 동일. #}
 {% if composed and composed.watch_signals %}
 <section class="freeform-section fade-in">
   <div class="container">
-    <div class="freeform-kicker">앞으로 무엇을 볼까</div>
-    <h2 class="freeform-heading">감시 신호</h2>
-    <div class="signal-grid">
+    <p class="epilogue-watch-lede">
+      본 분석의 가정이 다음 <strong>{{ composed.watch_signals | length }}개 지점</strong>에서 시험된다.
+      한 곳이라도 반대 방향으로 움직이면 결론은 다시 작성되어야 한다.
+    </p>
+    <div class="epilogue-watch-list">
       {% for s in composed.watch_signals %}
-      <div class="signal-card">
-        <div class="signal-card-head">
-          <div class="signal-card-title">{% if s.icon %}{{ s.icon }} {% endif %}{{ s.signal | strip_md }}</div>
-          {% if s.deadline %}<div class="signal-card-deadline">{{ s.deadline | strip_md }}</div>{% endif %}
+      <div class="epilogue-watch-row{% if not s.deadline %} no-deadline{% endif %}">
+        {% if s.deadline %}<div class="epilogue-watch-deadline">{{ s.deadline | strip_md }}</div>{% endif %}
+        <div class="epilogue-watch-body">
+          <div class="epilogue-watch-signal">{% if s.icon %}{{ s.icon }} {% endif %}{{ s.signal | strip_md }}</div>
+          {% if s.description %}<p class="epilogue-watch-desc">{{ s.description | strip_md }}</p>{% endif %}
+          {% if s.indicates %}<span class="epilogue-watch-indicates">{{ s.indicates | strip_md }}</span>{% endif %}
         </div>
-        {% if s.description %}<div class="signal-card-desc">{{ s.description | strip_md }}</div>{% endif %}
-        {% if s.indicates %}
-        <div class="signal-card-takeaway">
-          <span class="signal-card-takeaway-label">시사</span>{{ s.indicates | strip_md }}
-        </div>
-        {% endif %}
       </div>
       {% endfor %}
     </div>
