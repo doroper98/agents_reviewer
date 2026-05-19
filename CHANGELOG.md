@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.3.0
+last_synced_with: v5.3.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-18
+last_review: 2026-05-19
 ---
 
 # Changelog
@@ -17,6 +17,69 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.3.1] — 2026-05-19
+
+### Fixed — entry 애니메이션 커버리지 (option C — bar grow + donut sweep + fill-path fade)
+
+**배경**: v5.3.0 의 `_applyEntryAnimation` 은 *type-무관 post-process* 로
+설계됐다. renderer 코드를 손대지 않고 SVG DOM 만 스캔해 path/rect/circle
+3종에 generic 애니메이션을 거는 방식. 하지만 두 가지 사각이 있었음:
+
+1. **fill 있는 path 는 전부 skip** (line/area 의 stroke-only 만 그리기).
+   결과: donut arc / choropleth 국경 / sankey flow / stacked_area 레이어 /
+   forecast cone / area gradient 가 모두 무애니메이션. 보고서에서 가장
+   자주 등장하는 *donut* 이 거의 정적으로 보이던 원인.
+
+2. **rect 는 opacity fade 만** (width/height 변형 X). 가로 bar 의 막대가
+   "좌→우 성장" 이 아닌 "그 자리에서 어슴푸레 진해짐" 으로만 등장.
+
+옵션 A (fill-fade 만 추가, 최소 패치) 와 B (전 renderer 모크업 이식) 중,
+사용 빈도 상위 2 type 만 renderer-level 로 가져오고 나머지는 generic
+확장으로 메우는 **옵션 C** 채택.
+
+**변경**:
+
+- `drawBar` (`src/templates/static/charts.js:318`) — 막대 rect 에 두 가지
+  data 속성 부여:
+  - `data-anim="bar-grow"` (대상 식별)
+  - `data-final-w={barW}` (목표 폭)
+
+- `drawDonut` (`src/templates/static/charts.js:374`) — arc path 에:
+  - `data-anim="donut-arc"` + `data-start={startAngle}` + `data-end={endAngle}`
+  - SVG 루트엔 `data-donut-cx/cy/ir/r` (arcGen 재구성용 geometry)
+
+- `_animateBars(svg)` — `rect[data-anim="bar-grow"]` 의 width 를 0 으로
+  되감았다가 stagger 40ms / duration 380ms 으로 final width 까지 트랜지션.
+
+- `_animateDonut(svg)` — SVG 의 geometry 메타로 `d3.arc()` 재구성,
+  `attrTween('d')` 로 각 arc 를 startAngle 위치의 zero-arc 에서 (startAngle,
+  endAngle) 로 펼침. duration 680ms. 시작 프레임 깜빡임 방지를 위해
+  transition 직전 d 를 zero-arc 로 동기 세팅.
+
+- `_applyEntryAnimation` 의 path 분기 재설계 — *fill 있는* path 면 opacity
+  fade-in (360ms), *stroke only* 면 기존 stroke-dashoffset 그리기. 위
+  type-specific 핸들러가 처리한 tagged 요소는 skip.
+
+- **silent 회귀 fix** — `data-orig-dasharray` 가 어디서도 set 되지 않아
+  dual_line / forecast 의 점선이 애니메이션 종료 후 솔리드로 둔갑하던
+  버그 해소. dashoffset 트릭 시작 전에 기존 `stroke-dasharray` 를
+  `data-orig-dasharray` 에 저장해 두고 on('end') 에서 복원.
+
+**보존**:
+- CHART-AP-18 가드 (≤700ms 단일 duration, prefers-reduced-motion 즉시 정적
+  폴백, IntersectionObserver 1회 재생 후 unobserve, fallback 즉시 렌더).
+- 나머지 17 종 차트의 generic post-process — rect fade / circle pop /
+  stroke draw 동작 무변경.
+
+**파일**:
+- `src/templates/static/charts.js` — drawBar + drawDonut 태깅, _applyEntryAnimation
+  재설계 (≈+70 lines, -10 lines)
+- `src/orchestrator.py:VERSION` — `v5.3.0` → `v5.3.1`
+- `README.md` Status 갱신
+- `CHANGELOG.md` 본 entry
 
 ---
 

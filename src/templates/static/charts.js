@@ -316,7 +316,8 @@
       // 빈 행처럼 보임).
       const barW = Math.max(2, x1 - x0);
       svg.append('rect').attr('x', x0).attr('y', y).attr('width', barW).attr('height', 16)
-        .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', i === 0 ? 0 : 0.4);
+        .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', i === 0 ? 0 : 0.4)
+        .attr('data-anim', 'bar-grow').attr('data-final-w', barW);
       // v5.2.11: 값 라벨도 fmt 적용. 이전엔 raw String(d.value) → "13567",
       // 축은 "13,567" → 같은 차트 안에서 포맷 불일치 회귀.
       const labelText = fmt(d.value);
@@ -374,8 +375,14 @@
     pie(data).forEach((a, i) => {
       const fill = i === 0 ? t.accent : `url(#${idp(PATTERN_SEQ[(i - 1) % PATTERN_SEQ.length])})`;
       svg.append('path').attr('d', arc(a)).attr('transform', `translate(${cx},${cy})`)
-        .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', 0.5);
+        .attr('fill', fill).attr('stroke', t.text).attr('stroke-width', 0.5)
+        .attr('data-anim', 'donut-arc')
+        .attr('data-start', a.startAngle).attr('data-end', a.endAngle);
     });
+    // v5.3.1 — entry 애니메이션 (arc sweep) 재구성용 geometry 메타.
+    // _applyEntryAnimation 이 arcGen 을 다시 빚어 attrTween('d') 수행.
+    svg.attr('data-donut-cx', cx).attr('data-donut-cy', cy)
+      .attr('data-donut-ir', ir).attr('data-donut-r', r);
     // Center label
     svg.append('text').attr('x', cx).attr('y', cy - 4).attr('text-anchor', 'middle')
       .attr('font-family', 'Noto Serif KR').attr('font-size', 11)
@@ -2226,15 +2233,24 @@
 
   // ============================================================
   // v5.3.0 — Entry Animation Framework
+  // v5.3.1 — bar grow + donut arc sweep + fill-path fade-in (option C).
   //
   // IntersectionObserver 로 차트 카드가 뷰포트 진입 시점에 renderStage 호출,
-  // SVG 생성 직후 _applyEntryAnimation 으로 stroke-dashoffset 그리기 +
-  // rect/circle stagger 등장. prefers-reduced-motion 시 즉시 정적 렌더.
+  // SVG 생성 직후 _applyEntryAnimation 이 type-aware 분기 후 post-process.
+  //
+  // 분기:
+  //   (A) bar  → rect[data-anim="bar-grow"] 의 width 0→final, stagger 40ms
+  //   (B) donut→ path[data-anim="donut-arc"] 의 arc sweep (attrTween)
+  //   (C) 공통 path  → fill-only/stroked+fill = opacity fade,
+  //                    stroke-only = stroke-dashoffset 그리기 (대시 패턴 보존)
+  //   (D) 공통 rect  → opacity fade-in (tagged 는 skip)
+  //   (E) 공통 circle→ r=0 → r 확장
   //
   // CHART-AP-18 (motion regression) 방지:
   // - duration ≤ 700ms (스크롤 속도 방해 차단)
   // - 1회 재생 후 unobserve (반복 재생 X)
   // - IntersectionObserver 미지원 브라우저 → backward-compat 즉시 렌더
+  // - prefers-reduced-motion → 모든 분기 즉시 return, 정적 final state 유지
   // ============================================================
 
   function _motionEnabled() {
@@ -2242,44 +2258,104 @@
     return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
+  function _animateBars(svg) {
+    let barIdx = 0;
+    svg.selectAll('rect[data-anim="bar-grow"]').each(function () {
+      const node = this;
+      const finalW = parseFloat(node.getAttribute('data-final-w') || '0');
+      if (!isFinite(finalW) || finalW <= 0) return;
+      d3.select(node).attr('width', 0)
+        .transition().delay((barIdx++) * 40).duration(380).ease(d3.easeCubicOut)
+        .attr('width', finalW);
+    });
+  }
+
+  function _animateDonut(svg) {
+    const cxAttr = svg.attr('data-donut-cx');
+    if (!cxAttr) return;
+    const cx = parseFloat(cxAttr);
+    const cy = parseFloat(svg.attr('data-donut-cy'));
+    const ir = parseFloat(svg.attr('data-donut-ir'));
+    const r = parseFloat(svg.attr('data-donut-r'));
+    if (![cx, cy, ir, r].every(isFinite)) return;
+    const arcGen = d3.arc().innerRadius(ir).outerRadius(r);
+    svg.selectAll('path[data-anim="donut-arc"]').each(function () {
+      const node = this;
+      const sa = parseFloat(node.getAttribute('data-start'));
+      const ea = parseFloat(node.getAttribute('data-end'));
+      if (!isFinite(sa) || !isFinite(ea)) return;
+      // 시작 프레임 깜빡임 방지 — transition 직전 d 를 zero-arc 로 동기 세팅.
+      d3.select(node).attr('d', arcGen({ startAngle: sa, endAngle: sa }))
+        .transition().duration(680).ease(d3.easeCubicOut)
+        .attrTween('d', function () {
+          const interp = d3.interpolate(
+            { startAngle: sa, endAngle: sa },
+            { startAngle: sa, endAngle: ea }
+          );
+          return tt => arcGen(interp(tt));
+        });
+    });
+  }
+
   function _applyEntryAnimation(stage) {
     if (!_motionEnabled()) return;
     const svg = d3.select(stage).select('svg');
     if (svg.empty()) return;
 
-    // (1) Path 그리기 — stroke-dashoffset 트릭. fill=none + stroke 있는 path 만.
+    // (A,B) Type-specific 우선 — bar/donut 의 tagged 요소 처리.
+    _animateBars(svg);
+    _animateDonut(svg);
+
+    // (C) 공통 path — tagged 는 skip. fill 존재 여부로 분기.
     svg.selectAll('path').each(function () {
       const node = this;
+      if (node.getAttribute('data-anim')) return;  // 이미 처리됨
       const sel = d3.select(node);
       const stroke = sel.attr('stroke');
-      if (!stroke || stroke === 'none') return;
       const fill = sel.attr('fill');
-      if (fill && fill !== 'none' && fill !== 'transparent') return;
+      const hasStroke = stroke && stroke !== 'none';
+      const hasFill = fill && fill !== 'none' && fill !== 'transparent';
+      if (!hasStroke && !hasFill) return;
+
+      if (hasFill) {
+        // 채워진 path (sankey flow / choropleth 국경 / stacked_area layer /
+        // forecast cone / area gradient fill) — opacity fade-in.
+        // 채워진 path 에 stroke-draw 를 걸면 채움이 먼저 보여 어색함 → fade 가 안전.
+        sel.style('opacity', 0)
+          .transition().duration(360).ease(d3.easeCubicOut)
+          .style('opacity', 1);
+        return;
+      }
+      // stroke-only path — stroke-dashoffset 그리기.
       let len;
       try { len = node.getTotalLength(); } catch (e) { return; }
       if (!isFinite(len) || len < 4 || len > 8000) return;
+      // v5.3.1 — 원래 dasharray (dual_line/forecast 의 점선) 보존 fix.
+      // 이전엔 data-orig-dasharray 를 어디서도 set 안 해 on('end') 의 복원이
+      // 항상 null → 점선이 솔리드로 둔갑하는 회귀가 있었음.
+      const origDashArr = sel.attr('stroke-dasharray');
+      if (origDashArr) sel.attr('data-orig-dasharray', origDashArr);
       sel.attr('stroke-dasharray', `${len} ${len}`)
         .attr('stroke-dashoffset', len)
         .transition().duration(700).ease(d3.easeCubicOut)
         .attr('stroke-dashoffset', 0)
         .on('end', function () {
-          // dasharray 제거 → 점선/실선 원래 패턴 복원 (dual_line/forecast 의 dashed 보존)
-          const origDashArr = sel.attr('data-orig-dasharray');
-          d3.select(this).attr('stroke-dasharray', origDashArr || null);
+          const orig = sel.attr('data-orig-dasharray');
+          d3.select(this).attr('stroke-dasharray', orig || null);
+          if (orig) sel.attr('data-orig-dasharray', null);
         });
     });
 
-    // (2) Rect 등장 — fade-in stagger. clipPath / 배경 / decorative 는 skip.
+    // (D) 공통 rect — tagged (bar-grow) 는 skip. clipPath/배경 제외.
     let rectIdx = 0;
     svg.selectAll('rect').each(function () {
       const node = this;
+      if (node.getAttribute('data-anim')) return;  // bar-grow 처리됨
       const parent = node.parentNode;
       if (parent && parent.tagName === 'clipPath') return;
       const w = parseFloat(node.getAttribute('width') || '0');
       const h = parseFloat(node.getAttribute('height') || '0');
       if (w < 3 || h < 3) return;
-      const fill = node.getAttribute('fill');
-      // 배경 (W 전체 폭 + bg 컬러) 스킵 — 사용자 인지에 깜빡임 회피
       const vbAttr = svg.attr('viewBox');
       if (vbAttr) {
         const parts = vbAttr.split(/\s+/);
@@ -2291,7 +2367,7 @@
         .style('opacity', 1);
     });
 
-    // (3) Circle 등장 — r=0 → r 확장. r ≥1.5 만 (decorative 작은 dot 제외).
+    // (E) 공통 circle — r=0 → r 확장. r ≥1.5 만.
     svg.selectAll('circle').each(function () {
       const node = this;
       const r = parseFloat(node.getAttribute('r') || '0');
