@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.3
+last_synced_with: v5.4.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.4] — 2026-05-20
+
+### Changed — `analysis-reports.pages.dev` 인덱스 editorial_cream 톤으로 전환
+
+**배경**: 보고서 목록 페이지 (Cloudflare Pages 루트, `_generate_index` 생성) 가 다크 버건디 (#2B1A1A bg / #C9A84C gold / Noto Sans KR) 톤으로 남아있어 *7테마 풀의 어느 보고서를 열어도* 인덱스 → 보고서 간 색·폰트 단절. 사용자가 이걸 editorial_cream 으로 통일 요청.
+
+**변경**: `src/agents/report_synthesizer.py:_generate_index` 의 인라인 CSS 와 마크업을 전면 교체.
+
+- 팔레트: `--bg #F2EBDB / --card #ECE3D0 / --card-hover #E5DBC4 / --border #D4C8B0 / --text #1F1814 / --muted #6B5C4A / --accent #B05A38` (samples 다이어그램 페이지와 동일 토큰, mono guide §3.1)
+- 폰트: Newsreader (제목 800 + 보고서 링크 700) + IBM Plex Sans KR (본문) + IBM Plex Mono (eyebrow / 날짜 / footer). Noto Sans/Serif KR 한국어 폴백
+- 구조: eyebrow ("Event Analysis Team") + h1 ("Analysis Reports") + sub (총 N건 mono) + table (Newsreader 제목 링크, hover accent underline) + footer ("editorial_cream · samples · github" 링크)
+- 모바일 (≤640px): wrap padding 축소, h1 30px, cell-date 11px / 패딩 축소
+- `data-theme="editorial_cream"` html 속성으로 보고서 본문 (random 7테마) 와 인덱스 (고정 cream) 의 시각 정체성 분리
+
+**무영향 (데이터 계약)**:
+- `glob('analysis_*.html')` → 50건 정렬, title 추출 로직 변경 없음
+- 인덱스 파일 경로 (`reports/index.html`) + 배포 절차 변경 없음
+- Pydantic / orchestrator 호출 경로 무영향 — 템플릿 인라인 HTML 만 교체
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.3 → v5.4.4
+- `src/agents/report_synthesizer.py:_generate_index` 인라인 HTML/CSS 전면 교체
+- README.md Status + last_synced_with
+- 본 CHANGELOG entry
+
+**검증**: 코드 컴파일 통과. 다음 보고서 발행 시 자동으로 새 인덱스 생성 — 별도 마이그레이션 불요. 봇 재배포 (VM SOP 4단계) 후 첫 보고서부터 적용.
 
 ---
 

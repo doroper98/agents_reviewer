@@ -1592,38 +1592,122 @@ class ReportSynthesizer:
             except Exception:
                 pass
 
-            rows.append(f'<tr><td style="padding:10px 12px;border-bottom:1px solid #3D2828">'
-                        f'<a href="{fname}" style="color:#C9A84C;text-decoration:none;font-weight:600">{title}</a>'
-                        f'</td><td style="padding:10px 12px;border-bottom:1px solid #3D2828;color:#A89880;'
-                        f'font-size:12px">{display_date}</td></tr>')
+            rows.append(
+                f'<tr>'
+                f'<td class="cell-title"><a href="{fname}">{title}</a></td>'
+                f'<td class="cell-date">{display_date}</td>'
+                f'</tr>'
+            )
 
+        empty_row = (
+            '<tr><td colspan="2" class="cell-empty">보고서가 없습니다</td></tr>'
+        )
         index_html = f'''<!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="editorial_cream">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Analysis Reports</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-body{{font-family:'Noto Sans KR',sans-serif;background:#2B1A1A;color:#D4C4AA;margin:0;padding:0}}
-.wrap{{max-width:800px;margin:0 auto;padding:20px 14px}}
-h1{{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:900;margin-bottom:4px;color:#F0E2CC}}
-.sub{{font-size:12px;color:#A89880;margin-bottom:20px}}
-table{{width:100%;border-collapse:collapse;background:#3D2828;border:1px solid #5A4A3A;border-radius:8px;overflow:hidden}}
-th{{background:#2B1A1A;color:#A89880;padding:10px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}}
-tr:hover{{background:#4A3232}}
+:root {{
+  --bg:#F2EBDB; --card:#ECE3D0; --card-hover:#E5DBC4;
+  --border:#D4C8B0; --border-soft:rgba(212,200,176,0.55);
+  --text:#1F1814; --text-2:#2E2620; --muted:#6B5C4A;
+  --accent:#B05A38;
+}}
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{
+  font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;
+  background:var(--bg); color:var(--text-2);
+  font-size:14.5px; line-height:1.7;
+  word-break:keep-all; overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}}
+.wrap{{max-width:880px;margin:0 auto;padding:48px 24px 64px}}
+.eyebrow{{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;font-weight:700;letter-spacing:2.4px;
+  text-transform:uppercase;color:var(--accent);margin-bottom:12px;
+}}
+h1{{
+  font-family:'Newsreader','Noto Serif KR',serif;
+  font-size:38px;font-weight:800;line-height:1.15;
+  color:var(--text);margin-bottom:10px;letter-spacing:-0.6px;
+}}
+.sub{{
+  font-size:13px;color:var(--muted);margin-bottom:28px;
+  padding-bottom:18px;border-bottom:1px solid var(--border-soft);
+  font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;
+}}
+.sub strong{{color:var(--accent);font-weight:700}}
+table{{
+  width:100%;border-collapse:collapse;
+  background:var(--card);border:1px solid var(--border-soft);
+  border-radius:8px;overflow:hidden;
+}}
+thead th{{
+  background:var(--card-hover);color:var(--muted);
+  padding:12px 16px;text-align:left;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.4px;
+  border-bottom:1px solid var(--border-soft);
+}}
+tbody tr{{transition:background .15s}}
+tbody tr:hover{{background:var(--card-hover)}}
+.cell-title{{padding:14px 16px;border-bottom:1px solid var(--border-soft)}}
+.cell-title a{{
+  font-family:'Newsreader','Noto Serif KR',serif;
+  color:var(--text);text-decoration:none;font-weight:700;
+  font-size:15.5px;line-height:1.4;
+  border-bottom:1px solid transparent;transition:border-color .15s,color .15s;
+}}
+.cell-title a:hover{{color:var(--accent);border-bottom-color:var(--accent)}}
+.cell-date{{
+  padding:14px 16px;border-bottom:1px solid var(--border-soft);
+  color:var(--muted);font-size:12px;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;
+  white-space:nowrap;
+}}
+tbody tr:last-child .cell-title,
+tbody tr:last-child .cell-date{{border-bottom:none}}
+.cell-empty{{
+  padding:36px 20px;text-align:center;color:var(--muted);
+  font-style:italic;font-size:14px;
+}}
+.foot{{
+  margin-top:24px;padding-top:16px;
+  border-top:1px solid var(--border-soft);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--muted);letter-spacing:0.3px;
+  text-align:center;
+}}
+.foot a{{color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(176,90,56,0.4)}}
+.foot a:hover{{color:var(--text);border-bottom-color:var(--text)}}
+@media (max-width:640px){{
+  .wrap{{padding:32px 16px 48px}}
+  h1{{font-size:30px}}
+  .cell-title a{{font-size:14px}}
+  .cell-date{{font-size:11px;padding:14px 10px}}
+  thead th{{padding:10px 12px;font-size:10px}}
+}}
 </style>
 </head>
 <body>
 <div class="wrap">
+<div class="eyebrow">Event Analysis Team</div>
 <h1>Analysis Reports</h1>
-<div class="sub">총 {len(reports)}건의 보고서</div>
+<div class="sub">총 <strong>{len(reports)}</strong>건의 보고서 · 최신 50건</div>
 <table>
-<thead><tr><th>보고서</th><th style="width:160px">생성일시</th></tr></thead>
+<thead><tr><th>보고서</th><th style="width:170px">생성일시</th></tr></thead>
 <tbody>
-{"".join(rows) if rows else '<tr><td colspan="2" style="padding:20px;text-align:center;color:#7A6E5E">보고서가 없습니다</td></tr>'}
+{"".join(rows) if rows else empty_row}
 </tbody>
 </table>
+<div class="foot">editorial_cream · <a href="https://doroper98.github.io/agents_reviewer/samples/">samples</a> · <a href="https://github.com/doroper98/agents_reviewer">github</a></div>
 </div>
 </body>
 </html>'''

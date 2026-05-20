@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="editorial_cream">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analysis Reports — preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F2EBDB; --card:#ECE3D0; --card-hover:#E5DBC4;
+  --border:#D4C8B0; --border-soft:rgba(212,200,176,0.55);
+  --text:#1F1814; --text-2:#2E2620; --muted:#6B5C4A;
+  --accent:#B05A38;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;
+  background:var(--bg); color:var(--text-2);
+  font-size:14.5px; line-height:1.7;
+  word-break:keep-all; overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 64px}
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;font-weight:700;letter-spacing:2.4px;
+  text-transform:uppercase;color:var(--accent);margin-bottom:12px;
+}
+h1{
+  font-family:'Newsreader','Noto Serif KR',serif;
+  font-size:38px;font-weight:800;line-height:1.15;
+  color:var(--text);margin-bottom:10px;letter-spacing:-0.6px;
+}
+.sub{
+  font-size:13px;color:var(--muted);margin-bottom:28px;
+  padding-bottom:18px;border-bottom:1px solid var(--border-soft);
+  font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;
+}
+.sub strong{color:var(--accent);font-weight:700}
+table{
+  width:100%;border-collapse:collapse;
+  background:var(--card);border:1px solid var(--border-soft);
+  border-radius:8px;overflow:hidden;
+}
+thead th{
+  background:var(--card-hover);color:var(--muted);
+  padding:12px 16px;text-align:left;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.4px;
+  border-bottom:1px solid var(--border-soft);
+}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:var(--card-hover)}
+.cell-title{padding:14px 16px;border-bottom:1px solid var(--border-soft)}
+.cell-title a{
+  font-family:'Newsreader','Noto Serif KR',serif;
+  color:var(--text);text-decoration:none;font-weight:700;
+  font-size:15.5px;line-height:1.4;
+  border-bottom:1px solid transparent;transition:border-color .15s,color .15s;
+}
+.cell-title a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.cell-date{
+  padding:14px 16px;border-bottom:1px solid var(--border-soft);
+  color:var(--muted);font-size:12px;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;
+  white-space:nowrap;
+}
+tbody tr:last-child .cell-title,
+tbody tr:last-child .cell-date{border-bottom:none}
+.foot{
+  margin-top:24px;padding-top:16px;
+  border-top:1px solid var(--border-soft);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--muted);letter-spacing:0.3px;
+  text-align:center;
+}
+.foot a{color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(176,90,56,0.4)}
+.foot a:hover{color:var(--text);border-bottom-color:var(--text)}
+@media (max-width:640px){
+  .wrap{padding:32px 16px 48px}
+  h1{font-size:30px}
+  .cell-title a{font-size:14px}
+  .cell-date{font-size:11px;padding:14px 10px}
+  thead th{padding:10px 12px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="eyebrow">Event Analysis Team</div>
+<h1>Analysis Reports</h1>
+<div class="sub">총 <strong>127</strong>건의 보고서 · 최신 50건</div>
+<table>
+<thead><tr><th>보고서</th><th style="width:170px">생성일시</th></tr></thead>
+<tbody>
+<tr><td class="cell-title"><a href="#">삼성전자 2026 1Q 실적 — DS 영업이익률 37.3%, 매출 333.6조의 분기 분해</a></td><td class="cell-date">2026-05-20 13:42</td></tr>
+<tr><td class="cell-title"><a href="#">호르무즈 봉쇄 가능성 — 유가·DXY·KOSPI 3채널 transmission 분석</a></td><td class="cell-date">2026-05-20 09:18</td></tr>
+<tr><td class="cell-title"><a href="#">LLM 시장 재편 시나리오 — Anthropic·OpenAI·Google 3-tree 분기</a></td><td class="cell-date">2026-05-19 22:04</td></tr>
+<tr><td class="cell-title"><a href="#">한미 관세 협상 결렬 시 한국 매크로 충격 — pre_mortem</a></td><td class="cell-date">2026-05-19 18:51</td></tr>
+<tr><td class="cell-title"><a href="#">SK하이닉스 HBM3E 가격 협상 — 시장 점유율 vs 마진 trade-off</a></td><td class="cell-date">2026-05-19 14:27</td></tr>
+<tr><td class="cell-title"><a href="#">미중 반도체 수출 통제 14차 — stakeholder_matrix 5개 진영</a></td><td class="cell-date">2026-05-18 21:13</td></tr>
+<tr><td class="cell-title"><a href="#">엔비디아 Blackwell B200 양산 지연 — fault_tree 5층 원인 분해</a></td><td class="cell-date">2026-05-18 11:08</td></tr>
+<tr><td class="cell-title"><a href="#">06:00 KST 일일 브리핑 — 2026-05-18</a></td><td class="cell-date">2026-05-18 06:00</td></tr>
+</tbody>
+</table>
+<div class="foot">editorial_cream · <a href="https://doroper98.github.io/agents_reviewer/samples/">samples</a> · <a href="https://github.com/doroper98/agents_reviewer">github</a></div>
+</div>
+</body>
+</html>
