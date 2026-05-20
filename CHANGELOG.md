@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.1
+last_synced_with: v5.4.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.2] — 2026-05-20
+
+### Changed — /status 메시지에서 에이전트 구성 블록 제거
+
+운영자에게 *반복 노이즈* 인 "📋 에이전트 구성 — Tier 4 ..." 블록 (① 상황
+분석관 ② 편집장 + ※ 4 줄 설명) 을 텔레그램 `/status` 출력에서 제거. 메시지가
+짧아짐 — 봇 상태 / 가동시간 / 보고서 수 / 메모리 / 큐 / 일일 브리핑 만 표시.
+
+에이전트 구성은 변경 시점에만 의미 있는 정보 (이미 [docs/CATALOGS.md §1](docs/CATALOGS.md)
+에 SSOT) — 매 status 호출마다 표시할 필요 없음. v4.0.0 이래 Tier 4 가 안
+바뀌었고 사용자가 이미 알고 있는 정보의 반복.
+
+`src/telegram_bot.py` 만 변경, 다른 경로 영향 없음.
 
 ---
 
