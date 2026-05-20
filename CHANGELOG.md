@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.3.2
+last_synced_with: v5.4.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-19
+last_review: 2026-05-20
 ---
 
 # Changelog
@@ -17,6 +17,73 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.0] — 2026-05-20
+
+### Added — 보고서 본문에 출처 기사의 사진 자동 삽입
+
+**배경**: 보고서가 본문 + 차트 + 지도 일색이라 *지금 누가 / 무엇이 / 어디서*
+의 시각 정보가 비어 있었다. 사용자 피드백 — "맥락에 닿아있는 필요한 사진을
+넣자". FT 의 헤드라인 직후 hero 사진 + 캡션 + 출처 (© Getty Images) 형태를
+참조 SSOT 로 채택.
+
+**파이프라인**:
+1. ContextAnalyst 가 평소대로 sources URL 수집.
+2. orchestrator 가 market_fetcher 후속으로 `src/tools/image_fetcher.py` 호출
+   — 각 source URL 의 og:image / og:title / og:description / publisher 를
+   추출해 `ContextAnalysis.available_images` 채움. 5장 cap, per-URL 5s
+   timeout, total 12s timeout. 실패해도 보고서 진행 (graceful degrade).
+3. NarrativeComposer 가 payload 에 available_images 를 받아 본문 흐름과
+   *직접 맥락이 닿는* 사진만 신중하게 선택. hero_image (보고서 1장) + 섹션
+   inline images (보고서 전체 0~3장) emit. 캡션은 한국어 editorial 톤, credit
+   은 `© Publisher` 형식.
+4. `freeform_essay.html` 이 hero figure (deck 직후) + 섹션 inline figure 를
+   FT 스타일로 렌더 — Newsreader italic 캡션 + sans-serif credit, 컬러 사진
+   그대로 (mono 필터 X), 7개 테마 토큰 (border/figcaption color) 자동 적용.
+
+**SSOT 매트릭스**:
+- `src/models.py`: `AvailableImage` 신규 + `ContextAnalysis.available_images` +
+  `ComposedReport.hero_image` + `ComposedSection.images`. forward-ref 해결
+  `ContextAnalysis.model_rebuild()`.
+- `src/tools/image_fetcher.py`: aiohttp + regex 기반 (외부 lib 의존성 0).
+  HTML 첫 64KB 만 읽음 (og 태그는 <head> 안). 평범한 데스크탑 Chrome UA +
+  Accept 헤더로 위장 (403 회피). twitter:image / property/name 순서 반전 /
+  HTML entity unescape / 상대 URL → 절대 URL 자동 처리.
+- `src/agents/narrative_composer.py`: SYSTEM_PROMPT 에 `=== 사진 (v5.4.0) ===`
+  섹션 추가 — 후보 풀 형식, 선택 원칙 (맥락 직결만 / 추정 금지 / 광고
+  placeholder 차단), 배치 (hero 0~1 + inline 0~3), 캡션·credit 작성 가이드,
+  Anti-pattern (URL 환각 / 중복 / 보일러플레이트). JSON schema 에 `images` /
+  `hero_image` 필드 명시.
+- `src/orchestrator.py`: market_fetcher hook 직후에 image_fetch hook 추가.
+- `src/templates/archetypes/freeform_essay.html`: `.freeform-figure.hero` +
+  `.freeform-figure.inline` CSS + hero figure (deck 직후) + 섹션 inline
+  figure (charts 다음, embedded_blocks 앞) 렌더 블록.
+
+**테스트 / 검증**:
+- 단위: `_parse_og_meta` — FT (standard og), BBC (twitter:image only), 한겨레
+  (content 속성 반전), 상대 URL, HTML entity, empty case 모두 정확.
+- publisher 매핑: ft.com → FT, biz.chosun.com → 조선비즈, bbc.co.uk → BBC 등
+  16개 매체 사람-친화 이름.
+- 통합: composer payload 에 `available_images` key 주입 확인. ComposedReport
+  / ComposedSection Pydantic round-trip 정상.
+- 렌더링: 가짜 데이터로 freeform_essay.html 풀 렌더 — hero <figure> 1개 +
+  inline <figure> 1개 + © Reuters / © Bloomberg credit 모두 정상 출력.
+
+**Graceful degrade 표**:
+
+| 시나리오 | 동작 |
+|---|---|
+| sources 비어있음 | image_fetch hook skip, 사진 emit X |
+| 모든 URL 403 / timeout | available_images 빈 list, composer 가 사진 emit X |
+| 일부만 og:image 보유 | 그것만 후보로, composer 가 선별 |
+| 네트워크 정책으로 외부 차단된 환경 | warning log + 보고서 정상 진행 |
+| composer 가 사진 emit 안 함 (자신 없을 때) | hero_image=null / images=[] — 차트만 박힌 보고서 |
+
+**모크업**: [`samples/report_images_theme_compare.html`](samples/report_images_theme_compare.html)
+— 7개 테마 (editorial_cream / burgundy_mono / slate_steel / forest_sage /
+midnight_indigo / dusk_rose / paper_classic) 별 hero+inline figure 시각 비교.
 
 ---
 

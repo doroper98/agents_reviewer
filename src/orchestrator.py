@@ -28,7 +28,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.3.2"
+VERSION = "v5.4.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1338,6 +1338,32 @@ class Orchestrator:
                 )
         except Exception as _e:  # pragma: no cover  — fetch 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] market_fetch skipped: %s", _e)
+
+        # v5.4.0 — Report image fetch hook.
+        # ContextAnalyst 가 수집한 sources URL 의 og:image / og:title / og:description
+        # 을 추출해 ContextAnalysis.available_images 채움. composer 가 그 후보 풀
+        # 중에서 본문 흐름에 맞는 사진을 골라 hero_image / 섹션 images 로 emit.
+        # market_fetcher 와 동일한 graceful degrade — fetch 실패해도 보고서 진행
+        # (사진만 emit X). 네트워크 정책으로 외부 차단된 환경에선 빈 list + warning.
+        try:
+            sources = list(getattr(result.context, "sources", None) or [])
+            if sources:
+                from src.tools.image_fetcher import fetch_many_images
+                stage_if = self.telemetry.stage_start("image_fetch")
+                # 최대 5 장만 후보로 (composer 가 그 중 1~3 장 골라 사용).
+                # per-URL timeout 5s · total 12s — 보고서 흐름 영향 최소화.
+                images = await fetch_many_images(
+                    sources[:8], max_count=5,
+                    per_url_timeout=5.0, total_timeout=12.0,
+                )
+                self.telemetry.stage_end(stage_if)
+                result.context.available_images = images
+                logger.info(
+                    "[orchestrator] image_fetch: %d sources tried, %d og:image returned",
+                    min(len(sources), 8), len(images),
+                )
+        except Exception as _e:  # pragma: no cover — fetch 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] image_fetch skipped: %s", _e)
 
         # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
         # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로

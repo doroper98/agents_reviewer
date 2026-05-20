@@ -267,6 +267,14 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - 기본 기간 3M (사건 보고서 event-anchored). 사건 일자 = `context.date` 기준. 향후 mode-aware period (daily=1M / historical=3Y) 확장 예정.
 - 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.
 
+## Report Images (v5.4.0)
+- ContextAnalyst 가 수집한 `sources` URL 들에서 og:image / og:title / og:description / publisher 자동 추출 → `ContextAnalysis.available_images` → composer 가 본문 흐름에 맞는 사진만 골라 `ComposedReport.hero_image` (보고서당 0~1장) + `ComposedSection.images` (섹션당 0~1장, 보고서 전체 0~3장) emit.
+- SSOT: [src/tools/image_fetcher.py](src/tools/image_fetcher.py) (og 메타 parser + publisher 매핑 16개 매체) + [src/agents/narrative_composer.py](src/agents/narrative_composer.py) `SYSTEM_PROMPT` 의 `=== 사진 (v5.4.0) ===` 섹션 (선택 원칙 / 캡션 작성 가이드 / Anti-pattern).
+- 렌더: `freeform_essay.html` 의 `.freeform-figure.hero` (deck 직후) + `.freeform-figure.inline` (섹션 charts 다음, embedded_blocks 앞). 컬러 사진 그대로, mono 필터 X. caption 은 Newsreader italic + credit `© Publisher` 는 sans-serif tone-down. 7개 테마 토큰 (border-soft / fg-3) 자동 적용. 모크업 SSOT: [samples/report_images_theme_compare.html](samples/report_images_theme_compare.html).
+- 외부 lib 의존성 0 — aiohttp + stdlib regex 만. HTML 첫 64KB cap (og 태그는 `<head>` 안). 평범한 데스크탑 Chrome UA + Accept 헤더로 위장 (메이저 매체 403 회피). per-URL 5s + total 12s timeout — 보고서 흐름 영향 최소화.
+- Graceful degrade — sources 빈 list / 모든 URL 403·timeout / 네트워크 차단된 환경 / composer 가 자신 없어 사진 emit X 모두 보고서 정상 진행. `market_fetcher` 와 동일 패턴.
+- **주의**: 사용자에게 노출되는 *유일한 외부 이미지 출처*. 광고·placeholder·매체 보일러플레이트 사진이 박힐 위험 — composer `SYSTEM_PROMPT` 의 *선택 원칙 #3* (title 에 'logo' / 'newsletter' / 'subscribe' 만 있으면 emit X) 으로 차단하지만 100% 아님. 봇 본인 사용 목적이므로 저작권은 출처표기 (© Publisher) 로 갈음.
+
 ## Map System (v4.5.7)
 - composer 가 `ComposedReport.embedded_map` 에 보고서당 1개 emit (지리적 사건일 때만).
 - 베이스맵: d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl 의존 폐기.

@@ -316,6 +316,55 @@ SYSTEM_PROMPT = (
     "  }\n"
     "  ```\n"
     "- d3-geo + TopoJSON 베이스맵 위에 mono 톤으로 렌더 (외부 타일 의존 없음).\n\n"
+    "=== 사진 (v5.4.0 — 출처 기사의 og:image) ===\n"
+    "- 입력에 ``available_images`` 가 있을 때만 사용 가능 — orchestrator 가\n"
+    "  context.sources URL 각각에서 og:image / og:title / og:description /\n"
+    "  publisher 를 추출해 채운 list. 비어있으면 사진 emit 절대 X.\n"
+    "- 각 entry 형식:\n"
+    "  ``{source_url, image_url, title, description, publisher}``\n"
+    "  · source_url: 원문 기사 URL (ContextAnalyst 가 인용한 출처)\n"
+    "  · image_url: og:image 절대 URL (FT/Reuters/한겨레 등 매체의 lead 사진)\n"
+    "  · title / description: 원문 기사의 og:title / og:description\n"
+    "  · publisher: 도메인 기반 표시명 (예: 'FT', 'Reuters', '한겨레')\n\n"
+    "[사진 선택 원칙 — 매우 보수적]\n"
+    "  1. **본문 narrative 와 직접 맥락이 닿는 사진만**. 출처 기사의 og:image 가\n"
+    "     본문이 다루는 사건/인물/장소를 담고 있는지 og:title 로 검증. title 이\n"
+    "     본문 주제와 무관하면 (예: 매체 메인 페이지의 generic image) emit X.\n"
+    "  2. **추정 금지**. 사진에 *누가 / 무엇이* 찍혀 있는지 모르면 (og:title 이\n"
+    "     사진 주제를 명시 안 함) 사진 자체를 emit X. WRITE-AP-5 (추정 단정)\n"
+    "     원칙. 캡션에서 사진의 인물·장소·행위를 *지어내지* 말 것.\n"
+    "  3. **품질**: 사용자가 광고/로고/매체 placeholder 이미지가 와도 분간 못 함\n"
+    "     — title 에 'logo' / 'newsletter' / 'subscribe' / 매체 이름만 있는\n"
+    "     경우는 placeholder 일 가능성 — emit X.\n\n"
+    "[배치]\n"
+    "  - hero_image (보고서 최상위, 1장만): 보고서 narrative 의 *핵심 인물 /\n"
+    "    장면* 사진. 보고서당 0~1 개. 자신 없으면 null.\n"
+    "    형식: ``{image_url, caption, credit, source_url, alt}``\n"
+    "  - 섹션 inline images (sec.images 배열): 그 섹션 본문 흐름에 맞는 사진.\n"
+    "    섹션당 0~1 개 (드물게 2). 보고서 전체 0~3 개. 사진 없는 섹션이 디폴트.\n"
+    "    형식: ``[{image_url, caption, credit, source_url, alt}]``\n\n"
+    "[캡션 + credit 작성 — FT 스타일]\n"
+    "  - caption: 1 문장. 사진이 *보여주는 것* 을 본문 흐름과 잇는 한 문장.\n"
+    "    · 좋음: '파월 의장은 기자회견 내내 데이터 의존을 일곱 차례 반복했다.'\n"
+    "      (사진=파월 기자회견 / 본문이 다루는 핵심 행위 묘사)\n"
+    "    · 나쁨 (추정): '그는 그날 무거운 표정으로 입을 열었다.' (찍힌 표정을\n"
+    "      안 봤음에도 묘사 — 추정 단정. WRITE-AP-5)\n"
+    "    · 나쁨 (반복): '아래 사진은 파월 의장이다.' (본문이 이미 말한 정보 X)\n"
+    "    · 평어체 (~다 / ~한다 / ~이다). 한국어 editorial 톤. mark down 강조 X.\n"
+    "    · 가능하면 사진의 *날짜 / 장소* 를 og:description 에서 가져와 caption\n"
+    "      시작부에 박음 (예: '5월 16일, 워싱턴 — ...').\n"
+    "  - credit: ``© Publisher`` 형식. publisher 는 available_images 의 값.\n"
+    "    composer 가 임의로 'AP / Getty' 같은 진짜 사진 출처 매체로 바꾸지 말 것\n"
+    "    — og:image 의 원래 소유자를 모름. 인용한 기사의 publisher 만 사용.\n"
+    "  - alt: 접근성 텍스트. 사진의 시각 정보를 짧게 (예: '단상에서 발언하는\n"
+    "    Fed 의장의 정면 사진'). 캡션을 그대로 복붙하지 말 것.\n"
+    "  - source_url: available_images 의 source_url 그대로. 클릭 시 원문 기사로\n"
+    "    이동하는 용도.\n\n"
+    "[Anti-pattern]\n"
+    "  - available_images 에 없는 사진 URL 임의로 생성 X (LLM 환각 차단).\n"
+    "  - hero_image 와 sec.images 에 *같은 image_url* 중복 사용 X.\n"
+    "  - title 이 광고 / SEO / 매체 보일러플레이트면 emit X. 본문과 맥락 닿은\n"
+    "    1~2 장만 신중하게.\n\n"
     "=== 정형 블록 (선택, 보수적) ===\n"
     "- 풍부한 정형 데이터를 본문 외에 따로 보여줘야 할 때만.\n"
     "- ``embedded_blocks``: actor_cards / scenario_table / timeline / flow_chain /\n"
@@ -359,12 +408,22 @@ SYSTEM_PROMPT = (
     "          ]\n"
     "        }\n"
     "      ],\n"
+    '      "images": [\n'
+    "        {\n"
+    '          \"image_url\": \"https://...\",                  // available_images 의 image_url 그대로\n'
+    '          \"caption\": \"5월 16일, 워싱턴 — 파월 의장은 기자회견 내내 데이터 의존을 일곱 차례 반복했다.\",\n'
+    '          \"credit\": \"© Reuters\",                        // © + publisher\n'
+    '          \"source_url\": \"https://reuters.com/...\",      // 원문 기사 URL\n'
+    '          \"alt\": \"단상에서 발언하는 Fed 의장의 정면 사진\"\n'
+    "        }\n"
+    "      ],\n"
     '      "embedded_blocks": [],\n'
     '      "pull_quote": "강조 인용 한 문장 (생략 가능)"\n'
     "    }\n"
     "  ],\n"
     '  "closing": "에필로그 1~2 문장 (생략 가능).",\n'
     '  "embedded_map": null,\n'
+    '  "hero_image": null,                          // 또는 {image_url, caption, credit, source_url, alt}\n'
     '  "watch_signals": [\n'
     "    {\n"
     '      \"signal\": \"Fed 6월 FOMC 점도표\",\n'
@@ -493,6 +552,20 @@ class NarrativeComposer:
                 "sources": context.sources,
             },
         }
+        # v5.4.0 — 사진 후보 풀 주입. orchestrator 가 sources URL 에서 추출한
+        # og:image / og:title / og:description / publisher. composer 가 본문
+        # 흐름에 맞는 것을 골라 hero_image / 섹션 images 로 emit.
+        if context.available_images:
+            payload["available_images"] = [
+                {
+                    "source_url": img.source_url,
+                    "image_url": img.image_url,
+                    "title": img.title,
+                    "description": img.description,
+                    "publisher": img.publisher,
+                }
+                for img in context.available_images
+            ]
         if parent_context is not None:
             sig = parent_context.triggering_signal
             payload["followup"] = {
