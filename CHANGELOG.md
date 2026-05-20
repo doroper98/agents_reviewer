@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.2
+last_synced_with: v5.4.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.3] — 2026-05-20
+
+### Fixed — 재무·수익성 보고서에서 sankey/waterfall 누락 회귀 (CHART-AP-19)
+
+**증상**: 사용자가 "재무분석 요청인데 sankey 가 안 들어갔다" — 삼성전자 2026
+1Q 보고서 (analysis_20260520_134233). event_category = '기업 재무 / 반도체
+산업', 본문 narrative 가 명백한 *재무 분해* (매출 333.6조 → DS/모바일/디스
+플레이/가전 → 비용 → 영업이익 57.2조, DS 영업이익률 37.3% → 66%). 그런데
+composer 가 emit 한 차트: line ×4 + slope + bar + range_bar + forecast. **분해
+차트 (sankey / waterfall) 0개**.
+
+**원인 — 결정 트리 collapse**: 기존 SYSTEM_PROMPT 의 [차트 type 결정 트리]
+는 step 1 이 "시간축 있음?" 이고 sankey/waterfall 은 step 3 (카테고리 비교)
+의 마지막 두 branch. 본문에 시계열 데이터 (삼성·SK하이닉스·코스피 추이) 가
+풍부하면 composer 가 step 1 에서 시계열 분기로 먼저 collapse → step 3 의 분해
+차트 branch 까지 못 도달. 5-Layer Guarantee 의 Layer 4 (다양성 쿼터) 도
+distinct type 5개라 monotony 검사 통과 — 단조 X, sankey 없음에도 silent.
+
+**해결 — 결정 트리 step 0 추가**:
+`src/agents/narrative_composer.py:SYSTEM_PROMPT` 의 [차트 type 결정 트리] 에
+*step 0 "사건 카테고리가 재무·수익성·기업 분석인가?"* 분기 신설. 매치되면
+**sankey 또는 waterfall 중 최소 1개 emit 강제** (시계열·추이는 *함께* OK,
+단 분해가 함께 있어야). step 1 보다 *먼저* 평가됨을 명시.
+
+추가:
+- 사례 구체화 — sankey type 별 가이드에 삼성전자 1Q 보고서 nodes/links 예시
+  (총매출 → 사업부 → 영업이익, negative=true 는 적자 사업부 흐름).
+- anti-bias 가드에 "재무·수익성 보고서인데 시계열 + bar 만 박지 말 것" 추가
+  (회귀 사례 라벨링).
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.2 → v5.4.3
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT`: [차트 type 결정 트리] +
+  anti-bias + sankey 가이드 (3곳)
+
+**검증**: 본 fix 의 효과는 다음 재무 보고서 emit 시 확인. SYSTEM_PROMPT 변경
+이라 단위 테스트 X — composer LLM 출력의 sankey 빈도 (v5.4.3 이후 재무
+카테고리 보고서) 를 운영 telemetry 로 추적.
 
 ---
 
