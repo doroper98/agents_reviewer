@@ -46,6 +46,26 @@ class ContextAnalysis(BaseModel):
     instruments_mentioned: list[str] = Field(default_factory=list)
     time_series: list[dict] = Field(default_factory=list)
 
+    # v5.4.0 — 사진 후보 풀. orchestrator 가 sources URL 각각의 og:image /
+    # og:title / og:description 을 추출해 채움. composer 가 이 list 를 보고
+    # 본문 흐름에 적합한 사진을 골라 hero_image / 섹션 images 로 emit.
+    # fetch 실패해도 보고서 정상 진행 — 빈 list 면 composer 가 사진 emit X.
+    available_images: list["AvailableImage"] = Field(default_factory=list)
+
+
+class AvailableImage(BaseModel):
+    """v5.4.0 — 사진 후보 (og:image 추출 결과).
+
+    composer 가 이 list 를 받아 본문 흐름에 적합한 사진을 골라 보고서 hero
+    또는 섹션 inline 으로 emit. 한 source URL 당 0~1 개.
+    """
+
+    source_url: str             # 원문 기사 URL
+    image_url: str              # og:image / twitter:image 절대 URL
+    title: str = ""             # og:title — composer 의 캡션 작성 입력
+    description: str = ""       # og:description — 캡션 보조 입력
+    publisher: str = ""         # 도메인 기반 표시명 (예: "FT", "조선일보")
+
 
 class PlayerAnalysis(BaseModel):
     """ACT II: Player identification and strategy analysis."""
@@ -569,6 +589,16 @@ class ComposedSection(BaseModel):
     """True 시 prose 첫 문단 첫 글자가 dropcap 으로 크게 렌더. 섹션 1~2개 한정.
     남용하면 시각 피로 — 보고서 전체에서 1~2 섹션만 권장."""
 
+    # v5.4.0 — 섹션 inline 사진. composer 가 available_images 에서 골라 emit.
+    # 각 dict: {image_url, caption, credit, source_url?, alt?}.
+    #  - image_url: og:image 절대 URL (available_images 의 image_url 그대로)
+    #  - caption: 한국어 editorial 톤 1~2 문장. mark down 강조 금지.
+    #  - credit: '© Publisher' 형식. publisher 는 available_images 의 publisher.
+    #  - source_url: 원문 기사 URL (선택, 캡션 끝 링크 처리에 사용 가능).
+    #  - alt: 접근성 텍스트 (선택, 누락 시 caption 으로 대체).
+    # 섹션당 0~2개 권장. 본문 흐름 무관한 사진 박지 말 것.
+    images: list[dict] = Field(default_factory=list)
+
     @model_validator(mode="after")
     def _drop_invalid_charts(self) -> "ComposedSection":
         """v5.2.0 — composer LLM 출력의 차트별 schema guard (production 진입점).
@@ -668,6 +698,13 @@ class ComposedReport(BaseModel):
     #        "legend"?: [{"label", "kind", "highlight"?}]}
     embedded_map: dict | None = None
 
+    # v5.4.0 — 보고서 hero 사진. deck 직후 / TOC 위에 큰 figure 로 렌더.
+    # 형식: {image_url, caption, credit, source_url?, alt?}.
+    # composer 가 available_images 중 가장 보고서 narrative 를 대표하는 1장을 선택.
+    # 사진이 본문 흐름과 무관하거나 사용자 검색 결과의 og:image 가 적절치 않으면
+    # null 로 두는 게 정상 — 빈 figure 박지 말 것.
+    hero_image: dict | None = None
+
 
 class ParentContext(BaseModel):
     """후속 분석을 트리거한 부모 보고서의 맥락 (v5.1.1).
@@ -735,4 +772,7 @@ class FullAnalysisResult(BaseModel):
 # v5.1.1: Forward reference 해결 — AnalysisRequest 가 ParentContext 를 string 참조하므로
 # 양쪽 정의가 완료된 뒤 model_rebuild 호출.
 AnalysisRequest.model_rebuild()
+
+# v5.4.0: ContextAnalysis.available_images 가 AvailableImage 를 string 참조 (forward).
+ContextAnalysis.model_rebuild()
 

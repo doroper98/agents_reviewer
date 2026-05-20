@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report Images — 7 Theme Compare (v5.4.0 draft)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ─── 모든 7개 테마의 토큰을 :scope 격리 (한 페이지 안에서 비교) ─── */
+
+[data-theme="editorial_cream"] {
+  --bg:#F2EBDB; --card:#ECE3D0; --bg-2:#ECE3D0; --bg-3:#E5DBC4;
+  --text:#1F1814; --fg-1:#1F1814; --fg-2:#2D241B; --fg-3:#6B5C4A;
+  --accent:#B05A38; --border-soft:rgba(212,200,176,0.55); --border-light:#E2D8C0;
+}
+[data-theme="burgundy_mono"] {
+  --bg:#2A0F18; --card:#371721; --bg-2:#371721; --bg-3:#1A0810;
+  --text:#EFE5D1; --fg-1:#EFE5D1; --fg-2:#E0D4BE; --fg-3:#A88E7A;
+  --accent:#D4A858; --border-soft:rgba(90,40,50,0.55); --border-light:#371721;
+}
+[data-theme="slate_steel"] {
+  --bg:#E5E9F0; --card:#EEF1F6; --bg-2:#EEF1F6; --bg-3:#DDE3EC;
+  --text:#1A2438; --fg-1:#1A2438; --fg-2:#2A3148; --fg-3:#5A6478;
+  --accent:#2962A0; --border-soft:rgba(196,204,218,0.55); --border-light:#D8DEE8;
+}
+[data-theme="forest_sage"] {
+  --bg:#E8EDE5; --card:#F0F4ED; --bg-2:#F0F4ED; --bg-3:#DEE5DA;
+  --text:#1F2A24; --fg-1:#1F2A24; --fg-2:#2D3A30; --fg-3:#5C6E60;
+  --accent:#4A7C5B; --border-soft:rgba(188,200,182,0.55); --border-light:#D1D9CC;
+}
+[data-theme="midnight_indigo"] {
+  --bg:#161A2E; --card:#1F2440; --bg-2:#1F2440; --bg-3:#0D1020;
+  --text:#E8ECEF; --fg-1:#E8ECEF; --fg-2:#D0D8E0; --fg-3:#8A92A8;
+  --accent:#6FB3FF; --border-soft:rgba(58,64,96,0.45); --border-light:#262C4A;
+}
+[data-theme="dusk_rose"] {
+  --bg:#F2E8E5; --card:#F8EFEB; --bg-2:#F8EFEB; --bg-3:#EDE0DC;
+  --text:#2A1F1D; --fg-1:#2A1F1D; --fg-2:#3A2A26; --fg-3:#7A5C58;
+  --accent:#B85968; --border-soft:rgba(214,194,190,0.55); --border-light:#E5D5D0;
+}
+[data-theme="paper_classic"] {
+  --bg:#FAFAF6; --card:#F2F2EE; --bg-2:#F2F2EE; --bg-3:#ECECE8;
+  --text:#0F0F0F; --fg-1:#0F0F0F; --fg-2:#1A1A1A; --fg-3:#5A5A5A;
+  --accent:#C4392B; --border-soft:rgba(200,200,192,0.55); --border-light:#DCDCD4;
+}
+
+/* ─── Reset + Page layout ─── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+  background: #1a1a1a;
+  color: #d4d4d4;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.page-header {
+  padding: 40px 20px 28px;
+  background: #0c0c0c;
+  border-bottom: 2px solid #2a2a2a;
+  text-align: center;
+}
+.page-header h1 {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #f0e2cc;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+.page-header .subtitle {
+  font-size: 13px;
+  color: #a89880;
+  max-width: 720px;
+  margin: 0 auto 18px;
+  line-height: 1.6;
+}
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.page-nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #c9a84c;
+  text-decoration: none;
+  padding: 7px 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  background: #1a1a1a;
+  transition: all .15s;
+}
+.page-nav a:hover { background: #2a2a2a; border-color: #c9a84c; }
+
+/* ─── Theme card — 한 테마의 freeform_essay 모사 ─── */
+
+.theme-card {
+  background: var(--bg);
+  color: var(--fg-2);
+  border-bottom: 8px solid #0c0c0c;
+}
+.theme-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 14px 20px;
+  background: rgba(0,0,0,0.18);
+  color: var(--accent);
+  border-bottom: 1px solid var(--border-soft);
+}
+.theme-label .name { color: var(--fg-1); margin-left: 6px; font-weight: 800; }
+.theme-label .tag  { float: right; color: var(--fg-3); font-weight: 500; letter-spacing: 0.8px; }
+
+.fr-container { max-width: 780px; margin: 0 auto; padding: 0 16px; }
+
+.fr-hero { padding: 36px 0 24px; border-bottom: 1px solid var(--border-soft); }
+.fr-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+}
+.fr-headline {
+  font-family: 'Newsreader','Noto Serif KR',serif;
+  font-size: 30px; font-weight: 900; line-height: 1.22;
+  color: var(--fg-1); margin: 0 0 12px; letter-spacing: -0.5px;
+}
+.fr-deck {
+  font-size: 16px; line-height: 1.55; color: var(--fg-2);
+  font-weight: 400; margin-bottom: 16px;
+}
+.fr-meta {
+  font-size: 11.5px; color: var(--fg-3);
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.fr-meta span + span::before {
+  content: "·"; margin-right: 10px; color: var(--fg-3); opacity: 0.5;
+}
+
+/* ─── Figure (hero + inline) — 핵심 디자인 ─── */
+
+/* Hero — deck 직후 큰 figure. container 폭 안에서 borderless. */
+.fr-figure-hero {
+  margin: 22px 0 8px;
+}
+.fr-figure-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+}
+.fr-figure-hero figcaption {
+  padding: 10px 2px 0;
+  font-family: 'Newsreader','Noto Serif KR',serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-3);
+  font-style: italic;
+}
+.fr-figure-hero figcaption .credit {
+  font-style: normal;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-size: 11.5px;
+  color: var(--fg-3);
+  margin-left: 6px;
+  opacity: 0.85;
+}
+
+/* Inline — 섹션 안 본문 사이. 좀 더 작은 figure. */
+.fr-figure-inline {
+  margin: 22px 0;
+}
+.fr-figure-inline img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+}
+.fr-figure-inline figcaption {
+  padding: 8px 2px 0;
+  font-family: 'Newsreader','Noto Serif KR',serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg-3);
+  font-style: italic;
+}
+.fr-figure-inline figcaption .credit {
+  font-style: normal;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-size: 11px;
+  color: var(--fg-3);
+  margin-left: 6px;
+  opacity: 0.85;
+}
+
+/* ─── Section + prose (실 보고서 톤 모사) ─── */
+
+.fr-section { padding: 28px 0; border-bottom: 1px solid var(--border-soft); }
+.fr-section:last-of-type { border-bottom: none; }
+.fr-kicker {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+.fr-heading {
+  font-family: 'Newsreader','Noto Serif KR',serif;
+  font-size: 22px; font-weight: 700; line-height: 1.3;
+  color: var(--fg-1); margin: 0 0 14px;
+}
+.fr-lede {
+  font-family: 'Newsreader','Noto Serif KR',serif;
+  font-size: 17px; line-height: 1.62;
+  color: var(--fg-1); font-style: italic;
+  margin: 0 0 18px; padding: 0 0 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.fr-prose {
+  font-size: 15px; line-height: 1.82; color: var(--fg-2);
+}
+.fr-prose p { margin: 0 0 14px; }
+
+/* ─── Reactive ─── */
+
+@media (max-width: 640px) {
+  .fr-headline { font-size: 24px; }
+  .fr-deck { font-size: 14.5px; }
+  .fr-heading { font-size: 18px; }
+  .fr-lede { font-size: 15.5px; }
+  .fr-prose { font-size: 14.5px; }
+  .fr-figure-hero figcaption,
+  .fr-figure-inline figcaption { font-size: 12.5px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Report Images — 7 Theme Compare</h1>
+  <p class="subtitle">
+    v5.4.0 초안: 보고서에 사진을 박을 때 7개 테마가 어떻게 어울리는지 비교. 같은 헤드라인 / 같은 사진 / 같은 캡션
+    — 변하는 건 테마 토큰뿐. 모든 사진은 picsum.photos 시드 이미지 (실제 og:image 로 대체될 자리).
+  </p>
+  <nav class="page-nav">
+    <a href="#editorial_cream">Editorial Cream</a>
+    <a href="#burgundy_mono">Burgundy Mono</a>
+    <a href="#slate_steel">Slate Steel</a>
+    <a href="#forest_sage">Forest Sage</a>
+    <a href="#midnight_indigo">Midnight Indigo</a>
+    <a href="#dusk_rose">Dusk Rose</a>
+    <a href="#paper_classic">Paper Classic</a>
+  </nav>
+</div>
+
+<!-- ============================================================
+     공통 콘텐츠 — 한번만 정의해서 7번 반복하기엔 jinja 가 없으니
+     실제 HTML 은 7번 복붙. 변하는 건 data-theme + section id 뿐.
+     ============================================================ -->
+
+<!-- ───── 1. Editorial Cream ───── -->
+<section id="editorial_cream" class="theme-card" data-theme="editorial_cream">
+  <div class="theme-label">테마 <span class="name">editorial_cream</span> <span class="tag">warm cream · terracotta accent</span></div>
+  <div class="fr-container">
+
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span>
+        <span>2026-05-20</span>
+        <span>Generated 05-20 14:32</span>
+      </div>
+
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620"
+             alt="Fed 의장이 기자회견 단상에서 발언하는 모습. 단상 뒤로 'Federal Reserve' 의 휘장이 보인다.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">
+        파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.
+      </div>
+      <div class="fr-prose">
+        <p>
+          연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다 (5-month range 의 정중앙).
+          두 지표 중 하나는 틀리고 있다.
+        </p>
+        <p>
+          채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다. 시간축이 다른 두 시장이 같은 데이터를 보고도 다른 결론을 내리는 것이다.
+        </p>
+
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520"
+               alt="뉴욕 증권거래소 트레이딩 플로어에서 화면을 응시하는 트레이더들의 모습.">
+          <figcaption>
+            5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span>
+          </figcaption>
+        </figure>
+
+        <p>
+          이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나.
+          어느 쪽이든 5월 12일 발표가 분기점이 된다.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</section>
+
+<!-- ───── 2. Burgundy Mono ───── -->
+<section id="burgundy_mono" class="theme-card" data-theme="burgundy_mono">
+  <div class="theme-label">테마 <span class="name">burgundy_mono</span> <span class="tag">deep wine · amber gold</span></div>
+  <div class="fr-container">
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span><span>Generated 05-20 14:32</span>
+      </div>
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620"
+             alt="Fed 의장이 기자회견 단상에서 발언하는 모습.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">
+        파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.
+      </div>
+      <div class="fr-prose">
+        <p>연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다. 두 지표 중 하나는 틀리고 있다.</p>
+        <p>채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다.</p>
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520"
+               alt="뉴욕 증권거래소 트레이딩 플로어.">
+          <figcaption>
+            5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span>
+          </figcaption>
+        </figure>
+        <p>이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나. 어느 쪽이든 5월 12일 발표가 분기점이 된다.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ───── 3. Slate Steel ───── -->
+<section id="slate_steel" class="theme-card" data-theme="slate_steel">
+  <div class="theme-label">테마 <span class="name">slate_steel</span> <span class="tag">cool gray · steel blue</span></div>
+  <div class="fr-container">
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span><span>Generated 05-20 14:32</span>
+      </div>
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620" alt="Fed 의장 기자회견.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.</div>
+      <div class="fr-prose">
+        <p>연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다. 두 지표 중 하나는 틀리고 있다.</p>
+        <p>채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다.</p>
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520" alt="NYSE 트레이딩 플로어.">
+          <figcaption>5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span></figcaption>
+        </figure>
+        <p>이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나. 어느 쪽이든 5월 12일 발표가 분기점이 된다.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ───── 4. Forest Sage ───── -->
+<section id="forest_sage" class="theme-card" data-theme="forest_sage">
+  <div class="theme-label">테마 <span class="name">forest_sage</span> <span class="tag">sage paper · forest green</span></div>
+  <div class="fr-container">
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span><span>Generated 05-20 14:32</span>
+      </div>
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620" alt="Fed 의장 기자회견.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.</div>
+      <div class="fr-prose">
+        <p>연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다. 두 지표 중 하나는 틀리고 있다.</p>
+        <p>채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다.</p>
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520" alt="NYSE 트레이딩 플로어.">
+          <figcaption>5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span></figcaption>
+        </figure>
+        <p>이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나. 어느 쪽이든 5월 12일 발표가 분기점이 된다.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ───── 5. Midnight Indigo (dark) ───── -->
+<section id="midnight_indigo" class="theme-card" data-theme="midnight_indigo">
+  <div class="theme-label">테마 <span class="name">midnight_indigo</span> <span class="tag">dark · sky blue accent</span></div>
+  <div class="fr-container">
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span><span>Generated 05-20 14:32</span>
+      </div>
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620" alt="Fed 의장 기자회견.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.</div>
+      <div class="fr-prose">
+        <p>연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다. 두 지표 중 하나는 틀리고 있다.</p>
+        <p>채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다.</p>
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520" alt="NYSE 트레이딩 플로어.">
+          <figcaption>5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span></figcaption>
+        </figure>
+        <p>이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나. 어느 쪽이든 5월 12일 발표가 분기점이 된다.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ───── 6. Dusk Rose ───── -->
+<section id="dusk_rose" class="theme-card" data-theme="dusk_rose">
+  <div class="theme-label">테마 <span class="name">dusk_rose</span> <span class="tag">dusk paper · deep rose</span></div>
+  <div class="fr-container">
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span><span>Generated 05-20 14:32</span>
+      </div>
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620" alt="Fed 의장 기자회견.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.</div>
+      <div class="fr-prose">
+        <p>연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다. 두 지표 중 하나는 틀리고 있다.</p>
+        <p>채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다.</p>
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520" alt="NYSE 트레이딩 플로어.">
+          <figcaption>5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span></figcaption>
+        </figure>
+        <p>이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나. 어느 쪽이든 5월 12일 발표가 분기점이 된다.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ───── 7. Paper Classic ───── -->
+<section id="paper_classic" class="theme-card" data-theme="paper_classic">
+  <div class="theme-label">테마 <span class="name">paper_classic</span> <span class="tag">newspaper white · red ink</span></div>
+  <div class="fr-container">
+    <header class="fr-hero">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있지만, 채권시장은 한쪽 가지만 가격에 반영하는 중이다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span><span>Generated 05-20 14:32</span>
+      </div>
+      <figure class="fr-figure-hero">
+        <img src="https://picsum.photos/seed/freeform-hero-trump/1100/620" alt="Fed 의장 기자회견.">
+        <figcaption>
+          파월 의장은 기자회견 내내 “데이터 의존” 이라는 표현을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+    </header>
+    <section class="fr-section">
+      <div class="fr-kicker">통화정책의 두 갈래</div>
+      <h2 class="fr-heading">절반만 듣고 있는 신호</h2>
+      <div class="fr-lede">파월 의장의 6월 발언은 두 가지를 동시에 말했다. 하나는 인하 가능성. 다른 하나는 인플레이션 재가속에 대한 경계.
+        그런데 시장이 가격에 반영한 건 첫 번째 가지뿐이다.</div>
+      <div class="fr-prose">
+        <p>연방기금금리 선물은 6월 인하 확률을 78%로 보고 있다. 5월 1일 56%에서 한 달 만에 22%p 상승했다.
+          그러나 같은 기간 미국 10년물 국채금리는 4.28%로 거의 변함이 없다. 두 지표 중 하나는 틀리고 있다.</p>
+        <p>채권시장이 더 보수적인 이유는 단순하다. 채권은 인플레이션의 *재가속* 시나리오까지 가격에 넣어야 하는데,
+          선물시장은 다음 90일의 한 점만 본다.</p>
+        <figure class="fr-figure-inline">
+          <img src="https://picsum.photos/seed/freeform-inline-bond/900/520" alt="NYSE 트레이딩 플로어.">
+          <figcaption>5월 16일 채권시장 마감 직후의 NYSE 플로어. 10년물 금리는 종일 4.28% 안팎에서 좀처럼 움직이지 않았다.
+            <span class="credit">© Bloomberg</span></figcaption>
+        </figure>
+        <p>이 모순은 다음 두 가지 중 하나로 해소된다. 첫째, 5월 CPI 가 예상치 아래로 나와서 채권금리가 따라 내려가거나.
+          둘째, CPI 가 예상치 위로 나와서 선물시장의 인하 확률이 50% 아래로 후퇴하거나. 어느 쪽이든 5월 12일 발표가 분기점이 된다.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+</body>
+</html>
