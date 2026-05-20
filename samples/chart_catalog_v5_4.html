@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="editorial_cream">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chart Catalog — 20종 라이브 카탈로그 · v5.4.4</title>
+<meta name="description" content="v5.4 production 차트 20종 라이브 렌더링. 스크롤 시 entry 애니메이션 자동 재생 (CHART-AP-18 가드). 실제 charts.js 사용.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<!-- d3 + topojson — production 과 동일 -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+<!-- production charts.css + charts.js (repo 루트의 src/templates/static/ 그대로) -->
+<link rel="stylesheet" href="../src/templates/static/charts.css">
+<style>
+  :root {
+    /* editorial_cream — samples 다이어그램 · 인덱스와 동일 토큰 */
+    --bg: #F2EBDB;
+    --bg-2: #EBE2CC;
+    --card: #ECE3D0;
+    --card-deep: #E5DBC4;
+    --card-hover: #DDD0B5;
+    --border: #D4C8B0;
+    --border-soft: rgba(212,200,176,0.55);
+    --text: #1F1814;
+    --text-2: #2E2620;
+    --text-3: #4A3F35;
+    --muted: #6B5C4A;
+    --accent: #B05A38;
+    --accent-2: #C9764E;
+    --up: #6F8A5E;
+    --down: #B05A38;
+    --critical: #B05A38;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+    background: var(--bg); color: var(--text-2);
+    font-size: 14.5px; line-height: 1.7;
+    word-break: keep-all; overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  /* ─── Hero ─── */
+  .hero {
+    padding: 64px 0 40px;
+    background:
+      radial-gradient(ellipse at top, rgba(176,90,56,0.07) 0%, transparent 60%),
+      linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: 3.2px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Newsreader', 'Noto Serif KR', serif;
+    font-size: 42px; font-weight: 800; line-height: 1.12;
+    color: var(--text); margin-bottom: 14px; letter-spacing: -1px;
+  }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 700; }
+  .deck {
+    font-size: 16px; color: var(--text-3); max-width: 680px;
+    font-weight: 300; margin-bottom: 22px;
+  }
+  .meta {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px;
+    color: var(--muted); padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .meta .pill {
+    padding: 3px 10px; border-radius: 100px;
+    background: var(--card-deep); border: 1px solid var(--border);
+    color: var(--text-2); font-size: 11px; letter-spacing: 0.4px;
+  }
+  .meta .pill.accent { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+  .replay {
+    display: inline-block; margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px;
+    font-weight: 700; letter-spacing: 0.5px;
+    padding: 7px 14px; border-radius: 6px;
+    background: var(--accent); color: var(--bg);
+    border: none; cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .replay:hover { background: var(--accent-2); }
+  .replay:active { transform: translateY(1px); }
+
+  /* ─── TOC ─── */
+  .toc {
+    padding: 22px 0; border-bottom: 1px solid var(--border-soft);
+    background: var(--bg-2);
+  }
+  .toc-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+  .toc a {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 6px 10px; background: var(--card);
+    border: 1px solid var(--border-soft); border-radius: 4px;
+    color: var(--text-3); text-decoration: none;
+    transition: all .15s;
+  }
+  .toc a:hover { background: var(--card-deep); color: var(--accent); border-color: var(--accent); }
+  .toc a.new { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  /* ─── Group sections ─── */
+  .group { padding: 48px 0 30px; border-bottom: 1px solid var(--border-soft); }
+  .group:last-of-type { border-bottom: none; padding-bottom: 80px; }
+  .group-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: 2.4px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+  }
+  .group-title {
+    font-family: 'Newsreader', 'Noto Serif KR', serif;
+    font-size: 26px; font-weight: 800; line-height: 1.25;
+    color: var(--text); margin-bottom: 8px; letter-spacing: -0.4px;
+  }
+  .group-deck {
+    font-size: 14.5px; color: var(--text-3); max-width: 680px;
+    margin-bottom: 28px; font-weight: 300;
+  }
+
+  /* ─── Chart entry ─── */
+  .entry {
+    margin-bottom: 36px;
+    scroll-margin-top: 14px;
+  }
+  .entry-hd {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .entry-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    font-weight: 700; letter-spacing: 1.5px;
+    padding: 3px 8px; border-radius: 3px;
+    background: var(--card-deep); color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  .entry-tag.new {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  .entry h3 {
+    font-family: 'Newsreader', 'Noto Serif KR', serif;
+    font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.2px;
+  }
+  .entry-desc {
+    font-size: 13.5px; color: var(--text-3); line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .entry-desc code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    background: rgba(176,90,56,0.08); padding: 1px 6px;
+    border-radius: 3px; color: var(--accent);
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    padding: 40px 0 60px; background: var(--bg-2);
+    border-top: 1px solid var(--border-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted);
+    text-align: center;
+  }
+  footer a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted rgba(176,90,56,0.4); }
+  footer code { background: rgba(176,90,56,0.08); padding: 1px 6px; border-radius: 3px; color: var(--accent); }
+
+  /* version badge */
+  .version-badge {
+    position: fixed; top: 14px; right: 14px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
+    font-weight: 700; letter-spacing: 1.2px;
+    padding: 5px 11px; border-radius: 100px;
+    background: var(--accent); color: var(--bg);
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(31,24,20,0.18);
+  }
+
+  @media (max-width: 720px) {
+    h1 { font-size: 32px; }
+    .group-title { font-size: 22px; }
+    .version-badge { top: 8px; right: 8px; font-size: 9.5px; padding: 4px 9px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="version-badge">v5.4.4</div>
+
+<!-- ═══════════════════════════ Hero ═══════════════════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">Event Analysis Team · Live Chart Catalog</div>
+    <h1>20종 차트 · <em>entry 애니메이션</em><br>실시간 렌더</h1>
+    <p class="deck">
+      production <code style="font-family:'IBM Plex Mono',monospace;background:rgba(176,90,56,0.08);padding:1px 6px;border-radius:3px;color:var(--accent)">src/templates/static/charts.js</code> 가 그대로 동작 — 스크롤하면 IntersectionObserver 가 각 카드에 entry 애니메이션 발사 (CHART-AP-18 가드: ≤700ms, prefers-reduced-motion 정적 폴백, 1회 재생). bar 는 좌→우 grow, donut 은 zero-arc 에서 펼침, line/area 는 stroke-dashoffset 그리기, 나머지는 opacity fade.
+    </p>
+    <div class="meta">
+      <span>VERSION <strong style="color:var(--accent);font-weight:700">v5.4.4</strong></span>
+      <span class="pill accent">20 chart types</span>
+      <span class="pill">★ 7 new (v5.3.0)</span>
+      <span class="pill">CHART-AP-18 guarded</span>
+      <span>2026-05-20</span>
+    </div>
+    <div style="margin-top:14px"><button class="replay" onclick="location.reload()">▶ 처음부터 다시 재생</button></div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ TOC ═══════════════════════════ -->
+<nav class="toc">
+  <div class="container">
+    <div class="toc-grid">
+      <a href="#bar">bar</a><a href="#donut">donut</a><a href="#line">line</a>
+      <a href="#area">area</a><a href="#gantt">gantt</a><a href="#stacked">stacked</a>
+      <a href="#bubble">bubble</a><a href="#heatmap">heatmap</a>
+      <a href="#dual_line">dual_line</a><a href="#forecast">forecast</a>
+      <a href="#network">network</a><a href="#candle">candle</a>
+      <a href="#scatter" class="new">★ scatter</a>
+      <a href="#stacked_area" class="new">★ stacked_area</a>
+      <a href="#lollipop" class="new">★ lollipop</a>
+      <a href="#slope" class="new">★ slope</a>
+      <a href="#small_multiples" class="new">★ small_multiples</a>
+      <a href="#waterfall" class="new">★ waterfall</a>
+      <a href="#range_bar" class="new">★ range_bar</a>
+      <a href="#sankey" class="new">★ sankey</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ Group 1: Core 12 ═══════════════════════════ -->
+<section class="group">
+  <div class="container">
+    <div class="group-eyebrow">Core · v4.x ~ v5.2</div>
+    <h2 class="group-title">기본 12종 — 안정 운영 (safe tier)</h2>
+    <p class="group-deck">
+      Chart Critic / Sanity Gate 통과율 90%↑ 검증된 type. composer 가 자유롭게 emit 가능.
+    </p>
+
+    <!-- 1. bar -->
+    <div class="entry" id="bar">
+      <div class="entry-hd"><span class="entry-tag">01 · safe</span><h3>bar — 가로 막대 (시나리오 확률)</h3></div>
+      <div class="entry-desc">categorical 비교의 기본. <em>좌→우 grow</em> 애니메이션 (v5.3.1 — width 0→final, stagger 40ms). data: <code>[{name, value, tag?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">시나리오 확률 분포</div>
+        <div class="chart-card-subtitle">3개 시나리오 — base / risk / shock</div>
+        <div class="chart-card-stage chart-stage-bar" data-chart-type="bar"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"bar","title":"시나리오 확률 분포","data":[{"name":"기준 (점진 완화)","value":0.52,"tag":"base"},{"name":"위험 (긴장 지속)","value":0.31,"tag":"risk"},{"name":"충격 (군사 충돌)","value":0.17,"tag":"shock"}],"note":"3-시나리오 확률 합 1.0"}</script>
+      </div>
+    </div>
+
+    <!-- 2. donut -->
+    <div class="entry" id="donut">
+      <div class="entry-hd"><span class="entry-tag">02 · safe</span><h3>donut — 도넛 (비중 분배)</h3></div>
+      <div class="entry-desc">part-of-whole. <em>zero-arc 에서 startAngle 위치 펼침</em> (v5.3.1 — attrTween, 680ms). 2-segment 금지 (CHART-AP-16). data: <code>[{label, value}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">매출 사업부 비중</div>
+        <div class="chart-card-stage chart-stage-donut" data-chart-type="donut"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"donut","title":"매출 사업부 비중","data":[{"label":"DS (반도체)","value":42},{"label":"모바일","value":31},{"label":"디스플레이","value":15},{"label":"가전","value":12}]}</script>
+      </div>
+    </div>
+
+    <!-- 3. line -->
+    <div class="entry" id="line">
+      <div class="entry-hd"><span class="entry-tag">03 · safe</span><h3>line — 단일 시계열</h3></div>
+      <div class="entry-desc">trend 의 기본. <em>stroke-dashoffset 으로 좌→우 그리기</em>. data: <code>[{x, y, event?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">KOSPI 3개월 추이</div>
+        <div class="chart-card-stage chart-stage-line" data-chart-type="line"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"line","title":"KOSPI 3개월","data":[{"x":"2026-02-20","y":2614},{"x":"2026-02-28","y":2638},{"x":"2026-03-10","y":2671},{"x":"2026-03-20","y":2654},{"x":"2026-03-31","y":2702},{"x":"2026-04-10","y":2745},{"x":"2026-04-20","y":2719},{"x":"2026-04-30","y":2768,"event":"FOMC dovish"},{"x":"2026-05-10","y":2801},{"x":"2026-05-20","y":2784}]}</script>
+      </div>
+    </div>
+
+    <!-- 4. area -->
+    <div class="entry" id="area">
+      <div class="entry-hd"><span class="entry-tag">04 · safe</span><h3>area — 영역 시계열</h3></div>
+      <div class="entry-desc">line + gradient fill 강조. <em>fill path 는 opacity fade</em> (v5.3.1). 단일 series 의 누적/강조용. data: <code>[{x, y, event?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">WTI 원유 6개월</div>
+        <div class="chart-card-stage chart-stage-area" data-chart-type="area"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"area","title":"WTI 원유","data":[{"x":"2025-11","y":71.2},{"x":"2025-12","y":72.8},{"x":"2026-01","y":75.4},{"x":"2026-02","y":78.1},{"x":"2026-03","y":83.2,"event":"호르무즈 긴장"},{"x":"2026-04","y":86.4},{"x":"2026-05","y":81.7}]}</script>
+      </div>
+    </div>
+
+    <!-- 5. gantt -->
+    <div class="entry" id="gantt">
+      <div class="entry-hd"><span class="entry-tag">05 · safe</span><h3>gantt — 타임라인 막대</h3></div>
+      <div class="entry-desc">duration 있는 이벤트 시각화. zero-duration 금지 (CHART-AP-15). day-precision (v5.2.11). data: <code>[{label, start, end, note?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">제재 단계 타임라인</div>
+        <div class="chart-card-stage chart-stage-gantt" data-chart-type="gantt"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"gantt","title":"제재 단계","data":[{"label":"1차 — 자산 동결","start":"2026-03-15","end":"2026-04-10"},{"label":"2차 — 금융 SWIFT 제한","start":"2026-04-05","end":"2026-05-20"},{"label":"3차 — 2차 제재 검토","start":"2026-04-25","end":"2026-06-15","note":"미 의회 표결 진행"},{"label":"보복 관세 발효","start":"2026-05-01","end":"2026-07-31"}]}</script>
+      </div>
+    </div>
+
+    <!-- 6. stacked -->
+    <div class="entry" id="stacked">
+      <div class="entry-hd"><span class="entry-tag">06 · safe</span><h3>stacked — 누적 막대 (시나리오별 구성)</h3></div>
+      <div class="entry-desc">같은 100% 안에서 구성비 비교. 45° 패턴으로 카테고리 구분. data: <code>{scenarios:[{name, parts:[{label, value}]}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">시나리오별 영향 구성</div>
+        <div class="chart-card-stage chart-stage-stacked" data-chart-type="stacked"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"stacked","title":"시나리오별 영향","data":{"scenarios":[{"name":"기준","parts":[{"label":"유가","value":35},{"label":"환율","value":28},{"label":"주가","value":22},{"label":"심리","value":15}]},{"name":"위험","parts":[{"label":"유가","value":48},{"label":"환율","value":24},{"label":"주가","value":18},{"label":"심리","value":10}]},{"name":"충격","parts":[{"label":"유가","value":58},{"label":"환율","value":20},{"label":"주가","value":14},{"label":"심리","value":8}]}]}}</script>
+      </div>
+    </div>
+
+    <!-- 7. bubble -->
+    <div class="entry" id="bubble">
+      <div class="entry-hd"><span class="entry-tag">07 · safe</span><h3>bubble — 영향·확률 매트릭스</h3></div>
+      <div class="entry-desc">x/y/size 3축. 위험 매트릭스의 기본. data: <code>[{label, x, y, size?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">위험 매트릭스 (영향 × 확률)</div>
+        <div class="chart-card-stage chart-stage-bubble" data-chart-type="bubble"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"bubble","title":"위험 매트릭스","data":[{"label":"호르무즈 봉쇄","x":0.72,"y":0.88,"size":90},{"label":"이란 미사일 보복","x":0.45,"y":0.62,"size":55},{"label":"미·이스라엘 합동작전","x":0.28,"y":0.74,"size":48},{"label":"OPEC 감산","x":0.81,"y":0.34,"size":62},{"label":"러시아 추가 제재","x":0.55,"y":0.41,"size":40}]}</script>
+      </div>
+    </div>
+
+    <!-- 8. heatmap -->
+    <div class="entry" id="heatmap">
+      <div class="entry-hd"><span class="entry-tag">08 · safe</span><h3>heatmap — 행렬 강도 시각화</h3></div>
+      <div class="entry-desc">시간 × 카테고리 또는 행위자 × 행위자. CSS 기반이라 PDF 캡처 안전. data: <code>[{title, severity}]</code> 또는 행렬</div>
+      <div class="chart-card">
+        <div class="chart-card-title">단계별 위험 강도</div>
+        <div class="chart-card-stage chart-stage-heatmap" data-chart-type="heatmap"></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"heatmap","title":"단계별 위험","data":[{"title":"외교 경고","severity":0.25},{"title":"경제 제재 1차","severity":0.42},{"title":"군사 배치","severity":0.61},{"title":"국지 충돌","severity":0.78},{"title":"호르무즈 폐쇄","severity":0.95}]}</script>
+      </div>
+    </div>
+
+    <!-- 9. dual_line -->
+    <div class="entry" id="dual_line">
+      <div class="entry-hd"><span class="entry-tag">09 · safe</span><h3>dual_line — 두 지표 동시 비교</h3></div>
+      <div class="entry-desc">상관·디커플링 시각화. 두 line 의 stroke-dashoffset 그리기 + 점선 보존 (v5.3.1 silent fix). data: <code>{series:[{name, data:[{x,y}]}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">KOSPI vs DXY</div>
+        <div class="chart-card-stage chart-stage-dual_line" data-chart-type="dual_line"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"dual_line","title":"KOSPI vs DXY","data":{"series":[{"name":"KOSPI","data":[{"x":"03-01","y":2638},{"x":"03-15","y":2671},{"x":"04-01","y":2702},{"x":"04-15","y":2719},{"x":"05-01","y":2768},{"x":"05-15","y":2784}]},{"name":"DXY","data":[{"x":"03-01","y":104.2},{"x":"03-15","y":103.8},{"x":"04-01","y":102.5},{"x":"04-15","y":101.9},{"x":"05-01","y":101.4},{"x":"05-15","y":102.1}]}]}}</script>
+      </div>
+    </div>
+
+    <!-- 10. forecast -->
+    <div class="entry" id="forecast">
+      <div class="entry-hd"><span class="entry-tag">10 · safe</span><h3>forecast — 시계열 + 신뢰구간 cone</h3></div>
+      <div class="entry-desc">history + 예측 + 90%/50% cone. data: <code>{history:[{x,y}], forecast:[{x, lo90, lo50, mid, hi50, hi90}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">미국 기준금리 전망</div>
+        <div class="chart-card-stage chart-stage-forecast" data-chart-type="forecast"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"forecast","title":"미국 기준금리","data":{"history":[{"x":"2025-09","y":5.25},{"x":"2025-12","y":5.00},{"x":"2026-03","y":4.75},{"x":"2026-05","y":4.50}],"forecast":[{"x":"2026-06","lo90":4.10,"lo50":4.25,"mid":4.40,"hi50":4.55,"hi90":4.65},{"x":"2026-09","lo90":3.70,"lo50":3.95,"mid":4.15,"hi50":4.35,"hi90":4.55},{"x":"2026-12","lo90":3.25,"lo50":3.60,"mid":3.85,"hi50":4.10,"hi90":4.40}]}}</script>
+      </div>
+    </div>
+
+    <!-- 11. network -->
+    <div class="entry" id="network">
+      <div class="entry-hd"><span class="entry-tag">11 · safe</span><h3>network — 행위자 관계망</h3></div>
+      <div class="entry-desc">노드 + edge (관계 부호). force layout. data: <code>{nodes:[{id, group?}], links:[{source, target, rel?}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">중동 행위자 관계</div>
+        <div class="chart-card-stage chart-stage-network" data-chart-type="network"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"network","title":"중동 행위자","data":{"nodes":[{"id":"미국","group":"서방"},{"id":"이스라엘","group":"서방"},{"id":"이란","group":"반미"},{"id":"러시아","group":"반미"},{"id":"사우디","group":"중립"},{"id":"카타르","group":"중립"},{"id":"중국","group":"중립"}],"links":[{"source":"미국","target":"이스라엘","rel":"allied"},{"source":"미국","target":"이란","rel":"hostile"},{"source":"이란","target":"이스라엘","rel":"hostile"},{"source":"이란","target":"러시아","rel":"allied"},{"source":"러시아","target":"중국","rel":"allied"},{"source":"사우디","target":"카타르","rel":"neutral"},{"source":"미국","target":"사우디","rel":"allied"},{"source":"중국","target":"이란","rel":"trade"}]}}</script>
+      </div>
+    </div>
+
+    <!-- 12. candle -->
+    <div class="entry" id="candle">
+      <div class="entry-hd"><span class="entry-tag">12 · safe · v5.2.0</span><h3>candle — OHLC 캔들스틱</h3></div>
+      <div class="entry-desc">market_fetcher 실데이터 전용 (KRX/Yahoo). 상승/하락 mono fill. data: <code>[{date, open, high, low, close}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">삼성전자 1개월 OHLC (예시 데이터)</div>
+        <div class="chart-card-stage chart-stage-candle" data-chart-type="candle"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"candle","title":"삼성전자","data":[{"date":"2026-04-21","open":78400,"high":79200,"low":77800,"close":78900},{"date":"2026-04-22","open":78900,"high":79600,"low":78500,"close":79400},{"date":"2026-04-23","open":79400,"high":80100,"low":79100,"close":79800},{"date":"2026-04-24","open":79800,"high":80200,"low":78900,"close":79100},{"date":"2026-04-25","open":79100,"high":79400,"low":78200,"close":78400},{"date":"2026-04-28","open":78400,"high":79800,"low":78300,"close":79600},{"date":"2026-04-29","open":79600,"high":80800,"low":79500,"close":80500},{"date":"2026-04-30","open":80500,"high":81200,"low":80100,"close":80900},{"date":"2026-05-02","open":80900,"high":81400,"low":80300,"close":80600},{"date":"2026-05-07","open":80600,"high":81100,"low":79800,"close":80100},{"date":"2026-05-08","open":80100,"high":80500,"low":79300,"close":79500},{"date":"2026-05-09","open":79500,"high":80200,"low":79200,"close":80000},{"date":"2026-05-12","open":80000,"high":81300,"low":79900,"close":81100},{"date":"2026-05-13","open":81100,"high":82000,"low":80800,"close":81700},{"date":"2026-05-14","open":81700,"high":82400,"low":81300,"close":82200},{"date":"2026-05-15","open":82200,"high":82800,"low":81700,"close":82500},{"date":"2026-05-16","open":82500,"high":82900,"low":81900,"close":82100},{"date":"2026-05-19","open":82100,"high":82600,"low":81400,"close":81800},{"date":"2026-05-20","open":81800,"high":82500,"low":81500,"close":82300}]}</script>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Group 2: FT/Economist 7 ═══════════════════════════ -->
+<section class="group">
+  <div class="container">
+    <div class="group-eyebrow">★ FT/Economist Style · v5.3.0</div>
+    <h2 class="group-title">신규 7종 + sankey — guarded tier</h2>
+    <p class="group-deck">
+      Chart Critic 7-질문 + Sanity Gate C 통과 필수. line/bar default bias 차단을 위해 결정 트리에 명시 분기 (재무 → sankey/waterfall 강제 — v5.4.3 step 0).
+    </p>
+
+    <!-- 13. scatter -->
+    <div class="entry" id="scatter">
+      <div class="entry-hd"><span class="entry-tag new">13 · ★ guarded</span><h3>scatter — 라벨 산점도</h3></div>
+      <div class="entry-desc">bubble 과 구분 — size 인코딩 X, 점 + label. FT 좌측 스타일. data: <code>[{label, x, y}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">PER vs ROE (반도체)</div>
+        <div class="chart-card-stage chart-stage-scatter" data-chart-type="scatter"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"scatter","title":"PER vs ROE","data":[{"label":"삼성전자","x":12.4,"y":14.2},{"label":"SK하이닉스","x":9.8,"y":21.5},{"label":"TSMC","x":18.7,"y":28.4},{"label":"엔비디아","x":34.2,"y":42.1},{"label":"마이크론","x":11.2,"y":12.8},{"label":"인텔","x":22.5,"y":6.4},{"label":"AMD","x":28.1,"y":18.9},{"label":"브로드컴","x":24.8,"y":31.2}]}</script>
+      </div>
+    </div>
+
+    <!-- 14. stacked_area -->
+    <div class="entry" id="stacked_area">
+      <div class="entry-hd"><span class="entry-tag new">14 · ★ guarded</span><h3>stacked_area — 누적 영역 (점유율 변화)</h3></div>
+      <div class="entry-desc">FT 우측 스타일. 시계열 위에서 점유율 연속 변화. data: <code>{series:[{name, data:[{x,y}]}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">LLM API 시장 점유율 (분기별)</div>
+        <div class="chart-card-stage chart-stage-stacked_area" data-chart-type="stacked_area"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"stacked_area","title":"LLM API 시장 점유율","data":{"series":[{"name":"OpenAI","data":[{"x":"24Q1","y":58},{"x":"24Q2","y":54},{"x":"24Q3","y":49},{"x":"24Q4","y":45},{"x":"25Q1","y":41},{"x":"25Q2","y":38},{"x":"25Q3","y":36},{"x":"25Q4","y":34},{"x":"26Q1","y":32}]},{"name":"Anthropic","data":[{"x":"24Q1","y":14},{"x":"24Q2","y":17},{"x":"24Q3","y":21},{"x":"24Q4","y":24},{"x":"25Q1","y":28},{"x":"25Q2","y":31},{"x":"25Q3","y":33},{"x":"25Q4","y":35},{"x":"26Q1","y":37}]},{"name":"Google","data":[{"x":"24Q1","y":18},{"x":"24Q2","y":18},{"x":"24Q3","y":19},{"x":"24Q4","y":19},{"x":"25Q1","y":20},{"x":"25Q2","y":21},{"x":"25Q3","y":21},{"x":"25Q4","y":21},{"x":"26Q1","y":21}]},{"name":"기타","data":[{"x":"24Q1","y":10},{"x":"24Q2","y":11},{"x":"24Q3","y":11},{"x":"24Q4","y":12},{"x":"25Q1","y":11},{"x":"25Q2","y":10},{"x":"25Q3","y":10},{"x":"25Q4","y":10},{"x":"26Q1","y":10}]}]}}</script>
+      </div>
+    </div>
+
+    <!-- 15. lollipop -->
+    <div class="entry" id="lollipop">
+      <div class="entry-hd"><span class="entry-tag new">15 · ★ guarded</span><h3>lollipop — bar 의 우아한 대안</h3></div>
+      <div class="entry-desc">8-15 항목의 비교에 적합. 막대 잉크 줄이고 값 위치 강조. data: <code>[{name, value}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">국가별 반도체 자급률</div>
+        <div class="chart-card-stage chart-stage-lollipop" data-chart-type="lollipop"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"lollipop","title":"반도체 자급률","data":[{"name":"대만","value":92},{"name":"한국","value":78},{"name":"미국","value":68},{"name":"일본","value":61},{"name":"중국","value":54},{"name":"독일","value":42},{"name":"네덜란드","value":38},{"name":"이스라엘","value":31},{"name":"싱가포르","value":28},{"name":"인도","value":14}]}</script>
+      </div>
+    </div>
+
+    <!-- 16. slope -->
+    <div class="entry" id="slope">
+      <div class="entry-hd"><span class="entry-tag new">16 · ★ guarded</span><h3>slope — 2 시점 비교 + 순위 역전</h3></div>
+      <div class="entry-desc">before/after 2개 점 + 연결선. 3-10 항목. data: <code>{items:[{label, before, after}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">2024 → 2026 OS 점유율</div>
+        <div class="chart-card-stage chart-stage-slope" data-chart-type="slope"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"slope","title":"OS 점유율 변화","data":{"items":[{"label":"Windows","before":68,"after":61},{"label":"macOS","before":17,"after":22},{"label":"Linux","before":4,"after":9},{"label":"ChromeOS","before":7,"after":5},{"label":"기타","before":4,"after":3}],"labels":{"before":"2024","after":"2026"}}}</script>
+      </div>
+    </div>
+
+    <!-- 17. small_multiples -->
+    <div class="entry" id="small_multiples">
+      <div class="entry-hd"><span class="entry-tag new">17 · ★ guarded</span><h3>small_multiples — 패널 그리드</h3></div>
+      <div class="entry-desc">4-9 패널 같은 축으로 비교. Tufte 의 *small multiples* 원칙. data: <code>{panels:[{title, series:[{x,y}]}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">주요 지수 6개월 (4개 비교)</div>
+        <div class="chart-card-stage chart-stage-small_multiples" data-chart-type="small_multiples"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"small_multiples","title":"주요 지수 6개월","data":{"panels":[{"title":"KOSPI","series":[{"x":1,"y":2580},{"x":2,"y":2620},{"x":3,"y":2680},{"x":4,"y":2710},{"x":5,"y":2760},{"x":6,"y":2784}]},{"title":"S&P 500","series":[{"x":1,"y":5810},{"x":2,"y":5890},{"x":3,"y":5750},{"x":4,"y":5920},{"x":5,"y":6050},{"x":6,"y":6120}]},{"title":"Nikkei","series":[{"x":1,"y":38420},{"x":2,"y":39100},{"x":3,"y":39800},{"x":4,"y":40200},{"x":5,"y":40850},{"x":6,"y":41200}]},{"title":"HSI","series":[{"x":1,"y":17820},{"x":2,"y":18100},{"x":3,"y":18450},{"x":4,"y":18200},{"x":5,"y":18650},{"x":6,"y":19100}]}]}}</script>
+      </div>
+    </div>
+
+    <!-- 18. waterfall -->
+    <div class="entry" id="waterfall">
+      <div class="entry-hd"><span class="entry-tag new">18 · ★ guarded</span><h3>waterfall — 양/음 누적 분해 (재무)</h3></div>
+      <div class="entry-desc">시작 → 가감 → 종착. v5.4.3 결정 트리 step 0 — 재무·수익성 보고서는 sankey 또는 waterfall 강제. data: <code>[{name, value, type?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">2026 1Q 영업이익 분해 (조 원)</div>
+        <div class="chart-card-stage chart-stage-waterfall" data-chart-type="waterfall"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"waterfall","title":"영업이익 분해","data":[{"name":"매출","value":333.6,"type":"total"},{"name":"매출원가","value":-218.4},{"name":"판관비","value":-58.0},{"name":"영업이익","value":57.2,"type":"total"}]}</script>
+      </div>
+    </div>
+
+    <!-- 19. range_bar -->
+    <div class="entry" id="range_bar">
+      <div class="entry-hd"><span class="entry-tag new">19 · ★ guarded</span><h3>range_bar — 신뢰구간 막대</h3></div>
+      <div class="entry-desc">low/high 구간 + 중앙값. 예측 분포 / 합의 vs 이상 비교. data: <code>[{name, low, high, mid?}]</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">2026 GDP 성장률 전망 (기관별)</div>
+        <div class="chart-card-stage chart-stage-range_bar" data-chart-type="range_bar"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"range_bar","title":"GDP 성장률 전망","data":[{"name":"IMF","low":1.8,"high":2.4,"mid":2.1},{"name":"OECD","low":1.6,"high":2.2,"mid":1.9},{"name":"한국은행","low":1.9,"high":2.5,"mid":2.2},{"name":"KDI","low":1.7,"high":2.3,"mid":2.0},{"name":"민간 평균","low":1.5,"high":2.6,"mid":2.05},{"name":"Bloomberg 컨센서스","low":1.8,"high":2.3,"mid":2.05}]}</script>
+      </div>
+    </div>
+
+    <!-- 20. sankey -->
+    <div class="entry" id="sankey">
+      <div class="entry-hd"><span class="entry-tag new">20 · ★ v5.3.0</span><h3>sankey — 흐름 분해 (자본·매출)</h3></div>
+      <div class="entry-desc">노드 간 양적 flow. 재무 분해의 정공법 (CHART-AP-19 fix). data: <code>{nodes:[{id}], links:[{source, target, value, negative?}]}</code></div>
+      <div class="chart-card">
+        <div class="chart-card-title">매출 → 사업부 → 손익 (1Q 분기 흐름)</div>
+        <div class="chart-card-stage chart-stage-sankey" data-chart-type="sankey"><svg></svg></div>
+        <script type="application/json" class="chart-payload-inline">{"type":"sankey","title":"매출 흐름","data":{"nodes":[{"id":"총매출"},{"id":"DS (반도체)"},{"id":"모바일"},{"id":"디스플레이"},{"id":"가전"},{"id":"비용"},{"id":"영업이익"}],"links":[{"source":"총매출","target":"DS (반도체)","value":140},{"source":"총매출","target":"모바일","value":103},{"source":"총매출","target":"디스플레이","value":50},{"source":"총매출","target":"가전","value":40},{"source":"DS (반도체)","target":"비용","value":88},{"source":"DS (반도체)","target":"영업이익","value":52},{"source":"모바일","target":"비용","value":92},{"source":"모바일","target":"영업이익","value":11},{"source":"디스플레이","target":"비용","value":48,"negative":true},{"source":"디스플레이","target":"영업이익","value":2},{"source":"가전","target":"비용","value":34},{"source":"가전","target":"영업이익","value":6}]}}</script>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Footer ═══════════════════════════ -->
+<footer>
+  <div class="container">
+    <div>20 production chart types · v5.4.4 live catalog</div>
+    <div style="margin-top:8px">
+      SSOT: <a href="https://github.com/doroper98/agents_reviewer/blob/main/src/templates/static/charts.js">charts.js</a> ·
+      <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/MONO_THEME_GUIDE.md">MONO_THEME_GUIDE.md</a> ·
+      <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/CHART_RENDERING_ANTIPATTERNS.md">CHART-AP 19종</a>
+    </div>
+    <div style="margin-top:8px">애니메이션 가드: CHART-AP-18 (≤700ms · prefers-reduced-motion 정적 폴백 · IntersectionObserver 1회 재생 · fallback 즉시 렌더)</div>
+  </div>
+</footer>
+
+<!-- production charts.js — 페이지 내 모든 .chart-card-stage[data-chart-type] 자동 렌더 -->
+<script src="../src/templates/static/charts.js"></script>
+
+</body>
+</html>
