@@ -327,8 +327,211 @@ async def fetch_many_images(
     return out
 
 
+# ─── v5.4.1 — 이미지 로컬 다운로드 + URL 치환 ─────────────────────
+# Composer 가 emit 한 og:image URL 을 보고서 도메인 (Cloudflare Pages) 에서
+# 직접 serve 하기 위한 helper. 두 가지 문제 동시 해소:
+#   ① hotlink 차단 — 메이저 매체 (FT/Reuters/Bloomberg 등) CDN 이 외부 도메인
+#     `<img src>` 의 referrer / origin 을 검증해 403 반환. 원본 보고서에서
+#     이미지 깨져 보이는 v5.4.0 회귀의 원인.
+#   ② 영구 보존 — 원본 URL 이 만료 / 변경되면 보고서 자체가 깨짐. 봇이
+#     다운로드해 함께 업로드하면 보고서 자체로 self-contained.
+#
+# 파일명은 image URL 의 SHA256[:16] + Content-Type 기반 확장자 — 같은 URL 이
+# 두 번 등장해도 한 번만 다운로드 (dedup). reports/img/<hash>.<ext> 에 저장하면
+# Cloudflare Pages 업로드 시 reports 디렉토리 통째로 올라감.
+
+
+import hashlib
+import os
+from pathlib import Path
+
+
+_CTYPE_EXT_MAP: dict[str, str] = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+    "image/avif": ".avif",
+    "image/svg+xml": ".svg",
+}
+
+
+async def download_image_to_dir(
+    url: str,
+    dst_dir: str,
+    *,
+    session: aiohttp.ClientSession | None = None,
+    timeout_s: float = 10.0,
+    max_bytes: int = 12 * 1024 * 1024,  # 12 MB cap — 메이저 매체 og:image 충분
+) -> str | None:
+    """단일 image URL 을 dst_dir 에 다운로드. 반환은 *파일명만* (상대 경로).
+
+    파일명 = SHA256(URL)[:16] + Content-Type 기반 확장자.
+    같은 URL 이 이미 dst_dir 에 있으면 다운로드 안 하고 캐시된 파일명 반환.
+
+    Args:
+        url: og:image 절대 URL.
+        dst_dir: 저장할 디렉토리 절대 경로 (없으면 자동 생성).
+        session: 재사용할 aiohttp 세션 (없으면 매 호출 새로 만듦).
+        timeout_s: HTTP timeout.
+        max_bytes: 단일 이미지 최대 크기. 초과하면 abort.
+
+    Returns:
+        성공 시 *파일명 only* (e.g. "a3f5...c8.jpg"). 호출자가 보고서 HTML 의
+        src 값으로 사용할 상대 경로. 실패 시 None — 호출자가 원본 URL 유지 또는
+        figure 자체 제거 결정.
+    """
+    if not url or not url.startswith(("http://", "https://")):
+        return None
+
+    Path(dst_dir).mkdir(parents=True, exist_ok=True)
+    url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
+
+    # 캐시 hit — 이미 다운로드된 파일 (확장자 모름 → 스캔)
+    for ext in _CTYPE_EXT_MAP.values():
+        cached = os.path.join(dst_dir, f"{url_hash}{ext}")
+        if os.path.exists(cached) and os.path.getsize(cached) > 0:
+            return f"{url_hash}{ext}"
+
+    own_session = session is None
+    if own_session:
+        connector = aiohttp.TCPConnector(limit=4, ttl_dns_cache=300)
+        session = aiohttp.ClientSession(connector=connector)
+
+    try:
+        timeout = aiohttp.ClientTimeout(total=timeout_s)
+        # 이미지 fetch — referrer 보냄 (CDN 일부는 referrer 있어야 200, 없으면
+        # 403). 메타 HTML fetch 와 달리 같은 매체 도메인을 referrer 로 보냄.
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            referer = f"{parsed.scheme}://{parsed.netloc}/"
+        except Exception:
+            referer = ""
+
+        headers = dict(_FETCH_HEADERS)
+        headers["Accept"] = "image/avif,image/webp,image/png,image/jpeg,image/*,*/*;q=0.8"
+        if referer:
+            headers["Referer"] = referer
+
+        async with session.get(url, timeout=timeout, allow_redirects=True, headers=headers) as resp:
+            if resp.status != 200:
+                logger.warning(
+                    "[image_fetcher] download %s HTTP %d (skip)", url, resp.status,
+                )
+                return None
+            ctype = (resp.headers.get("Content-Type") or "").lower().split(";")[0].strip()
+            ext = _CTYPE_EXT_MAP.get(ctype)
+            if ext is None:
+                # 알 수 없는 type 이면 URL 의 확장자 추측 (메이저 매체는 대부분 jpg)
+                from urllib.parse import urlparse as _up
+                path_lower = _up(url).path.lower()
+                for k_ext in _CTYPE_EXT_MAP.values():
+                    if path_lower.endswith(k_ext):
+                        ext = k_ext
+                        break
+                if ext is None:
+                    logger.warning(
+                        "[image_fetcher] %s: unknown content-type %r — skip", url, ctype,
+                    )
+                    return None
+
+            # 본문 chunked read — max_bytes 초과 시 abort
+            buf = bytearray()
+            async for chunk in resp.content.iter_chunked(64 * 1024):
+                buf.extend(chunk)
+                if len(buf) > max_bytes:
+                    logger.warning(
+                        "[image_fetcher] %s exceeds %d bytes (skip)", url, max_bytes,
+                    )
+                    return None
+            if len(buf) < 1024:
+                # 1KB 미만이면 placeholder / error page 일 가능성
+                logger.warning(
+                    "[image_fetcher] %s too small (%d bytes, skip)", url, len(buf),
+                )
+                return None
+    except (asyncio.TimeoutError, aiohttp.ClientError) as e:
+        logger.warning("[image_fetcher] download %s error: %s", url, e)
+        return None
+    except Exception as e:  # pragma: no cover  — 예상 못한 에러는 조용히 fail
+        logger.warning("[image_fetcher] download %s unexpected: %s", url, e)
+        return None
+    finally:
+        if own_session and session is not None:
+            await session.close()
+
+    fname = f"{url_hash}{ext}"
+    dst_path = os.path.join(dst_dir, fname)
+    try:
+        with open(dst_path, "wb") as f:
+            f.write(bytes(buf))
+    except OSError as e:
+        logger.warning("[image_fetcher] write %s failed: %s", dst_path, e)
+        return None
+
+    logger.info("[image_fetcher] saved %s → %s (%d bytes)", url, fname, len(buf))
+    return fname
+
+
+async def localize_image_urls(
+    image_urls: list[str],
+    dst_dir: str,
+    *,
+    url_prefix: str = "img",
+) -> dict[str, str]:
+    """다수 image URL 을 병렬 다운로드 → URL → 상대경로 매핑 반환.
+
+    Args:
+        image_urls: composed_report 에 박힌 image_url 들의 list (중복 OK).
+        dst_dir: 다운로드 대상 디렉토리 절대 경로.
+        url_prefix: HTML 의 ``<img src>`` 에 박을 prefix. dst_dir 가
+            ``reports/img/`` 면 ``url_prefix="img"`` → 보고서 HTML 에서
+            ``src="img/<hash>.jpg"`` 로 참조 (HTML 도 reports/ 아래 있으므로).
+
+    Returns:
+        ``{원본 URL: 상대 경로}`` dict. 다운로드 실패한 URL 은 dict 에 X.
+        호출자가 composed_report 의 image_url 을 이 dict 로 swap.
+    """
+    if not image_urls:
+        return {}
+
+    # 중복 제거
+    unique = list(dict.fromkeys(u for u in image_urls if u))
+    if not unique:
+        return {}
+
+    connector = aiohttp.TCPConnector(limit=4, ttl_dns_cache=300)
+    async with aiohttp.ClientSession(connector=connector) as session:
+        tasks = [
+            download_image_to_dir(u, dst_dir, session=session, timeout_s=10.0)
+            for u in unique
+        ]
+        try:
+            results = await asyncio.wait_for(
+                asyncio.gather(*tasks, return_exceptions=True),
+                timeout=30.0,
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                "[image_fetcher] localize total timeout — partial result",
+            )
+            return {}
+
+    mapping: dict[str, str] = {}
+    for url, r in zip(unique, results):
+        if isinstance(r, str) and r:
+            mapping[url] = f"{url_prefix.rstrip('/')}/{r}"
+        elif isinstance(r, Exception):
+            logger.debug("[image_fetcher] localize gather exception: %s", r)
+    return mapping
+
+
 __all__ = [
     "AvailableImage",
     "fetch_og_metadata",
     "fetch_many_images",
+    "download_image_to_dir",
+    "localize_image_urls",
 ]

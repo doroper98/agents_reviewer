@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.0
+last_synced_with: v5.4.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.1] — 2026-05-20
+
+### Fixed — 보고서 사진 broken image 회귀 (외부 hotlink 차단)
+
+**증상**: v5.4.0 첫 배포 후 사용자 피드백 — "본문에는 있는데 (figure / 캡션 /
+credit 은 보이는데) 이미지가 안 보여, 마치 다운로드가 안 된 것처럼." 즉
+composer 가 og:image URL 을 정상 emit + 템플릿이 `<img src>` 박았는데 브라우저
+에서 broken image 자리.
+
+**원인**: 메이저 매체 (FT / Reuters / Bloomberg / 한국 매체 다수) 의 이미지 CDN
+이 *외부 도메인의 hotlink 검증* — referrer / origin 헤더로 자기 사이트 외부에서
+`<img>` 로 박는 걸 403 으로 차단. og:image URL 자체는 valid 하고 브라우저로 직접
+열면 보이지만, *다른 도메인 (Cloudflare Pages) 에 박힌 `<img src>`* 로는 못
+가져옴. v5.4.0 의 설계가 외부 URL 그대로 참조하는 방식이라 정통으로 회귀.
+
+**해결 — 봇이 직접 다운로드 + 동일 출처 serve**:
+1. `src/tools/image_fetcher.py` 에 `download_image_to_dir(url, dst_dir)` +
+   `localize_image_urls(urls, dst_dir)` 추가. 이미지 fetch 시엔 매체 자기
+   도메인을 Referer 로 보냄 (CDN 일부는 referrer 있어야 200) + Accept 헤더를
+   image/* 로 설정. 파일명 = SHA256(URL)[:16] + Content-Type 기반 확장자
+   (같은 URL 두 번 등장 시 자동 dedup, 12MB cap, 1KB 미만 placeholder 제거).
+2. `src/agents/report_synthesizer.py` 의 `synthesize()` 가 template.render 직전
+   에 `_localize_report_images(result, output_dir)` 호출 — composed_report 의
+   hero_image + 각 sec.images 의 image_url 을 *전부 다운로드 후 상대 경로
+   ('img/<hash>.jpg') 로 swap*. Cloudflare Pages 가 reports/ 전체를 업로드하므로
+   이미지와 HTML 이 *동일 출처* → hotlink 검사 무관.
+3. 추가 안전망 — `freeform_essay.html` 의 `<img>` 에 `referrerpolicy="no-referrer"`
+   + `crossorigin="anonymous"` 속성. 다운로드 실패해 원본 URL 유지된 케이스
+   에서 referrer 기반 차단을 가볍게 우회. 로컬 상대경로일 땐 브라우저가 무시.
+
+**Graceful degrade**: 다운로드 실패한 URL 은 *원본 URL 유지* (위 referrer 속성
+도움받아 부분적으로라도 보일 가능성 있어 broken 보다 낫다는 판단). 모든 URL
+실패해도 보고서 렌더 정상 진행, warning log 만 남김. composer 가 사진 emit X
+한 보고서는 hook 자체 no-op.
+
+**검증**: aiohttp mock 기반 단위 테스트 — 3 URL 다운로드 → reports/img/ 에
+실제 파일 저장 → composed_report 의 image_url 이 'img/<hash>.jpg' 상대경로로
+swap → 같은 URL 두 번 등장 시 동일 로컬 파일 가리키는 dedup 까지 정상 동작.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.0 → v5.4.1
+- `src/tools/image_fetcher.py`: download_image_to_dir / localize_image_urls 신규,
+  `__all__` export 갱신
+- `src/agents/report_synthesizer.py:synthesize()`: localize hook 추가 (await),
+  `_localize_report_images()` async @staticmethod 신규
+- `src/templates/archetypes/freeform_essay.html`: hero + inline `<img>` 에
+  referrerpolicy + crossorigin 속성 추가
 
 ---
 

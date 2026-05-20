@@ -161,8 +161,13 @@
        와 가장 맥락 닿는 1장을 선택해 emit. 없으면 (자신 없을 때) null. #}
     {% if composed and composed.hero_image and composed.hero_image.image_url %}
     <figure class="freeform-figure hero">
+      {# v5.4.1 — referrerpolicy/crossorigin 은 로컬라이즈 실패해 원본 URL
+         유지된 경우 외부 매체의 hotlink 검사를 가볍게 우회. 로컬 상대경로면
+         이 속성들은 무해 (브라우저가 무시). #}
       <img src="{{ composed.hero_image.image_url }}"
            alt="{{ (composed.hero_image.alt or composed.hero_image.caption or '') | strip_md }}"
+           referrerpolicy="no-referrer"
+           crossorigin="anonymous"
            loading="eager">
       {% if composed.hero_image.caption or composed.hero_image.credit %}
       <figcaption>
@@ -326,6 +331,8 @@
       <figure class="freeform-figure inline">
         <img src="{{ img.image_url }}"
              alt="{{ (img.alt or img.caption or '') | strip_md }}"
+             referrerpolicy="no-referrer"
+             crossorigin="anonymous"
              loading="lazy">
         {% if img.caption or img.credit %}
         <figcaption>

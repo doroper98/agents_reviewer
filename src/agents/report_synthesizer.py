@@ -1073,6 +1073,15 @@ class ReportSynthesizer:
         # deck / headline / closing 등 raw text dict 에 적용.
         env.filters["strip_md"] = self._strip_markdown
 
+        # v5.4.1 — 보고서 이미지 로컬라이즈.
+        # composed_report 의 hero_image + 각 sec.images 의 image_url (외부 매체
+        # CDN URL) 을 봇이 직접 다운로드해 reports/img/ 에 저장 + image_url 을
+        # 상대 경로 ('img/<hash>.jpg') 로 swap. 메이저 매체의 hotlink 차단
+        # (referrer / origin 검증으로 외부 도메인 `<img>` 가 403 받는 v5.4.0
+        # 회귀) 우회. 동시에 영구 보존 효과 — 원본 URL 만료해도 보고서 안전.
+        # Cloudflare Pages 가 reports/ 디렉토리 통째로 업로드하므로 동일 출처.
+        await self._localize_report_images(result, output_dir=self.config.report_output_dir)
+
         # Branch by archetype. six_act_theater = unchanged legacy path (byte-equal output guarantee).
         # New archetypes (financial_transmission, tech_decomposition) render placeholder templates;
         # full block rendering arrives in Step 3.
@@ -1456,6 +1465,75 @@ class ReportSynthesizer:
             parts.append(line)
         parts.append("")
         return "\n".join(parts)
+
+    @staticmethod
+    async def _localize_report_images(result, output_dir: str) -> None:
+        """v5.4.1 — composed_report 의 외부 image_url 을 로컬 파일로 다운로드 + 상대 경로 swap.
+
+        composer 가 emit 한 og:image URL (FT/Reuters/Bloomberg 등 매체 CDN) 은
+        외부 hotlink 차단으로 보고서 HTML 에서 직접 `<img src>` 로 박으면 403/
+        broken image 가 됨 — v5.4.0 회귀. 해결: 봇이 직접 다운로드 → reports/
+        img/<hash>.<ext> 에 저장 → composed_report 의 image_url 을 'img/<hash>.
+        <ext>' 상대 경로로 swap. Cloudflare Pages 가 reports/ 통째로 업로드하므로
+        보고서 HTML 과 이미지가 *동일 출처* → hotlink 검사 자체 무관.
+
+        Graceful degrade: 다운로드 실패한 URL 은 원본 URL 그대로 유지 (안 보이는
+        것보단 깨진 img 가 낫다는 가정). 모든 URL 실패해도 보고서 렌더 정상 진행.
+        """
+        composed = getattr(result, "composed_report", None)
+        if composed is None:
+            return
+
+        # 모든 image URL 수집 — hero + 섹션 inline
+        urls: list[str] = []
+        hero = getattr(composed, "hero_image", None)
+        if hero and isinstance(hero, dict) and hero.get("image_url"):
+            urls.append(hero["image_url"])
+        for sec in (composed.sections or []):
+            for img in (getattr(sec, "images", None) or []):
+                if isinstance(img, dict) and img.get("image_url"):
+                    urls.append(img["image_url"])
+
+        if not urls:
+            return
+
+        try:
+            from src.tools.image_fetcher import localize_image_urls
+        except ImportError as e:
+            logger.warning("[report_synthesizer] image_fetcher unavailable: %s", e)
+            return
+
+        img_subdir = os.path.join(output_dir, "img")
+        mapping = await localize_image_urls(urls, img_subdir, url_prefix="img")
+
+        if not mapping:
+            logger.warning(
+                "[report_synthesizer] image localize: %d URLs tried, 0 downloaded — "
+                "보고서 HTML 에 원본 URL 유지 (broken image 가능, hotlink 차단 의심)",
+                len(set(urls)),
+            )
+            return
+
+        # composed_report 의 image_url 들을 상대 경로로 swap
+        if hero and isinstance(hero, dict):
+            local = mapping.get(hero.get("image_url"))
+            if local:
+                hero["image_url"] = local
+        for sec in (composed.sections or []):
+            new_imgs = []
+            for img in (getattr(sec, "images", None) or []):
+                if isinstance(img, dict):
+                    local = mapping.get(img.get("image_url"))
+                    if local:
+                        img["image_url"] = local
+                    new_imgs.append(img)
+            if hasattr(sec, "images"):
+                sec.images = new_imgs
+
+        logger.info(
+            "[report_synthesizer] image localize: %d/%d downloaded → reports/img/",
+            len(mapping), len(set(urls)),
+        )
 
     @staticmethod
     def _sync_static_assets(output_dir: str) -> None:
