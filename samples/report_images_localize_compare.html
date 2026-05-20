@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>v5.4.1 Image Localize — Before/After</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  background: #1a1a1a;
+  color: #d4d4d4;
+  font-size: 14px;
+  line-height: 1.7;
+  padding: 0;
+}
+
+/* Page header */
+.page-header {
+  padding: 36px 20px 24px;
+  background: #0c0c0c;
+  border-bottom: 2px solid #2a2a2a;
+  text-align: center;
+}
+.page-header h1 {
+  font-family: 'Newsreader', serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #f0e2cc;
+  margin-bottom: 8px;
+}
+.page-header .subtitle {
+  font-size: 13px;
+  color: #a89880;
+  max-width: 760px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+.version-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #C9A84C;
+  color: #1a1a1a;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  border-radius: 3px;
+  margin-top: 8px;
+}
+
+/* Comparison grid */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: #1a1a1a;
+}
+@media (max-width: 920px) { .compare-grid { grid-template-columns: 1fr; } }
+
+.compare-cell {
+  padding: 0;
+  border-right: 1px solid #2a2a2a;
+}
+.compare-cell:last-child { border-right: none; }
+
+.cell-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(0,0,0,0.20);
+}
+.cell-tag {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  margin-right: 8px;
+}
+.cell-tag.before { background: #5A2A2A; color: #FFB8B8; }
+.cell-tag.after  { background: #2A5A38; color: #B8FFCB; }
+.cell-title {
+  font-family: 'Newsreader', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fg-1);
+  display: inline;
+}
+.cell-subtitle {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--fg-3);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.3px;
+}
+
+/* freeform_essay 톤 모사 — editorial_cream */
+.compare-cell[data-theme="editorial_cream"] {
+  --bg:#F2EBDB; --bg-2:#ECE3D0; --text:#1F1814; --fg-1:#1F1814; --fg-2:#2D241B; --fg-3:#6B5C4A;
+  --accent:#B05A38; --border-soft:rgba(212,200,176,0.55);
+  background: var(--bg);
+  color: var(--fg-2);
+}
+
+.fr-container { max-width: 480px; margin: 0 auto; padding: 24px 18px 28px; }
+
+.fr-eyebrow {
+  font-size: 10.5px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+.fr-headline {
+  font-family: 'Newsreader','Noto Serif KR',serif;
+  font-size: 22px; font-weight: 900; line-height: 1.22;
+  color: var(--fg-1); margin: 0 0 10px; letter-spacing: -0.3px;
+}
+.fr-deck {
+  font-size: 14px; line-height: 1.55; color: var(--fg-2);
+  margin-bottom: 14px;
+}
+.fr-meta {
+  font-size: 11px; color: var(--fg-3);
+  margin-bottom: 6px;
+}
+.fr-meta span+span::before { content: "·"; margin-right: 8px; opacity: 0.5; }
+
+/* Figure styling — production 그대로 */
+.fr-figure {
+  margin: 16px 0;
+}
+.fr-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-2);
+}
+.fr-figure figcaption {
+  padding: 9px 2px 0;
+  font-family: 'Newsreader',serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-3);
+  font-style: italic;
+}
+.fr-figure figcaption .credit {
+  font-style: normal;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-size: 10.5px;
+  margin-left: 5px;
+  opacity: 0.85;
+}
+
+/* Broken image 시뮬레이션 — 실제 v5.4.0 환경 재현 */
+.broken-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(176, 90, 56, 0.04) 0,
+      rgba(176, 90, 56, 0.04) 8px,
+      rgba(176, 90, 56, 0.10) 8px,
+      rgba(176, 90, 56, 0.10) 16px);
+  border: 1px dashed rgba(176, 90, 56, 0.5);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(139, 42, 42, 0.85);
+  font-size: 12px;
+}
+.broken-img svg { width: 32px; height: 32px; opacity: 0.6; }
+.broken-img .url-line {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #8B2A2A;
+  padding: 3px 9px;
+  background: rgba(139, 42, 42, 0.08);
+  border-radius: 3px;
+  word-break: break-all;
+  max-width: 92%;
+  text-align: center;
+  letter-spacing: -0.2px;
+}
+.broken-img .reason {
+  font-size: 10.5px;
+  color: #8B2A2A;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Diagnosis box */
+.diag {
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  margin: 18px 0 4px;
+}
+.diag.fail {
+  background: rgba(139, 42, 42, 0.06);
+  border: 1px solid rgba(139, 42, 42, 0.25);
+  color: #8B2A2A;
+}
+.diag.ok {
+  background: rgba(74, 107, 62, 0.08);
+  border: 1px solid rgba(74, 107, 62, 0.30);
+  color: #4A6B3E;
+}
+.diag-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.diag code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  padding: 1px 5px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 2px;
+}
+
+/* Bottom explanation */
+.bottom-section {
+  padding: 32px 24px 40px;
+  background: #0c0c0c;
+  border-top: 2px solid #2a2a2a;
+}
+.bottom-section h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f0e2cc;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+@media (max-width: 920px) { .flow-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.flow-step {
+  padding: 14px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: #c0c0b8;
+}
+.flow-step .step-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #C9A84C;
+  margin-bottom: 5px;
+}
+.flow-step .step-title {
+  font-family: 'Newsreader', serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f0e2cc;
+  margin-bottom: 6px;
+}
+.flow-step code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: #88B888;
+  padding: 1px 4px;
+  background: rgba(136, 184, 136, 0.08);
+  border-radius: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>보고서 사진 다운로드 fix — Before / After</h1>
+  <p class="subtitle">
+    메이저 매체의 외부 hotlink 차단 우회. 봇이 og:image 를 직접 다운로드해
+    Cloudflare Pages 도메인에서 함께 serve 하면 broken image 회귀가 사라짐.
+  </p>
+  <span class="version-tag">v5.4.0 → v5.4.1</span>
+</div>
+
+<div class="compare-grid">
+
+  <!-- BEFORE: v5.4.0 -->
+  <div class="compare-cell" data-theme="editorial_cream">
+    <div class="cell-header" style="background: rgba(139, 42, 42, 0.06);">
+      <span class="cell-tag before">BEFORE</span>
+      <span class="cell-title">v5.4.0 — 외부 URL 직접 참조</span>
+      <span class="cell-subtitle">&lt;img src="https://ft.com/...jpg"&gt; → 매체 CDN 의 hotlink 검증으로 403</span>
+    </div>
+    <div class="fr-container">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span>
+      </div>
+
+      <figure class="fr-figure">
+        <div class="broken-img">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <div class="reason">사진을 불러오지 못했습니다</div>
+          <div class="url-line">https://www.ft.com/__origami/...8a3c4f12.jpg</div>
+        </div>
+        <figcaption>
+          5월 16일, 워싱턴 — 파월 의장은 기자회견 내내 데이터 의존을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+
+      <div class="diag fail">
+        <div class="diag-label">⚠ Network 진단 (브라우저 콘솔)</div>
+        <code>GET https://www.ft.com/...jpg</code> → <strong>403 Forbidden</strong><br>
+        <code>x-deny-reason: cross-origin-hotlink</code><br>
+        매체 CDN 이 <code>Referer: cloudflare-pages.dev</code> 를 차단.
+      </div>
+    </div>
+  </div>
+
+  <!-- AFTER: v5.4.1 -->
+  <div class="compare-cell" data-theme="editorial_cream">
+    <div class="cell-header" style="background: rgba(74, 107, 62, 0.06);">
+      <span class="cell-tag after">AFTER</span>
+      <span class="cell-title">v5.4.1 — 봇이 다운로드 → 상대 경로</span>
+      <span class="cell-subtitle">&lt;img src="img/b01f9014..jpg"&gt; → 보고서와 동일 출처, hotlink 검사 무관</span>
+    </div>
+    <div class="fr-container">
+      <div class="fr-eyebrow">Event Analysis · Composed</div>
+      <h1 class="fr-headline">Fed 의 6 월 회의, 시장이 절반만 듣고 있다</h1>
+      <p class="fr-deck">파월 의장의 발언은 두 갈래의 신호를 함께 보내고 있다.</p>
+      <div class="fr-meta">
+        <span>거시·통화정책</span><span>2026-05-20</span>
+      </div>
+
+      <figure class="fr-figure">
+        <img src="https://picsum.photos/seed/freeform-after-trump/900/506"
+             alt="단상에서 발언하는 Fed 의장의 정면 사진">
+        <figcaption>
+          5월 16일, 워싱턴 — 파월 의장은 기자회견 내내 데이터 의존을 일곱 차례 반복했다.
+          <span class="credit">© Reuters</span>
+        </figcaption>
+      </figure>
+
+      <div class="diag ok">
+        <div class="diag-label">✓ Network 진단 (브라우저 콘솔)</div>
+        <code>GET img/b01f9014390f0225.jpg</code> → <strong>200 OK</strong><br>
+        같은 도메인의 정적 파일 (Cloudflare Pages 가 reports/img/ 통째로 업로드).<br>
+        원본 URL 만료 / 매체 차단 정책 변경에도 보고서 안전.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-section">
+  <h2>봇 내부 흐름 — synthesize() 안에서 일어나는 일</h2>
+  <div class="flow-grid">
+    <div class="flow-step">
+      <div class="step-num">① 수집</div>
+      <div class="step-title">image URL 모으기</div>
+      composed_report 의 <code>hero_image.image_url</code> + 모든
+      <code>sec.images[].image_url</code> 을 list 로 수집.
+    </div>
+    <div class="flow-step">
+      <div class="step-num">② 다운로드</div>
+      <div class="step-title">병렬 fetch + 매체 Referer</div>
+      매체 자기 도메인을 <code>Referer</code> 로 송신해 CDN 검사 통과.
+      파일명 = <code>SHA256(URL)[:16]</code> + 자동 확장자, 같은 URL dedup.
+    </div>
+    <div class="flow-step">
+      <div class="step-num">③ 저장</div>
+      <div class="step-title">reports/img/ 에 기록</div>
+      12MB cap, 1KB 미만 placeholder 거름. 1주 캐시 (이미 있으면 skip).
+      Cloudflare 가 reports/ 통째로 업로드 → 자동으로 함께 배포.
+    </div>
+    <div class="flow-step">
+      <div class="step-num">④ swap</div>
+      <div class="step-title">composed_report URL 치환</div>
+      <code>image_url</code> 을 <code>img/&lt;hash&gt;.jpg</code> 상대경로로 교체.
+      template.render() → HTML 의 <code>&lt;img src&gt;</code> 가 동일 출처.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
