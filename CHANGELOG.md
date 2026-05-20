@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.4
+last_synced_with: v5.4.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.5] — 2026-05-20
+
+### Fixed — hero 사진 figure 위·아래 여백 비대칭
+
+**증상**: 사용자 피드백 — "사진은 잘 들어갔는데, 사진 위아래 여백이 너무 큰 거 같아. 특히 아래쪽이 더 커." 첫 사진 박힌 보고서 (삼성전자 2026 1Q, v5.4.2 시점) 의 hero 사진 영역에서 caption 아래 ~ 다음 섹션 (목차) 사이 공백이 사진 위쪽 (meta 아래) 보다 눈에 띄게 큼.
+
+**원인**: hero figure 가 `.freeform-hero` header 안에 있고, header 의 `padding: 48px 0 32px` 의 bottom 32px 가 figcaption 직후에 그대로 적용. figure 자체의 margin-bottom 은 0 이지만 header padding 이 누적되어 사용자 인지로는 ~46px (figcaption padding-top 10 + header padding-bottom 32 + 다음 섹션 시작 여백) 공백.
+
+**해결** — `src/templates/archetypes/freeform_essay.html` CSS 3곳:
+
+1. `.freeform-figure.hero` margin `18px 0 0` → `12px 0 0` (사진 위 여백 살짝 좁힘 — meta 와의 호흡 유지)
+2. `.freeform-hero:has(.freeform-figure.hero) {padding-bottom: 14px}` 신규 — `:has()` 셀렉터로 *사진 있을 때만* 적용. 사진 없는 보고서는 기존 32px 유지 (의도된 호흡)
+3. `.freeform-figure figcaption` padding-top `10px` → `8px` — 사진과 caption 사이도 살짝 좁힘 (전 figure 공통, hero/inline 모두)
+4. 모바일 (≤640px) `.freeform-hero:has(.freeform-figure.hero) {padding-bottom: 12px}` 추가 — 24→12
+
+**Graceful degrade**: `:has()` 미지원 구형 브라우저 (Safari 15.3 이하 / Firefox 120 이하) 는 기존 padding-bottom 32px 그대로 — 시각만 조금 헐렁할 뿐 기능 영향 X.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.4 → v5.4.5
+- `src/templates/archetypes/freeform_essay.html` (3 CSS 라인 + 모바일 break)
+- README.md Status + last_synced_with
+- 본 CHANGELOG entry
+
+**검증**: 다음 사진 박힌 보고서 (예: 다음 재무·기업 분석 보고서) 에서 caption 직후 본문까지의 공백이 사진 위 (meta→사진) 와 시각적으로 대칭이어야 정상.
 
 ---
 
