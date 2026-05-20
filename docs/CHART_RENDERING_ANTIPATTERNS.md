@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.2.0
+last_synced_with: v5.4.3
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -513,6 +513,59 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
 - `IntersectionObserver` `rootMargin: '0px 0px -8% 0px', threshold: 0.12` +
   `unobserve` 직후 호출.
 - ambient drift 는 본 PR 미도입 (검토 후 별도 PR 시 RAF pause 가드 필수).
+
+---
+
+## CHART-AP-19: 재무·수익성 보고서에서 sankey/waterfall 분해 차트 누락 (v5.4.3 신설)
+
+**증상**: 사건 카테고리가 명백한 *재무 분해* (기업 실적 / 재무제표 / 수익성
+분석 / 세그먼트 매출) 인데 composer 가 시계열 + bar + slope 만 박고 sankey
+또는 waterfall (분해형 차트) 을 0개 emit. 추이는 보여주는데 *구조* 를 안
+보여주는 보고서.
+
+**대표 회귀 사례** (v5.4.2 — 삼성전자 2026 1Q 보고서
+`analysis_20260520_134233`):
+- event_category: '기업 재무 / 반도체 산업'
+- 본문 narrative: 매출 333.6조 → DS / 모바일 / 디스플레이 / 가전 → 비용 →
+  영업이익 57.2조. DS 영업이익률 37.3% → 66%. HBM4 ASP 분해. 명백한
+  multi-stage 흐름 + P&L 1차원 분해.
+- composer emit: `line ×4 + slope + bar + range_bar + forecast` — distinct
+  5종이라 monotony 가드 통과, **sankey/waterfall 0**.
+
+**근본 원인 — 결정 트리 collapse**:
+- SYSTEM_PROMPT 의 [차트 type 결정 트리] (v5.2.14) 가 step 1 = "시간축
+  있음?" 으로 시작. 시계열 데이터 (관련 기업 주가 + 분기 이익 추이) 가
+  풍부하면 composer 가 step 1 분기로 먼저 collapse → step 3 (카테고리 비교)
+  의 sankey / waterfall branch 까지 못 도달.
+- 5-Layer Guarantee 의 Layer 4 (다양성 쿼터, `chart_type_monotony`) 도
+  distinct ≥2 만 검사 — distinct 5종이라 silent 통과. sankey 누락에 *알람
+  자체가 울리지 않음*.
+- Layer 3 (method × exhibit 매트릭스) 의 `_DEFAULT_REQUIRED_EXHIBITS` 는
+  research_director opt-in (디폴트 OFF) 이라 작동 안 함.
+
+**검증 체크리스트**:
+- [ ] composer SYSTEM_PROMPT 의 결정 트리에 *step 0 "사건 카테고리가 재무·
+      수익성·기업 분석인가?"* 가 step 1 보다 먼저 평가됨을 명시
+- [ ] step 0 매치 시 sankey 또는 waterfall *최소 1개* emit 강제 (시계열·
+      추이는 *함께* OK, 단 분해 차트 ≥1 가 함께 있어야)
+- [ ] anti-bias 가드 섹션에 "재무·수익성 보고서인데 시계열 + bar 만 박지 말
+      것" 명시적 라벨링
+- [ ] sankey type 별 가이드에 구체 사례 (총매출 → 사업부 → 영업이익, 적자
+      flow 는 `negative=true`) 포함
+
+**Fix (v5.4.3)**:
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` 의 [차트 type 결정 트리]
+  에 **step 0** 신설 (재무 카테고리 → sankey/waterfall ≥1 강제).
+- 같은 SYSTEM_PROMPT 의 anti-bias 가드 + sankey type 가이드 동시 보강 (3곳).
+
+**한계 — 향후 강화 옵션**:
+- (A) Layer 4 다양성 쿼터 보강: *재무 카테고리 한정* sankey/waterfall 미포함
+  시 soft fail 추가. 현재 distinct 만 검사 — 특정 type 누락은 검사 X.
+- (B) Layer 3 활성화: `enable_research_director` opt-in 을 디폴트 ON 으로
+  전환하면 `_DEFAULT_REQUIRED_EXHIBITS` 가 method × type 매핑 강제. 단 LLM
+  호출 1개 추가.
+- (C) 본 fix 만으로 v5.4.3 이후 재무 보고서의 sankey 빈도 추적 — telemetry
+  로 효과 측정 후 (A) / (B) 도입 여부 결정.
 
 ---
 

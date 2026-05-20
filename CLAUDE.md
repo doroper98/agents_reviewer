@@ -194,7 +194,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **18개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **19개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -204,6 +204,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-16: donut 2-segment 안티패턴 (v5.1.2 신설 — 정보 손실 + subtitle 잉여 + 렌더러 silent return 빈 카드 회귀, `DonutGuard.validate_segment_count` 추가)
 - CHART-AP-17: 차트 type starvation (v5.3.0 신설 — 캔들 회귀 교훈. 새 type 의 production wiring 만으로는 부족 — 5-Layer Usage Guarantee 필요)
 - CHART-AP-18: entry 애니메이션 motion 회귀 (v5.3.0 신설 — duration / easing / prefers-reduced-motion / IntersectionObserver unobserve / ambient RAF pause 가드)
+- CHART-AP-19: 재무·수익성 보고서에서 sankey/waterfall 분해 차트 누락 (v5.4.3 신설 — 결정 트리 collapse, 시계열 분기로 먼저 매치되어 분해 차트 branch 까지 못 도달. SYSTEM_PROMPT 에 step 0 추가)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
