@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.5
+last_synced_with: v5.4.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.6] — 2026-05-21
+
+### Fixed — sankey 차트 "위로 쏠림" (CHART-AP-20)
+
+**증상**: 사용자 피드백 — 삼성전자 DS 매출 흐름 sankey (analysis_20260521_122324) 가 다크 스테이지 위쪽 60% 만 채우고 아래쪽 ~40% 가 휑함. "한쪽으로 쏠려있다" 는 시각 인상.
+
+**원인**: `drawSankey` 의 viewBox 공식 `H = max(320, min(560, 60 + n*28))` 이 노드 적은 sankey (≤9 노드) 에 320px 를 강제 → 자연 사이즈 284 보다 36px 과대. 추가로 `MAX_NODE_H_RATIO = 0.50` 이라 가장 두꺼운 컬럼도 zones.data 의 50% 만 사용 → 8-노드 케이스에선 컨텐츠가 zones 의 ~68% 차지하고 위·아래 각 16% 가 여백. 가중치 큰 노드 (메모리 65) 가 첫 컬럼 위쪽에 자연 배치되면서 시각 무게중심이 위로 시프트 → 다크 스테이지 아래쪽 60px 가 눈에 띄게 휑함.
+
+**해결** — `src/templates/static/charts.js:drawSankey` 의 colKeys forEach 직후, link slice 할당 *전에* content-fit viewBox 패스 신설:
+
+1. 노드 positioning 끝난 뒤 `nodes` 의 vertical extent 측정 — 중간 컬럼 노드는 라벨 padding (위 18px / 아래 22px) 함께 산입
+2. `tightH = (contentBot - contentTop) + 14 + 14` 으로 viewBox H 재계산
+3. tightH < 원래 H 일 때만 `dy = 14 - contentTop` 만큼 모든 노드 y 시프트 + svg viewBox 재설정
+4. 시프트는 link slice 계산 전에 수행 (slice 는 `n.y0` 직접 참조)
+
+**결과**:
+- 8-노드 DS 매출 케이스: viewBox 320 → 238 (26% 축소), 위 7.86px / 아래 9.88px 로 균형. 다크 스테이지 361px → 263px (98px 축소)
+- 12-노드 회귀 케이스 (chart_catalog 의 매출 → 사업부 → 비용/이익): viewBox 396 → 256, 마찬가지 균형
+- v5.3.0 의 sankey 4원칙 (anchor 압축 / source-weighted ordering / 분기 V 분산 / column y-centering) 은 *보존*. 결과 viewBox 만 압축
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.5 → v5.4.6
+- `src/templates/static/charts.js:drawSankey` (content-fit viewBox 패스 추가)
+- `docs/CHART_RENDERING_ANTIPATTERNS.md` (CHART-AP-20 append + last_synced_with v5.4.3 → v5.4.6)
+- `CLAUDE.md` Anti-Patterns 차트 렌더링 (19 → 20, CHART-AP-20 line)
+- `README.md` Status
+- 본 CHANGELOG entry
+
+**검증**: `sankey_compare.png` (좌 v5.4.5 / 우 v5.4.6) — 아래쪽 dead space 가 사라지고 위·아래 여백이 8~10px 으로 대칭.
 
 ---
 

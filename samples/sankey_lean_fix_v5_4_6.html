@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="editorial_cream">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sankey 위로 쏠림 fix — v5.4.6 (CHART-AP-20)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,800&family=Noto+Sans+KR:wght@300;500;700&family=Noto+Serif+KR:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#F2EBDB; --card:#F2DEC1; --card-deep:#EFE0C4; --border-light:#D3BA94;
+  --text:#3a2e22; --text-2:#5e4d3a; --muted:#7a6a55; --border-soft:#D3BA94;
+  --border:#D3BA94; --accent:#B05A38; --gold:#B07D2A; --down:#C9837A;
+  --shadow:0 1px 2px rgba(0,0,0,0.05); --text-primary:#3a2e22; --text-muted:#7a6a55;
+}
+body{font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); margin:0; padding:40px 24px 80px; line-height:1.6}
+.wrap{max-width:1320px; margin:0 auto}
+h1{font-family:'Newsreader',serif; font-weight:800; font-size:32px; margin:0 0 8px; letter-spacing:-.5px}
+.subhead{font-style:italic; color:var(--text-2); margin:0 0 32px; font-size:15px}
+section{margin-bottom:40px}
+section h2{font-family:'Newsreader',serif; font-weight:700; font-size:22px; margin:0 0 12px; letter-spacing:-.3px}
+section h3{font-family:'Newsreader',serif; font-weight:700; font-size:16px; margin:24px 0 8px; color:var(--text-2)}
+.compare-img{display:block; width:100%; max-width:1320px; border:1px solid var(--border-light); border-radius:8px; margin-top:8px; background:#fff}
+.note{font-size:13px; color:var(--muted); margin:6px 0 0}
+.note code{background:rgba(176,90,56,0.08); padding:1px 6px; border-radius:3px; font-family:'IBM Plex Mono', ui-monospace, monospace; font-size:12px}
+ul.bullets{margin:8px 0 0 20px; padding:0}
+ul.bullets li{margin:4px 0; font-size:14px}
+.diff{background:var(--card); border:1px solid var(--border-light); border-radius:10px; padding:18px 16px; box-shadow:var(--shadow); margin-top:8px}
+pre{background:rgba(176,90,56,0.05); border-left:3px solid var(--accent); padding:12px 16px; overflow-x:auto; font-family:'IBM Plex Mono', ui-monospace, monospace; font-size:12px; line-height:1.65; margin:0; border-radius:0 4px 4px 0}
+
+/* chart card tokens — same as report */
+.chart-card{background:var(--card); border:1px solid var(--border-light); border-radius:10px; padding:18px 16px 14px; margin:12px 0; box-shadow:var(--shadow)}
+.chart-card-title{font-family:'Noto Serif KR',serif; font-weight:700; font-size:14px; color:var(--text-primary); margin-bottom:4px; letter-spacing:-.3px}
+.chart-card-subtitle{font-size:12.5px; font-style:italic; color:var(--text-2); margin:-2px 0 12px; line-height:1.55}
+.chart-card-stage{width:100%; background:var(--card-deep); border-radius:8px; padding:10px; position:relative}
+.chart-card-stage svg{display:block; width:100%; height:auto; font-family:'Noto Sans KR',sans-serif}
+.chart-card-takeaway{margin-top:8px; padding:8px 12px; background:rgba(176,90,56,0.07); border-left:3px solid var(--accent); border-radius:0 4px 4px 0; font-size:12px; line-height:1.6; color:var(--text)}
+.chart-card-takeaway-label{font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sankey "위로 쏠림" fix — v5.4.6</h1>
+  <p class="subhead">CHART-AP-20 — viewBox 과대 프로비저닝으로 다크 스테이지 아래쪽 ~40% 가 휑함. content-fit viewBox 패스로 해소.</p>
+
+  <section>
+    <h2>Before / After 비교</h2>
+    <img class="compare-img" src="sankey_lean_fix_v5_4_6.png" alt="Sankey before/after comparison">
+    <p class="note">좌측 (v5.4.5): viewBox <code>760×320</code> · 다크 스테이지 ≈ 361px · 아래쪽 ~60px 의 dead space. 우측 (v5.4.6): viewBox <code>760×238</code> · 스테이지 ≈ 263px · 위 7.86px / 아래 9.88px 로 균형.</p>
+  </section>
+
+  <section>
+    <h2>증상 분석</h2>
+    <ul class="bullets">
+      <li><b>viewBox H 클램프</b> — <code>H = Math.max(320, Math.min(560, 60 + nodes.length * 28))</code>. 8-노드 sankey 의 자연 사이즈는 60+8×28=284 인데 320 으로 강제 → 36px 과대 프로비저닝.</li>
+      <li><b>MAX_NODE_H_RATIO = 0.50</b> — 가장 두꺼운 컬럼도 zones.data 의 50% 만 사용. 컬럼 stack 이 60~65% 차지하고 위·아래 각 16% 가 여백.</li>
+      <li><b>가중치 편중</b> — 메모리 (65) 가 첫 컬럼 위쪽에 자연 배치되면서 두꺼운 흐름 (HBM 22 + DRAM 43 = 65) 이 모두 위쪽 50% 에 몰림. 시각 무게 중심이 y=120 부근 (전체의 45%) 으로 위로 시프트.</li>
+      <li>결과적으로 다크 스테이지 아래쪽 ~30% 가 휑하고 차트가 "위로 기울어진" 인상.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>해결 — content-fit viewBox 패스</h2>
+    <p class="note">위치: <code>src/templates/static/charts.js:drawSankey</code> 의 colKeys forEach 직후, link slice 할당 *전에* 삽입.</p>
+    <div class="diff">
+<pre>const LABEL_PAD_ABOVE = 18;   // 중간 col 노드 위쪽 라벨 (y0-6, font 11)
+const LABEL_PAD_BELOW = 22;   // 중간 col 노드 아래쪽 value 라벨 (y1+14, font 10)
+const SVG_TOP_BREATH = 14;
+const SVG_BOT_BREATH = 14;
+let contentTop = Infinity, contentBot = -Infinity;
+nodes.forEach(n =&gt; {
+  const above = (n.col &gt; 0 &amp;&amp; n.col &lt; maxCol) ? LABEL_PAD_ABOVE : 0;
+  const below = (n.col &gt; 0 &amp;&amp; n.col &lt; maxCol) ? LABEL_PAD_BELOW : 0;
+  if (n.y0 - above &lt; contentTop) contentTop = n.y0 - above;
+  if (n.y1 + below &gt; contentBot) contentBot = n.y1 + below;
+});
+const tightH = (contentBot - contentTop) + SVG_TOP_BREATH + SVG_BOT_BREATH;
+if (tightH &gt; 0 &amp;&amp; tightH &lt; H) {
+  const dy = SVG_TOP_BREATH - contentTop;
+  nodes.forEach(n =&gt; { n.y0 += dy; n.y1 += dy; });
+  svg.attr('viewBox', `0 0 ${W} ${Math.round(tightH)}`);
+}</pre>
+    </div>
+    <ul class="bullets">
+      <li>레이아웃 종료 후 실제 vertical extent 측정 (중간 컬럼은 라벨 padding 포함)</li>
+      <li>tight H 가 원래 H 보다 작을 때만 시프트 + viewBox 재설정 — 큰 sankey 는 그대로</li>
+      <li>v5.3.0 의 sankey 4원칙 (anchor 압축 / source-weighted ordering / 분기 V 분산 / column y-centering) 은 보존, 결과 viewBox 만 압축</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>회귀 검증 — 라이브 렌더</h2>
+    <h3>케이스 1: 8 노드, 3 컬럼 (이 보고서)</h3>
+    <div class="chart-card">
+      <div class="chart-card-title">삼성전자 DS 매출 흐름</div>
+      <div class="chart-card-subtitle">파운드리는 DS 의 3 할, 그중 2/3 가 캡티브 수주</div>
+      <div class="chart-card-stage chart-stage-sankey" data-chart-type="sankey" data-chart-id="a1"><svg></svg></div>
+      <script type="application/json" class="chart-payload-inline">{"type":"sankey","data":{"nodes":[{"id":"DS","label":"DS 매출"},{"id":"mem","label":"메모리"},{"id":"fnd","label":"파운드리"},{"id":"lsi","label":"시스템LSI"},{"id":"hbm","label":"HBM"},{"id":"dram","label":"범용 DRAM·NAND"},{"id":"captive","label":"캡티브 (사내 SoC·SSD)"},{"id":"external","label":"외부 빅테크 수주"}],"links":[{"source":"DS","target":"mem","value":65},{"source":"DS","target":"fnd","value":30},{"source":"DS","target":"lsi","value":5},{"source":"mem","target":"hbm","value":22},{"source":"mem","target":"dram","value":43},{"source":"fnd","target":"captive","value":19},{"source":"fnd","target":"external","value":11}]}}</script>
+      <div class="chart-card-takeaway"><span class="chart-card-takeaway-label">Takeaway</span>외부 빅테크 수주는 DS 매출의 한 자릿수 — 분사 후 채워야 할 자리</div>
+    </div>
+
+    <h3>케이스 2: 12 노드, 4 컬럼 (회귀 — 큰 sankey 도 영향 없음)</h3>
+    <div class="chart-card">
+      <div class="chart-card-title">매출 → 사업부 → 비용 / 영업이익</div>
+      <div class="chart-card-subtitle">디스플레이 흑자 전환 지연, 모바일 비용 비중 90%</div>
+      <div class="chart-card-stage chart-stage-sankey" data-chart-type="sankey" data-chart-id="a2"><svg></svg></div>
+      <script type="application/json" class="chart-payload-inline">{"type":"sankey","data":{"nodes":[{"id":"총매출"},{"id":"DS (반도체)"},{"id":"모바일"},{"id":"디스플레이"},{"id":"가전"},{"id":"비용"},{"id":"영업이익"}],"links":[{"source":"총매출","target":"DS (반도체)","value":140},{"source":"총매출","target":"모바일","value":103},{"source":"총매출","target":"디스플레이","value":50},{"source":"총매출","target":"가전","value":40},{"source":"DS (반도체)","target":"비용","value":88},{"source":"DS (반도체)","target":"영업이익","value":52},{"source":"모바일","target":"비용","value":92},{"source":"모바일","target":"영업이익","value":11},{"source":"디스플레이","target":"비용","value":48,"negative":true},{"source":"디스플레이","target":"영업이익","value":2},{"source":"가전","target":"비용","value":34},{"source":"가전","target":"영업이익","value":6}]}}</script>
+    </div>
+    <p class="note">두 케이스 모두 위·아래 여백 차이 4px 이하 (충분히 대칭). 큰 sankey 케이스의 viewBox 도 396 → 256 으로 자연 압축.</p>
+  </section>
+
+  <section>
+    <h2>참고</h2>
+    <ul class="bullets">
+      <li><a href="../docs/CHART_RENDERING_ANTIPATTERNS.md">docs/CHART_RENDERING_ANTIPATTERNS.md</a> §CHART-AP-20 — 전체 진단 + fix 코드 SSOT</li>
+      <li><a href="../CHANGELOG.md">CHANGELOG.md</a> §v5.4.6 — 릴리스 노트</li>
+      <li>원본 보고서: <a href="https://analysis-reports.pages.dev/analysis_20260521_122324">analysis_20260521_122324</a> — 사용자 피드백의 출발점</li>
+    </ul>
+  </section>
+</div>
+
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="../src/templates/static/charts.js"></script>
+</body>
+</html>

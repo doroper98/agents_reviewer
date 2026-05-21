@@ -1929,6 +1929,30 @@
       });
     });
 
+    // v5.4.6 — content-fit viewBox (CHART-AP-20).
+    // H 공식 (max 320 / min 560) 이 작은 노드 수에선 과대 프로비저닝 → 컨텐츠가
+    // 윗쪽 60~70% 만 차지하고 아래가 휑함. 가중치 큰 노드(예: 메모리 65)가 위에
+    // 배치되는 자연스러운 sankey 구조와 결합돼 "위로 쏠림" 시각 인상 강화.
+    // 픽스: 레이아웃 끝난 뒤 실제 content extent + 라벨 여백을 측정해 viewBox H
+    // 를 타이트하게 줄이고, 컨텐츠를 desiredTop 까지 시프트. 알고리즘은 보존.
+    const LABEL_PAD_ABOVE = 18;   // 중간 col 노드 위쪽 라벨 (y0-6, font 11)
+    const LABEL_PAD_BELOW = 22;   // 중간 col 노드 아래쪽 value 라벨 (y1+14, font 10)
+    const SVG_TOP_BREATH = 14;
+    const SVG_BOT_BREATH = 14;
+    let contentTop = Infinity, contentBot = -Infinity;
+    nodes.forEach(n => {
+      const above = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_ABOVE : 0;
+      const below = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_BELOW : 0;
+      if (n.y0 - above < contentTop) contentTop = n.y0 - above;
+      if (n.y1 + below > contentBot) contentBot = n.y1 + below;
+    });
+    const tightH = (contentBot - contentTop) + SVG_TOP_BREATH + SVG_BOT_BREATH;
+    if (tightH > 0 && tightH < H) {
+      const dy = SVG_TOP_BREATH - contentTop;
+      nodes.forEach(n => { n.y0 += dy; n.y1 += dy; });
+      svg.attr('viewBox', `0 0 ${W} ${Math.round(tightH)}`);
+    }
+
     // 링크 slice 할당 — 각 노드의 outgoing/incoming 을 target/source y 기준 정렬
     nodes.forEach(n => {
       n.outLinks = validLinks.filter(l => l.source === n.id);

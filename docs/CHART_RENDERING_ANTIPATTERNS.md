@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.4.3
+last_synced_with: v5.4.6
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -566,6 +566,81 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   호출 1개 추가.
 - (C) 본 fix 만으로 v5.4.3 이후 재무 보고서의 sankey 빈도 추적 — telemetry
   로 효과 측정 후 (A) / (B) 도입 여부 결정.
+
+---
+
+## CHART-AP-20: sankey viewBox 과대 프로비저닝으로 "위로 쏠림" (v5.4.6 신설)
+
+**증상**: 노드 수가 적은 (≤9) sankey 의 viewBox 가 320px (`H = max(320, ...)`)
+로 강제 클램프되는데, 실제 컨텐츠는 그 안에서 ~180px (55%) 만 차지하고 나머지
+~140px (45%) 가 빈 공간. 추가로 가중치가 큰 노드 (예: 메모리 65)가 자연스럽게
+첫 컬럼 위쪽에 배치되면서 시각적 무게 중심이 위쪽으로 쏠림. 결과적으로 다크
+스테이지 아래쪽 30~40% 가 휑하고 차트가 "위로 기울어진" 인상.
+
+**예시 (v5.4.5 보고서, 8-노드 sankey)**:
+- viewBox: `760×320`, zones.data.h = 268
+- 컨텐츠 vertical extent: y=70.7 ~ 252.05 (181px)
+- 위 여백: 42.75px (16%) / 아래 여백: 43.95px (16%) — 수학적으론 중앙
+- 그러나 메모리 (65) → HBM/DRAM (22+43=65) 의 두꺼운 흐름이 위쪽 50% 에
+  몰리고, 파운드리 (30) / LSI (5) 의 가는 흐름이 아래쪽 → 시각 무게 중심
+  은 y=120 부근 (전체의 45%) 으로 위로 시프트.
+- 다크 스테이지 height = 361px (SVG 341 + 20px padding) — 컨텐츠 영역
+  대비 약 60px 의 dead space 가 아래쪽 끝에 누적되어 보임.
+
+**왜 회귀했나**:
+- `H = Math.max(320, Math.min(560, 60 + nodes.length * 28))` — 8 노드면 자연
+  사이즈 284 < 320 으로 클램프 → 36px 강제 추가.
+- `MAX_NODE_H_RATIO = 0.50` — 가장 두꺼운 컬럼 한 줄도 zones.data 의 50% 만
+  사용 가능. 8-노드 케이스에선 컬럼 stack 이 60~65% 만 차지 → 나머지 35~40%
+  가 위·아래 여백.
+- v5.3.0 의 sankey 4원칙 (anchor 압축 / source-weighted ordering / 분기 V 분산
+  / column y-centering) 은 컬럼간 *상대* 정렬을 정확히 잡지만, *컬럼 안*
+  위·아래 휑함은 다루지 않음.
+
+**검증 체크리스트**:
+- [ ] `drawSankey` 가 노드 positioning 끝난 뒤 실제 content vertical extent
+      를 측정한다 (`d3.min(nodes, n => n.y0) - LABEL_PAD_ABOVE` 등).
+- [ ] tightH = extent + 위·아래 breathing room (각 14px) 으로 SVG viewBox 를
+      *재설정*. 단 tightH < 원래 H 일 때만 (큰 sankey 는 그대로).
+- [ ] 컨텐츠 전체를 `dy = SVG_TOP_BREATH - contentTop` 만큼 시프트해 위 여백
+      을 고정 14px 로 정렬.
+- [ ] 시프트는 link slice 계산 *전에* 수행 (slice 는 `n.y0` 사용).
+- [ ] 회귀 테스트: 8-노드 (이 케이스) 와 12-노드 (regression) 양쪽 모두에서
+      content_top_gap, content_bottom_gap 의 차이가 4px 이하인지 확인.
+
+**Fix (v5.4.6)**:
+- `src/templates/static/charts.js:drawSankey` 의 colKeys forEach 직후, link
+  slice 할당 전에 content-fit viewBox 패스 신설:
+  ```js
+  const LABEL_PAD_ABOVE = 18;  // 중간 col 라벨 (y0-6, font 11)
+  const LABEL_PAD_BELOW = 22;  // 중간 col value 라벨 (y1+14, font 10)
+  const SVG_TOP_BREATH = 14;
+  const SVG_BOT_BREATH = 14;
+  let contentTop = Infinity, contentBot = -Infinity;
+  nodes.forEach(n => {
+    const above = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_ABOVE : 0;
+    const below = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_BELOW : 0;
+    if (n.y0 - above < contentTop) contentTop = n.y0 - above;
+    if (n.y1 + below > contentBot) contentBot = n.y1 + below;
+  });
+  const tightH = (contentBot - contentTop) + SVG_TOP_BREATH + SVG_BOT_BREATH;
+  if (tightH > 0 && tightH < H) {
+    const dy = SVG_TOP_BREATH - contentTop;
+    nodes.forEach(n => { n.y0 += dy; n.y1 += dy; });
+    svg.attr('viewBox', `0 0 ${W} ${Math.round(tightH)}`);
+  }
+  ```
+- 8-노드 DS 케이스: viewBox 320 → 238 (26% 축소), 위 7.86px / 아래 9.88px
+  로 균형. 다크 스테이지 361px → 263px.
+- 12-노드 회귀 케이스: viewBox 396 → 256 (35% 축소), 마찬가지 균형.
+- 알고리즘 (v5.3.0 sankey 4원칙) 은 *보존*. 결과만 압축.
+
+**한계 — 향후 강화 옵션**:
+- (A) 모든 차트 type 의 viewBox 에 본 content-fit pass 일반화 (bar / network
+  / heatmap 도 비슷한 dead space 가능). 단 차트별 라벨 위치가 달라 type 별
+  PAD 상수 분기 필요 — 본 fix 는 sankey 한정.
+- (B) Composer 가 emit 시 적정 H 를 함께 지정하게 하는 방안 — 단 LLM 부담
+  추가. 본 deterministic fix 가 충분.
 
 ---
 
