@@ -194,7 +194,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **19개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **24개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -205,6 +205,11 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-17: 차트 type starvation (v5.3.0 신설 — 캔들 회귀 교훈. 새 type 의 production wiring 만으로는 부족 — 5-Layer Usage Guarantee 필요)
 - CHART-AP-18: entry 애니메이션 motion 회귀 (v5.3.0 신설 — duration / easing / prefers-reduced-motion / IntersectionObserver unobserve / ambient RAF pause 가드)
 - CHART-AP-19: 재무·수익성 보고서에서 sankey/waterfall 분해 차트 누락 (v5.4.3 신설 — 결정 트리 collapse, 시계열 분기로 먼저 매치되어 분해 차트 branch 까지 못 도달. SYSTEM_PROMPT 에 step 0 추가)
+- CHART-AP-20: sankey viewBox 과대 프로비저닝으로 "위로 쏠림" (v5.4.6 신설 — H = max(320,...) 클램프 + MAX_NODE_H_RATIO 0.50 의 결합으로 노드 적은 sankey 가 아래쪽 ~40% 휑함. content-fit viewBox 패스로 tight H 재계산 + dy 시프트)
+- CHART-AP-21: sankey 좌·우 zones margin 부족으로 라벨 잘림 (v5.4.7 신설 — left=8/right=8 으로 첫 컬럼 "DS 매출" 라벨이 음수 좌표까지 뻗어 잘리고 마지막 컬럼 우측에 ~170px 휑함. left=80/right=120 으로 보정)
+- CHART-AP-22: sankey 중간 컬럼 라벨 stacking 충돌 (v5.4.7 신설 — MIN_NODE_PAD=18 이 위 라벨 font11 + 값 라벨 font10 stacking 에 부족, 메모리/파운드리 사이 "65.0" ↔ "파운드리" 라벨 7px overlap. pad 36 으로 16px 여유 확보)
+- CHART-AP-23: forecast 차트 y축 도메인이 actual 점을 제외 (v5.4.8 신설 — `?? fallback` 으로 forecast 가 있으면 actual 무시 → actual 의 값이 forecast 범위 밖이면 데이터 점이 차트 영역 밖에 박힘. actual + forecast 모든 값 산입으로 픽스)
+- CHART-AP-24: forecast 차트 actual ↔ forecast 선 단절 (v5.4.8 신설 — actual 선과 forecast 선/cone 이 별도 path 로 그려져 boundary 에서 1년치 gap. actual 마지막 점을 forecast bridge 의 첫 점으로 prepend → cone 이 fork 시점에서 한 점, 미래로 fan 형태로 확장)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 

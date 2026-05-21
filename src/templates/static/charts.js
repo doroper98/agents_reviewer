@@ -1050,8 +1050,13 @@
       .concat(forecast.map(d => ({ x: d.x, y: +d.mid })));
     const xVals = allPoints.map(d => String(d.x));
     const x = d3.scalePoint().domain(xVals).range([zones.data.x, zones.data.x + zones.data.w]).padding(0.1);
-    const yMin = d3.min(forecast, d => +d.low) ?? d3.min(actual, d => +d.y);
-    const yMax = d3.max(forecast, d => +d.high) ?? d3.max(actual, d => +d.y);
+    // v5.4.8 — y 도메인 산정 시 actual 과 forecast 를 *모두* 포함.
+    // 이전 `?? fallback` 은 forecast 가 비어있을 때만 actual 을 보는 결함 — forecast
+    // 가 있으면 actual.y 가 y축 범위 밖으로 떨어져 데이터 점이 차트 영역 밖에 박힘.
+    const yValues = actual.map(d => +d.y)
+      .concat(forecast.flatMap(d => [+d.low, +d.mid, +d.high]));
+    const yMin = d3.min(yValues);
+    const yMax = d3.max(yValues);
     const yPad = (yMax - yMin) * 0.1 || 1;
     const y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad])
       .range([zones.data.y + zones.data.h, zones.data.y]);
@@ -1069,11 +1074,25 @@
     const occupancy = renderAnnotations(svg, payload, zones, t,
       (xv) => x(String(xv)), (yv) => y(+yv));
 
+    // v5.4.8 — 실측 ↔ 예측 시각 연결 (표준 fan chart 컨벤션).
+    // 이전: cone 과 forecast 선이 forecast 의 첫 해부터 시작 → actual 마지막 점과
+    // 단절. 픽스: actual 의 마지막 점을 forecast 의 *bridge 첫 점* 으로 prepend.
+    // cone 은 그 점에서 low=high=actual.y (한 점에서 시작해 미래로 확장하는 fan
+    // 형태), mid 선은 actual 끝점에서 시작하는 dashed 연속선.
+    let forecastBridge = forecast;
+    if (forecast.length && actual.length) {
+      const lastA = actual[actual.length - 1];
+      forecastBridge = [
+        { x: lastA.x, low: +lastA.y, mid: +lastA.y, high: +lastA.y },
+        ...forecast,
+      ];
+    }
+
     // Forecast cone (low~high) — render before lines so it's behind
-    if (forecast.length) {
+    if (forecastBridge.length) {
       const area = d3.area().x(d => x(String(d.x)))
         .y0(d => y(+d.low)).y1(d => y(+d.high)).curve(d3.curveMonotoneX);
-      svg.append('path').attr('d', area(forecast))
+      svg.append('path').attr('d', area(forecastBridge))
         .attr('fill', t.accent).attr('fill-opacity', 0.15);
     }
 
@@ -1081,10 +1100,10 @@
     const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
     svg.append('path').attr('d', lineA(actual)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.6);
-    // Forecast (mid) dashed line
-    if (forecast.length) {
+    // Forecast (mid) dashed line — bridge prepended for visual continuity
+    if (forecastBridge.length) {
       const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveMonotoneX);
-      svg.append('path').attr('d', lineF(forecast)).attr('fill', 'none')
+      svg.append('path').attr('d', lineF(forecastBridge)).attr('fill', 'none')
         .attr('stroke', t.accent).attr('stroke-width', 1.6).attr('stroke-dasharray', '3,2');
     }
     // Fork point
@@ -1807,7 +1826,10 @@
     if (nodes.length < 2 || links.length < 1) return;
     const W = 760;
     const H = Math.max(320, Math.min(560, 60 + nodes.length * 28));
-    const zones = computeZones(W, H, { left: 8, right: 8, top: 28, bottom: 24 });
+    // v5.4.7 — 첫 컬럼 라벨 (text-anchor: end at x0-6) 과 마지막 컬럼 라벨
+    // (text-anchor: start at x1+6) 이 viewBox 안에 들어가도록 좌·우 margin 확보.
+    // 이전 left=8/right=8 은 "DS 매출" / "100.0" 라벨이 음수 좌표까지 뻗어 잘림.
+    const zones = computeZones(W, H, { left: 80, right: 120, top: 28, bottom: 24 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
 
@@ -1861,7 +1883,11 @@
 
     const colWidth = zones.data.w / (maxCol + 1);
     const nodeWidth = 9;
-    const MIN_NODE_PAD = 18;
+    // v5.4.7 — 중간 컬럼 노드의 위쪽 라벨 (y0-6, font 11) 과 아래쪽 value 라벨
+    // (y1+14, font 10) 이 인접 노드의 라벨과 stacking 충돌하는 회귀.
+    // 이전 18 은 너무 좁아 메모리/파운드리 사이에서 "65.0" ↔ "파운드리" 라벨이
+    // 7px 겹쳐 시인성 박살. 36 = 위 라벨(8) + 값 라벨(7) + 텍스트 여백(5) ×2.
+    const MIN_NODE_PAD = 36;
     const MAX_NODE_H_RATIO = 0.50;
 
     // v5.3.0 sankey 시각 균형 4원칙:
@@ -1928,6 +1954,30 @@
         y += n.height + MIN_NODE_PAD;
       });
     });
+
+    // v5.4.6 — content-fit viewBox (CHART-AP-20).
+    // H 공식 (max 320 / min 560) 이 작은 노드 수에선 과대 프로비저닝 → 컨텐츠가
+    // 윗쪽 60~70% 만 차지하고 아래가 휑함. 가중치 큰 노드(예: 메모리 65)가 위에
+    // 배치되는 자연스러운 sankey 구조와 결합돼 "위로 쏠림" 시각 인상 강화.
+    // 픽스: 레이아웃 끝난 뒤 실제 content extent + 라벨 여백을 측정해 viewBox H
+    // 를 타이트하게 줄이고, 컨텐츠를 desiredTop 까지 시프트. 알고리즘은 보존.
+    const LABEL_PAD_ABOVE = 18;   // 중간 col 노드 위쪽 라벨 (y0-6, font 11)
+    const LABEL_PAD_BELOW = 22;   // 중간 col 노드 아래쪽 value 라벨 (y1+14, font 10)
+    const SVG_TOP_BREATH = 14;
+    const SVG_BOT_BREATH = 14;
+    let contentTop = Infinity, contentBot = -Infinity;
+    nodes.forEach(n => {
+      const above = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_ABOVE : 0;
+      const below = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_BELOW : 0;
+      if (n.y0 - above < contentTop) contentTop = n.y0 - above;
+      if (n.y1 + below > contentBot) contentBot = n.y1 + below;
+    });
+    const tightH = (contentBot - contentTop) + SVG_TOP_BREATH + SVG_BOT_BREATH;
+    if (tightH > 0 && tightH < H) {
+      const dy = SVG_TOP_BREATH - contentTop;
+      nodes.forEach(n => { n.y0 += dy; n.y1 += dy; });
+      svg.attr('viewBox', `0 0 ${W} ${Math.round(tightH)}`);
+    }
 
     // 링크 slice 할당 — 각 노드의 outgoing/incoming 을 target/source y 기준 정렬
     nodes.forEach(n => {

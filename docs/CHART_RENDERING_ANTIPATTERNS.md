@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.4.3
+last_synced_with: v5.4.8
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -566,6 +566,293 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   호출 1개 추가.
 - (C) 본 fix 만으로 v5.4.3 이후 재무 보고서의 sankey 빈도 추적 — telemetry
   로 효과 측정 후 (A) / (B) 도입 여부 결정.
+
+---
+
+## CHART-AP-20: sankey viewBox 과대 프로비저닝으로 "위로 쏠림" (v5.4.6 신설)
+
+**증상**: 노드 수가 적은 (≤9) sankey 의 viewBox 가 320px (`H = max(320, ...)`)
+로 강제 클램프되는데, 실제 컨텐츠는 그 안에서 ~180px (55%) 만 차지하고 나머지
+~140px (45%) 가 빈 공간. 추가로 가중치가 큰 노드 (예: 메모리 65)가 자연스럽게
+첫 컬럼 위쪽에 배치되면서 시각적 무게 중심이 위쪽으로 쏠림. 결과적으로 다크
+스테이지 아래쪽 30~40% 가 휑하고 차트가 "위로 기울어진" 인상.
+
+**예시 (v5.4.5 보고서, 8-노드 sankey)**:
+- viewBox: `760×320`, zones.data.h = 268
+- 컨텐츠 vertical extent: y=70.7 ~ 252.05 (181px)
+- 위 여백: 42.75px (16%) / 아래 여백: 43.95px (16%) — 수학적으론 중앙
+- 그러나 메모리 (65) → HBM/DRAM (22+43=65) 의 두꺼운 흐름이 위쪽 50% 에
+  몰리고, 파운드리 (30) / LSI (5) 의 가는 흐름이 아래쪽 → 시각 무게 중심
+  은 y=120 부근 (전체의 45%) 으로 위로 시프트.
+- 다크 스테이지 height = 361px (SVG 341 + 20px padding) — 컨텐츠 영역
+  대비 약 60px 의 dead space 가 아래쪽 끝에 누적되어 보임.
+
+**왜 회귀했나**:
+- `H = Math.max(320, Math.min(560, 60 + nodes.length * 28))` — 8 노드면 자연
+  사이즈 284 < 320 으로 클램프 → 36px 강제 추가.
+- `MAX_NODE_H_RATIO = 0.50` — 가장 두꺼운 컬럼 한 줄도 zones.data 의 50% 만
+  사용 가능. 8-노드 케이스에선 컬럼 stack 이 60~65% 만 차지 → 나머지 35~40%
+  가 위·아래 여백.
+- v5.3.0 의 sankey 4원칙 (anchor 압축 / source-weighted ordering / 분기 V 분산
+  / column y-centering) 은 컬럼간 *상대* 정렬을 정확히 잡지만, *컬럼 안*
+  위·아래 휑함은 다루지 않음.
+
+**검증 체크리스트**:
+- [ ] `drawSankey` 가 노드 positioning 끝난 뒤 실제 content vertical extent
+      를 측정한다 (`d3.min(nodes, n => n.y0) - LABEL_PAD_ABOVE` 등).
+- [ ] tightH = extent + 위·아래 breathing room (각 14px) 으로 SVG viewBox 를
+      *재설정*. 단 tightH < 원래 H 일 때만 (큰 sankey 는 그대로).
+- [ ] 컨텐츠 전체를 `dy = SVG_TOP_BREATH - contentTop` 만큼 시프트해 위 여백
+      을 고정 14px 로 정렬.
+- [ ] 시프트는 link slice 계산 *전에* 수행 (slice 는 `n.y0` 사용).
+- [ ] 회귀 테스트: 8-노드 (이 케이스) 와 12-노드 (regression) 양쪽 모두에서
+      content_top_gap, content_bottom_gap 의 차이가 4px 이하인지 확인.
+
+**Fix (v5.4.6)**:
+- `src/templates/static/charts.js:drawSankey` 의 colKeys forEach 직후, link
+  slice 할당 전에 content-fit viewBox 패스 신설:
+  ```js
+  const LABEL_PAD_ABOVE = 18;  // 중간 col 라벨 (y0-6, font 11)
+  const LABEL_PAD_BELOW = 22;  // 중간 col value 라벨 (y1+14, font 10)
+  const SVG_TOP_BREATH = 14;
+  const SVG_BOT_BREATH = 14;
+  let contentTop = Infinity, contentBot = -Infinity;
+  nodes.forEach(n => {
+    const above = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_ABOVE : 0;
+    const below = (n.col > 0 && n.col < maxCol) ? LABEL_PAD_BELOW : 0;
+    if (n.y0 - above < contentTop) contentTop = n.y0 - above;
+    if (n.y1 + below > contentBot) contentBot = n.y1 + below;
+  });
+  const tightH = (contentBot - contentTop) + SVG_TOP_BREATH + SVG_BOT_BREATH;
+  if (tightH > 0 && tightH < H) {
+    const dy = SVG_TOP_BREATH - contentTop;
+    nodes.forEach(n => { n.y0 += dy; n.y1 += dy; });
+    svg.attr('viewBox', `0 0 ${W} ${Math.round(tightH)}`);
+  }
+  ```
+- 8-노드 DS 케이스: viewBox 320 → 238 (26% 축소), 위 7.86px / 아래 9.88px
+  로 균형. 다크 스테이지 361px → 263px.
+- 12-노드 회귀 케이스: viewBox 396 → 256 (35% 축소), 마찬가지 균형.
+- 알고리즘 (v5.3.0 sankey 4원칙) 은 *보존*. 결과만 압축.
+
+**한계 — 향후 강화 옵션**:
+- (A) 모든 차트 type 의 viewBox 에 본 content-fit pass 일반화 (bar / network
+  / heatmap 도 비슷한 dead space 가능). 단 차트별 라벨 위치가 달라 type 별
+  PAD 상수 분기 필요 — 본 fix 는 sankey 한정.
+- (B) Composer 가 emit 시 적정 H 를 함께 지정하게 하는 방안 — 단 LLM 부담
+  추가. 본 deterministic fix 가 충분.
+
+---
+
+## CHART-AP-21: sankey 좌·우 zones margin 부족으로 라벨 잘림 (v5.4.7 신설)
+
+**증상**: 첫 컬럼의 라벨 (예: "DS 매출") 과 값 (예: "100.0") 이 viewBox 왼쪽
+경계 밖으로 뻗어 잘림. 동시에 마지막 컬럼의 라벨 끝에서 viewBox 오른쪽
+경계까지 ~170px 의 과도한 공백. 차트가 "왼쪽으로 치우친" 시각 인상.
+
+**예시 (v5.4.6 DS 매출 sankey)**:
+- `computeZones(W, H, { left: 8, right: 8, ... })` — 좌·우 margin 각 8px
+- 첫 컬럼 (`col=0`) 노드: `x0 = zones.data.x + 0*colWidth + 8 = 16`
+- 라벨 위치: `x = x0 - 6 = 10`, text-anchor: `end`
+- "DS 매출" 텍스트 폭 ~65px → 좌측 시작 좌표 ~-55 (음수) → **viewBox 밖**
+- 마지막 컬럼: x1=521, 라벨 시작 x=527, "범용 DRAM·NAND" 끝 ~625
+- 오른쪽 공백: 760 - 625 = 135px (18% wasted)
+- 결과: 시각적으로 차트가 좌측에 몰리고 좌측 라벨은 truncated
+
+**왜 회귀했나**:
+- 초기 `drawSankey` 구현 (v5.3.0) 에선 라벨 짧고 (예: "출"), 좌측 margin 8px
+  로도 텍스트 잘림이 미미했음.
+- v5.4.6 의 content-fit viewBox 픽스로 SVG 가 자연 비율 (760×238) 로 렌더되면
+  스테이지 폭 ~810 에 1.066× scale — 라벨이 viewBox 단위로 더 명확히 잘림.
+- 한국어 첫 컬럼 라벨 ("DS 매출" / "총매출" / "매출 흐름") 은 평균 4~8 글자,
+  font 11 에서 50~80px 폭 — `text-anchor: end at x0-6` 으로 음수 좌표까지 뻗음.
+
+**검증 체크리스트**:
+- [ ] 첫 컬럼 라벨이 한국어 8 자 이내일 때 viewBox 안 fully visible 한지 확인.
+- [ ] 마지막 컬럼 라벨 (예: "범용 DRAM·NAND" / "캡티브 (사내 SoC·SSD)" 14자)
+      이 viewBox 오른쪽 안에 들어가는지 확인.
+- [ ] zones margin 변경 시 col 위치 식 `x0 = zones.data.x + col*colWidth + 8`
+      이 그대로 작동 (zones.data 가 margin 을 자동 적용).
+
+**Fix (v5.4.7)**:
+- `src/templates/static/charts.js:drawSankey` 의 zones margin:
+  - `{ left: 8, right: 8, ... }` → `{ left: 80, right: 120, ... }`
+- left=80: 첫 컬럼 라벨 ("DS 매출" 등 ≤8자 한국어) 텍스트가 x≈22 부터 시작해
+  viewBox 안 fits
+- right=120: 마지막 컬럼 라벨 ("캡티브 (사내 SoC·SSD)" 등 ≤15자) 텍스트가
+  x≈490 부터 시작해 ~615 에서 끝나며 viewBox 안 fits (~145px 여유)
+- 좌·우 비대칭 (left<right) — 한국어 sankey 의 last col 라벨이 first col 라벨
+  보다 평균 1.5~2× 길다는 휴리스틱 반영
+
+**한계 — 향후 강화 옵션**:
+- (A) 동적 margin 계산 — 실제 라벨 텍스트 너비 (canvas.measureText) 측정 후
+  zones margin 산정. 단 비동기 측정 + 폰트 로드 타이밍 의존, 복잡도 ↑.
+- (B) 라벨 wrap (`<tspan>` 다단) — 긴 라벨도 폭 cap 안에서 줄바꿈. 그러나
+  sankey 의 노드 라벨은 1줄 가독성이 표준 — wrap 은 마지막 수단.
+
+---
+
+## CHART-AP-22: sankey 중간 컬럼 라벨 stacking 충돌 (v5.4.7 신설)
+
+**증상**: 중간 컬럼 (`0 < col < maxCol`) 의 노드 위쪽 라벨 (예: "파운드리")
+과 인접 상위 노드의 value 라벨 (예: "65.0") 이 vertical 거리 2~7px 으로
+겹쳐 시인성 파괴. 사용자 표현 — "시인성이 박살나있네."
+
+**예시 (v5.4.6 DS 매출 sankey, 메모리/파운드리 인접)**:
+- 메모리 노드: y0=77, y1=164.1
+- "65.0" value 라벨: y=164.1+14=178.1 (font 10 baseline)
+- 파운드리 노드: y0=182.1 (MIN_NODE_PAD=18 만큼 떨어짐), y1=222.3
+- "파운드리" 라벨: y=182.1-6=176.1 (font 11 baseline)
+- 두 라벨의 baseline 차이: 176.1 - 178.1 = -2px (역전!)
+- font 11 텍스트 높이 ~10px (cap 8 + desc 2) → "파운드리" 텍스트 영역:
+  y=168.1 to 178.1
+- font 10 텍스트 영역: y=171.1 to 180.1
+- **overlap 7px** (y=171.1 to 178.1)
+
+**왜 회귀했나**:
+- `MIN_NODE_PAD = 18` 은 v5.3.0 초기 구현에서 *노드끼리* 의 vertical 간격을
+  의미했지, *라벨 stacking* 을 고려하지 않음.
+- 라벨 위치:
+  - 위쪽 라벨: `y0 - 6` (font 11 baseline)
+  - 값 라벨: `y1 + 14` (font 10 baseline)
+- 두 노드 사이 사용 가능 영역: `(y0_lower - 6) - (y1_upper + 14) = pad - 20`
+- pad=18 일 때 사용 가능 = -2 → 반드시 overlap
+- 가중치 큰 노드 (메모리 65) 가 같은 컬럼의 작은 노드 (파운드리 30, LSI 5)
+  와 인접할 때 항상 발생 — 모든 컬럼 mixed-weight sankey 에서 회귀.
+
+**검증 체크리스트**:
+- [ ] 중간 컬럼 ≥2 노드의 sankey 에서 인접 노드의 value 라벨 (`y1+14`) 과
+      하위 노드 라벨 (`y0-6`) 의 baseline 차이 ≥ 16px 인지 확인.
+- [ ] font 11 (label) + font 10 (value) 텍스트 영역이 픽셀-수준에서 겹치지
+      않는지 (위 baseline + 2 < 아래 baseline - 8).
+- [ ] 회귀 fixture: 메모리/파운드리/LSI 같은 3 노드 컬럼 sankey 의 라벨
+      vertical 간격 측정.
+
+**Fix (v5.4.7)**:
+- `src/templates/static/charts.js:drawSankey` 의 `MIN_NODE_PAD`:
+  - `18` → `36`
+- 산식: pad = 위 라벨 height (8) + 값 라벨 height (7) + 텍스트 여백 (5) ×2
+  = 30px 최소, 36 으로 4px 여유 buffer
+- 결과 (메모리/파운드리 케이스): "65.0" baseline y=178.1, "파운드리"
+  baseline y=200.1 → 차이 22px → 텍스트 영역 5~6px 여유 gap.
+
+**부수 효과 — 차트가 vertical 로 약간 길어짐**:
+- 컬럼 stack 이 (n-1)×18 → (n-1)×36 만큼 늘어남 (3-노드 col 1: +36px,
+  4-노드 col 2: +54px).
+- 8-노드 DS 케이스: v5.4.6 의 tightH 238 → v5.4.7 의 tightH ~308.
+- 여전히 원래 H=320 보다 작음 (content-fit pass 가 작동) — 다크 스테이지
+  높이 263px → ~340px. 위로 쏠림은 해소된 상태에서 라벨도 깨끗.
+
+**한계 — 향후 강화 옵션**:
+- (A) Adaptive pad — 인접 노드의 라벨 length 가 짧으면 pad 작게, 길면 크게.
+  단 복잡도 ↑ 반대급부 작음.
+- (B) 중간 컬럼 라벨 위치를 노드 측면 (col 0 / col maxCol 처럼) 으로 이동 —
+  stacking 자체 회피. 단 flow 위에 라벨이 올라가 시각 잡음 증가.
+
+---
+
+## CHART-AP-23: forecast 차트 y축 도메인이 actual 점을 제외 (v5.4.8 신설)
+
+**증상**: `drawForecast` 의 y축이 forecast 데이터 (low/mid/high) 범위만 반영하고
+actual 데이터를 무시 → actual 의 값이 forecast 범위 아래/위에 있을 때 데이터
+점이 **차트 영역 밖**에 박힘. 사용자 시각: "선이 중간에 끊긴 것처럼 보임."
+
+**예시 (v5.4.7 HBM 보고서)**:
+- actual: 2023=4, 2024=14, 2025=25
+- forecast: 2026(low=30, mid=35, high=42), 2027(40,50,60), 2028(50,65,78)
+- y 도메인 계산: `yMin = d3.min(forecast, d => +d.low) ?? d3.min(actual, ...)`
+- `??` 는 nullish 일 때만 fallback — forecast 가 비어있지 않으면 actual 무시.
+- 결과: yMin = 30 (forecast.low 의 min), yMax = 78 (forecast.high 의 max)
+- 패딩 적용 후 y축 범위 ≈ 22~85 → **actual 2023=4 와 2024=14 가 22 아래로
+  떨어져 차트 영역 밖**. 2025=25 도 30 아래라 y축 grid 영역 밖.
+- 시각적으로 actual 선이 차트 하단 경계 밖에서 시작해 "25" 점이 grid 안에
+  들어오긴 하지만 forecast 영역과 단절되어 보임.
+
+**왜 회귀했나**:
+- `??` 연산자는 *오직 left=null/undefined* 일 때만 right 로 fallback.
+  `d3.min(forecast, ...)` 는 forecast 가 비어있어도 `undefined` 반환, 비어있지
+  않으면 항상 숫자 반환 → 사실상 actual 은 forecast 가 있는 한 무시.
+- `d3.min` 의 0 처리: 모든 값이 0 이면 `min` = 0 (falsy 지만 not nullish), 
+  `??` 는 그대로 0 사용 — `||` 였다면 falsy 처리되어 actual 로 fallback 됐을 것.
+  현재 코드의 `??` 자체가 의도와 다른 결과.
+- 의도는 "forecast 가 있으면 forecast 만 봐도 충분 (forecast.low/high 가
+  actual 을 covered 한다고 가정)" — 그러나 actual 이 forecast 범위 밖이면 깨짐.
+
+**검증 체크리스트**:
+- [ ] actual 의 최저값이 forecast.low 의 min 보다 작은 케이스에서 actual 의
+      모든 점이 y축 grid 안에 들어가는지.
+- [ ] actual 의 최고값이 forecast.high 의 max 보다 큰 케이스도 동일 확인.
+- [ ] y축 도메인 산정 시 actual + forecast 양쪽 값 모두 포함.
+
+**Fix (v5.4.8)**:
+- `src/templates/static/charts.js:drawForecast` 의 y 도메인:
+  ```js
+  const yValues = actual.map(d =&gt; +d.y)
+    .concat(forecast.flatMap(d =&gt; [+d.low, +d.mid, +d.high]));
+  const yMin = d3.min(yValues);
+  const yMax = d3.max(yValues);
+  ```
+- actual.y / forecast.low / forecast.mid / forecast.high 4종 모두 산입 →
+  모든 데이터 점이 항상 y 범위 안. forecast 가 비어있어도 작동 (yValues 가
+  actual 만 포함).
+
+---
+
+## CHART-AP-24: forecast 차트 actual ↔ forecast 선 단절 (v5.4.8 신설)
+
+**증상**: actual 선 (solid) 이 마지막 actual 해 (예: 2025) 의 점에서 끝나고,
+forecast 선 (dashed) 은 첫 forecast 해 (예: 2026) 에서 시작. 둘 사이 1년치
+gap 으로 시각 단절 + cone (low~high shaded area) 도 2026 의 low/high 부터
+시작해 actual 끝점과 disconnected.
+
+**예시 (v5.4.7 HBM 보고서)**:
+- actual 2025 점 (25) 의 위치와 forecast 2026 점 (mid=35) 사이 1년치 X 간격.
+- solid 검정 선이 (2025, 25) 에서 끝남.
+- dashed 빨강 선이 (2026, 35) 에서 시작.
+- 두 선이 서로 만나지 않아 차트가 "중간에 끊긴" 인상.
+- cone 도 마찬가지로 2026 부터 시작 — actual 끝점에서 fan 이 펼쳐지지 않음.
+
+**왜 회귀했나**:
+- `drawForecast` 가 actual 과 forecast 를 *완전히 별도* path 로 렌더.
+- actual 의 lineA path 는 actual 만, forecast 의 lineF 는 forecast 만.
+- 두 데이터셋의 boundary (fork_at 시점) 에서 연결 segment 없음.
+- 표준 fan chart 컨벤션 (cone 이 fork 시점에서 한 점으로 narrow → 미래로
+  확장, mid 선은 actual 끝점에서 dashed 연속) 미적용.
+
+**검증 체크리스트**:
+- [ ] forecast 의 첫 점이 actual 의 마지막 점과 *동일 위치* 에서 시작하는지
+      (data prepending 또는 동일 boundary year 컨벤션).
+- [ ] cone 이 fork 시점에서 low=mid=high=actual.y 인 한 점에서 시작해 미래로
+      퍼지는 fan 형태인지.
+- [ ] forecast 가 비어있을 때 actual 단독 line 만 그려지고 컴포넌트 누락
+      에러 없는지.
+
+**Fix (v5.4.8)**:
+- `src/templates/static/charts.js:drawForecast`:
+  ```js
+  let forecastBridge = forecast;
+  if (forecast.length &amp;&amp; actual.length) {
+    const lastA = actual[actual.length - 1];
+    forecastBridge = [
+      { x: lastA.x, low: +lastA.y, mid: +lastA.y, high: +lastA.y },
+      ...forecast,
+    ];
+  }
+  ```
+- `forecastBridge` 의 첫 점 = actual 의 마지막 점 (low=mid=high=actual.y 인
+  한 점). cone area 와 mid 선 모두 이 bridge 를 사용 → 시각적으로:
+  - cone: fork 시점에서 한 점, 미래로 갈수록 low~high 폭 확대 (fan 형태)
+  - mid 선: actual 끝점에서 시작해 forecast 의 마지막 mid 까지 dashed 연속
+- actual 의 lineA / actual 끝점의 dot / forecast 끝점의 dot / fork_at 의
+  vertical 라인은 그대로 (`forecast` 원본 사용) — bridge 는 cone+mid 렌더용
+  로컬 변수.
+
+**한계 — 향후 강화 옵션**:
+- (A) Boundary year 데이터 컨벤션 강제 — composer 가 forecast 의 첫 항목을
+  actual 마지막 해 + 1 이 아닌 *actual 마지막 해와 동일* 로 emit 하도록 prompt
+  조정. 현재 fix 는 데이터 그대로 두고 *렌더링* 에서만 bridge — 가장 비침습.
+- (B) Forecast 의 첫 점이 actual 의 마지막 해와 같으면 (composer 가 그렇게
+  emit), bridge 를 skip — 중복 점 방지. 현재 fix 는 다른 해여도 안전.
 
 ---
 
