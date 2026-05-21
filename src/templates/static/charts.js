@@ -1050,8 +1050,13 @@
       .concat(forecast.map(d => ({ x: d.x, y: +d.mid })));
     const xVals = allPoints.map(d => String(d.x));
     const x = d3.scalePoint().domain(xVals).range([zones.data.x, zones.data.x + zones.data.w]).padding(0.1);
-    const yMin = d3.min(forecast, d => +d.low) ?? d3.min(actual, d => +d.y);
-    const yMax = d3.max(forecast, d => +d.high) ?? d3.max(actual, d => +d.y);
+    // v5.4.8 — y 도메인 산정 시 actual 과 forecast 를 *모두* 포함.
+    // 이전 `?? fallback` 은 forecast 가 비어있을 때만 actual 을 보는 결함 — forecast
+    // 가 있으면 actual.y 가 y축 범위 밖으로 떨어져 데이터 점이 차트 영역 밖에 박힘.
+    const yValues = actual.map(d => +d.y)
+      .concat(forecast.flatMap(d => [+d.low, +d.mid, +d.high]));
+    const yMin = d3.min(yValues);
+    const yMax = d3.max(yValues);
     const yPad = (yMax - yMin) * 0.1 || 1;
     const y = d3.scaleLinear().domain([yMin - yPad, yMax + yPad])
       .range([zones.data.y + zones.data.h, zones.data.y]);
@@ -1069,11 +1074,25 @@
     const occupancy = renderAnnotations(svg, payload, zones, t,
       (xv) => x(String(xv)), (yv) => y(+yv));
 
+    // v5.4.8 — 실측 ↔ 예측 시각 연결 (표준 fan chart 컨벤션).
+    // 이전: cone 과 forecast 선이 forecast 의 첫 해부터 시작 → actual 마지막 점과
+    // 단절. 픽스: actual 의 마지막 점을 forecast 의 *bridge 첫 점* 으로 prepend.
+    // cone 은 그 점에서 low=high=actual.y (한 점에서 시작해 미래로 확장하는 fan
+    // 형태), mid 선은 actual 끝점에서 시작하는 dashed 연속선.
+    let forecastBridge = forecast;
+    if (forecast.length && actual.length) {
+      const lastA = actual[actual.length - 1];
+      forecastBridge = [
+        { x: lastA.x, low: +lastA.y, mid: +lastA.y, high: +lastA.y },
+        ...forecast,
+      ];
+    }
+
     // Forecast cone (low~high) — render before lines so it's behind
-    if (forecast.length) {
+    if (forecastBridge.length) {
       const area = d3.area().x(d => x(String(d.x)))
         .y0(d => y(+d.low)).y1(d => y(+d.high)).curve(d3.curveMonotoneX);
-      svg.append('path').attr('d', area(forecast))
+      svg.append('path').attr('d', area(forecastBridge))
         .attr('fill', t.accent).attr('fill-opacity', 0.15);
     }
 
@@ -1081,10 +1100,10 @@
     const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
     svg.append('path').attr('d', lineA(actual)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.6);
-    // Forecast (mid) dashed line
-    if (forecast.length) {
+    // Forecast (mid) dashed line — bridge prepended for visual continuity
+    if (forecastBridge.length) {
       const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveMonotoneX);
-      svg.append('path').attr('d', lineF(forecast)).attr('fill', 'none')
+      svg.append('path').attr('d', lineF(forecastBridge)).attr('fill', 'none')
         .attr('stroke', t.accent).attr('stroke-width', 1.6).attr('stroke-dasharray', '3,2');
     }
     // Fork point

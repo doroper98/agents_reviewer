@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.7
+last_synced_with: v5.4.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,66 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.8] — 2026-05-21
+
+### Fixed — forecast 차트 y축 도메인 + 실측 ↔ 예측 선 단절 (CHART-AP-23, CHART-AP-24)
+
+**증상**: 사용자 피드백 — "차트 이렇게 중간에 선이 끊기게 나오는게 맞아?" 같은 보고서 (`analysis_20260521_122324`) 의 HBM 시장 규모 추정 forecast 차트에서 두 회귀 동시 발견.
+
+**원인 — CHART-AP-23 (y축 도메인)**:
+- `drawForecast` 의 `yMin = d3.min(forecast, d => +d.low) ?? d3.min(actual, ...)` — `??` 연산자는 *좌측이 nullish 일 때만* 우측으로 fallback. `d3.min(forecast)` 는 forecast 가 있으면 항상 숫자 반환 → **actual 무시**.
+- HBM 케이스: actual 2023=4, 2024=14, 2025=25 / forecast 2026.low=30, 2028.high=78
+- yMin = 30, yMax = 78 → 패딩 후 y축 범위 22~85 → actual 4 와 14 가 22 미만으로 떨어져 **차트 영역 밖**. 2025=25 도 30 미만이라 grid 아래 박힘.
+
+**원인 — CHART-AP-24 (선 단절)**:
+- actual lineA path 와 forecast lineF path 가 *완전히 별도* 로 렌더 — boundary 에서 연결 segment 없음.
+- HBM 케이스: 검정 solid 선이 (2025, 25) 에서 끝, 빨강 dashed 선이 (2026, 35) 에서 시작 → 1년치 X 간격으로 시각 단절.
+- cone (low~high shaded) 도 2026 부터 시작 → actual 끝점에서 fan 형태로 펼쳐지지 않음 (표준 fan chart 컨벤션 미적용).
+
+**해결** — `src/templates/static/charts.js:drawForecast`:
+
+1. y 도메인 산정 변경:
+   ```js
+   const yValues = actual.map(d => +d.y)
+     .concat(forecast.flatMap(d => [+d.low, +d.mid, +d.high]));
+   const yMin = d3.min(yValues);
+   const yMax = d3.max(yValues);
+   ```
+   - actual.y + forecast.low/mid/high 4종 모두 산입 → 모든 데이터 점이 y 범위 안.
+
+2. Forecast bridge 추가 (시각 연결):
+   ```js
+   let forecastBridge = forecast;
+   if (forecast.length && actual.length) {
+     const lastA = actual[actual.length - 1];
+     forecastBridge = [
+       { x: lastA.x, low: +lastA.y, mid: +lastA.y, high: +lastA.y },
+       ...forecast,
+     ];
+   }
+   ```
+   - bridge 의 첫 점 = actual 의 마지막 점 (low=mid=high=actual.y).
+   - cone area: 그 점에서 한 점으로 시작 → 미래로 low~high 폭 확장 (fan 형태)
+   - mid dashed 선: actual 끝점에서 시작 → forecast 의 마지막 mid 까지 연속
+   - actual line / 끝점 dots / fork_at 마커는 `forecast` 원본 그대로 (bridge 는 cone+mid 렌더 전용)
+
+**결과**:
+- HBM 케이스 시각: y축 0~85 로 actual 모든 점 visible. solid 선 2023→2025 끝점이 dashed 선 시작점과 정확히 일치. cone 이 (2025, 25) 에서 한 점으로 narrow → (2028, 50~78) 까지 fan 으로 확장.
+- 표준 fan chart 컨벤션 (Bloomberg / FT / Economist 의 forecast 차트와 동일) 적용.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.7 → v5.4.8
+- `src/templates/static/charts.js:drawForecast` (y 도메인 + forecast bridge)
+- `docs/CHART_RENDERING_ANTIPATTERNS.md` (CHART-AP-23, CHART-AP-24 append + last_synced_with v5.4.7 → v5.4.8)
+- `CLAUDE.md` Anti-Patterns 차트 렌더링 (22 → 24, CHART-AP-23/24 lines)
+- `README.md` Status
+- `samples/forecast_continuity_fix_v5_4_8.png` (Before/After 비교)
+- 본 CHANGELOG entry
+
+**검증**: actual 의 모든 점이 y축 grid 안 visible, solid 선 끝점과 dashed 선 시작점 일치, cone 이 fork 에서 한 점으로 narrow.
 
 ---
 

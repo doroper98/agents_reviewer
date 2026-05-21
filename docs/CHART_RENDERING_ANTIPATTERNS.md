@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.4.7
+last_synced_with: v5.4.8
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -748,6 +748,111 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   단 복잡도 ↑ 반대급부 작음.
 - (B) 중간 컬럼 라벨 위치를 노드 측면 (col 0 / col maxCol 처럼) 으로 이동 —
   stacking 자체 회피. 단 flow 위에 라벨이 올라가 시각 잡음 증가.
+
+---
+
+## CHART-AP-23: forecast 차트 y축 도메인이 actual 점을 제외 (v5.4.8 신설)
+
+**증상**: `drawForecast` 의 y축이 forecast 데이터 (low/mid/high) 범위만 반영하고
+actual 데이터를 무시 → actual 의 값이 forecast 범위 아래/위에 있을 때 데이터
+점이 **차트 영역 밖**에 박힘. 사용자 시각: "선이 중간에 끊긴 것처럼 보임."
+
+**예시 (v5.4.7 HBM 보고서)**:
+- actual: 2023=4, 2024=14, 2025=25
+- forecast: 2026(low=30, mid=35, high=42), 2027(40,50,60), 2028(50,65,78)
+- y 도메인 계산: `yMin = d3.min(forecast, d => +d.low) ?? d3.min(actual, ...)`
+- `??` 는 nullish 일 때만 fallback — forecast 가 비어있지 않으면 actual 무시.
+- 결과: yMin = 30 (forecast.low 의 min), yMax = 78 (forecast.high 의 max)
+- 패딩 적용 후 y축 범위 ≈ 22~85 → **actual 2023=4 와 2024=14 가 22 아래로
+  떨어져 차트 영역 밖**. 2025=25 도 30 아래라 y축 grid 영역 밖.
+- 시각적으로 actual 선이 차트 하단 경계 밖에서 시작해 "25" 점이 grid 안에
+  들어오긴 하지만 forecast 영역과 단절되어 보임.
+
+**왜 회귀했나**:
+- `??` 연산자는 *오직 left=null/undefined* 일 때만 right 로 fallback.
+  `d3.min(forecast, ...)` 는 forecast 가 비어있어도 `undefined` 반환, 비어있지
+  않으면 항상 숫자 반환 → 사실상 actual 은 forecast 가 있는 한 무시.
+- `d3.min` 의 0 처리: 모든 값이 0 이면 `min` = 0 (falsy 지만 not nullish), 
+  `??` 는 그대로 0 사용 — `||` 였다면 falsy 처리되어 actual 로 fallback 됐을 것.
+  현재 코드의 `??` 자체가 의도와 다른 결과.
+- 의도는 "forecast 가 있으면 forecast 만 봐도 충분 (forecast.low/high 가
+  actual 을 covered 한다고 가정)" — 그러나 actual 이 forecast 범위 밖이면 깨짐.
+
+**검증 체크리스트**:
+- [ ] actual 의 최저값이 forecast.low 의 min 보다 작은 케이스에서 actual 의
+      모든 점이 y축 grid 안에 들어가는지.
+- [ ] actual 의 최고값이 forecast.high 의 max 보다 큰 케이스도 동일 확인.
+- [ ] y축 도메인 산정 시 actual + forecast 양쪽 값 모두 포함.
+
+**Fix (v5.4.8)**:
+- `src/templates/static/charts.js:drawForecast` 의 y 도메인:
+  ```js
+  const yValues = actual.map(d =&gt; +d.y)
+    .concat(forecast.flatMap(d =&gt; [+d.low, +d.mid, +d.high]));
+  const yMin = d3.min(yValues);
+  const yMax = d3.max(yValues);
+  ```
+- actual.y / forecast.low / forecast.mid / forecast.high 4종 모두 산입 →
+  모든 데이터 점이 항상 y 범위 안. forecast 가 비어있어도 작동 (yValues 가
+  actual 만 포함).
+
+---
+
+## CHART-AP-24: forecast 차트 actual ↔ forecast 선 단절 (v5.4.8 신설)
+
+**증상**: actual 선 (solid) 이 마지막 actual 해 (예: 2025) 의 점에서 끝나고,
+forecast 선 (dashed) 은 첫 forecast 해 (예: 2026) 에서 시작. 둘 사이 1년치
+gap 으로 시각 단절 + cone (low~high shaded area) 도 2026 의 low/high 부터
+시작해 actual 끝점과 disconnected.
+
+**예시 (v5.4.7 HBM 보고서)**:
+- actual 2025 점 (25) 의 위치와 forecast 2026 점 (mid=35) 사이 1년치 X 간격.
+- solid 검정 선이 (2025, 25) 에서 끝남.
+- dashed 빨강 선이 (2026, 35) 에서 시작.
+- 두 선이 서로 만나지 않아 차트가 "중간에 끊긴" 인상.
+- cone 도 마찬가지로 2026 부터 시작 — actual 끝점에서 fan 이 펼쳐지지 않음.
+
+**왜 회귀했나**:
+- `drawForecast` 가 actual 과 forecast 를 *완전히 별도* path 로 렌더.
+- actual 의 lineA path 는 actual 만, forecast 의 lineF 는 forecast 만.
+- 두 데이터셋의 boundary (fork_at 시점) 에서 연결 segment 없음.
+- 표준 fan chart 컨벤션 (cone 이 fork 시점에서 한 점으로 narrow → 미래로
+  확장, mid 선은 actual 끝점에서 dashed 연속) 미적용.
+
+**검증 체크리스트**:
+- [ ] forecast 의 첫 점이 actual 의 마지막 점과 *동일 위치* 에서 시작하는지
+      (data prepending 또는 동일 boundary year 컨벤션).
+- [ ] cone 이 fork 시점에서 low=mid=high=actual.y 인 한 점에서 시작해 미래로
+      퍼지는 fan 형태인지.
+- [ ] forecast 가 비어있을 때 actual 단독 line 만 그려지고 컴포넌트 누락
+      에러 없는지.
+
+**Fix (v5.4.8)**:
+- `src/templates/static/charts.js:drawForecast`:
+  ```js
+  let forecastBridge = forecast;
+  if (forecast.length &amp;&amp; actual.length) {
+    const lastA = actual[actual.length - 1];
+    forecastBridge = [
+      { x: lastA.x, low: +lastA.y, mid: +lastA.y, high: +lastA.y },
+      ...forecast,
+    ];
+  }
+  ```
+- `forecastBridge` 의 첫 점 = actual 의 마지막 점 (low=mid=high=actual.y 인
+  한 점). cone area 와 mid 선 모두 이 bridge 를 사용 → 시각적으로:
+  - cone: fork 시점에서 한 점, 미래로 갈수록 low~high 폭 확대 (fan 형태)
+  - mid 선: actual 끝점에서 시작해 forecast 의 마지막 mid 까지 dashed 연속
+- actual 의 lineA / actual 끝점의 dot / forecast 끝점의 dot / fork_at 의
+  vertical 라인은 그대로 (`forecast` 원본 사용) — bridge 는 cone+mid 렌더용
+  로컬 변수.
+
+**한계 — 향후 강화 옵션**:
+- (A) Boundary year 데이터 컨벤션 강제 — composer 가 forecast 의 첫 항목을
+  actual 마지막 해 + 1 이 아닌 *actual 마지막 해와 동일* 로 emit 하도록 prompt
+  조정. 현재 fix 는 데이터 그대로 두고 *렌더링* 에서만 bridge — 가장 비침습.
+- (B) Forecast 의 첫 점이 actual 의 마지막 해와 같으면 (composer 가 그렇게
+  emit), bridge 를 skip — 중복 점 방지. 현재 fix 는 다른 해여도 안전.
 
 ---
 
