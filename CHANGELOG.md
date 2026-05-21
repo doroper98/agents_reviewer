@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.6
+last_synced_with: v5.4.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.7] — 2026-05-21
+
+### Fixed — sankey 좌·우 라벨 잘림 + 중간 컬럼 라벨 stacking 충돌 (CHART-AP-21, CHART-AP-22)
+
+**증상**: v5.4.6 의 content-fit viewBox 픽스로 위·아래 쏠림은 해소됐으나 사용자 피드백으로 두 별개 회귀 추가 발견 — (1) "여전히 왼쪽으로 치우쳐져 있어서 맨 왼쪽 글씨가 짤려있고, 오른쪽에는 여백이 과도하게 남아있는 느낌." (2) "중간에 메모리, 파운드리, 시스템LSI 글씨가 있는 곳에 수치가 겹쳐있어서 시인성이 박살나있네."
+
+**원인 — CHART-AP-21 (좌·우 margin)**:
+- `computeZones(W, H, { left: 8, right: 8, ... })` — 좌·우 margin 각 8px
+- 첫 컬럼 라벨 위치: `x = x0 - 6 = 10`, text-anchor: `end`
+- 한국어 라벨 ("DS 매출" 등 5~8자) 텍스트 폭 ~50~80px → 음수 좌표까지 뻗어 viewBox 밖으로 잘림
+- 마지막 컬럼 라벨 끝 (x≈625) 에서 viewBox 오른쪽 경계 (760) 까지 135px 휑함 (18% wasted)
+
+**원인 — CHART-AP-22 (라벨 stacking)**:
+- `MIN_NODE_PAD = 18` 이 인접 노드의 위쪽 라벨 (font 11, y0-6) 과 상위 노드의 값 라벨 (font 10, y1+14) stacking 에 부족
+- 사용 가능 영역 = pad - 20 = -2px → 반드시 overlap
+- 메모리/파운드리 케이스: "65.0" baseline y=178.1 vs "파운드리" baseline y=176.1 (역전, 7px overlap)
+
+**해결** — `src/templates/static/charts.js:drawSankey`:
+
+1. `computeZones` margin: `{ left: 8, right: 8, ... }` → `{ left: 80, right: 120, ... }`
+   - left=80: 첫 컬럼 한국어 ≤8자 라벨이 x≈22 부터 렌더 — viewBox 안 fits
+   - right=120: 마지막 컬럼 ≤15자 라벨 (예: "캡티브 (사내 SoC·SSD)") 이 x≈490~615 — viewBox 안 fits
+   - 좌·우 비대칭 — 한국어 sankey 의 last col 라벨이 first col 대비 1.5~2× 긴 휴리스틱 반영
+
+2. `MIN_NODE_PAD`: `18` → `36`
+   - 산식: 위 라벨 height (8) + 값 라벨 height (7) + 텍스트 여백 (5) ×2 = 30 최소, 36 으로 4px buffer
+   - 결과: "65.0" baseline y=178.1, "파운드리" baseline y=200.1 → 22px 차이, 텍스트 영역 5~6px 여유 gap
+
+**부수 효과**: 컬럼 stack 이 (n-1)×18 → (n-1)×36 만큼 늘어나 차트 vertical 로 약간 길어짐. 8-노드 DS 케이스 tightH 238 → 308 (여전히 원래 H=320 보다 작음, content-fit pass 작동). 다크 스테이지 263px → ~340px — 위·아래 쏠림 해소 상태에서 라벨도 깨끗.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.6 → v5.4.7
+- `src/templates/static/charts.js:drawSankey` (zones margin + MIN_NODE_PAD)
+- `docs/CHART_RENDERING_ANTIPATTERNS.md` (CHART-AP-21, CHART-AP-22 append + last_synced_with v5.4.6 → v5.4.7)
+- `CLAUDE.md` Anti-Patterns 차트 렌더링 (20 → 22, CHART-AP-21/22 lines)
+- `README.md` Status
+- `samples/sankey_lean_fix_v5_4_6.png` → `sankey_lean_fix_v5_4_7.png` (v5.4.7 결과로 업데이트)
+- 본 CHANGELOG entry
+
+**검증**: 첫 컬럼 "DS 매출"/"100.0" 라벨 완전 visible, 중간 컬럼 라벨/값 간 5~6px 여유 gap, 마지막 컬럼 라벨 viewBox 안 fits.
 
 ---
 

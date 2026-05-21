@@ -194,7 +194,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **20개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **22개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -206,6 +206,8 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-18: entry 애니메이션 motion 회귀 (v5.3.0 신설 — duration / easing / prefers-reduced-motion / IntersectionObserver unobserve / ambient RAF pause 가드)
 - CHART-AP-19: 재무·수익성 보고서에서 sankey/waterfall 분해 차트 누락 (v5.4.3 신설 — 결정 트리 collapse, 시계열 분기로 먼저 매치되어 분해 차트 branch 까지 못 도달. SYSTEM_PROMPT 에 step 0 추가)
 - CHART-AP-20: sankey viewBox 과대 프로비저닝으로 "위로 쏠림" (v5.4.6 신설 — H = max(320,...) 클램프 + MAX_NODE_H_RATIO 0.50 의 결합으로 노드 적은 sankey 가 아래쪽 ~40% 휑함. content-fit viewBox 패스로 tight H 재계산 + dy 시프트)
+- CHART-AP-21: sankey 좌·우 zones margin 부족으로 라벨 잘림 (v5.4.7 신설 — left=8/right=8 으로 첫 컬럼 "DS 매출" 라벨이 음수 좌표까지 뻗어 잘리고 마지막 컬럼 우측에 ~170px 휑함. left=80/right=120 으로 보정)
+- CHART-AP-22: sankey 중간 컬럼 라벨 stacking 충돌 (v5.4.7 신설 — MIN_NODE_PAD=18 이 위 라벨 font11 + 값 라벨 font10 stacking 에 부족, 메모리/파운드리 사이 "65.0" ↔ "파운드리" 라벨 7px overlap. pad 36 으로 16px 여유 확보)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 

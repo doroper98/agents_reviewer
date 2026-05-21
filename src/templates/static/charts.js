@@ -1807,7 +1807,10 @@
     if (nodes.length < 2 || links.length < 1) return;
     const W = 760;
     const H = Math.max(320, Math.min(560, 60 + nodes.length * 28));
-    const zones = computeZones(W, H, { left: 8, right: 8, top: 28, bottom: 24 });
+    // v5.4.7 — 첫 컬럼 라벨 (text-anchor: end at x0-6) 과 마지막 컬럼 라벨
+    // (text-anchor: start at x1+6) 이 viewBox 안에 들어가도록 좌·우 margin 확보.
+    // 이전 left=8/right=8 은 "DS 매출" / "100.0" 라벨이 음수 좌표까지 뻗어 잘림.
+    const zones = computeZones(W, H, { left: 80, right: 120, top: 28, bottom: 24 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
 
@@ -1861,7 +1864,11 @@
 
     const colWidth = zones.data.w / (maxCol + 1);
     const nodeWidth = 9;
-    const MIN_NODE_PAD = 18;
+    // v5.4.7 — 중간 컬럼 노드의 위쪽 라벨 (y0-6, font 11) 과 아래쪽 value 라벨
+    // (y1+14, font 10) 이 인접 노드의 라벨과 stacking 충돌하는 회귀.
+    // 이전 18 은 너무 좁아 메모리/파운드리 사이에서 "65.0" ↔ "파운드리" 라벨이
+    // 7px 겹쳐 시인성 박살. 36 = 위 라벨(8) + 값 라벨(7) + 텍스트 여백(5) ×2.
+    const MIN_NODE_PAD = 36;
     const MAX_NODE_H_RATIO = 0.50;
 
     // v5.3.0 sankey 시각 균형 4원칙:

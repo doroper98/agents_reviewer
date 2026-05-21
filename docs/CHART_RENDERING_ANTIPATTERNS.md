@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.4.6
+last_synced_with: v5.4.7
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -641,6 +641,113 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   PAD 상수 분기 필요 — 본 fix 는 sankey 한정.
 - (B) Composer 가 emit 시 적정 H 를 함께 지정하게 하는 방안 — 단 LLM 부담
   추가. 본 deterministic fix 가 충분.
+
+---
+
+## CHART-AP-21: sankey 좌·우 zones margin 부족으로 라벨 잘림 (v5.4.7 신설)
+
+**증상**: 첫 컬럼의 라벨 (예: "DS 매출") 과 값 (예: "100.0") 이 viewBox 왼쪽
+경계 밖으로 뻗어 잘림. 동시에 마지막 컬럼의 라벨 끝에서 viewBox 오른쪽
+경계까지 ~170px 의 과도한 공백. 차트가 "왼쪽으로 치우친" 시각 인상.
+
+**예시 (v5.4.6 DS 매출 sankey)**:
+- `computeZones(W, H, { left: 8, right: 8, ... })` — 좌·우 margin 각 8px
+- 첫 컬럼 (`col=0`) 노드: `x0 = zones.data.x + 0*colWidth + 8 = 16`
+- 라벨 위치: `x = x0 - 6 = 10`, text-anchor: `end`
+- "DS 매출" 텍스트 폭 ~65px → 좌측 시작 좌표 ~-55 (음수) → **viewBox 밖**
+- 마지막 컬럼: x1=521, 라벨 시작 x=527, "범용 DRAM·NAND" 끝 ~625
+- 오른쪽 공백: 760 - 625 = 135px (18% wasted)
+- 결과: 시각적으로 차트가 좌측에 몰리고 좌측 라벨은 truncated
+
+**왜 회귀했나**:
+- 초기 `drawSankey` 구현 (v5.3.0) 에선 라벨 짧고 (예: "출"), 좌측 margin 8px
+  로도 텍스트 잘림이 미미했음.
+- v5.4.6 의 content-fit viewBox 픽스로 SVG 가 자연 비율 (760×238) 로 렌더되면
+  스테이지 폭 ~810 에 1.066× scale — 라벨이 viewBox 단위로 더 명확히 잘림.
+- 한국어 첫 컬럼 라벨 ("DS 매출" / "총매출" / "매출 흐름") 은 평균 4~8 글자,
+  font 11 에서 50~80px 폭 — `text-anchor: end at x0-6` 으로 음수 좌표까지 뻗음.
+
+**검증 체크리스트**:
+- [ ] 첫 컬럼 라벨이 한국어 8 자 이내일 때 viewBox 안 fully visible 한지 확인.
+- [ ] 마지막 컬럼 라벨 (예: "범용 DRAM·NAND" / "캡티브 (사내 SoC·SSD)" 14자)
+      이 viewBox 오른쪽 안에 들어가는지 확인.
+- [ ] zones margin 변경 시 col 위치 식 `x0 = zones.data.x + col*colWidth + 8`
+      이 그대로 작동 (zones.data 가 margin 을 자동 적용).
+
+**Fix (v5.4.7)**:
+- `src/templates/static/charts.js:drawSankey` 의 zones margin:
+  - `{ left: 8, right: 8, ... }` → `{ left: 80, right: 120, ... }`
+- left=80: 첫 컬럼 라벨 ("DS 매출" 등 ≤8자 한국어) 텍스트가 x≈22 부터 시작해
+  viewBox 안 fits
+- right=120: 마지막 컬럼 라벨 ("캡티브 (사내 SoC·SSD)" 등 ≤15자) 텍스트가
+  x≈490 부터 시작해 ~615 에서 끝나며 viewBox 안 fits (~145px 여유)
+- 좌·우 비대칭 (left<right) — 한국어 sankey 의 last col 라벨이 first col 라벨
+  보다 평균 1.5~2× 길다는 휴리스틱 반영
+
+**한계 — 향후 강화 옵션**:
+- (A) 동적 margin 계산 — 실제 라벨 텍스트 너비 (canvas.measureText) 측정 후
+  zones margin 산정. 단 비동기 측정 + 폰트 로드 타이밍 의존, 복잡도 ↑.
+- (B) 라벨 wrap (`<tspan>` 다단) — 긴 라벨도 폭 cap 안에서 줄바꿈. 그러나
+  sankey 의 노드 라벨은 1줄 가독성이 표준 — wrap 은 마지막 수단.
+
+---
+
+## CHART-AP-22: sankey 중간 컬럼 라벨 stacking 충돌 (v5.4.7 신설)
+
+**증상**: 중간 컬럼 (`0 < col < maxCol`) 의 노드 위쪽 라벨 (예: "파운드리")
+과 인접 상위 노드의 value 라벨 (예: "65.0") 이 vertical 거리 2~7px 으로
+겹쳐 시인성 파괴. 사용자 표현 — "시인성이 박살나있네."
+
+**예시 (v5.4.6 DS 매출 sankey, 메모리/파운드리 인접)**:
+- 메모리 노드: y0=77, y1=164.1
+- "65.0" value 라벨: y=164.1+14=178.1 (font 10 baseline)
+- 파운드리 노드: y0=182.1 (MIN_NODE_PAD=18 만큼 떨어짐), y1=222.3
+- "파운드리" 라벨: y=182.1-6=176.1 (font 11 baseline)
+- 두 라벨의 baseline 차이: 176.1 - 178.1 = -2px (역전!)
+- font 11 텍스트 높이 ~10px (cap 8 + desc 2) → "파운드리" 텍스트 영역:
+  y=168.1 to 178.1
+- font 10 텍스트 영역: y=171.1 to 180.1
+- **overlap 7px** (y=171.1 to 178.1)
+
+**왜 회귀했나**:
+- `MIN_NODE_PAD = 18` 은 v5.3.0 초기 구현에서 *노드끼리* 의 vertical 간격을
+  의미했지, *라벨 stacking* 을 고려하지 않음.
+- 라벨 위치:
+  - 위쪽 라벨: `y0 - 6` (font 11 baseline)
+  - 값 라벨: `y1 + 14` (font 10 baseline)
+- 두 노드 사이 사용 가능 영역: `(y0_lower - 6) - (y1_upper + 14) = pad - 20`
+- pad=18 일 때 사용 가능 = -2 → 반드시 overlap
+- 가중치 큰 노드 (메모리 65) 가 같은 컬럼의 작은 노드 (파운드리 30, LSI 5)
+  와 인접할 때 항상 발생 — 모든 컬럼 mixed-weight sankey 에서 회귀.
+
+**검증 체크리스트**:
+- [ ] 중간 컬럼 ≥2 노드의 sankey 에서 인접 노드의 value 라벨 (`y1+14`) 과
+      하위 노드 라벨 (`y0-6`) 의 baseline 차이 ≥ 16px 인지 확인.
+- [ ] font 11 (label) + font 10 (value) 텍스트 영역이 픽셀-수준에서 겹치지
+      않는지 (위 baseline + 2 < 아래 baseline - 8).
+- [ ] 회귀 fixture: 메모리/파운드리/LSI 같은 3 노드 컬럼 sankey 의 라벨
+      vertical 간격 측정.
+
+**Fix (v5.4.7)**:
+- `src/templates/static/charts.js:drawSankey` 의 `MIN_NODE_PAD`:
+  - `18` → `36`
+- 산식: pad = 위 라벨 height (8) + 값 라벨 height (7) + 텍스트 여백 (5) ×2
+  = 30px 최소, 36 으로 4px 여유 buffer
+- 결과 (메모리/파운드리 케이스): "65.0" baseline y=178.1, "파운드리"
+  baseline y=200.1 → 차이 22px → 텍스트 영역 5~6px 여유 gap.
+
+**부수 효과 — 차트가 vertical 로 약간 길어짐**:
+- 컬럼 stack 이 (n-1)×18 → (n-1)×36 만큼 늘어남 (3-노드 col 1: +36px,
+  4-노드 col 2: +54px).
+- 8-노드 DS 케이스: v5.4.6 의 tightH 238 → v5.4.7 의 tightH ~308.
+- 여전히 원래 H=320 보다 작음 (content-fit pass 가 작동) — 다크 스테이지
+  높이 263px → ~340px. 위로 쏠림은 해소된 상태에서 라벨도 깨끗.
+
+**한계 — 향후 강화 옵션**:
+- (A) Adaptive pad — 인접 노드의 라벨 length 가 짧으면 pad 작게, 길면 크게.
+  단 복잡도 ↑ 반대급부 작음.
+- (B) 중간 컬럼 라벨 위치를 노드 측면 (col 0 / col maxCol 처럼) 으로 이동 —
+  stacking 자체 회피. 단 flow 위에 라벨이 올라가 시각 잡음 증가.
 
 ---
 
