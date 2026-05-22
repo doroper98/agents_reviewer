@@ -371,12 +371,21 @@ class TelegramBot:
                 "[telegram_bot] signal %s at chain_depth=%d; skip auto-followup (cap=%d)",
                 signal.signal_id, signal.chain_depth, MAX_CHAIN_DEPTH,
             )
-            await self._send_to_chat(
-                signal.parent_chat_id,
-                f"ℹ️ 신호 `{signal.signal_id}` 의 후속 보고서는 체인 상한"
-                f"(depth={MAX_CHAIN_DEPTH})에 도달해 자동 생성하지 않습니다. "
-                f"필요 시 수동으로 분석을 요청하세요.",
-            )
+            # v5.4.9: MAX_CHAIN_DEPTH=0 이라 모든 신호가 여기로 — 메시지에서 depth
+            # 표기는 의미 없으므로 "자동 후속 분석 기능 비활성화" 로 단순화.
+            if MAX_CHAIN_DEPTH == 0:
+                msg = (
+                    f"ℹ️ 신호 `{signal.signal_id}` 발화 — 자동 후속 분석 "
+                    f"기능이 비활성화되어 있습니다. 필요 시 수동으로 분석을 "
+                    f"요청하세요."
+                )
+            else:
+                msg = (
+                    f"ℹ️ 신호 `{signal.signal_id}` 의 후속 보고서는 체인 상한"
+                    f"(depth={MAX_CHAIN_DEPTH})에 도달해 자동 생성하지 않습니다. "
+                    f"필요 시 수동으로 분석을 요청하세요."
+                )
+            await self._send_to_chat(signal.parent_chat_id, msg)
             return
 
         meta = self.watchlist_registry.get_report_meta(signal.parent_report_id) or {}

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.8
+last_synced_with: v5.4.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.4.9] — 2026-05-22
+
+### Changed — 자동 후속 보고서 생성 기능 비활성화 (사용자 요청)
+
+**배경**: 사용자 — "후속 보고서 만드는건 기능을 멈춰줘." v5.1.1 부터 도입된 watch signal 발화 → 자동 child 보고서 생성 체인을 끄고 싶다는 요청.
+
+**해결** — `src/models.py:MAX_CHAIN_DEPTH`:
+- `2` → `0`
+- 부수 효과 (의도):
+  - `src/telegram_bot.py:_maybe_enqueue_followup` — 모든 신호 발화가 `next_depth >= MAX_CHAIN_DEPTH` 조건에 걸려 후속 분석 enqueue 스킵. 사용자에게 "자동 후속 분석 기능이 비활성화되어 있습니다" 안내 송신
+  - `src/orchestrator.py:Phase 4` — `child_chain_depth >= MAX_CHAIN_DEPTH` (depth=0 이어도 통과) → 부모 보고서의 watch_signals 가 SQLite Watchlist Registry 에 *등록되지 않음*. HTML 보고서의 "감시 신호" 섹션은 composed_report.watch_signals 에서 직접 렌더하므로 시각 영향 X
+  - `/fire` 명령 — 등록된 신호 없음 → 발화 대상 없음 (수동 발화 경로도 사실상 정지)
+
+**메시지 단순화**: `_maybe_enqueue_followup` 에서 `MAX_CHAIN_DEPTH == 0` 분기 추가 — "체인 상한(depth=0) 도달" 같은 어색한 표기 대신 "자동 후속 분석 기능이 비활성화되어 있습니다" 로 명확화. 재활성화 (`MAX_CHAIN_DEPTH = 2`) 시 기존 메시지 자동 복원.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.8 → v5.4.9
+- `src/models.py:MAX_CHAIN_DEPTH` 2 → 0 (+ 주석 갱신)
+- `src/telegram_bot.py:_maybe_enqueue_followup` 메시지 단순화
+- `README.md` Status
+- 본 CHANGELOG entry
+
+**재활성화 방법**: `src/models.py:MAX_CHAIN_DEPTH = 2` 로 복원 + 재배포. 메시지 분기는 자동 복원 (== 0 조건이 거짓).
+
+**검증**: 다음 보고서 작성 → watch signals 섹션은 HTML 에 정상 표시, SQLite Registry 는 비어있음 (`/watchlist` 명령으로 확인). 임의로 `/fire signal_id` 시 — registry 가 비어 "신호 없음" 응답 + 자동 후속 미생성.
 
 ---
 
