@@ -726,7 +726,11 @@ class ParentContext(BaseModel):
 
 
 # v5.1.1: 자동 후속 체인 상한. 부모(0) → 자식(1) → 손자(2) 에서 정지.
-MAX_CHAIN_DEPTH = 2
+# v5.4.9: 0 으로 cap — 자동 후속 보고서 기능 전체 비활성화 (사용자 요청).
+# 부수 효과: orchestrator 의 watchlist 등록도 `child_chain_depth >= MAX` 체크에서
+# 스킵 → 부모 보고서 (depth=0) 의 watch_signals 가 SQLite Registry 에 등록되지
+# 않고 HTML 섹션으로만 표시. `/fire` 명령으로 수동 발화도 불가. 재활성화 시 2 로.
+MAX_CHAIN_DEPTH = 0
 
 
 class FullAnalysisResult(BaseModel):
