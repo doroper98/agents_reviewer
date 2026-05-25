@@ -1246,3 +1246,15 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 ## v5.5.4 — /bundle json import 누락 fix (2026-05-25)
 
 `_bundle_command`(v5.5.0)이 `json.load`/`json.dump`를 쓰는데 telegram_bot.py 상단에 `import json`이 없어 첫 실행 시 `name 'json' is not defined` 크래시. 사용자가 `/bundle 20260525_191503` 실행 중 발견. `import json` 추가. /bundle 외 다른 경로는 json 미사용이라 무관(auto-attach는 binary open). AST로 import 바인딩 확인.
+
+## v5.5.6 — ReportBundle B안 폴백 SVG prerender (2026-05-25)
+
+osint_generator 측이 앞서 밀던 "전-타입 prerendered_svg 채워달라" 요청을 **철회**하고 계약 A안(consumer 가 데이터로 cinematic 재렌더)으로 수렴. (그쪽 표현: osint 최우선 가치를 "영상미"로 못박음 → 정적 SVG 수신이 아니라 데이터·맥락 이해해 영상용 재렌더가 본질.) 합의된 B안 = 복잡 4종(map/choropleth/network/sankey)만 osint 가 자체 cinematic 렌더러 갖추기 전 *폴백* 정적 SVG 제공. v5.5.0 PR 에서 "텍스트+데이터+provenance 먼저, SVG 하네스 fast-follow" 로 잘랐던 그 fast-follow 를 이번에 구현.
+
+설계: 신규 `src/handoff/svg_prerender.py`. charts.js/maps.js 가 그리는 DOM(`<div class=chart-card-stage data-chart-type>` + `<script class=chart-payload-inline>` / `#freeform-map`+`#map-payload`)을 최소 HTML 1장에 재현 → Playwright headless chromium 격리 렌더(chart_id 별 1:1, 매핑 모호성 0) → 렌더된 `<svg>` outerHTML 추출 → 독립 SVG 래핑(xmlns 보강 + viewBox 전체 덮는 배경 rect). charts 3종은 로컬 자산(d3+charts.js)만, map 은 추가 CDN fetch 2건(topojson-client + world-atlas/110m) 의존.
+
+배선: `build_report_bundle(..., prerender_svg: bool=False)` 파라미터 + 두 emit 경로(report_synthesizer 자동 / telegram `/bundle`)에서 `config.enable_bundle_prerender`(env `V5_BUNDLE_PRERENDER_SVG`, 디폴트 ON)로 활성화. 기본 빌드(param 디폴트 False)는 byte-equal 유지 → `tests/test_report_bundle.py`(prerendered_svg is None) 무영향.
+
+graceful: Playwright/chromium 미설치, 렌더 실패/timeout, map CDN 차단 모두 조용히 None(기존 동작 = 계약 §5). 계약 schema_version **무증분**(additive — 예약된 optional 칸 채움). A안 17종 차트는 항상 null.
+
+검증 한계: 본 개발 컨테이너는 chromium 다운로드·CDN fetch 가 네트워크 정책으로 차단됨 → `_render_batch`(실제 헤드리스 렌더)는 여기서 미검증(pragma no cover). 순수 로직(type 게이팅 / standalone 래핑 / isolation HTML / graceful no-op)은 `_render_batch` monkeypatch 로 14개 단위테스트 통과(`tests/test_svg_prerender.py`). **VM smoke-test 필수** — 실제 SVG 출력의 배경/폰트/viewBox 정합은 첫 실렌더 후 iterate 예정.

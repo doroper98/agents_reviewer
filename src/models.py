@@ -891,7 +891,7 @@ class BundleChart(BaseModel):
     data: Any = None         # shape = schemas.py
     note: str = ""
     provenance: BundleProvenance
-    prerendered_svg: str | None = None  # 계약 §5 — v5.5.0 은 null (SVG passthrough fast-follow)
+    prerendered_svg: str | None = None  # 계약 §5 — A안 차트는 null. B안 4종(network/choropleth/sankey)은 prerender 가용 시 폴백 SVG (v5.5.6, svg_prerender.py)
 
 
 class BundleMap(BaseModel):

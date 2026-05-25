@@ -580,6 +580,7 @@ class TelegramBot:
             bundle = build_report_bundle(
                 result, html_url=predicted,
                 system_version=result.system_version or "",
+                prerender_svg=getattr(self.config, "enable_bundle_prerender", True),
             )
             bundle_path = os.path.join(output_dir, f"analysis_{stem}.bundle.json")
             with open(bundle_path, "w", encoding="utf-8") as f:

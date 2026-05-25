@@ -16,12 +16,15 @@ positive 매칭일 때만 confirmed.
 v5.5.0 한계 (계약에 명시):
 - claims[] = [] — 라이브 2-call 경로는 Claim/Evidence 그래프를 안 만든다.
   라벨 척추는 charts[].provenance.verification 가 진다. prose→claim 추출은 fast-follow.
-- prerendered_svg = None — SVG passthrough 하네스는 fast-follow.
+- prerendered_svg — A안 17종 차트는 None (consumer 가 데이터로 재렌더). B안 복잡
+  4종 (map/choropleth/network/sankey) 은 ``prerender_svg=True`` + Playwright 가용 시
+  폴백 SVG 로 채워짐 (v5.5.6, 계약 §5). 미가용 시 None (graceful). SSOT: svg_prerender.py.
 - section.map_ref = None — composer 가 섹션↔지도 바인딩을 emit 하기 전까지(§10).
 """
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime
 from pathlib import Path
@@ -47,6 +50,8 @@ from src.models import (
     ReportBundle,
 )
 from src.timeline_flow import build_timeline_flow
+
+logger = logging.getLogger(__name__)
 
 _CSS_PATH = Path(__file__).resolve().parent.parent / "templates" / "report.css"
 _TOKEN_NAMES = ("bg", "card", "text", "muted", "accent", "up", "down", "border")
@@ -154,8 +159,13 @@ def build_report_bundle(
     *,
     html_url: str = "",
     system_version: str = "",
+    prerender_svg: bool = False,
 ) -> ReportBundle:
-    """FullAnalysisResult → ReportBundle (계약 v1)."""
+    """FullAnalysisResult → ReportBundle (계약 v1).
+
+    prerender_svg=True 면 B안 복잡 4종(map/choropleth/network/sankey)의
+    prerendered_svg 를 Playwright 로 폴백 렌더 (계약 §5). 미가용 시 graceful None.
+    """
     composed = result.composed_report
     context = result.context
     fetched_at = (context.date if context and context.date else
@@ -233,6 +243,22 @@ def build_report_bundle(
                 confidence="medium",
             ),
         )
+
+    # 계약 §5 B안 — 복잡 4종 폴백 SVG. graceful: 실패/미가용 시 prerendered_svg=None 유지.
+    if prerender_svg:
+        try:
+            from src.handoff.svg_prerender import (
+                prerender_chart_svgs,
+                prerender_map_svg,
+            )
+            tokens = theme.tokens if theme else _theme_tokens(theme_id or "editorial_cream")
+            n = prerender_chart_svgs(charts, theme_id, tokens)
+            if bundle_map and composed and composed.embedded_map:
+                prerender_map_svg(bundle_map, composed.embedded_map, theme_id, tokens)
+            if n:
+                logger.info("[bundle] prerendered %d B안 chart SVG(s)", n)
+        except Exception as e:  # pragma: no cover — 안전망
+            logger.warning("[bundle] prerender skip (graceful): %s", e)
 
     signals = [
         BundleSignal(

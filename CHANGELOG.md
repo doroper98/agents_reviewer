@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.5
+last_synced_with: v5.5.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.6] — 2026-05-25
+
+### Added — ReportBundle B안 폴백 SVG prerender (계약 §5, osint_generator fast-follow)
+
+osint_generator 측이 "전-타입 prerendered_svg" 요청을 **철회**하고 계약 A안
+(consumer 가 데이터로 cinematic 재렌더) 으로 수렴. 합의된 B안 — 복잡 4종
+(`map` / `choropleth` / `network` / `sankey`) 만 osint 가 자체 렌더러를 갖추기 전
+*폴백* 정적 SVG 를 제공 — 을 구현.
+
+- 신규 `src/handoff/svg_prerender.py` — charts.js/maps.js 가 그리는 DOM 구조를
+  최소 HTML 1장에 재현 → Playwright(headless chromium) 격리 렌더 → `<svg>`
+  outerHTML 추출 → 독립 SVG 래핑(xmlns + 배경 rect). chart_id 별 1:1 격리.
+- `build_report_bundle(..., prerender_svg=True)` + config `enable_bundle_prerender`
+  (env `V5_BUNDLE_PRERENDER_SVG`, 디폴트 ON). 두 emit 경로(report_synthesizer 자동 /
+  `/bundle` 재emit) 에서 활성화.
+- **graceful** — Playwright/chromium 미설치, 렌더 실패/timeout, map 의 world-atlas
+  CDN fetch 차단 시 조용히 `null` (기존 v5.5.x 동작 = 계약 §5). 보고서/번들 흐름 영향 0.
+- 계약 schema_version **무증분** (additive — 이미 예약된 optional 칸을 채움).
+  A안 17종 차트는 항상 `null` 유지.
+
+행위자 관계도 v5.5.5 인접행렬도 `network` 타입이라 이 폴백 경로에 포함됨.
 
 ---
 

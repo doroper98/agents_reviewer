@@ -98,6 +98,15 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V5_REPORT_BUNDLE", "ENABLE_REPORT_BUNDLE", "enable_report_bundle"),
     )
 
+    # v5.5.6 — ReportBundle B안 폴백 SVG prerender (계약 §5). 복잡 4종
+    # (map/choropleth/network/sankey) 만 Playwright 로 정적 SVG 렌더해
+    # prerendered_svg 에 담음. 디폴트 ON — Playwright/chromium 미설치 시 graceful
+    # None (기존 동작 = 계약 §5). 끄려면 V5_BUNDLE_PRERENDER_SVG=0.
+    enable_bundle_prerender: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("V5_BUNDLE_PRERENDER_SVG", "ENABLE_BUNDLE_PRERENDER", "enable_bundle_prerender"),
+    )
+
     # v5.1.0 — Daily Briefing Scheduler.
     # 매일 ``daily_briefing_time`` (DAILY_BRIEFING_TZ 기준) 에 깨어나
     # ``/briefing_on`` 으로 구독한 모든 텔레그램 채팅에 "간밤 산업·지정학·정치·전쟁"

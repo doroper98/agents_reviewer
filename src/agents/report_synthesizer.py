@@ -1187,6 +1187,7 @@ class ReportSynthesizer:
                 bundle = build_report_bundle(
                     result, html_url=predicted_html_url,
                     system_version=result.system_version or "",
+                    prerender_svg=getattr(self.config, "enable_bundle_prerender", True),
                 )
                 bundle_filename = f"analysis_{timestamp}.bundle.json"
                 bundle_filepath = os.path.join(output_dir, bundle_filename)
