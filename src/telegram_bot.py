@@ -577,7 +577,9 @@ class TelegramBot:
                 f"https://{project}.pages.dev/{html_filename}" if project
                 else (result.report_url or "")
             )
-            bundle = build_report_bundle(
+            # v5.5.7 — to_thread: prerender 의 sync Playwright 를 async 루프 밖에서 실행.
+            bundle = await asyncio.to_thread(
+                build_report_bundle,
                 result, html_url=predicted,
                 system_version=result.system_version or "",
                 prerender_svg=getattr(self.config, "enable_bundle_prerender", True),

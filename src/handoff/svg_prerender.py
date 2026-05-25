@@ -154,8 +154,7 @@ def _render_batch(
             tmp_name = ""
             try:
                 with tempfile.NamedTemporaryFile(
-                    "w", suffix=".html", dir=str(_STATIC_DIR),
-                    delete=False, encoding="utf-8",
+                    "w", suffix=".html", delete=False, encoding="utf-8",
                 ) as tmp:
                     tmp.write(html)
                     tmp_name = tmp.name

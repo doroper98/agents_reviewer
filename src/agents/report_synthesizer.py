@@ -1184,7 +1184,10 @@ class ReportSynthesizer:
                     f"https://{project}.pages.dev/{filename}" if project
                     else (result.report_url or "")
                 )
-                bundle = build_report_bundle(
+                # v5.5.7 — to_thread: prerender 가 sync Playwright 라 async 루프
+                # 밖(워커 스레드)에서 실행해야 함 (루프 블로킹·sync-in-asyncio 예외 방지).
+                bundle = await asyncio.to_thread(
+                    build_report_bundle,
                     result, html_url=predicted_html_url,
                     system_version=result.system_version or "",
                     prerender_svg=getattr(self.config, "enable_bundle_prerender", True),

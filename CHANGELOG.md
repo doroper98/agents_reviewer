@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.6
+last_synced_with: v5.5.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.7] — 2026-05-25
+
+### Fixed — prerender 를 async 루프 밖(워커 스레드)에서 실행
+
+v5.5.6 의 SVG prerender 는 *sync* Playwright API(`sync_playwright`)를 쓰는데,
+이를 `build_report_bundle` 안에서 호출했고 그 빌더는 async `synthesize` /
+`_bundle_command` 가 **이벤트 루프 스레드에서 직접** 부른다. 결과:
+
+- sync Playwright 를 실행 중인 asyncio 루프 안에서 호출 → "Sync API inside
+  asyncio loop" 예외 → graceful null 로 빠짐 → **실제 봇에선 prerender 가 조용히
+  작동 안 함** (chromium 깔아도 항상 null).
+- 가사 루프 스레드에서 렌더가 돌았다면 보고서당 수초간 봇 이벤트 루프 블로킹.
+
+**fix**: 두 호출부(`report_synthesizer.synthesize`, `telegram_bot._bundle_command`)
+에서 `await asyncio.to_thread(build_report_bundle, ...)` 로 빌드 전체를 워커
+스레드에 오프로드. sync Playwright 가 실행 루프 없는 스레드에서 돌아 정상 작동 +
+이벤트 루프 비블로킹 (market_fetcher 의 `asyncio.to_thread` 와 동일 패턴).
+`_render_batch` 임시파일도 패키지 static dir → 시스템 temp dir 로 이동.
+
+**핵심 보고서 생성엔 영향 없음** — charts.js 인접행렬은 브라우저 전용(파이프라인
+무관, per-chart try/catch 격리), prerender 는 HTML 저장·배포 *후* 이중 try/except
+안에서 실행돼 실패해도 보고서는 이미 산출됨.
 
 ---
 

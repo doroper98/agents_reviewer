@@ -1258,3 +1258,11 @@ osint_generator 측이 앞서 밀던 "전-타입 prerendered_svg 채워달라" �
 graceful: Playwright/chromium 미설치, 렌더 실패/timeout, map CDN 차단 모두 조용히 None(기존 동작 = 계약 §5). 계약 schema_version **무증분**(additive — 예약된 optional 칸 채움). A안 17종 차트는 항상 null.
 
 검증 한계: 본 개발 컨테이너는 chromium 다운로드·CDN fetch 가 네트워크 정책으로 차단됨 → `_render_batch`(실제 헤드리스 렌더)는 여기서 미검증(pragma no cover). 순수 로직(type 게이팅 / standalone 래핑 / isolation HTML / graceful no-op)은 `_render_batch` monkeypatch 로 14개 단위테스트 통과(`tests/test_svg_prerender.py`). **VM smoke-test 필수** — 실제 SVG 출력의 배경/폰트/viewBox 정합은 첫 실렌더 후 iterate 예정.
+
+## v5.5.7 — prerender async-safety fix (2026-05-25)
+
+사용자 질문("핵심 보고서 생성 기능에 영향 주는 거 아니냐")을 계기로 v5.5.6 의 실질 결함 발견. `build_report_bundle` 의 prerender 는 *sync* Playwright(`sync_playwright`)인데, 빌더를 async `report_synthesizer.synthesize`(orchestrator:1538 await) / `telegram_bot._bundle_command` 가 **이벤트 루프 스레드에서 직접** 호출 → sync Playwright 를 실행 중인 asyncio 루프 안에서 열면 "Sync API inside asyncio loop" 예외 → 내 graceful try/except 로 잡혀 항상 null. 즉 봇에선 chromium 깔아도 prerender 가 조용히 死. 더 나쁜 가정: 루프 스레드에서 렌더가 실제로 돌면 보고서당 수초 블로킹.
+
+fix: 두 호출부에서 `await asyncio.to_thread(build_report_bundle, ...)` 로 빌드 전체를 워커 스레드로 오프로드(market_fetcher 가 yfinance/pykrx sync 라이브러리에 쓰는 패턴 동일). sync Playwright 가 실행 루프 없는 스레드에서 정상 동작 + 루프 비블로킹. `_render_batch` 임시 html 도 패키지 static dir → 시스템 temp dir(절대 file:// asset URI 라 위치 무관). build_report_bundle 자체는 sync 유지(스레드 안에서 실행).
+
+안전성 재확인: charts.js 인접행렬(v5.5.5)은 브라우저 전용 — Python 파이프라인 무관, renderStage per-chart try/catch 로 한 차트 깨져도 나머지 정상. prerender(v5.5.6)는 HTML 저장·배포 *후* + 이중 try/except. 둘 다 핵심 보고서 생성 경로를 깨뜨릴 수 없음. 단위테스트 14개 그대로 통과(to_thread 는 호출부 변경이라 svg_prerender 순수 로직 무영향).
