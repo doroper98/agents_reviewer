@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.2
+last_synced_with: v5.5.3
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -1227,3 +1227,16 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 - `BundleTimeline`+`ReportBundle.timeline` (additive, 계약 §7 무증분) — OSINT 영상 타임라인 세그먼트용. phase가 past/present/future 구분.
 
 **검증**: build_timeline_flow 결정론/윤색/graceful, jinja2로 섹션 실제 렌더(과거·현재·미래 점 + 미래 태그 + 빈 입력 시 미출력), 번들 timeline 적재, 회귀 9/9(6+신규 3). VM live run에서 composer의 timeline_flow 품질 확인 필요.
+
+---
+
+## v5.5.3 — ReportBundle 항상 emit + 텔레그램 자동 전송 (2026-05-25)
+
+**맥락**: 사용자 — osint_generator 영상 제작에 `analysis_{ts}.bundle.json` 필요. 보고서+md와 함께 번들도 텔레그램으로 받고 싶고, 이미 생성된 보고서의 번들도 회수하고 싶다.
+
+**변경**:
+- `report_synthesizer`: 번들 emit 게이트를 `request.emit_bundle` 의존에서 `config.enable_report_bundle` 단독(디폴트 ON)으로 → 모든 보고서에 항상 동반. 번들 빌드는 결정론·LLM 0이라 비용 무시.
+- `telegram_bot`: `_run_analysis` 결과 송신에 `analysis_{ts}.bundle.json` 문서 자동 첨부 + pages.dev URL. report_path(html)→.bundle.json 경로 유도(같은 timestamp stem 확인됨). `/bundle <report_id>`도 재생성 파일 첨부(기존 보고서 회수 경로). `/start` 도움말 갱신.
+- `--bundle` 플래그는 no-op으로 호환 유지(orchestrator strip 보존).
+
+**검증**: py_compile + 회귀 9/9. VM 재배포 후 텔레그램에서 실파일 첨부 확인 필요.

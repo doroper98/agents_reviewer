@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.2
+last_synced_with: v5.5.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,19 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## [v5.5.3] — 2026-05-25
+
+### Changed — ReportBundle 항상 emit + 텔레그램 자동 전송
+
+**배경**: 사용자 — osint_generator 영상 제작에 `analysis_{ts}.bundle.json` 이 필요. 보고서+md 와 함께 번들도 텔레그램으로 받고 싶다.
+
+**변경**:
+- `src/agents/report_synthesizer.py` — 번들 emit 게이트를 `config.enable_report_bundle` *단독* 으로(항상 emit). `--bundle` 플래그(`request.emit_bundle`) 의존 제거 — 이제 모든 보고서에 동반. 번들 빌드는 결정론·LLM 0 이라 비용 무시 가능.
+- `src/telegram_bot.py` — 분석 완료 시 `analysis_{ts}.bundle.json` 을 **문서로 자동 첨부** + pages.dev URL 안내. `/bundle <report_id>` 도 재생성한 파일을 첨부(기존 보고서 회수 경로). `/start` 도움말 갱신.
+- `--bundle` 플래그는 no-op 으로 호환 유지 (orchestrator strip 보존).
+
+**Change Propagation Matrix**: `src/orchestrator.py:VERSION` v5.5.2 → v5.5.3, `docs/CONTRACTS/report_bundle_v1.md` (트리거: 항상 emit), README/DEVLOG/본 CHANGELOG.
 
 ## [v5.5.2] — 2026-05-25
 
