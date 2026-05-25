@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.2.9
+last_synced_with: v5.5.1
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -196,6 +196,35 @@ last_review: 2026-05-17
 - `narrative_composer.MAX_TOKENS_BY_MODE`: fast 12K / standard 20K / deep 32K.
 - `_call_api(user_message, mode)` 에 mode 인자 추가 → mode 별 max_tokens 적용.
 - 단일 8K 폐기 (legacy MAX_TOKENS 는 default fallback 으로만 32K 보존).
+
+## WRITE-AP-9: 모순 섹션의 정적 메타-라벨 제목 (결론 회피 인상 + 단조로움)
+
+**증상**: 모든 보고서의 모순 섹션 제목이 동일한 정적 문구 ("봉합하지 않은 충돌"
+/ "모순" / "반대 관점"). 두 가지 해악 — (1) 제목이 *내용이 아니라 보고서의
+인식론* 을 말해서 "이 보고서는 결론을 안 냈다" 로 읽힘 → 앞 본문을 다 읽은
+독자가 시간낭비 느낌. (2) 매 보고서 동일 문구라 단조롭고 불편.
+
+**최초 사례**: v5.5.0 까지 `freeform_essay.html` 의 고정 `<h2>봉합하지 않은 충돌</h2>`
+(사용자 보고). 정작 결론인 `resolution` 은 "분석가의 정리 —" 라는 *각주형
+border-left 박스* 로 뒤에 붙어, 독자가 판단이 아니라 의심으로 끝남.
+
+**원인**: 제목·라벨이 템플릿에 하드코딩. composer 가 내용 기반 제목을 emit 할
+경로 없음. resolution 이 시각적으로 "본문의 착지" 가 아니라 "추가 메모" 로 렌더.
+
+**검증 체크리스트**:
+- [ ] 모순 섹션 제목이 composer 동적 emit 인가? (`ComposedReport.contradictions_heading`)
+- [ ] 정적 fallback 도 "봉합하지 않은 충돌" 류 메타-라벨이 아닌가? (reframe: '쟁점과 판단')
+- [ ] `resolution` 이 단락의 *마지막 문장으로 흐르나*? (각주형 라벨/박스 아님)
+- [ ] composer SYSTEM_PROMPT 가 "정적 메타-라벨 금지 + 판단으로 착지" 를 지시하나?
+
+**Fix (v5.5.1)**:
+- `ComposedReport.contradictions_heading: str = ""` 추가 — composer 가 판단형 제목
+  emit (예: '정전이냐 잠복이냐'). 비면 템플릿 fallback '쟁점과 판단'.
+- `freeform_essay.html` — 정적 `<h2>봉합하지 않은 충돌</h2>` 폐기. 서술형 prose 로
+  전환: side_a → '그러나' (accent) → side_b → resolution (fg-1 bold, 단락 착지).
+  각주형 "근거 충돌:" / "분석가의 정리 —" 라벨 + border-left 박스 제거.
+- composer SYSTEM_PROMPT — contradictions_heading 동적 작성 + resolution 결론적
+  문장 지시, 정적 메타-라벨 금지.
 
 ---
 

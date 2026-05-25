@@ -687,6 +687,12 @@ class ComposedReport(BaseModel):
     형식: [{side_a, side_b, evidence?, resolution?}]
     """
 
+    contradictions_heading: str = ""
+    """v5.5.1 — 모순 섹션의 *동적* 제목. composer 가 보고서 내용에 맞는 판단형
+    제목을 emit (예: '정전이냐 잠복이냐'). 비면 템플릿이 reframe 된 fallback
+    ('쟁점과 판단') 사용. 정적 메타-라벨 ('봉합하지 않은 충돌' 등) 금지 — WRITE-AP-9.
+    """
+
     confidence_summary: str = ""
     """신뢰도에 대한 한 줄 자유 텍스트 (예: '주요 출처 3건 모두 일치, 단 환율 데이터는 2일 지연')."""
 

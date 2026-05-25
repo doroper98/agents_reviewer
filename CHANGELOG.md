@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.0
+last_synced_with: v5.5.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,25 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## [v5.5.1] — 2026-05-25
+
+### Changed — 모순 섹션 서술형 전환 + 동적 제목 (WRITE-AP-9)
+
+**배경**: 사용자 — "'봉합하지 않은 충돌'이라는 명칭 자체가 결론을 안 낸 느낌, 앞 내용 읽은 독자에게 시간낭비 인상. 모든 보고서에 동일 문구라 단조롭다. 서술형으로 바꿔줘."
+
+**문제**: `freeform_essay.html` 의 고정 `<h2>봉합하지 않은 충돌</h2>` 가 *내용이 아니라 보고서 인식론* 을 말해 "결론 회피" 로 읽힘. 정작 판단인 `resolution` 은 "분석가의 정리 —" 각주형 border-left 박스로 뒤에 붙어 독자가 의심으로 끝남.
+
+**해결**:
+- `src/models.py:ComposedReport.contradictions_heading: str = ""` 추가 — composer 가 내용 기반 판단형 제목 emit (예: '정전이냐 잠복이냐'). 비면 reframe fallback '쟁점과 판단'.
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` — contradictions_heading 동적 작성 + resolution 결론적 문장(착지) 지시, 정적 메타-라벨 금지.
+- `src/templates/archetypes/freeform_essay.html` — 서술형 prose 전환: side_a → '그러나'(accent) → side_b → resolution(fg-1 bold, 단락 착지). 각주형 라벨("근거 충돌:" / "분석가의 정리 —") + border-left 박스 폐기. kicker '쟁점'.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.0 → v5.5.1
+- `src/models.py:ComposedReport` (contradictions_heading) → `docs/DATA_MODELS.md`
+- composer SYSTEM_PROMPT → `docs/REPORT_WRITING_ANTIPATTERNS.md` (WRITE-AP-9), `docs/REPORT_STYLE_GUIDE.md`
+- `CLAUDE.md` Anti-Patterns (9개 누적), `README.md`, `DEVLOG.md`, 본 CHANGELOG entry
 
 ## [v5.5.0] — 2026-05-25
 
