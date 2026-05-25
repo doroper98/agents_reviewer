@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v4.5.7
+last_synced_with: v5.5.5
 ssot_for:
   - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
@@ -152,7 +152,7 @@ SVG 정의 예시는 `samples/chart_map_mono_compare.html` 의 `definePatterns()
 | Viz | 처리 |
 |---|---|
 | Geographic Map | 주 경로 = 실선, 보조 경로 = 점선. 위험권 = 사선 해칭 채움 + 점선 보더. 마커 라벨은 SVG 오버레이로 직접 그리고 베이스맵 텍스트 레이어는 사용하지 않는다 (성능). |
-| Force Network | 관계 종류는 dash array (동맹=실선, 충돌=대시, 영향=점선, 전략=세점선). 위험도는 노드 하단 패턴 바 밀도 (high=tight, med=wide, low=dots). |
+| Network (관계 인접행렬) | v5.5.5 부터 radial 폐기 → **인접행렬** (CHART-AP-25). 행위자를 행·열에 두고 셀이 관계 type 인코딩: 대립 = `--down` 솔리드 + ✕, 동맹 = `--accent` 솔리드, 영향 = `accent-hatch`, 연관 = `dots`. 대각선은 `--border` fill-opacity 0.35 로 차단. 진영(group) 으로 정렬해 같은 진영을 대각선 근처에 모은다. 데이터 계약 (nodes/links) 불변. viewBox 는 getBBox content-fit → 자동 중앙 정렬 + 라벨/범례 클리핑 0. 모크업: `samples/actor_relationship_redesign_compare.html`. |
 | Line + Events | 면 채움은 `hatch-wide` 사선 해칭. 이벤트 vertical 은 `--down` 점선. 끝점 dot + 값 라벨은 `--accent`. |
 | Bar Categorical | 핵심 항목 = 액센트 솔리드. 기타 항목 = §4.2 패턴 순환 (`hatch-tight`, `accent-hatch`, `hatch-wide`, `dots`). |
 

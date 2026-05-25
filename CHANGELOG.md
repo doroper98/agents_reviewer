@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.4
+last_synced_with: v5.5.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.5] — 2026-05-25
+
+### Changed — 행위자 관계도: radial network → 인접행렬 (CHART-AP-25)
+
+행위자(이해관계자) 관계도를 그리던 `network` 차트가 노드를 원 위에 입력 순서대로
+배치하고 엣지를 직선으로 긋는 radial 레이아웃이라, 위치가 아무 의미를 안 가져
+항상 중심을 관통하는 실타래(hairball)가 되고 시인성이 최악이었다.
+
+`src/templates/static/charts.js` 의 `drawNetwork` **렌더러 본문만** 인접행렬
+(adjacency matrix) 로 교체:
+
+- 데이터 계약 (`{nodes:[{id,label,group}], links:[{source,target,type}]}`) **불변**
+  — composer SYSTEM_PROMPT / `NetworkGuard` / capability registry / usage_log /
+  회귀 fixture 전부 무변경, type 명 `network` 유지.
+- 행위자를 행·열에 두고 셀이 관계 type 인코딩: 대립 = `--down` 솔리드 + ✕,
+  동맹 = `--accent` 솔리드, 영향 = `accent-hatch`, 연관 = `dots`. 대각선은
+  `--border` fill-opacity 0.35 차단. 진영(group) 정렬로 같은 진영을 대각선
+  근처 블록으로 모음. 선 교차 0 → hairball 원천 제거.
+- viewBox 는 `getBBox` content-fit 으로 산출 → 라벨/범례 자동 중앙 정렬 +
+  클리핑 0 (수동 margin 추정 fragility 제거). 셀 rect 는 `data-anim="static"`
+  태깅으로 64셀 fade 캐스케이드 + opacity 덮어쓰기 방지.
+
+모크업 (radial vs 인접행렬/포지셔닝맵/arc 비교): `samples/actor_relationship_redesign_compare.html`.
 
 ---
 

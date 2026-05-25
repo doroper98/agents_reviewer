@@ -195,7 +195,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **24개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **25개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -211,6 +211,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-22: sankey 중간 컬럼 라벨 stacking 충돌 (v5.4.7 신설 — MIN_NODE_PAD=18 이 위 라벨 font11 + 값 라벨 font10 stacking 에 부족, 메모리/파운드리 사이 "65.0" ↔ "파운드리" 라벨 7px overlap. pad 36 으로 16px 여유 확보)
 - CHART-AP-23: forecast 차트 y축 도메인이 actual 점을 제외 (v5.4.8 신설 — `?? fallback` 으로 forecast 가 있으면 actual 무시 → actual 의 값이 forecast 범위 밖이면 데이터 점이 차트 영역 밖에 박힘. actual + forecast 모든 값 산입으로 픽스)
 - CHART-AP-24: forecast 차트 actual ↔ forecast 선 단절 (v5.4.8 신설 — actual 선과 forecast 선/cone 이 별도 path 로 그려져 boundary 에서 1년치 gap. actual 마지막 점을 forecast bridge 의 첫 점으로 prepend → cone 이 fork 시점에서 한 점, 미래로 fan 형태로 확장)
+- CHART-AP-25: 행위자 관계도를 radial network (hairball) 로 렌더 (v5.5.5 신설 — 노드 위치 무의미 → 중심 관통 실타래, 시인성 최악. `drawNetwork` 렌더러를 **인접행렬** 로 교체. 데이터 계약 (nodes/links) · NetworkGuard · registry · usage_log 불변, type 명 `network` 유지. 셀이 관계 type 인코딩 (대립/동맹/영향/연관), getBBox content-fit viewBox 로 자동 중앙정렬. 모크업: `samples/actor_relationship_redesign_compare.html`)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 

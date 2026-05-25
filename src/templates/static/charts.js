@@ -629,158 +629,142 @@
     renderAnnotations(svg, payload, zones, t, annXScale, null);
   }
 
-  // ----- NETWORK (radial static) -----
-  // ----- NETWORK (radial static) -----
-  // v4.4.4: 작은 노드 (색만) + 외부 라벨 (각도별 placement) — JPM 풍.
-  //         한국어 라벨이 노드 안에 안 들어가는 CHART-AP-1 후속 이슈 해결.
-  //         link type legend 추가 — 선 의미 (대립/영향/연관) 명시.
+  // ----- NETWORK → adjacency matrix (v5.5.5) -----
+  // 행위자 관계도. radial hairball (CHART-AP-25) 폐기 → 인접행렬.
+  //   · 데이터 계약 (nodes/links) 동일 — composer/스키마/레지스트리 무변경.
+  //   · 셀이 관계 type 인코딩 (대립/동맹/영향/연관), 대각선 차단.
+  //   · 진영(group) 으로 정렬해 같은 진영이 대각선 근처에 블록으로 모임.
+  //   · viewBox 는 getBBox content-fit → 자동 중앙 정렬 + 라벨/범례 클리핑 0.
   function drawNetwork(stage, payload, t) {
-    const nodes = (payload.data && payload.data.nodes) || [];
+    const rawNodes = (payload.data && payload.data.nodes) || [];
     const links = (payload.data && payload.data.links) || [];
-    if (nodes.length < 2) return;
-    const W = 640, H = 400;
-    const zones = computeZones(W, H, { left: 16, right: 140, top: 16, bottom: 16 });
+    if (rawNodes.length < 2) return;
+
     const svg = d3.select(stage).select('svg')
-      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+      .attr('preserveAspectRatio', 'xMidYMid meet');
     const prefix = stage.getAttribute('data-chart-id') || 'pat';
-    definePatterns(svg, t, prefix);
-    const idp = (n) => `${prefix}-${n}`;
+    const idp = definePatterns(svg, t, prefix);
 
-    // group → 시각 스타일 매핑 (v4.4.2 와 동일)
-    const SEMANTIC_STYLES = {
-      approve: { kind: 'solid',   fill: t.accent,                       stroke: t.text,  strokeStyle: null   },
-      review:  { kind: 'pattern', fill: `url(#${idp('accent-hatch')})`, stroke: t.text,  strokeStyle: null   },
-      oppose:  { kind: 'open',    fill: t.bg,                           stroke: t.down,  strokeStyle: 'solid' },
-      informal:{ kind: 'pattern', fill: `url(#${idp('dots')})`,         stroke: t.text,  strokeStyle: null   },
-      other:   { kind: 'muted',   fill: t.card,                         stroke: t.muted, strokeStyle: 'dashed'},
-    };
-    function classify(group) {
+    // group → 진영 rank (정렬용). 같은 진영을 대각선 근처에 모은다.
+    function nodeRank(group) {
       const g = String(group || '').toLowerCase();
-      if (/승인|찬성|동맹|approve|support|ally|core/.test(g)) return 'approve';
-      if (/검토|중립|관망|review|neutral|considering/.test(g)) return 'review';
-      if (/반대|대립|적|oppose|against|hostile/.test(g)) return 'oppose';
-      if (/비공식|간접|informal|covert|indirect/.test(g)) return 'informal';
-      return null;
+      if (/승인|찬성|주도|동맹|approve|support|ally|core|lead/.test(g)) return 0;
+      if (/검토|중립|관망|review|neutral|considering/.test(g)) return 1;
+      if (/반대|대립|적|oppose|against|hostile/.test(g)) return 2;
+      if (/비공식|간접|informal|covert|indirect/.test(g)) return 3;
+      return 4;
     }
-    const groupOrder = [];
-    const groupClass = {};
-    nodes.forEach(n => {
-      const g = String(n.group || '_default');
-      if (groupClass[g]) return;
-      const sem = classify(g);
-      if (sem) {
-        groupClass[g] = sem;
-      } else {
-        const fallbackOrder = ['approve', 'review', 'oppose', 'informal', 'other'];
-        const used = new Set(Object.values(groupClass));
-        const next = fallbackOrder.find(s => !used.has(s)) || 'other';
-        groupClass[g] = next;
-      }
-      groupOrder.push(g);
-    });
+    const nodes = rawNodes
+      .map((nd, i) => ({ nd, i, rank: nodeRank(nd.group) }))
+      .sort((a, b) => a.rank - b.rank || a.i - b.i)
+      .map(o => o.nd);
+    const n = nodes.length;
 
-    const cx = zones.data.x + zones.data.w / 2;
-    const cy = zones.data.y + zones.data.h / 2;
-    const r = Math.min(zones.data.w, zones.data.h) * 0.40;
-    nodes.forEach((n, i) => {
-      const ang = -Math.PI / 2 + (2 * Math.PI * i / nodes.length);
-      n._x = cx + r * Math.cos(ang);
-      n._y = cy + r * Math.sin(ang);
-      n._ang = ang;
-    });
-    const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
-
-    // Render links first (behind)
+    // 관계 type → 시각 클래스
+    function linkClass(type) {
+      const s = String(type || '').toLowerCase();
+      if (/대립|충돌|갈등|적대|conflict|oppose|against|hostile|rival/.test(s)) return 'conflict';
+      if (/동맹|협력|지지|연합|제휴|ally|alliance|support|coop|partner/.test(s)) return 'ally';
+      if (/영향|압박|의존|leverage|influence|pressure|depend/.test(s)) return 'influence';
+      return 'assoc';
+    }
+    const idIndex = Object.fromEntries(nodes.map((nd, i) => [nd.id, i]));
+    const rel = {}; // "r|c" → class (대칭)
     links.forEach(l => {
-      const a = byId[l.source], b = byId[l.target];
-      if (!a || !b) return;
-      const lt = String(l.type || '').toLowerCase();
-      const dash = (lt.includes('대립') || lt.includes('conflict')) ? '5,3'
-        : (lt.includes('영향') || lt.includes('influence')) ? '2,3'
-        : null;
-      svg.append('line').attr('x1', a._x).attr('y1', a._y).attr('x2', b._x).attr('y2', b._y)
-        .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.55)
-        .attr('stroke-dasharray', dash);
+      const a = idIndex[l.source], b = idIndex[l.target];
+      if (a == null || b == null || a === b) return;
+      const cls = linkClass(l.type);
+      rel[a + '|' + b] = cls;
+      rel[b + '|' + a] = cls;
     });
 
-    // Render nodes (small dots) + external labels (angular placement, no overflow)
-    const nodeR = 10;
-    nodes.forEach(n => {
-      const sem = groupClass[String(n.group || '_default')] || 'other';
-      const style = SEMANTIC_STYLES[sem];
-      const c = svg.append('circle').attr('cx', n._x).attr('cy', n._y).attr('r', nodeR)
-        .attr('fill', style.fill).attr('stroke', style.stroke);
-      if (style.kind === 'open') {
-        c.attr('stroke-width', 1.6);
-      } else if (style.strokeStyle === 'dashed') {
-        c.attr('stroke-width', 0.9).attr('stroke-dasharray', '3,2');
-      } else {
-        c.attr('stroke-width', 0.8);
+    // 셀 글리프: mono 4종 구분 (solid down / solid accent / accent-hatch / dots)
+    const GLYPH = {
+      conflict:  { fill: t.down,                          mark: '✕' },
+      ally:      { fill: t.accent },
+      influence: { fill: `url(#${idp('accent-hatch')})`,  bordered: true },
+      assoc:     { fill: `url(#${idp('dots')})`,           bordered: true },
+    };
+
+    // 셀 크기 적응 (그리드 폭 ~330 목표), 라벨 폰트 n 에 따라 축소
+    const cell = Math.max(24, Math.min(46, Math.round(330 / n)));
+    const fs = n > 9 ? 9.5 : 11;
+    const labelOf = (nd) => String(nd.label || nd.id || '').slice(0, 14);
+
+    // content 를 g 에 그린 뒤 getBBox 로 viewBox 산출 → 자동 중앙 정렬
+    const root = svg.append('g');
+
+    // 그리드 셀
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+      const X = cell * c, Y = cell * r;
+      root.append('rect').attr('x', X).attr('y', Y).attr('width', cell).attr('height', cell)
+        .attr('fill', 'none').attr('stroke', t.border).attr('stroke-width', 0.6);
+      if (r === c) {
+        root.append('rect').attr('x', X).attr('y', Y).attr('width', cell).attr('height', cell)
+          .attr('fill', t.border).attr('fill-opacity', 0.35);
+        continue;
       }
-      // External label: angular placement based on node's position relative to center
-      // Right half: anchor=start (label to right of node)
-      // Left half: anchor=end (label to left)
-      const labelText = String(n.label || n.id || '').slice(0, 8);
-      const isRight = Math.cos(n._ang) >= 0;
-      const lx = n._x + (isRight ? nodeR + 6 : -(nodeR + 6));
-      const ly = n._y + 4;
-      svg.append('text').attr('x', lx).attr('y', ly)
-        .attr('text-anchor', isRight ? 'start' : 'end')
-        .attr('font-family', 'Noto Sans KR').attr('font-size', 11)
-        .attr('font-weight', sem === 'approve' ? 700 : 500)
-        .attr('fill', t.text).text(labelText);
-    });
-
-    // Legend in right zone — group + link type
-    const legendX = W - 130;
-    let legendY = 24;
-    svg.append('text').attr('x', legendX).attr('y', legendY)
-      .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-      .attr('font-weight', 700).attr('fill', t.text).text('진영');
-    legendY += 18;
-    groupOrder.forEach(g => {
-      const sem = groupClass[g];
-      const style = SEMANTIC_STYLES[sem];
-      const swc = svg.append('circle').attr('cx', legendX + 7).attr('cy', legendY - 3).attr('r', 6)
-        .attr('fill', style.fill).attr('stroke', style.stroke);
-      if (style.kind === 'open') swc.attr('stroke-width', 1.4);
-      else if (style.strokeStyle === 'dashed') swc.attr('stroke-width', 0.8).attr('stroke-dasharray', '2,1');
-      else swc.attr('stroke-width', 0.6);
-      svg.append('text').attr('x', legendX + 20).attr('y', legendY)
-        .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
-        .text(String(g).slice(0, 12));
-      legendY += 17;
-    });
-
-    // Link type legend (only if multiple types observed)
-    const linkTypes = new Set(links.map(l => String(l.type || '').toLowerCase()));
-    const linkLegendItems = [];
-    let hasConflict = false, hasInfluence = false, hasOther = false;
-    linkTypes.forEach(lt => {
-      if (lt.includes('대립') || lt.includes('conflict')) hasConflict = true;
-      else if (lt.includes('영향') || lt.includes('influence')) hasInfluence = true;
-      else if (lt) hasOther = true;
-    });
-    if (hasConflict || hasInfluence || hasOther) {
-      legendY += 8;
-      svg.append('text').attr('x', legendX).attr('y', legendY)
-        .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-        .attr('font-weight', 700).attr('fill', t.text).text('관계');
-      legendY += 16;
-      const linkLegend = (label, dash) => {
-        svg.append('line').attr('x1', legendX).attr('y1', legendY - 3)
-          .attr('x2', legendX + 18).attr('y2', legendY - 3)
-          .attr('stroke', t.text).attr('stroke-width', 1.2).attr('stroke-opacity', 0.7)
-          .attr('stroke-dasharray', dash);
-        svg.append('text').attr('x', legendX + 24).attr('y', legendY)
-          .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
-          .text(label);
-        legendY += 16;
-      };
-      if (hasConflict)  linkLegend('대립', '5,3');
-      if (hasInfluence) linkLegend('영향', '2,3');
-      if (hasOther)     linkLegend('연관', null);
+      const cls = rel[r + '|' + c];
+      if (!cls) continue;
+      const g = GLYPH[cls];
+      const s = cell * 0.6, cxv = X + cell / 2, cyv = Y + cell / 2;
+      const sq = root.append('rect').attr('x', cxv - s / 2).attr('y', cyv - s / 2)
+        .attr('width', s).attr('height', s).attr('fill', g.fill);
+      if (g.bordered) sq.attr('stroke', t.border).attr('stroke-width', 0.5);
+      if (g.mark) {
+        root.append('text').attr('x', cxv).attr('y', cyv + s * 0.34)
+          .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR')
+          .attr('font-size', s * 0.6).attr('font-weight', 700).attr('fill', t.bg)
+          .text(g.mark);
+      }
     }
+
+    // 라벨 — 행: 좌측 거터 우측정렬 / 열: -45° 회전 (위로)
+    nodes.forEach((nd, i) => {
+      const lbl = labelOf(nd);
+      root.append('text').attr('x', -8).attr('y', cell * i + cell / 2 + fs * 0.35)
+        .attr('text-anchor', 'end').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', fs).attr('fill', t.text).text(lbl);
+      const cxl = cell * i + cell / 2, cyl = -8;
+      root.append('text').attr('x', cxl).attr('y', cyl)
+        .attr('text-anchor', 'start').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', fs).attr('fill', t.text)
+        .attr('transform', `rotate(-45 ${cxl} ${cyl})`).text(lbl);
+    });
+
+    // 범례 — 실제 등장한 관계 type 만, 그리드 하단 중앙
+    const seen = new Set(Object.values(rel));
+    const present = [['conflict', '대립'], ['ally', '동맹'], ['influence', '영향'], ['assoc', '연관']]
+      .filter(([k]) => seen.has(k));
+    if (present.length) {
+      const SW = 15, GAP = 6, ITEMGAP = 22, lgFs = 10.5;
+      const lgY = cell * n + 30;
+      const itemW = (label) => SW + GAP + label.length * lgFs * 0.95;
+      const totalW = present.reduce((a, [, l]) => a + itemW(l) + ITEMGAP, -ITEMGAP);
+      let lx = (cell * n) / 2 - totalW / 2;
+      present.forEach(([k, label]) => {
+        const g = GLYPH[k];
+        const sw = root.append('rect').attr('x', lx).attr('y', lgY - SW + 3)
+          .attr('width', SW).attr('height', SW).attr('fill', g.fill);
+        if (g.bordered) sw.attr('stroke', t.border).attr('stroke-width', 0.5);
+        if (g.mark) root.append('text').attr('x', lx + SW / 2).attr('y', lgY - SW / 2 + 4.5)
+          .attr('text-anchor', 'middle').attr('font-size', SW * 0.62)
+          .attr('font-weight', 700).attr('fill', t.bg).text(g.mark);
+        root.append('text').attr('x', lx + SW + GAP).attr('y', lgY)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', lgFs).attr('fill', t.text)
+          .text(label);
+        lx += itemW(label) + ITEMGAP;
+      });
+    }
+
+    // 정적 렌더 — 셀 fade 캐스케이드/opacity 덮어쓰기 방지 (CHART-AP-18 무관 안전)
+    root.selectAll('rect').attr('data-anim', 'static');
+
+    // content-fit viewBox: 모든 라벨/범례/회전 텍스트 포함 bbox + 패딩 → 중앙 정렬
+    const bb = root.node().getBBox();
+    const pad = 12;
+    svg.attr('viewBox',
+      `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);
   }
 
 

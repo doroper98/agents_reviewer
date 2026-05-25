@@ -270,36 +270,54 @@ function renderMatrix(t){
   const svg=document.getElementById('svg-matrix'); clear(svg);
   const order=['us','jp','nl','kr','ss','sk','cn','smic'];
   const acts=order.map(id=>byId[id]);
-  const n=acts.length, cell=42, gx=150, gy=132;    // grid origin
-  const W=gx+cell*n+30, H=gy+cell*n+24; svg.setAttribute('viewBox',`0 0 ${W} ${H}`); defs(svg,'mx',t);
+  const n=acts.length, cell=44, gridW=cell*n;
+  const padX=126;                 // 좌(행 라벨) = 우 여백 → 그리드 수평 정중앙
+  const padTop=120;               // 회전된 열 라벨 공간
+  const gx=padX, gy=padTop;
+  const W=padX+gridW+padX;
+  const legendY=gy+gridW+40;
+  const H=legendY+20;             // 범례 디센더까지 포함 (하단 클리핑 방지)
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); defs(svg,'mx',t);
   // relation lookup (symmetric)
   const rel={}; LINKS.forEach(l=>{rel[l.s+'|'+l.t]=l.type; rel[l.t+'|'+l.s]=l.type;});
-  // camp separators positions (after jp/nl=동맹? group blocks: 주도/동맹, 검토, 대립)
   // row/col labels
   acts.forEach((a,i)=>{
-    T(svg,gx-8,gy+cell*i+cell/2+4,a.label,{'font-size':11,fill:t.text,'text-anchor':'end'});
-    const tx=T(svg,gx+cell*i+cell/2,gy-8,a.label,{'font-size':10.5,fill:t.text,'text-anchor':'start'});
-    tx.setAttribute('transform',`rotate(-42 ${gx+cell*i+cell/2} ${gy-8})`);
+    T(svg,gx-10,gy+cell*i+cell/2+4,a.label,{'font-size':11,fill:t.text,'text-anchor':'end'});
+    const cxl=gx+cell*i+cell/2;
+    const tx=T(svg,cxl,gy-10,a.label,{'font-size':10.5,fill:t.text,'text-anchor':'start'});
+    tx.setAttribute('transform',`rotate(-45 ${cxl} ${gy-10})`);
   });
   // cells
   for(let r=0;r<n;r++)for(let c=0;c<n;c++){
     const X=gx+cell*c,Y=gy+cell*r;
     E('rect',{x:X,y:Y,width:cell,height:cell,fill:'none',stroke:t.border,'stroke-width':0.6},svg);
-    if(r===c){ E('rect',{x:X,y:Y,width:cell,height:cell,fill:t.border,'stroke-width':0,opacity:0.35},svg); continue; }
+    if(r===c){ E('rect',{x:X,y:Y,width:cell,height:cell,fill:t.border,opacity:0.35},svg); continue; }
     const type=rel[acts[r].id+'|'+acts[c].id]; if(!type)continue;
-    const cx=X+cell/2,cy=Y+cell/2,s=cell*0.62;
+    const cx=X+cell/2,cy=Y+cell/2,s=cell*0.6;
     if(type==='대립'){ E('rect',{x:cx-s/2,y:cy-s/2,width:s,height:s,fill:t.down,opacity:0.9},svg);
-      T(svg,cx,cy+4,'✕',{'font-size':14,fill:t.bg,'text-anchor':'middle','font-weight':700}); }
+      T(svg,cx,cy+5,'✕',{'font-size':14,fill:t.bg,'text-anchor':'middle','font-weight':700}); }
     else if(type==='동맹'){ E('rect',{x:cx-s/2,y:cy-s/2,width:s,height:s,fill:t.accent},svg); }
     else if(type==='영향'){ E('rect',{x:cx-s/2,y:cy-s/2,width:s,height:s,fill:`url(#mx-hatch)`,stroke:t.text,'stroke-width':0.5},svg); }
     else { E('circle',{cx,cy,r:s*0.42,fill:`url(#mx-dot)`,stroke:t.muted,'stroke-width':0.5},svg); }
   }
-  // inline glyph legend
-  let lx=gx, ly=gy+cell*n+20;
-  E('rect',{x:lx,y:ly-9,width:16,height:16,fill:t.down,opacity:0.9},svg); T(svg,lx+22,ly+4,'대립',{'font-size':10.5,fill:t.text});
-  E('rect',{x:lx+70,y:ly-9,width:16,height:16,fill:t.accent},svg); T(svg,lx+92,ly+4,'동맹',{'font-size':10.5,fill:t.text});
-  E('rect',{x:lx+140,y:ly-9,width:16,height:16,fill:`url(#mx-hatch)`,stroke:t.text,'stroke-width':0.5},svg); T(svg,lx+162,ly+4,'영향',{'font-size':10.5,fill:t.text});
-  E('circle',{cx:lx+218,cy:ly-1,r:7,fill:`url(#mx-dot)`,stroke:t.muted,'stroke-width':0.5},svg); T(svg,lx+232,ly+4,'연관',{'font-size':10.5,fill:t.text});
+  // centered glyph legend
+  const items=[
+    {kind:'sq',  fill:t.down,            opacity:0.9, label:'대립'},
+    {kind:'sq',  fill:t.accent,                       label:'동맹'},
+    {kind:'sq',  fill:'url(#mx-hatch)',  stroke:t.text,  label:'영향'},
+    {kind:'dot', fill:'url(#mx-dot)',    stroke:t.muted, label:'연관'},
+  ];
+  const SW=16, GAP=6, TXT=30, ITEMGAP=26;
+  const totalW=items.length*(SW+GAP+TXT)+(items.length-1)*ITEMGAP;
+  let lx=(W-totalW)/2;
+  items.forEach(it=>{
+    if(it.kind==='dot'){ E('circle',{cx:lx+8,cy:legendY-4,r:7,fill:it.fill,stroke:it.stroke||'none','stroke-width':0.5},svg); }
+    else { const rt=E('rect',{x:lx,y:legendY-12,width:SW,height:SW,fill:it.fill},svg);
+      if(it.opacity)rt.setAttribute('opacity',it.opacity);
+      if(it.stroke){rt.setAttribute('stroke',it.stroke);rt.setAttribute('stroke-width',0.5);} }
+    T(svg,lx+SW+GAP,legendY,it.label,{'font-size':10.5,fill:t.text});
+    lx+=SW+GAP+TXT+ITEMGAP;
+  });
 }
 
 /* ───────── ④ Arc diagram ───────── */

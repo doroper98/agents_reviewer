@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.4.8
+last_synced_with: v5.5.5
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -853,6 +853,30 @@ gap 으로 시각 단절 + cone (low~high shaded area) 도 2026 의 low/high 부
   조정. 현재 fix 는 데이터 그대로 두고 *렌더링* 에서만 bridge — 가장 비침습.
 - (B) Forecast 의 첫 점이 actual 의 마지막 해와 같으면 (composer 가 그렇게
   emit), bridge 를 skip — 중복 점 방지. 현재 fix 는 다른 해여도 안전.
+
+---
+
+## CHART-AP-25: 행위자 관계도를 radial network (hairball) 로 렌더 (v5.5.5 신설)
+
+**증상**: `drawNetwork` 가 노드를 원 위에 *입력 순서대로* 균등 배치하고 엣지를
+직선으로 그림. 노드 위치가 아무 의미를 안 가져 엣지가 전부 중심을 관통하는
+실타래(hairball)가 됨. "누가 주도/대립인지", "누가 영향력이 큰지"가 위치로 안
+읽히고, 라벨 8글자 잘림 + 관계는 dash 로만 구분해 범례 대조 필요. 시인성 최악.
+
+**원인**: 관계망을 node-edge 그래프로 그리는 형식 자체가 편집 보고서엔 부적합.
+force/radial 레이아웃은 본질적으로 가독성이 낮다 (FT/Economist 가 이해관계자
+관계를 hairball 로 안 그리는 이유).
+
+**Fix (v5.5.5)**: radial → **인접행렬 (adjacency matrix)**. 데이터 계약
+(`{nodes:[{id,label,group}], links:[{source,target,type}]}`) 불변 — composer /
+`NetworkGuard` / capability registry / usage_log 전부 무변경, `drawNetwork`
+*렌더러 본문만* 교체 (type 명 `network` 유지). 행위자를 행·열에 두고 셀이 관계
+type 인코딩 (대립=`--down`+✕ / 동맹=`--accent` / 영향=`accent-hatch` /
+연관=`dots`), 대각선 `--border` fill-opacity 0.35 차단, 진영(group) 정렬로 블록
+구조 노출. 선 교차 0 → hairball 원천 제거. viewBox 는 `getBBox` content-fit 으로
+산출 → 라벨/범례 자동 중앙 정렬 + 클리핑 0 (수동 margin 추정의 fragility 제거).
+셀 rect 는 `data-anim="static"` 태깅 — 64셀 fade 캐스케이드 + opacity 덮어쓰기
+방지. 모크업: `samples/actor_relationship_redesign_compare.html` (radial vs 대안 3종).
 
 ---
 
