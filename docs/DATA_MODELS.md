@@ -1,11 +1,11 @@
 ---
 tier: 2
-last_synced_with: v4.5.7
+last_synced_with: v5.5.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
   - "src/models.py (필드 정의의 SSOT)"
-last_review: 2026-05-05
+last_review: 2026-05-25
 ---
 
 # Data Models — Pydantic Schema Map
@@ -317,6 +317,29 @@ assert_input_is("composer", RawContext(...))      # StateGuardError (AP-V5-30)
 V5 의 `DraftReport` 는 v4.5.7 의 `ComposedReport` 와 *역할 일부 중복* — Phase 1 (Editor Pass) 진입 시 두 모델 분리. Phase 0C 시점엔 *형식만 정의* 되어 있고, 실제 Composer 호출은 여전히 `ComposedReport` 를 emit. v4.5.7 호출 경로 byte-equal 보존.
 
 ---
+
+## 5.5 ReportBundle (v5.5.0 — osint_generator 핸드오프)
+
+`ComposedReport` + `ContextAnalysis` → `ReportBundle` (emit 전용). 빌더는
+`src/handoff/bundle_builder.py`. 계약 SSOT: [docs/CONTRACTS/report_bundle_v1.md](CONTRACTS/report_bundle_v1.md).
+
+```
+ReportBundle
+├─ producer        BundleProducer (system, version, mode)
+├─ report          BundleReport (report_id, headline, deck, closing, html_url, theme→BundleTheme)
+├─ sections[]      BundleSection (chart_refs / map_ref / image_refs / claim_refs — §8 resolve)
+├─ charts[]        BundleChart (type, data=schemas.py shape, provenance→BundleProvenance, prerendered_svg)
+├─ map?            BundleMap (id, center, zoom, markers, arcs, legend, provenance)
+├─ claims[]        BundleClaim (status, evidence→BundleEvidence)   ← v5.5.0 라이브 경로엔 빈 list
+├─ signals[]       BundleSignal      ├─ contradictions[]  BundleContradiction
+├─ sources[]       BundleTopSource   └─ confidence?       BundleConfidence
+```
+
+- **enum SSOT**: `VerificationStatus`(confirmed/inferred/claim/unverified/disputed) /
+  `ConfidenceLevel`(low/medium/high) / `ProvenanceOrigin`(measured/narrative_inference/model_forecast) /
+  `EvidenceStance`(supports/refutes/contextual). 매핑 SSOT: `ORIGIN_TO_VERIFICATION`.
+- **차트 data shape 은 재정의 안 함** — `src/visual/schemas.py` pin (계약 §9).
+- **참조 무결성** `ReportBundle._validate_refs_and_ids` (계약 §8).
 
 ## 6. Out of scope
 

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.4.9
+last_synced_with: v5.5.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,29 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## [v5.5.0] — 2026-05-25
+
+### Added — ReportBundle 핸드오프 (osint_generator 영상 파이프라인 연동, 계약 v1)
+
+**배경**: osint_generator (한국어 OSINT 영상 자동제작) 와의 연동. 우리 보고서의 차트/지도/signals/섹션 + 출처·검증 메타를 최종 HTML 과 별개로 *기계 판독용 단일 산출물* `analysis_{ts}.bundle.json` 으로 내보낸다. 계약 SSOT: [docs/CONTRACTS/report_bundle_v1.md](docs/CONTRACTS/report_bundle_v1.md).
+
+**구현**:
+- `src/models.py` — `ReportBundle` + 하위 모델 (BundleReport/Section/Chart/Map/Provenance/Source/Claim/Signal/Contradiction/Theme/Confidence). 계약 §8 참조 무결성 (`*_refs` resolve + id unique) `model_validator` 강제. enum: VerificationStatus 5값 / ConfidenceLevel 3값 / ProvenanceOrigin 3값 / EvidenceStance 3값. `ORIGIN_TO_VERIFICATION` 매핑 SSOT (계약 §2).
+- `src/handoff/bundle_builder.py` (신규) — `FullAnalysisResult → ReportBundle`. **Q5 verification 배선 = 결정론**: market_fetcher 출처 차트 (context.time_series instrument 매칭) → measured/confirmed + source 자동주입, forecast → model_forecast/inferred, 그 외 composer 차트 → narrative_inference/inferred. composer SYSTEM_PROMPT 무변경. 테마 토큰은 `report.css [data-theme]` 블록 파싱 (단일 SSOT 유지).
+- `src/agents/report_synthesizer.py` — synthesize() 가 deploy 전 `.bundle.json` emit (request.emit_bundle + config.enable_report_bundle 둘 다 ON 시). 실패해도 보고서 정상 진행 (graceful).
+- `src/orchestrator.py` — `/analyze --bundle` 플래그 감지 → `AnalysisRequest.emit_bundle` (토픽 문자열에서 strip).
+- `src/telegram_bot.py` — `/bundle <report_id>` (기존 보고서 JSON 에서 재emit + 재배포) + `/analyze --bundle`.
+- `src/config.py` — `enable_report_bundle` kill-switch (디폴트 ON, env `V5_REPORT_BUNDLE=0`).
+
+**v5.5.0 한계 (계약 명시)**: `claims[]=[]` (라이브 2-call 경로는 Claim/Evidence 그래프 미생성 — 라벨 척추는 charts/map provenance 가 짐), `prerendered_svg=null` (SVG passthrough 하네스 fast-follow), `section.map_ref=null` (composer 섹션↔지도 바인딩 전, 계약 §10).
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.4.9 → v5.5.0
+- `src/models.py` (ReportBundle 모델군 + AnalysisRequest.emit_bundle) → `docs/DATA_MODELS.md`
+- `src/handoff/` 신규 → `docs/REPO_MAP.md`
+- `docs/CONTRACTS/report_bundle_v1.md` status draft → active
+- `README.md` Status, 본 CHANGELOG entry, `DEVLOG.md`
 
 ## [v5.4.9] — 2026-05-22
 

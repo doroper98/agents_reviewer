@@ -139,6 +139,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 |-----------|----------------------|
 | `src/orchestrator.py:VERSION` 증가 | [README.md](README.md) `Status`, [CHANGELOG.md](CHANGELOG.md) (신규 항목 추가), 영향받은 모든 문서 헤더의 `last_synced_with` |
 | `src/models.py` 모델 추가/변경 | [docs/DATA_MODELS.md](docs/DATA_MODELS.md) (도식 + 의미 가이드) |
+| `src/handoff/bundle_builder.py` 또는 `src/models.py:ReportBundle` 모델군 (v5.5.0) 변경 | [docs/CONTRACTS/report_bundle_v1.md](docs/CONTRACTS/report_bundle_v1.md) (계약 SSOT — §7: additive=무증분 / breaking=schema_version 증분+양측 동시), `src/visual/schemas.py` (차트 data shape pin, 재정의 금지 §9), [docs/DATA_MODELS.md §5.5](docs/DATA_MODELS.md), `docs/CONTRACTS/report_bundle_v1.example.json` (예시 parity), `tests/test_report_bundle.py`. `ORIGIN_TO_VERIFICATION` / verification enum 변경 시 계약 §1/§2 + 회귀 테스트 동시 갱신 |
 | `src/agents/*` 신규 추가/삭제 | [docs/CATALOGS.md §1](docs/CATALOGS.md), [docs/REPO_MAP.md](docs/REPO_MAP.md) |
 | `src/lenses/*` 신규 추가 (V3 Step 5 후) | [docs/CATALOGS.md §2](docs/CATALOGS.md) |
 | `src/archetypes/*` 신규 추가 (V3 Step 2 활성) | [docs/CATALOGS.md §3](docs/CATALOGS.md), [docs/ARCHITECTURE.md §5.1](docs/ARCHITECTURE.md) |
