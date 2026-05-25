@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.3
+last_synced_with: v5.5.4
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -1240,3 +1240,9 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 - `--bundle` 플래그는 no-op으로 호환 유지(orchestrator strip 보존).
 
 **검증**: py_compile + 회귀 9/9. VM 재배포 후 텔레그램에서 실파일 첨부 확인 필요.
+
+---
+
+## v5.5.4 — /bundle json import 누락 fix (2026-05-25)
+
+`_bundle_command`(v5.5.0)이 `json.load`/`json.dump`를 쓰는데 telegram_bot.py 상단에 `import json`이 없어 첫 실행 시 `name 'json' is not defined` 크래시. 사용자가 `/bundle 20260525_191503` 실행 중 발견. `import json` 추가. /bundle 외 다른 경로는 json 미사용이라 무관(auto-attach는 binary open). AST로 import 바인딩 확인.
