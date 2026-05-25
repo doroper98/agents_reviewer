@@ -98,8 +98,8 @@ class TelegramBot:
             "분석할 사건이나 상황을 메시지로 보내주세요.\n"
             "6명의 AI 분석관이 종합 보고서를 작성합니다.\n\n"
             "명령어:\n"
-            "/analyze <주제> — 분석 시작 (--bundle 붙이면 ReportBundle 동시 산출, v5.5.0)\n"
-            "/bundle <report_id> — 기존 보고서에서 ReportBundle 재생성·배포 (v5.5.0)\n"
+            "/analyze <주제> — 분석 시작 (보고서 + md + 영상용 bundle.json 자동 전송)\n"
+            "/bundle <report_id> — 기존 보고서의 bundle.json 재생성·전송\n"
             "/stop — 진행 중 분석 중단 (v3.4.2)\n"
             "/stopall — 진행 중 분석 + 대기열 전체 비우기 (v3.4.2)\n"
             "/status — 서버 상태 확인\n"
@@ -597,6 +597,15 @@ class TelegramBot:
                 f"  차트 {len(bundle.charts)} · 신호 {len(bundle.signals)} · 출처 {len(bundle.sources)}\n"
                 f"  {bundle_url}"
             )
+            # 영상 제작용 파일 자체도 첨부 (osint_generator 에 바로 넘길 수 있게).
+            try:
+                with open(bundle_path, "rb") as bf:
+                    await update.message.reply_document(
+                        document=bf, filename=f"analysis_{stem}.bundle.json",
+                        caption="📦 영상 제작용 번들 (osint_generator)",
+                    )
+            except Exception as e:
+                logger.warning("[telegram_bot] /bundle attach failed: %s", e)
         except Exception as e:
             logger.warning("[telegram_bot] /bundle error: %s", e)
             await msg.edit_text(f"번들 생성 실패: {e}")
@@ -780,6 +789,28 @@ class TelegramBot:
                             )
                     except Exception as e:
                         logger.warning("[telegram_bot] send_document failed: %s", e)
+
+            # v5.5.3 — 영상 제작용 ReportBundle 자동 첨부 (osint_generator). 항상 동반.
+            bundle_path = report_path.replace(".html", ".bundle.json") if report_path else ""
+            if bundle_path and os.path.isfile(bundle_path):
+                bundle_cap = "📦 영상 제작용 번들 (osint_generator)"
+                if result.report_url and result.report_url.startswith("http"):
+                    bundle_cap += f"\n🔗 {result.report_url.replace('.html', '.bundle.json')}"
+                try:
+                    if update is not None and update.message is not None:
+                        with open(bundle_path, "rb") as bf:
+                            await update.message.reply_document(
+                                document=bf, filename=os.path.basename(bundle_path),
+                                caption=bundle_cap,
+                            )
+                    elif self._app is not None:
+                        with open(bundle_path, "rb") as bf:
+                            await self._app.bot.send_document(
+                                chat_id=chat_id, document=bf,
+                                filename=os.path.basename(bundle_path), caption=bundle_cap,
+                            )
+                except Exception as e:
+                    logger.warning("[telegram_bot] bundle send failed: %s", e)
 
             global _analysis_count
             _analysis_count += 1

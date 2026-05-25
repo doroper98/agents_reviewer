@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v5.5.2
+last_synced_with: v5.5.3
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -26,8 +26,9 @@ last_review: 2026-05-25
 
 ## 0. 역할
 
-- **Producer = agents_reviewer.** "중요" 보고서에 대해 버전 박힌 단일 산출물
-  `analysis_{ts}.bundle.json` 을 emit, Cloudflare Pages 로 배포.
+- **Producer = agents_reviewer.** 모든 보고서에 대해(v5.5.3, `enable_report_bundle`
+  디폴트 ON) 버전 박힌 단일 산출물 `analysis_{ts}.bundle.json` 을 emit, Cloudflare
+  Pages 배포 + 텔레그램 문서 자동 첨부.
 - **Consumer = osint_generator.** bundle 을 수신 Pydantic 모델로 받아
   `bundle → research_dossier` 어댑터로 자기 파이프라인(research → script →
   scene → render) 에 주입. verification 라벨을 무손실 전파.
@@ -205,10 +206,12 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
 
 ## 3. 전달 · 트리거
 
-- 경로: **HTTP (Cloudflare Pages)**.
+- 경로: **HTTP (Cloudflare Pages)** + **텔레그램 문서 자동 첨부** (v5.5.3).
 - URL: `{pages}/analysis_{ts}.bundle.json`.
-- 트리거: `/analyze <주제> --bundle` 또는 `/bundle <report_id>`. "중요" 보고서만
-  온디맨드 emit.
+- 트리거 (v5.5.3): **모든 보고서에 항상 emit** (`config.enable_report_bundle`
+  디폴트 ON). `/analyze` 완료 시 텔레그램에 bundle.json 파일+URL 자동 송신.
+  기존 보고서는 `/bundle <report_id>` 로 재생성·회수. (v5.5.0~5.5.2 의 `--bundle`
+  온디맨드 트리거는 no-op 으로 호환 유지.)
 
 ## 4. 예시
 

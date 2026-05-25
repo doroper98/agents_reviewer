@@ -1173,10 +1173,10 @@ class ReportSynthesizer:
             logger.warning(f"[report_synthesizer] JSON save failed: {e}")
 
         # v5.5.0 — ReportBundle 핸드오프 emit (osint_generator 계약 v1).
-        # /analyze --bundle (request.emit_bundle) + 전역 kill-switch 둘 다 ON 일 때만.
+        # v5.5.3 — 항상 emit (config.enable_report_bundle kill-switch 만 게이트).
+        # 영상 제작용으로 모든 보고서에 동반. --bundle 플래그는 이제 no-op (호환 유지).
         # deploy *전* 에 써야 Pages 에 함께 업로드됨. 실패해도 보고서 정상 진행.
-        if (getattr(result.request, "emit_bundle", False)
-                and getattr(self.config, "enable_report_bundle", True)):
+        if getattr(self.config, "enable_report_bundle", True):
             try:
                 from src.handoff.bundle_builder import build_report_bundle
                 project = getattr(self.config, "cloudflare_project_name", "") or ""
