@@ -1170,6 +1170,30 @@ class ReportSynthesizer:
         except Exception as e:
             logger.warning(f"[report_synthesizer] JSON save failed: {e}")
 
+        # v5.5.0 — ReportBundle 핸드오프 emit (osint_generator 계약 v1).
+        # /analyze --bundle (request.emit_bundle) + 전역 kill-switch 둘 다 ON 일 때만.
+        # deploy *전* 에 써야 Pages 에 함께 업로드됨. 실패해도 보고서 정상 진행.
+        if (getattr(result.request, "emit_bundle", False)
+                and getattr(self.config, "enable_report_bundle", True)):
+            try:
+                from src.handoff.bundle_builder import build_report_bundle
+                project = getattr(self.config, "cloudflare_project_name", "") or ""
+                predicted_html_url = (
+                    f"https://{project}.pages.dev/{filename}" if project
+                    else (result.report_url or "")
+                )
+                bundle = build_report_bundle(
+                    result, html_url=predicted_html_url,
+                    system_version=result.system_version or "",
+                )
+                bundle_filename = f"analysis_{timestamp}.bundle.json"
+                bundle_filepath = os.path.join(output_dir, bundle_filename)
+                with open(bundle_filepath, "w", encoding="utf-8") as f:
+                    json.dump(bundle.model_dump(mode="json"), f, ensure_ascii=False, indent=2)
+                logger.info(f"[report_synthesizer] Bundle saved: {bundle_filepath}")
+            except Exception as e:
+                logger.warning(f"[report_synthesizer] Bundle emit failed: {e}")
+
         # Generate index.html (report listing page)
         self._generate_index(output_dir)
 

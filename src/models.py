@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -20,6 +20,8 @@ class AnalysisRequest(BaseModel):
     mode: Literal["fast", "standard", "deep"] = "standard"
     # v5.1.1: 후속 분석 시 부모 보고서의 맥락 — None 이면 일반 분석.
     parent_context: "ParentContext | None" = None
+    # v5.5.0: /analyze --bundle 시 True. ReportBundle (.bundle.json) 산출 트리거.
+    emit_bundle: bool = False
 
 
 class ContextAnalysis(BaseModel):
@@ -779,4 +781,233 @@ AnalysisRequest.model_rebuild()
 
 # v5.4.0: ContextAnalysis.available_images 가 AvailableImage 를 string 참조 (forward).
 ContextAnalysis.model_rebuild()
+
+
+# ====== v5.5.0 — ReportBundle 핸드오프 (osint_generator 연동 계약 v1) ======
+#
+# SSOT: docs/CONTRACTS/report_bundle_v1.md (계약 v1). 본 모델군은 *producer emit
+# 전용* — agents_reviewer 가 "중요" 보고서에 대해 버전 박힌 단일 산출물
+# analysis_{ts}.bundle.json 을 내보낼 때 사용. 차트 data shape 은 재정의하지 않고
+# src/visual/schemas.py 를 pin (계약 §9, 이중 SSOT 회피).
+#
+# 빌더: src/handoff/bundle_builder.py:build_report_bundle.
+# Q5 verification 배선: 결정론 (계약 §2 ORIGIN_TO_VERIFICATION + market_fetcher
+# 출처 자동주입). composer SYSTEM_PROMPT 무변경.
+
+VerificationStatus = Literal["confirmed", "inferred", "claim", "unverified", "disputed"]
+ConfidenceLevel = Literal["low", "medium", "high"]
+ProvenanceOrigin = Literal["measured", "narrative_inference", "model_forecast"]
+EvidenceStance = Literal["supports", "refutes", "contextual"]
+
+# 계약 §2 — origin → verification 기본 매핑 (SSOT). bundle_builder 가 참조.
+# 개별 차트/주장이 verification 을 직접 지정하면 그 값이 우선 (§2 단서).
+ORIGIN_TO_VERIFICATION: dict[str, str] = {
+    "measured": "confirmed",
+    "narrative_inference": "inferred",
+    "model_forecast": "inferred",
+}
+
+
+class BundleProducer(BaseModel):
+    system: str = "agents_reviewer"
+    version: str = ""
+    mode: str = "standard"
+
+
+class BundleThemeFonts(BaseModel):
+    serif: str = "Noto Serif KR"
+    sans: str = "Noto Sans KR"
+    mono: str = "IBM Plex Mono"
+
+
+class BundleTheme(BaseModel):
+    """선택된 테마 박제 (random.choice 라 emit 시 고정 필수, 계약 §Q4)."""
+
+    id: str
+    tokens: dict[str, str] = Field(default_factory=dict)  # bg/card/text/muted/accent/up/down/border
+    fonts: BundleThemeFonts = Field(default_factory=BundleThemeFonts)
+
+
+class BundleReport(BaseModel):
+    report_id: str
+    headline: str
+    deck: str = ""
+    closing: str = ""
+    html_url: str = ""
+    theme: BundleTheme | None = None
+
+
+class BundleSection(BaseModel):
+    section_id: str
+    heading: str
+    kicker: str = ""
+    prose: str = ""          # 나레이션 *원천* (편집체 유지, 계약 §6)
+    pull_quote: str = ""
+    chart_refs: list[str] = Field(default_factory=list)
+    map_ref: str | None = None  # map.id 로 resolve 또는 null (계약 §10)
+    image_refs: list[str] = Field(default_factory=list)
+    claim_refs: list[str] = Field(default_factory=list)
+
+
+class BundleSource(BaseModel):
+    """provenance.sources[] 항목 — 데이터 출처 (계약 §5)."""
+
+    source_id: str
+    provider: str = ""       # KRX|FRED|ECOS|YAHOO|web
+    code: str = ""
+    unit: str = ""
+    fetched_at: str = ""
+    url: str = ""
+
+
+class BundleProvenance(BaseModel):
+    """차트/지도별 출처·검증 메타 (계약 §2/§3/§5 — 라벨 척추)."""
+
+    origin: ProvenanceOrigin
+    verification: VerificationStatus
+    confidence: ConfidenceLevel = "medium"
+    sources: list[BundleSource] = Field(default_factory=list)
+
+
+class BundleChart(BaseModel):
+    chart_id: str
+    type: str                # schemas.py _TYPE_TO_GUARD 21종 (계약 §9)
+    title: str = ""
+    data: Any = None         # shape = schemas.py
+    note: str = ""
+    provenance: BundleProvenance
+    prerendered_svg: str | None = None  # 계약 §5 — v5.5.0 은 null (SVG passthrough fast-follow)
+
+
+class BundleMap(BaseModel):
+    id: str                  # 계약 §10 — section.map_ref resolve 대상
+    center: list[float] = Field(default_factory=list)
+    zoom: float = 0.0
+    markers: list[dict] = Field(default_factory=list)
+    arcs: list[dict] = Field(default_factory=list)
+    legend: list[dict] = Field(default_factory=list)
+    provenance: BundleProvenance | None = None
+    prerendered_svg: str | None = None
+
+
+class BundleEvidence(BaseModel):
+    source_id: str
+    quote_or_data: str = ""
+    locator: str = ""
+    reliability: str = "model_inference"  # primary|secondary|expert|model_inference
+    stance: EvidenceStance = "supports"
+
+
+class BundleClaim(BaseModel):
+    """산문 단위 주장 (계약 §1 라벨 척추). v5.5.0 라이브 경로는 비어있음 —
+    prose→claim 추출은 fast-follow."""
+
+    claim_id: str
+    statement: str
+    status: VerificationStatus
+    confidence: ConfidenceLevel = "medium"
+    cross_checked: bool = False
+    evidence: list[BundleEvidence] = Field(default_factory=list)
+    chart_refs: list[str] = Field(default_factory=list)
+
+
+class BundleSignal(BaseModel):
+    signal: str
+    description: str = ""
+    indicates: str = ""
+    deadline: str = ""
+    verification: VerificationStatus = "unverified"
+
+
+class BundleContradiction(BaseModel):
+    side_a: str = ""
+    side_b: str = ""
+    evidence: str = ""
+    resolution: str = ""
+
+
+class BundleTopSource(BaseModel):
+    source_id: str
+    url: str = ""
+    publisher: str = ""
+    title: str = ""
+    fetched_at: str = ""
+
+
+class BundleConfidence(BaseModel):
+    score: float = 0.0
+    summary: str = ""
+
+
+class ReportBundle(BaseModel):
+    """osint_generator 핸드오프 산출물 v1. emit 전용.
+
+    참조 무결성 (계약 §8): 모든 *_refs 는 같은 bundle 내 id 로 resolve, id 는 unique.
+    ``_validate_refs_and_ids`` 가 emit 시 강제 (미해결 ref / 중복 id → ValidationError).
+    """
+
+    schema_version: int = 1
+    bundle_kind: str = "report_bundle"
+    generated_at: str = ""
+    producer: BundleProducer = Field(default_factory=BundleProducer)
+    report: BundleReport
+    sections: list[BundleSection] = Field(default_factory=list)
+    charts: list[BundleChart] = Field(default_factory=list)
+    map: BundleMap | None = None
+    claims: list[BundleClaim] = Field(default_factory=list)
+    signals: list[BundleSignal] = Field(default_factory=list)
+    contradictions: list[BundleContradiction] = Field(default_factory=list)
+    sources: list[BundleTopSource] = Field(default_factory=list)
+    confidence: BundleConfidence | None = None
+
+    @model_validator(mode="after")
+    def _validate_refs_and_ids(self) -> "ReportBundle":
+        chart_ids = [c.chart_id for c in self.charts]
+        claim_ids = [c.claim_id for c in self.claims]
+        section_ids = [s.section_id for s in self.sections]
+        for name, ids in (
+            ("chart_id", chart_ids), ("claim_id", claim_ids), ("section_id", section_ids),
+        ):
+            dups = sorted({i for i in ids if ids.count(i) > 1})
+            if dups:
+                raise ValueError(f"ReportBundle §8: 중복 {name} — {dups}")
+
+        chart_set = set(chart_ids)
+        claim_set = set(claim_ids)
+        map_id = self.map.id if self.map else None
+        src_ids = {s.source_id for s in self.sources}
+        for c in self.charts:
+            src_ids |= {sp.source_id for sp in c.provenance.sources}
+        if self.map and self.map.provenance:
+            src_ids |= {sp.source_id for sp in self.map.provenance.sources}
+
+        for s in self.sections:
+            for r in s.chart_refs:
+                if r not in chart_set:
+                    raise ValueError(
+                        f"ReportBundle §8: section {s.section_id} 미해결 chart_ref {r!r}"
+                    )
+            for r in s.claim_refs:
+                if r not in claim_set:
+                    raise ValueError(
+                        f"ReportBundle §8: section {s.section_id} 미해결 claim_ref {r!r}"
+                    )
+            if s.map_ref is not None and s.map_ref != map_id:
+                raise ValueError(
+                    f"ReportBundle §8/§10: section {s.section_id} map_ref {s.map_ref!r} "
+                    f"!= map.id {map_id!r}"
+                )
+        for c in self.claims:
+            for r in c.chart_refs:
+                if r not in chart_set:
+                    raise ValueError(
+                        f"ReportBundle §8: claim {c.claim_id} 미해결 chart_ref {r!r}"
+                    )
+            for e in c.evidence:
+                if e.source_id not in src_ids:
+                    raise ValueError(
+                        f"ReportBundle §8: claim {c.claim_id} evidence source_id "
+                        f"{e.source_id!r} 미해결"
+                    )
+        return self
 

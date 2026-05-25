@@ -1,8 +1,8 @@
 ---
 tier: 2
-status: draft (pending counterparty PR reflection of §5–9)
+status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v5.4.9
+last_synced_with: v5.5.0
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -18,10 +18,11 @@ last_review: 2026-05-25
 
 # report_bundle 핸드오프 계약 v1 (agents_reviewer → osint_generator)
 
-> **STATUS: DRAFT (pending counterparty)** — osint_generator 가 §1~9 를 확정 회신
-> (2026-05-25)했고, agents_reviewer 의 producer PR(`ReportBundle` 모델 +
-> `.bundle.json` emit + composer provenance + `/analyze --bundle`)이 §5~9 를
-> 반영해 머지되는 시점에 `status: active` 로 플립한다. 이 문서가 계약의 SSOT.
+> **STATUS: ACTIVE** — osint_generator 가 §1~9 를 확정 회신(2026-05-25),
+> 예시 번들 seam 통과(GREEN, consumer v0.18.1). agents_reviewer producer PR
+> (`v5.5.0`: `ReportBundle` 모델 + `.bundle.json` emit + 결정론 provenance +
+> `/analyze --bundle` / `/bundle <id>`) 머지로 active 전환. 이 문서가 계약의 SSOT.
+> 실제 emit 의 필드 충실도(§11 빈값 규약 등) 재검증은 consumer 측 후속.
 
 ## 0. 역할
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 import shutil
 import time
 from typing import Any, Callable, Coroutine, Optional
@@ -28,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.4.9"
+VERSION = "v5.5.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1267,6 +1268,13 @@ class Orchestrator:
 
         start_time = time.time()
 
+        # v5.5.0 — /analyze --bundle: ReportBundle (.bundle.json) emit 트리거.
+        # 토픽 문자열에서 플래그를 떼어내 사실 수집·mode 판정에 오염되지 않게 함.
+        emit_bundle = False
+        if "--bundle" in event_description:
+            emit_bundle = True
+            event_description = re.sub(r"\s{2,}", " ", event_description.replace("--bundle", "")).strip()
+
         if mode is None:
             mode = resolve_mode(event_description)
 
@@ -1279,6 +1287,7 @@ class Orchestrator:
             chat_id=chat_id,
             mode=mode,
             parent_context=parent_context,
+            emit_bundle=emit_bundle,
         )
         result = FullAnalysisResult(request=request, parent_context=parent_context)
 

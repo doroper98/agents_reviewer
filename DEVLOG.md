@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.3
+last_synced_with: v5.5.0
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -1177,3 +1177,21 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 - LLM `visual_analyst.chart_config.charts[]` (legacy Canvas) 경로는 v5.2.x 에서
   `report.html:124-134` "Legacy Canvas Charts" 섹션으로 보존 — deep 모드에서만
   보조 출력. 본 패치 범위 밖.
+
+---
+
+## v5.5.0 — ReportBundle 핸드오프 (osint_generator 영상 파이프라인 연동, 2026-05-25)
+
+**맥락**: osint_generator (한국어 OSINT 영상 자동제작) 와 "버전 박힌 데이터 계약 기반 연동". 우리 보고서의 차트/지도/signals/섹션 + 출처·검증 메타를 최종 HTML 과 별개로 기계판독 JSON `analysis_{ts}.bundle.json` 으로 emit. 계약 v1 SSOT: `docs/CONTRACTS/report_bundle_v1.md` (osint_generator 가 §1~9 확정, 예시 번들 seam GREEN, consumer v0.18.1).
+
+**아키텍처 결정**:
+- 연동 방식 = A안 (차트 데이터만 받아 consumer Remotion 에서 재렌더) 기본 + 복잡 3종 B안 (정적 SVG). C안 (charts.js 흡수) 미채택 — d3 DOM/스크롤 애니 결합이 Remotion 프레임 모델과 충돌.
+- Q5 verification 배선 = **결정론** (composer-emitted / 하이브리드 미채택). consumer 가 floor 없이 그대로 신뢰하므로 LLM 오판이 화면 라벨로 직행하는 리스크 회피. market_fetcher 출처 차트 → measured/confirmed + source 자동주입, forecast → model_forecast/inferred, 그 외 → narrative_inference/inferred. composer SYSTEM_PROMPT 무변경 → 기존 보고서 생성 영향 0.
+- map 참조 갭 (seam 발견): map 단일객체 + `map.id` 부여 (list[Map]/bool 미채택) — producer 구조상 ≤1 map, 균일 ref 모델 보존 (계약 §10).
+- 테마 토큰은 `report.css [data-theme]` 블록 파싱 (Python 사본 안 만듦 — anti-pattern #1).
+
+**구현 파일**: `src/models.py` (ReportBundle 모델군 + AnalysisRequest.emit_bundle), `src/handoff/bundle_builder.py` (신규), `src/agents/report_synthesizer.py` (deploy 전 emit), `src/orchestrator.py` (--bundle 감지 + VERSION), `src/telegram_bot.py` (/bundle + /analyze --bundle), `src/config.py` (enable_report_bundle), `tests/test_report_bundle.py` (6 케이스).
+
+**v5.5.0 한계 (계약 명시, fast-follow)**: `claims[]=[]` (prose→claim 추출 미구현 — 라벨 척추는 chart/map provenance 가 짐), `prerendered_svg=null` (SVG passthrough 하네스 — consumer 가 모든 타입 기본화 요청, fast-follow), `section.map_ref=null` (composer 섹션↔지도 바인딩 전).
+
+**검증 한계**: 본 PR 은 컨테이너 환경에 pydantic 만 설치해 모델/빌더/회귀 6종 통과 확인. 실제 봇 end-to-end (텔레그램 → 분석 → Pages 배포) 는 VM 에서 재검증 필요.

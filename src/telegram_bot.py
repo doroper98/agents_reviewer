@@ -98,7 +98,8 @@ class TelegramBot:
             "분석할 사건이나 상황을 메시지로 보내주세요.\n"
             "6명의 AI 분석관이 종합 보고서를 작성합니다.\n\n"
             "명령어:\n"
-            "/analyze <주제> — 분석 시작\n"
+            "/analyze <주제> — 분석 시작 (--bundle 붙이면 ReportBundle 동시 산출, v5.5.0)\n"
+            "/bundle <report_id> — 기존 보고서에서 ReportBundle 재생성·배포 (v5.5.0)\n"
             "/stop — 진행 중 분석 중단 (v3.4.2)\n"
             "/stopall — 진행 중 분석 + 대기열 전체 비우기 (v3.4.2)\n"
             "/status — 서버 상태 확인\n"
@@ -529,6 +530,77 @@ class TelegramBot:
 
         await self._enqueue_analysis(update, text)
 
+    async def _bundle_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/bundle <report_id>`` — 기존 보고서에서 ReportBundle 재emit + 재배포 (v5.5.0).
+
+        저장된 analysis_{id}.json (FullAnalysisResult dump) 을 읽어 ReportBundle 로
+        매핑 → analysis_{id}.bundle.json 작성 → reports/ 디렉토리 재배포.
+        """
+        if update.message is None or update.effective_chat is None:
+            return
+        if not self._is_authorized(update.effective_chat.id):
+            await update.message.reply_text("Unauthorized.")
+            return
+        if not self.config.enable_report_bundle:
+            await update.message.reply_text("ReportBundle 비활성화됨 (V5_REPORT_BUNDLE=0).")
+            return
+        if not context.args:
+            await update.message.reply_text("사용법: /bundle <report_id> (예: 20260525_090000)")
+            return
+
+        stem = context.args[0].strip()
+        if stem.startswith("analysis_"):
+            stem = stem[len("analysis_"):]
+        for suf in (".bundle.json", ".json", ".html"):
+            if stem.endswith(suf):
+                stem = stem[: -len(suf)]
+        output_dir = self.config.report_output_dir
+        json_path = os.path.join(output_dir, f"analysis_{stem}.json")
+        if not os.path.exists(json_path):
+            await update.message.reply_text(f"보고서 JSON 없음: analysis_{stem}.json")
+            return
+
+        msg = await update.message.reply_text(f"📦 번들 생성 중: analysis_{stem}")
+        try:
+            from src.models import FullAnalysisResult
+            from src.handoff.bundle_builder import build_report_bundle
+
+            with open(json_path, "r", encoding="utf-8") as f:
+                result = FullAnalysisResult.model_validate(json.load(f))
+
+            project = self.config.cloudflare_project_name or ""
+            html_filename = f"analysis_{stem}.html"
+            predicted = (
+                f"https://{project}.pages.dev/{html_filename}" if project
+                else (result.report_url or "")
+            )
+            bundle = build_report_bundle(
+                result, html_url=predicted,
+                system_version=result.system_version or "",
+            )
+            bundle_path = os.path.join(output_dir, f"analysis_{stem}.bundle.json")
+            with open(bundle_path, "w", encoding="utf-8") as f:
+                json.dump(bundle.model_dump(mode="json"), f, ensure_ascii=False, indent=2)
+
+            html_path = os.path.join(output_dir, html_filename)
+            deploy_target = html_path if os.path.exists(html_path) else bundle_path
+            await self.orchestrator.report_synthesizer._upload_to_cloudflare(deploy_target)
+
+            bundle_url = (
+                f"https://{project}.pages.dev/analysis_{stem}.bundle.json" if project
+                else bundle_path
+            )
+            await msg.edit_text(
+                f"✅ 번들 생성·배포 완료\n"
+                f"  차트 {len(bundle.charts)} · 신호 {len(bundle.signals)} · 출처 {len(bundle.sources)}\n"
+                f"  {bundle_url}"
+            )
+        except Exception as e:
+            logger.warning("[telegram_bot] /bundle error: %s", e)
+            await msg.edit_text(f"번들 생성 실패: {e}")
+
     async def _message_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
@@ -760,6 +832,7 @@ class TelegramBot:
         app.add_handler(CommandHandler("queue", self._queue_command))
         app.add_handler(CommandHandler("reports", self._reports_command))
         app.add_handler(CommandHandler("analyze", self._analyze_command))
+        app.add_handler(CommandHandler("bundle", self._bundle_command))        # v5.5.0
         # V3 Step 5-B (v2.9.5)
         app.add_handler(CommandHandler("watchlist", self._watchlist_command))
         app.add_handler(CommandHandler("fire", self._fire_command))

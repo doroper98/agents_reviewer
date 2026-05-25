@@ -89,6 +89,15 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V5_LAYOUT_TYPESETTER", "ENABLE_LAYOUT_TYPESETTER", "enable_layout_typesetter"),
     )
 
+    # v5.5.0 — ReportBundle 핸드오프 (osint_generator 연동, 계약 v1) kill-switch.
+    # 실제 트리거는 per-request ``AnalysisRequest.emit_bundle`` (/analyze --bundle).
+    # 본 플래그는 전역 비활성화용 — 디폴트 ON (트리거가 없으면 어차피 emit 안 함).
+    # env: V5_REPORT_BUNDLE=0 으로 끄기.
+    enable_report_bundle: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("V5_REPORT_BUNDLE", "ENABLE_REPORT_BUNDLE", "enable_report_bundle"),
+    )
+
     # v5.1.0 — Daily Briefing Scheduler.
     # 매일 ``daily_briefing_time`` (DAILY_BRIEFING_TZ 기준) 에 깨어나
     # ``/briefing_on`` 으로 구독한 모든 텔레그램 채팅에 "간밤 산업·지정학·정치·전쟁"
