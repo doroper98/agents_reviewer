@@ -693,6 +693,15 @@ class ComposedReport(BaseModel):
     ('쟁점과 판단') 사용. 정적 메타-라벨 ('봉합하지 않은 충돌' 등) 금지 — WRITE-AP-9.
     """
 
+    timeline_flow: dict | None = None
+    """v5.5.2 — 시간 흐름도(감시 신호 직후 capstone)의 composer *선택적* 윤색.
+    형식: {"heading"?: str, "past": [{date, label, note?}],
+           "future": [{date, label, note?, branch?}]}.
+    None/생략 시 결정론 backbone (context.timeline + watch_signals) 으로 조립.
+    실제 렌더 데이터는 src/timeline_flow.py:build_timeline_flow 가 병합 (하이브리드).
+    미래 분기는 *토픽이 받쳐줄 때만* (과신 금지) — 렌더는 점선/'예상' 라벨로 투사 표시.
+    """
+
     confidence_summary: str = ""
     """신뢰도에 대한 한 줄 자유 텍스트 (예: '주요 출처 3건 모두 일치, 단 환율 데이터는 2일 지연')."""
 
@@ -945,6 +954,21 @@ class BundleConfidence(BaseModel):
     summary: str = ""
 
 
+class BundleTimelinePoint(BaseModel):
+    date: str                # YYYY-MM-DD
+    label: str
+    phase: Literal["past", "present", "future"]
+    note: str = ""           # future: '감시'/'예상' 등 투사 라벨
+
+
+class BundleTimeline(BaseModel):
+    """v5.5.2 — 보고서 시간 척추 (과거→현재→미래). 영상 타임라인 세그먼트용.
+    phase 가 confirmed-past vs projected-future 구분 (정직성)."""
+
+    heading: str = ""
+    points: list[BundleTimelinePoint] = Field(default_factory=list)
+
+
 class ReportBundle(BaseModel):
     """osint_generator 핸드오프 산출물 v1. emit 전용.
 
@@ -965,6 +989,7 @@ class ReportBundle(BaseModel):
     contradictions: list[BundleContradiction] = Field(default_factory=list)
     sources: list[BundleTopSource] = Field(default_factory=list)
     confidence: BundleConfidence | None = None
+    timeline: BundleTimeline | None = None  # v5.5.2 — 시간 척추 (additive, 계약 §7)
 
     @model_validator(mode="after")
     def _validate_refs_and_ids(self) -> "ReportBundle":

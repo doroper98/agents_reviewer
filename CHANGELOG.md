@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.1
+last_synced_with: v5.5.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,26 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## [v5.5.2] — 2026-05-25
+
+### Added — 시간 흐름도 (감시 신호 직후 capstone, 과거→현재→미래)
+
+**배경**: 사용자 — "감시 신호 이후에 보고서 전체 흐름 맥락을 이해하도록 과거→현재, 가능한 주제는 향후까지 시계열 흐름도를 넣자."
+
+**설계 (하이브리드)**: 재료가 이미 있음 — 과거는 `context.timeline`, 현재는 `context.date`, 미래는 바로 위 `watch_signals` 의 `deadline`. 감시 신호 직후 배치 = 방금 나열한 신호를 시간축 미래 마커로 흡수하는 synthesis (중복 아님).
+- `src/timeline_flow.py` (신규) — `build_timeline_flow(context, composed)`: 결정론 backbone (timeline + watch_signals) + composer 선택적 윤색 병합. render(report_synthesizer) 와 emit(bundle_builder) 가 공유.
+- `src/models.py:ComposedReport.timeline_flow: dict | None` — composer 가 milestone 라벨 + 시나리오 미래 분기 선택 emit. 비면 backbone 자동 조립.
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` — timeline_flow 선택 emit 가이드. **미래는 토픽이 받쳐줄 때만** (과신 금지).
+- `src/templates/archetypes/freeform_essay.html` — 감시 신호 직후 수직 타임라인. **과거=실선/채운 점, 현재=accent 앵커, 미래=점선/빈 점/'예상·감시' 태그** (투사 ≠ 사실 시각 구분). 데이터 없으면 섹션 생략 (graceful).
+- `src/models.py:BundleTimeline` + `ReportBundle.timeline` (additive, 계약 §7 무증분) — OSINT 영상 타임라인 세그먼트용. `phase` 가 confirmed-past vs projected-future 구분.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.1 → v5.5.2
+- `src/models.py` (ComposedReport.timeline_flow, BundleTimeline/Point, ReportBundle.timeline) → `docs/DATA_MODELS.md`
+- `src/timeline_flow.py` 신규 → `docs/REPO_MAP.md`
+- `docs/CONTRACTS/report_bundle_v1.md` (timeline additive)
+- `tests/test_report_bundle.py` (+3), `README.md`, `DEVLOG.md`, 본 CHANGELOG entry
 
 ## [v5.5.1] — 2026-05-25
 

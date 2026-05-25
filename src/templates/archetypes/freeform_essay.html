@@ -77,6 +77,22 @@
 .contradiction-prose .ct-turn{color:var(--accent,#C9A84C);font-weight:600}
 .contradiction-prose .ct-evidence{color:var(--fg-3,#A89880)}
 .contradiction-prose .ct-resolve{color:var(--fg-1,#F0E2CC);font-weight:600}
+/* v5.5.2 — 시간 흐름도 (감시 신호 직후 capstone). 수직 레일: 과거=실선+채운 점,
+   현재=accent 앵커, 미래=점선 레일+빈 점+예상/감시 태그 (투사 ≠ 사실 시각 구분). */
+.timeline-flow{list-style:none;margin:0;padding:0}
+.timeline-flow .tl-point{position:relative;padding:0 0 20px 26px}
+.timeline-flow .tl-point::before{content:"";position:absolute;left:5px;top:7px;bottom:-5px;width:2px;background:var(--border-soft,rgba(125,98,76,0.28))}
+.timeline-flow .tl-point:last-child::before{display:none}
+.timeline-flow .tl-future::before{background:none;background-image:repeating-linear-gradient(to bottom,var(--fg-3,#A89880) 0 3px,transparent 3px 8px)}
+.timeline-flow .tl-dot{position:absolute;left:0;top:5px;width:12px;height:12px;border-radius:50%;background:var(--fg-1,#F0E2CC);border:2px solid var(--bg,#1B1010)}
+.timeline-flow .tl-future .tl-dot{background:var(--bg,#1B1010);border-color:var(--fg-3,#A89880)}
+.timeline-flow .tl-present .tl-dot{width:14px;height:14px;left:-1px;top:4px;background:var(--accent,#C9A84C);border-color:var(--bg,#1B1010)}
+.timeline-flow .tl-date{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-3,#A89880);letter-spacing:0.3px;margin-bottom:1px}
+.timeline-flow .tl-present .tl-date{color:var(--accent,#C9A84C);font-weight:700}
+.timeline-flow .tl-label{font-family:'Newsreader','Noto Serif KR',serif;font-size:15.5px;color:var(--fg-1,#F0E2CC);line-height:1.5}
+.timeline-flow .tl-future .tl-label{color:var(--fg-2,#D4C4AA)}
+.timeline-flow .tl-present .tl-label{font-weight:700}
+.timeline-flow .tl-tag{font-family:'IBM Plex Sans KR',sans-serif;font-style:normal;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--accent,#C9A84C);border:1px solid var(--border-soft,rgba(125,98,76,0.4));border-radius:3px;padding:1px 5px;margin-left:6px;white-space:nowrap}
 /* v5.3.2 — 감시 신호 editorial epilogue 화. chart-card / takeaway 박스 폐기.
    epilogue-watch-indicates 가 italic + accent border-left 어휘 보존 (v5.5.1 에서
    contradiction-prose 는 서술형으로 전환돼 더 이상 box 어휘 공유 안 함).
@@ -421,6 +437,27 @@
       </div>
       {% endfor %}
     </div>
+  </div>
+</section>
+{% endif %}
+
+{# v5.5.2 — 시간 흐름도 capstone. 감시 신호 직후, closing 직전. report_timeline 은
+   src/timeline_flow.py:build_timeline_flow (결정론 backbone + composer 윤색, 하이브리드).
+   과거=실선/채운 점, 현재=accent 앵커, 미래=점선/빈 점/예상 태그. #}
+{% if report_timeline and report_timeline.points %}
+<section class="freeform-section fade-in">
+  <div class="container">
+    <div class="freeform-kicker">시간의 흐름</div>
+    <h2 class="freeform-heading">{{ report_timeline.heading | strip_md }}</h2>
+    <ol class="timeline-flow">
+      {% for p in report_timeline.points %}
+      <li class="tl-point tl-{{ p.phase }}">
+        <span class="tl-dot"></span>
+        <span class="tl-date">{{ p.date }}</span>
+        <span class="tl-label">{{ p.label | strip_md }}{% if p.phase == 'future' and p.note %}<em class="tl-tag">{{ p.note | strip_md }}</em>{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ol>
   </div>
 </section>
 {% endif %}

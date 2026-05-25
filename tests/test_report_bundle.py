@@ -103,6 +103,47 @@ def test_ref_integrity_guard():
         ReportBundle.model_validate(data)
 
 
+def test_timeline_flow_backbone_and_graceful():
+    """v5.5.2 — 결정론 backbone (context.timeline 과거 + watch_signals 미래) + graceful."""
+    from src.timeline_flow import build_timeline_flow
+    res = _make_result()
+    res.context.timeline = [{"date": "2025-09-27", "event": "협정", "impact": "x"}]
+    tf = build_timeline_flow(res.context, res.composed_report)
+    phases = {p["phase"] for p in tf["points"]}
+    assert "past" in phases and "present" in phases and "future" in phases
+    # 미래 점은 watch_signals deadline 에서 옴 (note='감시')
+    assert any(p["phase"] == "future" and p["note"] == "감시" for p in tf["points"])
+    # 데이터 전무 → None (섹션 생략)
+    res.context.timeline = []
+    res.composed_report.watch_signals = []
+    assert build_timeline_flow(res.context, res.composed_report) is None
+
+
+def test_timeline_composer_enrichment_overrides():
+    """v5.5.2 — composer timeline_flow.past/future 가 backbone 우선 (하이브리드)."""
+    from src.timeline_flow import build_timeline_flow
+    res = _make_result()
+    res.composed_report.timeline_flow = {
+        "heading": "정전의 시간표",
+        "past": [{"date": "2025-09-27", "label": "협정 체결"}],
+        "future": [{"date": "2026-07-01", "label": "정전 정착", "branch": "낙관"}],
+    }
+    tf = build_timeline_flow(res.context, res.composed_report)
+    assert tf["heading"] == "정전의 시간표"
+    fut = [p for p in tf["points"] if p["phase"] == "future"]
+    assert fut and fut[0]["label"] == "정전 정착" and fut[0]["note"] == "낙관"
+
+
+def test_bundle_carries_timeline():
+    """v5.5.2 — ReportBundle.timeline (additive) populated from shared assembler."""
+    res = _make_result()
+    res.context.timeline = [{"date": "2025-09-27", "event": "협정", "impact": "x"}]
+    b = build_report_bundle(res)
+    assert b.timeline is not None
+    assert {p.phase for p in b.timeline.points} >= {"past", "present"}
+    assert "timeline" in b.model_dump(mode="json")
+
+
 def test_bundle_reload_path():
     """/bundle 재emit: model_dump → model_validate → rebuild 동등."""
     res = _make_result()

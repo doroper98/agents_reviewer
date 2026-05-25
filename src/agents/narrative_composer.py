@@ -408,6 +408,13 @@ SYSTEM_PROMPT = (
     "  구절로 (예: '정전이냐 잠복이냐', '안전판의 한계', '인하인가 경보인가').\n"
     "  '봉합하지 않은 충돌' / '모순' / '반대 관점' 같은 *정적 메타-라벨 금지* —\n"
     "  보고서마다 달라야 하고, 결론을 회피하는 인상을 줘선 안 된다 (WRITE-AP-9).\n\n"
+    "=== 시간 흐름도 (timeline_flow, 선택 — v5.5.2) ===\n"
+    "- 감시 신호 직후에 보고서의 *시간 척추* 가 렌더된다 (과거→현재→미래 capstone).\n"
+    "- 비워도 된다 — 그러면 context.timeline(과거) + watch_signals(미래) 로 자동 조립.\n"
+    "- 윤색하고 싶으면 timeline_flow.past 에 *서사 아크에 맞는 milestone 라벨* 을\n"
+    "  (raw 사건명보다 의미 중심으로), future 에 *시나리오 분기점* 을 날짜와 함께.\n"
+    "- **미래는 토픽이 받쳐줄 때만** (예측 가능한 사건). 과신 금지 — 렌더가 점선/\n"
+    "  '예상' 으로 투사 표시하니 단정하지 말 것. 미정 토픽은 future 비워두면 된다.\n\n"
     "=== 감시 신호 (Watchlist 통합) ===\n"
     "- watch_signals 배열 — Watchlist 시스템이 SQLite 에 INSERT.\n"
     "- 형식: [{signal, description, indicates, deadline?, icon?}]\n"
@@ -475,6 +482,11 @@ SYSTEM_PROMPT = (
     '      \"resolution\": \"판단으로 착지: 어느 쪽에 무게 + 패배 입장 살아나는 조건\"\n'
     "    }\n"
     "  ],\n"
+    '  "timeline_flow": {\n'
+    '    \"heading\": \"흐름도 제목 (선택, 예: 사건의 궤적)\",\n'
+    '    \"past\": [{\"date\":\"YYYY-MM-DD\",\"label\":\"과거 milestone 한 구절\",\"note\":\"\"}],\n'
+    '    \"future\": [{\"date\":\"YYYY-MM-DD\",\"label\":\"향후 분기점\",\"branch\":\"어느 시나리오\"}]\n'
+    "  },\n"
     '  "confidence_summary": "출처 다양성/신선도/확신도 한 줄 자유 평가",\n'
     '  "confidence_score": 0.0~1.0\n'
     "}\n"
