@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-25T09:00:00+09:00",
+  "producer": { "system": "agents_reviewer", "version": "v5.4.9", "mode": "deep" },
+
+  "report": {
+    "report_id": "analysis_20260525_090000",
+    "headline": "삼성전자, HBM4 양산 전환 가속",
+    "deck": "메모리 사이클 반등과 맞물린 평택 설비 재배치 — 2026 하반기가 분기점.",
+    "closing": "수율 공시가 다음 확인점이다.",
+    "html_url": "https://doroper98.github.io/agents_reviewer/analysis_20260525_090000.html",
+    "theme": {
+      "id": "editorial_cream",
+      "tokens": {
+        "bg": "#F2EBDB", "card": "#ECE3D0", "text": "#1F1814", "muted": "#6B5C4A",
+        "accent": "#B05A38", "up": "#4A6B3E", "down": "#8B2A2A", "border": "#D4C8B0"
+      },
+      "fonts": { "serif": "Noto Serif KR", "sans": "Noto Sans KR", "mono": "IBM Plex Mono" }
+    }
+  },
+
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "메모리 사이클의 변곡점",
+      "kicker": "FACT",
+      "prose": "최근 3개월 삼성전자 주가는 71,800원에서 74,100원까지 완만히 올라섰다. 거래량은 HBM 관련 공시가 나온 주에 집중됐다.",
+      "pull_quote": "수요가 공급을 추월했다.",
+      "chart_refs": ["ch-1"],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": ["C-1"]
+    },
+    {
+      "section_id": "s2",
+      "heading": "HBM4 전환 시나리오",
+      "kicker": "DIVERGENCE",
+      "prose": "HBM 매출은 2024년 33.5억 달러에서 2025년 41.2억 달러로 늘었다. 2026~2027년 전환 속도는 평택 P4 라인 재배치 일정에 달려 있으며, 추정 구간의 폭이 넓다.",
+      "pull_quote": "",
+      "chart_refs": ["ch-2"],
+      "map_ref": "m-1",
+      "image_refs": [],
+      "claim_refs": ["C-2"]
+    }
+  ],
+
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "candle",
+      "title": "삼성전자 (최근 3개월, 주봉)",
+      "data": [
+        { "date": "2026-03-02", "open": 71800, "high": 73000, "low": 71500, "close": 72600 },
+        { "date": "2026-03-09", "open": 72600, "high": 74200, "low": 72400, "close": 73900 },
+        { "date": "2026-03-16", "open": 73900, "high": 75000, "low": 73200, "close": 74100 }
+      ],
+      "note": "사건일 전후 ±2주",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          { "source_id": "mkt-1", "provider": "KRX", "code": "005930", "unit": "원", "fetched_at": "2026-05-25", "url": "" }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "forecast",
+      "title": "삼성 HBM 매출 추이 + 전망 (십억 USD)",
+      "data": {
+        "actual": [
+          { "x": "2024", "y": 33.5 },
+          { "x": "2025", "y": 41.2 }
+        ],
+        "forecast": [
+          { "x": "2026", "mid": 52.0, "low": 46.0, "high": 58.0 },
+          { "x": "2027", "mid": 61.0, "low": 51.0, "high": 70.0 }
+        ],
+        "fork_at": "2025"
+      },
+      "note": "전망 구간은 시나리오 파생 추정 — 실측 아님",
+      "provenance": {
+        "origin": "model_forecast",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": [
+          { "source_id": "src-2", "provider": "web", "code": "", "unit": "USD bn", "fetched_at": "2026-05-25", "url": "https://example.com/hbm-outlook" }
+        ]
+      },
+      "prerendered_svg": null
+    }
+  ],
+
+  "map": {
+    "center": [127.05, 37.0],
+    "zoom": 6.5,
+    "markers": [
+      { "id": "mk-1", "name": "평택 캠퍼스 (P4)", "lng": 127.11, "lat": 37.0, "highlight": true }
+    ],
+    "arcs": [],
+    "legend": [
+      { "label": "신규 HBM4 라인", "kind": "marker", "highlight": true }
+    ],
+    "provenance": {
+      "origin": "narrative_inference",
+      "verification": "inferred",
+      "confidence": "medium",
+      "sources": [
+        { "source_id": "src-2", "provider": "web", "code": "", "unit": "", "fetched_at": "2026-05-25", "url": "https://example.com/hbm-outlook" }
+      ]
+    },
+    "prerendered_svg": null
+  },
+
+  "claims": [
+    {
+      "claim_id": "C-1",
+      "statement": "최근 3개월 삼성전자 주가는 71,800원에서 74,100원으로 약 3.2% 상승했다.",
+      "status": "confirmed",
+      "confidence": "high",
+      "cross_checked": true,
+      "evidence": [
+        { "source_id": "mkt-1", "quote_or_data": "KRX 005930 주봉 종가 72,600→74,100", "locator": "ch-1 data", "reliability": "primary", "stance": "supports" }
+      ],
+      "chart_refs": ["ch-1"]
+    },
+    {
+      "claim_id": "C-2",
+      "statement": "HBM4 양산 라인 전환은 2026년 하반기에 본격화될 것으로 추정된다.",
+      "status": "inferred",
+      "confidence": "medium",
+      "cross_checked": true,
+      "evidence": [
+        { "source_id": "src-2", "quote_or_data": "평택 P4 재배치 일정 보도", "locator": "3문단", "reliability": "secondary", "stance": "supports" }
+      ],
+      "chart_refs": ["ch-2"]
+    }
+  ],
+
+  "signals": [
+    { "signal": "HBM4 수율 공시", "description": "분기 실적 발표 시 HBM4 수율/가동률 언급 여부", "indicates": "전환 본격화", "deadline": "2026-09-30", "verification": "unverified" }
+  ],
+
+  "contradictions": [
+    { "side_a": "수요 견조 (주문 잔량 증가)", "side_b": "범용 D램 재고 누적", "evidence": "채널 재고 데이터 2일 지연", "resolution": "HBM 과 범용 D램 사이클 분기로 해석 — 봉합하지 않음" }
+  ],
+
+  "sources": [
+    { "source_id": "mkt-1", "url": "", "publisher": "KRX", "title": "005930 시세 (실측)", "fetched_at": "2026-05-25" },
+    { "source_id": "src-2", "url": "https://example.com/hbm-outlook", "publisher": "Example", "title": "HBM 전망 리포트", "fetched_at": "2026-05-25" }
+  ],
+
+  "confidence": { "score": 0.78, "summary": "시장 데이터 출처 일치(KRX), 단 HBM 전망 구간은 서술 파생 추정." }
+}
