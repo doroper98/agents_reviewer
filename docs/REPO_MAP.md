@@ -129,5 +129,6 @@ src/
 - `samples/` — 샘플 입력·출력
 - `scripts/` — 보조 스크립트 (예: html_to_md.py)
 - `reports/` — 생성된 HTML 보고서 (git ignored). v5.5.0 부터 `--bundle` 시 `analysis_{ts}.bundle.json` 동반
+- `src/timeline_flow.py` — v5.5.2 시간 흐름도 조립 (결정론 backbone + composer 윤색). render + bundle emit 공유
 - `src/handoff/` — v5.5.0 ReportBundle 핸드오프 (osint_generator 연동). `bundle_builder.py` = `FullAnalysisResult → ReportBundle`. 계약 SSOT: `docs/CONTRACTS/report_bundle_v1.md`
 - `src/tests/` — pytest 단위 테스트 (V3 Step 4 부터; 현재 `test_quality_gates.py` 18 케이스)

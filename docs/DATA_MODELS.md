@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.1
+last_synced_with: v5.5.2
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -10,6 +10,9 @@ last_review: 2026-05-25
 
 <!-- v5.5.1: ComposedReport 에 contradictions_heading: str 추가 (모순 섹션 동적
      제목, composer emit, 비면 '쟁점과 판단' fallback). WRITE-AP-9. -->
+<!-- v5.5.2: ComposedReport.timeline_flow: dict|None (시간 흐름도 composer 윤색,
+     선택). 조립 SSOT = src/timeline_flow.py. ReportBundle.timeline =
+     BundleTimeline{heading, points:[{date,label,phase,note}]} (additive). -->
 
 
 # Data Models — Pydantic Schema Map

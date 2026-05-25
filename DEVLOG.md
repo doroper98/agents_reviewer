@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.0
+last_synced_with: v5.5.2
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -1210,3 +1210,20 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 - 구조화된 contradictions(side_a/side_b/evidence/resolution)는 그대로 유지 — ReportBundle의 `contradictions[]`(OSINT "contradictions→disputed claim" 분기)가 의존하므로.
 
 **검증**: jinja2 설치해 모순 블록 실제 렌더 — 동적 제목("정전이냐 잠복이냐") + fallback("쟁점과 판단") + "봉합하지 않은 충돌" 완전 제거 + 그러나 전환/resolution 착지 확인. 구 fixture(필드 없음) 기본값 "" 호환. 번들 회귀 6/6 영향 없음. (실제 LLM이 좋은 contradictions_heading을 내는지는 VM live run에서 확인 필요 — composer 품질 의존.)
+
+---
+
+## v5.5.2 — 시간 흐름도 capstone (과거→현재→미래, 2026-05-25)
+
+**맥락**: 사용자 — "감시 신호 이후에 보고서 전체 흐름 맥락 이해를 위해 과거→현재, 가능한 주제는 향후까지 시계열 흐름도." 사용자 선택 = 하이브리드 생성 방식.
+
+**핵심 통찰**: 재료가 이미 다 있음 — 과거=`context.timeline`(ContextAnalyst 수집), 현재=`context.date`, 미래=바로 위 `watch_signals`의 `deadline`. 그래서 "감시 신호 직후" 배치가 정확 — 방금 나열한 신호를 시간축 미래 마커로 흡수하는 synthesis(중복 아님).
+
+**아키텍처 (하이브리드)**:
+- `src/timeline_flow.py` (신규, 공유 모듈) — `build_timeline_flow(context, composed)`: 결정론 backbone(timeline+watch_signals) + composer 윤색(`timeline_flow.{heading,past,future}`) 병합. render(report_synthesizer)와 emit(bundle_builder)가 같은 조립을 쓰도록 분리. duck-typing이라 무거운 import 없음.
+- `ComposedReport.timeline_flow: dict|None` — composer 선택 emit(milestone 라벨 + 시나리오 미래 분기). 비면 backbone 자동.
+- composer SYSTEM_PROMPT — timeline_flow 선택 가이드. **미래는 토픽 받쳐줄 때만**(과신 금지), 렌더가 점선/예상으로 투사 표시하니 단정 금지.
+- `freeform_essay.html` — 수직 타임라인. 과거=실선/채운 점, 현재=accent 앵커, 미래=점선 레일/빈 점/'예상·감시' 태그. 정직성을 *시각*으로 전달(confirmed past ≠ projected future). 데이터 없으면 섹션 생략.
+- `BundleTimeline`+`ReportBundle.timeline` (additive, 계약 §7 무증분) — OSINT 영상 타임라인 세그먼트용. phase가 past/present/future 구분.
+
+**검증**: build_timeline_flow 결정론/윤색/graceful, jinja2로 섹션 실제 렌더(과거·현재·미래 점 + 미래 태그 + 빈 입력 시 미출력), 번들 timeline 적재, 회귀 9/9(6+신규 3). VM live run에서 composer의 timeline_flow 품질 확인 필요.

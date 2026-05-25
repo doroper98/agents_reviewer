@@ -1113,6 +1113,7 @@ class ReportSynthesizer:
                 len(result.strategy.section_plan) if result.strategy and result.strategy.section_plan else 0,
                 len(blocks), block_types_used,
             )
+            from src.timeline_flow import build_timeline_flow
             html = template.render(
                 result=result,
                 css_content=css_content,
@@ -1122,6 +1123,7 @@ class ReportSynthesizer:
                 report_theme=theme,
                 archetype_id=archetype.archetype_id,
                 archetype_name=archetype.name,
+                report_timeline=build_timeline_flow(result.context, result.composed_report),
             )
 
         if standalone:

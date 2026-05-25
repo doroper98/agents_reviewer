@@ -40,10 +40,13 @@ from src.models import (
     BundleSignal,
     BundleSource,
     BundleTheme,
+    BundleTimeline,
+    BundleTimelinePoint,
     BundleTopSource,
     FullAnalysisResult,
     ReportBundle,
 )
+from src.timeline_flow import build_timeline_flow
 
 _CSS_PATH = Path(__file__).resolve().parent.parent / "templates" / "report.css"
 _TOKEN_NAMES = ("bg", "card", "text", "muted", "accent", "up", "down", "border")
@@ -268,6 +271,14 @@ def build_report_bundle(
             summary=composed.confidence_summary or "",
         )
 
+    bundle_timeline = None
+    tf = build_timeline_flow(context, composed)
+    if tf and tf.get("points"):
+        bundle_timeline = BundleTimeline(
+            heading=tf.get("heading", ""),
+            points=[BundleTimelinePoint(**p) for p in tf["points"]],
+        )
+
     return ReportBundle(
         schema_version=1,
         generated_at=datetime.now().astimezone().isoformat(),
@@ -284,4 +295,5 @@ def build_report_bundle(
         contradictions=contradictions,
         sources=sources,
         confidence=confidence,
+        timeline=bundle_timeline,
     )
