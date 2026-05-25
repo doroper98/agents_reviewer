@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.3
+last_synced_with: v5.5.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## [v5.5.4] — 2026-05-25
+
+### Fixed — `/bundle` 명령 `name 'json' is not defined` 크래시
+
+`src/telegram_bot.py:_bundle_command` (v5.5.0 신설) 이 `json.load`/`json.dump` 를
+쓰는데 모듈 상단에 `import json` 누락 → 첫 실행 시 `번들 생성 실패: name 'json'
+is not defined`. `import json` 추가로 해결. (auto-attach 경로는 binary open 이라
+무관, /bundle 재emit 경로만 영향.)
 
 ## [v5.5.3] — 2026-05-25
 
