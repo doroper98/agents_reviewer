@@ -1266,3 +1266,11 @@ graceful: Playwright/chromium 미설치, 렌더 실패/timeout, map CDN 차단 �
 fix: 두 호출부에서 `await asyncio.to_thread(build_report_bundle, ...)` 로 빌드 전체를 워커 스레드로 오프로드(market_fetcher 가 yfinance/pykrx sync 라이브러리에 쓰는 패턴 동일). sync Playwright 가 실행 루프 없는 스레드에서 정상 동작 + 루프 비블로킹. `_render_batch` 임시 html 도 패키지 static dir → 시스템 temp dir(절대 file:// asset URI 라 위치 무관). build_report_bundle 자체는 sync 유지(스레드 안에서 실행).
 
 안전성 재확인: charts.js 인접행렬(v5.5.5)은 브라우저 전용 — Python 파이프라인 무관, renderStage per-chart try/catch 로 한 차트 깨져도 나머지 정상. prerender(v5.5.6)는 HTML 저장·배포 *후* + 이중 try/except. 둘 다 핵심 보고서 생성 경로를 깨뜨릴 수 없음. 단위테스트 14개 그대로 통과(to_thread 는 호출부 변경이라 svg_prerender 순수 로직 무영향).
+
+## v5.5.8 — slope 라벨 충돌 fix + patch_report --replace-text (2026-05-25)
+
+사용자가 배포 후 보고서(analysis_20260525_233612)의 "effective per-token price" slope 차트에서 좌측 라벨 겹침 발견 — 세 모델 모두 2025-10 기준 100.0 정규화라 yA 가 동일 → 라벨 "Gemini 100.0 / GPT 100.0 / Claude 100.0" 가 한 점에 포개져 `GeGPGmi 100.0` 로 판독 불가. `drawSlope` 가 라벨을 점 위치에 dodge 없이 그린 게 원인 (CHART-AP-26). fix: 좌·우 라벨 baseline 을 minGap=13 으로 dodge(값 순 정렬→하향 push→하단 초과 시 그룹 상향→상단 클램프), 점·선은 실제 위치 유지, dodge 로 떨어진 라벨엔 점→라벨 0.6px connector. charts.js 는 보고서 공유 외부 자산(Cloudflare Pages 루트, `_inline_static_assets` 는 standalone 일 때만)이라 재배포 또는 `--rerender-only` 로 기존 보고서도 자동 교정.
+
+동반: `scripts/patch_report.py --replace-text "OLD=>NEW"`(반복 가능) 신설. 기존엔 deck/headline/closing/confidence_summary 통짜 교체만 가능했고 섹션 prose 안의 용어 치환 수단이 없었음 — 사용자의 "본문 GPU 시간 용어 쉽게 풀어쓰기" 요청 대응. composed_report 텍스트 필드 전체(headline/deck/closing/confidence_summary/contradictions_heading + 각 섹션 heading/kicker/prose/pull_quote)에 리터럴 치환. 순수 헬퍼 `_apply_subs` 분리(샌드박스에서 pydantic 없이 검증 — GPU 시간 케이스 1건 치환 확인).
+
+daily briefing "멈춤" 문의 — 코드상 정상. `config.daily_briefing_enabled` 기본 False + 트리거 시 `enabled=false` 면 `_run_one_briefing_cycle` 이 "DAILY_BRIEFING_ENABLED=false; skipping" 으로 스킵(scheduler/daily_briefing.py:151). 구독자 0 이어도 스킵. 활성화는 .env `DAILY_BRIEFING_ENABLED=true` + 재시작 + `/briefing_on`. `/briefing_status` 로 상태 확인. 코드 변경 아님(운영 설정).

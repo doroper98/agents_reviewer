@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.7
+last_synced_with: v5.5.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.8] — 2026-05-25
+
+### Fixed — slope 차트 라벨 충돌 (CHART-AP-26) + patch_report `--replace-text`
+
+- **slope 라벨 dodge**: `drawSlope` 가 라벨을 값 위치(`yScale`)에 그대로 그려,
+  여러 시리즈가 동일/근접 값일 때 라벨이 같은 y 에 겹쳐 판독 불가였다 (기준선
+  정규화로 모두 100.0 인 차트에서 특히 — "Gemini 100.0 / GPT 100.0 / Claude
+  100.0" 가 `GeGPGmi 100.0` 로 뭉개짐). 좌·우 라벨 baseline 을 최소 간격으로
+  dodge(정렬→하향 push→범위 클램프) + 점→라벨 connector 추가. 점·선은 실제 값
+  위치 유지. charts.js 는 보고서 공유 자산이라 재배포/`--rerender-only` 시 기존
+  보고서도 자동 교정.
+- **patch_report `--replace-text "OLD=>NEW"`** (신규, 반복 가능): 본문 텍스트
+  리터럴 치환 — headline/deck/closing/confidence_summary + 각 섹션
+  heading/kicker/prose/pull_quote. 용어 풀어쓰기/오타 수정용. 기존엔 deck/headline
+  등 통짜 교체만 가능했고 본문 prose 안의 용어 치환 수단이 없었음.
 
 ---
 

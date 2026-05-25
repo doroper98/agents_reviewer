@@ -1692,20 +1692,48 @@
       .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.text).text(leftLabel);
     svg.append('text').attr('x', xB).attr('y', zones.data.y - 18).attr('text-anchor', 'middle')
       .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.text).text(rightLabel);
-    items.forEach(it => {
-      const yA = yScale(+it.a), yB = yScale(+it.b);
-      const rising = +it.b > +it.a;
-      const stroke = rising ? t.accent : t.muted;
-      svg.append('line').attr('x1', xA).attr('y1', yA).attr('x2', xB).attr('y2', yB)
+    const rows = items.map(it => ({
+      it, yA: yScale(+it.a), yB: yScale(+it.b), rising: +it.b > +it.a,
+    }));
+    // lines + dots (실제 값 위치)
+    rows.forEach(r => {
+      const stroke = r.rising ? t.accent : t.muted;
+      svg.append('line').attr('x1', xA).attr('y1', r.yA).attr('x2', xB).attr('y2', r.yB)
         .attr('stroke', stroke).attr('stroke-width', 1.4);
-      svg.append('circle').attr('cx', xA).attr('cy', yA).attr('r', 4).attr('fill', t.text);
-      svg.append('circle').attr('cx', xB).attr('cy', yB).attr('r', 4)
-        .attr('fill', rising ? t.accent : t.text);
-      svg.append('text').attr('x', xA - 10).attr('y', yA + 4).attr('text-anchor', 'end')
+      svg.append('circle').attr('cx', xA).attr('cy', r.yA).attr('r', 4).attr('fill', t.text);
+      svg.append('circle').attr('cx', xB).attr('cy', r.yB).attr('r', 4)
+        .attr('fill', r.rising ? t.accent : t.text);
+    });
+    // CHART-AP-26 — 동일/근접 값 다수 시 라벨이 같은 y 에 겹침 (예: 모두 100.0 기준선).
+    // 라벨 baseline 을 최소 간격으로 dodge + 범위 클램프. 점은 실제 위치 유지, 멀어지면 connector.
+    const minGap = 13, lo = zones.data.y - 4, hi = zones.data.y + zones.data.h + 12;
+    const dodge = (ys) => {
+      const order = ys.map((y, i) => i).sort((p, q) => ys[p] - ys[q]);
+      const adj = order.map(i => ys[i]);
+      for (let i = 1; i < adj.length; i++)
+        if (adj[i] - adj[i - 1] < minGap) adj[i] = adj[i - 1] + minGap;
+      const over = adj[adj.length - 1] - hi;
+      if (over > 0) for (let i = 0; i < adj.length; i++) adj[i] -= over;
+      if (adj[0] < lo) { const d = lo - adj[0]; for (let i = 0; i < adj.length; i++) adj[i] += d; }
+      const out = new Array(ys.length);
+      order.forEach((origI, k) => { out[origI] = adj[k]; });
+      return out;
+    };
+    const fmt = d3.format(',.1f');
+    const ladY = dodge(rows.map(r => r.yA));
+    const lbdY = dodge(rows.map(r => r.yB));
+    rows.forEach((r, i) => {
+      if (Math.abs(ladY[i] - r.yA) > 2)
+        svg.append('line').attr('x1', xA - 4).attr('y1', r.yA).attr('x2', xA - 9).attr('y2', ladY[i])
+          .attr('stroke', t.border).attr('stroke-width', 0.6);
+      if (Math.abs(lbdY[i] - r.yB) > 2)
+        svg.append('line').attr('x1', xB + 4).attr('y1', r.yB).attr('x2', xB + 9).attr('y2', lbdY[i])
+          .attr('stroke', t.border).attr('stroke-width', 0.6);
+      svg.append('text').attr('x', xA - 10).attr('y', ladY[i] + 4).attr('text-anchor', 'end')
         .attr('font-size', 11).attr('fill', t.text)
-        .text(`${it.label} ${d3.format(',.1f')(+it.a)}`);
-      svg.append('text').attr('x', xB + 10).attr('y', yB + 4).attr('font-size', 11)
-        .attr('fill', rising ? t.accent : t.text).text(d3.format(',.1f')(+it.b));
+        .text(`${r.it.label} ${fmt(+r.it.a)}`);
+      svg.append('text').attr('x', xB + 10).attr('y', lbdY[i] + 4).attr('font-size', 11)
+        .attr('fill', r.rising ? t.accent : t.text).text(fmt(+r.it.b));
     });
   }
 

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.5
+last_synced_with: v5.5.8
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -877,6 +877,24 @@ type 인코딩 (대립=`--down`+✕ / 동맹=`--accent` / 영향=`accent-hatch` 
 산출 → 라벨/범례 자동 중앙 정렬 + 클리핑 0 (수동 margin 추정의 fragility 제거).
 셀 rect 는 `data-anim="static"` 태깅 — 64셀 fade 캐스케이드 + opacity 덮어쓰기
 방지. 모크업: `samples/actor_relationship_redesign_compare.html` (radial vs 대안 3종).
+
+---
+
+## CHART-AP-26: slope 차트 좌·우 라벨 충돌 (v5.5.8 신설)
+
+**증상**: `drawSlope` 가 라벨을 `yScale(value)` 의 점 위치에 그대로 그림. 여러
+시리즈가 *동일/근접 값* 을 가지면 라벨이 같은 y 에 포개져 글자가 뭉개짐. 실제
+사례 — "effective per-token price" slope 에서 세 모델이 모두 2025-10 기준 100.0
+→ 좌측 라벨 "Gemini 100.0 / GPT 100.0 / Claude 100.0" 가 한 점에 겹쳐
+`GeGPGmi 100.0` 처럼 판독 불가. (기준선 정규화 차트는 좌측 값이 다 같아 특히 빈발.)
+
+**원인**: 라벨 위치에 충돌 회피(dodge)가 없음. 점·선은 정상이나 텍스트만 겹침.
+
+**Fix (v5.5.8)**: 좌·우 라벨 baseline 을 최소 간격(`minGap=13`)으로 dodge —
+값 순으로 정렬 후 하향 push → 하단 초과 시 그룹 상향 시프트 → 상단 클램프. 점·선은
+실제 값 위치 유지(시각 정확성 보존), 라벨이 dodge 로 떨어지면 점→라벨 가는
+connector(0.6px). 단일/충분히 떨어진 라벨은 기존과 동일하게 렌더. charts.js 는
+보고서 공유 자산이라 재배포/`--rerender-only` 시 기존 보고서도 자동 교정.
 
 ---
 

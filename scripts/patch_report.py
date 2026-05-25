@@ -132,6 +132,14 @@ def parse_args() -> argparse.Namespace:
         help="composed_report.confidence_summary 교체.",
     )
     p.add_argument(
+        "--replace-text",
+        action="append",
+        metavar="OLD=>NEW",
+        help="본문 텍스트 리터럴 치환 — headline/deck/closing/confidence_summary + "
+             "각 섹션 heading/kicker/prose/pull_quote 전체. 여러 번 가능. "
+             "용어 풀어쓰기/오타 수정용. 예: --replace-text 'GPU 시간=>GPU 사용 시간'.",
+    )
+    p.add_argument(
         "--edit",
         action="store_true",
         help="$EDITOR 로 JSON 직접 편집 (저장 후 재렌더).",
@@ -296,6 +304,56 @@ def patch_set_text(result: FullAnalysisResult, field: str, value: str) -> bool:
     return True
 
 
+def _apply_subs(s: object, subs: list[tuple[str, str]]) -> tuple[object, int]:
+    """문자열이면 (old→new) 리터럴 치환. (결과, 치환 횟수) 반환. 비문자열은 그대로."""
+    if not isinstance(s, str) or not s:
+        return s, 0
+    out, n = s, 0
+    for old, new in subs:
+        if old and old in out:
+            n += out.count(old)
+            out = out.replace(old, new)
+    return out, n
+
+
+def patch_replace_text(result: FullAnalysisResult, specs: list[str]) -> bool:
+    """--replace-text OLD=>NEW 다중 적용 (composed_report 텍스트 필드 전체)."""
+    cr = result.composed_report
+    if not cr:
+        print("[patch] composed_report 없음", file=sys.stderr)
+        return False
+    subs: list[tuple[str, str]] = []
+    for spec in specs:
+        if "=>" not in spec:
+            print(f"[patch] --replace-text 형식 오류: {spec!r} (예: 'OLD=>NEW')", file=sys.stderr)
+            return False
+        old, new = spec.split("=>", 1)
+        if not old:
+            print(f"[patch] --replace-text: OLD 가 비어있음: {spec!r}", file=sys.stderr)
+            return False
+        subs.append((old, new))
+
+    total = 0
+    for field in ("headline", "deck", "closing", "confidence_summary",
+                  "contradictions_heading"):
+        if not hasattr(cr, field):
+            continue
+        new_val, n = _apply_subs(getattr(cr, field), subs)
+        if n:
+            setattr(cr, field, new_val)
+            total += n
+    for sec in (cr.sections or []):
+        for attr in ("heading", "kicker", "prose", "pull_quote"):
+            if not hasattr(sec, attr):
+                continue
+            new_val, n = _apply_subs(getattr(sec, attr), subs)
+            if n:
+                setattr(sec, attr, new_val)
+                total += n
+    print(f"[patch] --replace-text: {total}개 치환 ({len(subs)} 규칙)")
+    return total > 0
+
+
 def show_report(result: FullAnalysisResult) -> None:
     cr = result.composed_report
     if not cr:
@@ -437,6 +495,10 @@ async def main() -> int:
         if val is not None:
             if not patch_set_text(result, field, val):
                 return 1
+            mutated = True
+
+    if args.replace_text:
+        if patch_replace_text(result, args.replace_text):
             mutated = True
 
     # v5.2.7 — 시계열 차트 takeaway 만 재계산 (모든 차트 동일 takeaway +
