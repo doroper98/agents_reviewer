@@ -68,17 +68,18 @@
 .freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px}
 .freeform-fact-sublabel{font-size:11px;color:var(--fg-3,var(--muted));line-height:1.4}
 .freeform-prose.has-dropcap p:first-child::first-letter{font-family:'Newsreader','Noto Serif KR',serif;float:left;font-size:54px;font-weight:900;line-height:0.9;padding:6px 10px 0 0;color:var(--accent,#B05A38)}
-/* v5.2.12 — 모순 섹션 prose 화 (본문 톤). 강조 위계 3단: base / claim / accent */
-.contradiction-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400}
-.contradiction-prose p{margin:0 0 18px}
-.contradiction-prose .ct-claim{color:var(--fg-1,#F0E2CC);font-weight:600}
-.contradiction-prose .ct-accent{color:var(--accent,#C9A84C);font-weight:600}
-.contradiction-prose .ct-evidence{display:block;margin-top:-6px;margin-bottom:14px;font-size:12px;color:var(--fg-3,#A89880);line-height:1.6}
-.contradiction-prose .ct-evidence::before{content:"근거 충돌: ";font-weight:600;color:var(--fg-3,#A89880)}
-.contradiction-prose .ct-resolve{display:block;margin-top:8px;padding:4px 0 4px 14px;border-left:2px solid var(--accent,#C9A84C);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:15px;color:var(--fg-1,#F0E2CC);line-height:1.7}
-.contradiction-prose .ct-resolve::before{content:"분석가의 정리 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);font-weight:700;margin-right:6px}
+/* v5.5.1 — 모순 섹션 서술형 화. 각 모순 = 한 단락, '그러나' 로 전환, resolution
+   으로 착지. 각주형 라벨('근거 충돌:' / '분석가의 정리 —')·border-left 박스 폐기
+   (WRITE-AP-9). 강조는 전환점(accent) + 판단(fg-1 bold) 2단만. */
+.contradiction-prose{font-size:15.5px;line-height:1.9;color:var(--fg-2,#D4C4AA);font-weight:400}
+.contradiction-prose p{margin:0 0 20px}
+.contradiction-prose p:last-child{margin-bottom:0}
+.contradiction-prose .ct-turn{color:var(--accent,#C9A84C);font-weight:600}
+.contradiction-prose .ct-evidence{color:var(--fg-3,#A89880)}
+.contradiction-prose .ct-resolve{color:var(--fg-1,#F0E2CC);font-weight:600}
 /* v5.3.2 — 감시 신호 editorial epilogue 화. chart-card / takeaway 박스 폐기.
-   contradiction-prose 의 ct-resolve 패턴과 시각 어휘 통일 (italic + accent border-left).
+   epilogue-watch-indicates 가 italic + accent border-left 어휘 보존 (v5.5.1 에서
+   contradiction-prose 는 서술형으로 전환돼 더 이상 box 어휘 공유 안 함).
    별개 H2 폐기 — lede 한 문단 + deadline 좌측 mono + signal/desc/시사 우측 산문.
    같은 composed.watch_signals 데이터 (Pydantic 무변경, SQLite 등록 경로 무영향). */
 .epilogue-watch-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:17px;line-height:1.65;color:var(--fg-1);font-style:italic;margin:0 0 22px;font-weight:400}
@@ -375,16 +376,19 @@
 
 {# v5.2.12 — 모순: 본문 prose 톤으로 서술화. composer 의 4-필드 (side_a/side_b/evidence/resolution) 를
    "한쪽은 X. 반면 다른 쪽은 Y." 패턴으로 자연스럽게 결합, 강조는 accent/claim 위계로. #}
+{# v5.5.1 — 모순 섹션 서술형 + 동적 제목. composer 가 contradictions_heading 을
+   보고서마다 다르게 emit (판단형). 정적 '봉합하지 않은 충돌' 폐기 (WRITE-AP-9).
+   resolution 을 단락의 마지막 문장으로 흐르게 해 판단으로 착지 (각주형 라벨 제거). #}
 {% if composed and composed.contradictions %}
 <section class="freeform-section fade-in">
   <div class="container">
-    <div class="freeform-kicker">반대 관점 / 모순</div>
-    <h2 class="freeform-heading">봉합하지 않은 충돌</h2>
+    <div class="freeform-kicker">쟁점</div>
+    <h2 class="freeform-heading">{{ composed.contradictions_heading | strip_md if composed.contradictions_heading else '쟁점과 판단' }}</h2>
     <div class="contradiction-prose">
       {% for c in composed.contradictions %}
       <p>
-        <span class="ct-claim">{{ c.side_a | strip_md }}</span>
-        반면 <span class="ct-claim">{{ c.side_b | strip_md }}</span>
+        {{ c.side_a | strip_md }}
+        <span class="ct-turn">그러나</span> {{ c.side_b | strip_md }}
         {% if c.evidence %}<span class="ct-evidence">{{ c.evidence | strip_md }}</span>{% endif %}
         {% if c.resolution %}<span class="ct-resolve">{{ c.resolution | strip_md }}</span>{% endif %}
       </p>

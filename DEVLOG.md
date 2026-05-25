@@ -1195,3 +1195,18 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 **v5.5.0 한계 (계약 명시, fast-follow)**: `claims[]=[]` (prose→claim 추출 미구현 — 라벨 척추는 chart/map provenance 가 짐), `prerendered_svg=null` (SVG passthrough 하네스 — consumer 가 모든 타입 기본화 요청, fast-follow), `section.map_ref=null` (composer 섹션↔지도 바인딩 전).
 
 **검증 한계**: 본 PR 은 컨테이너 환경에 pydantic 만 설치해 모델/빌더/회귀 6종 통과 확인. 실제 봇 end-to-end (텔레그램 → 분석 → Pages 배포) 는 VM 에서 재검증 필요.
+
+---
+
+## v5.5.1 — 모순 섹션 서술형 전환 + 동적 제목 (WRITE-AP-9, 2026-05-25)
+
+**맥락**: 사용자 — 모순 섹션의 고정 제목 "봉합하지 않은 충돌"이 (1) 결론을 안 낸 인상(앞 본문 읽은 독자에게 시간낭비 느낌), (2) 모든 보고서 동일 문구라 단조로움. "서술형으로 바꿔줘."
+
+**진단**: 제목이 *내용이 아니라 보고서의 인식론*("우리는 봉합 안 했다")을 말함. 정작 판단인 `resolution`은 "분석가의 정리 —" 각주형 border-left 박스로 뒤에 붙어 독자가 의심으로 끝남. → 핵심 결함은 framing(메타-라벨 + resolution을 footnote로 강등).
+
+**해결 (template + composer, 데이터 구조는 bundle 위해 유지)**:
+- `ComposedReport.contradictions_heading: str = ""` 추가 (`model_validate` 경로라 composer가 JSON에 바로 emit). composer SYSTEM_PROMPT가 보고서마다 다른 판단형 제목 작성 + resolution을 결론적 문장(착지)으로 지시. 정적 메타-라벨 금지.
+- `freeform_essay.html`: 정적 `<h2>봉합하지 않은 충돌</h2>` → `{{ contradictions_heading or '쟁점과 판단' }}`. 서술형 prose: side_a → '그러나'(accent) → side_b → resolution(fg-1 bold, 단락 착지). 각주형 라벨("근거 충돌:" / "분석가의 정리 —") + border-left 박스 CSS 폐기.
+- 구조화된 contradictions(side_a/side_b/evidence/resolution)는 그대로 유지 — ReportBundle의 `contradictions[]`(OSINT "contradictions→disputed claim" 분기)가 의존하므로.
+
+**검증**: jinja2 설치해 모순 블록 실제 렌더 — 동적 제목("정전이냐 잠복이냐") + fallback("쟁점과 판단") + "봉합하지 않은 충돌" 완전 제거 + 그러나 전환/resolution 착지 확인. 구 fixture(필드 없음) 기본값 "" 호환. 번들 회귀 6/6 영향 없음. (실제 LLM이 좋은 contradictions_heading을 내는지는 VM live run에서 확인 필요 — composer 품질 의존.)
