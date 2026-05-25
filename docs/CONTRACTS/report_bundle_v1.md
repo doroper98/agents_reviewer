@@ -214,7 +214,28 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
 
 schema-valid 예시 1건: [`report_bundle_v1.example.json`](report_bundle_v1.example.json)
 (차트 없이 텍스트 슬라이드 seam 검증용으로도 충분 — chart/map 은 consumer 가
-무시 가능).
+무시 가능). **단 이 손예시는 `claims` 가 채워져 있어** seam 의 라벨 척추를 claim
+경로로 시연한다 — v5.5.0 라이브 emit 의 실제 `claims=[]` 현실과 다르다.
+
+**realistic 샘플 2건 (v5.5.0, fixture-derived)** — 실제 composer 형태 ComposedReport
+fixture 를 실제 `src/handoff/bundle_builder.py` 빌더에 통과시킨 결과 (LLM run 아님,
+producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 + 라벨 척추가
+`charts[].provenance.verification` 를 타는 모습을 보여준다:
+- [`report_bundle_v1.realistic_geo.json`](report_bundle_v1.realistic_geo.json) — 지정학
+  (map 객체 존재, gantt/bubble 차트 모두 `inferred`, signals 5 / contradictions 3).
+- [`report_bundle_v1.realistic_fin.json`](report_bundle_v1.realistic_fin.json) — 금융
+  (`line` 차트가 market_fetcher time_series 매칭 → `measured/confirmed` + `sources:[YAHOO]`,
+  나머지 `inferred`, `map: null`).
+
+**§11 빈값 규약 — 위 샘플로 확정**: producer 는 키를 *생략하지 않는다*. `note`/
+`pull_quote` → `""`, `map_ref` → `null`, `claim_refs`/`image_refs` → `[]`,
+`prerendered_svg` → `null`, `map`/`confidence` 부재 시 키 존재 + `null`. consumer 는
+옵셔널 객체(`map`/`confidence`) 만 null 체크하면 된다.
+
+> fixture 의 heatmap 차트는 `ComposedSection._drop_invalid_charts` (HeatmapGuard,
+> `{x,y,value}` 요구) 가 fixture 의 `{title,severity}` 형태를 guard-drop 해 번들에
+> 미포함 — fixture 가 오래된 탓이지 빌더 결함 아님 (라이브 composer 는 guard 통과
+> 차트만 emit).
 
 ## 5. 변경 이력
 
