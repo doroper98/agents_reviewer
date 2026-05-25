@@ -84,8 +84,9 @@ TTS 발화형 한국어 변환은 consumer 의 ScriptWorker 책임. producer 는
 - `sections[].chart_refs / claim_refs / image_refs`, `sections[].map_ref`,
   `charts[].provenance.sources[].source_id`, `claims[].evidence[].source_id`,
   `claims[].chart_refs` 는 모두 **같은 bundle 내 id 로 resolve** 돼야 한다.
-- 모든 id(`section_id`/`chart_id`/`claim_id`/`source_id`/이미지 id)는 bundle 내
-  **unique**. producer 는 emit 시 `model_validator` 로 강제(미해결 ref /
+- `sections[].map_ref` 는 `map.id` 로 resolve 또는 null (§10).
+- 모든 id(`section_id`/`chart_id`/`claim_id`/`source_id`/`map.id`/이미지 id)는
+  bundle 내 **unique**. producer 는 emit 시 `model_validator` 로 강제(미해결 ref /
   중복 id → reject).
 
 ### §9 차트 data shape SSOT
@@ -98,6 +99,28 @@ consumer 는 schemas.py 를 자기 Pydantic 으로 미러한다.
 > gantt/network/candle/dual_line/forecast/choropleth/scatter/stacked_area/
 > lollipop/slope/small_multiples/waterfall/range_bar/sankey).
 > shape 변경 시 producer 가 본 pin 갱신 + §7 절차.
+
+### §10 map 참조 해소 (v1 draft 보정 — 2026-05-25 seam 발견)
+초안에서 `section.map_ref="m-1"` 이 resolve 안 되는 갭 발견(map 객체에 id 없음 +
+`map.markers[].id="mk-1"` 와 불일치).
+**확정: map 은 보고서당 단일 optional 객체이며 `id` 필드(예: `"map-1"`)를 가진다.
+`section.map_ref` 는 `map.id` 로 resolve 또는 null.**
+- **A안(list[Map]) 미채택** — producer 는 구조적으로 보고서당 ≤1 map
+  (`ComposedReport.embedded_map: dict|None`)만 emit. 다중 지도는 speculative generality.
+- **B안(bool/생략) 미채택** — §8 의 균일한 "ref=id 포인터" 모델을 깨고 map 만 특수화.
+- producer 현실: map 은 report-level 요소(특정 섹션에 바인딩 안 됨). composer 가
+  섹션↔지도 바인딩을 emit 하기 전까지 `section.map_ref` 는 **null 이 기본**. 바인딩
+  신호가 생기면 해당 섹션이 `map.id` 를 가리킨다.
+
+### §11 빈값 / optional emit 규약 (seam 확정 — 2026-05-25)
+consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
+| 종류 | 허용 | 금지 |
+|---|---|---|
+| 문자열 스칼라 (`deck`/`closing`/`note`/`pull_quote`/`heading`/`kicker` 등; `headline` 제외) | `""` 또는 키 생략 | `null` |
+| 리스트 (`chart_refs`/`image_refs`/`claim_refs`/`markers`/`arcs`/`legend`/`sections`/`charts`/`claims`/`signals`/`contradictions`/`sources`) | `[]` 또는 생략 (`image_refs` 는 `[]` 권장) | `null` |
+| optional 객체/참조 (`map_ref`/`prerendered_svg`/`theme`/`map`/`confidence`) | `null`·생략·값 모두 | — |
+- 지리 없는 보고서: `map`/`signals`/`contradictions`/`confidence` 통째 absent 허용 (seam 검증됨).
+- `map.markers[].id`, `map.legend[].kind` 는 consumer 미러됨 — 그대로 emit.
 
 ## 2. 번들 스키마 (필드 / 타입)
 
@@ -152,7 +175,8 @@ consumer 는 schemas.py 를 자기 Pydantic 으로 미러한다.
     "prerendered_svg": "str | null"           // §5 — A안 차트는 null
   }],
 
-  "map": {                                   // [기존] embedded_map + [신규] provenance/svg
+  "map": {                                   // [기존] embedded_map + [신규] id/provenance/svg
+    "id": "str (unique)",                     // [신규] §10 — section.map_ref resolve 대상
     "center": [lng, lat], "zoom": 0.0,
     "markers": [{ "id","name","lng","lat","highlight" }],
     "arcs": [{ "from_id","to_id","label" }],
@@ -196,3 +220,4 @@ schema-valid 예시 1건: [`report_bundle_v1.example.json`](report_bundle_v1.exa
 | contract_version | 날짜 | 변경 | 비고 |
 |---|---|---|---|
 | 1 (draft) | 2026-05-25 | 초안 확정 (§1~9) | producer PR 머지 시 active |
+| 1 (draft) | 2026-05-25 | seam 보정: §10 map 참조 해소 (map.id) + §11 빈값/optional emit 규약 | schema_version 무증분 (draft 보정, 양측 합의) |
