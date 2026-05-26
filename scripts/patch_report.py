@@ -48,6 +48,12 @@
   python scripts/patch_report.py 20260525_233612 --replace "rate card=공시 요금표" --dry-run
       치환/추가를 *적용하지 않고* 매치 수만 출력 (JSON·배포 변경 X). 검증용.
 
+  python scripts/patch_report.py 20260525_233612 --recompose
+      저장된 사실 데이터로 보고서를 통째로 재작성 (LLM 1회=composer). 현재 패치된
+      프롬프트를 쓰므로 모든 전문 용어가 평이하게 바뀌고 불가피한 용어엔 문단 하단
+      각주가 붙음. URL 동일 유지. 단어 단위 --replace 가 놓치는 용어 (premium
+      request 등) ·대소문자 문제까지 해결. --mode 로 깊이 지정 가능 (기본=원본 유지).
+
   python scripts/patch_report.py 20260502_154823 --edit
       $EDITOR (vim/nano) 로 JSON 직접 편집
 
@@ -190,6 +196,19 @@ def parse_args() -> argparse.Namespace:
              "모든 차트에 동일 takeaway (전역 summary 의 소수점 절단 회귀) "
              "박혔던 케이스 복구용. composer-emitted 비-시계열 차트 (network/"
              "donut/gantt 등) 의 takeaway 는 건드리지 않음.",
+    )
+    p.add_argument(
+        "--recompose",
+        action="store_true",
+        help="(v5.5.5) 저장된 사실 데이터(context)로 보고서를 *통째로 재작성*. "
+             "현재(패치된) composer 프롬프트를 쓰므로 모든 전문 용어가 평이하게 "
+             "바뀌고 불가피한 용어엔 각주가 붙음. URL 동일 유지 (LLM 1회=composer). "
+             "단어 단위 --replace 가 놓치는 용어(premium request 등)·대소문자까지 해결.",
+    )
+    p.add_argument(
+        "--mode",
+        choices=["fast", "standard", "deep"],
+        help="--recompose 시 분석 깊이. 미지정 시 원본 보고서의 mode 유지.",
     )
     p.add_argument(
         "--rerender-only",
@@ -624,6 +643,42 @@ async def main() -> int:
     if args.dry_run:
         print("[patch] --dry-run: 변경 적용 안 함 (JSON·배포 그대로).")
         return 0
+
+    # v5.5.5 — 통째 재작성. 패치된 composer 프롬프트로 모든 용어 평이화 + 각주.
+    # 단어 단위 치환이 놓치는 용어·대소문자까지 LLM 이 일괄 처리. URL 동일.
+    if args.recompose:
+        if not result.context:
+            print(
+                "[patch] context(사실 데이터) 없음 — recompose 불가. "
+                "재분석 필요.",
+                file=sys.stderr,
+            )
+            return 1
+        from src.agents.narrative_composer import NarrativeComposer
+
+        recompose_mode = args.mode or (
+            result.request.mode if result.request else "standard"
+        )
+        print(
+            f"[patch] --recompose: 패치된 프롬프트로 보고서 재작성 "
+            f"(mode={recompose_mode}, LLM 1회=composer)..."
+        )
+        composer = NarrativeComposer(config)
+        new_composed = await composer.compose_unified(
+            result.context, mode=recompose_mode
+        )
+        if new_composed is None:
+            print(
+                "[patch] recompose 실패 (composer 가 None 반환 — LLM 호출/파싱 실패).",
+                file=sys.stderr,
+            )
+            return 1
+        result.composed_report = new_composed
+        mutated = True
+        print(
+            f"[patch] recompose 완료: {len(new_composed.sections)} 섹션, "
+            f"headline={new_composed.headline[:40]!r}"
+        )
 
     # v5.2.7 — 시계열 차트 takeaway 만 재계산 (모든 차트 동일 takeaway +
     # 소수점 절단 회귀 retro fix). composer-emitted 비-시계열 차트는 skip.
