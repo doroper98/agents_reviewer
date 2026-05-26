@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.8
+last_synced_with: v5.5.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.9] — 2026-05-26
+
+### Fixed — composer 호출 타임아웃 + 재시도 (보고서 중간 끊김 / "사실 자료만" 회귀)
+
+증상: 보고서가 본문 없이 context 사실만 + 신뢰도 0% + "composer 호출 실패.
+사실 자료만 표시." 로 끝나는 경우가 최근 빈발. 로그 분석 결과 — composer CLI 가
+**returncode 0 으로 성공**했으나 (rate-limit 비정상 종료 아님) ① 응답에 **10분 24초**
+소요(정상 1~3분), ② deep 보고서치곤 **너무 짧은(5,888자)** degraded 응답, ③
+`_parse_response` 가 그걸 ComposedReport 로 못 만들어 `None` → orchestrator 가
+confidence-0 minimal fallback 으로 격하. `_call_cli` 에 **타임아웃이 없어** 무한
+대기 + composer 호출에 **재시도가 없어** 단 한 번의 degraded 응답이 보고서 전체를
+망가뜨렸다.
+
+- `narrative_composer._call_cli` 에 **타임아웃**(`asyncio.wait_for`, mode 별
+  fast 240 / standard 360 / deep 540초). 초과 시 프로세스 kill + RuntimeError →
+  fail-fast (10분+ hang 차단).
+- `compose_unified` 에 **bounded 재시도**(`COMPOSE_MAX_ATTEMPTS=2`, 백오프 4s).
+  호출 실패/timeout *및* 파싱 None(성공했지만 쓸 수 없는 응답) 양쪽에서 재시도.
+  rate-limit 비정상 종료가 아니므로 재시도가 사용량 한도를 악화시키지 않음.
+- 파싱 실패 시 raw 응답 길이 + head 300자 **로깅** — 다음 회귀 때 모델이 뭘
+  반환했는지(잘림 vs prose vs 스키마 불일치) 즉시 진단 가능.
+
+핵심 보고서 생성 경로 자체는 무변경 — 성공 경로 byte-equal, 재시도/타임아웃은
+실패 시에만 작동.
 
 ---
 

@@ -513,6 +513,18 @@ class NarrativeComposer:
     }
     MAX_TOKENS: int = 32000  # 기본값 (mode 정보 없을 때)
 
+    # v5.5.9 — composer 복원력. CLI 가 degraded 응답(짧음/잘림/prose)을 줘 파싱이
+    # None 이 되거나, 호출이 hang/timeout 날 때 보고서 전체가 confidence-0 fallback
+    # 으로 격하되던 회귀 대응. CLI 무한 대기 차단(타임아웃) + 1회 재시도.
+    # 정상 composer 는 1~3분 — degraded 시 10분+ hang 관측됨.
+    CLI_TIMEOUT_BY_MODE: dict[str, float] = {
+        "fast": 240.0,
+        "standard": 360.0,
+        "deep": 540.0,
+    }
+    COMPOSE_MAX_ATTEMPTS: int = 2          # 최초 1 + 재시도 1
+    COMPOSE_RETRY_BACKOFF_S: float = 4.0   # attempt N 전 대기 = backoff * (N-1)
+
     def __init__(self, config: Config) -> None:
         self.config = config
         self._api_client: object | None = None
@@ -545,16 +557,34 @@ class NarrativeComposer:
         user_payload = self._build_unified_payload(context, mode, parent_context)
         user_message = json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
 
-        try:
-            if self.config.use_cli_mode:
-                raw = await self._call_cli(user_message)
-            else:
-                raw = await self._call_api(user_message, mode=mode)
-        except Exception as e:
-            logger.warning("[unified_composer] LLM call failed: %s", e)
-            return None
-
-        composed = self._parse_response(raw)
+        # v5.5.9 — 복원력: CLI 가 degraded/짧은/잘린 응답을 줘 _parse_response 가 None 인
+        # 경우(returncode 0 이지만 파싱 불가) + 호출 자체 실패/timeout 시 *재시도*.
+        # rate-limit 비정상 종료가 아니라 "성공했는데 쓸 수 없는 응답" 회귀라 재시도 안전.
+        timeout_s = self.CLI_TIMEOUT_BY_MODE.get(mode, 360.0)
+        composed = None
+        for attempt in range(1, self.COMPOSE_MAX_ATTEMPTS + 1):
+            try:
+                if self.config.use_cli_mode:
+                    raw = await self._call_cli(user_message, timeout_s=timeout_s)
+                else:
+                    raw = await self._call_api(user_message, mode=mode)
+            except Exception as e:
+                logger.warning(
+                    "[unified_composer] LLM call failed (attempt %d/%d): %s",
+                    attempt, self.COMPOSE_MAX_ATTEMPTS, e,
+                )
+                raw = None
+            if raw is not None:
+                composed = self._parse_response(raw)
+                if composed is not None:
+                    break
+                logger.warning(
+                    "[unified_composer] parse returned None (attempt %d/%d): "
+                    "raw=%d chars, head=%r",
+                    attempt, self.COMPOSE_MAX_ATTEMPTS, len(raw), raw[:300],
+                )
+            if attempt < self.COMPOSE_MAX_ATTEMPTS:
+                await asyncio.sleep(self.COMPOSE_RETRY_BACKOFF_S * attempt)
         if composed is None:
             return None
         # v4.0.0: chart_catalog 가 비었으니 embedded_charts 도 빈 list 로 강제 (검증 layer).
@@ -786,7 +816,7 @@ class NarrativeComposer:
     # LLM call
     # ------------------------------------------------------------------
 
-    async def _call_cli(self, user_message: str) -> str:
+    async def _call_cli(self, user_message: str, timeout_s: float = 480.0) -> str:
         claude_bin = shutil.which("claude")
         if claude_bin is None:
             raise RuntimeError(
@@ -802,8 +832,8 @@ class NarrativeComposer:
             "--dangerously-skip-permissions",
         ]
         logger.info(
-            "[narrative_composer] Starting CLI call (%s, prompt=%d chars)",
-            self.COMPOSER_MODEL, len(full_prompt),
+            "[narrative_composer] Starting CLI call (%s, prompt=%d chars, timeout=%.0fs)",
+            self.COMPOSER_MODEL, len(full_prompt), timeout_s,
         )
         start = time.time()
         proc = await asyncio.create_subprocess_exec(
@@ -812,7 +842,18 @@ class NarrativeComposer:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.communicate()
+        # v5.5.9 — 타임아웃으로 무한 대기 차단 (CLI degraded/overload 시 10분+ hang 회귀).
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout_s)
+        except asyncio.TimeoutError:
+            proc.kill()
+            try:
+                await proc.wait()
+            except Exception:  # pragma: no cover — reap best-effort
+                pass
+            raise RuntimeError(
+                f"narrative_composer CLI timeout after {timeout_s:.0f}s"
+            )
         elapsed_ms = int((time.time() - start) * 1000)
         if proc.returncode != 0:
             err = stderr.decode().strip() if stderr else "unknown"

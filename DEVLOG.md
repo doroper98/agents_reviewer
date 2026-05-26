@@ -1274,3 +1274,14 @@ fix: 두 호출부에서 `await asyncio.to_thread(build_report_bundle, ...)` 로
 동반: `scripts/patch_report.py --replace-text "OLD=>NEW"`(반복 가능) 신설. 기존엔 deck/headline/closing/confidence_summary 통짜 교체만 가능했고 섹션 prose 안의 용어 치환 수단이 없었음 — 사용자의 "본문 GPU 시간 용어 쉽게 풀어쓰기" 요청 대응. composed_report 텍스트 필드 전체(headline/deck/closing/confidence_summary/contradictions_heading + 각 섹션 heading/kicker/prose/pull_quote)에 리터럴 치환. 순수 헬퍼 `_apply_subs` 분리(샌드박스에서 pydantic 없이 검증 — GPU 시간 케이스 1건 치환 확인).
 
 daily briefing "멈춤" 문의 — 코드상 정상. `config.daily_briefing_enabled` 기본 False + 트리거 시 `enabled=false` 면 `_run_one_briefing_cycle` 이 "DAILY_BRIEFING_ENABLED=false; skipping" 으로 스킵(scheduler/daily_briefing.py:151). 구독자 0 이어도 스킵. 활성화는 .env `DAILY_BRIEFING_ENABLED=true` + 재시작 + `/briefing_on`. `/briefing_status` 로 상태 확인. 코드 변경 아님(운영 설정).
+
+## v5.5.9 — composer 타임아웃 + 재시도 (보고서 중간 끊김 fix, 2026-05-26)
+
+사용자가 "보고서가 composer 호출 실패로 중간에 끊긴다, 최근 자주" 제보 + 보고서 화면(신뢰도 0% / "composer 호출 실패. 사실 자료만 표시.") 제공. bot.log 추적으로 정확한 체인 확정:
+- `21:03:53 Starting CLI call (prompt=27213 chars)` → `21:14:16 CLI response (5888 chars, 623938ms)` → `composer failed; emitting minimal fallback`.
+- 즉 CLI 가 **returncode 0 으로 성공**(rate-limit 비정상 종료 *아님*)했으나 ① 응답에 10분 24초 소요(정상 1~3분) ② deep 보고서치곤 5,888자로 너무 짧은 degraded 응답 ③ `_parse_response` 가 None 반환 → `compose_unified` 가 None → orchestrator:1477 minimal fallback. `unified_composer error` 라인 부재 = 예외 아니라 None 리턴(파싱 실패를 내부에서 삼킴) 입증.
+- 근본 취약점: `_call_cli` 에 타임아웃 없음(`await proc.communicate()` 무한 대기) + composer 호출에 재시도 없음(단일 try). degraded 응답 한 번 = 보고서 전체 격하.
+
+fix: `_call_cli(timeout_s)` + `asyncio.wait_for` (mode 별 fast 240/standard 360/deep 540s, 초과 시 proc.kill + RuntimeError). `compose_unified` 에 bounded 재시도(`COMPOSE_MAX_ATTEMPTS=2`, backoff 4s*attempt) — 호출 실패/timeout *및* 파싱 None 양쪽에서 재시도. returncode 0 + 파싱 불가 회귀라 재시도가 안전(사용량 한도 악화 X). 파싱 실패 시 `raw[:300]` head 로깅 추가 — 다음 회귀 때 모델 반환물(잘림 vs prose vs 스키마)을 즉시 구분. 성공 경로 byte-equal(`_parse_response` 무변경, 기존 테스트 무영향). 동일 무-타임아웃 패턴이 base.py:121(context_analyst) / report_synthesizer.py:712,957 에도 있음 — 본 커밋은 실제 실패한 composer 만, 나머지는 후속 검토.
+
+미해결: 5,888자 응답이 잘린 JSON(JSONDecodeError)인지 prose(No JSON object)인지 — 사용자에게 `sed -n '2265,2272p' bot.log` 요청(파싱 분기 확정용). 잘림이면 향후 partial-JSON 복구 또는 deep 분할 검토.
