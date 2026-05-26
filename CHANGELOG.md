@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.6.1
+last_synced_with: v5.6.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.6.2] — 2026-05-26
+
+### Changed — 공개 인덱스 목록 비공개 + /reports (관리자) 전체 목록 회수
+
+v5.6.1 의 난수 URL 가드를 완성. 공개 `index.html` 이 전체 보고서를 나열하면 토큰
+링크가 다 노출돼 가드가 무력화되던 구멍을 막음.
+
+- **공개 `index.html`**: 보고서 목록·건수 제거 → "구독자 전용, 발급 링크로만 열람"
+  안내만. `_generate_index` 가 더 이상 reports/ 를 glob 하지 않음.
+- **`/reports` (텔레그램, 관리자 전용)**: 기존엔 공개 인덱스 링크만 던졌으나 이제
+  최근 30건의 제목 + 생성일시 + **토큰 URL** 을 직접 회수. 모든 unlisted 링크를
+  노출하므로 `_is_authorized` 게이팅 추가 (기존엔 무방비였음).
+
+> 운영 필수: 구독자 서비스라면 `.env` 의 `ALLOWED_CHAT_IDS` 에 본인 chat_id 를
+> 설정해야 `/reports`(및 다른 명령)가 외부에 열리지 않는다. 미설정 = 전체 허용.
 
 ---
 

@@ -246,13 +246,55 @@ class TelegramBot:
     async def _reports_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """Handle /reports command."""
-        if update.message is None:
+        """``/reports`` — (관리자 전용) 전체 보고서 목록 + 토큰 URL 회수.
+
+        v5.6.2 — 공개 인덱스가 목록을 노출하지 않게 바뀌어, 관리자는 본 명령으로
+        unlisted 토큰 링크를 받는다. 모든 보고서의 비공개 URL 을 노출하므로
+        ``_is_authorized`` 게이팅 필수 (ALLOWED_CHAT_IDS 미설정 = 전체 허용이니
+        구독자 서비스라면 반드시 본인 chat_id 로 설정할 것).
+        """
+        if update.message is None or update.effective_chat is None:
             return
-        project = self.config.cloudflare_project_name
-        await update.message.reply_text(
-            f"📁 전체 보고서 목록:\nhttps://{project}.pages.dev/"
-        )
+        if not self._is_authorized(update.effective_chat.id):
+            await update.message.reply_text("권한 없음.")
+            return
+        import glob
+
+        output_dir = self.config.report_output_dir
+        project = self.config.cloudflare_project_name or ""
+        files = sorted(
+            glob.glob(os.path.join(output_dir, "analysis_*.html")), reverse=True
+        )[:30]
+        if not files:
+            await update.message.reply_text("보고서가 없습니다.")
+            return
+
+        lines = [f"📁 전체 보고서 {len(files)}건 (최근순):\n"]
+        for fp in files:
+            fname = os.path.basename(fp)
+            stem = fname.replace("analysis_", "").replace(".html", "")
+            parts = stem.split("_")
+            if len(parts) >= 2 and len(parts[0]) == 8 and len(parts[1]) == 6:
+                d, t = parts[0], parts[1]
+                date = f"{d[:4]}-{d[4:6]}-{d[6:8]} {t[:2]}:{t[2:4]}"
+            else:
+                date = stem
+            title = fname
+            try:
+                with open(fp, "r", encoding="utf-8") as f:
+                    head = f.read(3000)
+                if "<title>" in head and "</title>" in head:
+                    cand = head.split("<title>")[1].split("</title>")[0].strip()
+                    if cand and cand != "Analysis":
+                        title = cand
+            except Exception:
+                pass
+            url = f"https://{project}.pages.dev/{fname}" if project else fname
+            lines.append(f"• {date}  {title}\n  {url}")
+
+        text = "\n".join(lines)
+        for i in range(0, len(text), 3900):
+            await update.message.reply_text(text[i:i + 3900])
 
     # ------------------------------------------------------------------
     # V3 Step 5-B (v2.9.5) — Watchlist commands

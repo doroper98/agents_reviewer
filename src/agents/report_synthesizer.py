@@ -1599,44 +1599,12 @@ class ReportSynthesizer:
                 )
 
     def _generate_index(self, output_dir: str) -> None:
-        """Generate index.html listing all reports."""
-        import glob
-        reports = sorted(glob.glob(os.path.join(output_dir, "analysis_*.html")), reverse=True)
+        """공개 랜딩 index.html 생성 — 보고서 목록은 노출하지 않음 (v5.6.2).
 
-        rows = []
-        for rpath in reports[:50]:
-            fname = os.path.basename(rpath)
-            # Extract date from filename: analysis_20260328_041426.html
-            parts = fname.replace("analysis_", "").replace(".html", "").split("_")
-            if len(parts) >= 2:
-                date_str = parts[0]
-                time_str = parts[1]
-                display_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]} {time_str[:2]}:{time_str[2:4]}"
-            else:
-                display_date = fname
-
-            # Try to extract title from HTML
-            title = fname
-            try:
-                with open(rpath, "r", encoding="utf-8") as f:
-                    content = f.read(3000)
-                    if "<title>" in content and "</title>" in content:
-                        title = content.split("<title>")[1].split("</title>")[0].strip()
-                        if not title or title == "Analysis":
-                            title = fname
-            except Exception:
-                pass
-
-            rows.append(
-                f'<tr>'
-                f'<td class="cell-title"><a href="{fname}">{title}</a></td>'
-                f'<td class="cell-date">{display_date}</td>'
-                f'</tr>'
-            )
-
-        empty_row = (
-            '<tr><td colspan="2" class="cell-empty">보고서가 없습니다</td></tr>'
-        )
+        구독자 전용 서비스 — 각 보고서는 발급된 난수 토큰 링크로만 접근. 공개
+        인덱스가 전체 목록을 나열하면 unlisted 가드가 무력화되므로, 목록은 빼고
+        안내만 둔다. 관리자는 텔레그램 ``/reports`` 로 전체 목록 + 토큰 URL 회수.
+        """
         index_html = f'''<!DOCTYPE html>
 <html lang="ko" data-theme="editorial_cream">
 <head>
@@ -1735,13 +1703,11 @@ tbody tr:last-child .cell-date{{border-bottom:none}}
 <div class="wrap">
 <div class="eyebrow">Event Analysis Team</div>
 <h1>Analysis Reports</h1>
-<div class="sub">총 <strong>{len(reports)}</strong>건의 보고서 · 최신 50건</div>
-<table>
-<thead><tr><th>보고서</th><th style="width:170px">생성일시</th></tr></thead>
-<tbody>
-{"".join(rows) if rows else empty_row}
-</tbody>
-</table>
+<div class="sub">구독자 전용 분석 서비스</div>
+<div style="background:var(--card);border:1px solid var(--border-soft);border-radius:8px;padding:32px 24px;text-align:center;color:var(--muted);line-height:1.9">
+<p style="font-family:'Newsreader','Noto Serif KR',serif;font-size:17px;color:var(--text);margin-bottom:8px">보고서 목록은 공개되지 않습니다.</p>
+<p>각 분석 보고서는 발급된 전용 링크로만 열람하실 수 있어요.</p>
+</div>
 <div class="foot">editorial_cream · <a href="https://doroper98.github.io/agents_reviewer/samples/">samples</a> · <a href="https://github.com/doroper98/agents_reviewer">github</a></div>
 </div>
 </body>
