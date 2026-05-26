@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+import secrets
 import shutil
 from datetime import datetime, timezone, timedelta
 
@@ -1134,7 +1135,11 @@ class ReportSynthesizer:
         os.makedirs(output_dir, exist_ok=True)
 
         # v4.4.1: report_id 가 주어지면 그대로 사용 (patch 시 기존 파일 덮어쓰기).
-        timestamp = report_id if report_id else datetime.now(KST).strftime("%Y%m%d_%H%M%S")
+        # v5.6.1: 신규 생성 시 날짜+시각 뒤에 난수 토큰 부착 — 구독자 전용 unlisted URL.
+        #         파일명 = analysis_{YYYYMMDD_HHMMSS}_{10hex}. report_id(재렌더) 는 토큰 보존.
+        timestamp = report_id if report_id else (
+            datetime.now(KST).strftime("%Y%m%d_%H%M%S") + "_" + secrets.token_hex(5)
+        )
         filename = f"analysis_{timestamp}.html"
         filepath = os.path.join(output_dir, filename)
 

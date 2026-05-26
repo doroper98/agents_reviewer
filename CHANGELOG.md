@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.6.0
+last_synced_with: v5.6.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.6.1] — 2026-05-26
+
+### Added — X(트위터) 구독자용 broadcast 요약 + 보고서 URL 난수 토큰
+
+- **broadcast_summary**: composer 가 보고서마다 `ComposedReport.broadcast_summary`
+  로 친절한 평문 요약을 emit (해요/습니다 혼합, 문단당 2문장, 5~6 짧은 문단,
+  라벨·이모지·불릿·AI 상투어 금지). 마지막 문장은 전체 보고서로 안내하되 *매번 다른
+  표현* 으로 변주 (고정 문구 = AI 티). 텔레그램 완료 메시지에 **라벨 없이** 링크 앞에
+  첨부 — 보고서를 안 봐도 맥락·핵심·시사점을 얻게. 비면 첨부 안 함(graceful).
+  일일 브리핑 전송 경로에도 동일 적용. SSOT: narrative_composer SYSTEM_PROMPT
+  `=== broadcast_summary ===` 블록.
+- **보고서 URL 난수 토큰**: 신규 보고서 파일명을 `analysis_{YYYYMMDD_HHMMSS}_{10hex}`
+  로 — 날짜·시각은 유지하되 `secrets.token_hex(5)` 난수를 덧붙여 추측 불가능한
+  unlisted URL 생성 (구독자 전용 컨텐츠 가드). 재렌더(patch_report)는 토큰 보존.
+  bundle/md/json 도 같은 stem 공유. 인덱스 날짜 파싱·patch 조회 호환.
+
+> 주의: 난수 URL 은 "추측 불가(unlisted)" 가드일 뿐 인증이 아니다. 공개 인덱스
+> 페이지가 모든 보고서를 나열하면 가드가 무력화됨 — 인덱스 비공개/게이팅은 별도 결정.
 
 ---
 

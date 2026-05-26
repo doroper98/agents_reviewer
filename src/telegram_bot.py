@@ -766,6 +766,16 @@ class TelegramBot:
 
             report_path = result.report_path
             followup_tag = " (후속)" if parent_context is not None else ""
+
+            # v5.6.1 — X 구독자용 broadcast 요약 (라벨 없이 본문만, 링크 메시지 앞에).
+            broadcast = (
+                result.composed_report.broadcast_summary.strip()
+                if result.composed_report and result.composed_report.broadcast_summary
+                else ""
+            )
+            if broadcast:
+                await send(broadcast)
+
             if result.report_url and result.report_url.startswith("http"):
                 md_url = result.report_url.replace(".html", ".md")
                 await send(

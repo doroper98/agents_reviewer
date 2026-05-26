@@ -730,6 +730,11 @@ class ComposedReport(BaseModel):
     confidence_score: float = Field(default=0.5, ge=0.0, le=1.0)
     """0~1 종합 신뢰도. composer 가 자체 평가."""
 
+    # v5.6.1 — X(트위터) 구독자용 broadcast 요약. 보고서를 안 읽어도 맥락·핵심·시사점을
+    # 얻는 친절한 평문 (해요/습니다 혼합, 문단당 2문장, 라벨 없음). 텔레그램 완료 메시지에
+    # 라벨 없이 첨부. 비면 첨부 안 함 (graceful). SSOT: narrative_composer SYSTEM_PROMPT.
+    broadcast_summary: str = ""
+
     # v4.2.0 — 보고서 레벨 단일 지도. 지리적 사건일 때만 composer 가 채움.
     # 형식: {"center": [lng, lat], "zoom": float,
     #        "markers": [{"id", "name", "lng", "lat", "highlight": bool}],
