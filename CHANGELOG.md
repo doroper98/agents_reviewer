@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.5.10
+last_synced_with: v5.6.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-20
+last_review: 2026-05-26
 ---
 
 # Changelog
@@ -20,147 +20,61 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## [v5.5.10] — 2026-05-26
+## [v5.6.0] — 2026-05-26
 
-### Fixed — composer 응답 파싱 강건화 ("Extra data" JSON 파싱 실패 회귀)
+### Integrated — feature 브랜치 통합 (인접행렬 + prerender + slope fix + composer 복원력)
 
-v5.5.9 의 로그 추가로 실패 원인 확정 — `[narrative_composer] Parse/validation
-failed: Extra data: line 1 column 8 (char 7)`. CLI 응답(returncode 0)에서 추출한
-JSON 객체 *뒤에* 모델이 덧붙인 텍스트가 있어 `json.loads` 가 "Extra data" 로
-죽었다. 기존 `_parse_response` 는 fence split + greedy regex 로 추출 후 통짜
-`json.loads` 라 꼬리 텍스트/스트레이 펜스에 취약.
+별도 feature 브랜치(`claude/ecstatic-newton-1OmQA`)에서 진행된 작업을 main 의
+v5.5.5(평이화/각주)와 통합. 병렬 작업으로 양쪽이 v5.5.5 를 동시 사용 + patch_report
+를 양쪽이 수정 → 본 통합에서 조율. **코드 충돌은 없었음**(main 의 평이화/footnotes 는
+`ComposedSection.footnotes` 필드 + SYSTEM_PROMPT 추가로 additive — 본 작업의 차트
+렌더러·prerender·composer 호출부와 무관). 단계별 상세는 DEVLOG 의 v5.5.6~v5.5.10 항목.
 
-- `_loads_first_json_object`: `json.JSONDecoder().raw_decode` 로 **첫 완결 JSON
-  객체만** 파싱하고 뒤따르는 extra data 를 무시. 앞 prose / 잘못된 펜스도 첫 `{`
-  부터 디코드.
-- `_parse_response`: 여러 후보(```json 펜스 / raw 전체 / 일반 펜스)를 순서대로
-  raw_decode → 첫 검증 통과 ComposedReport 채택. 실패 시 raw head 200자 로깅.
-- 회귀 테스트 2종 추가 (trailing extra / leading prose). 기존 3종 그대로 통과.
+- **행위자 관계도 → 인접행렬 (CHART-AP-25)**: radial hairball 폐기, `drawNetwork`
+  렌더러만 교체(데이터 계약 nodes/links 불변). 셀이 관계 type 인코딩 + 진영 정렬 +
+  getBBox content-fit 중앙정렬.
+- **ReportBundle B안 폴백 SVG prerender (계약 §5)**: 복잡 4종(map/choropleth/
+  network/sankey)만 Playwright 격리 렌더로 `prerendered_svg` 채움. `asyncio.to_thread`
+  로 이벤트 루프 밖 실행. graceful null. schema_version 무증분.
+- **slope 차트 라벨 충돌 fix (CHART-AP-26)**: 동일/근접 값 다수 시 라벨 dodge + connector.
+- **composer 복원력 ("보고서 중간 끊김 / 사실 자료만 표시" 회귀 fix)**: CLI 응답이
+  degraded(10분+ 소요·짧음·JSON 뒤 잡설) → 파싱 None → confidence-0 fallback 되던
+  문제. `_call_cli` mode 별 타임아웃(deep 540s) + `compose_unified` 1회 재시도 +
+  `_parse_response` 를 `raw_decode` 기반으로 강건화("Extra data" 무시) + raw head 로깅.
 
-v5.5.9(타임아웃+재시도)와 합쳐, degraded CLI 응답 → 재시도 + 견고 파싱으로
-보고서가 confidence-0 fallback 으로 격하될 확률을 크게 낮춤.
+### Coordination — patch_report 도구 일원화
 
----
-
-## [v5.5.9] — 2026-05-26
-
-### Fixed — composer 호출 타임아웃 + 재시도 (보고서 중간 끊김 / "사실 자료만" 회귀)
-
-증상: 보고서가 본문 없이 context 사실만 + 신뢰도 0% + "composer 호출 실패.
-사실 자료만 표시." 로 끝나는 경우가 최근 빈발. 로그 분석 결과 — composer CLI 가
-**returncode 0 으로 성공**했으나 (rate-limit 비정상 종료 아님) ① 응답에 **10분 24초**
-소요(정상 1~3분), ② deep 보고서치곤 **너무 짧은(5,888자)** degraded 응답, ③
-`_parse_response` 가 그걸 ComposedReport 로 못 만들어 `None` → orchestrator 가
-confidence-0 minimal fallback 으로 격하. `_call_cli` 에 **타임아웃이 없어** 무한
-대기 + composer 호출에 **재시도가 없어** 단 한 번의 degraded 응답이 보고서 전체를
-망가뜨렸다.
-
-- `narrative_composer._call_cli` 에 **타임아웃**(`asyncio.wait_for`, mode 별
-  fast 240 / standard 360 / deep 540초). 초과 시 프로세스 kill + RuntimeError →
-  fail-fast (10분+ hang 차단).
-- `compose_unified` 에 **bounded 재시도**(`COMPOSE_MAX_ATTEMPTS=2`, 백오프 4s).
-  호출 실패/timeout *및* 파싱 None(성공했지만 쓸 수 없는 응답) 양쪽에서 재시도.
-  rate-limit 비정상 종료가 아니므로 재시도가 사용량 한도를 악화시키지 않음.
-- 파싱 실패 시 raw 응답 길이 + head 300자 **로깅** — 다음 회귀 때 모델이 뭘
-  반환했는지(잘림 vs prose vs 스키마 불일치) 즉시 진단 가능.
-
-핵심 보고서 생성 경로 자체는 무변경 — 성공 경로 byte-equal, 재시도/타임아웃은
-실패 시에만 작동.
+main 의 `--replace`/`--add-footnote`/`--dry-run`(v5.5.5) 을 정본으로 채택. feature
+브랜치가 별도로 추가했던 `--replace-text "OLD=>NEW"` 는 폐기(기능 중복). 보고서 용어
+정정은 `python scripts/patch_report.py <id> --replace "OLD=NEW"` 사용.
 
 ---
 
-## [v5.5.8] — 2026-05-25
+## [v5.5.5] — 2026-05-26
 
-### Fixed — slope 차트 라벨 충돌 (CHART-AP-26) + patch_report `--replace-text`
+### Added — 일반 독자 우선: 전문 용어 평이화 + 문단 하단 주석 (WRITE-AP-10)
 
-- **slope 라벨 dodge**: `drawSlope` 가 라벨을 값 위치(`yScale`)에 그대로 그려,
-  여러 시리즈가 동일/근접 값일 때 라벨이 같은 y 에 겹쳐 판독 불가였다 (기준선
-  정규화로 모두 100.0 인 차트에서 특히 — "Gemini 100.0 / GPT 100.0 / Claude
-  100.0" 가 `GeGPGmi 100.0` 로 뭉개짐). 좌·우 라벨 baseline 을 최소 간격으로
-  dodge(정렬→하향 push→범위 클램프) + 점→라벨 connector 추가. 점·선은 실제 값
-  위치 유지. charts.js 는 보고서 공유 자산이라 재배포/`--rerender-only` 시 기존
-  보고서도 자동 교정.
-- **patch_report `--replace-text "OLD=>NEW"`** (신규, 반복 가능): 본문 텍스트
-  리터럴 치환 — headline/deck/closing/confidence_summary + 각 섹션
-  heading/kicker/prose/pull_quote. 용어 풀어쓰기/오타 수정용. 기존엔 deck/headline
-  등 통짜 교체만 가능했고 본문 prose 안의 용어 치환 수단이 없었음.
+**배경**: 사용자 — 보고서에 `rate card` / `rate limit premium` 같은 영어 표현·전문
+용어가 풀이 없이 그대로 노출됨. "일반인이 이해할 수 있는 평이한 용어 + 어려운
+전문용어는 문단 하단 주석" 을 본 시스템의 *최우선 가치* 로 요청.
 
----
+**변경**:
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` — 본문 최상단에 "★ 최우선 원칙 —
+  일반 독자 우선" 블록 신설. (1) 전문 용어·영어 표현·은어를 평이한 우리말로 바꾸고
+  (2) 못 바꾸는 핵심 용어만 그 섹션 `footnotes` 로 문단 하단 주석. 다른 모든 문체
+  지시에 우선. JSON 스키마에 `footnotes` 추가.
+- `src/models.py:ComposedSection.footnotes` — `list[{term, explanation}]` 신규 필드.
+  None / 비정형 항목 정규화 validator (빈 각주 카드 회귀 차단).
+- `src/templates/archetypes/freeform_essay.html` — prose 직후 `.freeform-footnotes`
+  "용어 풀이" 블록 (term + explanation) 렌더 + 7테마 토큰 CSS. 비면 안 그림.
+- `docs/REPORT_STYLE_GUIDE.md` — §0.1 (최우선 가치 명문화) + §2.1 어휘표 확장
+  (rate card / rate limit premium / 익스포저 / 가이던스 / 헤지 등) + §2.2 를 3단
+  사다리 (평이화 → 괄호 풀이 → 문단 하단 주석) 로 재구성.
+- `docs/REPORT_WRITING_ANTIPATTERNS.md` — WRITE-AP-10 신설 (append-only).
+- `CLAUDE.md` / `docs/DATA_MODELS.md` — 최우선 가치 + 신규 필드 반영.
 
-## [v5.5.7] — 2026-05-25
-
-### Fixed — prerender 를 async 루프 밖(워커 스레드)에서 실행
-
-v5.5.6 의 SVG prerender 는 *sync* Playwright API(`sync_playwright`)를 쓰는데,
-이를 `build_report_bundle` 안에서 호출했고 그 빌더는 async `synthesize` /
-`_bundle_command` 가 **이벤트 루프 스레드에서 직접** 부른다. 결과:
-
-- sync Playwright 를 실행 중인 asyncio 루프 안에서 호출 → "Sync API inside
-  asyncio loop" 예외 → graceful null 로 빠짐 → **실제 봇에선 prerender 가 조용히
-  작동 안 함** (chromium 깔아도 항상 null).
-- 가사 루프 스레드에서 렌더가 돌았다면 보고서당 수초간 봇 이벤트 루프 블로킹.
-
-**fix**: 두 호출부(`report_synthesizer.synthesize`, `telegram_bot._bundle_command`)
-에서 `await asyncio.to_thread(build_report_bundle, ...)` 로 빌드 전체를 워커
-스레드에 오프로드. sync Playwright 가 실행 루프 없는 스레드에서 돌아 정상 작동 +
-이벤트 루프 비블로킹 (market_fetcher 의 `asyncio.to_thread` 와 동일 패턴).
-`_render_batch` 임시파일도 패키지 static dir → 시스템 temp dir 로 이동.
-
-**핵심 보고서 생성엔 영향 없음** — charts.js 인접행렬은 브라우저 전용(파이프라인
-무관, per-chart try/catch 격리), prerender 는 HTML 저장·배포 *후* 이중 try/except
-안에서 실행돼 실패해도 보고서는 이미 산출됨.
-
----
-
-## [v5.5.6] — 2026-05-25
-
-### Added — ReportBundle B안 폴백 SVG prerender (계약 §5, osint_generator fast-follow)
-
-osint_generator 측이 "전-타입 prerendered_svg" 요청을 **철회**하고 계약 A안
-(consumer 가 데이터로 cinematic 재렌더) 으로 수렴. 합의된 B안 — 복잡 4종
-(`map` / `choropleth` / `network` / `sankey`) 만 osint 가 자체 렌더러를 갖추기 전
-*폴백* 정적 SVG 를 제공 — 을 구현.
-
-- 신규 `src/handoff/svg_prerender.py` — charts.js/maps.js 가 그리는 DOM 구조를
-  최소 HTML 1장에 재현 → Playwright(headless chromium) 격리 렌더 → `<svg>`
-  outerHTML 추출 → 독립 SVG 래핑(xmlns + 배경 rect). chart_id 별 1:1 격리.
-- `build_report_bundle(..., prerender_svg=True)` + config `enable_bundle_prerender`
-  (env `V5_BUNDLE_PRERENDER_SVG`, 디폴트 ON). 두 emit 경로(report_synthesizer 자동 /
-  `/bundle` 재emit) 에서 활성화.
-- **graceful** — Playwright/chromium 미설치, 렌더 실패/timeout, map 의 world-atlas
-  CDN fetch 차단 시 조용히 `null` (기존 v5.5.x 동작 = 계약 §5). 보고서/번들 흐름 영향 0.
-- 계약 schema_version **무증분** (additive — 이미 예약된 optional 칸을 채움).
-  A안 17종 차트는 항상 `null` 유지.
-
-행위자 관계도 v5.5.5 인접행렬도 `network` 타입이라 이 폴백 경로에 포함됨.
-
----
-
-## [v5.5.5] — 2026-05-25
-
-### Changed — 행위자 관계도: radial network → 인접행렬 (CHART-AP-25)
-
-행위자(이해관계자) 관계도를 그리던 `network` 차트가 노드를 원 위에 입력 순서대로
-배치하고 엣지를 직선으로 긋는 radial 레이아웃이라, 위치가 아무 의미를 안 가져
-항상 중심을 관통하는 실타래(hairball)가 되고 시인성이 최악이었다.
-
-`src/templates/static/charts.js` 의 `drawNetwork` **렌더러 본문만** 인접행렬
-(adjacency matrix) 로 교체:
-
-- 데이터 계약 (`{nodes:[{id,label,group}], links:[{source,target,type}]}`) **불변**
-  — composer SYSTEM_PROMPT / `NetworkGuard` / capability registry / usage_log /
-  회귀 fixture 전부 무변경, type 명 `network` 유지.
-- 행위자를 행·열에 두고 셀이 관계 type 인코딩: 대립 = `--down` 솔리드 + ✕,
-  동맹 = `--accent` 솔리드, 영향 = `accent-hatch`, 연관 = `dots`. 대각선은
-  `--border` fill-opacity 0.35 차단. 진영(group) 정렬로 같은 진영을 대각선
-  근처 블록으로 모음. 선 교차 0 → hairball 원천 제거.
-- viewBox 는 `getBBox` content-fit 으로 산출 → 라벨/범례 자동 중앙 정렬 +
-  클리핑 0 (수동 margin 추정 fragility 제거). 셀 rect 는 `data-anim="static"`
-  태깅으로 64셀 fade 캐스케이드 + opacity 덮어쓰기 방지.
-
-모크업 (radial vs 인접행렬/포지셔닝맵/arc 비교): `samples/actor_relationship_redesign_compare.html`.
-
----
+**범위**: ReportBundle (`BundleSection`) 은 footnotes 를 싣지 않음 — 계약 무변경
+(additive). 기존 보고서 데이터는 footnotes 빈 list 로 호환.
 
 ## [v5.5.4] — 2026-05-25
 

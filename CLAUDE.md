@@ -218,10 +218,19 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 9개 패턴 누적:
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 10개 패턴 누적:
+
+> **★ 최우선 가치 — 일반 독자 우선 (v5.5.5).** 보고서는 *비전문가* 가 읽는다. ①
+> 전문 용어·영어 표현·은어는 평이한 우리말로 바꾼다. ② 못 바꾸는 핵심 용어만 본문에
+> 남기고 그 섹션 `ComposedSection.footnotes` 로 *문단 하단 주석* (`{term, explanation}`)
+> 을 단다. 이 둘이 다른 모든 문체 규칙에 앞선다. SSOT: [docs/REPORT_STYLE_GUIDE.md §0.1](docs/REPORT_STYLE_GUIDE.md).
+> 렌더는 `freeform_essay.html` 의 `.freeform-footnotes`, prompt 는 composer SYSTEM_PROMPT
+> 의 "★ 최우선 원칙" 블록.
+
 - WRITE-AP-1~7: 기존 (마크다운 raw / 용어 풀이 / 지도 후행 / 진부 연결어 / 추정 단정 / 모순 봉합 / 서수 모호)
 - WRITE-AP-8: max_tokens 한도로 보고서 본문 중간 절단 (v4.5.4 신설 — 단일 8K 한도 회귀)
 - WRITE-AP-9: 모순 섹션의 정적 메타-라벨 제목 (v5.5.1 신설 — "봉합하지 않은 충돌" 고정 제목이 결론 회피 인상 + 단조로움. composer 동적 `contradictions_heading` + resolution 단락 착지로 서술형 전환)
+- WRITE-AP-10: 전문 용어·영어 표현을 평이화도 주석도 없이 본문에 방치 (v5.5.5 신설 — rate card / rate limit premium 회귀. `ComposedSection.footnotes` 문단 하단 주석 + 평이화 어휘표 신설)
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 

@@ -601,6 +601,28 @@ class ComposedSection(BaseModel):
     # 섹션당 0~2개 권장. 본문 흐름 무관한 사진 박지 말 것.
     images: list[dict] = Field(default_factory=list)
 
+    # v5.5.5 — 전문 용어 주석 (문단 하단 각주). 일반 독자 우선이 본 시스템의
+    # *최우선 가치* — composer 는 전문 용어·영어 표현·업계 은어를 평이한 우리말로
+    # 바꾸고, 뜻을 보존하느라 *불가피하게* 남긴 용어만 그 섹션 본문 하단의 각주로
+    # 풀어준다. 각 dict: {term: str, explanation: str}.
+    #  - term: 본문에 그대로 둔 전문 용어/약어 (예: 'rate limit premium')
+    #  - explanation: 일반 독자가 이해할 한두 문장 풀이 (마크다운 강조 금지)
+    # 비면 각주 블록 자체가 렌더 안 됨. SSOT: docs/REPORT_STYLE_GUIDE.md §0/§2.2.
+    footnotes: list[dict] = Field(default_factory=list)
+
+    @field_validator("footnotes", mode="before")
+    @classmethod
+    def _normalize_footnotes(cls, v):
+        # composer LLM 이 null 또는 비정형 항목을 emit 하는 경우 회복.
+        # term/explanation 둘 다 빈 항목은 drop — 빈 각주 카드 렌더 회귀 차단.
+        if not isinstance(v, list):
+            return []
+        out: list[dict] = []
+        for item in v:
+            if isinstance(item, dict) and (item.get("term") or item.get("explanation")):
+                out.append(item)
+        return out
+
     @model_validator(mode="after")
     def _drop_invalid_charts(self) -> "ComposedSection":
         """v5.2.0 — composer LLM 출력의 차트별 schema guard (production 진입점).
