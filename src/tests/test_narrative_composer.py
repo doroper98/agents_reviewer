@@ -88,6 +88,27 @@ def test_composed_section_minimal_construction():
     assert sec.embedded_charts == []
     assert sec.embedded_blocks == []
     assert sec.cited_claim_ids == []
+    assert sec.footnotes == []
+
+
+def test_composed_section_footnotes_normalized():
+    # v5.5.5 (WRITE-AP-10): 전문 용어 문단 하단 주석. None / 비정형 항목은 정규화.
+    sec = ComposedSection(
+        heading="요금 구조",
+        prose="rate card 를 그대로 둘 수밖에 없는 핵심 용어가 있다.",
+        footnotes=[
+            {"term": "rate limit premium", "explanation": "처리 한도를 높이는 대가로 내는 웃돈."},
+            {},                      # term/explanation 둘 다 없음 → drop
+            {"junk": 1},             # 무관 키 → drop
+            "bad",                   # dict 아님 → drop
+        ],
+    )
+    assert len(sec.footnotes) == 1
+    assert sec.footnotes[0]["term"] == "rate limit premium"
+
+    # composer 가 null 을 emit 해도 빈 list 로 회복 (검증 reject 방지).
+    sec_none = ComposedSection(heading="h", prose="p", footnotes=None)
+    assert sec_none.footnotes == []
 
 
 def test_composed_report_minimal_construction():

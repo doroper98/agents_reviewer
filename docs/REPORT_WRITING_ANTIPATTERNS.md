@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.1
+last_synced_with: v5.5.5
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -228,6 +228,45 @@ border-left 박스* 로 뒤에 붙어, 독자가 판단이 아니라 의심으�
 
 ---
 
+## WRITE-AP-10: 전문 용어·영어 표현을 평이화도 주석도 없이 본문에 방치
+
+**증상**: composer 가 `rate card` / `rate limit premium` 같은 영어 표현·업계 은어·
+전문 용어를 *평이한 우리말로 바꾸지도 않고, 문단 하단 주석으로 풀지도 않고* 본문에
+그대로 박음. 일반 독자가 막힘. WRITE-AP-2 (첫 등장 한 줄 풀이) 의 강화·확장 — 일반
+독자 우선이 본 시스템의 *최우선 가치* (REPORT_STYLE_GUIDE §0.1) 임을 명문화하면서
+신설.
+
+**최초 사례**: analysis_20260525_233612 보고서 (사용자 보고). API 요금 구조를
+다루는 본문에 `rate card` / `rate limit premium` 이 풀이 없이 그대로 노출 — "일반인이
+이해할 수 있는 평이한 용어 + 전문용어 문단 하단 주석" 을 최우선 가치로 요청.
+
+**원인**: 전문 용어 처리가 "첫 등장 시 한 줄 괄호 풀이" (WRITE-AP-2) 한 단계뿐이었고,
+*평이화* 와 *문단 하단 주석* 경로가 SYSTEM_PROMPT·데이터 모델·템플릿에 없었음.
+composer 가 영어 표현을 "정확한 용어" 라는 이유로 그대로 두는 편향.
+
+**검증 체크리스트**:
+- [ ] composer SYSTEM_PROMPT 최상단에 "★ 최우선 원칙 — 일반 독자 우선" 블록이 있고,
+  (1) 평이화 (2) 문단 하단 주석 2단계를 다른 지시보다 *우선* 으로 명시하는가?
+- [ ] `ComposedSection.footnotes` 필드가 있고, composer 가 불가피한 용어를
+  `{term, explanation}` 으로 emit 하는가?
+- [ ] `freeform_essay.html` 이 `sec.footnotes` 를 그 섹션 본문 *하단* 에
+  "용어 풀이" 블록으로 렌더하는가? (`.freeform-footnotes`)
+- [ ] REPORT_STYLE_GUIDE §2.1 어휘표에 영어·은어 항목 (rate card / rate limit
+  premium / 익스포저 / 가이던스 / 헤지 등) 이 있는가?
+- [ ] "평이화 가능한데 주석으로 떠넘기기" 가 아닌가? (먼저 (1), 못 바꿀 때만 (2))
+
+**Fix (v5.5.5)**:
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` — 본문 최상단에 "★ 최우선 원칙"
+  블록 + JSON 스키마에 `footnotes` 추가.
+- `src/models.py:ComposedSection.footnotes` — `list[{term, explanation}]`,
+  None/비정형 항목 정규화 validator.
+- `src/templates/archetypes/freeform_essay.html` — prose 직후 `.freeform-footnotes`
+  블록 (term + explanation) 렌더 + CSS.
+- `docs/REPORT_STYLE_GUIDE.md` §0.1 / §2.1 / §2.2 — 최우선 가치 명문화 + 어휘표
+  확장 + 3단 사다리.
+
+---
+
 ## 체크리스트 — composer prompt / persona 가이드 변경 시
 
 ### prose 형식
@@ -237,6 +276,8 @@ border-left 박스* 로 뒤에 붙어, 독자가 판단이 아니라 의심으�
 - [ ] 서수는 "첫"/"처음으로", "N번" 금지 (WRITE-AP-7)
 
 ### 어휘
+- [ ] **(최우선) 전문 용어·영어 표현·은어를 평이한 우리말로 바꿈 (WRITE-AP-10, §0.1)**
+- [ ] **(최우선) 못 바꾼 핵심 용어는 footnotes 로 문단 하단 주석 (WRITE-AP-10, §2.2)**
 - [ ] 전문 용어 첫 등장 시 한 줄 풀이 (WRITE-AP-2)
 - [ ] 영어 약어 풀어쓰기
 

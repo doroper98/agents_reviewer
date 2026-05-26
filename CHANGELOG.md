@@ -1,12 +1,12 @@
 ---
 tier: 3
-last_synced_with: v5.5.4
+last_synced_with: v5.5.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
   - "src/orchestrator.py:VERSION"
   - "DEVLOG.md (개발 상세 로그)"
-last_review: 2026-05-20
+last_review: 2026-05-26
 ---
 
 # Changelog
@@ -19,6 +19,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## [v5.5.5] — 2026-05-26
+
+### Added — 일반 독자 우선: 전문 용어 평이화 + 문단 하단 주석 (WRITE-AP-10)
+
+**배경**: 사용자 — 보고서에 `rate card` / `rate limit premium` 같은 영어 표현·전문
+용어가 풀이 없이 그대로 노출됨. "일반인이 이해할 수 있는 평이한 용어 + 어려운
+전문용어는 문단 하단 주석" 을 본 시스템의 *최우선 가치* 로 요청.
+
+**변경**:
+- `src/agents/narrative_composer.py:SYSTEM_PROMPT` — 본문 최상단에 "★ 최우선 원칙 —
+  일반 독자 우선" 블록 신설. (1) 전문 용어·영어 표현·은어를 평이한 우리말로 바꾸고
+  (2) 못 바꾸는 핵심 용어만 그 섹션 `footnotes` 로 문단 하단 주석. 다른 모든 문체
+  지시에 우선. JSON 스키마에 `footnotes` 추가.
+- `src/models.py:ComposedSection.footnotes` — `list[{term, explanation}]` 신규 필드.
+  None / 비정형 항목 정규화 validator (빈 각주 카드 회귀 차단).
+- `src/templates/archetypes/freeform_essay.html` — prose 직후 `.freeform-footnotes`
+  "용어 풀이" 블록 (term + explanation) 렌더 + 7테마 토큰 CSS. 비면 안 그림.
+- `docs/REPORT_STYLE_GUIDE.md` — §0.1 (최우선 가치 명문화) + §2.1 어휘표 확장
+  (rate card / rate limit premium / 익스포저 / 가이던스 / 헤지 등) + §2.2 를 3단
+  사다리 (평이화 → 괄호 풀이 → 문단 하단 주석) 로 재구성.
+- `docs/REPORT_WRITING_ANTIPATTERNS.md` — WRITE-AP-10 신설 (append-only).
+- `CLAUDE.md` / `docs/DATA_MODELS.md` — 최우선 가치 + 신규 필드 반영.
+
+**범위**: ReportBundle (`BundleSection`) 은 footnotes 를 싣지 않음 — 계약 무변경
+(additive). 기존 보고서 데이터는 footnotes 빈 list 로 호환.
 
 ## [v5.5.4] — 2026-05-25
 

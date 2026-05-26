@@ -1,13 +1,15 @@
 ---
 tier: 2
-last_synced_with: v5.5.2
+last_synced_with: v5.5.5
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
   - "src/models.py (필드 정의의 SSOT)"
-last_review: 2026-05-25
+last_review: 2026-05-26
 ---
 
+<!-- v5.5.5: ComposedSection 에 footnotes: list[{term, explanation}] 추가 (전문
+     용어 문단 하단 주석 — 일반 독자 우선 최우선 가치). WRITE-AP-10. -->
 <!-- v5.5.1: ComposedReport 에 contradictions_heading: str 추가 (모순 섹션 동적
      제목, composer emit, 비면 '쟁점과 판단' fallback). WRITE-AP-9. -->
 <!-- v5.5.2: ComposedReport.timeline_flow: dict|None (시간 흐름도 composer 윤색,
@@ -30,7 +32,7 @@ flowchart TD
     CTX --> CTXA["ContextAnalysis<br/>(event_name / category / summary / timeline /<br/>key_figures / sources / recommended_persona [v4.3.0])"]
     CTXA --> COMP["NarrativeComposer<br/>(Opus 4.7, v4.5.4 max_tokens fast 12K / std 20K / deep 32K)"]
     COMP --> CR["ComposedReport<br/>(headline / deck / sections[] / closing /<br/>watch_signals[] / contradictions[] /<br/>confidence_score / confidence_summary /<br/>embedded_map [v4.2.0])"]
-    CR --> SECS["ComposedSection (sections 안)<br/>(heading / kicker / lede [v4.5.0] / analogy [v4.5.0] /<br/>fact_grid [v4.5.0] / dropcap [v4.5.0] /<br/>prose / charts [v4.2.0] / pull_quote / cited_claim_ids)"]
+    CR --> SECS["ComposedSection (sections 안)<br/>(heading / kicker / lede [v4.5.0] / analogy [v4.5.0] /<br/>fact_grid [v4.5.0] / dropcap [v4.5.0] / footnotes [v5.5.5] /<br/>prose / charts [v4.2.0] / pull_quote / cited_claim_ids)"]
     CR --> FULL["FullAnalysisResult<br/>(request / context / composed_report /<br/>report_theme / report_url / report_path /<br/>system_version [v4.5.5] / revision [v4.5.5] /<br/>analysis_timestamp / total_duration_seconds)"]
     FULL --> SYNTH["ReportSynthesizer (코드, LLM 0)<br/>→ freeform_essay.html → Cloudflare Pages"]
     FULL --> WL["WatchlistRegistry.register()<br/>→ WatchSignal[] → SQLite"]
@@ -54,7 +56,7 @@ v4.5.7 의 *실제* 데이터 흐름은 `AnalysisRequest → ContextAnalysis →
 |------|------|-----------|
 | `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델). event_description / chat_id / mode. | `src/models.py` |
 | `ContextAnalysis` | ContextAnalyst (Opus 4.7) 출력. event_name / category / summary / timeline / key_figures / sources / **`recommended_persona: dict` (v4.3.0 신설)** | `src/models.py` |
-| `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. | `src/models.py` |
+| `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)** / **`footnotes: list[{term, explanation}]` (v5.5.5 전문 용어 문단 하단 주석)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. | `src/models.py` |
 | `ComposedReport` | NarrativeComposer (Opus 4.7) 단일 호출 산출. headline / deck / sections / closing / **(v4.0.0) watch_signals + contradictions + confidence_summary + confidence_score + (v4.2.0) embedded_map**. v4.0.0 부터 보고서 SSOT. | `src/models.py` |
 | `FullAnalysisResult` | 모든 결과 + 메타데이터 컨테이너. request / context / composed_report / report_url / report_path / report_theme / **(v4.5.5) system_version + revision** / analysis_timestamp / total_duration_seconds. v3 시대 optional 필드 (strategy / blocks / findings / judgment / players / dynamics / chain_reaction / scenarios / visuals) 는 호환 목적으로 보존되나 v4.5.7 호출 경로에서는 채워지지 않는다. | `src/models.py` |
 | `WatchSignal` | 감시 신호 — signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at. `WatchlistRegistry` (SQLite) 에 영구 저장 (Anti-pattern #11). composer 의 `composed_report.watch_signals: list[dict]` → `convert_watch_signals()` 변환. | `src/models.py` |
@@ -98,6 +100,7 @@ composer 가 짠 1개 자유 섹션. `prose` 가 본문이고 시각화 / editor
 - `fact_grid` (v4.5.0): `[{label, value, sublabel?}]` 핵심 수치 격자. v4.5.2 부터 `data-cols` 한 줄 강제 — wrap 없음.
 - `dropcap` (v4.5.0): True 시 prose 첫 글자 dropcap. 보고서당 1~2 섹션 권장 (남용하면 시각 피로).
 - `prose`: 본문 — 마크다운 단락 자유.
+- `footnotes` (v5.5.5): `[{term, explanation}]` 전문 용어 주석. 일반 독자 우선 = 시스템 최우선 가치 (REPORT_STYLE_GUIDE §0.1). composer 가 평이한 우리말로 못 바꾼 *핵심 용어만* emit → `freeform_essay.html` 이 prose 직후 "용어 풀이" 블록 (`.freeform-footnotes`) 으로 *문단 하단* 렌더. None/비정형 항목은 validator 가 정규화·drop.
 - `charts` (v4.2.0): `list[dict]` — `[{type, title, data, note?}]`. 8종 type (`bar / donut / line / gantt / network / stacked / bubble / heatmap`). composer 가 *수치 비교가 본문 이해에 결정적일 때만* 보수적으로 emit.
 - `pull_quote`: 강조 인용 (선택).
 - `cited_claim_ids`: claim 추적성 보존용 (legacy V3 Step 4 호환).

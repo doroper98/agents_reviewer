@@ -57,6 +57,14 @@
 .freeform-analogy-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#B05A38);margin-bottom:8px}
 .freeform-analogy-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16.5px;font-weight:700;line-height:1.4;color:var(--fg-1);margin-bottom:8px}
 .freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2)}
+/* v5.5.5 — 전문 용어 주석 (문단 하단 각주). 일반 독자 우선 = 최우선 가치.
+   본문보다 한 단계 작고 차분한 톤으로, 평이한 말로 못 바꾼 용어만 풀어준다. */
+.freeform-footnotes{margin:16px 0 4px;padding:13px 18px;background:var(--bg-2,rgba(0,0,0,0.06));border-left:3px solid var(--border-soft,rgba(125,98,76,0.40));border-radius:0 6px 6px 0}
+.freeform-footnotes-label{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--fg-3,#A89880);margin-bottom:8px}
+.freeform-footnote{font-size:13px;line-height:1.7;color:var(--fg-3,#A89880);margin-bottom:7px}
+.freeform-footnote:last-child{margin-bottom:0}
+.freeform-footnote-term{font-weight:700;color:var(--fg-2,#D4C4AA)}
+.freeform-footnote-term::after{content:' — '}
 /* v4.5.2 — count 그대로 한 줄 강제 (전 화면). wrap 자체를 차단. */
 .freeform-fact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
 .freeform-fact-grid[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
@@ -249,6 +257,22 @@
     <h2 class="freeform-heading">{{ sec.heading | strip_md }}</h2>
     {% if sec.lede %}<div class="freeform-lede">{{ sec.lede | strip_md }}</div>{% endif %}
     {% if sec.prose %}<div class="freeform-prose{% if sec.dropcap %} has-dropcap{% endif %}">{{ sec.prose | structured }}</div>{% endif %}
+    {# v5.5.5 — 전문 용어 주석. 일반 독자 우선이 본 시스템의 최우선 가치.
+       평이한 말로 못 바꾼 전문 용어만 composer 가 footnotes 로 emit → 그 문단
+       *하단* 에 각주 (용어 풀이) 로 렌더. 비면 블록 자체를 안 그림. #}
+    {% if sec.footnotes %}
+    <div class="freeform-footnotes" role="doc-endnotes">
+      <div class="freeform-footnotes-label">용어 풀이</div>
+      {% for fn in sec.footnotes %}
+        {% if fn.term or fn.explanation %}
+        <div class="freeform-footnote">
+          {% if fn.term %}<span class="freeform-footnote-term">{{ fn.term | strip_md }}</span>{% endif %}
+          {% if fn.explanation %}<span class="freeform-footnote-text">{{ fn.explanation | strip_md }}</span>{% endif %}
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
     {% if sec.fact_grid %}
     <div class="freeform-fact-grid" data-cols="{{ sec.fact_grid | length }}">
       {% for f in sec.fact_grid %}
