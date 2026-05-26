@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.9
+last_synced_with: v5.5.10
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.10] — 2026-05-26
+
+### Fixed — composer 응답 파싱 강건화 ("Extra data" JSON 파싱 실패 회귀)
+
+v5.5.9 의 로그 추가로 실패 원인 확정 — `[narrative_composer] Parse/validation
+failed: Extra data: line 1 column 8 (char 7)`. CLI 응답(returncode 0)에서 추출한
+JSON 객체 *뒤에* 모델이 덧붙인 텍스트가 있어 `json.loads` 가 "Extra data" 로
+죽었다. 기존 `_parse_response` 는 fence split + greedy regex 로 추출 후 통짜
+`json.loads` 라 꼬리 텍스트/스트레이 펜스에 취약.
+
+- `_loads_first_json_object`: `json.JSONDecoder().raw_decode` 로 **첫 완결 JSON
+  객체만** 파싱하고 뒤따르는 extra data 를 무시. 앞 prose / 잘못된 펜스도 첫 `{`
+  부터 디코드.
+- `_parse_response`: 여러 후보(```json 펜스 / raw 전체 / 일반 펜스)를 순서대로
+  raw_decode → 첫 검증 통과 ComposedReport 채택. 실패 시 raw head 200자 로깅.
+- 회귀 테스트 2종 추가 (trailing extra / leading prose). 기존 3종 그대로 통과.
+
+v5.5.9(타임아웃+재시도)와 합쳐, degraded CLI 응답 → 재시도 + 견고 파싱으로
+보고서가 confidence-0 fallback 으로 격하될 확률을 크게 낮춤.
 
 ---
 

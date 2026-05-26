@@ -18,7 +18,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import re
 import shutil
 import time
 from typing import Optional
@@ -897,24 +896,58 @@ class NarrativeComposer:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _parse_response(raw: str) -> ComposedReport | None:
-        """Extract JSON from raw text and validate as ComposedReport."""
-        if "```json" in raw:
-            json_str = raw.split("```json", 1)[1].split("```", 1)[0].strip()
-        elif "```" in raw:
-            json_str = raw.split("```", 1)[1].split("```", 1)[0].strip()
-        else:
-            match = re.search(r"\{[\s\S]*\}", raw)
-            if not match:
-                logger.warning("[narrative_composer] No JSON object in response")
-                return None
-            json_str = match.group()
-        try:
-            data = json.loads(json_str)
-            return ComposedReport.model_validate(data)
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning("[narrative_composer] Parse/validation failed: %s", e)
+    def _loads_first_json_object(s: str) -> dict | None:
+        """문자열에서 첫 완결 JSON 객체를 추출. 앞 prose / 뒤 extra data 허용.
+
+        v5.5.10 — `json.loads` 는 "Extra data" (객체 뒤 텍스트) 에 죽지만
+        `raw_decode` 는 첫 완결 값만 파싱하고 나머지를 무시한다. degraded 응답
+        (JSON + 꼬리 텍스트, 또는 prose + JSON) 회귀 대응.
+        """
+        s = (s or "").strip()
+        if not s:
             return None
+        try:
+            obj = json.loads(s)
+            return obj if isinstance(obj, dict) else None
+        except json.JSONDecodeError:
+            pass
+        start = s.find("{")
+        if start == -1:
+            return None
+        try:
+            obj, _end = json.JSONDecoder().raw_decode(s, start)
+            return obj if isinstance(obj, dict) else None
+        except json.JSONDecodeError:
+            return None
+
+    @staticmethod
+    def _parse_response(raw: str) -> ComposedReport | None:
+        """raw 텍스트에서 ComposedReport JSON 추출 + 검증.
+
+        v5.5.10 — fence split / greedy regex 가 깨진 응답("Extra data" 등) 에
+        취약했음. 여러 후보(```json 펜스 / raw 전체 / 일반 펜스)를 raw_decode 로
+        시도해 첫 검증 통과 객체를 채택. trailing extra / 앞 prose / 잘못된
+        스트레이 펜스에 견고.
+        """
+        candidates: list[str] = []
+        if "```json" in raw:
+            candidates.append(raw.split("```json", 1)[1].split("```", 1)[0])
+        candidates.append(raw)  # 펜스 없는 본문 / 펜스 추출 실패 / trailing extra 대비
+        if "```" in raw:
+            candidates.append(raw.split("```", 1)[1].split("```", 1)[0])
+        for cand in candidates:
+            obj = NarrativeComposer._loads_first_json_object(cand)
+            if obj is None:
+                continue
+            try:
+                return ComposedReport.model_validate(obj)
+            except Exception:  # noqa: BLE001 — 다음 후보 시도
+                continue
+        logger.warning(
+            "[narrative_composer] No parseable ComposedReport "
+            "(raw=%d chars, head=%r)", len(raw), raw[:200],
+        )
+        return None
 
     @staticmethod
     def _validate_references(

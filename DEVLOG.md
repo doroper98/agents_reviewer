@@ -1285,3 +1285,11 @@ daily briefing "멈춤" 문의 — 코드상 정상. `config.daily_briefing_enab
 fix: `_call_cli(timeout_s)` + `asyncio.wait_for` (mode 별 fast 240/standard 360/deep 540s, 초과 시 proc.kill + RuntimeError). `compose_unified` 에 bounded 재시도(`COMPOSE_MAX_ATTEMPTS=2`, backoff 4s*attempt) — 호출 실패/timeout *및* 파싱 None 양쪽에서 재시도. returncode 0 + 파싱 불가 회귀라 재시도가 안전(사용량 한도 악화 X). 파싱 실패 시 `raw[:300]` head 로깅 추가 — 다음 회귀 때 모델 반환물(잘림 vs prose vs 스키마)을 즉시 구분. 성공 경로 byte-equal(`_parse_response` 무변경, 기존 테스트 무영향). 동일 무-타임아웃 패턴이 base.py:121(context_analyst) / report_synthesizer.py:712,957 에도 있음 — 본 커밋은 실제 실패한 composer 만, 나머지는 후속 검토.
 
 미해결: 5,888자 응답이 잘린 JSON(JSONDecodeError)인지 prose(No JSON object)인지 — 사용자에게 `sed -n '2265,2272p' bot.log` 요청(파싱 분기 확정용). 잘림이면 향후 partial-JSON 복구 또는 deep 분할 검토.
+
+## v5.5.10 — composer 파싱 강건화 ("Extra data" fix, 2026-05-26)
+
+사용자 로그 제공으로 v5.5.9 의 "미해결" 확정: `Parse/validation failed: Extra data: line 1 column 8 (char 7)`. = `json.JSONDecodeError` "Extra data" — 추출된 json_str 의 첫 완결 JSON 값(앞 7자) *뒤에* 추가 텍스트가 붙어 `json.loads` 가 죽음. 단순 "느려서 잘림"이 아니라 모델이 JSON 뒤에 잡설을 덧붙였거나 스트레이 펜스로 추출이 깨진 케이스. 기존 `_parse_response` 는 ```json 펜스 split → 없으면 일반 ``` split → 없으면 greedy `\{[\s\S]*\}` regex 후 통짜 `json.loads` 라 trailing extra 에 취약.
+
+fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부터 `json.JSONDecoder().raw_decode` 로 **첫 완결 객체만** 파싱(뒤 extra 무시, 앞 prose 스킵). `_parse_response` 는 후보 3종(```json 펜스 / raw 전체 / 일반 펜스)을 순서대로 시도해 첫 검증 통과 ComposedReport 채택, 실패 시 raw head 200자 로깅. `re` import 제거(미사용). 회귀 테스트 2종 추가(trailing extra / leading prose), 기존 3종(json_block / bare_json[sections=[] 도 통과해야 함 → sections-비었음 가드 금지] / invalid) 보존.
+
+한계: "작은 JSON 파편 → 그 뒤 진짜 보고서" 순서면 raw_decode 가 파편만 잡아 validate 실패 → 다음 후보 → None 가능. 그러나 대부분의 "Extra data" 는 진짜 객체 *뒤* 꼬리 텍스트라 본 fix 로 해결. v5.5.9 재시도 + 본 파싱강건 + head 로깅 3중으로 confidence-0 fallback 확률 대폭 감소.
