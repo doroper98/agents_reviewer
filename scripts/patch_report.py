@@ -32,6 +32,22 @@
       composed_report 의 텍스트 필드 교체 (--deck/--headline/--closing/
       --confidence-summary). 한국어 따옴표 포함 시 셸 escape 주의.
 
+  python scripts/patch_report.py 20260525_233612 \
+      --replace "rate card=공시 요금표(기본 단가표)" \
+      --replace "rate limit premium=처리 한도를 높이는 대가로 내는 웃돈"
+      전문 용어·영어 표현을 평이한 우리말로 일괄 치환 (LLM 0). 보고서 전체의
+      모든 텍스트 필드 (headline/deck/closing/섹션 prose·heading·lede·pull_quote/
+      차트 title·subtitle·note·takeaway/모순·감시신호/각주) 를 훑어 OLD→NEW 치환.
+      대소문자 구분. 여러 번 지정 가능. --dry-run 으로 먼저 매치 수 확인 권장.
+
+  python scripts/patch_report.py 20260525_233612 \
+      --add-footnote "1:rate limit premium=처리 한도를 평소보다 높여 달라고 요청할 때 추가로 내는 웃돈."
+      특정 섹션(0-based) 본문 하단에 용어 풀이 각주 추가. "SEC:용어=설명" 형식.
+      평이하게 못 바꾸는 핵심 용어를 본문에 남길 때 (WRITE-AP-10, v5.5.5).
+
+  python scripts/patch_report.py 20260525_233612 --replace "rate card=공시 요금표" --dry-run
+      치환/추가를 *적용하지 않고* 매치 수만 출력 (JSON·배포 변경 X). 검증용.
+
   python scripts/patch_report.py 20260502_154823 --edit
       $EDITOR (vim/nano) 로 JSON 직접 편집
 
@@ -130,6 +146,29 @@ def parse_args() -> argparse.Namespace:
         "--confidence-summary",
         metavar="TEXT",
         help="composed_report.confidence_summary 교체.",
+    )
+    p.add_argument(
+        "--replace",
+        metavar="OLD=NEW",
+        action="append",
+        default=[],
+        help="전문 용어·영어 표현을 평이한 우리말로 일괄 치환 (LLM 0). 보고서 전체의 "
+             "모든 텍스트 필드를 훑어 OLD→NEW 치환. 대소문자 구분. 여러 번 가능. "
+             "예: --replace \"rate card=공시 요금표\". --dry-run 으로 먼저 검증 권장.",
+    )
+    p.add_argument(
+        "--add-footnote",
+        metavar="SEC:TERM=EXPLANATION",
+        action="append",
+        default=[],
+        help="특정 섹션(0-based) 본문 하단에 용어 풀이 각주 추가 (v5.5.5). "
+             "예: --add-footnote \"1:rate limit premium=처리 한도를 높일 때 내는 웃돈.\".",
+    )
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="--replace / --add-footnote 를 *적용하지 않고* 매치 수만 출력 "
+             "(JSON·배포 변경 X). 치환 검증용.",
     )
     p.add_argument(
         "--edit",
@@ -296,6 +335,123 @@ def patch_set_text(result: FullAnalysisResult, field: str, value: str) -> bool:
     return True
 
 
+def patch_replace_terms(
+    result: FullAnalysisResult,
+    replacements: list[tuple[str, str]],
+    dry_run: bool,
+) -> bool:
+    """전문 용어·영어 표현을 평이한 우리말로 일괄 치환 (LLM 0, 결정론).
+
+    보고서의 *모든* 텍스트 필드 (headline/deck/closing/confidence_summary/
+    contradictions_heading + 섹션 heading/kicker/lede/prose/pull_quote +
+    analogy/fact_grid + charts 의 title/subtitle/note/takeaway/source +
+    contradictions/watch_signals + footnotes) 를 훑어 OLD→NEW substring 치환.
+    dry_run 이면 매치 수만 집계하고 텍스트는 안 바꿈. WRITE-AP-10 (v5.5.5).
+    """
+    cr = result.composed_report
+    if not cr:
+        print("[patch] composed_report 없음", file=sys.stderr)
+        return False
+    counts: dict[str, int] = {old: 0 for old, _ in replacements}
+
+    def sub(text: str | None) -> str | None:
+        if not text:
+            return text
+        for old, new in replacements:
+            c = text.count(old)
+            if c:
+                counts[old] += c
+                if not dry_run:
+                    text = text.replace(old, new)
+        return text
+
+    cr.headline = sub(cr.headline)
+    cr.deck = sub(cr.deck)
+    cr.closing = sub(cr.closing)
+    cr.confidence_summary = sub(cr.confidence_summary)
+    cr.contradictions_heading = sub(cr.contradictions_heading)
+    for c in (cr.contradictions or []):
+        for k in ("side_a", "side_b", "evidence", "resolution"):
+            if c.get(k):
+                c[k] = sub(c[k])
+    for w in (cr.watch_signals or []):
+        for k in ("signal", "description", "indicates"):
+            if w.get(k):
+                w[k] = sub(w[k])
+    for sec in (cr.sections or []):
+        sec.heading = sub(sec.heading)
+        sec.kicker = sub(sec.kicker)
+        sec.lede = sub(sec.lede)
+        sec.prose = sub(sec.prose)
+        sec.pull_quote = sub(sec.pull_quote)
+        if sec.analogy:
+            for k in ("title", "body"):
+                if sec.analogy.get(k):
+                    sec.analogy[k] = sub(sec.analogy[k])
+        for f in (sec.fact_grid or []):
+            for k in ("label", "value", "sublabel"):
+                if f.get(k):
+                    f[k] = sub(f[k])
+        for ch in (sec.charts or []):
+            for k in ("title", "subtitle", "note", "takeaway", "source"):
+                if ch.get(k):
+                    ch[k] = sub(ch[k])
+        for fn in (sec.footnotes or []):
+            for k in ("term", "explanation"):
+                if fn.get(k):
+                    fn[k] = sub(fn[k])
+
+    total = sum(counts.values())
+    tag = "[dry-run] " if dry_run else ""
+    for old, new in replacements:
+        print(f"[patch] {tag}--replace '{old}' → '{new}': {counts[old]} matches")
+    print(f"[patch] {tag}총 {total} matches")
+    return (total > 0) and (not dry_run)
+
+
+def patch_add_footnote(
+    result: FullAnalysisResult, spec: str, dry_run: bool
+) -> bool:
+    """섹션 본문 하단 용어 풀이 각주 추가. spec = "SEC:term=explanation"."""
+    cr = result.composed_report
+    if not cr or not cr.sections:
+        print("[patch] composed_report.sections 가 비어있음", file=sys.stderr)
+        return False
+    try:
+        sec_part, rest = spec.split(":", 1)
+        sec_i = int(sec_part)
+        term, explanation = rest.split("=", 1)
+    except ValueError:
+        print(
+            f"[patch] --add-footnote 형식 오류: {spec} "
+            f'(예: "1:rate limit premium=처리 한도를 높일 때 내는 웃돈.")',
+            file=sys.stderr,
+        )
+        return False
+    term, explanation = term.strip(), explanation.strip()
+    if sec_i < 0 or sec_i >= len(cr.sections):
+        print(
+            f"[patch] section_idx {sec_i} 범위 초과 (0~{len(cr.sections) - 1})",
+            file=sys.stderr,
+        )
+        return False
+    sec = cr.sections[sec_i]
+    if any(fn.get("term") == term for fn in (sec.footnotes or [])):
+        print(f"[patch] 섹션 [{sec_i}] 에 이미 '{term}' 각주 있음 — skip")
+        return False
+    tag = "[dry-run] " if dry_run else ""
+    print(
+        f"[patch] {tag}섹션 [{sec_i}] '{sec.heading[:30]}' 각주 추가: "
+        f"{term} — {explanation[:40]}"
+    )
+    if dry_run:
+        return False
+    sec.footnotes = list(sec.footnotes or []) + [
+        {"term": term, "explanation": explanation}
+    ]
+    return True
+
+
 def show_report(result: FullAnalysisResult) -> None:
     cr = result.composed_report
     if not cr:
@@ -315,6 +471,12 @@ def show_report(result: FullAnalysisResult) -> None:
         )
         print(f"  [{i}] {sec.heading[:50]}")
         print(f"      charts: {chart_summary}")
+        fns = sec.footnotes or []
+        if fns:
+            print(
+                "      footnotes: "
+                + ", ".join((fn.get("term") or "")[:20] for fn in fns)
+            )
     if cr.embedded_map:
         emap = cr.embedded_map
         print("[show] embedded_map:")
@@ -438,6 +600,30 @@ async def main() -> int:
             if not patch_set_text(result, field, val):
                 return 1
             mutated = True
+
+    # v5.5.5 — 전문 용어 평이화 (--replace) + 문단 하단 각주 (--add-footnote).
+    if args.replace:
+        try:
+            pairs = [tuple(x.split("=", 1)) for x in args.replace]
+            for pr in pairs:
+                if len(pr) != 2:
+                    raise ValueError(pr)
+        except ValueError:
+            print(
+                f'[patch] --replace 형식 오류: {args.replace} (예: "OLD=NEW")',
+                file=sys.stderr,
+            )
+            return 1
+        if patch_replace_terms(result, pairs, args.dry_run):
+            mutated = True
+    for spec in args.add_footnote:
+        if patch_add_footnote(result, spec, args.dry_run):
+            mutated = True
+
+    # --dry-run 은 검증만 — JSON/재렌더/배포 일절 변경 X.
+    if args.dry_run:
+        print("[patch] --dry-run: 변경 적용 안 함 (JSON·배포 그대로).")
+        return 0
 
     # v5.2.7 — 시계열 차트 takeaway 만 재계산 (모든 차트 동일 takeaway +
     # 소수점 절단 회귀 retro fix). composer-emitted 비-시계열 차트는 skip.
