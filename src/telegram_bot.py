@@ -269,6 +269,13 @@ class TelegramBot:
             await update.message.reply_text("보고서가 없습니다.")
             return
 
+        admin_token = (getattr(self.config, "admin_index_token", "") or "").strip()
+        if admin_token and project:
+            await update.message.reply_text(
+                "🔖 즐겨찾기용 전체 목록 페이지 (비공개):\n"
+                f"https://{project}.pages.dev/admin-{admin_token}.html"
+            )
+
         lines = [f"📁 전체 보고서 {len(files)}건 (최근순):\n"]
         for fp in files:
             fname = os.path.basename(fp)

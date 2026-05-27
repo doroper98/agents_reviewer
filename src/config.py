@@ -17,6 +17,10 @@ class Config(BaseSettings):
     cloudflare_api_token: str = ""
     cloudflare_project_name: str = "analysis-reports"
     report_output_dir: str = "reports"
+    # v5.6.3 — 관리자 비공개 목록 페이지 토큰. 설정 시 admin-{token}.html 에 전체
+    # 보고서 목록(토큰 URL 포함)을 생성 — 관리자만 아는 *고정* unlisted 주소(즐겨찾기용).
+    # 미설정 시 미생성 (공개 index 는 목록 없음, /reports 로 대체). 긴 난수 권장.
+    admin_index_token: str = ""
     model_name: str = "claude-opus-4-6"
     model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True

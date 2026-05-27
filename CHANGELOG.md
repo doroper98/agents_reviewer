@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.6.2
+last_synced_with: v5.6.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.6.3] — 2026-05-26
+
+### Added — 관리자 비공개 목록 페이지 (즐겨찾기용 고정 unlisted 주소)
+
+v5.6.2 에서 공개 목록을 없앤 뒤, 관리자가 웹에서 전체 목록을 *즐겨찾기* 로 보고
+싶다는 요청. 비번 없이 일관되게 — *고정 난수* 주소의 비공개 페이지로 해결.
+
+- `config.admin_index_token` (env `ADMIN_INDEX_TOKEN`) 설정 시 `_generate_index` 가
+  공개 `index.html`(목록 없음) **외에** `admin-{token}.html` 도 생성 — 전체 보고서
+  목록 + 토큰 URL 테이블. 토큰이 고정이라 한 번 북마크하면 주소 불변.
+- 미설정 시 admin 페이지 미생성 (기존 동작). 두 페이지 모두 `noindex,nofollow`.
+- `/reports` 가 admin 페이지 URL 을 상단에 함께 안내 (토큰 설정 시).
+
+> 설정: `.env` 에 `ADMIN_INDEX_TOKEN=<긴 난수>` (예: `openssl rand -hex 8`).
+> 북마크 주소 = `https://<project>.pages.dev/admin-<token>.html`. 토큰을 모르면
+> 접근 불가 (unlisted). 진짜 인증이 필요하면 Cloudflare Access 권장.
 
 ---
 
