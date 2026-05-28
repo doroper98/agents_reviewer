@@ -12,9 +12,10 @@ import shutil
 from collections import deque
 from dataclasses import dataclass, field
 
-from telegram import Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
+    CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
     MessageHandler,
@@ -23,7 +24,7 @@ from telegram.ext import (
 
 from src.config import Config
 from src.orchestrator import Orchestrator
-from src.models import MAX_CHAIN_DEPTH, ParentContext, WatchSignal
+from src.models import ParentContext, WatchSignal
 from src.watchlist import WatchlistRegistry, run_monitor_loop
 from src.watchlist.monitor import format_telegram_alert
 from src.scheduler import BriefingSubscriberRegistry, run_daily_briefing_loop
@@ -388,7 +389,13 @@ class TelegramBot:
             logger.warning("[telegram_bot] send_message failed for chat=%d: %s", chat_id, e)
 
     async def _notify_signal_fired(self, signal: WatchSignal) -> None:
-        """신호 발화 시 ①텔레그램 알림 ②chain_depth < MAX 면 후속 분석 자동 enqueue (v5.1.1)."""
+        """신호 발화 시 텔레그램 알림 송신. v5.5.6 부터 알림에 [▶ 후속 보고 생성]
+        InlineKeyboardButton 1개를 동봉 — 사용자가 누르면 ``_followup_callback`` 이
+        ParentContext 를 조립해 후속 분석을 수동 활성화한다.
+
+        자동 후속 분석은 v5.4.9 에서 비활성화 (``MAX_CHAIN_DEPTH=0``). 활성화는
+        오로지 본 버튼 (또는 ``/fire`` 이후 본 알림 경유) 으로만 일어난다.
+        """
         if self._app is None:
             logger.warning("[telegram_bot] notify called before app init; skipping")
             return
@@ -399,46 +406,32 @@ class TelegramBot:
             )
             return
         text = format_telegram_alert(signal, parent_title=signal.parent_report_id)
-        await self._send_to_chat(signal.parent_chat_id, text)
-
-        # v5.1.1: 자동 후속 분석 트리거 — 부모(0)/자식(1) 발화까지만 자동 후속, 손자(2)+ 차단.
+        keyboard = InlineKeyboardMarkup([[
+            InlineKeyboardButton(
+                "▶ 후속 보고 생성",
+                callback_data=f"followup:{signal.signal_id}",
+            ),
+        ]])
         try:
-            await self._maybe_enqueue_followup(signal)
+            await self._app.bot.send_message(
+                chat_id=signal.parent_chat_id,
+                text=text,
+                reply_markup=keyboard,
+            )
         except Exception as e:
             logger.warning(
-                "[telegram_bot] followup enqueue error for %s: %s",
+                "[telegram_bot] notify send failed for %s: %s",
                 signal.signal_id, e,
             )
 
-    async def _maybe_enqueue_followup(self, signal: WatchSignal) -> None:
-        """발화된 신호로부터 ParentContext 를 조립하고 후속 분석을 큐에 추가 (v5.1.1).
+    async def _activate_followup(self, signal: WatchSignal) -> None:
+        """발화된 신호로부터 ParentContext 를 조립하고 후속 분석을 enqueue (v5.5.6).
 
-        ``signal.chain_depth`` 가 부모의 깊이. 자식 깊이는 +1. ``>= MAX_CHAIN_DEPTH``
-        면 후속 자동 생성을 스킵하고 안내만 송신.
+        v5.1.1 의 ``_maybe_enqueue_followup`` 에서 ``chain_depth`` 가드를 제거한 형태.
+        사용자가 ``_followup_callback`` 의 [▶ 후속 보고 생성] 버튼을 누른 결과로만
+        호출되므로 자동/수동 구분이 불필요. 호출자(버튼 콜백)는 이미 권한 검증을
+        마친 상태.
         """
-        next_depth = signal.chain_depth + 1
-        if next_depth >= MAX_CHAIN_DEPTH:
-            logger.info(
-                "[telegram_bot] signal %s at chain_depth=%d; skip auto-followup (cap=%d)",
-                signal.signal_id, signal.chain_depth, MAX_CHAIN_DEPTH,
-            )
-            # v5.4.9: MAX_CHAIN_DEPTH=0 이라 모든 신호가 여기로 — 메시지에서 depth
-            # 표기는 의미 없으므로 "자동 후속 분석 기능 비활성화" 로 단순화.
-            if MAX_CHAIN_DEPTH == 0:
-                msg = (
-                    f"ℹ️ 신호 `{signal.signal_id}` 발화 — 자동 후속 분석 "
-                    f"기능이 비활성화되어 있습니다. 필요 시 수동으로 분석을 "
-                    f"요청하세요."
-                )
-            else:
-                msg = (
-                    f"ℹ️ 신호 `{signal.signal_id}` 의 후속 보고서는 체인 상한"
-                    f"(depth={MAX_CHAIN_DEPTH})에 도달해 자동 생성하지 않습니다. "
-                    f"필요 시 수동으로 분석을 요청하세요."
-                )
-            await self._send_to_chat(signal.parent_chat_id, msg)
-            return
-
         meta = self.watchlist_registry.get_report_meta(signal.parent_report_id) or {}
         parent_event_desc = meta.get("event_description", "")
         parent_scenarios = meta.get("scenarios", [])
@@ -459,12 +452,6 @@ class TelegramBot:
             f"원 이벤트: {parent_event_short}"
         )
 
-        await self._send_to_chat(
-            signal.parent_chat_id,
-            f"🔄 후속 분석 자동 시작 — 부모: {signal.parent_report_id}\n"
-            f"  발화 신호: {signal.description}",
-        )
-
         if self._is_analyzing:
             position = len(self._queue) + 1
             self._queue.append(QueueItem(
@@ -476,14 +463,68 @@ class TelegramBot:
             ))
             await self._send_to_chat(
                 signal.parent_chat_id,
-                f"📋 후속 분석 대기열 추가 ({position}번째)",
+                f"📋 후속 분석 대기열 추가 ({position}번째) — 신호: {signal.description}",
             )
         else:
+            await self._send_to_chat(
+                signal.parent_chat_id,
+                f"🔄 후속 분석 시작 — 부모: {signal.parent_report_id}\n"
+                f"  발화 신호: {signal.description}",
+            )
             await self._run_analysis(
                 update=None,
                 event_text=event_description,
                 chat_id=signal.parent_chat_id,
                 parent_context=parent_context,
+            )
+
+    async def _followup_callback(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``followup:<signal_id>`` callback_data 를 받는 [▶ 후속 보고 생성] 버튼 핸들러
+        (v5.5.6). 권한 검증 → 버튼 비활성화 → ``_activate_followup`` 위임.
+        """
+        query = update.callback_query
+        if query is None or query.data is None:
+            return
+        await query.answer()  # spinner 즉시 해제 (Telegram 요구사항).
+
+        if not query.data.startswith("followup:"):
+            return
+        signal_id = query.data[len("followup:"):]
+        chat_id = update.effective_chat.id if update.effective_chat else 0
+
+        if not self._is_authorized(chat_id):
+            await query.answer(text="Unauthorized.", show_alert=True)
+            return
+
+        signal = self.watchlist_registry.get(signal_id)
+        if signal is None:
+            try:
+                await query.edit_message_reply_markup(reply_markup=None)
+            except Exception:
+                pass
+            await self._send_to_chat(chat_id, f"신호를 찾을 수 없음: {signal_id}")
+            return
+        if signal.parent_chat_id and signal.parent_chat_id != chat_id:
+            await query.answer(text="권한 없음 (다른 채팅의 신호).", show_alert=True)
+            return
+
+        # 버튼 비활성화 — 중복 클릭 방지. 메시지 본문은 보존.
+        try:
+            await query.edit_message_reply_markup(reply_markup=None)
+        except Exception as e:
+            logger.warning(
+                "[telegram_bot] reply_markup clear failed for %s: %s",
+                signal_id, e,
+            )
+
+        try:
+            await self._activate_followup(signal)
+        except Exception as e:
+            logger.exception("[telegram_bot] followup activation failed for %s", signal_id)
+            await self._send_to_chat(
+                chat_id, f"❌ 후속 분석 활성화 실패: {str(e)[:200]}",
             )
 
     # ------------------------------------------------------------------
@@ -934,6 +975,10 @@ class TelegramBot:
         app.add_handler(CommandHandler("briefing_on", self._briefing_on_command))
         app.add_handler(CommandHandler("briefing_off", self._briefing_off_command))
         app.add_handler(CommandHandler("briefing_status", self._briefing_status_command))
+        # v5.5.6 — [▶ 후속 보고 생성] 버튼 콜백.
+        app.add_handler(
+            CallbackQueryHandler(self._followup_callback, pattern=r"^followup:")
+        )
         app.add_handler(
             MessageHandler(
                 filters.TEXT & ~filters.COMMAND, self._message_handler
