@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.6.3
+last_synced_with: v5.6.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.6.4] — 2026-05-29
+
+### Fixed — 발행일과 사건일이 다를 때 시점 앵커 누락 (WRITE-AP-11)
+
+5/29 발행 데일리 브리핑이 본문 첫 줄부터 "5월 26일 코스피 8,047 신고가..." 로
+시작하고 "같은 시각, 환율 7거래일 연속..." 로 지속 상태를 사건일에 고정 → 독자에
+게 "오늘 보고서인데 갑자기 사흘 전?" 인지부조화 회귀.
+
+원인: composer SYSTEM_PROMPT 에 "오늘=발행일" anchor 가 없었고 payload 에도
+`publication_date` 가 없어 composer 가 today 를 모름. context.date 는 사건일이
+박혀와 본문 시제가 그날에 고정됐다. 데일리 브리핑 prompt 가 ContextAnalyst 에는
+today 를 줬지만 composer 단까지 전달이 끊겨 있었다.
+
+- `_build_unified_payload` 에 `publication_date` (datetime.now %Y-%m-%d) 주입.
+- SYSTEM_PROMPT 에 **=== 시점 앵커링 ===** 신설:
+  · 첫 단락에 시간 거리를 발행일 시점 표현으로 명시 ('지난 26일' / '사흘 전').
+  · '같은 시각' / '같은 날' 표현 주의 — 시점을 사건일에 고정시킴.
+  · 지속 상태(누적/연속)는 *발행일 현재* 기준으로 프레이밍.
+  · publication_date == event.date 면 적용 불필요.
+  · broadcast_summary 에도 동일 적용.
+
+docs: WRITE-AP-11 등록(REPORT_WRITING_ANTIPATTERNS.md) + CLAUDE.md 카운트 11.
 
 ---
 

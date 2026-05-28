@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime as _dt
 import json
 import logging
 import shutil
@@ -88,6 +89,20 @@ SYSTEM_PROMPT = (
     "  번호 뉘앙스 (WRITE-AP-7).\n"
     "- **짧은 문단**: 한 문단 3~5 문장. 단락 사이 ``\\n\\n``.\n"
     "- **모순 봉합 금지**: 관점 충돌은 ``contradictions`` 에 명시 (Anti-pattern #5).\n\n"
+    "=== 시점 앵커링 — 발행일 vs 사건일 (v5.6.4, WRITE-AP-11) ===\n"
+    "입력의 ``publication_date`` 는 *이 보고서가 쓰이는 날* (오늘) 이고, ``event.date`` 는\n"
+    "분석 대상 사건이 일어난 날이다. 둘이 같지 않으면 글의 시점이 흐려져 독자가\n"
+    "'왜 갑자기 며칠 전 얘기?' 하는 인지부조화가 생긴다. 다음을 지켜라:\n"
+    "- **첫 단락**에 시간 거리를 명시: '지난 26일' / '사흘 전' / '두 주 전' /\n"
+    "  '지난주 화요일' 등 — 발행일에서 바라본 표현. 'YYYY년 M월 D일' 만 덩그러니\n"
+    "  쓰면 시점이 그날에 못 박힌 듯 들린다.\n"
+    "- '같은 시각' / '같은 날' / '같은 시점' 표현 주의 — 시점을 사건일에 고정시킨다.\n"
+    "  지속 상태 (환율 누적, '7거래일 연속' 등) 는 *발행일 현재* 기준으로 프레이밍:\n"
+    "  예 — '오늘(5/29)까지 환율은 7거래일째 1,500원 위' (5/29 = publication_date).\n"
+    "- 결론·시사점은 *발행일 시점의 판단* 으로 쓴다. '지금 시점에서' 같은 명시는\n"
+    "  자연스러우면 어휘로만 — 강제 아님.\n"
+    "- ``publication_date == event.date`` 면 위 규칙 적용 불필요.\n"
+    "- 본 규칙은 본문 prose 뿐 아니라 ``broadcast_summary`` 에도 그대로 적용.\n\n"
     "=== 분석 깊이 (mode 인자에 따라) ===\n"
     "- fast:     핵심만 간결. 3~4 섹션. 시나리오 2~3개. 모순 명시 선택.\n"
     "- standard: 다각도 4~6 섹션. 시나리오 3~5개. 모순 1~2건 명시 권장.\n"
@@ -655,8 +670,11 @@ class NarrativeComposer:
         v5.1.1: ``parent_context`` 가 있으면 ``followup`` 필드 추가 — composer 가 부모
         시나리오 / 발화 신호를 인지하고 분기 잇기 작업 수행.
         """
+        # v5.6.4 — 발행일(오늘) 주입. composer 가 event.date 와 비교해 시간 거리를
+        # 본문에 명시할 수 있게 (WRITE-AP-11). 시스템 로컬 날짜(VM=KST 가정).
         payload: dict = {
             "mode": mode,
+            "publication_date": _dt.datetime.now().strftime("%Y-%m-%d"),
             "event": {
                 "name": context.event_name,
                 "category": context.category,

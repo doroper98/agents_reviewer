@@ -218,7 +218,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 10개 패턴 누적:
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 11개 패턴 누적:
 
 > **★ 최우선 가치 — 일반 독자 우선 (v5.5.5).** 보고서는 *비전문가* 가 읽는다. ①
 > 전문 용어·영어 표현·은어는 평이한 우리말로 바꾼다. ② 못 바꾸는 핵심 용어만 본문에
@@ -231,6 +231,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - WRITE-AP-8: max_tokens 한도로 보고서 본문 중간 절단 (v4.5.4 신설 — 단일 8K 한도 회귀)
 - WRITE-AP-9: 모순 섹션의 정적 메타-라벨 제목 (v5.5.1 신설 — "봉합하지 않은 충돌" 고정 제목이 결론 회피 인상 + 단조로움. composer 동적 `contradictions_heading` + resolution 단락 착지로 서술형 전환)
 - WRITE-AP-10: 전문 용어·영어 표현을 평이화도 주석도 없이 본문에 방치 (v5.5.5 신설 — rate card / rate limit premium 회귀. `ComposedSection.footnotes` 문단 하단 주석 + 평이화 어휘표 신설)
+- WRITE-AP-11: 발행일과 사건일이 다른데 본문에 시점 앵커 없음 (v5.6.4 신설 — 5/29 발행 보고서 본문이 "5월 26일 코스피..." 로 시작 + "같은 시각, 환율 7거래일 연속..." 로 지속 상태를 사건일에 고정 → 인지부조화 회귀. `_build_unified_payload` 에 `publication_date` 주입 + SYSTEM_PROMPT 의 `=== 시점 앵커링 ===` 섹션으로 첫 단락 시간 거리 명시 + '같은 시각' 금지 + 지속 상태는 발행일 현재 기준 프레이밍 강제)
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 

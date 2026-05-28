@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.5
+last_synced_with: v5.6.4
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -264,6 +264,38 @@ composer 가 영어 표현을 "정확한 용어" 라는 이유로 그대로 두�
   블록 (term + explanation) 렌더 + CSS.
 - `docs/REPORT_STYLE_GUIDE.md` §0.1 / §2.1 / §2.2 — 최우선 가치 명문화 + 어휘표
   확장 + 3단 사다리.
+
+---
+
+## WRITE-AP-11: 발행일과 사건일이 다른데 본문에 시점 앵커가 없음 (v5.6.4 신설)
+
+**증상**: 보고서 발행 시점(예: 5/29)이 분석 대상 사건 발생일(예: 5/26)과 다른데
+본문이 그 시간 거리를 명시 안 함 → 첫 단락부터 "5월 26일 코스피는 8,047 신고가"
+처럼 사건일을 단독으로 박아 독자에게 "오늘 보고서인데 왜 갑자기 며칠 전 얘기?"
+인지부조화. 더 미묘한 형태 — "같은 시각, 원/달러 환율은 7거래일 연속 1,500원
+위에 머물렀다" 처럼 *지속 상태* 를 사건일 시점으로 묶어버려, 사실은 발행일 현재
+누적된 상태인데도 5/26 에 멈춰 있는 듯이 들림. 데일리 브리핑(매일 06:00 KST)
+에서 빈발 — 분석 윈도우는 어제~오늘이라도 *원인 사건* 이 며칠 전이면 발생.
+
+**원인**: composer SYSTEM_PROMPT 에 "오늘=발행일" anchor 가 없고, payload 에도
+publication_date 가 없어 composer 가 today 를 모름. `context.date` 는 사건일이
+박혀와 본문 시제가 그날에 고정됨. 데일리 브리핑 prompt 는 "오늘"을 ContextAnalyst
+에게 줬지만 composer 단까지 전달이 안 됐다.
+
+**Fix (v5.6.4)**:
+
+- `_build_unified_payload` 가 `publication_date` (`datetime.now().strftime("%Y-%m-%d")`)
+  를 payload 에 주입. composer 가 today 와 event.date 를 직접 비교 가능.
+- SYSTEM_PROMPT 에 **=== 시점 앵커링 ===** 섹션 신설:
+  · 첫 단락에 시간 거리를 발행일 시점 표현으로 명시 ('지난 26일' / '사흘 전').
+  · '같은 시각' / '같은 날' 표현 주의 — 시점을 사건일에 고정시킴.
+  · 지속 상태(누적/연속)는 *발행일 현재* 기준 ('5/29 현재 7거래일째 1500원 위').
+  · 결론·시사점도 발행일 시점의 판단.
+  · publication_date == event.date 면 적용 불필요.
+  · broadcast_summary 에도 동일 적용.
+
+**적용 SSOT**: `src/agents/narrative_composer.py` SYSTEM_PROMPT `=== 시점 앵커링 ===`
+블록 + `_build_unified_payload` 의 publication_date 주입.
 
 ---
 
