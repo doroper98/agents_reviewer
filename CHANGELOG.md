@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.5
+last_synced_with: v5.5.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.6] — 2026-05-28
+
+### Added — 감시 신호 후속 보고 수동 활성화 버튼 (InlineKeyboardButton)
+
+**배경**: v5.4.9 에서 자동 후속 보고 생성을 `MAX_CHAIN_DEPTH=0` 으로 비활성화한
+이후, 발화된 감시 신호에 대해 후속 보고서를 만들려면 사용자가 다시 `/analyze`
+명령으로 컨텍스트를 직접 타이핑해야 했음 — 부모 보고서와의 연계 (`ParentContext`)
+가 끊김. 사용자 요청: "후속 보고를 이전 보고서와 연계해서 보고 싶을 때 맥락을
+연결해서" + "자식 보고서를 몇 개까지 만들어야 할지 결정론적으로 정할 필요 없이
+필요할 때 1-클릭 활성화".
+
+**변경**:
+- `src/telegram_bot.py:_notify_signal_fired` — `🔔 감시 신호 발생` 알림에
+  `InlineKeyboardMarkup([[InlineKeyboardButton("▶ 후속 보고 생성", callback_data=f"followup:{signal_id}")]])`
+  동봉. 자동/수동 (`/fire`) 발화 모두 동일 경로라 alarm 마다 버튼 1개.
+- `src/telegram_bot.py:_followup_callback` (신규) — `^followup:` 패턴
+  `CallbackQueryHandler` 핸들러. 권한 검증 (`parent_chat_id == effective_chat.id`)
+  → `query.edit_message_reply_markup(reply_markup=None)` 로 버튼 즉시 비활성화
+  (중복 클릭 방지) → `_activate_followup` 위임.
+- `src/telegram_bot.py:_activate_followup` (신규, 이전 `_maybe_enqueue_followup`
+  리팩토링) — `chain_depth` 가드 제거. 사용자가 버튼을 누른 결과로만 호출되니까
+  자동/수동 분기 불필요. `ParentContext` 조립 + 분석 큐 enqueue 또는 즉시 실행.
+- `src/telegram_bot.py:create_app` — `CallbackQueryHandler` 등록.
+- 미사용 import 정리 — `MAX_CHAIN_DEPTH` 가 더 이상 telegram_bot 에서 안 쓰임
+  (가드 제거된 결과). `src/models.py:MAX_CHAIN_DEPTH=0` 상수는 보존 — 자동 후속
+  재활성화 가능성을 위한 hatch.
+
+**효과**: 발화된 신호마다 사용자가 후속 보고서를 만들지 안 만들지 *그 자리에서*
+판단. 만들기로 하면 부모의 event_description / scenarios / triggering_signal 이
+`ParentContext` 로 composer 에게 그대로 전달돼 맥락 연결.
+
+**한계**:
+- 봇 재기동 후 옛 알림 메시지에 남아 있는 버튼은 여전히 누르면 동작 (registry 에
+  signal 이 살아 있으면). 중복 분석 방지 추적은 message-level 만 — 추가 분석이
+  필요하다고 판단되면 그대로 실행됨. 신호 레벨 "이미 활성화됨" 추적은 의도적
+  배제 (사용자가 같은 신호로 여러 시점에서 다른 각도의 후속을 원할 수 있음).
+- `MAX_CHAIN_DEPTH=0` 은 그대로. 따라서 후속 보고서가 또 신호를 emit 해도 그
+  signal 들은 SQLite Registry 에 등록되지 않음 (orchestrator 의 cap 통과 실패).
+  손자 보고서 활성화는 현재 불가능 — 의도 (사용자가 v5.4.9 에서 명시 요청).
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.5 → v5.5.6
+- README Status, 본 CHANGELOG entry (Change Propagation Matrix 의 VERSION 변경
+  행 준수). `src/models.py` 변경 없음, `docs/CONTRACTS/report_bundle_v1.md`
+  무영향 (텔레그램 UI 한정), `src/agents/*` 무변경.
 
 ---
 
