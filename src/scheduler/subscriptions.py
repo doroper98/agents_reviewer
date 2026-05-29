@@ -143,3 +143,117 @@ class BriefingSubscriberRegistry:
                 "WHERE run_date = ?",
                 (now, succeeded, failed, run_date),
             )
+
+
+# ======================================================================
+# v5.5.9 — Market Close Briefing subscribers (장마감 17:00 KST 자동 브리핑).
+# BriefingSubscriberRegistry 와 동일 패턴, 별도 테이블 (market_brief_*).
+# 같은 scheduler.db 파일 공유 — schema 한 번에 init.
+# ======================================================================
+
+
+class MarketBriefSubscriberRegistry:
+    """SQLite-backed market close briefing subscriber registry (v5.5.9)."""
+
+    def __init__(self, db_path: str) -> None:
+        self.db_path = db_path
+        os.makedirs(os.path.dirname(os.path.abspath(db_path)) or ".", exist_ok=True)
+        self._initialize()
+
+    def _initialize(self) -> None:
+        with self._connect() as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            with open(_SCHEMA_PATH, "r", encoding="utf-8") as f:
+                conn.executescript(f.read())
+        logger.info("[scheduler] Market brief registry initialized at %s", self.db_path)
+
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def subscribe(self, chat_id: int, mode: AnalysisMode = "deep") -> bool:
+        now = datetime.utcnow().isoformat()
+        with self._connect() as conn:
+            existing = conn.execute(
+                "SELECT chat_id FROM market_brief_subscribers WHERE chat_id = ?",
+                (chat_id,),
+            ).fetchone()
+            if existing is not None:
+                conn.execute(
+                    "UPDATE market_brief_subscribers SET mode = ? WHERE chat_id = ?",
+                    (mode, chat_id),
+                )
+                return False
+            conn.execute(
+                "INSERT INTO market_brief_subscribers (chat_id, subscribed_at, mode) "
+                "VALUES (?, ?, ?)",
+                (chat_id, now, mode),
+            )
+            return True
+
+    def unsubscribe(self, chat_id: int) -> bool:
+        with self._connect() as conn:
+            cur = conn.execute(
+                "DELETE FROM market_brief_subscribers WHERE chat_id = ?", (chat_id,),
+            )
+            return cur.rowcount > 0
+
+    def is_subscribed(self, chat_id: int) -> bool:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT 1 FROM market_brief_subscribers WHERE chat_id = ?", (chat_id,),
+            ).fetchone()
+        return row is not None
+
+    def list_all(self) -> list[tuple[int, AnalysisMode]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT chat_id, mode FROM market_brief_subscribers "
+                "ORDER BY subscribed_at"
+            ).fetchall()
+        return [(int(r["chat_id"]), r["mode"]) for r in rows]
+
+    def count(self) -> int:
+        with self._connect() as conn:
+            (n,) = conn.execute(
+                "SELECT COUNT(*) FROM market_brief_subscribers"
+            ).fetchone()
+        return int(n)
+
+    def start_run(
+        self,
+        run_date: str,
+        subscribers: int,
+        skipped_reason: str | None = None,
+    ) -> bool:
+        """Mark a run started. ``skipped_reason`` 채워 두면 dedupe + 사유 기록.
+
+        Returns False if the date already has a row (skip).
+        """
+        now = datetime.utcnow().isoformat()
+        with self._connect() as conn:
+            cur = conn.execute(
+                "INSERT OR IGNORE INTO market_brief_runs "
+                "(run_date, started_at, subscribers, skipped_reason) "
+                "VALUES (?, ?, ?, ?)",
+                (run_date, now, subscribers, skipped_reason),
+            )
+            return cur.rowcount > 0
+
+    def finish_run(self, run_date: str, succeeded: int, failed: int) -> None:
+        now = datetime.utcnow().isoformat()
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE market_brief_runs SET finished_at = ?, succeeded = ?, failed = ? "
+                "WHERE run_date = ?",
+                (now, succeeded, failed, run_date),
+            )

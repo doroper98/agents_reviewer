@@ -9,9 +9,15 @@ Public API:
 """
 
 from src.scheduler.daily_briefing import run_daily_briefing_loop
-from src.scheduler.subscriptions import BriefingSubscriberRegistry
+from src.scheduler.market_briefing import run_market_briefing_loop
+from src.scheduler.subscriptions import (
+    BriefingSubscriberRegistry,
+    MarketBriefSubscriberRegistry,
+)
 
 __all__ = [
     "BriefingSubscriberRegistry",
+    "MarketBriefSubscriberRegistry",
     "run_daily_briefing_loop",
+    "run_market_briefing_loop",
 ]

@@ -27,7 +27,12 @@ from src.orchestrator import Orchestrator
 from src.models import ParentContext, WatchSignal
 from src.watchlist import WatchlistRegistry, run_monitor_loop
 from src.watchlist.monitor import format_telegram_alert
-from src.scheduler import BriefingSubscriberRegistry, run_daily_briefing_loop
+from src.scheduler import (
+    BriefingSubscriberRegistry,
+    MarketBriefSubscriberRegistry,
+    run_daily_briefing_loop,
+    run_market_briefing_loop,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +71,12 @@ class TelegramBot:
         db_path = os.path.join(config.report_output_dir, DEFAULT_WATCHLIST_DB_NAME)
         self.watchlist_registry = WatchlistRegistry(db_path)
         # v5.1.0: Briefing subscription registry — daily scheduler 가 공유.
+        # v5.5.9: Market brief subscription registry 추가 (같은 scheduler.db 파일 공유).
         scheduler_db_path = os.path.join(
             config.report_output_dir, DEFAULT_SCHEDULER_DB_NAME,
         )
         self.briefing_registry = BriefingSubscriberRegistry(scheduler_db_path)
+        self.market_brief_registry = MarketBriefSubscriberRegistry(scheduler_db_path)
         self.orchestrator = Orchestrator(config, watchlist_registry=self.watchlist_registry)
         self._queue: deque[QueueItem] = deque()
         self._is_analyzing: bool = False
@@ -80,6 +87,8 @@ class TelegramBot:
         self._monitor_task: asyncio.Task | None = None
         # v5.1.0: asyncio task handle for the daily briefing scheduler loop.
         self._briefing_task: asyncio.Task | None = None
+        # v5.5.9: asyncio task handle for the market close briefing scheduler loop.
+        self._market_brief_task: asyncio.Task | None = None
         # Application reference for telegram message sending from monitor task.
         self._app: Application | None = None
         global _bot_start_time
@@ -111,9 +120,12 @@ class TelegramBot:
             "/queue — 대기열 확인\n"
             "/watchlist — 활성 감시 신호 목록 (v2.9.5)\n"
             "/fire <signal_id> [direction] — 신호 수동 발화 (v2.9.5)\n"
-            "/briefing_on — 일일 브리핑 구독 (v5.1.0)\n"
+            "/briefing_on — 일일 브리핑 구독 (06:00 KST, v5.1.0)\n"
             "/briefing_off — 일일 브리핑 구독 해제\n"
             "/briefing_status — 일일 브리핑 설정 확인\n"
+            "/market_brief_on — 한국 장마감 브리핑 구독 (17:00 KST, v5.5.9)\n"
+            "/market_brief_off — 장마감 브리핑 구독 해제\n"
+            "/market_brief_status — 장마감 브리핑 설정 확인\n"
             "? <질문> — 간단 질답\n"
             "/start — 이 메시지 표시"
         )
@@ -620,6 +632,92 @@ class TelegramBot:
             f"구독: /briefing_on · 해제: /briefing_off"
         )
 
+    # ------------------------------------------------------------------
+    # v5.5.9 — Market Close Briefing commands (한국 장마감 17:00 KST 자동 브리핑)
+    # ------------------------------------------------------------------
+
+    async def _market_brief_on_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/market_brief_on`` — 이 채팅을 한국 장마감 브리핑 수신처로 등록 (mode=deep)."""
+        if update.message is None or update.effective_chat is None:
+            return
+        if not self._is_authorized(update.effective_chat.id):
+            await update.message.reply_text("Unauthorized.")
+            return
+        chat_id = update.effective_chat.id
+        newly = self.market_brief_registry.subscribe(chat_id, mode="deep")
+        time_str = self.config.market_briefing_time
+        tz_name = self.config.market_briefing_tz
+        enabled = self.config.market_briefing_enabled
+        persona_path = self.config.market_briefing_persona_path
+        persona_loaded = bool(persona_path and os.path.isfile(persona_path))
+        head = (
+            "✅ 장마감 브리핑 구독 완료"
+            if newly
+            else "ℹ 이미 구독 중 (모드 갱신만 적용)"
+        )
+        enabled_str = (
+            "활성"
+            if enabled
+            else "비활성 (서버 .env MARKET_BRIEFING_ENABLED=false)"
+        )
+        persona_str = (
+            f"✅ 로드됨 ({persona_path})"
+            if persona_loaded
+            else f"❌ 파일 없음 ({persona_path}) — 페르소나 없이 진행"
+        )
+        await update.message.reply_text(
+            f"{head}\n\n"
+            f"  · 트리거: 평일 {time_str} ({tz_name}) — KRX 휴장일 (주말·공휴일) 자동 skip\n"
+            f"  · 모드: 🔬 deep\n"
+            f"  · 페르소나: {persona_str}\n"
+            f"  · 분석 범위: 오늘 한국 주식시장 (가격·거래대금·수급·섹터·거시) 구조 해석\n"
+            f"  · 스케줄러 상태: {enabled_str}\n\n"
+            f"해제: /market_brief_off"
+        )
+
+    async def _market_brief_off_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/market_brief_off`` — 이 채팅의 장마감 브리핑 구독 해제."""
+        if update.message is None or update.effective_chat is None:
+            return
+        chat_id = update.effective_chat.id
+        removed = self.market_brief_registry.unsubscribe(chat_id)
+        if removed:
+            await update.message.reply_text("✅ 장마감 브리핑 구독 해제됨.")
+        else:
+            await update.message.reply_text("ℹ 구독 중이 아니었습니다.")
+
+    async def _market_brief_status_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """``/market_brief_status`` — 이 채팅의 구독 상태 + 스케줄러 + 페르소나 설정."""
+        if update.message is None or update.effective_chat is None:
+            return
+        chat_id = update.effective_chat.id
+        subscribed = self.market_brief_registry.is_subscribed(chat_id)
+        total_subs = self.market_brief_registry.count()
+        time_str = self.config.market_briefing_time
+        tz_name = self.config.market_briefing_tz
+        enabled = self.config.market_briefing_enabled
+        persona_path = self.config.market_briefing_persona_path
+        persona_loaded = bool(persona_path and os.path.isfile(persona_path))
+        sub_str = "✅ 구독 중" if subscribed else "❌ 미구독"
+        enabled_str = "✅ 활성" if enabled else "❌ 비활성 (.env)"
+        persona_str = "✅ 로드됨" if persona_loaded else "❌ 파일 없음"
+        await update.message.reply_text(
+            f"📈 한국 장마감 브리핑 상태\n\n"
+            f"  · 이 채팅: {sub_str}\n"
+            f"  · 전체 구독자 수: {total_subs}\n"
+            f"  · 트리거: 평일 {time_str} ({tz_name}) — KRX 휴장일 자동 skip\n"
+            f"  · 스케줄러: {enabled_str}\n"
+            f"  · 페르소나 파일: {persona_str} ({persona_path})\n"
+            f"  · 모드: 🔬 deep\n\n"
+            f"구독: /market_brief_on · 해제: /market_brief_off"
+        )
+
     async def _analyze_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
@@ -997,6 +1095,10 @@ class TelegramBot:
         app.add_handler(CommandHandler("briefing_on", self._briefing_on_command))
         app.add_handler(CommandHandler("briefing_off", self._briefing_off_command))
         app.add_handler(CommandHandler("briefing_status", self._briefing_status_command))
+        # v5.5.9 — Market Close Briefing (한국 장마감 17:00 KST)
+        app.add_handler(CommandHandler("market_brief_on", self._market_brief_on_command))
+        app.add_handler(CommandHandler("market_brief_off", self._market_brief_off_command))
+        app.add_handler(CommandHandler("market_brief_status", self._market_brief_status_command))
         # v5.5.6 — [▶ 후속 보고 생성] 버튼 콜백.
         app.add_handler(
             CallbackQueryHandler(self._followup_callback, pattern=r"^followup:")
@@ -1062,11 +1164,35 @@ class TelegramBot:
         )
         logger.info("[telegram_bot] Daily briefing scheduler task started")
 
+        # v5.5.9 — Market Close Briefing scheduler task.
+        mb_sub_count = self.market_brief_registry.count()
+        logger.info(
+            "[telegram_bot] Market brief boot: subscribers=%d enabled=%s time=%s tz=%s persona=%s",
+            mb_sub_count, self.config.market_briefing_enabled,
+            self.config.market_briefing_time, self.config.market_briefing_tz,
+            self.config.market_briefing_persona_path,
+        )
+        self._market_brief_task = asyncio.create_task(
+            run_market_briefing_loop(
+                orchestrator=self.orchestrator,
+                subscribers=self.market_brief_registry,
+                send_text_fn=self._send_text_to_chat,
+                send_document_fn=self._send_document_to_chat,
+                time_str=self.config.market_briefing_time,
+                tz_name=self.config.market_briefing_tz,
+                persona_path=self.config.market_briefing_persona_path,
+                enabled=self.config.market_briefing_enabled,
+            ),
+            name="market_briefing_scheduler",
+        )
+        logger.info("[telegram_bot] Market close briefing scheduler task started")
+
     async def _on_app_post_shutdown(self, app: Application) -> None:
         """봇 종료 시 background task 정리. SQLite 데이터는 영구 보존."""
         for task_attr, task_label in (
             ("_monitor_task", "watchlist monitor"),
             ("_briefing_task", "daily briefing scheduler"),
+            ("_market_brief_task", "market briefing scheduler"),
         ):
             task = getattr(self, task_attr, None)
             if task is not None and not task.done():
