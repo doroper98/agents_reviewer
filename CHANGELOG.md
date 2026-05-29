@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.9
+last_synced_with: v5.5.10
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.10] — 2026-05-29
+
+### Added — `/status` 에 장마감 브리핑 구독 정보 표기
+
+v5.5.9 에서 빠뜨린 부분. 사용자 요청. 기존 daily briefing 정보 줄 (`일일 브리핑
+(06:00): ...`) 다음에 두 줄 추가:
+
+```
+  장마감 브리핑 (KRX): ✅ 17:00 (Asia/Seoul) · 구독자 1명 · 이 채팅 ✅
+    페르소나: ✅ prompts/market_briefing_persona.md
+```
+
+- 트리거 시각·TZ + 전체 구독자 수
+- `update.effective_chat.id` 의 이 채팅 구독 여부 (`is_subscribed`)
+- 페르소나 파일 존재 여부 (`os.path.isfile`)
+
+### Fixed — `/watchlist` 4096자 한도 silent fail
+
+**증상**: 텔레그램에서 `/watchlist` 쳐도 봇 응답 없음. 진단 — 사용자 chat 의
+active 신호 370건 (5월 backfill + 누적 invalid deadline 신호로 폭증), 한 신호당
+~120자 × 370 = ~44KB → 텔레그램 한 메시지 한도 4,096자의 11배 초과 →
+`reply_text` 가 `BadRequest: message is too long` 으로 fail → 봇 silent.
+
+**Fix** (`src/telegram_bot.py:_watchlist_command`):
+- deadline 가까운 상위 20건만 표시 (registry 가 이미 `ORDER BY deadline ASC`).
+- 각 신호 description 80자로 trim.
+- 잔여 카운트 표기 (`... 외 350건 (deadline 더 먼 신호 생략)`).
+- 한 신호 ~150자, 20개면 ~3KB 안에 fit — 한도 안전.
+
+전체 신호 조회 필요시 SQLite 직접 쿼리 (CHANGELOG v5.5.8 의 backfill 스크립트
+패턴) 사용 권장.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.9 → v5.5.10
+- README Status, 본 CHANGELOG entry
 
 ---
 
