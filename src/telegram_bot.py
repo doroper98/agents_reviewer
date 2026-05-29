@@ -218,8 +218,28 @@ class TelegramBot:
         briefing_subs = self.briefing_registry.count()
         briefing_enabled = "✅" if self.config.daily_briefing_enabled else "❌"
         briefing_info = (
-            f"  일일 브리핑: {briefing_enabled} {self.config.daily_briefing_time} "
+            f"  일일 브리핑 (06:00): {briefing_enabled} {self.config.daily_briefing_time} "
             f"({self.config.daily_briefing_tz}) · 구독자 {briefing_subs}명"
+        )
+        # v5.5.10 — market close briefing 정보
+        mb_subs = self.market_brief_registry.count()
+        mb_enabled = "✅" if self.config.market_briefing_enabled else "❌"
+        mb_user_sub = (
+            " · 이 채팅 ✅"
+            if update.effective_chat is not None
+            and self.market_brief_registry.is_subscribed(update.effective_chat.id)
+            else ""
+        )
+        mb_persona_loaded = (
+            "✅" if (
+                self.config.market_briefing_persona_path
+                and os.path.isfile(self.config.market_briefing_persona_path)
+            ) else "❌"
+        )
+        market_brief_info = (
+            f"  장마감 브리핑 (KRX): {mb_enabled} {self.config.market_briefing_time} "
+            f"({self.config.market_briefing_tz}) · 구독자 {mb_subs}명{mb_user_sub}\n"
+            f"    페르소나: {mb_persona_loaded} {self.config.market_briefing_persona_path}"
         )
 
         status_msg = (
@@ -231,7 +251,8 @@ class TelegramBot:
             f"  서버 메모리: {mem_str}\n"
             f"  현재 상태: {analyzing_str}\n"
             f"  대기열: {queue_str}\n"
-            f"{briefing_info}"
+            f"{briefing_info}\n"
+            f"{market_brief_info}"
         )
 
         await update.message.reply_text(status_msg)
@@ -325,7 +346,12 @@ class TelegramBot:
     async def _watchlist_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """``/watchlist`` — 이 채팅에 등록된 활성(미발화) 감시 신호 목록."""
+        """``/watchlist`` — 이 채팅에 등록된 활성(미발화) 감시 신호 목록.
+
+        v5.5.10: deadline 가까운 상위 N건만 표시. 누적 active 가 수백 건이면
+        한 메시지가 텔레그램 4096자 한도 초과 → silent fail 회귀 차단.
+        description 도 80자로 trim — 한 신호 약 150자, N=20 이면 ~3KB 안에 fit.
+        """
         if update.message is None or update.effective_chat is None:
             return
         chat_id = update.effective_chat.id
@@ -336,13 +362,27 @@ class TelegramBot:
                 "분석을 실행하면 보고서의 watch_signals 가 자동 등록됨."
             )
             return
-        lines = [f"📒 활성 감시 신호 {len(signals)}건:"]
-        for sig in signals:
+
+        TOP_N = 20
+        total = len(signals)
+        shown = signals[:TOP_N]
+        remaining = total - len(shown)
+
+        head = (
+            f"📒 활성 감시 신호 {total}건"
+            + (f" (deadline 가까운 순 {len(shown)}건 표시)" if remaining > 0 else "")
+            + ":"
+        )
+        lines = [head]
+        for sig in shown:
+            desc = sig.description if len(sig.description) <= 80 else sig.description[:77] + "..."
             lines.append(
                 f"\n• `{sig.signal_id}`\n"
-                f"  {sig.description}\n"
+                f"  {desc}\n"
                 f"  방향: {sig.direction} · 데드라인: {sig.deadline}"
             )
+        if remaining > 0:
+            lines.append(f"\n... 외 {remaining}건 (deadline 더 먼 신호 생략)")
         lines.append("\n수동 발화: /fire <signal_id> [direction]")
         await update.message.reply_text("\n".join(lines))
 
