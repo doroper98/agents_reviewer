@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.7
+last_synced_with: v5.5.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,70 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.8] — 2026-05-29
+
+### Fixed — silent except 가 묻고 있던 3건의 attribute access 버그
+
+**증상**: v5.5.7 의 가드 제거 후에도 신규 보고서의 `report_meta` 등록 0건.
+사용자가 새 보고서 1건 만든 직후 `bot.log` 확인 — 두 줄의 warning 발견:
+
+```
+WARNING: [orchestrator] register_report_meta failed (계속 진행):
+  'ComposedReport' object has no attribute 'scenarios'
+WARNING: [orchestrator] chart usage tracking fail:
+  'FullAnalysisResult' object has no attribute 'sections'
+```
+
+이 두 warning 이 *매 보고서마다* 찍히고 있었지만 silent except 가 잡고 분석은
+계속 진행 → 회귀가 묻혀 있던 상태. v5.1.1 (`register_report_meta`) 와 v5.2.14
+(`chart_usage tracking`) 도입 시점부터 누적 회귀.
+
+**Root cause**: `FullAnalysisResult` vs `ComposedReport` 사이 필드 access 혼동.
+
+| 위치 | 잘못된 access | 올바른 access |
+|---|---|---|
+| `orchestrator.py:1551` | `result.sections` | `result.composed_report.sections` |
+| `orchestrator.py:1558` | `result.embedded_map` | `result.composed_report.embedded_map` |
+| `orchestrator.py:1600` | `result.composed_report.scenarios` (없음) | `result.scenarios.scenarios` (ScenarioAnalysis 거쳐서) |
+
+`FullAnalysisResult.sections` 는 존재하지 않는 필드 — sections 는
+`ComposedReport.sections` 에 있음. 마찬가지로 `embedded_map` 도 ComposedReport
+에. 반대로 `scenarios` 는 ComposedReport 가 아니라 `FullAnalysisResult.scenarios`
+의 ScenarioAnalysis 안에. v4.0.0 Tier 4 부터 ComposedReport 가 시나리오 분석을
+sections 안에 통합하므로 별도 scenarios 필드 없음.
+
+**변경**:
+- `src/orchestrator.py:1551` — `result.sections` → `result.composed_report.sections`.
+  chart usage tracking 의 emit type 누적 정상화 → starvation 가드 (캔들 회귀
+  차단 안전망) 실효성 회복.
+- `src/orchestrator.py:1558` — `getattr(result, "embedded_map", None)` →
+  `getattr(result.composed_report, "embedded_map", None)`. 지도 emit 도 시각화
+  분모 정상 포함.
+- `src/orchestrator.py:1596-1607` — `register_report_meta` 호출의 `scenarios`
+  인자를 `result.composed_report.scenarios` (없음) 에서 `result.scenarios`
+  (ScenarioAnalysis, Optional) 의 `.scenarios` (list[dict]) 로 변경. None 가드 +
+  빈 list fallback.
+
+**효과**:
+- v5.5.8 이후 모든 보고서의 `report_meta` 정상 등록 → 후속 분석 시
+  ContextAnalyst 가 부모 컨텍스트 수신 → 메타-자가 인식 회귀 차단.
+- v5.2.14 의 chart usage 영구 JSONL 기록 정상화 → 누적 ≥10 보고서에서 0회
+  emit type 감지 (캔들 starvation 같은 회귀 조기 발견).
+
+**한계 (v5.5.7 한계 그대로)**:
+- v5.1.1~v5.5.7 시기 36개 부모 보고서는 registry 메타 없음 → 그 시기 신호의
+  후속 분석은 v5.5.7 의 누락 가드로 거부됨. `reports/analysis_*.json` 에 원본
+  보존돼 있으므로 별도 backfill 스크립트로 복구 가능 (옵션).
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.7 → v5.5.8
+- README Status, 본 CHANGELOG entry
+- silent except 패턴 자체는 보존 — 분석 파이프라인이 보조 작업 (메타 등록 /
+  chart tracking) 실패로 인해 중단되지 않게 하는 의도된 격리. 단 warning 메시지
+  는 bot.log 에 매 보고서마다 찍힘 — 운영 시 주기 점검 권장.
 
 ---
 

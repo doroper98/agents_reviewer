@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.5.7"
+VERSION = "v5.5.8"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1545,17 +1545,21 @@ class Orchestrator:
         # v5.2.14 — chart type usage 추적 (캔들 starvation 회귀 방지).
         # composed.sections 의 모든 charts 를 순회해 type 수집 → telemetry +
         # 영구 JSONL. ``warn_if_starved`` 가 누적 N 보고서 동안 0회 emit type 감지.
+        # v5.5.8 — `result.sections` / `result.embedded_map` 은 `FullAnalysisResult`
+        # 에 존재하지 않는 필드 (AttributeError silent). 정확한 위치는
+        # `result.composed_report.sections` / `.embedded_map`. v5.2.14 도입부터
+        # 매 보고서마다 try/except 가 잡고 warning 만 찍어 차트 type 기록이 0건.
         try:
             from src.visual.usage_log import append_run, warn_if_starved
             emitted_types: list[str] = []
-            for sec in (result.sections or []):
+            for sec in (result.composed_report.sections or []):
                 for ch in (sec.charts or []):
                     if isinstance(ch, dict):
                         ct = ch.get("type")
                         if isinstance(ct, str) and ct:
                             emitted_types.append(ct)
             # embedded_map 도 시각화 채널 → starvation 분모 포함
-            if getattr(result, "embedded_map", None):
+            if getattr(result.composed_report, "embedded_map", None):
                 emitted_types.append("map")
             if self.telemetry is not None:
                 self.telemetry.record_chart_types(emitted_types)
@@ -1589,11 +1593,20 @@ class Orchestrator:
                     chain_depth=child_chain_depth,
                 )
                 # v5.1.1: 부모 메타 등록 — monitor 가 신호 발화 시 ParentContext 즉시 조립용.
+                # v5.5.8: 시나리오는 `result.scenarios` (ScenarioAnalysis, Optional)
+                # 의 `.scenarios` 에 있음. v5.1.1 도입 시 `result.composed_report.scenarios`
+                # 로 잘못 쓰여 AttributeError silent → v5.5.7 이전 모든 보고서의
+                # report_meta 등록 실패 (36건 부모 모두 메타 없음). v4.0.0 Tier 4
+                # 부터 ComposedReport 는 시나리오 분석을 sections 안에 통합하므로
+                # 별도 scenarios 필드 없음. `result.scenarios` 가 None 이면 빈 list.
                 try:
+                    parent_scenarios: list[dict] = []
+                    if result.scenarios is not None and result.scenarios.scenarios:
+                        parent_scenarios = list(result.scenarios.scenarios)
                     self.watchlist_registry.register_report_meta(
                         report_id=report_id,
                         event_description=event_description,
-                        scenarios=list(result.composed_report.scenarios or []),
+                        scenarios=parent_scenarios,
                         chain_depth=child_chain_depth,
                     )
                 except Exception as meta_err:
