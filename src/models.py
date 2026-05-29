@@ -757,8 +757,8 @@ class ParentContext(BaseModel):
     v5.1.0 의 ``narrative_composer.compose_unified`` payload 의 ``followup`` 필드에 주입되어
     composer 가 부모 시나리오 중 어느 가지가 실현 중인지 판정 + 분기 잇기 작업을 수행.
 
-    체인 방지: ``chain_depth`` 가 ``MAX_CHAIN_DEPTH`` 이상이면 자식 보고서의 새 watch_signals
-    는 DB 등록을 건너뛴다.
+    v5.5.7: ``chain_depth`` 제한 폐지. 부모/자식/손자/N대손 모두 정상 등록. 자동 폭주는
+    v5.5.6 의 [▶ 후속 보고 생성] 수동 버튼 모델 (사용자 명시 활성화) 로 차단.
     """
 
     parent_report_id: str
@@ -767,14 +767,6 @@ class ParentContext(BaseModel):
     parent_scenarios: list[dict] = Field(default_factory=list)  # 부모 ComposedReport.scenarios
     triggering_signal: WatchSignal
     chain_depth: int = 0  # 부모의 chain_depth 값. 자식 보고서의 신호는 +1 로 등록.
-
-
-# v5.1.1: 자동 후속 체인 상한. 부모(0) → 자식(1) → 손자(2) 에서 정지.
-# v5.4.9: 0 으로 cap — 자동 후속 보고서 기능 전체 비활성화 (사용자 요청).
-# 부수 효과: orchestrator 의 watchlist 등록도 `child_chain_depth >= MAX` 체크에서
-# 스킵 → 부모 보고서 (depth=0) 의 watch_signals 가 SQLite Registry 에 등록되지
-# 않고 HTML 섹션으로만 표시. `/fire` 명령으로 수동 발화도 불가. 재활성화 시 2 로.
-MAX_CHAIN_DEPTH = 0
 
 
 class FullAnalysisResult(BaseModel):

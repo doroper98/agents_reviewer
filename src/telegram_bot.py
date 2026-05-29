@@ -47,12 +47,14 @@ class QueueItem:
     """A queued analysis request.
 
     v5.1.1: ``update`` 가 None 이면 자동 후속 분석 — ``chat_id`` + ``parent_context`` 사용.
+    v5.5.7: ``mode`` 가 None 이 아니면 orchestrator 의 키워드 매핑을 우회하고 명시 모드 사용.
     """
     event_text: str
     update: Update | None = None
     chat_id: int = 0
     parent_context: ParentContext | None = None
     position: int = 0
+    mode: str | None = None
 
 
 class TelegramBot:
@@ -393,8 +395,9 @@ class TelegramBot:
         InlineKeyboardButton 1개를 동봉 — 사용자가 누르면 ``_followup_callback`` 이
         ParentContext 를 조립해 후속 분석을 수동 활성화한다.
 
-        자동 후속 분석은 v5.4.9 에서 비활성화 (``MAX_CHAIN_DEPTH=0``). 활성화는
-        오로지 본 버튼 (또는 ``/fire`` 이후 본 알림 경유) 으로만 일어난다.
+        자동 후속 분석은 v5.4.9 에서 비활성화. 활성화는 오로지 본 버튼 (또는
+        ``/fire`` 이후 본 알림 경유) 으로만 일어난다. v5.5.7 부터 chain depth
+        제한 없음 — N대손 보고서까지 동일 UX.
         """
         if self._app is None:
             logger.warning("[telegram_bot] notify called before app init; skipping")
@@ -427,12 +430,26 @@ class TelegramBot:
     async def _activate_followup(self, signal: WatchSignal) -> None:
         """발화된 신호로부터 ParentContext 를 조립하고 후속 분석을 enqueue (v5.5.6).
 
-        v5.1.1 의 ``_maybe_enqueue_followup`` 에서 ``chain_depth`` 가드를 제거한 형태.
-        사용자가 ``_followup_callback`` 의 [▶ 후속 보고 생성] 버튼을 누른 결과로만
-        호출되므로 자동/수동 구분이 불필요. 호출자(버튼 콜백)는 이미 권한 검증을
-        마친 상태.
+        v5.5.7:
+        - 후속 보고는 항상 ``mode="deep"`` (사용자 결정 — 부모와 맥락을 잇는 분석에는
+          5~7 섹션 + 모순 명시가 자연스러움).
+        - 부모 메타가 누락된 경우 (registry 에 report_meta 없음) 활성화 중단. 빈
+          parent_event_desc 로 분석을 강행하면 ContextAnalyst 가 메타-자가 인식
+          모드로 빠져 본문이 망가짐 (v5.5.6 회귀 사례). 사용자에게 명확히 알리고
+          /analyze 로 컨텍스트 직접 지정하도록 안내.
         """
-        meta = self.watchlist_registry.get_report_meta(signal.parent_report_id) or {}
+        meta = self.watchlist_registry.get_report_meta(signal.parent_report_id)
+        if not meta or not meta.get("event_description"):
+            await self._send_to_chat(
+                signal.parent_chat_id,
+                f"⚠️ 후속 분석 불가 — 부모 보고서 컨텍스트가 registry 에 없음.\n"
+                f"  부모: {signal.parent_report_id}\n"
+                f"  사유: v5.4.9~v5.5.6 의 chain depth 가드 사이드이펙트로 일부 부모"
+                f" 메타가 등록되지 않았음. v5.5.7 부터 신규 보고서는 정상 등록됨.\n"
+                f"  대안: /analyze <이 신호에 대한 분석 주제> 로 직접 지시",
+            )
+            return
+
         parent_event_desc = meta.get("event_description", "")
         parent_scenarios = meta.get("scenarios", [])
 
@@ -445,7 +462,7 @@ class TelegramBot:
             chain_depth=signal.chain_depth,
         )
 
-        parent_event_short = (parent_event_desc or signal.parent_report_id)[:300]
+        parent_event_short = parent_event_desc[:300]
         event_description = (
             f"[후속 분석] 부모 보고서: {signal.parent_report_id}\n"
             f"발화된 감시 신호: {signal.description} (방향: {signal.direction})\n"
@@ -460,15 +477,16 @@ class TelegramBot:
                 chat_id=signal.parent_chat_id,
                 parent_context=parent_context,
                 position=position,
+                mode="deep",
             ))
             await self._send_to_chat(
                 signal.parent_chat_id,
-                f"📋 후속 분석 대기열 추가 ({position}번째) — 신호: {signal.description}",
+                f"📋 후속 분석 대기열 추가 ({position}번째, 🔬 deep) — 신호: {signal.description}",
             )
         else:
             await self._send_to_chat(
                 signal.parent_chat_id,
-                f"🔄 후속 분석 시작 — 부모: {signal.parent_report_id}\n"
+                f"🔄 후속 분석 시작 (🔬 deep) — 부모: {signal.parent_report_id}\n"
                 f"  발화 신호: {signal.description}",
             )
             await self._run_analysis(
@@ -476,6 +494,7 @@ class TelegramBot:
                 event_text=event_description,
                 chat_id=signal.parent_chat_id,
                 parent_context=parent_context,
+                mode="deep",
             )
 
     async def _followup_callback(
@@ -758,6 +777,7 @@ class TelegramBot:
             event_text=next_item.event_text,
             chat_id=next_item.chat_id or None,
             parent_context=next_item.parent_context,
+            mode=next_item.mode,
         )
 
     async def _quick_question(self, update: Update, question: str) -> None:
@@ -808,6 +828,7 @@ class TelegramBot:
         event_text: str,
         chat_id: int | None = None,
         parent_context: ParentContext | None = None,
+        mode: str | None = None,
     ) -> None:
         """Execute the analysis pipeline and send report.
 
@@ -849,6 +870,7 @@ class TelegramBot:
                 chat_id=chat_id,
                 status_callback=status_callback,
                 parent_context=parent_context,
+                mode=mode,  # v5.5.7: None 이면 orchestrator 가 키워드 매핑.
             )
 
             # v5.1.1: 텍스트 보고서 청크 + glossary 송신 제거 — 본문 콘텐츠는 보고서 HTML 안에 있음.
