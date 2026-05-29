@@ -16,7 +16,7 @@ from src.lens_policy import select_lenses, select_theme
 from src.lenses.registry import get_lens, list_lenses
 from src.models import (
     AnalysisRequest, AnalysisStrategy, AnalyticalFinding, Claim, ConfidenceProfile,
-    Evidence, FullAnalysisResult, JudgmentVerdict, MAX_CHAIN_DEPTH, ParentContext,
+    Evidence, FullAnalysisResult, JudgmentVerdict, ParentContext,
 )
 from src.telemetry import RunTelemetry
 from src.token_budget import AnalysisMode, TokenBudget, resolve_mode
@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.5.6"
+VERSION = "v5.5.7"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1258,7 +1258,8 @@ class Orchestrator:
         - compose_unified payload 에 followup 필드 주입 → composer 가 부모 시나리오 인지
         - report.html 의 h1 풋노트 + 상단 부모 헤더 박스 렌더
         - 새 watch_signals 의 chain_depth = parent.chain_depth + 1 로 등록
-          (``>= MAX_CHAIN_DEPTH`` 면 등록 자체 스킵 — 체인 종결)
+          (v5.5.7 부터 chain depth 상한 없음 — 손자/증손자/N대손 모두 정상 등록.
+          수동 [▶ 후속 보고 생성] 버튼이 폭주 차단)
 
         legacy 멀티 에이전트 (player/dynamics/chain_reaction/scenario/synthesis_judge/
         quality_inspector/visual_analyst/lens_pool) 는 v4.0.0 부터 호출 안 함.
@@ -1564,20 +1565,16 @@ class Orchestrator:
             logger.warning("[orchestrator] chart usage tracking fail: %s", e)
 
         # -- Phase 4: Watchlist 등록 (composed_report.watch_signals 에서) --
-        # v5.1.1: 체인 상한 — parent_context.chain_depth + 1 >= MAX_CHAIN_DEPTH 면 등록 스킵.
-        # 손자(depth=2) 보고서가 다시 후속을 자동 트리거하지 못하도록 차단.
+        # v5.5.7: chain depth 가드 제거. v5.4.9 의 MAX_CHAIN_DEPTH=0 은 자동 후속
+        # 폭주 차단이 목적이었으나 v5.5.6 의 [▶ 후속 보고 생성] 수동 버튼 모델
+        # (사용자가 매번 의식적으로 활성화) 로 자동 폭주 위험이 사라졌고, 가드가
+        # 부모 보고서 (depth=0) 의 watchlist 등록까지 막아 후속 분석에 필요한 부모
+        # 메타 자체를 잃는 사이드이펙트가 v5.5.6 회귀의 root cause. 부모/자식/손자/
+        # N대손 모두 정상 등록.
         child_chain_depth = (parent_context.chain_depth + 1) if parent_context is not None else 0
-        chain_at_cap = child_chain_depth >= MAX_CHAIN_DEPTH
-        if chain_at_cap:
-            logger.info(
-                "[orchestrator] Chain depth cap reached (depth=%d, MAX=%d); "
-                "skipping watch_signals registration for this report",
-                child_chain_depth, MAX_CHAIN_DEPTH,
-            )
         if (
             self.watchlist_registry is not None
             and result.composed_report.watch_signals
-            and not chain_at_cap
         ):
             try:
                 report_id = ""

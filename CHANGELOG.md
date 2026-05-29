@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.6
+last_synced_with: v5.5.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.7] — 2026-05-29
+
+### Fixed — 후속 보고서 본문 망가짐 회귀 (v5.5.6 regression): 부모 메타 누락 + 메타-자가 인식 응답
+
+**증상**: v5.5.6 의 [▶ 후속 보고 생성] 버튼을 누르면 후속 보고서가 짧게 잘리고
+본문이 ContextAnalyst 의 메타-자가 인식 텍스트 ("이건 ContextAnalyst 에이전트의
+SYSTEM_PROMPT + user 메시지가 Claude Code 개발 세션에 그대로 붙은 것으로
+보입니다...") 로 채워짐. 사례: `analysis_20260529_144225` (부모
+`analysis_20260518_063432`, 신호 `Q1'26 잠정실적 (5/29)`).
+
+**Root cause**: v5.4.9 의 `MAX_CHAIN_DEPTH=0` 가드가 자동 후속 폭주 차단 목적이었
+으나 `child_chain_depth = 0` (부모 보고서) 의 경우에도 `0 >= 0` 으로 cap 통과
+실패 → orchestrator 의 `register_report_meta` 호출 스킵 → 부모 보고서의
+`event_description` 이 watchlist registry 에 등록되지 않음. v5.5.6 의
+`_activate_followup` 가 `registry.get_report_meta(parent_report_id)` 로 빈 dict
+회수 → `parent_event_desc=""` → ContextAnalyst prompt 가 "원 이벤트:
+analysis_20260518_063432" 정도로 끝나는 빈 컨텍스트 → 모델이 자기 환경
+(CLAUDE.md / Bash / Read 메타 도구 활성) 에 대해 답하는 메타 모드로 빠짐.
+
+**변경**:
+- `src/models.py` — `MAX_CHAIN_DEPTH` 상수 제거. v5.5.6 의 수동 버튼 모델
+  (사용자가 매번 의식 활성화) 이 자동 폭주를 차단하므로 chain depth 제한 불필요.
+  ParentContext docstring 도 갱신.
+- `src/orchestrator.py:1567` — Phase 4 watchlist 등록의 `chain_at_cap` 가드 제거.
+  부모/자식/손자/N대손 모두 정상 등록. import 정리.
+- `src/telegram_bot.py:_activate_followup` — 부모 메타가 registry 에 없거나
+  `event_description` 이 비어 있으면 활성화 거부 + 안내 메시지 (v5.4.9~v5.5.6
+  시기 등록되지 않은 부모는 회복 불가, `/analyze` 로 우회). 빈 prompt 로 분석
+  강행 차단.
+- `src/telegram_bot.py:_activate_followup` — 후속 보고는 항상 `mode="deep"` (사용자
+  결정). `QueueItem.mode` 필드 신설. `_run_analysis` / `_process_queue` 가 mode
+  를 orchestrator.run_analysis 까지 forward.
+- 알림 메시지에 모드 표기 (🔬 deep) 추가.
+
+**효과**:
+- v5.5.7 이후 신규 보고서는 부모/자식/손자 무관 watchlist 정상 등록 → 후속
+  분석이 부모 컨텍스트 받아 메타-자가 인식 회귀 차단.
+- 후속 보고서가 deep 모드로 5~7 섹션 + 모순 명시 + 32K max_tokens 로 생성.
+- v5.5.6 의 후속 체인 제한 (`MAX_CHAIN_DEPTH=0`) 폐지 — 후속 보고서의 후속
+  보고서의 후속 보고서... 무제한 chain 가능. 사용자가 매번 버튼 활성화하므로
+  자동 폭주 위험 없음.
+
+**한계**:
+- v5.4.9 (2026-05-22) ~ v5.5.6 (2026-05-28) 시기에 만들어진 부모 보고서는
+  registry 에 등록되지 않았으므로 그 시기 신호의 후속 분석은 거부됨 (안내
+  메시지 + `/analyze` 우회). 신규 보고서는 정상.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.6 → v5.5.7
+- `src/models.py` 변경 (MAX_CHAIN_DEPTH 제거, ParentContext docstring) →
+  CLAUDE.md `Key Directories` 의 모듈 설명은 영향 없음 (상수 자체는 외부
+  공개 API 아님).
+- README Status, 본 CHANGELOG entry.
 
 ---
 
