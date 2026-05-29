@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.8
+last_synced_with: v5.5.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,67 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.9] — 2026-05-29
+
+### Added — 한국 장마감 자동 브리핑 (시장 구조 해석가 페르소나)
+
+**배경**: 사용자 — "한국주식장이 끝난 평일 17시에 그날 거래장에 대한 깊고 상세한
+브리핑 보고서를 DEEP 모드로 생성해. 거래를 안 하는 날은 발행하지 않아도 됨."
++ 페르소나 직접 주입 가능성 요청.
+
+**기능**:
+- 디폴트 17:00 KST 트리거 (외인/기관 잠정치 + 종가 거래대금 확정 후) — 환경변수
+  `MARKET_BRIEFING_TIME` 으로 조정 가능.
+- pykrx 거래일 캘린더로 KRX 휴장일 자동 skip (`get_nearest_business_day_in_a_week`).
+  주말 + 한국 공휴일 + 임시휴장 모두 자동 반영. pykrx 가져오기 실패하면 평일
+  fail-open + warning.
+- `prompts/market_briefing_persona.md` (markdown) 의 *시장 구조 해석가* 페르소나
+  (10 렌즈 — 가격·거래대금·수급·섹터·거시·뉴스 관계 해석 + 가설/반증 조건) 를
+  startup 시 1회 로드 후 event_description *앞* 에 prime. ContextAnalyst 가
+  사실 수집으로, NarrativeComposer 가 해석으로 단계 분리되도록 페르소나 맨
+  앞에 한 줄 instruction 추가.
+
+**변경**:
+- `prompts/market_briefing_persona.md` (신설) — 사용자 작성 페르소나 + 단계 분리 가드.
+- `src/scheduler/market_briefing.py` (신설) — `run_market_briefing_loop` +
+  `_is_krx_trading_day` (pykrx 가드) + `_load_persona` + `_build_market_briefing_prompt`.
+- `src/scheduler/subscriptions.py` — `MarketBriefSubscriberRegistry` 추가 (기존
+  `BriefingSubscriberRegistry` 와 동일 패턴, 별도 테이블).
+- `src/scheduler/db_schema.sql` — `market_brief_subscribers` + `market_brief_runs`
+  (with `skipped_reason TEXT` 컬럼 — 'weekend' / 'holiday' / NULL).
+- `src/scheduler/__init__.py` — public API 확장.
+- `src/config.py` — `market_briefing_enabled` / `_time` / `_tz` / `_persona_path` 4 필드.
+- `src/telegram_bot.py` — `/market_brief_on` / `/market_brief_off` /
+  `/market_brief_status` 3 명령 + post_init/post_shutdown 의 `_market_brief_task`
+  관리. `/start` 안내 갱신.
+- `.env.example` — `MARKET_BRIEFING_*` 4 변수 블록.
+
+**활성화**:
+```bash
+# .env 추가
+MARKET_BRIEFING_ENABLED=true
+MARKET_BRIEFING_TIME=17:00
+MARKET_BRIEFING_TZ=Asia/Seoul
+MARKET_BRIEFING_PERSONA_PATH=prompts/market_briefing_persona.md
+
+# 봇 재시작 후 텔레그램에서:
+/market_brief_on
+```
+
+**페르소나 수정 절차**: `prompts/market_briefing_persona.md` 편집 → 봇 재시작 1회
+→ 다음 17:00 브리핑부터 반영. git history 로 페르소나 진화 추적 자연 보존.
+
+**구독 분리**: 기존 `/briefing_on` (06:00 매크로/지정학) 와 *별개 구독*.
+한쪽만 / 양쪽 다 / 양쪽 다 안 함 선택 가능.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.8 → v5.5.9
+- README Status, 본 CHANGELOG entry, `.env.example`
+- 신규 모듈: `src/scheduler/market_briefing.py`, `prompts/market_briefing_persona.md`
+- 신규 SQLite 테이블 2건 — 기존 `briefing_subscribers` / `briefing_runs` 무영향.
 
 ---
 
