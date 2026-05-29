@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.10
+last_synced_with: v5.5.11
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,66 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## [v5.5.11] — 2026-05-29
+
+### Changed — composer max_tokens 한도 1.5배 (분량 여지 확장)
+
+**배경**: 사용자 — "보고서 길이 제한 더 완화. 모든 보고서가 그 길이에 맞출
+필요는 없고, 그 길이까지 가야 할 내용에 충실하게."
+
+**변경** (`src/agents/narrative_composer.py:537-542`):
+- `MAX_TOKENS_BY_MODE`: fast 12000→18000, standard 20000→30000, deep 32000→48000
+- `MAX_TOKENS` 디폴트: 32000→48000
+
+모델 (Opus 4.7) 은 한도의 자연 sweet spot (60~80%) 으로 출력하므로 한도
+확장이 *모든* 보고서를 균일 확대하지 않는다. 분량 더 필요한 주제만 더 깊게
+다룰 여지가 생김 — 사용자 의도 정확 부합. SYSTEM_PROMPT 의 섹션 수 가이드
+(deep 5~7) 는 그대로 유지 (섹션 수까지 늘리면 모든 보고서 균일 확대).
+
+### Changed — headline + deck 평이화 명시 (★ 최우선 원칙 (3)번 신설)
+
+**배경**: 사용자 — "본문은 좀 완화됐는데 제목과 제목 하단 요약도 더
+평이해질 필요가 있다."
+
+**변경** (`src/agents/narrative_composer.py:SYSTEM_PROMPT`):
+v5.5.5 의 "★ 최우선 원칙" 블록에 (3)번 조항 신설. 본문 평이화 (1)(2) 와
+동일 원칙을 headline + deck 에 *더 엄격하게* 적용. 첫 화면이라 한 단어
+어렵게 박히면 일반 독자가 닫는다.
+
+- **headline (~30자)**: 한자어 압축 (양해각서 / 시험대 / 분기점 / 변곡점 /
+  절충안), 신문 표제어 (봉인 / 칼끝 / 풍전등화), 은유 (두 갈래 / 갈림길 /
+  무대) 자제. 일상어 명사 + 동사 한 호흡.
+  - Before: "양해각서 60일, 두 갈래 결정"
+  - After: "이란 핵 합의, 60일 뒤 첫 시험 — 사찰을 열까 막을까"
+- **deck (~80자, 1~2 문장)**: 비전문가 친구에게 설명하듯. 영어·전문 용어·
+  라틴 어원 한자어 (불식 / 함의 / 제고 / 회임) 금지. 행위자·사건·이해관계
+  누구 봐도 보이게.
+
+### Fixed — 첫 사진 figcaption 중앙 정렬 회귀
+
+**증상**: hero 영역 첫 사진 (composed.hero_image) 의 figcaption 만 중앙
+정렬. inline 본문 사진들 (composed_section.images) 의 figcaption 은 왼쪽
+정렬 — 일관성 깨짐.
+
+**Root cause**: `<figure class="freeform-figure hero">` 가 `freeform-figure`
+와 `hero` 두 클래스를 갖는데, `src/templates/report.css:393` 의
+`.hero { text-align: center }` 가 figure 의 자식 figcaption 까지 inherit.
+
+**Fix** (`src/templates/archetypes/freeform_essay.html:124`):
+`.freeform-figure figcaption` 에 `text-align:left` 명시. hero/inline 무관
+모든 figcaption 왼쪽 정렬. report.css 의 `.hero` 는 다른 archetype 도
+쓰는 일반 hero 클래스라 거기 직접 손대지 않음.
+
+**Change Propagation Matrix**:
+- `src/orchestrator.py:VERSION` v5.5.10 → v5.5.11
+- README Status, 본 CHANGELOG entry
+- composer SYSTEM_PROMPT 변경 → docs/REPORT_STYLE_GUIDE.md 의 어휘 SSOT
+  과 정합 (headline/deck 어휘 ban 리스트는 본 entry 가 일차 기록 — STYLE_GUIDE
+  의 §0.1 ★ 최우선 원칙 블록은 본문에 한정돼 있어 headline/deck 은 별도
+  명시 필요했음)
 
 ---
 
