@@ -20,6 +20,50 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.6.5] — 2026-05-30
+
+### 두 버전 계보 통합 (lineage reconciliation)
+
+`v5.5.5` 이후 배포 라인(main)과 기능 라인(v5.6.x)이 **두 갈래로 분기**해
+`v5.5.6`~`v5.5.10` 버전 번호가 양쪽에서 중복 사용되는 회귀가 발생했다 (Execution
+Rule #12 위반). 배포된 봇은 main 계보(`v5.5.11`)였고, X 공유 요약·composer
+타임아웃/재시도·파싱 강건화 등은 v5.6.x 계보에만 있어 운영에 반영되지 않았다.
+
+본 릴리스는 **v5.6.x 계보를 정본으로 확정**하고, main 계보(`v5.5.6`~`v5.5.11`)가
+독자적으로 추가한 기능을 빠짐없이 cherry-pick 으로 이식해 단일 라인으로 합쳤다.
+
+#### main 계보에서 이식된 기능
+
+- **감시 신호 후속 보고 수동 활성화 버튼** (main v5.5.6): 신호 발화 알림에
+  `[▶ 후속 보고 생성]` `InlineKeyboardButton` 동봉 + `CallbackQueryHandler`.
+- **후속 보고 deep 모드 고정 + chain depth 제한 폐지 + 부모 메타 누락 가드**
+  (main v5.5.7): `MAX_CHAIN_DEPTH` 상수 제거, 자동 폭주는 수동 버튼 모델로 차단.
+- **silent except 가 묻고 있던 attribute access 3건 fix** (main v5.5.8):
+  `result.composed_report.sections` / `.embedded_map`, `result.scenarios` 정정 —
+  차트 type 기록·부모 report_meta 등록 실패 회귀 해소.
+- **한국 장마감 자동 브리핑 + 시장 구조 해석가 페르소나** (main v5.5.9):
+  `/market_brief_on|off|status` 명령 + `MarketBriefSubscriberRegistry` +
+  `run_market_briefing_loop` + `prompts/market_briefing_persona.md` +
+  `MARKET_BRIEFING_*` config 4종 (디폴트 17:00 KST, 기본 OFF).
+- **`/status` 에 market brief 정보 추가 + `/watchlist` 4096자 한도 fix**
+  (main v5.5.10).
+- **composer `max_tokens` 1.5배 + headline/deck 평이화 + figcaption 정렬 fix**
+  (main v5.5.11): `MAX_TOKENS_BY_MODE` fast 18K / standard 30K / deep 48K.
+- **patch_report `--recompose`** (main, v5.5.5 후속): 저장된 사실 기반 보고서
+  통째 재작성.
+
+#### v5.6.x 계보가 이미 보유 (보존됨)
+
+- composer 타임아웃 + 재시도 + "Extra data" 파싱 강건화 (v5.6.x 계보의 v5.5.9/
+  v5.5.10 — "사실 자료만 표시" 중단 회귀 차단). main v5.5.11 의 max_tokens 증량과
+  **공존** — 보고서 중단을 타임아웃·재시도·토큰증량 3중으로 방어.
+- X 구독자용 broadcast 요약 + 보고서 URL 난수 토큰 (v5.6.1).
+- 공개 인덱스 비공개 + `/reports` 관리자 토큰 URL (v5.6.2~v5.6.3).
+- 발행일·사건일 시점 앵커링 WRITE-AP-11 (v5.6.4).
+
+> ⚠️ **VM 재배포 필수.** 배포된 봇은 두 기능(X 공유 요약·composer 안정화)을
+> 갖지 못한 main `v5.5.11` 이다. 본 통합본으로 재배포해야 두 문제가 동시에 해소된다.
+
 ## [v5.6.4] — 2026-05-29
 
 ### Fixed — 발행일과 사건일이 다를 때 시점 앵커 누락 (WRITE-AP-11)
