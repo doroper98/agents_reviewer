@@ -299,6 +299,36 @@ publication_date 가 없어 composer 가 today 를 모름. `context.date` 는 �
 
 ---
 
+## WRITE-AP-12: AI 가 인지되는 기호 (마크다운 강조 / em·en dash) 사용 (v5.6.7 신설)
+
+**증상**: 보고서 headline·deck·본문·캡션·`broadcast_summary` 에 `**굵게**` /
+`*기울임*` 같은 마크다운 강조나 긴 줄표(em dash `—`)·en dash(`–`)가 노출. 사람은
+잘 안 쓰는 기호라 "AI 가 썼다" 는 인상을 즉시 준다. 사용자 최우선 규칙으로 금지.
+
+**원인**: LLM 이 영어권 편집 관습(em dash 선호) + 마크다운 강조 습관을 한국어
+출력에 그대로 가져옴. WRITE-AP-1(마크다운 강조)의 확장 — dash 까지 포함하고,
+프롬프트 지시만으론 100% 차단 안 되는 점을 결정적 후처리로 보강.
+
+**Fix (v5.6.7)** — 2중 방어:
+
+1. **프롬프트**: `narrative_composer.py:SYSTEM_PROMPT` 에 "★ 기호 금지 (최우선,
+   WRITE-AP-12)" 블록 추가 — `*`/`**`/백틱/em·en dash 금지, 부연은 쉼표·마침표,
+   숫자 범위는 `~`, 제목 부제 구분은 쉼표·줄바꿈.
+2. **결정적 후처리**: `NarrativeComposer._sanitize_symbols` 가 파싱된
+   ComposedReport 의 *모든* 사용자 노출 텍스트(headline/deck/heading/prose/
+   pull_quote/lede/캡션/chart 라벨·note/watch_signals/contradictions/
+   timeline_flow/map 라벨/broadcast_summary)에서 강조 기호 제거 + dash 자연
+   치환(공백 둘러싼 삽입구 → 쉼표, 숫자 사이 → `~`, 단어 직접 인접 → 공백).
+   URL(source_url/image_url)·좌표·bool 은 보존. orchestrator 가 최종
+   `_sanitize_symbols` 를 한 번 더 호출 — minimal fallback / hook 추가 텍스트 /
+   context 기반 합성본까지 *모든 경로* 보장. broadcast 폴백의 `_strip_inline_md`
+   도 동일 dash 규칙으로 확장.
+
+**회귀 테스트**: `_clean_text` 13케이스 + `_sanitize_symbols` e2e(중첩 구조 +
+URL/좌표 보존 23검사) 오프라인 통과. 회귀 발견 시 케이스 추가.
+
+---
+
 ## 체크리스트 — composer prompt / persona 가이드 변경 시
 
 ### prose 형식

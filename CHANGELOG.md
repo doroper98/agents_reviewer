@@ -20,6 +20,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.6.7] — 2026-05-30
+
+### AI 가 인지되는 기호 박멸 (마크다운 강조 + em/en dash) — 사용자 최우선 규칙 (WRITE-AP-12)
+
+보고서·SNS 문구 등 봇이 생성하는 *모든* 사용자 노출 텍스트에서 `**`/`*`/백틱
+(마크다운 강조) 와 긴 줄표 em dash `—` / en dash `–` 를 절대 쓰지 않는다. 사람은
+잘 안 쓰는 기호라 "AI 가 썼다" 는 인상을 즉시 주기 때문. 사용자 최우선 규칙.
+
+#### 2중 방어
+
+- **프롬프트** (`narrative_composer.py:SYSTEM_PROMPT`): "★ 기호 금지 (최우선,
+  WRITE-AP-12)" 블록 추가. 강조 기호 + dash 금지, 부연은 쉼표·마침표, 숫자 범위는
+  `~`, 제목 부제 구분은 쉼표·줄바꿈.
+- **결정적 후처리** (`NarrativeComposer._sanitize_symbols`): 파싱된 ComposedReport
+  의 모든 사용자 노출 텍스트(headline/deck/heading/prose/pull_quote/lede/캡션/
+  chart 라벨·note/watch_signals/contradictions/timeline_flow/map 라벨/
+  broadcast_summary)에서 강조 기호 제거 + dash 자연 치환(삽입구 → 쉼표, 숫자 범위
+  → `~`, 단어 인접 → 공백). URL·좌표·bool 보존.
+- **모든 경로 보장**: orchestrator 가 `_ensure_broadcast_summary` 직후
+  `_sanitize_symbols` 를 한 번 더 호출 — composer 정상 경로뿐 아니라 minimal
+  fallback / hook 추가 텍스트 / context 기반 합성본까지 정화. broadcast 폴백의
+  `_strip_inline_md` 도 동일 dash 규칙으로 확장.
+
+> 검증: `_clean_text` 13케이스 + `_sanitize_symbols` e2e(중첩 구조 + URL/좌표 보존
+> 23검사) 오프라인 통과, 전체 compile OK. ⚠️ VM 재배포 필수.
+
 ## [v5.6.6] — 2026-05-30
 
 ### composer 짤림(truncation) 근본 수정 + SNS 문구 강건화

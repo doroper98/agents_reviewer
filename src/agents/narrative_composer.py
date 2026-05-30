@@ -109,6 +109,12 @@ SYSTEM_PROMPT = (
     "  지역)'). 한 문장에 새 개념 0~1개.\n"
     "- **마크다운 강조 금지**: ``*..*`` / ``**..**`` / ``_..__`` / ``>`` 모두 X. 강조는\n"
     "  ``pull_quote`` 필드 (WRITE-AP-1).\n"
+    "- **★ 기호 금지 (최우선, WRITE-AP-12)**: AI 가 쓴 티가 나는 기호를 절대 쓰지 않는다.\n"
+    "  ① 별표 ``*`` / ``**`` (강조), 백틱 ``` ` ``` 모두 금지. ② **긴 줄표(em dash) ``—`` 와\n"
+    "  en dash ``–`` 절대 금지** — 사람은 잘 안 쓰고 AI 특유다. 대신: 부연·삽입구는\n"
+    "  쉼표나 마침표로 끊고, 숫자 범위(3~5년)는 물결표 ``~`` 를, 제목의 부제 구분은\n"
+    "  쉼표나 줄바꿈을 쓴다. 본문 prose 뿐 아니라 headline·deck·heading·캡션·\n"
+    "  ``broadcast_summary`` 등 *모든* 출력 텍스트에 적용.\n"
     "- **진부 연결어 금지**: 다양한 측면에서 / 결론적으로 / 주목할 만한 점은 / 다시\n"
     "  말해 / 더 깊은 분석이 필요하다 / 심도 있게 살펴보면. 허용: 사실은 / 단 /\n"
     "  즉 / 그러나 / 반면 (WRITE-AP-4).\n"
@@ -700,6 +706,9 @@ class NarrativeComposer:
             return None
         # v4.0.0: chart_catalog 가 비었으니 embedded_charts 도 빈 list 로 강제 (검증 layer).
         composed = self._validate_references(composed, chart_catalog=[])
+        # v5.6.7 — AI 가 인지되는 기호(마크다운 강조 / em·en dash) 결정적 제거. 사용자
+        # 최우선 규칙. 프롬프트 지시만으론 LLM 이 100% 안 지키므로 출력 후처리로 강제.
+        self._sanitize_symbols(composed)
         logger.info(
             "[unified_composer] Composed: %d sections, headline=%r, "
             "watch_signals=%d, contradictions=%d, conf=%.2f, followup=%s",
@@ -1185,6 +1194,131 @@ class NarrativeComposer:
         nd = dict(data)
         nd["sections"] = good
         return nd
+
+    # ------------------------------------------------------------------
+    # 기호 정화 (v5.6.7) — AI 가 인지되는 기호 결정적 제거 (사용자 최우선 규칙)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _clean_text(s: str) -> str:
+        """한 텍스트에서 마크다운 강조 + em/en dash 를 자연스럽게 제거/치환.
+
+        - 마크다운 강조 (``**`` / ``*`` / ``` `` ``` / ``_``) → 제거 (강조 내용은 보존).
+        - em dash ``—`` / en dash ``–`` / 수평선 ``―`` → 맥락별 자연 치환:
+          · 공백으로 둘러싸인 ` — ` (삽입구/부연) → ', ' (쉼표) — 한국어에서 가장 자연.
+          · 숫자 사이 ``3—5`` (범위) → '~'.
+          · 그 외 (단어 직접 인접) → 공백 한 칸.
+        치환 후 이중 공백/공백+문장부호는 정리.
+        """
+        if not s:
+            return s
+        import re as _re
+        out = s
+        # 1) 마크다운 강조 제거 (내용 보존). ** 먼저, 그 다음 단독 * / ` / _.
+        out = out.replace("**", "")
+        out = out.replace("*", "")
+        out = out.replace("`", "")
+        # 밑줄 강조: 단어 경계의 _..._ 만 (스네이크케이스 식별자 훼손 방지 위해 공백 인접만).
+        out = _re.sub(r"(?<=\s)_+|_+(?=\s)", "", out)
+        out = _re.sub(r"^_+|_+$", "", out)
+        # 2) dash 치환. 범위(숫자—숫자) → ~
+        out = _re.sub(r"(?<=\d)\s*[—–―]\s*(?=\d)", "~", out)
+        # 공백으로 둘러싸인 dash → 쉼표 (삽입구/부연 자르기)
+        out = _re.sub(r"\s+[—–―]\s+", ", ", out)
+        # 남은 dash (단어 직접 인접) → 공백
+        out = _re.sub(r"[—–―]", " ", out)
+        # 3) 정리: 쉼표 앞 공백 제거, 이중 쉼표/공백 압축
+        out = _re.sub(r"\s+,", ",", out)
+        out = _re.sub(r",\s*,", ",", out)
+        out = _re.sub(r"[ \t]{2,}", " ", out)
+        # 문장부호 앞 잉여 쉼표 ( ", ." → "." )
+        out = _re.sub(r",\s*([.!?])", r"\1", out)
+        return out.strip()
+
+    @classmethod
+    def _clean_value(cls, v):
+        """str / list / dict 를 재귀적으로 정화. 그 외 타입은 그대로."""
+        if isinstance(v, str):
+            return cls._clean_text(v)
+        if isinstance(v, list):
+            return [cls._clean_value(x) for x in v]
+        if isinstance(v, dict):
+            return {k: cls._clean_value(x) for k, x in v.items()}
+        return v
+
+    @classmethod
+    def _sanitize_symbols(cls, composed: "ComposedReport") -> None:
+        """ComposedReport 의 *모든 사용자 노출 텍스트* 에서 금지 기호 제거 (in-place).
+
+        사용자 최우선 규칙 (v5.6.7): 보고서·SNS 문구에 ``**`` / ``*`` / em dash 등
+        AI 가 인지되는 기호를 절대 쓰지 않는다. 프롬프트 지시 + 본 결정적 후처리
+        2중 방어. URL(source_url/image_url) 은 정화 대상에서 제외 (링크 훼손 방지).
+        """
+        # 보고서 레벨 단문 필드
+        for attr in (
+            "headline", "deck", "closing", "contradictions_heading",
+            "confidence_summary", "broadcast_summary",
+        ):
+            val = getattr(composed, attr, "")
+            if isinstance(val, str) and val:
+                setattr(composed, attr, cls._clean_text(val))
+
+        # 리스트[dict] 필드 (watch_signals / contradictions) — 값 전체 재귀 정화
+        composed.watch_signals = cls._clean_value(composed.watch_signals)
+        composed.contradictions = cls._clean_value(composed.contradictions)
+        if composed.timeline_flow:
+            composed.timeline_flow = cls._clean_value(composed.timeline_flow)
+
+        # hero_image / embedded_map: URL 제외하고 텍스트 필드만
+        cls._clean_media(getattr(composed, "hero_image", None))
+        if composed.embedded_map:
+            composed.embedded_map = cls._clean_map(composed.embedded_map)
+
+        # 섹션
+        for sec in composed.sections:
+            for attr in ("heading", "kicker", "prose", "pull_quote", "lede"):
+                val = getattr(sec, attr, "")
+                if isinstance(val, str) and val:
+                    setattr(sec, attr, cls._clean_text(val))
+            if sec.analogy:
+                sec.analogy = cls._clean_value(sec.analogy)
+            sec.fact_grid = cls._clean_value(sec.fact_grid)
+            # charts: title/note/data 내 라벨 텍스트 정화 (URL 없음)
+            sec.charts = cls._clean_value(sec.charts)
+            # images: caption/credit/alt 만 — URL 키는 보존
+            for img in (sec.images or []):
+                cls._clean_media(img)
+
+    @classmethod
+    def _clean_media(cls, media) -> None:
+        """이미지 dict 의 텍스트 필드만 정화 (URL 키 보존). in-place. None 안전."""
+        if not isinstance(media, dict):
+            return
+        for k in ("caption", "credit", "alt", "title"):
+            if isinstance(media.get(k), str) and media[k]:
+                media[k] = cls._clean_text(media[k])
+
+    @classmethod
+    def _clean_map(cls, m: dict) -> dict:
+        """embedded_map 의 label 텍스트만 정화. 좌표/id/bool 보존."""
+        if not isinstance(m, dict):
+            return m
+        nm = dict(m)
+        for coll_key in ("markers", "arcs", "legend"):
+            coll = nm.get(coll_key)
+            if isinstance(coll, list):
+                new_coll = []
+                for item in coll:
+                    if isinstance(item, dict):
+                        it = dict(item)
+                        for tk in ("name", "label"):
+                            if isinstance(it.get(tk), str) and it[tk]:
+                                it[tk] = cls._clean_text(it[tk])
+                        new_coll.append(it)
+                    else:
+                        new_coll.append(item)
+                nm[coll_key] = new_coll
+        return nm
 
     @staticmethod
     def _validate_references(

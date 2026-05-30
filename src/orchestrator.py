@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.6.6"
+VERSION = "v5.6.7"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -589,10 +589,21 @@ def _ensure_time_series_chart(composed, context) -> None:
 
 
 def _strip_inline_md(text: str) -> str:
-    """본문의 인라인 마크다운 강조 기호를 제거한다 (broadcast 합성용 평문화)."""
+    """마크다운 강조 + em/en dash 제거 (broadcast 합성용 평문화, v5.6.7).
+
+    composer 의 ``_sanitize_symbols`` 와 동일 규칙 — AI 가 인지되는 기호 박멸
+    (사용자 최우선 규칙). 이 경로는 composer 가 완전 실패해 context 기반으로
+    합성할 때의 백스톱이다.
+    """
     if not text:
         return ""
-    out = text.replace("**", "").replace("*", "").replace("`", "").replace("_", "")
+    out = text.replace("**", "").replace("*", "").replace("`", "")
+    out = re.sub(r"(?<=\s)_+|_+(?=\s)", "", out)
+    out = re.sub(r"^_+|_+$", "", out)
+    out = re.sub(r"(?<=\d)\s*[—–―]\s*(?=\d)", "~", out)
+    out = re.sub(r"\s+[—–―]\s+", ", ", out)
+    out = re.sub(r"[—–―]", " ", out)
+    out = re.sub(r"\s+,", ",", out)
     return " ".join(out.split())
 
 
@@ -1539,7 +1550,7 @@ class Orchestrator:
                 deck=(result.context.summary or "")[:200],
                 sections=[ComposedSection(
                     heading="요약",
-                    prose=result.context.summary or "(분석 실패 — composer 호출 오류)",
+                    prose=result.context.summary or "(분석 실패: composer 호출 오류)",
                 )],
                 confidence_score=0.0,
                 confidence_summary="composer 호출 실패. 사실 자료만 표시.",
@@ -1569,6 +1580,13 @@ class Orchestrator:
             _ensure_broadcast_summary(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — 폴백 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_broadcast_summary skipped: %s", _e)
+        # v5.6.7 — 최종 기호 정화 (사용자 최우선 규칙). composer 경로는 자체 정화하지만
+        # minimal fallback / hook 가 추가한 텍스트 / context 기반 합성본까지 *모든* 경로를
+        # 여기서 한 번 더 보장. NarrativeComposer 의 정화 규칙 재사용.
+        try:
+            self.narrative_composer._sanitize_symbols(result.composed_report)
+        except Exception as _e:  # pragma: no cover  — 정화 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] _sanitize_symbols skipped: %s", _e)
 
         n_sections = len(result.composed_report.sections)
         n_signals = len(result.composed_report.watch_signals)
