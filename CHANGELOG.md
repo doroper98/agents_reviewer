@@ -20,6 +20,44 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.6.9] — 2026-05-30
+
+### 미국 빅테크/반도체 개별주 + 미국 지수 차트 지원 + 주제 우선 차트화
+
+사용자 보고: NVIDIA 주제 보고서인데 차트에 삼성·하이닉스·KOSPI 만 뜸. 원인 —
+`INSTRUMENT_REGISTRY` 에 미국 개별주가 아예 없어서(한국 개별주 삼성·하이닉스 2개뿐),
+ContextAnalyst 가 'NVIDIA' 를 emit 해도 `resolve_instrument` 가 None → 데이터 못
+가져옴 → 매치되는 삼성·하이닉스·KOSPI 만 차트화.
+
+#### 추가 (`src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` 11→24 종목)
+
+- **미국 개별주 10종** (Yahoo, candle): NVDA(엔비디아)·TSLA(테슬라)·AAPL(애플)·
+  MSFT(마이크로소프트)·GOOGL(알파벳/구글)·AMZN(아마존)·META(메타/페이스북)·AMD·
+  TSM(TSMC)·AVGO(브로드컴).
+- **미국 지수 3종** (Yahoo, line): S&P 500(`^GSPC`)·나스닥(`^IXIC`)·필라델피아
+  반도체(`^SOX`).
+- YahooFetcher 는 이미 범용 구현(임의 ticker OHLC) — 레지스트리 항목만 추가하면
+  KOSPI/DXY 와 동일 경로로 fetch. 코드 변경은 레지스트리 + 프롬프트 + hook 뿐.
+- 모두 무인증(yfinance) — API 키 불필요.
+
+#### 주제 우선 차트화 (`orchestrator.py:_topic_priority_key`)
+
+- 기존 `_ensure_time_series_chart` 는 'data 많은 순' 으로만 정렬 → 주제 주인공이
+  아닌 종목이 먼저 뜰 수 있었음. v5.6.9 부터 3단계 우선순위: 제목(event_name)
+  등장 > 요약(summary) 등장 > 그 외, 같은 그룹 안에선 data 많은 순. 'NVIDIA
+  보고서엔 NVIDIA 차트' 보장 (제목 주인공은 data 적어도 primary).
+- ContextAnalyst SYSTEM_PROMPT 에 "주제 주인공 종목을 instruments_mentioned 의
+  *첫 번째* 로" 규칙 추가.
+
+#### 동시 갱신 (Change Propagation Matrix)
+
+`context_analyst.py:SYSTEM_PROMPT`(지원 종목 목록) · `orchestrator.py`(hook) ·
+`tests/test_market_fetcher.py`(미국 종목 22 매치 + 오탐 회귀) · `.env.example` ·
+CLAUDE.md · market_fetcher.py 헤더 표(KOSPI/KOSDAQ Source 드리프트 KRX→YAHOO 정정).
+
+> 검증: resolve_instrument 정상매치 22/22 + 오탐 점검 + 주제우선 3단계 정렬 통과,
+> 전체 compile OK. ⚠️ VM 재배포 필수 (+ yfinance 설치 확인 — 이미 requirements.txt).
+
 ## [v5.6.8] — 2026-05-30
 
 ### composer head-loss 회귀 픽스 — JSON 응답 시작이 빠지던 새 패턴 (WRITE-AP-13)

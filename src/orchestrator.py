@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.6.8"
+VERSION = "v5.6.9"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -507,6 +507,26 @@ def _ensure_market_strip(composed, context) -> None:
     )
 
 
+def _topic_priority_key(series: dict, title_text: str, summary_text: str):
+    """v5.6.9 — 주제 우선 정렬 키. 보고서 주인공 종목의 차트가 먼저 뜨게 한다.
+    'NVIDIA 보고서엔 NVIDIA 차트' 보장.
+
+    3단계 우선순위 (작을수록 앞):
+      0 — event_name(제목) 에 등장. 제목은 진짜 주인공만 담김.
+      1 — summary(본문 요약) 에만 등장.
+      2 — 어디에도 없음 (보조 지수/매크로).
+    같은 그룹 안에선 data 많은 순. sorted() 에 그대로 사용.
+    """
+    inst = str(series.get("instrument") or "")
+    if inst and inst in title_text:
+        rank = 0
+    elif inst and inst in summary_text:
+        rank = 1
+    else:
+        rank = 2
+    return (rank, -len(series.get("data") or []))
+
+
 def _ensure_time_series_chart(composed, context) -> None:
     """v5.2.2 — composer 가 시계열 차트 누락 시 mockup 수준으로 자동 보충.
 
@@ -549,9 +569,14 @@ def _ensure_time_series_chart(composed, context) -> None:
     # 0 이면, 가장 정보 풍부한 series 1개를 strip dedupe 우회로 풀 카드 강제.
     # 1개만 강제 — 모든 instrument 풀 카드는 strip 의 at-a-glance 역할과
     # 중복돼 시각 혼잡 (사용자 사례 v5.2.5 의 origin).
+    # v5.6.9 — 주제 우선. 제목(event_name) 등장 종목 > 요약(summary) 등장 > 그 외.
+    title_text = getattr(context, "event_name", "") or ""
+    summary_text = getattr(context, "summary", "") or ""
     forced_inst: str | None = None
     if _count_existing_ts_charts(composed) == 0:
-        primary_pool = sorted(candidates, key=lambda s: -len(s.get("data") or []))
+        primary_pool = sorted(
+            candidates, key=lambda s: _topic_priority_key(s, title_text, summary_text)
+        )
         primary = primary_pool[0]
         forced_inst = primary.get("instrument")
         target = composed.sections[0]
@@ -570,8 +595,8 @@ def _ensure_time_series_chart(composed, context) -> None:
     if not to_add:
         return  # composer (또는 forced primary) 가 다 박았으면 no-op
 
-    # data 많은 순 (가장 정보 풍부한 series 가 첫 섹션)
-    to_add.sort(key=lambda s: -len(s.get("data") or []))
+    # v5.6.9 — 주제 우선, 그 안에서 data 많은 순 (가장 정보 풍부한 series 가 첫 섹션)
+    to_add.sort(key=lambda s: _topic_priority_key(s, title_text, summary_text))
 
     # 첫 섹션 앞쪽에 모두 삽입 (사용자: '적극적이어도 OK, 단 mockup 품질')
     target = composed.sections[0]

@@ -57,6 +57,47 @@ def test_resolve_substring_match() -> None:
     assert spec.code == "DGS1"
 
 
+# ─── v5.6.9 미국 개별주 / 지수 ──────────────────────────────────
+
+def test_resolve_us_stocks() -> None:
+    """미국 빅테크/반도체 개별주 — Yahoo source, candle 차트."""
+    cases = {
+        "엔비디아": "NVDA", "NVIDIA": "NVDA",
+        "테슬라": "TSLA", "Tesla": "TSLA",
+        "애플": "AAPL", "Apple": "AAPL",
+        "마이크로소프트": "MSFT", "Microsoft": "MSFT",
+        "알파벳": "GOOGL", "구글": "GOOGL",
+        "아마존": "AMZN",
+        "페이스북": "META",
+        "AMD": "AMD",
+        "TSMC": "TSM", "대만 반도체": "TSM",
+        "브로드컴": "AVGO",
+    }
+    for query, expected_code in cases.items():
+        spec = resolve_instrument(query)
+        assert spec is not None, f"{query!r} → None (등록 누락)"
+        assert spec.source == "YAHOO", f"{query!r} source={spec.source}"
+        assert spec.code == expected_code, f"{query!r} → {spec.code} (기대 {expected_code})"
+        assert spec.chart_type == "candle"
+
+
+def test_resolve_us_indices() -> None:
+    """미국 지수 — Yahoo source, line 차트."""
+    for query, code in [("S&P 500", "^GSPC"), ("나스닥", "^IXIC"),
+                        ("필라델피아 반도체", "^SOX")]:
+        spec = resolve_instrument(query)
+        assert spec is not None, f"{query!r} → None"
+        assert spec.source == "YAHOO"
+        assert spec.code == code
+        assert spec.chart_type == "line"
+
+
+def test_resolve_us_stock_in_topic_phrase() -> None:
+    """본문 구절 안에 종목명이 있어도 substring 매치."""
+    assert resolve_instrument("엔비디아 신제품 발표").code == "NVDA"  # type: ignore[union-attr]
+    assert resolve_instrument("아마존 AWS 실적 호조").code == "AMZN"  # type: ignore[union-attr]
+
+
 # ─── period_to_dates ────────────────────────────────────────────
 
 

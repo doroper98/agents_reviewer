@@ -284,7 +284,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 
 ## Market Data Fetcher (v5.2.0)
 - ContextAnalyst 가 LLM 출력에 `instruments_mentioned: list[str]` emit → orchestrator 가 `src/tools/market_fetcher.py` 의 `fetch_many` 호출 → `ContextAnalysis.time_series` 채움 → composer 가 candle / line / area 차트로 emit.
-- 4 source: KRX (한국 개별주, 무인증) / YAHOO (지수 · DXY — `^KS11`/`^KQ11`/`DX-Y.NYB`, 무인증) / FRED (미국 매크로 — UST/WTI/금, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 11 종목). v5.2.6 — DXY 는 FRED/DTWEXBGS (Fed Broad TWI, 117~125 레인지의 다른 지수) 에서 Yahoo/DX-Y.NYB (진짜 ICE DXY, 99~110 레인지) 로 교체.
+- 4 source: KRX (한국 개별주, 무인증) / YAHOO (한국·미국 지수 + 미국 개별주 + DXY, 무인증) / FRED (미국 매크로 — UST/WTI/금, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 24 종목). v5.6.9 — 미국 빅테크/반도체 개별주 10종 (NVDA/TSLA/AAPL/MSFT/GOOGL/AMZN/META/AMD/TSM/AVGO, Yahoo candle) + 미국 지수 3종 (S&P500 `^GSPC` / 나스닥 `^IXIC` / 필라델피아 반도체 `^SOX`, Yahoo line) 추가. YahooFetcher 는 범용 — 레지스트리 항목만 추가하면 KOSPI 와 동일 경로로 fetch. `_ensure_time_series_chart` 가 주제(event_name>summary) 등장 종목을 우선 차트화 (`_topic_priority_key`, 'NVIDIA 보고서엔 NVIDIA 차트' 보장). v5.2.6 — DXY 는 FRED/DTWEXBGS (Fed Broad TWI, 117~125 레인지의 다른 지수) 에서 Yahoo/DX-Y.NYB (진짜 ICE DXY, 99~110 레인지) 로 교체.
 - Graceful degradation — API key 누락·HTTP fail 시 빈 series + warning log. 보고서는 정상 진행, 해당 instrument 차트만 emit X.
 - 기본 기간 3M (사건 보고서 event-anchored). 사건 일자 = `context.date` 기준. 향후 mode-aware period (daily=1M / historical=3Y) 확장 예정.
 - 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.

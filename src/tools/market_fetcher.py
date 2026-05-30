@@ -8,10 +8,23 @@ v5.2.0 — 시계열 데이터 수집. ContextAnalyst 가 LLM 출력에 ``instru
 
 | 종목                  | Source | Code                  | 차트 기본 |
 |----------------------|--------|-----------------------|----------|
-| KOSPI                | KRX    | 1001 (index)          | line     |
-| KOSDAQ               | KRX    | 2001 (index)          | line     |
+| KOSPI                | YAHOO  | ^KS11                 | line     |
+| KOSDAQ               | YAHOO  | ^KQ11                 | line     |
 | 삼성전자              | KRX    | 005930                | candle   |
 | SK하이닉스            | KRX    | 000660                | candle   |
+| 엔비디아 (NVDA)       | YAHOO  | NVDA                  | candle   |
+| 테슬라 (TSLA)         | YAHOO  | TSLA                  | candle   |
+| 애플 (AAPL)           | YAHOO  | AAPL                  | candle   |
+| 마이크로소프트 (MSFT)  | YAHOO  | MSFT                  | candle   |
+| 알파벳 (GOOGL)        | YAHOO  | GOOGL                 | candle   |
+| 아마존 (AMZN)         | YAHOO  | AMZN                  | candle   |
+| 메타 (META)           | YAHOO  | META                  | candle   |
+| AMD                  | YAHOO  | AMD                   | candle   |
+| TSMC (TSM)           | YAHOO  | TSM                   | candle   |
+| 브로드컴 (AVGO)       | YAHOO  | AVGO                  | candle   |
+| S&P 500              | YAHOO  | ^GSPC                 | line     |
+| 나스닥                | YAHOO  | ^IXIC                 | line     |
+| 필라델피아 반도체      | YAHOO  | ^SOX                  | line     |
 | 달러인덱스 (DXY)      | YAHOO  | DX-Y.NYB              | line     |
 | 미국채 1Y             | FRED   | DGS1                  | line     |
 | 미국채 10Y            | FRED   | DGS10                 | line     |
@@ -88,6 +101,76 @@ INSTRUMENT_REGISTRY: dict[str, InstrumentSpec] = {
         name="SK하이닉스", source="KRX", code="000660",
         chart_type="candle", unit="원",
         aliases=("SK하이닉스", "SK 하이닉스", "하이닉스"),
+    ),
+    # ── 미국 개별주 (Yahoo Finance — 무인증, KOSPI 지수와 동일 경로. v5.6.9) ──
+    # candle 차트. unit "$". alias 는 한글명 + 영문 풀네임 위주 — 짧은 티커
+    # (NVDA/AMD 등) 의 substring 오탐 방지 위해 ticker 자체는 정확 매치(registry
+    # key)로만 의존하고 aliases 에는 3자 이상 + 변별력 있는 표기만 등록.
+    "NVDA": InstrumentSpec(
+        name="엔비디아", source="YAHOO", code="NVDA",
+        chart_type="candle", unit="$",
+        aliases=("엔비디아", "NVIDIA", "Nvidia"),
+    ),
+    "TSLA": InstrumentSpec(
+        name="테슬라", source="YAHOO", code="TSLA",
+        chart_type="candle", unit="$",
+        aliases=("테슬라", "TESLA", "Tesla"),
+    ),
+    "AAPL": InstrumentSpec(
+        name="애플", source="YAHOO", code="AAPL",
+        chart_type="candle", unit="$",
+        aliases=("애플", "Apple", "APPLE"),
+    ),
+    "MSFT": InstrumentSpec(
+        name="마이크로소프트", source="YAHOO", code="MSFT",
+        chart_type="candle", unit="$",
+        aliases=("마이크로소프트", "Microsoft", "MICROSOFT", "MSFT"),
+    ),
+    "GOOGL": InstrumentSpec(
+        name="알파벳", source="YAHOO", code="GOOGL",
+        chart_type="candle", unit="$",
+        aliases=("알파벳", "Alphabet", "ALPHABET", "구글", "Google", "GOOGL"),
+    ),
+    "AMZN": InstrumentSpec(
+        name="아마존", source="YAHOO", code="AMZN",
+        chart_type="candle", unit="$",
+        aliases=("아마존", "Amazon", "AMAZON", "AMZN"),
+    ),
+    "META": InstrumentSpec(
+        name="메타", source="YAHOO", code="META",
+        chart_type="candle", unit="$",
+        aliases=("메타 플랫폼", "Meta Platforms", "페이스북", "Facebook"),
+    ),
+    "AMD": InstrumentSpec(
+        name="AMD", source="YAHOO", code="AMD",
+        chart_type="candle", unit="$",
+        aliases=("에이엠디", "Advanced Micro Devices"),
+    ),
+    "TSM": InstrumentSpec(
+        name="TSMC", source="YAHOO", code="TSM",
+        chart_type="candle", unit="$",
+        aliases=("TSMC", "티에스엠씨", "타이완 반도체", "대만 반도체", "Taiwan Semiconductor"),
+    ),
+    "AVGO": InstrumentSpec(
+        name="브로드컴", source="YAHOO", code="AVGO",
+        chart_type="candle", unit="$",
+        aliases=("브로드컴", "Broadcom", "BROADCOM", "AVGO"),
+    ),
+    # ── 미국 지수 (Yahoo Finance — line. v5.6.9) ──
+    "SP500": InstrumentSpec(
+        name="S&P 500", source="YAHOO", code="^GSPC",
+        chart_type="line",
+        aliases=("S&P 500", "S&P500", "SP500", "에스앤피", "스탠더드앤드푸어스", "미국 증시"),
+    ),
+    "NASDAQ": InstrumentSpec(
+        name="나스닥", source="YAHOO", code="^IXIC",
+        chart_type="line",
+        aliases=("나스닥", "NASDAQ", "Nasdaq", "나스닥 종합"),
+    ),
+    "SOX": InstrumentSpec(
+        name="필라델피아 반도체", source="YAHOO", code="^SOX",
+        chart_type="line",
+        aliases=("필라델피아 반도체", "필라델피아 반도체 지수", "SOX", "반도체 지수"),
     ),
     # ── FRED 매크로 ──
     # v5.2.6 — DXY 라우팅을 FRED/DTWEXBGS → Yahoo/DX-Y.NYB 로 교체.
