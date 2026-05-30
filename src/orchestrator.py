@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.6.5"
+VERSION = "v5.6.6"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -585,6 +585,63 @@ def _ensure_time_series_chart(composed, context) -> None:
     logging.getLogger(__name__).info(
         "[orchestrator] _ensure_time_series_chart: +%d 차트 (%s) → sections[0].charts (mockup-quality)",
         len(to_add), names,
+    )
+
+
+def _strip_inline_md(text: str) -> str:
+    """본문의 인라인 마크다운 강조 기호를 제거한다 (broadcast 합성용 평문화)."""
+    if not text:
+        return ""
+    out = text.replace("**", "").replace("*", "").replace("`", "").replace("_", "")
+    return " ".join(out.split())
+
+
+def _ensure_broadcast_summary(composed, context) -> None:
+    """v5.6.6 — broadcast_summary(SNS 문구) 결정적 폴백.
+
+    composer 가 성공해도 ``broadcast_summary`` 필드를 비워 emit 하거나(LLM 누락),
+    timeout 부분 살림본이라 비어 있는 경우, 텔레그램/일일브리핑이 SNS 문구를 아예
+    안 보내던 회귀 차단. deck + 앞 섹션 prose 로 친절한 평문을 합성한다.
+
+    *결정적* hook — LLM 미호출. composer 가 채웠으면 (strip 후 비어있지 않으면)
+    그대로 둔다. 합성 텍스트에 마크다운 강조 기호 미사용 (평문만).
+    """
+    if composed is None:
+        return
+    existing = (getattr(composed, "broadcast_summary", "") or "").strip()
+    if existing:
+        return  # composer 가 채웠음 — 존중
+
+    parts: list[str] = []
+    deck = _strip_inline_md(getattr(composed, "deck", "") or "")
+    if deck:
+        parts.append(deck)
+
+    for sec in (getattr(composed, "sections", None) or []):
+        prose = _strip_inline_md(getattr(sec, "prose", "") or "")
+        if not prose:
+            continue
+        sentences = [s.strip() for s in prose.replace("\n", " ").split(". ") if s.strip()]
+        snippet = ". ".join(sentences[:2])
+        if snippet and snippet not in " ".join(parts):
+            parts.append(snippet)
+        if sum(len(p) for p in parts) >= 240:
+            break
+
+    body = "\n\n".join(parts).strip()
+    if not body:
+        body = _strip_inline_md(getattr(context, "summary", "") or "")
+    if not body:
+        return  # 정말 아무것도 없으면 첨부 안 함 (graceful, 기존 동작)
+
+    if len(body) > 500:
+        body = body[:500].rsplit(". ", 1)[0].rstrip()
+        if body and not body.endswith((".", "다", "요", "음")):
+            body += "."
+    composed.broadcast_summary = body
+    logger.info(
+        "[orchestrator] _ensure_broadcast_summary: 합성 (%d자) — composer 누락 폴백",
+        len(body),
     )
 
 
@@ -1507,6 +1564,11 @@ class Orchestrator:
             _ensure_time_series_chart(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
+        # v5.6.6 — SNS broadcast 문구 결정적 폴백 (composer 누락/부분 살림본 대비).
+        try:
+            _ensure_broadcast_summary(result.composed_report, result.context)
+        except Exception as _e:  # pragma: no cover  — 폴백 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] _ensure_broadcast_summary skipped: %s", _e)
 
         n_sections = len(result.composed_report.sections)
         n_signals = len(result.composed_report.watch_signals)

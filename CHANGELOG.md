@@ -20,6 +20,39 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.6.6] — 2026-05-30
+
+### composer 짤림(truncation) 근본 수정 + SNS 문구 강건화
+
+사용자 보고 (`analysis_20260530_105701`): deep 보고서가 또 "사실 자료만 표시"
+0% fallback 으로 짤림. Duration 1306초 = deep timeout 540s × 2회(재시도) + 컨텍스트
+분석. 즉 composer 가 540초 안에 큰 deep 보고서를 못 끝내 **두 번 다 timeout →
+부분 출력 통째 폐기 → 0% fallback** 회귀. v5.5.9 의 timeout 은 "무한 hang" 만 막고
+(a) 큰 보고서엔 한도 부족 (b) 부분 출력 폐기 (c) 재시도가 같은 timeout 한 번 더
+낭비 — 3중 문제를 남겼다.
+
+#### 수정 (4중 방어, `src/agents/narrative_composer.py`)
+
+- **부분 출력 살리기**: `_call_cli` 가 stdout 을 임시 파일로 받는다. timeout 으로
+  proc 를 kill 해도 디스크에 남은 부분 출력을 `_ComposerTimeout.partial` 로 운반.
+- **잘린 JSON 복구**: `_repair_truncated_json` 이 마지막 *완결 경계* (쉼표 직전 /
+  `}`·`]` 직후) 까지 자르고 열린 괄호를 닫아 파싱. `_drop_invalid_sections` 가
+  heading/prose 빠진 절단 섹션 제거. 완성된 섹션까지는 실제 내용으로 렌더.
+- **timeout 후 재시도 안 함**: 또 timeout 날 뿐 — 살린 부분으로 끝내거나 중단.
+- **timeout 상향**: deep 540→900s, standard 360→480s, fast 240→300s. 부분 살림이
+  있으므로 한도 초과해도 완성 섹션은 건진다.
+
+#### SNS broadcast 문구 결정적 폴백 (`src/orchestrator.py`)
+
+- `_ensure_broadcast_summary` 추가. composer 가 `broadcast_summary` 를 비워 emit
+  하거나(LLM 누락) timeout 부분 살림본이라 비어 있을 때, deck + 앞 섹션 prose 로
+  친절한 평문을 합성 (최후 폴백 context.summary). 결정적 hook — LLM 미호출.
+  composer 가 채웠으면 존중. 이제 텔레그램/일일브리핑이 SNS 문구를 *항상* 확보.
+- 합성 텍스트는 평문화 (`_strip_inline_md` 로 `**`/`*`/`` ` ``/`_` 제거).
+
+> 검증: JSON 복구 8케이스 + broadcast 폴백 7케이스 오프라인 통과, 전체 compile OK.
+> ⚠️ VM 재배포 필수 (composer 안정화는 봇 재기동 후 적용).
+
 ## [v5.6.5] — 2026-05-30
 
 ### 두 버전 계보 통합 (lineage reconciliation)
