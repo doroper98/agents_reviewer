@@ -282,13 +282,62 @@ class TelegramBot:
     async def _reports_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """Handle /reports command."""
-        if update.message is None:
+        """``/reports`` — (관리자 전용) 전체 보고서 목록 + 토큰 URL 회수.
+
+        v5.6.2 — 공개 인덱스가 목록을 노출하지 않게 바뀌어, 관리자는 본 명령으로
+        unlisted 토큰 링크를 받는다. 모든 보고서의 비공개 URL 을 노출하므로
+        ``_is_authorized`` 게이팅 필수 (ALLOWED_CHAT_IDS 미설정 = 전체 허용이니
+        구독자 서비스라면 반드시 본인 chat_id 로 설정할 것).
+        """
+        if update.message is None or update.effective_chat is None:
             return
-        project = self.config.cloudflare_project_name
-        await update.message.reply_text(
-            f"📁 전체 보고서 목록:\nhttps://{project}.pages.dev/"
-        )
+        if not self._is_authorized(update.effective_chat.id):
+            await update.message.reply_text("권한 없음.")
+            return
+        import glob
+
+        output_dir = self.config.report_output_dir
+        project = self.config.cloudflare_project_name or ""
+        files = sorted(
+            glob.glob(os.path.join(output_dir, "analysis_*.html")), reverse=True
+        )[:30]
+        if not files:
+            await update.message.reply_text("보고서가 없습니다.")
+            return
+
+        admin_token = (getattr(self.config, "admin_index_token", "") or "").strip()
+        if admin_token and project:
+            await update.message.reply_text(
+                "🔖 즐겨찾기용 전체 목록 페이지 (비공개):\n"
+                f"https://{project}.pages.dev/admin-{admin_token}.html"
+            )
+
+        lines = [f"📁 전체 보고서 {len(files)}건 (최근순):\n"]
+        for fp in files:
+            fname = os.path.basename(fp)
+            stem = fname.replace("analysis_", "").replace(".html", "")
+            parts = stem.split("_")
+            if len(parts) >= 2 and len(parts[0]) == 8 and len(parts[1]) == 6:
+                d, t = parts[0], parts[1]
+                date = f"{d[:4]}-{d[4:6]}-{d[6:8]} {t[:2]}:{t[2:4]}"
+            else:
+                date = stem
+            title = fname
+            try:
+                with open(fp, "r", encoding="utf-8") as f:
+                    head = f.read(3000)
+                if "<title>" in head and "</title>" in head:
+                    cand = head.split("<title>")[1].split("</title>")[0].strip()
+                    if cand and cand != "Analysis":
+                        title = cand
+            except Exception:
+                pass
+            url = f"https://{project}.pages.dev/{fname}" if project else fname
+            lines.append(f"• {date}  {title}\n  {url}")
+
+        text = "\n".join(lines)
+        for i in range(0, len(text), 3900):
+            await update.message.reply_text(text[i:i + 3900])
 
     # ------------------------------------------------------------------
     # V3 Step 5-B (v2.9.5) — Watchlist commands
@@ -775,9 +824,12 @@ class TelegramBot:
                 f"https://{project}.pages.dev/{html_filename}" if project
                 else (result.report_url or "")
             )
-            bundle = build_report_bundle(
+            # v5.5.7 — to_thread: prerender 의 sync Playwright 를 async 루프 밖에서 실행.
+            bundle = await asyncio.to_thread(
+                build_report_bundle,
                 result, html_url=predicted,
                 system_version=result.system_version or "",
+                prerender_svg=getattr(self.config, "enable_bundle_prerender", True),
             )
             bundle_path = os.path.join(output_dir, f"analysis_{stem}.bundle.json")
             with open(bundle_path, "w", encoding="utf-8") as f:
@@ -964,6 +1016,16 @@ class TelegramBot:
 
             report_path = result.report_path
             followup_tag = " (후속)" if parent_context is not None else ""
+
+            # v5.6.1 — X 구독자용 broadcast 요약 (라벨 없이 본문만, 링크 메시지 앞에).
+            broadcast = (
+                result.composed_report.broadcast_summary.strip()
+                if result.composed_report and result.composed_report.broadcast_summary
+                else ""
+            )
+            if broadcast:
+                await send(broadcast)
+
             if result.report_url and result.report_url.startswith("http"):
                 md_url = result.report_url.replace(".html", ".md")
                 await send(

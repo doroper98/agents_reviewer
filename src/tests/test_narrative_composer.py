@@ -163,6 +163,26 @@ def test_composer_parse_response_returns_none_on_invalid():
     assert NarrativeComposer._parse_response("not json at all") is None
 
 
+def test_composer_parse_response_tolerates_trailing_extra_data():
+    # v5.5.10 회귀 — "Extra data: line 1 column N" (객체 뒤 꼬리 텍스트) 에 죽던 케이스.
+    raw = (
+        '{"headline":"끝맺음","deck":"","sections":'
+        '[{"heading":"S","prose":"P"}],"closing":""}'
+        "\n\n위 JSON 외 모델이 덧붙인 잡설 (무시되어야 함)."
+    )
+    parsed = NarrativeComposer._parse_response(raw)
+    assert parsed is not None
+    assert parsed.headline == "끝맺음"
+    assert len(parsed.sections) == 1
+
+
+def test_composer_parse_response_tolerates_leading_prose_no_fence():
+    raw = '서두 설명입니다.\n{"headline":"Y","deck":"","sections":[],"closing":""}'
+    parsed = NarrativeComposer._parse_response(raw)
+    assert parsed is not None
+    assert parsed.headline == "Y"
+
+
 def test_composer_validate_references_filters_invalid_chart_ids():
     composed = ComposedReport(
         headline="X",

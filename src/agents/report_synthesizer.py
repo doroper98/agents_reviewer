@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+import secrets
 import shutil
 from datetime import datetime, timezone, timedelta
 
@@ -1134,7 +1135,11 @@ class ReportSynthesizer:
         os.makedirs(output_dir, exist_ok=True)
 
         # v4.4.1: report_id 가 주어지면 그대로 사용 (patch 시 기존 파일 덮어쓰기).
-        timestamp = report_id if report_id else datetime.now(KST).strftime("%Y%m%d_%H%M%S")
+        # v5.6.1: 신규 생성 시 날짜+시각 뒤에 난수 토큰 부착 — 구독자 전용 unlisted URL.
+        #         파일명 = analysis_{YYYYMMDD_HHMMSS}_{10hex}. report_id(재렌더) 는 토큰 보존.
+        timestamp = report_id if report_id else (
+            datetime.now(KST).strftime("%Y%m%d_%H%M%S") + "_" + secrets.token_hex(5)
+        )
         filename = f"analysis_{timestamp}.html"
         filepath = os.path.join(output_dir, filename)
 
@@ -1184,9 +1189,13 @@ class ReportSynthesizer:
                     f"https://{project}.pages.dev/{filename}" if project
                     else (result.report_url or "")
                 )
-                bundle = build_report_bundle(
+                # v5.5.7 — to_thread: prerender 가 sync Playwright 라 async 루프
+                # 밖(워커 스레드)에서 실행해야 함 (루프 블로킹·sync-in-asyncio 예외 방지).
+                bundle = await asyncio.to_thread(
+                    build_report_bundle,
                     result, html_url=predicted_html_url,
                     system_version=result.system_version or "",
+                    prerender_svg=getattr(self.config, "enable_bundle_prerender", True),
                 )
                 bundle_filename = f"analysis_{timestamp}.bundle.json"
                 bundle_filepath = os.path.join(output_dir, bundle_filename)
@@ -1590,158 +1599,116 @@ class ReportSynthesizer:
                 )
 
     def _generate_index(self, output_dir: str) -> None:
-        """Generate index.html listing all reports."""
+        """공개 랜딩(목록 비공개) + 관리자 비공개 목록 페이지 생성 (v5.6.3).
+
+        - ``index.html``: 구독자 전용 안내만 — 목록 노출 X (unlisted 가드).
+        - ``admin-{token}.html``: 전체 보고서 목록 + 토큰 URL. ``config.admin_index_token``
+          (env ``ADMIN_INDEX_TOKEN``) 설정 시에만 생성. *고정* 난수 주소라 관리자가
+          즐겨찾기 가능. 미설정 시 미생성 (텔레그램 ``/reports`` 로 대체).
+        """
         import glob
-        reports = sorted(glob.glob(os.path.join(output_dir, "analysis_*.html")), reverse=True)
 
-        rows = []
-        for rpath in reports[:50]:
-            fname = os.path.basename(rpath)
-            # Extract date from filename: analysis_20260328_041426.html
-            parts = fname.replace("analysis_", "").replace(".html", "").split("_")
-            if len(parts) >= 2:
-                date_str = parts[0]
-                time_str = parts[1]
-                display_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]} {time_str[:2]}:{time_str[2:4]}"
-            else:
-                display_date = fname
-
-            # Try to extract title from HTML
-            title = fname
-            try:
-                with open(rpath, "r", encoding="utf-8") as f:
-                    content = f.read(3000)
-                    if "<title>" in content and "</title>" in content:
-                        title = content.split("<title>")[1].split("</title>")[0].strip()
-                        if not title or title == "Analysis":
-                            title = fname
-            except Exception:
-                pass
-
-            rows.append(
-                f'<tr>'
-                f'<td class="cell-title"><a href="{fname}">{title}</a></td>'
-                f'<td class="cell-date">{display_date}</td>'
-                f'</tr>'
-            )
-
-        empty_row = (
-            '<tr><td colspan="2" class="cell-empty">보고서가 없습니다</td></tr>'
-        )
-        index_html = f'''<!DOCTYPE html>
+        head = """<!DOCTYPE html>
 <html lang="ko" data-theme="editorial_cream">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
 <title>Analysis Reports</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-:root {{
-  --bg:#F2EBDB; --card:#ECE3D0; --card-hover:#E5DBC4;
-  --border:#D4C8B0; --border-soft:rgba(212,200,176,0.55);
-  --text:#1F1814; --text-2:#2E2620; --muted:#6B5C4A;
-  --accent:#B05A38;
-}}
-*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
-body{{
-  font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;
-  background:var(--bg); color:var(--text-2);
-  font-size:14.5px; line-height:1.7;
-  word-break:keep-all; overflow-wrap:break-word;
-  -webkit-font-smoothing:antialiased;
-}}
-.wrap{{max-width:880px;margin:0 auto;padding:48px 24px 64px}}
-.eyebrow{{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;font-weight:700;letter-spacing:2.4px;
-  text-transform:uppercase;color:var(--accent);margin-bottom:12px;
-}}
-h1{{
-  font-family:'Newsreader','Noto Serif KR',serif;
-  font-size:38px;font-weight:800;line-height:1.15;
-  color:var(--text);margin-bottom:10px;letter-spacing:-0.6px;
-}}
-.sub{{
-  font-size:13px;color:var(--muted);margin-bottom:28px;
-  padding-bottom:18px;border-bottom:1px solid var(--border-soft);
-  font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;
-}}
-.sub strong{{color:var(--accent);font-weight:700}}
-table{{
-  width:100%;border-collapse:collapse;
-  background:var(--card);border:1px solid var(--border-soft);
-  border-radius:8px;overflow:hidden;
-}}
-thead th{{
-  background:var(--card-hover);color:var(--muted);
-  padding:12px 16px;text-align:left;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:10.5px;font-weight:700;
-  text-transform:uppercase;letter-spacing:1.4px;
-  border-bottom:1px solid var(--border-soft);
-}}
-tbody tr{{transition:background .15s}}
-tbody tr:hover{{background:var(--card-hover)}}
-.cell-title{{padding:14px 16px;border-bottom:1px solid var(--border-soft)}}
-.cell-title a{{
-  font-family:'Newsreader','Noto Serif KR',serif;
-  color:var(--text);text-decoration:none;font-weight:700;
-  font-size:15.5px;line-height:1.4;
-  border-bottom:1px solid transparent;transition:border-color .15s,color .15s;
-}}
-.cell-title a:hover{{color:var(--accent);border-bottom-color:var(--accent)}}
-.cell-date{{
-  padding:14px 16px;border-bottom:1px solid var(--border-soft);
-  color:var(--muted);font-size:12px;
-  font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;
-  white-space:nowrap;
-}}
-tbody tr:last-child .cell-title,
-tbody tr:last-child .cell-date{{border-bottom:none}}
-.cell-empty{{
-  padding:36px 20px;text-align:center;color:var(--muted);
-  font-style:italic;font-size:14px;
-}}
-.foot{{
-  margin-top:24px;padding-top:16px;
-  border-top:1px solid var(--border-soft);
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;color:var(--muted);letter-spacing:0.3px;
-  text-align:center;
-}}
-.foot a{{color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(176,90,56,0.4)}}
-.foot a:hover{{color:var(--text);border-bottom-color:var(--text)}}
-@media (max-width:640px){{
-  .wrap{{padding:32px 16px 48px}}
-  h1{{font-size:30px}}
-  .cell-title a{{font-size:14px}}
-  .cell-date{{font-size:11px;padding:14px 10px}}
-  thead th{{padding:10px 12px;font-size:10px}}
-}}
+:root{--bg:#F2EBDB;--card:#ECE3D0;--card-hover:#E5DBC4;--border:#D4C8B0;--border-soft:rgba(212,200,176,0.55);--text:#1F1814;--text-2:#2E2620;--muted:#6B5C4A;--accent:#B05A38}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-2);font-size:14.5px;line-height:1.7;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 64px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+h1{font-family:'Newsreader','Noto Serif KR',serif;font-size:38px;font-weight:800;line-height:1.15;color:var(--text);margin-bottom:10px;letter-spacing:-0.6px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--border-soft);font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px}
+.sub strong{color:var(--accent);font-weight:700}
+.notice{background:var(--card);border:1px solid var(--border-soft);border-radius:8px;padding:32px 24px;text-align:center;color:var(--muted);line-height:1.9}
+.notice p.lead{font-family:'Newsreader','Noto Serif KR',serif;font-size:17px;color:var(--text);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:8px;overflow:hidden}
+thead th{background:var(--card-hover);color:var(--muted);padding:12px 16px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;border-bottom:1px solid var(--border-soft)}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:var(--card-hover)}
+.cell-title{padding:14px 16px;border-bottom:1px solid var(--border-soft)}
+.cell-title a{font-family:'Newsreader','Noto Serif KR',serif;color:var(--text);text-decoration:none;font-weight:700;font-size:15.5px;line-height:1.4;border-bottom:1px solid transparent;transition:border-color .15s,color .15s}
+.cell-title a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.cell-date{padding:14px 16px;border-bottom:1px solid var(--border-soft);color:var(--muted);font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;white-space:nowrap}
+tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:none}
+.cell-empty{padding:36px 20px;text-align:center;color:var(--muted);font-style:italic;font-size:14px}
+.foot{margin-top:24px;padding-top:16px;border-top:1px solid var(--border-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.3px;text-align:center}
+.foot a{color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(176,90,56,0.4)}
+.foot a:hover{color:var(--text);border-bottom-color:var(--text)}
+@media (max-width:640px){.wrap{padding:32px 16px 48px}h1{font-size:30px}.cell-title a{font-size:14px}.cell-date{font-size:11px;padding:14px 10px}thead th{padding:10px 12px;font-size:10px}}
 </style>
 </head>
-<body>
-<div class="wrap">
-<div class="eyebrow">Event Analysis Team</div>
-<h1>Analysis Reports</h1>
-<div class="sub">총 <strong>{len(reports)}</strong>건의 보고서 · 최신 50건</div>
-<table>
-<thead><tr><th>보고서</th><th style="width:170px">생성일시</th></tr></thead>
-<tbody>
-{"".join(rows) if rows else empty_row}
-</tbody>
-</table>
-<div class="foot">editorial_cream · <a href="https://doroper98.github.io/agents_reviewer/samples/">samples</a> · <a href="https://github.com/doroper98/agents_reviewer">github</a></div>
-</div>
-</body>
-</html>'''
+"""
+        foot = (
+            '<div class="foot">editorial_cream · '
+            '<a href="https://doroper98.github.io/agents_reviewer/samples/">samples</a> · '
+            '<a href="https://github.com/doroper98/agents_reviewer">github</a></div>'
+        )
 
+        # 1) 공개 랜딩 — 목록 없음.
+        public_body = (
+            '<div class="eyebrow">Event Analysis Team</div>\n'
+            '<h1>Analysis Reports</h1>\n'
+            '<div class="sub">구독자 전용 분석 서비스</div>\n'
+            '<div class="notice">\n'
+            '<p class="lead">보고서 목록은 공개되지 않습니다.</p>\n'
+            '<p>각 분석 보고서는 발급된 전용 링크로만 열람하실 수 있어요.</p>\n'
+            '</div>\n' + foot
+        )
+        index_html = head + f'<body>\n<div class="wrap">\n{public_body}\n</div>\n</body>\n</html>'
         index_path = os.path.join(output_dir, "index.html")
         with open(index_path, "w", encoding="utf-8") as f:
             f.write(index_html)
-        logger.info(f"[report_synthesizer] Index page updated: {index_path}")
+        logger.info(f"[report_synthesizer] Public index updated: {index_path}")
+
+        # 2) 관리자 비공개 목록 (고정 토큰 설정 시만). 즐겨찾기용 unlisted 주소.
+        token = (getattr(self.config, "admin_index_token", "") or "").strip()
+        if not token:
+            return
+        reports = sorted(
+            glob.glob(os.path.join(output_dir, "analysis_*.html")), reverse=True
+        )
+        rows = []
+        for rpath in reports[:200]:
+            fname = os.path.basename(rpath)
+            parts = fname.replace("analysis_", "").replace(".html", "").split("_")
+            if len(parts) >= 2 and len(parts[0]) == 8 and len(parts[1]) == 6:
+                d, t = parts[0], parts[1]
+                display_date = f"{d[:4]}-{d[4:6]}-{d[6:8]} {t[:2]}:{t[2:4]}"
+            else:
+                display_date = fname
+            title = fname
+            try:
+                with open(rpath, "r", encoding="utf-8") as fr:
+                    content = fr.read(3000)
+                if "<title>" in content and "</title>" in content:
+                    cand = content.split("<title>")[1].split("</title>")[0].strip()
+                    if cand and cand != "Analysis":
+                        title = cand
+            except Exception:
+                pass
+            rows.append(
+                f'<tr><td class="cell-title"><a href="{fname}">{title}</a></td>'
+                f'<td class="cell-date">{display_date}</td></tr>'
+            )
+        empty_row = '<tr><td colspan="2" class="cell-empty">보고서가 없습니다</td></tr>'
+        admin_body = (
+            '<div class="eyebrow">Event Analysis Team · Admin</div>\n'
+            '<h1>전체 보고서</h1>\n'
+            f'<div class="sub">총 <strong>{len(reports)}</strong>건 · 비공개 목록 (즐겨찾기 전용)</div>\n'
+            '<table>\n<thead><tr><th>보고서</th><th style="width:170px">생성일시</th></tr></thead>\n'
+            f'<tbody>\n{"".join(rows) if rows else empty_row}\n</tbody>\n</table>\n' + foot
+        )
+        admin_html = head + f'<body>\n<div class="wrap">\n{admin_body}\n</div>\n</body>\n</html>'
+        admin_path = os.path.join(output_dir, f"admin-{token}.html")
+        with open(admin_path, "w", encoding="utf-8") as f:
+            f.write(admin_html)
+        logger.info("[report_synthesizer] Admin index updated: admin-%s.html", token)
 
 
 # Populate the block builder registry after class definition.

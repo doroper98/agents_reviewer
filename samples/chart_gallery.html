@@ -99,9 +99,9 @@ h1{font-family:'Noto Serif KR',serif;font-weight:900;font-size:24px;color:var(--
 
     <!-- 9. Network -->
     <div class="chart-card" style="grid-column:1/-1">
-      <div class="chart-card-title">9. 행위자 네트워크 그래프</div>
-      <div class="chart-card-subtitle">force-directed — 행위자 간 동맹/대립/중립 관계. 대립은 점선.</div>
-      <div class="chart-card-stage" style="aspect-ratio:5/3"><svg id="g-network"></svg></div>
+      <div class="chart-card-title">9. 행위자 관계 인접행렬</div>
+      <div class="chart-card-subtitle">v5.5.5 — radial 폐기 → 인접행렬. 셀이 관계 type (대립 ✕ / 동맹 / 영향 / 연관). 진영 정렬.</div>
+      <div class="chart-card-stage"><svg id="g-network"></svg></div>
       <div class="chart-card-meta"><span><strong>data</strong> {nodes: [{id, label, group}], links: [{source, target, type}]}</span><span><strong>타입</strong> network</span></div>
     </div>
 

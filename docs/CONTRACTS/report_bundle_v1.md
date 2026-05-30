@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v5.5.3
+last_synced_with: v5.5.6
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -70,6 +70,15 @@ verification 의 권위는 **producer(agents_reviewer)** 에 있다. consumer �
 ### §5 prerendered_svg 위치
 `charts[]` **그리고** `map` 객체 양쪽에 `prerendered_svg` 칸을 둔다.
 B안(정적 SVG) 대상: map / choropleth / network / sankey. A안 대상 차트는 `null`.
+
+**v5.5.6 — B안 구현됨 (additive, schema_version 무증분).** consumer(osint_generator)
+가 "전-타입 SVG" 요청을 철회하고 A안(데이터-온리 재렌더)으로 수렴 — B안은 복잡 4종의
+*폴백* 으로만 채운다. producer 는 `prerender_svg=True` (config `enable_bundle_prerender`,
+디폴트 ON) + Playwright 가용 시 charts.js/maps.js 를 헤드리스 렌더해 해당 4종의
+`prerendered_svg` 를 독립 SVG 로 채운다. Playwright/chromium 미설치·렌더 실패·네트워크
+차단(map 의 world-atlas fetch) 시 graceful `null` — 본 칸은 *언제나 optional* (§7 의
+"optional 은 null/생략/값 모두 valid"). A안 17종 차트는 항상 `null` 유지. SSOT:
+`src/handoff/svg_prerender.py`.
 
 ### §6 텍스트 레지스터
 `prose` / `headline` / `deck` / `pull_quote` 는 **편집체 그대로** 둔다.

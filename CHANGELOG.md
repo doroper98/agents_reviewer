@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.11
+last_synced_with: v5.6.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -20,330 +20,160 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## [v5.5.11] — 2026-05-29
+## [v5.6.5] — 2026-05-30
 
-### Changed — composer max_tokens 한도 1.5배 (분량 여지 확장)
+### 두 버전 계보 통합 (lineage reconciliation)
 
-**배경**: 사용자 — "보고서 길이 제한 더 완화. 모든 보고서가 그 길이에 맞출
-필요는 없고, 그 길이까지 가야 할 내용에 충실하게."
+`v5.5.5` 이후 배포 라인(main)과 기능 라인(v5.6.x)이 **두 갈래로 분기**해
+`v5.5.6`~`v5.5.10` 버전 번호가 양쪽에서 중복 사용되는 회귀가 발생했다 (Execution
+Rule #12 위반). 배포된 봇은 main 계보(`v5.5.11`)였고, X 공유 요약·composer
+타임아웃/재시도·파싱 강건화 등은 v5.6.x 계보에만 있어 운영에 반영되지 않았다.
 
-**변경** (`src/agents/narrative_composer.py:537-542`):
-- `MAX_TOKENS_BY_MODE`: fast 12000→18000, standard 20000→30000, deep 32000→48000
-- `MAX_TOKENS` 디폴트: 32000→48000
+본 릴리스는 **v5.6.x 계보를 정본으로 확정**하고, main 계보(`v5.5.6`~`v5.5.11`)가
+독자적으로 추가한 기능을 빠짐없이 cherry-pick 으로 이식해 단일 라인으로 합쳤다.
 
-모델 (Opus 4.7) 은 한도의 자연 sweet spot (60~80%) 으로 출력하므로 한도
-확장이 *모든* 보고서를 균일 확대하지 않는다. 분량 더 필요한 주제만 더 깊게
-다룰 여지가 생김 — 사용자 의도 정확 부합. SYSTEM_PROMPT 의 섹션 수 가이드
-(deep 5~7) 는 그대로 유지 (섹션 수까지 늘리면 모든 보고서 균일 확대).
+#### main 계보에서 이식된 기능
 
-### Changed — headline + deck 평이화 명시 (★ 최우선 원칙 (3)번 신설)
+- **감시 신호 후속 보고 수동 활성화 버튼** (main v5.5.6): 신호 발화 알림에
+  `[▶ 후속 보고 생성]` `InlineKeyboardButton` 동봉 + `CallbackQueryHandler`.
+- **후속 보고 deep 모드 고정 + chain depth 제한 폐지 + 부모 메타 누락 가드**
+  (main v5.5.7): `MAX_CHAIN_DEPTH` 상수 제거, 자동 폭주는 수동 버튼 모델로 차단.
+- **silent except 가 묻고 있던 attribute access 3건 fix** (main v5.5.8):
+  `result.composed_report.sections` / `.embedded_map`, `result.scenarios` 정정 —
+  차트 type 기록·부모 report_meta 등록 실패 회귀 해소.
+- **한국 장마감 자동 브리핑 + 시장 구조 해석가 페르소나** (main v5.5.9):
+  `/market_brief_on|off|status` 명령 + `MarketBriefSubscriberRegistry` +
+  `run_market_briefing_loop` + `prompts/market_briefing_persona.md` +
+  `MARKET_BRIEFING_*` config 4종 (디폴트 17:00 KST, 기본 OFF).
+- **`/status` 에 market brief 정보 추가 + `/watchlist` 4096자 한도 fix**
+  (main v5.5.10).
+- **composer `max_tokens` 1.5배 + headline/deck 평이화 + figcaption 정렬 fix**
+  (main v5.5.11): `MAX_TOKENS_BY_MODE` fast 18K / standard 30K / deep 48K.
+- **patch_report `--recompose`** (main, v5.5.5 후속): 저장된 사실 기반 보고서
+  통째 재작성.
 
-**배경**: 사용자 — "본문은 좀 완화됐는데 제목과 제목 하단 요약도 더
-평이해질 필요가 있다."
+#### v5.6.x 계보가 이미 보유 (보존됨)
 
-**변경** (`src/agents/narrative_composer.py:SYSTEM_PROMPT`):
-v5.5.5 의 "★ 최우선 원칙" 블록에 (3)번 조항 신설. 본문 평이화 (1)(2) 와
-동일 원칙을 headline + deck 에 *더 엄격하게* 적용. 첫 화면이라 한 단어
-어렵게 박히면 일반 독자가 닫는다.
+- composer 타임아웃 + 재시도 + "Extra data" 파싱 강건화 (v5.6.x 계보의 v5.5.9/
+  v5.5.10 — "사실 자료만 표시" 중단 회귀 차단). main v5.5.11 의 max_tokens 증량과
+  **공존** — 보고서 중단을 타임아웃·재시도·토큰증량 3중으로 방어.
+- X 구독자용 broadcast 요약 + 보고서 URL 난수 토큰 (v5.6.1).
+- 공개 인덱스 비공개 + `/reports` 관리자 토큰 URL (v5.6.2~v5.6.3).
+- 발행일·사건일 시점 앵커링 WRITE-AP-11 (v5.6.4).
 
-- **headline (~30자)**: 한자어 압축 (양해각서 / 시험대 / 분기점 / 변곡점 /
-  절충안), 신문 표제어 (봉인 / 칼끝 / 풍전등화), 은유 (두 갈래 / 갈림길 /
-  무대) 자제. 일상어 명사 + 동사 한 호흡.
-  - Before: "양해각서 60일, 두 갈래 결정"
-  - After: "이란 핵 합의, 60일 뒤 첫 시험 — 사찰을 열까 막을까"
-- **deck (~80자, 1~2 문장)**: 비전문가 친구에게 설명하듯. 영어·전문 용어·
-  라틴 어원 한자어 (불식 / 함의 / 제고 / 회임) 금지. 행위자·사건·이해관계
-  누구 봐도 보이게.
+> ⚠️ **VM 재배포 필수.** 배포된 봇은 두 기능(X 공유 요약·composer 안정화)을
+> 갖지 못한 main `v5.5.11` 이다. 본 통합본으로 재배포해야 두 문제가 동시에 해소된다.
 
-### Fixed — 첫 사진 figcaption 중앙 정렬 회귀
+## [v5.6.4] — 2026-05-29
 
-**증상**: hero 영역 첫 사진 (composed.hero_image) 의 figcaption 만 중앙
-정렬. inline 본문 사진들 (composed_section.images) 의 figcaption 은 왼쪽
-정렬 — 일관성 깨짐.
+### Fixed — 발행일과 사건일이 다를 때 시점 앵커 누락 (WRITE-AP-11)
 
-**Root cause**: `<figure class="freeform-figure hero">` 가 `freeform-figure`
-와 `hero` 두 클래스를 갖는데, `src/templates/report.css:393` 의
-`.hero { text-align: center }` 가 figure 의 자식 figcaption 까지 inherit.
+5/29 발행 데일리 브리핑이 본문 첫 줄부터 "5월 26일 코스피 8,047 신고가..." 로
+시작하고 "같은 시각, 환율 7거래일 연속..." 로 지속 상태를 사건일에 고정 → 독자에
+게 "오늘 보고서인데 갑자기 사흘 전?" 인지부조화 회귀.
 
-**Fix** (`src/templates/archetypes/freeform_essay.html:124`):
-`.freeform-figure figcaption` 에 `text-align:left` 명시. hero/inline 무관
-모든 figcaption 왼쪽 정렬. report.css 의 `.hero` 는 다른 archetype 도
-쓰는 일반 hero 클래스라 거기 직접 손대지 않음.
+원인: composer SYSTEM_PROMPT 에 "오늘=발행일" anchor 가 없었고 payload 에도
+`publication_date` 가 없어 composer 가 today 를 모름. context.date 는 사건일이
+박혀와 본문 시제가 그날에 고정됐다. 데일리 브리핑 prompt 가 ContextAnalyst 에는
+today 를 줬지만 composer 단까지 전달이 끊겨 있었다.
 
-**Change Propagation Matrix**:
-- `src/orchestrator.py:VERSION` v5.5.10 → v5.5.11
-- README Status, 본 CHANGELOG entry
-- composer SYSTEM_PROMPT 변경 → docs/REPORT_STYLE_GUIDE.md 의 어휘 SSOT
-  과 정합 (headline/deck 어휘 ban 리스트는 본 entry 가 일차 기록 — STYLE_GUIDE
-  의 §0.1 ★ 최우선 원칙 블록은 본문에 한정돼 있어 headline/deck 은 별도
-  명시 필요했음)
+- `_build_unified_payload` 에 `publication_date` (datetime.now %Y-%m-%d) 주입.
+- SYSTEM_PROMPT 에 **=== 시점 앵커링 ===** 신설:
+  · 첫 단락에 시간 거리를 발행일 시점 표현으로 명시 ('지난 26일' / '사흘 전').
+  · '같은 시각' / '같은 날' 표현 주의 — 시점을 사건일에 고정시킴.
+  · 지속 상태(누적/연속)는 *발행일 현재* 기준으로 프레이밍.
+  · publication_date == event.date 면 적용 불필요.
+  · broadcast_summary 에도 동일 적용.
 
----
-
-## [v5.5.10] — 2026-05-29
-
-### Added — `/status` 에 장마감 브리핑 구독 정보 표기
-
-v5.5.9 에서 빠뜨린 부분. 사용자 요청. 기존 daily briefing 정보 줄 (`일일 브리핑
-(06:00): ...`) 다음에 두 줄 추가:
-
-```
-  장마감 브리핑 (KRX): ✅ 17:00 (Asia/Seoul) · 구독자 1명 · 이 채팅 ✅
-    페르소나: ✅ prompts/market_briefing_persona.md
-```
-
-- 트리거 시각·TZ + 전체 구독자 수
-- `update.effective_chat.id` 의 이 채팅 구독 여부 (`is_subscribed`)
-- 페르소나 파일 존재 여부 (`os.path.isfile`)
-
-### Fixed — `/watchlist` 4096자 한도 silent fail
-
-**증상**: 텔레그램에서 `/watchlist` 쳐도 봇 응답 없음. 진단 — 사용자 chat 의
-active 신호 370건 (5월 backfill + 누적 invalid deadline 신호로 폭증), 한 신호당
-~120자 × 370 = ~44KB → 텔레그램 한 메시지 한도 4,096자의 11배 초과 →
-`reply_text` 가 `BadRequest: message is too long` 으로 fail → 봇 silent.
-
-**Fix** (`src/telegram_bot.py:_watchlist_command`):
-- deadline 가까운 상위 20건만 표시 (registry 가 이미 `ORDER BY deadline ASC`).
-- 각 신호 description 80자로 trim.
-- 잔여 카운트 표기 (`... 외 350건 (deadline 더 먼 신호 생략)`).
-- 한 신호 ~150자, 20개면 ~3KB 안에 fit — 한도 안전.
-
-전체 신호 조회 필요시 SQLite 직접 쿼리 (CHANGELOG v5.5.8 의 backfill 스크립트
-패턴) 사용 권장.
-
-**Change Propagation Matrix**:
-- `src/orchestrator.py:VERSION` v5.5.9 → v5.5.10
-- README Status, 본 CHANGELOG entry
+docs: WRITE-AP-11 등록(REPORT_WRITING_ANTIPATTERNS.md) + CLAUDE.md 카운트 11.
 
 ---
 
-## [v5.5.9] — 2026-05-29
+## [v5.6.3] — 2026-05-26
 
-### Added — 한국 장마감 자동 브리핑 (시장 구조 해석가 페르소나)
+### Added — 관리자 비공개 목록 페이지 (즐겨찾기용 고정 unlisted 주소)
 
-**배경**: 사용자 — "한국주식장이 끝난 평일 17시에 그날 거래장에 대한 깊고 상세한
-브리핑 보고서를 DEEP 모드로 생성해. 거래를 안 하는 날은 발행하지 않아도 됨."
-+ 페르소나 직접 주입 가능성 요청.
+v5.6.2 에서 공개 목록을 없앤 뒤, 관리자가 웹에서 전체 목록을 *즐겨찾기* 로 보고
+싶다는 요청. 비번 없이 일관되게 — *고정 난수* 주소의 비공개 페이지로 해결.
 
-**기능**:
-- 디폴트 17:00 KST 트리거 (외인/기관 잠정치 + 종가 거래대금 확정 후) — 환경변수
-  `MARKET_BRIEFING_TIME` 으로 조정 가능.
-- pykrx 거래일 캘린더로 KRX 휴장일 자동 skip (`get_nearest_business_day_in_a_week`).
-  주말 + 한국 공휴일 + 임시휴장 모두 자동 반영. pykrx 가져오기 실패하면 평일
-  fail-open + warning.
-- `prompts/market_briefing_persona.md` (markdown) 의 *시장 구조 해석가* 페르소나
-  (10 렌즈 — 가격·거래대금·수급·섹터·거시·뉴스 관계 해석 + 가설/반증 조건) 를
-  startup 시 1회 로드 후 event_description *앞* 에 prime. ContextAnalyst 가
-  사실 수집으로, NarrativeComposer 가 해석으로 단계 분리되도록 페르소나 맨
-  앞에 한 줄 instruction 추가.
+- `config.admin_index_token` (env `ADMIN_INDEX_TOKEN`) 설정 시 `_generate_index` 가
+  공개 `index.html`(목록 없음) **외에** `admin-{token}.html` 도 생성 — 전체 보고서
+  목록 + 토큰 URL 테이블. 토큰이 고정이라 한 번 북마크하면 주소 불변.
+- 미설정 시 admin 페이지 미생성 (기존 동작). 두 페이지 모두 `noindex,nofollow`.
+- `/reports` 가 admin 페이지 URL 을 상단에 함께 안내 (토큰 설정 시).
 
-**변경**:
-- `prompts/market_briefing_persona.md` (신설) — 사용자 작성 페르소나 + 단계 분리 가드.
-- `src/scheduler/market_briefing.py` (신설) — `run_market_briefing_loop` +
-  `_is_krx_trading_day` (pykrx 가드) + `_load_persona` + `_build_market_briefing_prompt`.
-- `src/scheduler/subscriptions.py` — `MarketBriefSubscriberRegistry` 추가 (기존
-  `BriefingSubscriberRegistry` 와 동일 패턴, 별도 테이블).
-- `src/scheduler/db_schema.sql` — `market_brief_subscribers` + `market_brief_runs`
-  (with `skipped_reason TEXT` 컬럼 — 'weekend' / 'holiday' / NULL).
-- `src/scheduler/__init__.py` — public API 확장.
-- `src/config.py` — `market_briefing_enabled` / `_time` / `_tz` / `_persona_path` 4 필드.
-- `src/telegram_bot.py` — `/market_brief_on` / `/market_brief_off` /
-  `/market_brief_status` 3 명령 + post_init/post_shutdown 의 `_market_brief_task`
-  관리. `/start` 안내 갱신.
-- `.env.example` — `MARKET_BRIEFING_*` 4 변수 블록.
-
-**활성화**:
-```bash
-# .env 추가
-MARKET_BRIEFING_ENABLED=true
-MARKET_BRIEFING_TIME=17:00
-MARKET_BRIEFING_TZ=Asia/Seoul
-MARKET_BRIEFING_PERSONA_PATH=prompts/market_briefing_persona.md
-
-# 봇 재시작 후 텔레그램에서:
-/market_brief_on
-```
-
-**페르소나 수정 절차**: `prompts/market_briefing_persona.md` 편집 → 봇 재시작 1회
-→ 다음 17:00 브리핑부터 반영. git history 로 페르소나 진화 추적 자연 보존.
-
-**구독 분리**: 기존 `/briefing_on` (06:00 매크로/지정학) 와 *별개 구독*.
-한쪽만 / 양쪽 다 / 양쪽 다 안 함 선택 가능.
-
-**Change Propagation Matrix**:
-- `src/orchestrator.py:VERSION` v5.5.8 → v5.5.9
-- README Status, 본 CHANGELOG entry, `.env.example`
-- 신규 모듈: `src/scheduler/market_briefing.py`, `prompts/market_briefing_persona.md`
-- 신규 SQLite 테이블 2건 — 기존 `briefing_subscribers` / `briefing_runs` 무영향.
+> 설정: `.env` 에 `ADMIN_INDEX_TOKEN=<긴 난수>` (예: `openssl rand -hex 8`).
+> 북마크 주소 = `https://<project>.pages.dev/admin-<token>.html`. 토큰을 모르면
+> 접근 불가 (unlisted). 진짜 인증이 필요하면 Cloudflare Access 권장.
 
 ---
 
-## [v5.5.8] — 2026-05-29
+## [v5.6.2] — 2026-05-26
 
-### Fixed — silent except 가 묻고 있던 3건의 attribute access 버그
+### Changed — 공개 인덱스 목록 비공개 + /reports (관리자) 전체 목록 회수
 
-**증상**: v5.5.7 의 가드 제거 후에도 신규 보고서의 `report_meta` 등록 0건.
-사용자가 새 보고서 1건 만든 직후 `bot.log` 확인 — 두 줄의 warning 발견:
+v5.6.1 의 난수 URL 가드를 완성. 공개 `index.html` 이 전체 보고서를 나열하면 토큰
+링크가 다 노출돼 가드가 무력화되던 구멍을 막음.
 
-```
-WARNING: [orchestrator] register_report_meta failed (계속 진행):
-  'ComposedReport' object has no attribute 'scenarios'
-WARNING: [orchestrator] chart usage tracking fail:
-  'FullAnalysisResult' object has no attribute 'sections'
-```
+- **공개 `index.html`**: 보고서 목록·건수 제거 → "구독자 전용, 발급 링크로만 열람"
+  안내만. `_generate_index` 가 더 이상 reports/ 를 glob 하지 않음.
+- **`/reports` (텔레그램, 관리자 전용)**: 기존엔 공개 인덱스 링크만 던졌으나 이제
+  최근 30건의 제목 + 생성일시 + **토큰 URL** 을 직접 회수. 모든 unlisted 링크를
+  노출하므로 `_is_authorized` 게이팅 추가 (기존엔 무방비였음).
 
-이 두 warning 이 *매 보고서마다* 찍히고 있었지만 silent except 가 잡고 분석은
-계속 진행 → 회귀가 묻혀 있던 상태. v5.1.1 (`register_report_meta`) 와 v5.2.14
-(`chart_usage tracking`) 도입 시점부터 누적 회귀.
-
-**Root cause**: `FullAnalysisResult` vs `ComposedReport` 사이 필드 access 혼동.
-
-| 위치 | 잘못된 access | 올바른 access |
-|---|---|---|
-| `orchestrator.py:1551` | `result.sections` | `result.composed_report.sections` |
-| `orchestrator.py:1558` | `result.embedded_map` | `result.composed_report.embedded_map` |
-| `orchestrator.py:1600` | `result.composed_report.scenarios` (없음) | `result.scenarios.scenarios` (ScenarioAnalysis 거쳐서) |
-
-`FullAnalysisResult.sections` 는 존재하지 않는 필드 — sections 는
-`ComposedReport.sections` 에 있음. 마찬가지로 `embedded_map` 도 ComposedReport
-에. 반대로 `scenarios` 는 ComposedReport 가 아니라 `FullAnalysisResult.scenarios`
-의 ScenarioAnalysis 안에. v4.0.0 Tier 4 부터 ComposedReport 가 시나리오 분석을
-sections 안에 통합하므로 별도 scenarios 필드 없음.
-
-**변경**:
-- `src/orchestrator.py:1551` — `result.sections` → `result.composed_report.sections`.
-  chart usage tracking 의 emit type 누적 정상화 → starvation 가드 (캔들 회귀
-  차단 안전망) 실효성 회복.
-- `src/orchestrator.py:1558` — `getattr(result, "embedded_map", None)` →
-  `getattr(result.composed_report, "embedded_map", None)`. 지도 emit 도 시각화
-  분모 정상 포함.
-- `src/orchestrator.py:1596-1607` — `register_report_meta` 호출의 `scenarios`
-  인자를 `result.composed_report.scenarios` (없음) 에서 `result.scenarios`
-  (ScenarioAnalysis, Optional) 의 `.scenarios` (list[dict]) 로 변경. None 가드 +
-  빈 list fallback.
-
-**효과**:
-- v5.5.8 이후 모든 보고서의 `report_meta` 정상 등록 → 후속 분석 시
-  ContextAnalyst 가 부모 컨텍스트 수신 → 메타-자가 인식 회귀 차단.
-- v5.2.14 의 chart usage 영구 JSONL 기록 정상화 → 누적 ≥10 보고서에서 0회
-  emit type 감지 (캔들 starvation 같은 회귀 조기 발견).
-
-**한계 (v5.5.7 한계 그대로)**:
-- v5.1.1~v5.5.7 시기 36개 부모 보고서는 registry 메타 없음 → 그 시기 신호의
-  후속 분석은 v5.5.7 의 누락 가드로 거부됨. `reports/analysis_*.json` 에 원본
-  보존돼 있으므로 별도 backfill 스크립트로 복구 가능 (옵션).
-
-**Change Propagation Matrix**:
-- `src/orchestrator.py:VERSION` v5.5.7 → v5.5.8
-- README Status, 본 CHANGELOG entry
-- silent except 패턴 자체는 보존 — 분석 파이프라인이 보조 작업 (메타 등록 /
-  chart tracking) 실패로 인해 중단되지 않게 하는 의도된 격리. 단 warning 메시지
-  는 bot.log 에 매 보고서마다 찍힘 — 운영 시 주기 점검 권장.
+> 운영 필수: 구독자 서비스라면 `.env` 의 `ALLOWED_CHAT_IDS` 에 본인 chat_id 를
+> 설정해야 `/reports`(및 다른 명령)가 외부에 열리지 않는다. 미설정 = 전체 허용.
 
 ---
 
-## [v5.5.7] — 2026-05-29
+## [v5.6.1] — 2026-05-26
 
-### Fixed — 후속 보고서 본문 망가짐 회귀 (v5.5.6 regression): 부모 메타 누락 + 메타-자가 인식 응답
+### Added — X(트위터) 구독자용 broadcast 요약 + 보고서 URL 난수 토큰
 
-**증상**: v5.5.6 의 [▶ 후속 보고 생성] 버튼을 누르면 후속 보고서가 짧게 잘리고
-본문이 ContextAnalyst 의 메타-자가 인식 텍스트 ("이건 ContextAnalyst 에이전트의
-SYSTEM_PROMPT + user 메시지가 Claude Code 개발 세션에 그대로 붙은 것으로
-보입니다...") 로 채워짐. 사례: `analysis_20260529_144225` (부모
-`analysis_20260518_063432`, 신호 `Q1'26 잠정실적 (5/29)`).
+- **broadcast_summary**: composer 가 보고서마다 `ComposedReport.broadcast_summary`
+  로 친절한 평문 요약을 emit (해요/습니다 혼합, 문단당 2문장, 5~6 짧은 문단,
+  라벨·이모지·불릿·AI 상투어 금지). 마지막 문장은 전체 보고서로 안내하되 *매번 다른
+  표현* 으로 변주 (고정 문구 = AI 티). 텔레그램 완료 메시지에 **라벨 없이** 링크 앞에
+  첨부 — 보고서를 안 봐도 맥락·핵심·시사점을 얻게. 비면 첨부 안 함(graceful).
+  일일 브리핑 전송 경로에도 동일 적용. SSOT: narrative_composer SYSTEM_PROMPT
+  `=== broadcast_summary ===` 블록.
+- **보고서 URL 난수 토큰**: 신규 보고서 파일명을 `analysis_{YYYYMMDD_HHMMSS}_{10hex}`
+  로 — 날짜·시각은 유지하되 `secrets.token_hex(5)` 난수를 덧붙여 추측 불가능한
+  unlisted URL 생성 (구독자 전용 컨텐츠 가드). 재렌더(patch_report)는 토큰 보존.
+  bundle/md/json 도 같은 stem 공유. 인덱스 날짜 파싱·patch 조회 호환.
 
-**Root cause**: v5.4.9 의 `MAX_CHAIN_DEPTH=0` 가드가 자동 후속 폭주 차단 목적이었
-으나 `child_chain_depth = 0` (부모 보고서) 의 경우에도 `0 >= 0` 으로 cap 통과
-실패 → orchestrator 의 `register_report_meta` 호출 스킵 → 부모 보고서의
-`event_description` 이 watchlist registry 에 등록되지 않음. v5.5.6 의
-`_activate_followup` 가 `registry.get_report_meta(parent_report_id)` 로 빈 dict
-회수 → `parent_event_desc=""` → ContextAnalyst prompt 가 "원 이벤트:
-analysis_20260518_063432" 정도로 끝나는 빈 컨텍스트 → 모델이 자기 환경
-(CLAUDE.md / Bash / Read 메타 도구 활성) 에 대해 답하는 메타 모드로 빠짐.
-
-**변경**:
-- `src/models.py` — `MAX_CHAIN_DEPTH` 상수 제거. v5.5.6 의 수동 버튼 모델
-  (사용자가 매번 의식 활성화) 이 자동 폭주를 차단하므로 chain depth 제한 불필요.
-  ParentContext docstring 도 갱신.
-- `src/orchestrator.py:1567` — Phase 4 watchlist 등록의 `chain_at_cap` 가드 제거.
-  부모/자식/손자/N대손 모두 정상 등록. import 정리.
-- `src/telegram_bot.py:_activate_followup` — 부모 메타가 registry 에 없거나
-  `event_description` 이 비어 있으면 활성화 거부 + 안내 메시지 (v5.4.9~v5.5.6
-  시기 등록되지 않은 부모는 회복 불가, `/analyze` 로 우회). 빈 prompt 로 분석
-  강행 차단.
-- `src/telegram_bot.py:_activate_followup` — 후속 보고는 항상 `mode="deep"` (사용자
-  결정). `QueueItem.mode` 필드 신설. `_run_analysis` / `_process_queue` 가 mode
-  를 orchestrator.run_analysis 까지 forward.
-- 알림 메시지에 모드 표기 (🔬 deep) 추가.
-
-**효과**:
-- v5.5.7 이후 신규 보고서는 부모/자식/손자 무관 watchlist 정상 등록 → 후속
-  분석이 부모 컨텍스트 받아 메타-자가 인식 회귀 차단.
-- 후속 보고서가 deep 모드로 5~7 섹션 + 모순 명시 + 32K max_tokens 로 생성.
-- v5.5.6 의 후속 체인 제한 (`MAX_CHAIN_DEPTH=0`) 폐지 — 후속 보고서의 후속
-  보고서의 후속 보고서... 무제한 chain 가능. 사용자가 매번 버튼 활성화하므로
-  자동 폭주 위험 없음.
-
-**한계**:
-- v5.4.9 (2026-05-22) ~ v5.5.6 (2026-05-28) 시기에 만들어진 부모 보고서는
-  registry 에 등록되지 않았으므로 그 시기 신호의 후속 분석은 거부됨 (안내
-  메시지 + `/analyze` 우회). 신규 보고서는 정상.
-
-**Change Propagation Matrix**:
-- `src/orchestrator.py:VERSION` v5.5.6 → v5.5.7
-- `src/models.py` 변경 (MAX_CHAIN_DEPTH 제거, ParentContext docstring) →
-  CLAUDE.md `Key Directories` 의 모듈 설명은 영향 없음 (상수 자체는 외부
-  공개 API 아님).
-- README Status, 본 CHANGELOG entry.
+> 주의: 난수 URL 은 "추측 불가(unlisted)" 가드일 뿐 인증이 아니다. 공개 인덱스
+> 페이지가 모든 보고서를 나열하면 가드가 무력화됨 — 인덱스 비공개/게이팅은 별도 결정.
 
 ---
 
-## [v5.5.6] — 2026-05-28
+## [v5.6.0] — 2026-05-26
 
-### Added — 감시 신호 후속 보고 수동 활성화 버튼 (InlineKeyboardButton)
+### Integrated — feature 브랜치 통합 (인접행렬 + prerender + slope fix + composer 복원력)
 
-**배경**: v5.4.9 에서 자동 후속 보고 생성을 `MAX_CHAIN_DEPTH=0` 으로 비활성화한
-이후, 발화된 감시 신호에 대해 후속 보고서를 만들려면 사용자가 다시 `/analyze`
-명령으로 컨텍스트를 직접 타이핑해야 했음 — 부모 보고서와의 연계 (`ParentContext`)
-가 끊김. 사용자 요청: "후속 보고를 이전 보고서와 연계해서 보고 싶을 때 맥락을
-연결해서" + "자식 보고서를 몇 개까지 만들어야 할지 결정론적으로 정할 필요 없이
-필요할 때 1-클릭 활성화".
+별도 feature 브랜치(`claude/ecstatic-newton-1OmQA`)에서 진행된 작업을 main 의
+v5.5.5(평이화/각주)와 통합. 병렬 작업으로 양쪽이 v5.5.5 를 동시 사용 + patch_report
+를 양쪽이 수정 → 본 통합에서 조율. **코드 충돌은 없었음**(main 의 평이화/footnotes 는
+`ComposedSection.footnotes` 필드 + SYSTEM_PROMPT 추가로 additive — 본 작업의 차트
+렌더러·prerender·composer 호출부와 무관). 단계별 상세는 DEVLOG 의 v5.5.6~v5.5.10 항목.
 
-**변경**:
-- `src/telegram_bot.py:_notify_signal_fired` — `🔔 감시 신호 발생` 알림에
-  `InlineKeyboardMarkup([[InlineKeyboardButton("▶ 후속 보고 생성", callback_data=f"followup:{signal_id}")]])`
-  동봉. 자동/수동 (`/fire`) 발화 모두 동일 경로라 alarm 마다 버튼 1개.
-- `src/telegram_bot.py:_followup_callback` (신규) — `^followup:` 패턴
-  `CallbackQueryHandler` 핸들러. 권한 검증 (`parent_chat_id == effective_chat.id`)
-  → `query.edit_message_reply_markup(reply_markup=None)` 로 버튼 즉시 비활성화
-  (중복 클릭 방지) → `_activate_followup` 위임.
-- `src/telegram_bot.py:_activate_followup` (신규, 이전 `_maybe_enqueue_followup`
-  리팩토링) — `chain_depth` 가드 제거. 사용자가 버튼을 누른 결과로만 호출되니까
-  자동/수동 분기 불필요. `ParentContext` 조립 + 분석 큐 enqueue 또는 즉시 실행.
-- `src/telegram_bot.py:create_app` — `CallbackQueryHandler` 등록.
-- 미사용 import 정리 — `MAX_CHAIN_DEPTH` 가 더 이상 telegram_bot 에서 안 쓰임
-  (가드 제거된 결과). `src/models.py:MAX_CHAIN_DEPTH=0` 상수는 보존 — 자동 후속
-  재활성화 가능성을 위한 hatch.
+- **행위자 관계도 → 인접행렬 (CHART-AP-25)**: radial hairball 폐기, `drawNetwork`
+  렌더러만 교체(데이터 계약 nodes/links 불변). 셀이 관계 type 인코딩 + 진영 정렬 +
+  getBBox content-fit 중앙정렬.
+- **ReportBundle B안 폴백 SVG prerender (계약 §5)**: 복잡 4종(map/choropleth/
+  network/sankey)만 Playwright 격리 렌더로 `prerendered_svg` 채움. `asyncio.to_thread`
+  로 이벤트 루프 밖 실행. graceful null. schema_version 무증분.
+- **slope 차트 라벨 충돌 fix (CHART-AP-26)**: 동일/근접 값 다수 시 라벨 dodge + connector.
+- **composer 복원력 ("보고서 중간 끊김 / 사실 자료만 표시" 회귀 fix)**: CLI 응답이
+  degraded(10분+ 소요·짧음·JSON 뒤 잡설) → 파싱 None → confidence-0 fallback 되던
+  문제. `_call_cli` mode 별 타임아웃(deep 540s) + `compose_unified` 1회 재시도 +
+  `_parse_response` 를 `raw_decode` 기반으로 강건화("Extra data" 무시) + raw head 로깅.
 
-**효과**: 발화된 신호마다 사용자가 후속 보고서를 만들지 안 만들지 *그 자리에서*
-판단. 만들기로 하면 부모의 event_description / scenarios / triggering_signal 이
-`ParentContext` 로 composer 에게 그대로 전달돼 맥락 연결.
+### Coordination — patch_report 도구 일원화
 
-**한계**:
-- 봇 재기동 후 옛 알림 메시지에 남아 있는 버튼은 여전히 누르면 동작 (registry 에
-  signal 이 살아 있으면). 중복 분석 방지 추적은 message-level 만 — 추가 분석이
-  필요하다고 판단되면 그대로 실행됨. 신호 레벨 "이미 활성화됨" 추적은 의도적
-  배제 (사용자가 같은 신호로 여러 시점에서 다른 각도의 후속을 원할 수 있음).
-- `MAX_CHAIN_DEPTH=0` 은 그대로. 따라서 후속 보고서가 또 신호를 emit 해도 그
-  signal 들은 SQLite Registry 에 등록되지 않음 (orchestrator 의 cap 통과 실패).
-  손자 보고서 활성화는 현재 불가능 — 의도 (사용자가 v5.4.9 에서 명시 요청).
-
-**Change Propagation Matrix**:
-- `src/orchestrator.py:VERSION` v5.5.5 → v5.5.6
-- README Status, 본 CHANGELOG entry (Change Propagation Matrix 의 VERSION 변경
-  행 준수). `src/models.py` 변경 없음, `docs/CONTRACTS/report_bundle_v1.md`
-  무영향 (텔레그램 UI 한정), `src/agents/*` 무변경.
+main 의 `--replace`/`--add-footnote`/`--dry-run`(v5.5.5) 을 정본으로 채택. feature
+브랜치가 별도로 추가했던 `--replace-text "OLD=>NEW"` 는 폐기(기능 중복). 보고서 용어
+정정은 `python scripts/patch_report.py <id> --replace "OLD=NEW"` 사용.
 
 ---
 

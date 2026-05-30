@@ -1246,3 +1246,50 @@ main 은 v5.2.2 이고, v5.2.0 부터 차트 렌더링은 `src/templates/static/
 ## v5.5.4 — /bundle json import 누락 fix (2026-05-25)
 
 `_bundle_command`(v5.5.0)이 `json.load`/`json.dump`를 쓰는데 telegram_bot.py 상단에 `import json`이 없어 첫 실행 시 `name 'json' is not defined` 크래시. 사용자가 `/bundle 20260525_191503` 실행 중 발견. `import json` 추가. /bundle 외 다른 경로는 json 미사용이라 무관(auto-attach는 binary open). AST로 import 바인딩 확인.
+
+## v5.5.6 — ReportBundle B안 폴백 SVG prerender (2026-05-25)
+
+osint_generator 측이 앞서 밀던 "전-타입 prerendered_svg 채워달라" 요청을 **철회**하고 계약 A안(consumer 가 데이터로 cinematic 재렌더)으로 수렴. (그쪽 표현: osint 최우선 가치를 "영상미"로 못박음 → 정적 SVG 수신이 아니라 데이터·맥락 이해해 영상용 재렌더가 본질.) 합의된 B안 = 복잡 4종(map/choropleth/network/sankey)만 osint 가 자체 cinematic 렌더러 갖추기 전 *폴백* 정적 SVG 제공. v5.5.0 PR 에서 "텍스트+데이터+provenance 먼저, SVG 하네스 fast-follow" 로 잘랐던 그 fast-follow 를 이번에 구현.
+
+설계: 신규 `src/handoff/svg_prerender.py`. charts.js/maps.js 가 그리는 DOM(`<div class=chart-card-stage data-chart-type>` + `<script class=chart-payload-inline>` / `#freeform-map`+`#map-payload`)을 최소 HTML 1장에 재현 → Playwright headless chromium 격리 렌더(chart_id 별 1:1, 매핑 모호성 0) → 렌더된 `<svg>` outerHTML 추출 → 독립 SVG 래핑(xmlns 보강 + viewBox 전체 덮는 배경 rect). charts 3종은 로컬 자산(d3+charts.js)만, map 은 추가 CDN fetch 2건(topojson-client + world-atlas/110m) 의존.
+
+배선: `build_report_bundle(..., prerender_svg: bool=False)` 파라미터 + 두 emit 경로(report_synthesizer 자동 / telegram `/bundle`)에서 `config.enable_bundle_prerender`(env `V5_BUNDLE_PRERENDER_SVG`, 디폴트 ON)로 활성화. 기본 빌드(param 디폴트 False)는 byte-equal 유지 → `tests/test_report_bundle.py`(prerendered_svg is None) 무영향.
+
+graceful: Playwright/chromium 미설치, 렌더 실패/timeout, map CDN 차단 모두 조용히 None(기존 동작 = 계약 §5). 계약 schema_version **무증분**(additive — 예약된 optional 칸 채움). A안 17종 차트는 항상 null.
+
+검증 한계: 본 개발 컨테이너는 chromium 다운로드·CDN fetch 가 네트워크 정책으로 차단됨 → `_render_batch`(실제 헤드리스 렌더)는 여기서 미검증(pragma no cover). 순수 로직(type 게이팅 / standalone 래핑 / isolation HTML / graceful no-op)은 `_render_batch` monkeypatch 로 14개 단위테스트 통과(`tests/test_svg_prerender.py`). **VM smoke-test 필수** — 실제 SVG 출력의 배경/폰트/viewBox 정합은 첫 실렌더 후 iterate 예정.
+
+## v5.5.7 — prerender async-safety fix (2026-05-25)
+
+사용자 질문("핵심 보고서 생성 기능에 영향 주는 거 아니냐")을 계기로 v5.5.6 의 실질 결함 발견. `build_report_bundle` 의 prerender 는 *sync* Playwright(`sync_playwright`)인데, 빌더를 async `report_synthesizer.synthesize`(orchestrator:1538 await) / `telegram_bot._bundle_command` 가 **이벤트 루프 스레드에서 직접** 호출 → sync Playwright 를 실행 중인 asyncio 루프 안에서 열면 "Sync API inside asyncio loop" 예외 → 내 graceful try/except 로 잡혀 항상 null. 즉 봇에선 chromium 깔아도 prerender 가 조용히 死. 더 나쁜 가정: 루프 스레드에서 렌더가 실제로 돌면 보고서당 수초 블로킹.
+
+fix: 두 호출부에서 `await asyncio.to_thread(build_report_bundle, ...)` 로 빌드 전체를 워커 스레드로 오프로드(market_fetcher 가 yfinance/pykrx sync 라이브러리에 쓰는 패턴 동일). sync Playwright 가 실행 루프 없는 스레드에서 정상 동작 + 루프 비블로킹. `_render_batch` 임시 html 도 패키지 static dir → 시스템 temp dir(절대 file:// asset URI 라 위치 무관). build_report_bundle 자체는 sync 유지(스레드 안에서 실행).
+
+안전성 재확인: charts.js 인접행렬(v5.5.5)은 브라우저 전용 — Python 파이프라인 무관, renderStage per-chart try/catch 로 한 차트 깨져도 나머지 정상. prerender(v5.5.6)는 HTML 저장·배포 *후* + 이중 try/except. 둘 다 핵심 보고서 생성 경로를 깨뜨릴 수 없음. 단위테스트 14개 그대로 통과(to_thread 는 호출부 변경이라 svg_prerender 순수 로직 무영향).
+
+## v5.5.8 — slope 라벨 충돌 fix + patch_report --replace-text (2026-05-25)
+
+사용자가 배포 후 보고서(analysis_20260525_233612)의 "effective per-token price" slope 차트에서 좌측 라벨 겹침 발견 — 세 모델 모두 2025-10 기준 100.0 정규화라 yA 가 동일 → 라벨 "Gemini 100.0 / GPT 100.0 / Claude 100.0" 가 한 점에 포개져 `GeGPGmi 100.0` 로 판독 불가. `drawSlope` 가 라벨을 점 위치에 dodge 없이 그린 게 원인 (CHART-AP-26). fix: 좌·우 라벨 baseline 을 minGap=13 으로 dodge(값 순 정렬→하향 push→하단 초과 시 그룹 상향→상단 클램프), 점·선은 실제 위치 유지, dodge 로 떨어진 라벨엔 점→라벨 0.6px connector. charts.js 는 보고서 공유 외부 자산(Cloudflare Pages 루트, `_inline_static_assets` 는 standalone 일 때만)이라 재배포 또는 `--rerender-only` 로 기존 보고서도 자동 교정.
+
+동반: `scripts/patch_report.py --replace-text "OLD=>NEW"`(반복 가능) 신설. 기존엔 deck/headline/closing/confidence_summary 통짜 교체만 가능했고 섹션 prose 안의 용어 치환 수단이 없었음 — 사용자의 "본문 GPU 시간 용어 쉽게 풀어쓰기" 요청 대응. composed_report 텍스트 필드 전체(headline/deck/closing/confidence_summary/contradictions_heading + 각 섹션 heading/kicker/prose/pull_quote)에 리터럴 치환. 순수 헬퍼 `_apply_subs` 분리(샌드박스에서 pydantic 없이 검증 — GPU 시간 케이스 1건 치환 확인).
+
+daily briefing "멈춤" 문의 — 코드상 정상. `config.daily_briefing_enabled` 기본 False + 트리거 시 `enabled=false` 면 `_run_one_briefing_cycle` 이 "DAILY_BRIEFING_ENABLED=false; skipping" 으로 스킵(scheduler/daily_briefing.py:151). 구독자 0 이어도 스킵. 활성화는 .env `DAILY_BRIEFING_ENABLED=true` + 재시작 + `/briefing_on`. `/briefing_status` 로 상태 확인. 코드 변경 아님(운영 설정).
+
+## v5.5.9 — composer 타임아웃 + 재시도 (보고서 중간 끊김 fix, 2026-05-26)
+
+사용자가 "보고서가 composer 호출 실패로 중간에 끊긴다, 최근 자주" 제보 + 보고서 화면(신뢰도 0% / "composer 호출 실패. 사실 자료만 표시.") 제공. bot.log 추적으로 정확한 체인 확정:
+- `21:03:53 Starting CLI call (prompt=27213 chars)` → `21:14:16 CLI response (5888 chars, 623938ms)` → `composer failed; emitting minimal fallback`.
+- 즉 CLI 가 **returncode 0 으로 성공**(rate-limit 비정상 종료 *아님*)했으나 ① 응답에 10분 24초 소요(정상 1~3분) ② deep 보고서치곤 5,888자로 너무 짧은 degraded 응답 ③ `_parse_response` 가 None 반환 → `compose_unified` 가 None → orchestrator:1477 minimal fallback. `unified_composer error` 라인 부재 = 예외 아니라 None 리턴(파싱 실패를 내부에서 삼킴) 입증.
+- 근본 취약점: `_call_cli` 에 타임아웃 없음(`await proc.communicate()` 무한 대기) + composer 호출에 재시도 없음(단일 try). degraded 응답 한 번 = 보고서 전체 격하.
+
+fix: `_call_cli(timeout_s)` + `asyncio.wait_for` (mode 별 fast 240/standard 360/deep 540s, 초과 시 proc.kill + RuntimeError). `compose_unified` 에 bounded 재시도(`COMPOSE_MAX_ATTEMPTS=2`, backoff 4s*attempt) — 호출 실패/timeout *및* 파싱 None 양쪽에서 재시도. returncode 0 + 파싱 불가 회귀라 재시도가 안전(사용량 한도 악화 X). 파싱 실패 시 `raw[:300]` head 로깅 추가 — 다음 회귀 때 모델 반환물(잘림 vs prose vs 스키마)을 즉시 구분. 성공 경로 byte-equal(`_parse_response` 무변경, 기존 테스트 무영향). 동일 무-타임아웃 패턴이 base.py:121(context_analyst) / report_synthesizer.py:712,957 에도 있음 — 본 커밋은 실제 실패한 composer 만, 나머지는 후속 검토.
+
+미해결: 5,888자 응답이 잘린 JSON(JSONDecodeError)인지 prose(No JSON object)인지 — 사용자에게 `sed -n '2265,2272p' bot.log` 요청(파싱 분기 확정용). 잘림이면 향후 partial-JSON 복구 또는 deep 분할 검토.
+
+## v5.5.10 — composer 파싱 강건화 ("Extra data" fix, 2026-05-26)
+
+사용자 로그 제공으로 v5.5.9 의 "미해결" 확정: `Parse/validation failed: Extra data: line 1 column 8 (char 7)`. = `json.JSONDecodeError` "Extra data" — 추출된 json_str 의 첫 완결 JSON 값(앞 7자) *뒤에* 추가 텍스트가 붙어 `json.loads` 가 죽음. 단순 "느려서 잘림"이 아니라 모델이 JSON 뒤에 잡설을 덧붙였거나 스트레이 펜스로 추출이 깨진 케이스. 기존 `_parse_response` 는 ```json 펜스 split → 없으면 일반 ``` split → 없으면 greedy `\{[\s\S]*\}` regex 후 통짜 `json.loads` 라 trailing extra 에 취약.
+
+fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부터 `json.JSONDecoder().raw_decode` 로 **첫 완결 객체만** 파싱(뒤 extra 무시, 앞 prose 스킵). `_parse_response` 는 후보 3종(```json 펜스 / raw 전체 / 일반 펜스)을 순서대로 시도해 첫 검증 통과 ComposedReport 채택, 실패 시 raw head 200자 로깅. `re` import 제거(미사용). 회귀 테스트 2종 추가(trailing extra / leading prose), 기존 3종(json_block / bare_json[sections=[] 도 통과해야 함 → sections-비었음 가드 금지] / invalid) 보존.
+
+한계: "작은 JSON 파편 → 그 뒤 진짜 보고서" 순서면 raw_decode 가 파편만 잡아 validate 실패 → 다음 후보 → None 가능. 그러나 대부분의 "Extra data" 는 진짜 객체 *뒤* 꼬리 텍스트라 본 fix 로 해결. v5.5.9 재시도 + 본 파싱강건 + head 로깅 3중으로 confidence-0 fallback 확률 대폭 감소.

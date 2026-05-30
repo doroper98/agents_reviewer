@@ -16,9 +16,9 @@
 from __future__ import annotations
 
 import asyncio
+import datetime as _dt
 import json
 import logging
-import re
 import shutil
 import time
 from typing import Optional
@@ -100,6 +100,20 @@ SYSTEM_PROMPT = (
     "  번호 뉘앙스 (WRITE-AP-7).\n"
     "- **짧은 문단**: 한 문단 3~5 문장. 단락 사이 ``\\n\\n``.\n"
     "- **모순 봉합 금지**: 관점 충돌은 ``contradictions`` 에 명시 (Anti-pattern #5).\n\n"
+    "=== 시점 앵커링 — 발행일 vs 사건일 (v5.6.4, WRITE-AP-11) ===\n"
+    "입력의 ``publication_date`` 는 *이 보고서가 쓰이는 날* (오늘) 이고, ``event.date`` 는\n"
+    "분석 대상 사건이 일어난 날이다. 둘이 같지 않으면 글의 시점이 흐려져 독자가\n"
+    "'왜 갑자기 며칠 전 얘기?' 하는 인지부조화가 생긴다. 다음을 지켜라:\n"
+    "- **첫 단락**에 시간 거리를 명시: '지난 26일' / '사흘 전' / '두 주 전' /\n"
+    "  '지난주 화요일' 등 — 발행일에서 바라본 표현. 'YYYY년 M월 D일' 만 덩그러니\n"
+    "  쓰면 시점이 그날에 못 박힌 듯 들린다.\n"
+    "- '같은 시각' / '같은 날' / '같은 시점' 표현 주의 — 시점을 사건일에 고정시킨다.\n"
+    "  지속 상태 (환율 누적, '7거래일 연속' 등) 는 *발행일 현재* 기준으로 프레이밍:\n"
+    "  예 — '오늘(5/29)까지 환율은 7거래일째 1,500원 위' (5/29 = publication_date).\n"
+    "- 결론·시사점은 *발행일 시점의 판단* 으로 쓴다. '지금 시점에서' 같은 명시는\n"
+    "  자연스러우면 어휘로만 — 강제 아님.\n"
+    "- ``publication_date == event.date`` 면 위 규칙 적용 불필요.\n"
+    "- 본 규칙은 본문 prose 뿐 아니라 ``broadcast_summary`` 에도 그대로 적용.\n\n"
     "=== 분석 깊이 (mode 인자에 따라) ===\n"
     "- fast:     핵심만 간결. 3~4 섹션. 시나리오 2~3개. 모순 명시 선택.\n"
     "- standard: 다각도 4~6 섹션. 시나리오 3~5개. 모순 1~2건 명시 권장.\n"
@@ -456,6 +470,18 @@ SYSTEM_PROMPT = (
     "  · indicates: 이 신호가 어느 시나리오 분기를 가리키는지\n"
     "  · deadline: 'YYYY-MM-DD' 또는 '6월 중' 등 (생략 가능)\n"
     "  · icon: 이모지 1~2자 (생략 가능)\n\n"
+    "=== broadcast_summary (X 구독자용 요약, v5.6.1) ===\n"
+    "보고서를 안 읽는 X(트위터) 구독자가 이 글만 보고도 맥락·핵심·시사점을 얻게 쓴다.\n"
+    "  · 해요체와 습니다체를 자연스럽게 *섞어* 쓴다 (한 톤으로 고정 금지).\n"
+    "  · 한 문단은 최대 2문장. 문단마다 빈 줄(\\n\\n)로 분리한다.\n"
+    "  · 5~6개의 짧은 문단. 라벨/제목/이모지/불릿/머리말 금지 — 본문만.\n"
+    "  · 무슨 일 → 왜 그런가 → 그래서 무엇(시사점) 흐름. 핵심 숫자는 문장에 자연스럽게 녹인다 (표 금지).\n"
+    "  · AI 티 절대 금지: '안녕하세요/이 보고서는/결론적으로/요약하자면' 류 메타·상투어, 과한 존댓말 반복 금지.\n"
+    "  · 뉴스레터 잘 쓰는 사람이 아는 사람에게 설명하듯 — 친절하지만 군더더기 없이.\n"
+    "  · 맨 마지막 문단은 전체 보고서로 부드럽게 안내하는 한 문장으로 닫는다 (예: '자세한 건\n"
+    "    보고서에 정리해 뒀어요', '나머지 맥락은 본문에서 이어집니다', '숫자와 근거는 보고서에서\n"
+    "    더 볼 수 있어요'). 단 *매 보고서마다 다른 표현* 으로 — 똑같은 마무리 문구를 반복하면\n"
+    "    AI 티가 나므로 그때그때 자연스럽게 바꾼다.\n\n"
     "=== JSON 응답 형식 (반드시 준수) ===\n"
     "```json\n"
     "{\n"
@@ -527,7 +553,8 @@ SYSTEM_PROMPT = (
     '    \"future\": [{\"date\":\"YYYY-MM-DD\",\"label\":\"향후 분기점\",\"branch\":\"어느 시나리오\"}]\n'
     "  },\n"
     '  "confidence_summary": "출처 다양성/신선도/확신도 한 줄 자유 평가",\n'
-    '  "confidence_score": 0.0~1.0\n'
+    '  "confidence_score": 0.0~1.0,\n'
+    '  "broadcast_summary": "broadcast_summary 지침대로 — 5~6개 짧은 문단, 해요/습니다 혼합, 문단당 2문장 이내, 라벨 없이 본문만"\n'
     "}\n"
     "```\n"
     "JSON 만 출력. 추가 설명 텍스트 금지.\n"
@@ -555,6 +582,18 @@ class NarrativeComposer:
         "deep": 48000,
     }
     MAX_TOKENS: int = 48000  # 기본값 (mode 정보 없을 때)
+
+    # v5.5.9 — composer 복원력. CLI 가 degraded 응답(짧음/잘림/prose)을 줘 파싱이
+    # None 이 되거나, 호출이 hang/timeout 날 때 보고서 전체가 confidence-0 fallback
+    # 으로 격하되던 회귀 대응. CLI 무한 대기 차단(타임아웃) + 1회 재시도.
+    # 정상 composer 는 1~3분 — degraded 시 10분+ hang 관측됨.
+    CLI_TIMEOUT_BY_MODE: dict[str, float] = {
+        "fast": 240.0,
+        "standard": 360.0,
+        "deep": 540.0,
+    }
+    COMPOSE_MAX_ATTEMPTS: int = 2          # 최초 1 + 재시도 1
+    COMPOSE_RETRY_BACKOFF_S: float = 4.0   # attempt N 전 대기 = backoff * (N-1)
 
     def __init__(self, config: Config) -> None:
         self.config = config
@@ -588,16 +627,34 @@ class NarrativeComposer:
         user_payload = self._build_unified_payload(context, mode, parent_context)
         user_message = json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
 
-        try:
-            if self.config.use_cli_mode:
-                raw = await self._call_cli(user_message)
-            else:
-                raw = await self._call_api(user_message, mode=mode)
-        except Exception as e:
-            logger.warning("[unified_composer] LLM call failed: %s", e)
-            return None
-
-        composed = self._parse_response(raw)
+        # v5.5.9 — 복원력: CLI 가 degraded/짧은/잘린 응답을 줘 _parse_response 가 None 인
+        # 경우(returncode 0 이지만 파싱 불가) + 호출 자체 실패/timeout 시 *재시도*.
+        # rate-limit 비정상 종료가 아니라 "성공했는데 쓸 수 없는 응답" 회귀라 재시도 안전.
+        timeout_s = self.CLI_TIMEOUT_BY_MODE.get(mode, 360.0)
+        composed = None
+        for attempt in range(1, self.COMPOSE_MAX_ATTEMPTS + 1):
+            try:
+                if self.config.use_cli_mode:
+                    raw = await self._call_cli(user_message, timeout_s=timeout_s)
+                else:
+                    raw = await self._call_api(user_message, mode=mode)
+            except Exception as e:
+                logger.warning(
+                    "[unified_composer] LLM call failed (attempt %d/%d): %s",
+                    attempt, self.COMPOSE_MAX_ATTEMPTS, e,
+                )
+                raw = None
+            if raw is not None:
+                composed = self._parse_response(raw)
+                if composed is not None:
+                    break
+                logger.warning(
+                    "[unified_composer] parse returned None (attempt %d/%d): "
+                    "raw=%d chars, head=%r",
+                    attempt, self.COMPOSE_MAX_ATTEMPTS, len(raw), raw[:300],
+                )
+            if attempt < self.COMPOSE_MAX_ATTEMPTS:
+                await asyncio.sleep(self.COMPOSE_RETRY_BACKOFF_S * attempt)
         if composed is None:
             return None
         # v4.0.0: chart_catalog 가 비었으니 embedded_charts 도 빈 list 로 강제 (검증 layer).
@@ -628,8 +685,11 @@ class NarrativeComposer:
         v5.1.1: ``parent_context`` 가 있으면 ``followup`` 필드 추가 — composer 가 부모
         시나리오 / 발화 신호를 인지하고 분기 잇기 작업 수행.
         """
+        # v5.6.4 — 발행일(오늘) 주입. composer 가 event.date 와 비교해 시간 거리를
+        # 본문에 명시할 수 있게 (WRITE-AP-11). 시스템 로컬 날짜(VM=KST 가정).
         payload: dict = {
             "mode": mode,
+            "publication_date": _dt.datetime.now().strftime("%Y-%m-%d"),
             "event": {
                 "name": context.event_name,
                 "category": context.category,
@@ -829,7 +889,7 @@ class NarrativeComposer:
     # LLM call
     # ------------------------------------------------------------------
 
-    async def _call_cli(self, user_message: str) -> str:
+    async def _call_cli(self, user_message: str, timeout_s: float = 480.0) -> str:
         claude_bin = shutil.which("claude")
         if claude_bin is None:
             raise RuntimeError(
@@ -845,8 +905,8 @@ class NarrativeComposer:
             "--dangerously-skip-permissions",
         ]
         logger.info(
-            "[narrative_composer] Starting CLI call (%s, prompt=%d chars)",
-            self.COMPOSER_MODEL, len(full_prompt),
+            "[narrative_composer] Starting CLI call (%s, prompt=%d chars, timeout=%.0fs)",
+            self.COMPOSER_MODEL, len(full_prompt), timeout_s,
         )
         start = time.time()
         proc = await asyncio.create_subprocess_exec(
@@ -855,7 +915,18 @@ class NarrativeComposer:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.communicate()
+        # v5.5.9 — 타임아웃으로 무한 대기 차단 (CLI degraded/overload 시 10분+ hang 회귀).
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout_s)
+        except asyncio.TimeoutError:
+            proc.kill()
+            try:
+                await proc.wait()
+            except Exception:  # pragma: no cover — reap best-effort
+                pass
+            raise RuntimeError(
+                f"narrative_composer CLI timeout after {timeout_s:.0f}s"
+            )
         elapsed_ms = int((time.time() - start) * 1000)
         if proc.returncode != 0:
             err = stderr.decode().strip() if stderr else "unknown"
@@ -899,24 +970,58 @@ class NarrativeComposer:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _parse_response(raw: str) -> ComposedReport | None:
-        """Extract JSON from raw text and validate as ComposedReport."""
-        if "```json" in raw:
-            json_str = raw.split("```json", 1)[1].split("```", 1)[0].strip()
-        elif "```" in raw:
-            json_str = raw.split("```", 1)[1].split("```", 1)[0].strip()
-        else:
-            match = re.search(r"\{[\s\S]*\}", raw)
-            if not match:
-                logger.warning("[narrative_composer] No JSON object in response")
-                return None
-            json_str = match.group()
-        try:
-            data = json.loads(json_str)
-            return ComposedReport.model_validate(data)
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning("[narrative_composer] Parse/validation failed: %s", e)
+    def _loads_first_json_object(s: str) -> dict | None:
+        """문자열에서 첫 완결 JSON 객체를 추출. 앞 prose / 뒤 extra data 허용.
+
+        v5.5.10 — `json.loads` 는 "Extra data" (객체 뒤 텍스트) 에 죽지만
+        `raw_decode` 는 첫 완결 값만 파싱하고 나머지를 무시한다. degraded 응답
+        (JSON + 꼬리 텍스트, 또는 prose + JSON) 회귀 대응.
+        """
+        s = (s or "").strip()
+        if not s:
             return None
+        try:
+            obj = json.loads(s)
+            return obj if isinstance(obj, dict) else None
+        except json.JSONDecodeError:
+            pass
+        start = s.find("{")
+        if start == -1:
+            return None
+        try:
+            obj, _end = json.JSONDecoder().raw_decode(s, start)
+            return obj if isinstance(obj, dict) else None
+        except json.JSONDecodeError:
+            return None
+
+    @staticmethod
+    def _parse_response(raw: str) -> ComposedReport | None:
+        """raw 텍스트에서 ComposedReport JSON 추출 + 검증.
+
+        v5.5.10 — fence split / greedy regex 가 깨진 응답("Extra data" 등) 에
+        취약했음. 여러 후보(```json 펜스 / raw 전체 / 일반 펜스)를 raw_decode 로
+        시도해 첫 검증 통과 객체를 채택. trailing extra / 앞 prose / 잘못된
+        스트레이 펜스에 견고.
+        """
+        candidates: list[str] = []
+        if "```json" in raw:
+            candidates.append(raw.split("```json", 1)[1].split("```", 1)[0])
+        candidates.append(raw)  # 펜스 없는 본문 / 펜스 추출 실패 / trailing extra 대비
+        if "```" in raw:
+            candidates.append(raw.split("```", 1)[1].split("```", 1)[0])
+        for cand in candidates:
+            obj = NarrativeComposer._loads_first_json_object(cand)
+            if obj is None:
+                continue
+            try:
+                return ComposedReport.model_validate(obj)
+            except Exception:  # noqa: BLE001 — 다음 후보 시도
+                continue
+        logger.warning(
+            "[narrative_composer] No parseable ComposedReport "
+            "(raw=%d chars, head=%r)", len(raw), raw[:200],
+        )
+        return None
 
     @staticmethod
     def _validate_references(

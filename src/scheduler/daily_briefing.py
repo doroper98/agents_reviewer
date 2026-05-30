@@ -265,6 +265,18 @@ async def _briefing_for_chat(
     except Exception as e:
         logger.warning("[scheduler] glossary send failed: %s", e)
 
+    # 2.5) v5.6.1 — X 구독자용 broadcast 요약 (라벨 없이 본문만).
+    try:
+        broadcast = (
+            result.composed_report.broadcast_summary.strip()
+            if result.composed_report and result.composed_report.broadcast_summary
+            else ""
+        )
+        if broadcast:
+            await send_text_fn(chat_id, broadcast)
+    except Exception as e:
+        logger.warning("[scheduler] broadcast summary send failed: %s", e)
+
     # 3) Report URL (must reach the user).
     if result.report_url and result.report_url.startswith("http"):
         md_url = result.report_url.replace(".html", ".md")

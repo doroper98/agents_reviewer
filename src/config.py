@@ -17,6 +17,10 @@ class Config(BaseSettings):
     cloudflare_api_token: str = ""
     cloudflare_project_name: str = "analysis-reports"
     report_output_dir: str = "reports"
+    # v5.6.3 — 관리자 비공개 목록 페이지 토큰. 설정 시 admin-{token}.html 에 전체
+    # 보고서 목록(토큰 URL 포함)을 생성 — 관리자만 아는 *고정* unlisted 주소(즐겨찾기용).
+    # 미설정 시 미생성 (공개 index 는 목록 없음, /reports 로 대체). 긴 난수 권장.
+    admin_index_token: str = ""
     model_name: str = "claude-opus-4-6"
     model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True
@@ -96,6 +100,15 @@ class Config(BaseSettings):
     enable_report_bundle: bool = Field(
         default=True,
         validation_alias=AliasChoices("V5_REPORT_BUNDLE", "ENABLE_REPORT_BUNDLE", "enable_report_bundle"),
+    )
+
+    # v5.5.6 — ReportBundle B안 폴백 SVG prerender (계약 §5). 복잡 4종
+    # (map/choropleth/network/sankey) 만 Playwright 로 정적 SVG 렌더해
+    # prerendered_svg 에 담음. 디폴트 ON — Playwright/chromium 미설치 시 graceful
+    # None (기존 동작 = 계약 §5). 끄려면 V5_BUNDLE_PRERENDER_SVG=0.
+    enable_bundle_prerender: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("V5_BUNDLE_PRERENDER_SVG", "ENABLE_BUNDLE_PRERENDER", "enable_bundle_prerender"),
     )
 
     # v5.1.0 — Daily Briefing Scheduler.

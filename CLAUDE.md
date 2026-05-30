@@ -195,7 +195,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **24개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **26개 패턴 누적**:
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -211,12 +211,14 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-22: sankey 중간 컬럼 라벨 stacking 충돌 (v5.4.7 신설 — MIN_NODE_PAD=18 이 위 라벨 font11 + 값 라벨 font10 stacking 에 부족, 메모리/파운드리 사이 "65.0" ↔ "파운드리" 라벨 7px overlap. pad 36 으로 16px 여유 확보)
 - CHART-AP-23: forecast 차트 y축 도메인이 actual 점을 제외 (v5.4.8 신설 — `?? fallback` 으로 forecast 가 있으면 actual 무시 → actual 의 값이 forecast 범위 밖이면 데이터 점이 차트 영역 밖에 박힘. actual + forecast 모든 값 산입으로 픽스)
 - CHART-AP-24: forecast 차트 actual ↔ forecast 선 단절 (v5.4.8 신설 — actual 선과 forecast 선/cone 이 별도 path 로 그려져 boundary 에서 1년치 gap. actual 마지막 점을 forecast bridge 의 첫 점으로 prepend → cone 이 fork 시점에서 한 점, 미래로 fan 형태로 확장)
+- CHART-AP-25: 행위자 관계도를 radial network (hairball) 로 렌더 (v5.5.5 신설 — 노드 위치 무의미 → 중심 관통 실타래, 시인성 최악. `drawNetwork` 렌더러를 **인접행렬** 로 교체. 데이터 계약 (nodes/links) · NetworkGuard · registry · usage_log 불변, type 명 `network` 유지. 셀이 관계 type 인코딩 (대립/동맹/영향/연관), getBBox content-fit viewBox 로 자동 중앙정렬. 모크업: `samples/actor_relationship_redesign_compare.html`)
+- CHART-AP-26: slope 차트 좌·우 라벨 충돌 (v5.5.8 신설 — 동일/근접 값 다수 시 라벨이 같은 y 에 겹쳐 판독 불가. 기준선 정규화(모두 100.0) 차트에서 특히 빈발. `drawSlope` 에 라벨 baseline dodge (minGap 13 + 범위 클램프) + 점→라벨 connector 추가. 점·선은 실제 값 위치 유지)
 
 회귀 발견 시 본 문서에 새 항목 (CHART-AP-N) append. 같은 실수 반복 차단의 SSOT.
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 10개 패턴 누적:
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 11개 패턴 누적:
 
 > **★ 최우선 가치 — 일반 독자 우선 (v5.5.5).** 보고서는 *비전문가* 가 읽는다. ①
 > 전문 용어·영어 표현·은어는 평이한 우리말로 바꾼다. ② 못 바꾸는 핵심 용어만 본문에
@@ -229,6 +231,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - WRITE-AP-8: max_tokens 한도로 보고서 본문 중간 절단 (v4.5.4 신설 — 단일 8K 한도 회귀)
 - WRITE-AP-9: 모순 섹션의 정적 메타-라벨 제목 (v5.5.1 신설 — "봉합하지 않은 충돌" 고정 제목이 결론 회피 인상 + 단조로움. composer 동적 `contradictions_heading` + resolution 단락 착지로 서술형 전환)
 - WRITE-AP-10: 전문 용어·영어 표현을 평이화도 주석도 없이 본문에 방치 (v5.5.5 신설 — rate card / rate limit premium 회귀. `ComposedSection.footnotes` 문단 하단 주석 + 평이화 어휘표 신설)
+- WRITE-AP-11: 발행일과 사건일이 다른데 본문에 시점 앵커 없음 (v5.6.4 신설 — 5/29 발행 보고서 본문이 "5월 26일 코스피..." 로 시작 + "같은 시각, 환율 7거래일 연속..." 로 지속 상태를 사건일에 고정 → 인지부조화 회귀. `_build_unified_payload` 에 `publication_date` 주입 + SYSTEM_PROMPT 의 `=== 시점 앵커링 ===` 섹션으로 첫 단락 시간 거리 명시 + '같은 시각' 금지 + 지속 상태는 발행일 현재 기준 프레이밍 강제)
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 

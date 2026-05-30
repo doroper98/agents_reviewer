@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.5
+last_synced_with: v5.6.1
 ssot_for:
   - "보고서 본문 문체·어휘·어조 가이드 (composer + context 공통)"
 depends_on:
@@ -197,6 +197,18 @@ last_review: 2026-05-17
   - 나쁨 (극적): "베르베라는 거대한 게임판의 마지막 퍼즐."
 
 ---
+
+## 4.1 broadcast_summary (X 구독자용 요약, v5.6.1)
+
+보고서 *본문과는 별개 레지스터*. 보고서를 안 읽는 X(트위터) 구독자가 이 글만 보고도
+맥락·핵심·시사점을 얻게 쓰는 친절한 평문. 규칙 SSOT 는 `narrative_composer.py`
+SYSTEM_PROMPT 의 `=== broadcast_summary ===` 블록 (본 가이드는 사본 안 둠 —
+anti-pattern #1):
+
+- 해요체+습니다체 *혼합*, 한 문단 최대 2문장, 5~6 짧은 문단, 라벨·이모지·불릿 금지.
+- 무슨 일 → 왜 → 그래서 무엇. 숫자는 문장에 자연스럽게.
+- 마지막 문장은 전체 보고서로 부드럽게 안내하되 *매번 다른 표현* (고정 문구 = AI 티).
+- 텔레그램 완료 메시지에 라벨 없이 첨부 (`ComposedReport.broadcast_summary`).
 
 ## 5. 차트·지도 본문 결합
 
