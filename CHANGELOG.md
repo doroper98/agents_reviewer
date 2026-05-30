@@ -20,6 +20,40 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## ops/2026-05-30 — VM 재배포 회귀 방지 체계 (VM_DEPLOY_PLAYBOOK)
+
+이번 세션에서 VM 재배포가 두 번 막혔다. 모두 사전 예방 가능했던 회귀였고,
+체계가 없어 같은 일이 반복됐다. SSOT 신설 + Claude 행동 규칙으로 차단.
+
+### 신설: `docs/VM_DEPLOY_PLAYBOOK.md`
+
+- **§1 표준 재배포 절차** — VM-AP-1~6 모든 가드 내장 idempotent 명령어 블록.
+  사용자가 그대로 복붙. CLAUDE.md 의 SOP 가 본 §1 을 참조.
+- **§2 VM-AP-N 카탈로그** (append-only):
+  - VM-AP-1: pkill 후 graceful shutdown 대기 부족 → 두 봇 동시 가동 → 텔레그램
+    Conflict (2026-05-30 발생, 15초 polling + SIGKILL fallback 으로 차단)
+  - VM-AP-2: 새 실행 스크립트 git 100644 (실행 불가) — `bot-if-working` 사례.
+    원칙: 새 실행 스크립트 안 만들기, 부득이하면 `git update-index --chmod=+x`
+  - VM-AP-3: 삭제된 파일의 VM 잔재로 pull 충돌 (2026-05-30 발생, pull 전 git
+    status 검사 가드)
+  - VM-AP-4: 봇 옛 버전 가동 + 코드 갱신 후 버전 확인 누락 (2회 발생, Stage 3
+    + Stage 6 의 명시적 버전·Starting 라인 확인)
+  - VM-AP-5: 두 봇이 같은 bot.log 출력 → 진단 혼선 (잠재, mv 백업으로 차단)
+  - VM-AP-6: requirements 변경 후 pip install 누락 (잠재, diff 감지 자동화)
+- **§3 진단 명령어** — 봇 상태 / 보고서 진행 / composer 회귀 추적.
+- **§4 새 회귀 등록 절차** — CHART-AP / WRITE-AP 와 동일 패턴.
+
+### Claude 행동 규칙 추가 (`CLAUDE.md`)
+
+- VM 배포 SOP 섹션을 playbook §1 참조로 교체. "🔴 Claude 행동 규칙: VM 명령을
+  줄 때 반드시 playbook 의 모든 가드를 포함한 명령어를 그대로 제공" 명시.
+- 단축 4단계 (`pkill / sleep 2 / nohup / tail`) 금지 — 이번 회귀의 원인.
+- Change Propagation Matrix 에 "VM 재배포 회귀 발견 시 playbook §2 append + §1
+  가드 추가" 행 추가.
+
+> 이번 세션의 VM 재배포 회귀 4건 (VM-AP-1/2/3/4) 모두 사후 등록. 향후 동일
+> 회귀는 §1 의 가드가 차단하고, 새 회귀는 §4 절차로 누적.
+
 ## [v5.6.9] — 2026-05-30
 
 ### 미국 빅테크/반도체 개별주 + 미국 지수 차트 지원 + 주제 우선 차트화

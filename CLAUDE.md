@@ -61,53 +61,33 @@ V5 Phase 1A 부터 추가 가능한 에이전트:
 
 ## VM 배포 SOP (✱ 기능 개발 완료 후 반드시 사용자에게 안내)
 
-**규칙:** Claude 가 새 기능을 개발·main 머지한 직후, **반드시** Ubuntu VM 에서 봇을 재배포하는 정확한 명령어 묶음을 사용자에게 제공한다. 사용자에게 "재시작하세요" 처럼 모호하게 지시하지 말 것. 다음 4단계 *그대로* 복사해서 답변에 포함:
+> **SSOT: [docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md).** 표준 재배포
+> 명령어 + VM-AP-N 회귀 카탈로그 + 진단 명령어가 모두 playbook 에 있다.
+>
+> **🔴 Claude 행동 규칙 (필수)**: VM 재배포 명령을 사용자에게 줄 때 **반드시 본
+> playbook §1 의 모든 가드 (VM-AP-1~6) 를 포함한 명령어를 그대로** 제공한다.
+> "간단히 pkill + nohup 4단계" 식 단축 금지 — 이번 세션에서 2회 재발한 VM-AP-1
+> (graceful shutdown 부족), VM-AP-3 (잔재 충돌), VM-AP-4 (옛 버전 가동) 의 원인.
+> 새 회귀 발견 시 playbook §2 에 VM-AP-N 으로 등록 후 §1 에 가드 추가.
 
-```bash
-# 1. 코드 최신화
-cd ~/agents_reviewer
-git pull
-
-# 2. 기존 봇 프로세스 모두 죽이기 (중복 인스턴스 방지)
-pkill -f "src.main"
-sleep 2 && ps aux | grep "src.main" | grep -v grep
-# 두 번째 줄이 빈 출력이어야 함. 안 죽으면 kill -9 <PID>
-
-# 3. venv 활성화 + 백그라운드로 1개만 띄우기
-source venv/bin/activate
-nohup python -m src.main > bot.log 2>&1 &
-disown
-
-# 4. 정상 가동 확인
-sleep 3
-ps aux | grep "src.main" | grep -v grep   # 한 줄만 떠야 함
-tail -30 bot.log                          # "Application started" 확인
-```
-
-**필수 안내 사항:**
+**필수 안내 사항 (playbook §1 외 운영 컨텍스트):**
 - 처음 clone 후 1회: `git config core.hooksPath .githooks` (commit-msg hook 활성화 — Execution Rule #12). 미설정 시 hook 작동 안 함.
 - venv 가 없으면 `python -m venv venv && source venv/bin/activate && pip install -r requirements.txt` 후 진행
 - `.env` 변경 시 (env flag 추가 등) 재시작 *반드시* 필요. config 는 startup 시점 1회만 로드
-- systemd 서비스로 등록되어 있다면 `sudo systemctl restart agents-reviewer` 한 줄로 대체 가능 — 없으면 위 4단계
-- 사용자가 SSH foreground 로 봇을 띄운 상태에서 SSH 가 끊기면 봇 죽음 → `nohup ... & disown` 필수
+- systemd 서비스로 등록되어 있다면 `sudo systemctl restart agents-reviewer` 한 줄로 대체 가능 — 없으면 playbook §1
+- 사용자가 SSH foreground 로 봇을 띄운 상태에서 SSH 가 끊기면 봇 죽음 → `nohup ... & disown` 필수 (§1 Stage 5 포함)
 
 **보안:**
 - 봇 토큰·API 키가 노출된 로그를 사용자가 붙여넣으면 즉시 토큰 회전 안내 (`@BotFather /revoke` → `.env` 갱신 → 재시작)
 - `.env` 는 절대 git 에 커밋 금지. `.env.example` 만 커밋
 
-**진단 명령어 (사용자가 막혔을 때):**
+**진단 명령어**: playbook §3 참조 (봇 상태 / 보고서 생성 진행 여부 / composer 회귀 추적).
 
-```bash
-# V5 flag 가 실제로 로드됐는지
-python -c "from src.config import get_config; c = get_config(); print('research:', c.enable_research_director, 'visual:', c.enable_visual_planner, 'editor:', c.enable_editor_pass, 'layout:', c.enable_layout_typesetter, 'desk:', c.enable_desk_editor)"
-
-# 봇 프로세스 추적
-systemctl list-units --type=service --state=running | grep -iE "bot|analy|review"
-ps aux | grep -iE "python.*bot|src.main" | grep -v grep
-
-# 로그 실시간 모니터
-tail -f bot.log
-```
+**새 실행 스크립트 만들 때 (VM-AP-2 가드)**: 컨테이너 환경의 `core.fileMode false`
+때문에 새 인터프리터 스크립트(`*.sh`/`*.py` 실행파일/no-ext shebang) 가 git 에 100644
+로 들어가 VM 에서 실행 불가. 권장: **새 스크립트를 안 만들고** 명령어 sequence 를
+playbook §3 에 텍스트로 박는다. 부득이하면 `git add <file>` 직후 `git update-index
+--chmod=+x <file>` + commit 전 `git ls-files --stage <file>` 가 100755 확인.
 
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
@@ -160,6 +140,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | 의존성 추가 (`requirements.txt`) | [DEVLOG.md](DEVLOG.md), [README.md](README.md) Quick Start |
 | 워크플로우 변경 | [WORKFLOWS.md](WORKFLOWS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | 인프라 변경 (Cloudflare/VM) | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [DEVLOG.md](DEVLOG.md) |
+| VM 재배포 회귀 발견 (graceful shutdown / 권한 / 잔재 / 옛 버전 가동 등) | [docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md) §2 (VM-AP-N append) + §1 (가드 추가). CLAUDE.md `VM 배포 SOP` 의 playbook 참조 라인은 그대로 유지. CHANGELOG 의 ops 항목에 reference |
 | `docs/CHART_RENDERING_ANTIPATTERNS.md` 새 항목 추가 | [CLAUDE.md `Anti-Patterns (차트 렌더링)`](CLAUDE.md), [CHANGELOG.md](CHANGELOG.md) 의 해당 버전 entry |
 | `docs/REPORT_WRITING_ANTIPATTERNS.md` 새 항목 추가 | [CLAUDE.md `Anti-Patterns (보고서 본문 작성)`](CLAUDE.md), [CHANGELOG.md](CHANGELOG.md) |
 | V5 Phase 진입/완료 ([REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md)) | [CHANGELOG.md](CHANGELOG.md), 신규 SSOT 문서 (Phase 0B 의 `tests/regression/README.md`, Phase 1A 의 `docs/RESEARCH_DIRECTOR_METHODS.md`, Phase 2B 의 `docs/VISUAL_CAPABILITY_REGISTRY.yaml`, Phase 7 의 `docs/DESK_VISUAL_RUBRIC.md`, Phase 8 의 `docs/STRATEGIC_MODE_PROMPT.md`), 영향받은 모든 문서 헤더의 `last_synced_with` |
