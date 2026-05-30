@@ -16,10 +16,13 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import datetime as _dt
 import json
 import logging
+import os
 import shutil
+import tempfile
 import time
 from typing import Optional
 
@@ -34,6 +37,19 @@ from src.models import (
 from src.telemetry import RunTelemetry
 
 logger = logging.getLogger(__name__)
+
+
+class _ComposerTimeout(RuntimeError):
+    """CLI 호출이 timeout 으로 죽었을 때 그때까지 생성된 *부분 출력* 을 함께 운반한다.
+
+    v5.6.6 — 타임아웃 시 부분 출력을 통째로 버려 0% "사실 자료만 표시" fallback 으로
+    격하되던 회귀(보고서 짤림) 차단. ``partial`` 의 잘린 JSON 을 _parse_response 가
+    복구해 완성된 섹션까지는 실제 내용으로 렌더한다.
+    """
+
+    def __init__(self, timeout_s: float, partial: str) -> None:
+        super().__init__(f"narrative_composer CLI timeout after {timeout_s:.0f}s")
+        self.partial = partial
 
 
 SYSTEM_PROMPT = (
@@ -587,12 +603,16 @@ class NarrativeComposer:
     # None 이 되거나, 호출이 hang/timeout 날 때 보고서 전체가 confidence-0 fallback
     # 으로 격하되던 회귀 대응. CLI 무한 대기 차단(타임아웃) + 1회 재시도.
     # 정상 composer 는 1~3분 — degraded 시 10분+ hang 관측됨.
+    # v5.6.6 — deep 한도 540→900 상향. CAPEX/실적류 큰 deep 보고서가 540s 안에 못
+    # 끝나 두 번 다 timeout → 부분 폐기 → 0% fallback 회귀 (Duration 1306s = 540+540+ctx
+    # 더블 timeout 의 산술 증거). timeout 시 부분 출력을 살리므로(아래) 한도 초과해도
+    # 완성 섹션은 건진다. 정상 composer 는 1~3분 — 900s 는 degraded 안전망.
     CLI_TIMEOUT_BY_MODE: dict[str, float] = {
-        "fast": 240.0,
-        "standard": 360.0,
-        "deep": 540.0,
+        "fast": 300.0,
+        "standard": 480.0,
+        "deep": 900.0,
     }
-    COMPOSE_MAX_ATTEMPTS: int = 2          # 최초 1 + 재시도 1
+    COMPOSE_MAX_ATTEMPTS: int = 2          # 최초 1 + 재시도 1 (timeout 은 부분 살린 뒤 재시도 X)
     COMPOSE_RETRY_BACKOFF_S: float = 4.0   # attempt N 전 대기 = backoff * (N-1)
 
     def __init__(self, config: Config) -> None:
@@ -638,21 +658,42 @@ class NarrativeComposer:
                     raw = await self._call_cli(user_message, timeout_s=timeout_s)
                 else:
                     raw = await self._call_api(user_message, mode=mode)
+            except _ComposerTimeout as e:
+                # v5.6.6 — timeout 으로 잘린 부분 출력을 살린다. 완성 섹션이 1개 이상이면
+                # 그대로 사용하고 *재시도하지 않는다* (재시도해도 또 timeout — 시간 2배 낭비).
+                salvaged = self._parse_response(e.partial) if e.partial else None
+                if salvaged is not None and salvaged.sections:
+                    composed = salvaged
+                    if not composed.confidence_summary:
+                        composed.confidence_summary = (
+                            "생성이 제한 시간 내 완료되지 않아 마지막 일부가 생략됐을 수 있음."
+                        )
+                    logger.warning(
+                        "[unified_composer] attempt %d timed out; using salvaged "
+                        "partial (%d sections)", attempt, len(composed.sections),
+                    )
+                    break
+                logger.warning(
+                    "[unified_composer] attempt %d/%d timed out; nothing salvageable",
+                    attempt, self.COMPOSE_MAX_ATTEMPTS,
+                )
+                break  # 재시도해도 또 timeout
             except Exception as e:
                 logger.warning(
                     "[unified_composer] LLM call failed (attempt %d/%d): %s",
                     attempt, self.COMPOSE_MAX_ATTEMPTS, e,
                 )
                 raw = None
-            if raw is not None:
-                composed = self._parse_response(raw)
-                if composed is not None:
-                    break
-                logger.warning(
-                    "[unified_composer] parse returned None (attempt %d/%d): "
-                    "raw=%d chars, head=%r",
-                    attempt, self.COMPOSE_MAX_ATTEMPTS, len(raw), raw[:300],
-                )
+            else:
+                if raw is not None:
+                    composed = self._parse_response(raw)
+                    if composed is not None:
+                        break
+                    logger.warning(
+                        "[unified_composer] parse returned None (attempt %d/%d): "
+                        "raw=%d chars, head=%r",
+                        attempt, self.COMPOSE_MAX_ATTEMPTS, len(raw), raw[:300],
+                    )
             if attempt < self.COMPOSE_MAX_ATTEMPTS:
                 await asyncio.sleep(self.COMPOSE_RETRY_BACKOFF_S * attempt)
         if composed is None:
@@ -909,40 +950,64 @@ class NarrativeComposer:
             self.COMPOSER_MODEL, len(full_prompt), timeout_s,
         )
         start = time.time()
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdin=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        # v5.5.9 — 타임아웃으로 무한 대기 차단 (CLI degraded/overload 시 10분+ hang 회귀).
+        # v5.6.6 — stdout 을 임시 파일로 받는다. timeout 으로 proc 를 kill 해도 그때까지
+        # 스트리밍된 부분 출력이 디스크에 남아 살릴 수 있다. PIPE+communicate() 는 timeout
+        # 시 부분 출력을 통째로 버려 0% fallback 회귀의 직접 원인이었다.
+        fd, tmp_path = tempfile.mkstemp(prefix="composer_", suffix=".txt")
         try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout_s)
-        except asyncio.TimeoutError:
-            proc.kill()
-            try:
-                await proc.wait()
-            except Exception:  # pragma: no cover — reap best-effort
-                pass
-            raise RuntimeError(
-                f"narrative_composer CLI timeout after {timeout_s:.0f}s"
+            with os.fdopen(fd, "wb") as out_f:
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdin=asyncio.subprocess.DEVNULL,
+                    stdout=out_f,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                try:
+                    _, stderr = await asyncio.wait_for(
+                        proc.communicate(), timeout=timeout_s,
+                    )
+                except asyncio.TimeoutError:
+                    proc.kill()
+                    with contextlib.suppress(Exception):
+                        await proc.wait()
+                    partial = self._read_text(tmp_path)
+                    logger.warning(
+                        "[narrative_composer] CLI timeout after %.0fs; "
+                        "salvaged %d chars partial output",
+                        timeout_s, len(partial),
+                    )
+                    raise _ComposerTimeout(timeout_s, partial)
+            elapsed_ms = int((time.time() - start) * 1000)
+            if proc.returncode != 0:
+                err = stderr.decode().strip() if stderr else "unknown"
+                raise RuntimeError(
+                    f"narrative_composer CLI exit={proc.returncode}: {err}"
+                )
+            raw = self._read_text(tmp_path)
+            if self.telemetry is not None:
+                self.telemetry.record_llm_call(
+                    agent_name="narrative_composer",
+                    input_chars=len(full_prompt),
+                    output_chars=len(raw),
+                    elapsed_ms=elapsed_ms,
+                )
+            logger.info(
+                "[narrative_composer] CLI response (%d chars, %dms)",
+                len(raw), elapsed_ms,
             )
-        elapsed_ms = int((time.time() - start) * 1000)
-        if proc.returncode != 0:
-            err = stderr.decode().strip() if stderr else "unknown"
-            raise RuntimeError(f"narrative_composer CLI exit={proc.returncode}: {err}")
-        raw = stdout.decode().strip()
-        if self.telemetry is not None:
-            self.telemetry.record_llm_call(
-                agent_name="narrative_composer",
-                input_chars=len(full_prompt),
-                output_chars=len(raw),
-                elapsed_ms=elapsed_ms,
-            )
-        logger.info(
-            "[narrative_composer] CLI response (%d chars, %dms)", len(raw), elapsed_ms,
-        )
-        return raw
+            return raw
+        finally:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp_path)
+
+    @staticmethod
+    def _read_text(path: str) -> str:
+        """파일을 utf-8 로 읽어 strip. 실패/부재 시 빈 문자열 (부분 출력 살리기용)."""
+        try:
+            with open(path, "rb") as f:
+                return f.read().decode("utf-8", "replace").strip()
+        except OSError:
+            return ""
 
     async def _call_api(self, user_message: str, mode: str = "standard") -> str:
         assert self._api_client is not None, "API client not initialised"
@@ -1017,11 +1082,109 @@ class NarrativeComposer:
                 return ComposedReport.model_validate(obj)
             except Exception:  # noqa: BLE001 — 다음 후보 시도
                 continue
+        # v5.6.6 — 정상 파싱이 모두 실패하면 *잘린 JSON 복구* 시도. 타임아웃/한도로
+        # 중간에 끊긴 응답에서 완성된 섹션까지만 살린다 (0% fallback 회피).
+        for cand in candidates:
+            repaired = NarrativeComposer._repair_truncated_json(cand)
+            if repaired is None:
+                continue
+            try:
+                obj = json.loads(repaired)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(obj, dict):
+                continue
+            for candidate_obj in (obj, NarrativeComposer._drop_invalid_sections(obj)):
+                try:
+                    composed = ComposedReport.model_validate(candidate_obj)
+                    logger.warning(
+                        "[narrative_composer] recovered truncated JSON "
+                        "(%d sections)", len(composed.sections),
+                    )
+                    return composed
+                except Exception:  # noqa: BLE001 — 섹션 떨군 뒤 재시도
+                    continue
         logger.warning(
             "[narrative_composer] No parseable ComposedReport "
             "(raw=%d chars, head=%r)", len(raw), raw[:200],
         )
         return None
+
+    @staticmethod
+    def _repair_truncated_json(s: str) -> str | None:
+        """절단된 JSON 을 마지막 *완결 경계* 까지 자르고 열린 괄호를 닫는다.
+
+        쉼표 직전(완결 값 뒤)·``}``/``]`` 직후만 안전 경계로 인정해 미완 스칼라/키를
+        남기지 않는다. 문자열 내부의 괄호·쉼표는 무시(in_str 추적). 첫 ``{`` 부터 시작.
+        """
+        if not s:
+            return None
+        start = s.find("{")
+        if start < 0:
+            return None
+        s = s[start:].rstrip()
+        # 앞 펜스 잔재가 있으면 위 find 로 제거됨. 이제 안전 경계 탐색.
+        in_str = False
+        esc = False
+        last_safe: int | None = None
+        for i, ch in enumerate(s):
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+            elif ch in "}]":
+                last_safe = i + 1
+            elif ch == ",":
+                last_safe = i
+        if last_safe is None:
+            return None
+        head = s[:last_safe]
+        # 열린 괄호 추적해 닫기.
+        stack: list[str] = []
+        in_str = False
+        esc = False
+        for ch in head:
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+            elif ch == "{":
+                stack.append("}")
+            elif ch == "[":
+                stack.append("]")
+            elif ch in "}]":
+                if stack:
+                    stack.pop()
+        head = head.rstrip().rstrip(",").rstrip()
+        return head + "".join(reversed(stack))
+
+    @staticmethod
+    def _drop_invalid_sections(data: dict) -> dict:
+        """sections 배열에서 heading/prose 가 빠진(절단된) 항목 제거한 사본 반환."""
+        secs = data.get("sections")
+        if not isinstance(secs, list):
+            return data
+        good = [
+            s for s in secs
+            if isinstance(s, dict) and s.get("heading") and s.get("prose")
+        ]
+        if len(good) == len(secs):
+            return data
+        nd = dict(data)
+        nd["sections"] = good
+        return nd
 
     @staticmethod
     def _validate_references(
