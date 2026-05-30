@@ -329,6 +329,42 @@ URL/좌표 보존 23검사) 오프라인 통과. 회귀 발견 시 케이스 추
 
 ---
 
+## WRITE-AP-13: LLM 이 SYSTEM_PROMPT 의 JSON 예시 들여쓰기를 따라 응답 시작을 누락 (v5.6.8 신설)
+
+**증상**: composer 응답이 ``` ```json``` 직후 ``{`` 가 아니라 ``      "prose": "..."`` /
+``      "side_a": "..."`` 같은 sections 또는 contradictions 객체의 *중간 줄* 부터
+시작. 정상 종료(timeout 아님)지만 JSON 시작(``{``, headline, deck, sections 배열
+시작)이 통째로 누락돼 파싱 실패 → 두 번 재시도 모두 같은 회귀 → 0% minimal fallback.
+
+**원인**: Claude Opus 4.7 이 SYSTEM_PROMPT 안의 JSON 예시(들여쓰기 6 spaces 의
+sections 객체 필드들)를 보고, 자기 응답을 **예시의 깊은 줄부터** 이어서 시작.
+일종의 prompt cache / few-shot 따라하기 회귀. 큰 prompt(32K+ chars)에서 빈발.
+
+**Fix (v5.6.8)** — 2중 방어:
+
+1. **프롬프트**: `narrative_composer.py:SYSTEM_PROMPT` 의 ``=== JSON 응답 형식 ===``
+   섹션 *직후* (예시 직전) 에 ★★★ 강조 박스 추가 — "응답은 반드시 ``{`` 한 글자로
+   시작. 코드펜스 ``` ```json``` 직후 첫 비공백 글자가 ``{`` 가 아니면 응답 *전부
+   무효*. 아래 예시의 중간 줄(``      "prose":`` / ``      "side_a":`` / ``      "lede":``)
+   부터 시작 금지. 응답이 폐기되고 minimal fallback 으로 격하됨". LLM 이 깊은 줄부터
+   출력하지 않도록 명시적 instruction.
+2. **결정적 후처리**: `NarrativeComposer._recover_head_loss` 가 정상 파싱 + 절단 복구
+   모두 실패한 뒤 호출 — body 가 ``{`` 가 아니라 ``"key":`` 패턴으로 시작하면 ``{...}``
+   로 wrap 해 부분 객체 파싱 시도. ``prose`` 가 있으면 ``heading``/``kicker``/``lede``/
+   ``pull_quote`` 와 함께 1-섹션 ComposedReport 재조립 (confidence 0.3, summary
+   "응답 시작 부분이 누락돼 본문 일부만 복구함"). headline 은 빈 문자열 (orchestrator
+   가 hook 으로 context.event_name 으로 덮어쓸 수 있음). 0% fallback 대신 일부 살림.
+
+**적용 SSOT**: `src/agents/narrative_composer.py:SYSTEM_PROMPT` ``=== JSON 응답 형식
+===`` 직후 강조 박스 + `NarrativeComposer._recover_head_loss` + `_parse_response` 의
+호출부.
+
+**회귀 테스트**: 사용자 회귀 case 6/6 통과 (실제 raw head:
+``      "prose": "GPU 부족이 사이클의 첫 병목..."`` 165자 prose 살림 + side_a/side_b
+contradictions 부분은 정상 None / 정상 응답 / 빈 응답 / heading 포함 케이스).
+
+---
+
 ## 체크리스트 — composer prompt / persona 가이드 변경 시
 
 ### prose 형식

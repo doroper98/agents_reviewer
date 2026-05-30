@@ -505,6 +505,13 @@ SYSTEM_PROMPT = (
     "    더 볼 수 있어요'). 단 *매 보고서마다 다른 표현* 으로 — 똑같은 마무리 문구를 반복하면\n"
     "    AI 티가 나므로 그때그때 자연스럽게 바꾼다.\n\n"
     "=== JSON 응답 형식 (반드시 준수) ===\n"
+    "★★★ **응답은 반드시 ``{`` 한 글자로 시작한다.** ★★★\n"
+    "코드펜스 ```json 직후 첫 비공백 글자가 ``{`` 가 아니면 그 응답은 *전부 무효*\n"
+    "다. 아래 예시의 *중간 줄* (예: ``      \"prose\":`` / ``      \"side_a\":`` /\n"
+    "``      \"lede\":``) 부터 시작하지 말 것. 예시를 외워 깊은 줄부터 출력하면\n"
+    "응답이 폐기되고 보고서가 minimal fallback 으로 격하된다. 반드시 최상위 ``{``\n"
+    "→ ``\"headline\":`` → ``\"deck\":`` → ``\"sections\": [`` 순으로 *처음부터* 짠다.\n"
+    "응답 마지막 글자는 ``}`` (선택적으로 그 뒤에 닫는 ``` ).\n\n"
     "```json\n"
     "{\n"
     '  "headline": "사건의 본질을 가리키는 한 줄 (~30자)",\n'
@@ -1113,10 +1120,81 @@ class NarrativeComposer:
                     return composed
                 except Exception:  # noqa: BLE001 — 섹션 떨군 뒤 재시도
                     continue
+        # v5.6.8 — head-loss 복구. LLM 이 SYSTEM_PROMPT 의 JSON 예시 들여쓰기를
+        # 따라가다 응답의 *시작 부분* (``{``, headline, deck, sections 배열 시작) 을
+        # 통째로 빠뜨리고 ``      "prose": "..."`` 같은 sections 객체의 *중간 줄* 부터
+        # 시작하는 회귀(2026-05-30 발견). 그 경우 부분 객체라도 살려 1-섹션 보고서로.
+        recovered = NarrativeComposer._recover_head_loss(raw)
+        if recovered is not None:
+            logger.warning(
+                "[narrative_composer] head-loss 복구: 1-섹션 (prose=%d chars)",
+                len(recovered.sections[0].prose) if recovered.sections else 0,
+            )
+            return recovered
         logger.warning(
             "[narrative_composer] No parseable ComposedReport "
             "(raw=%d chars, head=%r)", len(raw), raw[:200],
         )
+        return None
+
+    @staticmethod
+    def _recover_head_loss(raw: str) -> ComposedReport | None:
+        """LLM 이 응답 시작을 빠뜨려 sections 객체 *중간 줄* 부터 시작했을 때,
+        부분 객체에서 prose / heading 등을 추출해 1-섹션 ComposedReport 로 재조립.
+
+        패턴: 코드펜스 또는 응답 시작이 ``{`` 가 아니라 들여쓰기된 ``"key":`` 인 케이스.
+        그 부분을 ``{...}`` 로 wrap 해서 한 객체로 만든 뒤, ``heading``/``prose`` 가
+        있으면 ComposedSection 으로 변환. headline 은 빈 문자열(orchestrator 가 hook
+        으로 context.event_name 으로 덮어쓸 수 있음).
+        """
+        if not raw:
+            return None
+        # 코드펜스 안 또는 raw 직접에서 후보 추출
+        body = raw
+        if "```json" in raw:
+            body = raw.split("```json", 1)[1]
+            if "```" in body:
+                body = body.split("```", 1)[0]
+        body = body.strip()
+        if not body or body.startswith("{"):
+            return None  # 정상 시작이면 본 복구 대상 아님
+        # 들여쓰기 키 패턴이 있어야 head-loss 후보
+        import re as _re
+        if not _re.search(r'^\s*"[A-Za-z_][A-Za-z0-9_]*"\s*:', body):
+            return None
+        # ``{`` 로 wrap → 파싱 시도 + 잘렸으면 복구
+        for wrapped in ("{" + body, "{" + body + "}"):
+            obj = NarrativeComposer._loads_first_json_object(wrapped)
+            if obj is None:
+                repaired = NarrativeComposer._repair_truncated_json(wrapped)
+                if repaired is None:
+                    continue
+                try:
+                    obj = json.loads(repaired)
+                except json.JSONDecodeError:
+                    continue
+            if not isinstance(obj, dict):
+                continue
+            prose = obj.get("prose")
+            if not isinstance(prose, str) or not prose.strip():
+                continue  # prose 없으면 살릴 가치 없음
+            heading = obj.get("heading") if isinstance(obj.get("heading"), str) else "분석"
+            section_data = {"heading": heading, "prose": prose}
+            for opt in ("kicker", "lede", "pull_quote"):
+                v = obj.get(opt)
+                if isinstance(v, str) and v.strip():
+                    section_data[opt] = v
+            try:
+                return ComposedReport(
+                    headline="",
+                    sections=[ComposedSection(**section_data)],
+                    confidence_score=0.3,
+                    confidence_summary=(
+                        "응답 시작 부분이 누락돼 본문 일부만 복구함 (head-loss recovery)."
+                    ),
+                )
+            except Exception:  # noqa: BLE001
+                continue
         return None
 
     @staticmethod

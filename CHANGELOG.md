@@ -20,6 +20,39 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## [v5.6.8] — 2026-05-30
+
+### composer head-loss 회귀 픽스 — JSON 응답 시작이 빠지던 새 패턴 (WRITE-AP-13)
+
+사용자 보고 (`analysis_20260530_130528`, Duration 1397s, "composer 호출 실패. 사실
+자료만 표시."): v5.6.7 부분 살림(timeout 복구)에도 불구하고 또 minimal fallback.
+로그 분석 결과 **timeout 안 났고 정상 종료**, raw 응답이 ``` ```json``` 직후 ``{``
+가 아니라 ``      "prose": ...`` 처럼 sections 객체의 *중간 줄* 부터 시작 — 즉
+LLM 이 SYSTEM_PROMPT 의 JSON 예시 들여쓰기(6 spaces)를 따라가다 응답의 시작 부분
+(``{``, headline, deck, sections 배열 시작) 을 통째로 빠뜨림 (head-loss). 두 번
+다 같은 회귀 → 재시도 무용.
+
+#### 수정 (2중 방어)
+
+- **근본 (`narrative_composer.py:SYSTEM_PROMPT`)**: JSON 예시 직전에 ★★★ 강조 박스
+  추가 — "응답은 반드시 ``{`` 한 글자로 시작. 코드펜스 ``` ```json``` 직후 첫
+  비공백 글자가 ``{`` 가 아니면 응답 *전부 무효*. 예시의 중간 줄(``      "prose":``
+  / ``      "side_a":``) 부터 시작 금지" 명시. LLM 이 깊은 줄부터 출력하지 않도록 유도.
+- **단기 (`NarrativeComposer._recover_head_loss`)**: 정상 파싱 + 절단 복구 모두
+  실패하고, 응답 body 가 ``{`` 가 아니라 ``"key":`` 패턴으로 시작하면, ``{...}`` 로
+  wrap 해서 부분 객체에서 ``prose``/``heading``/``kicker``/``lede``/``pull_quote``
+  추출 → 1-섹션 ComposedReport 재조립 (confidence_score 0.3, summary "응답 시작
+  부분이 누락돼 본문 일부만 복구함"). 0% fallback 대신 일부라도 살림.
+
+#### WRITE-AP-13 신규 항목
+
+LLM 이 SYSTEM_PROMPT 의 JSON 예시 들여쓰기를 따라가다 응답 시작을 누락하는 회귀.
+JSON 예시가 들여쓰기된 예시를 포함할 때 빈발. 예시 들여쓰기 자체는 유지(가독성)
+하되 명시적 instruction + 결정적 후처리 복구로 차단.
+
+> 검증: 사용자 회귀 case1 (165자 prose 살림) + case2 (prose 없음 → 정상 None) +
+> 정상 응답 + 빈 응답 + heading 포함 케이스 6/6 통과. ⚠️ VM 재배포 필수.
+
 ## [v5.6.7] — 2026-05-30
 
 ### AI 가 인지되는 기호 박멸 (마크다운 강조 + em/en dash) — 사용자 최우선 규칙 (WRITE-AP-12)
