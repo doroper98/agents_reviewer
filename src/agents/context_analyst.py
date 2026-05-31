@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from src.agents.base import BaseAgent
 from src.config import Config
 from src.models import AnalysisRequest, ContextAnalysis
+from src.timeutil import today_kst
 
 SYSTEM_PROMPT = (
     "당신은 상황 분석관. 사건의 팩트, 타임라인, 핵심 수치를 정리함.\n\n"
@@ -102,7 +101,9 @@ class ContextAnalyst(BaseAgent):
             "event_description": request.event_description,
             "request_type": request.request_type,
         }
-        context["current_date"] = datetime.now().strftime("%Y-%m-%d")
+        # v5.7.0 — KST 기준 '오늘'. naive datetime.now() 는 UTC VM 에서 하루 어긋남
+        # (일일 브리핑 06:00 KST = 전날 21:00 UTC). WRITE-AP-11 의 진짜 원인.
+        context["current_date"] = today_kst()
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
         self.system_prompt = SYSTEM_PROMPT.replace("{current_date}", context["current_date"])
         raw_text = await super().analyze(context)

@@ -9,12 +9,13 @@ import os
 import re
 import secrets
 import shutil
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
 
 from src.archetypes import ReportArchetype, get_archetype
 from src.config import Config
+from src.timeutil import KST
 from src.models import (
     AnalysisBlock, FullAnalysisResult, NarrativePlan, NarrativeSection,
     ReportSectionPlan,
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 CSS_PATH = os.path.join(TEMPLATE_DIR, "report.css")
 STATIC_DIR = os.path.join(TEMPLATE_DIR, "static")
-KST = timezone(timedelta(hours=9))
+# v5.7.0 — KST SSOT 는 src.timeutil. 여기선 import 해서 사용 (중복 정의 제거).
 
 # v3.2.0 — 정적 자산 (d3 + charts.js + charts.css). 보고서 디렉토리에 한 번만 복사.
 STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css", "maps.js", "maps.css")

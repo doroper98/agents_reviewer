@@ -27,6 +27,7 @@ import time
 from typing import Optional
 
 from src.config import Config
+from src.timeutil import today_kst
 from src.models import (
     ComposedReport,
     ComposedSection,
@@ -744,10 +745,12 @@ class NarrativeComposer:
         시나리오 / 발화 신호를 인지하고 분기 잇기 작업 수행.
         """
         # v5.6.4 — 발행일(오늘) 주입. composer 가 event.date 와 비교해 시간 거리를
-        # 본문에 명시할 수 있게 (WRITE-AP-11). 시스템 로컬 날짜(VM=KST 가정).
+        # 본문에 명시할 수 있게 (WRITE-AP-11).
+        # v5.7.0 — KST 기준. naive datetime.now() 는 UTC VM 에서 하루 어긋나
+        # publication_date 가 전날로 박혔다 (제목·본문 5/30 회귀의 원인).
         payload: dict = {
             "mode": mode,
-            "publication_date": _dt.datetime.now().strftime("%Y-%m-%d"),
+            "publication_date": today_kst(),
             "event": {
                 "name": context.event_name,
                 "category": context.category,

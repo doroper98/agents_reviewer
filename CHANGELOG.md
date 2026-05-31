@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.6.4
+last_synced_with: v5.7.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.7.0 — 일일 브리핑 날짜가 하루 어긋나던 회귀 fix (KST timezone SSOT)
+
+**증상**: 5/31 06:00 KST 에 트리거된 일일 브리핑이 제목·본문 전체에 "5/30" 을
+박았다. 스케줄러가 만든 안내 메시지("2026-05-31 일일 브리핑 시작")와 분석 스코프
+문구("Asia/Seoul 기준 2026-05-30 자정 이후 ~ 오늘 06:00")는 5/31 로 맞았는데,
+완성된 보고서 제목("2026-05-30 아침 종합 브리핑")과 본문("오늘(5/30) 아침
+풍경...")만 하루 전이라 인지부조화. WRITE-AP-11(시점 앵커링)의 더 깊은 원인.
+
+**원인**: 봇이 도는 VM/컨테이너가 **UTC** 인데, 사용자에게 노출되는 '오늘'
+날짜를 만드는 4곳이 timezone 없는 `datetime.now()` 를 썼다. 06:00 KST = 전날
+21:00 UTC 이므로 naive `now()` 는 *전날* 을 돌려준다. 스케줄러만
+`ZoneInfo("Asia/Seoul")` 로 올바르게 계산했고, ContextAnalyst 의 `current_date`
+(composer 가 보는 '오늘' 의 진짜 출처) / NarrativeComposer 의 `publication_date`
+/ bundle_builder 의 `fetched_at`·`generated_at` / models 의 `analysis_timestamp`
+는 모두 UTC 기준 전날로 셌다.
+
+**Fix**:
+- `src/timeutil.py` 신설 — `KST` / `now_kst()` / `today_kst()` SSOT (stdlib 고정
+  +09:00, tzdata 미설치 환경도 안전). 사용자 노출 날짜는 *항상* 이 모듈을 경유.
+- 위 4곳을 KST-aware 로 교체. `report_synthesizer.py` 의 중복 `KST` 정의도 본
+  모듈로 통합 (이미 `datetime.now(KST)` 로 올바르게 동작 중이었음).
+- 부수 효과 — ReportBundle 의 `generated_at` 이 계약서(`docs/CONTRACTS/
+  report_bundle_v1.md`)가 요구하는 `+09:00` offset 으로 정렬됨 (기존
+  `.astimezone()` 는 VM 의 UTC offset 을 냄).
+- `docs/REPORT_WRITING_ANTIPATTERNS.md` WRITE-AP-11 에 근본 원인(timezone) 보강.
+
+배포된 봇은 이 fix 가 없으므로 VM 재배포 필요 (다음 일일 브리핑부터 날짜 정합).
 
 ---
 

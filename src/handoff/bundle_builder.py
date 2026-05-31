@@ -26,10 +26,10 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
+from src.timeutil import now_kst, today_kst
 from src.models import (
     ORIGIN_TO_VERIFICATION,
     BundleChart,
@@ -169,7 +169,7 @@ def build_report_bundle(
     composed = result.composed_report
     context = result.context
     fetched_at = (context.date if context and context.date else
-                  datetime.now().strftime("%Y-%m-%d"))
+                  today_kst())  # v5.7.0 — KST 기준 fallback
     mkt_index = _market_index(context.time_series if context else [])
 
     # report_id: 저장 파일 stem (analysis_{ts}) — report_path 우선.
@@ -307,7 +307,7 @@ def build_report_bundle(
 
     return ReportBundle(
         schema_version=1,
-        generated_at=datetime.now().astimezone().isoformat(),
+        generated_at=now_kst().isoformat(),  # v5.7.0 — KST 기준
         producer=BundleProducer(
             system="agents_reviewer", version=version,
             mode=result.request.mode if result.request else "standard",

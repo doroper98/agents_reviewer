@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from src.timeutil import now_kst
 
 
 class AnalysisRequest(BaseModel):
@@ -793,7 +794,7 @@ class FullAnalysisResult(BaseModel):
     # v5.1.1: 후속 보고서일 때만 채워짐 — report.html 의 h1 풋노트 + 상단 헤더 박스 렌더링.
     parent_context: ParentContext | None = None
     analysis_timestamp: str = Field(
-        default_factory=lambda: datetime.now().isoformat()
+        default_factory=lambda: now_kst().isoformat()
     )
     total_duration_seconds: float = 0.0
     # v4.5.5 — 시스템 추적성. 회귀 / 재생성 / 패치 흔적이 보고서 자체에 노출.
