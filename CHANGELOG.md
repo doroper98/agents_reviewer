@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.3
+last_synced_with: v5.8.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.4 — fact-grid 숫자 정렬 버그 fix (v5.8.1 margin-top:auto 제거)
+
+v5.8.1 의 fact-grid 정렬이 sublabel(부가 설명) 줄 수가 카드마다 다르면 다시
+어긋나던 버그 수정. `.freeform-fact-value` 의 `margin-top:auto` 가 큰 숫자를 카드
+*바닥* 으로 밀어붙였기 때문에, sublabel 이 1줄인 카드(23.51% "역대 최고")와 2줄인
+카드(D-2 "2026년 6월 3일 수요일")의 숫자 baseline 이 어긋났다.
+
+- **Fix**: `margin-top:auto` 제거. label 의 `min-height:2.6em`(2줄 예약)은 유지 —
+  큰 숫자가 *고정 높이 label 바로 아래* 에서 시작(위에서 정렬)하므로 sublabel 줄
+  수와 무관하게 모든 카드의 숫자 세로 시작선이 일치.
+- 모크업 `samples/factgrid_pullquote_redesign_compare.html` A안도 동일 수정.
+- 데이터 계약 무변경, 7테마 자동 적용. 배포된 봇은 VM 재배포 시 반영.
 
 ---
 

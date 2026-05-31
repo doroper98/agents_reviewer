@@ -31,7 +31,7 @@ h2.sec{font-family:'Newsreader','Noto Serif KR',serif;font-size:21px;color:var(-
 /* AFTER A: flex column + label min-height (2줄 예약) + value 기준 정렬 */
 .fg.afterA .ft{display:flex;flex-direction:column}
 .fg.afterA .fl{min-height:2.6em;display:flex;align-items:flex-start}
-.fg.afterA .fv{margin-top:auto}
+/* v5.8.4 — value 위에서 정렬 (margin-top:auto 제거: sublabel 줄 수 차이로 다시 어긋나던 버그) */
 
 /* AFTER B: flex column, label 위 / value+sub 아래로 밀기 (value 바닥 정렬) */
 .fg.afterB .ft{display:flex;flex-direction:column}

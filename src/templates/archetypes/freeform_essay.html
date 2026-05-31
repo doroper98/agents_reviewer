@@ -84,11 +84,12 @@
 .freeform-fact-grid[data-cols="5"]{grid-template-columns:repeat(5,1fr)}
 .freeform-fact-grid[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
 .freeform-fact-tile{padding:14px 16px;background:var(--bg-1);display:flex;flex-direction:column}
-/* v5.8.1 — label 영역을 2줄 높이로 예약 → 1줄/2줄 label 이 섞여도 큰 숫자(value)
-   의 세로 시작선이 모든 카드에서 일치. value 는 margin-top:auto 로 label 영역
-   바로 아래 고정선에서 시작. */
+/* v5.8.1→v5.8.4 — label 영역을 2줄 높이로 예약 → 1줄/2줄 label 이 섞여도 큰
+   숫자(value)의 세로 시작선이 모든 카드에서 일치. value 는 고정 높이 label 바로
+   아래에서 시작 (위에서 정렬). v5.8.1 의 margin-top:auto 는 value 를 아래로 밀어
+   sublabel 줄 수가 다르면 다시 어긋나던 버그라 제거. */
 .freeform-fact-label{font-size:10.5px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--fg-3,var(--muted));margin-bottom:4px;min-height:2.6em;display:flex;align-items:flex-start}
-.freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px;margin-top:auto}
+.freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px}
 .freeform-fact-sublabel{font-size:11px;color:var(--fg-3,var(--muted));line-height:1.4}
 .freeform-prose.has-dropcap p:first-child::first-letter{font-family:'Newsreader','Noto Serif KR',serif;float:left;font-size:54px;font-weight:900;line-height:0.9;padding:6px 10px 0 0;color:var(--accent,#B05A38)}
 /* v5.5.1 — 모순 섹션 서술형 화. 각 모순 = 한 단락, '그러나' 로 전환, resolution
