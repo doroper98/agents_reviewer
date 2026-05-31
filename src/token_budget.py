@@ -8,7 +8,8 @@
 - 모든 사건에 모든 에이전트를 실행하지 않는다.
 - 분석 품질은 "에이전트 수" 가 아니라 "사건에 맞는 렌즈 선택, 사실 검증, 반대가설 유지,
   근거 추적성" 으로 보장한다.
-- 기본은 ``standard``. ``fast`` / ``deep`` 는 키워드 또는 명시적 호출로 진입.
+- 기본은 ``deep`` (v5.8.2). 사용자가 "빠르게/짧게/요약" 등 fast 키워드를 명시하지
+  않는 한 깊게 분석. ``fast`` 는 키워드로, ``standard`` 는 호출부 명시로만 진입.
 
 SSOT: 본 정의. ``docs/ARCHITECTURE.md §3.1`` (토큰 사용량) 와
 ``docs/CATALOGS.md`` (lens cap 정책) 가 사람-친화 미러.
@@ -78,9 +79,15 @@ class TokenBudget:
 
 
 def resolve_mode(event_description: str) -> AnalysisMode:
-    """사용자 입력 → mode. 키워드가 없으면 ``standard``.
+    """사용자 입력 → mode. 키워드가 없으면 ``deep`` (v5.8.2 기본 변경).
 
-    deep 키워드 우선 (둘 다 있으면 deep). 케이스 무시 + 한국어 매칭.
+    v5.8.2: 기본 모드를 standard → deep 으로 변경. 사용자가 "빠르게/짧게/요약"
+    같은 fast 키워드를 명시하지 않는 한 항상 깊게 분석한다. standard 는 이제
+    명시 키워드 없을 때의 기본이 아니라 *호출부가 직접 지정* 할 때만 진입.
+
+    우선순위는 그대로: deep 키워드 우선 (fast·deep 키워드가 함께 오면 deep).
+    fast 키워드만 있으면 fast. 둘 다 없으면 deep (← 변경점, 기존 standard).
+    케이스 무시 + 한국어 매칭.
     """
     text = (event_description or "").lower()
     for kw in _DEEP_KEYWORDS:
@@ -89,4 +96,4 @@ def resolve_mode(event_description: str) -> AnalysisMode:
     for kw in _FAST_KEYWORDS:
         if kw.lower() in text:
             return "fast"
-    return "standard"
+    return "deep"

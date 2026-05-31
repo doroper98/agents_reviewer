@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.1
+last_synced_with: v5.8.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.2 — 기본 분석 모드 standard → deep
+
+사용자가 "빠르게/짧게/요약" 등 fast 키워드를 *명시하지 않는 한* 모든 보고서를
+deep 으로 생성. `token_budget.resolve_mode` 의 폴백을 standard → deep 으로 변경.
+
+- 우선순위는 그대로: deep 키워드 우선(fast·deep 함께 오면 deep), fast 키워드만
+  있으면 fast, 둘 다 없으면 deep(← 변경점, 기존 standard).
+- 영향 범위: 일반 `/analyze` 에서 mode 미지정(None) 일 때만. daily_briefing /
+  후속 보고서는 이미 `mode="deep"` 명시라 무영향. standard 는 호출부가 직접
+  지정할 때만 진입.
+- 동반 갱신: `resolve_mode_fallback`(regression helper 미러), golden_prompts.yaml
+  의 expected_mode standard 7건 → deep, test_resolve_mode_keywords, CLAUDE.md
+  Mode Routing.
+
+배포된 봇 반영은 VM 재배포 필요. (mode 는 startup 무관 — 코드만 갱신되면 즉시 적용.)
 
 ---
 
