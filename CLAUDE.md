@@ -318,6 +318,6 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - v4.5.7 — Somaliland (de facto) 폴리곤·legend 는 `path.bounds()` viewport 교집합 통과 시에만 렌더 (CHART-AP-14). 무관한 지리 annotation 의 무조건 렌더 차단.
 
 ## Mode Routing (v4.5.7)
-- 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard.
+- 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약/빠르게` → fast, `심층/자세히/면밀` → deep, **그 외(키워드 없음) → deep** (v5.8.2 기본 변경, 기존 standard). standard 는 이제 호출부가 `mode="standard"` 로 명시할 때만 진입. daily_briefing / 후속 보고서는 `mode="deep"` 명시이므로 resolve_mode 무관.
 - Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
 - v4.0.0 부터 모든 모드 LLM 호출 **2회** 동일 (context + composer). mode 는 composer prompt 의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) + max_tokens 한도 (v4.5.4: composer fast 12K / standard 20K / deep 32K, v4.5.7: context fast/standard 4K / deep 10K) 결정.
