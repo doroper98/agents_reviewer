@@ -33,7 +33,7 @@ python -m src.main
 ```
 
 ## What This Does (v4.5.7 Tier 4)
-- 텔레그램 봇이 사건 한 줄 메시지를 받음. `짧게/간략/요약` → fast, `심층/자세히/면밀` → deep, 그 외 → standard 모드 자동 결정.
+- 텔레그램 봇이 사건 한 줄 메시지를 받음. `짧게/간략/요약/빠르게` → fast, `심층/자세히/면밀` → deep, **그 외(키워드 없음) → deep** (v5.8.2 기본) 자동 결정. standard 는 호출부 명시 전용.
 - **2-call 파이프라인**: ContextAnalyst (Opus 4.7, 웹 검색, deep 모드 max_tokens 10K) 가 사실/타임라인/출처 수집 → NarrativeComposer (Opus 4.7, mode 별 max_tokens 12K/20K/32K) 가 *단일 호출* 로 행위자/구조/시나리오/모순 분석 + 보고서 본문 작성 + 감시 신호 추출 + 차트 데이터 + 지도 데이터까지 모두 emit.
 - mode 는 composer 프롬프트의 분석 깊이 지시 (fast 3~4 섹션 / standard 4~6 / deep 5~7 + 모순 명시 필수) 와 max_tokens 한도에 영향. LLM 호출 수는 모든 모드 2회 동일.
 - 보고서: `freeform_essay.html` 단일 템플릿. composer 의 `ComposedReport` (headline / sections / charts / map / watch_signals / contradictions / confidence) 를 mono 테마 (editorial_cream 디폴트 / burgundy_mono 위기·분쟁 한정) 로 렌더 → Cloudflare Pages 배포. 보고서 상단 hero 영역에 `system_version + revision` 추적 정보 표시.
