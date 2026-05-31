@@ -37,8 +37,11 @@ last_review: 2026-05-05
 >   ([REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) §2.1 어휘표 / [REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md) WRITE-AP-N
 >   / [CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md) CHART-AP-N) 동시 갱신 후 커밋·푸시.
 >
-> **④ 실행 환경 분기.** **VM(봇 가동기)**: 위 명령을 그대로 실행 — `reports/*.json` + Cloudflare
-> 자격증명이 거기 있음. **Claude Code on the web / 원격 컨테이너**: fresh clone 라 `reports/`
+> **④ 실행 환경 분기.** **VM(봇 가동기)**: 위 명령 실행 — `reports/*.json` + Cloudflare
+> 자격증명이 거기 있음. 단 **반드시 repo 루트에서 venv 활성 후** (`cd ~/agents_reviewer &&
+> source venv/bin/activate`). Ubuntu 는 `python` 이 없고 `python3` 만 있으며, 홈(`~`)에서
+> 바로 돌리면 `src.*` import·의존성이 안 잡힌다 (실제 재발한 gotcha). **Claude Code on the
+> web / 원격 컨테이너**: fresh clone 라 `reports/`
 > 없음 + Cloudflare 토큰 없음 → 직접 실행 불가. 이때는 ③-A 명령을 **복사용 한 줄** 로 정확히
 > 만들어 주고("VM 에서 실행하세요"), ③-B 소스 패치만 내가 커밋·푸시한다.
 >
