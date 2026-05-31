@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fact-grid 정렬 + pull_quote 재설계 비교</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2EBDB; --card:#ECE3D0; --border:#D4C8B0;
+  --text:#1F1814; --muted:#6B5C4A; --accent:#B05A38;
+  --bg-1:var(--bg); --bg-2:var(--card);
+  --fg-1:var(--text); --fg-2:#2D241B; --fg-3:var(--muted);
+  --border-soft:rgba(212,200,176,0.55);
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans KR',sans-serif;margin:0;padding:40px 0}
+.container{max-width:760px;margin:0 auto;padding:0 24px}
+h2.sec{font-family:'Newsreader','Noto Serif KR',serif;font-size:21px;color:var(--fg-1);border-bottom:2px solid var(--accent);padding-bottom:8px;margin:48px 0 8px}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:3px;margin:18px 0 10px}
+.tag.before{background:#8B2A2A;color:#fff}
+.tag.after{background:#4A6B3E;color:#fff}
+.note{font-size:13px;color:var(--muted);line-height:1.7;margin:6px 0 18px}
+
+/* ============ FACT GRID ============ */
+.fg{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin:14px 0;background:var(--border-soft);border:1px solid var(--border-soft);border-radius:6px;overflow:hidden}
+.ft{padding:14px 16px;background:var(--bg-1)}
+.fl{font-size:10.5px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--fg-3);margin-bottom:4px}
+.fv{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px}
+.fs{font-size:11px;color:var(--fg-3);line-height:1.4}
+
+/* AFTER A: flex column + label min-height (2줄 예약) + value 기준 정렬 */
+.fg.afterA .ft{display:flex;flex-direction:column}
+.fg.afterA .fl{min-height:2.6em;display:flex;align-items:flex-start}
+.fg.afterA .fv{margin-top:auto}
+
+/* AFTER B: flex column, label 위 / value+sub 아래로 밀기 (value 바닥 정렬) */
+.fg.afterB .ft{display:flex;flex-direction:column}
+.fg.afterB .fl{margin-bottom:auto;padding-bottom:8px}
+
+/* ============ PULL QUOTE ============ */
+/* BEFORE: 전형적 AI 박스 */
+.pq-before{margin:24px 0 8px;padding:18px 22px;background:rgba(176,90,56,0.06);border-left:4px solid var(--accent);border-radius:4px;font-family:'Newsreader','Noto Serif KR',serif;font-size:18px;font-weight:700;line-height:1.5;color:var(--fg-1)}
+
+/* AFTER A: 행잉 따옴표 + 박스 제거 (편집형) */
+.pq-a{margin:30px 0 26px;padding:0 0 0 8px;font-family:'Newsreader','Noto Serif KR',serif;font-size:23px;font-weight:700;line-height:1.45;color:var(--fg-1);position:relative}
+.pq-a::before{content:"\201C";position:absolute;left:-22px;top:-6px;font-size:54px;color:var(--accent);opacity:0.5;font-family:'Newsreader',serif;line-height:1}
+
+/* AFTER B: 상단 얇은 룰 + 큰 세리프, 박스 없음 */
+.pq-b{margin:32px 0 28px;padding:16px 0 0;border-top:2px solid var(--fg-1);font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;line-height:1.5;color:var(--fg-1);max-width:90%}
+
+/* AFTER C (채택): 좌·우 양쪽 가는 룰 + 이탤릭 강조, 배경 제거 */
+.pq-c{margin:30px 0 26px;padding:2px 20px;border-left:2px solid var(--accent);border-right:2px solid var(--accent);font-family:'Newsreader','Noto Serif KR',serif;font-size:21px;font-weight:700;font-style:italic;line-height:1.5;color:var(--fg-1)}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h2 class="sec">① 가로 카드 (fact-grid) — 큰 숫자 세로 정렬</h2>
+<p class="note">문제: label 이 1줄("오픈AI 평가")인 카드와 2줄("엔비디아 1분기 매출")인 카드가 섞여, 그 아래 큰 숫자의 세로 시작 위치가 카드마다 어긋남.</p>
+
+<div class="tag before">BEFORE (현재)</div>
+<div class="fg">
+  <div class="ft"><div class="fl">앤스로픽 평가</div><div class="fv">9,650억 달러</div><div class="fs">2026-05-28 / 시리즈 H</div></div>
+  <div class="ft"><div class="fl">오픈AI 평가</div><div class="fv">8,520억 달러</div><div class="fs">2026-03 발표</div></div>
+  <div class="ft"><div class="fl">엔비디아 1분기 매출</div><div class="fv">816억 달러</div><div class="fs">전년 동기 +85%</div></div>
+  <div class="ft"><div class="fl">앤스로픽 ARR</div><div class="fv">470억 달러</div><div class="fs">2026-05 / 전월 대비 +57%</div></div>
+  <div class="ft"><div class="fl">앤스로픽 2분기 가이던스</div><div class="fv">109억 달러</div><div class="fs">영업이익 5.59억 가능</div></div>
+</div>
+
+<div class="tag after">AFTER A — label 2줄 높이 예약 + value 바닥 기준 정렬 (권장)</div>
+<p class="note">label 영역을 항상 2줄 높이로 잡고, 큰 숫자를 그 아래 같은 선에서 시작. 숫자 baseline 이 5칸 모두 일치.</p>
+<div class="fg afterA">
+  <div class="ft"><div class="fl">앤스로픽 평가</div><div class="fv">9,650억 달러</div><div class="fs">2026-05-28 / 시리즈 H</div></div>
+  <div class="ft"><div class="fl">오픈AI 평가</div><div class="fv">8,520억 달러</div><div class="fs">2026-03 발표</div></div>
+  <div class="ft"><div class="fl">엔비디아 1분기 매출</div><div class="fv">816억 달러</div><div class="fs">전년 동기 +85%</div></div>
+  <div class="ft"><div class="fl">앤스로픽 ARR</div><div class="fv">470억 달러</div><div class="fs">2026-05 / 전월 대비 +57%</div></div>
+  <div class="ft"><div class="fl">앤스로픽 2분기 가이던스</div><div class="fv">109억 달러</div><div class="fs">영업이익 5.59억 가능</div></div>
+</div>
+
+<div class="tag after">AFTER B — value+sublabel 을 카드 바닥에 정렬</div>
+<p class="note">label 은 위에 두고, 숫자+부가설명을 카드 아래쪽으로 밀어 바닥 기준 정렬. 카드 높이가 일정할 때 효과적.</p>
+<div class="fg afterB">
+  <div class="ft"><div class="fl">앤스로픽 평가</div><div class="fv">9,650억 달러</div><div class="fs">2026-05-28 / 시리즈 H</div></div>
+  <div class="ft"><div class="fl">오픈AI 평가</div><div class="fv">8,520억 달러</div><div class="fs">2026-03 발표</div></div>
+  <div class="ft"><div class="fl">엔비디아 1분기 매출</div><div class="fv">816억 달러</div><div class="fs">전년 동기 +85%</div></div>
+  <div class="ft"><div class="fl">앤스로픽 ARR</div><div class="fv">470억 달러</div><div class="fs">2026-05 / 전월 대비 +57%</div></div>
+  <div class="ft"><div class="fl">앤스로픽 2분기 가이던스</div><div class="fv">109억 달러</div><div class="fs">영업이익 5.59억 가능</div></div>
+</div>
+
+
+<h2 class="sec">② 단일 카드 키 메시지 (pull_quote) — 박스 재설계</h2>
+<p class="note">문제: background + border-left + border-radius 조합이 전형적인 "AI 인용 박스" 룩. 메시지는 좋으니 감싸는 형상만 편집 디자인으로.</p>
+
+<div class="tag before">BEFORE (현재)</div>
+<div class="pq-before">한 회사가 한 라운드 안에 650억 달러를 받은 사례는 닷컴 이전을 통틀어 찾기 어렵다.</div>
+
+<div class="tag after">AFTER A — 행잉 따옴표, 박스 제거 (FT/매거진형)</div>
+<p class="note">배경·테두리 없이 큰 따옴표를 행 바깥에 걸고 글씨를 키움. 본문 흐름에 자연스럽게 녹음.</p>
+<div class="pq-a">한 회사가 한 라운드 안에 650억 달러를 받은 사례는 닷컴 이전을 통틀어 찾기 어렵다.</div>
+
+<div class="tag after">AFTER B — 상단 얇은 룰 + 큰 세리프 (Economist형)</div>
+<p class="note">위에 얇은 선 하나만. 절제되고 신문 사설 같은 무게감.</p>
+<div class="pq-b">한 회사가 한 라운드 안에 650억 달러를 받은 사례는 닷컴 이전을 통틀어 찾기 어렵다.</div>
+
+<div class="tag after">AFTER C — 좌측 가는 룰 + 이탤릭 (가장 절제)</div>
+<p class="note">기존 border-left 의 정제판 — 두께 줄이고 배경 제거, 이탤릭으로 인용 톤. 변경폭 최소.</p>
+<div class="pq-c">한 회사가 한 라운드 안에 650억 달러를 받은 사례는 닷컴 이전을 통틀어 찾기 어렵다.</div>
+
+<div style="height:60px"></div>
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.0
+last_synced_with: v5.8.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.1 — fact-grid 숫자 세로 정렬 + pull_quote 박스 재설계
+
+보고서의 두 시각 요소를 다듬었다.
+
+- **가로 카드(fact-grid) 숫자 정렬**: label 이 1줄/2줄로 섞이면 그 아래 큰 숫자의
+  세로 시작선이 카드마다 어긋나 보기 불편하던 문제. `.freeform-fact-tile` 을 flex
+  column 으로 바꾸고 `.freeform-fact-label` 에 `min-height:2.6em` (2줄 예약) +
+  `.freeform-fact-value` 에 `margin-top:auto` → 큰 숫자 baseline 이 모든 카드에서 일치.
+- **키 메시지(pull_quote) 박스 재설계**: 기존 `background + border-radius +
+  border-left 4px` 의 전형적인 "AI 인용 박스" 룩 폐기. 배경·둥근모서리 제거 +
+  좌·우 양쪽 가는 룰(accent 2px) + 이탤릭 세리프로 편집 디자인 인용 톤. 메시지는
+  그대로, 감싸는 형상만 절제.
+- 모바일 오버라이드 동반 갱신 (pullquote padding, fact-label min-height).
+- 모크업: `samples/factgrid_pullquote_redesign_compare.html` (Before/After 비교).
+
+7개 테마 모두 토큰(accent/fg/border-soft) 자동 적용. 데이터 계약 무변경.
 
 ---
 
