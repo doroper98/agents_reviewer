@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.2
+last_synced_with: v5.8.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.3 — 미래 사건 카운트다운 발행일 기준 재계산 (WRITE-AP-14)
+
+6/1 발행 보고서가 6/3 지방선거를 "사흘 앞으로 다가온" 으로 표기하던 회귀 수정.
+6/1 → 6/3 은 이틀 뒤(모레)인데 "사흘"로 셌다 — "사흘"은 5/31 기준이며, 출처
+기사(5/31 작성)의 카운트다운을 그대로 베낀 것.
+
+- **원인**: v5.6.4 시점 앵커링 블록이 *과거* 방향("사흘 전")만 다루고 *미래*
+  방향 카운트다운(D-N, "사흘 앞" / "내일" / "모레")은 언급이 없었다. composer 가
+  웹 검색 출처의 상대 표현을 발행일 기준 재계산 없이 옮겼다. WRITE-AP-11 의 거울상.
+- **Fix**: composer SYSTEM_PROMPT `=== 시점 앵커링 ===` 블록에 미래 카운트다운
+  규칙 추가 — D-N·상대 표현은 publication_date 와 사건일의 실제 차이로 직접 셈하고,
+  출처 문구를 그대로 옮기지 않으며, 불확실하면 'M월 D일' 절대 날짜만 쓴다.
+- WRITE-AP-14 등록 (REPORT_WRITING_ANTIPATTERNS.md). 코드 변경은 prompt 1곳.
+
+이미 발행된 보고서(analysis_20260601_060645…)는 VM 에서 `patch_report.py --replace`
+로 핫픽스. 배포된 봇은 prompt fix 가 없어 VM 재배포 시 다음 보고서부터 반영.
 
 ---
 
