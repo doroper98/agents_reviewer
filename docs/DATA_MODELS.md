@@ -270,6 +270,17 @@ Phase 1 (ContextAnalyst Opus 4.7) 출력. composer 가 보는 *유일한* 사실
 - `fired`, `fired_at`: 발화 상태 + 시각 (ISO 8601 datetime).
 - 정의 SSOT 는 `src/models.py`. SQLite 영구 저장은 `src/watchlist/registry.py:WatchlistRegistry`.
 
+### 3.14 ParentContext (v5.1.1 — 후속 보고서 맥락)
+- 감시 신호 발화 시 부모 보고서의 맥락을 자식 분석으로 옮기는 컨테이너. `narrative_composer` payload 의 `followup` 필드 + `freeform_essay.html` 의 '이 분석의 출발점' 렌더에 사용.
+- `parent_report_id`: 부모 보고서 식별자 (필수).
+- `parent_report_url`: 부모 보고서 클릭 링크 (옵셔널). 후속 본문의 '이 분석의 출발점' / '이어서 읽기' 앵커.
+- `parent_report_title` (v5.8.0): 부모 보고서 헤드라인. 후속 보고서 서두·매리말에 제목으로 노출. 없으면 `parent_report_id` 폴백. 출처는 `report_meta.report_title` (등록 시 `ComposedReport.headline`).
+- `parent_event_description`: 부모 사건 요약 (composer payload 에 500자 truncate).
+- `parent_scenarios`: 부모 `ScenarioAnalysis.scenarios` (composer 가 어느 가지가 실현 중인지 판정).
+- `triggering_signal`: 발화된 `WatchSignal`.
+- `chain_depth`: 부모 체인 깊이. 자식 신호는 +1 로 등록 (v5.5.7 제한 폐지).
+- 영구 저장: `report_meta` 테이블 (`registry.register_report_meta` / `get_report_meta`). v5.8.0 에서 `report_title` 컬럼 추가 (구 DB idempotent 마이그레이션).
+
 ---
 
 ## 4. 모델 변경 시 동시 갱신해야 할 곳

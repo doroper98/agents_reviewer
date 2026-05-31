@@ -59,6 +59,16 @@ class WatchlistRegistry:
                     "ALTER TABLE watchsignals ADD COLUMN chain_depth INTEGER NOT NULL DEFAULT 0"
                 )
                 logger.info("[watchlist] Migrated: added chain_depth column to watchsignals")
+            # v5.8.0: 기존 report_meta 에 report_title 컬럼이 없으면 추가.
+            meta_cols = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(report_meta)").fetchall()
+            }
+            if "report_title" not in meta_cols:
+                conn.execute(
+                    "ALTER TABLE report_meta ADD COLUMN report_title TEXT NOT NULL DEFAULT ''"
+                )
+                logger.info("[watchlist] Migrated: added report_title column to report_meta")
         logger.info("[watchlist] Registry initialized at %s", self.db_path)
 
     @contextmanager
@@ -111,10 +121,12 @@ class WatchlistRegistry:
         event_description: str,
         scenarios: list[dict],
         chain_depth: int = 0,
+        report_title: str = "",
     ) -> bool:
         """보고서의 부모 맥락 메타 등록 — 신호 발화 시 ParentContext 즉시 조립용.
 
         report_id 가 비어있으면 no-op. 동일 ID 재등록은 REPLACE (재배포 케이스 흡수).
+        v5.8.0: report_title (부모 헤드라인) — 후속 보고서의 '이 분석의 출발점' 렌더용.
         """
         if not report_id:
             return False
@@ -127,15 +139,19 @@ class WatchlistRegistry:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO report_meta
-                (report_id, event_description, scenarios_json, chain_depth, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                (report_id, event_description, report_title, scenarios_json, chain_depth, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (report_id, event_description, scenarios_json, int(chain_depth), created_at),
+                (report_id, event_description, report_title or "",
+                 scenarios_json, int(chain_depth), created_at),
             )
         return True
 
     def get_report_meta(self, report_id: str) -> dict | None:
-        """report_id 로 부모 메타 조회. 반환 dict: {event_description, scenarios, chain_depth}."""
+        """report_id 로 부모 메타 조회.
+
+        반환 dict: {event_description, report_title, scenarios, chain_depth}.
+        """
         if not report_id:
             return None
         with self._connect() as conn:
@@ -148,8 +164,13 @@ class WatchlistRegistry:
             scenarios = json.loads(row["scenarios_json"] or "[]")
         except (TypeError, ValueError):
             scenarios = []
+        # v5.8.0: report_title 은 마이그레이션 전 행에 없을 수 있어 keys() 가드.
+        title = ""
+        if "report_title" in row.keys():
+            title = row["report_title"] or ""
         return {
             "event_description": row["event_description"] or "",
+            "report_title": title,
             "scenarios": scenarios if isinstance(scenarios, list) else [],
             "chain_depth": int(row["chain_depth"] or 0),
         }

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.7.0
+last_synced_with: v5.8.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.0 — 후속 보고서에 '이 분석의 출발점' (원 보고서 제목 + 링크) 노출
+
+후속(follow-up) 보고서를 읽는 사람이 원 보고서의 사건·가정을 함께 보며 입체적으로
+이해하도록, 원 보고서로의 연결 고리를 후속 보고서 본문 **서두 + 매리말 양쪽**에 넣었다.
+
+- **용어**: 본문에 "부모 보고서" 같은 내부 용어 대신 **'이 분석의 출발점'** (매리말은
+  '이어서 읽기 — 이 분석의 출발점') 으로 노출. 일반 독자 우선 원칙.
+- **데이터**: 원 보고서 헤드라인을 `report_meta.report_title` 에 신규 저장
+  (`ComposedReport.headline` 출처). `ParentContext.parent_report_title` 필드 추가.
+  제목 없으면 `parent_report_id` 폴백.
+- **렌더**: `freeform_essay.html` 에 `.freeform-origin` 박스 — 서두(헤드라인·덱 아래,
+  본문 읽기 전 맥락) + 매리말(closing 뒤, 다 읽고 원본으로 회귀). accent border-left,
+  제목은 Newsreader serif + 클릭 링크. 후속 보고서일 때만 (`result.parent_context`).
+  일반 보고서엔 미노출.
+- **DB**: `report_meta` 에 `report_title` 컬럼 추가. 기존 DB 는
+  `registry._initialize` 의 idempotent 마이그레이션 (PRAGMA 체크 → ALTER TABLE).
+  구 행은 빈 title 로 안전 조회.
+- 회귀 테스트: `TestReportMeta` 4종 (왕복 / 폴백 / no-op / 구 DB 마이그레이션).
+
+배포된 봇은 이 기능이 없으므로 VM 재배포 필요. 마이그레이션은 봇 재시작 시 자동.
 
 ---
 
