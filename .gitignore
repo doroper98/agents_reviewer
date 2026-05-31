@@ -9,4 +9,5 @@ dist/
 logs/
 .wrangler/
 bot.log
+bot.log.*
 baseline_log.txt

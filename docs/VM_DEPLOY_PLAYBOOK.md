@@ -1,13 +1,13 @@
 ---
 tier: 1
-last_synced_with: v5.6.9
+last_synced_with: v5.8.0
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
 depends_on:
   - "src/orchestrator.py:VERSION (재배포 후 일치 확인 대상)"
   - "requirements.txt (의존성 변경 감지)"
-last_review: 2026-05-30
+last_review: 2026-05-31
 ---
 
 # VM Deploy Playbook — 재배포 회귀 방지 SSOT
@@ -23,96 +23,106 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
 
 ## §1 표준 재배포 절차 (회귀 가드 내장)
 
-VM 의 `~/agents_reviewer` 에서 그대로 복붙. **§2 VM-AP-1~6 모든 가드 포함**.
+VM 의 `~/agents_reviewer` 에서 그대로 복붙. **§2 VM-AP-1~7 모든 가드 포함**.
 idempotent — 봇이 떠있든 안 떠있든 같은 결과.
 
+> **★ paste-safe 설계 (VM-AP-7).** 전체를 `redeploy()` 함수로 감싼다. 이유:
+> SSH 셸에 직접 붙여넣으면 명령이 *현재 로그인 셸* 에서 실행되는데, Stage 1 의
+> 가드가 `exit 1` 이면 그 로그인 셸(=SSH 세션) 자체가 종료돼 접속이 끊긴다.
+> 함수 안에서는 `return 1` 이 함수만 빠져나오므로 세션이 살아있다. 붙여넣은 뒤
+> 마지막 줄 `redeploy` 가 1회 실행한다. 가드에 걸려 멈춰도 `redeploy` 만 다시
+> 치면 재실행된다 (함수는 이미 정의됨).
+
 ```bash
-cd ~/agents_reviewer
+redeploy() {
+  cd ~/agents_reviewer || return 1
 
-# ─── Stage 1: pull 전 working tree 정리 (VM-AP-3 가드) ───
-# 로컬 잔재 (이전 commit 에서 삭제된 파일이 VM 에 남음) 가 pull 을 막는다.
-DIRTY=$(git status --porcelain)
-if [ -n "$DIRTY" ]; then
-  echo "⚠️ 로컬 수정사항 발견:"
-  echo "$DIRTY"
-  echo "→ 잔재 파일이면 rm, 의도적 수정이면 stash 후 재실행."
-  echo "  (자주 발생: 이전에 삭제된 스크립트의 VM 잔재 — rm 안전)"
-  exit 1
-fi
-
-# ─── Stage 2: pull + 의존성 변경 감지 (VM-AP-6 가드) ───
-git fetch origin main
-LOCAL=$(git rev-parse HEAD)
-REMOTE=$(git rev-parse origin/main)
-if [ "$LOCAL" != "$REMOTE" ]; then
-  # requirements 변경 감지 → pip install 안내
-  if git diff --name-only "$LOCAL..$REMOTE" | grep -qE '^requirements(-.*)?\.txt$'; then
-    echo "⚠️ requirements 변경 감지 — pip install 필요"
-    NEED_PIP=1
+  # ─── Stage 1: pull 전 working tree 정리 (VM-AP-3 가드) ───
+  # untracked(-uno) 제외 — bot.log 백업 등은 pull 을 막지 않는다 (VM-AP-7).
+  # tracked 수정(삭제된 파일의 VM 잔재 등)만 pull 차단 위험.
+  DIRTY=$(git status --porcelain --untracked-files=no)
+  if [ -n "$DIRTY" ]; then
+    echo "⚠️ 로컬 tracked 수정사항 발견 (pull 차단 위험):"
+    echo "$DIRTY"
+    echo "→ 잔재면 git checkout -- <file>, 의도적 수정이면 stash 후 재실행."
+    return 1
   fi
-  git pull
-  if [ -n "${NEED_PIP:-}" ]; then
-    source venv/bin/activate
-    pip install -r requirements.txt
-  fi
-else
-  echo "✓ 이미 최신 ($LOCAL)"
-fi
 
-# ─── Stage 3: 코드 버전 확인 (VM-AP-4 가드 — 재기동 누락 차단) ───
-echo "코드 버전: $(grep '^VERSION = ' src/orchestrator.py)"
-
-# ─── Stage 4: 옛 봇 graceful + force 종료 (VM-AP-1 가드) ───
-# pkill SIGTERM 후 종료를 *기다린다*. graceful shutdown 은 텔레그램 polling
-# unwind 때문에 5~15초 걸린다. sleep 2 후 즉시 새 봇 띄우면 두 봇이 동시에
-# polling → "Conflict: terminated by other getUpdates request" 에러로 한쪽 죽음.
-OLD=$(pgrep -f 'python.*src\.main' || true)
-if [ -n "$OLD" ]; then
-  echo "기존 봇 PID: $OLD — SIGTERM 송신"
-  pkill -f 'python.*src\.main'
-  for i in $(seq 1 15); do
-    sleep 1
-    REM=$(pgrep -f 'python.*src\.main' || true)
-    if [ -z "$REM" ]; then
-      echo "✓ 옛 봇 정상 종료 (${i}초 소요)"
-      break
+  # ─── Stage 2: pull + 의존성 변경 감지 (VM-AP-6 가드) ───
+  git fetch origin main
+  LOCAL=$(git rev-parse HEAD)
+  REMOTE=$(git rev-parse origin/main)
+  if [ "$LOCAL" != "$REMOTE" ]; then
+    # requirements 변경 감지 → pip install 안내
+    if git diff --name-only "$LOCAL..$REMOTE" | grep -qE '^requirements(-.*)?\.txt$'; then
+      echo "⚠️ requirements 변경 감지 — pip install 필요"
+      NEED_PIP=1
     fi
-  done
-  REM=$(pgrep -f 'python.*src\.main' || true)
-  if [ -n "$REM" ]; then
-    echo "⚠️ graceful shutdown 15초 초과 — SIGKILL (PID: $REM)"
-    kill -9 $REM
-    sleep 1
+    git pull
+    if [ -n "${NEED_PIP:-}" ]; then
+      source venv/bin/activate
+      pip install -r requirements.txt
+    fi
+  else
+    echo "✓ 이미 최신 ($LOCAL)"
   fi
-fi
 
-# ─── Stage 5: 옛 bot.log 보존 + 새 봇 시작 (VM-AP-5 가드) ───
-# nohup 의 ``> bot.log`` 가 truncate 모드라 두 봇이 동시에 떠있을 때 같은 파일에
-# 쓰며 진단을 혼선시킨다. 새 봇 띄우기 전 옛 로그 1건 백업.
-if [ -f bot.log ]; then
-  mv bot.log "bot.log.$(date +%Y%m%d_%H%M%S)"
-fi
-source venv/bin/activate
-nohup python -m src.main > bot.log 2>&1 &
-disown
+  # ─── Stage 3: 코드 버전 확인 (VM-AP-4 가드 — 재기동 누락 차단) ───
+  echo "코드 버전: $(grep '^VERSION = ' src/orchestrator.py)"
 
-# ─── Stage 6: 가동 확인 (VM-AP-4 강화 — 버전·인스턴스·에러) ───
-sleep 4
-N=$(pgrep -f 'python.*src\.main' | wc -l)
-if [ "$N" -ne 1 ]; then
-  echo "⚠️ 봇 인스턴스 수: $N (1이어야 정상)"
-  ps aux | grep 'src.main' | grep -v grep
-fi
-echo "─── bot.log 가동 신호 ───"
-grep -E 'Starting Event Analysis Team bot|Application started|Conflict|ERROR' bot.log | head
-echo "─── 확인 포인트 ───"
-echo "  ① 'Starting Event Analysis Team bot — vX.Y.Z' 가 코드 버전과 일치"
-echo "  ② [DIRTY] 표시 없어야 (working tree clean)"
-echo "  ③ 'Conflict' / 'ERROR' 라인 없어야 (옛 봇과 polling 충돌 안 났는지)"
+  # ─── Stage 4: 옛 봇 graceful + force 종료 (VM-AP-1 가드) ───
+  # pkill SIGTERM 후 종료를 *기다린다*. graceful shutdown 은 텔레그램 polling
+  # unwind 때문에 5~15초 걸린다. sleep 2 후 즉시 새 봇 띄우면 두 봇이 동시에
+  # polling → "Conflict: terminated by other getUpdates request" 에러로 한쪽 죽음.
+  OLD=$(pgrep -f 'python.*src\.main' || true)
+  if [ -n "$OLD" ]; then
+    echo "기존 봇 PID: $OLD — SIGTERM 송신"
+    pkill -f 'python.*src\.main'
+    for i in $(seq 1 15); do
+      sleep 1
+      REM=$(pgrep -f 'python.*src\.main' || true)
+      if [ -z "$REM" ]; then
+        echo "✓ 옛 봇 정상 종료 (${i}초 소요)"
+        break
+      fi
+    done
+    REM=$(pgrep -f 'python.*src\.main' || true)
+    if [ -n "$REM" ]; then
+      echo "⚠️ graceful shutdown 15초 초과 — SIGKILL (PID: $REM)"
+      kill -9 $REM
+      sleep 1
+    fi
+  fi
+
+  # ─── Stage 5: 옛 bot.log 보존 + 새 봇 시작 (VM-AP-5 가드) ───
+  # nohup 의 ``> bot.log`` 가 truncate 모드라 두 봇이 동시에 떠있을 때 같은 파일에
+  # 쓰며 진단을 혼선시킨다. 새 봇 띄우기 전 옛 로그 1건 백업.
+  # (백업 bot.log.* 는 .gitignore + Stage 1 -uno 로 git status 에 안 잡힘 — VM-AP-7.)
+  if [ -f bot.log ]; then
+    mv bot.log "bot.log.$(date +%Y%m%d_%H%M%S)"
+  fi
+  source venv/bin/activate
+  nohup python -m src.main > bot.log 2>&1 &
+  disown
+
+  # ─── Stage 6: 가동 확인 (VM-AP-4 강화 — 버전·인스턴스·에러) ───
+  sleep 4
+  N=$(pgrep -f 'python.*src\.main' | wc -l)
+  if [ "$N" -ne 1 ]; then
+    echo "⚠️ 봇 인스턴스 수: $N (1이어야 정상)"
+    ps aux | grep 'src.main' | grep -v grep
+  fi
+  echo "─── bot.log 가동 신호 ───"
+  grep -E 'Starting Event Analysis Team bot|Application started|Conflict|ERROR' bot.log | head
+  echo "─── 확인 포인트 ───"
+  echo "  ① 'Starting Event Analysis Team bot — vX.Y.Z' 가 코드 버전과 일치"
+  echo "  ② 'Conflict' / 'ERROR' 라인 없어야 (옛 봇과 polling 충돌 안 났는지)"
+}
+redeploy
 ```
 
-복붙 가능한 한 묶음으로 유지. 한 줄씩 끊지 말 것 — 사용자가 5단계만 실행하고
-6단계 누락하는 회귀가 VM-AP-4 의 본질.
+복붙 가능한 한 묶음으로 유지. 함수 정의 + 마지막 `redeploy` 호출까지 통째로
+붙여넣을 것 — 5단계만 실행하고 6단계 누락하는 회귀가 VM-AP-4 의 본질.
 
 ---
 
@@ -199,6 +209,31 @@ v5.6.7 의 이미지로 도는 중. 사용자에게 "재배포 완료" 로 보�
 **Fix**: §1 Stage 2 — `git diff --name-only LOCAL..REMOTE` 로 requirements 변경 감지
 시 `pip install -r requirements.txt` 자동 실행 (venv 활성화 포함).
 
+### VM-AP-7 — 재배포 블록을 SSH 에 붙여넣으면 세션이 끊기고, bot.log 백업이 가드를 오발 (2026-05-31 발생)
+
+**증상 (2가지가 겹쳐 발현)**:
+
+1. **SSH 세션 종료**: §1 블록을 함수로 안 감싸고 raw 명령 나열로 SSH 셸에 붙여넣으면,
+   명령이 *현재 로그인 셸* 에서 실행된다. Stage 1 가드가 `exit 1` 이면 그게
+   스크립트 종료가 아니라 *로그인 셸(=SSH 세션) 종료* → 접속이 뚝 끊긴다. 사용자
+   화면에선 "VM 이 꺼진 것처럼" 보이지만 실제 VM·봇은 멀쩡.
+2. **bot.log 백업이 dirty 오발**: Stage 5 가 만든 `bot.log.<timestamp>` 백업이
+   untracked 라, 다음 실행의 Stage 1 `git status --porcelain` 에 `??` 로 잡힌다.
+   가드가 자기가 만든 로그 백업을 "로컬 수정사항" 으로 오인해 매번 멈춘다 (악순환).
+   `.gitignore` 에 `bot.log` 만 있고 `bot.log.*` 가 없어 백업은 무시 안 됐음.
+
+**관찰된 흔적**:
+- 붙여넣기 직후 프롬프트가 로그아웃돼 `ubuntu@host:~$` 로 떨어짐 (세션 종료)
+- 재접속 후 `git status` 에 `?? bot.log.20260531_113123` 만 단독으로 잡힘
+- Stage 1 가드 메시지("로컬 수정사항 발견") + 백업 파일명만 출력하고 중단
+
+**Fix (3중)**:
+1. **§1 전체를 `redeploy()` 함수로 래핑** + `exit 1` → `return 1`. 함수 안의 return
+   은 함수만 빠져나오므로 SSH 세션 유지. 블록 끝 `redeploy` 로 1회 실행.
+2. **Stage 1 을 `git status --porcelain --untracked-files=no`** 로 변경 — untracked
+   (bot.log 백업 등) 은 pull 을 막지 않으므로 제외. tracked 수정만 차단 위험으로 검사.
+3. **`.gitignore` 에 `bot.log.*` 추가** — 백업이 애초에 git status 에 안 잡히게 근본 차단.
+
 ---
 
 ## §3 진단 명령어
@@ -243,7 +278,7 @@ tail -500 bot.log | grep -E '(narrative_composer|unified_composer|composer 호�
 
 CHART-AP / WRITE-AP 와 동일 패턴 (append-only):
 
-1. **번호 부여**: 다음 VM-AP-N (현재 6 까지 사용). 같은 패턴은 기존 항목에 사례 추가.
+1. **번호 부여**: 다음 VM-AP-N (현재 7 까지 사용). 같은 패턴은 기존 항목에 사례 추가.
 2. **§2 에 새 항목 append** — 증상 / 관찰된 흔적 / Fix 3 섹션.
 3. **§1 표준 절차에 가드 추가** — Fix 가 명령어 단계인 경우.
 4. **CLAUDE.md 의 본 playbook 참조 라인이 있으면** `last_synced_with` 갱신.

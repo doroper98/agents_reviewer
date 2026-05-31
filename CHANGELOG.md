@@ -20,6 +20,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## ops/2026-05-31 — VM 재배포 paste-safe + bot.log 백업 가드 오발 fix (VM-AP-7)
+
+이번 세션 재배포에서 두 번 막혔다. 둘 다 §1 표준 절차의 구조적 결함이었고
+VM-AP-7 로 등록 + 영구 차단.
+
+- **SSH 세션 종료**: §1 블록을 raw 명령으로 SSH 에 붙여넣으면 Stage 1 의 `exit 1`
+  이 *로그인 셸(=SSH 세션)* 을 종료해 접속이 끊김. → §1 전체를 `redeploy()` 함수로
+  래핑 + `exit 1` → `return 1`. 붙여넣기 안전 (paste-safe).
+- **bot.log 백업 dirty 오발**: Stage 5 가 만든 `bot.log.<ts>` 백업이 untracked 라
+  다음 Stage 1 `git status` 가 "로컬 수정사항" 으로 오인해 매번 멈춤 (악순환).
+  → Stage 1 을 `--untracked-files=no` 로 변경 + `.gitignore` 에 `bot.log.*` 추가.
+- `docs/VM_DEPLOY_PLAYBOOK.md` §1 표준 절차 교체 + §2 VM-AP-7 append.
+
+코드 변경 없음 (ops/문서) — VERSION 무증분.
+
+---
+
 ## v5.8.0 — 후속 보고서에 '이 분석의 출발점' (원 보고서 제목 + 링크) 노출
 
 후속(follow-up) 보고서를 읽는 사람이 원 보고서의 사건·가정을 함께 보며 입체적으로
