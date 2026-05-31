@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.7.0"
+VERSION = "v5.8.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1708,11 +1708,17 @@ class Orchestrator:
                     parent_scenarios: list[dict] = []
                     if result.scenarios is not None and result.scenarios.scenarios:
                         parent_scenarios = list(result.scenarios.scenarios)
+                    # v5.8.0: 부모 헤드라인을 메타에 저장 — 후속 보고서의
+                    # '이 분석의 출발점' (제목 + 링크) 렌더용.
+                    parent_title = ""
+                    if result.composed_report and result.composed_report.headline:
+                        parent_title = result.composed_report.headline
                     self.watchlist_registry.register_report_meta(
                         report_id=report_id,
                         event_description=event_description,
                         scenarios=parent_scenarios,
                         chain_depth=child_chain_depth,
+                        report_title=parent_title,
                     )
                 except Exception as meta_err:
                     logger.warning(

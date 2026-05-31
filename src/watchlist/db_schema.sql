@@ -23,9 +23,13 @@ CREATE INDEX IF NOT EXISTS idx_watchsignals_deadline ON watchsignals(deadline);
 
 -- v5.1.1: 부모 보고서 메타 — 신호 발화 시 ParentContext 즉시 조립용.
 -- event_description + scenarios JSON 영구 보관. 자동 후속 체인 차단 판단에도 사용.
+-- v5.8.0: report_title 추가 — 후속 보고서 본문에 '이 분석의 출발점' (원 보고서
+-- 제목 + 링크) 을 렌더하기 위함. 기존 DB 는 registry._initialize 의 idempotent
+-- 마이그레이션으로 컬럼 추가.
 CREATE TABLE IF NOT EXISTS report_meta (
     report_id          TEXT    PRIMARY KEY,
     event_description  TEXT    NOT NULL DEFAULT '',
+    report_title       TEXT    NOT NULL DEFAULT '',
     scenarios_json     TEXT    NOT NULL DEFAULT '[]',
     chain_depth        INTEGER NOT NULL DEFAULT 0,
     created_at         TEXT    NOT NULL

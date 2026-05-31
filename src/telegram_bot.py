@@ -504,10 +504,12 @@ class TelegramBot:
 
         parent_event_desc = meta.get("event_description", "")
         parent_scenarios = meta.get("scenarios", [])
+        parent_title = meta.get("report_title", "")  # v5.8.0
 
         parent_context = ParentContext(
             parent_report_id=signal.parent_report_id,
             parent_report_url=signal.parent_report_url,
+            parent_report_title=parent_title,
             parent_event_description=parent_event_desc,
             parent_scenarios=parent_scenarios,
             triggering_signal=signal,

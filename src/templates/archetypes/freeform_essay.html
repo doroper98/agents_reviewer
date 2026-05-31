@@ -65,6 +65,15 @@
 .freeform-footnote:last-child{margin-bottom:0}
 .freeform-footnote-term{font-weight:700;color:var(--fg-2,#D4C4AA)}
 .freeform-footnote-term::after{content:' — '}
+/* v5.8.0 — 후속 보고서: '이 분석의 출발점' (원 보고서 제목 + 링크). 서두 + 매리말. */
+.freeform-origin{margin:18px 0 4px;padding:14px 18px;background:var(--bg-2,rgba(0,0,0,0.06));border-left:3px solid var(--accent,#C9A84C);border-radius:0 6px 6px 0}
+.freeform-origin-label{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:7px}
+.freeform-origin-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;font-weight:700;line-height:1.45;color:var(--fg-1,#F0E2CC);margin-bottom:6px}
+.freeform-origin-title a{color:var(--fg-1,#F0E2CC);text-decoration:none;border-bottom:1px solid var(--accent,#C9A84C)}
+.freeform-origin-title a:hover{color:var(--accent,#C9A84C)}
+.freeform-origin-note{font-size:12.5px;line-height:1.65;color:var(--fg-3,#A89880)}
+.freeform-origin-link{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent,#C9A84C);word-break:break-all}
+.freeform-origin.epilogue{margin-top:0}
 /* v4.5.2 — count 그대로 한 줄 강제 (전 화면). wrap 자체를 차단. */
 .freeform-fact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
 .freeform-fact-grid[data-cols="2"]{grid-template-columns:repeat(2,1fr)}
@@ -188,6 +197,19 @@
       {% if result.context and result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
       <span>{{ generated_at }}</span>
     </div>
+    {# v5.8.0 — 후속 보고서: '이 분석의 출발점' (원 보고서). 서두 — 독자가 본문을
+       읽기 전 맥락을 먼저 잡게. parent_context 있을 때만. 제목 없으면 report_id 폴백. #}
+    {% if result.parent_context %}
+    {% set pc = result.parent_context %}
+    {% set origin_label = (pc.parent_report_title or pc.parent_report_id or '') | strip_md %}
+    <div class="freeform-origin">
+      <div class="freeform-origin-label">이 분석의 출발점</div>
+      <div class="freeform-origin-title">
+        {% if pc.parent_report_url %}<a href="{{ pc.parent_report_url }}" target="_blank" rel="noopener">{{ origin_label }}</a>{% else %}{{ origin_label }}{% endif %}
+      </div>
+      <div class="freeform-origin-note">이 보고서는 위 분석에서 예고한 “{{ pc.triggering_signal.description | strip_md }}” 신호가 실제로 나타나면서 이어 쓴 후속편입니다. 위 링크에서 처음의 사건과 가정을 함께 읽으면 흐름이 입체적으로 보입니다.</div>
+    </div>
+    {% endif %}
     {# v5.4.0 — hero 사진. composer 가 출처 기사의 og:image 중 본문 narrative
        와 가장 맥락 닿는 1장을 선택해 emit. 없으면 (자신 없을 때) null. #}
     {% if composed and composed.hero_image and composed.hero_image.image_url %}
@@ -499,6 +521,33 @@
     <div class="freeform-closing-label">분석가의 한계</div>
     <div class="freeform-closing-body">{{ composed.closing | strip_md }}</div>
     {% endif %}
+    {# v5.8.0 — 매리말: 본문을 다 읽은 독자에게 원 보고서로 돌아가는 링크 재노출. #}
+    {% if result.parent_context %}
+    {% set pc = result.parent_context %}
+    {% set origin_label = (pc.parent_report_title or pc.parent_report_id or '') | strip_md %}
+    <div class="freeform-origin epilogue" style="margin-top:18px">
+      <div class="freeform-origin-label">이어서 읽기 — 이 분석의 출발점</div>
+      <div class="freeform-origin-title">
+        {% if pc.parent_report_url %}<a href="{{ pc.parent_report_url }}" target="_blank" rel="noopener">{{ origin_label }}</a>{% else %}{{ origin_label }}{% endif %}
+      </div>
+      {% if pc.parent_report_url %}<div class="freeform-origin-link">{{ pc.parent_report_url }}</div>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% elif result.parent_context %}
+{# closing 이 없어도 후속 보고서면 매리말 출발점 링크는 남긴다. #}
+<section class="freeform-closing">
+  <div class="container">
+    {% set pc = result.parent_context %}
+    {% set origin_label = (pc.parent_report_title or pc.parent_report_id or '') | strip_md %}
+    <div class="freeform-origin epilogue">
+      <div class="freeform-origin-label">이어서 읽기 — 이 분석의 출발점</div>
+      <div class="freeform-origin-title">
+        {% if pc.parent_report_url %}<a href="{{ pc.parent_report_url }}" target="_blank" rel="noopener">{{ origin_label }}</a>{% else %}{{ origin_label }}{% endif %}
+      </div>
+      {% if pc.parent_report_url %}<div class="freeform-origin-link">{{ pc.parent_report_url }}</div>{% endif %}
+    </div>
   </div>
 </section>
 {% endif %}

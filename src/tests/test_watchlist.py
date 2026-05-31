@@ -296,3 +296,81 @@ class TestAlertFormat:
         assert "신호: DXY > 95 → rejects_base" in text
         assert "원 보고서: https://x.dev/r1" in text
         assert "권장 후속: 후속 분석" in text
+
+
+# ----------------------------------------------------------------------
+# report_meta — 부모 보고서 메타 (v5.1.1) + report_title (v5.8.0)
+# ----------------------------------------------------------------------
+
+
+class TestReportMeta:
+    def test_register_and_get_with_title(self, registry):
+        """v5.8.0 — report_title 왕복. 후속 보고서 '이 분석의 출발점' 렌더 데이터원."""
+        ok = registry.register_report_meta(
+            report_id="r1",
+            event_description="원 이벤트",
+            scenarios=[{"name": "S1"}],
+            chain_depth=0,
+            report_title="코스피 사상 최고, 그 이면의 네 갈래",
+        )
+        assert ok is True
+        meta = registry.get_report_meta("r1")
+        assert meta is not None
+        assert meta["report_title"] == "코스피 사상 최고, 그 이면의 네 갈래"
+        assert meta["event_description"] == "원 이벤트"
+        assert meta["scenarios"] == [{"name": "S1"}]
+        assert meta["chain_depth"] == 0
+
+    def test_title_defaults_empty(self, registry):
+        """report_title 미지정 시 빈 문자열 (graceful — 폴백은 report_id 로 렌더)."""
+        registry.register_report_meta(
+            report_id="r2", event_description="e", scenarios=[],
+        )
+        meta = registry.get_report_meta("r2")
+        assert meta["report_title"] == ""
+
+    def test_empty_report_id_noop(self, registry):
+        assert registry.register_report_meta("", "e", []) is False
+        assert registry.get_report_meta("") is None
+
+    def test_legacy_db_migration_adds_title_column(self, tmp_db):
+        """구 스키마(report_title 없는) DB 를 열면 idempotent 마이그레이션으로 컬럼 추가.
+
+        구 행은 빈 title 로 안전 조회, 신규 등록은 title 정상 저장.
+        """
+        import sqlite3
+
+        schema = open("src/watchlist/db_schema.sql", encoding="utf-8").read()
+        old_schema = schema.replace(
+            "    report_title       TEXT    NOT NULL DEFAULT '',\n", ""
+        )
+        conn = sqlite3.connect(tmp_db)
+        conn.executescript(old_schema)
+        conn.execute(
+            "INSERT INTO report_meta "
+            "(report_id, event_description, scenarios_json, chain_depth, created_at) "
+            "VALUES ('old1', '이전', '[]', 0, '2026-01-01')"
+        )
+        conn.commit()
+        conn.close()
+        pre = {
+            r[1]
+            for r in sqlite3.connect(tmp_db)
+            .execute("PRAGMA table_info(report_meta)")
+            .fetchall()
+        }
+        assert "report_title" not in pre
+
+        reg = WatchlistRegistry(tmp_db)  # triggers migration
+        post = {
+            r[1]
+            for r in sqlite3.connect(tmp_db)
+            .execute("PRAGMA table_info(report_meta)")
+            .fetchall()
+        }
+        assert "report_title" in post
+        # 구 행: 빈 title 로 안전
+        assert reg.get_report_meta("old1")["report_title"] == ""
+        # 신규: title 저장
+        reg.register_report_meta("new1", "새", [], report_title="새 제목")
+        assert reg.get_report_meta("new1")["report_title"] == "새 제목"

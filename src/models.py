@@ -764,6 +764,7 @@ class ParentContext(BaseModel):
 
     parent_report_id: str
     parent_report_url: str = ""
+    parent_report_title: str = ""  # v5.8.0: 부모 헤드라인 — '이 분석의 출발점' 렌더용
     parent_event_description: str = ""
     parent_scenarios: list[dict] = Field(default_factory=list)  # 부모 ComposedReport.scenarios
     triggering_signal: WatchSignal
