@@ -151,7 +151,7 @@ flowchart TD
 - 사용자 메시지에 `짧게` / `간략히` / `간략하게` / `빠르게` / `요약` / `간단히` / `간단하게` / `fast` 키워드 → **fast**
 - 사용자 메시지에 `심층` / `깊게` / `자세히` / `정밀` / `면밀` / `상세하게` / `deep` 키워드 → **deep**
 - 둘 다 있으면 deep 우선
-- 그 외 → **standard** (default)
+- 그 외 (키워드 없음) → **deep** (v5.8.2 기본 변경, 기존 standard). standard 는 호출부가 `mode="standard"` 로 명시할 때만 진입.
 
 ### 4.2 Mode 별 max_tokens (현재 baseline)
 

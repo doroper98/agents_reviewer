@@ -208,14 +208,18 @@ _DEEP_KEYWORDS = {
 
 
 def resolve_mode_fallback(prompt: str) -> str:
-    """orchestrator 의 mode 결정 규칙을 fixture-friendly 하게 재현."""
+    """orchestrator 의 mode 결정 규칙을 fixture-friendly 하게 재현.
+
+    v5.8.2: 기본 폴백 standard → deep (token_budget.resolve_mode 와 동일). 두 함수
+    결과가 다르면 그 자체가 회귀.
+    """
     has_deep = any(k in prompt for k in _DEEP_KEYWORDS)
     has_fast = any(k in prompt for k in _FAST_KEYWORDS)
     if has_deep:
         return "deep"
     if has_fast:
         return "fast"
-    return "standard"
+    return "deep"
 
 
 # ─── Semantic regression — 결정적 휴리스틱 (Plan §3.4 다) ────────────────

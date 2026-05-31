@@ -76,10 +76,12 @@ class TestTokenBudget:
         assert resolve_mode("간략히 분석해줘") == "fast"
         assert resolve_mode("심층 분석") == "deep"
         assert resolve_mode("자세히 봐줘") == "deep"
-        # default
-        assert resolve_mode("한미 정상회담") == "standard"
-        # deep 우선
+        # v5.8.2: 키워드 없으면 deep (기본 변경 — 기존 standard)
+        assert resolve_mode("한미 정상회담") == "deep"
+        # deep 우선 (fast·deep 둘 다 있으면 deep)
         assert resolve_mode("간략히 심층 분석") == "deep"
+        # fast 키워드만 있으면 fast (deep 기본을 낮춤)
+        assert resolve_mode("빠르게 요약해줘") == "fast"
 
 
 # ----------------------------------------------------------------------
