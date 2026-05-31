@@ -16,6 +16,38 @@ last_review: 2026-05-05
 
 > **🔴 운영 모드 SSOT — 절대 잊지 말 것.** 이 봇은 **Claude Code CLI 구독 플랜** 으로 돈다. `.env` 의 `ANTHROPIC_API_KEY` 는 *빈 값이 정상*. [src/config.py:131-135](src/config.py) 의 `_select_mode` 가 키가 비어있으면 자동으로 `use_cli_mode=True` 선택. `bot.log` 의 `WARNING: ANTHROPIC_API_KEY is not set` 은 [src/main.py:29](src/main.py) 가 무조건 찍는 노이즈 — 무시. 사용자에게 "API 키 채우라" 같은 조언 절대 금지. 사용자가 명시적으로 "API 로 바꿔달라" 라고 하지 않는 한 키 채우라고 하지 말 것.
 
+> **🔴 제1규칙 — 보고서 핫픽스 시퀀스 (사용자가 발행된 보고서의 결함을 지적하면 *즉시* 이 순서로).**
+> 사용자가 발행된 보고서(보통 `analysis-reports.pages.dev/...` 링크 + "이 문구 / 이 차트 / 이 표현 고쳐"
+> 형태)의 결함을 지적하면 — 되묻지 말고 — 아래 시퀀스로 이해·진행한다. SSOT 도구는
+> [scripts/patch_report.py](scripts/patch_report.py) (LLM 0, ~$0, **URL 보존**, `revision +1`).
+>
+> **① 트리거 인식.** "이거 고쳐 / 패치해 / 무슨 뜻이야 + 보완" + 보고서 링크·문구 인용 = 핫픽스. 즉시 착수.
+>
+> **② report_id 추출.** URL `…/analysis_<report_id>` 의 `analysis_` 뒤 전체가 `report_id`
+> (해시 접미사 포함). 예: `…/analysis_20260530_163305_9a4dd1d5ed` → `20260530_163305_9a4dd1d5ed`.
+> 파일은 `reports/analysis_<report_id>.json` ([patch_report.py:549](scripts/patch_report.py)).
+>
+> **③ 범위 판정** ([docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md) §결정트리):
+> 이 보고서 1건만 → ③-A. 모든 보고서에 재발할 시스템 회귀 → ③-A + ③-B *둘 다*.
+> - **③-A 발행본 핫픽스** (이미 나간 보고서): `scripts/patch_report.py <report_id>` 로
+>   `--replace "OLD=NEW"` (전문 용어 평이화) / `--add-footnote "SEC:용어=설명"` (불가피한 핵심 용어)
+>   / `--remove-chart`·`--remove-section`·`--map-*` (차트·지도) / `--recompose` (통째 재작성).
+>   **반드시 `--dry-run` 으로 매치 수 먼저 확인 → 그다음 실제 적용.**
+> - **③-B 소스 재발 방지** (시스템 회귀일 때만): composer `SYSTEM_PROMPT` + 해당 SSOT
+>   ([REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) §2.1 어휘표 / [REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md) WRITE-AP-N
+>   / [CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md) CHART-AP-N) 동시 갱신 후 커밋·푸시.
+>
+> **④ 실행 환경 분기.** **VM(봇 가동기)**: 위 명령 실행 — `reports/*.json` + Cloudflare
+> 자격증명이 거기 있음. 단 **반드시 repo 루트에서 venv 활성 후** (`cd ~/agents_reviewer &&
+> source venv/bin/activate`). Ubuntu 는 `python` 이 없고 `python3` 만 있으며, 홈(`~`)에서
+> 바로 돌리면 `src.*` import·의존성이 안 잡힌다 (실제 재발한 gotcha). **Claude Code on the
+> web / 원격 컨테이너**: fresh clone 라 `reports/`
+> 없음 + Cloudflare 토큰 없음 → 직접 실행 불가. 이때는 ③-A 명령을 **복사용 한 줄** 로 정확히
+> 만들어 주고("VM 에서 실행하세요"), ③-B 소스 패치만 내가 커밋·푸시한다.
+>
+> **⑤ 평이화 어휘는 SSOT 1곳.** `--replace` 매핑은 [REPORT_STYLE_GUIDE.md §2.1](docs/REPORT_STYLE_GUIDE.md)
+> 어휘표 + composer `SYSTEM_PROMPT` 평이화 예시와 *항상 정합*. 새 매핑 쓰면 그 두 곳에도 추가.
+
 ## Project Overview
 텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 + NarrativeComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
