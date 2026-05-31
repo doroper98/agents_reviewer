@@ -303,6 +303,30 @@ publication_date 가 없어 composer 가 today 를 모름. `context.date` 는 �
 **적용 SSOT**: `src/agents/narrative_composer.py` SYSTEM_PROMPT `=== 시점 앵커링 ===`
 블록 + `_build_unified_payload` 의 publication_date 주입.
 
+**후속 Fix (v5.7.0) — 더 깊은 원인: timezone 누락**:
+
+v5.6.4 의 시점 앵커링은 "발행일 ≠ 사건일" 을 *표현* 으로 다뤘지만, 더 근본적인
+회귀가 따로 있었다 — **발행일 자체가 하루 어긋남**. 5/31 06:00 KST 에 트리거된
+일일 브리핑이 제목·본문 전체에 "5/30" 을 박았다. 안내·스코프 문구(스케줄러가
+`ZoneInfo("Asia/Seoul")` 로 생성)는 5/31 로 맞는데, 보고서 내용만 5/30 이라 더
+혼란스러웠다.
+
+원인은 봇이 도는 VM/컨테이너가 **UTC** 인데 아래 4곳이 timezone 없는
+`datetime.now()` 를 썼던 것. 06:00 KST = 전날 21:00 UTC 이므로 naive `now()` 는
+*전날* 을 돌려준다.
+
+- `context_analyst.py` — `current_date` (composer 가 보는 '오늘' 의 진짜 출처)
+- `narrative_composer.py` — `publication_date` (주석에 "VM=KST 가정" 이라 적혀
+  있었으나 그 가정이 깨진 상태)
+- `bundle_builder.py` — `fetched_at` fallback / `generated_at` (계약서는
+  `+09:00` 요구인데 `.astimezone()` 가 UTC offset 을 냄)
+- `models.py` — `analysis_timestamp` default
+
+**Fix**: `src/timeutil.py` 신설 (`KST` / `now_kst()` / `today_kst()` SSOT —
+stdlib 고정 +09:00, tzdata 미설치 환경도 안전). 위 4곳 + `report_synthesizer.py`
+의 중복 `KST` 정의를 모두 이 모듈로 통합. 사용자 노출 날짜는 *항상* KST 기준.
+naive `datetime.now()` 로 사용자 노출 날짜 생성 금지 (이 회귀의 SSOT 차단점).
+
 ---
 
 ## WRITE-AP-12: AI 가 인지되는 기호 (마크다운 강조 / em·en dash) 사용 (v5.6.7 신설)
