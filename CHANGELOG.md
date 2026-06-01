@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.6
+last_synced_with: v5.8.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.7 — 보고서 완료 알림의 "전체 보고서 목록" 링크 정정
+
+보고서 완료 시 텔레그램이 보내던 `📁 전체 보고서 목록: …/` 링크가 **공개
+인덱스(`/`)** 를 가리켰는데, 이 페이지는 v5.6.2 부터 목록을 노출하지 않는 빈
+랜딩("보고서 목록은 공개되지 않습니다")이다. 라벨과 목적지가 모순돼, 눌러도
+목록이 안 보이던 회귀.
+
+- **Fix** (`telegram_bot.py`): 실제 목록 경로로 정정.
+  - `ADMIN_INDEX_TOKEN` 설정 시 → `…/admin-{token}.html` (전체 목록 웹 페이지).
+  - 미설정 시 → "전체 보고서 목록은 `/reports` 명령으로" 안내 (빈 랜딩 링크 제거).
+- `.env.example` 에 `ADMIN_INDEX_TOKEN` 항목 추가 (그간 누락 — 발견성 개선).
+- 참고: `/reports` 텔레그램 명령(관리자 전용)은 기존대로 전체 목록을 즉시 회수.
 
 ---
 
