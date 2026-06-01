@@ -1110,11 +1110,24 @@ class TelegramBot:
             queue_info = f"\n📋 대기열: {len(self._queue)}건 남음" if self._queue else ""
             await send(f"✅ 분석 완료 (소요시간: {duration}초){queue_info}")
 
-            # Send index page link as separate message
+            # Send report list link as separate message.
+            # v5.8.7 — 공개 인덱스(/)는 v5.6.2 부터 목록 비공개(빈 랜딩)라, 이를
+            # "전체 보고서 목록" 으로 안내하면 눌러도 목록이 안 보이는 회귀였다.
+            # 실제 목록 경로로 정정: admin_index_token 설정 시 admin-{token}.html
+            # (웹 목록 페이지), 미설정 시 /reports 명령 안내.
             if result.report_url and result.report_url.startswith("http"):
                 base_url = result.report_url.rsplit("/", 1)[0]
-                index_url = f"{base_url}/"
-                await send(f"📁 전체 보고서 목록: {index_url}")
+                admin_token = (
+                    getattr(self.config, "admin_index_token", "") or ""
+                ).strip()
+                if admin_token:
+                    await send(
+                        f"📁 전체 보고서 목록: {base_url}/admin-{admin_token}.html"
+                    )
+                else:
+                    await send(
+                        "📁 전체 보고서 목록은 /reports 명령으로 받으실 수 있어요."
+                    )
 
         except asyncio.CancelledError:
             # v3.4.2 — /stop /stopall 으로 취소됨. 사용자에게 알리고 정상 종료 시그널 전파.
