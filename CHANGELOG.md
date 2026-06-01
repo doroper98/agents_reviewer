@@ -20,6 +20,26 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.7 (plan) — V6 마스터 플랜 신설 + Fact-discipline 골든 fixture (Phase V6-0)
+
+2026-06-01 NVIDIA GTC 보고서가 외부 팩트체크에서 받은 5종 사실오류(보드 130만
+scope 오귀속 / "27년" 출처없는수치 / GR00T "오늘" 신규성 혼동 / 211.14 시점
+과근접 / OEM 목록 축소)를 구조적 결함으로 진단. 근본 원인은 ① 자유 본문에
+evidence-binding 미적용 ② fact-critic/검증 루프 부재(단일 패스).
+
+- **[REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) 신설** — "workflow → agent" 트랙.
+  bounded FactCritic 루프 + 결정적 사실 가드 + per-fact provenance + 역할별 모델
+  티어링(본문=Opus 고정, critic/plan=저가, control=0 LLM). 11 GAP / 11 REQ / 8
+  Phase(3-Tier) / 테스트 플랜 T-0~8 / AP-V6-1~7. 모든 `V6_*` flag default OFF =
+  v5.8.7 byte-equal.
+- **Phase V6-0 착수**: `tests/regression/fixtures/fact_discipline_scenarios.yaml`
+  (NVIDIA 5종 회귀 영구 보존, error_class 5종 동결) + `test_fact_discipline.py`
+  (스키마·enum·분포 회귀 6종 통과). 코드 경로 무변경 (fixture+테스트만).
+- 다음: Phase V6-1 (결정적 가드 + composer SYSTEM_PROMPT 사실 규율 블록 +
+  WRITE-AP-15/16) — composer 프롬프트 변경이라 착수 전 체크인.
+
+---
+
 ## v5.8.7 — 보고서 완료 알림의 "전체 보고서 목록" 링크 정정
 
 보고서 완료 시 텔레그램이 보내던 `📁 전체 보고서 목록: …/` 링크가 **공개
