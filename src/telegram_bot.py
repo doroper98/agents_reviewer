@@ -450,6 +450,13 @@ class TelegramBot:
         자동 후속 분석은 v5.4.9 에서 비활성화. 활성화는 오로지 본 버튼 (또는
         ``/fire`` 이후 본 알림 경유) 으로만 일어난다. v5.5.7 부터 chain depth
         제한 없음 — N대손 보고서까지 동일 UX.
+
+        v5.8.6: 부모 메타가 registry 에 없는 신호 (v5.5.7 이전 생성 + JSON 백필
+        불가) 는 버튼을 눌러도 ``_activate_followup`` 이 "후속 분석 불가" 로 막힌다
+        (telegram_bot.py 의 메타 가드). 그런 신호엔 *처음부터 버튼을 안 붙이고*
+        대신 ``/analyze`` 안내 한 줄을 본문에 덧붙인다 — 눌러도 막히는 죽은 버튼
+        UX 제거. ``_activate_followup`` 의 가드와 동일 조건 (get_report_meta +
+        event_description) 을 미러.
         """
         if self._app is None:
             logger.warning("[telegram_bot] notify called before app init; skipping")
@@ -461,12 +468,30 @@ class TelegramBot:
             )
             return
         text = format_telegram_alert(signal, parent_title=signal.parent_report_id)
-        keyboard = InlineKeyboardMarkup([[
-            InlineKeyboardButton(
-                "▶ 후속 보고 생성",
-                callback_data=f"followup:{signal.signal_id}",
-            ),
-        ]])
+
+        # v5.8.6 — 버튼이 실제로 작동할 신호에만 버튼을 붙인다. _activate_followup
+        # 의 메타 가드와 동일 조건: report_meta 가 있고 event_description 이 차 있어야
+        # 후속 분석이 가능. 없으면 (v5.5.7 이전 + 백필 불가) 버튼 대신 /analyze 안내.
+        meta = None
+        if self.watchlist_registry is not None:
+            meta = self.watchlist_registry.get_report_meta(signal.parent_report_id)
+        followup_available = bool(meta and meta.get("event_description"))
+
+        if followup_available:
+            keyboard = InlineKeyboardMarkup([[
+                InlineKeyboardButton(
+                    "▶ 후속 보고 생성",
+                    callback_data=f"followup:{signal.signal_id}",
+                ),
+            ]])
+        else:
+            keyboard = None
+            text += (
+                "\n\n※ 이 보고서는 후속 분석에 필요한 원본 맥락이 없어 (구버전 생성) "
+                "[후속 보고 생성] 을 제공하지 않습니다.\n"
+                "  대안: /analyze <이 신호에 대한 분석 주제> 로 직접 지시"
+            )
+
         try:
             await self._app.bot.send_message(
                 chat_id=signal.parent_chat_id,

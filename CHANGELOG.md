@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.5
+last_synced_with: v5.8.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.6 — 메타 없는 신호엔 [▶ 후속 보고 생성] 버튼 숨김 (죽은 버튼 제거)
+
+v5.5.7 이전 생성 + JSON 백필 불가인 보고서(예: 5/2)는 후속 분석에 필요한
+`report_meta` 가 없어, [▶ 후속 보고 생성] 버튼을 눌러도 "후속 분석 불가 —
+부모 컨텍스트가 registry 에 없음" 으로 매번 막혔다. 누르면 죽는 버튼이 계속
+노출되던 UX 문제.
+
+- **Fix**: `_notify_signal_fired` 가 버튼을 붙이기 전에 `get_report_meta` 로
+  부모 메타 존재를 확인 — `_activate_followup` 의 가드와 동일 조건
+  (meta + event_description). 메타가 있으면 버튼 부착(기존 동작), 없으면 버튼
+  대신 "구버전 생성이라 후속 제공 안 함 + `/analyze` 로 직접 지시" 안내 한 줄.
+- 죽은 버튼이 사라지고, 작동 가능한 신호에만 버튼이 뜬다. v5.5.7 이후 보고서는
+  영향 없음(메타 있음 → 버튼 그대로). 코드 1곳(telegram_bot.py).
 
 ---
 
