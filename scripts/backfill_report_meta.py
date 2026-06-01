@@ -108,10 +108,23 @@ def main() -> int:
 
     registry = WatchlistRegistry(db_path)
 
-    json_paths = sorted(glob.glob(os.path.join(reports_dir, "analysis_*.json")))
+    # analysis_*.json 중 *.bundle.json 은 제외 — ReportBundle (v5.5.0, 다른 스키마)
+    # 이라 FullAnalysisResult 로 검증 안 됨. 진짜 보고서는 같은 ts 의 analysis_*.json
+    # 으로 따로 존재. glob 패턴으로 못 거르므로 (bundle 도 analysis_ 로 시작) 명시 제외.
+    json_paths = sorted(
+        p for p in glob.glob(os.path.join(reports_dir, "analysis_*.json"))
+        if not p.endswith(".bundle.json")
+    )
     if not json_paths:
         print(f"[backfill] analysis_*.json 없음 — 백필 대상 0.")
         return 0
+
+    # 옛 보고서엔 깨진 차트가 있어 로드 시 ComposedSection._drop_invalid_charts 가
+    # pydantic 에러 트리를 logger.warning 으로 stderr 에 흘린다 (보고서 로드 자체는
+    # 정상 — 위반 차트만 drop). 백필 출력만 보이게 src.models 로거를 ERROR 로 올려
+    # 그 노이즈를 잠재운다. 백필 결과엔 영향 없음.
+    import logging
+    logging.getLogger("src.models").setLevel(logging.ERROR)
 
     total = len(json_paths)
     already = 0          # 이미 메타 있음 (skip)
