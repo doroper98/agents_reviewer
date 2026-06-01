@@ -1,13 +1,13 @@
 ---
 tier: 1
-last_synced_with: v5.8.0
+last_synced_with: v5.8.6
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
 depends_on:
   - "src/orchestrator.py:VERSION (재배포 후 일치 확인 대상)"
   - "requirements.txt (의존성 변경 감지)"
-last_review: 2026-05-31
+last_review: 2026-06-01
 ---
 
 # VM Deploy Playbook — 재배포 회귀 방지 SSOT
@@ -23,19 +23,28 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
 
 ## §1 표준 재배포 절차 (회귀 가드 내장)
 
-VM 의 `~/agents_reviewer` 에서 그대로 복붙. **§2 VM-AP-1~7 모든 가드 포함**.
+VM 의 `~/agents_reviewer` 에서 그대로 복붙. **§2 VM-AP-1~8 모든 가드 포함**.
 idempotent — 봇이 떠있든 안 떠있든 같은 결과.
 
-> **★ paste-safe 설계 (VM-AP-7).** 전체를 `redeploy()` 함수로 감싼다. 이유:
-> SSH 셸에 직접 붙여넣으면 명령이 *현재 로그인 셸* 에서 실행되는데, Stage 1 의
-> 가드가 `exit 1` 이면 그 로그인 셸(=SSH 세션) 자체가 종료돼 접속이 끊긴다.
-> 함수 안에서는 `return 1` 이 함수만 빠져나오므로 세션이 살아있다. 붙여넣은 뒤
-> 마지막 줄 `redeploy` 가 1회 실행한다. 가드에 걸려 멈춰도 `redeploy` 만 다시
-> 치면 재실행된다 (함수는 이미 정의됨).
+> **★ paste-safe 설계 (VM-AP-8, VM-AP-7 개정).** 전체를 **즉시 실행 서브셸
+> `( … )`** 로 감싼다. **별도 호출 명령(`redeploy`) 이 없다** — 닫는 `)` 까지
+> 붙여넣는 순간 1회 실행된다.
+>
+> 왜 함수(`redeploy() { … }` + 끝줄 `redeploy`) 가 아니라 서브셸인가: 함수 방식은
+> *정의* 와 *호출* 이 분리돼 있어, 긴 함수 본문이 SSH 붙여넣기 중 한 줄이라도
+> 씹히면 함수가 끝내 정의되지 않고, 그 상태로 마지막 `redeploy` 만 실행돼
+> **"redeploy: command not found"** 가 난다 (VM-AP-8 실제 회귀). 서브셸은 정의·호출이
+> 한 몸이라 이 분리 실패가 원천적으로 없다.
+>
+> 서브셸도 VM-AP-7 의 SSH-종료 안전성을 그대로 만족한다: `( … )` 안의 `exit 1` 은
+> *서브셸만* 빠져나오고 부모 로그인 셸(=SSH 세션) 은 유지된다. 가드에 걸려 멈췄으면
+> 원인 고친 뒤 **블록 전체를 다시 붙여넣으면** 된다 (재정의/재호출 구분 없음).
+>
+> ⚠️ 마지막 줄이 닫는 괄호 `)` 다. 붙여넣을 때 **`)` 까지 포함**됐는지 확인.
 
 ```bash
-redeploy() {
-  cd ~/agents_reviewer || return 1
+(
+  cd ~/agents_reviewer || exit 1
 
   # ─── Stage 1: pull 전 working tree 정리 (VM-AP-3 가드) ───
   # untracked(-uno) 제외 — bot.log 백업 등은 pull 을 막지 않는다 (VM-AP-7).
@@ -45,7 +54,7 @@ redeploy() {
     echo "⚠️ 로컬 tracked 수정사항 발견 (pull 차단 위험):"
     echo "$DIRTY"
     echo "→ 잔재면 git checkout -- <file>, 의도적 수정이면 stash 후 재실행."
-    return 1
+    exit 1
   fi
 
   # ─── Stage 2: pull + 의존성 변경 감지 (VM-AP-6 가드) ───
@@ -117,12 +126,12 @@ redeploy() {
   echo "─── 확인 포인트 ───"
   echo "  ① 'Starting Event Analysis Team bot — vX.Y.Z' 가 코드 버전과 일치"
   echo "  ② 'Conflict' / 'ERROR' 라인 없어야 (옛 봇과 polling 충돌 안 났는지)"
-}
-redeploy
+)
 ```
 
-복붙 가능한 한 묶음으로 유지. 함수 정의 + 마지막 `redeploy` 호출까지 통째로
-붙여넣을 것 — 5단계만 실행하고 6단계 누락하는 회귀가 VM-AP-4 의 본질.
+복붙 가능한 한 묶음으로 유지. **여는 `(` 부터 닫는 `)` 까지 통째로** 붙여넣을 것 —
+서브셸은 `)` 가 들어오는 순간 1회 자동 실행된다. 별도 `redeploy` 호출 없음 (VM-AP-8).
+5단계만 실행하고 6단계 누락하는 회귀가 VM-AP-4 의 본질이므로 블록을 자르지 말 것.
 
 ---
 
@@ -233,6 +242,27 @@ v5.6.7 의 이미지로 도는 중. 사용자에게 "재배포 완료" 로 보�
 2. **Stage 1 을 `git status --porcelain --untracked-files=no`** 로 변경 — untracked
    (bot.log 백업 등) 은 pull 을 막지 않으므로 제외. tracked 수정만 차단 위험으로 검사.
 3. **`.gitignore` 에 `bot.log.*` 추가** — 백업이 애초에 git status 에 안 잡히게 근본 차단.
+
+### VM-AP-8 — `redeploy` 함수가 정의 안 돼 "command not found" (2026-06-01 발생)
+
+**증상**: VM-AP-7 의 Fix 로 §1 을 `redeploy() { … }` 함수 + 끝줄 `redeploy` 호출
+형태로 바꿨더니, 사용자가 SSH 에 붙여넣고 마지막에 `redeploy` 를 쳤을 때
+**`redeploy: command not found`** 가 났다. 함수 *정의* 와 *호출* 이 분리돼 있어,
+긴 함수 본문(80여 줄) 이 SSH 붙여넣기 중 한 줄이라도 씹히거나 중간에 끊기면
+함수가 끝까지 정의되지 않는다. 그 상태에서 마지막 `redeploy` 만 셸에 들어가면
+정의되지 않은 명령을 부르는 꼴 → command not found. 사용자는 "명령어가 틀렸다"
+고 인지하지만 실제론 *정의가 누락* 된 것.
+
+**관찰된 흔적**:
+- `redeploy` 입력 시 `redeploy: command not found` (또는 `bash: redeploy: …`)
+- `type redeploy` 가 `not found` — 함수가 셸에 등록 안 됨
+- 붙여넣기 로그를 보면 함수 본문 중간 줄부터 프롬프트가 섞여 있음 (paste 분절)
+
+**Fix**: §1 을 **즉시 실행 서브셸 `( … )`** 로 재설계. 정의·호출이 한 몸이라
+별도 `redeploy` 호출 자체가 없어진다 — 닫는 `)` 가 들어오는 순간 1회 실행. paste
+가 중간에 끊겨도 셸 문법 에러로 *즉시* 드러나지(불완전 `(`) 조용히 "정의 누락"
+으로 빠지지 않는다. VM-AP-7 의 SSH-종료 안전성은 서브셸의 `exit 1`(부모 셸 미종료)
+으로 동일하게 보존. 함수 안의 `return 1` → 서브셸의 `exit 1` 로 일괄 치환.
 
 ---
 
