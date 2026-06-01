@@ -127,7 +127,7 @@ src/
 
 ## Other directories
 - `samples/` — 샘플 입력·출력
-- `scripts/` — 보조 스크립트 (예: html_to_md.py)
+- `scripts/` — 보조 스크립트. `patch_report.py` (발행본 핫픽스, LLM 0), `backfill_report_meta.py` (옛 보고서 `report_meta` 백필 — v5.5.7 미만 보고서의 후속 버튼 복구, dry-run 기본), `html_to_md.py` 등
 - `reports/` — 생성된 HTML 보고서 (git ignored). v5.5.0 부터 `--bundle` 시 `analysis_{ts}.bundle.json` 동반
 - `src/timeline_flow.py` — v5.5.2 시간 흐름도 조립 (결정론 backbone + composer 윤색). render + bundle emit 공유
 - `src/handoff/` — v5.5.0 ReportBundle 핸드오프 (osint_generator 연동). `bundle_builder.py` = `FullAnalysisResult → ReportBundle`. 계약 SSOT: `docs/CONTRACTS/report_bundle_v1.md`

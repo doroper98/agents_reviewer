@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.4
+last_synced_with: v5.8.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v5.8.5 — 옛 보고서 report_meta 백필 스크립트 (후속 버튼 복구)
+
+v5.5.7 미만(특히 v5.4.9~v5.5.6 의 `MAX_CHAIN_DEPTH=0` 가드 +
+`result.composed_report.scenarios` AttributeError 사이드이펙트)에 생성된
+보고서는 `report_meta` 등록이 누락돼, 감시 신호의 [▶ 후속 보고 생성] 버튼을
+누르면 "후속 분석 불가 — 부모 컨텍스트가 registry 에 없음" 으로 막혔다.
+
+- `scripts/backfill_report_meta.py` 신설 — `reports/analysis_*.json`
+  (FullAnalysisResult.model_dump) 에 *이미 저장된* 필드만 꺼내 백필. **LLM 0,
+  재분석 없음** (orchestrator.py:1716 과 동일 추출 경로: event_description ←
+  request, report_title ← composed_report.headline, scenarios ←
+  scenarios.scenarios).
+- **dry-run 기본** — `--apply` 없이는 DB 무변경. **메타 없는 것만** 등록
+  (idempotent, v5.5.7+ 정상 메타 보존). JSON 없는(v4.4.0 미만) 보고서는 skip.
+- 사용: `python scripts/backfill_report_meta.py` (목록 확인) →
+  `--apply` (실제 백필). 코드 경로 무변경 — 운영 보조 스크립트만 추가.
 
 ---
 
