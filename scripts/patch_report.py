@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""patch_report.py — v4.4.7
+"""patch_report.py — v4.4.8
 이미 생성된 보고서를 LLM 호출 없이 부분 수정하고 재렌더·재배포.
 
 [배경]
@@ -62,6 +62,14 @@
 
   python scripts/patch_report.py 20260502_154823 --no-deploy
       로컬 파일만 갱신, Cloudflare 배포 X
+
+  python scripts/patch_report.py 20260601_xxxxxx_xxxx \
+      --replace "27년 만=30년 만" --broadcast
+      패치 + 재배포 후, 정정된 broadcast_summary + 동일 URL 을 텔레그램으로
+      '[정정]' 머리표 붙여 *새 메시지* 재발송 (원본 메시지는 그대로, in-place edit
+      아님). 대상은 --chat-id (여러 번 가능) 또는 config.ALLOWED_CHAT_IDS.
+      배포된 http URL 이 있을 때만 동작 (--no-deploy 와 함께면 skip).
+      ※ broadcast_summary 도 --replace 치환 대상이므로 정정이 요약문까지 반영됨.
 
 [주의]
 - v4.4.0 이전에 생성된 보고서는 JSON 저장이 없어 patch 불가. 재분석 필요.
@@ -220,6 +228,22 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Cloudflare 배포 스킵 (로컬 파일만 갱신).",
     )
+    p.add_argument(
+        "--broadcast",
+        action="store_true",
+        help="패치+재배포 후, 정정된 broadcast_summary + 동일 URL 을 텔레그램으로 "
+             "'[정정]' 머리표 붙여 *새 메시지* 로 재발송. 원본 메시지는 그대로 남음 "
+             "(in-place edit 아님). 배포된 http URL 이 있을 때만 동작 (--no-deploy 와 "
+             "함께 쓰면 skip). 대상은 --chat-id 또는 config.ALLOWED_CHAT_IDS.",
+    )
+    p.add_argument(
+        "--chat-id",
+        action="append",
+        type=int,
+        default=[],
+        help="--broadcast 발송 대상 chat_id (여러 번 지정 가능). 미지정 시 "
+             "config.allowed_chat_ids (ALLOWED_CHAT_IDS env) 로 발송.",
+    )
     return p.parse_args()
 
 
@@ -362,7 +386,7 @@ def patch_replace_terms(
     """전문 용어·영어 표현을 평이한 우리말로 일괄 치환 (LLM 0, 결정론).
 
     보고서의 *모든* 텍스트 필드 (headline/deck/closing/confidence_summary/
-    contradictions_heading + 섹션 heading/kicker/lede/prose/pull_quote +
+    broadcast_summary/contradictions_heading + 섹션 heading/kicker/lede/prose/pull_quote +
     analogy/fact_grid + charts 의 title/subtitle/note/takeaway/source +
     contradictions/watch_signals + footnotes) 를 훑어 OLD→NEW substring 치환.
     dry_run 이면 매치 수만 집계하고 텍스트는 안 바꿈. WRITE-AP-10 (v5.5.5).
@@ -388,6 +412,9 @@ def patch_replace_terms(
     cr.deck = sub(cr.deck)
     cr.closing = sub(cr.closing)
     cr.confidence_summary = sub(cr.confidence_summary)
+    # v5.8.7 — 텔레그램/SNS 재발송용 요약문도 치환 (HTML 엔 안 보이지만
+    # --broadcast 가 이 필드를 쏘므로, 정정이 요약문까지 반영되게 함).
+    cr.broadcast_summary = sub(cr.broadcast_summary)
     cr.contradictions_heading = sub(cr.contradictions_heading)
     for c in (cr.contradictions or []):
         for k in ("side_a", "side_b", "evidence", "resolution"):
@@ -540,6 +567,58 @@ def write_json(result: FullAnalysisResult, json_path: str) -> None:
             result.model_dump(mode="json"),
             f, ensure_ascii=False, indent=2,
         )
+
+
+async def broadcast_correction(
+    result: FullAnalysisResult,
+    url: str,
+    config: Config,
+    chat_ids: list[int],
+) -> bool:
+    """정정된 broadcast_summary + URL 을 텔레그램으로 *새 메시지* 재발송.
+
+    원본 메시지는 message_id 를 저장하지 않아 in-place edit 불가 → '[정정]' 머리표를
+    붙인 새 메시지로 보낸다 (사용자 선택, 2026-06-01). getUpdates polling 이 아닌
+    단발 send_message 라 가동 중인 본 봇과 충돌하지 않는다.
+    """
+    cr = result.composed_report
+    summary = (cr.broadcast_summary or "").strip() if cr else ""
+    if not summary:
+        print(
+            "[broadcast] broadcast_summary 가 비어 있음 — 재발송 skip. "
+            "(--replace 로 요약문을 먼저 정정했는지 확인)",
+            file=sys.stderr,
+        )
+        return False
+    token = (config.telegram_bot_token or "").strip()
+    if not token:
+        print("[broadcast] telegram_bot_token 미설정 — 재발송 불가.", file=sys.stderr)
+        return False
+    targets = chat_ids or config.allowed_chat_ids
+    if not targets:
+        print(
+            "[broadcast] 발송 대상 없음 — --chat-id 또는 ALLOWED_CHAT_IDS env 설정 필요.",
+            file=sys.stderr,
+        )
+        return False
+
+    header = "[정정] 앞서 보낸 보고서의 사실 일부를 바로잡았습니다. 링크는 동일합니다."
+    text = f"{header}\n\n{summary}\n\n{url}"
+
+    from telegram import Bot
+
+    bot = Bot(token)
+    ok = 0
+    async with bot:
+        for cid in targets:
+            try:
+                await bot.send_message(chat_id=cid, text=text)
+                ok += 1
+                print(f"[broadcast] ✓ chat={cid} 정정 요약 재발송")
+            except Exception as e:  # noqa: BLE001 — 채팅 1건 실패가 나머지 막지 않게
+                print(f"[broadcast] ⚠️ chat={cid} 발송 실패: {e}", file=sys.stderr)
+    print(f"[broadcast] 완료: {ok}/{len(targets)} 채팅 발송")
+    return ok > 0
 
 
 async def main() -> int:
@@ -766,6 +845,17 @@ async def main() -> int:
         print(f"[patch] 완료. URL: {url_or_path}")
     else:
         print(f"[patch] 완료. local: {url_or_path} (배포는 별도)")
+
+    # v5.8.7 — 정정 요약 텔레그램 재발송. 배포된 http URL 이 있을 때만.
+    if args.broadcast:
+        if not url_or_path.startswith("http"):
+            print(
+                "[broadcast] 배포된 URL 이 없어 재발송 skip "
+                "(--no-deploy 와 함께 쓰면 링크가 로컬 경로라 의미 없음).",
+                file=sys.stderr,
+            )
+        else:
+            await broadcast_correction(result, url_or_path, config, args.chat_id)
     return 0
 
 

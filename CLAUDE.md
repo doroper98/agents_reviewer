@@ -33,6 +33,10 @@ last_review: 2026-05-05
 >   `--replace "OLD=NEW"` (전문 용어 평이화) / `--add-footnote "SEC:용어=설명"` (불가피한 핵심 용어)
 >   / `--remove-chart`·`--remove-section`·`--map-*` (차트·지도) / `--recompose` (통째 재작성).
 >   **반드시 `--dry-run` 으로 매치 수 먼저 확인 → 그다음 실제 적용.**
+>   정정을 텔레그램 구독자에게도 보내려면 `--broadcast` 추가 — 정정된 `broadcast_summary`
+>   (이 필드도 `--replace` 치환 대상) + 동일 URL 을 `[정정]` 머리표 붙여 *새 메시지* 로
+>   재발송 (원본 메시지 in-place edit 아님; message_id 미저장). 대상은 `--chat-id` 또는
+>   `ALLOWED_CHAT_IDS`. 배포된 http URL 있을 때만 동작.
 > - **③-B 소스 재발 방지** (시스템 회귀일 때만): composer `SYSTEM_PROMPT` + 해당 SSOT
 >   ([REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) §2.1 어휘표 / [REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md) WRITE-AP-N
 >   / [CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md) CHART-AP-N) 동시 갱신 후 커밋·푸시.
