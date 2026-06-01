@@ -53,6 +53,8 @@ last_review: 2026-05-05
 
 > **V5 리팩토링 진행 중.** [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 가 v5.0.0 의 4-Tier 17-Phase 마스터 플랜 SSOT. 현재는 Phase 0 (Baseline + SSOT Repair) 에 진입한 상태이고, v4.5.7 baseline 으로 코드·문서 정합성을 복원하는 작업이 진행된다. 코드는 v4.5.7 그대로 유지된다.
 
+> **V6 트랙 (병행) — "workflow → agent".** [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) 가 v6.0.0 의 *사실 grounding + bounded verification loop* 마스터 플랜 SSOT. 2026-06-01 NVIDIA 보고서 팩트체크 회귀(5종)에서 출발 — 자유 본문(`ComposedSection.prose`)에 evidence-binding 미적용 + fact-critic 루프 부재가 근본 결함. 핵심: **bounded FactCritic 루프**(외부 ChatGPT 역할의 내재화) + 결정적 사실 가드 + per-fact provenance + **역할별 모델 티어링**(본문=Opus 고정 AP-V6-1 / critic·plan=저가 / loop control=0 LLM AP-V6-5). 모든 `V6_*` flag default OFF = v5.8.7 byte-equal (AP-V6-3). Phase V6-0(fixture) 착수. V5 와 flag 네임스페이스 분리(`V5_*`/`V6_*`), composer SYSTEM_PROMPT 는 양 트랙이 직교하게 추가. 새 사실오류 회귀는 `tests/regression/fixtures/fact_discipline_scenarios.yaml` 에 append (error_class 5종 동결).
+
 ## Tech Stack (v4.5.7)
 - Language: Python 3.11+
 - AI 모델: **claude-opus-4-7** (composer + context, 일관) · claude-sonnet-4-6 (legacy 보존)

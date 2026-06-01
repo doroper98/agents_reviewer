@@ -1,0 +1,84 @@
+# Fact Discipline Scenarios — REFACTOR_V6_PLAN.md Phase V6-0
+#
+# V6 의 사실 거버넌스 회귀 fixture SSOT. 2026-06-01 NVIDIA GTC Taipei 보고서가
+# 외부 팩트체크(ChatGPT)에서 받은 5종 사실오류를 *영구 회귀 케이스* 로 박는다.
+# Phase 1 의 결정적 가드, Phase 3 의 FactCritic 루프가 본 fixture 를 입력으로
+# 검증한다. 새 회귀 발견 시 시나리오를 *추가만* (기존 수정 금지).
+#
+# error_class 5종 동결 (REFACTOR_V6_PLAN.md §3 Phase V6-0):
+#   unsourced_number      — 출처에 없는 특정 수치를 단정 (confabulation)
+#   scope_misattribution  — 진짜 수치를 잘못된 단위/범위에 귀속
+#   novelty_conflation    — 출처 작성일(과거)을 "오늘 발표"로 합성
+#   timepoint_overclaim   — 시계열/시장 수치에 시점 라벨 없이 과근접 단정
+#   list_truncation       — 부분 목록을 전체인 것처럼 단정
+#
+# 항목 의미:
+#   id                — error_class + 일련번호. 회귀 추적용.
+#   error_class       — 위 5종 enum 중 하나. test_fact_discipline.py 가 분포 검증.
+#   evidence          — ContextAnalysis 가 수집했어야 할 사실 (provenance 포함).
+#                       Phase 2 의 source_date / scope_note / source_url 형태.
+#   bad_prose         — 실제 회귀 본문 (이 표현이 발행되면 fail).
+#   good_prose        — 가드/critic 통과 후 기대되는 교정 표현 (참조용).
+#   expected_flag     — Phase 1 결정적 가드가 bad_prose 에서 검출해야 하는 신호.
+#   guard             — 이 케이스를 1차로 잡는 결정적 가드 (Phase 1).
+
+scenarios:
+  - id: scope_misattribution_01
+    error_class: scope_misattribution
+    evidence:
+      fact: "Vera Rubin NVL72 랙 전체에 약 130만 개 부품과 약 1,300개 칩이 들어간다. 각 Vera Rubin superchip 에는 약 17,000개 부품."
+      source_date: "2026-06-01"
+      scope_note: "130만 = 랙(NVL72) 전체 단위. 보드/superchip 단위 아님."
+      source_url: "https://nvidianews.nvidia.com/"
+    bad_prose: "베라 루빈 보드 한 장에는 부품이 130만 개 넘게 들어가는데"
+    good_prose: "베라 루빈 NVL72 랙 전체에는 약 130만 개 부품이 들어가는데"
+    expected_flag: scope_bareword
+    guard: ScopeBarewordGuard
+
+  - id: unsourced_number_01
+    error_class: unsourced_number
+    evidence:
+      fact: "NVIDIA 공식 블로그는 RTX Spark 가 'NVIDIA 의 30년 기술 혁신'을 Windows 노트북·데스크톱에 가져온다고 설명."
+      source_date: "2026-06-01"
+      scope_note: "공식 표현은 '30년'. '27년 만'이라는 표현은 출처에 없음."
+      source_url: "https://blogs.nvidia.com/"
+    bad_prose: "27년 만의 PC 칩 RTX 스파크"
+    good_prose: "RTX 스파크 PC 칩 (NVIDIA 가 30년 기술을 PC 로 가져온다고 설명)"
+    expected_flag: unsourced_number
+    guard: UnsourcedNumberGuard
+
+  - id: novelty_conflation_01
+    error_class: novelty_conflation
+    evidence:
+      fact: "GR00T N1.7 이 early access + commercial licensing 으로 제공되고 GR00T N2 가 preview 됨."
+      source_date: "2026-03-16"
+      scope_note: "GTC San Jose 2026-03-16 발표분. 6/1 타이베이 키노트의 신규 발표 아님 — 재강조."
+      source_url: "https://nvidianews.nvidia.com/"
+    bad_prose: "휴머노이드 기반 모델 GR00T 상용화를 한꺼번에 (오늘) 공개했어요"
+    good_prose: "GR00T N1.7·N2 는 3월 GTC 에서 이미 공개된 흐름이며, 이번 타이베이 발표에서 다시 강조됐어요"
+    expected_flag: novelty_delta
+    guard: NoveltyDeltaGuard
+
+  - id: timepoint_overclaim_01
+    error_class: timepoint_overclaim
+    evidence:
+      fact: "NVDA 211.14 달러, -1.45%."
+      source_date: "2026-05-29"
+      scope_note: "미국장 직전 정규거래일 종가. 타이베이 11시(=미 5/31 밤)는 장 마감 — '발표 직전 정규장 반응' 아님."
+      source_url: "https://www.nasdaq.com/"
+    bad_prose: "키노트 직전 NVDA 는 211.14달러로 하루 1.45% 빠졌고"
+    good_prose: "직전 정규거래일 종가는 211.14달러로 1.45% 하락했고"
+    expected_flag: timepoint_label_missing
+    guard: TimepointLabelGuard
+
+  - id: list_truncation_01
+    error_class: list_truncation
+    evidence:
+      fact: "RTX Spark 탑재 기기 OEM: Dell, HP, Asus, Lenovo, Microsoft, Acer, MSI 등."
+      source_date: "2026-06-01"
+      scope_note: "7개 OEM 이상. 'Asus·MSI·Dell' 만 쓰면 사실 축소."
+      source_url: "https://www.reuters.com/"
+    bad_prose: "가을에 에이수스와 MSI, 델의 노트북으로 출시될 예정이에요"
+    good_prose: "가을에 델·HP·에이수스·레노버·MS·에이서·MSI 등의 노트북·데스크톱으로 출시될 예정이에요"
+    expected_flag: list_closed_enumeration
+    guard: ListTruncationGuard
