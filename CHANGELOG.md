@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.7
+last_synced_with: v5.8.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,24 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v5.8.8 — fact-grid 가로 오버플로/비대칭 폭 fix
+
+5·6개짜리 팩트 그리드가 한 셀만 가로로 길어지고 마지막 카드가 화면 밖으로 잘리던
+회귀 수정 (사용자 보고). 원인은 `grid-template-columns:repeat(N,1fr)` 의 `1fr` 이
+실제로는 `minmax(min-content,1fr)` 이라, `$4.99~5.50/hr` 처럼 끊기지 않는 넓은 값
+셀의 min-content 가 균등분할을 깨고 그리드 전체를 컨테이너(780px) 밖으로 밀어낸 것.
+
+- **모든 트랙을 `minmax(0,1fr)` 로** — 셀이 콘텐츠보다 좁아지는 것을 허용해 N개가
+  항상 균등 폭으로 컨테이너 안에 들어옴 (오버플로/비대칭 근본 차단).
+- **5·6개는 데스크탑에서 3-wide 로 줄바꿈** (6→3+3, 5→3+2) — 한 줄에 욱여넣어
+  셀이 좁아 값이 잘리던 문제 해소. 7개 이상은 base(4-wide) 로 자동 wrap.
+- **모바일(≤640px) 5·6개는 2-wide** (6→2+2+2, 5→2+2+1).
+- 값/서브라벨에 `overflow-wrap:break-word;word-break:keep-all` 안전망 — 한글은
+  단어 단위 유지, 긴 라틴 토큰만 필요 시 줄바꿈(인접 셀 침범 방지).
+- 코드 경로/Pydantic 무변경. `freeform_essay.html` CSS 만. 이미 발행된 보고서는
+  `patch_report.py <id> --rerender-only` 로 동일 URL 재렌더 시 적용. v5.8.1/v5.8.4
+  의 세로 baseline 정렬(label `min-height:2.6em`)은 보존.
 
 ## v5.8.7 (plan) — V6 마스터 플랜 신설 + Fact-discipline 골든 fixture (Phase V6-0)
 
