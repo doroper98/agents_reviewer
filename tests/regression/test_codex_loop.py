@@ -305,6 +305,19 @@ def test_progress_none_is_safe() -> None:
 # --------------------------------------------------------------------------
 
 
+def test_diff_span_shows_only_changed_region() -> None:
+    from src.factcheck.critic_loop import _diff_span
+    o = "공통 앞부분 길게길게 어제(2일) 공통 뒷부분 길게길게 끝"
+    n = "공통 앞부분 길게길게 지난 2일 공통 뒷부분 길게길게 끝"
+    span = _diff_span(o, n)
+    assert span is not None
+    before, after = span
+    # 바뀐 토큰이 before/after 에 다르게 보인다 (앞 140자 동일 회귀 해소).
+    assert "어제" in before and "지난" in after
+    assert before != after
+    assert _diff_span("같다", "같다") is None
+
+
 def test_pretty_writer_version() -> None:
     assert _pretty_writer("claude-opus-4-7") == "Claude Opus 4.7"
     assert _pretty_writer("claude-sonnet-4-6") == "Claude Sonnet 4.6"

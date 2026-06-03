@@ -137,19 +137,41 @@ def _clip(s: str, n: int = 140) -> str:
     return s if len(s) <= n else s[:n] + "…"
 
 
+def _diff_span(old: str, new: str, ctx: int = 30) -> tuple[str, str] | None:
+    """변경된 *부분만* + 앞뒤 문맥. 공통 prefix/suffix 제거 (긴 본문에서 1단어
+    바뀌어도 그 부분만 보이게 — 섹션 앞 140자 클립의 '위아래 동일' 회귀 해소)."""
+    old = (old or "").replace("\n", " ")
+    new = (new or "").replace("\n", " ")
+    if old == new:
+        return None
+    m = min(len(old), len(new))
+    i = 0
+    while i < m and old[i] == new[i]:
+        i += 1
+    j = 0
+    while j < (m - i) and old[len(old) - 1 - j] == new[len(new) - 1 - j]:
+        j += 1
+    o_start, o_end = max(0, i - ctx), len(old) - j + ctx
+    n_start, n_end = max(0, i - ctx), len(new) - j + ctx
+    op = ("…" if o_start > 0 else "") + old[o_start:o_end].strip() + ("…" if o_end < len(old) else "")
+    npv = ("…" if n_start > 0 else "") + new[n_start:n_end].strip() + ("…" if n_end < len(new) else "")
+    return op, npv
+
+
 def _diff_reports(orig: ComposedReport, final: ComposedReport) -> list[str]:
-    """원본 → 최종 보고서의 텍스트 변경을 사람-읽기 목록으로 (감사용)."""
+    """원본 → 최종 보고서의 *바뀐 부분만* 사람-읽기 목록으로 (감사용)."""
     out: list[str] = []
-    if orig.headline != final.headline:
-        out.append(f"headline: «{_clip(orig.headline)}» → «{_clip(final.headline)}»")
-    if orig.deck != final.deck:
-        out.append(f"deck: «{_clip(orig.deck)}» → «{_clip(final.deck)}»")
+    hd = _diff_span(orig.headline, final.headline)
+    if hd:
+        out.append(f"headline: «{hd[0]}» → «{hd[1]}»")
+    dk = _diff_span(orig.deck, final.deck)
+    if dk:
+        out.append(f"deck: «{dk[0]}» → «{dk[1]}»")
     for i, sec in enumerate(final.sections):
-        if i < len(orig.sections) and orig.sections[i].prose != sec.prose:
-            out.append(
-                f"섹션 '{sec.heading}': «{_clip(orig.sections[i].prose)}» → "
-                f"«{_clip(sec.prose)}»"
-            )
+        if i < len(orig.sections):
+            sp = _diff_span(orig.sections[i].prose, sec.prose)
+            if sp:
+                out.append(f"섹션 '{sec.heading}': «{sp[0]}» → «{sp[1]}»")
     return out
 
 
@@ -310,17 +332,21 @@ class CriticLoop:
                 0.3, round(final.confidence_score - 0.1 * len(unresolved), 3),
             )
 
-        # 최종 status — 정직하게 (위반 수렴 / 잔존 표시).
+        # 최종 status — 정직하게. "정정"(=drop)이 아니라 "보완 반영"으로 표기
+        # (Opus 가 본문을 고친 것을 0건처럼 보이게 하던 회귀 해소).
         if not residual:
             await self._emit(
                 on_progress,
-                f"✅ 사실 검수 완료 — 지적 {v1.violation_count}건 반영 (잔존 0)",
+                f"✅ 사실 검수 완료 — 지적 {v1.violation_count}건 보완 반영",
             )
         else:
+            _parts = [f"지적 {v1.violation_count}건 보완 반영"]
+            if dropped:
+                _parts.append(f"{len(dropped)}건 삭제")
+            if unresolved:
+                _parts.append(f"{len(unresolved)}건 미해결(신뢰도 반영)")
             await self._emit(
-                on_progress,
-                f"✅ 사실 검수·보완 완료 — 지적 {v1.violation_count}건 중 "
-                f"{len(dropped)}건 정정·{len(unresolved)}건 미해결(신뢰도 반영)",
+                on_progress, "✅ 사실 검수·보완 완료 — " + ", ".join(_parts),
             )
 
         return CriticLoopResult(

@@ -1606,6 +1606,7 @@ class Orchestrator:
         except Exception as _e:  # pragma: no cover  — 폴백 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_broadcast_summary skipped: %s", _e)
 
+        v6_loop_result = None  # Phase V6-7/c — 렌더 후 report_id 태깅 요약 로그용
         # -- Phase 2.5 (V6): Codex fact-critic 루프 (opt-in, flag OFF = byte-equal) --
         # Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1). 외부 degrade /
         # 보완 실패 시 원본 보존 (AP-V6-12). V6_CODEX_CRITIC OFF 면 이 블록 통째 스킵
@@ -1630,6 +1631,7 @@ class Orchestrator:
                     publication_date=today_kst(),
                     on_progress=_loop_progress,
                 )
+                v6_loop_result = loop_result
                 if loop_result.report is not None:
                     result.composed_report = loop_result.report
                 # Phase V6-7 — 검수 바이라인. *실제 검수 수행 시에만* (AP-V6-10).
@@ -1719,6 +1721,18 @@ class Orchestrator:
         )
         self.telemetry.stage_end(stage)
         result.report_url = report_url
+
+        # Phase V6-7/c — report_id 태깅 검수 요약 (발행 URL 과 1:1 매칭되는 grep 키).
+        if v6_loop_result is not None and not v6_loop_result.skipped:
+            _rid = (
+                (getattr(result, "report_path", "") or report_url or "")
+                .rstrip("/").split("/")[-1].replace(".html", "")
+            )
+            logger.info(
+                "[orchestrator] V6 [%s] 검수 요약: 식별 %d · 변경 %d · 잔존 %d · 미해결 %d",
+                _rid, v6_loop_result.initial_violations, len(v6_loop_result.changes),
+                v6_loop_result.residual_violations, v6_loop_result.unresolved_count,
+            )
 
         # -- Phase V6-4: Codex 미학 검수 (opt-in, 발행 후 log-only) --
         # 렌더된 보고서의 차트 PNG 를 codex 비전으로 교차검수. 현재 측정(log)만 —

@@ -1053,12 +1053,17 @@ class TelegramBot:
             if broadcast:
                 await send(broadcast)
 
+            # Phase V6-7/b — 검수 바이라인 (검수 수행 시만 채워짐). 완료 메시지에 첨부.
+            _verif = (result.composed_report.verification if result.composed_report else None) or {}
+            verif_line = f"\n🔎 {_verif['text']}" if _verif.get("text") else ""
+
             if result.report_url and result.report_url.startswith("http"):
                 md_url = result.report_url.replace(".html", ".md")
                 await send(
                     f"📊 Full Analysis Report{followup_tag}\n\n"
                     f"🔗 보고서 링크: {result.report_url}\n"
                     f"🤖 AI 전달용 (Markdown): {md_url}"
+                    f"{verif_line}"
                 )
             elif report_path and os.path.isfile(report_path):
                 # Fallback: send file only if Cloudflare upload failed
