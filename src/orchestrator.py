@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v5.8.8"
+VERSION = "v6.0.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1605,6 +1605,53 @@ class Orchestrator:
             _ensure_broadcast_summary(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — 폴백 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_broadcast_summary skipped: %s", _e)
+
+        # -- Phase 2.5 (V6): Codex fact-critic 루프 (opt-in, flag OFF = byte-equal) --
+        # Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1). 외부 degrade /
+        # 보완 실패 시 원본 보존 (AP-V6-12). V6_CODEX_CRITIC OFF 면 이 블록 통째 스킵
+        # → v5.8.8 호출 경로 byte-equal (AP-V6-3).
+        if self.config.enable_codex_critic:
+            try:
+                from src.agents.codex_critic import CodexCritic
+                from src.factcheck.critic_loop import CriticLoop, NarrativeComposerReviser
+                from src.timeutil import today_kst
+
+                loop = CriticLoop(
+                    self.config,
+                    CodexCritic(self.config),
+                    NarrativeComposerReviser(self.narrative_composer),
+                )
+
+                async def _loop_progress(msg: str) -> None:
+                    await self._notify(msg, status_callback)
+
+                loop_result = await loop.run(
+                    result.composed_report, result.context,
+                    publication_date=today_kst(),
+                    on_progress=_loop_progress,
+                )
+                if loop_result.report is not None:
+                    result.composed_report = loop_result.report
+                logger.info(
+                    "[orchestrator] V6 critic loop: skipped=%s reason=%s revised=%s "
+                    "confirm=%s init_viol=%d residual=%d unresolved=%d dropped=%d pre_flags=%d",
+                    loop_result.skipped, loop_result.skip_reason, loop_result.revised,
+                    loop_result.confirm_ran, loop_result.initial_violations,
+                    loop_result.residual_violations, loop_result.unresolved_count,
+                    len(loop_result.dropped_quotes), loop_result.pre_flag_count,
+                )
+                for claim in loop_result.applied_claims:
+                    logger.info("[orchestrator] V6 검수 식별: %s", claim)
+                for change in loop_result.changes:
+                    logger.info("[orchestrator] V6 변경: %s", change)
+                if loop_result.residual_summary:
+                    logger.info(
+                        "[orchestrator] V6 residual (미해결): %s",
+                        " | ".join(loop_result.residual_summary),
+                    )
+            except Exception as _e:  # pragma: no cover — 외부 의존 실패가 발행을 막지 않음
+                logger.warning("[orchestrator] V6 critic loop skipped: %s", _e)
+
         # v5.6.7 — 최종 기호 정화 (사용자 최우선 규칙). composer 경로는 자체 정화하지만
         # minimal fallback / hook 가 추가한 텍스트 / context 기반 합성본까지 *모든* 경로를
         # 여기서 한 번 더 보장. NarrativeComposer 의 정화 규칙 재사용.
@@ -1646,6 +1693,31 @@ class Orchestrator:
         )
         self.telemetry.stage_end(stage)
         result.report_url = report_url
+
+        # -- Phase V6-4: Codex 미학 검수 (opt-in, 발행 후 log-only) --
+        # 렌더된 보고서의 차트 PNG 를 codex 비전으로 교차검수. 현재 측정(log)만 —
+        # 차트 자동수정 안 함 (V5 deterministic_gate / chart_critic 와 병행). flag OFF /
+        # Playwright·codex 비전 미가용 시 graceful skip (AP-V6-12). byte-equal 보존.
+        if self.config.enable_codex_visual and getattr(result, "report_path", None):
+            try:
+                from src.agents.codex_critic import CodexCritic
+                vverdict = await CodexCritic(self.config).critique_report_visuals(
+                    result.composed_report, result.report_path,
+                )
+                if vverdict.skipped:
+                    logger.info("[orchestrator] V6 미학 검수 skip: %s", vverdict.skip_reason)
+                else:
+                    logger.info(
+                        "[orchestrator] V6 미학 검수: %s findings=%d",
+                        vverdict.verdict_status, vverdict.violation_count,
+                    )
+                    for c in vverdict.claims:
+                        logger.info(
+                            "[orchestrator] V6 미학 지적: [%s] %s: %s",
+                            c.error_class, c.location, c.fix_instruction,
+                        )
+            except Exception as _e:  # pragma: no cover — 미학 검수 실패가 발행 막지 않음
+                logger.warning("[orchestrator] V6 미학 검수 skipped: %s", _e)
 
         # v5.2.14 — chart type usage 추적 (캔들 starvation 회귀 방지).
         # composed.sections 의 모든 charts 를 순회해 type 수집 → telemetry +
@@ -1760,9 +1832,14 @@ class Orchestrator:
         # Telemetry summary.
         if self.telemetry is not None:
             self.telemetry.log_summary()
-            # v4.0.0 Tier 4: 모든 모드 max_llm_calls=2 고정. 직접 비교 (budget 변수 미사용).
+            # v4.0.0 Tier 4: 모든 모드 max_llm_calls=2 고정 (context + composer).
             from src.token_budget import TokenBudget
             cap = TokenBudget.for_mode(mode).max_llm_calls
+            # V6: critic 루프의 Opus 보완(revise_for_facts)이 RunTelemetry 1콜을 정당하게
+            # 추가 (codex 검수/확인패스/미학은 외부 subprocess라 RunTelemetry 미집계).
+            # 켜졌을 때 budget 경고가 헛울리지 않게 보정.
+            if self.config.enable_codex_critic:
+                cap += 1
             if self.telemetry.total_llm_calls > cap:
                 logger.warning(
                     "[telemetry] LLM call budget exceeded: %d > %d (mode=%s). "

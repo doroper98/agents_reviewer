@@ -166,10 +166,116 @@ class Config(BaseSettings):
         ),
     )
 
+    # === V6 Phase V6-1 — Codex 외부 critic CLI 통합 (Tier 0 spike) ===
+    # REFACTOR_V6_PLAN.md §3 Phase V6-1. codex CLI (ChatGPT 구독) 를 headless 로
+    # 호출해 ComposedReport 를 사실 검수하고 FactVerdict 를 받는 경로의 마스터 스위치.
+    # 디폴트 OFF — 꺼지면 src/agents/codex_critic.py 의 critique() 가 즉시 skip
+    # verdict 를 반환해 v5.8.8 단일패스 byte-equal (AP-V6-3/12). Phase 1 단계에선
+    # orchestrator 가 본 모듈을 호출하지 않으므로 호출 경로 자체가 불변.
+    # env: V6_CODEX_CRITIC=1.
+    enable_codex_critic: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_CODEX_CRITIC", "ENABLE_CODEX_CRITIC", "enable_codex_critic"),
+    )
+    # codex CLI 실행 파라미터 (VM spike 가 실제 호출 형태를 확정 — 전부 override 가능).
+    # 기본 호출: ``codex exec`` 에 프롬프트를 stdin 으로 전달, stdout=verdict JSON.
+    codex_bin: str = Field(
+        default="codex",
+        validation_alias=AliasChoices("V6_CODEX_BIN", "codex_bin"),
+    )
+    codex_subcommand: str = Field(
+        default="exec",
+        validation_alias=AliasChoices("V6_CODEX_SUBCOMMAND", "codex_subcommand"),
+    )
+    codex_extra_args: str = Field(
+        default="--skip-git-repo-check --sandbox read-only",
+        validation_alias=AliasChoices("V6_CODEX_EXTRA_ARGS", "codex_extra_args"),
+    )
+    codex_model: str = Field(
+        default="",
+        validation_alias=AliasChoices("V6_CODEX_MODEL", "codex_model"),
+    )
+    codex_timeout_s: int = Field(
+        default=180,
+        validation_alias=AliasChoices("V6_CODEX_TIMEOUT_S", "codex_timeout_s"),
+    )
+    # Codex critic 페르소나 — *검수자* 관점(도메인 인식 팩트체크 데스크)을 prompt 에
+    # 주입. 빈 값이면 기본 critic 지침만 (byte-equal). 파일 경로 (market_briefing_persona
+    # 패턴). 작성 페르소나가 아님 — codex 는 본문을 쓰지 않는다 (AP-V6-11).
+    # env: V6_CODEX_PERSONA_PATH.
+    codex_critic_persona_path: str = Field(
+        default="prompts/codex_critic_persona.md",
+        validation_alias=AliasChoices("V6_CODEX_PERSONA_PATH", "codex_critic_persona_path"),
+    )
+
+    # === V6 Phase V6-2 — 결정적 사실 사전필터 가드 (LLM 0) ===
+    # 본문의 명백한 사실 위반(출처 없는 수치 / scope 모호 / 시장 수치 불일치 / NaN)을
+    # codex 호출(=ChatGPT 한도) 전에 0-LLM 으로 검출. 초기 log-only — drop/enforce 안
+    # 하고 GuardFlag 적립·경고만 (REFACTOR_V6_PLAN.md §4.5 측정우선). 디폴트 OFF —
+    # orchestrator 미연결로 byte-equal. env: V6_FACT_GUARDS=1.
+    enable_fact_guards: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_FACT_GUARDS", "ENABLE_FACT_GUARDS", "enable_fact_guards"),
+    )
+    # composer SYSTEM_PROMPT 에 `=== 사실 규율 (V6) ===` 블록 주입 (scope 명시 / 출처없는
+    # 특정수치 금지 / 신규성 구분 / 시장 시점 라벨·단일소스 / 주장 귀속 / 인과 헤지 등,
+    # WRITE-AP-11/14~21). 디폴트 OFF — 꺼지면 compose 프롬프트 byte-equal. V5 어조와 직교.
+    # env: V6_FACT_PROMPT=1.
+    enable_fact_prompt: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_FACT_PROMPT", "ENABLE_FACT_PROMPT", "enable_fact_prompt"),
+    )
+    # ContextAnalyst 웹검색 최신성 제한 — 당일/최근 브리핑은 최근 24~48h 출처 우선 +
+    # 상대 시점("이틀 전")을 발행일 기준으로 환산 (stale_sourcing 차단). 디폴트 OFF —
+    # 꺼지면 context_analyst 프롬프트 byte-equal. env: V6_RECENCY_BOUND=1.
+    enable_recency_bound: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_RECENCY_BOUND", "ENABLE_RECENCY_BOUND", "enable_recency_bound"),
+    )
+
+    # === V6 Phase V6-4 — Codex 미학 검수 (vision, 렌더 PNG) ===
+    # 발행 후 차트 PNG 를 codex 비전(`codex exec -i`)에 넣어 미학·데이터 정합을 교차검수.
+    # V5 deterministic_gate / chart_critic 와 병행(교차검증). 현재 log-only(측정) — 차트
+    # 자동수정 안 함. 디폴트 OFF, Playwright/codex 비전 미가용 시 graceful skip.
+    # env: V6_CODEX_VISUAL=1.
+    enable_codex_visual: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_CODEX_VISUAL", "ENABLE_CODEX_VISUAL", "enable_codex_visual"),
+    )
+
+    # === V6 Phase V6-5 — Codex 웹 verify (bounded) ===
+    # 켜지면 codex 가 검수 시 *자체 웹검색* 으로 우리 근거에 없는 사실까지 ground truth
+    # 대조 + 사용 URL 을 cited_urls/source_urls 에 명시. 웹은 변동 → ON 만 비결정,
+    # OFF 는 byte-equal. 검색 횟수는 codex_websearch_cap 으로 프롬프트 bound (AP-V6-2).
+    # env: V6_CODEX_WEBVERIFY=1.
+    enable_codex_webverify: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_CODEX_WEBVERIFY", "ENABLE_CODEX_WEBVERIFY", "enable_codex_webverify"),
+    )
+    # codex 웹검색 인자 (보통 비워둠). codex 0.136.0 은 웹검색이 *기본 ON* 이라
+    # 별도 플래그 불요 — webverify 는 프롬프트 블록으로 구동(VM 확정 2026-06-03).
+    # 특정 환경에서 명시 제어 필요 시만 채움 (예: `-c web_search="live"`).
+    codex_websearch_args: str = Field(
+        default="",
+        validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_ARGS", "codex_websearch_args"),
+    )
+    codex_websearch_cap: int = Field(
+        default=3,
+        validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_CAP", "codex_websearch_cap"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
     }
+
+    @property
+    def codex_cmd_args(self) -> list[str]:
+        """codex CLI 의 subcommand + extra args 를 토큰 리스트로 (bin 제외)."""
+        args = [self.codex_subcommand] if self.codex_subcommand else []
+        if self.codex_extra_args.strip():
+            args.extend(self.codex_extra_args.split())
+        return args
 
     @property
     def allowed_chat_ids(self) -> list[int]:

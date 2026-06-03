@@ -191,7 +191,14 @@ Phase 1 codex spike 부터.**
   `timepoint_overclaim` / `list_truncation`. + `test_fact_discipline.py` 스켈레톤.
 - **불변 계약**: error_class 5종은 동결. 신규 class 는 Phase 6 게이트 승격으로만 추가.
 
-### Phase V6-1 — Codex CLI 통합 Spike + Verdict 계약 (Tier 0, 최우선)
+### Phase V6-1 — Codex CLI 통합 Spike + Verdict 계약 (Tier 0, 최우선) ✅ (완료, 2026-06-03)
+**상태**: **DoD 전부 충족.** `src/agents/codex_critic.py` + `src/models.py:FactVerdict`/
+`CritiqueClaim` + `Config.codex_*`(`V6_CODEX_CRITIC` default OFF) + 회귀
+`test_codex_contract.py`(T-V1) / `test_codex_critic.py`(T-C1/C2/C3, 39 tests pass).
+orchestrator 미연결 = flag OFF byte-equal. **VM 실연동 검증 완료** — codex-cli 0.136.0
+(gpt-5.5) e2e 검수가 scope_misattribution + unsourced_number 를 정확히 검출
+(35.1s, 측정 로그 `docs/V6_TEST_RESULTS.md` §1). stdin 입력·`-o` 클린 캡처·`-i` 비전
+지원 확정. 다음 = Phase 2(사전필터) / 3(루프).
 **목적**: 전 Phase 가 의존하는 외부 경로를 *먼저* 증명. 여기서 막히면 설계 재고.
 - **신규 SSOT**: `src/agents/codex_critic.py` — codex CLI 를 `_call_cli` 패턴으로
   headless 호출(`codex exec` 류, stdin=프롬프트+보고서 JSON+근거, stdout=verdict JSON).
@@ -208,7 +215,14 @@ Phase 1 codex spike 부터.**
 - **DoD**: 모킹된 codex 응답으로 FactVerdict 파싱·절단복구·degrade 3경로 테스트 통과.
   실제 codex 1회 수동 호출 로그 첨부(VM). flag OFF byte-equal.
 
-### Phase V6-2 — Deterministic 사전필터 가드 + 프롬프트 하드닝 (Tier 1, LLM 0)
+### Phase V6-2 — Deterministic 사전필터 가드 + 프롬프트 하드닝 (Tier 1, LLM 0) ✅ (완료 2026-06-03)
+**상태**: ① 결정적 가드 5종 (`UnsourcedNumberGuard`/`ScopeBarewordGuard`/`NoveltyDeltaGuard`/
+`MarketDataSourceGuard`/`NaNExposureGuard`) + `run_fact_guards` + `GuardFlag` + 검수자
+페르소나 훅 (`V6_CODEX_PERSONA_PATH`). T-1 결정적 타깃 5종 100%/0-FP. ② 프롬프트 하드닝 —
+composer `_FACT_DISCIPLINE_BLOCK`(`V6_FACT_PROMPT`, `_compose_system_prompt()`) +
+ContextAnalyst `_RECENCY_BLOCK`(`V6_RECENCY_BOUND`, `_build_system_prompt()`), `test_fact_prompt.py`
+6종(OFF byte-equal/ON 주입). 모든 flag default OFF = byte-equal. 의미판단(threshold/FX
+sub-tolerance/event/attribution/causal/metric/timepoint 앵커)은 Codex(Phase 3) 라우팅.
 **목적**: codex 호출(=한도) 전에 명백한 위반을 0-LLM 으로 거른다.
 - **신규 SSOT**: `src/factcheck/deterministic_guards.py` — ① `UnsourcedNumberGuard`
   (본문 "N년 만"·"N개"·"N%" 정규식 → evidence 문자열에 없으면 flag) ② `ScopeBarewordGuard`
@@ -228,7 +242,16 @@ Phase 1 codex spike 부터.**
 - **DoD**: fixture 4종(unsourced/scope/timepoint/novelty) ≥90% 검출, FP < 임계.
   프롬프트 변경 후 golden_prompts 회귀 통과.
 
-### Phase V6-3 — Codex Critic Loop: 사실+차트데이터 (Tier 2, **핵심**)
+### Phase V6-3 — Codex Critic Loop: 사실+차트데이터 (Tier 2, **핵심**) ✅ (완료, e2e 수렴 2026-06-03)
+**상태**: 루프 코드·orchestrator 연결·착지·회귀 랜딩. `src/factcheck/critic_loop.py`
+(`CriticLoop` 제어 0-LLM, 재작성≤1·확인패스≤1, `apply_landing` unsourced drop,
+`NarrativeComposerReviser`) + `NarrativeComposer.revise_for_facts`(Opus 보완, AP-V6-1/11,
+텍스트-only merge 로 차트 보존) + orchestrator Phase 2.5 flag-gated. 사전필터(Phase 2)→
+pre_flags 합류, 재작성 트리거는 Codex 위반에만. T-3/T-4 9종 + 전체 71 pass, flag OFF
+byte-equal. **VM e2e 수렴 완료** — 실제 codex(gpt-5.5)+Opus 루프가 NVIDIA 표본 4위반을
+보완 1회로 위반 0 수렴 (scope/unsourced/novelty 교정, 측정 `docs/V6_TEST_RESULTS.md §1`).
+**남은 것(선택)** = 전체 4층 풀 파이프라인 e2e(웹검색+발행) + degrade 발행 확인 — 배포 단계.
+차트 데이터 정합 검수는 codex 프롬프트에 포함(미학은 Phase 4).
 **목적**: GAP-6. 확정 루프 `Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)`.
 - 입력: ComposedReport(prose+차트 data) + ContextAnalysis. Codex 가 사실/문구 + 차트
   *데이터 정합*(차트 숫자 ↔ 본문/근거) 검수, FactVerdict emit.
@@ -244,7 +267,13 @@ Phase 1 codex spike 부터.**
 - **DoD**: NVIDIA fixture 5종 e2e → 위반 0/헤지/drop 수렴. 재작성 ≤1, 확인패스 ≤1
   강제 검증. degrade 시 정상 발행. flag OFF byte-equal.
 
-### Phase V6-4 — Codex 미학 검수 (Vision, 렌더 PNG)
+### Phase V6-4 — Codex 미학 검수 (Vision, 렌더 PNG) ✅ (VM 검증 2026-06-03)
+**상태**: `CodexCritic.critique_visual`/`critique_report_visuals` + `_call_codex_cli` 이미지
+(`-i`) 지원 + `_VISUAL_INSTRUCTIONS` + orchestrator 발행 후 flag-gated 훅(log-only) +
+budget telemetry V6-aware. `V6_CODEX_VISUAL` default OFF, T-5 모킹 6종 통과, flag OFF
+byte-equal. capture_proofs(Playwright) 캡처 → critique_visual. 차트 자동수정은 안 함
+(V5 deterministic_gate/chart_critic 와 병행, 측정 후 정리). **VM 검증 완료** — codex(gpt-5.5)
+가 실제 차트 PNG 판독 + 미학 지적 정확. Playwright 시스템 deps(`install-deps chromium`) 필요.
 **목적**: GAP-8. 차트 데이터뿐 아니라 *미학*까지 Codex 가 본다.
 - `src/visual/capture.py` 로 차트→PNG → Codex 비전 입력. verdict 에 차트별 시각 지적
   (가독성/잘림/패턴 충돌 등) + fix_instruction(데이터/타입/축 조정).
@@ -255,7 +284,14 @@ Phase 1 codex spike 부터.**
 - **flag**: `V6_CODEX_VISUAL`.
 - **DoD**: 데이터-불일치 차트 + 미학 결함 차트 fixture 를 검출. flag OFF byte-equal.
 
-### Phase V6-5 — Codex 웹 Verify (bounded)
+### Phase V6-5 — Codex 웹 Verify (bounded) ✅ (VM 검증 2026-06-03)
+**상태**: `critique()` webverify-aware(config flag) — cmd 웹검색 인자(`codex_websearch_args`)
++ 프롬프트 `=== 웹 verify (≤N) ===` 블록(근거 없는 사실만 검색·URL 인용 강제·미인용 무시
+AP-V6-8) + `_build_cmd`/`_call_codex_cli` webverify 파라미터 + `_coerce_verdict` cited_urls
+집계. `V6_CODEX_WEBVERIFY` default OFF(byte-equal, ON 만 비결정), `codex_websearch_cap`
+bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검색 수행 + 정답·URL 반환.
+발견: codex 0.136.0 웹검색 *기본 ON*, `--enable web_search` deprecated → `codex_websearch_args`
+기본 `""`(프롬프트로 구동). 측정 `docs/V6_TEST_RESULTS.md §1`.
 **목적**: 우리 근거가 불완전해도 ground truth 대조. fact-critic 강화.
 - Codex 가 verdict 산출 시 **자체 웹검색 ≤N(기본 3)** 허용 + 사용 URL 을 `cited_urls`
   에 명시. **재현성 포기 허용**(웹 변동) — flag OFF 경로는 byte-equal 유지, ON 만 비결정.
@@ -370,6 +406,7 @@ FP·효과를 본 뒤 단계적으로 enforce 로 올린다.
 | **AP-V6-10** | 실제 안 돈 검수를 바이라인에 "검수" 로 표기 금지 | 조건부 렌더 (T-8) |
 | **AP-V6-11** | Codex(외부 모델)가 본문 텍스트를 *직접 작성/편집* 금지 (검수·지시만) | 보완은 Opus 가 수행 (T-3) |
 | **AP-V6-12** | 외부 의존(codex/웹) 실패가 보고서 발행을 막음 금지 | graceful degrade → 단일패스 (T-C2) |
+| **AP-V6-13** | 보완 결과가 *정정 흔적/메타 코멘트* 를 본문에 남김 ('신규 공개 아님 / 사실과 다름 / 출처에 따르면 ~아니다' 류 해명조·부정 박제) — 독자 무가치. 검수는 독자에게 보이지 않아야 함 (2026-06-03 e2e 발견) | `REVISE_SYSTEM_PROMPT` 의 "★ 독자 우선" 블록 — 틀린 주장은 정확한 사실로 자연스럽게 재작성하거나 덜어냄, 부정문 박제 금지 |
 
 회귀 발견 시 본 표에 AP-V6-N append.
 

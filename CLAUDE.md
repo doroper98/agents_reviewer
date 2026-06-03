@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v5.2.12
+last_synced_with: v6.0.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
@@ -57,7 +57,7 @@ last_review: 2026-05-05
 
 > **V5 리팩토링 진행 중.** [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 가 v5.0.0 의 4-Tier 17-Phase 마스터 플랜 SSOT. 현재는 Phase 0 (Baseline + SSOT Repair) 에 진입한 상태이고, v4.5.7 baseline 으로 코드·문서 정합성을 복원하는 작업이 진행된다. 코드는 v4.5.7 그대로 유지된다.
 
-> **V6 트랙 (병행) — "workflow → agent".** [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) 가 v6.0.0 의 *사실 grounding + bounded Codex critic loop* 마스터 플랜 SSOT (v2 — Codex 외부 critic 중심 개정, 2026-06-03). 2026-06-01 NVIDIA 보고서 팩트체크 회귀(5종)에서 출발 — 자유 본문(`ComposedSection.prose`)에 evidence-binding 미적용 + fact-critic 루프 부재가 근본 결함. 핵심 결정: 빠진 critic 을 **외부 모델 `codex` CLI(ChatGPT 구독)** 로 내재화 — 교차 모델(GPT)이 Claude(Opus) confabulation 을 검수. 확정 루프 **`Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)`** (재작성 bounded, 제어=0 LLM 위반카운트 AP-V6-5). Codex 는 사실/문구 + 차트 데이터 + 미학(렌더 PNG) + 자체 웹verify 까지 검수하나 **본문은 직접 쓰지 않음**(보완은 Opus, AP-V6-1/11). 착지=헤지 기본 + `unsourced_number` 만 drop. 자율 보강은 **적립↔적용 분리**(critique_log 자동적립 → 재발 시 log-only 소프트가드 자동 → 정식 프롬프트/가드 편입만 게이트, AP-V6-9). 바이라인("Opus 작성/Codex 검수")은 검수 실제 수행 시에만(AP-V6-10). 외부 의존은 graceful degrade(AP-V6-12). 모든 `V6_*` flag default OFF = v5.8.8 byte-equal (AP-V6-3). Phase V6-0(fixture) 완료, Phase 1(codex spike) 이 최우선 진입점. V5 와 flag 네임스페이스 분리(`V5_*`/`V6_*`), composer SYSTEM_PROMPT 는 양 트랙이 직교하게 추가. 새 사실오류 회귀는 `tests/regression/fixtures/fact_discipline_scenarios.yaml` 에 append (error_class 1차 5종 + 2026-06-03 일일 브리핑 2차 확장 6종 = market_data_mismatch[최우선]/stale_sourcing/event_conflation/attribution_as_fact/causal_overreach/metric_label_ambiguity, 신규 class 는 사용자 게이트 승격으로만 추가).
+> **V6 트랙 (병행) — "workflow → agent".** [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) 가 v6.0.0 의 *사실 grounding + bounded Codex critic loop* 마스터 플랜 SSOT (v2 — Codex 외부 critic 중심 개정, 2026-06-03). 2026-06-01 NVIDIA 보고서 팩트체크 회귀(5종)에서 출발 — 자유 본문(`ComposedSection.prose`)에 evidence-binding 미적용 + fact-critic 루프 부재가 근본 결함. 핵심 결정: 빠진 critic 을 **외부 모델 `codex` CLI(ChatGPT 구독)** 로 내재화 — 교차 모델(GPT)이 Claude(Opus) confabulation 을 검수. 확정 루프 **`Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)`** (재작성 bounded, 제어=0 LLM 위반카운트 AP-V6-5). Codex 는 사실/문구 + 차트 데이터 + 미학(렌더 PNG) + 자체 웹verify 까지 검수하나 **본문은 직접 쓰지 않음**(보완은 Opus, AP-V6-1/11). 착지=헤지 기본 + `unsourced_number` 만 drop. 자율 보강은 **적립↔적용 분리**(critique_log 자동적립 → 재발 시 log-only 소프트가드 자동 → 정식 프롬프트/가드 편입만 게이트, AP-V6-9). 바이라인("Opus 작성/Codex 검수")은 검수 실제 수행 시에만(AP-V6-10). 외부 의존은 graceful degrade(AP-V6-12). 모든 `V6_*` flag default OFF = v5.8.8 byte-equal (AP-V6-3). Phase V6-0(fixture) 완료, **Phase V6-1(codex spike) 코드 랜딩** — [src/agents/codex_critic.py](src/agents/codex_critic.py) + [src/models.py:FactVerdict](src/models.py)/`CritiqueClaim` + `Config.codex_*`(`V6_CODEX_CRITIC` default OFF) + 회귀 39종(모킹). orchestrator 미연결 = flag OFF byte-equal 자명. **VM 실연동 완료** (2026-06-03 — codex-cli 0.136.0/gpt-5.5 e2e 검수가 scope/unsourced 정확 검출, stdin·`-o`·비전 확정) — 측정 SSOT 는 [docs/V6_TEST_RESULTS.md](docs/V6_TEST_RESULTS.md). **Phase V6-2(사전필터) 가드 랜딩** — [src/factcheck/deterministic_guards.py](src/factcheck/deterministic_guards.py) 5종(unsourced/scope/novelty/market/nan, log-only, `V6_FACT_GUARDS` default OFF) + CodexCritic 검수자 페르소나 훅(`V6_CODEX_PERSONA_PATH`), T-1 결정적 5종 100%/0-FP. 프롬프트 하드닝 완료 — composer `_FACT_DISCIPLINE_BLOCK`(`V6_FACT_PROMPT`) + ContextAnalyst `_RECENCY_BLOCK`(`V6_RECENCY_BOUND`), 둘 다 flag OFF byte-equal(WRITE-AP-11/14~21 작성단계 차단·stale 검색 차단). **Phase V6-3(루프) orchestrator 연결** — [src/factcheck/critic_loop.py](src/factcheck/critic_loop.py) `CriticLoop`(Opus작성→Codex검수→Opus보완≤1→확인패스≤1, 제어 0-LLM, `apply_landing` unsourced drop) + [NarrativeComposer.revise_for_facts](src/agents/narrative_composer.py)(Opus 보완, 텍스트-only merge 로 차트 보존) + orchestrator Phase 2.5 flag-gated(`V6_CODEX_CRITIC`). T-3/T-4 9종+전체 71 pass, flag OFF byte-equal. **VM e2e 수렴** — 실제 codex(gpt-5.5)+Opus 루프가 NVIDIA 4위반을 보완 1회로 위반 0 수렴(scope/unsourced/novelty 교정). Phase V6-1/2/3 완료 + 풀 파이프라인 e2e 통과(실제 토픽 발행). **Phase V6-4(미학 vision, `V6_CODEX_VISUAL`)·V6-5(웹verify, `V6_CODEX_WEBVERIFY`) 완료 + VM 실연동 검증** (codex 비전이 실제 차트 판독·미학 지적, codex 웹검색이 정답+URL 반환; 둘 다 default OFF byte-equal). 남은 것=Phase 6(자율보강)·7(바이라인)·8(provenance) + 머지·배포(v6.0.0). V5 와 flag 네임스페이스 분리(`V5_*`/`V6_*`), composer SYSTEM_PROMPT 는 양 트랙이 직교하게 추가. 새 사실오류 회귀는 `tests/regression/fixtures/fact_discipline_scenarios.yaml` 에 append (error_class 1차 5종 + 2026-06-03 일일 브리핑 2차 확장 6종 = market_data_mismatch[최우선]/stale_sourcing/event_conflation/attribution_as_fact/causal_overreach/metric_label_ambiguity, 신규 class 는 사용자 게이트 승격으로만 추가).
 
 ## Tech Stack (v4.5.7)
 - Language: Python 3.11+
@@ -127,6 +127,38 @@ V5 Phase 1A 부터 추가 가능한 에이전트:
 playbook §3 에 텍스트로 박는다. 부득이하면 `git add <file>` 직후 `git update-index
 --chmod=+x <file>` + commit 전 `git ls-files --stage <file>` 가 100755 확인.
 
+## Codex 검수자 페르소나 갱신 SOP (사용자가 codex 페르소나 지침을 주면 *즉시* 이 절차로)
+
+> **트리거 인식.** 사용자가 "codex 검수자가 X도 봐야 한다 / 이런 표현(을) 쓰지 마라 /
+> 심각도 기준 바꿔 / 도메인 추가 / 이 케이스를 잡아라" 식으로 **codex *검수* 페르소나** 에
+> 대한 지침을 주면 — 되묻지 말고 — 아래로 두 파일에 *정합* 반영한다. ⚠️ 이건 *작성*
+> 페르소나가 아니라 *검수* 페르소나다 (codex 는 본문을 쓰지 않음, AP-V6-11). "이렇게
+> 써라" 류 작성 지시면 composer SYSTEM_PROMPT/STYLE_GUIDE 쪽이지 여기가 아니다.
+>
+> **두 파일 (SSOT 분리, 항상 정합):**
+> - [prompts/market_factcheck_desk_v6.md](prompts/market_factcheck_desk_v6.md) — *전체
+>   기준서*(bible). 상세 정의·예시·배경. 길어도 됨. drift 시 **이게 정본**.
+> - [prompts/codex_critic_persona.md](prompts/codex_critic_persona.md) — *런타임 단축본*.
+>   실제 codex 프롬프트로 주입됨 (`V6_CODEX_PERSONA_PATH` 기본값). 핵심만, 토큰 경제.
+>
+> **반영 규칙:**
+> 1. 새 검수 항목/도메인 → 전체 기준서 §"반드시 검수해야 할 항목"(상세) + 단축본
+>    §"검수 포커스"(1~2줄 압축) *둘 다*.
+> 2. 심각도·금지 행동·태도 변경 → 두 파일 모두. 심각도는 항상 JSON `severity`(high/
+>    medium/low) 매핑 유지 (치명적→high / 중대→medium / 경미·개선→low).
+> 3. **출력 형식은 절대 바꾸지 않는다.** codex 출력은 `FactVerdict` JSON 고정(파서·루프
+>    계약). 페르소나의 산문형 데스크 보고서 형식을 *런타임 단축본에 넣지 말 것* (파서
+>    깨짐, AP-V6-13 인접). 단축본에 "출력은 시스템 지정 JSON 따름" 문구 유지.
+> 4. AP-V6-8(모든 지적 근거 인용 필수)·AP-V6-11(본문 작성 금지)은 *항상* 보존. 작성
+>    페르소나로 변질 금지.
+>
+> **적용·운영:**
+> - **코드 변경 불요, 봇 재시작 불요.** 파일은 런타임에 읽힌다 (`CodexCritic` 가 보고서
+>   마다 재생성되며 persona 재로딩) — 커밋·푸시 후 VM `git pull` 이면 *다음 보고서부터* 적용.
+> - 새 검수 항목이 *재발 회귀* 케이스면 `tests/regression/fixtures/fact_discipline_scenarios.yaml`
+>   fixture 도 함께 (단 error_class 동결 확장은 사용자 게이트 — AP-V6-9).
+> - 회귀 발견 패턴이면 [REFACTOR_V6_PLAN.md §5](REFACTOR_V6_PLAN.md) AP-V6-N append.
+
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **20종** (v5.3.0 부터). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 신규 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). 신규 7종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수.
@@ -171,6 +203,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 | `src/models.py:ComposedSection._drop_invalid_charts` 변경 (v5.2.0) | `src/visual/schemas.py:_TYPE_TO_GUARD` (타입별 가드 SSOT), `tests/regression/test_composed_section_guard.py` (production wiring 회귀), `docs/CHART_RENDERING_ANTIPATTERNS.md` (AP-N 추가 시 함께). 본 validator 가 chart_gate 의 production 진입점 — 디폴트 ON. 위반 차트 silent drop. |
 | `src/agents/narrative_composer.py` 변경 (v3.3.0) | [docs/CATALOGS.md §1](docs/CATALOGS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [src/visual_builder.py:build_chart_catalog](src/visual_builder.py), [src/tests/test_narrative_composer.py](src/tests/test_narrative_composer.py) |
 | `src/agents/narrative_composer.py:SYSTEM_PROMPT` 또는 `src/agents/context_analyst.py:SYSTEM_PROMPT` 의 어조·어휘 가이드 변경 (v5.2.9 신설) | [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) (본문 문체 SSOT — 한 곳에만 적기, anti-pattern #1), [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md) (회귀 시 새 WRITE-AP-N append). 두 SYSTEM_PROMPT 와 STYLE_GUIDE 의 어휘 표·ban 리스트·빈도 가이드는 *항상 정합* 해야 — drift 발견 시 STYLE_GUIDE 가 정본 |
+| codex *검수자* 페르소나 지침 변경 (사용자 지시, V6) | [prompts/codex_critic_persona.md](prompts/codex_critic_persona.md) (런타임 단축본) + [prompts/market_factcheck_desk_v6.md](prompts/market_factcheck_desk_v6.md) (전체 기준서) *동시* 갱신, 항상 정합. 출력 형식(`FactVerdict` JSON)·AP-V6-8/11 불변. 절차 SSOT: CLAUDE.md `Codex 검수자 페르소나 갱신 SOP` |
 | `src/templates/archetypes/freeform_essay.html` 변경 (v3.3.0) | [docs/REPO_MAP.md](docs/REPO_MAP.md), [docs/CATALOGS.md §3](docs/CATALOGS.md) |
 | `src/templates/static/charts.css` 차트 디자인 토큰 변경 | [CLAUDE.md `Chart System`](CLAUDE.md) |
 | `src/visual_builder.py:build_chart_payload` 차트 매핑 변경 | [CHANGELOG.md `차트 매트릭스`](CHANGELOG.md) |

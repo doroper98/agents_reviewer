@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.8
+last_synced_with: v6.0.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,174 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.0.0 — V6 사실 거버넌스 (Codex 외부 critic 루프) 정식 릴리스
+
+2026-06-01 일일 브리핑 팩트체크 회귀(자유 본문에 evidence-binding 부재 + fact-critic 루프
+부재)에서 출발한 V6 트랙의 코어가 라이브. 외부 모델 `codex`(ChatGPT 구독)가 Claude(Opus)
+본문의 사실 결함을 *교차 검수* 하는 bounded 루프를 orchestrator 에 연결.
+
+**4층 사실 거버넌스 (전부 opt-in flag, default OFF = v5.8.8 byte-equal):**
+1. **검색** — ContextAnalyst 최신성 제한 (`V6_RECENCY_BOUND`): 당일/최근 브리핑 24~48h 출처.
+2. **작성** — composer 사실규율 프롬프트 (`V6_FACT_PROMPT`): 시장 단일소스·시점 라벨·scope·
+   신규성·귀속·인과 헤지 (WRITE-AP-11/14~21 작성단계 차단).
+3. **가드** — 결정적 사전필터 5종 (`V6_FACT_GUARDS`): unsourced/scope/novelty/market/nan, 0-LLM.
+4. **루프** — Codex critic (`V6_CODEX_CRITIC`): `Opus 작성 → Codex 검수 → Opus 보완(≤1) →
+   Codex 확인패스(≤1)` (제어 0-LLM). + 차트 미학 비전 검수 (`V6_CODEX_VISUAL`) + 웹 verify
+   (`V6_CODEX_WEBVERIFY`).
+
+**불변식**: 본문은 Opus 고정(Codex 는 지시만, 본문 안 씀 — AP-V6-11) / 모든 지적 근거 인용
+강제(AP-V6-8) / 외부 실패 graceful degrade → 단일패스(AP-V6-12) / 재작성·확인패스 각 ≤1 bound
+(AP-V6-2). 생성 중 라이브 status + 잔존 정직 착지(미해결 시 신뢰도 하향, 검수 안 했으면 "건너뜀"
+표시 AP-V6-10). 검수 페르소나 SSOT `prompts/market_factcheck_desk_v6.md` + 런타임 단축본.
+
+**검증**: 회귀 97종(모킹) + VM e2e — NVIDIA 표본 위반 4→0 수렴(scope/unsourced/novelty 교정),
+실토픽(예측) 풀 파이프라인 발행 구독자 품질, codex 비전(차트 판독+미학 지적)·웹검색(정답+URL)
+실연동. 측정 SSOT `docs/V6_TEST_RESULTS.md`. 마스터 플랜 `REFACTOR_V6_PLAN.md`.
+
+**남은 것 (post-v6.0.0)**: Phase 6(자율보강 critique_log)·7(발행물 바이라인)·8(per-fact provenance).
+
+## v5.8.8 (V6 Phase V6-5) — Codex 웹 verify (bounded)
+
+GAP-2/9 — 우리 근거에 *없는* 사실까지 codex 가 자체 웹검색으로 ground truth 대조.
+오늘 e2e 캐비엇("블랙웰 300" 류 내부정합은 맞지만 외부 미검증)을 닫는 단계. 웹은 변동 →
+`V6_CODEX_WEBVERIFY` ON 만 비결정, OFF byte-equal.
+
+- `critique()` webverify-aware (config flag) — cmd 에 웹검색 인자(`codex_websearch_args`,
+  기본 `--enable web_search`) + 프롬프트에 `=== 웹 verify (bounded ≤N) ===` 블록(근거 없는
+  사실만 ≤N 검색·URL 인용 강제·URL 못 대면 지적 안 함, AP-V6-8).
+- `_build_cmd`/`_call_codex_cli` 에 `webverify` 파라미터. `codex_websearch_cap`(기본 3) bound.
+- `_coerce_verdict` — claim 의 `source_urls` 를 `cited_urls` 로 집계(웹verify URL 추적).
+- 회귀 `test_codex_webverify.py` 6종(웹검색 인자/프롬프트 블록/cap/flag OFF 불변/cited_urls 집계). V6 96 pass.
+- **남은 것(VM)**: codex `exec` 가 실제 웹검색을 하는지 + `--enable web_search` 정확한 형태 실연동.
+
+## v5.8.8 (V6 Phase V6-4) — Codex 미학 검수 (vision, 렌더 PNG)
+
+GAP-8 — 차트 데이터뿐 아니라 *미학* 까지 교차모델(codex 비전)이 검수. Phase 1 에서
+`codex exec -i` 이미지 입력 지원 확인됨. 현재 발행 후 log-only(측정) — 차트 자동수정은
+안 함(V5 deterministic_gate / chart_critic 와 병행). flag `V6_CODEX_VISUAL` default OFF.
+
+- **`CodexCritic.critique_visual(report, image_paths)`** — 차트 PNG 를 codex 비전(`-i`)에
+  넣어 미학·데이터 정합 검수. `_VISUAL_INSTRUCTIONS`(가독성/잘림/패턴충돌/축누락/데이터
+  불일치/빈프레임) + chart data digest(숫자 대조). FactVerdict 계약 재사용(model_label
+  "OpenAI Codex (vision)").
+- **`critique_report_visuals(report, html_path)`** — `src/visual/capture.py:capture_proofs`
+  로 차트 PNG 캡처 → critique_visual. Playwright/codex 비전 미가용 시 graceful skip.
+- `_call_codex_cli` / `_build_cmd` 에 `image_paths`(→ `-i`) 지원.
+- orchestrator 발행 후 flag-gated 훅(log-only): 미학 지적을 `V6 미학 지적:` 로 로그.
+- **budget telemetry V6-aware** — critic 루프의 Opus 보완 1콜을 cap 에 반영(헛경고 제거).
+- 회귀 `test_codex_visual.py` 6종(이미지 -i 전달/verdict 파싱/flag·이미지 degrade). V6 91 pass.
+- **남은 것(VM)**: codex 비전이 실제 차트 PNG 를 검수하는지 실연동 1회 + 자동수정 통합 여부 측정.
+
+## v5.8.8 (V6) — Codex 검수 루프 라이브 status (텔레그램/CLI 진행 표시)
+
+루프가 logger 만 찍고 `status_callback` 미연결이라 사용자가 검수 단계를 못 보던 것
+보강. 검수+보완이 ~35s+ 지연을 더하는데 표시가 없으면 "왜 멈췄지" → 라이브 진행 +
+신뢰 신호(생성 중 버전). Phase 7 바이라인(발행 후 도장)의 *생성 중* 대응물.
+
+- `CriticLoop.run(..., on_progress=콜백)` — 단계별 status emit. orchestrator 가
+  `self._notify` 래퍼를 주입(텔레그램/CLI 양쪽).
+- 흐름: "🔎 외부 팩트체크 데스크(Codex) 교차검증 중…" → 위반 0 "✅ 사실 검수 통과" /
+  위반 N "✍️ 편집장(Opus) 지적 N건 반영 중…" → "✅ 사실 검수 완료(잔존/미해결 정직 표시)".
+- **degrade 시 "건너뜀" 으로 정직 표시**(검수 안 했는데 "통과" 거짓말 안 함, AP-V6-10).
+- flag OFF 면 루프 미동작 → status 0 (byte-equal). emit 실패가 검수를 막지 않음.
+- 회귀 `test_codex_loop.py` progress 4종(clean/violation/skipped 정직/None 안전). V6 83 pass.
+
+## v5.8.8 (V6) — 루프 완결성 보강 (예방·가시성·정직한 착지)
+
+e2e 에서 보완이 새 프레이밍("PC 칩 복귀")을 끌어들여 residual 이 생긴 것을 발견 →
+완결성을 "0 보장"이 아니라 *예방+가시성+정직 착지+bounded* 로 확보. (사용자 방향 (a).)
+
+- **① 예방**: `REVISE_SYSTEM_PROMPT` 규칙 7 — 고치면서 근거 없는 *새* 주장·프레이밍
+  ('복귀/최초/사상 최대/직격탄/사실상') 도입 금지. 한 결함 고치다 새 결함 심는 것 차단.
+- **② 가시성**: `CriticLoopResult.residual_summary`(잔존 claim 사람-읽기 요약) +
+  `unresolved_count` + orchestrator 로그 노출. 잔존이 *뭔지* 보임(기존 카운트만).
+- **③ 정직한 착지**: drop 으로 해소 안 된 잔존이 남으면 "깨끗한 척" 발행 안 하고
+  `confidence_score` 정직 하향(−0.1/건, 0.3 floor). 비-unsourced 잔존은 prose surgery
+  대신 신호로만(AP-V6-10 사상). bounded(재작성≤1) 유지 — 무한 루프 금지(AP-V6-2).
+- 회귀 `test_codex_loop.py` 보강(미해결 카운트/신뢰도 하향/잔존 요약/예방 프롬프트). 73 pass.
+
+## v5.8.8 (V6 Phase V6-3) — Bounded Codex critic 루프 (orchestrator 연결)
+
+V6 의 심장 — `Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)` 루프를
+orchestrator 에 연결. `V6_CODEX_CRITIC` OFF 면 블록 통째 스킵 = v5.8.8 byte-equal.
+플랜: REFACTOR_V6_PLAN.md §3 Phase V6-3.
+
+- **`src/factcheck/critic_loop.py`** — `CriticLoop`(루프 제어 0-LLM, 위반 카운트로 결정),
+  `CriticLoopResult`, `apply_landing`(잔존 `unsourced_number` 만 결정적 drop),
+  `NarrativeComposerReviser` 어댑터. 재작성 ≤1·확인패스 ≤1·결정적 종료. degrade/보완
+  실패 시 원본 보존 (AP-V6-12).
+- **`NarrativeComposer.revise_for_facts`** — Codex `fix_instruction` 을 받아 *지적된
+  부분만* Opus 가 재작성 (AP-V6-1/11, 본문은 Opus 고정). `REVISE_SYSTEM_PROMPT` +
+  텍스트-only 출력 → 코드가 원본에 merge (차트/이미지/신호 보존). 파싱·호출 실패 시 원본
+  반환. `_call_cli`/`_call_api` 에 `system_prompt` override 추가 (기본 None=compose 경로 byte-equal).
+- **orchestrator Phase 2.5** — composer + ensure-hooks 후, `_sanitize_symbols` 전에
+  flag-gated 삽입. 사전필터(Phase 2) 신호를 Codex pre_flags 로 합류 (단 재작성 트리거는
+  Codex 위반에만 — 가드 FP 가 본문 안 망침).
+- **회귀 T-3/T-4** (`test_codex_loop.py`, 9종) — flag OFF passthrough(critic 0콜)/degrade/
+  clean 무보완/위반→보완→확인 수렴/unsourced 착지 drop/bound(재작성·확인 각 1회 강제)/
+  보완실패 원본보존/사전필터 합류. 전체 66 pass.
+- **VM e2e 수렴 (완료, 2026-06-03)**: 실제 codex(gpt-5.5)+Opus 루프가 NVIDIA 표본 4위반
+  (scope/unsourced/novelty)을 보완 1회·확인패스 1회로 **위반 0 수렴**. 130만→"랙 전체",
+  "27년 만" 제거, GR00T "오늘 공개"→"3월 GTC, 신규 아님" 정확 교정. Phase V6-3 DoD 충족.
+
+## v5.8.8 (V6 Phase V6-2) — 결정적 사실 사전필터 가드 + 프롬프트 하드닝 + 검수자 페르소나
+
+codex 호출(=ChatGPT 한도) 전에 *명백한* 사실 위반을 0-LLM 으로 거르는 결정적 가드.
+전부 flag OFF default + orchestrator 미연결 = byte-equal. 플랜: REFACTOR_V6_PLAN.md §3 Phase V6-2.
+
+- **`src/factcheck/deterministic_guards.py`** — 5종 가드 (log-only, drop 안 함):
+  `UnsourcedNumberGuard`(근거에 없는 정량 주장) / `ScopeBarewordGuard`(근거가
+  "X 단위 아님" 경고한 X 에 대형 수치 귀속) / `NoveltyDeltaGuard`(출처일↔발행일 차 +
+  신규성·상대시점 단어) / `MarketDataSourceGuard`(시장 수치 ±tolerance 불일치) /
+  `NaNExposureGuard`(본문·차트 nan 노출). `run_fact_guards()` 집계 → `GuardFlag` 목록,
+  Phase 3 에서 `CodexCritic.critique(pre_flags=...)` 로 합류.
+- **검수자 페르소나 훅 + 실제 페르소나** — `CodexCritic(config, persona=...)` +
+  `V6_CODEX_PERSONA_PATH`(기본 `prompts/codex_critic_persona.md`). GPT 협업 산출물
+  "시장 브리핑 팩트체크 데스크" 채택: 전체 기준서 `prompts/market_factcheck_desk_v6.md` +
+  런타임 단축본 `prompts/codex_critic_persona.md`(10개 검수 포커스·회의적 기본·심각도
+  매핑·금지사항). **출력 형식만 우리 `FactVerdict` JSON 계약으로 오버라이드**(페르소나의
+  산문형 데스크 보고서 형식은 파서와 충돌 → 미채택). *검증 기준*이지 작성 페르소나 아님
+  (codex 는 본문 안 씀, AP-V6-11). 파일 없으면 graceful 빈값 = byte-equal.
+- **flag**: `V6_FACT_GUARDS`(default OFF). `.env.example` 갱신.
+- **회귀 T-1** (`test_fact_discipline.py`) — 결정적 타깃 5종 100% 검출 + good_prose 0-FP +
+  NaN/clean/pre_flag seam. 의미 판단 케이스(threshold/event/attribution/causal/metric/
+  timepoint 앵커/list/FX sub-tolerance)는 Codex(Phase 3)로 명시 라우팅.
+- **프롬프트 하드닝 (완료)**: composer `_FACT_DISCIPLINE_BLOCK`(`V6_FACT_PROMPT`) —
+  SYSTEM_PROMPT 에 직교 추가, 시장 단일소스·시점 라벨·scope·신규성·귀속·인과 헤지 등
+  WRITE-AP-11/14~21 를 작성 단계에서 선제 차단. `_compose_system_prompt()` 로 flag-gating
+  (OFF=byte-equal). ContextAnalyst `_RECENCY_BLOCK`(`V6_RECENCY_BOUND`) — 당일/최근
+  브리핑 최근 24~48h 출처 우선 + 상대 시점 발행일 환산(`stale_sourcing` 차단),
+  `_build_system_prompt()` flag-gating. 회귀 `test_fact_prompt.py` 6종(OFF byte-equal +
+  ON 주입). **Phase V6-2 완료.**
+
+## v5.8.8 (V6 Phase V6-1) — Codex CLI 통합 spike + FactVerdict 계약
+
+V6 트랙(사실 grounding + 외부 Codex critic 루프)의 Tier 0 진입점. 전 V6 루프가
+의존하는 *외부 codex CLI 경로* 를 먼저 증명하는 spike. 모든 신규 행동은 flag OFF
+default 라 v5.8.8 byte-equal — orchestrator 에 연결하지 않았다(계약·degrade 검증만).
+VERSION 미증가(릴리스 아님). 마스터 플랜: [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) §3 Phase V6-1.
+
+- **`src/models.py:FactVerdict` / `CritiqueClaim`** — Codex verdict 계약. per-claim
+  지적(location/error_class/quote/evidence_conflict/source_urls/fix_instruction/
+  severity). 근거(evidence_conflict) 없는 지적은 모델 validation 이 거부 (AP-V6-8).
+  보완은 Opus 가 수행 — Codex 는 본문을 쓰지 않는다 (AP-V6-1/11).
+- **`src/agents/codex_critic.py:CodexCritic`** — codex CLI 를 headless 호출(프롬프트
+  stdin → verdict JSON stdout). JSON 파싱 + 코드펜스 제거 + 절단복구
+  (`_repair_truncated_json`, composer 대응물) + ungrounded claim 드롭. 외부 실패는
+  **graceful degrade** (`FactVerdict.skip`): flag_off / codex_not_found / auth_failed /
+  rate_limited / timeout / codex_error / parse_failed → 단일패스 발행 (AP-V6-12).
+  호출 텔레메트리 JSONL 적립 (`logs/codex_calls.jsonl`, T-C3).
+- **`src/config.py`** — `V6_CODEX_CRITIC`(마스터, default OFF) + `V6_CODEX_BIN` /
+  `_SUBCOMMAND` / `_EXTRA_ARGS` / `_MODEL` / `_TIMEOUT_S` (VM spike 가 실제 호출 형태 확정).
+  `.env.example` 갱신.
+- **회귀 39종** — `tests/regression/test_codex_contract.py`(T-V1, 17) +
+  `test_codex_critic.py`(T-C1/C2/C3, 22). codex 는 *모킹*(CI 결정적), 실연동은 VM 수동 1회.
+- **문서**: DATA_MODELS §3.15 / CATALOGS §1 / REPO_MAP / 신규 [docs/V6_TEST_RESULTS.md](docs/V6_TEST_RESULTS.md)(append-only 측정 SSOT) 갱신.
+- **VM 실연동 완료** (2026-06-03): codex-cli 0.136.0(gpt-5.5) e2e 검수가 NVIDIA 표본의
+  scope_misattribution(130만=랙) + unsourced_number(27년)를 정확 검출(35.1s). stdin 입력·
+  `-o` 클린 캡처(배너/echo/푸터 제거)·`-i` 비전 입력 지원 확정 → Phase V6-4 가능.
+  DoD 전부 충족. 다음 = Phase 2(사전필터)·3(루프).
 
 ## v5.8.8 — fact-grid 가로 오버플로/비대칭 폭 fix
 

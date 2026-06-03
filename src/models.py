@@ -751,6 +751,107 @@ class ComposedReport(BaseModel):
     hero_image: dict | None = None
 
 
+# ======================================================================
+# V6 Phase V6-1 — Codex 외부 critic verdict 계약 (REFACTOR_V6_PLAN.md §3)
+# ======================================================================
+
+
+class CritiqueClaim(BaseModel):
+    """Codex(외부 GPT) critic 의 per-claim 구조화 지적 (REQ-V6-8).
+
+    codex 가 본문/차트에서 발견한 사실 결함 1건. 본문 보완은 Codex 가 아니라
+    Opus 가 수행하므로 (AP-V6-1/11) 이 모델은 *지시서* 일 뿐 본문 텍스트를 담지
+    않는다. AP-V6-8 — 근거(``evidence_conflict``) 인용 없는 지적은 거부: false-
+    positive 가 멀쩡한 본문을 훼손하는 것을 차단한다. 필수 필드 누락 시 모델
+    validation 이 거부 (T-V1 계약).
+    """
+
+    location: str = Field(min_length=1)
+    """결함 위치 — 섹션 heading / 'headline' / 'deck' / 차트 title 등 (Opus 가
+    어느 부분을 고칠지 특정)."""
+
+    error_class: str = Field(min_length=1)
+    """fact_discipline_scenarios.yaml 의 error_class 와 정합되는 분류. codex 가
+    약간 다른 라벨을 줄 수 있어 Literal enum 강제는 하지 않는다 (루프가 매핑) —
+    단 비어있으면 거부."""
+
+    quote: str = Field(min_length=1)
+    """문제가 된 본문/차트의 실제 인용구."""
+
+    evidence_conflict: str = Field(min_length=1)
+    """이 지적이 *어느 근거와 충돌* 하는지 (AP-V6-8 — 근거 없는 지적 금지).
+    비어있으면 거부 — 행동 대상이 되지 못한다."""
+
+    source_urls: list[str] = Field(default_factory=list)
+    """지적의 근거가 된 출처 URL(들). Codex 웹verify(Phase 5) 시 채워짐. 선택."""
+
+    fix_instruction: str = Field(min_length=1)
+    """Opus 가 수행할 보완 지시 (Codex 는 본문을 직접 쓰지 않음, AP-V6-11)."""
+
+    severity: Literal["high", "medium", "low"]
+    """위반 강도. 루프 제어(0-LLM)는 위반 *카운트* 로 하되, severity 는 헤지/drop
+    착지 판정 보조."""
+
+
+class FactVerdict(BaseModel):
+    """Codex 외부 critic 의 구조화 verdict (REQ-V6-6/7/8, Phase V6-1).
+
+    codex CLI 가 headless 로 emit. graceful degrade 시 ``skipped=True``
+    (codex 부재/인증실패/한도초과/timeout/파싱실패) → 호출측이 루프를 스킵 →
+    v5.8.8 단일패스 발행 (AP-V6-12). 어떤 경우에도 보고서 발행을 막지 않는다.
+    """
+
+    verdict_status: Literal["clean", "violations", "skipped"] = "clean"
+    """clean=위반 0, violations=보완 필요, skipped=외부 degrade(검수 미수행)."""
+
+    claims: list[CritiqueClaim] = Field(default_factory=list)
+    cited_urls: list[str] = Field(default_factory=list)
+    """Codex 가 검수에 사용한 전체 URL (Phase 5 웹verify). 바이라인/추적용."""
+
+    model_label: str = ""
+    """바이라인용 외부 모델 표시명 (예: 'OpenAI Codex'). 내부 모델 ID 금지 — Phase 7."""
+
+    skipped: bool = False
+    skip_reason: str = ""
+    """degrade 진단: flag_off / codex_not_found / auth_failed / rate_limited /
+    timeout / codex_error / parse_failed. 비어있으면 정상 수행."""
+
+    latency_ms: int = 0
+    """T-C3 측정 hook — codex 호출 왕복 시간."""
+
+    truncation_repaired: bool = False
+    """T-C1 — codex stdout 이 절단되어 _repair_truncated_json 으로 복구됐는지."""
+
+    @model_validator(mode="after")
+    def _coherent_status(self) -> "FactVerdict":
+        # degrade 면 status 를 skipped 로 강제 (거짓 clean 방지 — 바이라인 정합).
+        if self.skipped:
+            self.verdict_status = "skipped"
+        elif self.verdict_status != "skipped":
+            # codex 가 status 를 빠뜨리거나 claims 와 어긋나게 줘도 claims 기준 정규화.
+            self.verdict_status = "violations" if self.claims else "clean"
+        return self
+
+    @property
+    def violation_count(self) -> int:
+        return len(self.claims)
+
+    @property
+    def is_actionable(self) -> bool:
+        """루프가 Opus 보완을 트리거해야 하는가 (제어는 0-LLM, AP-V6-5)."""
+        return (not self.skipped) and bool(self.claims)
+
+    @classmethod
+    def skip(cls, reason: str, *, latency_ms: int = 0) -> "FactVerdict":
+        """graceful degrade verdict — 루프 스킵 → 단일패스 (AP-V6-12)."""
+        return cls(
+            verdict_status="skipped",
+            skipped=True,
+            skip_reason=reason,
+            latency_ms=latency_ms,
+        )
+
+
 class ParentContext(BaseModel):
     """후속 분석을 트리거한 부모 보고서의 맥락 (v5.1.1).
 
