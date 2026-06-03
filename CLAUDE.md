@@ -57,7 +57,7 @@ last_review: 2026-05-05
 
 > **V5 리팩토링 진행 중.** [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 가 v5.0.0 의 4-Tier 17-Phase 마스터 플랜 SSOT. 현재는 Phase 0 (Baseline + SSOT Repair) 에 진입한 상태이고, v4.5.7 baseline 으로 코드·문서 정합성을 복원하는 작업이 진행된다. 코드는 v4.5.7 그대로 유지된다.
 
-> **V6 트랙 (병행) — "workflow → agent".** [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) 가 v6.0.0 의 *사실 grounding + bounded Codex critic loop* 마스터 플랜 SSOT (v2 — Codex 외부 critic 중심 개정, 2026-06-03). 2026-06-01 NVIDIA 보고서 팩트체크 회귀(5종)에서 출발 — 자유 본문(`ComposedSection.prose`)에 evidence-binding 미적용 + fact-critic 루프 부재가 근본 결함. 핵심 결정: 빠진 critic 을 **외부 모델 `codex` CLI(ChatGPT 구독)** 로 내재화 — 교차 모델(GPT)이 Claude(Opus) confabulation 을 검수. 확정 루프 **`Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)`** (재작성 bounded, 제어=0 LLM 위반카운트 AP-V6-5). Codex 는 사실/문구 + 차트 데이터 + 미학(렌더 PNG) + 자체 웹verify 까지 검수하나 **본문은 직접 쓰지 않음**(보완은 Opus, AP-V6-1/11). 착지=헤지 기본 + `unsourced_number` 만 drop. 자율 보강은 **적립↔적용 분리**(critique_log 자동적립 → 재발 시 log-only 소프트가드 자동 → 정식 프롬프트/가드 편입만 게이트, AP-V6-9). 바이라인("Opus 작성/Codex 검수")은 검수 실제 수행 시에만(AP-V6-10). 외부 의존은 graceful degrade(AP-V6-12). 모든 `V6_*` flag default OFF = v5.8.8 byte-equal (AP-V6-3). Phase V6-0(fixture) 완료, Phase 1(codex spike) 이 최우선 진입점. V5 와 flag 네임스페이스 분리(`V5_*`/`V6_*`), composer SYSTEM_PROMPT 는 양 트랙이 직교하게 추가. 새 사실오류 회귀는 `tests/regression/fixtures/fact_discipline_scenarios.yaml` 에 append (error_class 5종 동결).
+> **V6 트랙 (병행) — "workflow → agent".** [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) 가 v6.0.0 의 *사실 grounding + bounded Codex critic loop* 마스터 플랜 SSOT (v2 — Codex 외부 critic 중심 개정, 2026-06-03). 2026-06-01 NVIDIA 보고서 팩트체크 회귀(5종)에서 출발 — 자유 본문(`ComposedSection.prose`)에 evidence-binding 미적용 + fact-critic 루프 부재가 근본 결함. 핵심 결정: 빠진 critic 을 **외부 모델 `codex` CLI(ChatGPT 구독)** 로 내재화 — 교차 모델(GPT)이 Claude(Opus) confabulation 을 검수. 확정 루프 **`Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)`** (재작성 bounded, 제어=0 LLM 위반카운트 AP-V6-5). Codex 는 사실/문구 + 차트 데이터 + 미학(렌더 PNG) + 자체 웹verify 까지 검수하나 **본문은 직접 쓰지 않음**(보완은 Opus, AP-V6-1/11). 착지=헤지 기본 + `unsourced_number` 만 drop. 자율 보강은 **적립↔적용 분리**(critique_log 자동적립 → 재발 시 log-only 소프트가드 자동 → 정식 프롬프트/가드 편입만 게이트, AP-V6-9). 바이라인("Opus 작성/Codex 검수")은 검수 실제 수행 시에만(AP-V6-10). 외부 의존은 graceful degrade(AP-V6-12). 모든 `V6_*` flag default OFF = v5.8.8 byte-equal (AP-V6-3). Phase V6-0(fixture) 완료, Phase 1(codex spike) 이 최우선 진입점. V5 와 flag 네임스페이스 분리(`V5_*`/`V6_*`), composer SYSTEM_PROMPT 는 양 트랙이 직교하게 추가. 새 사실오류 회귀는 `tests/regression/fixtures/fact_discipline_scenarios.yaml` 에 append (error_class 1차 5종 + 2026-06-03 일일 브리핑 2차 확장 6종 = market_data_mismatch[최우선]/stale_sourcing/event_conflation/attribution_as_fact/causal_overreach/metric_label_ambiguity, 신규 class 는 사용자 게이트 승격으로만 추가).
 
 ## Tech Stack (v4.5.7)
 - Language: Python 3.11+
@@ -214,7 +214,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **26개 패턴 누적**:
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **29개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단):
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -237,7 +237,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 14개 패턴 누적:
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 21개 패턴 누적 (v5.8.8 — WRITE-AP-15 시장수치 자유서술[최우선] / 16 주장→사실 / 17 인과 과장 / 18 행사 혼동 / 19 일방서사 / 20 제목·본문 무게 / 21 신뢰도% 노출, 2026-06-03 일일 브리핑 회귀):
 
 > **★ 최우선 가치 — 일반 독자 우선 (v5.5.5).** 보고서는 *비전문가* 가 읽는다. ①
 > 전문 용어·영어 표현·은어는 평이한 우리말로 바꾼다. ② 못 바꾸는 핵심 용어만 본문에

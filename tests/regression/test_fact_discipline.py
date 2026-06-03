@@ -23,6 +23,7 @@ FIXTURE_PATH = (
 
 # REFACTOR_V6_PLAN.md §3 Phase V6-0 에서 동결한 5종. 추가는 Plan 갱신 + 본 set
 # 갱신 *동시에* 만 (AP-V6 신규 케이스 등록 절차).
+# 1차 동결 5종 (REFACTOR_V6_PLAN.md §3 Phase V6-0 — NVIDIA 2026-06-01 표본).
 FROZEN_ERROR_CLASSES = {
     "unsourced_number",
     "scope_misattribution",
@@ -30,6 +31,20 @@ FROZEN_ERROR_CLASSES = {
     "timepoint_overclaim",
     "list_truncation",
 }
+
+# 2차 확장 6종 (2026-06-03 일일 브리핑 표본, 사용자 게이트 승격 — AP-V6-9).
+# REFACTOR_V6_PLAN.md §0.2-b. 신규 class 는 Plan §0.2-b + 본 set 갱신 *동시에* 만.
+EXPANDED_ERROR_CLASSES = {
+    "market_data_mismatch",
+    "stale_sourcing",
+    "event_conflation",
+    "attribution_as_fact",
+    "causal_overreach",
+    "metric_label_ambiguity",
+}
+
+# 임의 확장 차단용 전체 enum (가드 대상 = 알려진 class 전체).
+ALL_ERROR_CLASSES = FROZEN_ERROR_CLASSES | EXPANDED_ERROR_CLASSES
 
 _REQUIRED_KEYS = {
     "id",
@@ -62,18 +77,22 @@ def test_every_scenario_has_required_schema() -> None:
         assert not ev_missing, f"{sc['id']} evidence 누락: {ev_missing}"
 
 
-def test_error_class_within_frozen_enum() -> None:
+def test_error_class_within_known_enum() -> None:
     for sc in _load():
         assert (
-            sc["error_class"] in FROZEN_ERROR_CLASSES
-        ), f"{sc['id']} 의 error_class '{sc['error_class']}' 가 동결 enum 밖"
+            sc["error_class"] in ALL_ERROR_CLASSES
+        ), f"{sc['id']} 의 error_class '{sc['error_class']}' 가 알려진 enum 밖 (게이트 승격 필요)"
 
 
-def test_all_five_error_classes_covered() -> None:
+def test_all_known_error_classes_covered() -> None:
     present = {sc["error_class"] for sc in _load()}
-    assert present == FROZEN_ERROR_CLASSES, (
-        "5종 error_class 가 모두 fixture 에 1건 이상 있어야 한다. "
+    assert FROZEN_ERROR_CLASSES <= present, (
+        "1차 동결 5종이 모두 fixture 에 1건 이상 있어야 한다. "
         f"누락: {FROZEN_ERROR_CLASSES - present}"
+    )
+    assert present == ALL_ERROR_CLASSES, (
+        "알려진 error_class 가 모두 fixture 에 1건 이상 있어야 한다. "
+        f"누락: {ALL_ERROR_CLASSES - present}"
     )
 
 

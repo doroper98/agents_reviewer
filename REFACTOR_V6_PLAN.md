@@ -89,6 +89,34 @@ last_review: 2026-06-03
 > (Phase 3)이며, Phase 2 는 그 루프가 호출 전 명백한 것을 거를 *0-LLM 사전필터* 를,
 > Phase 8 은 critic 과 바이라인이 쓸 *provenance 재료* 를 깐다.
 
+### 0.2-b 2차 표본 — 2026-06-03 일일 브리핑 회귀 (외부 Codex 데스크 검수)
+
+NVIDIA(6/1)에 이어, 6/3 06:17 자동 브리핑(`analysis_20260603_061712_3e14fb009f`)이
+외부 Codex 데스크 검수에서 받은 결함을 2차 표본으로 박았다. 1차(NVIDIA 5종)가
+*사실 정밀도* 문제였다면, 2차는 **시장 데이터 정합성 + 오래된 뉴스 재탕**이 핵심 —
+*상품의 존재 이유*(오늘의 시장 브리핑)를 직접 무너뜨리는 더 치명적 범주다.
+
+| 신규 error_class / AP | 결함 | 증거 | 처리 |
+|----------------------|------|------|------|
+| `market_data_mismatch` ★최우선 | 코스피 8,650.93/-1.6% (실제 8,801.49/+0.15%, 부호 반대) · 원/달러 1,511.95 (실제 1,516.4) · 소스 혼합 | 연합뉴스 종가 | fixture + WRITE-AP-15 + `MarketDataSourceGuard` |
+| `stale_sourcing` ★최우선 | Spider's Web(2025-06-01)을 "이틀 전"으로 — 1년 묵은 뉴스를 어젯밤으로 | 출처 작전일 | fixture + ContextAnalyst 최신성 제한 |
+| `event_conflation` | 컴퓨텍스 ↔ GTC Taipei 혼동 | 공식 일정 | fixture + WRITE-AP-18 |
+| `attribution_as_fact` | 러 국방부 '보복' 주장을 사실로 단정 | Reuters | fixture + WRITE-AP-16 |
+| `causal_overreach` | 규제→한국 메모리 '직격탄'(중간단계 생략) | Reuters | fixture + WRITE-AP-17 |
+| `metric_label_ambiguity` | '순이익률 71%' (매출총이익률 74.9% 혼동) | NVIDIA IR | fixture |
+| CHART-AP-27 | 폭포수 부호 미인코딩 (100+22+12+8+9=151≠117) | 본 차트 | 결정적 `WaterfallCoherenceGuard` |
+| CHART-AP-28 | 빈 차트 프레임 (small_multiples 데이터 0) | 본 차트 | 결정적 `EmptyChartGuard` |
+| CHART-AP-29 | "코스피 nan%" 노출 | 본 카드 | 결정적 `NaNExposureGuard` |
+| WRITE-AP-19~21 | 일방 서사 / 제목·본문 무게 불일치 / 신뢰도% 독자 노출 | 데스크 검수 | 서술 가드 |
+
+> **우선순위 상향(중요).** 이 표본이 드러낸 두 가지를 V6 최상단으로 끌어올린다 —
+> ① **시장 데이터 단일 소스·시점 라벨 강제**(WRITE-AP-15, `MarketDataSourceGuard`):
+> 시장 수치는 `market_fetcher` time_series 에서만, 결측이면 *생략*(자유서술 confabulation
+> 금지). ② **일일 브리핑 검색 최신성 제한**: ContextAnalyst 웹검색을 최근 24~48h 로
+> bound — `stale_sourcing` 의 근본 원인. 이 둘은 Codex critic(Phase 3) 이전에, Phase 2
+> 결정적 가드 + ContextAnalyst 하드닝으로 *먼저* 잡아야 하는 0-LLM 영역이다.
+> CHART-AP-27/28/29 도 동일 — Codex 없이 결정적 가드로 막힌다.
+
 ### 0.3 구현 우선순위 — 3-Tier (Codex 중심 재배치)
 
 | Tier | 내용 | 포함 Phase | 정당화 |
@@ -190,7 +218,12 @@ Phase 1 codex spike 부터.**
 - **프롬프트**: `narrative_composer.py:SYSTEM_PROMPT` 에 `=== 사실 규율 (V6) ===` 블록
   (`.replace()`, Rule #7) — scope 명시 / 출처없는 특정수치 금지 / 신규성 구분 / 시장
   시점 라벨 / 목록 "대표 몇 + 등". V5 어조 지시와 직교.
-- **anti-pattern**: WRITE-AP-15(scope·출처없는수치), WRITE-AP-16(기발표↔오늘 혼동) 신설.
+- **anti-pattern 카탈로그**: 관측 회귀를 WRITE-AP-N 으로 append (이미 등재: WRITE-AP-15
+  시장수치 자유서술 / 16 주장→사실 / 17 인과 과장 / 18 행사 혼동 / 19 일방서사 / 20
+  제목·본문 무게 / 21 신뢰도% 노출, CHART-AP-27~29). 신규 발견 시 순차 추가.
+- **시장 데이터 가드(최우선)**: `MarketDataSourceGuard` — 본문 시장 수치는 time_series
+  단일 소스 ±tolerance 검증, 결측 시 생략. `NaNExposureGuard`(CHART-AP-29).
+- **ContextAnalyst 최신성 제한**: 일일 브리핑 웹검색 최근 24~48h bound (`stale_sourcing` 차단).
 - **flag**: `V6_FACT_GUARDS`. 초기 **log-only**(WARNING, drop 안 함) → FP 측정 후 enforce 승격.
 - **DoD**: fixture 4종(unsourced/scope/timepoint/novelty) ≥90% 검출, FP < 임계.
   프롬프트 변경 후 golden_prompts 회귀 통과.
