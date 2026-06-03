@@ -55,9 +55,10 @@ last_review: 2026-06-03
 2. ☑ `codex exec` 호출 형태 확정 — **완료**. `exec` 가 stdin 프롬프트 수신, `-o <FILE>` 로
    최종 메시지만 수신. `.env` 기본값 = `V6_CODEX_SUBCOMMAND=exec` +
    `V6_CODEX_EXTRA_ARGS="--skip-git-repo-check --sandbox read-only"`.
-3. ☐ Codex 호출 rate-limit 이 일일브리핑 + 온디맨드 빈도를 감당하는지 (한도·지연 측정) — **대기**.
+3. ◐ Codex 호출 rate-limit/지연 — **단건 측정 완료** (e2e 검수 1회 = 35.1s, gpt-5.5).
+   볼륨 한도(일일브리핑+온디맨드 빈도)는 Phase 3 루프 가동 후 누적 측정.
 4. ☑ 비전(이미지) 입력 지원 — **YES** (`codex exec -i, --image <FILE>...`). Phase V6-4 가능.
-5. ☐ 실제 봇 e2e 1회 수동 호출 로그 (`logs/codex_calls.jsonl` 1줄 + verdict) — **대기**(다음 단계).
+5. ☑ 실제 봇 e2e 1회 — **완료 (2026-06-03)**. 아래 §봇 e2e 참조.
 
 #### VM 실연동 로그 (2026-06-03, analysisbot)
 
@@ -74,8 +75,29 @@ last_review: 2026-06-03
   **대응**: `_call_codex_cli` 가 `-o <tmpfile>` 로 *최종 메시지만* 수신하도록 코드 보강
   (배너/echo/푸터 제거). 파일 비면 raw stdout 폴백 + 절단복구.
 - **bubblewrap 미설치 경고**: codex 가 번들 bubblewrap 으로 폴백 — 동작엔 무해
-  (읽기전용 검수라 샌드박스 거의 미사용). 선택적으로 `sudo apt-get install -y bubblewrap`
-  로 경고 제거 가능.
+  (읽기전용 검수라 샌드박스 거의 미사용). `sudo apt-get install -y bubblewrap` 로 제거함.
+
+#### 봇 e2e 실연동 (2026-06-03, /tmp/v6spike 워크트리, `V6_CODEX_CRITIC=1`)
+
+`CodexCritic.critique()` 에 NVIDIA 회귀 표본(본문에 scope/unsourced 오류 + evidence 에
+정답 provenance) 투입. **실제 codex(gpt-5.5) 검수 결과:**
+
+```
+status=violations  violations=3  skipped=False  reason=  latency_ms=35101
+ - unsourced_number   | headline  | '27년 만' 삭제/근거범위 수정
+ - scope_misattribution | 발표 요지 | 130만 부품 → 보드 아니라 NVL72 랙 전체로 수정
+ - unsourced_number   | 발표 요지 | '27년 만'·'PC 칩' 단정을 입증 가능 표현으로
+```
+
+- **핵심 검증**: 교차모델(GPT)이 Claude 본문의 scope_misattribution + unsourced_number 를
+  *근거 대조*로 정확히 검출 (fact_discipline fixture 의 scope_misattribution_01 /
+  unsourced_number_01 과 동형). V6 핵심 가설(외부 critic 으로 confabulation 검수) 실증.
+- **파싱**: `-o` 클린 캡처로 parse_failed 0. 3 claims 모두 계약 통과 = codex 가
+  evidence_conflict/quote/severity 까지 채움 (AP-V6-8 충족, ungrounded drop 0).
+- **지연**: 35.1s (단건, 첫 호출 워밍업 포함). 일일브리핑(비동기)엔 무영향, 온디맨드
+  보고서엔 루프당 codex 2회 ≈ +70s 예상 → Phase 3 에서 측정·튜닝.
+
+**→ Phase V6-1 DoD 전부 충족** (모킹 39종 + 실제 codex 1회 + flag OFF byte-equal).
 
 **VM 수동 호출 (복사용) — codex 설치·인증 후 repo 루트 venv 활성 상태에서:**
 
@@ -110,6 +132,6 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 |------|----|--------|
 | fact-error rate (fixture 기준 발행본 잔존위반/보고서) | — (Phase 3 후) | — |
 | 루프 평균 횟수 (재작성/확인패스) | — | — |
-| Codex 호출수 · 한도소모 · 평균 지연 | — (VM 실연동 후) | — |
+| Codex 호출수 · 한도소모 · 평균 지연 | 단건 검수 35.1s (gpt-5.5, e2e 1회) — 볼륨 한도 Phase 3 후 | 2026-06-03 |
 | Codex FP율 (근거 없는 지적 비율) | — | — |
 | 소프트가드 적중률 (Phase 6) | — | — |

@@ -43,8 +43,10 @@ VERSION 미증가(릴리스 아님). 마스터 플랜: [REFACTOR_V6_PLAN.md](REF
 - **회귀 39종** — `tests/regression/test_codex_contract.py`(T-V1, 17) +
   `test_codex_critic.py`(T-C1/C2/C3, 22). codex 는 *모킹*(CI 결정적), 실연동은 VM 수동 1회.
 - **문서**: DATA_MODELS §3.15 / CATALOGS §1 / REPO_MAP / 신규 [docs/V6_TEST_RESULTS.md](docs/V6_TEST_RESULTS.md)(append-only 측정 SSOT) 갱신.
-- **남은 것**: VM 실연동 검증 4항목(설치/인증/한도/비전) + codex 1회 수동 호출 로그 →
-  V6_TEST_RESULTS §1 추가 기록. 그 후 Phase 2(사전필터)·3(루프) 진입.
+- **VM 실연동 완료** (2026-06-03): codex-cli 0.136.0(gpt-5.5) e2e 검수가 NVIDIA 표본의
+  scope_misattribution(130만=랙) + unsourced_number(27년)를 정확 검출(35.1s). stdin 입력·
+  `-o` 클린 캡처(배너/echo/푸터 제거)·`-i` 비전 입력 지원 확정 → Phase V6-4 가능.
+  DoD 전부 충족. 다음 = Phase 2(사전필터)·3(루프).
 
 ## v5.8.8 — fact-grid 가로 오버플로/비대칭 폭 fix
 
