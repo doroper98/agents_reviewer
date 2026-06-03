@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.8
+last_synced_with: v5.8.8
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -895,6 +895,59 @@ type 인코딩 (대립=`--down`+✕ / 동맹=`--accent` / 영향=`accent-hatch` 
 실제 값 위치 유지(시각 정확성 보존), 라벨이 dodge 로 떨어지면 점→라벨 가는
 connector(0.6px). 단일/충분히 떨어진 라벨은 기존과 동일하게 렌더. charts.js 는
 보고서 공유 자산이라 재배포/`--rerender-only` 시 기존 보고서도 자동 교정.
+
+---
+
+## CHART-AP-27: 폭포수(waterfall) 차트 부호(±) 미인코딩 (v5.8.8 신설)
+
+**증상**: 폭포수 차트가 *증가/감소를 모두 위로 올라가는 막대* 로 그림. 실제 사례 —
+"HBM 매출 변동 요인" 폭포수에서 `100 → +22 → +12 → 8 → 9 → 117`. 의미상 22·12는
+더하기, 8·9는 **빼기**(미 규제·중국 위축, takeaway 도 "더하기 두 줄, 빼기 두 줄"
+명시)인데, 8·9가 위로 쌓이는 막대로 렌더돼 누적이 ~150까지 올라갔다가 최종 막대만
+117로 뚝 떨어지는 비논리적 그림. `100+22+12+8+9 = 151 ≠ 117` 인데도 차트가 통과.
+
+**원인**: 폭포수 step 데이터에 방향(부호)이 없거나 렌더러가 무시. 모든 step 을
+양(+)으로 쌓아 감소 요인이 시각적으로 증가로 둔갑. 연결선(connector)이 최종 막대와
+어긋남.
+
+**Fix 방향 (결정적 가드 — Codex/LLM 불필요)**: `WaterfallCoherenceGuard` —
+① `base + Σ(signed steps) == final_total` 검증, 불일치 시 차트 drop/flag.
+② step 별 부호를 데이터 계약에 강제(`delta` 부호 또는 `direction: up|down`),
+감소 step 은 running total 에서 *아래로* 그림. 위반 시 `_drop_invalid_charts` 에서
+silent drop. 회귀 fixture: `chart_type_scenarios.yaml` 에 waterfall 부호 케이스 추가.
+
+---
+
+## CHART-AP-28: 빈 차트 프레임 — 데이터 0인데 틀/라벨만 렌더 (v5.8.8 신설)
+
+**증상**: "주간 사망자 추이" small_multiples 가 다섯 도시(키이우/드니프로/자포리자/
+폴타바/하르키우) 패널 *틀과 라벨만 띄우고 내부 데이터는 전부 비어* 발행. 독자는
+즉시 "검수 없이 자동 발행됐다"고 판단 — 출고 중단 사유.
+
+**원인**: 차트 구조(패널·축·라벨)는 emit 됐으나 data series 가 빈 배열/0 포인트.
+"빈 데이터면 차트 없음" 규칙(Chart System)이 small_multiples 등 일부 type 에
+미적용 — `_drop_invalid_charts` / `_TYPE_TO_GUARD` 가드 구멍.
+
+**Fix 방향 (결정적 가드 — LLM 불필요)**: `EmptyChartGuard` — 모든 type 에 대해
+*렌더 가능한 데이터 포인트 총합 == 0* 이면 차트 통째 drop (프레임도 안 그림).
+small_multiples 는 *모든 패널* 이 비면 drop, 일부만 비면 빈 패널 제외. 회귀
+fixture 에 type 별 empty-data 케이스 추가.
+
+---
+
+## CHART-AP-29: NaN/null 값을 사용자에게 그대로 노출 (v5.8.8 신설)
+
+**증상**: 본문/카드에 `코스피 nan% 1M` 이 그대로 노출. 시장 데이터가 부분 결측인데
+계산식이 NaN 을 만들고 그 문자열이 렌더까지 흘러감. (06:00 일일 브리핑은 KRX 데이터
+미확정 시각이라 빈 series → NaN 빈발 가설.)
+
+**원인**: market_fetcher graceful degrade(빈 series)가 차트/카드 수치 계산으로
+전파될 때 `NaN`/`null`/`Infinity` 를 거르지 않음. 변화율 `(a-b)/b` 에서 b 결측 시 NaN.
+
+**Fix 방향 (결정적 가드 — LLM 불필요)**: `NaNExposureGuard` — 사용자 노출 수치
+문자열에 `NaN`/`nan`/`null`/`undefined`/`Infinity` 가 있으면 해당 값을 숨기거나
+카드/차트를 drop. 더 근본적으로 시장 수치 결측 시 *그 수치를 아예 emit 하지 않음*
+(WRITE-AP-15 와 연동 — composer 가 결측 시점에 자유서술로 메우지 않게).
 
 ---
 

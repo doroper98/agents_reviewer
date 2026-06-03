@@ -82,3 +82,114 @@ scenarios:
     good_prose: "가을에 델·HP·에이수스·레노버·MS·에이서·MSI 등의 노트북·데스크톱으로 출시될 예정이에요"
     expected_flag: list_closed_enumeration
     guard: ListTruncationGuard
+
+  # ========================================================================
+  # v2 확장 — 2026-06-03 일일 브리핑 회귀 (외부 Codex 검수 표본)
+  # 보고서 analysis_20260603_061712_3e14fb009f 가 ChatGPT/Codex 검수에서 받은
+  # 오류들을 영구 회귀로 박는다. error_class 5종 동결을 *사용자 게이트* 로 확장
+  # (2026-06-03, AP-V6-9 정식 승격 경로 — 사람 승인). 신규 6종:
+  #   market_data_mismatch  — 시장 가격(지수/환율/종목)이 실제 종가와 불일치 또는
+  #                           소스 혼합(장중/정규장종가/야간선물/Yahoo). *최우선*.
+  #   stale_sourcing        — 오래된 뉴스를 현재로. 상대 시점("이틀 전")을 1년 묵은
+  #                           출처에서 그대로 베낌. 일일 브리핑 최악 실패모드.
+  #   event_conflation      — 별개 행사/사건을 하나로 혼동 (컴퓨텍스 ↔ GTC Taipei).
+  #   attribution_as_fact   — 한쪽 주장(러 국방부 '보복')을 사실로 단정. 주장/해석 미분리.
+  #   causal_overreach      — 인과 중간단계 생략 + 영향 강도 과장 ('직격탄').
+  #   metric_label_ambiguity— 지표 라벨 모호 ('순이익률' ↔ 'GAAP 순마진' 혼동 유발).
+  # ========================================================================
+
+  - id: market_data_mismatch_01
+    error_class: market_data_mismatch
+    evidence:
+      fact: "2026-06-02 코스피 정규장 종가 8,801.49, +13.11p, +0.15% (상승 마감)."
+      source_date: "2026-06-02"
+      scope_note: "연합뉴스 당일 종가. 보고서의 8,650.93 / -1.6% 와 부호·수치 모두 불일치 — 시장 수치는 market_fetcher time_series 단일 소스에서만."
+      source_url: "https://www.yna.co.kr/"
+    bad_prose: "6월 2일 코스피는 8,650.93으로 1.6% 하락하며 안전자산 선호가 누적됐다"
+    good_prose: "6월 2일 코스피는 정규장 종가 기준 8,801.49로 0.15% 올라 강보합 마감했다"
+    expected_flag: market_value_mismatch
+    guard: MarketDataSourceGuard
+
+  - id: market_data_mismatch_02
+    error_class: market_data_mismatch
+    evidence:
+      fact: "2026-06-02 서울외환시장 주간거래 원/달러 종가 1,516.4원, +12.1원."
+      source_date: "2026-06-02"
+      scope_note: "주간거래 종가 단일 소스. 보고서 1,511.95 / +7.65 와 불일치. 시점(장중/주간종가/야간) 라벨 필수."
+      source_url: "https://www.yna.co.kr/"
+    bad_prose: "원/달러는 1,511.95원으로 7.65원 올랐다"
+    good_prose: "원/달러는 주간거래 종가 기준 1,516.4원으로 12.1원 올랐다"
+    expected_flag: market_value_mismatch
+    guard: MarketDataSourceGuard
+
+  - id: stale_sourcing_01
+    error_class: stale_sourcing
+    evidence:
+      fact: "우크라이나 'Spider's Web'(Spiderweb) 작전은 공개 자료 기준 2025-06-01."
+      source_date: "2025-06-01"
+      scope_note: "발행일 2026-06-03 기준 약 1년 전 사건. 출처 기사(2025-06-03 작성)의 '이틀 전'을 그대로 베껴 1년 묵은 뉴스를 현재로 발행."
+      source_url: "https://www.reuters.com/"
+    bad_prose: "이틀 전 우크라이나가 러시아 장거리 폭격기 40여 대를 손상시킨 작전(Spider's Web)에 대한 보복이다"
+    good_prose: "2025년 6월 Spider's Web 작전 이후 이어진 보복 성격이라는 해석이 있다(작전일·출처 재확인 필요)"
+    expected_flag: stale_relative_timepoint
+    guard: NoveltyDeltaGuard
+
+  - id: event_conflation_01
+    error_class: event_conflation
+    evidence:
+      fact: "COMPUTEX 2026 공식 일정은 6/2~6/5. 젠슨 황 키노트는 NVIDIA GTC Taipei. 두 행사는 별개(부대 행사로 겹침)."
+      source_date: "2026-06-02"
+      scope_note: "'컴퓨텍스에서 발표'와 'GTC Taipei 키노트에서 말했다'는 다름. 행사명 혼동 금지."
+      source_url: "https://www.computextaipei.com.tw/"
+    bad_prose: "컴퓨텍스가 어제까지 이틀 동안 열렸고, 거기서 젠슨 황이 베라 루빈을 발표했다"
+    good_prose: "NVIDIA GTC Taipei 키노트(컴퓨텍스 기간 중 개최)에서 젠슨 황이 베라 루빈을 공개했다"
+    expected_flag: event_name_conflation
+    guard: EventConflationGuard
+
+  - id: attribution_as_fact_01
+    error_class: attribution_as_fact
+    evidence:
+      fact: "러시아 국방부는 이번 공격을 '키이우의 테러 행위에 대한 대응'이라 주장. 특정 작전 보복이라는 단정은 러측 주장이며 서방·우크라 해석과 분리 필요."
+      source_date: "2026-06-02"
+      scope_note: "한쪽(러측) 주장을 객관 사실로 단정 금지. '주장'과 '해석'을 명시 분리."
+      source_url: "https://www.reuters.com/"
+    bad_prose: "이번 대규모 공습은 이틀 전 우크라이나 작전에 대한 보복이다"
+    good_prose: "러시아 국방부는 이를 보복이라 주장했으나, 특정 작전 한 건에 대한 보복인지는 확인되지 않았다"
+    expected_flag: claim_stated_as_fact
+    guard: AttributionGuard
+
+  - id: causal_overreach_01
+    error_class: causal_overreach
+    evidence:
+      fact: "미 BIS 가 중국계 해외 법인 경유 첨단칩 우회수출 라이선스 요건을 강화. 한국 메모리에는 직접 규제가 아니라 HBM 간접 수요 리스크. 엔비디아 비중국 수요가 커 순효과 제한적일 수 있음."
+      source_date: "2026-06-02"
+      scope_note: "규제→한국 메모리 '직격탄' 은 중간단계 생략 + 강도 과장. '간접 수요 리스크'로 단계 분리."
+      source_url: "https://www.reuters.com/"
+    bad_prose: "미국 우회수출 규제로 한국 메모리 중국향 매출이 직격탄을 맞는다"
+    good_prose: "미 AI칩이 중국계 해외 법인으로 못 가면 그 서버용 HBM 수요 일부가 줄 수 있으나, 엔비디아 비중국 수요가 커 한국 메모리엔 직격탄이라기보다 간접 수요 리스크다"
+    expected_flag: causal_step_skipped
+    guard: CausalChainGuard
+
+  - id: metric_label_ambiguity_01
+    error_class: metric_label_ambiguity
+    evidence:
+      fact: "NVIDIA 1분기 매출 816억 달러(YoY +85%), GAAP 매출총이익률 74.9%, GAAP 순이익 583억 달러(순마진 약 71%)."
+      source_date: "2026-05-28"
+      scope_note: "'순이익률 71%'는 순이익/매출로는 얼추 맞으나, 일반 독자가 매출총이익률(74.9%)과 혼동. 'GAAP 순이익 기준 순마진'으로 명시."
+      source_url: "https://nvidianews.nvidia.com/"
+    bad_prose: "엔비디아의 순이익률은 71%에 달한다"
+    good_prose: "엔비디아의 GAAP 순이익 기준 순마진은 약 71%다(매출총이익률 74.9%와는 다른 지표)"
+    expected_flag: metric_label_unqualified
+    guard: MetricLabelGuard
+
+  - id: unsourced_number_02
+    error_class: unsourced_number
+    evidence:
+      fact: "원/달러 1,505 라는 기준선의 산출 근거(기술적 지지선/전일 종가/주간평균/옵션 포지션 등)가 출처에 없음."
+      source_date: "2026-06-02"
+      scope_note: "트레이딩 신호로 읽히는 임계선은 산출 근거 필수. 근거 없으면 제시 금지."
+      source_url: null
+    bad_prose: "환율이 1,505 밑으로 빠지는지가 가장 빠른 신호다"
+    good_prose: "환율 흐름이 가장 빠른 신호이며, 특정 임계선을 제시하려면 그 산출 근거를 함께 밝힌다"
+    expected_flag: unsourced_threshold
+    guard: UnsourcedNumberGuard
