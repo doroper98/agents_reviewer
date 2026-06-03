@@ -49,6 +49,12 @@ class ContextAnalysis(BaseModel):
     instruments_mentioned: list[str] = Field(default_factory=list)
     time_series: list[dict] = Field(default_factory=list)
 
+    # v6.0.0 (Phase V6-8) — per-fact provenance. V6_PROVENANCE 켜질 때만 ContextAnalyst
+    # 가 채움 (additive·Optional, 구 데이터 호환, flag OFF 면 빈 list). 각 항목:
+    # {"fact": str, "source_date"?: "YYYY-MM-DD", "scope_note"?: str, "source_url"?: str}.
+    # NoveltyDelta/Scope 가드가 이 데이터로 판정 (프롬프트 의존 X). fixture evidence 와 동형.
+    provenance: list[dict] = Field(default_factory=list)
+
     # v5.4.0 — 사진 후보 풀. orchestrator 가 sources URL 각각의 og:image /
     # og:title / og:description 을 추출해 채움. composer 가 이 list 를 보고
     # 본문 흐름에 적합한 사진을 골라 hero_image / 섹션 images 로 emit.

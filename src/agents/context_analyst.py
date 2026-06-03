@@ -87,6 +87,20 @@ _RECENCY_BLOCK = (
 )
 
 
+# V6 Phase V6-8 — per-fact provenance 블록 (opt-in, V6_PROVENANCE). 각 핵심 사실에
+# 출처일·단위·URL 을 구조화 emit → NoveltyDelta/Scope 가드가 데이터로 판정. flag OFF
+# 면 미주입 → byte-equal.
+_PROVENANCE_BLOCK = (
+    "\n\n=== 사실 출처 메타 (V6) ===\n"
+    "핵심 사실(특히 수치·시점·고유명사)마다 출처 메타를 `provenance` 배열로 함께 emit 한다.\n"
+    "각 항목: {\"fact\": \"사실 요지\", \"source_date\": \"YYYY-MM-DD(출처 작성/발표일)\",\n"
+    "  \"scope_note\": \"수치의 단위·범위(예: '130만 = 랙 전체 단위, 보드 아님')\",\n"
+    "  \"source_url\": \"출처 URL\"}. 모르는 필드는 비워둔다(빈 문자열).\n"
+    "- 시점이 중요한 사실(발표·실적·사건)은 source_date 를 반드시 채운다(신규성 판정용).\n"
+    "- 큰 수치는 scope_note 로 단위·귀속을 명시한다(scope 오귀속 방지용).\n"
+)
+
+
 class ContextAnalyst(BaseAgent):
     """Establishes facts, timeline, and key data points."""
 
@@ -123,11 +137,13 @@ class ContextAnalyst(BaseAgent):
         return self._parse_json_response(raw_text, ContextAnalysis)
 
     def _build_system_prompt(self, current_date: str) -> str:
-        """system prompt 조립 — V6_RECENCY_BOUND 켜지면 최신성 제한 블록을 직교 추가.
+        """system prompt 조립 — V6 flag 켜지면 직교 블록 추가.
 
         flag OFF 면 v4.5.7 와 동일 문자열 (byte-equal).
         """
         prompt = SYSTEM_PROMPT.replace("{current_date}", current_date)
         if getattr(self.config, "enable_recency_bound", False):
             prompt += _RECENCY_BLOCK.replace("{current_date}", current_date)
+        if getattr(self.config, "enable_provenance", False):
+            prompt += _PROVENANCE_BLOCK
         return prompt

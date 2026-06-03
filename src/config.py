@@ -284,6 +284,16 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_AUTOLEARN", "ENABLE_AUTOLEARN", "enable_autolearn"),
     )
 
+    # === V6 Phase V6-8 — per-fact provenance ===
+    # 켜지면 ContextAnalyst 가 각 사실에 source_date/scope_note/source_url 을 구조화 emit
+    # (`ContextAnalysis.provenance`). 이 데이터로 NoveltyDelta/Scope 가드가 *프롬프트 없이
+    # 데이터로* 판정 (지금은 production 에서 미공급이라 inert). additive·Optional — 구
+    # 데이터 호환, flag OFF byte-equal. env: V6_PROVENANCE=1.
+    enable_provenance: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_PROVENANCE", "ENABLE_PROVENANCE", "enable_provenance"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

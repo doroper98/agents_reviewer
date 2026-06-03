@@ -115,6 +115,24 @@ def blocks_from_report(report: ComposedReport) -> list[ProseBlock]:
     return blocks
 
 
+def source_dates_from_context(context: ContextAnalysis) -> list[str]:
+    """Phase V6-8 — provenance 의 source_date 들 (NoveltyDeltaGuard 데이터 공급)."""
+    return [
+        p["source_date"]
+        for p in getattr(context, "provenance", []) or []
+        if isinstance(p, dict) and p.get("source_date")
+    ]
+
+
+def scope_notes_from_context(context: ContextAnalysis) -> list[str]:
+    """Phase V6-8 — provenance 의 scope_note 들 (ScopeBarewordGuard 데이터 공급)."""
+    return [
+        p["scope_note"]
+        for p in getattr(context, "provenance", []) or []
+        if isinstance(p, dict) and p.get("scope_note")
+    ]
+
+
 def evidence_corpus_from_context(context: ContextAnalysis) -> str:
     """ContextAnalysis 의 근거 텍스트를 검색용 단일 코퍼스로 합본."""
     parts: list[str] = [context.summary, context.background, context.event_name]
@@ -327,11 +345,17 @@ def run_fact_guards(
     """
     blocks = blocks_from_report(report)
     corpus = evidence_corpus_from_context(context)
+    # Phase V6-8 — 명시 인자 없으면 context.provenance 에서 데이터로 끌어온다
+    # (provenance 비면 [] → 가드 inert = 기존 동작, byte-equal).
+    if scope_notes is None:
+        scope_notes = scope_notes_from_context(context)
+    if source_dates is None:
+        source_dates = source_dates_from_context(context)
     flags: list[GuardFlag] = []
     flags += unsourced_number_guard(blocks, corpus)
-    flags += scope_bareword_guard(blocks, scope_notes or [])
+    flags += scope_bareword_guard(blocks, scope_notes)
     flags += novelty_delta_guard(
-        blocks, publication_date or context.date, source_dates or [],
+        blocks, publication_date or context.date, source_dates,
     )
     flags += market_data_source_guard(blocks, market_series or {})
     flags += nan_exposure_guard(blocks, report)

@@ -517,6 +517,7 @@ class CodexCritic:
             "key_figures": context.key_figures,
             "sources": context.sources,
             "time_series": context.time_series,
+            "provenance": getattr(context, "provenance", []),  # Phase V6-8 — 출처일·단위·URL
         }
 
     # ------------------------------------------------------------------

@@ -334,7 +334,13 @@ orchestrator 조건부 세팅(검수 수행 시만, AP-V6-10) + `freeform_essay.
 - **DoD**: 검수 수행/스킵 2경로에서 바이라인 정/부 렌더, 버전 config 연동, 모델 ID
   내부 식별자 비노출.
 
-### Phase V6-8 — Per-fact Provenance in ContextAnalysis
+### Phase V6-8 — Per-fact Provenance in ContextAnalysis ✅ (완료 2026-06-03)
+**상태**: `ContextAnalysis.provenance` (additive·Optional) + context_analyst `_PROVENANCE_BLOCK`
+(`_build_system_prompt` flag-gating) + `run_fact_guards` 가 provenance 에서 source_dates/
+scope_notes 데이터 공급(`source_dates_from_context`/`scope_notes_from_context`) → NoveltyDelta/
+Scope 가드가 *프롬프트 없이 데이터로* 판정 + codex evidence digest 에 provenance. provenance
+비면 inert = 기존 동작(byte-equal). flag `V6_PROVENANCE` default OFF. 회귀 7종. **V6 전
+Phase(0~8) 완료.**
 **목적**: GAP-7. 신규성·scope·시점을 *데이터*로 판정 + 바이라인/웹verify 정확도 보강.
 - `src/models.py:ContextAnalysis` 증거 항목에 `source_date`/`scope_note`/`source_url`
   (additive, Optional — 구 데이터 호환). DATA_MODELS 갱신. `context_analyst.py:
