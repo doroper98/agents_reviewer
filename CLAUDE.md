@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v5.2.12
+last_synced_with: v6.0.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"

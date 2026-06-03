@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.8.8
+last_synced_with: v6.0.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.0.0 — V6 사실 거버넌스 (Codex 외부 critic 루프) 정식 릴리스
+
+2026-06-01 일일 브리핑 팩트체크 회귀(자유 본문에 evidence-binding 부재 + fact-critic 루프
+부재)에서 출발한 V6 트랙의 코어가 라이브. 외부 모델 `codex`(ChatGPT 구독)가 Claude(Opus)
+본문의 사실 결함을 *교차 검수* 하는 bounded 루프를 orchestrator 에 연결.
+
+**4층 사실 거버넌스 (전부 opt-in flag, default OFF = v5.8.8 byte-equal):**
+1. **검색** — ContextAnalyst 최신성 제한 (`V6_RECENCY_BOUND`): 당일/최근 브리핑 24~48h 출처.
+2. **작성** — composer 사실규율 프롬프트 (`V6_FACT_PROMPT`): 시장 단일소스·시점 라벨·scope·
+   신규성·귀속·인과 헤지 (WRITE-AP-11/14~21 작성단계 차단).
+3. **가드** — 결정적 사전필터 5종 (`V6_FACT_GUARDS`): unsourced/scope/novelty/market/nan, 0-LLM.
+4. **루프** — Codex critic (`V6_CODEX_CRITIC`): `Opus 작성 → Codex 검수 → Opus 보완(≤1) →
+   Codex 확인패스(≤1)` (제어 0-LLM). + 차트 미학 비전 검수 (`V6_CODEX_VISUAL`) + 웹 verify
+   (`V6_CODEX_WEBVERIFY`).
+
+**불변식**: 본문은 Opus 고정(Codex 는 지시만, 본문 안 씀 — AP-V6-11) / 모든 지적 근거 인용
+강제(AP-V6-8) / 외부 실패 graceful degrade → 단일패스(AP-V6-12) / 재작성·확인패스 각 ≤1 bound
+(AP-V6-2). 생성 중 라이브 status + 잔존 정직 착지(미해결 시 신뢰도 하향, 검수 안 했으면 "건너뜀"
+표시 AP-V6-10). 검수 페르소나 SSOT `prompts/market_factcheck_desk_v6.md` + 런타임 단축본.
+
+**검증**: 회귀 97종(모킹) + VM e2e — NVIDIA 표본 위반 4→0 수렴(scope/unsourced/novelty 교정),
+실토픽(예측) 풀 파이프라인 발행 구독자 품질, codex 비전(차트 판독+미학 지적)·웹검색(정답+URL)
+실연동. 측정 SSOT `docs/V6_TEST_RESULTS.md`. 마스터 플랜 `REFACTOR_V6_PLAN.md`.
+
+**남은 것 (post-v6.0.0)**: Phase 6(자율보강 critique_log)·7(발행물 바이라인)·8(per-fact provenance).
 
 ## v5.8.8 (V6 Phase V6-5) — Codex 웹 verify (bounded)
 
