@@ -20,6 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6) — Codex 검수 루프 라이브 status (텔레그램/CLI 진행 표시)
+
+루프가 logger 만 찍고 `status_callback` 미연결이라 사용자가 검수 단계를 못 보던 것
+보강. 검수+보완이 ~35s+ 지연을 더하는데 표시가 없으면 "왜 멈췄지" → 라이브 진행 +
+신뢰 신호(생성 중 버전). Phase 7 바이라인(발행 후 도장)의 *생성 중* 대응물.
+
+- `CriticLoop.run(..., on_progress=콜백)` — 단계별 status emit. orchestrator 가
+  `self._notify` 래퍼를 주입(텔레그램/CLI 양쪽).
+- 흐름: "🔎 외부 팩트체크 데스크(Codex) 교차검증 중…" → 위반 0 "✅ 사실 검수 통과" /
+  위반 N "✍️ 편집장(Opus) 지적 N건 반영 중…" → "✅ 사실 검수 완료(잔존/미해결 정직 표시)".
+- **degrade 시 "건너뜀" 으로 정직 표시**(검수 안 했는데 "통과" 거짓말 안 함, AP-V6-10).
+- flag OFF 면 루프 미동작 → status 0 (byte-equal). emit 실패가 검수를 막지 않음.
+- 회귀 `test_codex_loop.py` progress 4종(clean/violation/skipped 정직/None 안전). V6 83 pass.
+
 ## v5.8.8 (V6) — 루프 완결성 보강 (예방·가시성·정직한 착지)
 
 e2e 에서 보완이 새 프레이밍("PC 칩 복귀")을 끌어들여 residual 이 생긴 것을 발견 →

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Protocol
+from typing import Awaitable, Callable, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -134,14 +134,25 @@ class CriticLoop:
         self.critic = critic
         self.reviser = reviser
 
+    @staticmethod
+    async def _emit(cb: "Callable[[str], Awaitable[None]] | None", msg: str) -> None:
+        """진행 status 1건 송신 (텔레그램/CLI). 실패가 검수를 막지 않는다."""
+        if cb is None:
+            return
+        try:
+            await cb(msg)
+        except Exception:  # noqa: BLE001
+            logger.debug("[critic_loop] progress emit failed", exc_info=True)
+
     async def run(
         self,
         report: ComposedReport,
         context: ContextAnalysis,
         *,
         publication_date: str = "",
+        on_progress: "Callable[[str], Awaitable[None]] | None" = None,
     ) -> CriticLoopResult:
-        # flag OFF → 즉시 passthrough (byte-equal, AP-V6-3).
+        # flag OFF → 즉시 passthrough (byte-equal, AP-V6-3). status 도 emit 안 함.
         if not self.config.enable_codex_critic:
             return CriticLoopResult(report=report, skipped=True, skip_reason="flag_off")
 
@@ -159,11 +170,18 @@ class CriticLoop:
                 logger.warning("[critic_loop] pre-filter guards skipped: %s", exc)
 
         # 2. 1차 검수.
+        await self._emit(
+            on_progress,
+            "🔎 외부 팩트체크 데스크 (Codex): 사실·수치·시점 교차검증 중…",
+        )
         v1 = await self.critic.critique(
             report, context, publication_date=publication_date, pre_flags=pre_flags,
         )
         if v1.skipped:
-            # 외부 degrade → 단일패스 (AP-V6-12).
+            # 외부 degrade → 단일패스 (AP-V6-12). 검수 안 했으니 "통과" 라 거짓말 안 함.
+            await self._emit(
+                on_progress, "ⓘ 외부 사실 검수 건너뜀 — 단일 패스로 발행",
+            )
             return CriticLoopResult(
                 report=report, skipped=True, skip_reason=v1.skip_reason,
                 pre_flag_count=len(pre_flags),
@@ -171,12 +189,17 @@ class CriticLoop:
 
         # 재작성 트리거는 *Codex 위반* 에만 (사전필터 FP 가 본문을 망치지 않게).
         if not v1.is_actionable:
+            await self._emit(on_progress, "✅ 사실 검수 통과 (지적 없음)")
             return CriticLoopResult(
                 report=report, initial_violations=v1.violation_count,
                 pre_flag_count=len(pre_flags),
             )
 
         # 3. Opus 보완 (≤1). Codex 지시 + 사전필터 힌트를 합산해 전달.
+        await self._emit(
+            on_progress,
+            f"✍️ 편집장 (Opus): 검수 지적 {v1.violation_count}건 반영 중…",
+        )
         fix_instructions = [c.fix_instruction for c in v1.claims] + pre_flags
         final = report
         revised_ok = False
@@ -199,9 +222,7 @@ class CriticLoop:
         # 5. 착지 — unsourced 잔존만 결정적 drop.
         final, dropped = apply_landing(final, residual)
 
-        # ② 잔존 가시화 + ③ 정직한 착지. drop 으로 해소 안 된 잔존(unresolved)이
-        # 남으면 "깨끗한 척" 발행하지 않고 신뢰도를 정직하게 낮춘다 (AP-V6-10 사상).
-        # surgery 가 위험한 비-unsourced 잔존은 그대로 두되 신호로 남긴다.
+        # ② 잔존 가시화 + ③ 정직한 착지.
         residual_summary = [
             f"[{c.error_class}] {c.location}: {c.quote}" for c in residual
         ]
@@ -210,6 +231,19 @@ class CriticLoop:
             final = final.model_copy(deep=True)
             final.confidence_score = max(
                 0.3, round(final.confidence_score - 0.1 * len(unresolved), 3),
+            )
+
+        # 최종 status — 정직하게 (위반 수렴 / 잔존 표시).
+        if not residual:
+            await self._emit(
+                on_progress,
+                f"✅ 사실 검수 완료 — 지적 {v1.violation_count}건 반영 (잔존 0)",
+            )
+        else:
+            await self._emit(
+                on_progress,
+                f"✅ 사실 검수·보완 완료 — 지적 {v1.violation_count}건 중 "
+                f"{len(dropped)}건 정정·{len(unresolved)}건 미해결(신뢰도 반영)",
             )
 
         return CriticLoopResult(

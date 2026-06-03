@@ -1621,9 +1621,14 @@ class Orchestrator:
                     CodexCritic(self.config),
                     NarrativeComposerReviser(self.narrative_composer),
                 )
+
+                async def _loop_progress(msg: str) -> None:
+                    await self._notify(msg, status_callback)
+
                 loop_result = await loop.run(
                     result.composed_report, result.context,
                     publication_date=today_kst(),
+                    on_progress=_loop_progress,
                 )
                 if loop_result.report is not None:
                     result.composed_report = loop_result.report

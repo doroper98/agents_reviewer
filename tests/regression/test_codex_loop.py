@@ -229,6 +229,54 @@ def test_revise_prompt_forbids_new_framing() -> None:
     assert "독자 우선" in sp  # AP-V6-13 가드 유지
 
 
+# --------------------------------------------------------------------------
+# 진행 status (on_progress) — 텔레그램/CLI 라이브 표시
+# --------------------------------------------------------------------------
+
+
+def _collect_progress():
+    msgs: list[str] = []
+
+    async def cb(m):  # noqa: ANN001
+        msgs.append(m)
+    return msgs, cb
+
+
+def test_progress_clean_path() -> None:
+    msgs, cb = _collect_progress()
+    loop = CriticLoop(_cfg(), StubCritic([_clean()]), StubReviser())
+    _run(loop.run(_report(), ContextAnalysis(), on_progress=cb))
+    assert any("교차검증 중" in m for m in msgs)   # 검수 시작
+    assert any("검수 통과" in m for m in msgs)      # clean 결과
+    assert not any("반영 중" in m for m in msgs)    # 보완 없음
+
+
+def test_progress_violation_path() -> None:
+    msgs, cb = _collect_progress()
+    critic = StubCritic([_violations(_claim()), _clean()])
+    loop = CriticLoop(_cfg(), critic, StubReviser(_report(prose="보완본")))
+    _run(loop.run(_report(), ContextAnalysis(), on_progress=cb))
+    assert any("교차검증 중" in m for m in msgs)
+    assert any("반영 중" in m for m in msgs)        # Opus 보완 단계
+    assert any("검수 완료" in m for m in msgs)       # 최종
+
+
+def test_progress_skipped_is_honest() -> None:
+    # degrade 시 "통과" 가 아니라 "건너뜀" 으로 정직하게 (AP-V6-10).
+    msgs, cb = _collect_progress()
+    loop = CriticLoop(_cfg(), StubCritic([FactVerdict.skip("rate_limited")]), StubReviser())
+    _run(loop.run(_report(), ContextAnalysis(), on_progress=cb))
+    assert any("건너뜀" in m for m in msgs)
+    assert not any("검수 통과" in m for m in msgs)
+
+
+def test_progress_none_is_safe() -> None:
+    # on_progress 미지정이어도 정상 동작 (기존 호출 호환).
+    loop = CriticLoop(_cfg(), StubCritic([_clean()]), StubReviser())
+    res = _run(loop.run(_report(), ContextAnalysis()))
+    assert res.initial_violations == 0
+
+
 def test_pre_flags_alone_do_not_trigger_rewrite() -> None:
     # 사전필터만 잡고 codex 가 clean 이면 재작성 안 함 (가드 FP 가 본문 안 망침).
     critic = StubCritic([_clean()])
