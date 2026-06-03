@@ -270,6 +270,22 @@ V6_RECENCY_BOUND=1`):
 
 ---
 
+### Phase V6-4 — Codex 미학 검수 (vision) ◐ (코드 랜딩, VM 비전 실연동 대기)
+
+**일자**: 2026-06-03 · **flag**: `V6_CODEX_VISUAL` (default OFF)
+
+**랜딩**: `CodexCritic.critique_visual`(차트 PNG `-i` → 미학 verdict) + `critique_report_visuals`
+(capture_proofs 캡처 → 검수) + `_call_codex_cli`/`_build_cmd` 이미지 지원 + `_VISUAL_INSTRUCTIONS`
+(가독성/잘림/패턴/축/데이터불일치/빈프레임) + orchestrator 발행 후 flag-gated 훅(log-only).
+budget telemetry V6-aware(Opus 보완 1콜 cap 반영). T-5 모킹 6종(`test_codex_visual.py`) 통과,
+전체 V6 91 pass. flag OFF byte-equal.
+
+**남은 것 (VM)**: codex 비전이 *실제* 차트 PNG 를 검수하는지 실연동 1회(Phase 1 의 `-i` 플래그
+존재 확인 → 실제 이미지 처리 검증). 미작동 시 미학은 V5(chart_critic/desk_editor) 유지. 자동수정
+통합 여부는 측정 후(현재 log-only).
+
+---
+
 ## §2. 효과·비용 지표 (T-10, 누적 — Phase 3 루프 가동 후 채움)
 
 | 지표 | 값 | 측정일 |

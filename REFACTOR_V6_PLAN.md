@@ -267,7 +267,13 @@ byte-equal. **VM e2e 수렴 완료** — 실제 codex(gpt-5.5)+Opus 루프가 NV
 - **DoD**: NVIDIA fixture 5종 e2e → 위반 0/헤지/drop 수렴. 재작성 ≤1, 확인패스 ≤1
   강제 검증. degrade 시 정상 발행. flag OFF byte-equal.
 
-### Phase V6-4 — Codex 미학 검수 (Vision, 렌더 PNG)
+### Phase V6-4 — Codex 미학 검수 (Vision, 렌더 PNG) ◐ (코드 랜딩 2026-06-03)
+**상태**: `CodexCritic.critique_visual`/`critique_report_visuals` + `_call_codex_cli` 이미지
+(`-i`) 지원 + `_VISUAL_INSTRUCTIONS` + orchestrator 발행 후 flag-gated 훅(log-only) +
+budget telemetry V6-aware. `V6_CODEX_VISUAL` default OFF, T-5 모킹 6종 통과, flag OFF
+byte-equal. capture_proofs(Playwright) 캡처 → critique_visual. 차트 자동수정은 안 함
+(V5 deterministic_gate/chart_critic 와 병행, 측정 후 정리). **남은 것** = VM 비전 실연동
+1회(실제 차트 PNG 검수 확인) — 측정 `docs/V6_TEST_RESULTS.md §1`.
 **목적**: GAP-8. 차트 데이터뿐 아니라 *미학*까지 Codex 가 본다.
 - `src/visual/capture.py` 로 차트→PNG → Codex 비전 입력. verdict 에 차트별 시각 지적
   (가독성/잘림/패턴 충돌 등) + fix_instruction(데이터/타입/축 조정).

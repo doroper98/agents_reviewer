@@ -24,6 +24,7 @@ subcommand / extra args / model / timeout 을 전부 config 로 override 할 수
 from __future__ import annotations
 
 import asyncio
+import base64
 import contextlib
 import json
 import logging
@@ -97,6 +98,36 @@ _PROMPT_TEMPLATE = (
     + "\n=== 결정적 사전필터가 이미 표시한 의심 (참고, Phase 2) ===\n__PRE_FLAGS__\n"
     + "\n=== 수집된 근거 (ContextAnalysis evidence) ===\n__EVIDENCE_JSON__\n"
     + "\n=== 검수 대상 보고서 (ComposedReport) ===\n__REPORT_JSON__\n"
+)
+
+
+# Phase V6-4 — 차트 미학 검수 (비전). 첨부된 차트 PNG 이미지를 보고 미학·데이터
+# 정합을 검수한다. 출력은 동일한 FactVerdict JSON (claims[].location=차트 title).
+_VISUAL_INSTRUCTIONS = """You are an external visual desk critic for charts in a Korean analysis report.
+첨부된 이미지는 보고서의 *차트 렌더 결과* 다. 각 차트를 보고 미학·데이터 정합 문제를 찾는다.
+본문 문체는 보지 않는다. 차트만 본다.
+
+검수 항목 (error_class):
+  chart_readability     라벨 겹침/잘림, 글자 너무 작음, 범례 누락으로 판독 불가
+  chart_truncation      막대/축/라벨이 카드 밖으로 잘림
+  chart_pattern_conflict 패턴·해칭이 충돌해 카테고리 구분 불가
+  chart_axis_missing    축/단위/기준선 없음, 0 baseline 누락으로 왜곡
+  chart_data_mismatch   차트 숫자가 본문/근거 데이터와 불일치 (data digest 와 대조)
+  chart_empty           데이터 0 또는 의미 없는 빈 프레임
+
+규칙:
+  - 각 지적은 어느 차트(title)·무엇이 문제인지 명시. 근거 없는 트집 금지.
+  - fix_instruction 은 데이터/타입/축 조정 *지시* 만. 직접 그리지 말 것.
+  - 미학이 멀쩡하면 위반 아님. 의심만으로 flag 하지 말 것.
+
+출력: 시스템이 지정한 FactVerdict JSON *하나만*. claims[].location = 차트 title.
+위반 없으면 {"verdict_status":"clean","claims":[]}.
+"""
+
+_VISUAL_PROMPT_TEMPLATE = (
+    _VISUAL_INSTRUCTIONS
+    + "\n=== 차트 데이터 digest (숫자 대조용) ===\n__CHART_JSON__\n"
+    + "\n첨부 이미지가 위 차트들의 렌더 결과다. 이미지를 보고 검수하라.\n"
 )
 
 
@@ -201,20 +232,122 @@ class CodexCritic:
         return verdict
 
     # ------------------------------------------------------------------
+    # Phase V6-4 — 차트 미학 검수 (비전)
+    # ------------------------------------------------------------------
+
+    async def critique_visual(
+        self, report: ComposedReport, image_paths: list[str],
+    ) -> FactVerdict:
+        """차트 PNG 이미지를 codex 비전에 넣어 미학·데이터 정합 검수.
+
+        flag OFF / 이미지 없음 / codex 부재 / 실패 시 skip verdict (graceful, log-only).
+        결과는 호출측이 *측정* 으로 적립 — 현재 차트 자동수정 안 함 (V5 가드와 병행).
+        """
+        if not self.config.enable_codex_visual:
+            return FactVerdict.skip("flag_off")
+        if not image_paths:
+            return FactVerdict.skip("no_images")
+        bin_path = self._resolve_bin()
+        if bin_path is None:
+            return FactVerdict.skip("codex_not_found")
+
+        chart_digest = [
+            {
+                "section": sec.heading,
+                "charts": [
+                    {"type": c.get("type"), "title": c.get("title"), "data": c.get("data")}
+                    for c in sec.charts if isinstance(c, dict)
+                ],
+            }
+            for sec in report.sections if sec.charts
+        ]
+        prompt = _VISUAL_PROMPT_TEMPLATE.replace(
+            "__CHART_JSON__",
+            json.dumps(chart_digest, ensure_ascii=False, separators=(",", ":")),
+        )
+        if self.critic_persona:
+            prompt = (
+                "=== 검수 관점 (페르소나) ===\n" + self.critic_persona + "\n\n" + prompt
+            )
+
+        start = time.time()
+        try:
+            stdout, stderr, returncode, elapsed_ms = await self._call_codex_cli(
+                bin_path, prompt, image_paths=image_paths,
+            )
+        except asyncio.TimeoutError:
+            return FactVerdict.skip("timeout", latency_ms=int((time.time() - start) * 1000))
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[codex_critic] visual invocation failed: %s", exc)
+            return FactVerdict.skip("codex_error", latency_ms=int((time.time() - start) * 1000))
+        if returncode != 0:
+            return FactVerdict.skip(
+                self._classify_failure(returncode, stderr), latency_ms=elapsed_ms,
+            )
+        verdict = self._parse_verdict(stdout, latency_ms=elapsed_ms)
+        verdict.model_label = "OpenAI Codex (vision)"  # 미학 verdict 명시 (파서 기본 라벨 덮음)
+        logger.info(
+            "[codex_critic] visual verdict=%s findings=%d (%dms, %d imgs)",
+            verdict.verdict_status, verdict.violation_count, verdict.latency_ms,
+            len(image_paths),
+        )
+        return verdict
+
+    async def critique_report_visuals(
+        self, report: ComposedReport, html_path: str,
+    ) -> FactVerdict:
+        """렌더된 HTML 에서 차트 PNG 를 캡처해 미학 검수 (capture → critique_visual).
+
+        Playwright 미설치/캡처 실패 시 graceful skip (AP-V6-12).
+        """
+        if not self.config.enable_codex_visual:
+            return FactVerdict.skip("flag_off")
+        try:
+            from src.visual.capture import capture_proofs
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[codex_critic] capture import failed: %s", exc)
+            return FactVerdict.skip("no_capture")
+        try:
+            captures = capture_proofs(html_path)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[codex_critic] capture failed: %s", exc)
+            return FactVerdict.skip("no_capture")
+        charts = [c for c in captures if getattr(c, "role", "") == "chart_closeup"]
+        if not charts:
+            return FactVerdict.skip("no_images")
+        tmpdir = tempfile.mkdtemp(prefix="codex_charts_")
+        paths: list[str] = []
+        try:
+            for i, cap in enumerate(charts):
+                p = os.path.join(tmpdir, f"chart_{i:02d}.png")
+                with open(p, "wb") as f:
+                    f.write(base64.b64decode(cap.image_b64))
+                paths.append(p)
+            return await self.critique_visual(report, paths)
+        finally:
+            for p in paths:
+                with contextlib.suppress(OSError):
+                    os.unlink(p)
+            with contextlib.suppress(OSError):
+                os.rmdir(tmpdir)
+
+    # ------------------------------------------------------------------
     # CLI 호출
     # ------------------------------------------------------------------
 
     def _resolve_bin(self) -> str | None:
         return shutil.which(self.config.codex_bin)
 
-    def _build_cmd(self, bin_path: str) -> list[str]:
+    def _build_cmd(self, bin_path: str, image_paths: list[str] | None = None) -> list[str]:
         cmd = [bin_path, *self.config.codex_cmd_args]
         if self.config.codex_model:
             cmd.extend(["-m", self.config.codex_model])
+        for img in image_paths or []:
+            cmd.extend(["-i", img])  # codex exec --image (Phase V6-4 비전)
         return cmd
 
     async def _call_codex_cli(
-        self, bin_path: str, prompt: str,
+        self, bin_path: str, prompt: str, image_paths: list[str] | None = None,
     ) -> tuple[str, str, int, int]:
         """codex 를 subprocess 로 호출. 프롬프트는 stdin 으로 전달.
 
@@ -224,7 +357,7 @@ class CodexCritic:
         배너+echo+푸터로 오염됨을 확인). 파일이 비면 raw stdout 폴백. timeout 시
         ``asyncio.TimeoutError`` 를 raise (호출측이 skip verdict 로 degrade).
         """
-        cmd = self._build_cmd(bin_path)
+        cmd = self._build_cmd(bin_path, image_paths)
         fd, msg_path = tempfile.mkstemp(prefix="codex_verdict_", suffix=".txt")
         os.close(fd)
         cmd = [*cmd, "-o", msg_path]

@@ -20,6 +20,24 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6 Phase V6-4) — Codex 미학 검수 (vision, 렌더 PNG)
+
+GAP-8 — 차트 데이터뿐 아니라 *미학* 까지 교차모델(codex 비전)이 검수. Phase 1 에서
+`codex exec -i` 이미지 입력 지원 확인됨. 현재 발행 후 log-only(측정) — 차트 자동수정은
+안 함(V5 deterministic_gate / chart_critic 와 병행). flag `V6_CODEX_VISUAL` default OFF.
+
+- **`CodexCritic.critique_visual(report, image_paths)`** — 차트 PNG 를 codex 비전(`-i`)에
+  넣어 미학·데이터 정합 검수. `_VISUAL_INSTRUCTIONS`(가독성/잘림/패턴충돌/축누락/데이터
+  불일치/빈프레임) + chart data digest(숫자 대조). FactVerdict 계약 재사용(model_label
+  "OpenAI Codex (vision)").
+- **`critique_report_visuals(report, html_path)`** — `src/visual/capture.py:capture_proofs`
+  로 차트 PNG 캡처 → critique_visual. Playwright/codex 비전 미가용 시 graceful skip.
+- `_call_codex_cli` / `_build_cmd` 에 `image_paths`(→ `-i`) 지원.
+- orchestrator 발행 후 flag-gated 훅(log-only): 미학 지적을 `V6 미학 지적:` 로 로그.
+- **budget telemetry V6-aware** — critic 루프의 Opus 보완 1콜을 cap 에 반영(헛경고 제거).
+- 회귀 `test_codex_visual.py` 6종(이미지 -i 전달/verdict 파싱/flag·이미지 degrade). V6 91 pass.
+- **남은 것(VM)**: codex 비전이 실제 차트 PNG 를 검수하는지 실연동 1회 + 자동수정 통합 여부 측정.
+
 ## v5.8.8 (V6) — Codex 검수 루프 라이브 status (텔레그램/CLI 진행 표시)
 
 루프가 logger 만 찍고 `status_callback` 미연결이라 사용자가 검수 단계를 못 보던 것

@@ -1694,6 +1694,31 @@ class Orchestrator:
         self.telemetry.stage_end(stage)
         result.report_url = report_url
 
+        # -- Phase V6-4: Codex 미학 검수 (opt-in, 발행 후 log-only) --
+        # 렌더된 보고서의 차트 PNG 를 codex 비전으로 교차검수. 현재 측정(log)만 —
+        # 차트 자동수정 안 함 (V5 deterministic_gate / chart_critic 와 병행). flag OFF /
+        # Playwright·codex 비전 미가용 시 graceful skip (AP-V6-12). byte-equal 보존.
+        if self.config.enable_codex_visual and getattr(result, "report_path", None):
+            try:
+                from src.agents.codex_critic import CodexCritic
+                vverdict = await CodexCritic(self.config).critique_report_visuals(
+                    result.composed_report, result.report_path,
+                )
+                if vverdict.skipped:
+                    logger.info("[orchestrator] V6 미학 검수 skip: %s", vverdict.skip_reason)
+                else:
+                    logger.info(
+                        "[orchestrator] V6 미학 검수: %s findings=%d",
+                        vverdict.verdict_status, vverdict.violation_count,
+                    )
+                    for c in vverdict.claims:
+                        logger.info(
+                            "[orchestrator] V6 미학 지적: [%s] %s: %s",
+                            c.error_class, c.location, c.fix_instruction,
+                        )
+            except Exception as _e:  # pragma: no cover — 미학 검수 실패가 발행 막지 않음
+                logger.warning("[orchestrator] V6 미학 검수 skipped: %s", _e)
+
         # v5.2.14 — chart type usage 추적 (캔들 starvation 회귀 방지).
         # composed.sections 의 모든 charts 를 순회해 type 수집 → telemetry +
         # 영구 JSONL. ``warn_if_starved`` 가 누적 N 보고서 동안 0회 emit type 감지.
@@ -1807,9 +1832,14 @@ class Orchestrator:
         # Telemetry summary.
         if self.telemetry is not None:
             self.telemetry.log_summary()
-            # v4.0.0 Tier 4: 모든 모드 max_llm_calls=2 고정. 직접 비교 (budget 변수 미사용).
+            # v4.0.0 Tier 4: 모든 모드 max_llm_calls=2 고정 (context + composer).
             from src.token_budget import TokenBudget
             cap = TokenBudget.for_mode(mode).max_llm_calls
+            # V6: critic 루프의 Opus 보완(revise_for_facts)이 RunTelemetry 1콜을 정당하게
+            # 추가 (codex 검수/확인패스/미학은 외부 subprocess라 RunTelemetry 미집계).
+            # 켜졌을 때 budget 경고가 헛울리지 않게 보정.
+            if self.config.enable_codex_critic:
+                cap += 1
             if self.telemetry.total_llm_calls > cap:
                 logger.warning(
                     "[telemetry] LLM call budget exceeded: %d > %d (mode=%s). "

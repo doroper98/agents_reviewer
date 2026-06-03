@@ -233,6 +233,16 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_RECENCY_BOUND", "ENABLE_RECENCY_BOUND", "enable_recency_bound"),
     )
 
+    # === V6 Phase V6-4 — Codex 미학 검수 (vision, 렌더 PNG) ===
+    # 발행 후 차트 PNG 를 codex 비전(`codex exec -i`)에 넣어 미학·데이터 정합을 교차검수.
+    # V5 deterministic_gate / chart_critic 와 병행(교차검증). 현재 log-only(측정) — 차트
+    # 자동수정 안 함. 디폴트 OFF, Playwright/codex 비전 미가용 시 graceful skip.
+    # env: V6_CODEX_VISUAL=1.
+    enable_codex_visual: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_CODEX_VISUAL", "ENABLE_CODEX_VISUAL", "enable_codex_visual"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
