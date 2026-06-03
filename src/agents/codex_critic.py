@@ -186,14 +186,16 @@ class CodexCritic:
             )
             return verdict
 
+        webverify = self.config.enable_codex_webverify
         prompt = self._build_prompt(
             report, context, publication_date=publication_date, pre_flags=pre_flags,
+            webverify=webverify,
         )
 
         start = time.time()
         try:
             stdout, stderr, returncode, elapsed_ms = await self._call_codex_cli(
-                bin_path, prompt,
+                bin_path, prompt, webverify=webverify,
             )
         except asyncio.TimeoutError:
             elapsed_ms = int((time.time() - start) * 1000)
@@ -338,8 +340,13 @@ class CodexCritic:
     def _resolve_bin(self) -> str | None:
         return shutil.which(self.config.codex_bin)
 
-    def _build_cmd(self, bin_path: str, image_paths: list[str] | None = None) -> list[str]:
+    def _build_cmd(
+        self, bin_path: str, image_paths: list[str] | None = None,
+        webverify: bool = False,
+    ) -> list[str]:
         cmd = [bin_path, *self.config.codex_cmd_args]
+        if webverify and self.config.codex_websearch_args.strip():
+            cmd.extend(self.config.codex_websearch_args.split())  # 웹검색 활성 (Phase V6-5)
         if self.config.codex_model:
             cmd.extend(["-m", self.config.codex_model])
         for img in image_paths or []:
@@ -348,6 +355,7 @@ class CodexCritic:
 
     async def _call_codex_cli(
         self, bin_path: str, prompt: str, image_paths: list[str] | None = None,
+        webverify: bool = False,
     ) -> tuple[str, str, int, int]:
         """codex 를 subprocess 로 호출. 프롬프트는 stdin 으로 전달.
 
@@ -357,7 +365,7 @@ class CodexCritic:
         배너+echo+푸터로 오염됨을 확인). 파일이 비면 raw stdout 폴백. timeout 시
         ``asyncio.TimeoutError`` 를 raise (호출측이 skip verdict 로 degrade).
         """
-        cmd = self._build_cmd(bin_path, image_paths)
+        cmd = self._build_cmd(bin_path, image_paths, webverify)
         fd, msg_path = tempfile.mkstemp(prefix="codex_verdict_", suffix=".txt")
         os.close(fd)
         cmd = [*cmd, "-o", msg_path]
@@ -426,6 +434,7 @@ class CodexCritic:
         *,
         publication_date: str,
         pre_flags: list[str] | None,
+        webverify: bool = False,
     ) -> str:
         report_json = json.dumps(
             self._report_digest(report), ensure_ascii=False, separators=(",", ":"),
@@ -441,6 +450,17 @@ class CodexCritic:
             .replace("__EVIDENCE_JSON__", evidence_json)
             .replace("__REPORT_JSON__", report_json)
         )
+        # Phase V6-5 — 웹 verify. 근거에 없는 사실은 웹으로 ≤N 대조 + URL 인용 강제 (bound).
+        if webverify:
+            prompt += (
+                f"\n\n=== 웹 verify (V6, bounded ≤{self.config.codex_websearch_cap}회) ===\n"
+                "수집된 근거(evidence)에 *없는* 특정 사실(제품명·날짜·수치·인용)은 웹검색으로\n"
+                f"최대 {self.config.codex_websearch_cap}회까지 ground truth 와 대조하라.\n"
+                "- 웹으로 확인한 지적은 사용한 URL 을 해당 claim 의 source_urls 와 전체 cited_urls 에 명시.\n"
+                "- URL 을 댈 수 없으면 그 지적은 내지 마라(근거 없는 지적 금지, AP-V6-8).\n"
+                "- 웹으로도 확인 불가면 '허위' 가 아니라 evidence_conflict 에 '근거 부족(웹 미확인)' 으로.\n"
+                f"- 검색은 {self.config.codex_websearch_cap}회를 넘기지 마라.\n"
+            )
         # 검수자 페르소나가 있으면 *맨 앞* 에 주입 (검수 관점만 — 본문 작성 금지).
         if self.critic_persona:
             prompt = (
@@ -537,6 +557,15 @@ class CodexCritic:
         payload["claims"] = good
         # status 는 _coherent_status validator 가 claims 기준 정규화하므로 제거.
         payload.pop("verdict_status", None)
+        # Phase V6-5 — cited_urls 가 비면 claim 의 source_urls 를 집계 (웹verify 추적).
+        if not payload.get("cited_urls"):
+            seen: list[str] = []
+            for c in good:
+                for u in c.source_urls:
+                    if u and u not in seen:
+                        seen.append(u)
+            if seen:
+                payload["cited_urls"] = seen
         try:
             return FactVerdict.model_validate(payload)
         except ValidationError as exc:

@@ -243,6 +243,26 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_CODEX_VISUAL", "ENABLE_CODEX_VISUAL", "enable_codex_visual"),
     )
 
+    # === V6 Phase V6-5 — Codex 웹 verify (bounded) ===
+    # 켜지면 codex 가 검수 시 *자체 웹검색* 으로 우리 근거에 없는 사실까지 ground truth
+    # 대조 + 사용 URL 을 cited_urls/source_urls 에 명시. 웹은 변동 → ON 만 비결정,
+    # OFF 는 byte-equal. 검색 횟수는 codex_websearch_cap 으로 프롬프트 bound (AP-V6-2).
+    # env: V6_CODEX_WEBVERIFY=1.
+    enable_codex_webverify: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_CODEX_WEBVERIFY", "ENABLE_CODEX_WEBVERIFY", "enable_codex_webverify"),
+    )
+    # codex 웹검색 활성화 인자 (VM spike 가 정확한 형태 확정 — codex 0.136.0 의
+    # `--enable <feature>` 패턴. 환경별 override 가능). webverify ON 일 때만 cmd 에 추가.
+    codex_websearch_args: str = Field(
+        default="--enable web_search",
+        validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_ARGS", "codex_websearch_args"),
+    )
+    codex_websearch_cap: int = Field(
+        default=3,
+        validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_CAP", "codex_websearch_cap"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

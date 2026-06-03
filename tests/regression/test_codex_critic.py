@@ -60,7 +60,7 @@ def _critic_with_stub(config: Config, *, bin_path="/usr/bin/codex", call_stub=No
 
 
 def _stub_returning(stdout: str, stderr: str = "", returncode: int = 0, elapsed_ms: int = 42):
-    async def _stub(bin_path, prompt):  # noqa: ANN001
+    async def _stub(bin_path, prompt, **kwargs):  # noqa: ANN001 — image_paths/webverify 호환
         return stdout, stderr, returncode, elapsed_ms
     return _stub
 
@@ -210,7 +210,7 @@ def test_degrade_generic_error() -> None:
 
 
 def test_degrade_timeout() -> None:
-    async def _timeout_stub(bin_path, prompt):  # noqa: ANN001
+    async def _timeout_stub(bin_path, prompt, **kwargs):  # noqa: ANN001
         raise asyncio.TimeoutError()
 
     critic = _critic_with_stub(_make_config(), call_stub=_timeout_stub)

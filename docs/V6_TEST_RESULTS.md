@@ -286,6 +286,22 @@ budget telemetry V6-aware(Opus 보완 1콜 cap 반영). T-5 모킹 6종(`test_co
 
 ---
 
+### Phase V6-5 — Codex 웹 verify (bounded) ◐ (코드 랜딩, VM 웹검색 실연동 대기)
+
+**일자**: 2026-06-03 · **flag**: `V6_CODEX_WEBVERIFY` (default OFF)
+
+**랜딩**: `critique()` webverify-aware — cmd 에 웹검색 인자(`codex_websearch_args`,
+기본 `--enable web_search`) + 프롬프트 `=== 웹 verify (bounded ≤N) ===` 블록(근거 없는
+사실만 ≤N 검색·URL 인용 강제·URL 못 대면 무시) + `_build_cmd`/`_call_codex_cli` webverify
+파라미터 + `_coerce_verdict` cited_urls 집계. T-6 모킹 6종(`test_codex_webverify.py`),
+전체 V6 96 pass. flag OFF byte-equal (ON 만 비결정 — 웹 변동).
+
+**남은 것 (VM)**: codex `exec` 가 *실제* 웹검색을 수행하는지 + `--enable web_search` 정확한
+형태(샌드박스/네트워크 정책 포함) 실연동 1회. 미작동 시 `codex_websearch_args` override 로
+조정 or webverify 보류(graceful — flag OFF 면 무영향).
+
+---
+
 ## §2. 효과·비용 지표 (T-10, 누적 — Phase 3 루프 가동 후 채움)
 
 | 지표 | 값 | 측정일 |

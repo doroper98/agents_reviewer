@@ -20,6 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6 Phase V6-5) — Codex 웹 verify (bounded)
+
+GAP-2/9 — 우리 근거에 *없는* 사실까지 codex 가 자체 웹검색으로 ground truth 대조.
+오늘 e2e 캐비엇("블랙웰 300" 류 내부정합은 맞지만 외부 미검증)을 닫는 단계. 웹은 변동 →
+`V6_CODEX_WEBVERIFY` ON 만 비결정, OFF byte-equal.
+
+- `critique()` webverify-aware (config flag) — cmd 에 웹검색 인자(`codex_websearch_args`,
+  기본 `--enable web_search`) + 프롬프트에 `=== 웹 verify (bounded ≤N) ===` 블록(근거 없는
+  사실만 ≤N 검색·URL 인용 강제·URL 못 대면 지적 안 함, AP-V6-8).
+- `_build_cmd`/`_call_codex_cli` 에 `webverify` 파라미터. `codex_websearch_cap`(기본 3) bound.
+- `_coerce_verdict` — claim 의 `source_urls` 를 `cited_urls` 로 집계(웹verify URL 추적).
+- 회귀 `test_codex_webverify.py` 6종(웹검색 인자/프롬프트 블록/cap/flag OFF 불변/cited_urls 집계). V6 96 pass.
+- **남은 것(VM)**: codex `exec` 가 실제 웹검색을 하는지 + `--enable web_search` 정확한 형태 실연동.
+
 ## v5.8.8 (V6 Phase V6-4) — Codex 미학 검수 (vision, 렌더 PNG)
 
 GAP-8 — 차트 데이터뿐 아니라 *미학* 까지 교차모델(codex 비전)이 검수. Phase 1 에서
