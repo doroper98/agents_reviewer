@@ -40,7 +40,9 @@ orchestrator 에 연결. `V6_CODEX_CRITIC` OFF 면 블록 통째 스킵 = v5.8.8
 - **회귀 T-3/T-4** (`test_codex_loop.py`, 9종) — flag OFF passthrough(critic 0콜)/degrade/
   clean 무보완/위반→보완→확인 수렴/unsourced 착지 drop/bound(재작성·확인 각 1회 강제)/
   보완실패 원본보존/사전필터 합류. 전체 66 pass.
-- **남은 것**: VM e2e (실제 codex+Opus 루프 1회) + Phase 2 잔여(프롬프트 하드닝·최신성 제한).
+- **VM e2e 수렴 (완료, 2026-06-03)**: 실제 codex(gpt-5.5)+Opus 루프가 NVIDIA 표본 4위반
+  (scope/unsourced/novelty)을 보완 1회·확인패스 1회로 **위반 0 수렴**. 130만→"랙 전체",
+  "27년 만" 제거, GR00T "오늘 공개"→"3월 GTC, 신규 아님" 정확 교정. Phase V6-3 DoD 충족.
 
 ## v5.8.8 (V6 Phase V6-2) — 결정적 사실 사전필터 가드 + 프롬프트 하드닝 + 검수자 페르소나
 

@@ -170,7 +170,7 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 `_build_system_prompt()`). 회귀 `test_fact_prompt.py` 6종 — 둘 다 **flag OFF byte-equal**
 (== v5.8.8 프롬프트) + ON 직교 주입(WRITE-AP-11/14~21 / 최신성 24~48h). 전체 V6 회귀 71 pass.
 
-### Phase V6-3 — Bounded Codex critic 루프 ◐ (orchestrator 연결, VM e2e 대기)
+### Phase V6-3 — Bounded Codex critic 루프 ✅ (완료, VM e2e 수렴 2026-06-03)
 
 **일자**: 2026-06-03
 **flag**: `V6_CODEX_CRITIC` (default OFF — 루프 마스터)
@@ -198,11 +198,32 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 
 전체 V6 회귀 **66 pass**. flag OFF byte-equal (orchestrator 블록 조건부 + call 시그니처 하위호환).
 
-**남은 것 — VM e2e (실제 codex + Opus 루프 1회)**
-- ☐ `V6_CODEX_CRITIC=1` (+선택 `V6_FACT_GUARDS=1`) 로 실제 보고서 1건 생성 → 루프 로그
-  (`init_viol/revised/confirm/residual/dropped`) + 발행본 확인. NVIDIA 표본이 위반 0/헤지/
-  drop 으로 수렴하는지. codex 2콜 × ~35s + Opus 보완 1콜의 총 지연 측정 (온디맨드 UX).
-- ☐ degrade 경로(codex 미인증/한도) 에서 정상 단일패스 발행 확인.
+#### VM e2e — 실제 codex + Opus 루프 (2026-06-03, /tmp/v6spike, `V6_CODEX_CRITIC=1 V6_FACT_GUARDS=1`)
+
+NVIDIA 표본(본문에 scope/unsourced/novelty 오류 + evidence 에 정답 provenance) 투입.
+**실측 결과 — 위반 0 으로 수렴:**
+
+```
+skipped=False  revised=True  confirm=True
+init_viol=4  residual=0  dropped=[]  pre_flags=2
+[보완본] headline: "PC 칩 RTX 스파크 공개"  (← "27년 만의 PC 칩" 에서 27년 만 제거)
+ 발표 요지: "베라 루빈 NVL72 랙 전체에 약 130만 개 …  PC용 칩 RTX 스파크를 새로 내놨다.
+            GR00T N1.7/N2 는 3월 GTC에서 공개된 내용으로 이번 타이베이 신규 공개 아님."
+```
+
+- **수렴 검증**: 결정적 가드 2건 선검출(pre_flags) + Codex 4건 검출(init_viol) →
+  Opus 보완 1회 → Codex 확인패스 잔존 0 → drop 불필요. **재작성 1회·확인패스 1회 bound 준수.**
+- **교정 정확도**: scope(보드→NVL72 랙 전체) / unsourced("27년 만" 제거) / novelty(GR00T
+  "오늘 공개"→"3월 GTC, 신규 아님") 3종 모두 evidence 에 맞게 교정 (fact_discipline
+  scope_misattribution_01 / unsourced_number_01 / novelty_conflation_01 과 동형).
+- **V6 핵심 가설 실증**: 교차모델(GPT)이 Claude confabulation 검출 → Opus 보완 →
+  bounded 루프 수렴. 전 과정 실제 모델.
+
+**→ Phase V6-3 DoD 충족** (NVIDIA 표본 위반 0 수렴 + 재작성≤1 + 확인패스≤1 + 모킹 9종).
+
+**남은 것 (선택, 배포 단계)**: 전체 4층(검색·작성·가드·루프) + 실제 웹검색 + 발행까지의
+풀 파이프라인 e2e — 봇으로 실제 보고서 1건 (프로덕션 영향) + degrade 경로(codex 미인증)
+단일패스 확인. codex 2콜 + Opus 보완 1콜의 총 지연(온디맨드 UX) 측정.
 
 ---
 
