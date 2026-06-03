@@ -29,6 +29,7 @@ import json
 import logging
 import os
 import shutil
+import tempfile
 import time
 from pathlib import Path
 
@@ -202,35 +203,56 @@ class CodexCritic:
     ) -> tuple[str, str, int, int]:
         """codex 를 subprocess 로 호출. 프롬프트는 stdin 으로 전달.
 
-        Returns ``(stdout, stderr, returncode, elapsed_ms)``. timeout 시
+        Returns ``(stdout, stderr, returncode, elapsed_ms)`` 에서 ``stdout`` 은
+        codex 의 *최종 메시지만* (배너/프롬프트 echo/`tokens used` 푸터 없이) —
+        ``-o <FILE>`` 로 깨끗이 받는다 (codex-cli 0.136.0 VM spike 에서 stdout 이
+        배너+echo+푸터로 오염됨을 확인). 파일이 비면 raw stdout 폴백. timeout 시
         ``asyncio.TimeoutError`` 를 raise (호출측이 skip verdict 로 degrade).
         """
         cmd = self._build_cmd(bin_path)
+        fd, msg_path = tempfile.mkstemp(prefix="codex_verdict_", suffix=".txt")
+        os.close(fd)
+        cmd = [*cmd, "-o", msg_path]
         logger.info(
             "[codex_critic] invoking codex (cmd=%s, prompt=%d chars, timeout=%ds)",
             " ".join(cmd), len(prompt), self.config.codex_timeout_s,
         )
         start = time.time()
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
         try:
-            stdout_b, stderr_b = await asyncio.wait_for(
-                proc.communicate(input=prompt.encode("utf-8")),
-                timeout=self.config.codex_timeout_s,
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
-        except asyncio.TimeoutError:
-            proc.kill()
-            with contextlib.suppress(Exception):
-                await proc.wait()
-            raise
-        elapsed_ms = int((time.time() - start) * 1000)
-        stdout = stdout_b.decode("utf-8", "replace").strip()
-        stderr = stderr_b.decode("utf-8", "replace").strip()
-        return stdout, stderr, proc.returncode or 0, elapsed_ms
+            try:
+                stdout_b, stderr_b = await asyncio.wait_for(
+                    proc.communicate(input=prompt.encode("utf-8")),
+                    timeout=self.config.codex_timeout_s,
+                )
+            except asyncio.TimeoutError:
+                proc.kill()
+                with contextlib.suppress(Exception):
+                    await proc.wait()
+                raise
+            elapsed_ms = int((time.time() - start) * 1000)
+            # 최종 메시지는 -o 파일에서 (깨끗). 비면 raw stdout 으로 폴백.
+            message = self._read_text(msg_path)
+            stdout = message or stdout_b.decode("utf-8", "replace").strip()
+            stderr = stderr_b.decode("utf-8", "replace").strip()
+            return stdout, stderr, proc.returncode or 0, elapsed_ms
+        finally:
+            with contextlib.suppress(OSError):
+                os.unlink(msg_path)
+
+    @staticmethod
+    def _read_text(path: str) -> str:
+        """파일을 utf-8 로 읽어 strip. 실패/부재 시 빈 문자열 (폴백 트리거)."""
+        try:
+            with open(path, "rb") as f:
+                return f.read().decode("utf-8", "replace").strip()
+        except OSError:
+            return ""
 
     @staticmethod
     def _classify_failure(returncode: int, stderr: str) -> str:

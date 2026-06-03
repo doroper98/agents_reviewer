@@ -188,7 +188,7 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_CODEX_SUBCOMMAND", "codex_subcommand"),
     )
     codex_extra_args: str = Field(
-        default="",
+        default="--skip-git-repo-check --sandbox read-only",
         validation_alias=AliasChoices("V6_CODEX_EXTRA_ARGS", "codex_extra_args"),
     )
     codex_model: str = Field(

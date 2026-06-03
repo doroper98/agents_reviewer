@@ -51,12 +51,31 @@ last_review: 2026-06-03
 > 아래는 *코드가 아니라 환경* 검증이라 fresh 컨테이너에선 불가 (codex·인증·reports 없음).
 > VM(Oracle Ubuntu, 봇 가동기)에서 수동 1회 수행 후 결과를 본 §1 에 *추가* 기록.
 
-1. ☐ codex CLI 설치 + ChatGPT headless 인증 유지 방식 확인 (`codex --version`, 인증 토큰 만료 주기).
-2. ☐ `codex exec` 비대화형 JSON 출력 안정성 — 실제 호출 형태 확정 (subcommand/args).
-   확정 결과를 `.env` 의 `V6_CODEX_SUBCOMMAND` / `V6_CODEX_EXTRA_ARGS` 에 반영.
-3. ☐ Codex 호출 rate-limit 이 일일브리핑 + 온디맨드 빈도를 감당하는지 (한도·지연 측정).
-4. ☐ 비전(이미지) 입력 지원 여부 — Phase V6-4(미학 검수) 가부 결정.
-5. ☐ 실제 codex 1회 수동 호출 로그 (`logs/codex_calls.jsonl` 1줄 + stdout 샘플) 첨부.
+1. ☑ codex CLI 설치 + ChatGPT headless 인증 — **완료 (2026-06-03)**. 아래 §VM 참조.
+2. ☑ `codex exec` 호출 형태 확정 — **완료**. `exec` 가 stdin 프롬프트 수신, `-o <FILE>` 로
+   최종 메시지만 수신. `.env` 기본값 = `V6_CODEX_SUBCOMMAND=exec` +
+   `V6_CODEX_EXTRA_ARGS="--skip-git-repo-check --sandbox read-only"`.
+3. ☐ Codex 호출 rate-limit 이 일일브리핑 + 온디맨드 빈도를 감당하는지 (한도·지연 측정) — **대기**.
+4. ☑ 비전(이미지) 입력 지원 — **YES** (`codex exec -i, --image <FILE>...`). Phase V6-4 가능.
+5. ☐ 실제 봇 e2e 1회 수동 호출 로그 (`logs/codex_calls.jsonl` 1줄 + verdict) — **대기**(다음 단계).
+
+#### VM 실연동 로그 (2026-06-03, analysisbot)
+
+- **환경**: Oracle Cloud Ubuntu (봇 가동기), Node v20.20.0 / npm 10.8.2.
+- **설치**: `sudo npm install -g @openai/codex` (전역 prefix `/usr/lib/node_modules` 라 sudo
+  필요). → **codex-cli 0.136.0**. 시스템 Node 미변경(봇의 claude CLI 보존).
+- **인증**: `ssh -L 1455:localhost:1455` 포워딩 세션에서 `codex login` → ChatGPT 계정 OAuth
+  (로컬 브라우저 콜백) → `~/.codex/auth.json` (0600) 생성. 토큰 자동 갱신.
+- **모델**: 기본 `gpt-5.5` (provider openai). approval=never, sandbox=read-only 로 비대화 동작.
+- **스모크**: `printf '... {"ok":true,"msg":"hi"}' | codex exec --skip-git-repo-check
+  --sandbox read-only -C /tmp` → 정답 `{"ok":true,"msg":"hi"}` 반환 (1,592 tokens).
+- **관측된 gotcha**: codex stdout 은 *배너(workdir/model/session) + 프롬프트 echo +
+  `tokens used` 푸터* 로 오염됨 → 첫 `{` 스크랩이 echo 된 프롬프트의 `{` 를 잡을 위험.
+  **대응**: `_call_codex_cli` 가 `-o <tmpfile>` 로 *최종 메시지만* 수신하도록 코드 보강
+  (배너/echo/푸터 제거). 파일 비면 raw stdout 폴백 + 절단복구.
+- **bubblewrap 미설치 경고**: codex 가 번들 bubblewrap 으로 폴백 — 동작엔 무해
+  (읽기전용 검수라 샌드박스 거의 미사용). 선택적으로 `sudo apt-get install -y bubblewrap`
+  로 경고 제거 가능.
 
 **VM 수동 호출 (복사용) — codex 설치·인증 후 repo 루트 venv 활성 상태에서:**
 
