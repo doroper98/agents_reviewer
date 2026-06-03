@@ -20,6 +20,19 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 — 시장 수치 역산 교체 + 맥락·서사 검수 (R1·R2, 사용자 지시)
+
+- **R1. 시장 수치 *교체*(drop 아님)** — `market_correction_hint`: 틀린 시장 수치의 *올바른
+  값* 을 `time_series` 에서 역산(종목+날짜 → 종가·전일대비%)해 Opus 의 fix_instruction 에
+  덧댐 → Opus 가 *정확값으로 교체*. 실측: "삼성 5/29 +10.1%" → "318,500, +7.78%"(차트와 일치).
+  매치 실패 시 착지 drop 으로 폴백.
+- **R2. 맥락·서사 정합 검수** — codex 검수자가 *문장 간 맥락* 도 본다. error_class
+  `coherence_break`(비유·프레임 붕괴 — "세 채널"인데 "유가 채널" 등장) / `undefined_reference`
+  (서두 정의 없이 'A/B'·약어 사용). 어디서 끊기는지 evidence_conflict + *어떻게 이으면 되는지*
+  Opus 가이드를 fix_instruction 에. 페르소나 SOP 정합 — `codex_critic_persona.md`(런타임) +
+  `market_factcheck_desk_v6.md`(전체 §11) + `_CRITIC_INSTRUCTIONS` 동시 갱신, 본문 작성 금지 보존(AP-V6-11).
+- 회귀 124 pass.
+
 ## v6.0.0 — 시장 수치 잔존 처리 강화 (착지 drop + time_series 가드)
 
 첫 실전에서 codex 가 "삼성전자 5/29 +10.1%"(실제 +7.78%)를 잡고도 *발행은 됐던* 문제

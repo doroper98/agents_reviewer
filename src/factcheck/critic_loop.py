@@ -132,6 +132,74 @@ def build_verification_byline(
     }
 
 
+_MD_RE = re.compile(r"(\d{1,2})\s*월\s*(\d{1,2})\s*일")
+_YMD_RE = re.compile(r"(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})")
+
+
+def _quote_date(quote: str, default_year: str) -> str | None:
+    m = _YMD_RE.search(quote or "")
+    if m:
+        return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
+    m = _MD_RE.search(quote or "")
+    if m and default_year:
+        return f"{default_year}-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
+    return None
+
+
+def _fmt_price(v: float) -> str:
+    return f"{v:,.0f}" if float(v).is_integer() else f"{v:,.2f}"
+
+
+def market_correction_hint(quote: str, context: ContextAnalysis) -> str | None:
+    """Phase V6-8/R1 — 틀린 시장 수치의 *올바른 값* 을 time_series 에서 역산해 Opus 에게
+    제공 (drop 대신 교체). 인용구의 종목+날짜로 종가·전일대비% 를 계산.
+
+    예: "삼성전자 5/29 +10.1%" → time_series 의 5/29 종가·전일종가로 실제 % 산출 →
+    "[time_series 정정 참고] 삼성전자 2026-05-29 종가 318,500, 전일 대비 +7.78% …".
+    매치 실패 시 None (그땐 착지 drop 으로 폴백).
+    """
+    year = (getattr(context, "date", "") or "")[:4] or ""
+    for ts in getattr(context, "time_series", []) or []:
+        if not isinstance(ts, dict):
+            continue
+        name = ts.get("instrument") or ts.get("name")
+        data = ts.get("data") or []
+        if not name or name not in (quote or "") or not data:
+            continue
+        target = _quote_date(quote, year)
+        idx = None
+        if target:
+            for k, b in enumerate(data):
+                if isinstance(b, dict) and b.get("date") == target:
+                    idx = k
+                    break
+            if idx is None:  # 정확 날짜 없으면 그 이하 가장 가까운 거래일
+                cands = [
+                    k for k, b in enumerate(data)
+                    if isinstance(b, dict) and b.get("date") and b["date"] <= target
+                ]
+                idx = cands[-1] if cands else None
+        if idx is None:
+            idx = len(data) - 1
+        bar = data[idx]
+        close = bar.get("close") if isinstance(bar, dict) else None
+        if not close:
+            continue
+        prior = (
+            data[idx - 1].get("close")
+            if idx > 0 and isinstance(data[idx - 1], dict) else None
+        )
+        parts = [f"{name} {bar.get('date', '')} 종가 {_fmt_price(float(close))}"]
+        if prior:
+            pct = (float(close) - float(prior)) / float(prior) * 100
+            parts.append(f"전일 대비 {pct:+.2f}%")
+        return (
+            "[time_series 정정 참고] " + ", ".join(parts)
+            + " — 본문의 해당 시장 수치를 이 값으로 교체하라(삭제 말 것)."
+        )
+    return None
+
+
 def _clip(s: str, n: int = 140) -> str:
     s = (s or "").replace("\n", " ").strip()
     return s if len(s) <= n else s[:n] + "…"
@@ -301,7 +369,17 @@ class CriticLoop:
             {"error_class": c.error_class, "location": c.location, "quote": _clip(c.quote, 80)}
             for c in v1.claims
         ]
-        fix_instructions = [c.fix_instruction for c in v1.claims] + pre_flags
+        # R1 — 시장 수치 지적엔 time_series 역산 정정값을 fix_instruction 에 덧대 Opus 가
+        # *교체* 하게 (drop 폴백 전에). 매치 실패 시 원 지시 그대로.
+        fix_instructions: list[str] = []
+        for c in v1.claims:
+            instr = c.fix_instruction
+            if "market" in (c.error_class or "").lower():
+                hint = market_correction_hint(c.quote, context)
+                if hint:
+                    instr = f"{instr} {hint}"
+            fix_instructions.append(instr)
+        fix_instructions += pre_flags
         final = report
         revised_ok = False
         try:
