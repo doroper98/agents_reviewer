@@ -314,7 +314,12 @@ bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검�
 - **DoD**: 적립 idempotent, 재발 임계 시 소프트가드 자동 등재, 소프트가드가 본문
   프롬프트를 변형하지 않음(byte-equal 본문 프롬프트 가드), 정식 승격은 게이트 필수.
 
-### Phase V6-7 — 바이라인 신뢰장치
+### Phase V6-7 — 바이라인 신뢰장치 ✅ (완료 2026-06-03)
+**상태**: `ComposedReport.verification` + `build_verification_byline`(critic_loop) +
+orchestrator 조건부 세팅(검수 수행 시만, AP-V6-10) + `freeform_essay.html` footer 렌더.
+**버전 명시** — 작성=config(`COMPOSER_MODEL`→"Claude Opus 4.7"), 검수=codex 배너 실측
+(`model:` 파싱→"gpt-5.5", 하드코딩 금지). flag `V6_BYLINE` default OFF. degrade/skip 시
+`verification=None`(거짓 신뢰 금지). 회귀 6종. ReportBundle verification 척추와 정합 가능.
 **목적**: REQ-V6-12. 독자가 보고서 신뢰도를 가늠하는 출처-검증 라벨.
 - `freeform_essay.html` 말미에 "Claude Opus {ver} 작성 / OpenAI Codex 검수 ({n}회)".
   버전은 **config SSOT**(현 composer=Opus 4.7)에서 끌어옴 — 하드코딩 금지.

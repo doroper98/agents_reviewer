@@ -572,6 +572,10 @@
 {# v4.4.6 — 지도 섹션은 hero 직후로 이동. 여기엔 안 둠 (WRITE-AP-3). #}
 
 <footer class="footer">
+  {# Phase V6-7 — 검수 바이라인 (검수 실제 수행 시에만 채워짐, AP-V6-10). #}
+  {% if composed and composed.verification and composed.verification.text %}
+  <div class="footer-byline" style="margin-bottom:10px;font-weight:600;color:var(--accent,#C9A84C)">{{ composed.verification.text | strip_md }}</div>
+  {% endif %}
   {% if confidence_text %}<div class="footer-confidence">{{ confidence_text }}</div>{% endif %}
   <div>archetype: freeform_essay · Generated {{ generated_at }} · Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s</div>
   {% if result.report_url and result.report_url.startswith('http') %}

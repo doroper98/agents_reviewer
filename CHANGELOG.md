@@ -20,6 +20,19 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 (Phase V6-7) — 검수 바이라인 (버전 명시 신뢰 도장)
+
+발행물 말미에 "Claude Opus 4.7 작성 · OpenAI Codex (gpt-5.5) 사실 검수 — 지적 N건 반영"
+도장. 독자에게 보이는 신뢰 surface (생성 중 라이브 status 의 발행 후 짝). flag `V6_BYLINE`.
+
+- **버전 명시** — 작성 모델은 config SSOT(`NarrativeComposer.COMPOSER_MODEL` → "Claude Opus
+  4.7"), 검수 모델은 **codex 배너 실측**("model: gpt-5.5" 파싱, 하드코딩 금지). `_pretty_writer`.
+- **조건부 렌더 (AP-V6-10)** — critic 이 *실제 수행* 됐을 때만. degrade/skip/flag OFF 시
+  `ComposedReport.verification=None` → 바이라인 생략(거짓 신뢰 금지). `critic_label` 빈값으로 가드.
+- `build_verification_byline` (위반 수·미해결·웹대조 반영) → `composed.verification.text` →
+  `freeform_essay.html` footer `.footer-byline`(accent 색).
+- 회귀 `test_codex_loop.py` 바이라인 6종(버전/clean/미해결/label 전파/skip 무바이라인). V6 102 pass.
+
 ## v6.0.0 — V6 사실 거버넌스 (Codex 외부 critic 루프) 정식 릴리스
 
 2026-06-01 일일 브리핑 팩트체크 회귀(자유 본문에 evidence-binding 부재 + fact-critic 루프

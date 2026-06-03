@@ -264,6 +264,16 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_CAP", "codex_websearch_cap"),
     )
 
+    # === V6 Phase V6-7 — 바이라인 신뢰장치 ===
+    # 발행물 말미에 "Claude Opus 4.7 작성 / OpenAI Codex (GPT-5.5) 검수" 도장.
+    # 검수 *실제 수행* 시에만 렌더(degrade/skip 시 검수 줄 생략 — 거짓 신뢰 금지 AP-V6-10).
+    # 버전은 config(작성=COMPOSER_MODEL) + codex 배너 실측(검수). 디폴트 OFF.
+    # env: V6_BYLINE=1.
+    enable_byline: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_BYLINE", "ENABLE_BYLINE", "enable_byline"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

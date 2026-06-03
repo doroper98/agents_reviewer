@@ -86,6 +86,48 @@ class CriticLoopResult(BaseModel):
     # 감사용 — 검수가 *식별* 한 지적(+보완 지시) 과 *실제* before→after 변경.
     applied_claims: list[str] = Field(default_factory=list)
     changes: list[str] = Field(default_factory=list)
+    # 바이라인용 (Phase V6-7) — 실측 검수 모델 라벨 (예: "OpenAI Codex (gpt-5.5)").
+    critic_label: str = ""
+
+
+def _pretty_writer(model_id: str) -> str:
+    """모델 ID → 사람-읽기 (예: 'claude-opus-4-7' → 'Claude Opus 4.7'). 바이라인용."""
+    s = (model_id or "").strip()
+    if not s:
+        return "Claude (Opus)"
+    s = s.replace("claude-", "Claude ")
+    s = re.sub(
+        r"(opus|sonnet|haiku)-(\d+)-(\d+)",
+        lambda m: f"{m.group(1).capitalize()} {m.group(2)}.{m.group(3)}",
+        s,
+    )
+    return s
+
+
+def build_verification_byline(
+    result: "CriticLoopResult", writer_model: str, *, web_verified: bool = False,
+) -> dict:
+    """검수 바이라인 dict (Phase V6-7). *검수 실제 수행 시에만* 호출 (AP-V6-10).
+
+    버전 명시 — 작성=config 모델(Opus 4.7), 검수=codex 배너 실측(gpt-5.5).
+    """
+    writer = _pretty_writer(writer_model)
+    critic = result.critic_label or "OpenAI Codex"
+    if result.initial_violations == 0:
+        detail = "지적 없음 통과"
+    else:
+        detail = f"지적 {result.initial_violations}건 반영"
+        if result.unresolved_count:
+            detail += f" · {result.unresolved_count}건 미해결(신뢰도 반영)"
+    web = " · 웹 대조" if web_verified else ""
+    return {
+        "writer": writer,
+        "critic": critic,
+        "violations_fixed": result.initial_violations,
+        "unresolved": result.unresolved_count,
+        "web_verified": web_verified,
+        "text": f"{writer} 작성 · {critic} 사실 검수{web} — {detail}",
+    }
 
 
 def _clip(s: str, n: int = 140) -> str:
@@ -216,7 +258,7 @@ class CriticLoop:
             await self._emit(on_progress, "✅ 사실 검수 통과 (지적 없음)")
             return CriticLoopResult(
                 report=report, initial_violations=v1.violation_count,
-                pre_flag_count=len(pre_flags),
+                pre_flag_count=len(pre_flags), critic_label=v1.model_label,
             )
 
         # 3. Opus 보완 (≤1). Codex 지시 + 사전필터 힌트를 합산해 전달.
@@ -287,4 +329,5 @@ class CriticLoop:
             unresolved_count=len(unresolved),
             applied_claims=applied_claims,
             changes=_diff_reports(report, final),
+            critic_label=v1.model_label,
         )

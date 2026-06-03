@@ -750,6 +750,13 @@ class ComposedReport(BaseModel):
     # null 로 두는 게 정상 — 빈 figure 박지 말 것.
     hero_image: dict | None = None
 
+    # v6.0.0 (Phase V6-7) — 검수 바이라인. Codex critic 루프가 *실제 수행* 됐을 때만
+    # orchestrator 가 채움 (degrade/skip/flag OFF → None, 거짓 신뢰 금지 AP-V6-10).
+    # 형식: {"writer": "Claude Opus 4.7", "critic": "OpenAI Codex (gpt-5.5)",
+    #        "violations_fixed": int, "unresolved": int, "web_verified": bool,
+    #        "text": "사람-읽기 한 줄"}. 렌더는 freeform_essay.html 의 .freeform-byline.
+    verification: dict | None = None
+
 
 # ======================================================================
 # V6 Phase V6-1 — Codex 외부 critic verdict 계약 (REFACTOR_V6_PLAN.md §3)

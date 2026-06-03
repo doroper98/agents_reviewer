@@ -1632,6 +1632,14 @@ class Orchestrator:
                 )
                 if loop_result.report is not None:
                     result.composed_report = loop_result.report
+                # Phase V6-7 — 검수 바이라인. *실제 검수 수행 시에만* (AP-V6-10).
+                if self.config.enable_byline and not loop_result.skipped:
+                    from src.factcheck.critic_loop import build_verification_byline
+                    result.composed_report.verification = build_verification_byline(
+                        loop_result,
+                        self.narrative_composer.COMPOSER_MODEL,
+                        web_verified=self.config.enable_codex_webverify,
+                    )
                 logger.info(
                     "[orchestrator] V6 critic loop: skipped=%s reason=%s revised=%s "
                     "confirm=%s init_viol=%d residual=%d unresolved=%d dropped=%d pre_flags=%d",
