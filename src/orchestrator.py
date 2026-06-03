@@ -1640,6 +1640,10 @@ class Orchestrator:
                     loop_result.residual_violations, loop_result.unresolved_count,
                     len(loop_result.dropped_quotes), loop_result.pre_flag_count,
                 )
+                for claim in loop_result.applied_claims:
+                    logger.info("[orchestrator] V6 검수 식별: %s", claim)
+                for change in loop_result.changes:
+                    logger.info("[orchestrator] V6 변경: %s", change)
                 if loop_result.residual_summary:
                     logger.info(
                         "[orchestrator] V6 residual (미해결): %s",

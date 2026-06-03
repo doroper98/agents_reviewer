@@ -83,6 +83,30 @@ class CriticLoopResult(BaseModel):
     residual_summary: list[str] = Field(default_factory=list)
     # ③ 정직한 착지 — drop 으로도 해소 안 된 잔존 수 (≠ 0 이면 신뢰도 하향).
     unresolved_count: int = 0
+    # 감사용 — 검수가 *식별* 한 지적(+보완 지시) 과 *실제* before→after 변경.
+    applied_claims: list[str] = Field(default_factory=list)
+    changes: list[str] = Field(default_factory=list)
+
+
+def _clip(s: str, n: int = 140) -> str:
+    s = (s or "").replace("\n", " ").strip()
+    return s if len(s) <= n else s[:n] + "…"
+
+
+def _diff_reports(orig: ComposedReport, final: ComposedReport) -> list[str]:
+    """원본 → 최종 보고서의 텍스트 변경을 사람-읽기 목록으로 (감사용)."""
+    out: list[str] = []
+    if orig.headline != final.headline:
+        out.append(f"headline: «{_clip(orig.headline)}» → «{_clip(final.headline)}»")
+    if orig.deck != final.deck:
+        out.append(f"deck: «{_clip(orig.deck)}» → «{_clip(final.deck)}»")
+    for i, sec in enumerate(final.sections):
+        if i < len(orig.sections) and orig.sections[i].prose != sec.prose:
+            out.append(
+                f"섹션 '{sec.heading}': «{_clip(orig.sections[i].prose)}» → "
+                f"«{_clip(sec.prose)}»"
+            )
+    return out
 
 
 def apply_landing(
@@ -200,6 +224,11 @@ class CriticLoop:
             on_progress,
             f"✍️ 편집장 (Opus): 검수 지적 {v1.violation_count}건 반영 중…",
         )
+        # 감사용 — 검수가 식별한 지적 + 보완 지시 (무엇을 왜 고치는지).
+        applied_claims = [
+            f"[{c.error_class}] {c.location}: «{_clip(c.quote)}» → {_clip(c.fix_instruction, 200)}"
+            for c in v1.claims
+        ]
         fix_instructions = [c.fix_instruction for c in v1.claims] + pre_flags
         final = report
         revised_ok = False
@@ -256,4 +285,6 @@ class CriticLoop:
             dropped_quotes=dropped,
             residual_summary=residual_summary,
             unresolved_count=len(unresolved),
+            applied_claims=applied_claims,
+            changes=_diff_reports(report, final),
         )

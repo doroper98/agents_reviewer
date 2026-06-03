@@ -221,6 +221,24 @@ def test_clean_convergence_no_confidence_penalty() -> None:
     assert res.report.confidence_score == 0.5  # 하향 없음
 
 
+def test_audit_applied_claims_and_changes() -> None:
+    # 감사 — 무엇이 식별됐고(applied_claims) 어떻게 바뀌었는지(changes) 노출.
+    revised = _report(prose="베라 루빈 NVL72 랙 전체에 약 130만 부품.")
+    critic = StubCritic([_violations(_claim(error_class="scope_misattribution", quote="보드 한 장 130만")), _clean()])
+    loop = CriticLoop(_cfg(), critic, StubReviser(revised))
+    res = _run(loop.run(_report(), ContextAnalysis()))
+    # 식별: error_class + 인용구 + 보완 지시가 보인다.
+    assert any("scope_misattribution" in c and "보드 한 장 130만" in c for c in res.applied_claims)
+    # 변경: before→after 가 보인다 (prose 가 바뀌었으니).
+    assert res.changes and any("→" in ch for ch in res.changes)
+
+
+def test_audit_empty_when_clean() -> None:
+    loop = CriticLoop(_cfg(), StubCritic([_clean()]), StubReviser())
+    res = _run(loop.run(_report(), ContextAnalysis()))
+    assert res.applied_claims == [] and res.changes == []
+
+
 def test_revise_prompt_forbids_new_framing() -> None:
     # ① 예방 — 보완 프롬프트가 '새 주장/프레이밍 도입 금지'를 명시하는지.
     from src.agents.narrative_composer import NarrativeComposer
