@@ -166,10 +166,52 @@ class Config(BaseSettings):
         ),
     )
 
+    # === V6 Phase V6-1 — Codex 외부 critic CLI 통합 (Tier 0 spike) ===
+    # REFACTOR_V6_PLAN.md §3 Phase V6-1. codex CLI (ChatGPT 구독) 를 headless 로
+    # 호출해 ComposedReport 를 사실 검수하고 FactVerdict 를 받는 경로의 마스터 스위치.
+    # 디폴트 OFF — 꺼지면 src/agents/codex_critic.py 의 critique() 가 즉시 skip
+    # verdict 를 반환해 v5.8.8 단일패스 byte-equal (AP-V6-3/12). Phase 1 단계에선
+    # orchestrator 가 본 모듈을 호출하지 않으므로 호출 경로 자체가 불변.
+    # env: V6_CODEX_CRITIC=1.
+    enable_codex_critic: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_CODEX_CRITIC", "ENABLE_CODEX_CRITIC", "enable_codex_critic"),
+    )
+    # codex CLI 실행 파라미터 (VM spike 가 실제 호출 형태를 확정 — 전부 override 가능).
+    # 기본 호출: ``codex exec`` 에 프롬프트를 stdin 으로 전달, stdout=verdict JSON.
+    codex_bin: str = Field(
+        default="codex",
+        validation_alias=AliasChoices("V6_CODEX_BIN", "codex_bin"),
+    )
+    codex_subcommand: str = Field(
+        default="exec",
+        validation_alias=AliasChoices("V6_CODEX_SUBCOMMAND", "codex_subcommand"),
+    )
+    codex_extra_args: str = Field(
+        default="",
+        validation_alias=AliasChoices("V6_CODEX_EXTRA_ARGS", "codex_extra_args"),
+    )
+    codex_model: str = Field(
+        default="",
+        validation_alias=AliasChoices("V6_CODEX_MODEL", "codex_model"),
+    )
+    codex_timeout_s: int = Field(
+        default=180,
+        validation_alias=AliasChoices("V6_CODEX_TIMEOUT_S", "codex_timeout_s"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
     }
+
+    @property
+    def codex_cmd_args(self) -> list[str]:
+        """codex CLI 의 subcommand + extra args 를 토큰 리스트로 (bin 제외)."""
+        args = [self.codex_subcommand] if self.codex_subcommand else []
+        if self.codex_extra_args.strip():
+            args.extend(self.codex_extra_args.split())
+        return args
 
     @property
     def allowed_chat_ids(self) -> list[int]:

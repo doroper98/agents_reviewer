@@ -62,6 +62,13 @@ v4.5.7 의 *실제* 데이터 흐름은 `AnalysisRequest → ContextAnalysis →
 | `WatchSignal` | 감시 신호 — signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at. `WatchlistRegistry` (SQLite) 에 영구 저장 (Anti-pattern #11). composer 의 `composed_report.watch_signals: list[dict]` → `convert_watch_signals()` 변환. | `src/models.py` |
 | `WatchDirection` (Literal) | confirms_base / rejects_base / ambiguous (V3 Step 5-B 도입, v4.5.7 도 동일). | `src/models.py` |
 
+**V6 Phase V6-1 (opt-in, `V6_CODEX_CRITIC` default OFF)** — Codex 외부 critic 의 verdict 계약. flag OFF 시 인스턴스화 안 됨 (byte-equal). 상세는 §3.15.
+
+| 모델 | 책무 | 정의 위치 |
+|------|------|-----------|
+| `CritiqueClaim` | Codex 가 emit 하는 per-claim 구조화 지적. location / error_class / quote / evidence_conflict / source_urls / fix_instruction / severity. AP-V6-8 — 근거 없는 지적은 모델 validation 이 거부. | `src/models.py` |
+| `FactVerdict` | Codex critic 의 보고서 단위 verdict. verdict_status (clean/violations/skipped) / claims / cited_urls / model_label / skipped + skip_reason / latency_ms / truncation_repaired. degrade 시 `FactVerdict.skip(...)` → 단일패스 (AP-V6-12). | `src/models.py` |
+
 **Deprecated (정의는 보존되나 v4.5.7 호출 경로에서 인스턴스화/사용 안 됨)** — v3 시대의 7-agent + 11-lens + 11-archetype + 5-gate 흐름의 모델들. 코드 cleanup 미정.
 
 | 모델 | 마지막 활성 버전 | 비고 |
@@ -280,6 +287,23 @@ Phase 1 (ContextAnalyst Opus 4.7) 출력. composer 가 보는 *유일한* 사실
 - `triggering_signal`: 발화된 `WatchSignal`.
 - `chain_depth`: 부모 체인 깊이. 자식 신호는 +1 로 등록 (v5.5.7 제한 폐지).
 - 영구 저장: `report_meta` 테이블 (`registry.register_report_meta` / `get_report_meta`). v5.8.0 에서 `report_title` 컬럼 추가 (구 DB idempotent 마이그레이션).
+
+### 3.15 FactVerdict / CritiqueClaim (V6 Phase V6-1 — Codex 외부 critic, opt-in)
+- REFACTOR_V6_PLAN.md §3 Phase V6-1. `src/agents/codex_critic.py:CodexCritic` 가 codex CLI(ChatGPT 구독)를 headless 호출해 emit. **본문은 Codex 가 쓰지 않는다** — verdict 는 *지시서* 일 뿐, 보완은 Opus 가 수행 (AP-V6-1/11). flag `V6_CODEX_CRITIC` default OFF.
+- `CritiqueClaim` (per-claim 지적):
+  - `location` (필수, min_length=1): 결함 위치 (섹션 heading / 'headline' / 'deck' / 차트 title).
+  - `error_class` (필수): `fact_discipline_scenarios.yaml` 의 error_class 와 정합. codex 가 다른 라벨을 줄 수 있어 Literal enum 강제는 안 함.
+  - `quote` (필수): 문제가 된 본문/차트 인용구.
+  - `evidence_conflict` (필수, min_length=1): 어느 근거와 충돌하는지. **AP-V6-8 — 비면 거부** (근거 없는 false-positive 가 본문을 훼손하는 것 차단).
+  - `source_urls` (옵셔널): 근거 URL. Phase 5 웹verify 시 채워짐.
+  - `fix_instruction` (필수): Opus 가 수행할 보완 지시.
+  - `severity` (필수 Literal): high / medium / low.
+- `FactVerdict` (보고서 단위 verdict):
+  - `verdict_status` (Literal): clean / violations / skipped. `_coherent_status` validator 가 claims·skipped 기준으로 정규화 (거짓 clean·거짓 신뢰 방지, AP-V6-10).
+  - `claims`: CritiqueClaim 목록. `violation_count` / `is_actionable` 프로퍼티로 루프 제어 (0-LLM, AP-V6-5).
+  - `cited_urls` / `model_label` (바이라인용, 내부 모델 ID 금지) / `latency_ms` (T-C3) / `truncation_repaired` (T-C1).
+  - `skipped` + `skip_reason`: graceful degrade (flag_off / codex_not_found / auth_failed / rate_limited / timeout / codex_error / parse_failed). `FactVerdict.skip(reason)` 클래스메서드 → 호출측 단일패스 발행 (AP-V6-12).
+- Phase V6-1 단계에선 orchestrator 가 본 모델을 채우지 않는다 (호출 경로 byte-equal, T-0). 루프 통합은 Phase V6-3.
 
 ---
 

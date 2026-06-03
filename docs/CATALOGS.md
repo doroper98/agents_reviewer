@@ -29,6 +29,8 @@ last_review: 2026-05-18
 >
 > **V5 Phase 1A (현재 opt-in)** — `ResearchDirector` (`src/agents/research_director.py`) 가 추가됨. `Config.enable_research_director=True` (env `V5_RESEARCH_DIRECTOR=1`) 일 때 ContextAnalyst 직후에 호출되어 `AnalysisBrief` (분석 설계도) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 9종 method enum SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](RESEARCH_DIRECTOR_METHODS.md).
 >
+> **V6 Phase V6-1 (현재 opt-in, spike)** — `CodexCritic` (`src/agents/codex_critic.py`) 가 추가됨. `Config.enable_codex_critic=True` (env `V6_CODEX_CRITIC=1`) 일 때만 동작하는 *외부 fact critic* — codex CLI(ChatGPT 구독)를 headless 호출해 `ComposedReport` 를 사실 검수하고 `FactVerdict` 를 emit. **본문은 쓰지 않는다** (검수·지시만, 보완은 Opus, AP-V6-1/11). 외부 실패는 graceful degrade (`FactVerdict.skip`) → 단일패스 (AP-V6-12). 디폴트 OFF — v5.8.8 byte-equal. Phase V6-1 단계에선 orchestrator 가 *호출하지 않음* (계약·degrade spike). 루프 통합은 Phase V6-3. SSOT: [REFACTOR_V6_PLAN.md §3](../REFACTOR_V6_PLAN.md).
+>
 > | # | 에이전트 | 파일 | 활성 |
 > |---|---------|------|------|
 > | 1 | ContextAnalyst | `src/agents/context_analyst.py` | ✅ 항상 |

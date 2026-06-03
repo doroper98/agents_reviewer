@@ -20,6 +20,32 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6 Phase V6-1) — Codex CLI 통합 spike + FactVerdict 계약
+
+V6 트랙(사실 grounding + 외부 Codex critic 루프)의 Tier 0 진입점. 전 V6 루프가
+의존하는 *외부 codex CLI 경로* 를 먼저 증명하는 spike. 모든 신규 행동은 flag OFF
+default 라 v5.8.8 byte-equal — orchestrator 에 연결하지 않았다(계약·degrade 검증만).
+VERSION 미증가(릴리스 아님). 마스터 플랜: [REFACTOR_V6_PLAN.md](REFACTOR_V6_PLAN.md) §3 Phase V6-1.
+
+- **`src/models.py:FactVerdict` / `CritiqueClaim`** — Codex verdict 계약. per-claim
+  지적(location/error_class/quote/evidence_conflict/source_urls/fix_instruction/
+  severity). 근거(evidence_conflict) 없는 지적은 모델 validation 이 거부 (AP-V6-8).
+  보완은 Opus 가 수행 — Codex 는 본문을 쓰지 않는다 (AP-V6-1/11).
+- **`src/agents/codex_critic.py:CodexCritic`** — codex CLI 를 headless 호출(프롬프트
+  stdin → verdict JSON stdout). JSON 파싱 + 코드펜스 제거 + 절단복구
+  (`_repair_truncated_json`, composer 대응물) + ungrounded claim 드롭. 외부 실패는
+  **graceful degrade** (`FactVerdict.skip`): flag_off / codex_not_found / auth_failed /
+  rate_limited / timeout / codex_error / parse_failed → 단일패스 발행 (AP-V6-12).
+  호출 텔레메트리 JSONL 적립 (`logs/codex_calls.jsonl`, T-C3).
+- **`src/config.py`** — `V6_CODEX_CRITIC`(마스터, default OFF) + `V6_CODEX_BIN` /
+  `_SUBCOMMAND` / `_EXTRA_ARGS` / `_MODEL` / `_TIMEOUT_S` (VM spike 가 실제 호출 형태 확정).
+  `.env.example` 갱신.
+- **회귀 39종** — `tests/regression/test_codex_contract.py`(T-V1, 17) +
+  `test_codex_critic.py`(T-C1/C2/C3, 22). codex 는 *모킹*(CI 결정적), 실연동은 VM 수동 1회.
+- **문서**: DATA_MODELS §3.15 / CATALOGS §1 / REPO_MAP / 신규 [docs/V6_TEST_RESULTS.md](docs/V6_TEST_RESULTS.md)(append-only 측정 SSOT) 갱신.
+- **남은 것**: VM 실연동 검증 4항목(설치/인증/한도/비전) + codex 1회 수동 호출 로그 →
+  V6_TEST_RESULTS §1 추가 기록. 그 후 Phase 2(사전필터)·3(루프) 진입.
+
 ## v5.8.8 — fact-grid 가로 오버플로/비대칭 폭 fix
 
 5·6개짜리 팩트 그리드가 한 셀만 가로로 길어지고 마지막 카드가 화면 밖으로 잘리던

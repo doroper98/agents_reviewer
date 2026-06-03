@@ -191,7 +191,13 @@ Phase 1 codex spike 부터.**
   `timepoint_overclaim` / `list_truncation`. + `test_fact_discipline.py` 스켈레톤.
 - **불변 계약**: error_class 5종은 동결. 신규 class 는 Phase 6 게이트 승격으로만 추가.
 
-### Phase V6-1 — Codex CLI 통합 Spike + Verdict 계약 (Tier 0, 최우선)
+### Phase V6-1 — Codex CLI 통합 Spike + Verdict 계약 (Tier 0, 최우선) ◐ (코드 랜딩, VM 실연동 대기)
+**상태**: 코드·계약·degrade·테스트 랜딩 완료 (모킹 기준). `src/agents/codex_critic.py`
++ `src/models.py:FactVerdict`/`CritiqueClaim` + `Config.codex_*`(`V6_CODEX_CRITIC`
+default OFF) + 회귀 `tests/regression/test_codex_contract.py`(T-V1) /
+`test_codex_critic.py`(T-C1/C2/C3, 39 tests pass). orchestrator 미연결 = flag OFF
+byte-equal 자명 보존. **남은 것 = VM 검증 4항목**(아래) + 실제 codex 1회 수동 호출
+로그 → `docs/V6_TEST_RESULTS.md` 기록. 그 후 Phase 2/3 진입.
 **목적**: 전 Phase 가 의존하는 외부 경로를 *먼저* 증명. 여기서 막히면 설계 재고.
 - **신규 SSOT**: `src/agents/codex_critic.py` — codex CLI 를 `_call_cli` 패턴으로
   headless 호출(`codex exec` 류, stdin=프롬프트+보고서 JSON+근거, stdout=verdict JSON).
