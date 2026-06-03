@@ -148,6 +148,39 @@ def test_violation_then_revise_then_clean_confirm() -> None:
     assert res.report.sections[0].prose == revised.sections[0].prose
 
 
+def test_market_correction_hint_recomputes() -> None:
+    # R1 — time_series 에서 특정일 종가·전일대비% 역산.
+    from src.factcheck.critic_loop import market_correction_hint
+    ctx = ContextAnalysis(date="2026-06-03", time_series=[{"instrument": "삼성전자", "data": [
+        {"date": "2026-05-28", "close": 295500.0}, {"date": "2026-05-29", "close": 318500.0}]}])
+    hint = market_correction_hint("삼성전자는 5월 29일 종가 기준 10.1% 뛰었다", ctx)
+    assert hint and "318,500" in hint and "+7.78%" in hint and "교체" in hint
+    assert market_correction_hint("없는종목 9999", ctx) is None
+
+
+def test_market_claim_revision_gets_correction_hint() -> None:
+    # 루프가 market 지적의 fix_instruction 에 역산 정정값을 덧대 reviser 에 전달.
+    ctx = ContextAnalysis(date="2026-06-03", time_series=[{"instrument": "삼성전자", "data": [
+        {"date": "2026-05-28", "close": 295500.0}, {"date": "2026-05-29", "close": 318500.0}]}])
+    claim = _claim(error_class="market_data_mismatch", quote="삼성전자 5월 29일 종가 기준 10.1%")
+    reviser = StubReviser(_report(prose="보완본"))
+    loop = CriticLoop(_cfg(), StubCritic([_violations(claim), _clean()]), reviser)
+    _run(loop.run(_report(), ctx))
+    joined = " ".join(reviser.fix_instructions_seen[0])
+    assert "318,500" in joined and "7.78%" in joined  # Opus 가 정확값으로 교체하게
+
+
+def test_landing_drops_market_residual() -> None:
+    # Phase V6-8/A — 잔존 market_data_mismatch 도 drop (틀린 시장 수치 발행 방지).
+    from src.factcheck.critic_loop import apply_landing
+    rep = _report(prose="삼성전자는 5월 29일 종가 기준 10.1% 뛰었다. 다음 문장은 남는다.")
+    claim = _claim(error_class="market_data_mismatch", quote="삼성전자는 5월 29일 종가 기준 10.1% 뛰었다.")
+    out, dropped = apply_landing(rep, [claim])
+    assert "10.1%" not in out.sections[0].prose
+    assert "다음 문장은 남는다" in out.sections[0].prose
+    assert any("삼성" in d for d in dropped)
+
+
 def test_residual_unsourced_dropped_at_landing() -> None:
     # 보완 후에도 unsourced 가 남으면 착지에서 결정적 drop → unresolved 0 (해소됨).
     still_bad = _report(prose="여전히 27년 만의 칩이라는 표현이 남아있다.")

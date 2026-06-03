@@ -67,9 +67,20 @@ body — you only return structured critique that a separate writer (Opus) will 
   attribution_as_fact   한쪽 주장을 객관 사실로 단정
   causal_overreach      인과 중간단계 생략 + 강도 과장
   metric_label_ambiguity 지표 라벨 모호
+  coherence_break       문장 간 논리·맥락 단절. 비유/프레임을 세운 뒤 그 틀과 어긋나는
+                        요소를 끼워넣음(예: '세 채널'이라 해놓고 갑자기 '유가 채널'),
+                        또는 뜬금없는 개념 도약으로 해석이 어려움
+  undefined_reference   서두 정의 없이 'A/B', '전자/후자', 약어를 사용해 독자가 무엇을
+                        가리키는지 알 수 없음
 
 규칙:
-  - 모든 지적은 어느 evidence/URL 과 충돌하는지 evidence_conflict 에 반드시 명시.
+  - 시장 수치(지수·환율·주가·등락률)는 evidence 의 time_series 와 *반드시* 대조하라.
+    종가·레벨이 어긋나거나 등락률이 안 맞으면 market_data_mismatch (최우선).
+  - 사실뿐 아니라 *문장 간 맥락·정합성* 도 본다. 비유·프레임이 무너지거나(coherence_break),
+    정의 없이 A/B·약어를 쓰면(undefined_reference) 어디가 어떻게 끊기는지 evidence_conflict
+    에 적고, fix_instruction 에 *어떻게 이으면 되는지* 구체 지시(정의를 앞에 두기 / 비유
+    틀에 맞추기 / 전환 문장 추가)를 준다. 단 본문을 직접 쓰지 말고 *지시* 만.
+  - 모든 지적은 어느 evidence/URL 또는 *본문의 어느 부분* 과 충돌하는지 evidence_conflict 에 반드시 명시.
     근거를 못 대는 지적은 아예 내지 말 것 (false-positive 가 멀쩡한 본문을 망친다).
   - evidence 에 부합하면 위반이 아니다. 의심만으로 flag 하지 말 것.
   - fix_instruction 은 Opus 가 수행할 *지시* 만. 본문 문장을 대신 쓰지 말 것.

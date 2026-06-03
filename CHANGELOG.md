@@ -20,6 +20,33 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 — 시장 수치 역산 교체 + 맥락·서사 검수 (R1·R2, 사용자 지시)
+
+- **R1. 시장 수치 *교체*(drop 아님)** — `market_correction_hint`: 틀린 시장 수치의 *올바른
+  값* 을 `time_series` 에서 역산(종목+날짜 → 종가·전일대비%)해 Opus 의 fix_instruction 에
+  덧댐 → Opus 가 *정확값으로 교체*. 실측: "삼성 5/29 +10.1%" → "318,500, +7.78%"(차트와 일치).
+  매치 실패 시 착지 drop 으로 폴백.
+- **R2. 맥락·서사 정합 검수** — codex 검수자가 *문장 간 맥락* 도 본다. error_class
+  `coherence_break`(비유·프레임 붕괴 — "세 채널"인데 "유가 채널" 등장) / `undefined_reference`
+  (서두 정의 없이 'A/B'·약어 사용). 어디서 끊기는지 evidence_conflict + *어떻게 이으면 되는지*
+  Opus 가이드를 fix_instruction 에. 페르소나 SOP 정합 — `codex_critic_persona.md`(런타임) +
+  `market_factcheck_desk_v6.md`(전체 §11) + `_CRITIC_INSTRUCTIONS` 동시 갱신, 본문 작성 금지 보존(AP-V6-11).
+- 회귀 124 pass.
+
+## v6.0.0 — 시장 수치 잔존 처리 강화 (착지 drop + time_series 가드)
+
+첫 실전에서 codex 가 "삼성전자 5/29 +10.1%"(실제 +7.78%)를 잡고도 *발행은 됐던* 문제
+(market_data_mismatch 가 unsourced 가 아니라 착지 drop 대상이 아니었음) 해결. 사용자 선택 C.
+
+- **A. 착지 확장** — `apply_landing` 이 잔존 `unsourced_number` + **`market_data_mismatch`**
+  를 본문에서 drop. 시장 수치는 최우선(WRITE-AP-15) — 틀린 채 발행하느니 제거.
+- **B. time_series 가드 공급** — `market_series_from_context` 가 `context.time_series` →
+  {종목:[종가들]} 추출, `run_fact_guards` 가 자동 공급(이전엔 미공급으로 inert). 가드 v2:
+  종목명 직후 *가격* 숫자만(날짜·% 제외, `_PRICE_RE`) + 시계열 *어느 종가와도* 불일치
+  시만 flag(날짜 모호성 강건·low-FP).
+- codex 프롬프트에 "시장 수치는 time_series 와 반드시 대조" 강조 → 1차 검수서 포착.
+- 회귀 122 pass (market: level 불일치 검출 / 과거일 매치 FP 없음 / % skip / 착지 drop).
+
 ## v6.0.0 — V6 검수 가시성 개선 (status 문구·텔레그램 바이라인·로그 diff/태깅)
 
 첫 실전 e2e 에서 드러난 가시성 결함 4종 일괄 보강 (사용자 피드백).

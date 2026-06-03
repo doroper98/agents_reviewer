@@ -76,6 +76,8 @@ _SCOPE_FORBID_RE = re.compile(r"([가-힣A-Za-z][가-힣A-Za-z/]*)\s*단위\s*�
 _LARGE_NUM_RE = re.compile(r"\d[\d,]*\s*(만|억|개)")
 # NaN 노출.
 _NAN_RE = re.compile(r"(?<![A-Za-z])nan(?![A-Za-z])", re.IGNORECASE)
+# 가격-like 숫자 (콤마 그룹 / 소수 / 4자리+ 정수). 날짜(5월·29일)·한자리 정수 제외.
+_PRICE_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+|\d{4,}")
 
 # 신규성 단어.
 _ABSOLUTE_NOVELTY = ("오늘", "방금", "지금 막", "막 공개", "오늘 공개", "오늘 발표", "이날 공개")
@@ -255,39 +257,75 @@ def novelty_delta_guard(
 
 def market_data_source_guard(
     blocks: list[ProseBlock],
-    market_series: dict[str, float],
+    market_series: dict,
     *,
     tolerance: float = 0.005,
 ) -> list[GuardFlag]:
-    """본문의 시장 수치가 time_series 단일 소스 값과 ±tolerance 초과로 어긋나면 flag.
+    """본문의 시장 *가격 레벨* 이 time_series 의 어느 종가와도 안 맞으면 flag (Phase V6-8/B).
 
-    market_series: {종목명: 기준값}. 본문에서 종목명 직후 숫자를 찾아 비교.
+    market_series: {종목명: 기준값(float) | 종가 리스트(list[float])}. 종목명 직후의
+    *가격* 숫자만 검사 — % 등락률은 건너뜀(코덱스 담당). 날짜 모호성에 강하도록
+    *시계열의 어느 값과도* 일치하지 않을 때만 flag (low-FP). 비어있으면 inert.
     """
     flags: list[GuardFlag] = []
     for name, ref in market_series.items():
-        if not name or ref == 0:
+        closes = [float(x) for x in (ref if isinstance(ref, (list, tuple)) else [ref]) if x]
+        if not name or not closes:
             continue
-        pat = re.compile(re.escape(name) + r"[^\d]{0,15}?(\d[\d,]*(?:\.\d+)?)")
         for blk in blocks:
-            m = pat.search(blk.text)
-            if not m:
-                continue
-            try:
-                got = float(_norm_num(m.group(1)))
-            except ValueError:
-                continue
-            if abs(got - ref) / abs(ref) > tolerance:
-                flags.append(
-                    GuardFlag(
-                        guard=GUARD_MARKET,
-                        flag="market_value_mismatch",
-                        location=blk.location,
-                        quote=f"{name} {m.group(1)}",
-                        detail=f"'{name}' 본문 {got} vs 단일 소스 {ref} (허용 {tolerance:.1%} 초과)",
-                        severity="high",
-                    )
-                )
+            start = 0
+            while True:
+                p = blk.text.find(name, start)
+                if p < 0:
+                    break
+                start = p + len(name)
+                window = blk.text[start:start + 30]  # 종목명 직후 30자 (날짜 끼어도 가격 포착)
+                for m in _PRICE_RE.finditer(window):
+                    # 가격 숫자 직후가 '%' 면 등락률 → 가격 가드 대상 아님 (코덱스 담당).
+                    if window[m.end():m.end() + 1] == "%":
+                        continue
+                    try:
+                        got = float(_norm_num(m.group()))
+                    except ValueError:
+                        continue
+                    if got == 0:
+                        continue
+                    # 시계열의 *어느 종가와도* tolerance 안에서 안 맞으면 flag (날짜 모호성 강건).
+                    if not any(abs(got - c) / c <= tolerance for c in closes):
+                        flags.append(
+                            GuardFlag(
+                                guard=GUARD_MARKET,
+                                flag="market_value_mismatch",
+                                location=blk.location,
+                                quote=f"{name} {m.group()}",
+                                detail=f"'{name}' 본문 가격 {got} 가 time_series 어느 종가와도 불일치",
+                                severity="high",
+                            )
+                        )
     return flags
+
+
+def market_series_from_context(context: ContextAnalysis) -> dict:
+    """Phase V6-8/B — context.time_series → {종목명: [종가 리스트]} (MarketDataSourceGuard 공급).
+
+    날짜 모호성에 강하도록 *전체 종가 리스트* 를 넘긴다 (특정일 인용도 매치되게).
+    """
+    out: dict[str, list[float]] = {}
+    for ts in getattr(context, "time_series", []) or []:
+        if not isinstance(ts, dict):
+            continue
+        name = ts.get("instrument") or ts.get("name")
+        data = ts.get("data") or []
+        if not name or not data:
+            continue
+        closes = [
+            float(d["close"])
+            for d in data
+            if isinstance(d, dict) and d.get("close")
+        ]
+        if closes:
+            out[name] = closes
+    return out
 
 
 def nan_exposure_guard(
@@ -335,7 +373,7 @@ def run_fact_guards(
     *,
     publication_date: str = "",
     source_dates: list[str] | None = None,
-    market_series: dict[str, float] | None = None,
+    market_series: dict | None = None,
     scope_notes: list[str] | None = None,
 ) -> list[GuardFlag]:
     """모든 결정적 가드를 돌려 GuardFlag 목록을 반환 (log-only — drop 안 함).
@@ -351,12 +389,14 @@ def run_fact_guards(
         scope_notes = scope_notes_from_context(context)
     if source_dates is None:
         source_dates = source_dates_from_context(context)
+    if market_series is None:
+        market_series = market_series_from_context(context)
     flags: list[GuardFlag] = []
     flags += unsourced_number_guard(blocks, corpus)
     flags += scope_bareword_guard(blocks, scope_notes)
     flags += novelty_delta_guard(
         blocks, publication_date or context.date, source_dates,
     )
-    flags += market_data_source_guard(blocks, market_series or {})
+    flags += market_data_source_guard(blocks, market_series)
     flags += nan_exposure_guard(blocks, report)
     return flags

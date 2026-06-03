@@ -9,6 +9,7 @@ from __future__ import annotations
 from src.agents.context_analyst import SYSTEM_PROMPT as CTX_PROMPT, ContextAnalyst
 from src.config import Config
 from src.factcheck.deterministic_guards import (
+    market_series_from_context,
     run_fact_guards,
     scope_notes_from_context,
     source_dates_from_context,
@@ -73,6 +74,41 @@ def test_novelty_guard_fires_from_provenance() -> None:
     ctx = ContextAnalysis(provenance=[{"fact": "GR00T", "source_date": "2026-03-16"}])
     flags = {f.flag for f in run_fact_guards(report, ctx, publication_date="2026-06-01")}
     assert "novelty_delta" in flags
+
+
+def test_market_series_from_time_series() -> None:
+    ctx = ContextAnalysis(time_series=[
+        {"instrument": "코스피", "data": [{"date": "2026-06-01", "close": 8476.15}, {"date": "2026-06-02", "close": 8801.49}]},
+        {"instrument": "빈종목", "data": []},
+    ])
+    ms = market_series_from_context(ctx)
+    assert ms["코스피"] == [8476.15, 8801.49]
+    assert "빈종목" not in ms
+
+
+def test_market_guard_flags_level_not_in_series() -> None:
+    # 본문 가격이 시계열 어느 종가와도 안 맞으면 flag (날짜 모호성 강건).
+    report = ComposedReport(headline="h", sections=[ComposedSection(heading="시황", prose="코스피는 8,650.93으로 마감")])
+    ctx = ContextAnalysis(time_series=[{"instrument": "코스피", "data": [{"date": "2026-06-02", "close": 8801.49}]}])
+    flags = {f.flag for f in run_fact_guards(report, ctx)}
+    assert "market_value_mismatch" in flags
+
+
+def test_market_guard_no_fp_on_matching_historical_level() -> None:
+    # 특정일 종가가 시계열 어딘가에 있으면 FP 안 냄.
+    report = ComposedReport(headline="h", sections=[ComposedSection(heading="시황", prose="코스피 5월 29일 종가는 8,476.15였다")])
+    ctx = ContextAnalysis(time_series=[{"instrument": "코스피", "data": [
+        {"date": "2026-05-29", "close": 8476.15}, {"date": "2026-06-02", "close": 8801.49}]}])
+    flags = {f.flag for f in run_fact_guards(report, ctx)}
+    assert "market_value_mismatch" not in flags
+
+
+def test_market_guard_skips_percent() -> None:
+    # 등락률(%)은 가격 가드 대상 아님 (코덱스 담당) → FP 없음.
+    report = ComposedReport(headline="h", sections=[ComposedSection(heading="시황", prose="코스피 0.15% 올랐다")])
+    ctx = ContextAnalysis(time_series=[{"instrument": "코스피", "data": [{"date": "2026-06-02", "close": 8801.49}]}])
+    flags = {f.flag for f in run_fact_guards(report, ctx)}
+    assert "market_value_mismatch" not in flags
 
 
 def test_no_provenance_guards_inert() -> None:
