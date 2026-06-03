@@ -20,6 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 — V6 검수 가시성 개선 (status 문구·텔레그램 바이라인·로그 diff/태깅)
+
+첫 실전 e2e 에서 드러난 가시성 결함 4종 일괄 보강 (사용자 피드백).
+
+- **(a) status 문구** — "지적 N건 중 0건 정정"(=drop 0, Opus 보완을 0처럼 오인)을 "지적
+  N건 **보완 반영**, K건 미해결"로. Opus 가 실제 고친 것을 정확히 표기.
+- **(b) 텔레그램 바이라인** — `/analyze`·일일브리핑 완료 메시지에 `🔎 Opus 작성·Codex
+  검수 — 지적 N건 보완 반영…` 첨부 (검수 수행 시만, `verification.text`).
+- **(c) 로그 report_id 태깅** — 발행 후 `V6 [analysis_…id] 검수 요약: 식별·변경·잔존`
+  한 줄 → `grep analysis_…id` 로 보고서별 검수 내역 추적 가능(이전엔 매칭 불가).
+- **(d) diff 개선** — `_diff_span`: `V6 변경` 이 섹션 앞 140자 클립이라 변경이 뒤쪽이면
+  "위아래 동일"로 보이던 회귀 → 공통 prefix/suffix 제거 후 *바뀐 부분만* + 문맥.
+- 회귀 117 pass. 코드만(flag OFF byte-equal 유지).
+
 ## v6.0.0 (Phase V6-8) — per-fact provenance (가드를 데이터로 판정)
 
 GAP-7. ContextAnalyst 가 각 사실에 출처일·단위·URL 을 구조화 emit → NoveltyDelta/Scope

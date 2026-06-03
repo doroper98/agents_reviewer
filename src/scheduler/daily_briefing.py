@@ -278,13 +278,17 @@ async def _briefing_for_chat(
         logger.warning("[scheduler] broadcast summary send failed: %s", e)
 
     # 3) Report URL (must reach the user).
+    # Phase V6-7/b — 검수 바이라인 (검수 수행 시만).
+    _verif = (result.composed_report.verification if result.composed_report else None) or {}
+    _verif_line = f"\n🔎 {_verif['text']}" if _verif.get("text") else ""
     if result.report_url and result.report_url.startswith("http"):
         md_url = result.report_url.replace(".html", ".md")
         await send_text_fn(
             chat_id,
             f"📊 일일 브리핑 ({run_date})\n\n"
             f"🔗 보고서 링크: {result.report_url}\n"
-            f"🤖 AI 전달용 (Markdown): {md_url}",
+            f"🤖 AI 전달용 (Markdown): {md_url}"
+            f"{_verif_line}",
         )
     elif result.report_path and os.path.isfile(result.report_path) and send_document_fn:
         await send_document_fn(
