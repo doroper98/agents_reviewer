@@ -107,8 +107,23 @@ class CodexCritic:
     구독)이고 verdict 만 생산하기 때문. 호출 형태는 Config.codex_* 로 override.
     """
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, *, persona: str | None = None) -> None:
         self.config = config
+        # 검수자 페르소나 (도메인 인식 팩트체크 데스크). 빈 문자열이면 기본 지침만
+        # = byte-equal. 작성 페르소나가 아님 — codex 는 본문을 안 쓴다 (AP-V6-11).
+        self.critic_persona = (
+            persona if persona is not None else self._load_persona_from_config()
+        )
+
+    def _load_persona_from_config(self) -> str:
+        path = (self.config.codex_critic_persona_path or "").strip()
+        if not path:
+            return ""
+        try:
+            return Path(path).read_text(encoding="utf-8").strip()
+        except OSError as exc:
+            logger.warning("[codex_critic] persona load fail (%s): %s", path, exc)
+            return ""
 
     # ------------------------------------------------------------------
     # Public
@@ -286,13 +301,22 @@ class CodexCritic:
             self._evidence_digest(context), ensure_ascii=False, separators=(",", ":"),
         )
         flags_txt = "\n".join(f"- {f}" for f in (pre_flags or [])) or "(없음)"
-        return (
+        prompt = (
             _PROMPT_TEMPLATE
             .replace("__PUB_DATE__", publication_date or context.date or "(미상)")
             .replace("__PRE_FLAGS__", flags_txt)
             .replace("__EVIDENCE_JSON__", evidence_json)
             .replace("__REPORT_JSON__", report_json)
         )
+        # 검수자 페르소나가 있으면 *맨 앞* 에 주입 (검수 관점만 — 본문 작성 금지).
+        if self.critic_persona:
+            prompt = (
+                "=== 검수 관점 (페르소나 — 검증 기준이지 작성 지침 아님) ===\n"
+                f"{self.critic_persona}\n"
+                "위 관점은 *무엇을 사실로 의심할지* 판단에만 쓴다. 문체 평가·본문 작성 금지.\n\n"
+                + prompt
+            )
+        return prompt
 
     @staticmethod
     def _report_digest(report: ComposedReport) -> dict:

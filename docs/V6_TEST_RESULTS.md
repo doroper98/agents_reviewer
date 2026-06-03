@@ -133,6 +133,37 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 
 ---
 
+### Phase V6-2 — 결정적 사실 사전필터 가드 ◐ (가드 랜딩, 프롬프트 하드닝 대기)
+
+**일자**: 2026-06-03
+**flag**: `V6_FACT_GUARDS` (default OFF), `V6_CODEX_PERSONA_PATH` (페르소나 훅)
+
+**랜딩 산출물**
+- `src/factcheck/deterministic_guards.py` — 5종 가드 + `run_fact_guards` 집계 (log-only).
+- `CodexCritic` 검수자 페르소나 훅 (`persona=` / `V6_CODEX_PERSONA_PATH`, default 빈값=byte-equal).
+
+**T-1 검출 (`test_fact_discipline.py`) — 통과**
+
+| 시나리오 | 가드 | bad 검출 | good 0-FP |
+|----------|------|:--------:|:---------:|
+| scope_misattribution_01 | ScopeBarewordGuard | ✅ | ✅ |
+| unsourced_number_01 | UnsourcedNumberGuard | ✅ | ✅ |
+| novelty_conflation_01 | NoveltyDeltaGuard (novelty_delta) | ✅ | ✅ |
+| stale_sourcing_01 | NoveltyDeltaGuard (stale_relative_timepoint) | ✅ | ✅ |
+| market_data_mismatch_01 | MarketDataSourceGuard | ✅ | ✅ |
+
+- **결정적 검출률 5/5 = 100%** (DoD ≥90% 충족), good_prose FP 0.
+- **Codex 라우팅 (결정적 비대상)**: unsourced_number_02(근거 산출 임계) / market_data_mismatch_02
+  (원/달러 0.29% sub-tolerance) / event_conflation / attribution_as_fact / causal_overreach /
+  metric_label_ambiguity / timepoint_overclaim(앵커 정확성) / list_truncation — 의미 판단
+  영역이라 Phase 3 Codex critic 담당. 가드는 *명백한* 위반만 0-LLM 으로 거른다.
+- `test_fact_discipline.py` 합계 통과 (스키마 6 + T-1 14 = 20).
+
+**남은 것**: composer `SYSTEM_PROMPT` `=== 사실 규율 (V6) ===` 블록(byte-equal 위해 flag-gating
+필요) + ContextAnalyst 일일브리핑 최신성 제한(24~48h, `stale_sourcing` 근본 차단).
+
+---
+
 ## §2. 효과·비용 지표 (T-10, 누적 — Phase 3 루프 가동 후 채움)
 
 | 지표 | 값 | 측정일 |

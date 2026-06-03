@@ -215,7 +215,14 @@ orchestrator 미연결 = flag OFF byte-equal. **VM 실연동 검증 완료** —
 - **DoD**: 모킹된 codex 응답으로 FactVerdict 파싱·절단복구·degrade 3경로 테스트 통과.
   실제 codex 1회 수동 호출 로그 첨부(VM). flag OFF byte-equal.
 
-### Phase V6-2 — Deterministic 사전필터 가드 + 프롬프트 하드닝 (Tier 1, LLM 0)
+### Phase V6-2 — Deterministic 사전필터 가드 + 프롬프트 하드닝 (Tier 1, LLM 0) ◐ (가드 랜딩 2026-06-03)
+**상태**: ① 결정적 가드 5종 (`UnsourcedNumberGuard`/`ScopeBarewordGuard`/`NoveltyDeltaGuard`/
+`MarketDataSourceGuard`/`NaNExposureGuard`) + `run_fact_guards` 집계 + `GuardFlag` 모델 +
+검수자 페르소나 훅 (`V6_CODEX_PERSONA_PATH`) 랜딩. T-1 결정적 타깃 5종 100% 검출 + 0-FP
+(측정 `docs/V6_TEST_RESULTS.md §1`). flag `V6_FACT_GUARDS` default OFF, orchestrator 미연결
+= byte-equal. `TimepointLabelGuard`(앵커 정확성)·threshold·FX sub-tolerance·event/attribution/
+causal/metric 은 의미판단이라 Codex(Phase 3)로 라우팅. ② **남은 것** = composer `SYSTEM_PROMPT`
+`=== 사실 규율 ===` 블록(flag-gating 필요 — byte-equal) + ContextAnalyst 최신성 제한.
 **목적**: codex 호출(=한도) 전에 명백한 위반을 0-LLM 으로 거른다.
 - **신규 SSOT**: `src/factcheck/deterministic_guards.py` — ① `UnsourcedNumberGuard`
   (본문 "N년 만"·"N개"·"N%" 정규식 → evidence 문자열에 없으면 flag) ② `ScopeBarewordGuard`

@@ -20,6 +20,27 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6 Phase V6-2, 진행) — 결정적 사실 사전필터 가드 + 검수자 페르소나 훅
+
+codex 호출(=ChatGPT 한도) 전에 *명백한* 사실 위반을 0-LLM 으로 거르는 결정적 가드.
+전부 flag OFF default + orchestrator 미연결 = byte-equal. 플랜: REFACTOR_V6_PLAN.md §3 Phase V6-2.
+
+- **`src/factcheck/deterministic_guards.py`** — 5종 가드 (log-only, drop 안 함):
+  `UnsourcedNumberGuard`(근거에 없는 정량 주장) / `ScopeBarewordGuard`(근거가
+  "X 단위 아님" 경고한 X 에 대형 수치 귀속) / `NoveltyDeltaGuard`(출처일↔발행일 차 +
+  신규성·상대시점 단어) / `MarketDataSourceGuard`(시장 수치 ±tolerance 불일치) /
+  `NaNExposureGuard`(본문·차트 nan 노출). `run_fact_guards()` 집계 → `GuardFlag` 목록,
+  Phase 3 에서 `CodexCritic.critique(pre_flags=...)` 로 합류.
+- **검수자 페르소나 훅** — `CodexCritic(config, persona=...)` + `V6_CODEX_PERSONA_PATH`.
+  *검증 기준*(도메인 인식 팩트체크 데스크)이지 작성 페르소나 아님 (codex 는 본문을
+  안 씀, AP-V6-11). 비우면 기본 지침 = byte-equal.
+- **flag**: `V6_FACT_GUARDS`(default OFF). `.env.example` 갱신.
+- **회귀 T-1** (`test_fact_discipline.py`) — 결정적 타깃 5종 100% 검출 + good_prose 0-FP +
+  NaN/clean/pre_flag seam. 의미 판단 케이스(threshold/event/attribution/causal/metric/
+  timepoint 앵커/list/FX sub-tolerance)는 Codex(Phase 3)로 명시 라우팅.
+- **남은 것**(다음 PR): composer `SYSTEM_PROMPT` 의 `=== 사실 규율 (V6) ===` 블록
+  (byte-equal 위해 flag-gating 필요) + ContextAnalyst 일일브리핑 최신성 제한(24~48h).
+
 ## v5.8.8 (V6 Phase V6-1) — Codex CLI 통합 spike + FactVerdict 계약
 
 V6 트랙(사실 grounding + 외부 Codex critic 루프)의 Tier 0 진입점. 전 V6 루프가

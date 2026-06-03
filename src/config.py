@@ -199,6 +199,24 @@ class Config(BaseSettings):
         default=180,
         validation_alias=AliasChoices("V6_CODEX_TIMEOUT_S", "codex_timeout_s"),
     )
+    # Codex critic 페르소나 — *검수자* 관점(도메인 인식 팩트체크 데스크)을 prompt 에
+    # 주입. 빈 값이면 기본 critic 지침만 (byte-equal). 파일 경로 (market_briefing_persona
+    # 패턴). 작성 페르소나가 아님 — codex 는 본문을 쓰지 않는다 (AP-V6-11).
+    # env: V6_CODEX_PERSONA_PATH.
+    codex_critic_persona_path: str = Field(
+        default="",
+        validation_alias=AliasChoices("V6_CODEX_PERSONA_PATH", "codex_critic_persona_path"),
+    )
+
+    # === V6 Phase V6-2 — 결정적 사실 사전필터 가드 (LLM 0) ===
+    # 본문의 명백한 사실 위반(출처 없는 수치 / scope 모호 / 시장 수치 불일치 / NaN)을
+    # codex 호출(=ChatGPT 한도) 전에 0-LLM 으로 검출. 초기 log-only — drop/enforce 안
+    # 하고 GuardFlag 적립·경고만 (REFACTOR_V6_PLAN.md §4.5 측정우선). 디폴트 OFF —
+    # orchestrator 미연결로 byte-equal. env: V6_FACT_GUARDS=1.
+    enable_fact_guards: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_FACT_GUARDS", "ENABLE_FACT_GUARDS", "enable_fact_guards"),
+    )
 
     model_config = {
         "env_file": ".env",
