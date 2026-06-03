@@ -599,6 +599,34 @@ SYSTEM_PROMPT = (
 )
 
 
+# V6 Phase V6-2 — 사실 규율 블록 (opt-in, V6_FACT_PROMPT). SYSTEM_PROMPT 에 *직교*
+# 추가 (V5 어조·시각 지시와 충돌 없음). 2026-06-03 일일 브리핑 회귀(WRITE-AP-11/14~21)를
+# 작성 단계에서 선제 차단. flag OFF 면 미주입 → compose 프롬프트 byte-equal.
+_FACT_DISCIPLINE_BLOCK = (
+    "\n\n=== 사실 규율 (V6 — 최우선, 문체보다 사실) ===\n"
+    "아래는 사실 정확성 규율이다. 생생함·문체보다 우선한다. 출처 없는 생생함은 과장이다.\n"
+    "1) 시장 수치(지수·환율·주가·등락률)는 입력 time_series 의 단일 소스 값만 쓴다. "
+    "값이 없으면 그 수치를 *생략* — 기억·추정으로 지어내지 말 것 (WRITE-AP-15).\n"
+    "2) 시계열·시장 수치엔 시점 라벨을 붙인다('직전 정규장 종가', '장중', '주간거래 종가'). "
+    "'직전 반응' 처럼 모호한 근접 단정 금지.\n"
+    "3) 출처에 없는 특정 수치(년수·개수·%·임계선)를 단정하지 말 것. 근거가 뒷받침하는 "
+    "표현으로만. 트레이딩 임계선은 산출 근거가 없으면 제시 금지.\n"
+    "4) 대형 수치엔 scope(단위·전체/부분)를 명시한다. '130만' 단독 금지 → '랙 전체 130만'.\n"
+    "5) 신규성: 출처 작성일과 사건일이 다르면 '오늘 발표/방금' 류 단정 금지. 발행일"
+    "(publication_date) 기준으로 시점을 환산하고, 미래 카운트다운(D-N·'사흘 앞')도 "
+    "발행일↔사건일 실제 차이로 직접 센다 (WRITE-AP-11/14).\n"
+    "6) 한쪽(정부·군·정치 행위자)의 주장은 사실로 단정하지 말고 '...측은 주장했다'로 "
+    "귀속한다 (WRITE-AP-16).\n"
+    "7) 인과는 중간단계를 생략하거나 강도를 과장하지 말 것. 불확실하면 '기여했을 수 있다/"
+    "압박 요인/간접 영향'으로 헤지 (WRITE-AP-17).\n"
+    "8) 별개 행사·사건을 하나로 혼동하지 말 것(예: 컴퓨텍스 ↔ GTC Taipei) (WRITE-AP-18).\n"
+    "9) 한 방향 서사로 몰지 말고 반대 관점·반증을 함께 다룬다 (WRITE-AP-19). 제목과 본문의 "
+    "확정 강도를 일치시킨다 (WRITE-AP-20).\n"
+    "10) 신뢰도 %를 독자에게 노출하지 말 것 (WRITE-AP-21). 목록은 전체를 단정하지 말고 "
+    "'대표 몇 + 등'으로.\n"
+)
+
+
 class NarrativeComposer:
     """Opus 4.7 단일 콜로 보고서를 자유 형식으로 작성.
 
@@ -649,6 +677,16 @@ class NarrativeComposer:
     # Public entry point
     # ------------------------------------------------------------------
 
+    def _compose_system_prompt(self) -> str:
+        """compose 용 system prompt — V6_FACT_PROMPT 켜지면 사실 규율 블록을 직교 추가.
+
+        flag OFF 면 모듈 SYSTEM_PROMPT 그대로 → ``_call_cli(system_prompt=SYSTEM_PROMPT)``
+        는 미지정(None) 경로와 byte-equal (full_prompt 동일).
+        """
+        if getattr(self.config, "enable_fact_prompt", False):
+            return SYSTEM_PROMPT + _FACT_DISCIPLINE_BLOCK
+        return SYSTEM_PROMPT
+
     async def compose_unified(
         self,
         context: ContextAnalysis,
@@ -673,13 +711,18 @@ class NarrativeComposer:
         # 경우(returncode 0 이지만 파싱 불가) + 호출 자체 실패/timeout 시 *재시도*.
         # rate-limit 비정상 종료가 아니라 "성공했는데 쓸 수 없는 응답" 회귀라 재시도 안전.
         timeout_s = self.CLI_TIMEOUT_BY_MODE.get(mode, 360.0)
+        sys_prompt = self._compose_system_prompt()
         composed = None
         for attempt in range(1, self.COMPOSE_MAX_ATTEMPTS + 1):
             try:
                 if self.config.use_cli_mode:
-                    raw = await self._call_cli(user_message, timeout_s=timeout_s)
+                    raw = await self._call_cli(
+                        user_message, timeout_s=timeout_s, system_prompt=sys_prompt,
+                    )
                 else:
-                    raw = await self._call_api(user_message, mode=mode)
+                    raw = await self._call_api(
+                        user_message, mode=mode, system_prompt=sys_prompt,
+                    )
             except _ComposerTimeout as e:
                 # v5.6.6 — timeout 으로 잘린 부분 출력을 살린다. 완성 섹션이 1개 이상이면
                 # 그대로 사용하고 *재시도하지 않는다* (재시도해도 또 timeout — 시간 2배 낭비).

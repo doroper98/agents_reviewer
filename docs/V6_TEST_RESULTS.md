@@ -133,7 +133,7 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 
 ---
 
-### Phase V6-2 — 결정적 사실 사전필터 가드 ◐ (가드 랜딩, 프롬프트 하드닝 대기)
+### Phase V6-2 — 결정적 사실 사전필터 가드 + 프롬프트 하드닝 ✅ (완료, 2026-06-03)
 
 **일자**: 2026-06-03
 **flag**: `V6_FACT_GUARDS` (default OFF), `V6_CODEX_PERSONA_PATH` (페르소나 훅)
@@ -165,8 +165,10 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
   영역이라 Phase 3 Codex critic 담당. 가드는 *명백한* 위반만 0-LLM 으로 거른다.
 - `test_fact_discipline.py` 합계 통과 (스키마 6 + T-1 14 = 20).
 
-**남은 것**: composer `SYSTEM_PROMPT` `=== 사실 규율 (V6) ===` 블록(byte-equal 위해 flag-gating
-필요) + ContextAnalyst 일일브리핑 최신성 제한(24~48h, `stale_sourcing` 근본 차단).
+**프롬프트 하드닝 (완료)**: composer `_FACT_DISCIPLINE_BLOCK`(`V6_FACT_PROMPT`,
+`_compose_system_prompt()` flag-gating) + ContextAnalyst `_RECENCY_BLOCK`(`V6_RECENCY_BOUND`,
+`_build_system_prompt()`). 회귀 `test_fact_prompt.py` 6종 — 둘 다 **flag OFF byte-equal**
+(== v5.8.8 프롬프트) + ON 직교 주입(WRITE-AP-11/14~21 / 최신성 24~48h). 전체 V6 회귀 71 pass.
 
 ### Phase V6-3 — Bounded Codex critic 루프 ◐ (orchestrator 연결, VM e2e 대기)
 

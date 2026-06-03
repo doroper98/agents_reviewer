@@ -74,6 +74,19 @@ SYSTEM_PROMPT = (
 )
 
 
+# V6 Phase V6-2 — 최신성 제한 블록 (opt-in, V6_RECENCY_BOUND). 당일/최근 사건 브리핑의
+# stale_sourcing(1년 묵은 뉴스를 어젯밤으로) 차단. flag OFF 면 미주입 → byte-equal.
+_RECENCY_BLOCK = (
+    "\n\n=== 최신성 제한 (V6) ===\n"
+    "오늘은 {current_date}. 이 분석이 *당일/최근* 사건 브리핑이면 다음을 지킨다.\n"
+    "- 최근 24~48시간 내 출처를 우선한다. 1년 전 등 오래된 기사를 최신 사건으로 옮기지 말 것.\n"
+    "- 출처의 상대 시점 표현('이틀 전', '어젯밤', '오늘 아침')을 그대로 베끼지 말 것. "
+    "출처 작성일을 확인해 오늘({current_date}) 기준으로 환산하거나 절대 날짜로 적는다.\n"
+    "- 각 핵심 사실에는 가능하면 출처 작성일을 함께 파악해 둔다(신규성·시점 검증용).\n"
+    "- 과거 사건의 역사적 분석이면 위 제한은 적용하지 않는다(오래된 출처가 정상).\n"
+)
+
+
 class ContextAnalyst(BaseAgent):
     """Establishes facts, timeline, and key data points."""
 
@@ -105,6 +118,16 @@ class ContextAnalyst(BaseAgent):
         # (일일 브리핑 06:00 KST = 전날 21:00 UTC). WRITE-AP-11 의 진짜 원인.
         context["current_date"] = today_kst()
         context["instruction"] = f"오늘은 {context['current_date']}. 최신 정보 기준으로 분석할 것."
-        self.system_prompt = SYSTEM_PROMPT.replace("{current_date}", context["current_date"])
+        self.system_prompt = self._build_system_prompt(context["current_date"])
         raw_text = await super().analyze(context)
         return self._parse_json_response(raw_text, ContextAnalysis)
+
+    def _build_system_prompt(self, current_date: str) -> str:
+        """system prompt 조립 — V6_RECENCY_BOUND 켜지면 최신성 제한 블록을 직교 추가.
+
+        flag OFF 면 v4.5.7 와 동일 문자열 (byte-equal).
+        """
+        prompt = SYSTEM_PROMPT.replace("{current_date}", current_date)
+        if getattr(self.config, "enable_recency_bound", False):
+            prompt += _RECENCY_BLOCK.replace("{current_date}", current_date)
+        return prompt

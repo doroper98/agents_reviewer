@@ -217,6 +217,21 @@ class Config(BaseSettings):
         default=False,
         validation_alias=AliasChoices("V6_FACT_GUARDS", "ENABLE_FACT_GUARDS", "enable_fact_guards"),
     )
+    # composer SYSTEM_PROMPT 에 `=== 사실 규율 (V6) ===` 블록 주입 (scope 명시 / 출처없는
+    # 특정수치 금지 / 신규성 구분 / 시장 시점 라벨·단일소스 / 주장 귀속 / 인과 헤지 등,
+    # WRITE-AP-11/14~21). 디폴트 OFF — 꺼지면 compose 프롬프트 byte-equal. V5 어조와 직교.
+    # env: V6_FACT_PROMPT=1.
+    enable_fact_prompt: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_FACT_PROMPT", "ENABLE_FACT_PROMPT", "enable_fact_prompt"),
+    )
+    # ContextAnalyst 웹검색 최신성 제한 — 당일/최근 브리핑은 최근 24~48h 출처 우선 +
+    # 상대 시점("이틀 전")을 발행일 기준으로 환산 (stale_sourcing 차단). 디폴트 OFF —
+    # 꺼지면 context_analyst 프롬프트 byte-equal. env: V6_RECENCY_BOUND=1.
+    enable_recency_bound: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_RECENCY_BOUND", "ENABLE_RECENCY_BOUND", "enable_recency_bound"),
+    )
 
     model_config = {
         "env_file": ".env",

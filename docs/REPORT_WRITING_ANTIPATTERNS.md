@@ -431,6 +431,13 @@ contradictions 부분은 정상 None / 정상 응답 / 빈 응답 / heading 포�
 > 보고서 `analysis_20260603_061712_3e14fb009f` 가 외부 Codex 데스크 검수에서 받은
 > 서술·구조 결함을 회귀로 박는다. 사실/데이터 케이스는 `fact_discipline_scenarios.yaml`
 > (v2 확장), 차트 결함은 CHART-AP-27~29. 본 묶음은 *서사가 검증을 앞지른* 결함들이다.
+>
+> **V6 작성단계 enforcement (opt-in).** WRITE-AP-11/14~21 는 V6 Phase V6-2 에서
+> composer `_FACT_DISCIPLINE_BLOCK` (`src/agents/narrative_composer.py`, flag `V6_FACT_PROMPT`)
+> 으로 *작성 단계 선제 차단* 층을 얻었다. 검색 단계는 ContextAnalyst `_RECENCY_BLOCK`
+> (`V6_RECENCY_BOUND`) 이 stale 출처를 거른다. 둘 다 flag OFF=byte-equal. 잔여는 결정적
+> 가드(`src/factcheck/deterministic_guards.py`) + Codex critic 루프(`critic_loop.py`)가 검출·보완.
+> 본 카탈로그가 그 층들의 *기대 동작 SSOT* 다 — 새 AP-N 추가 시 블록·가드·fixture 정합 점검.
 
 ## WRITE-AP-15: 시장 수치를 단일 소스·시점 라벨 없이 자유서술 (v5.8.8 신설, 최우선)
 

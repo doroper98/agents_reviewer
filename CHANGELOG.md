@@ -42,7 +42,7 @@ orchestrator 에 연결. `V6_CODEX_CRITIC` OFF 면 블록 통째 스킵 = v5.8.8
   보완실패 원본보존/사전필터 합류. 전체 66 pass.
 - **남은 것**: VM e2e (실제 codex+Opus 루프 1회) + Phase 2 잔여(프롬프트 하드닝·최신성 제한).
 
-## v5.8.8 (V6 Phase V6-2, 진행) — 결정적 사실 사전필터 가드 + 검수자 페르소나 훅
+## v5.8.8 (V6 Phase V6-2) — 결정적 사실 사전필터 가드 + 프롬프트 하드닝 + 검수자 페르소나
 
 codex 호출(=ChatGPT 한도) 전에 *명백한* 사실 위반을 0-LLM 으로 거르는 결정적 가드.
 전부 flag OFF default + orchestrator 미연결 = byte-equal. 플랜: REFACTOR_V6_PLAN.md §3 Phase V6-2.
@@ -64,8 +64,13 @@ codex 호출(=ChatGPT 한도) 전에 *명백한* 사실 위반을 0-LLM 으로 �
 - **회귀 T-1** (`test_fact_discipline.py`) — 결정적 타깃 5종 100% 검출 + good_prose 0-FP +
   NaN/clean/pre_flag seam. 의미 판단 케이스(threshold/event/attribution/causal/metric/
   timepoint 앵커/list/FX sub-tolerance)는 Codex(Phase 3)로 명시 라우팅.
-- **남은 것**(다음 PR): composer `SYSTEM_PROMPT` 의 `=== 사실 규율 (V6) ===` 블록
-  (byte-equal 위해 flag-gating 필요) + ContextAnalyst 일일브리핑 최신성 제한(24~48h).
+- **프롬프트 하드닝 (완료)**: composer `_FACT_DISCIPLINE_BLOCK`(`V6_FACT_PROMPT`) —
+  SYSTEM_PROMPT 에 직교 추가, 시장 단일소스·시점 라벨·scope·신규성·귀속·인과 헤지 등
+  WRITE-AP-11/14~21 를 작성 단계에서 선제 차단. `_compose_system_prompt()` 로 flag-gating
+  (OFF=byte-equal). ContextAnalyst `_RECENCY_BLOCK`(`V6_RECENCY_BOUND`) — 당일/최근
+  브리핑 최근 24~48h 출처 우선 + 상대 시점 발행일 환산(`stale_sourcing` 차단),
+  `_build_system_prompt()` flag-gating. 회귀 `test_fact_prompt.py` 6종(OFF byte-equal +
+  ON 주입). **Phase V6-2 완료.**
 
 ## v5.8.8 (V6 Phase V6-1) — Codex CLI 통합 spike + FactVerdict 계약
 
