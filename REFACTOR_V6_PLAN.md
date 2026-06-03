@@ -267,13 +267,13 @@ byte-equal. **VM e2e 수렴 완료** — 실제 codex(gpt-5.5)+Opus 루프가 NV
 - **DoD**: NVIDIA fixture 5종 e2e → 위반 0/헤지/drop 수렴. 재작성 ≤1, 확인패스 ≤1
   강제 검증. degrade 시 정상 발행. flag OFF byte-equal.
 
-### Phase V6-4 — Codex 미학 검수 (Vision, 렌더 PNG) ◐ (코드 랜딩 2026-06-03)
+### Phase V6-4 — Codex 미학 검수 (Vision, 렌더 PNG) ✅ (VM 검증 2026-06-03)
 **상태**: `CodexCritic.critique_visual`/`critique_report_visuals` + `_call_codex_cli` 이미지
 (`-i`) 지원 + `_VISUAL_INSTRUCTIONS` + orchestrator 발행 후 flag-gated 훅(log-only) +
 budget telemetry V6-aware. `V6_CODEX_VISUAL` default OFF, T-5 모킹 6종 통과, flag OFF
 byte-equal. capture_proofs(Playwright) 캡처 → critique_visual. 차트 자동수정은 안 함
-(V5 deterministic_gate/chart_critic 와 병행, 측정 후 정리). **남은 것** = VM 비전 실연동
-1회(실제 차트 PNG 검수 확인) — 측정 `docs/V6_TEST_RESULTS.md §1`.
+(V5 deterministic_gate/chart_critic 와 병행, 측정 후 정리). **VM 검증 완료** — codex(gpt-5.5)
+가 실제 차트 PNG 판독 + 미학 지적 정확. Playwright 시스템 deps(`install-deps chromium`) 필요.
 **목적**: GAP-8. 차트 데이터뿐 아니라 *미학*까지 Codex 가 본다.
 - `src/visual/capture.py` 로 차트→PNG → Codex 비전 입력. verdict 에 차트별 시각 지적
   (가독성/잘림/패턴 충돌 등) + fix_instruction(데이터/타입/축 조정).
@@ -284,13 +284,14 @@ byte-equal. capture_proofs(Playwright) 캡처 → critique_visual. 차트 자동
 - **flag**: `V6_CODEX_VISUAL`.
 - **DoD**: 데이터-불일치 차트 + 미학 결함 차트 fixture 를 검출. flag OFF byte-equal.
 
-### Phase V6-5 — Codex 웹 Verify (bounded) ◐ (코드 랜딩 2026-06-03)
+### Phase V6-5 — Codex 웹 Verify (bounded) ✅ (VM 검증 2026-06-03)
 **상태**: `critique()` webverify-aware(config flag) — cmd 웹검색 인자(`codex_websearch_args`)
 + 프롬프트 `=== 웹 verify (≤N) ===` 블록(근거 없는 사실만 검색·URL 인용 강제·미인용 무시
 AP-V6-8) + `_build_cmd`/`_call_codex_cli` webverify 파라미터 + `_coerce_verdict` cited_urls
 집계. `V6_CODEX_WEBVERIFY` default OFF(byte-equal, ON 만 비결정), `codex_websearch_cap`
-bound. T-6 모킹 6종 통과. **남은 것** = VM 실연동(codex exec 실웹검색 + `--enable web_search`
-정확 형태) — 측정 `docs/V6_TEST_RESULTS.md §1`.
+bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검색 수행 + 정답·URL 반환.
+발견: codex 0.136.0 웹검색 *기본 ON*, `--enable web_search` deprecated → `codex_websearch_args`
+기본 `""`(프롬프트로 구동). 측정 `docs/V6_TEST_RESULTS.md §1`.
 **목적**: 우리 근거가 불완전해도 ground truth 대조. fact-critic 강화.
 - Codex 가 verdict 산출 시 **자체 웹검색 ≤N(기본 3)** 허용 + 사용 URL 을 `cited_urls`
   에 명시. **재현성 포기 허용**(웹 변동) — flag OFF 경로는 byte-equal 유지, ON 만 비결정.

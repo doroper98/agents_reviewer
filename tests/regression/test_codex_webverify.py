@@ -53,11 +53,18 @@ def _run(coro):
 
 
 def test_build_cmd_adds_websearch_args_when_webverify() -> None:
-    critic = CodexCritic(_cfg())
+    # codex 0.136.0 은 웹검색 기본 ON 이라 보통 비움 — 명시 인자 설정 시만 webverify 에 추가.
+    critic = CodexCritic(_cfg(codex_websearch_args="-c web_search=live"))
     on = critic._build_cmd("/usr/bin/codex", webverify=True)
     off = critic._build_cmd("/usr/bin/codex", webverify=False)
-    assert "--enable" in on and "web_search" in on
-    assert "--enable" not in off  # OFF 면 불변
+    assert "web_search=live" in on
+    assert "web_search=live" not in off  # OFF 면 불변
+
+
+def test_build_cmd_no_websearch_args_by_default() -> None:
+    # 기본 codex_websearch_args="" → cmd 에 웹검색 플래그 미추가 (웹검색은 기본 ON).
+    critic = CodexCritic(_cfg())
+    assert critic._build_cmd("/usr/bin/codex", webverify=True) == critic._build_cmd("/usr/bin/codex", webverify=False)
 
 
 def test_prompt_has_webverify_block_with_cap() -> None:

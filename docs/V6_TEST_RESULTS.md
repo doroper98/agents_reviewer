@@ -270,7 +270,7 @@ V6_RECENCY_BOUND=1`):
 
 ---
 
-### Phase V6-4 — Codex 미학 검수 (vision) ◐ (코드 랜딩, VM 비전 실연동 대기)
+### Phase V6-4 — Codex 미학 검수 (vision) ✅ (VM 실연동 검증 2026-06-03)
 
 **일자**: 2026-06-03 · **flag**: `V6_CODEX_VISUAL` (default OFF)
 
@@ -280,13 +280,15 @@ V6_RECENCY_BOUND=1`):
 budget telemetry V6-aware(Opus 보완 1콜 cap 반영). T-5 모킹 6종(`test_codex_visual.py`) 통과,
 전체 V6 91 pass. flag OFF byte-equal.
 
-**남은 것 (VM)**: codex 비전이 *실제* 차트 PNG 를 검수하는지 실연동 1회(Phase 1 의 `-i` 플래그
-존재 확인 → 실제 이미지 처리 검증). 미작동 시 미학은 V5(chart_critic/desk_editor) 유지. 자동수정
-통합 여부는 측정 후(현재 log-only).
+**VM 실연동 (2026-06-03) — 작동 확인**: `playwright install-deps chromium` 으로 libatk 등
+시스템 라이브러리 설치 후 capture_proofs 정상. 발행 보고서 차트 PNG 를 `codex exec -i` 로
+검수 → codex(gpt-5.5)가 **실제 차트 내용 판독**("S&P 500 ... 6,870→7,610 약 10.78% 상승")
++ 미학 지적("날짜 라벨·축 숫자가 작고 대비 약해 안 보임, 7,610 라벨이 경계에 붙어 답답") 정확
+반환. → Phase 4 비전 검수 실작동 확정. (현재 log-only, 자동수정 통합은 측정 후.)
 
 ---
 
-### Phase V6-5 — Codex 웹 verify (bounded) ◐ (코드 랜딩, VM 웹검색 실연동 대기)
+### Phase V6-5 — Codex 웹 verify (bounded) ✅ (VM 실연동 검증 2026-06-03)
 
 **일자**: 2026-06-03 · **flag**: `V6_CODEX_WEBVERIFY` (default OFF)
 
@@ -296,9 +298,11 @@ budget telemetry V6-aware(Opus 보완 1콜 cap 반영). T-5 모킹 6종(`test_co
 파라미터 + `_coerce_verdict` cited_urls 집계. T-6 모킹 6종(`test_codex_webverify.py`),
 전체 V6 96 pass. flag OFF byte-equal (ON 만 비결정 — 웹 변동).
 
-**남은 것 (VM)**: codex `exec` 가 *실제* 웹검색을 수행하는지 + `--enable web_search` 정확한
-형태(샌드박스/네트워크 정책 포함) 실연동 1회. 미작동 시 `codex_websearch_args` override 로
-조정 or webverify 보류(graceful — flag OFF 면 무영향).
+**VM 실연동 (2026-06-03) — 작동 확인 + 설계 보정**: `codex exec` 웹검색 프롬프트 →
+실제 검색 수행("web search: NVIDIA latest quarterly revenue...") + 정답 반환("816억 달러" +
+출처 URL investor.nvidia.com). **핵심 발견**: codex 0.136.0 은 *웹검색 기본 ON*, `--enable
+web_search` 는 deprecated → `codex_websearch_args` 기본값을 `""` 로 변경(웹검색은 프롬프트
+블록으로 구동, cmd 플래그 불요). webverify 실작동 확정.
 
 ---
 

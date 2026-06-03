@@ -252,10 +252,11 @@ class Config(BaseSettings):
         default=False,
         validation_alias=AliasChoices("V6_CODEX_WEBVERIFY", "ENABLE_CODEX_WEBVERIFY", "enable_codex_webverify"),
     )
-    # codex 웹검색 활성화 인자 (VM spike 가 정확한 형태 확정 — codex 0.136.0 의
-    # `--enable <feature>` 패턴. 환경별 override 가능). webverify ON 일 때만 cmd 에 추가.
+    # codex 웹검색 인자 (보통 비워둠). codex 0.136.0 은 웹검색이 *기본 ON* 이라
+    # 별도 플래그 불요 — webverify 는 프롬프트 블록으로 구동(VM 확정 2026-06-03).
+    # 특정 환경에서 명시 제어 필요 시만 채움 (예: `-c web_search="live"`).
     codex_websearch_args: str = Field(
-        default="--enable web_search",
+        default="",
         validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_ARGS", "codex_websearch_args"),
     )
     codex_websearch_cap: int = Field(
