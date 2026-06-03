@@ -148,6 +148,17 @@ def test_violation_then_revise_then_clean_confirm() -> None:
     assert res.report.sections[0].prose == revised.sections[0].prose
 
 
+def test_landing_drops_market_residual() -> None:
+    # Phase V6-8/A — 잔존 market_data_mismatch 도 drop (틀린 시장 수치 발행 방지).
+    from src.factcheck.critic_loop import apply_landing
+    rep = _report(prose="삼성전자는 5월 29일 종가 기준 10.1% 뛰었다. 다음 문장은 남는다.")
+    claim = _claim(error_class="market_data_mismatch", quote="삼성전자는 5월 29일 종가 기준 10.1% 뛰었다.")
+    out, dropped = apply_landing(rep, [claim])
+    assert "10.1%" not in out.sections[0].prose
+    assert "다음 문장은 남는다" in out.sections[0].prose
+    assert any("삼성" in d for d in dropped)
+
+
 def test_residual_unsourced_dropped_at_landing() -> None:
     # 보완 후에도 unsourced 가 남으면 착지에서 결정적 drop → unresolved 0 (해소됨).
     still_bad = _report(prose="여전히 27년 만의 칩이라는 표현이 남아있다.")

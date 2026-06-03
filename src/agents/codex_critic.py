@@ -69,6 +69,8 @@ body — you only return structured critique that a separate writer (Opus) will 
   metric_label_ambiguity 지표 라벨 모호
 
 규칙:
+  - 시장 수치(지수·환율·주가·등락률)는 evidence 의 time_series 와 *반드시* 대조하라.
+    종가·레벨이 어긋나거나 등락률이 안 맞으면 market_data_mismatch (최우선).
   - 모든 지적은 어느 evidence/URL 과 충돌하는지 evidence_conflict 에 반드시 명시.
     근거를 못 대는 지적은 아예 내지 말 것 (false-positive 가 멀쩡한 본문을 망친다).
   - evidence 에 부합하면 위반이 아니다. 의심만으로 flag 하지 말 것.

@@ -20,6 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 — 시장 수치 잔존 처리 강화 (착지 drop + time_series 가드)
+
+첫 실전에서 codex 가 "삼성전자 5/29 +10.1%"(실제 +7.78%)를 잡고도 *발행은 됐던* 문제
+(market_data_mismatch 가 unsourced 가 아니라 착지 drop 대상이 아니었음) 해결. 사용자 선택 C.
+
+- **A. 착지 확장** — `apply_landing` 이 잔존 `unsourced_number` + **`market_data_mismatch`**
+  를 본문에서 drop. 시장 수치는 최우선(WRITE-AP-15) — 틀린 채 발행하느니 제거.
+- **B. time_series 가드 공급** — `market_series_from_context` 가 `context.time_series` →
+  {종목:[종가들]} 추출, `run_fact_guards` 가 자동 공급(이전엔 미공급으로 inert). 가드 v2:
+  종목명 직후 *가격* 숫자만(날짜·% 제외, `_PRICE_RE`) + 시계열 *어느 종가와도* 불일치
+  시만 flag(날짜 모호성 강건·low-FP).
+- codex 프롬프트에 "시장 수치는 time_series 와 반드시 대조" 강조 → 1차 검수서 포착.
+- 회귀 122 pass (market: level 불일치 검출 / 과거일 매치 FP 없음 / % skip / 착지 drop).
+
 ## v6.0.0 — V6 검수 가시성 개선 (status 문구·텔레그램 바이라인·로그 diff/태깅)
 
 첫 실전 e2e 에서 드러난 가시성 결함 4종 일괄 보강 (사용자 피드백).

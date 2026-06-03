@@ -178,16 +178,18 @@ def _diff_reports(orig: ComposedReport, final: ComposedReport) -> list[str]:
 def apply_landing(
     report: ComposedReport, residual_claims: list,
 ) -> tuple[ComposedReport, list[str]]:
-    """확인패스 후 잔존 위반 착지 — `unsourced_number` 계열만 결정적 drop.
+    """확인패스 후 잔존 위반 착지 — `unsourced_number`·`market_data_mismatch` 결정적 drop.
 
-    Opus 보완이 이미 헤지/교정을 수행했으므로, 여기서는 *출처 없는 특정 수치* 가
-    그래도 남았을 때만 그 인용구를 본문에서 제거한다 (Claim validator 사상). 나머지
-    error_class 는 surgery 하지 않는다 (FP 가 멀쩡한 본문을 망치지 않게, log-only).
+    Opus 보완이 이미 헤지/교정을 수행했으므로, 여기서는 *출처 없는 특정 수치* 와 *틀린
+    시장 수치* 가 그래도 남았을 때만 그 인용구를 본문에서 제거한다 (시장 수치는 최우선 —
+    틀린 채 발행하느니 빼는 게 낫다, WRITE-AP-15 / Phase V6-8/A). 그 외 error_class 는
+    surgery 하지 않는다 (FP 가 멀쩡한 본문을 망치지 않게, log-only).
     """
     drop_quotes = [
         c.quote
         for c in residual_claims
-        if "unsourced" in getattr(c, "error_class", "").lower() and getattr(c, "quote", "")
+        if any(k in getattr(c, "error_class", "").lower() for k in ("unsourced", "market"))
+        and getattr(c, "quote", "")
     ]
     if not drop_quotes:
         return report, []
