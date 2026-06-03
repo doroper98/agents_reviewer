@@ -20,6 +20,22 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 (Phase V6-6) — 자율 보강 (critique 적립 → 소프트가드 → 승격 후보)
+
+"Codex 가 매번 잡는 패턴이 시스템에 누적돼 스스로 강해진다" — 단 **적립↔적용 분리**
+(AP-V6-9). flag `V6_AUTOLEARN` default OFF.
+
+- **A. 적립(자동·안전)** — `src/factcheck/critique_log.py:append_critique` 가 모든 verdict
+  지적을 `logs/critique_log.jsonl` 에 {error_class, signature, location, report_id, 날짜}로
+  영구 적립. 코드/프롬프트 무변경.
+- **B-1. 소프트가드 자동등재(log-only)** — `auto_register_soft_guards`: 동일 시그니처 재발
+  ≥3 → `logs/soft_guards.yaml` 에 `mode: log_only` 로 자동 등재 + 로그. 정규 가드/프롬프트
+  불변 (오판이어도 피해 0).
+- **B-2. 정식 승격(사람 게이트)** — `promotion_candidates`: 재발 ≥8 시그니처를 *로그로 표면화만*.
+  정규 가드/`SYSTEM_PROMPT`/fixture/AP-N 편입은 사람 확인 후에만 (자동 편입 금지, AP-V6-9).
+- orchestrator 가 루프 후 flag-gated 로 적립+자동등재+후보 표면화. `CriticLoopResult.claim_records`.
+- 회귀 `test_critique_log.py` 7종(적립/재발 임계/idempotent 등재/승격 임계/graceful). V6 109 pass.
+
 ## v6.0.0 (Phase V6-7) — 검수 바이라인 (버전 명시 신뢰 도장)
 
 발행물 말미에 "Claude Opus 4.7 작성 · OpenAI Codex (gpt-5.5) 사실 검수 — 지적 N건 반영"

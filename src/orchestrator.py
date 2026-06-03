@@ -1657,6 +1657,24 @@ class Orchestrator:
                         "[orchestrator] V6 residual (미해결): %s",
                         " | ".join(loop_result.residual_summary),
                     )
+                # Phase V6-6 — 자율 보강: critique 적립(자동) → 소프트가드 자동등재(log-only)
+                # → 승격 후보 표면화(사람 게이트). 적립↔적용 분리 (AP-V6-9).
+                if self.config.enable_autolearn and not loop_result.skipped:
+                    try:
+                        from src.factcheck import critique_log
+                        rid = f"{result.context.event_name or 'report'}|{result.context.date}"
+                        critique_log.append_critique(rid, loop_result.claim_records)
+                        newly = critique_log.auto_register_soft_guards()
+                        if newly:
+                            logger.info("[orchestrator] V6 소프트가드 자동등재(log-only): %s", newly)
+                        cands = critique_log.promotion_candidates()
+                        if cands:
+                            logger.info(
+                                "[orchestrator] V6 정식 승격 후보(사람 확인 필요): %s",
+                                [f"{c['signature']}×{c['count']}" for c in cands],
+                            )
+                    except Exception as _e:  # pragma: no cover
+                        logger.warning("[orchestrator] V6 autolearn skipped: %s", _e)
             except Exception as _e:  # pragma: no cover — 외부 의존 실패가 발행을 막지 않음
                 logger.warning("[orchestrator] V6 critic loop skipped: %s", _e)
 

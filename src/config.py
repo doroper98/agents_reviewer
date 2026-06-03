@@ -274,6 +274,16 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_BYLINE", "ENABLE_BYLINE", "enable_byline"),
     )
 
+    # === V6 Phase V6-6 — 자율 보강 (critique 적립 → 소프트가드 → 승격 후보) ===
+    # 켜지면 codex 지적을 critique_log.jsonl 에 영구 적립 + 재발 시그니처를 soft_guards.yaml
+    # 에 자동 등재(log-only) + 정식 승격 후보 로그 표면화. 적립↔적용 분리(AP-V6-9) —
+    # 정규 가드/프롬프트/fixture 편입은 *사람 게이트*. 코드/프롬프트 무변경이라 byte-equal.
+    # env: V6_AUTOLEARN=1.
+    enable_autolearn: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_AUTOLEARN", "ENABLE_AUTOLEARN", "enable_autolearn"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

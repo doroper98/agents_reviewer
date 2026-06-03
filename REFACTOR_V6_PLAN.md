@@ -299,7 +299,12 @@ bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검�
 - **flag**: `V6_CODEX_WEBVERIFY`.
 - **DoD**: 근거에 없는 사실을 웹으로 잡는 시나리오 통과, 검색 cap 준수, URL 인용 100%.
 
-### Phase V6-6 — 자율 보강: critique 적립 → 소프트가드 → 게이트 승격 (Tier 3)
+### Phase V6-6 — 자율 보강: critique 적립 → 소프트가드 → 게이트 승격 (Tier 3) ✅ (완료 2026-06-03)
+**상태**: `src/factcheck/critique_log.py` — append_critique(logs/critique_log.jsonl 적립) +
+analyze_recurring + auto_register_soft_guards(재발≥3 → logs/soft_guards.yaml `mode:log_only`) +
+promotion_candidates(재발≥8 표면화만). orchestrator flag-gated 적립+등재+후보 로그. **적립↔적용
+분리** (AP-V6-9) — 정규 가드/프롬프트/fixture 편입은 사람 게이트(자동 편입 금지). flag
+`V6_AUTOLEARN` default OFF. 회귀 7종.
 **목적**: "Codex 가 매번 잡는 패턴이 점점 시스템에 누적돼 스스로 강해진다." (사용자 핵심 안)
 - **A. 적립(자동·안전)**: 모든 verdict 를 `src/factcheck/critique_log.jsonl` 에
   {error_class, 패턴 시그니처, location, report_id, 날짜}로 영구 적립(usage_log 패턴).

@@ -88,6 +88,8 @@ class CriticLoopResult(BaseModel):
     changes: list[str] = Field(default_factory=list)
     # 바이라인용 (Phase V6-7) — 실측 검수 모델 라벨 (예: "OpenAI Codex (gpt-5.5)").
     critic_label: str = ""
+    # 자율 보강용 (Phase V6-6) — 구조화 지적 (critique_log 적립). [{error_class, location, quote}]
+    claim_records: list[dict] = Field(default_factory=list)
 
 
 def _pretty_writer(model_id: str) -> str:
@@ -271,6 +273,10 @@ class CriticLoop:
             f"[{c.error_class}] {c.location}: «{_clip(c.quote)}» → {_clip(c.fix_instruction, 200)}"
             for c in v1.claims
         ]
+        claim_records = [
+            {"error_class": c.error_class, "location": c.location, "quote": _clip(c.quote, 80)}
+            for c in v1.claims
+        ]
         fix_instructions = [c.fix_instruction for c in v1.claims] + pre_flags
         final = report
         revised_ok = False
@@ -330,4 +336,5 @@ class CriticLoop:
             applied_claims=applied_claims,
             changes=_diff_reports(report, final),
             critic_label=v1.model_label,
+            claim_records=claim_records,
         )
