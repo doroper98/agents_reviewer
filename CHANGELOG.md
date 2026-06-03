@@ -20,6 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6) — 루프 완결성 보강 (예방·가시성·정직한 착지)
+
+e2e 에서 보완이 새 프레이밍("PC 칩 복귀")을 끌어들여 residual 이 생긴 것을 발견 →
+완결성을 "0 보장"이 아니라 *예방+가시성+정직 착지+bounded* 로 확보. (사용자 방향 (a).)
+
+- **① 예방**: `REVISE_SYSTEM_PROMPT` 규칙 7 — 고치면서 근거 없는 *새* 주장·프레이밍
+  ('복귀/최초/사상 최대/직격탄/사실상') 도입 금지. 한 결함 고치다 새 결함 심는 것 차단.
+- **② 가시성**: `CriticLoopResult.residual_summary`(잔존 claim 사람-읽기 요약) +
+  `unresolved_count` + orchestrator 로그 노출. 잔존이 *뭔지* 보임(기존 카운트만).
+- **③ 정직한 착지**: drop 으로 해소 안 된 잔존이 남으면 "깨끗한 척" 발행 안 하고
+  `confidence_score` 정직 하향(−0.1/건, 0.3 floor). 비-unsourced 잔존은 prose surgery
+  대신 신호로만(AP-V6-10 사상). bounded(재작성≤1) 유지 — 무한 루프 금지(AP-V6-2).
+- 회귀 `test_codex_loop.py` 보강(미해결 카운트/신뢰도 하향/잔존 요약/예방 프롬프트). 73 pass.
+
 ## v5.8.8 (V6 Phase V6-3) — Bounded Codex critic 루프 (orchestrator 연결)
 
 V6 의 심장 — `Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)` 루프를

@@ -144,7 +144,7 @@ def test_violation_then_revise_then_clean_confirm() -> None:
 
 
 def test_residual_unsourced_dropped_at_landing() -> None:
-    # 보완 후에도 unsourced 가 남으면 착지에서 결정적 drop.
+    # 보완 후에도 unsourced 가 남으면 착지에서 결정적 drop → unresolved 0 (해소됨).
     still_bad = _report(prose="여전히 27년 만의 칩이라는 표현이 남아있다.")
     critic = StubCritic([
         _violations(_claim()),
@@ -155,6 +155,8 @@ def test_residual_unsourced_dropped_at_landing() -> None:
     res = _run(loop.run(_report(), ContextAnalysis()))
     assert "27년 만의" in res.dropped_quotes
     assert "27년 만의" not in res.report.sections[0].prose
+    # drop 으로 해소됐으니 미해결 0, 신뢰도 하향 없음.
+    assert res.unresolved_count == 0
 
 
 # --------------------------------------------------------------------------
@@ -175,6 +177,10 @@ def test_bounded_single_rewrite_even_if_confirm_still_violates() -> None:
     assert critic.calls == 2, "검수 1 + 확인패스 1 = 2회 (bound)"
     assert res.residual_violations == 1
     assert res.dropped_quotes == []  # causal 은 drop 대상 아님 (헤지는 Opus 가 이미)
+    # ② 가시성: 잔존이 요약으로 남는다. ③ 정직: 미해결 1 → 신뢰도 하향.
+    assert res.unresolved_count == 1
+    assert any("causal_overreach" in s and "직격탄" in s for s in res.residual_summary)
+    assert res.report.confidence_score < 0.5  # 정직한 하향 (default 0.5 → 0.4)
 
 
 def test_reviser_failure_keeps_original_but_confirms() -> None:
@@ -203,6 +209,24 @@ def test_pre_flags_passed_to_critic_when_guards_enabled() -> None:
     # 본문 "27년 만" 이 근거(30년)에 없으니 사전필터가 잡아 pre_flags 에 실림.
     assert res.pre_flag_count >= 1
     assert any("unsourced" in f for f in critic.pre_flags_seen[0])
+
+
+def test_clean_convergence_no_confidence_penalty() -> None:
+    # 위반→보완→확인 clean 이면 미해결 0, 신뢰도 그대로 (잔존 없음).
+    revised = _report(prose="정확히 교정된 본문.")
+    critic = StubCritic([_violations(_claim()), _clean()])
+    loop = CriticLoop(_cfg(), critic, StubReviser(revised))
+    res = _run(loop.run(_report(), ContextAnalysis()))
+    assert res.unresolved_count == 0 and res.residual_summary == []
+    assert res.report.confidence_score == 0.5  # 하향 없음
+
+
+def test_revise_prompt_forbids_new_framing() -> None:
+    # ① 예방 — 보완 프롬프트가 '새 주장/프레이밍 도입 금지'를 명시하는지.
+    from src.agents.narrative_composer import NarrativeComposer
+    sp = NarrativeComposer.REVISE_SYSTEM_PROMPT
+    assert "새로운" in sp and ("복귀" in sp or "프레이밍" in sp)
+    assert "독자 우선" in sp  # AP-V6-13 가드 유지
 
 
 def test_pre_flags_alone_do_not_trigger_rewrite() -> None:

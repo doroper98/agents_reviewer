@@ -227,6 +227,13 @@ init_viol=4  residual=0  dropped=[]  pre_flags=2
 > 설계의 정당성 입증). bounded(재작성≤1) 라 잔존 1건은 2차 재작성 없이 발행. → 후속 개선
 > 후보: ① 보완 시 *새 주장·프레이밍 도입 금지* 프롬프트 강화(예방) ② residual claim 텍스트
 > 로깅(현재 카운트만) ③ 비-unsourced 잔존의 착지 정책(헤지 vs 발행).
+>
+> **완결성 보강 ①②③ 반영 (2026-06-03).** ① `REVISE_SYSTEM_PROMPT` 규칙 7 — 고치면서
+> 새 주장·프레이밍('복귀/최초/직격탄/사실상') 도입 금지(예방). ② `CriticLoopResult.residual_summary`
+> (잔존 claim 사람-읽기 요약) + orchestrator 로그 노출(가시성). ③ 정직한 착지 — drop 으로
+> 해소 안 된 잔존(`unresolved_count`)이 남으면 "깨끗한 척" 발행 안 하고 `confidence_score`
+> 를 정직 하향(−0.1/건, 0.3 floor). surgery 위험한 비-unsourced 잔존은 신호로만 남김.
+> **완결성 = 0 보장이 아니라 예방+가시성+정직 착지+bounded.** 회귀 73 pass.
 
 **→ Phase V6-3 DoD 충족** (NVIDIA 표본 위반 0 수렴 + 재작성≤1 + 확인패스≤1 + 모킹 9종).
 

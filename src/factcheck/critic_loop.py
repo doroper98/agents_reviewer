@@ -79,6 +79,10 @@ class CriticLoopResult(BaseModel):
     initial_violations: int = 0
     residual_violations: int = 0
     dropped_quotes: list[str] = Field(default_factory=list)
+    # ② 가시성 — 확인패스 잔존 claim 의 사람-읽기 요약 (진단·텔레메트리).
+    residual_summary: list[str] = Field(default_factory=list)
+    # ③ 정직한 착지 — drop 으로도 해소 안 된 잔존 수 (≠ 0 이면 신뢰도 하향).
+    unresolved_count: int = 0
 
 
 def apply_landing(
@@ -195,6 +199,19 @@ class CriticLoop:
         # 5. 착지 — unsourced 잔존만 결정적 drop.
         final, dropped = apply_landing(final, residual)
 
+        # ② 잔존 가시화 + ③ 정직한 착지. drop 으로 해소 안 된 잔존(unresolved)이
+        # 남으면 "깨끗한 척" 발행하지 않고 신뢰도를 정직하게 낮춘다 (AP-V6-10 사상).
+        # surgery 가 위험한 비-unsourced 잔존은 그대로 두되 신호로 남긴다.
+        residual_summary = [
+            f"[{c.error_class}] {c.location}: {c.quote}" for c in residual
+        ]
+        unresolved = [c for c in residual if getattr(c, "quote", "") not in dropped]
+        if unresolved:
+            final = final.model_copy(deep=True)
+            final.confidence_score = max(
+                0.3, round(final.confidence_score - 0.1 * len(unresolved), 3),
+            )
+
         return CriticLoopResult(
             report=final,
             revised=revised_ok,
@@ -203,4 +220,6 @@ class CriticLoop:
             initial_violations=v1.violation_count,
             residual_violations=len(residual),
             dropped_quotes=dropped,
+            residual_summary=residual_summary,
+            unresolved_count=len(unresolved),
         )

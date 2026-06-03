@@ -1629,12 +1629,17 @@ class Orchestrator:
                     result.composed_report = loop_result.report
                 logger.info(
                     "[orchestrator] V6 critic loop: skipped=%s reason=%s revised=%s "
-                    "confirm=%s init_viol=%d residual=%d dropped=%d pre_flags=%d",
+                    "confirm=%s init_viol=%d residual=%d unresolved=%d dropped=%d pre_flags=%d",
                     loop_result.skipped, loop_result.skip_reason, loop_result.revised,
                     loop_result.confirm_ran, loop_result.initial_violations,
-                    loop_result.residual_violations, len(loop_result.dropped_quotes),
-                    loop_result.pre_flag_count,
+                    loop_result.residual_violations, loop_result.unresolved_count,
+                    len(loop_result.dropped_quotes), loop_result.pre_flag_count,
                 )
+                if loop_result.residual_summary:
+                    logger.info(
+                        "[orchestrator] V6 residual (미해결): %s",
+                        " | ".join(loop_result.residual_summary),
+                    )
             except Exception as _e:  # pragma: no cover — 외부 의존 실패가 발행을 막지 않음
                 logger.warning("[orchestrator] V6 critic loop skipped: %s", _e)
 
