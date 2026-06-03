@@ -31,9 +31,13 @@ codex 호출(=ChatGPT 한도) 전에 *명백한* 사실 위반을 0-LLM 으로 �
   신규성·상대시점 단어) / `MarketDataSourceGuard`(시장 수치 ±tolerance 불일치) /
   `NaNExposureGuard`(본문·차트 nan 노출). `run_fact_guards()` 집계 → `GuardFlag` 목록,
   Phase 3 에서 `CodexCritic.critique(pre_flags=...)` 로 합류.
-- **검수자 페르소나 훅** — `CodexCritic(config, persona=...)` + `V6_CODEX_PERSONA_PATH`.
-  *검증 기준*(도메인 인식 팩트체크 데스크)이지 작성 페르소나 아님 (codex 는 본문을
-  안 씀, AP-V6-11). 비우면 기본 지침 = byte-equal.
+- **검수자 페르소나 훅 + 실제 페르소나** — `CodexCritic(config, persona=...)` +
+  `V6_CODEX_PERSONA_PATH`(기본 `prompts/codex_critic_persona.md`). GPT 협업 산출물
+  "시장 브리핑 팩트체크 데스크" 채택: 전체 기준서 `prompts/market_factcheck_desk_v6.md` +
+  런타임 단축본 `prompts/codex_critic_persona.md`(10개 검수 포커스·회의적 기본·심각도
+  매핑·금지사항). **출력 형식만 우리 `FactVerdict` JSON 계약으로 오버라이드**(페르소나의
+  산문형 데스크 보고서 형식은 파서와 충돌 → 미채택). *검증 기준*이지 작성 페르소나 아님
+  (codex 는 본문 안 씀, AP-V6-11). 파일 없으면 graceful 빈값 = byte-equal.
 - **flag**: `V6_FACT_GUARDS`(default OFF). `.env.example` 갱신.
 - **회귀 T-1** (`test_fact_discipline.py`) — 결정적 타깃 5종 100% 검출 + good_prose 0-FP +
   NaN/clean/pre_flag seam. 의미 판단 케이스(threshold/event/attribution/causal/metric/

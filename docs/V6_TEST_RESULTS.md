@@ -140,7 +140,13 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 
 **랜딩 산출물**
 - `src/factcheck/deterministic_guards.py` — 5종 가드 + `run_fact_guards` 집계 (log-only).
-- `CodexCritic` 검수자 페르소나 훅 (`persona=` / `V6_CODEX_PERSONA_PATH`, default 빈값=byte-equal).
+- `CodexCritic` 검수자 페르소나 훅 (`persona=` / `V6_CODEX_PERSONA_PATH`).
+- **검수자 페르소나 (GPT 협업 채택)**: `prompts/market_factcheck_desk_v6.md`(전체 기준서) +
+  `prompts/codex_critic_persona.md`(런타임 단축본, config 기본값). 10개 검수 포커스 +
+  회의적 기본 + 심각도 4단계→JSON severity 매핑. **출력 형식은 우리 `FactVerdict` JSON
+  으로 오버라이드** (페르소나 원안의 산문형 데스크 보고서는 파서와 충돌해 미채택).
+  파일 부재 시 graceful 빈값. 회귀: `test_codex_critic.py` 페르소나 4종(기본 로드/본문작성
+  금지 정합/missing graceful/명시 빈값) 통과.
 
 **T-1 검출 (`test_fact_discipline.py`) — 통과**
 

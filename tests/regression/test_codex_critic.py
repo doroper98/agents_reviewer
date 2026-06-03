@@ -252,6 +252,37 @@ def test_telemetry_records_degrade(tmp_path: Path, monkeypatch) -> None:
 # --------------------------------------------------------------------------
 
 
+# --------------------------------------------------------------------------
+# 검수자 페르소나 (V6-2) — 기본 로드 + graceful + 본문작성 금지 정합
+# --------------------------------------------------------------------------
+
+
+def test_default_persona_loads() -> None:
+    critic = CodexCritic(Config(_env_file=None))
+    assert critic.critic_persona, "기본 페르소나(prompts/codex_critic_persona.md)가 로드돼야 함"
+    # V6 핵심 가드가 페르소나에 살아있는지 (AP-V6-8 근거인용 / AP-V6-11 본문작성금지).
+    assert "AP-V6-8" in critic.critic_persona
+    assert "AP-V6-11" in critic.critic_persona
+    assert "팩트체크 데스크" in critic.critic_persona
+
+
+def test_persona_forbids_body_writing() -> None:
+    # 페르소나는 *검수자* 여야 한다 — 본문을 쓰지 않는다는 지시가 있어야 (AP-V6-11).
+    critic = CodexCritic(Config(_env_file=None))
+    assert "본문을 다시 쓰지" in critic.critic_persona or "본문 작성 금지" in critic.critic_persona
+
+
+def test_missing_persona_graceful() -> None:
+    cfg = _make_config(codex_critic_persona_path="/nonexistent/persona.md")
+    critic = CodexCritic(cfg)
+    assert critic.critic_persona == ""  # 파일 없으면 빈 문자열 (degrade), 예외 안 남
+
+
+def test_explicit_empty_persona_overrides_default() -> None:
+    critic = CodexCritic(Config(_env_file=None), persona="")
+    assert critic.critic_persona == ""
+
+
 def test_build_cmd_respects_config() -> None:
     critic = CodexCritic(
         _make_config(codex_subcommand="exec", codex_extra_args="--json --cd /tmp", codex_model="gpt-5")

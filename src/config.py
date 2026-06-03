@@ -204,7 +204,7 @@ class Config(BaseSettings):
     # 패턴). 작성 페르소나가 아님 — codex 는 본문을 쓰지 않는다 (AP-V6-11).
     # env: V6_CODEX_PERSONA_PATH.
     codex_critic_persona_path: str = Field(
-        default="",
+        default="prompts/codex_critic_persona.md",
         validation_alias=AliasChoices("V6_CODEX_PERSONA_PATH", "codex_critic_persona_path"),
     )
 
