@@ -96,6 +96,13 @@ status=violations  violations=3  skipped=False  reason=  latency_ms=35101
   evidence_conflict/quote/severity 까지 채움 (AP-V6-8 충족, ungrounded drop 0).
 - **지연**: 35.1s (단건, 첫 호출 워밍업 포함). 일일브리핑(비동기)엔 무영향, 온디맨드
   보고서엔 루프당 codex 2회 ≈ +70s 예상 → Phase 3 에서 측정·튜닝.
+- **텔레메트리 (T-C3 실측, `logs/codex_calls.jsonl`)**:
+  ```
+  {"ts":1780468194,"verdict_status":"violations","skipped":false,"skip_reason":"",
+   "violations":3,"latency_ms":35101,"truncation_repaired":false,"prompt_chars":2253,"model":"(default)"}
+  ```
+  `truncation_repaired:false` = `-o` 클린 캡처로 복구 폴백 미발동 (codex 출력이 파서에
+  그대로 진입). prompt_chars=2253 (report digest + evidence digest).
 
 **→ Phase V6-1 DoD 전부 충족** (모킹 39종 + 실제 codex 1회 + flag OFF byte-equal).
 
