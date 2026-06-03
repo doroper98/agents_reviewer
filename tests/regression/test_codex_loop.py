@@ -10,7 +10,12 @@ from __future__ import annotations
 import asyncio
 
 from src.config import Config
-from src.factcheck.critic_loop import CriticLoop, CriticLoopResult
+from src.factcheck.critic_loop import (
+    CriticLoop,
+    CriticLoopResult,
+    _pretty_writer,
+    build_verification_byline,
+)
 from src.models import (
     ComposedReport,
     ComposedSection,
@@ -293,6 +298,57 @@ def test_progress_none_is_safe() -> None:
     loop = CriticLoop(_cfg(), StubCritic([_clean()]), StubReviser())
     res = _run(loop.run(_report(), ContextAnalysis()))
     assert res.initial_violations == 0
+
+
+# --------------------------------------------------------------------------
+# 바이라인 (Phase V6-7) — 버전 명시 + 정직 (검수 수행 시만)
+# --------------------------------------------------------------------------
+
+
+def test_pretty_writer_version() -> None:
+    assert _pretty_writer("claude-opus-4-7") == "Claude Opus 4.7"
+    assert _pretty_writer("claude-sonnet-4-6") == "Claude Sonnet 4.6"
+    assert _pretty_writer("") == "Claude (Opus)"
+
+
+def test_byline_includes_both_versions() -> None:
+    res = CriticLoopResult(
+        report=_report(), initial_violations=2, unresolved_count=0,
+        critic_label="OpenAI Codex (gpt-5.5)",
+    )
+    b = build_verification_byline(res, "claude-opus-4-7", web_verified=True)
+    assert b["writer"] == "Claude Opus 4.7"
+    assert "gpt-5.5" in b["critic"]
+    # 한 줄에 두 모델 버전 + 지적 수 + 웹 대조 모두.
+    assert "Claude Opus 4.7" in b["text"] and "gpt-5.5" in b["text"]
+    assert "2건 반영" in b["text"] and "웹 대조" in b["text"]
+
+
+def test_byline_clean_pass_and_unresolved() -> None:
+    clean = build_verification_byline(
+        CriticLoopResult(report=_report(), initial_violations=0, critic_label="OpenAI Codex (gpt-5.5)"),
+        "claude-opus-4-7",
+    )
+    assert "지적 없음 통과" in clean["text"]
+    unres = build_verification_byline(
+        CriticLoopResult(report=_report(), initial_violations=3, unresolved_count=1, critic_label="OpenAI Codex (gpt-5.5)"),
+        "claude-opus-4-7",
+    )
+    assert "3건 반영" in unres["text"] and "1건 미해결" in unres["text"]
+
+
+def test_critic_label_flows_from_verdict() -> None:
+    v1 = FactVerdict(claims=[_claim()], model_label="OpenAI Codex (gpt-5.5)")
+    loop = CriticLoop(_cfg(), StubCritic([v1, _clean()]), StubReviser(_report(prose="보완")))
+    res = _run(loop.run(_report(), ContextAnalysis()))
+    assert res.critic_label == "OpenAI Codex (gpt-5.5)"
+
+
+def test_skipped_has_no_critic_label() -> None:
+    # degrade → critic_label 빈값 → orchestrator 가 바이라인 안 만듦 (AP-V6-10).
+    loop = CriticLoop(_cfg(), StubCritic([FactVerdict.skip("rate_limited")]), StubReviser())
+    res = _run(loop.run(_report(), ContextAnalysis()))
+    assert res.critic_label == ""
 
 
 def test_pre_flags_alone_do_not_trigger_rewrite() -> None:

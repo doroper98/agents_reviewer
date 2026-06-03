@@ -29,6 +29,7 @@ import contextlib
 import json
 import logging
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -140,6 +141,8 @@ class CodexCritic:
 
     def __init__(self, config: Config, *, persona: str | None = None) -> None:
         self.config = config
+        # codex 배너에서 실측한 모델명 (바이라인 버전 표기용, Phase V6-7). 하드코딩 금지.
+        self._last_codex_model = ""
         # 검수자 페르소나 (도메인 인식 팩트체크 데스크). 빈 문자열이면 기본 지침만
         # = byte-equal. 작성 페르소나가 아님 — codex 는 본문을 안 쓴다 (AP-V6-11).
         self.critic_persona = (
@@ -223,6 +226,9 @@ class CodexCritic:
             return verdict
 
         verdict = self._parse_verdict(stdout, latency_ms=elapsed_ms)
+        # 바이라인 버전 표기 (Phase V6-7) — 배너 실측 모델 반영, 없으면 일반 라벨.
+        if self._last_codex_model:
+            verdict.model_label = f"OpenAI Codex ({self._last_codex_model})"
         self._record_call(verdict, prompt_chars=len(prompt))
         logger.info(
             "[codex_critic] verdict=%s violations=%d (%dms%s)",
@@ -393,8 +399,13 @@ class CodexCritic:
                 raise
             elapsed_ms = int((time.time() - start) * 1000)
             # 최종 메시지는 -o 파일에서 (깨끗). 비면 raw stdout 으로 폴백.
+            raw_stdout = stdout_b.decode("utf-8", "replace")
+            # codex 배너의 "model: gpt-5.5" 실측 (바이라인 버전, Phase V6-7).
+            m = re.search(r"(?mi)^\s*model:\s*(\S+)", raw_stdout)
+            if m:
+                self._last_codex_model = m.group(1).strip()
             message = self._read_text(msg_path)
-            stdout = message or stdout_b.decode("utf-8", "replace").strip()
+            stdout = message or raw_stdout.strip()
             stderr = stderr_b.decode("utf-8", "replace").strip()
             return stdout, stderr, proc.returncode or 0, elapsed_ms
         finally:
@@ -506,6 +517,7 @@ class CodexCritic:
             "key_figures": context.key_figures,
             "sources": context.sources,
             "time_series": context.time_series,
+            "provenance": getattr(context, "provenance", []),  # Phase V6-8 — 출처일·단위·URL
         }
 
     # ------------------------------------------------------------------

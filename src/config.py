@@ -264,6 +264,36 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_CODEX_WEBSEARCH_CAP", "codex_websearch_cap"),
     )
 
+    # === V6 Phase V6-7 — 바이라인 신뢰장치 ===
+    # 발행물 말미에 "Claude Opus 4.7 작성 / OpenAI Codex (GPT-5.5) 검수" 도장.
+    # 검수 *실제 수행* 시에만 렌더(degrade/skip 시 검수 줄 생략 — 거짓 신뢰 금지 AP-V6-10).
+    # 버전은 config(작성=COMPOSER_MODEL) + codex 배너 실측(검수). 디폴트 OFF.
+    # env: V6_BYLINE=1.
+    enable_byline: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_BYLINE", "ENABLE_BYLINE", "enable_byline"),
+    )
+
+    # === V6 Phase V6-6 — 자율 보강 (critique 적립 → 소프트가드 → 승격 후보) ===
+    # 켜지면 codex 지적을 critique_log.jsonl 에 영구 적립 + 재발 시그니처를 soft_guards.yaml
+    # 에 자동 등재(log-only) + 정식 승격 후보 로그 표면화. 적립↔적용 분리(AP-V6-9) —
+    # 정규 가드/프롬프트/fixture 편입은 *사람 게이트*. 코드/프롬프트 무변경이라 byte-equal.
+    # env: V6_AUTOLEARN=1.
+    enable_autolearn: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_AUTOLEARN", "ENABLE_AUTOLEARN", "enable_autolearn"),
+    )
+
+    # === V6 Phase V6-8 — per-fact provenance ===
+    # 켜지면 ContextAnalyst 가 각 사실에 source_date/scope_note/source_url 을 구조화 emit
+    # (`ContextAnalysis.provenance`). 이 데이터로 NoveltyDelta/Scope 가드가 *프롬프트 없이
+    # 데이터로* 판정 (지금은 production 에서 미공급이라 inert). additive·Optional — 구
+    # 데이터 호환, flag OFF byte-equal. env: V6_PROVENANCE=1.
+    enable_provenance: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V6_PROVENANCE", "ENABLE_PROVENANCE", "enable_provenance"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

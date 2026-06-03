@@ -55,7 +55,7 @@ v4.5.7 의 *실제* 데이터 흐름은 `AnalysisRequest → ContextAnalysis →
 | 모델 | 책무 | 정의 위치 |
 |------|------|-----------|
 | `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델). event_description / chat_id / mode. | `src/models.py` |
-| `ContextAnalysis` | ContextAnalyst (Opus 4.7) 출력. event_name / category / summary / timeline / key_figures / sources / **`recommended_persona: dict` (v4.3.0 신설)** | `src/models.py` |
+| `ContextAnalysis` | ContextAnalyst (Opus 4.7) 출력. event_name / category / summary / timeline / key_figures / sources / instruments_mentioned / time_series / **`provenance: list[dict]` (v6.0.0 Phase V6-8 — 각 사실의 source_date/scope_note/source_url, additive·Optional, `V6_PROVENANCE` 시 채움)** | `src/models.py` |
 | `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)** / **`footnotes: list[{term, explanation}]` (v5.5.5 전문 용어 문단 하단 주석)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. | `src/models.py` |
 | `ComposedReport` | NarrativeComposer (Opus 4.7) 단일 호출 산출. headline / deck / sections / closing / **(v4.0.0) watch_signals + contradictions + confidence_summary + confidence_score + (v4.2.0) embedded_map**. v4.0.0 부터 보고서 SSOT. | `src/models.py` |
 | `FullAnalysisResult` | 모든 결과 + 메타데이터 컨테이너. request / context / composed_report / report_url / report_path / report_theme / **(v4.5.5) system_version + revision** / analysis_timestamp / total_duration_seconds. v3 시대 optional 필드 (strategy / blocks / findings / judgment / players / dynamics / chain_reaction / scenarios / visuals) 는 호환 목적으로 보존되나 v4.5.7 호출 경로에서는 채워지지 않는다. | `src/models.py` |

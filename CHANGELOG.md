@@ -20,6 +20,50 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 (Phase V6-8) — per-fact provenance (가드를 데이터로 판정)
+
+GAP-7. ContextAnalyst 가 각 사실에 출처일·단위·URL 을 구조화 emit → NoveltyDelta/Scope
+가드가 *프롬프트 없이 데이터로* 판정. (지금까진 production 에서 source_dates/scope_notes 가
+미공급이라 두 가드가 사실상 inert 였음 — provenance 가 이 데이터를 채워 가드를 실작동시킴.)
+flag `V6_PROVENANCE` default OFF. **V6 전 Phase(0~8) 완료.**
+
+- `ContextAnalysis.provenance: list[dict]` (additive·Optional, 구 데이터 호환). 각 항목
+  {fact, source_date?, scope_note?, source_url?} — fixture evidence 와 동형.
+- context_analyst `_PROVENANCE_BLOCK` (`_build_system_prompt` flag-gating, recency 와 직교).
+- `run_fact_guards` 가 명시 인자 없으면 `source_dates_from_context`/`scope_notes_from_context`
+  로 provenance 에서 데이터 공급 (provenance 비면 [] → inert = 기존 동작, byte-equal).
+- codex 비전/critic evidence digest 에 provenance 추가.
+- 회귀 `test_provenance.py` 7종(프롬프트 flag-gating/derive/scope·novelty 데이터 발화/inert). V6 116 pass.
+
+## v6.0.0 (Phase V6-6) — 자율 보강 (critique 적립 → 소프트가드 → 승격 후보)
+
+"Codex 가 매번 잡는 패턴이 시스템에 누적돼 스스로 강해진다" — 단 **적립↔적용 분리**
+(AP-V6-9). flag `V6_AUTOLEARN` default OFF.
+
+- **A. 적립(자동·안전)** — `src/factcheck/critique_log.py:append_critique` 가 모든 verdict
+  지적을 `logs/critique_log.jsonl` 에 {error_class, signature, location, report_id, 날짜}로
+  영구 적립. 코드/프롬프트 무변경.
+- **B-1. 소프트가드 자동등재(log-only)** — `auto_register_soft_guards`: 동일 시그니처 재발
+  ≥3 → `logs/soft_guards.yaml` 에 `mode: log_only` 로 자동 등재 + 로그. 정규 가드/프롬프트
+  불변 (오판이어도 피해 0).
+- **B-2. 정식 승격(사람 게이트)** — `promotion_candidates`: 재발 ≥8 시그니처를 *로그로 표면화만*.
+  정규 가드/`SYSTEM_PROMPT`/fixture/AP-N 편입은 사람 확인 후에만 (자동 편입 금지, AP-V6-9).
+- orchestrator 가 루프 후 flag-gated 로 적립+자동등재+후보 표면화. `CriticLoopResult.claim_records`.
+- 회귀 `test_critique_log.py` 7종(적립/재발 임계/idempotent 등재/승격 임계/graceful). V6 109 pass.
+
+## v6.0.0 (Phase V6-7) — 검수 바이라인 (버전 명시 신뢰 도장)
+
+발행물 말미에 "Claude Opus 4.7 작성 · OpenAI Codex (gpt-5.5) 사실 검수 — 지적 N건 반영"
+도장. 독자에게 보이는 신뢰 surface (생성 중 라이브 status 의 발행 후 짝). flag `V6_BYLINE`.
+
+- **버전 명시** — 작성 모델은 config SSOT(`NarrativeComposer.COMPOSER_MODEL` → "Claude Opus
+  4.7"), 검수 모델은 **codex 배너 실측**("model: gpt-5.5" 파싱, 하드코딩 금지). `_pretty_writer`.
+- **조건부 렌더 (AP-V6-10)** — critic 이 *실제 수행* 됐을 때만. degrade/skip/flag OFF 시
+  `ComposedReport.verification=None` → 바이라인 생략(거짓 신뢰 금지). `critic_label` 빈값으로 가드.
+- `build_verification_byline` (위반 수·미해결·웹대조 반영) → `composed.verification.text` →
+  `freeform_essay.html` footer `.footer-byline`(accent 색).
+- 회귀 `test_codex_loop.py` 바이라인 6종(버전/clean/미해결/label 전파/skip 무바이라인). V6 102 pass.
+
 ## v6.0.0 — V6 사실 거버넌스 (Codex 외부 critic 루프) 정식 릴리스
 
 2026-06-01 일일 브리핑 팩트체크 회귀(자유 본문에 evidence-binding 부재 + fact-critic 루프

@@ -299,7 +299,12 @@ bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검�
 - **flag**: `V6_CODEX_WEBVERIFY`.
 - **DoD**: 근거에 없는 사실을 웹으로 잡는 시나리오 통과, 검색 cap 준수, URL 인용 100%.
 
-### Phase V6-6 — 자율 보강: critique 적립 → 소프트가드 → 게이트 승격 (Tier 3)
+### Phase V6-6 — 자율 보강: critique 적립 → 소프트가드 → 게이트 승격 (Tier 3) ✅ (완료 2026-06-03)
+**상태**: `src/factcheck/critique_log.py` — append_critique(logs/critique_log.jsonl 적립) +
+analyze_recurring + auto_register_soft_guards(재발≥3 → logs/soft_guards.yaml `mode:log_only`) +
+promotion_candidates(재발≥8 표면화만). orchestrator flag-gated 적립+등재+후보 로그. **적립↔적용
+분리** (AP-V6-9) — 정규 가드/프롬프트/fixture 편입은 사람 게이트(자동 편입 금지). flag
+`V6_AUTOLEARN` default OFF. 회귀 7종.
 **목적**: "Codex 가 매번 잡는 패턴이 점점 시스템에 누적돼 스스로 강해진다." (사용자 핵심 안)
 - **A. 적립(자동·안전)**: 모든 verdict 를 `src/factcheck/critique_log.jsonl` 에
   {error_class, 패턴 시그니처, location, report_id, 날짜}로 영구 적립(usage_log 패턴).
@@ -314,7 +319,12 @@ bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검�
 - **DoD**: 적립 idempotent, 재발 임계 시 소프트가드 자동 등재, 소프트가드가 본문
   프롬프트를 변형하지 않음(byte-equal 본문 프롬프트 가드), 정식 승격은 게이트 필수.
 
-### Phase V6-7 — 바이라인 신뢰장치
+### Phase V6-7 — 바이라인 신뢰장치 ✅ (완료 2026-06-03)
+**상태**: `ComposedReport.verification` + `build_verification_byline`(critic_loop) +
+orchestrator 조건부 세팅(검수 수행 시만, AP-V6-10) + `freeform_essay.html` footer 렌더.
+**버전 명시** — 작성=config(`COMPOSER_MODEL`→"Claude Opus 4.7"), 검수=codex 배너 실측
+(`model:` 파싱→"gpt-5.5", 하드코딩 금지). flag `V6_BYLINE` default OFF. degrade/skip 시
+`verification=None`(거짓 신뢰 금지). 회귀 6종. ReportBundle verification 척추와 정합 가능.
 **목적**: REQ-V6-12. 독자가 보고서 신뢰도를 가늠하는 출처-검증 라벨.
 - `freeform_essay.html` 말미에 "Claude Opus {ver} 작성 / OpenAI Codex 검수 ({n}회)".
   버전은 **config SSOT**(현 composer=Opus 4.7)에서 끌어옴 — 하드코딩 금지.
@@ -324,7 +334,13 @@ bound. T-6 모킹 6종 통과. **VM 검증 완료** — codex 가 실제 웹검�
 - **DoD**: 검수 수행/스킵 2경로에서 바이라인 정/부 렌더, 버전 config 연동, 모델 ID
   내부 식별자 비노출.
 
-### Phase V6-8 — Per-fact Provenance in ContextAnalysis
+### Phase V6-8 — Per-fact Provenance in ContextAnalysis ✅ (완료 2026-06-03)
+**상태**: `ContextAnalysis.provenance` (additive·Optional) + context_analyst `_PROVENANCE_BLOCK`
+(`_build_system_prompt` flag-gating) + `run_fact_guards` 가 provenance 에서 source_dates/
+scope_notes 데이터 공급(`source_dates_from_context`/`scope_notes_from_context`) → NoveltyDelta/
+Scope 가드가 *프롬프트 없이 데이터로* 판정 + codex evidence digest 에 provenance. provenance
+비면 inert = 기존 동작(byte-equal). flag `V6_PROVENANCE` default OFF. 회귀 7종. **V6 전
+Phase(0~8) 완료.**
 **목적**: GAP-7. 신규성·scope·시점을 *데이터*로 판정 + 바이라인/웹verify 정확도 보강.
 - `src/models.py:ContextAnalysis` 증거 항목에 `source_date`/`scope_note`/`source_url`
   (additive, Optional — 구 데이터 호환). DATA_MODELS 갱신. `context_analyst.py:

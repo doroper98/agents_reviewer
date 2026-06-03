@@ -44,7 +44,8 @@ src/
 ├── factcheck/           # V6 — 사실 거버넌스 (opt-in)
 │   ├── __init__.py
 │   ├── deterministic_guards.py   # ✅ V6-2 0-LLM 사전필터 (unsourced/scope/novelty/market/nan). log-only
-│   └── critic_loop.py            # ✅ V6-3 bounded 루프 (Opus작성→Codex검수→Opus보완≤1→확인≤1). V6_CODEX_CRITIC
+│   ├── critic_loop.py            # ✅ V6-3 bounded 루프 (Opus작성→Codex검수→Opus보완≤1→확인≤1). V6_CODEX_CRITIC
+│   └── critique_log.py           # ✅ V6-6 자율 보강 (적립→소프트가드 자동등재→승격 후보). V6_AUTOLEARN
 ├── archetypes/          # v4.0.0: freeform_essay 만 사용. 11종은 deprecated.
 │   ├── __init__.py
 │   ├── base.py                       # ReportArchetype Protocol

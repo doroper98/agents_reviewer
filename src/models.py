@@ -49,6 +49,12 @@ class ContextAnalysis(BaseModel):
     instruments_mentioned: list[str] = Field(default_factory=list)
     time_series: list[dict] = Field(default_factory=list)
 
+    # v6.0.0 (Phase V6-8) — per-fact provenance. V6_PROVENANCE 켜질 때만 ContextAnalyst
+    # 가 채움 (additive·Optional, 구 데이터 호환, flag OFF 면 빈 list). 각 항목:
+    # {"fact": str, "source_date"?: "YYYY-MM-DD", "scope_note"?: str, "source_url"?: str}.
+    # NoveltyDelta/Scope 가드가 이 데이터로 판정 (프롬프트 의존 X). fixture evidence 와 동형.
+    provenance: list[dict] = Field(default_factory=list)
+
     # v5.4.0 — 사진 후보 풀. orchestrator 가 sources URL 각각의 og:image /
     # og:title / og:description 을 추출해 채움. composer 가 이 list 를 보고
     # 본문 흐름에 적합한 사진을 골라 hero_image / 섹션 images 로 emit.
@@ -749,6 +755,13 @@ class ComposedReport(BaseModel):
     # 사진이 본문 흐름과 무관하거나 사용자 검색 결과의 og:image 가 적절치 않으면
     # null 로 두는 게 정상 — 빈 figure 박지 말 것.
     hero_image: dict | None = None
+
+    # v6.0.0 (Phase V6-7) — 검수 바이라인. Codex critic 루프가 *실제 수행* 됐을 때만
+    # orchestrator 가 채움 (degrade/skip/flag OFF → None, 거짓 신뢰 금지 AP-V6-10).
+    # 형식: {"writer": "Claude Opus 4.7", "critic": "OpenAI Codex (gpt-5.5)",
+    #        "violations_fixed": int, "unresolved": int, "web_verified": bool,
+    #        "text": "사람-읽기 한 줄"}. 렌더는 freeform_essay.html 의 .freeform-byline.
+    verification: dict | None = None
 
 
 # ======================================================================
