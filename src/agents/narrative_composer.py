@@ -809,6 +809,115 @@ class NarrativeComposer:
             }
         return payload
 
+    # ------------------------------------------------------------------
+    # V6 Phase V6-3 — 사실 보완 (Codex 지시 → Opus 재작성, AP-V6-1/11)
+    # ------------------------------------------------------------------
+
+    REVISE_SYSTEM_PROMPT: str = (
+        "너는 이 시장·지정학 보고서를 쓴 편집장(Opus)이다. 외부 팩트체크 데스크(Codex)가\n"
+        "사실 결함을 지적했다. 너의 임무는 *지적된 부분만* 근거에 맞게 고치는 것이다.\n\n"
+        "절대 규칙:\n"
+        "1) 지적되지 않은 문장·구조·논지·문체는 그대로 둔다. 보고서를 새로 쓰지 마라.\n"
+        "2) 출처 없는 특정 수치는 삭제하거나, 근거가 뒷받침하는 표현으로만 바꾼다.\n"
+        "3) 과장된 인과·단정은 헤지 표현으로 누그러뜨린다('기여했을 수 있다/와 부합한다/\n"
+        "   간접 영향'). 한쪽 주장은 '...측은 주장했다' 로 귀속한다.\n"
+        "4) scope(단위/범위)를 근거에 맞게 정정한다. 시점·신규성은 발행일 기준으로 맞춘다.\n"
+        "5) 없는 사실을 새로 지어내지 마라. 근거가 부족하면 단정을 빼고 완화한다.\n"
+        "6) 마크다운 강조·em/en dash 금지(평문). 일반 독자가 읽는 평이한 우리말.\n\n"
+        "출력: 아래 JSON *하나만*. 코드펜스·설명 금지. 차트·이미지·신호는 시스템이 보존하니\n"
+        "너는 *텍스트만* 낸다.\n"
+        '{"headline":"(정정된 제목)","deck":"(정정된 부제)",'
+        '"sections":[{"heading":"(섹션 제목)","prose":"(정정된 본문)"}],"closing":"(맺음, 없으면 빈 문자열)"}\n'
+        "sections 는 원본과 *같은 개수·같은 순서* 로 낸다. 안 고친 섹션도 원문 그대로 포함."
+    )
+
+    async def revise_for_facts(
+        self,
+        report: "ComposedReport",
+        context: ContextAnalysis,
+        *,
+        fix_instructions: list[str],
+        publication_date: str,
+    ) -> "ComposedReport":
+        """Codex 지적(fix_instructions)을 받아 *지적된 부분만* Opus 가 재작성.
+
+        본문은 Opus 고정 (AP-V6-1/11). 차트·이미지·신호 등 비텍스트 필드는 코드가
+        원본에서 보존(merge)하므로 LLM 은 텍스트만 emit. 파싱·호출 실패 시 원본을
+        그대로 반환 (graceful — 보완이 원본보다 나빠지지 않게).
+        """
+        if not fix_instructions:
+            return report
+        payload = {
+            "publication_date": publication_date or today_kst(),
+            "event": {"name": context.event_name, "date": context.date},
+            "evidence": {
+                "summary": context.summary,
+                "background": context.background,
+                "timeline": context.timeline,
+                "key_figures": context.key_figures,
+                "sources": context.sources,
+                "time_series": context.time_series,
+            },
+            "fix_instructions": fix_instructions,
+            "report_text": {
+                "headline": report.headline,
+                "deck": report.deck,
+                "sections": [
+                    {"heading": s.heading, "prose": s.prose} for s in report.sections
+                ],
+                "closing": report.closing,
+            },
+        }
+        user_message = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        try:
+            if self.config.use_cli_mode:
+                raw = await self._call_cli(
+                    user_message, timeout_s=300.0,
+                    system_prompt=self.REVISE_SYSTEM_PROMPT,
+                )
+            else:
+                raw = await self._call_api(
+                    user_message, mode="standard",
+                    system_prompt=self.REVISE_SYSTEM_PROMPT,
+                )
+        except Exception as exc:  # noqa: BLE001 — 보완 실패 → 원본 유지
+            logger.warning("[revise_for_facts] LLM call failed: %s", exc)
+            return report
+
+        obj = self._loads_first_json_object(raw)
+        if obj is None:
+            repaired = self._repair_truncated_json(raw)
+            obj = self._loads_first_json_object(repaired) if repaired else None
+        if not isinstance(obj, dict):
+            logger.warning("[revise_for_facts] revision parse failed; keeping original")
+            return report
+        return self._merge_text_revision(report, obj)
+
+    @staticmethod
+    def _merge_text_revision(original: "ComposedReport", revised: dict) -> "ComposedReport":
+        """LLM 이 낸 텍스트 필드만 원본 deep-copy 에 병합 (차트/이미지/신호 보존).
+
+        sections 는 *인덱스 매칭* — LLM 이 같은 개수·순서로 내도록 지시받았다. 개수가
+        달라도 겹치는 인덱스만 갱신해 본문 손실을 막는다.
+        """
+        new = original.model_copy(deep=True)
+        if isinstance(revised.get("headline"), str) and revised["headline"].strip():
+            new.headline = revised["headline"]
+        if isinstance(revised.get("deck"), str):
+            new.deck = revised["deck"]
+        if isinstance(revised.get("closing"), str):
+            new.closing = revised["closing"]
+        rsecs = revised.get("sections")
+        if isinstance(rsecs, list):
+            for i, rs in enumerate(rsecs):
+                if i >= len(new.sections) or not isinstance(rs, dict):
+                    continue
+                if isinstance(rs.get("heading"), str) and rs["heading"].strip():
+                    new.sections[i].heading = rs["heading"]
+                if isinstance(rs.get("prose"), str) and rs["prose"].strip():
+                    new.sections[i].prose = rs["prose"]
+        return new
+
     async def compose(
         self,
         result: FullAnalysisResult,
@@ -957,14 +1066,18 @@ class NarrativeComposer:
     # LLM call
     # ------------------------------------------------------------------
 
-    async def _call_cli(self, user_message: str, timeout_s: float = 480.0) -> str:
+    async def _call_cli(
+        self, user_message: str, timeout_s: float = 480.0,
+        system_prompt: str | None = None,
+    ) -> str:
         claude_bin = shutil.which("claude")
         if claude_bin is None:
             raise RuntimeError(
                 "claude CLI not found on PATH. "
                 "Install it with: npm install -g @anthropic-ai/claude-code"
             )
-        full_prompt = f"{SYSTEM_PROMPT}\n\n---\n\n{user_message}"
+        # system_prompt 미지정 시 compose 용 SYSTEM_PROMPT (기본 경로 byte-equal).
+        full_prompt = f"{system_prompt or SYSTEM_PROMPT}\n\n---\n\n{user_message}"
         cmd = [
             claude_bin,
             "-p", full_prompt,
@@ -1036,14 +1149,18 @@ class NarrativeComposer:
         except OSError:
             return ""
 
-    async def _call_api(self, user_message: str, mode: str = "standard") -> str:
+    async def _call_api(
+        self, user_message: str, mode: str = "standard",
+        system_prompt: str | None = None,
+    ) -> str:
         assert self._api_client is not None, "API client not initialised"
         start = time.time()
+        sys_p = system_prompt or SYSTEM_PROMPT
         max_tokens = self.MAX_TOKENS_BY_MODE.get(mode, self.MAX_TOKENS)
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
             model=self.COMPOSER_MODEL,
             max_tokens=max_tokens,
-            system=SYSTEM_PROMPT,
+            system=sys_p,
             messages=[{"role": "user", "content": user_message}],
         )
         raw = response.content[0].text  # type: ignore[index]
@@ -1051,7 +1168,7 @@ class NarrativeComposer:
         if self.telemetry is not None:
             self.telemetry.record_llm_call(
                 agent_name="narrative_composer",
-                input_chars=len(SYSTEM_PROMPT) + len(user_message),
+                input_chars=len(sys_p) + len(user_message),
                 output_chars=len(raw),
                 elapsed_ms=elapsed_ms,
             )

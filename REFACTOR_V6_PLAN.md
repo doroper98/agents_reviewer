@@ -242,7 +242,14 @@ causal/metric 은 의미판단이라 Codex(Phase 3)로 라우팅. ② **남은 �
 - **DoD**: fixture 4종(unsourced/scope/timepoint/novelty) ≥90% 검출, FP < 임계.
   프롬프트 변경 후 golden_prompts 회귀 통과.
 
-### Phase V6-3 — Codex Critic Loop: 사실+차트데이터 (Tier 2, **핵심**)
+### Phase V6-3 — Codex Critic Loop: 사실+차트데이터 (Tier 2, **핵심**) ◐ (orchestrator 연결 2026-06-03)
+**상태**: 루프 코드·orchestrator 연결·착지·회귀 랜딩. `src/factcheck/critic_loop.py`
+(`CriticLoop` 제어 0-LLM, 재작성≤1·확인패스≤1, `apply_landing` unsourced drop,
+`NarrativeComposerReviser`) + `NarrativeComposer.revise_for_facts`(Opus 보완, AP-V6-1/11,
+텍스트-only merge 로 차트 보존) + orchestrator Phase 2.5 flag-gated. 사전필터(Phase 2)→
+pre_flags 합류, 재작성 트리거는 Codex 위반에만. T-3/T-4 9종 + 전체 66 pass, flag OFF
+byte-equal. **남은 것** = VM e2e(실제 codex+Opus 루프 1회 + degrade 발행 확인) — 측정
+`docs/V6_TEST_RESULTS.md §1`. 차트 데이터 정합 검수는 codex 프롬프트에 포함(미학은 Phase 4).
 **목적**: GAP-6. 확정 루프 `Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)`.
 - 입력: ComposedReport(prose+차트 data) + ContextAnalysis. Codex 가 사실/문구 + 차트
   *데이터 정합*(차트 숫자 ↔ 본문/근거) 검수, FactVerdict emit.

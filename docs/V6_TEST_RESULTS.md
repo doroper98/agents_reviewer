@@ -168,6 +168,40 @@ for c in v.claims: print(' -', c.error_class, '|', c.location, '|', c.fix_instru
 **남은 것**: composer `SYSTEM_PROMPT` `=== 사실 규율 (V6) ===` 블록(byte-equal 위해 flag-gating
 필요) + ContextAnalyst 일일브리핑 최신성 제한(24~48h, `stale_sourcing` 근본 차단).
 
+### Phase V6-3 — Bounded Codex critic 루프 ◐ (orchestrator 연결, VM e2e 대기)
+
+**일자**: 2026-06-03
+**flag**: `V6_CODEX_CRITIC` (default OFF — 루프 마스터)
+
+**랜딩 산출물**
+- `src/factcheck/critic_loop.py` — `CriticLoop`/`CriticLoopResult`/`apply_landing`/
+  `NarrativeComposerReviser`. 루프 제어 0-LLM (위반 카운트), 재작성≤1·확인패스≤1.
+- `NarrativeComposer.revise_for_facts` + `REVISE_SYSTEM_PROMPT` (텍스트-only → merge).
+  `_call_cli`/`_call_api` `system_prompt` override (기본 None=byte-equal).
+- orchestrator Phase 2.5 flag-gated 연결 (composer→ensure-hooks→**루프**→sanitize→render).
+
+**T-3/T-4 (`test_codex_loop.py`, 모킹 critic+reviser) — 9종 통과**
+
+| 테스트 | 검증 |
+|--------|------|
+| flag OFF passthrough | 원본 동일 객체 + critic 0콜 (byte-equal) |
+| degrade(skipped) | 원본 보존 + 보완·확인 안 함 |
+| clean 1차 | 무보완·무확인 (위반 0 결정적 종료) |
+| 위반→보완→clean 확인 | revised=True, critic 2콜, 잔존 0 |
+| unsourced 착지 | 확인패스 잔존 unsourced 인용구 결정적 drop |
+| **bound** | 확인패스에 위반 남아도 재작성 1회·검수 2회 고정 |
+| 보완 실패 | 원본 보존 + 확인패스는 진행 |
+| 사전필터 합류 | guards on → pre_flags 가 codex 1차에 전달 |
+| 사전필터 단독 | codex clean 이면 가드 신호만으론 재작성 안 함 |
+
+전체 V6 회귀 **66 pass**. flag OFF byte-equal (orchestrator 블록 조건부 + call 시그니처 하위호환).
+
+**남은 것 — VM e2e (실제 codex + Opus 루프 1회)**
+- ☐ `V6_CODEX_CRITIC=1` (+선택 `V6_FACT_GUARDS=1`) 로 실제 보고서 1건 생성 → 루프 로그
+  (`init_viol/revised/confirm/residual/dropped`) + 발행본 확인. NVIDIA 표본이 위반 0/헤지/
+  drop 으로 수렴하는지. codex 2콜 × ~35s + Opus 보완 1콜의 총 지연 측정 (온디맨드 UX).
+- ☐ degrade 경로(codex 미인증/한도) 에서 정상 단일패스 발행 확인.
+
 ---
 
 ## §2. 효과·비용 지표 (T-10, 누적 — Phase 3 루프 가동 후 채움)

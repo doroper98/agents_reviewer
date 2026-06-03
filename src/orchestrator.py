@@ -1605,6 +1605,39 @@ class Orchestrator:
             _ensure_broadcast_summary(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — 폴백 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_broadcast_summary skipped: %s", _e)
+
+        # -- Phase 2.5 (V6): Codex fact-critic 루프 (opt-in, flag OFF = byte-equal) --
+        # Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1). 외부 degrade /
+        # 보완 실패 시 원본 보존 (AP-V6-12). V6_CODEX_CRITIC OFF 면 이 블록 통째 스킵
+        # → v5.8.8 호출 경로 byte-equal (AP-V6-3).
+        if self.config.enable_codex_critic:
+            try:
+                from src.agents.codex_critic import CodexCritic
+                from src.factcheck.critic_loop import CriticLoop, NarrativeComposerReviser
+                from src.timeutil import today_kst
+
+                loop = CriticLoop(
+                    self.config,
+                    CodexCritic(self.config),
+                    NarrativeComposerReviser(self.narrative_composer),
+                )
+                loop_result = await loop.run(
+                    result.composed_report, result.context,
+                    publication_date=today_kst(),
+                )
+                if loop_result.report is not None:
+                    result.composed_report = loop_result.report
+                logger.info(
+                    "[orchestrator] V6 critic loop: skipped=%s reason=%s revised=%s "
+                    "confirm=%s init_viol=%d residual=%d dropped=%d pre_flags=%d",
+                    loop_result.skipped, loop_result.skip_reason, loop_result.revised,
+                    loop_result.confirm_ran, loop_result.initial_violations,
+                    loop_result.residual_violations, len(loop_result.dropped_quotes),
+                    loop_result.pre_flag_count,
+                )
+            except Exception as _e:  # pragma: no cover — 외부 의존 실패가 발행을 막지 않음
+                logger.warning("[orchestrator] V6 critic loop skipped: %s", _e)
+
         # v5.6.7 — 최종 기호 정화 (사용자 최우선 규칙). composer 경로는 자체 정화하지만
         # minimal fallback / hook 가 추가한 텍스트 / context 기반 합성본까지 *모든* 경로를
         # 여기서 한 번 더 보장. NarrativeComposer 의 정화 규칙 재사용.

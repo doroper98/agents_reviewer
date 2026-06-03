@@ -20,6 +20,28 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v5.8.8 (V6 Phase V6-3) — Bounded Codex critic 루프 (orchestrator 연결)
+
+V6 의 심장 — `Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)` 루프를
+orchestrator 에 연결. `V6_CODEX_CRITIC` OFF 면 블록 통째 스킵 = v5.8.8 byte-equal.
+플랜: REFACTOR_V6_PLAN.md §3 Phase V6-3.
+
+- **`src/factcheck/critic_loop.py`** — `CriticLoop`(루프 제어 0-LLM, 위반 카운트로 결정),
+  `CriticLoopResult`, `apply_landing`(잔존 `unsourced_number` 만 결정적 drop),
+  `NarrativeComposerReviser` 어댑터. 재작성 ≤1·확인패스 ≤1·결정적 종료. degrade/보완
+  실패 시 원본 보존 (AP-V6-12).
+- **`NarrativeComposer.revise_for_facts`** — Codex `fix_instruction` 을 받아 *지적된
+  부분만* Opus 가 재작성 (AP-V6-1/11, 본문은 Opus 고정). `REVISE_SYSTEM_PROMPT` +
+  텍스트-only 출력 → 코드가 원본에 merge (차트/이미지/신호 보존). 파싱·호출 실패 시 원본
+  반환. `_call_cli`/`_call_api` 에 `system_prompt` override 추가 (기본 None=compose 경로 byte-equal).
+- **orchestrator Phase 2.5** — composer + ensure-hooks 후, `_sanitize_symbols` 전에
+  flag-gated 삽입. 사전필터(Phase 2) 신호를 Codex pre_flags 로 합류 (단 재작성 트리거는
+  Codex 위반에만 — 가드 FP 가 본문 안 망침).
+- **회귀 T-3/T-4** (`test_codex_loop.py`, 9종) — flag OFF passthrough(critic 0콜)/degrade/
+  clean 무보완/위반→보완→확인 수렴/unsourced 착지 drop/bound(재작성·확인 각 1회 강제)/
+  보완실패 원본보존/사전필터 합류. 전체 66 pass.
+- **남은 것**: VM e2e (실제 codex+Opus 루프 1회) + Phase 2 잔여(프롬프트 하드닝·최신성 제한).
+
 ## v5.8.8 (V6 Phase V6-2, 진행) — 결정적 사실 사전필터 가드 + 검수자 페르소나 훅
 
 codex 호출(=ChatGPT 한도) 전에 *명백한* 사실 위반을 0-LLM 으로 거르는 결정적 가드.

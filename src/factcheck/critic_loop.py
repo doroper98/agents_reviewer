@@ -1,0 +1,206 @@
+"""V6 Phase V6-3 — Bounded Codex critic 루프 (REFACTOR_V6_PLAN.md §3, 핵심).
+
+확정 루프: **Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)**.
+
+설계 (REFACTOR_V6_PLAN.md §1):
+  - **루프 제어 = 0 LLM** (AP-V6-5). "보완할까" 판정은 Codex verdict 의 *위반 카운트*
+    (결정적). 재작성 ≤1, 확인패스 ≤1, 결정적 종료 (위반 0 또는 cap 소진).
+  - **본문 보완 = Opus** (AP-V6-1/11). Codex 는 `fix_instruction` 만 주고, 실제 재작성은
+    Opus(reviser) 가 한다. Codex 는 본문 텍스트를 쓰지 않는다.
+  - **사전필터 합류** — Phase 2 결정적 가드(log-only)를 Codex 에 *힌트* 로 전달
+    (pre_flags). 단, 재작성 트리거는 Codex 위반에만 (가드 FP 가 본문을 망치지 않게).
+  - **착지** — 확인패스 후 잔존 위반: `unsourced_number` 만 결정적 drop, 나머지는
+    Opus 보완이 이미 헤지 처리(추가 surgery 안 함, log-only).
+  - **graceful degrade** (AP-V6-12) — Codex skip / reviser 실패 → 원본 보존, 정상 발행.
+  - **flag OFF = byte-equal** (AP-V6-3) — `V6_CODEX_CRITIC` OFF 면 즉시 passthrough.
+"""
+
+from __future__ import annotations
+
+import logging
+import re
+from typing import Protocol
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from src.agents.codex_critic import CodexCritic
+from src.config import Config
+from src.factcheck.deterministic_guards import run_fact_guards
+from src.models import ComposedReport, ContextAnalysis, FactVerdict
+
+logger = logging.getLogger(__name__)
+
+
+class Reviser(Protocol):
+    """Opus 본문 보완자. Codex 지시를 받아 해당 부분을 재작성 (본문은 Opus 고정)."""
+
+    async def revise_for_facts(
+        self,
+        report: ComposedReport,
+        context: ContextAnalysis,
+        *,
+        fix_instructions: list[str],
+        publication_date: str,
+    ) -> ComposedReport: ...
+
+
+class NarrativeComposerReviser:
+    """`NarrativeComposer.revise_for_facts` 어댑터 (duck-typed, 순환 import 회피)."""
+
+    def __init__(self, composer: object) -> None:
+        self._composer = composer
+
+    async def revise_for_facts(
+        self,
+        report: ComposedReport,
+        context: ContextAnalysis,
+        *,
+        fix_instructions: list[str],
+        publication_date: str,
+    ) -> ComposedReport:
+        return await self._composer.revise_for_facts(  # type: ignore[attr-defined]
+            report, context,
+            fix_instructions=fix_instructions,
+            publication_date=publication_date,
+        )
+
+
+class CriticLoopResult(BaseModel):
+    """루프 1회 실행 결과 + 텔레메트리."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    report: ComposedReport
+    skipped: bool = False
+    skip_reason: str = ""
+    revised: bool = False
+    confirm_ran: bool = False
+    pre_flag_count: int = 0
+    initial_violations: int = 0
+    residual_violations: int = 0
+    dropped_quotes: list[str] = Field(default_factory=list)
+
+
+def apply_landing(
+    report: ComposedReport, residual_claims: list,
+) -> tuple[ComposedReport, list[str]]:
+    """확인패스 후 잔존 위반 착지 — `unsourced_number` 계열만 결정적 drop.
+
+    Opus 보완이 이미 헤지/교정을 수행했으므로, 여기서는 *출처 없는 특정 수치* 가
+    그래도 남았을 때만 그 인용구를 본문에서 제거한다 (Claim validator 사상). 나머지
+    error_class 는 surgery 하지 않는다 (FP 가 멀쩡한 본문을 망치지 않게, log-only).
+    """
+    drop_quotes = [
+        c.quote
+        for c in residual_claims
+        if "unsourced" in getattr(c, "error_class", "").lower() and getattr(c, "quote", "")
+    ]
+    if not drop_quotes:
+        return report, []
+
+    new = report.model_copy(deep=True)
+    dropped: list[str] = []
+
+    def _strip(text: str) -> str:
+        out = text
+        for q in drop_quotes:
+            if q and q in out:
+                out = out.replace(q, "")
+                if q not in dropped:
+                    dropped.append(q)
+        # 제거로 생긴 이중 공백·고아 구두점 정리.
+        out = re.sub(r"\s{2,}", " ", out)
+        out = re.sub(r"\s+([,.)\]])", r"\1", out).strip()
+        return out
+
+    new.headline = _strip(new.headline)
+    new.deck = _strip(new.deck)
+    for sec in new.sections:
+        sec.prose = _strip(sec.prose)
+    if dropped:
+        logger.info("[critic_loop] landing dropped unsourced quote(s): %s", dropped)
+    return new, dropped
+
+
+class CriticLoop:
+    """Bounded Codex critic 루프 오케스트레이터."""
+
+    def __init__(self, config: Config, critic: CodexCritic, reviser: Reviser) -> None:
+        self.config = config
+        self.critic = critic
+        self.reviser = reviser
+
+    async def run(
+        self,
+        report: ComposedReport,
+        context: ContextAnalysis,
+        *,
+        publication_date: str = "",
+    ) -> CriticLoopResult:
+        # flag OFF → 즉시 passthrough (byte-equal, AP-V6-3).
+        if not self.config.enable_codex_critic:
+            return CriticLoopResult(report=report, skipped=True, skip_reason="flag_off")
+
+        # 1. 결정적 사전필터 (log-only 힌트 → Codex 에 pre_flags 로 전달).
+        pre_flags: list[str] = []
+        if self.config.enable_fact_guards:
+            try:
+                pre_flags = [
+                    f.as_pre_flag()
+                    for f in run_fact_guards(
+                        report, context, publication_date=publication_date,
+                    )
+                ]
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("[critic_loop] pre-filter guards skipped: %s", exc)
+
+        # 2. 1차 검수.
+        v1 = await self.critic.critique(
+            report, context, publication_date=publication_date, pre_flags=pre_flags,
+        )
+        if v1.skipped:
+            # 외부 degrade → 단일패스 (AP-V6-12).
+            return CriticLoopResult(
+                report=report, skipped=True, skip_reason=v1.skip_reason,
+                pre_flag_count=len(pre_flags),
+            )
+
+        # 재작성 트리거는 *Codex 위반* 에만 (사전필터 FP 가 본문을 망치지 않게).
+        if not v1.is_actionable:
+            return CriticLoopResult(
+                report=report, initial_violations=v1.violation_count,
+                pre_flag_count=len(pre_flags),
+            )
+
+        # 3. Opus 보완 (≤1). Codex 지시 + 사전필터 힌트를 합산해 전달.
+        fix_instructions = [c.fix_instruction for c in v1.claims] + pre_flags
+        final = report
+        revised_ok = False
+        try:
+            candidate = await self.reviser.revise_for_facts(
+                report, context,
+                fix_instructions=fix_instructions,
+                publication_date=publication_date,
+            )
+            if isinstance(candidate, ComposedReport) and candidate.headline and candidate.sections:
+                final = candidate
+                revised_ok = True
+        except Exception as exc:  # noqa: BLE001 — 보완 실패가 발행을 막지 않음
+            logger.warning("[critic_loop] reviser failed, keeping original: %s", exc)
+
+        # 4. 확인패스 (≤1, 재작성 없음 — 검증만).
+        v2 = await self.critic.critique(final, context, publication_date=publication_date)
+        residual = [] if v2.skipped else list(v2.claims)
+
+        # 5. 착지 — unsourced 잔존만 결정적 drop.
+        final, dropped = apply_landing(final, residual)
+
+        return CriticLoopResult(
+            report=final,
+            revised=revised_ok,
+            confirm_ran=not v2.skipped,
+            pre_flag_count=len(pre_flags),
+            initial_violations=v1.violation_count,
+            residual_violations=len(residual),
+            dropped_quotes=dropped,
+        )

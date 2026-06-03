@@ -41,9 +41,10 @@ src/
 │   ├── report_synthesizer.py     # ✅ HTML 렌더 + Cloudflare 배포 (LLM 거의 0)
 │   ├── research_director.py      # ✅ V5 Phase 1A (opt-in, Config.enable_research_director)
 │   └── codex_critic.py           # ✅ V6 Phase V6-1 (opt-in, V6_CODEX_CRITIC) — codex CLI 외부 fact critic
-├── factcheck/           # V6 Phase V6-2 — 사실 거버넌스 (opt-in, V6_FACT_GUARDS)
+├── factcheck/           # V6 — 사실 거버넌스 (opt-in)
 │   ├── __init__.py
-│   └── deterministic_guards.py   # ✅ 0-LLM 사전필터 (unsourced/scope/novelty/market/nan). log-only
+│   ├── deterministic_guards.py   # ✅ V6-2 0-LLM 사전필터 (unsourced/scope/novelty/market/nan). log-only
+│   └── critic_loop.py            # ✅ V6-3 bounded 루프 (Opus작성→Codex검수→Opus보완≤1→확인≤1). V6_CODEX_CRITIC
 ├── archetypes/          # v4.0.0: freeform_essay 만 사용. 11종은 deprecated.
 │   ├── __init__.py
 │   ├── base.py                       # ReportArchetype Protocol
