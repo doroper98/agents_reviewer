@@ -234,6 +234,9 @@ init_viol=4  residual=0  dropped=[]  pre_flags=2
 > 해소 안 된 잔존(`unresolved_count`)이 남으면 "깨끗한 척" 발행 안 하고 `confidence_score`
 > 를 정직 하향(−0.1/건, 0.3 floor). surgery 위험한 비-unsourced 잔존은 신호로만 남김.
 > **완결성 = 0 보장이 아니라 예방+가시성+정직 착지+bounded.** 회귀 73 pass.
+> **재실행 검증 (2026-06-03)**: 동일 표본 e2e 재실행 → `residual=0`(① 예방으로 "복귀"
+> 미발생), `unresolved=0`, `conf=0.7` 유지(③ 깨끗한 케이스 무페널티). 보완본 헤드라인도
+> "엔비디아 타이베이 공개, 베라 루빈과 RTX 스파크" 로 담백·정확. 설계가 깨끗(이번)/잔존(지난) 둘 다 처리 확인.
 
 **→ Phase V6-3 DoD 충족** (NVIDIA 표본 위반 0 수렴 + 재작성≤1 + 확인패스≤1 + 모킹 9종).
 
