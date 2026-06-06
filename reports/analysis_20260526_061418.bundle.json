@@ -1,0 +1,782 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-25T21:14:18.249280+00:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.5.8",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260526_061418",
+    "headline": "2026-05-26 (화) 아침 일일 브리핑 — 트럼프 이란협상·Abraham Accords 연계, 러 Oreshnik 키이우 타격, SK하이닉스 시총 $900B 돌파",
+    "deck": "5/25 트럼프가 이란 협상 진전을 Abraham Accords 확장과 연계 발언 → 중동 디리스킹 기대로 Brent $103·WTI $96 로 한 주 5~8% 하락. 같은 24~25일 러시아가 극초음속 미사일 Oreshnik 로 키이우 타격 (사망 2·부상 77), 우크라이나는 5/3 Primorsk 항 드론공격에 이어 러 원유 수출능력 40% 마비 상태",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260526_061418.html",
+    "theme": {
+      "id": "midnight_indigo",
+      "tokens": {
+        "bg": "#161A2E",
+        "card": "#1F2440",
+        "border": "#3A4060",
+        "text": "#E8ECEF",
+        "muted": "#8A92A8",
+        "accent": "#6FB3FF",
+        "up": "#88B888",
+        "down": "#DC7A7A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "5/25 트럼프가 이란 협상 진전을 Abraham Accords 확장과 연계 발언 → 중동 디리스킹 기대로 Brent $103·WTI $96 로 한 주 5~8% 하락. 같은 24~25일 러시아가 극초음속 미사일 Oreshnik 로 키이우 타격 (사망 2·부상 77), 우크라이나는 5/3 Primorsk 항 드론공격에 이어 러 원유 수출능력 40% 마비 상태 유지. 국내는 부처님오신날(대체) 휴장 사이 SK하이닉스 시총 $900B 돌파·코스피 8,046 신고가로 5/26 개장 모멘텀 강함. 한미 2+2 통상협의 6월 개최 합의·이재명 정부 '한반도 평화공존 정책' 책자 배포 (END 이니셔티브 누락).",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1",
+        "ch-2",
+        "ch-3",
+        "ch-4",
+        "ch-5",
+        "ch-6"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "line",
+      "title": "코스피 종합지수",
+      "data": [
+        {
+          "x": "2026-04-27",
+          "y": 6615.02978515625
+        },
+        {
+          "x": "2026-04-28",
+          "y": 6641.02001953125
+        },
+        {
+          "x": "2026-04-29",
+          "y": 6690.89990234375
+        },
+        {
+          "x": "2026-04-30",
+          "y": 6598.8701171875
+        },
+        {
+          "x": "2026-05-04",
+          "y": 6936.990234375
+        },
+        {
+          "x": "2026-05-06",
+          "y": 7384.56005859375
+        },
+        {
+          "x": "2026-05-07",
+          "y": 7490.0498046875
+        },
+        {
+          "x": "2026-05-08",
+          "y": 7498.0
+        },
+        {
+          "x": "2026-05-11",
+          "y": 7822.240234375
+        },
+        {
+          "x": "2026-05-12",
+          "y": 7643.14990234375
+        },
+        {
+          "x": "2026-05-13",
+          "y": 7844.009765625
+        },
+        {
+          "x": "2026-05-14",
+          "y": 7981.41015625
+        },
+        {
+          "x": "2026-05-15",
+          "y": 7493.18017578125,
+          "event": "트럼프-시진핑 베이징 정상회담, 보잉 200대·농산물 연 $170억 구매·tariff $300억 framew"
+        },
+        {
+          "x": "2026-05-18",
+          "y": 7516.0400390625
+        },
+        {
+          "x": "2026-05-19",
+          "y": 7271.66015625
+        },
+        {
+          "x": "2026-05-20",
+          "y": 7208.9501953125
+        },
+        {
+          "x": "2026-05-21",
+          "y": 7815.58984375
+        },
+        {
+          "x": "2026-05-22",
+          "y": 7847.7099609375,
+          "event": "코스피 +8.42% → 7,816 마감, 이후 8,046.78 고점. 거래대금 일평균 40조 첫 돌파, 반도"
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-1",
+            "provider": "YAHOO",
+            "code": "^KS11",
+            "unit": "",
+            "fetched_at": "2026-05-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "line",
+      "title": "코스피",
+      "data": [
+        {
+          "x": "2026-04-27",
+          "y": 6615.02978515625
+        },
+        {
+          "x": "2026-04-28",
+          "y": 6641.02001953125
+        },
+        {
+          "x": "2026-04-29",
+          "y": 6690.89990234375
+        },
+        {
+          "x": "2026-04-30",
+          "y": 6598.8701171875
+        },
+        {
+          "x": "2026-05-04",
+          "y": 6936.990234375
+        },
+        {
+          "x": "2026-05-06",
+          "y": 7384.56005859375
+        },
+        {
+          "x": "2026-05-07",
+          "y": 7490.0498046875
+        },
+        {
+          "x": "2026-05-08",
+          "y": 7498.0
+        },
+        {
+          "x": "2026-05-11",
+          "y": 7822.240234375
+        },
+        {
+          "x": "2026-05-12",
+          "y": 7643.14990234375
+        },
+        {
+          "x": "2026-05-13",
+          "y": 7844.009765625
+        },
+        {
+          "x": "2026-05-14",
+          "y": 7981.41015625
+        },
+        {
+          "x": "2026-05-15",
+          "y": 7493.18017578125
+        },
+        {
+          "x": "2026-05-18",
+          "y": 7516.0400390625
+        },
+        {
+          "x": "2026-05-19",
+          "y": 7271.66015625
+        },
+        {
+          "x": "2026-05-20",
+          "y": 7208.9501953125
+        },
+        {
+          "x": "2026-05-21",
+          "y": 7815.58984375
+        },
+        {
+          "x": "2026-05-22",
+          "y": 7847.7099609375
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-2",
+            "provider": "YAHOO",
+            "code": "^KS11",
+            "unit": "",
+            "fetched_at": "2026-05-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-3",
+      "type": "line",
+      "title": "SK하이닉스",
+      "data": [
+        {
+          "x": "2026-04-27",
+          "y": 1292000.0
+        },
+        {
+          "x": "2026-04-28",
+          "y": 1300000.0
+        },
+        {
+          "x": "2026-04-29",
+          "y": 1293000.0
+        },
+        {
+          "x": "2026-04-30",
+          "y": 1286000.0
+        },
+        {
+          "x": "2026-05-04",
+          "y": 1447000.0
+        },
+        {
+          "x": "2026-05-06",
+          "y": 1601000.0
+        },
+        {
+          "x": "2026-05-07",
+          "y": 1654000.0
+        },
+        {
+          "x": "2026-05-08",
+          "y": 1686000.0
+        },
+        {
+          "x": "2026-05-11",
+          "y": 1880000.0
+        },
+        {
+          "x": "2026-05-12",
+          "y": 1835000.0
+        },
+        {
+          "x": "2026-05-13",
+          "y": 1976000.0
+        },
+        {
+          "x": "2026-05-14",
+          "y": 1970000.0
+        },
+        {
+          "x": "2026-05-15",
+          "y": 1819000.0
+        },
+        {
+          "x": "2026-05-18",
+          "y": 1840000.0
+        },
+        {
+          "x": "2026-05-19",
+          "y": 1745000.0
+        },
+        {
+          "x": "2026-05-20",
+          "y": 1745000.0
+        },
+        {
+          "x": "2026-05-21",
+          "y": 1940000.0
+        },
+        {
+          "x": "2026-05-22",
+          "y": 1941000.0
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-3",
+            "provider": "KRX",
+            "code": "000660",
+            "unit": "원",
+            "fetched_at": "2026-05-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-4",
+      "type": "line",
+      "title": "삼성전자",
+      "data": [
+        {
+          "x": "2026-04-27",
+          "y": 224500.0
+        },
+        {
+          "x": "2026-04-28",
+          "y": 222000.0
+        },
+        {
+          "x": "2026-04-29",
+          "y": 226000.0
+        },
+        {
+          "x": "2026-04-30",
+          "y": 220500.0
+        },
+        {
+          "x": "2026-05-04",
+          "y": 232500.0
+        },
+        {
+          "x": "2026-05-06",
+          "y": 266000.0
+        },
+        {
+          "x": "2026-05-07",
+          "y": 271500.0
+        },
+        {
+          "x": "2026-05-08",
+          "y": 268500.0
+        },
+        {
+          "x": "2026-05-11",
+          "y": 285500.0
+        },
+        {
+          "x": "2026-05-12",
+          "y": 279000.0
+        },
+        {
+          "x": "2026-05-13",
+          "y": 284000.0
+        },
+        {
+          "x": "2026-05-14",
+          "y": 296000.0
+        },
+        {
+          "x": "2026-05-15",
+          "y": 270500.0
+        },
+        {
+          "x": "2026-05-18",
+          "y": 281000.0
+        },
+        {
+          "x": "2026-05-19",
+          "y": 275500.0
+        },
+        {
+          "x": "2026-05-20",
+          "y": 276000.0
+        },
+        {
+          "x": "2026-05-21",
+          "y": 299500.0
+        },
+        {
+          "x": "2026-05-22",
+          "y": 292500.0
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-4",
+            "provider": "KRX",
+            "code": "005930",
+            "unit": "원",
+            "fetched_at": "2026-05-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-5",
+      "type": "line",
+      "title": "WTI 유가",
+      "data": [
+        {
+          "x": "2026-04-27",
+          "y": 99.89
+        },
+        {
+          "x": "2026-04-28",
+          "y": 103.45
+        },
+        {
+          "x": "2026-04-29",
+          "y": 110.47
+        },
+        {
+          "x": "2026-04-30",
+          "y": 108.64
+        },
+        {
+          "x": "2026-05-01",
+          "y": 105.38
+        },
+        {
+          "x": "2026-05-04",
+          "y": 109.76
+        },
+        {
+          "x": "2026-05-05",
+          "y": 105.66
+        },
+        {
+          "x": "2026-05-06",
+          "y": 98.75
+        },
+        {
+          "x": "2026-05-07",
+          "y": 98.38
+        },
+        {
+          "x": "2026-05-08",
+          "y": 98.87
+        },
+        {
+          "x": "2026-05-11",
+          "y": 101.56
+        },
+        {
+          "x": "2026-05-12",
+          "y": 105.78
+        },
+        {
+          "x": "2026-05-13",
+          "y": 104.52
+        },
+        {
+          "x": "2026-05-14",
+          "y": 104.66
+        },
+        {
+          "x": "2026-05-15",
+          "y": 108.99
+        },
+        {
+          "x": "2026-05-18",
+          "y": 112.25
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-5",
+            "provider": "FRED",
+            "code": "DCOILWTICO",
+            "unit": "$",
+            "fetched_at": "2026-05-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-6",
+      "type": "line",
+      "title": "원/달러 환율",
+      "data": [
+        {
+          "x": "2026-04-27",
+          "y": 1482.9
+        },
+        {
+          "x": "2026-04-28",
+          "y": 1473.1
+        },
+        {
+          "x": "2026-04-29",
+          "y": 1473.3
+        },
+        {
+          "x": "2026-04-30",
+          "y": 1476.1
+        },
+        {
+          "x": "2026-05-04",
+          "y": 1484.8
+        },
+        {
+          "x": "2026-05-06",
+          "y": 1470.5
+        },
+        {
+          "x": "2026-05-07",
+          "y": 1456.8
+        },
+        {
+          "x": "2026-05-08",
+          "y": 1450.8
+        },
+        {
+          "x": "2026-05-11",
+          "y": 1466.0
+        },
+        {
+          "x": "2026-05-12",
+          "y": 1473.0
+        },
+        {
+          "x": "2026-05-13",
+          "y": 1484.3
+        },
+        {
+          "x": "2026-05-14",
+          "y": 1495.1
+        },
+        {
+          "x": "2026-05-15",
+          "y": 1491.8
+        },
+        {
+          "x": "2026-05-18",
+          "y": 1499.8
+        },
+        {
+          "x": "2026-05-19",
+          "y": 1503.4
+        },
+        {
+          "x": "2026-05-20",
+          "y": 1503.8
+        },
+        {
+          "x": "2026-05-21",
+          "y": 1509.7
+        },
+        {
+          "x": "2026-05-22",
+          "y": 1503.5
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-6",
+            "provider": "ECOS",
+            "code": "731Y001/0000001",
+            "unit": "원",
+            "fetched_at": "2026-05-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/5/25/trump-links-iran-negotiations-to-expansion-of-abraham-accords",
+      "publisher": "aljazeera.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://www.cnbc.com/2026/05/22/oil-prices-today-trump-iran-strait-of-hormuz-uranium-.html",
+      "publisher": "cnbc.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://en.wikipedia.org/wiki/2026_Iran_war_fuel_crisis",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.usnews.com/news/world/articles/2026-05-03/russias-primorsk-port-hit-as-ukraine-launches-wave-of-drone-strikes",
+      "publisher": "usnews.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.russiamatters.org/news/russia-ukraine-war-report-card/russia-ukraine-war-report-card-may-20-2026",
+      "publisher": "russiamatters.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://www.tradingkey.com/analysis/stocks/more/261879241-sk-hynix-hbm-shortage-samsung-tracker-valuation-tradingkey",
+      "publisher": "tradingkey.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://news.skhynix.com/2026-market-outlook-focus-on-the-hbm-led-memory-supercycle/",
+      "publisher": "news.skhynix.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://www.cliktoday.com/2026/05/20260525-today-news.html",
+      "publisher": "cliktoday.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://www.npr.org/2026/05/22/g-s1-123647/comparing-u-s-and-china-announcements",
+      "publisher": "npr.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-11",
+      "url": "https://www.cnn.com/2026/05/18/china/xi-trump-trade-agreements-china-visit-intl-hnk",
+      "publisher": "cnn.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-12",
+      "url": "https://imnews.imbc.com/news/2026/politics/article/6798265_36911.html",
+      "publisher": "imnews.imbc.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-13",
+      "url": "https://www.golocalprov.com/news/5-big-news-stories-overnight-monday-may-25-2026",
+      "publisher": "golocalprov.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-14",
+      "url": "https://www.koreatimes.co.kr/economy/others/20260102/seoul-stocks-soar-to-all-time-high-on-first-trading-day-of-2026",
+      "publisher": "koreatimes.co.kr",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2026-05-15",
+        "label": "트럼프-시진핑 베이징 정상회담, 보잉 200대·농산물 연 $170억 구매·tariff $300억 framework 합의",
+        "phase": "past",
+        "note": "대중 무역 불확실성 일부 해소, 한국 반도체·기계장비 익스포저 우호"
+      },
+      {
+        "date": "2026-05-22",
+        "label": "Brent $103.54·WTI $96.60 마감. 주간 Brent -5%·WTI -8%, 트럼프 '대이란 공습 보류' 발언이 트리거",
+        "phase": "past",
+        "note": "정유·항공 마진 회복, 인플레 압력 완화"
+      },
+      {
+        "date": "2026-05-22",
+        "label": "코스피 +8.42% → 7,816 마감, 이후 8,046.78 고점. 거래대금 일평균 40조 첫 돌파, 반도체 대형주 거래 43% 점유",
+        "phase": "past",
+        "note": "쏠림 심화·변동성 증가지만 외인 수급 견조"
+      },
+      {
+        "date": "2026-05-24",
+        "label": "러시아 Oreshnik 극초음속 미사일로 키이우 타격, 사망 2·부상 77. 동시에 우 드론은 Novorossiysk·Primorsk·Ust-Luga 3대 수출항 가동 차질 (러 원유 수출능력 ~40% halt) 유지",
+        "phase": "past",
+        "note": "전쟁 escalation, 러 원유 공급 차질 → 5/26 아시아 개장 시 유가 반등 리스크"
+      },
+      {
+        "date": "2026-05-25",
+        "label": "트럼프, 이란 협상 진전을 Abraham Accords 확장과 명시적 연계 발언 (Al Jazeera 보도)",
+        "phase": "past",
+        "note": "사우디·UAE·이스라엘 정상화 패키지 재가동 시그널 → 중동 건설·방산·LNG 종목 변동 가능"
+      },
+      {
+        "date": "2026-05-25",
+        "label": "한국 부처님오신날 대체휴일 — 코스피·코스닥 휴장. 동일자 중국 Shenzhou 23 발사 (1년 장기체류 미션)",
+        "phase": "past",
+        "note": "5/26 첫 개장 시 주말 누적 헤드라인 일괄 반영"
+      },
+      {
+        "date": "2026-05-26",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      }
+    ]
+  }
+}
