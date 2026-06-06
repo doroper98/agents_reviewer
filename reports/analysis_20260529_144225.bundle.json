@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-29T05:42:25.160500+00:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.5.6",
+    "mode": "standard"
+  },
+  "report": {
+    "report_id": "analysis_20260529_144225",
+    "headline": "[후속 분석] 부모 보고서: analysis_20260",
+    "deck": "이건 ContextAnalyst 에이전트의 SYSTEM_PROMPT + user 메시지가 Claude Code 개발 세션에 그대로 붙은 것으로 보입니다. 실제 봇 파이프라인에서는 `claude` 서브프로세스가 받아서 JSON 응답을 뱉지만, 지금은 개발 컨텍스트 (CLAUDE.md / Bash / Read 등 메타 도구 활성) 입니다.\n\n추가로 분석이 막힌",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260529_144225.html",
+    "theme": {
+      "id": "editorial_cream",
+      "tokens": {
+        "bg": "#F2EBDB",
+        "card": "#ECE3D0",
+        "border": "#D4C8B0",
+        "text": "#1F1814",
+        "muted": "#6B5C4A",
+        "accent": "#B05A38",
+        "up": "#4A6B3E",
+        "down": "#8B2A2A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "이건 ContextAnalyst 에이전트의 SYSTEM_PROMPT + user 메시지가 Claude Code 개발 세션에 그대로 붙은 것으로 보입니다. 실제 봇 파이프라인에서는 `claude` 서브프로세스가 받아서 JSON 응답을 뱉지만, 지금은 개발 컨텍스트 (CLAUDE.md / Bash / Read 등 메타 도구 활성) 입니다.\n\n추가로 분석이 막힌 이유:\n- 신호 텍스트는 \"Q1'26 잠정실적 (5/29)\" 뿐 — 어느 회사인지 명시 안 됨\n- 부모 보고서 `analysis_20260518_063432` 의 본문을 읽어야 종목 특정 가능\n- 한국 상장사 Q1 잠정실적은 보통 4월 말~5월 중순 마감 → 5/29 발표라면 외국 기업 (회계연도 다름) 일 가능성. 엔비디아가 5/28 (FY27 Q1) 실적을 발표했고, 한국 시장이 이를 5/29 반영하는 패턴이 유력하지만 부모 보고서 없이 단정 불가\n\n원하시는 게 어느 쪽인가요?\n\n1. 부모 보고서 추적 — `reports/` 또는 watchlist DB 에서 `analysis_20260518_063432` 찾아서 어떤 사건/종목인지 확인\n2. 봇 코드 디버깅 — 이 follow-up 신호 흐름 자체에 문제가 있는지 (예: 종목명이 prompt 에 안 실리는 버그)\n3. 다른 작업 — 이 텍스트는 그냥 붙여넣기 실수였고 별도 요청이 있는지",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": null
+}
