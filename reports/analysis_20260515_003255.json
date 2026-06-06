@@ -1,0 +1,505 @@
+{
+  "request": {
+    "event_description": "[후속 분석] 부모 보고서: analysis_20260514_073830\n발화된 감시 신호: 베이징 정상회담 공동 발표문 (방향: ambiguous)\n원 이벤트: analysis_20260514_073830",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "standard",
+    "parent_context": {
+      "parent_report_id": "analysis_20260514_073830",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260514_073830.html",
+      "parent_event_description": "",
+      "parent_scenarios": [],
+      "triggering_signal": {
+        "signal_id": "WS-20260514-56945365",
+        "description": "베이징 정상회담 공동 발표문",
+        "measurement": "다섯 의제 가운데 한국의 이름이 어느 줄에 거론되는지",
+        "direction": "ambiguous",
+        "deadline": "2026-05-15",
+        "follow_up_action": "균형외교 시험 → 청구서 전환 분기 시 후속 분석 재요청 권장",
+        "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260514_073830.html",
+        "parent_report_id": "analysis_20260514_073830",
+        "parent_chat_id": 50717095,
+        "fired": true,
+        "fired_at": "2026-05-14T15:13:10.760511",
+        "chain_depth": 0
+      },
+      "chain_depth": 0
+    }
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2025년 4월 중국의 희토류 수출 통제 → 트럼프 2기 관세 응수 → 양국 디커플링 4년차 진입. 양 정상 모두 국내 압박(트럼프는 임기 후반 입법 동력 약화, 시진핑은 3기 경제 둔화)으로 '관리 가능한 안정'에 동기. 본 회담은 그 안정의 외교적 봉인. 다만 핵심 충돌점(대만·AI 칩·희토류 이행) 은 모호화로 처리 — '대타협(grand bargain)' 이 아닌 '전술적 안정화(tactical stabilization)' 로 분석가들이 사전에 성격 규정. 부모 보고서(2026-05-14 07:38) 의 watchlist 가 이 모호성을 ambiguous 방향으로 발화.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-04",
+            "event": "중국, 희토류 수출 통제 부과",
+            "impact": "이후 1년간 핵심 자원 수출 약 50% 감소 — 본 회담의 무역 의제 형성"
+          },
+          {
+            "date": "2025-10",
+            "event": "백악관, 베이징이 희토류 수출 통제를 '실효적으로 제거' 합의했다고 발표",
+            "impact": "이행 미흡 → 정상회담에서 재확인 필요해짐"
+          },
+          {
+            "date": "2026-05-12",
+            "event": "중국 외교부, 트럼프 5/13~15 국빈 방문 공식 발표",
+            "impact": "회담 일정 확정"
+          },
+          {
+            "date": "2026-05-13",
+            "event": "한국 사전 실무회담 (Bessent 재무장관 ↔ 허리펑(何立峰) 부총리)",
+            "impact": "양측 '전반적으로 균형되고 긍정적' 결과 도달 — 무역 합의 토대"
+          },
+          {
+            "date": "2026-05-14 10:15",
+            "event": "베이징 인민대회당 양자 회담 개시",
+            "impact": "시진핑 '파트너 돼야' / 트럼프 '환상적 관계' 발언"
+          },
+          {
+            "date": "2026-05-14 12:30경",
+            "event": "약 2시간 회담 종료",
+            "impact": "당일 오후까지 공동성명·공동기자회견 부재 → 모호성 증폭"
+          },
+          {
+            "date": "2026-05-14 (이후)",
+            "event": "중국측 공식 readout 발표 — 대만 언급 없음",
+            "impact": "Chatham House 등이 우려했던 '정확한 표현'의 회피 — 동맹국·시장 해석 분기"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "트럼프-시진핑 베이징 정상회담 공동 발표문 (대만 언급 부재)",
+    "event_name_en": "Trump-Xi Beijing Summit Joint Statement: The Taiwan Silence",
+    "date": "2026-05-14",
+    "category": "외교/지정학",
+    "summary": "9년 만의 미 대통령 방중. 트럼프·시진핑이 베이징 인민대회당에서 약 2시간 회담 후 '전략적 안정성을 가진 건설적 미중 관계'를 향후 3년+ 가이딩 프레임워크로 합의. 다만 공동 readout 에 대만 언급이 빠지고 관세 수치·시한도 미공개여서 시장·동맹국이 해석을 두고 분기. 무역(사전 한국 회담 결과 추인)·이란(호르무즈 개방·핵보유 반대) 은 합의, 대만·희토류·AI 칩은 모호 처리.",
+    "timeline": [
+      {
+        "date": "2025-04",
+        "event": "중국, 희토류 수출 통제 부과",
+        "impact": "이후 1년간 핵심 자원 수출 약 50% 감소 — 본 회담의 무역 의제 형성"
+      },
+      {
+        "date": "2025-10",
+        "event": "백악관, 베이징이 희토류 수출 통제를 '실효적으로 제거' 합의했다고 발표",
+        "impact": "이행 미흡 → 정상회담에서 재확인 필요해짐"
+      },
+      {
+        "date": "2026-05-12",
+        "event": "중국 외교부, 트럼프 5/13~15 국빈 방문 공식 발표",
+        "impact": "회담 일정 확정"
+      },
+      {
+        "date": "2026-05-13",
+        "event": "한국 사전 실무회담 (Bessent 재무장관 ↔ 허리펑(何立峰) 부총리)",
+        "impact": "양측 '전반적으로 균형되고 긍정적' 결과 도달 — 무역 합의 토대"
+      },
+      {
+        "date": "2026-05-14 10:15",
+        "event": "베이징 인민대회당 양자 회담 개시",
+        "impact": "시진핑 '파트너 돼야' / 트럼프 '환상적 관계' 발언"
+      },
+      {
+        "date": "2026-05-14 12:30경",
+        "event": "약 2시간 회담 종료",
+        "impact": "당일 오후까지 공동성명·공동기자회견 부재 → 모호성 증폭"
+      },
+      {
+        "date": "2026-05-14 (이후)",
+        "event": "중국측 공식 readout 발표 — 대만 언급 없음",
+        "impact": "Chatham House 등이 우려했던 '정확한 표현'의 회피 — 동맹국·시장 해석 분기"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "회담 지속 시간",
+        "value": "약 2시간 15분",
+        "context": "10:15 ~ 12:30 KST 기준, 인민대회당"
+      },
+      {
+        "label": "미 대통령 방중 공백",
+        "value": "약 9년",
+        "context": "트럼프 1기(2017) 방중 이후 첫 미 대통령 베이징 방문"
+      },
+      {
+        "label": "중국산 희토류 수출",
+        "value": "통제 이전 대비 약 -50%",
+        "context": "2025년 4월 통제 이전 12개월 평균 대비, 2026년 5월 시점 — 회담 추인 합의의 이행 압력"
+      },
+      {
+        "label": "공동 발표문 내 '대만' 언급",
+        "value": "0회",
+        "context": "중국측 readout 기준 — 시진핑은 회담에서 '가장 중요한 문제'로 거론했음에도 문서엔 부재"
+      },
+      {
+        "label": "합의 프레임워크 적용 기간",
+        "value": "3년+ ('and beyond')",
+        "context": "시진핑이 '구속 프레임'으로 제시 — 트럼프 임기(2029.1.20 종료) 와 사실상 겹침"
+      }
+    ],
+    "background": "2025년 4월 중국의 희토류 수출 통제 → 트럼프 2기 관세 응수 → 양국 디커플링 4년차 진입. 양 정상 모두 국내 압박(트럼프는 임기 후반 입법 동력 약화, 시진핑은 3기 경제 둔화)으로 '관리 가능한 안정'에 동기. 본 회담은 그 안정의 외교적 봉인. 다만 핵심 충돌점(대만·AI 칩·희토류 이행) 은 모호화로 처리 — '대타협(grand bargain)' 이 아닌 '전술적 안정화(tactical stabilization)' 로 분석가들이 사전에 성격 규정. 부모 보고서(2026-05-14 07:38) 의 watchlist 가 이 모호성을 ambiguous 방향으로 발화.",
+    "sources": [
+      "https://www.rfa.org/korean/in-focus/2026/05/14/us-china-summit-2026/",
+      "https://www.newspim.com/news/view/20260514000698",
+      "https://korean.cri.cn/2026/05/14/ARTI1778733919830967",
+      "https://www.cnbc.com/2026/05/14/trump-xi-beijing-summit-trade-taiwan-ai-iran-rare-earths-tariffs.html",
+      "https://www.cnbc.com/2026/05/14/trump-xi-summit-beijing-takeaway-taiwan-trade-iran-war-strategic-relations-.html",
+      "https://www.aljazeera.com/news/liveblog/2026/5/14/trump-xi-summit-live-us-china-leaders-to-hold-talks-on-trade-tech-iran",
+      "https://www.fnnews.com/news/202605141513573065",
+      "https://www.csis.org/programs/trump-xi-2026-summit",
+      "https://foreignpolicy.com/2026/05/13/trump-china-xi-jinping-summit-trade-rare-earths-artificial-intelligence/",
+      "https://www.joelwong.net/2026/05/12/beijing-summit-more-a-tactical-stabilization-than-a-grand-bargain/",
+      "https://www.epochtimes.kr/2026/05/749494.html"
+    ],
+    "glossary": [
+      {
+        "term": "readout (공식 회담 요약문)",
+        "definition": "정상회담 후 각국이 자국 입장에서 회담 내용을 정리해 발표하는 공식 문서. 양측 readout 의 차이가 외교적 해석 갈등의 단초가 되기도 함."
+      },
+      {
+        "term": "G2 (Group of 2)",
+        "definition": "미·중 양강 체제론. 양국이 글로벌 의제를 양자적으로 결정하는 비공식 틀."
+      },
+      {
+        "term": "디커플링 (decoupling)",
+        "definition": "두 경제권의 분리. 여기선 미·중 무역·기술 공급망 분리."
+      },
+      {
+        "term": "전략적 안정성 (strategic stability)",
+        "definition": "핵·군축 용어에서 차용. 양측이 우발 충돌 회피와 위기관리 채널 유지에 합의한 상태. '협력' 보다는 '관리' 에 가까움."
+      },
+      {
+        "term": "8.17 공동성명 (1982)",
+        "definition": "미·중 간 대만 무기 수출 점진 감축을 명시한 3대 공동성명 중 하나. 대만 의제의 역사적 기준점."
+      }
+    ],
+    "confidence_score": 0.78,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄. 본 사건의 핵심은 '말하지 않은 것'(대만 부재) 이 신호인지 침묵인지 — 양 가설을 끝까지 병치할 것.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '희토류 수출 −50% — 2025년 4월 통제 이전 12개월 평균 대비'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "ACH (Analysis of Competing Hypotheses) — 대만 부재의 두 가설 병치",
+        "DIME (Diplomatic/Information/Military/Economic) — 합의 영역별 종합",
+        "Pre-mortem — 3년 프레임이 깨질 시나리오 역추적"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: G2 (미·중 양강 체제)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 회담 사실(요약) → 합의·미합의 항목 분해 → 대만 부재의 의미(ACH) → 시장·동맹국 반응 → 향후 3년 프레임의 취약점(Pre-mortem) → 미해결 수치(희토류 이행률·AI 칩 통제). 독자가 '이 결론이 어디서 도출됐나' 추적 가능해야 함.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "베이징의 침묵: 9년 만의 봉합, 빠진 한 단어",
+    "deck": "전술적 안정화에 양국이 서명했다. 단 가장 큰 충돌점인 대만은 공동 발표문에서 통째로 빠졌다 — 신호인가 침묵인가.",
+    "sections": [
+      {
+        "heading": "9년 만의 방중, 그리고 빠진 한 단어",
+        "kicker": "사건의 윤곽",
+        "prose": "이번 회담은 두 가지 사실을 동시에 만들어냈다. 하나는 봉합이고, 다른 하나는 공백이다. 무역과 이란 — 호르무즈 해협 개방과 핵보유 반대 — 은 사전 한국 실무회담(Bessent ↔ 허리펑) 의 결과를 정상 차원에서 추인하는 형태로 합의에 도달했다. 반면 대만, 희토류 이행, AI (인공지능) 칩 통제는 모호한 표현 뒤로 물러섰다.\n\n분석가들이 사전에 이 회담의 성격을 규정한 표현은 '대타협(grand bargain)' 이 아니라 '전술적 안정화(tactical stabilization)' 였다. 결과는 그 예측 안에 들어갔다. 양 정상 모두 국내 압박이 컸다. 트럼프는 임기 후반의 입법 동력 약화에 직면해 있고, 시진핑은 3기의 경제 둔화를 등에 지고 있다. 두 사람 모두 큰 거래보다 '관리 가능한 안정'에 더 큰 동기가 있었다.\n\n핵심 질문은 이것이다. 회담장 안에서 시진핑이 직접 '가장 중요한 문제'로 거론한 대만이, 왜 회담장 밖의 문서에서는 사라졌는가.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "트럼프가 9년 만에 베이징의 인민대회당 문턱을 넘었다. 약 2시간 15분이 흘렀고, 양 정상은 '전략적 안정성을 가진 건설적 미중 관계'를 향후 3년 이상의 가이딩 프레임으로 합의했다. 그러나 회담장 밖으로 흘러나온 공동 readout 에는 '대만'이라는 단어가 단 한 번도 등장하지 않았다.",
+        "analogy": {
+          "title": "이번 회담은 '디탕트(긴장 완화)' 가 아니라 '체크인'",
+          "body": "냉전기 미·소 디탕트는 군축·교역·이념의 큰 그림을 함께 묶는 거래였다. 이번 베이징 회담은 그게 아니다. 호텔 체크인처럼 '향후 3년 머무를 방의 규칙' 만 합의했고, 방 안의 분쟁(대만·희토류·AI 칩) 은 문 닫고 나중에 다투기로 미뤘다."
+        },
+        "fact_grid": [
+          {
+            "label": "회담 시간",
+            "value": "약 2시간 15분",
+            "sublabel": "10:15~12:30 KST · 인민대회당"
+          },
+          {
+            "label": "미 대통령 방중 공백",
+            "value": "약 9년",
+            "sublabel": "트럼프 1기(2017) 이후 첫 베이징 방문"
+          },
+          {
+            "label": "프레임 적용 기간",
+            "value": "3년+",
+            "sublabel": "시진핑 제시, 트럼프 임기 종료와 사실상 겹침"
+          },
+          {
+            "label": "공동 readout 내 '대만'",
+            "value": "0회",
+            "sublabel": "중국측 공식 문서 기준"
+          },
+          {
+            "label": "희토류 수출 (vs 2025-04 통제 이전)",
+            "value": "약 −50%",
+            "sublabel": "2026-05 시점, 12개월 평균 대비"
+          },
+          {
+            "label": "공동 기자회견",
+            "value": "부재",
+            "sublabel": "당일 오후 시점 — 모호성 증폭"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "합의와 미합의: 다섯 의제의 비대칭",
+        "kicker": "DIME 분해 / 2",
+        "prose": "DIME (외교·정보·군사·경제) 의 네 축으로 보면, 이번 회담은 외교·경제축에서는 봉합을, 정보·군사축에서는 모호화를 골랐다. 결과는 다섯 의제의 명백한 비대칭이다.\n\n무역은 가장 단단한 합의 영역이다. 사전 한국 회담의 '균형되고 긍정적' 결과가 정상 차원에서 추인됐다. 다만 관세 수치와 시한은 공개되지 않았다. 이란 — 호르무즈 해협의 항행 자유 보장과 이란 핵보유 반대 — 도 합의됐다. 미·중이 중동에서 같은 줄에 서는 흔치 않은 장면이다.\n\n그 반대편에는 모호화된 세 의제가 있다. 대만은 readout 에서 통째로 사라졌다. 희토류는 2025년 10월 '실효적 제거' 합의가 1년 가까이 미이행 상태로 끌려왔는데, 이번 회담에서 재확인은 됐지만 검증 메커니즘은 없다. AI 칩 통제도 마찬가지로 구체 문구가 빠졌다.\n\n핵심은 어느 의제가 '말해진' 것이 아니라, 어느 의제가 '쓰여진' 것이다. 말해진 것 가운데 쓰여지지 않은 것이 가장 무겁다.",
+        "charts": [
+          {
+            "type": "heatmap",
+            "title": "다섯 의제별 모호도",
+            "subtitle": "회담에서 거론됨 ≠ 공동 발표문에 명문화됨",
+            "data": [
+              {
+                "title": "무역 (한국 회담 결과 추인)",
+                "severity": "low"
+              },
+              {
+                "title": "이란 (호르무즈·핵보유 반대)",
+                "severity": "low"
+              },
+              {
+                "title": "희토류 이행률 검증",
+                "severity": "medium"
+              },
+              {
+                "title": "AI 칩 수출통제 문구",
+                "severity": "high"
+              },
+              {
+                "title": "대만 (readout 부재)",
+                "severity": "high"
+              }
+            ],
+            "source": "중국측 공식 readout / CNBC·CSIS / 2026-05-14",
+            "takeaway": "합의의 단단함은 외교·경제축에 몰려 있고, 안보·기술축은 통째로 보류됐다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "대만 부재의 두 가설",
+        "kicker": "경쟁 가설 분석 / 3",
+        "prose": "왜 시진핑이 회담장 안에서 '가장 중요한 문제'로 꺼낸 단어가 문서 밖으로 사라졌나. ACH (경쟁 가설 분석) 의 틀로 두 가설을 끝까지 병치한다.\n\n첫 번째 가설은 '신호로서의 부재' 다. 양측이 의도적으로 대만을 빼고 협상했다는 것. 트럼프 진영은 명문화를 거부함으로써 '하나의 중국' 재확인이라는 외교적 양보를 피했고, 시진핑 진영은 강한 표현을 얻지 못한 대가로 무역·이란 합의를 가져갔다. 이 해석이 맞다면, 두 정상이 가장 첨예한 문제를 '의도적 회색지대' 로 묶어둔 셈이다. 안정은 그 회색지대 위에 서 있다.\n\n두 번째 가설은 '침묵으로서의 부재' 다. 합의 자체가 실패했고, 양측이 자국 청중을 향해 각자의 해석을 흘리기 위해 공동 문서를 비워뒀다는 것. 중국 내부는 시진핑이 '강하게 거론했다'고 보도할 수 있고, 미국 측은 '구속받지 않는다'고 주장할 수 있다. 모두를 만족시키는 방법은 아무도 만족시키지 않는 것이다. 공동 기자회견의 부재가 이 가설을 뒷받침한다.\n\n현 시점에서 우선되는 쪽은 두 번째 가설이다. Chatham House 가 사전에 우려한 '정확한 표현의 회피' 패턴과 합치하고, 공동 기자회견 부재가 그 회피의 운영적 흔적이기 때문이다. 다만 첫 번째 가설이 살아나는 조건은 명확하다. 향후 6개월 내 대만해협의 미·중 군사 활동이 모두 자제로 수렴하면, 그것은 회담장에서 묵계가 있었다는 강한 증거가 된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "말해진 것 가운데 쓰여지지 않은 것이 가장 무겁다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "시장과 동맹국, 그리고 한국의 자리",
+        "kicker": "반향 / 4",
+        "prose": "공동 발표문의 모호성은 시장과 동맹국이 각자의 해석을 가져갈 여백을 만들었다. 미·중 양국이 '전략적 안정성' 이라는 라벨에 동의했다는 사실 자체는 위험자산에 호재다. 단 관세 수치와 시한이 공개되지 않은 한, 한국·일본·대만의 수출 기업은 어떤 시나리오로 향후 분기를 설계해야 할지 모른다.\n\n부모 보고서(2026-05-14 07:38) 가 watchlist 로 발화시킨 신호 — '다섯 의제 가운데 한국의 이름이 어느 줄에 거론되는지' — 는 ambiguous 방향으로 실현됐다. 한국은 사전 실무회담의 무대를 제공한 협상 통로로 호명됐을 뿐, 정상 합의문에서 별도 호명을 얻지 못했다. 균형외교의 시험대에 올랐지만, 청구서가 발행되기 직전에서 멈췄다.\n\n청구서 전환의 분기점은 회담 후 3~6개월의 무역 디테일 협상에서 나타난다. 미국이 한국에 '중국 우회 수출 통제' 의 구체 행정 협력을 요구하면 분기는 청구서 방향으로 진행된다. 반대로 무역 합의가 시한 없이 표류하면 균형외교의 여백이 더 길게 유지된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "한국의 회담 내 호명",
+            "value": "사전 실무 통로",
+            "sublabel": "정상 합의문 내 별도 호명 없음"
+          },
+          {
+            "label": "관세 수치 공개",
+            "value": "없음",
+            "sublabel": "시한도 미공개"
+          },
+          {
+            "label": "청구서 전환 관찰창",
+            "value": "3~6개월",
+            "sublabel": "무역 디테일 협상 단계"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "3년 프레임의 균열 지점",
+        "kicker": "Pre-mortem / 5",
+        "prose": "시진핑이 제시한 '3년+' 프레임은 트럼프의 임기 종료(2029-01-20) 와 사실상 겹친다. 그것은 우연이 아니다. 베이징은 트럼프의 잔여 임기 동안만 안정성을 사겠다고 선언한 것에 가깝다. 그렇다면 이 프레임은 어디서 깨질 수 있나. 사건이 일어난 뒤에 거꾸로 추적하는 pre-mortem 으로 네 갈래를 본다.\n\n첫째, 대만해협의 군사 도발이다. 중국이 미사일 시험 또는 봉쇄 훈련을 한 단계 올리면, 트럼프는 readout 의 침묵을 '구속받지 않는다'는 해석으로 전환할 명분을 얻는다. 이때 프레임은 가장 빠르게 깨진다.\n\n둘째, 희토류 이행률의 검증 실패다. 2025년 4월 통제 이전 대비 −50% 인 현 수출량이 향후 6개월 내 정상화되지 않으면, 미국 의회가 회담 자체의 진정성을 공격할 가능성이 크다.\n\n셋째, AI 칩 후속 행정명령의 비대칭이다. 트럼프 행정부가 회담 직후 칩 통제를 '강화' 하는 후속 명령을 발하면, 중국은 약속 위반으로 받아들인다.\n\n넷째, 트럼프 임기 후 정권 교체다. 3년+ 프레임은 차기 행정부에 자동 계승되지 않는다. 시진핑은 그 위험을 알면서도 3년에 서명했다 — 그것이 본 합의의 짧은 유효기간을 자인하는 부분이다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "프레임 파열 시나리오 — 확률 × 영향",
+            "subtitle": "x: 향후 12개월 내 발생 확률, y: 프레임 손상 강도",
+            "data": [
+              {
+                "label": "전술적 안정 지속",
+                "x": 0.55,
+                "y": 0.2,
+                "size": 60
+              },
+              {
+                "label": "희토류 검증 실패",
+                "x": 0.45,
+                "y": 0.55,
+                "size": 40
+              },
+              {
+                "label": "AI 칩 후속 명령 충돌",
+                "x": 0.4,
+                "y": 0.6,
+                "size": 35
+              },
+              {
+                "label": "대만해협 군사 도발",
+                "x": 0.25,
+                "y": 0.9,
+                "size": 50
+              },
+              {
+                "label": "무역 디테일 결렬",
+                "x": 0.3,
+                "y": 0.5,
+                "size": 30
+              }
+            ],
+            "source": "자체 추정 / CSIS·Foreign Policy 사전 분석 종합 / 2026-05-14",
+            "note": "확률·영향 모두 정성적 추정. 절대값보다 상대 위치를 볼 것."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "감시할 것: 침묵을 어떻게 측정할까",
+        "kicker": "관찰창 / 6",
+        "prose": "본 회담의 진의는 두 정상의 말이 아니라 향후 6개월의 행동으로 검증된다. 침묵은 측정하기 어렵다. 그래서 측정 가능한 대리 지표를 잡아둔다.\n\n희토류 수출 회복률은 가장 단단한 정량 신호다. 2025년 4월 통제 이전 12개월 평균을 기준으로 분기별 회복률을 봐야 한다. 50% 미만이 두 분기 이상 지속되면 회담의 약속은 사실상 무효다.\n\n대만해협의 미 함정 통과 빈도는 두 가설의 가름쇠다. 통과가 자제 방향으로 수렴하면 첫 번째 가설(신호로서의 부재) 이 살아나고, 평소 빈도로 유지되면 두 번째 가설(침묵으로서의 부재) 이 굳어진다.\n\nAI 칩 후속 행정명령의 향방도 결정적이다. 회담 직후 30~60일은 약속을 행동으로 옮길 수 있는 가장 짧은 기간이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "베이징은 큰 거래를 만들지 않았다. 다만 향후 3년의 회색지대를 만들었다. 그 회색지대가 봉합인지 균열의 잠복기인지는, 합의문이 아니라 그 옆에서 자라는 침묵의 양으로 결정된다.",
+    "watch_signals": [
+      {
+        "signal": "희토류 수출 분기 회복률",
+        "description": "2025-04 통제 이전 12개월 평균 대비 분기별 회복률 — 현 −50% 가 어떻게 변하는지",
+        "indicates": "두 분기 연속 50% 미만이면 '희토류 검증 실패' 분기 진입",
+        "deadline": "2026-08-15",
+        "icon": "📉"
+      },
+      {
+        "signal": "대만해협 미 함정 통과 빈도",
+        "description": "회담 후 90일 내 항행의 자유 작전 빈도 변화",
+        "indicates": "자제 수렴 → ACH 가설1(신호로서의 부재) / 평소 유지 → 가설2(침묵으로서의 부재)",
+        "deadline": "2026-08-14",
+        "icon": "🚢"
+      },
+      {
+        "signal": "AI 칩 후속 행정명령",
+        "description": "트럼프 행정부의 추가 수출통제·완화 명령 발동 여부",
+        "indicates": "강화 명령 시 'AI 칩 후속 명령 충돌' 분기로 빠르게 이행",
+        "deadline": "2026-07-15",
+        "icon": "🔌"
+      },
+      {
+        "signal": "미·중 무역 디테일 협상 시한 공개",
+        "description": "관세 수치·시한이 후속 발표로 명문화되는지",
+        "indicates": "60일 내 미공개 시 '무역 디테일 결렬' 가능성 상승 + 한국 청구서 전환 가능성 동반 상승",
+        "deadline": "2026-07-14",
+        "icon": "📑"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "대만 부재는 의도적 회색지대 — 양 정상이 가장 첨예한 문제를 묵계로 묶어두고 안정성을 샀다 (신호)",
+        "side_b": "대만 부재는 합의 실패의 흔적 — 양측이 자국 청중을 향해 각자 해석을 흘리기 위해 문서를 비워뒀다 (침묵)",
+        "evidence": "공동 기자회견 부재 + Chatham House 가 사전에 지적한 '정확한 표현의 회피' 패턴은 가설B 쪽. 시진핑이 회담 안에서 직접 거론한 사실은 가설A 쪽.",
+        "resolution": "현 시점 가설B(침묵) 우선. 가설A 는 향후 6개월 대만해협에서 미·중 군사 활동이 동시 자제로 수렴할 때만 살아난다. 첫 90일의 미 함정 통과 빈도가 가장 빠른 가름쇠."
+      },
+      {
+        "side_a": "부모 보고서(2026-05-14 07:38) 의 '균형외교 가지' — 한국이 사전 실무 통로 호명으로 균형외교의 입지를 유지한다",
+        "side_b": "현 보고서가 보는 '청구서 전환 가지' — 정상 합의문 내 별도 호명 없음 + 관세 수치 미공개로 청구서 발행 직전에서 멈춘 상태. 다음 분기 진행 가능성이 큼",
+        "resolution": "양 가지 모두 부분 실현 중. ambiguous 방향이 정확히 양립 상태로 안착했다. 분기 결정은 3~6개월 내 미국이 '중국 우회 수출통제' 의 한국 행정 협력을 요구하는지에 달림."
+      }
+    ],
+    "confidence_summary": "주류 통신·싱크탱크(CNBC·CSIS·Foreign Policy·Al Jazeera·Chatham House 사전 분석·RFA·뉴스핌·CRI·파이낸셜뉴스·에포크) 11개 출처로 사실 골격은 단단함. 다만 회담 직후 readout 만 공개된 시점이라 후속 90일의 행동 데이터가 미수집 — 가설 우열은 잠정.",
+    "confidence_score": 0.7,
+    "embedded_map": null
+  },
+  "executive_summary": "전술적 안정화에 양국이 서명했다. 단 가장 큰 충돌점인 대만은 공동 발표문에서 통째로 빠졌다 — 신호인가 침묵인가.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260515_003255.html",
+  "report_theme": "editorial_cream",
+  "parent_context": {
+    "parent_report_id": "analysis_20260514_073830",
+    "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260514_073830.html",
+    "parent_event_description": "",
+    "parent_scenarios": [],
+    "triggering_signal": {
+      "signal_id": "WS-20260514-56945365",
+      "description": "베이징 정상회담 공동 발표문",
+      "measurement": "다섯 의제 가운데 한국의 이름이 어느 줄에 거론되는지",
+      "direction": "ambiguous",
+      "deadline": "2026-05-15",
+      "follow_up_action": "균형외교 시험 → 청구서 전환 분기 시 후속 분석 재요청 권장",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260514_073830.html",
+      "parent_report_id": "analysis_20260514_073830",
+      "parent_chat_id": 50717095,
+      "fired": true,
+      "fired_at": "2026-05-14T15:13:10.760511",
+      "chain_depth": 0
+    },
+    "chain_depth": 0
+  },
+  "analysis_timestamp": "2026-05-15T00:28:16.110362",
+  "total_duration_seconds": 279.0404703617096,
+  "system_version": "v5.1.2",
+  "revision": 0
+}
