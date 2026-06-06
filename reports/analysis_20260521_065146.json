@@ -1,0 +1,614 @@
+{
+  "request": {
+    "event_description": "엔비디아 금일 실적발표 내용을 분석하고 재무제표 사항을 sankey 차트로 보여줘. 그리고 어닝콜 발표 내용을 deep 하게 분석해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "엔비디아의 FY27 은 'AI 팩토리' 빌드아웃 가속과 Blackwell → Vera Rubin 의 세대 전환이 동시 진행되는 국면임. 2024년 미국 정부의 對中 AI 칩 수출 통제가 단계적 강화되어 China 향 데이터센터 매출은 사실상 소멸했으나, 이를 상쇄하고도 남는 하이퍼스케일러 (MS / Google / Meta / Amazon) + 신흥 AI 클라우드 (CoreWeave / Lambda 등) + 정부·국가 AI 인프라 (sovereign AI) 수요가 폭증한 상태. Jensen Huang 은 콜에서 '에이전트 AI (agentic AI) 가 도래해 실제 가치를 생산하고 산업 전반으로 확산 중' 이라 언급. 시장 관심사는 (1) China 매출 0 환경에서의 지속 성장 가능성, (2) Rubin 세대의 매출 전환 시점, (3) 매출총이익률 75% 수준의 지속성 세 가지에 집중됨.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-02",
+            "event": "FY2026 연간 실적 발표 — 매출 2,159억 달러 (전년 대비 +65%)",
+            "impact": "데이터센터 비중 90% 도달, AI 인프라 수퍼사이클 확인"
+          },
+          {
+            "date": "2026-04",
+            "event": "미국 對中 AI 칩 추가 규제 강화 — H20 등 China-spec 제품 라이선스 제약",
+            "impact": "Q1 FY27 China 데이터센터 매출 사실상 0 으로 처리, 향후 분기도 0 가정"
+          },
+          {
+            "date": "2026-05-20 (장 마감 후)",
+            "event": "Q1 FY27 실적 보도자료 + 컨퍼런스 콜 (오후 5시 ET)",
+            "impact": "매출·가이던스 모두 시장 기대치 상회, 배당 25배 증액 + 800억 달러 자사주 매입 신설"
+          },
+          {
+            "date": "2026-H2 (예정)",
+            "event": "Vera Rubin 플랫폼 파트너 가용성 시작 (AWS / GCP / Azure / Oracle / CoreWeave)",
+            "impact": "Blackwell → Rubin 세대 전환의 매출 인식 시점 — Q3·Q4 FY27 의 핵심 변수"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "엔비디아 2027 회계연도 1분기 실적 발표 (2026-05-20)",
+    "event_name_en": "NVIDIA Q1 FY2027 Earnings Release",
+    "date": "2026-05-20",
+    "category": "기업 실적 / AI 반도체",
+    "summary": "엔비디아 Q1 FY2027 매출 816억 달러 (전년 동기 대비 +85%), 데이터센터 752억 달러 (+92%)로 가이던스 (780억 ±2%) 와 시장 컨센서스 (788억) 모두 상회. Blackwell 이 데이터센터 컴퓨트의 약 70% 차지하며 Hopper 전환 사실상 완료. Q2 매출 가이던스 910억 달러 (±2%) 로 컨센서스 (868억) 큰 폭 상회 — 다음 분기 데이터센터 China 매출 0 가정에도 강한 가이던스.",
+    "timeline": [
+      {
+        "date": "2026-02",
+        "event": "FY2026 연간 실적 발표 — 매출 2,159억 달러 (전년 대비 +65%)",
+        "impact": "데이터센터 비중 90% 도달, AI 인프라 수퍼사이클 확인"
+      },
+      {
+        "date": "2026-04",
+        "event": "미국 對中 AI 칩 추가 규제 강화 — H20 등 China-spec 제품 라이선스 제약",
+        "impact": "Q1 FY27 China 데이터센터 매출 사실상 0 으로 처리, 향후 분기도 0 가정"
+      },
+      {
+        "date": "2026-05-20 (장 마감 후)",
+        "event": "Q1 FY27 실적 보도자료 + 컨퍼런스 콜 (오후 5시 ET)",
+        "impact": "매출·가이던스 모두 시장 기대치 상회, 배당 25배 증액 + 800억 달러 자사주 매입 신설"
+      },
+      {
+        "date": "2026-H2 (예정)",
+        "event": "Vera Rubin 플랫폼 파트너 가용성 시작 (AWS / GCP / Azure / Oracle / CoreWeave)",
+        "impact": "Blackwell → Rubin 세대 전환의 매출 인식 시점 — Q3·Q4 FY27 의 핵심 변수"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "Q1 FY27 총 매출",
+        "value": "$81.62B",
+        "context": "전년 동기 $44.06B 대비 +85%, 가이던스 $78B 대비 +4.6%, 컨센서스 $78.8B 상회"
+      },
+      {
+        "label": "데이터센터 매출",
+        "value": "$75.2B",
+        "context": "전년 동기 대비 +92%, 컨센서스 $72.8B 상회, 전체 매출의 약 92%"
+      },
+      {
+        "label": "하이퍼스케일러 데이터센터",
+        "value": "$38B",
+        "context": "전 분기 대비 +12%, 데이터센터 매출의 절반 초과"
+      },
+      {
+        "label": "ACIE (AI 클라우드·산업·엔터프라이즈)",
+        "value": "$37B",
+        "context": "AI 클라우드 매출 전년 동기 대비 3배 이상, 신규 보고 카테고리"
+      },
+      {
+        "label": "희석 EPS (Non-GAAP 기준 추정)",
+        "value": "$4.90",
+        "context": "컨센서스 $1.77 (조정 분할 전 환산) 상회 — 마진·세후이익 모두 기대 이상"
+      },
+      {
+        "label": "Q2 FY27 매출 가이던스",
+        "value": "$91B ±2%",
+        "context": "컨센서스 $86.84B 상회 (+4.8%), China 데이터센터 매출 0 가정 포함"
+      },
+      {
+        "label": "Q2 FY27 Non-GAAP 매출총이익률",
+        "value": "75.0% ±50bp",
+        "context": "FY26 연간 71.1% 대비 약 4%p 개선 — Blackwell 비중 확대 효과"
+      },
+      {
+        "label": "분기 배당",
+        "value": "$0.25/주",
+        "context": "기존 $0.01/주 대비 25배 증액, 2026-06-26 지급"
+      },
+      {
+        "label": "추가 자사주 매입 한도",
+        "value": "$80B 신규",
+        "context": "기존 잔여 한도 $38.5B 위에 추가 — 총 $118.5B 매입 capacity"
+      },
+      {
+        "label": "분기 자유현금흐름",
+        "value": "$48.55B",
+        "context": "전년 동기 대비 +85.4% — 매출 성장률과 거의 동행"
+      },
+      {
+        "label": "Blackwell 비중",
+        "value": "데이터센터 컴퓨트의 ~70%",
+        "context": "Hopper 전환 사실상 완료, 1년 전 거의 0% 에서 급증"
+      },
+      {
+        "label": "China 데이터센터 매출",
+        "value": "$0 (Q2 가정)",
+        "context": "2024 년 $17.1B 까지 차지했던 시장 — 매출 반영분 사라졌음에도 전체 매출 가이던스 상향"
+      }
+    ],
+    "background": "엔비디아의 FY27 은 'AI 팩토리' 빌드아웃 가속과 Blackwell → Vera Rubin 의 세대 전환이 동시 진행되는 국면임. 2024년 미국 정부의 對中 AI 칩 수출 통제가 단계적 강화되어 China 향 데이터센터 매출은 사실상 소멸했으나, 이를 상쇄하고도 남는 하이퍼스케일러 (MS / Google / Meta / Amazon) + 신흥 AI 클라우드 (CoreWeave / Lambda 등) + 정부·국가 AI 인프라 (sovereign AI) 수요가 폭증한 상태. Jensen Huang 은 콜에서 '에이전트 AI (agentic AI) 가 도래해 실제 가치를 생산하고 산업 전반으로 확산 중' 이라 언급. 시장 관심사는 (1) China 매출 0 환경에서의 지속 성장 가능성, (2) Rubin 세대의 매출 전환 시점, (3) 매출총이익률 75% 수준의 지속성 세 가지에 집중됨.",
+    "sources": [
+      "https://www.cnbc.com/2026/05/20/nvidia-nvda-earnings-report-q1-2027.html",
+      "https://www.kiplinger.com/investing/live/nvidia-earnings-live-updates-and-commentary-may-2026",
+      "https://www.heygotrade.com/en/blog/nvidia-q1-fy2027-earnings-preview-may-20-setup-catalysts/",
+      "https://www.techtimes.com/articles/316918/20260520/nvidia-q1-fy2027-earnings-q2-guidance-above-87-billion-only-move-markets-will-reward.htm",
+      "https://247wallst.com/investing/2026/05/20/live-nvidias-q1-earnings-tonight-could-send-shockwaves-across-the-market/",
+      "https://www.techi.com/nvidia-earnings-today-ai-factory-audit/",
+      "https://aimatters.co.kr/news-report/42664/",
+      "https://www.thelec.kr/news/articleView.html?idxno=52757",
+      "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000019/q4fy26cfocommentary.htm"
+    ],
+    "glossary": [
+      {
+        "term": "FY (Fiscal Year, 회계연도)",
+        "definition": "엔비디아의 회계연도는 1월 말 종료 — FY2027 Q1 은 2026년 2~4월 기간을 의미"
+      },
+      {
+        "term": "Blackwell",
+        "definition": "엔비디아의 2024~2025년 출시 GPU 아키텍처 (B100/B200/GB200), 현재 매출의 주력"
+      },
+      {
+        "term": "Vera Rubin",
+        "definition": "Blackwell 다음 세대 GPU 플랫폼 — 2026년 하반기 파트너 가용성 시작 예정, 추론 (inference) 비용 추가 절감 목표"
+      },
+      {
+        "term": "Hopper",
+        "definition": "Blackwell 직전 세대 (H100/H200) — Q1 FY27 기준 전환 거의 완료"
+      },
+      {
+        "term": "하이퍼스케일러 (Hyperscaler)",
+        "definition": "초대형 클라우드 사업자 — AWS / Microsoft Azure / Google Cloud / Oracle / Meta 등"
+      },
+      {
+        "term": "ACIE",
+        "definition": "AI Cloud · Industrial · Enterprise — 엔비디아가 신규 분류한 비(非)하이퍼스케일러 데이터센터 매출 카테고리"
+      },
+      {
+        "term": "에이전트 AI (Agentic AI)",
+        "definition": "사람의 지시 없이 스스로 도구를 호출하고 다단계 업무를 수행하는 AI — 단순 챗봇 대비 추론 컴퓨트 수요가 큼"
+      },
+      {
+        "term": "Non-GAAP 매출총이익률",
+        "definition": "일반회계기준 (GAAP) 에서 일회성 비용·스톡옵션 비용 등을 제외한 조정 매출총이익률"
+      },
+      {
+        "term": "주권 AI (Sovereign AI)",
+        "definition": "정부·국가 단위가 자국 데이터·언어 기반으로 구축하는 AI 인프라 — 사우디·UAE·인도·일본·한국 등이 주요 고객"
+      }
+    ],
+    "confidence_score": 0.88,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "available_images": [
+      {
+        "source_url": "https://www.cnbc.com/2026/05/20/nvidia-nvda-earnings-report-q1-2027.html",
+        "image_url": "https://image.cnbcfm.com/api/v1/image/108228212-1763587796970-108228212-1763561133301-gettyimages-2244307749-_cho5718_nd40pgg3.jpeg?v=1779309216&w=1920&h=1080",
+        "title": "Nvidia beats on revenue and guidance, adds $80 billion to buyback plan: Live updates",
+        "description": "Nvidia's conference call with analysts is scheduled for 5 p.m. ET, where CEO Jensen Huang will talk about the results.",
+        "publisher": "CNBC"
+      },
+      {
+        "source_url": "https://www.techtimes.com/articles/316918/20260520/nvidia-q1-fy2027-earnings-q2-guidance-above-87-billion-only-move-markets-will-reward.htm",
+        "image_url": "https://d.techtimes.com/en/full/463337/nvidia-logo.jpg",
+        "title": "Nvidia Q1 FY2027 Earnings: Q2 Guidance Above $87 Billion Is Only Move Markets Will Reward",
+        "description": "Nvidia reports its fiscal first-quarter 2027 results tonight after the market closes — and investors watching only the Q1 headline will be watching the wrong number. Wall Street consensus sits at roughly $78.8 billion in revenue and $1.77 in non-GAAP earnings per share, implying year-over-year",
+        "publisher": "techtimes.com"
+      },
+      {
+        "source_url": "https://aimatters.co.kr/news-report/42664/",
+        "image_url": "https://aimatters.co.kr/wp-content/uploads/2026/05/NVIDIA-EARNINGS-DAY.jpg",
+        "title": "엔비디아, 오늘 1분기 실적 발표… 월가 ‘매출 약 788억 달러·데이터센터 728억’ 전망 - AI매터스",
+        "description": "엔비디아가 20일(현지시간) 장 마감 후 2027 회계연도 1분기 실적을 발표한다. 월가는 매출 약 788억 달러, 데이터센터 부문 약 728억 달러를 예상하며 전년 대비 약 77% 성장을 점친다. 블랙웰에서 차세대 베라 루빈으로 넘어가는 전환기 가이던스가 최대 관전 포인트다.",
+        "publisher": "aimatters.co.kr"
+      },
+      {
+        "source_url": "https://www.thelec.kr/news/articleView.html?idxno=52757",
+        "image_url": "https://cdn.thelec.kr/news/photo/202602/52757_41926_280.jpg",
+        "title": "엔비디아, 매출 308조 역대 최대...데이터센터 견인 - 디일렉(THE ELEC)",
+        "description": "엔비디아가 인공지능(AI) 반도체 수요로 2025년 2월부터 2026년 1월까지(2026회계연도) 사상 최대 실적을 경신했다. 데이터센터 부문이 전체 성장을 견인",
+        "publisher": "thelec.kr"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "엔비디아 Q1 816억 — 본질은 가이던스 910억",
+    "deck": "Q1 매출 816억 달러는 컨센서스를 4% 넘었지만, 본질은 다음 분기 가이던스 910억이다. 중국 데이터센터 매출 0 가정에도 시장 합의를 41억 달러 웃돌았다.",
+    "sections": [
+      {
+        "heading": "한 화면에 담기는 사실",
+        "kicker": "FY27 1분기 실적",
+        "prose": "발표는 두 숫자가 핵심이었다. 실적 자체보다 가이던스가 컨센서스를 얼마나 상회하는지가 시장의 보상 기준이라는 사전 분석이 있었다 (출처: techtimes.com). 결과적으로 둘 다 넘었다.\n\n데이터센터 부문이 752억 달러로 전년 동기 대비 92% 늘었고, 전체 매출의 92%를 차지한다. Blackwell 칩이 데이터센터 컴퓨트의 70% 가량을 점유하면서 직전 세대 Hopper 로부터의 전환은 사실상 끝났다.\n\n자본 배분 측면에서는 분기 배당이 기존 0.01달러에서 0.25달러로 25배 늘었고, 800억 달러 자사주 매입 한도가 신설됐다. 기존 잔여 한도 385억과 합하면 총 1,185억 달러 규모다 (출처: sec.gov).",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "Q1 FY27 매출 — 가이던스·컨센서스·실제",
+            "subtitle": "회사 가이드도, 월가 합의도 모두 4%대 차이로 넘었다",
+            "data": [
+              {
+                "label": "회사 가이던스",
+                "value": 78.0,
+                "note": "엔비디아 제시 (Q4 FY26 발표)"
+              },
+              {
+                "label": "월가 컨센서스",
+                "value": 78.8,
+                "note": "4월 평균치"
+              },
+              {
+                "label": "실제 Q1",
+                "value": 81.62,
+                "note": "가이던스 +4.6%, 컨센서스 +3.5%"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 78.8,
+                "label": "컨센서스선"
+              }
+            ],
+            "source": "NVIDIA 보도자료, CNBC / 2026-05-20 / 단위: 10억 달러",
+            "takeaway": "기대치 두 줄을 모두 넘은 매출"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "회사 가이드도, 월가 합의도 모두 4%대 차이로 넘었다.",
+        "cited_claim_ids": [],
+        "lede": "엔비디아가 5월 20일 장 마감 후 공시한 Q1 FY27 매출은 816억 달러였다. 회사 가이던스 780억, 월가 컨센서스 788억을 각각 4.6%, 3.5% 넘었다. 다음 분기 가이던스로 제시된 910억은 컨센서스 868억보다 41억 달러 높다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "Q1 매출",
+            "value": "816억 달러",
+            "sublabel": "+85% YoY"
+          },
+          {
+            "label": "데이터센터",
+            "value": "752억",
+            "sublabel": "+92% YoY · 전체의 92%"
+          },
+          {
+            "label": "Q2 가이던스",
+            "value": "910억 ±2%",
+            "sublabel": "컨센서스 868억 상회"
+          },
+          {
+            "label": "Q2 매출총이익률",
+            "value": "75% ±50bp",
+            "sublabel": "FY26 71.1% 대비 +3.9%p"
+          }
+        ],
+        "dropcap": true,
+        "images": []
+      },
+      {
+        "heading": "매출은 어디서 흘렀나",
+        "kicker": "",
+        "prose": "데이터센터 752억 달러는 두 갈래로 갈린다. 엔비디아가 이번 분기부터 분리 공시한 두 카테고리다. 하이퍼스케일러 데이터센터 매출이 약 380억 달러, ACIE (AI 클라우드·산업·엔터프라이즈) 가 약 370억 달러다. ACIE 는 직전 분기까지 별도 보고되지 않던 신규 카테고리로, 그 안에 CoreWeave·Lambda 같은 신흥 AI 클라우드 사업자와 국가 단위 sovereign AI 인프라, 산업·기업 자체 AI 팩토리가 묶여 있다.\n\nACIE 매출은 전년 동기 대비 3배 이상 늘었다. 하이퍼스케일러 데이터센터가 전 분기 대비 12% 증가했으니 분기 흐름은 ACIE 쪽이 가팔랐던 것으로 보인다. 단 ACIE 안의 신흥 AI 클라우드 사업자들이 어떻게 자금을 조달하는지가 중요하다. CoreWeave 등은 결국 Microsoft·Oracle·Google 의 capacity 위탁계약을 끌고 있어, 자금 origin 은 여전히 하이퍼스케일러일 가능성이 남는다.\n\n게이밍·자동차·프로페셔널 시각화를 합한 비데이터센터 부문은 약 64억 달러로 전체의 8%에 그친다. 엔비디아는 이제 사실상 데이터센터 회사다.",
+        "charts": [
+          {
+            "type": "sankey",
+            "title": "Q1 매출 816억 달러의 구성",
+            "subtitle": "하이퍼스케일러와 ACIE 가 데이터센터를 거의 반씩 나눈다",
+            "data": {
+              "nodes": [
+                {
+                  "id": "rev",
+                  "label": "총매출 81.6"
+                },
+                {
+                  "id": "dc",
+                  "label": "데이터센터 75.2"
+                },
+                {
+                  "id": "other",
+                  "label": "게이밍·기타 6.4"
+                },
+                {
+                  "id": "hs",
+                  "label": "하이퍼스케일러 38"
+                },
+                {
+                  "id": "acie",
+                  "label": "ACIE 37",
+                  "accent": true
+                }
+              ],
+              "links": [
+                {
+                  "source": "rev",
+                  "target": "dc",
+                  "value": 75.2
+                },
+                {
+                  "source": "rev",
+                  "target": "other",
+                  "value": 6.4
+                },
+                {
+                  "source": "dc",
+                  "target": "hs",
+                  "value": 38
+                },
+                {
+                  "source": "dc",
+                  "target": "acie",
+                  "value": 37
+                }
+              ]
+            },
+            "source": "NVIDIA 보도자료 / 2026-05-20 / 단위: 10억 달러",
+            "takeaway": "데이터센터 92% — 두 layer 로 분리 공시"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "ACIE 는 데이터센터의 두 번째 layer",
+          "body": "원래 데이터센터 매출은 사실상 하이퍼스케일러 4-5곳 (MS · Google · Meta · Amazon) 의 합이었다. ACIE 는 신흥 AI 클라우드 (CoreWeave · Lambda 등) + 국가 단위 sovereign AI (자국 AI 인프라 사업) + 기업 자체 AI 팩토리를 묶은 새 카테고리다. 카테고리가 늘어나면 매출 origin 의 표면적이 늘어난다."
+        },
+        "fact_grid": [],
+        "dropcap": false,
+        "images": []
+      },
+      {
+        "heading": "Blackwell 전환의 흔적은 마진에 있다",
+        "kicker": "",
+        "prose": "Q2 가이던스에서 가장 주목할 숫자는 매출이 아니라 매출총이익률이다. 회사는 Q2 Non-GAAP 매출총이익률을 75% (±50bp) 로 안내했다. FY26 연간 71.1% 대비 약 3.9%포인트 높은 수치다.\n\n이 차이의 원천은 Blackwell 비중이다. 1년 전 데이터센터 컴퓨트에서 거의 0% 였던 Blackwell 점유가 70% 수준에 도달했고, 직전 세대 Hopper 의 잔여 출하는 사실상 종료됐다. 신세대의 가격결정력 + 학습곡선 효과 (대량 양산이 진행되며 단위 원가가 빠르게 떨어지는 현상) 가 마진을 끌어올린 구조다.\n\n다만 마진 75%가 정상상태인지는 다른 문제다. Blackwell 출시 초기 프리미엄 효과를 빼고 보면, 다음 세대 Vera Rubin 의 매출 인식이 시작되는 시점 (FY27 하반기 예상) 에 일시적 비용 증가와 mix 희석으로 마진 일시 후퇴 가능성이 있다. 시장이 75%를 새 정상으로 받아들이는지가 향후 멀티플 (주가가 이익의 몇 배에 거래되는지) 판단의 분기점으로 보인다.",
+        "charts": [
+          {
+            "type": "slope",
+            "title": "1년 사이 바뀐 세 지표",
+            "subtitle": "마진·DC 비중·Blackwell 점유가 같은 방향으로 움직였다",
+            "data": {
+              "left_label": "FY26 (~2026-01)",
+              "right_label": "Q2 FY27 가이던스",
+              "items": [
+                {
+                  "label": "Non-GAAP GM (%)",
+                  "a": 71.1,
+                  "b": 75.0
+                },
+                {
+                  "label": "데이터센터 비중 (%)",
+                  "a": 90,
+                  "b": 92
+                },
+                {
+                  "label": "Blackwell DC 컴퓨트 점유 (%)",
+                  "a": 0,
+                  "b": 70
+                }
+              ]
+            },
+            "source": "NVIDIA 보도자료, SEC 10-K FY26 / 단위: %",
+            "takeaway": "Blackwell 70% 점유가 마진 75%의 원천"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": []
+      },
+      {
+        "heading": "중국 0 의 역설",
+        "kicker": "",
+        "prose": "2024 회계연도 기준 중국 데이터센터는 엔비디아 매출의 약 171억 달러를 차지했다. 미국 對中 AI 칩 수출통제가 단계적으로 강화되면서 2026년 4월 H20 등 China-spec 제품에 라이선스 제약이 더해졌고, Q2 FY27 가이던스는 중국 데이터센터 매출 0 가정 위에 작성됐다.\n\n산술적으로 보면 171억 달러 매출원이 사라졌는데도 다음 분기 가이던스가 컨센서스보다 41억 달러 높다. 이는 두 가지를 시사한다. 첫째, 비중국 수요가 단지 빈자리를 메운 정도가 아니라 중국 매출 손실분을 훨씬 넘어선다. 둘째, 시장이 이미 중국 비중을 보수적으로 가격에 반영해뒀다는 것 — 그래서 가이던스 910억이 컨센서스를 넘을 수 있었다.\n\n다만 중국 매출이 사라진 것과 중국 수요가 사라진 것은 다른 명제다. 회색지대를 통한 우회 유통, 화웨이 등 자국 칩 발전 속도, 향후 워싱턴-베이징 협상의 결과 — 이 세 변수가 어떻게 풀리느냐에 따라 '중국 0' 가정의 유효기간은 달라질 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "171억 달러가 사라졌는데 가이던스는 41억 달러 늘었다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": []
+      },
+      {
+        "heading": "자본 배분의 신호",
+        "kicker": "",
+        "prose": "이번 발표에서 자본 배분 변화는 매출만큼이나 의미가 크다. 분기 배당이 0.01달러에서 0.25달러로 25배 늘었고, 800억 달러 자사주 매입 한도가 신규로 추가됐다. 기존 잔여 한도 385억을 합하면 총 1,185억 달러의 매입 capacity 가 마련됐다. 분기 자유현금흐름 486억 달러를 감안하면 약 2.4분기 분의 현금흐름에 해당하는 규모다.\n\n배당 25배 증액은 단순한 주주환원이 아니라 신호다. 회사가 향후 분기의 현금 창출이 안정적이라고 판단하지 않으면 배당을 그렇게 큰 폭으로 늘리지 못한다. 자사주 매입은 capex (설비투자) 와 R&D 가 충분히 자금 조달되고도 남는다는 메시지다.\n\n단 1,185억 달러 한도가 곧바로 시장 매수로 옮겨가는 것은 아니다. capacity 와 실제 집행은 다른 문제다. 분기별 매입 실적이 어느 페이스로 진행되는지가 진짜 메시지를 형성한다.",
+        "charts": [
+          {
+            "type": "waterfall",
+            "title": "자사주 매입 capacity — 기존 + 신규 = 1,185억",
+            "subtitle": "분기 FCF 486억 대비 약 2.4분기 분량",
+            "data": [
+              {
+                "label": "기존 잔여 한도",
+                "value": 38.5,
+                "type": "total"
+              },
+              {
+                "label": "이번 분기 신규 추가",
+                "value": 80.0,
+                "type": "pos"
+              },
+              {
+                "label": "총 매입 capacity",
+                "value": 118.5,
+                "type": "total"
+              }
+            ],
+            "source": "NVIDIA 보도자료 / 2026-05-20 / 단위: 10억 달러",
+            "takeaway": "한도는 마련됐지만 집행 속도가 진짜 신호"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": []
+      },
+      {
+        "heading": "다섯 갈래의 다음 분기",
+        "kicker": "",
+        "prose": "Q3·Q4 FY27 의 매출 궤적을 결정할 변수를 다섯 갈래로 정리하면 다음과 같다.\n\n(1) 기준선 — Vera Rubin 의 매출 인식이 예정대로 FY27 하반기부터 점진적으로 시작되고, ACIE 가 분기당 10~15% 성장을 유지하는 경우. 가능성이 가장 높다.\n\n(2) 가속 — sovereign AI 인프라 발주가 예상보다 빨리 매출로 인식되거나, ACIE 내 신흥 AI 클라우드 사업자들의 추가 capacity 계약이 폭증하는 경우.\n\n(3) Rubin 지연 — 신세대 플랫폼의 파트너 가용성이 늦어지면서 Q3 매출이 가이던스 trend 를 밑돌 가능성. 학습곡선 초기 비용 증가도 동반한다.\n\n(4) 중국 부분 회복 — 워싱턴-베이징 협상으로 일부 China-spec 제품의 라이선스가 다시 열리는 경우. 매출에 즉시 반영은 어렵고 분기 시차가 발생한다.\n\n(5) 멀티플 압축 — 마진 75% 의 지속성에 대한 시장 회의가 커지면서, 실적과 무관하게 주가 멀티플이 후퇴.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "Q3-Q4 FY27 시나리오 — 확률 × 영향",
+            "subtitle": "기준선의 가능성이 가장 높지만 가속과 지연이 양쪽에서 잡아당긴다",
+            "data": [
+              {
+                "label": "기준선 (Rubin 정상)",
+                "x": 0.45,
+                "y": 5
+              },
+              {
+                "label": "가속 (Sovereign AI)",
+                "x": 0.25,
+                "y": 8
+              },
+              {
+                "label": "Rubin 지연",
+                "x": 0.15,
+                "y": -6
+              },
+              {
+                "label": "중국 부분 회복",
+                "x": 0.1,
+                "y": 4
+              },
+              {
+                "label": "멀티플 압축",
+                "x": 0.05,
+                "y": -8
+              }
+            ],
+            "source": "본 보고서 시나리오 설계 / x=주관확률, y=주가 영향 점수 (-10~+10)",
+            "takeaway": "기준선 45% — 다만 양 끝 시나리오의 영향 크기가 비대칭적으로 크다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": []
+      },
+      {
+        "heading": "두 모순과 다섯 신호",
+        "kicker": "",
+        "prose": "두 가지 관점이 충돌한다. 첫째는 ACIE 라는 새 카테고리의 등장으로 엔비디아의 매출 origin 이 진짜로 분산됐다는 입장이다. 또 하나는 ACIE 안의 신흥 AI 클라우드 사업자들이 결국 하이퍼스케일러의 위탁계약으로 사는 구조이니, 카테고리만 새로워졌고 실질 자금 origin 은 동일하다는 입장이다. 어느 쪽이 맞는지는 Q2-Q3 분기 ACIE 내부 breakdown 이 공시될 때 가려진다.\n\n또 다른 모순은 마진 75%의 지속성에 있다. Blackwell 가격결정력 + 학습곡선 효과로 정상상태 마진이 한 단계 올라갔다는 입장과, 출시 초기 mix 효과일 뿐 Rubin 매출 비중이 늘면 정상화될 것이라는 입장이 갈린다. FY28 첫 분기 마진이 검증대가 된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": []
+      }
+    ],
+    "closing": "Q1 발표는 끝이 아니라 가이던스 검증의 시작이다. 다음 두 분기는 ACIE 의 내부 구조와 Rubin 의 매출 전환 속도가 같이 시험대에 오른다.",
+    "watch_signals": [
+      {
+        "signal": "Q2 FY27 10-Q · ACIE 내부 breakdown",
+        "description": "ACIE 안에서 신흥 AI 클라우드 / sovereign / 기업 자체 AI 가 어떤 비율인지 공시되는지",
+        "indicates": "매출 origin 분산 (분산 가설) vs 하이퍼스케일러 동행 (collapse 가설) 분기",
+        "deadline": "2026-08",
+        "icon": "📑"
+      },
+      {
+        "signal": "Vera Rubin 첫 매출 인식 분기",
+        "description": "Q3 FY27 또는 Q4 FY27 콜에서 Rubin 의 의미 있는 매출 비중 첫 언급",
+        "indicates": "기준선 vs Rubin 지연 시나리오 분기",
+        "deadline": "2026-11",
+        "icon": "⚙️"
+      },
+      {
+        "signal": "FY28 Q1 매출총이익률",
+        "description": "75% 가 새 정상상태로 유지되는지 또는 70%대 초반으로 후퇴하는지",
+        "indicates": "마진 지속 가설 vs Blackwell 초기 프리미엄 가설 분기",
+        "deadline": "2027-02",
+        "icon": "📈"
+      },
+      {
+        "signal": "미국 對中 AI 칩 규제 추가 조치 또는 완화 신호",
+        "description": "BIS (Bureau of Industry and Security · 미 상무부 수출통제국) 의 신규 가이드라인 또는 면허 발급 동향",
+        "indicates": "중국 0 가정의 유효기간 — 부분 회복 시나리오 가능성",
+        "deadline": "분기별",
+        "icon": "🏛️"
+      },
+      {
+        "signal": "하이퍼스케일러 4사 Q2 capex 가이던스",
+        "description": "MS · Google · Meta · Amazon 각 사 Q2 capex 가이던스 합계가 직전 분기 trend 를 유지하는지",
+        "indicates": "ACIE 매출 origin 이 결국 하이퍼스케일러 자본인지 검증",
+        "deadline": "2026-07",
+        "icon": "🏢"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "ACIE 의 등장으로 엔비디아 매출 origin 이 실제로 분산됐다 — sovereign AI 와 신흥 AI 클라우드가 하이퍼스케일러와 비등한 규모로 성장",
+        "side_b": "ACIE 안의 신흥 AI 클라우드 (CoreWeave · Lambda 등) 는 결국 MS · Oracle · Google 의 capacity 위탁계약을 받아 사는 구조 — 카테고리만 새로워졌고 자금 origin 은 동일",
+        "evidence": "ACIE 매출 +3배 YoY 는 표면. 다만 ACIE 내부 sub-segment 별 매출은 미공시. CoreWeave 등의 매출 origin 은 IPO 공시 기준 약 60%가 Microsoft 1社 의존",
+        "resolution": "현 시점에선 side_a 우세 — 가이던스 910억의 강도가 ACIE 자체 동력 없이는 설명 어려움. 단 side_b 는 Q2-Q3 ACIE 내부 breakdown 공시에서 신흥 AI 클라우드 비중이 70% 이상으로 나오면 부활"
+      },
+      {
+        "side_a": "Non-GAAP 매출총이익률 75% 는 Blackwell 의 가격결정력과 학습곡선 효과로 정착한 새 정상상태",
+        "side_b": "75% 는 Blackwell 출시 초기 mix + 프리미엄의 일시 효과 — Rubin 매출 비중이 올라오는 FY27 하반기에 70%대 초반으로 정상화",
+        "evidence": "FY26 연간 71.1% → Q2 FY27 75% 의 약 3.9%p 점프가 Blackwell 비중 0→70% 와 동행. 다만 Hopper-Blackwell 사이클 비교 historic 데이터 부족",
+        "resolution": "FY28 Q1 마진이 검증대. 73~74% 사이에 안착하면 절충적 정답"
+      }
+    ],
+    "confidence_summary": "출처는 NVIDIA 보도자료·SEC 10-Q·CNBC 등 1차 자료 중심으로 신선도·신뢰도 모두 높음. 다만 ACIE 의 내부 breakdown, 중국 0 가정 하의 비중국 수요 구성, FY28 마진 정상상태 등은 추정 영역에 머묾.",
+    "confidence_score": 0.82,
+    "embedded_map": null,
+    "hero_image": null
+  },
+  "executive_summary": "Q1 매출 816억 달러는 컨센서스를 4% 넘었지만, 본질은 다음 분기 가이던스 910억이다. 중국 데이터센터 매출 0 가정에도 시장 합의를 41억 달러 웃돌았다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260521_065146.html",
+  "report_theme": "paper_classic",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-20T21:42:53.912398",
+  "total_duration_seconds": 532.1295912265778,
+  "system_version": "v5.4.5",
+  "revision": 0
+}
