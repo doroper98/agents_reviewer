@@ -1,0 +1,1335 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-30T04:05:28.567276+00:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.6.7",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260530_130528_99ab6a8e97",
+    "headline": "AI 반도체 사이클 경고 신호, 하이퍼스케일러 4사 CAPEX 2026 1분기 점검",
+    "deck": "MS·Alphabet·Amazon·Meta 4사의 2026 합계 CAPEX 가 약 6,400~6,900억 달러 (전년 대비 +67~74%) 로 가속됨. 매출·RPO·백로그·클라우드 영업이익률은 동반 가속 중이라 사이클 자체는 아직 꺾이지 않았으나, 합계 FCF 가 2022 저점 밑으로 하락하고 AMZN FCF 가 -95% 폭락하며 자금 조달이 OCF (",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260530_130528_99ab6a8e97.html",
+    "theme": {
+      "id": "dusk_rose",
+      "tokens": {
+        "bg": "#F2E8E5",
+        "card": "#F8EFEB",
+        "border": "#D6C2BE",
+        "text": "#2A1F1D",
+        "muted": "#7A5C58",
+        "accent": "#B85968",
+        "up": "#6B8550",
+        "down": "#A8584A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "MS·Alphabet·Amazon·Meta 4사의 2026 합계 CAPEX 가 약 6,400~6,900억 달러 (전년 대비 +67~74%) 로 가속됨. 매출·RPO·백로그·클라우드 영업이익률은 동반 가속 중이라 사이클 자체는 아직 꺾이지 않았으나, 합계 FCF 가 2022 저점 밑으로 하락하고 AMZN FCF 가 -95% 폭락하며 자금 조달이 OCF (영업현금흐름) 에서 부채로 빠르게 전환됨. 진짜 병목은 GPU 가 아니라 전력 으로 이동했고, AMZN 의 서버 내용연수 단축 (6→5년) 이 첫 균열로 등장. 현재 국면 판정: 노란색 (전기 단계, 진성 수요 견조 + 자금 조달 구조 균열).",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1",
+        "ch-2"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "candle",
+      "title": "SK하이닉스 (000660)",
+      "data": [
+        {
+          "date": "2026-02-27",
+          "open": 1050000.0,
+          "high": 1096000.0,
+          "low": 1048000.0,
+          "close": 1061000.0,
+          "volume": 6453062.0
+        },
+        {
+          "date": "2026-03-03",
+          "open": 1022000.0,
+          "high": 1040000.0,
+          "low": 939000.0,
+          "close": 939000.0,
+          "volume": 6818327.0
+        },
+        {
+          "date": "2026-03-04",
+          "open": 894000.0,
+          "high": 954000.0,
+          "low": 846000.0,
+          "close": 849000.0,
+          "volume": 9253420.0
+        },
+        {
+          "date": "2026-03-05",
+          "open": 976000.0,
+          "high": 992000.0,
+          "low": 927000.0,
+          "close": 941000.0,
+          "volume": 6442459.0
+        },
+        {
+          "date": "2026-03-06",
+          "open": 912000.0,
+          "high": 938000.0,
+          "low": 885000.0,
+          "close": 924000.0,
+          "volume": 3744322.0
+        },
+        {
+          "date": "2026-03-09",
+          "open": 851000.0,
+          "high": 864000.0,
+          "low": 808000.0,
+          "close": 836000.0,
+          "volume": 7253621.0
+        },
+        {
+          "date": "2026-03-10",
+          "open": 915000.0,
+          "high": 950000.0,
+          "low": 899000.0,
+          "close": 938000.0,
+          "volume": 5304897.0
+        },
+        {
+          "date": "2026-03-11",
+          "open": 954000.0,
+          "high": 985000.0,
+          "low": 941000.0,
+          "close": 955000.0,
+          "volume": 3916098.0
+        },
+        {
+          "date": "2026-03-12",
+          "open": 938000.0,
+          "high": 963000.0,
+          "low": 928000.0,
+          "close": 930000.0,
+          "volume": 3711742.0
+        },
+        {
+          "date": "2026-03-13",
+          "open": 891000.0,
+          "high": 929000.0,
+          "low": 884000.0,
+          "close": 910000.0,
+          "volume": 3645102.0
+        },
+        {
+          "date": "2026-03-16",
+          "open": 925000.0,
+          "high": 975000.0,
+          "low": 924000.0,
+          "close": 974000.0,
+          "volume": 3829496.0
+        },
+        {
+          "date": "2026-03-17",
+          "open": 1009000.0,
+          "high": 1010000.0,
+          "low": 969000.0,
+          "close": 970000.0,
+          "volume": 3326240.0
+        },
+        {
+          "date": "2026-03-18",
+          "open": 1000000.0,
+          "high": 1060000.0,
+          "low": 999000.0,
+          "close": 1056000.0,
+          "volume": 4347884.0
+        },
+        {
+          "date": "2026-03-19",
+          "open": 1008000.0,
+          "high": 1043000.0,
+          "low": 1003000.0,
+          "close": 1013000.0,
+          "volume": 3347483.0
+        },
+        {
+          "date": "2026-03-20",
+          "open": 1023000.0,
+          "high": 1026000.0,
+          "low": 1002000.0,
+          "close": 1007000.0,
+          "volume": 3426646.0
+        },
+        {
+          "date": "2026-03-23",
+          "open": 952000.0,
+          "high": 963000.0,
+          "low": 927000.0,
+          "close": 933000.0,
+          "volume": 3911813.0
+        },
+        {
+          "date": "2026-03-24",
+          "open": 993000.0,
+          "high": 994000.0,
+          "low": 938000.0,
+          "close": 986000.0,
+          "volume": 4352152.0
+        },
+        {
+          "date": "2026-03-25",
+          "open": 1016000.0,
+          "high": 1042000.0,
+          "low": 988000.0,
+          "close": 995000.0,
+          "volume": 4463869.0
+        },
+        {
+          "date": "2026-03-26",
+          "open": 965000.0,
+          "high": 973000.0,
+          "low": 931000.0,
+          "close": 933000.0,
+          "volume": 4660620.0
+        },
+        {
+          "date": "2026-03-27",
+          "open": 890000.0,
+          "high": 934000.0,
+          "low": 880000.0,
+          "close": 922000.0,
+          "volume": 4520942.0
+        },
+        {
+          "date": "2026-03-30",
+          "open": 867000.0,
+          "high": 884000.0,
+          "low": 862000.0,
+          "close": 873000.0,
+          "volume": 4498502.0
+        },
+        {
+          "date": "2026-03-31",
+          "open": 817000.0,
+          "high": 852000.0,
+          "low": 806000.0,
+          "close": 807000.0,
+          "volume": 7194351.0
+        },
+        {
+          "date": "2026-04-01",
+          "open": 884000.0,
+          "high": 905000.0,
+          "low": 858000.0,
+          "close": 893000.0,
+          "volume": 6255058.0
+        },
+        {
+          "date": "2026-04-02",
+          "open": 912000.0,
+          "high": 914000.0,
+          "low": 818000.0,
+          "close": 830000.0,
+          "volume": 6127534.0
+        },
+        {
+          "date": "2026-04-03",
+          "open": 867000.0,
+          "high": 886000.0,
+          "low": 860000.0,
+          "close": 876000.0,
+          "volume": 2927164.0
+        },
+        {
+          "date": "2026-04-06",
+          "open": 877000.0,
+          "high": 901500.0,
+          "low": 869000.0,
+          "close": 886000.0,
+          "volume": 3100989.0
+        },
+        {
+          "date": "2026-04-07",
+          "open": 917000.0,
+          "high": 933000.0,
+          "low": 888000.0,
+          "close": 916000.0,
+          "volume": 3619929.0
+        },
+        {
+          "date": "2026-04-08",
+          "open": 1007000.0,
+          "high": 1056000.0,
+          "low": 992000.0,
+          "close": 1033000.0,
+          "volume": 6709356.0
+        },
+        {
+          "date": "2026-04-09",
+          "open": 1015000.0,
+          "high": 1025000.0,
+          "low": 990000.0,
+          "close": 998000.0,
+          "volume": 5026817.0
+        },
+        {
+          "date": "2026-04-10",
+          "open": 1030000.0,
+          "high": 1042000.0,
+          "low": 1024000.0,
+          "close": 1027000.0,
+          "volume": 3134921.0
+        },
+        {
+          "date": "2026-04-13",
+          "open": 999000.0,
+          "high": 1043000.0,
+          "low": 996000.0,
+          "close": 1040000.0,
+          "volume": 2769753.0
+        },
+        {
+          "date": "2026-04-14",
+          "open": 1092000.0,
+          "high": 1128000.0,
+          "low": 1078000.0,
+          "close": 1103000.0,
+          "volume": 4754545.0
+        },
+        {
+          "date": "2026-04-15",
+          "open": 1165000.0,
+          "high": 1173000.0,
+          "low": 1130000.0,
+          "close": 1136000.0,
+          "volume": 4093703.0
+        },
+        {
+          "date": "2026-04-16",
+          "open": 1141000.0,
+          "high": 1161000.0,
+          "low": 1130000.0,
+          "close": 1155000.0,
+          "volume": 2901319.0
+        },
+        {
+          "date": "2026-04-17",
+          "open": 1149000.0,
+          "high": 1155000.0,
+          "low": 1121000.0,
+          "close": 1128000.0,
+          "volume": 3578235.0
+        },
+        {
+          "date": "2026-04-20",
+          "open": 1148000.0,
+          "high": 1175000.0,
+          "low": 1141000.0,
+          "close": 1166000.0,
+          "volume": 3748014.0
+        },
+        {
+          "date": "2026-04-21",
+          "open": 1196000.0,
+          "high": 1228000.0,
+          "low": 1193000.0,
+          "close": 1224000.0,
+          "volume": 3516960.0
+        },
+        {
+          "date": "2026-04-22",
+          "open": 1227000.0,
+          "high": 1233000.0,
+          "low": 1195000.0,
+          "close": 1223000.0,
+          "volume": 2894919.0
+        },
+        {
+          "date": "2026-04-23",
+          "open": 1220000.0,
+          "high": 1267000.0,
+          "low": 1183000.0,
+          "close": 1225000.0,
+          "volume": 5343871.0
+        },
+        {
+          "date": "2026-04-24",
+          "open": 1237000.0,
+          "high": 1242000.0,
+          "low": 1193000.0,
+          "close": 1222000.0,
+          "volume": 3127857.0
+        },
+        {
+          "date": "2026-04-27",
+          "open": 1253000.0,
+          "high": 1317000.0,
+          "low": 1249000.0,
+          "close": 1292000.0,
+          "volume": 4563073.0
+        },
+        {
+          "date": "2026-04-28",
+          "open": 1313000.0,
+          "high": 1328000.0,
+          "low": 1296000.0,
+          "close": 1300000.0,
+          "volume": 3002713.0
+        },
+        {
+          "date": "2026-04-29",
+          "open": 1284000.0,
+          "high": 1317000.0,
+          "low": 1281000.0,
+          "close": 1293000.0,
+          "volume": 3001208.0,
+          "event": "Amazon Q1 2026, AWS +28% (3년래 최고), 연환산 1,500억 달러 도달, RPO 3,"
+        },
+        {
+          "date": "2026-04-30",
+          "open": 1312000.0,
+          "high": 1325000.0,
+          "low": 1286000.0,
+          "close": 1286000.0,
+          "volume": 3342342.0
+        },
+        {
+          "date": "2026-05-04",
+          "open": 1339000.0,
+          "high": 1450000.0,
+          "low": 1333000.0,
+          "close": 1447000.0,
+          "volume": 5776641.0
+        },
+        {
+          "date": "2026-05-06",
+          "open": 1590000.0,
+          "high": 1614000.0,
+          "low": 1557000.0,
+          "close": 1601000.0,
+          "volume": 6631934.0
+        },
+        {
+          "date": "2026-05-07",
+          "open": 1622000.0,
+          "high": 1665000.0,
+          "low": 1567000.0,
+          "close": 1654000.0,
+          "volume": 5860618.0
+        },
+        {
+          "date": "2026-05-08",
+          "open": 1591000.0,
+          "high": 1689000.0,
+          "low": 1591000.0,
+          "close": 1686000.0,
+          "volume": 4278087.0
+        },
+        {
+          "date": "2026-05-11",
+          "open": 1833000.0,
+          "high": 1949000.0,
+          "low": 1826000.0,
+          "close": 1880000.0,
+          "volume": 7433039.0
+        },
+        {
+          "date": "2026-05-12",
+          "open": 1944000.0,
+          "high": 1967000.0,
+          "low": 1804000.0,
+          "close": 1835000.0,
+          "volume": 9160593.0
+        },
+        {
+          "date": "2026-05-13",
+          "open": 1781000.0,
+          "high": 1990000.0,
+          "low": 1781000.0,
+          "close": 1976000.0,
+          "volume": 7126921.0
+        },
+        {
+          "date": "2026-05-14",
+          "open": 1976000.0,
+          "high": 1994000.0,
+          "low": 1937000.0,
+          "close": 1970000.0,
+          "volume": 6040068.0
+        },
+        {
+          "date": "2026-05-15",
+          "open": 1950000.0,
+          "high": 1995000.0,
+          "low": 1789000.0,
+          "close": 1819000.0,
+          "volume": 7485233.0
+        },
+        {
+          "date": "2026-05-18",
+          "open": 1780000.0,
+          "high": 1897000.0,
+          "low": 1731000.0,
+          "close": 1840000.0,
+          "volume": 6481608.0
+        },
+        {
+          "date": "2026-05-19",
+          "open": 1791000.0,
+          "high": 1823000.0,
+          "low": 1740000.0,
+          "close": 1745000.0,
+          "volume": 4575855.0
+        },
+        {
+          "date": "2026-05-20",
+          "open": 1743000.0,
+          "high": 1778000.0,
+          "low": 1690000.0,
+          "close": 1745000.0,
+          "volume": 5535123.0,
+          "event": "NVIDIA Q1 FY27, 매출 816억 (+85%), 데이터센터 752억 (+92% YoY, +21%"
+        },
+        {
+          "date": "2026-05-21",
+          "open": 1801000.0,
+          "high": 1954000.0,
+          "low": 1796000.0,
+          "close": 1940000.0,
+          "volume": 5096690.0
+        },
+        {
+          "date": "2026-05-22",
+          "open": 1942000.0,
+          "high": 1952000.0,
+          "low": 1912000.0,
+          "close": 1941000.0,
+          "volume": 3135190.0,
+          "event": "Motley Fool 등, AI 데이터센터 '과공급' 패닉 시작, Vertiv 등 인프라 주 매도세"
+        },
+        {
+          "date": "2026-05-26",
+          "open": 2008000.0,
+          "high": 2087000.0,
+          "low": 2006000.0,
+          "close": 2052000.0,
+          "volume": 4903591.0
+        },
+        {
+          "date": "2026-05-27",
+          "open": 2279000.0,
+          "high": 2358000.0,
+          "low": 2200000.0,
+          "close": 2243000.0,
+          "volume": 7545783.0
+        },
+        {
+          "date": "2026-05-28",
+          "open": 2189000.0,
+          "high": 2305000.0,
+          "low": 2151000.0,
+          "close": 2289000.0,
+          "volume": 6229499.0
+        },
+        {
+          "date": "2026-05-29",
+          "open": 2352000.0,
+          "high": 2379000.0,
+          "low": 2290500.0,
+          "close": 2333000.0,
+          "volume": 7066332.0
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-1",
+            "provider": "KRX",
+            "code": "000660",
+            "unit": "원",
+            "fetched_at": "2026-05-30",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "candle",
+      "title": "삼성전자 (005930)",
+      "data": [
+        {
+          "date": "2026-02-27",
+          "open": 210000.0,
+          "high": 223000.0,
+          "low": 210000.0,
+          "close": 216500.0,
+          "volume": 51774768.0
+        },
+        {
+          "date": "2026-03-03",
+          "open": 209500.0,
+          "high": 212500.0,
+          "low": 195100.0,
+          "close": 195100.0,
+          "volume": 54879010.0
+        },
+        {
+          "date": "2026-03-04",
+          "open": 184200.0,
+          "high": 195900.0,
+          "low": 171900.0,
+          "close": 172200.0,
+          "volume": 89427954.0
+        },
+        {
+          "date": "2026-03-05",
+          "open": 195000.0,
+          "high": 199700.0,
+          "low": 188100.0,
+          "close": 191600.0,
+          "volume": 53959129.0
+        },
+        {
+          "date": "2026-03-06",
+          "open": 186100.0,
+          "high": 189700.0,
+          "low": 181000.0,
+          "close": 188200.0,
+          "volume": 29522650.0
+        },
+        {
+          "date": "2026-03-09",
+          "open": 173500.0,
+          "high": 175500.0,
+          "low": 167300.0,
+          "close": 173500.0,
+          "volume": 43066020.0
+        },
+        {
+          "date": "2026-03-10",
+          "open": 187600.0,
+          "high": 191500.0,
+          "low": 184300.0,
+          "close": 187900.0,
+          "volume": 33530170.0
+        },
+        {
+          "date": "2026-03-11",
+          "open": 193000.0,
+          "high": 194800.0,
+          "low": 187700.0,
+          "close": 190000.0,
+          "volume": 24311356.0
+        },
+        {
+          "date": "2026-03-12",
+          "open": 186600.0,
+          "high": 190000.0,
+          "low": 185900.0,
+          "close": 187900.0,
+          "volume": 20440753.0
+        },
+        {
+          "date": "2026-03-13",
+          "open": 180000.0,
+          "high": 186200.0,
+          "low": 179900.0,
+          "close": 183500.0,
+          "volume": 19566331.0
+        },
+        {
+          "date": "2026-03-16",
+          "open": 184600.0,
+          "high": 189000.0,
+          "low": 183600.0,
+          "close": 188700.0,
+          "volume": 19747901.0
+        },
+        {
+          "date": "2026-03-17",
+          "open": 198000.0,
+          "high": 198000.0,
+          "low": 193100.0,
+          "close": 193900.0,
+          "volume": 20300082.0
+        },
+        {
+          "date": "2026-03-18",
+          "open": 200500.0,
+          "high": 209000.0,
+          "low": 199700.0,
+          "close": 208500.0,
+          "volume": 25148481.0
+        },
+        {
+          "date": "2026-03-19",
+          "open": 199900.0,
+          "high": 205000.0,
+          "low": 199600.0,
+          "close": 200500.0,
+          "volume": 19884483.0
+        },
+        {
+          "date": "2026-03-20",
+          "open": 202000.0,
+          "high": 202500.0,
+          "low": 199000.0,
+          "close": 199400.0,
+          "volume": 35279762.0
+        },
+        {
+          "date": "2026-03-23",
+          "open": 190500.0,
+          "high": 191200.0,
+          "low": 186300.0,
+          "close": 186300.0,
+          "volume": 30268173.0
+        },
+        {
+          "date": "2026-03-24",
+          "open": 195500.0,
+          "high": 196000.0,
+          "low": 185500.0,
+          "close": 189700.0,
+          "volume": 25458914.0
+        },
+        {
+          "date": "2026-03-25",
+          "open": 193700.0,
+          "high": 196400.0,
+          "low": 189000.0,
+          "close": 189000.0,
+          "volume": 22995904.0
+        },
+        {
+          "date": "2026-03-26",
+          "open": 185500.0,
+          "high": 185900.0,
+          "low": 178900.0,
+          "close": 180100.0,
+          "volume": 32074131.0
+        },
+        {
+          "date": "2026-03-27",
+          "open": 172100.0,
+          "high": 181700.0,
+          "low": 172000.0,
+          "close": 179700.0,
+          "volume": 29138966.0
+        },
+        {
+          "date": "2026-03-30",
+          "open": 171000.0,
+          "high": 176650.0,
+          "low": 170600.0,
+          "close": 176300.0,
+          "volume": 22269147.0
+        },
+        {
+          "date": "2026-03-31",
+          "open": 170000.0,
+          "high": 174700.0,
+          "low": 167000.0,
+          "close": 167200.0,
+          "volume": 38659593.0
+        },
+        {
+          "date": "2026-04-01",
+          "open": 179000.0,
+          "high": 190800.0,
+          "low": 178000.0,
+          "close": 189600.0,
+          "volume": 32390251.0
+        },
+        {
+          "date": "2026-04-02",
+          "open": 192600.0,
+          "high": 193600.0,
+          "low": 175000.0,
+          "close": 178400.0,
+          "volume": 38615231.0
+        },
+        {
+          "date": "2026-04-03",
+          "open": 184200.0,
+          "high": 187200.0,
+          "low": 182700.0,
+          "close": 186200.0,
+          "volume": 20194447.0
+        },
+        {
+          "date": "2026-04-06",
+          "open": 190900.0,
+          "high": 194600.0,
+          "low": 190100.0,
+          "close": 193100.0,
+          "volume": 20635958.0
+        },
+        {
+          "date": "2026-04-07",
+          "open": 202000.0,
+          "high": 202500.0,
+          "low": 192400.0,
+          "close": 196500.0,
+          "volume": 30848053.0
+        },
+        {
+          "date": "2026-04-08",
+          "open": 214000.0,
+          "high": 214500.0,
+          "low": 207500.0,
+          "close": 210500.0,
+          "volume": 35890973.0
+        },
+        {
+          "date": "2026-04-09",
+          "open": 207000.0,
+          "high": 207500.0,
+          "low": 202000.0,
+          "close": 204000.0,
+          "volume": 42320839.0
+        },
+        {
+          "date": "2026-04-10",
+          "open": 208500.0,
+          "high": 211000.0,
+          "low": 205500.0,
+          "close": 206000.0,
+          "volume": 18244459.0
+        },
+        {
+          "date": "2026-04-13",
+          "open": 198200.0,
+          "high": 203000.0,
+          "low": 198200.0,
+          "close": 201000.0,
+          "volume": 19603415.0
+        },
+        {
+          "date": "2026-04-14",
+          "open": 208000.0,
+          "high": 210000.0,
+          "low": 205500.0,
+          "close": 206500.0,
+          "volume": 23672078.0
+        },
+        {
+          "date": "2026-04-15",
+          "open": 215000.0,
+          "high": 215500.0,
+          "low": 210000.0,
+          "close": 211000.0,
+          "volume": 24092884.0
+        },
+        {
+          "date": "2026-04-16",
+          "open": 212000.0,
+          "high": 218000.0,
+          "low": 210500.0,
+          "close": 217500.0,
+          "volume": 21499788.0
+        },
+        {
+          "date": "2026-04-17",
+          "open": 217000.0,
+          "high": 218000.0,
+          "low": 215000.0,
+          "close": 216000.0,
+          "volume": 18079322.0
+        },
+        {
+          "date": "2026-04-20",
+          "open": 214500.0,
+          "high": 219000.0,
+          "low": 213000.0,
+          "close": 214500.0,
+          "volume": 17107741.0
+        },
+        {
+          "date": "2026-04-21",
+          "open": 218000.0,
+          "high": 220000.0,
+          "low": 216000.0,
+          "close": 219000.0,
+          "volume": 16752132.0
+        },
+        {
+          "date": "2026-04-22",
+          "open": 218500.0,
+          "high": 222500.0,
+          "low": 215500.0,
+          "close": 217500.0,
+          "volume": 16823480.0
+        },
+        {
+          "date": "2026-04-23",
+          "open": 223000.0,
+          "high": 229500.0,
+          "low": 216000.0,
+          "close": 224500.0,
+          "volume": 34525485.0
+        },
+        {
+          "date": "2026-04-24",
+          "open": 224000.0,
+          "high": 225000.0,
+          "low": 216500.0,
+          "close": 219500.0,
+          "volume": 19626666.0
+        },
+        {
+          "date": "2026-04-27",
+          "open": 220000.0,
+          "high": 226000.0,
+          "low": 218500.0,
+          "close": 224500.0,
+          "volume": 22870374.0
+        },
+        {
+          "date": "2026-04-28",
+          "open": 224000.0,
+          "high": 226000.0,
+          "low": 221500.0,
+          "close": 222000.0,
+          "volume": 18444490.0
+        },
+        {
+          "date": "2026-04-29",
+          "open": 219500.0,
+          "high": 228000.0,
+          "low": 218500.0,
+          "close": 226000.0,
+          "volume": 20363756.0,
+          "event": "Amazon Q1 2026, AWS +28% (3년래 최고), 연환산 1,500억 달러 도달, RPO 3,"
+        },
+        {
+          "date": "2026-04-30",
+          "open": 229000.0,
+          "high": 230000.0,
+          "low": 220500.0,
+          "close": 220500.0,
+          "volume": 22161975.0
+        },
+        {
+          "date": "2026-05-04",
+          "open": 228000.0,
+          "high": 232500.0,
+          "low": 224000.0,
+          "close": 232500.0,
+          "volume": 32920816.0
+        },
+        {
+          "date": "2026-05-06",
+          "open": 254000.0,
+          "high": 270000.0,
+          "low": 251000.0,
+          "close": 266000.0,
+          "volume": 53097996.0
+        },
+        {
+          "date": "2026-05-07",
+          "open": 272000.0,
+          "high": 277000.0,
+          "low": 260000.0,
+          "close": 271500.0,
+          "volume": 41404687.0
+        },
+        {
+          "date": "2026-05-08",
+          "open": 260000.0,
+          "high": 270000.0,
+          "low": 260000.0,
+          "close": 268500.0,
+          "volume": 25875880.0
+        },
+        {
+          "date": "2026-05-11",
+          "open": 284500.0,
+          "high": 288500.0,
+          "low": 280000.0,
+          "close": 285500.0,
+          "volume": 36031094.0
+        },
+        {
+          "date": "2026-05-12",
+          "open": 290000.0,
+          "high": 291500.0,
+          "low": 266000.0,
+          "close": 279000.0,
+          "volume": 41211149.0
+        },
+        {
+          "date": "2026-05-13",
+          "open": 264000.0,
+          "high": 285500.0,
+          "low": 262000.0,
+          "close": 284000.0,
+          "volume": 35540134.0
+        },
+        {
+          "date": "2026-05-14",
+          "open": 282000.0,
+          "high": 299500.0,
+          "low": 282000.0,
+          "close": 296000.0,
+          "volume": 39314752.0
+        },
+        {
+          "date": "2026-05-15",
+          "open": 291000.0,
+          "high": 296500.0,
+          "low": 266000.0,
+          "close": 270500.0,
+          "volume": 38075487.0
+        },
+        {
+          "date": "2026-05-18",
+          "open": 269500.0,
+          "high": 288500.0,
+          "low": 262000.0,
+          "close": 281000.0,
+          "volume": 33555214.0
+        },
+        {
+          "date": "2026-05-19",
+          "open": 274000.0,
+          "high": 281500.0,
+          "low": 266000.0,
+          "close": 275500.0,
+          "volume": 30767569.0
+        },
+        {
+          "date": "2026-05-20",
+          "open": 278000.0,
+          "high": 282500.0,
+          "low": 263500.0,
+          "close": 276000.0,
+          "volume": 35662077.0,
+          "event": "NVIDIA Q1 FY27, 매출 816억 (+85%), 데이터센터 752억 (+92% YoY, +21%"
+        },
+        {
+          "date": "2026-05-21",
+          "open": 291000.0,
+          "high": 299500.0,
+          "low": 287000.0,
+          "close": 299500.0,
+          "volume": 36168689.0
+        },
+        {
+          "date": "2026-05-22",
+          "open": 300000.0,
+          "high": 300500.0,
+          "low": 292000.0,
+          "close": 292500.0,
+          "volume": 18395274.0,
+          "event": "Motley Fool 등, AI 데이터센터 '과공급' 패닉 시작, Vertiv 등 인프라 주 매도세"
+        },
+        {
+          "date": "2026-05-26",
+          "open": 298000.0,
+          "high": 302000.0,
+          "low": 297500.0,
+          "close": 299000.0,
+          "volume": 23441371.0
+        },
+        {
+          "date": "2026-05-27",
+          "open": 321500.0,
+          "high": 323000.0,
+          "low": 306000.0,
+          "close": 307000.0,
+          "volume": 33916688.0
+        },
+        {
+          "date": "2026-05-28",
+          "open": 305000.0,
+          "high": 306500.0,
+          "low": 287500.0,
+          "close": 299500.0,
+          "volume": 30195334.0
+        },
+        {
+          "date": "2026-05-29",
+          "open": 309500.0,
+          "high": 319000.0,
+          "low": 305500.0,
+          "close": 317000.0,
+          "volume": 32804208.0
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-2",
+            "provider": "KRX",
+            "code": "005930",
+            "unit": "원",
+            "fetched_at": "2026-05-30",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q1",
+      "publisher": "microsoft.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://www.heygotrade.com/en/blog/microsoft-q1-2026-earnings-reaction/",
+      "publisher": "heygotrade.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://windowsnews.ai/article/azure-ai-boom-slams-into-power-constraints-as-627b-rpo-backlog-reveals-delivery-crisis.415905",
+      "publisher": "windowsnews.ai",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.heygotrade.com/en/blog/alphabet-q1-2026-earnings-reaction/",
+      "publisher": "heygotrade.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.levelheadedinvesting.com/p/alphabet-inc-google-q1-2026-results-cloud-breaks-escape-velocity-multiple-catches-up",
+      "publisher": "levelheadedinvesting.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.investing.com/news/company-news/amazon-q1-2026-slides-aws-surges-28-record-margins-offset-by-capex-93CH-4647447",
+      "publisher": "investing.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://seekingalpha.com/article/4901553-amazon-the-465-billion-backlog-that-silences-the-capex-bears",
+      "publisher": "seekingalpha.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://thenextweb.com/news/amazon-q1-2026-anthropic-aws-earnings",
+      "publisher": "thenextweb.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://qz.com/meta-q1-2026-earnings-ai-spending-capex-stock-042926",
+      "publisher": "qz.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://fortune.com/2026/04/29/meta-zuckerberg-145-billion-ai-spending-roi/",
+      "publisher": "fortune.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-11",
+      "url": "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000051/q1fy27cfocommentary.htm",
+      "publisher": "sec.gov",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-12",
+      "url": "https://intellectia.ai/blog/nvda-stock-earnings-analysis-may-2026",
+      "publisher": "intellectia.ai",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-13",
+      "url": "https://www.trendforce.com/news/2025/12/24/news-samsung-sk-hynix-reportedly-plan-20-hbm3e-price-hike-for-2026-as-nvidia-h200-asic-demand-rises/",
+      "publisher": "trendforce.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-14",
+      "url": "https://www.trendforce.com/news/2026/01/06/news-samsung-sk-reportedly-hike-server-dram-prices-60-70-google-microsoft-in-the-queue/",
+      "publisher": "trendforce.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-15",
+      "url": "https://www.datacenterknowledge.com/hyperscalers/hyperscalers-in-2026-what-s-next-for-the-world-s-largest-data-center-operators-",
+      "publisher": "datacenterknowledge.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-16",
+      "url": "https://introl.com/blog/hyperscaler-capex-690-billion-microsoft-azure-power-bottleneck-2026",
+      "publisher": "introl.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-17",
+      "url": "https://tech-insider.org/us-ai-data-center-delays-cancellations-7gw-capacity-crisis-2026/",
+      "publisher": "tech-insider.org",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-18",
+      "url": "https://www.silicondata.com/blog/gpu-pricing-trends-2026-what-to-expect-in-the-year-ahead",
+      "publisher": "silicondata.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-19",
+      "url": "https://deepquarry.substack.com/p/amazon-revises-server-lifespan-amid",
+      "publisher": "deepquarry.substack.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-20",
+      "url": "https://siliconangle.com/2025/11/22/resetting-gpu-depreciation-ai-factories-bend-dont-break-useful-life-assumptions/",
+      "publisher": "siliconangle.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-21",
+      "url": "https://fortune.com/2026/02/17/ai-tech-red-flag-capex-hyperscalers-cash-flow-negative-evercore/",
+      "publisher": "fortune.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-22",
+      "url": "https://seekingalpha.com/news/4575079-ai-capex-roi-becomes-key-2026-test-for-hyperscalers-investing-experts",
+      "publisher": "seekingalpha.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    },
+    {
+      "source_id": "src-23",
+      "url": "https://fortune.com/2026/01/28/microsoft-stock-drops-azure-growth-slows-capex-spending-q2/",
+      "publisher": "fortune.com",
+      "title": "",
+      "fetched_at": "2026-05-30"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2025-01-01",
+        "label": "Amazon, 서버 / 네트워크 장비 일부의 추정 내용연수를 6년 → 5년 으로 단축 (AI / ML 기술 진보 가속이 사유)",
+        "phase": "past",
+        "note": "3개월 순이익 -2.98억 달러, 9개월 누계 -6.77억 달러. 하이퍼스케일러 감가 연장 트렌드의 첫 *역행* 사례"
+      },
+      {
+        "date": "2025-11-22",
+        "label": "SiliconANGLE 등, GPU 가 3년 사이클인데 회계상 5~6년 상각이 이익을 인위적으로 부풀린다는 비판 확산",
+        "phase": "past",
+        "note": "Satya Nadella '한 세대 GPU 에 4~5년 묶이고 싶지 않다' 발언 공식화"
+      },
+      {
+        "date": "2026-01-28",
+        "label": "MS FY26 Q2 — Azure 성장률 시장 기대 하회. 주가 -5%, CAPEX 부담 부각 (Fortune 보도)",
+        "phase": "past",
+        "note": "하이퍼스케일러 CAPEX/성장 비율에 첫 시장 우려"
+      },
+      {
+        "date": "2026-02-17",
+        "label": "Evercore, 하이퍼스케일러 CAPEX 가 합계 FCF 를 음 (-) 전환시킬 수 있다는 '레드 플래그' 경고",
+        "phase": "past",
+        "note": "공식 sell-side 의 첫 '버블 가능성' 노출"
+      },
+      {
+        "date": "2026-04-29",
+        "label": "Alphabet Q1 2026 — GCP +63% YoY, Cloud 백로그 4,600억 달러 (전 분기 대비 거의 2배). 2026 CAPEX 가이던스 1,800~1,900억 달러 (상향)",
+        "phase": "past",
+        "note": "수요 사이드의 *가속* 증거. 2027 CAPEX '상당한 증가' 예고"
+      },
+      {
+        "date": "2026-04-29",
+        "label": "Meta Q1 2026 — 2026 CAPEX 가이던스 1,250~1,450억 달러 (기존 1,150~1,350억에서 상향, '부품 가격 상승 + 미래 캐파' 이유). 시간외 -6%",
+        "phase": "past",
+        "note": "CAPEX 증가의 *단가 인플레* 기여분이 처음으로 명시적으로 가이던스 노트에 등장"
+      },
+      {
+        "date": "2026-04-29",
+        "label": "Amazon Q1 2026 — AWS +28% (3년래 최고), 연환산 1,500억 달러 도달, RPO 3,640억 달러 (+93%, OpenAI 1,000억 신규 + 기존 380억 별도). CAPEX 442억 달러, FCF 12억 달러 (-95%)",
+        "phase": "past",
+        "note": "수요 가속과 자금경색이 한 분기에 동시 노출"
+      },
+      {
+        "date": "2026-05-20",
+        "label": "NVIDIA Q1 FY27 — 매출 816억 (+85%), 데이터센터 752억 (+92% YoY, +21% QoQ). 하이퍼스케일러 비중 ~50%, 나머지 50% 는 AI 클라우드 / 주권 (sovereign) / 기업",
+        "phase": "past",
+        "note": "수요 측 진성 신호는 아직 견고. 채널 다변화 진행"
+      },
+      {
+        "date": "2026-05-22",
+        "label": "Motley Fool 등, AI 데이터센터 '과공급' 패닉 시작 — Vertiv 등 인프라 주 매도세",
+        "phase": "past",
+        "note": "투자자 심리 첫 균열 (실데이터 보다 빠른 가격 시그널)"
+      },
+      {
+        "date": "2026-05-30",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      }
+    ]
+  }
+}
