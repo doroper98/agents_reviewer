@@ -34,6 +34,11 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
   (≈pad) → 흐름이 빈 공간 없이 중앙. 중간 컬럼 라벨/수직 정렬은 불변.
 - charts.js 만 변경. 발행본은 `patch_report.py <id> --rerender-only` 로 동일 URL
   재렌더 시 적용. CHART-AP-21 "재발 4" 항목 추가.
+- **재발방지 SSOT 확정** — 4회 재발(v6.0.1~6.0.4)을 거쳐 끝-라벨 차트 중앙정렬의
+  최종 해법을 `docs/CHART_RENDERING_ANTIPATTERNS.md` CHART-AP-21 "★ 최종 해법 (SSOT)"
+  박스로 압축: **①렌더 후 getBBox content-fit ②노드 코어 기준 중앙정렬 ③긴 끝-라벨
+  2줄 wrap 의 3종 결합** (하나라도 빠지면 재발). CLAUDE.md CHART-AP-21 한 줄도 정합
+  갱신 — "중앙이 아니다" 회귀 시 margin 숫자 만지지 말고 3종 점검. (코드는 이미 main)
 
 ## v6.0.3 — sankey 흐름 코어 중앙 정렬 (CHART-AP-21 재발 3, bbox → 코어 기준)
 
