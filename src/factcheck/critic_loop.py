@@ -30,6 +30,9 @@ from src.models import ComposedReport, ContextAnalysis, FactVerdict
 
 logger = logging.getLogger(__name__)
 
+# 결정적 가드 중 *고신뢰* — codex 와 무관하게 revision 을 강제 트리거 (FP 위험 낮음).
+_HARD_TRIGGER_FLAGS = {"duplicate_heading", "nan_exposed"}
+
 
 class Reviser(Protocol):
     """Opus 본문 보완자. Codex 지시를 받아 해당 부분을 재작성 (본문은 Opus 고정)."""
@@ -317,17 +320,18 @@ class CriticLoop:
             return CriticLoopResult(report=report, skipped=True, skip_reason="flag_off")
 
         # 1. 결정적 사전필터 (log-only 힌트 → Codex 에 pre_flags 로 전달).
-        pre_flags: list[str] = []
+        # 1. 결정적 사전필터. 대부분은 codex 힌트(soft)지만, *고신뢰* 결정 신호(제목
+        #    중복·NaN)는 codex 와 무관하게 revision 을 *강제 트리거* 한다 (HARD).
+        guard_flags = []
         if self.config.enable_fact_guards:
             try:
-                pre_flags = [
-                    f.as_pre_flag()
-                    for f in run_fact_guards(
-                        report, context, publication_date=publication_date,
-                    )
-                ]
+                guard_flags = run_fact_guards(
+                    report, context, publication_date=publication_date,
+                )
             except Exception as exc:  # noqa: BLE001
                 logger.warning("[critic_loop] pre-filter guards skipped: %s", exc)
+        pre_flags: list[str] = [f.as_pre_flag() for f in guard_flags]
+        hard_flags = [f for f in guard_flags if f.flag in _HARD_TRIGGER_FLAGS]
 
         # 2. 1차 검수.
         await self._emit(
@@ -339,6 +343,7 @@ class CriticLoop:
         )
         if v1.skipped:
             # 외부 degrade → 단일패스 (AP-V6-12). 검수 안 했으니 "통과" 라 거짓말 안 함.
+            # (codex degrade 시엔 byline 정합 위해 hard 보완도 생략 — 결정 신호는 로그로 남음.)
             await self._emit(
                 on_progress, "ⓘ 외부 사실 검수 건너뜀 — 단일 패스로 발행",
             )
@@ -347,27 +352,41 @@ class CriticLoop:
                 pre_flag_count=len(pre_flags),
             )
 
-        # 재작성 트리거는 *Codex 위반* 에만 (사전필터 FP 가 본문을 망치지 않게).
-        if not v1.is_actionable:
+        # 재작성 트리거 = Codex 위반 *또는* HARD 결정 신호 (제목 중복·NaN).
+        if not v1.is_actionable and not hard_flags:
             await self._emit(on_progress, "✅ 사실 검수 통과 (지적 없음)")
             return CriticLoopResult(
                 report=report, initial_violations=v1.violation_count,
                 pre_flag_count=len(pre_flags), critic_label=v1.model_label,
             )
 
-        # 3. Opus 보완 (≤1). Codex 지시 + 사전필터 힌트를 합산해 전달.
+        # 3. Opus 보완 (≤1). Codex 지시 + HARD 결정 신호 + 사전필터 힌트.
+        n_total = v1.violation_count + len(hard_flags)
         await self._emit(
             on_progress,
-            f"✍️ 편집장 (Opus): 검수 지적 {v1.violation_count}건 반영 중…",
+            f"✍️ 편집장 (Opus): 검수 지적 {n_total}건 반영 중…",
         )
+        # HARD 결정 신호의 강제 교정 지시 (제목 중복·NaN).
+        hard_instr: list[str] = []
+        for f in hard_flags:
+            if f.flag == "duplicate_heading":
+                hard_instr.append(
+                    f"[중대·강제] 섹션 제목 '{f.quote}' 가 다른 섹션과 중복된다. 각 섹션을 "
+                    "내용에 맞는 *서로 다른* 제목으로 반드시 바꿔라(같은 제목 금지)."
+                )
+            else:
+                hard_instr.append(f"[{f.location}] {f.detail} — 제거/정정.")
         # 감사용 — 검수가 식별한 지적 + 보완 지시 (무엇을 왜 고치는지).
         applied_claims = [
             f"[{c.error_class}] {c.location}: «{_clip(c.quote)}» → {_clip(c.fix_instruction, 200)}"
             for c in v1.claims
-        ]
+        ] + [f"[{f.flag}] {f.detail}" for f in hard_flags]
         claim_records = [
             {"error_class": c.error_class, "location": c.location, "quote": _clip(c.quote, 80)}
             for c in v1.claims
+        ] + [
+            {"error_class": f.flag, "location": f.location, "quote": _clip(f.quote, 80)}
+            for f in hard_flags
         ]
         # R1 — 시장 수치 지적엔 time_series 역산 정정값을 fix_instruction 에 덧대 Opus 가
         # *교체* 하게 (drop 폴백 전에). 매치 실패 시 원 지시 그대로.
@@ -379,6 +398,7 @@ class CriticLoop:
                 if hint:
                     instr = f"{instr} {hint}"
             fix_instructions.append(instr)
+        fix_instructions += hard_instr
         fix_instructions += pre_flags
         final = report
         revised_ok = False
@@ -434,7 +454,7 @@ class CriticLoop:
             revised=revised_ok,
             confirm_ran=not v2.skipped,
             pre_flag_count=len(pre_flags),
-            initial_violations=v1.violation_count,
+            initial_violations=n_total,
             residual_violations=len(residual),
             dropped_quotes=dropped,
             residual_summary=residual_summary,

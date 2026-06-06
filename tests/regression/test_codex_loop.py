@@ -148,6 +148,32 @@ def test_violation_then_revise_then_clean_confirm() -> None:
     assert res.report.sections[0].prose == revised.sections[0].prose
 
 
+def test_duplicate_heading_hard_triggers_revision() -> None:
+    # codex 가 clean 이어도 제목 중복(HARD 결정 신호)이면 revision 강제 (매 보고서 보장).
+    dup = ComposedReport(headline="h", sections=[
+        ComposedSection(heading="같은제목", prose="가"),
+        ComposedSection(heading="같은제목", prose="나"),
+    ])
+    revised = ComposedReport(headline="h", sections=[
+        ComposedSection(heading="첫번째", prose="가"), ComposedSection(heading="두번째", prose="나")])
+    reviser = StubReviser(revised)
+    loop = CriticLoop(_cfg(enable_fact_guards=True), StubCritic([_clean(), _clean()]), reviser)
+    res = _run(loop.run(dup, ContextAnalysis()))
+    assert reviser.calls == 1, "제목 중복이면 codex clean 이어도 강제 보완"
+    assert any("duplicate_heading" in r.get("error_class", "") for r in res.claim_records)
+    assert any("서로 다른" in fi for fi in reviser.fix_instructions_seen[0])
+
+
+def test_clean_no_dup_still_no_revision() -> None:
+    # 제목 중복 없고 codex clean 이면 보완 안 함 (기존 동작 유지).
+    ok = ComposedReport(headline="h", sections=[
+        ComposedSection(heading="A", prose="평범한 본문"), ComposedSection(heading="B", prose="평범한 본문")])
+    reviser = StubReviser()
+    loop = CriticLoop(_cfg(enable_fact_guards=True), StubCritic([_clean()]), reviser)
+    res = _run(loop.run(ok, ContextAnalysis()))
+    assert reviser.calls == 0 and not res.revised
+
+
 def test_market_correction_hint_recomputes() -> None:
     # R1 — time_series 에서 특정일 종가·전일대비% 역산.
     from src.factcheck.critic_loop import market_correction_hint

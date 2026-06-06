@@ -20,6 +20,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.0 — 검수 강도 ↑: 실시간성 엄격 + 반복 섹션 제목 강제교정 (사용자 지시)
+
+- **#1 실시간성(엄격)** — codex 검수 페르소나·지침에 *실시간성 최우선* 추가. 발행일
+  (publication_date) 기준 데이터·시점·'오늘/현재/최근' 신선도를 매 보고서 가장 깐깐하게
+  검수, 어긋나면 `recency_violation`(high) + 웹 최신값 확인. `_CRITIC_INSTRUCTIONS` +
+  `codex_critic_persona.md` + `market_factcheck_desk_v6.md §2` 정합(SOP).
+- **#2 반복 섹션 제목** — 동일 제목이 여러 섹션에 나란히 붙는 회귀를 *매 보고서 결정적*
+  으로 잡음. `DuplicateHeadingGuard`(정규화 동일 제목 검출, low-FP) + **loop HARD 트리거**:
+  codex 가 clean 이어도 제목 중복이면 revision 강제 → Opus 에 "각 섹션을 서로 다른 제목으로"
+  강한 지시. codex 측도 `duplicate_heading`(high)로 병행 검수(페르소나 §12). nan 노출도 HARD.
+- 회귀 127 pass (dup guard 검출 / HARD 트리거 / 정상시 무트리거 유지). flag OFF byte-equal.
+
 ## v6.0.0 — 시장 수치 역산 교체 + 맥락·서사 검수 (R1·R2, 사용자 지시)
 
 - **R1. 시장 수치 *교체*(drop 아님)** — `market_correction_hint`: 틀린 시장 수치의 *올바른
