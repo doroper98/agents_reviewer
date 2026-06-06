@@ -298,13 +298,20 @@ async def _market_brief_for_chat(
     # 텍스트 보고서 청크 + glossary 송신 제거 (v5.1.1 의 daily_briefing 도 추후 같은 정리
     # 필요하지만 일단 본 신규 모듈은 처음부터 노이즈 최소화 — URL + bundle 만).
 
+    # v6.1.0 — pages.dev 를 막는 샌드박스 AI 용 GitHub raw 미러 링크 (미러 성공 시만).
+    _mirror_line = (
+        f"\n🤝 AI 직접 열람용 (GitHub raw): {result.mirror_url.replace('.html', '.md')}"
+        if result.mirror_url and result.mirror_url.startswith("http")
+        else ""
+    )
     if result.report_url and result.report_url.startswith("http"):
         md_url = result.report_url.replace(".html", ".md")
         await send_text_fn(
             chat_id,
             f"📈 한국 장마감 브리핑 ({run_date})\n\n"
             f"🔗 보고서: {result.report_url}\n"
-            f"🤖 AI 전달용 (Markdown): {md_url}",
+            f"🤖 AI 전달용 (Markdown): {md_url}"
+            f"{_mirror_line}",
         )
     elif result.report_path and os.path.isfile(result.report_path) and send_document_fn:
         await send_document_fn(

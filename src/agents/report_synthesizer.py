@@ -1182,6 +1182,7 @@ class ReportSynthesizer:
         # v5.5.3 — 항상 emit (config.enable_report_bundle kill-switch 만 게이트).
         # 영상 제작용으로 모든 보고서에 동반. --bundle 플래그는 이제 no-op (호환 유지).
         # deploy *전* 에 써야 Pages 에 함께 업로드됨. 실패해도 보고서 정상 진행.
+        bundle_filepath: str | None = None
         if getattr(self.config, "enable_report_bundle", True):
             try:
                 from src.handoff.bundle_builder import build_report_bundle
@@ -1222,6 +1223,22 @@ class ReportSynthesizer:
         if not os.path.exists(headers_path) or open(headers_path).read() != headers_content:
             with open(headers_path, "w", encoding="utf-8") as f:
                 f.write(headers_content)
+
+        # v6.1.0 — GitHub raw 미러. pages.dev 를 egress 허용목록에서 막는 샌드박스
+        # 환경(Claude Code on the web 등)의 다른 AI 가 보고서를 직접 열람할 수 있게
+        # 동일 파일을 공개 GitHub repo 에도 push. 토큰/repo 미설정 시 graceful skip.
+        try:
+            from src.tools.github_mirror import GitHubMirror
+            mirror = GitHubMirror(self.config)
+            if mirror.enabled:
+                mirror_targets = [filepath, md_filepath, json_filepath]
+                if bundle_filepath and os.path.exists(bundle_filepath):
+                    mirror_targets.append(bundle_filepath)
+                raw_html_url = await mirror.mirror(mirror_targets)
+                if raw_html_url:
+                    result.mirror_url = raw_html_url
+        except Exception as e:
+            logger.warning(f"[report_synthesizer] GitHub mirror failed: {e}")
 
         # Upload entire reports directory to Cloudflare Pages
         report_url = await self._upload_to_cloudflare(filepath)

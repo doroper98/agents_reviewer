@@ -1057,12 +1057,22 @@ class TelegramBot:
             _verif = (result.composed_report.verification if result.composed_report else None) or {}
             verif_line = f"\n🔎 {_verif['text']}" if _verif.get("text") else ""
 
+            # v6.1.0 — pages.dev 를 egress 허용목록에서 막는 샌드박스 AI(Claude Code
+            # on the web 등) 용 GitHub raw 미러 링크 (미러 성공 시만).
+            mirror_line = ""
+            if result.mirror_url and result.mirror_url.startswith("http"):
+                mirror_line = (
+                    f"\n🤝 AI 직접 열람용 (GitHub raw): "
+                    f"{result.mirror_url.replace('.html', '.md')}"
+                )
+
             if result.report_url and result.report_url.startswith("http"):
                 md_url = result.report_url.replace(".html", ".md")
                 await send(
                     f"📊 Full Analysis Report{followup_tag}\n\n"
                     f"🔗 보고서 링크: {result.report_url}\n"
                     f"🤖 AI 전달용 (Markdown): {md_url}"
+                    f"{mirror_line}"
                     f"{verif_line}"
                 )
             elif report_path and os.path.isfile(report_path):
@@ -1092,6 +1102,11 @@ class TelegramBot:
                 bundle_cap = "📦 영상 제작용 번들 (osint_generator)"
                 if result.report_url and result.report_url.startswith("http"):
                     bundle_cap += f"\n🔗 {result.report_url.replace('.html', '.bundle.json')}"
+                if result.mirror_url and result.mirror_url.startswith("http"):
+                    bundle_cap += (
+                        f"\n🤝 AI 직접 열람용 (GitHub raw): "
+                        f"{result.mirror_url.replace('.html', '.bundle.json')}"
+                    )
                 try:
                     if update is not None and update.message is not None:
                         with open(bundle_path, "rb") as bf:

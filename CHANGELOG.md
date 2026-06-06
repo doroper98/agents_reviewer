@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.0.4
+last_synced_with: v6.1.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,30 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.1.0 — GitHub raw 미러 (pages.dev 를 막는 샌드박스 AI 도 보고서 직접 열람)
+
+- **동기(사용자 보고)** — 텔레그램으로 받은 보고서 링크(`analysis-reports.pages.dev/
+  …​.html` / `.md` / `.bundle.json`)를 다른 Claude(특히 Claude Code on the web 같은
+  *샌드박스 컨테이너*)가 열지 못했다. 원인은 봇 차단도 파일 형식도 아니라, 받는 쪽
+  AI 의 **egress 허용목록(network policy)** 에 `*.pages.dev` 가 없어 프록시가
+  `403 host_not_allowed` 로 막은 것. 반면 `github.com` / `raw.githubusercontent.com`
+  은 대부분의 샌드박스 허용목록에 포함된다.
+- **변경** — 보고서 산출물(`.html`/`.md`/`.json`/`.bundle.json`)을 Cloudflare Pages
+  배포와 *함께* 공개 GitHub repo 에도 미러하고, 텔레그램 메시지에
+  `raw.githubusercontent.com/...` 링크(🤝 AI 직접 열람용)를 함께 싣는다. 받는 쪽 AI 는
+  설정 변경 없이 보고서를 바로 읽는다.
+  - 신규 [src/tools/github_mirror.py](src/tools/github_mirror.py) `GitHubMirror`
+    (Contents API PUT, 파일 단위 업로드, 기존 파일은 sha update).
+  - `Config.github_mirror_{token,repo,branch,path}` (env `GITHUB_MIRROR_*`).
+  - `FullAnalysisResult.mirror_url` (raw HTML URL) — 메시지 사이트가 여기서
+    `.md`/`.bundle.json` 파생.
+  - 메시지 사이트 3곳 연결: `/analyze` (telegram_bot) + 일일 브리핑 + 장마감 브리핑.
+- **Graceful degrade** — 토큰/repo 미설정 또는 네트워크 차단·HTTP fail 시 미러를
+  건너뛰고 빈 `mirror_url`. Cloudflare 흐름·기존 메시지는 **byte-equal 불변**
+  (`market_fetcher`/`image_fetcher` 와 동일 패턴).
+- **설정** — `.env` 에 `GITHUB_MIRROR_TOKEN`(공개 repo Contents read/write PAT) +
+  `GITHUB_MIRROR_REPO`(`owner/repo`) 추가 후 재시작. 미설정 시 기존 동작 그대로.
 
 ## v6.0.5 — 발행본 revision 을 major.minor 로 분리 (내용=정수부 / 표현=소수부)
 

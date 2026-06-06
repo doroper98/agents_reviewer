@@ -1,0 +1,145 @@
+"""v6.1.0 — github_mirror 회귀 테스트.
+
+HTTP 호출 모킹 — enabled 게이팅 / raw URL 구성 / graceful degrade /
+happy-path PUT 만 결정적 검증. 실 GitHub 연동은 운영 환경에서 PAT 로 별도 검증.
+"""
+
+from __future__ import annotations
+
+import asyncio
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from src.tools.github_mirror import GitHubMirror
+
+
+def _cfg(**kw) -> SimpleNamespace:
+    base = dict(
+        github_mirror_token="",
+        github_mirror_repo="",
+        github_mirror_branch="main",
+        github_mirror_path="reports",
+    )
+    base.update(kw)
+    return SimpleNamespace(**base)
+
+
+# ─── enabled 게이팅 ──────────────────────────────────────────────
+
+
+def test_disabled_without_token_or_repo() -> None:
+    assert GitHubMirror(_cfg()).enabled is False
+    assert GitHubMirror(_cfg(github_mirror_token="t")).enabled is False
+    assert GitHubMirror(_cfg(github_mirror_repo="o/r")).enabled is False
+
+
+def test_disabled_when_repo_missing_slash() -> None:
+    m = GitHubMirror(_cfg(github_mirror_token="t", github_mirror_repo="noslash"))
+    assert m.enabled is False
+
+
+def test_enabled_with_token_and_repo() -> None:
+    m = GitHubMirror(_cfg(github_mirror_token="t", github_mirror_repo="owner/repo"))
+    assert m.enabled is True
+
+
+# ─── raw URL 구성 ────────────────────────────────────────────────
+
+
+def test_raw_url_with_prefix() -> None:
+    m = GitHubMirror(_cfg(github_mirror_token="t", github_mirror_repo="owner/repo"))
+    assert m.raw_url("analysis_x.md") == (
+        "https://raw.githubusercontent.com/owner/repo/main/reports/analysis_x.md"
+    )
+
+
+def test_raw_url_without_prefix() -> None:
+    m = GitHubMirror(
+        _cfg(github_mirror_token="t", github_mirror_repo="o/r", github_mirror_path="")
+    )
+    assert m.raw_url("a.html") == "https://raw.githubusercontent.com/o/r/main/a.html"
+
+
+def test_raw_url_custom_branch() -> None:
+    m = GitHubMirror(
+        _cfg(github_mirror_token="t", github_mirror_repo="o/r", github_mirror_branch="reports")
+    )
+    assert m.raw_url("a.html").startswith("https://raw.githubusercontent.com/o/r/reports/")
+
+
+# ─── graceful degrade ───────────────────────────────────────────
+
+
+def test_mirror_returns_empty_when_disabled() -> None:
+    m = GitHubMirror(_cfg())
+    assert asyncio.run(m.mirror(["/nonexistent.html"])) == ""
+
+
+# ─── happy-path PUT (aiohttp 모킹) ───────────────────────────────
+
+
+class _FakeResp:
+    def __init__(self, status: int, json_data=None) -> None:
+        self.status = status
+        self._json = json_data or {}
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return False
+
+    async def json(self):
+        return self._json
+
+    async def text(self):
+        return ""
+
+
+class _FakeSession:
+    """PUT 은 201, GET(sha 조회) 는 404 로 응답하는 최소 세션."""
+
+    def __init__(self, *a, **kw) -> None:
+        self.puts: list[str] = []
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return False
+
+    def get(self, url, **kw):
+        return _FakeResp(404)
+
+    def put(self, url, **kw):
+        self.puts.append(url)
+        return _FakeResp(201)
+
+
+def test_mirror_happy_path(tmp_path) -> None:
+    html = tmp_path / "analysis_20260606_x.html"
+    md = tmp_path / "analysis_20260606_x.md"
+    html.write_text("<html></html>", encoding="utf-8")
+    md.write_text("# report", encoding="utf-8")
+
+    m = GitHubMirror(_cfg(github_mirror_token="t", github_mirror_repo="owner/repo"))
+    fake = _FakeSession()
+    with patch("src.tools.github_mirror.aiohttp.ClientSession", return_value=fake):
+        url = asyncio.run(m.mirror([str(html), str(md)]))
+
+    # HTML raw URL 반환 + 두 파일 모두 PUT
+    assert url == (
+        "https://raw.githubusercontent.com/owner/repo/main/reports/analysis_20260606_x.html"
+    )
+    assert len(fake.puts) == 2
+
+
+def test_mirror_skips_missing_files(tmp_path) -> None:
+    html = tmp_path / "a.html"
+    html.write_text("<html></html>", encoding="utf-8")
+    m = GitHubMirror(_cfg(github_mirror_token="t", github_mirror_repo="o/r"))
+    fake = _FakeSession()
+    with patch("src.tools.github_mirror.aiohttp.ClientSession", return_value=fake):
+        url = asyncio.run(m.mirror([str(html), str(tmp_path / "missing.md")]))
+    assert url.endswith("/a.html")
+    assert len(fake.puts) == 1
