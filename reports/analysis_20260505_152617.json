@@ -1,0 +1,597 @@
+{
+  "request": {
+    "event_description": "사내 LLM 인프라 자체 구축 vs 클라우드 API 어떤 전략을 취해야 하지",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 0,
+    "mode": "standard"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2024~2025년엔 자체 구축이 데이터 주권·지연시간 측면에서만 정당화됐고 비용 면에선 거의 항상 API가 우세였음. 2025년 후반 오픈웨이트 모델이 GPT-4o급에 도달하고 vLLM/SGLang이 표준화되면서 단가 격차가 좁혀짐. 동시에 2026년 프런티어 API가 80% 가격 인하로 반격하면서, 결정 기준이 '품질'이 아닌 '월간 토큰 사용량 + 데이터 민감도 + 지연시간 요건'으로 재편됨. 한국 기업 관점에선 개인정보보호법·금융권 망분리·국가안보 데이터 등 규제 요인이 손익분기점과 무관하게 자체 구축을 강제하는 경우가 별도로 존재.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-04",
+            "event": "Llama 3 / DeepSeek V3 / Qwen 2.5 공개로 오픈웨이트가 GPT-4o급 근접",
+            "impact": "기업 자체 호스팅 옵션 현실화"
+          },
+          {
+            "date": "2025-Q3",
+            "event": "vLLM PagedAttention + continuous batching 표준화",
+            "impact": "동일 GPU에서 처리량 20~40% 향상"
+          },
+          {
+            "date": "2025-Q4",
+            "event": "주요 클라우드 (AWS/Azure/GCP)에 H200(141GB HBM3e) 인스턴스 보급",
+            "impact": "70B 모델 단일 GPU 서빙 가능, 텐서 병렬 통신 비용 감소"
+          },
+          {
+            "date": "2026-Q1",
+            "event": "프런티어 API 가격 일제히 인하 — Claude Opus 4.6 $5/$25, Gemini 3.1 Pro $2/$12, GPT-5.4 $2.50",
+            "impact": "API 손익분기점 상향, 자체 구축 정당화 어려워짐"
+          },
+          {
+            "date": "2026-04",
+            "event": "Llama 4 (Scout+Maverick), Qwen 3.5, DeepSeek V4, Gemma 4, Mistral Medium 3.5 동시 출현",
+            "impact": "오픈웨이트 5개가 모두 프런티어급. 자체 구축 시 모델 선택폭 확대"
+          },
+          {
+            "date": "2026-04",
+            "event": "주요 API 사업자 모두 프롬프트 캐싱 + 50% Batch 할인 도입 완료",
+            "impact": "API 실효 단가 추가 하락"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "사내 LLM 인프라 자체 구축 vs 클라우드 API 전략 결정",
+    "event_name_en": "In-house LLM Infrastructure vs Cloud API: Strategic Decision Framework (May 2026)",
+    "date": "2026-05-05",
+    "category": "기술전략",
+    "summary": "2026년 5월 기준, 클라우드 API 가격은 2025년 대비 약 80% 하락했고 오픈웨이트 모델(Llama 4, Qwen 3.5, DeepSeek V4)은 프런티어급에 근접함. 자체 구축의 손익분기점은 월 6억~12억 토큰 사용량으로 좁혀졌고, 그 이하에선 API + 프롬프트 캐싱이 대체로 유리함.",
+    "timeline": [
+      {
+        "date": "2025-04",
+        "event": "Llama 3 / DeepSeek V3 / Qwen 2.5 공개로 오픈웨이트가 GPT-4o급 근접",
+        "impact": "기업 자체 호스팅 옵션 현실화"
+      },
+      {
+        "date": "2025-Q3",
+        "event": "vLLM PagedAttention + continuous batching 표준화",
+        "impact": "동일 GPU에서 처리량 20~40% 향상"
+      },
+      {
+        "date": "2025-Q4",
+        "event": "주요 클라우드 (AWS/Azure/GCP)에 H200(141GB HBM3e) 인스턴스 보급",
+        "impact": "70B 모델 단일 GPU 서빙 가능, 텐서 병렬 통신 비용 감소"
+      },
+      {
+        "date": "2026-Q1",
+        "event": "프런티어 API 가격 일제히 인하 — Claude Opus 4.6 $5/$25, Gemini 3.1 Pro $2/$12, GPT-5.4 $2.50",
+        "impact": "API 손익분기점 상향, 자체 구축 정당화 어려워짐"
+      },
+      {
+        "date": "2026-04",
+        "event": "Llama 4 (Scout+Maverick), Qwen 3.5, DeepSeek V4, Gemma 4, Mistral Medium 3.5 동시 출현",
+        "impact": "오픈웨이트 5개가 모두 프런티어급. 자체 구축 시 모델 선택폭 확대"
+      },
+      {
+        "date": "2026-04",
+        "event": "주요 API 사업자 모두 프롬프트 캐싱 + 50% Batch 할인 도입 완료",
+        "impact": "API 실효 단가 추가 하락"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "API 가격 하락폭",
+        "value": "약 80%",
+        "context": "2025년 대비 2026년 4월, 주요 프런티어 모델 평균"
+      },
+      {
+        "label": "Claude Opus 4.6 단가",
+        "value": "$5 / $25 per M tokens",
+        "context": "input/output, 2026-04"
+      },
+      {
+        "label": "Gemini 3.1 Pro 단가",
+        "value": "$2 / $12 per M tokens",
+        "context": "프런티어 중 최저"
+      },
+      {
+        "label": "DeepSeek V4 Flash 단가",
+        "value": "$0.18 per M tokens",
+        "context": "오픈웨이트 매니지드 API, 2026-04"
+      },
+      {
+        "label": "오픈웨이트 자체 호스팅 단가",
+        "value": "$0.17~0.42 per M tokens",
+        "context": "Llama 4 / DeepSeek V4 / Qwen 3.5, vLLM 기준"
+      },
+      {
+        "label": "자체 구축 손익분기 (chat)",
+        "value": "월 12억 토큰",
+        "context": "Sitepoint 2026 TCO 분석, 엔지니어 인건비 포함"
+      },
+      {
+        "label": "자체 구축 손익분기 (코드 보조)",
+        "value": "월 6억 토큰",
+        "context": "토큰당 가치가 높아 더 빠르게 분기점 도달"
+      },
+      {
+        "label": "H200 시간당 단가",
+        "value": "$3.50~6.00/hr 온디맨드",
+        "context": "Lambda·CoreWeave 저가, AWS/GCP/Azure 고가. 1년 약정 30~40% 할인"
+      },
+      {
+        "label": "헤비티어 36개월 TCO",
+        "value": "$391,707",
+        "context": "1년차 $308K + 2~3년 전기·인건비 $41,680/년. 실효 단가 $7.15/M tokens"
+      },
+      {
+        "label": "지연시간 격차",
+        "value": "18ms vs 350ms",
+        "context": "자체 H100 vLLM vs 클라우드 API 평균"
+      },
+      {
+        "label": "vLLM 처리량 이득",
+        "value": "20~40%",
+        "context": "naive 서빙 대비, PagedAttention + continuous batching"
+      },
+      {
+        "label": "기업 평균 회수기간",
+        "value": "6~12개월",
+        "context": "자체 호스팅 전환 시, 워크로드 규모에 따라"
+      }
+    ],
+    "background": "2024~2025년엔 자체 구축이 데이터 주권·지연시간 측면에서만 정당화됐고 비용 면에선 거의 항상 API가 우세였음. 2025년 후반 오픈웨이트 모델이 GPT-4o급에 도달하고 vLLM/SGLang이 표준화되면서 단가 격차가 좁혀짐. 동시에 2026년 프런티어 API가 80% 가격 인하로 반격하면서, 결정 기준이 '품질'이 아닌 '월간 토큰 사용량 + 데이터 민감도 + 지연시간 요건'으로 재편됨. 한국 기업 관점에선 개인정보보호법·금융권 망분리·국가안보 데이터 등 규제 요인이 손익분기점과 무관하게 자체 구축을 강제하는 경우가 별도로 존재.",
+    "sources": [
+      "https://www.cloudidr.com/llm-pricing — LLM API Pricing 2026 비교",
+      "https://www.tldl.io/resources/llm-api-pricing-2026 — GPT-5/Claude 4/Gemini 2.5/DeepSeek 단가",
+      "https://pecollective.com/blog/llm-pricing-comparison-2026/ — Cross-Provider 2026-04 단가표",
+      "https://www.sitepoint.com/local-llms-vs-cloud-api-cost-analysis-2026/ — 자체 구축 vs API TCO",
+      "https://www.digitalapplied.com/blog/self-host-frontier-models-tco-analysis-2026 — 프런티어 자체 호스팅 TCO",
+      "https://dev.to/pooyagolchian/self-hosting-ai-in-2026-55-tco-reduction-18ms-latency-and-the-open-source-stack-that-replaces-40a6 — 55% TCO 감축 사례",
+      "https://blog.premai.io/self-hosted-llm-guide-setup-tools-cost-comparison-2026/ — 자체 호스팅 도구 비교",
+      "https://onyx.app/self-hosted-llm-leaderboard — 2026 오픈웨이트 리더보드",
+      "https://www.spheron.network/blog/deepseek-vs-llama-4-vs-qwen3/ — DeepSeek V4 / Llama 4 / Qwen 3 프로덕션 비교",
+      "https://www.swfte.com/blog/open-source-llm-cost-savings-guide — 오픈소스 86% 비용 절감 분석"
+    ],
+    "glossary": [
+      {
+        "term": "TCO(총소유비용)",
+        "definition": "장비 구입비뿐 아니라 전기·인건비·유지보수까지 포함한 누적 비용"
+      },
+      {
+        "term": "vLLM",
+        "definition": "오픈소스 LLM 추론 서버. PagedAttention 기법으로 GPU 메모리를 효율적으로 쓰며 처리량을 높임"
+      },
+      {
+        "term": "프롬프트 캐싱",
+        "definition": "자주 쓰는 시스템 프롬프트·문서를 서버에 저장하고 재사용 시 정상 단가의 일부만 받는 기능"
+      },
+      {
+        "term": "오픈웨이트",
+        "definition": "모델 가중치를 공개해 누구나 자체 서버에 받아 돌릴 수 있는 모델 (Llama, Qwen, DeepSeek 등)"
+      },
+      {
+        "term": "H200",
+        "definition": "엔비디아 GPU. 메모리 141GB로 70B 모델을 단일 GPU에서 돌릴 수 있는 첫 세대"
+      },
+      {
+        "term": "손익분기점",
+        "definition": "자체 구축이 누적 비용 면에서 API를 따라잡기 시작하는 사용량 지점"
+      },
+      {
+        "term": "Batch API",
+        "definition": "지연시간이 안 중요한 작업을 묶어 처리하면 50% 할인해주는 API 모드"
+      }
+    ],
+    "confidence_score": 0.78,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '월 12억 토큰 — 2026 Sitepoint TCO 분석, 엔지니어 인건비 포함'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "TCO 비교 분석 (3년 누적 손익분기 곡선)",
+        "Decision Tree (월간 토큰량 / 데이터 민감도 / 지연시간 요건 3축)",
+        "Pre-mortem (자체 구축 실패 시나리오 — 가격 추가 인하 / 모델 진부화 / 인력 이탈)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: TCO(총소유비용), vLLM(추론 서버 오픈소스)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실(현재 단가·하드웨어 가격) → 메커니즘(손익분기 어떻게 정해지나) → 함의(어떤 조직에 어떤 선택이 맞나) → 반례·미해결(가격 추가 인하 시나리오, 규제 강제 케이스). 각 섹션이 이전 섹션 결론을 입력으로 받는 cumulative 구조.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "12억 토큰, 답이 흔들리는 분기점",
+    "deck": "프런티어 API 80% 인하와 오픈웨이트 따라잡기가 동시에 일어났다. 결정 기준은 품질이 아니라 사용량·민감도·지연시간으로 옮겨갔다.",
+    "sections": [
+      {
+        "heading": "1년 만에 좁아진 격차",
+        "kicker": "기술전략 변곡 / 1",
+        "prose": "두 가지 힘이 동시에 부딪혔다. 한쪽에선 프런티어 API 가격이 1년 사이 약 80% 떨어졌다 (출처: cloudidr.com / pecollective.com, 2026-04). Claude Opus 4.6은 입력 100만 토큰당 $5, 출력은 $25까지 내려갔고, Gemini 3.1 Pro는 입력 $2 / 출력 $12로 프런티어 최저가를 찍었다. 다른 한쪽에선 오픈웨이트 모델이 같은 시점에 프런티어급에 닿았다. Llama 4·Qwen 3.5·DeepSeek V4·Gemma 4·Mistral Medium 3.5 다섯 개가 2026년 4월 한 달 안에 함께 출시됐고, vLLM (추론 서버 오픈소스) 표준화로 자체 호스팅 단가는 100만 토큰당 $0.17~0.42 범위까지 내려왔다.\n\n결과는 단순하다. 결정 기준이 바뀌었다. 2024~2025년엔 자체 구축이 데이터 주권과 지연시간 측면에서만 정당화됐고, 비용은 거의 항상 API가 이겼다. 2026년엔 비용 격차가 좁아진 대신 어느 쪽이 유리한지가 사용량·민감도·지연시간 세 축에 따라 갈린다. 모두에게 답이 같지 않다는 것이 새 출발점이다.\n\n그렇다면 자기 조직에 맞는 답을 어떻게 찾는가. 산수부터 다시 짜야 한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "결정 기준이 품질에서 사용량·민감도·지연시간으로 옮겨갔다.",
+        "cited_claim_ids": [],
+        "lede": "1년 전엔 답이 정해져 있었다. 거의 모든 워크로드에서 클라우드 API가 이겼다. 2026년 봄, 그 전제가 흔들린다.",
+        "analogy": {
+          "title": "API는 임대, 자체 구축은 매입",
+          "body": "상가를 빌려 장사하면 매달 임대료가 나간다. 매출이 작을 땐 매입보다 싸다. 매출이 일정 규모를 넘으면 매입이 유리해지지만, 그 대신 건물 관리·세금·공실 위험을 직접 진다. LLM도 같다. 토큰 사용량이 적으면 API라는 임대가 싸다. 일정 규모를 넘기면 자체 구축이 이기지만, 엔지니어 채용·GPU 진부화·모델 업데이트를 직접 떠안아야 한다."
+        },
+        "fact_grid": [
+          {
+            "label": "Claude Opus 4.6",
+            "value": "$5 / $25",
+            "sublabel": "입력/출력, 100만 토큰당 (2026-04)"
+          },
+          {
+            "label": "Gemini 3.1 Pro",
+            "value": "$2 / $12",
+            "sublabel": "프런티어 최저가"
+          },
+          {
+            "label": "DeepSeek V4 Flash",
+            "value": "$0.18",
+            "sublabel": "매니지드 API, 100만 토큰당"
+          },
+          {
+            "label": "오픈웨이트 자체",
+            "value": "$0.17~0.42",
+            "sublabel": "vLLM 단순 단가, 100만 토큰당"
+          },
+          {
+            "label": "API 가격 하락폭",
+            "value": "약 80%",
+            "sublabel": "2025 → 2026, 프런티어 평균"
+          },
+          {
+            "label": "H200 시간당",
+            "value": "$3.50~6.00",
+            "sublabel": "온디맨드 — Lambda·CoreWeave 저가, AWS 고가"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "손익분기점의 산수",
+        "kicker": "TCO 해부 / 2",
+        "prose": "월 6억~12억 토큰. 자체 구축이 API를 이기기 시작하는 분기점이다. 이 숫자가 어디서 나오는가. Sitepoint의 2026 TCO (총소유비용) 분석에 따르면, 헤비티어 자체 호스팅의 36개월 누적 비용은 $391,707이다. 1년차 초기 투자가 $308,000, 2~3년차는 전기료와 엔지니어 인건비를 합쳐 연 $41,680이 더 든다. 36개월 평균을 처리한 토큰량으로 나누면 실효 단가가 100만 토큰당 약 $7.15. 여기에 vLLM의 PagedAttention과 continuous batching이 처리량을 20~40% 끌어올리면서 격차가 좁혀졌다.\n\n같은 표를 API 쪽에서 다시 짠다. Claude Opus 4.6의 $5/$25 단가에 입력·출력 비율 4:1을 가정하면 100만 토큰당 평균 $9 안팎. Gemini 3.1 Pro는 $4 안팎이다. 단순 단가만 늘어놓으면 격차가 2배 안으로 들어왔다 (아래 차트).\n\n분기가 바뀌는 지점은 사용량이다. 월 12억 토큰을 365일 동일하게 쓴다면 API 청구액이 자체 구축 TCO를 추월한다. 코드 보조처럼 토큰당 가치가 큰 워크로드에선 그 분기점이 월 6억까지 내려간다. 단 이 산수엔 세 개의 회색 지대가 남는다. 첫째, 엔지니어 인건비를 어디까지 자체 구축에 귀속시키나. 둘째, 모델 진부화 비용 — 1년 후 출시될 차세대 오픈웨이트로 전환 시 학습·튜닝 노력이 다시 든다. 셋째, GPU 가격 하락 속도. H200 다음 세대가 30% 싸게 풀리면 분기점이 또 한 번 흔들린다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "100만 토큰당 단가 비교",
+            "subtitle": "API 4종 vs 자체 호스팅 — 자체 단가는 헤비티어 TCO 36개월 평균",
+            "data": [
+              {
+                "label": "Claude Opus 4.6 (혼합)",
+                "value": 9.0,
+                "note": "입력 $5 + 출력 $25, 4:1 가정"
+              },
+              {
+                "label": "자체 호스팅 (헤비티어 TCO)",
+                "value": 7.15,
+                "note": "36개월 평균"
+              },
+              {
+                "label": "Gemini 3.1 Pro (혼합)",
+                "value": 4.0,
+                "note": "입력 $2 + 출력 $12, 4:1 가정"
+              },
+              {
+                "label": "GPT-5.4",
+                "value": 2.5,
+                "note": "2026-04 단가"
+              },
+              {
+                "label": "DeepSeek V4 Flash (API)",
+                "value": 0.18,
+                "note": "매니지드 API"
+              },
+              {
+                "label": "오픈웨이트 자체 (단순 단가)",
+                "value": 0.17,
+                "note": "vLLM, 인건비 미포함"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 7.15,
+                "label": "자체 헤비티어 TCO 평균"
+              }
+            ],
+            "source": "cloudidr.com / sitepoint.com / digitalapplied.com, 2026-04",
+            "takeaway": "프런티어 API와 자체 호스팅의 실효 단가는 2배 이내로 좁혀졌다. 단 자체 단가는 가동률 가정에 매우 민감하다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "월 12억 토큰이 365일 일정해야 자체 구축이 산수상 이긴다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "세 개의 축으로 갈리는 답",
+        "kicker": "결정 프레임 / 3",
+        "prose": "왜 같은 산수에서 어떤 조직은 자체 구축으로 가고 어떤 조직은 API에 머무는가. 사용량 하나만으로는 답이 안 나온다. 결정은 세 축의 결합이다.\n\n첫 축은 월간 토큰량이다. 월 1억 미만이면 API가 거의 항상 이긴다. 1~6억 사이에선 프롬프트 캐싱과 50% Batch 할인을 활용한 API 최적화가 자체 구축을 누른다. 6~12억 구간이 회색 지대다. 12억 이상이면 자체 구축이 산수상 우세하지만 안정적인 가동률이 전제다.\n\n둘째 축은 데이터 민감도다. 산수와 무관하게 자체 구축을 강제하는 영역이 있다. 금융권 망분리 환경, 개인정보 처리 시스템, 국가안보 데이터, 의료 영상 분석 등이다. 이 영역은 'API가 더 싸다' 는 명제 자체가 성립하지 않는다. 데이터 외부 반출이 법적·계약적으로 막힌 시점에서 결정은 끝난 것이다.\n\n셋째 축은 지연시간 요건이다. 자체 H100 vLLM 환경에서 응답 첫 토큰까지 18ms, 클라우드 API 평균 350ms (출처: dev.to pooyagolchian, 2026). 18ms와 350ms는 같은 사용 경험이 아니다. 실시간 음성 어시스턴트, 자율주행 보조, 트레이딩 시스템처럼 지연이 가치로 직결되는 영역에선 단가 비교가 부차적이다.\n\n세 축이 모두 자체 구축 쪽을 가리키면 결정은 명확하다. 모두 API 쪽이면 그것도 명확하다. 실제 의사결정의 어려움은 두 축은 자체, 한 축은 API를 가리킬 때 — 즉 가중치를 직접 정해야 할 때다. 워크로드 7종을 토큰량과 민감도 평면에 늘어놓으면 어떤 유형이 어디에 떨어지는지 보인다 (아래 매트릭스).",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "워크로드 유형별 결정 매트릭스",
+            "subtitle": "월간 토큰량 (x, 단위: 억) × 데이터 민감도 (y, 1~10), 점 크기는 지연 민감도",
+            "data": [
+              {
+                "label": "마케팅 콘텐츠",
+                "x": 2,
+                "y": 2,
+                "size": 2
+              },
+              {
+                "label": "내부 RAG 검색",
+                "x": 3,
+                "y": 7,
+                "size": 3
+              },
+              {
+                "label": "코드 보조 (사내)",
+                "x": 8,
+                "y": 6,
+                "size": 5
+              },
+              {
+                "label": "고객 챗봇",
+                "x": 15,
+                "y": 4,
+                "size": 7
+              },
+              {
+                "label": "금융 리포트 자동화",
+                "x": 5,
+                "y": 9,
+                "size": 4
+              },
+              {
+                "label": "실시간 음성 어시스턴트",
+                "x": 12,
+                "y": 5,
+                "size": 10
+              },
+              {
+                "label": "의료 영상 보조",
+                "x": 1,
+                "y": 10,
+                "size": 8
+              }
+            ],
+            "source": "내부 분석 / 워크로드 7종 가정, 2026-04",
+            "takeaway": "오른쪽·위쪽으로 갈수록 자체 구축이 유리하다. 점이 클수록 API의 350ms 지연이 부담이 된다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "두 축은 자체, 한 축은 API를 가리킬 때 진짜 결정이 시작된다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "한국적 변수 — 규제가 손익을 무력화한다",
+        "kicker": "규제 강제 영역 / 4",
+        "prose": "한국 기업 관점에서 결정의 산수는 한 번 더 비틀린다. 금융 망분리 규정이 대표적이다. 금융위 전자금융감독규정상 내부망과 외부망이 분리된 환경에선 외부 클라우드 API 호출 자체가 원칙적으로 막힌다. 보안 게이트웨이로 우회하는 방법이 있긴 하지만 비용과 운영 부담이 적지 않고, 일부 업무는 우회 자체가 허용되지 않는다. 이 영역의 의사결정은 이미 끝난 셈이다 — 자체 구축이 강제다.\n\n개인정보보호법도 비슷한 압력을 만든다. 가명처리·최소수집 원칙을 준수하더라도 대규모 개인정보를 외부 LLM에 흘려보내는 행위는 위탁 처리 동의·국외이전 고지 같은 별도 의무를 만들어낸다. 이 행정 비용이 누적되면 자체 구축의 인건비를 무겁게 보던 손익 계산이 다시 균형을 잡는다.\n\n반면 외부 정보 분석·마케팅 콘텐츠·일반 고객 응대처럼 민감 데이터가 거의 끼지 않는 워크로드는 한국 기업도 API 쪽이 명백히 유리하다. 따라서 한국에서의 현실적인 답은 이중 트랙이다. 규제 영역은 자체 (필요하면 sLLM), 범용 영역은 API. 한 시스템에 하나의 답을 강요하면 비용도 컴플라이언스도 둘 다 잃는다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "규제 영역은 자체, 범용 영역은 API. 한 답을 강요하면 둘 다 잃는다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "1년 후의 세 갈래",
+        "kicker": "Pre-mortem / 5",
+        "prose": "지금 자체 구축에 투자한 조직은 1년 후 무엇을 후회할 가능성이 있는가. 세 갈래가 그려진다.\n\n첫째, 가격 추가 인하 시나리오. 프런티어 API가 한 번 더 50% 인하를 단행하면 자체 구축의 산수상 분기점은 월 24억 토큰까지 올라간다. 헤비티어 TCO 회수 기간은 6~12개월에서 18~24개월로 늘어나고, 그 사이 모델 진부화가 진행된다. 이 시나리오에선 자체 구축 결정이 후회 거리가 된다.\n\n둘째, 오픈웨이트 가속 시나리오. Llama 5·DeepSeek V5가 reasoning과 멀티모달까지 프런티어를 확실히 추월하면 API에 묶인 조직이 거꾸로 후회한다. 자체 구축 인프라를 미리 갖춘 조직은 새 모델로 갈아끼우기만 하면 된다. 이 시나리오의 결정적 신호는 reasoning 벤치마크 (예: GPQA Diamond·HLE) 에서 오픈웨이트가 프런티어를 처음 명확히 앞서는 시점이다.\n\n셋째, 인력 이탈 시나리오. 자체 구축의 숨은 비용은 GPU나 전기가 아니라 ML 엔지니어다. 한 명이 떠나면 vLLM 운영·모니터링·튜닝 지식이 통째로 빠진다. 인건비를 절감한다고 자체 구축한 조직이 1년 후 외부 컨설턴트에 더 큰 비용을 지불하게 되는 패턴이 반복된다. 이 시나리오는 가격이나 모델과 무관하게 발생한다.\n\n세 시나리오가 동시에 오는 경우는 드물지만, 결정 시점에 적어도 한 가지가 현실이 될 확률을 0으로 두면 안 된다. 시나리오별로 36개월 비용이 어떻게 다르게 부풀어 오르는지 아래 비교에서 볼 수 있다.",
+        "charts": [
+          {
+            "type": "stacked",
+            "title": "세 시나리오의 36개월 비용 구성",
+            "subtitle": "자체 구축 헤비티어 기준 ($K) — 인건비·진부화·기회비용이 시나리오마다 다르게 부풀어 오른다",
+            "data": {
+              "scenarios": [
+                {
+                  "name": "기준선 (현 가정 유지)",
+                  "segments": [
+                    {
+                      "label": "인프라 (GPU+전기)",
+                      "value": 250
+                    },
+                    {
+                      "label": "엔지니어 인건비",
+                      "value": 110
+                    },
+                    {
+                      "label": "모델 전환 비용",
+                      "value": 30
+                    }
+                  ]
+                },
+                {
+                  "name": "가격 추가 인하 (API −50%)",
+                  "segments": [
+                    {
+                      "label": "인프라",
+                      "value": 250
+                    },
+                    {
+                      "label": "인건비",
+                      "value": 110
+                    },
+                    {
+                      "label": "모델 전환",
+                      "value": 30
+                    },
+                    {
+                      "label": "미실현 절감 (기회비용)",
+                      "value": 180
+                    }
+                  ]
+                },
+                {
+                  "name": "오픈웨이트 가속",
+                  "segments": [
+                    {
+                      "label": "인프라",
+                      "value": 250
+                    },
+                    {
+                      "label": "인건비",
+                      "value": 110
+                    },
+                    {
+                      "label": "모델 재훈련",
+                      "value": 80
+                    }
+                  ]
+                },
+                {
+                  "name": "인력 이탈",
+                  "segments": [
+                    {
+                      "label": "인프라",
+                      "value": 250
+                    },
+                    {
+                      "label": "인건비",
+                      "value": 110
+                    },
+                    {
+                      "label": "외부 컨설팅",
+                      "value": 150
+                    },
+                    {
+                      "label": "가동 중단 손실",
+                      "value": 70
+                    }
+                  ]
+                }
+              ]
+            },
+            "source": "내부 시뮬레이션 — Sitepoint TCO $391K 베이스라인 + 시나리오별 가산",
+            "takeaway": "기준선 외 세 갈래 모두에서 비용이 부풀어 오른다. 가격 인하 시나리오의 '미실현 절감' 이 가장 무겁다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "한 명이 떠나면 vLLM 운영 지식이 통째로 빠진다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "남는 모순과 감시점",
+        "kicker": "결정 너머 / 6",
+        "prose": "이 보고서가 끝까지 봉합하지 않는 두 모순이 있다. 하나는 비용 우위의 방향이다. 자체 호스팅 진영의 핵심 주장은 '오픈웨이트 단가가 100만 토큰당 $0.17~0.42, API보다 10배 이상 싸다' 이다. API 진영의 반박은 '실효 단가에 엔지니어 인건비·진부화·기회비용을 다 넣어야 진짜 비교다' 이다. 양쪽 다 맞다. 단지 어느 비용을 손익계산서에 어떻게 잡느냐가 다를 뿐이다. 본 보고서는 가동률 100%가 비현실적이라 보고 인건비 포함 TCO를 기준으로 잡았다. 가동률 가정이 달라지면 손은 다시 자체 호스팅 쪽으로 갈 수 있다.\n\n다른 모순은 시간축이다. '오픈웨이트가 곧 프런티어를 추월한다' 는 진단과 '프런티어가 가격 인하로 격차를 다시 벌렸다' 는 진단이 충돌한다. 2026년 4월 시점에선 일반 대화·요약·코딩 영역에서 격차가 거의 사라졌으나 reasoning 과 long-context 멀티모달에선 프런티어 우세가 이어진다. 어느 쪽이 이길지는 다음 12개월이 결정한다.\n\n결정 시점이 지금이라면, 답은 '한쪽 베팅' 이 아니라 '재평가 트리거를 미리 박아두기' 다. 어떤 신호가 보이면 결정을 다시 연다는 약속이다. 그 신호 목록이 다음의 감시 신호다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "답은 한쪽 베팅이 아니라 재평가 트리거를 미리 박아두는 것이다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "1년 전의 답은 지금의 답이 아니다. 지금의 답도 1년 후엔 다시 검증받는다. 결정 자체보다 결정을 다시 여는 트리거를 미리 정해두는 것이 더 중요하다.",
+    "watch_signals": [
+      {
+        "signal": "프런티어 API 추가 가격 인하",
+        "description": "Claude / Gemini / GPT 차분기 단가 발표에서 추가 −30% 이상 인하가 나오는지",
+        "indicates": "가격 추가 인하 시나리오로 분기 — 자체 구축 손익분기점이 월 24억 토큰으로 상승",
+        "deadline": "2026-Q3",
+        "icon": "💰"
+      },
+      {
+        "signal": "오픈웨이트 reasoning 추월",
+        "description": "Llama 5 / DeepSeek V5 등이 GPQA Diamond·HLE 벤치마크에서 프런티어를 처음 명확히 앞서는 시점",
+        "indicates": "오픈웨이트 가속 시나리오 분기 — 자체 호스팅 가치 급등",
+        "deadline": "2026-12-31",
+        "icon": "🔓"
+      },
+      {
+        "signal": "H200 후속 GPU (B200) 가격 공시",
+        "description": "차세대 GPU 시간당 단가가 H200 대비 30% 이상 싸게 풀리는지",
+        "indicates": "자체 호스팅 단가 추가 하락 — 손익분기점 다시 하향",
+        "deadline": "2026-Q4",
+        "icon": "🖥️"
+      },
+      {
+        "signal": "한국 금융위 망분리 규정 개정 논의",
+        "description": "전자금융감독규정상 클라우드 API 호출 허용 범위가 확대되는지",
+        "indicates": "규제 강제 자체 구축 영역의 축소 — 한국 금융권 의사결정 재개방",
+        "deadline": "2026년 하반기 입법예고",
+        "icon": "📜"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "자체 호스팅 단가 100만 토큰당 $0.17~0.42 — API보다 10배 이상 싸다",
+        "side_b": "엔지니어 인건비·모델 진부화·가동률 손실까지 더한 실효 TCO는 100만 토큰당 $7.15 — API와 격차가 2배 이내로 좁혀진다",
+        "evidence": "swfte.com 의 86% 절감 분석 vs sitepoint·digitalapplied 의 36개월 TCO 분석. 양쪽이 같은 GPU·같은 모델 가정에서 시작했지만 인건비·가동률 가정이 다름",
+        "resolution": "월 12억 토큰의 안정 가동률을 가정한 본 보고서는 TCO 기준 (B 입장) 손을 들어줌. 가동률이 100%에 가깝게 유지되거나 인건비가 다른 업무와 공유 가능한 조직에선 A 입장이 다시 살아남"
+      },
+      {
+        "side_a": "오픈웨이트가 프런티어를 곧 추월한다 — 자체 구축에 미리 베팅해야 한다",
+        "side_b": "프런티어 API의 80% 인하가 격차를 다시 벌렸다 — 추격은 reasoning·멀티모달에서 막혀 있다",
+        "evidence": "onyx.app 리더보드의 일반 영역 격차 소실 vs Claude Opus 4.6·GPT-5.4의 reasoning 벤치마크 우세 유지",
+        "resolution": "현 시점은 영역별로 갈림 — 일반 대화·요약·코딩은 오픈웨이트가 따라잡았으나 long-context reasoning·멀티모달은 프런티어 우세. 향후 12개월의 reasoning 벤치마크 추월 여부가 분기점"
+      }
+    ],
+    "confidence_summary": "출처 10건 — 가격 비교 4건, TCO 분석 3건, 자체 호스팅 가이드 3건. 2026-04 시점 데이터로 신선도 양호. 단가는 공시 기준이라 신뢰도 높으나 TCO 가정 (가동률·인건비) 은 출처마다 차이가 있어 시나리오별 폭이 넓음.",
+    "confidence_score": 0.78,
+    "embedded_map": null
+  },
+  "executive_summary": "프런티어 API 80% 인하와 오픈웨이트 따라잡기가 동시에 일어났다. 결정 기준은 품질이 아니라 사용량·민감도·지연시간으로 옮겨갔다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260505_152617.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-05T06:18:30.981086",
+  "total_duration_seconds": 466.0271248817444,
+  "system_version": "v4.5.7",
+  "revision": 0
+}
