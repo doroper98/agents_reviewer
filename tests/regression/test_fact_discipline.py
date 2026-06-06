@@ -208,6 +208,17 @@ def test_duplicate_heading_guard() -> None:
         ComposedSection(heading="다음수", prose="b"),
     ])
     assert duplicate_heading_guard(near)
+    # ★ 실제 회귀 — 섹션 제목 = 쟁점(모순) 섹션 제목(contradictions_heading) 중복.
+    real = ComposedReport(
+        headline="h",
+        contradictions_heading="임대업인가, 궤도로 가는 다리인가",
+        sections=[
+            ComposedSection(heading="임대업인가, 궤도로 가는 다리인가", prose="a"),
+            ComposedSection(heading="감시 신호", prose="b"),
+        ],
+    )
+    rflags = duplicate_heading_guard(real)
+    assert rflags and "쟁점 섹션" in rflags[0].detail
     # 중복 없으면 빈 list.
     ok = ComposedReport(headline="h", sections=[
         ComposedSection(heading="첫째", prose="a"), ComposedSection(heading="둘째", prose="b")])

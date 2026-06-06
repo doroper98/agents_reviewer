@@ -238,6 +238,9 @@ def _diff_reports(orig: ComposedReport, final: ComposedReport) -> list[str]:
     dk = _diff_span(orig.deck, final.deck)
     if dk:
         out.append(f"deck: «{dk[0]}» → «{dk[1]}»")
+    ch = _diff_span(orig.contradictions_heading, final.contradictions_heading)
+    if ch:
+        out.append(f"쟁점 제목: «{ch[0]}» → «{ch[1]}»")
     for i, sec in enumerate(final.sections):
         if i < len(orig.sections):
             sp = _diff_span(orig.sections[i].prose, sec.prose)
@@ -371,8 +374,9 @@ class CriticLoop:
         for f in hard_flags:
             if f.flag == "duplicate_heading":
                 hard_instr.append(
-                    f"[중대·강제] 섹션 제목 '{f.quote}' 가 다른 섹션과 중복된다. 각 섹션을 "
-                    "내용에 맞는 *서로 다른* 제목으로 반드시 바꿔라(같은 제목 금지)."
+                    f"[중대·강제] {f.detail}. 겹치는 제목들(섹션 제목 / 쟁점 섹션 제목 "
+                    "contradictions_heading / 헤드라인 포함)을 각각 그 부분 내용에 맞는 "
+                    "*서로 다른* 제목으로 반드시 바꿔라(같은 제목 두 곳 금지)."
                 )
             else:
                 hard_instr.append(f"[{f.location}] {f.detail} — 제거/정정.")

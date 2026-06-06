@@ -885,8 +885,12 @@ class NarrativeComposer:
         "출력: 아래 JSON *하나만*. 코드펜스·설명 금지. 차트·이미지·신호는 시스템이 보존하니\n"
         "너는 *텍스트만* 낸다.\n"
         '{"headline":"(정정된 제목)","deck":"(정정된 부제)",'
-        '"sections":[{"heading":"(섹션 제목)","prose":"(정정된 본문)"}],"closing":"(맺음, 없으면 빈 문자열)"}\n'
-        "sections 는 원본과 *같은 개수·같은 순서* 로 낸다. 안 고친 섹션도 원문 그대로 포함."
+        '"sections":[{"heading":"(섹션 제목)","prose":"(정정된 본문)"}],'
+        '"contradictions_heading":"(쟁점 섹션 제목, 있으면)","closing":"(맺음, 없으면 빈 문자열)"}\n'
+        "sections 는 원본과 *같은 개수·같은 순서* 로 낸다. 안 고친 섹션도 원문 그대로 포함.\n"
+        "★ 제목 중복 지적이 있으면: 같은 제목을 두 곳(섹션 제목 / 쟁점 섹션 제목 "
+        "contradictions_heading / 헤드라인)에 쓰지 말고, 각각 그 부분 내용에 맞는 *서로 "
+        "다른* 제목으로 반드시 바꾼다."
     )
 
     async def revise_for_facts(
@@ -923,6 +927,7 @@ class NarrativeComposer:
                 "sections": [
                     {"heading": s.heading, "prose": s.prose} for s in report.sections
                 ],
+                "contradictions_heading": report.contradictions_heading,
                 "closing": report.closing,
             },
         }
@@ -965,6 +970,8 @@ class NarrativeComposer:
             new.deck = revised["deck"]
         if isinstance(revised.get("closing"), str):
             new.closing = revised["closing"]
+        if isinstance(revised.get("contradictions_heading"), str) and revised["contradictions_heading"].strip():
+            new.contradictions_heading = revised["contradictions_heading"]
         rsecs = revised.get("sections")
         if isinstance(rsecs, list):
             for i, rs in enumerate(rsecs):

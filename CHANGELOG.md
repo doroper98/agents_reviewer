@@ -30,6 +30,9 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
   으로 잡음. `DuplicateHeadingGuard`(정규화 동일 제목 검출, low-FP) + **loop HARD 트리거**:
   codex 가 clean 이어도 제목 중복이면 revision 강제 → Opus 에 "각 섹션을 서로 다른 제목으로"
   강한 지시. codex 측도 `duplicate_heading`(high)로 병행 검수(페르소나 §12). nan 노출도 HARD.
+  **실제 회귀 반영(사용자 스크린샷)** — 일반 섹션 제목 + **쟁점(모순) 섹션 제목
+  (`contradictions_heading`)** + 헤드라인까지 비교(섹션-쟁점 제목 동일이 잦음). `contradictions_heading`
+  을 `revise_for_facts` payload/merge 에 추가해 Opus 가 *교정 가능* (이전엔 넘기지 않아 못 고쳤음).
 - 회귀 127 pass (dup guard 검출 / HARD 트리거 / 정상시 무트리거 유지). flag OFF byte-equal.
 
 ## v6.0.0 — 시장 수치 역산 교체 + 맥락·서사 검수 (R1·R2, 사용자 지시)
