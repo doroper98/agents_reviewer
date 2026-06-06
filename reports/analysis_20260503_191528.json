@@ -1,0 +1,656 @@
+{
+  "request": {
+    "event_description": "HawkEye 360 ($HAWK) 이라고 하는 상장 예정 기업에 대해 뭐하는 기업인지, CEO는 누구인지, 어떤 영역의 사업영역을 가지고 있는지, upside 포텐셜은 어떤지, downside 리스크는 무엇인지 회계/재무 영역까지 낱낱이, 그리고 매우 deep 하게 분석한 대규모 분석 보고서를 만들어.",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "RF SIGINT(신호정보)는 전파를 가로채 위치·내용을 분석하는 정보활동으로, 과거에는 NSA·NRO 같은 정부 전유물이었으나 2010년대 후반 소형위성·SDR(Software-Defined Radio·소프트웨어로 주파수를 자유롭게 잡는 라디오) 기술 발전으로 민간 진입이 가능해짐. HawkEye 360은 위성 3기를 군집 비행시켜 동일 신호의 도달 시간차(TDOA)·주파수차(FDOA)로 송신원 좌표를 산출, 정부에는 국방·해상감시용으로, 통신사에는 전파간섭 진단용으로 SaaS 형태로 판매. 2022년 우크라이나 사례 이후 상용 SIGINT 수요가 폭증하며 NRO의 RF 상용 데이터 구매 프로그램(SIGINT Capabilities Acquisition) 본격화, 동사가 직접 수혜. 동종 위성 데이터 기업 Spire Global·Planet Labs는 2021년 SPAC으로 상장했으나 시총이 각각 $236M·$675M까지 압축된 반면, HawkEye 360은 흑자·수주잔고·관급 비중을 갖춘 상태로 정통 IPO를 시도하는 첫 케이스.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2015",
+            "event": "Chris DeMay·Charles Clancy·Bob McGwier가 버지니아 Herndon에서 설립",
+            "impact": "상용 RF 지오로케이션 시장 개척 1세대"
+          },
+          {
+            "date": "2018-12",
+            "event": "Pathfinder 클러스터 첫 발사",
+            "impact": "3기 위성 군집(cluster) 모델 검증"
+          },
+          {
+            "date": "2021-08",
+            "event": "시리즈 D $145M 조달",
+            "impact": "성장기 자본 확보"
+          },
+          {
+            "date": "2022-02",
+            "event": "러시아 침공 직전 우크라이나·벨라루스 국경의 GPS 교란 탐지·공개",
+            "impact": "상용 SIGINT 가치 입증, NRO 등 미 정부와의 거래 확대 계기"
+          },
+          {
+            "date": "2023-12",
+            "event": "Maxar Intelligence의 RF Solutions 사업부 인수",
+            "impact": "분석 인력·기존 정부 계약 흡수"
+          },
+          {
+            "date": "2025-12-09",
+            "event": "미 해군 인도태평양 해상 인지(MDA) 계약 $98.8M 갱신",
+            "impact": "단일 계약 규모로 해상 SIGINT 수요 확정"
+          },
+          {
+            "date": "2025-12-18",
+            "event": "Innovative Signal Analysis(ISA) 인수 완료 + 시리즈 E·부채 $150M 동시 마무리",
+            "impact": "각도탐지(AOA) 알고리즘·보안인가 인력 170명 흡수, IPO 직전 재무 보강"
+          },
+          {
+            "date": "2026-03-03",
+            "event": "유럽 모 국방부와 우주기반 전자전(EW) 서비스 계약 체결",
+            "impact": "비미국 정부 매출 다변화 신호"
+          },
+          {
+            "date": "2026-03-30",
+            "event": "Cluster 14 위성을 SpaceX Falcon 9 Transporter-16 라이드쉐어로 발사",
+            "impact": "운용 위성 수 확대(이전 36기 + 추가)"
+          },
+          {
+            "date": "2026-04-10",
+            "event": "SEC에 S-1 제출",
+            "impact": "IPO 공식 절차 개시"
+          },
+          {
+            "date": "2026-04-27",
+            "event": "IPO 로드쇼 개시, 가격범위 $24~26 공시",
+            "impact": "조달 $384M~$416M, 목표 시총 $2.4B"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "HawkEye 360($HAWK) NYSE IPO 상장",
+    "event_name_en": "HawkEye 360 (HAWK) NYSE IPO Deep Dive",
+    "date": "2026-04-27",
+    "category": "기업·IPO·우주방산",
+    "summary": "RF(전파) 신호정보 위성 운용사 HawkEye 360이 2026-04-10 SEC에 S-1 제출, 04-27 IPO 로드쇼 개시. NYSE 티커 HAWK, 1,600만 주를 주당 $24~26에 발행, 조달 $384M~$416M, 시가총액 약 $2.4B 목표. 2025년 매출 $117.7M(전년比 74% 증가)·조정 EBITDA $24.8M로 위성 데이터 IPO 중 보기 드물게 흑자 전환 직후 상장이라는 점이 차별점.",
+    "timeline": [
+      {
+        "date": "2015",
+        "event": "Chris DeMay·Charles Clancy·Bob McGwier가 버지니아 Herndon에서 설립",
+        "impact": "상용 RF 지오로케이션 시장 개척 1세대"
+      },
+      {
+        "date": "2018-12",
+        "event": "Pathfinder 클러스터 첫 발사",
+        "impact": "3기 위성 군집(cluster) 모델 검증"
+      },
+      {
+        "date": "2021-08",
+        "event": "시리즈 D $145M 조달",
+        "impact": "성장기 자본 확보"
+      },
+      {
+        "date": "2022-02",
+        "event": "러시아 침공 직전 우크라이나·벨라루스 국경의 GPS 교란 탐지·공개",
+        "impact": "상용 SIGINT 가치 입증, NRO 등 미 정부와의 거래 확대 계기"
+      },
+      {
+        "date": "2023-12",
+        "event": "Maxar Intelligence의 RF Solutions 사업부 인수",
+        "impact": "분석 인력·기존 정부 계약 흡수"
+      },
+      {
+        "date": "2025-12-09",
+        "event": "미 해군 인도태평양 해상 인지(MDA) 계약 $98.8M 갱신",
+        "impact": "단일 계약 규모로 해상 SIGINT 수요 확정"
+      },
+      {
+        "date": "2025-12-18",
+        "event": "Innovative Signal Analysis(ISA) 인수 완료 + 시리즈 E·부채 $150M 동시 마무리",
+        "impact": "각도탐지(AOA) 알고리즘·보안인가 인력 170명 흡수, IPO 직전 재무 보강"
+      },
+      {
+        "date": "2026-03-03",
+        "event": "유럽 모 국방부와 우주기반 전자전(EW) 서비스 계약 체결",
+        "impact": "비미국 정부 매출 다변화 신호"
+      },
+      {
+        "date": "2026-03-30",
+        "event": "Cluster 14 위성을 SpaceX Falcon 9 Transporter-16 라이드쉐어로 발사",
+        "impact": "운용 위성 수 확대(이전 36기 + 추가)"
+      },
+      {
+        "date": "2026-04-10",
+        "event": "SEC에 S-1 제출",
+        "impact": "IPO 공식 절차 개시"
+      },
+      {
+        "date": "2026-04-27",
+        "event": "IPO 로드쇼 개시, 가격범위 $24~26 공시",
+        "impact": "조달 $384M~$416M, 목표 시총 $2.4B"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "2025년 매출",
+        "value": "$117.7M",
+        "context": "2024년 $67.6M 대비 +74%"
+      },
+      {
+        "label": "2025년 순이익",
+        "value": "$48,000",
+        "context": "2024년 순손실 $31.2M에서 흑자 전환(미세 흑자)"
+      },
+      {
+        "label": "2025년 조정 EBITDA",
+        "value": "$24.8M",
+        "context": "조정 EBITDA 마진 약 21%"
+      },
+      {
+        "label": "수주잔고(backlog)",
+        "value": "$302.7M",
+        "context": "2025-12-31 기준, 전년 $44.1M의 약 6.9배·2025 매출의 2.6배"
+      },
+      {
+        "label": "미국 정부 매출 비중",
+        "value": "61%",
+        "context": "2025년 기준, NRO·NGA·Space Force·해군 등"
+      },
+      {
+        "label": "고객 집중도",
+        "value": "상위 3사 34%/16%/11%",
+        "context": "합계 61% — SIGINT 계약 특성상 일반적이나 단일 계약 해지 리스크"
+      },
+      {
+        "label": "IPO 발행 규모",
+        "value": "1,600만 주 × $24~26",
+        "context": "조달 $384M~$416M, 그린슈 240만 주 추가 옵션"
+      },
+      {
+        "label": "목표 시가총액",
+        "value": "약 $2.4B",
+        "context": "2025 매출 대비 P/S 약 20배, 발행가 상단 기준"
+      },
+      {
+        "label": "운용 위성 수",
+        "value": "36기(2025-07 기준) + Cluster 14 추가",
+        "context": "12개 클러스터(3기 1조)로 트라이래터레이션(triangulation·삼각측량) 수행"
+      },
+      {
+        "label": "총 누적 조달액(IPO 전)",
+        "value": "$411.7M",
+        "context": "2015년 설립 이후 시리즈 A~E + 부채"
+      },
+      {
+        "label": "시리즈 E 단가 vs IPO 단가",
+        "value": "$11.88(2차 시장) vs $24~26",
+        "context": "Notice.co 2차시장 호가, 공모가 약 2배 — 기존 주주 차익 가능성"
+      }
+    ],
+    "background": "RF SIGINT(신호정보)는 전파를 가로채 위치·내용을 분석하는 정보활동으로, 과거에는 NSA·NRO 같은 정부 전유물이었으나 2010년대 후반 소형위성·SDR(Software-Defined Radio·소프트웨어로 주파수를 자유롭게 잡는 라디오) 기술 발전으로 민간 진입이 가능해짐. HawkEye 360은 위성 3기를 군집 비행시켜 동일 신호의 도달 시간차(TDOA)·주파수차(FDOA)로 송신원 좌표를 산출, 정부에는 국방·해상감시용으로, 통신사에는 전파간섭 진단용으로 SaaS 형태로 판매. 2022년 우크라이나 사례 이후 상용 SIGINT 수요가 폭증하며 NRO의 RF 상용 데이터 구매 프로그램(SIGINT Capabilities Acquisition) 본격화, 동사가 직접 수혜. 동종 위성 데이터 기업 Spire Global·Planet Labs는 2021년 SPAC으로 상장했으나 시총이 각각 $236M·$675M까지 압축된 반면, HawkEye 360은 흑자·수주잔고·관급 비중을 갖춘 상태로 정통 IPO를 시도하는 첫 케이스.",
+    "sources": [
+      "https://www.bloomberg.com/news/articles/2026-04-27/surveillance-firm-hawkeye-360-seeks-up-to-416-million-in-us-ipo",
+      "https://www.bloomberg.com/news/articles/2026-04-10/surveillance-firm-hawkeye-360-files-for-ipo-amid-defense-tech-boom",
+      "https://www.satellitetoday.com/finance/2026/04/27/hawkeye-360-files-to-go-public-reports-99m-in-revenue-in-2025/",
+      "https://www.spaceintelreport.com/satellite-signals-intelligence-provider-hawkeye-360-preparing-ipo-reports-117-7m-in-2025-revenue-and-24-8m-ebitda/",
+      "https://asymmetrixintelligence.substack.com/p/118m-revenue-satellite-data-provider",
+      "https://www.washingtontechnology.com/companies/2026/04/hawkeye-360-launches-ipo-roadshow-sets-goals-listing/413138/",
+      "https://www.prnewswire.com/news-releases/hawkeye-360-announces-launch-of-initial-public-offering-roadshow-302754172.html",
+      "https://seekingalpha.com/article/4891584-hawkeye-360-spies-ipo-as-revenue-growth-takes-off",
+      "https://www.satellitetoday.com/finance/2025/12/19/hawkeye-360-ceo-says-isa-acquisition-will-bolster-hawkeyes-signals-analysis/",
+      "https://spacenews.com/hawkeye-360-expands-defense-footprint-with-acquisition-of-innovative-signal-analysis/",
+      "https://www.prnewswire.com/news-releases/us-navy-renews-hawkeye-360-contract-to-advance-indo-pacific-maritime-domain-awareness-302635343.html",
+      "https://www.prnewswire.com/news-releases/hawkeye-360-successfully-launches-cluster-14-satellites-302728684.html",
+      "https://en.wikipedia.org/wiki/HawkEye_360",
+      "https://www.sec.gov/Archives/edgar/data/1750704/000162828026024593/hawkeye360-sx1.htm",
+      "https://thedefensepost.com/2026/03/03/hawkeye360-europe-electronic-warfare/amp/",
+      "https://spacenews.com/hawkeye-360-acquires-maxars-rf-solutions-business-unit/",
+      "https://www.spaceintelreport.com/one-example-of-itar-and-newspace-signals-intelligence-provider-hawkeye-360/"
+    ],
+    "glossary": [
+      {
+        "term": "RF SIGINT (Radio Frequency Signals Intelligence)",
+        "definition": "전파 신호를 가로채 위치·종류·세기를 분석해 정보를 얻는 활동. 통신·레이더·GPS 신호 등이 대상."
+      },
+      {
+        "term": "TDOA / FDOA (Time/Frequency Difference of Arrival)",
+        "definition": "동일 신호가 여러 수신기에 도달한 시간차·주파수차로 발신원 위치를 역산하는 측위 기법."
+      },
+      {
+        "term": "트라이래터레이션(trilateration)",
+        "definition": "세 지점에서의 거리 측정값으로 한 점의 좌표를 구하는 방법. HawkEye 360은 위성 3기를 한 묶음으로 운용해 이를 구현."
+      },
+      {
+        "term": "SaaS (Software-as-a-Service)",
+        "definition": "소프트웨어를 구독료로 제공하는 사업 모델. 일회성 라이선스 판매가 아니라 반복 매출 구조."
+      },
+      {
+        "term": "수주잔고(backlog)",
+        "definition": "이미 계약했지만 아직 매출로 인식되지 않은 미래 수익. 매출 가시성 지표."
+      },
+      {
+        "term": "조정 EBITDA (Adjusted EBITDA)",
+        "definition": "이자·세금·감가상각비 차감 전 이익에서 일회성·비현금 항목을 추가로 빼고 기업 본업 수익성을 보여주는 지표. GAAP(미국 회계기준) 비표준."
+      },
+      {
+        "term": "P/S (Price-to-Sales)",
+        "definition": "시가총액을 매출로 나눈 배수. 적자 기업 평가에 자주 쓰임."
+      },
+      {
+        "term": "S-1",
+        "definition": "미국 SEC(증권거래위원회)에 IPO 시 제출하는 첫 등록서류. 사업·재무·리스크 전부 공시."
+      },
+      {
+        "term": "그린슈(greenshoe)",
+        "definition": "주관사가 수요 초과 시 추가 발행할 수 있는 옵션. 통상 발행 규모의 15%."
+      },
+      {
+        "term": "ITAR (International Traffic in Arms Regulations)",
+        "definition": "미국 국방용 기술·물자의 수출을 통제하는 법규. 위성 SIGINT 기술은 이 규제 영향권에 들어감."
+      },
+      {
+        "term": "NRO (National Reconnaissance Office·국가정찰국)",
+        "definition": "미국 첩보위성을 운영하는 정보기관. HawkEye 360 최대 단일 고객."
+      },
+      {
+        "term": "AIS (Automatic Identification System)",
+        "definition": "선박이 의무적으로 송출하는 위치·식별 신호. 끄거나(go dark) 위변조 가능."
+      },
+      {
+        "term": "Dark vessel(다크 베슬)",
+        "definition": "AIS를 끄거나 조작해 추적을 피하는 선박. 불법 어업·제재 회피 운송 등에 동원."
+      }
+    ],
+    "confidence_score": 0.85,
+    "recommended_persona": {
+      "tone": "객관적·수치 중심. 공모가 산정·시장 비교군의 함의를 비판적으로 검증하되, '방산 테마주 광풍' 같은 서사가 펀더멘털을 가리지 않도록 사실에 기반해 단호히 분리. 모순(예: 흑자전환과 장부상 순이익 $48,000의 미세함)은 봉합하지 않고 그대로 드러냄. 깊은 회계·우주산업 구조 탐구가 살아있되 위트는 자제(투자 의사결정 자료 성격).",
+      "numeric_principle": "S-1·로드쇼 가격대·기존 위성 SaaS 비교군 시총·수주잔고 등 출처 명시 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 표기(예: '시총 $2.4B — 발행가 상단 기준, 2025 매출 대비 P/S 20배'). 결정적 1~2개 수치는 본문에 녹이고 나머지는 차트로.",
+      "frameworks": [
+        "Porter 5 Forces (방산 SIGINT 시장 진입장벽 분석)",
+        "Bow-Tie Risk (다운사이드 시나리오 분기)",
+        "Pre-mortem (IPO 후 12개월 실패 시나리오)",
+        "DCF/Multiple Comparables (Spire·Planet·BlackSky 대비 밸류에이션)"
+      ],
+      "vocabulary": "회계·우주 기술 용어 첫 등장 시 한두 문장으로 풀이(예: EBITDA·트라이래터레이션·ITAR). 영어 약어 첫 등장 시 괄호 풀어쓰기. 한 문장에 두 개념 동시 도입 금지.",
+      "analytical_pressure": "사실(IPO 구조·재무) → 메커니즘(어떻게 수익이 나는가, 위성 클러스터 경제성) → 함의(업사이드/다운사이드 정량화) → 반례·미해결(고객 집중·ITAR·SPAC 상장 동종사 부진의 교훈). 회계 챕터에서는 매출 인식·수주잔고·이연수익 구조까지 단계적으로 깊이를 더함.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "흑자 안고 입성하는 RF 정찰의 첫 정통 IPO",
+    "deck": "HawkEye 360($HAWK)이 시총 $2.4B를 노리며 NYSE에 오른다. 매출 74% 성장과 수주잔고 6.9배라는 숫자 뒤로, 정부 매출 61%·고객 집중도 61%·SPAC으로 무너진 동종사라는 그림자가 함께 따라온다.",
+    "sections": [
+      {
+        "heading": "공모 구조와 첫 인상",
+        "kicker": "1 / IPO 사실관계",
+        "prose": "HawkEye 360은 2026-04-10 SEC(미국 증권거래위원회)에 S-1을 제출하고, 04-27 IPO 로드쇼를 열었다. NYSE 티커는 HAWK다. 1,600만 주를 주당 $24~26에 발행해 $384M~$416M을 조달하고, 발행가 상단 기준 시가총액 약 $2.4B를 노린다 (출처: bloomberg.com, prnewswire.com).\n\n발행가 상단을 기준 삼으면 2025 매출 $117.7M 대비 주가매출비율(P/S)이 약 20배다. 단순 비교로도 동종 위성 데이터 상장사 평균을 크게 웃돈다. 이 숫자가 정당한가는 본 보고서의 중심 질문이다.\n\n특이점은 두 가지다. 첫째, 시리즈 E 2차 시장 호가가 주당 $11.88이었던 것으로 알려졌는데 (출처: notice.co 호가 데이터, asymmetrixintelligence.substack.com), 공모가 상단이 그 두 배 수준이다. 기존 주주의 평가차익이 일시 실현될 여지가 있다. 둘째, 그린슈(초과배정옵션) 240만 주가 더 붙는다. 시장 수요가 강하면 조달 규모는 약 $470M까지 늘어난다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "공모가 상단은 2차 시장 호가의 약 두 배. 기존 주주의 일시 차익 실현이 첫 분기의 변동성을 만든다.",
+        "cited_claim_ids": [],
+        "lede": "위성 데이터 기업이 흑자를 안고 정통 IPO에 오르는 일은 드물다. 2021년 SPAC(특수목적인수회사·우회상장 통로) 광풍에 올라탔던 Spire Global과 Planet Labs가 시총 $236M·$675M까지 압축된 지금, HawkEye 360은 거꾸로 정공법을 택했다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "발행가",
+            "value": "$24~26",
+            "sublabel": "주당 / 1,600만 주"
+          },
+          {
+            "label": "조달 규모",
+            "value": "$384M~$416M",
+            "sublabel": "그린슈 제외"
+          },
+          {
+            "label": "목표 시총",
+            "value": "약 $2.4B",
+            "sublabel": "발행가 상단 기준"
+          },
+          {
+            "label": "P/S 배수",
+            "value": "약 20배",
+            "sublabel": "2025 매출 $117.7M 대비"
+          },
+          {
+            "label": "2차시장 호가",
+            "value": "$11.88",
+            "sublabel": "공모가 상단의 약 1/2"
+          },
+          {
+            "label": "누적 조달액",
+            "value": "$411.7M",
+            "sublabel": "2015년 설립 이후, IPO 전"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "어떻게 돈을 버는가 — 위성 3기로 좌표를 그리는 사업",
+        "kicker": "2 / 비즈니스 메커니즘",
+        "prose": "RF SIGINT(전파 신호정보·radio frequency signals intelligence)는 전파를 가로채 누가·어디서 보내는지 분석하는 정보활동이다. 과거 NSA(미 국가안보국)·NRO(미 국가정찰국) 같은 정부 기관의 전유물이었으나, 2010년대 후반 소형위성과 SDR(Software-Defined Radio·소프트웨어로 주파수를 자유롭게 잡는 라디오) 기술 발전으로 민간 진입이 가능해졌다.\n\nHawkEye 360의 위성은 3기가 한 묶음(클러스터)으로 비행한다. 같은 신호가 세 위성에 닿는 시간 차(TDOA·time difference of arrival)와 주파수 차(FDOA·frequency difference of arrival)를 측정하면, 송신원의 좌표를 지상 ~수백 미터 단위로 풀어낸다. 이를 트라이래터레이션 (triangulation·세 점에서 거리를 재 위치를 좁히는 측량) 이라 부른다.\n\n2025-07 기준 36기를 띄워 12개 클러스터를 운용하고, 2026-03-30 SpaceX Falcon 9의 라이드쉐어로 Cluster 14를 추가 발사했다 (출처: prnewswire.com). 즉 위성 수가 늘면 동일 지점을 더 자주 다시 들여다볼 수 있다 — 재방문주기 (revisit) 가 짧아진다는 뜻이고, 이는 곧 데이터의 신선도다.\n\n수익화는 SaaS(소프트웨어 구독) 형태다. 정부에는 국방·해상감시용으로 팔고, 통신사에는 전파 간섭 진단용으로 판다. 단 매출의 무게중심은 명백히 정부 쪽이다 (다음 섹션의 차트 참고).",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "왜 위성 한 기가 아니라 세 기일까. 답은 기하학에 있다.",
+        "analogy": {
+          "title": "TDOA는 '천둥소리로 번개 위치 맞추기'",
+          "body": "번개를 본 뒤 천둥소리가 들리는 시간 차로 거리를 가늠하듯, HawkEye의 세 위성은 같은 전파가 각자에게 도달한 시간 차를 잰다. 한 명만 들으면 거리만 알지만, 세 명이 다른 위치에서 들으면 송신원이 어디 있는지 좌표가 좁혀진다. 위성 한 기가 아니라 셋이 한 묶음으로 도는 이유다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "재무 해부 — 흑자의 진짜 두께",
+        "kicker": "3 / 재무 디테일",
+        "prose": "2025년 매출은 $117.7M으로 전년 $67.6M 대비 +74%다. 조정 EBITDA(이자·세금·감가상각·일회성 비용 차감 전 영업이익)는 $24.8M로 마진 약 21%를 찍었다. 위성 데이터 IPO 중 흑자 전환 직후 상장이라는 점에서 차별점은 분명하다 (출처: spaceintelreport.com).\n\n단 회계상 순이익은 $48,000이다. 매출의 0.04%다. EBITDA $24.8M에서 감가상각·이자·세금을 차감하면 사실상 손익분기에 간신히 닿는 수준이라는 뜻이다. 흑자전환은 사실이지만, 흑자의 두께는 광고 문구만큼 두껍지 않다. 모순은 봉합하지 않는다 — 둘 다 사실이다.\n\n수주잔고는 더 인상적이다. 2025-12-31 기준 $302.7M로 전년 $44.1M의 약 6.9배, 2025 매출의 2.6배다. 단 잔고는 인식 시점이 분산된다. 결제 조건과 인도 시점에 따라 향후 2~4년에 걸쳐 매출로 풀린다. 즉 잔고가 곧 내년 매출은 아니다.\n\n매출 구성에서 미국 정부 비중은 61%, 상위 3개 고객이 매출의 34%·16%·11%를 차지한다 (합계 61%). SIGINT 계약 특성상 고객 집중은 일반적이지만, 단일 계약 해지가 분기 실적을 흔들 수 있는 구조라는 점은 간과할 수 없다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "매출과 EBITDA의 도약 (2024 → 2025)",
+            "subtitle": "매출은 +74%, EBITDA는 적자에서 +$24.8M로 — 단 순이익은 $48,000",
+            "data": [
+              {
+                "label": "2024 매출",
+                "value": 67.6,
+                "note": "$M"
+              },
+              {
+                "label": "2025 매출",
+                "value": 117.7,
+                "note": "$M, +74%"
+              },
+              {
+                "label": "2024 EBITDA",
+                "value": -6.0,
+                "note": "추정 적자"
+              },
+              {
+                "label": "2025 EBITDA",
+                "value": 24.8,
+                "note": "마진 21%"
+              }
+            ],
+            "source": "S-1 (sec.gov), spaceintelreport.com / 2026-04",
+            "takeaway": "매출 성장과 EBITDA 흑자전환은 명확. 그러나 순이익은 $48,000 — EBITDA 흑자가 곧 두꺼운 흑자는 아니다."
+          },
+          {
+            "type": "donut",
+            "title": "매출 구성 — 정부 의존도",
+            "subtitle": "미국 정부 61%, 상위 3개 고객만으로도 같은 61%",
+            "data": [
+              {
+                "label": "미국 정부",
+                "value": 61,
+                "note": "NRO·NGA·해군·우주군"
+              },
+              {
+                "label": "상업·통신사",
+                "value": 22,
+                "note": "전파간섭 진단 등"
+              },
+              {
+                "label": "비미국 정부·기타",
+                "value": 17,
+                "note": "유럽 EW 계약 포함"
+              }
+            ],
+            "source": "S-1 (sec.gov) / 2025년 기준",
+            "takeaway": "정부 매출 61%는 안정적 수요의 증거이자, 동시에 단일 정책·예산 변화에 노출된다는 뜻."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "EBITDA $24.8M와 순이익 $48,000은 모순이 아니라 같은 그림의 두 면이다. 둘 다 보아야 한다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "비교군의 그림자 — Spire와 Planet의 학습",
+        "kicker": "4 / 밸류에이션 비판",
+        "prose": "2021년 SPAC으로 상장한 위성 데이터 기업의 현주소는 차갑다. Spire Global은 시총 $236M, Planet Labs는 $675M까지 압축됐다. BlackSky도 $200M대에 머문다. HawkEye 360이 노리는 시총 $2.4B는 이들의 합계에 가깝다.\n\n핵심은 펀더멘털 차이다. HawkEye는 흑자 EBITDA·정부 수주잔고·관급 비중이라는 세 가지를 갖췄다. SPAC 동종사들은 상장 당시 이 셋 중 어느 것도 충족하지 못했다. 즉 가격표는 비싸 보이지만, 가격표를 매단 기업의 체질은 다르다.\n\n그러나 두 가지를 더 봐야 한다. 첫째, P/S 20배는 SaaS 평균(약 6~10배)을 크게 웃돈다. 시장이 매출 성장률 +74%가 향후 2~3년 유지된다고 가정해야 정당화된다. 둘째, 동종 SPAC들도 상장 직후엔 비슷한 멀티플로 거래됐다. 시간이 갈수록 정부 계약의 lumpy(들쭉날쭉) 성격과 위성 자본지출 부담이 드러나며 멀티플이 압축됐다. HawkEye가 이 압축 곡선에서 자유로울 근거는 아직 시간 위에서 검증되지 않았다.\n\n반론도 있다. 우크라이나 사례 이후 NRO의 RF 상용 데이터 구매 프로그램(SIGINT Capabilities Acquisition)이 본격화되며 시장 자체가 커졌다. 즉 HawkEye가 동종 SPAC들이 직면했던 '수요 정체' 문제를 만나지 않을 가능성이 있다. 이 가설의 진위는 다음 4~6개 분기 정부 계약 흐름에서 갈린다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "위성 데이터 상장사 시총 비교",
+            "subtitle": "HawkEye 목표 $2.4B는 동종 3사 합계 수준 — 펀더멘털이 받쳐주는가",
+            "data": [
+              {
+                "label": "Spire Global",
+                "value": 236,
+                "note": "SPAC 2021"
+              },
+              {
+                "label": "BlackSky",
+                "value": 250,
+                "note": "SPAC 2021, 추정"
+              },
+              {
+                "label": "Planet Labs",
+                "value": 675,
+                "note": "SPAC 2021"
+              },
+              {
+                "label": "HawkEye 360 (목표)",
+                "value": 2400,
+                "note": "IPO 2026, 발행가 상단"
+              }
+            ],
+            "source": "각사 시총 / 2026-04 기준 · HawkEye는 발행가 상단",
+            "takeaway": "HawkEye의 가격표는 동종사 합계급. 흑자·수주잔고·관급 비중이 그 차이를 정당화하는 세 기둥."
+          },
+          {
+            "type": "bar",
+            "title": "수주잔고 (Backlog) 도약",
+            "subtitle": "전년 대비 6.9배 — 단 인식 시점은 향후 2~4년에 분산",
+            "data": [
+              {
+                "label": "2024년말",
+                "value": 44.1,
+                "note": "$M"
+              },
+              {
+                "label": "2025년말",
+                "value": 302.7,
+                "note": "$M, ×6.9"
+              },
+              {
+                "label": "2025 매출",
+                "value": 117.7,
+                "note": "$M, 잔고/매출 = 2.6"
+              }
+            ],
+            "source": "S-1 (sec.gov) / 2025-12-31",
+            "takeaway": "잔고 6.9배 증가는 강한 수요 신호. 단 잔고가 곧 내년 매출은 아니다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "위성 데이터 SPAC 1세대의 결말은 잔혹했다. HawkEye는 그 그림자에서 벗어날 수 있는가.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "12개월 시나리오 — 분기를 가르는 변수들",
+        "kicker": "5 / 시나리오",
+        "prose": "상장 후 12개월의 경로를 4갈래로 본다. 각 경로의 트리거와 신호를 함께 적는다.\n\n시나리오 A — 기준선 (확률 약 40%): 발행가 중간 ($25 내외) 결정, 상장 첫날 +10~20% 마감. 2026 하반기 분기 실적이 잔고 전환을 보여주며 P/S 18~22배 박스권 유지. 트리거는 2026-Q3·Q4 매출 가이던스가 +50% 이상 유지될 때.\n\n시나리오 B — 강세 (확률 약 25%): 발행가 상단 결정, 첫날 +30% 이상. NRO·해군 후속 계약 갱신이 분기마다 발표되며 P/S 25배 이상으로 재평가. 트리거는 유럽 정부 추가 계약 + 한국·일본 등 인도태평양 신규 정부 매출.\n\n시나리오 C — 압축 (확률 약 25%): 상장 후 6~9개월 내 정부 셧다운·국방예산 지연으로 분기 매출 lumpy 노출. P/S 12~15배로 멀티플 압축. SPAC 동종사의 학습 곡선을 따라간다. 트리거는 미 정부 회계연도 전환기 (2026-10) 의 계약 정체.\n\n시나리오 D — 다운사이드 (확률 약 10%): 단일 대형 계약 (상위 1위 고객 매출 비중 34%) 의 갱신 실패 또는 ITAR(국제무기거래규정·International Traffic in Arms Regulations) 관련 수출 통제 강화. 시총 $1B 아래로 압축 가능. 트리거는 수주잔고 분기별 감소 신호.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "시나리오별 확률 × 영향",
+            "subtitle": "기준선 박스권에 무게 — 단 다운사이드의 영향 폭은 가장 크다",
+            "data": [
+              {
+                "label": "A 기준선",
+                "x": 40,
+                "y": 50,
+                "size": 40
+              },
+              {
+                "label": "B 강세",
+                "x": 25,
+                "y": 75,
+                "size": 30
+              },
+              {
+                "label": "C 압축",
+                "x": 25,
+                "y": 35,
+                "size": 30
+              },
+              {
+                "label": "D 다운사이드",
+                "x": 10,
+                "y": 15,
+                "size": 25
+              }
+            ],
+            "source": "본 분석 / 2026-04 시점",
+            "takeaway": "확률 합계 100%. 영향(주가 수준)은 100을 발행가, 0을 시총 $1B 아래로 정규화."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "모순과 반대 가설 — 봉합하지 않는다",
+        "kicker": "6 / 충돌점",
+        "prose": "HawkEye를 둘러싼 평가는 한쪽으로 정리되지 않는다. 정직한 분석은 양쪽을 그대로 두는 것이다.\n\n첫 번째 충돌은 '흑자전환'을 어떻게 읽을 것인가다. EBITDA $24.8M·마진 21%는 진짜 영업 효율을 보여준다. 동시에 순이익 $48,000은 감가상각 (위성 자본지출의 회계적 반영) 과 이자비용을 차감하면 사실상 손익분기라는 뜻이다. 어느 쪽이 더 본질인가는 위성 자본지출의 향후 사이클을 어떻게 보느냐에 달렸다.\n\n두 번째 충돌은 정부 매출 61%의 해석이다. 강세 입장은 NRO·해군의 장기 계약과 보안인가가 진입장벽 그 자체라고 본다. 약세 입장은 정부 의존도가 높은 기업의 멀티플은 결국 SaaS가 아닌 방산주 (P/E 15~20배) 수준으로 수렴한다고 본다. 두 입장 모두 데이터로 뒷받침된다.\n\n세 번째 충돌은 시리즈 E 2차시장 호가 $11.88과 공모가 상단 $26의 격차다. 강세는 비상장 시장이 공모 호조를 충분히 반영하지 못한 결과라고 본다. 약세는 공모가가 과열됐고 락업 (lock-up·기존 주주 매각 제한 기간) 종료 시점에 매도 압력이 집중될 거라고 본다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "감시 신호와 결어",
+        "kicker": "7 / 다음을 보는 법",
+        "prose": "분기를 가르는 신호는 셋이다. 첫째, 2026-Q3·Q4 정부 계약 발표의 흐름. 둘째, 락업 해제 시점의 거래량 변화. 셋째, ITAR 관련 수출 통제 동향과 비미국 정부 매출의 실제 인식 속도다.\n\n핵심은 가격표가 아니라 시간이다. 동종 SPAC 1세대가 멀티플 압축을 겪은 것은 상장 후 6~12개월 구간이었다. HawkEye가 그 곡선에서 벗어날 근거 — 흑자 EBITDA·수주잔고·관급 비중 — 는 충분히 다르지만, 차별성이 시장에서 검증되는 데에는 같은 만큼의 시간이 필요하다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "흑자전환 직후 정통 IPO라는 카드는 위성 데이터 섹터에서 처음이다. 단 첫 카드가 곧 이기는 패라는 보장은 없다. 향후 12개월의 정부 계약 흐름이 가격표를 정당화하거나, 동종사의 압축 곡선을 답습하게 만들 것이다.",
+    "watch_signals": [
+      {
+        "signal": "2026-Q3·Q4 정부 계약 갱신·신규 발표",
+        "description": "NRO·해군·우주군의 후속 계약과 신규 다년 계약 발표 빈도",
+        "indicates": "기준선(A) vs 강세(B) 시나리오 분기 — 잔고 전환의 실효성 검증",
+        "deadline": "2026-12-31",
+        "icon": "📊"
+      },
+      {
+        "signal": "락업(lock-up) 해제 시점 거래량",
+        "description": "통상 IPO 후 180일. 시리즈 E 단가($11.88) 대비 +120% 차익 구간 매도 압력",
+        "indicates": "압축(C) 시나리오 트리거 가능성 — 기존 주주 차익 실현 규모",
+        "deadline": "2026-10-27",
+        "icon": "🔓"
+      },
+      {
+        "signal": "ITAR 수출 통제 동향과 비미국 매출 인식",
+        "description": "유럽·인도태평양 정부 신규 계약의 매출 인식 속도. 2026-03 유럽 EW 계약 후속",
+        "indicates": "다운사이드(D) 트리거 — 매출 다변화가 막히면 정부 의존도 그대로",
+        "deadline": "2026-09-30",
+        "icon": "🛰️"
+      },
+      {
+        "signal": "수주잔고 분기별 변동",
+        "description": "$302.7M 잔고의 분기 인식 속도와 신규 잔고 추가 규모",
+        "indicates": "잔고가 곧 매출이 되는지 검증 — 멀티플 유지의 핵심 변수",
+        "deadline": "2026-Q2 실적",
+        "icon": "📋"
+      },
+      {
+        "signal": "상위 3개 고객 (34%/16%/11%) 갱신 동향",
+        "description": "단일 계약 해지 시 분기 실적 충격. SIGINT 계약 특성상 비공개 갱신 다수",
+        "indicates": "다운사이드(D) — 고객 집중 리스크의 현재화",
+        "deadline": "2027-Q1까지 누적 관찰",
+        "icon": "⚠️"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "EBITDA $24.8M·마진 21%로 진짜 흑자기업이 됐다",
+        "side_b": "순이익은 $48,000 — 감가상각·이자 차감 후 사실상 손익분기",
+        "evidence": "EBITDA는 자본지출의 회계적 반영을 차감 전 수치. 위성 자본지출 사이클이 다시 가속하면 GAAP 순이익은 적자로 회귀 가능",
+        "resolution": "현 시점은 EBITDA 흑자전환을 사실로 인정하되, '흑자기업'이라는 단정은 유보. 위성 자본지출이 안정 궤도에 진입하는 2026~2027 데이터를 본 후 재판단. 패배한 입장(사실상 손익분기)은 Cluster 15~16 발사가 본격화되면 다시 살아남."
+      },
+      {
+        "side_a": "정부 매출 61%는 보안인가·장기 계약이라는 진입장벽 그 자체다 (SaaS 멀티플 정당화)",
+        "side_b": "정부 의존도 높은 기업의 멀티플은 결국 방산주(P/E 15~20배)로 수렴한다",
+        "evidence": "Palantir·Booz Allen 등 정부 비중 높은 기업의 역사적 멀티플 압축 사례. 반대로 클라우드 전환에 성공한 일부 기업은 SaaS 멀티플 유지",
+        "resolution": "현 시점은 SaaS 멀티플 정당화 입장에 더 무게. 단 상업 매출 비중이 향후 24개월 내 30% 이상으로 늘지 못하면 약세 입장이 우세해질 가능성. 패배 입장은 정부 셧다운·예산 지연 신호 발생 시 즉시 부활."
+      },
+      {
+        "side_a": "공모가 상단 $26은 시리즈 E 2차시장 호가($11.88) 대비 과열",
+        "side_b": "비상장 2차시장은 유동성 결핍으로 공정가치를 반영 못함. 공모 호조가 진실에 가깝다",
+        "evidence": "2차시장 호가는 거래량 부족·정보 비대칭 한계. 단 시리즈 E 라운드 자체의 합의 가격은 펀더멘털을 반영했을 가능성",
+        "resolution": "어느 쪽 손도 들기 어려움. 락업 해제(약 2026-10-27) 시점의 거래량이 결정. 패배 입장은 락업 해제 시 매도 압력의 실제 규모로 즉시 검증."
+      }
+    ],
+    "confidence_summary": "S-1·로드쇼 공시·동종사 시총 등 1차 출처 다양 (Bloomberg·SEC·SpaceNews·Satellite Today 등 17개). 미래 정부 계약 흐름·락업 후 매도 압력은 본질적 불확실. 회계 수치는 S-1 기반으로 신뢰도 높으나, 시나리오 확률은 본 분석의 정성 추정.",
+    "confidence_score": 0.78,
+    "embedded_map": null
+  },
+  "executive_summary": "HawkEye 360($HAWK)이 시총 $2.4B를 노리며 NYSE에 오른다. 매출 74% 성장과 수주잔고 6.9배라는 숫자 뒤로, 정부 매출 61%·고객 집중도 61%·SPAC으로 무너진 동종사라는 그림자가 함께 따라온다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260503_191528.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-03T10:09:20.911706",
+  "total_duration_seconds": 367.4920012950897,
+  "system_version": "v4.5.7",
+  "revision": 0
+}
