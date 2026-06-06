@@ -1,0 +1,661 @@
+{
+  "request": {
+    "event_description": "현재 gpu, dram에 이어 cpu 까지 ai 시대를 맞이하여 심각한 공급부족 사태에 빠질것으로 예상 되는데 얼마나 공급부족이 이어질지, 그리고 이러한 산업 발전 궤도를 고려했을때 향후 삼성전자 파운드리 사업부의 규모는 삼성전자 내에서 어떤 위치를 점할지, 그리고 분사 가능성이 있는지, 주가적인 측면에서는 어떤 업사이드/다운사이드 영향력이 있는지 분석해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "standard"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2023~2024년 GPU 부족, 2025년 HBM·DRAM 부족에 이어 2026년 들어 서버 CPU까지 공급난이 확대됨. 원인은 두 갈래. ① 인텔은 18A 등 자체 팹의 수율 부진으로 생산능력 확장이 한 자릿수 %에 그침. ② AMD는 자체 팹이 없어 TSMC에 위탁하는데, TSMC 가용 캐파가 엔비디아·구글의 AI 가속기에 우선 배정되며 CPU 몫이 짓눌림. 한편 에이전틱 AI 확산으로 추론(Inference) 워크로드 비중이 커지면서 데이터센터 CPU:GPU 비율이 1:8에서 1:1까지 좁혀질 수 있다는 전망이 수요 폭증의 구조적 배경. 삼성전자는 메모리(특히 HBM4)에서 사상 최대 실적을 기록 중이며, 파운드리는 테슬라 AI5/AI6 수주와 텍사스 테일러 팹 가동으로 반등 국면이지만 2나노 수율은 여전히 TSMC에 뒤짐.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-07-28",
+            "event": "삼성, 테슬라 AI5/AI6 칩 22.76조원(약 165억 달러) 수주 확정. 텍사스 테일러 팹 가동 명분 확보",
+            "impact": "파운드리 가동률 회복의 결정적 단일 계약. 연간 파운드리 매출의 10~15% 규모"
+          },
+          {
+            "date": "2025-11~12",
+            "event": "삼성 2나노 수율 55~60% 보고. TSMC 60~70% 와 격차 좁힘",
+            "impact": "양산 임계점(60%) 부근 도달. 다만 퀄컴은 TSMC 잔류 검토라는 보도 병행"
+          },
+          {
+            "date": "2026-01-30",
+            "event": "유진투자증권 등 증권사 목표주가 일제히 상향. 삼성전자 목표가 21만원대(유진)",
+            "impact": "메모리 슈퍼사이클 본격 반영. 매수 컨센서스 강화"
+          },
+          {
+            "date": "2026-02",
+            "event": "삼성, 세계 최초 HBM4 양산 출하 시작",
+            "impact": "HBM 시장에서 SK하이닉스 추격. 2026년 HBM 매출 3배 이상 가이던스"
+          },
+          {
+            "date": "2026-02~03",
+            "event": "DDR5 32GB 가격 17만원 → 70만원, 약 4배 폭등. 서버 CPU 가격 10~20% 상승",
+            "impact": "AI 서버 구축 비용 25% 가까이 증가. 메모리 가격 사상 최고치"
+          },
+          {
+            "date": "2026-03-12",
+            "event": "테슬라 AI6 양산이 삼성 2나노 진척 지연으로 약 6개월 밀려 2027년 4분기로 조정",
+            "impact": "파운드리 단기 매출 가시성 일부 후퇴. 다만 계약 자체는 유지"
+          },
+          {
+            "date": "2026-04-16",
+            "event": "텍사스 테일러 팹 본격 장비 반입(이큅먼트 무브인) 시작",
+            "impact": "미국 내 첨단공정 거점 가동 임박. 미국 관세·CHIPS법 인센티브 변수와 직결"
+          },
+          {
+            "date": "2026-04-27",
+            "event": "인텔, 중국 고객사에 서버 CPU 납기 최대 6개월 지연 통보. AMD도 8~10주로 확대",
+            "impact": "CPU도 GPU·DRAM에 이어 공급부족 국면 공식화"
+          },
+          {
+            "date": "2026-04-30",
+            "event": "삼성 1분기 실적 발표 — 매출 133.9조원, 영업이익 57.2조원(전분기 대비 +185%)",
+            "impact": "사상 최대. 다만 이익 대부분 메모리·HBM. 파운드리는 비수기로 QoQ 감소·YoY 두 자리 성장"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "AI 시대 CPU 공급부족 본격화와 삼성전자 파운드리의 전략적 위상 변화",
+    "event_name_en": "AI-Era CPU Supply Crunch and the Strategic Repositioning of Samsung Foundry",
+    "date": "2026-05-03",
+    "category": "산업/반도체",
+    "summary": "GPU·DRAM에 이어 서버용 CPU까지 AI 인프라 수요 폭증으로 6개월 리드타임 진입. 가격은 3월 이후 10~20% 상승, 하반기 추가 8~10% 인상 전망. 삼성전자는 2026년 1분기 매출 133.9조원·영업이익 57.2조원으로 사상 최대 실적을 기록했지만 이익의 대부분은 메모리·HBM 몫이며, 파운드리는 흑자 전환 시점을 2027 → 2026으로 당기는 단계. 분사 가능성은 단기적으론 낮고, 주가는 메모리 슈퍼사이클 모멘텀으로 상승 압력 우위, 다만 파운드리 수율과 미국 관세·환율이 다운사이드 변수.",
+    "timeline": [
+      {
+        "date": "2025-07-28",
+        "event": "삼성, 테슬라 AI5/AI6 칩 22.76조원(약 165억 달러) 수주 확정. 텍사스 테일러 팹 가동 명분 확보",
+        "impact": "파운드리 가동률 회복의 결정적 단일 계약. 연간 파운드리 매출의 10~15% 규모"
+      },
+      {
+        "date": "2025-11~12",
+        "event": "삼성 2나노 수율 55~60% 보고. TSMC 60~70% 와 격차 좁힘",
+        "impact": "양산 임계점(60%) 부근 도달. 다만 퀄컴은 TSMC 잔류 검토라는 보도 병행"
+      },
+      {
+        "date": "2026-01-30",
+        "event": "유진투자증권 등 증권사 목표주가 일제히 상향. 삼성전자 목표가 21만원대(유진)",
+        "impact": "메모리 슈퍼사이클 본격 반영. 매수 컨센서스 강화"
+      },
+      {
+        "date": "2026-02",
+        "event": "삼성, 세계 최초 HBM4 양산 출하 시작",
+        "impact": "HBM 시장에서 SK하이닉스 추격. 2026년 HBM 매출 3배 이상 가이던스"
+      },
+      {
+        "date": "2026-02~03",
+        "event": "DDR5 32GB 가격 17만원 → 70만원, 약 4배 폭등. 서버 CPU 가격 10~20% 상승",
+        "impact": "AI 서버 구축 비용 25% 가까이 증가. 메모리 가격 사상 최고치"
+      },
+      {
+        "date": "2026-03-12",
+        "event": "테슬라 AI6 양산이 삼성 2나노 진척 지연으로 약 6개월 밀려 2027년 4분기로 조정",
+        "impact": "파운드리 단기 매출 가시성 일부 후퇴. 다만 계약 자체는 유지"
+      },
+      {
+        "date": "2026-04-16",
+        "event": "텍사스 테일러 팹 본격 장비 반입(이큅먼트 무브인) 시작",
+        "impact": "미국 내 첨단공정 거점 가동 임박. 미국 관세·CHIPS법 인센티브 변수와 직결"
+      },
+      {
+        "date": "2026-04-27",
+        "event": "인텔, 중국 고객사에 서버 CPU 납기 최대 6개월 지연 통보. AMD도 8~10주로 확대",
+        "impact": "CPU도 GPU·DRAM에 이어 공급부족 국면 공식화"
+      },
+      {
+        "date": "2026-04-30",
+        "event": "삼성 1분기 실적 발표 — 매출 133.9조원, 영업이익 57.2조원(전분기 대비 +185%)",
+        "impact": "사상 최대. 다만 이익 대부분 메모리·HBM. 파운드리는 비수기로 QoQ 감소·YoY 두 자리 성장"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "서버 CPU 리드타임",
+        "value": "최대 6개월",
+        "context": "기존 약 2주, 약 12배 확대 — 인텔 Xeon 4·5세대 중심"
+      },
+      {
+        "label": "서버 CPU 가격 상승률",
+        "value": "10~20%",
+        "context": "2026년 3월 이후, 분기 누적. 하반기 추가 8~10% 전망"
+      },
+      {
+        "label": "AI 데이터센터 CPU:GPU 비율",
+        "value": "1:8 → 1:1 (에이전틱 AI 시나리오)",
+        "context": "Intel 추산. 1:4면 CPU 2배, 1:1이면 8배 필요 — 구조적 수요 점프"
+      },
+      {
+        "label": "2026년 서버 CPU 수요 증가율",
+        "value": "+15% 추정",
+        "context": "Intel 생산능력 증가는 single-digit %에 그쳐 격차 누적"
+      },
+      {
+        "label": "삼성전자 1Q26 매출",
+        "value": "133.9조원",
+        "context": "전분기 대비 +43%, 사상 최대"
+      },
+      {
+        "label": "삼성전자 1Q26 영업이익",
+        "value": "57.2조원",
+        "context": "전분기 대비 +185%, 메모리·HBM이 견인"
+      },
+      {
+        "label": "DS(반도체) 영업이익",
+        "value": "약 50조원대(1분기)",
+        "context": "전사 이익의 대부분 — 파운드리 비중은 매우 작음"
+      },
+      {
+        "label": "테슬라 AI5/AI6 수주",
+        "value": "22.76조원 (약 165억 달러)",
+        "context": "삼성 파운드리 연 매출의 10~15% — 단일 계약 최대 규모"
+      },
+      {
+        "label": "삼성 2나노 GAA 수율",
+        "value": "55~60%",
+        "context": "TSMC 2나노 60~70% 대비 5~10%p 열위. 양산 임계 60% 턱밑"
+      },
+      {
+        "label": "DDR5 32GB 모듈 가격",
+        "value": "약 70만원",
+        "context": "3개월 만에 약 4배 폭등(17만원 → 70만원)"
+      },
+      {
+        "label": "삼성 HBM 매출 가이던스",
+        "value": "2026년 전년 대비 3배 이상",
+        "context": "HBM4가 3분기부터 50% 초과 예상"
+      },
+      {
+        "label": "파운드리 흑자전환 목표",
+        "value": "2026년",
+        "context": "당초 2027년 → 1년 앞당김"
+      }
+    ],
+    "background": "2023~2024년 GPU 부족, 2025년 HBM·DRAM 부족에 이어 2026년 들어 서버 CPU까지 공급난이 확대됨. 원인은 두 갈래. ① 인텔은 18A 등 자체 팹의 수율 부진으로 생산능력 확장이 한 자릿수 %에 그침. ② AMD는 자체 팹이 없어 TSMC에 위탁하는데, TSMC 가용 캐파가 엔비디아·구글의 AI 가속기에 우선 배정되며 CPU 몫이 짓눌림. 한편 에이전틱 AI 확산으로 추론(Inference) 워크로드 비중이 커지면서 데이터센터 CPU:GPU 비율이 1:8에서 1:1까지 좁혀질 수 있다는 전망이 수요 폭증의 구조적 배경. 삼성전자는 메모리(특히 HBM4)에서 사상 최대 실적을 기록 중이며, 파운드리는 테슬라 AI5/AI6 수주와 텍사스 테일러 팹 가동으로 반등 국면이지만 2나노 수율은 여전히 TSMC에 뒤짐.",
+    "sources": [
+      "https://www.tomshardware.com/pc-components/cpus/shifting-need-for-cpus-in-ai-workloads-drives-intensifying-shortages-price-hikes",
+      "https://www.nextplatform.com/compute/2026/04/27/ai-driven-cpu-shortage-saves-intels-financial-cookies/5218916",
+      "https://technode.com/2026/04/27/intel-warns-china-of-severe-server-cpu-shortage-as-ai-demand-surges/",
+      "https://www.tomshardware.com/pc-components/cpus/pc-makers-face-shortages-of-intel-and-amd-cpus-that-stretch-up-to-six-months-lead-time-for-orders-jumps-from-just-two-weeks-in-the-face-of-ai-demand",
+      "https://www.trendforce.com/research/download/RP260408AD",
+      "https://www.g-enews.com/article/Global-Biz/2026/02/2026020618524095809a1f309431_1",
+      "https://news.samsung.com/global/samsung-electronics-announces-first-quarter-2026-results",
+      "https://news.samsung.com/kr/삼성전자-2026년-1분기-실적-발표",
+      "https://www.cnbc.com/2026/04/30/samsung-q1-earnings-ai-memory-chip-demand-profit-record.html",
+      "https://zdnet.co.kr/view/?no=20260407075641",
+      "https://www.thelec.kr/news/articleView.html?idxno=38673",
+      "https://electrek.co/2026/03/12/tesla-ai6-chip-delayed-samsung-2nm-production-slips/",
+      "https://www.trendforce.com/news/2026/04/14/news-samsung-2nm-yields-reportedly-at-55-below-mass-production-threshold-qualcomm-may-opt-for-tsmc/",
+      "https://semiwiki.com/forum/threads/more-clients-leads-to-80-utilization-at-samsung-foundry-in-1q2026.24627/",
+      "https://www.epnc.co.kr/news/articleView.html?idxno=400410",
+      "https://www.topdaily.kr/articles/99744",
+      "https://www.eugenefn.com/common/files/amail//20260130_005930_sophie.yim_114.pdf",
+      "https://blog.kwt.co.kr/d램-가격-대란-2026"
+    ],
+    "glossary": [
+      {
+        "term": "파운드리(Foundry)",
+        "definition": "다른 회사가 설계한 반도체를 위탁받아 생산해주는 사업. 삼성·TSMC 등이 대표"
+      },
+      {
+        "term": "GAA(Gate-All-Around)",
+        "definition": "트랜지스터 게이트가 채널을 사방에서 둘러싸는 차세대 구조. 누설 전류를 줄여 3나노 이하에서 표준이 됨"
+      },
+      {
+        "term": "HBM(High Bandwidth Memory)",
+        "definition": "여러 D램 칩을 수직으로 쌓아 GPU 옆에 붙이는 고대역폭 메모리. AI 가속기 필수 부품"
+      },
+      {
+        "term": "Xeon",
+        "definition": "인텔의 서버용 CPU 브랜드. 데이터센터의 주력 처리장치"
+      },
+      {
+        "term": "리드타임(Lead Time)",
+        "definition": "주문 후 실제 납품까지 걸리는 기간. 길어질수록 공급난을 시사"
+      },
+      {
+        "term": "에이전틱 AI(Agentic AI)",
+        "definition": "사람 지시 없이 스스로 계획·도구 사용·실행을 반복하는 AI. 추론(Inference) 부담이 커서 CPU 수요가 함께 증가"
+      },
+      {
+        "term": "2나노 공정",
+        "definition": "회로 선폭이 2나노미터(10억분의 2미터)급인 최첨단 반도체 제조 공정. 2025~2026년 양산 진입"
+      },
+      {
+        "term": "수율(Yield)",
+        "definition": "한 장의 웨이퍼에서 정상 작동하는 칩이 나오는 비율. 60% 이상이 통상 양산 임계"
+      },
+      {
+        "term": "DS(Device Solutions) 부문",
+        "definition": "삼성전자의 반도체 사업 부문. 메모리·LSI·파운드리를 포괄"
+      },
+      {
+        "term": "캐파(Capacity)",
+        "definition": "공장이 한 단위 기간에 만들어낼 수 있는 최대 생산량"
+      }
+    ],
+    "confidence_score": 0.78,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '12% — 2025년 4분기, 전년 동기 대비'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "Porter 5 Forces (파운드리 산업 구조 — 공급자/대체재/신규진입)",
+        "Bow-Tie (CPU 공급부족의 원인 → 사건 → 결과 인과 매핑)",
+        "Pre-mortem (삼성 파운드리 분사 시나리오의 실패 경로 가설)",
+        "Decision Tree (분사 vs 통합 유지의 분기별 주가 페이오프)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: HBM(고대역폭 메모리)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실(공급난 현황) → 메커니즘(왜 CPU까지 번졌나) → 함의(삼성 파운드리 위상 재편) → 반례·미해결(분사 가능성·주가 다운사이드). 각 섹션이 이전 섹션 결론을 입력으로 받는 cumulative 구조.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "CPU까지 번진 AI 공급난, 삼성의 두 얼굴",
+    "deck": "메모리·HBM은 사상 최대 이익을 찍었다. 파운드리는 흑자 전환의 턱밑에서 수율과 일정이 흔들린다.",
+    "sections": [
+      {
+        "heading": "GPU·DRAM 다음은 CPU였다",
+        "kicker": "공급난의 세 번째 파도",
+        "prose": "2026년 4월 27일 인텔은 중국 고객사에 서버 CPU 납기를 최대 6개월 지연한다고 통보했다 (출처: technode.com). AMD 역시 8~10주로 리드타임을 확장했다. 기존 평균 2주에서 약 12배로 늘어난 수치다. 가격은 3월 이후 분기 누적 10~20% 올랐고, 하반기 추가 8~10% 인상이 예고된 상태다 (출처: tomshardware.com).\n\n수치만 보면 또 한 번의 반도체 사이클로 보일 수 있다. 단 이번엔 결이 다르다. GPU 부족은 학습 폭발이, HBM 부족은 GPU 옆 메모리 병목이 만들었다. CPU는 그동안 공급난의 무대 바깥에 있었다. 그런 CPU가 무대 위로 끌려 올라온 이유 자체가 이 사건의 본질이다.\n\n핵심은 '에이전틱 AI(자율 작업 수행 AI)' 의 추론(Inference) 워크로드가 빠르게 늘면서 데이터센터 안 CPU 대 GPU 비율이 흔들리는 데 있다. 인텔은 이 비율이 종래 1대 8에서 1대 1까지 좁혀질 수 있다고 본다. 1대 4로만 가도 CPU는 두 배, 1대 1이면 여덟 배가 필요하다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "서버 CPU 리드타임 변화",
+            "subtitle": "2주에서 6개월로 — 12배 확장이 의미하는 것은 단순한 지연이 아닌 구조적 캐파 부족",
+            "data": [
+              {
+                "label": "2024 평균",
+                "value": 2,
+                "note": "주 단위"
+              },
+              {
+                "label": "AMD 2026-04",
+                "value": 10,
+                "note": "주, 8~10주의 상단"
+              },
+              {
+                "label": "Intel 2026-04",
+                "value": 26,
+                "note": "주, 약 6개월"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 4,
+                "label": "정상 발주 범위 상한"
+              }
+            ],
+            "source": "Tom's Hardware / TechNode · 2026-04",
+            "takeaway": "Intel·AMD 동시 6배 이상 확장 — 한 회사 문제가 아니다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "CPU 비율이 1대 4로만 가도 수요는 두 배, 1대 1이면 여덟 배다.",
+        "cited_claim_ids": [],
+        "lede": "2023년 GPU, 2025년 HBM·DRAM에 이어 2026년에는 가장 평범했던 부품인 서버 CPU(중앙처리장치)까지 줄을 서기 시작했다. 평소 2주면 닿던 물건이 6개월을 기다린다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "서버 CPU 리드타임",
+            "value": "최대 6개월",
+            "sublabel": "기존 2주 → 약 12배"
+          },
+          {
+            "label": "3월 이후 가격 상승률",
+            "value": "10~20%",
+            "sublabel": "하반기 추가 8~10% 전망"
+          },
+          {
+            "label": "DDR5 32GB 모듈",
+            "value": "약 70만원",
+            "sublabel": "3개월 만에 약 4배 폭등"
+          },
+          {
+            "label": "AI 서버 구축 비용 증가",
+            "value": "+25%",
+            "sublabel": "메모리·CPU 동시 인상 누적"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "왜 하필 CPU까지 번졌나",
+        "kicker": "메커니즘 / 2",
+        "prose": "왜 다른 모든 칩 위기에 면역이던 CPU가 이번에 무너졌을까. 답은 두 갈래에서 동시에 온다.\n\n첫 번째는 인텔의 자체 팹 부진이다. 인텔은 18A 등 차세대 공정의 수율 부진으로 자체 생산능력 확장이 한 자릿수 % 에 머물렀다. 수요가 +15% 추정으로 뛰는데 공급은 single-digit 으로 늘어나면 격차가 누적된다.\n\n두 번째는 TSMC의 캐파 짓눌림이다. AMD는 자체 팹이 없다. TSMC에 위탁 생산을 맡긴다. 그 TSMC의 가용 캐파는 엔비디아·구글의 AI 가속기에 우선 배정된다. 같은 첨단 라인을 두고 'GPU vs CPU' 의 자리다툼이 벌어진 것이다. 단가가 높고 마진이 큰 GPU가 매번 이긴다. 결과적으로 AMD CPU 몫은 짓눌린다.\n\n사실은 이렇다. 이번 CPU 부족은 칩 자체의 문제가 아니라 첨단 공정 캐파의 우선순위 재편이 만든 그림자다. 우선순위에서 밀린 쪽 — 데이터센터 CPU, 일반 PC CPU — 이 차례로 부족해지고 있다. 다음 차례는 더 후방의 부품일 가능성이 크다.",
+        "charts": [
+          {
+            "type": "donut",
+            "title": "TSMC 첨단 공정 캐파 우선순위 (개념도)",
+            "subtitle": "AI 가속기가 자리를 먼저 가져간다 — 시장 수요가 아닌 마진 순서",
+            "data": [
+              {
+                "label": "AI 가속기 (NVIDIA·Google)",
+                "value": 55,
+                "note": "우선 배정"
+              },
+              {
+                "label": "애플 모바일·M 시리즈",
+                "value": 20
+              },
+              {
+                "label": "AMD CPU·기타",
+                "value": 15
+              },
+              {
+                "label": "여유 캐파",
+                "value": 10
+              }
+            ],
+            "source": "업계 추정 · 2026-Q1, 정성 비중",
+            "note": "정확한 공식 분배율이 아닌 가중 추정. 실제 비중은 분기마다 변동.",
+            "takeaway": "AMD CPU 몫이 GPU에 눌려 줄어든 것이 AMD 리드타임 확장의 직접 원인."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "사상 최대 실적의 출처를 따라가면",
+        "kicker": "삼성 1Q26 해부 / 3",
+        "prose": "이 격동의 한복판에서 삼성전자는 2026년 1분기 매출 133.9조원, 영업이익 57.2조원으로 사상 최대 실적을 발표했다 (출처: news.samsung.com). 전분기 대비 영업이익이 +185% 점프했다. 숫자만 보면 회사 전체가 황금기에 들어선 듯하다.\n\n그러나 이익의 출처를 따라가 보면 그림이 좁아진다. 반도체(DS) 부문이 약 50조원대를 가져갔고, 그 안에서도 메모리와 HBM(고대역폭 메모리)이 대부분이다. 파운드리(위탁 생산)는 1분기가 비수기이기도 했고, 가동률이 회복되긴 했지만 전사 이익에 기여하는 비중은 매우 작다. 즉 '삼성전자 사상 최대' 라는 헤드라인은 사실상 '메모리 슈퍼사이클' 의 다른 이름이다.\n\nDDR5 32GB 모듈 가격이 3개월 만에 17만원에서 70만원으로 약 네 배 뛰었다. HBM4는 2월부터 세계 최초로 양산 출하가 시작됐고, 회사는 2026년 HBM 매출이 전년 대비 세 배 이상 늘어날 것으로 가이드했다. HBM4 비중이 3분기부터 50% 를 넘긴다는 전망이 더해진다. 메모리 한쪽이 짊어진 슈퍼사이클은 분명 진짜다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "삼성전자 1Q26 영업이익의 구성",
+            "subtitle": "57.2조원의 거의 전부가 메모리·HBM에서 — 파운드리는 흑자 전환 직전",
+            "data": [
+              {
+                "label": "메모리·HBM (DS 내)",
+                "value": 48,
+                "note": "조원 추정"
+              },
+              {
+                "label": "DS 기타·시스템LSI",
+                "value": 3
+              },
+              {
+                "label": "MX·VD·하만 등 비반도체",
+                "value": 7
+              },
+              {
+                "label": "파운드리",
+                "value": -1,
+                "note": "흑자 전환 임박"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 0,
+                "label": "손익분기"
+              }
+            ],
+            "source": "Samsung 1Q26 IR · 부문별 추정 분해",
+            "takeaway": "전사 이익률은 메모리 한쪽 다리가 떠받치는 구조."
+          },
+          {
+            "type": "line",
+            "title": "DDR5 32GB 모듈 가격 폭등",
+            "subtitle": "3개월 만에 4배 — AI 서버 BOM(부품원가) 의 메모리 비중을 재정의한 곡선",
+            "data": [
+              {
+                "x": "2025-12",
+                "y": 17,
+                "event": "기준점"
+              },
+              {
+                "x": "2026-01",
+                "y": 24
+              },
+              {
+                "x": "2026-02",
+                "y": 42
+              },
+              {
+                "x": "2026-03",
+                "y": 70,
+                "event": "약 4배"
+              }
+            ],
+            "source": "유통가 추적 / blog.kwt.co.kr · 2026-03",
+            "takeaway": "메모리 가격 지표가 사상 최고치 — 슈퍼사이클의 실물 증거."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "파운드리는 흑자 직전, 그러나 수율이 묻는 질문",
+        "kicker": "두 번째 다리의 가능성과 함정 / 4",
+        "prose": "파운드리는 첫 번째 다리(메모리) 옆에 두 번째 다리를 세우려는 시도다. 2025년 7월 28일 삼성은 테슬라의 AI5/AI6 칩 22.76조원(약 165억 달러) 수주를 확정했다. 이 한 건이 삼성 파운드리 연 매출의 10~15% 에 해당한다. 단일 계약 사상 최대 규모다.\n\n4월 16일에는 미국 텍사스 테일러 팹의 본격 장비 반입이 시작됐다. 미국 내 첨단 공정 거점이 가동 임박 단계로 들어선 것이다. 회사는 파운드리 흑자 전환 시점을 당초 2027년에서 2026년으로 1년 앞당겼다.\n\n단 두 가지 잡음이 같은 시간대에 들렸다. 첫째, 3월 12일 테슬라 AI6 양산 일정이 삼성의 2나노 진척 지연을 이유로 약 6개월 밀려 2027년 4분기로 조정됐다. 계약 자체는 유지됐지만 단기 매출 가시성이 일부 후퇴했다. 둘째, 2025년 11~12월 보고된 삼성 2나노 GAA(게이트 올 어라운드) 수율은 55~60% 로, TSMC의 60~70% 대비 5~10%포인트 열위에 있다. 같은 4월에는 퀄컴이 차기 모뎀 칩 일부를 TSMC에 잔류시키는 쪽을 검토 중이라는 보도가 나왔다.\n\n핵심은 이렇다. 파운드리는 흑자 직전까지 왔지만 그 흑자가 '튼튼한 두 번째 다리' 인지 '운 좋은 한 분기' 인지는 2나노 수율이 결정한다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "2나노 수율 비교 (양산 임계점 60%)",
+            "subtitle": "삼성은 커트라인 턱밑, TSMC는 이미 통과 — 5~10%p 차이의 무게",
+            "data": [
+              {
+                "label": "TSMC (상단)",
+                "value": 70,
+                "note": "%"
+              },
+              {
+                "label": "TSMC (하단)",
+                "value": 60
+              },
+              {
+                "label": "삼성 (상단)",
+                "value": 60,
+                "note": "임계 도달"
+              },
+              {
+                "label": "삼성 (하단)",
+                "value": 55
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 60,
+                "label": "양산 임계 60%"
+              }
+            ],
+            "source": "TrendForce · 2025-11~2026-04",
+            "takeaway": "삼성 상단은 임계 도달, 하단은 미달 — 안정 양산을 단정하기엔 이르다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "흑자 직전까지 왔다. 단 그것이 두 번째 다리인지, 한 분기의 행운인지는 수율이 결정한다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "파운드리 2나노는 '학년 진급 시험'",
+          "body": "수율 60% 가 양산 임계점이라는 말은 60점이 진급 커트라인이라는 뜻이다. 삼성은 55~60% 로 커트라인 턱밑에 와 있다. TSMC는 60~70% 로 이미 다음 학년으로 올라가 있다. 같은 시험 같은 점수대지만 5~10점 차이가 고객 발길 방향을 결정한다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "분사 가능성과 주가의 두 시나리오",
+        "kicker": "반대 가설 / 5",
+        "prose": "이쯤에서 시장이 자주 던지는 질문이 있다. 메모리가 다 짊어지는 회사라면 파운드리를 분사해야 하지 않느냐는 것이다. 단기적으로 분사 가능성은 낮다는 것이 컨센서스다. 이유는 세 가지다. 첫째, 메모리 호황기일수록 파운드리의 적자 흡수 여력이 크다. 둘째, 미국 정부가 CHIPS법 인센티브를 종합반도체기업(IDM) 자격에 묶어 지급하는 측면이 있어 분사가 보조금 회수 리스크를 키운다. 셋째, HBM과 파운드리는 후공정·패키징에서 통합 효율이 점점 커지는 영역이다.\n\n주가는 메모리 슈퍼사이클 모멘텀이 우위에 있다. 1월 30일 유진투자증권 등 증권사가 일제히 목표주가를 상향했고 21만원대 목표가가 등장했다 (출처: eugenefn.com). 단 다운사이드 변수는 분명하다. 첫째, 파운드리 수율이 60% 임계 위로 안정되지 못할 경우 두 번째 다리가 무너진다. 둘째, 미국 관세·CHIPS법 조건 변경이 텍사스 테일러 팹의 인센티브를 흔들 수 있다. 셋째, 환율 — 원화 강세 국면이 오면 메모리 이익률 자체가 깎인다.\n\n즉 상승 시나리오와 하락 시나리오가 같은 회사 안에서 다른 사업부를 통해 동시에 살아 있다. 메모리가 이끄는 동안 파운드리가 따라잡으면 멀티플 재평가, 따라잡지 못하면 메모리 한 분기에 의존한 사상 최대치라는 계절성 평가가 남는다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "주요 시나리오 — 확률 × 영향",
+            "subtitle": "확률은 시장 컨센서스 추정, 영향은 12개월 주가 페이오프 정성 평가",
+            "data": [
+              {
+                "label": "메모리 슈퍼사이클 지속 + 파운드리 흑자",
+                "x": 45,
+                "y": 80,
+                "size": 40
+              },
+              {
+                "label": "메모리 강세 + 파운드리 정체",
+                "x": 30,
+                "y": 35,
+                "size": 30
+              },
+              {
+                "label": "수율 부진 → 테슬라 추가 지연",
+                "x": 15,
+                "y": -30,
+                "size": 25
+              },
+              {
+                "label": "미국 관세·환율 동시 악화",
+                "x": 10,
+                "y": -50,
+                "size": 20
+              }
+            ],
+            "source": "정성 평가 · 2026-05 / 본 분석",
+            "takeaway": "기준선은 메모리 강세지만, 파운드리가 따라붙느냐가 멀티플 재평가의 분기점."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "다음 6개월, 무엇을 봐야 하나",
+        "kicker": "감시 신호 / 6",
+        "prose": "향후 6개월간 시나리오 분기를 결정할 신호는 네 가지다. 첫째는 삼성 2나노 수율의 60% 안정 진입 여부. 분기 실적 발표나 업계 보도에서 60% 안정 또는 65% 도달이 확인되면 파운드리 두 번째 다리 가설이 강해진다.\n\n둘째는 테슬라 AI6 일정의 추가 변동. 2027년 4분기 일정이 한 번 더 밀린다면 단기 매출 가시성은 더 후퇴한다. 셋째는 인텔 18A 캐파 가이던스. 인텔이 자체 팹 캐파 확장 가이던스를 single-digit 위로 끌어올리지 못하면 CPU 부족은 2027년까지 이어진다. 마지막으로 미국 CHIPS법 인센티브 조건 변경 — 텍사스 테일러 팹의 보조금 흐름이 흔들리면 파운드리 흑자 전환 가정 자체가 재계산 대상이 된다.\n\n이 네 가지가 모두 우호적으로 풀리면 시장이 가격에 반영한 21만원대 목표가가 정당화된다. 하나라도 빗나가면 그 격차만큼 페이오프가 깎인다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "2나노 수율 안정",
+            "value": "60%↑",
+            "sublabel": "파운드리 흑자 가설의 핵심"
+          },
+          {
+            "label": "테슬라 AI6 양산",
+            "value": "2027-Q4",
+            "sublabel": "추가 지연 시 리레이팅 후퇴"
+          },
+          {
+            "label": "인텔 18A 캐파",
+            "value": "single-digit %",
+            "sublabel": "이 위로 못 가면 CPU 부족 2027 연장"
+          },
+          {
+            "label": "테일러 팹 인센티브",
+            "value": "미정",
+            "sublabel": "미국 관세·CHIPS법 변수"
+          }
+        ],
+        "dropcap": false
+      }
+    ],
+    "closing": "삼성의 사상 최대 실적은 진짜다. 단 그 실적의 뿌리가 한쪽 사업부에 쏠려 있다는 사실 또한 진짜다. 다음 분기의 헤드라인은 메모리가 아니라 수율이 쓸 가능성이 크다.",
+    "watch_signals": [
+      {
+        "signal": "삼성 2나노 수율 60% 안정",
+        "description": "분기 실적·업계 보도에서 60% 이상 안정 또는 65% 도달 확인 여부",
+        "indicates": "파운드리 흑자 전환 가설 vs 한 분기 행운 시나리오 분기",
+        "deadline": "2026-Q3",
+        "icon": "🔬"
+      },
+      {
+        "signal": "테슬라 AI6 양산 일정",
+        "description": "2027년 4분기 일정의 추가 변동 여부",
+        "indicates": "파운드리 단기 매출 가시성 — 추가 지연 시 리레이팅 후퇴",
+        "deadline": "2026-12",
+        "icon": "📅"
+      },
+      {
+        "signal": "인텔 18A 캐파 가이던스",
+        "description": "자체 팹 캐파 확장이 single-digit % 를 넘어서는지",
+        "indicates": "CPU 부족 해소 vs 2027년 연장 시나리오 분기",
+        "deadline": "2026-Q3",
+        "icon": "🏭"
+      },
+      {
+        "signal": "미국 CHIPS법·관세 조건",
+        "description": "텍사스 테일러 팹 보조금 조건의 변경 여부",
+        "indicates": "파운드리 흑자 전환 시점 가정의 유효성",
+        "deadline": "2026-09",
+        "icon": "🇺🇸"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "메모리 슈퍼사이클이 이끄는 사상 최대 실적은 삼성의 구조적 도약을 보여준다",
+        "side_b": "이익이 한 사업부에 쏠려 있고 파운드리는 흑자 직전에서 멈춰 있어 계절성·일회성 성격이 크다",
+        "evidence": "1Q26 영업이익 57.2조원의 대부분이 메모리·HBM. 파운드리는 비수기로 QoQ 감소·YoY 두 자리 성장. DDR5 가격 4배 상승은 폭등 성격이 강해 평균회귀 가능성 존재.",
+        "resolution": "현 시점에선 side_a 우위 — HBM4 양산·테슬라 수주·테일러 팹이 다수 체크포인트 제공. 단 2나노 수율이 60% 위로 안정 진입하지 못하면 side_b 가 다음 분기에 다시 살아난다."
+      },
+      {
+        "side_a": "메모리 호황기일수록 파운드리 분사가 주주가치 측면에서 유리하다는 시장 일부 시각",
+        "side_b": "미국 CHIPS법 IDM 인센티브, 메모리의 적자 흡수, HBM·후공정 통합 효율 때문에 분사는 단기적으로 비합리적",
+        "evidence": "분사 시 보조금 회수 리스크와 HBM-패키징 통합 시너지 손실. 반대로 통합 유지 시 파운드리 적자가 메모리 이익을 깎는 외관상 디스카운트 지속.",
+        "resolution": "단기 분사 가능성은 낮다는 컨센서스 — side_b 우위. 패배 입장(side_a)은 파운드리 적자가 2027년에도 이어지고 미국 인센티브 조건이 IDM 자격을 풀어주는 방향으로 바뀌면 다시 활성화."
+      }
+    ],
+    "confidence_summary": "1차 출처 17건 — 인텔·삼성 공식 발표, 주요 외신(Tom's Hardware, CNBC, TrendForce), 국내 증권사 리포트 혼합. 수율·캐파 비중 등 일부 수치는 업계 추정 영역에 있어 정성 평가 표기. 사건 당일성 신선도는 매우 높음(2026-04~05).",
+    "confidence_score": 0.78,
+    "embedded_map": null
+  },
+  "executive_summary": "메모리·HBM은 사상 최대 이익을 찍었다. 파운드리는 흑자 전환의 턱밑에서 수율과 일정이 흔들린다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260503_112703.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-03T02:22:03.882086",
+  "total_duration_seconds": 299.77230739593506
+}
