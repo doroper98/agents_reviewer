@@ -1,0 +1,602 @@
+{
+  "request": {
+    "event_description": "와우 오늘 이런일이 있었다고 하네. 샅샅이 deep하게 조사해\n\nBREAKING | Escalation between NATO and Russia is reaching unprecedented scales, raising the risks of a potential military confrontation.\n\n​Today, a Romanian Air Force F-16 based in Lithuania shot down a Ukrainian drone in Estonian airspace. The drone's trajectory had been altered and redirected toward Estonia by Russian forces using electronic warfare (EW) systems.\n\n​Ukraine officially denies using the airspace of the Baltic states, noting that Russia is deliberately and provocatively altering the targets of Ukrainian drones to generate certain propaganda threats.",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "발트 3국과 핀란드는 러시아와 국경을 맞댄 NATO 동맹국. 2026년 들어 우크라이나의 러시아 본토 (특히 발트해 연안 정유·항만) 장거리 드론 타격이 강화되면서, 러시아 EW(전자전) 시스템이 드론 항법(GPS·위성 통신)을 교란해 항로를 강제로 변경시킨 사례가 누적됨. 우크라이나 측은 러시아가 NATO 영토를 향해 *의도적으로* 드론을 재유도해 정보·심리전 효과를 노린다고 주장. NATO 일각은 이를 러시아 자산 방어 EW 의 *부수 효과* (드론이 항법 상실 후 유사 형상 타깃을 자율 선택) 로 해석. 어느 쪽이든 NATO 영공 통제 부담은 가중되고, 격추 사례 등장으로 우-러 전쟁의 spillover 가 NATO 비행 작전 단계로 한 단계 옮겨감.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-03-23",
+            "event": "리투아니아에 우크라이나제 드론 추락 (3국 연쇄 침범의 시작)",
+            "impact": "발트 EW(전자전) 회랑에서의 드론 표류 패턴 가시화"
+          },
+          {
+            "date": "2026-03-25",
+            "event": "라트비아·에스토니아에 추가 드론 추락 — 48시간 내 3국 동시 침범",
+            "impact": "Sybiha 우크라이나 외교장관, 러시아의 의도적 항로 변경 주장"
+          },
+          {
+            "date": "2026-03-31",
+            "event": "포르투갈 F-16M, 이탈리아 유로파이터를 대체해 에스토니아 Ämari 기지 배치",
+            "impact": "NATO 발트 공역 경찰임무 강화"
+          },
+          {
+            "date": "2026-04-01",
+            "event": "루마니아 'Carpathian Vipers' F-16 6대·인원 100명, 시아울리아이 기지 배치 (~7월까지)",
+            "impact": "프랑스 Rafale 와 공동으로 발트 강화 공역 경찰임무 수행"
+          },
+          {
+            "date": "2026-05-07",
+            "event": "라트비아 Rēzekne 일대에 우크라이나제 드론 2기 침범, 1기가 빈 연료 저장 시설 타격",
+            "impact": "민간 인명 피해 없음 / 발트 첫 폭발성 타격"
+          },
+          {
+            "date": "2026-05-10",
+            "event": "라트비아 국방장관 Andris Spruds 사임",
+            "impact": "드론 대응 부실 책임"
+          },
+          {
+            "date": "2026-05-14",
+            "event": "라트비아 총리 Evika Silina 사임 (좌파 Progressives 연정 이탈)",
+            "impact": "10월 총선 4개월 전 정부 붕괴"
+          },
+          {
+            "date": "2026-05-17",
+            "event": "리투아니아 Utena 지구 주민이 드론 잔해 발견 (폭발물 확인)",
+            "impact": "48시간 내 발트 두 번째 침범 — 5/18 통제 폭파"
+          },
+          {
+            "date": "2026-05-19",
+            "event": "에스토니아 Võrtsjärv 호수~Põltsamaa 사이 상공에서 루마니아 F-16 이 드론 격추, 잔해 Kablaküla 부근 낙하",
+            "impact": "발트 공역 경찰임무 출범 이래 *최초* 영공 침범 드론 격추"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "에스토니아 영공 침범 우크라이나 드론, NATO 전투기에 격추",
+    "event_name_en": "NATO F-16 Downs Ukrainian Drone Over Estonia: First Baltic Air-Policing Shootdown",
+    "date": "2026-05-19",
+    "category": "안보/지정학 — NATO-러시아 마찰, 발트 공역 침범",
+    "summary": "2026-05-19 리투아니아 시아울리아이(Šiauliai) 기지 주둔 루마니아 공군 F-16 1대가 에스토니아 영공으로 진입한 우크라이나제 드론 1기를 격추함. NATO 발트 공역 경찰임무(Baltic Air Policing) 출범 이래 영공 침범 드론을 격추한 *최초* 사례. 48시간 사이 발트 국가에서 발생한 두 번째 침범 사건으로, 3월 이후 누적된 침범 패턴이 정치 위기 단계로 진입함.",
+    "timeline": [
+      {
+        "date": "2026-03-23",
+        "event": "리투아니아에 우크라이나제 드론 추락 (3국 연쇄 침범의 시작)",
+        "impact": "발트 EW(전자전) 회랑에서의 드론 표류 패턴 가시화"
+      },
+      {
+        "date": "2026-03-25",
+        "event": "라트비아·에스토니아에 추가 드론 추락 — 48시간 내 3국 동시 침범",
+        "impact": "Sybiha 우크라이나 외교장관, 러시아의 의도적 항로 변경 주장"
+      },
+      {
+        "date": "2026-03-31",
+        "event": "포르투갈 F-16M, 이탈리아 유로파이터를 대체해 에스토니아 Ämari 기지 배치",
+        "impact": "NATO 발트 공역 경찰임무 강화"
+      },
+      {
+        "date": "2026-04-01",
+        "event": "루마니아 'Carpathian Vipers' F-16 6대·인원 100명, 시아울리아이 기지 배치 (~7월까지)",
+        "impact": "프랑스 Rafale 와 공동으로 발트 강화 공역 경찰임무 수행"
+      },
+      {
+        "date": "2026-05-07",
+        "event": "라트비아 Rēzekne 일대에 우크라이나제 드론 2기 침범, 1기가 빈 연료 저장 시설 타격",
+        "impact": "민간 인명 피해 없음 / 발트 첫 폭발성 타격"
+      },
+      {
+        "date": "2026-05-10",
+        "event": "라트비아 국방장관 Andris Spruds 사임",
+        "impact": "드론 대응 부실 책임"
+      },
+      {
+        "date": "2026-05-14",
+        "event": "라트비아 총리 Evika Silina 사임 (좌파 Progressives 연정 이탈)",
+        "impact": "10월 총선 4개월 전 정부 붕괴"
+      },
+      {
+        "date": "2026-05-17",
+        "event": "리투아니아 Utena 지구 주민이 드론 잔해 발견 (폭발물 확인)",
+        "impact": "48시간 내 발트 두 번째 침범 — 5/18 통제 폭파"
+      },
+      {
+        "date": "2026-05-19",
+        "event": "에스토니아 Võrtsjärv 호수~Põltsamaa 사이 상공에서 루마니아 F-16 이 드론 격추, 잔해 Kablaküla 부근 낙하",
+        "impact": "발트 공역 경찰임무 출범 이래 *최초* 영공 침범 드론 격추"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "격추 사례",
+        "value": "1건 (최초)",
+        "context": "발트 공역 경찰임무(2004 출범) 이래 영공 침범 드론을 NATO 전투기가 격추한 첫 사례"
+      },
+      {
+        "label": "48시간 침범 건수",
+        "value": "2건",
+        "context": "5/17 리투아니아 Utena + 5/19 에스토니아 — 발트 공역의 침범 빈도 가속화"
+      },
+      {
+        "label": "3월 이후 발트 침범",
+        "value": "4개국 (핀란드·라트비아·리투아니아·에스토니아)",
+        "context": "러시아와 직접 국경을 맞댄 NATO 동맹국 전체에 누적"
+      },
+      {
+        "label": "라트비아 사임자",
+        "value": "2명 (국방장관 + 총리)",
+        "context": "5/10·5/14 — 침범 대응 책임으로 정부 붕괴"
+      },
+      {
+        "label": "루마니아 detachment",
+        "value": "F-16 6대 · 100명",
+        "context": "Carpathian Vipers, 2026-04-01~7월. 루마니아의 리투아니아 4회차 배치"
+      },
+      {
+        "label": "민간 피해",
+        "value": "0건",
+        "context": "에스토니아 5/19 격추 후 잔해 낙하지 인근 인명·재산 피해 없음"
+      }
+    ],
+    "background": "발트 3국과 핀란드는 러시아와 국경을 맞댄 NATO 동맹국. 2026년 들어 우크라이나의 러시아 본토 (특히 발트해 연안 정유·항만) 장거리 드론 타격이 강화되면서, 러시아 EW(전자전) 시스템이 드론 항법(GPS·위성 통신)을 교란해 항로를 강제로 변경시킨 사례가 누적됨. 우크라이나 측은 러시아가 NATO 영토를 향해 *의도적으로* 드론을 재유도해 정보·심리전 효과를 노린다고 주장. NATO 일각은 이를 러시아 자산 방어 EW 의 *부수 효과* (드론이 항법 상실 후 유사 형상 타깃을 자율 선택) 로 해석. 어느 쪽이든 NATO 영공 통제 부담은 가중되고, 격추 사례 등장으로 우-러 전쟁의 spillover 가 NATO 비행 작전 단계로 한 단계 옮겨감.",
+    "sources": [
+      "Estonian World — Romanian F-16 shoots down Ukrainian drone over Estonia (2026-05-19)",
+      "Aerotime Aero — NATO fighter downs drone over Estonia in second Baltic incursion in 48 hours",
+      "U.S. News & World Report (Reuters) — NATO Jet Shoots Down Drone in Estonia (2026-05-19)",
+      "Washington Post — Latvian government collapses amid dispute over breaches by Ukrainian drones (2026-05-14)",
+      "Al Jazeera — Latvian prime minister resigns after drone incident (2026-05-14)",
+      "Meduza — Ukrainian drones crashing in Latvia trigger a government crisis (2026-05-12)",
+      "Defense News — Ukrainian drones hit all three Baltic States − did Russia redirect them? (2026-03-27)",
+      "Wikipedia — 2026 Ukrainian drone incursions into Baltic states",
+      "Allied Air Command (NATO) — Romanian Air Force assume NATO's Air Policing mission in Šiauliai",
+      "Romania Insider — Romanian Air Force deploys F-16 jets to Baltic region (2026-03)"
+    ],
+    "glossary": [
+      {
+        "term": "NATO 발트 공역 경찰임무 (Baltic Air Policing)",
+        "definition": "전투기를 보유하지 못한 에스토니아·라트비아·리투아니아 3국 영공을 NATO 회원국 전투기가 윤번 배치로 지키는 임무. 2004년부터 시아울리아이(리투아니아) + Ämari(에스토니아) 두 기지에서 운영"
+      },
+      {
+        "term": "EW (Electronic Warfare, 전자전)",
+        "definition": "적의 전파·GPS·통신 신호를 교란하거나 가짜 신호로 속이는 작전. 드론의 위성 항법을 무력화하면 드론이 항로를 잃거나 사전에 등록된 백업 좌표로 향하게 됨"
+      },
+      {
+        "term": "Carpathian Vipers",
+        "definition": "루마니아 공군의 F-16 detachment 별명. 2026-04-01 부터 시아울리아이 기지에 6대·100명 규모로 배치 (~7월)"
+      },
+      {
+        "term": "kamikaze drone (자폭 드론)",
+        "definition": "탑재 폭약을 가지고 표적에 직접 충돌해 폭발하는 일회용 드론. Shahed 류 / 우크라이나의 자체 장거리 타격 드론이 대표"
+      },
+      {
+        "term": "NATO 헌장 4조",
+        "definition": "회원국이 영토·정치적 독립·안보 위협을 받았다고 판단할 때 동맹 협의를 요청하는 조항. 5조(집단방위)보다 한 단계 낮은 협의 절차"
+      }
+    ],
+    "confidence_score": 0.88,
+    "instruments_mentioned": [],
+    "time_series": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "NATO 전투기, 발트 상공서 첫 드론 격추",
+    "deck": "2026년 5월 19일 루마니아 F-16이 에스토니아 영공의 우크라이나제 드론을 격추했다. 발트 공역 경찰임무 22년 역사상 첫 격추이자, 48시간 사이 두 번째 영공 침범에 대한 대응이다.",
+    "sections": [
+      {
+        "heading": "발트 영공의 지리",
+        "kicker": "지정학적 배경",
+        "prose": "이번 격추는 발트 공역 경찰임무 (Baltic Air Policing — 자체 전투기를 보유하지 않은 발트 3국의 영공을 동맹국 전투기가 순환 방위하는 NATO 작전, 2004년 출범) 의 틀 안에서 벌어졌다. 작전의 거점은 리투아니아 시아울리아이 기지와 에스토니아 애마리 기지 두 곳이다. 시아울리아이에는 2026년 4월부터 루마니아 공군의 F-16 6대와 인원 100명이 'Carpathian Vipers' 라는 이름으로 7월까지 배치된다. 애마리에는 3월 말 포르투갈 공군의 F-16M이 이탈리아 유로파이터를 대체해 들어왔다.\n\n5월 19일 격추가 일어난 지점은 에스토니아 남부의 부르츠야르브 호수와 푈차마 사이 상공이다. 드론 잔해는 카블라퀼라 부근에 떨어졌고 민간 피해는 보고되지 않았다. 두 NATO 기지에서 발진한 전투기는 평소에는 러시아 군용기의 영공 접근을 식별·차단하는 임무를 맡지만, 이번에는 표적이 처음으로 사람이 타지 않은 우크라이나제 자폭드론이었다는 점이 달랐다.\n\n같은 회랑에서 일어난 다른 두 사건의 지점을 함께 보면 패턴이 분명해진다. 5월 7일 라트비아 동부의 레제크네에서는 드론 1기가 빈 연료 저장 시설을 타격했고, 5월 17일에는 리투아니아 우테나에서 주민이 폭발물이 실린 잔해를 발견했다. 세 지점은 모두 러시아 또는 벨라루스 국경에서 100km 안쪽이다. 격추가 NATO 동측의 임의 지역이 아니라 동맹의 가장 얇은 살갗에서 일어났다는 사실이 사건의 무게를 더한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "에스토니아·라트비아·리투아니아 세 나라는 러시아와 직접 국경을 맞댄 NATO 동맹국이다. 발트해 동안의 좁은 회랑에 자리해 NATO의 동측 비행 작전 무대가 된다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "격추 사례",
+            "value": "1건 (최초)",
+            "sublabel": "발트 공역 경찰임무 출범 (2004) 이래"
+          },
+          {
+            "label": "48시간 침범",
+            "value": "2건",
+            "sublabel": "5/17 리투아니아 + 5/19 에스토니아"
+          },
+          {
+            "label": "3월 이후 영향 국가",
+            "value": "4개국",
+            "sublabel": "핀란드·라트비아·리투아니아·에스토니아"
+          },
+          {
+            "label": "민간 피해",
+            "value": "0건",
+            "sublabel": "5/19 격추 잔해 낙하"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "침범의 누적 패턴",
+        "kicker": "사실 추적",
+        "prose": "5월 19일 격추는 단발 사건이 아니라 두 달 가까이 누적된 사슬의 마지막 고리다. 시작은 3월 23일 리투아니아에 떨어진 드론 1기였다. 이틀 뒤인 3월 25일에는 라트비아와 에스토니아에서 각각 추가 추락이 보고되어, 48시간 안에 발트 3국 모두가 영향을 받았다.\n\n그 직후인 3월 31일 포르투갈 F-16M이 애마리에 들어왔고, 4월 1일에는 루마니아 F-16 6대가 시아울리아이에 합류했다. 4월 한 달은 표면상 잠잠했지만, 5월 7일 라트비아 레제크네에서 빈 연료 저장 시설이 드론에 타격된 사건이 첫 폭발성 피해를 기록했다 (아래 차트).\n\n5월의 가속이 이번 위기의 본질이다. 5월 7일 폭발성 타격, 17일 리투아니아 우테나의 폭발물 잔해 발견, 19일 에스토니아 영공 격추가 12일 사이에 일어났다. 평균 4일에 한 번꼴이다. 빈도가 임계 구간에 들어왔다는 신호로 읽힌다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "발트 영공 누적 침범 사건",
+            "subtitle": "3월 23일 첫 추락 이후 6건 — 5월 들어 가속",
+            "data": [
+              {
+                "x": "2026-03-23",
+                "y": 1,
+                "event": "리투아니아 첫 추락"
+              },
+              {
+                "x": "2026-03-25",
+                "y": 3,
+                "event": "라트비아·에스토니아 동시 침범"
+              },
+              {
+                "x": "2026-05-07",
+                "y": 4,
+                "event": "라트비아 Rēzekne 폭발성 타격"
+              },
+              {
+                "x": "2026-05-17",
+                "y": 5,
+                "event": "리투아니아 Utena 잔해"
+              },
+              {
+                "x": "2026-05-19",
+                "y": 6,
+                "event": "에스토니아 영공 격추"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "band",
+                "x_from": "2026-05-07",
+                "x_to": "2026-05-19",
+                "label": "12일간 3건"
+              }
+            ],
+            "source": "NATO 발표, Estonian World, Defense News / 2026-05-19 기준",
+            "takeaway": "4월 한 달의 평온이 5월 가속의 대비를 더 뚜렷하게 만든다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "12일 사이 폭발성 타격 1건, 폭발물 잔해 1건, 격추 1건.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "누가 무엇을 움직이나",
+        "kicker": "구조적 동인",
+        "prose": "사건을 움직이는 핵심 동력은 세 갈래다. 첫째, 우크라이나의 러시아 본토 타격이 강화되면서 발트해 연안의 정유·항만이 자폭드론의 표적이 됐다. 사거리는 1000km 안팎이고, 항법은 GPS와 위성 통신에 의존한다. 둘째, 러시아 전자전 (EW — 위성·통신 신호를 방해하거나 가짜 신호를 송출해 적의 무기 항법을 마비시키는 기술) 자산이 자국 시설 방어를 위해 광역으로 전파를 교란한다. 셋째, 항법을 잃은 드론이 미리 입력된 유사 형상 표적을 자율로 선택하거나 직선 항로로 표류하면서 NATO 영토로 흘러들어간다.\n\n쟁점은 셋째 단계의 인과에 있다. 우크라이나 외교장관 시비하는 3월 침범 직후 러시아가 NATO 영토를 향해 드론을 의도적으로 재유도한다고 주장했다. 반면 NATO 일각과 서방 군사 분석가들은 이를 자산 방어 EW의 부수 효과로 본다. 어느 쪽 해석이 맞느냐에 따라 대응 수단이 갈린다. 의도라면 외교·군사적 압력의 대상이 러시아가 되고, 부수 효과라면 우크라이나 드론의 항법 강화와 NATO 자체 방공망 보강이 우선이 된다 (아래 관계도).\n\n양 해석을 가르는 결정적 증거는 아직 공개되지 않았다. 단, 격추된 잔해의 항법 모듈 분석이 향후 몇 주 안에 어느 쪽 손을 들어줄 수 있다.",
+        "charts": [
+          {
+            "type": "network",
+            "title": "드론 표류의 인과 사슬과 NATO 반응",
+            "subtitle": "두 해석이 갈라지는 결절점은 '러시아 EW' 노드",
+            "data": {
+              "nodes": [
+                {
+                  "id": "ua",
+                  "label": "우크라이나 장거리 드론",
+                  "group": "actor"
+                },
+                {
+                  "id": "ru_target",
+                  "label": "러시아 정유·항만",
+                  "group": "target"
+                },
+                {
+                  "id": "ru_ew",
+                  "label": "러시아 EW 교란",
+                  "group": "actor"
+                },
+                {
+                  "id": "drift",
+                  "label": "드론 항법 표류",
+                  "group": "mechanism"
+                },
+                {
+                  "id": "baltic",
+                  "label": "발트 3국 영공",
+                  "group": "territory"
+                },
+                {
+                  "id": "nato",
+                  "label": "NATO 공역 경찰임무",
+                  "group": "response"
+                },
+                {
+                  "id": "ro_f16",
+                  "label": "루마니아 F-16 / 시아울리아이",
+                  "group": "response"
+                },
+                {
+                  "id": "shoot",
+                  "label": "5/19 첫 격추",
+                  "group": "outcome"
+                },
+                {
+                  "id": "lv_gov",
+                  "label": "라트비아 정부 붕괴",
+                  "group": "outcome"
+                }
+              ],
+              "links": [
+                {
+                  "source": "ua",
+                  "target": "ru_target",
+                  "type": "타격 작전"
+                },
+                {
+                  "source": "ru_ew",
+                  "target": "drift",
+                  "type": "교란"
+                },
+                {
+                  "source": "ua",
+                  "target": "drift",
+                  "type": "의도 주장"
+                },
+                {
+                  "source": "drift",
+                  "target": "baltic",
+                  "type": "월경"
+                },
+                {
+                  "source": "baltic",
+                  "target": "nato",
+                  "type": "방어 요청"
+                },
+                {
+                  "source": "nato",
+                  "target": "ro_f16",
+                  "type": "배치"
+                },
+                {
+                  "source": "ro_f16",
+                  "target": "shoot",
+                  "type": "교전"
+                },
+                {
+                  "source": "baltic",
+                  "target": "lv_gov",
+                  "type": "정치 압력"
+                }
+              ]
+            },
+            "source": "공개 보도 종합, 본 보고서 정리"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "라트비아의 정치 도미노",
+        "kicker": "단기 파급",
+        "prose": "5월 7일 레제크네 폭발성 타격은 라트비아 정부에 직접적인 책임 논쟁을 불러왔다. 5월 10일 국방장관 안드리스 스프루스가 사임했고, 5월 14일에는 총리 에비카 실리냐가 사임했다. 좌파 성향 Progressives 가 연정에서 이탈하면서 연정 산수가 깨졌기 때문이다. 라트비아는 10월 총선을 4개월 앞두고 정부가 무너졌다.\n\n사임 사유는 표면상 드론 대응 부실이지만, 실제 정치적 단층은 더 깊다. 야당과 일부 여당 의원은 우크라이나에 대한 라트비아의 지원 규모와 자국 방공망 투자 비율을 두고 입장이 다르다. 드론 침범이 이 단층을 갈라놓은 도구가 됐다. 우크라이나 비판 노선이 부각될지, 반대로 NATO 통합 방어 강화 쪽으로 결집할지가 다음 총선의 핵심 쟁점으로 떠올랐다.\n\n에스토니아와 리투아니아는 같은 시점에 정부 위기를 겪고 있지 않다. 하지만 5월 17일 우테나, 5월 19일 부르츠야르브 사건이 잇따르면서 두 나라 정부도 야당의 책임 추궁 압력을 받고 있다. 라트비아가 1차 도미노라면, 다음 패가 어디로 떨어질지가 관전 포인트다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "NATO 교전 규칙의 잠재적 변화",
+        "kicker": "중기 파급",
+        "prose": "발트 공역 경찰임무는 2004년 출범 이래 줄곧 식별·차단·호위 위주였다. 러시아 정찰기나 항법 신호를 잃은 민간기에 대한 응대가 통례였고, 살상력이 있는 표적을 직접 격추한 사례는 22년 동안 없었다. 5월 19일의 격추가 교전 규칙 (ROE — 군이 무력을 사용할 수 있는 조건을 미리 정해둔 내부 규정) 의 정식 개정인지, 아니면 현장 지휘관의 재량 판단인지는 NATO 공식 발표에서 분명히 밝혀지지 않았다.\n\n구별이 중요한 이유는 다음 격추의 정당성이 여기서 갈리기 때문이다. 정식 ROE 개정이라면 다음 침범 드론도 같은 식으로 처리되며, 사실상 발트 전역의 '드론 격추 구역' 이 설정된다. 재량 판단이라면 다음 사건마다 정치적 비용을 다시 치러야 한다. 잔해 낙하로 인한 민간 피해 가능성을 어떻게 다루느냐도 정책의 변수다. 5월 19일은 운 좋게 호숫가 인근에 떨어졌지만, 도심부 격추는 다른 종류의 결정을 요구한다.\n\n동맹 내 입장도 같지 않다. 미국과 영국은 발트 강화에 적극적이지만, 일부 서유럽 국가는 우크라이나 전쟁의 확전 risk 를 우려해 격추보다 전파 차단·항법 무력화 같은 비파괴적 대응을 선호한다. 다음 NATO 국방장관회의가 이 갈래를 어떻게 정리하느냐가 향후 6개월의 발트 정책을 결정할 가능성이 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "네 갈래의 시나리오",
+        "kicker": "전망",
+        "prose": "현 시점에서 향후 6개월의 경로는 크게 네 갈래로 갈린다.\n\n첫 번째는 봉쇄 안정화 시나리오다 (확률 추정 30%). NATO 가 ROE 를 명시적으로 개정해 격추를 표준 절차에 편입하고, 동시에 우크라이나가 항법 모듈을 강화해 표류율이 떨어진다. 침범 빈도는 점차 줄고 정치 위기는 가라앉는다. 라트비아 10월 총선은 친-NATO 결집으로 마무리된다.\n\n두 번째는 점진적 침식 시나리오다 (35%). 침범이 월 1~2건 수준에서 지속되고, NATO 는 사례마다 격추 여부를 따로 판단한다. 라트비아식 정부 위기가 다른 발트 국가로 확산하고, 우크라이나 지원에 대한 동맹 내 피로가 누적된다. 큰 사건은 없지만 동맹의 정치적 일관성이 천천히 약해진다.\n\n세 번째는 우발적 확전 시나리오다 (20%). 드론이 도심부에 떨어져 민간 피해가 발생하거나, 격추 잔해로 인한 사고가 일어난다. 책임 소재를 둘러싸고 우크라이나·러시아·NATO 모두가 자기 입장을 굳히는 가운데, 정치 압력이 군사적 대응 확대로 이어진다. 폴란드 영공의 미사일 사건 (2022년 페르예보디우) 같은 단발성 위기가 재현될 가능성이 있다.\n\n네 번째는 의도적 도발 입증 시나리오다 (15%). 격추된 잔해의 항법 모듈 분석에서 러시아 EW 의 의도적 재유도 증거가 확인된다. NATO 는 러시아에 대한 제재나 발트해 함대 대응을 강화하고, 발트 공역 경찰임무는 전투작전성 임무로 격상된다.\n\n네 갈래는 서로 배타적이지 않다. 첫째와 둘째가 결합되거나, 셋째가 넷째를 촉발할 수도 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "모순과 다음에 볼 신호",
+        "kicker": "감시 신호",
+        "prose": "이번 사건의 가장 큰 미해결 모순은 드론 항로 변경의 원인이다. 우크라이나 정부는 러시아의 의도적 재유도라고 주장하지만, NATO 와 서방 분석가 다수는 EW 의 부수 효과로 본다. 잔해의 항법 모듈 분석이 어느 쪽 손을 들어줄지가 향후 몇 주의 결정적 변수다.\n\n또 하나의 모순은 격추 정책 자체에 있다. 강경한 격추가 다음 침범을 억제할 수 있다는 입장과, 잔해 낙하 위험과 확전 risk 를 감수하지 말고 비파괴적 대응에 그쳐야 한다는 입장이 동맹 안에서 부딪친다. 잔해가 도심부에 떨어지는 사건이 한 번만 발생해도 정책 추가 변경 압력이 즉시 커진다.\n\n앞으로 관찰할 만한 신호는 다섯 가지다. NATO 국방장관회의의 ROE 공식 입장, 라트비아 10월 총선의 우크라이나 지원 관련 쟁점화 정도, 러시아 EW 강도의 변화 (위성 항법 교란 빈도), 핀란드·폴란드 같은 다른 동측 국가의 격추 사례 발생 여부, 그리고 우크라이나 드론의 관성·시각 보조 항법 도입 속도다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "5월 19일 격추는 발트 공역에 그어진 첫 번째 선이다. 그 선이 차단의 선인지, 확전의 선인지는 향후 6개월의 NATO 결정과 모스크바·키이우의 대응이 함께 결정한다.",
+    "watch_signals": [
+      {
+        "signal": "NATO 국방장관회의 ROE 공식 입장",
+        "description": "발트 공역에서의 격추가 표준 절차인지 재량 판단인지를 가리는 공식 결정",
+        "indicates": "봉쇄 안정화 vs 점진적 침식 시나리오의 분기점",
+        "icon": "📋"
+      },
+      {
+        "signal": "격추 드론 항법 모듈 분석 결과",
+        "description": "GPS·통신 모듈에서 의도적 재유도 흔적이 발견되는지",
+        "indicates": "의도적 도발 입증 시나리오의 활성화 여부",
+        "icon": "🔬"
+      },
+      {
+        "signal": "라트비아 10월 총선 결과",
+        "description": "친-NATO 결집인지 우크라이나 지원 피로의 반영인지",
+        "deadline": "2026-10",
+        "indicates": "점진적 침식 시나리오의 동맹 내 정치 영향 확대",
+        "icon": "🗳️"
+      },
+      {
+        "signal": "다른 동측 NATO 국가의 격추 사례",
+        "description": "핀란드·폴란드 등에서 두 번째 격추가 발생하는지",
+        "indicates": "발트 사례의 일회성 여부와 ROE 변화의 지리적 확산",
+        "icon": "🛡️"
+      },
+      {
+        "signal": "우크라이나 드론 항법 보강",
+        "description": "관성 항법·시각 항법 등 GPS 외 보조 항법의 도입 속도",
+        "indicates": "표류 빈도 감소를 통한 봉쇄 안정화 가능성",
+        "icon": "🛰️"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "우크라이나 외교부 — 러시아가 NATO 영토로 드론을 의도적으로 재유도해 정보·심리전 효과를 노린다",
+        "side_b": "NATO·서방 분석가 다수 — 러시아 EW 가 자국 자산 방어를 위해 광역 교란을 하면서 드론 항법이 부수적으로 마비된 결과",
+        "evidence": "양측 모두 결정적 증거 미공개. 우크라이나는 항로 패턴의 일관성을 근거로, 서방은 표적 분포의 무차별성을 근거로 든다",
+        "resolution": "현 시점에서는 서방 해석이 우세. 5/19 격추 드론의 항법 모듈 분석에서 외부 재유도 신호 패턴이 확인되면 우크라이나 주장이 살아난다"
+      },
+      {
+        "side_a": "격추 강경 — 다음 침범 억제를 위해 ROE 공식 개정과 일관된 격추가 필요하다",
+        "side_b": "비파괴 대응 — 잔해 낙하의 민간 피해 risk 와 확전 가능성을 감수하지 말고 전파 차단·항법 무력화에 머물러야 한다",
+        "evidence": "5/19 격추는 호숫가 인근에 잔해가 떨어져 민간 피해가 없었으나, 도심부 사례가 발생할 경우 정책 자체가 재검토 대상",
+        "resolution": "현 시점에서는 강경 입장이 NATO 동측에서 우세. 단, 도심부 잔해 낙하 사고가 한 차례라도 발생하면 비파괴 대응 진영이 부활한다"
+      }
+    ],
+    "confidence_summary": "1차 출처 10건 (NATO 공식, Reuters, Estonian World, Defense News, Al Jazeera, Washington Post 등) 으로 사실관계는 확고. 다만 항법 모듈 원인 규명과 NATO ROE 공식 변경 여부는 미공개 영역이라 시나리오 확률은 보수적 추정",
+    "confidence_score": 0.72,
+    "embedded_map": {
+      "center": [
+        25.0,
+        57.5
+      ],
+      "zoom": 5.5,
+      "markers": [
+        {
+          "id": "siauliai",
+          "name": "시아울리아이 (LT) — 루마니아 F-16",
+          "lng": 23.32,
+          "lat": 55.93,
+          "highlight": true
+        },
+        {
+          "id": "amari",
+          "name": "애마리 (EE) — 포르투갈 F-16M",
+          "lng": 24.21,
+          "lat": 59.26,
+          "highlight": false
+        },
+        {
+          "id": "vortsjarv",
+          "name": "부르츠야르브 (EE) — 5/19 격추",
+          "lng": 26.1,
+          "lat": 58.2,
+          "highlight": true
+        },
+        {
+          "id": "utena",
+          "name": "우테나 (LT) — 5/17 잔해",
+          "lng": 25.6,
+          "lat": 55.5,
+          "highlight": false
+        },
+        {
+          "id": "rezekne",
+          "name": "레제크네 (LV) — 5/7 폭발 타격",
+          "lng": 27.33,
+          "lat": 56.51,
+          "highlight": false
+        }
+      ],
+      "arcs": [
+        {
+          "from_id": "siauliai",
+          "to_id": "vortsjarv",
+          "highlight": true,
+          "label": "5/19 F-16 출격"
+        }
+      ],
+      "legend": [
+        {
+          "label": "5/19 격추 출격",
+          "kind": "line",
+          "highlight": true
+        },
+        {
+          "label": "최근 3건 침범 지점",
+          "kind": "point",
+          "highlight": true
+        }
+      ]
+    }
+  },
+  "executive_summary": "2026년 5월 19일 루마니아 F-16이 에스토니아 영공의 우크라이나제 드론을 격추했다. 발트 공역 경찰임무 22년 역사상 첫 격추이자, 48시간 사이 두 번째 영공 침범에 대한 대응이다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260519_224040.html",
+  "report_theme": "midnight_indigo",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-19T13:33:32.914061",
+  "total_duration_seconds": 427.79251646995544,
+  "system_version": "v5.3.2",
+  "revision": 0
+}
