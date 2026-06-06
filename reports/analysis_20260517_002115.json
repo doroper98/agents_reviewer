@@ -1,0 +1,5262 @@
+{
+  "request": {
+    "event_description": "미국채 금리가 폭등 하고 있어. 한국 국채 금리와 비교했을때 향후 금리의 추이는 어떻게 될 것인지, 그리고 국채 금리는 왜 이렇게 미친듯이 상승하고 있는지 deep하게 분석해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "미국채 금리 폭등은 단일 변수 이슈가 아니라 다층 폭격임. ① 공급 — 미국 재정적자가 만성화되고 이자비용 자체가 사회보장 다음의 2위 지출이 되면서 장기물 발행이 끊임없이 늘어남. ② 수요 — 외국인 응찰 비중은 유지(66.6%)되나 전체 bid-to-cover 가 떨어져 텀 프리미엄(장기물 보유 위험에 대한 추가 보상)이 부활하는 중. ③ 통화정책 — 새 연준 의장 Kevin Warsh 는 대차대조표 정상화(QT) 가속과 forward guidance 축소를 선호 → 시장이 연준 안전망을 덜 신뢰. ④ 인플레 — 이란 전쟁발 유가 충격 + 4월 PPI 가속이 '끈적한 인플레' 이미지를 굳힘. 한국은 ① 인플레 재가속(2.6%) + BOK 인상 사이클 시사 + ② WGBI 편입 패시브 유입이라는 상반된 압력이 동시 작용 — 미국만큼 격하게 안 오르는 이유.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-12-25",
+            "event": "BOK, 2026년 정책 방향에서 인하 기조 유보 옵션 시사",
+            "impact": "한국 금리 인하 사이클 종착 신호"
+          },
+          {
+            "date": "2026-03-18",
+            "event": "Citi, BOK 가 2026년 안에 기준금리 3%까지 인상할 것이라는 보고서",
+            "impact": "한국 인상 사이클 가능성 시장 반영 시작"
+          },
+          {
+            "date": "2026-04-01",
+            "event": "한국 WGBI(세계국채지수) 8개월 단계 편입 시작",
+            "impact": "패시브 자금 최대 700억 달러 유입 가능 — 한국 10Y 금리 최대 20bp 하락 압력"
+          },
+          {
+            "date": "2026-04 (중)",
+            "event": "BOK 기준금리 2.5% 7회 연속 동결",
+            "impact": "이란 전쟁 영향 평가 차원"
+          },
+          {
+            "date": "2026-04-30",
+            "event": "한국 CPI 2.6% (2024년 7월 이후 최고)",
+            "impact": "BOK 의 인하 → 인상 피벗 압력"
+          },
+          {
+            "date": "2026-05-04",
+            "event": "BOK 부총재 류상대 '이제 인상을 고려할 때'",
+            "impact": "인상 사이클 공식 신호화"
+          },
+          {
+            "date": "2026-05-13",
+            "event": "미 재무부 30년물 250억 달러 입찰, 5.046% 낙찰 (2007년 이후 첫 5% 돌파, bid-to-cover 2.303)",
+            "impact": "장기물 수요 약화, 텀 프리미엄 부활 확인"
+          },
+          {
+            "date": "2026-05-15",
+            "event": "미 4월 PPI 충격 + 미 10Y 14bp 점프 4.595%, 30Y 11bp 점프 5.121%",
+            "impact": "1년 최고치 — 인플레 끈적임 + Warsh 정책 노선 재가격"
+          },
+          {
+            "date": "2026-05-15",
+            "event": "한 10Y 4.25% (전일 +18bp), 한 달 +57bp, 전년 +156bp",
+            "impact": "한국도 동반 상승하나 미국 대비 폭은 작음"
+          },
+          {
+            "date": "2026-05-28",
+            "event": "BOK 차기 정책회의 예정",
+            "impact": "인상 여부 / 동결 후 매파 톤 여부 결정"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "미국채 금리 폭등과 한미 금리 결합도 흔들림 (2026년 5월)",
+    "event_name_en": "US Treasury Yield Surge and the US-Korea Rate Decoupling, May 2026",
+    "date": "2026-05-15",
+    "category": "macro_finance",
+    "summary": "미국 10년물 금리가 5월 15일 4.59%로 1년 만에 최고치, 30년물은 5.12%로 2007년 이후 처음 5% 돌파. 한국 10년물도 4.18~4.25%로 2023년 11월 이후 최고. 이란 전쟁발 유가 충격 + 새 연준 의장 Warsh 의 매파적 자산축소 + 미국 재정적자 + 인플레 재가속이 동시 폭격. 한국은 인플레 2.6%(4월) + WGBI 편입 흐름이 엇갈리며 미국 따라가는 정도가 약해진 상태.",
+    "timeline": [
+      {
+        "date": "2025-12-25",
+        "event": "BOK, 2026년 정책 방향에서 인하 기조 유보 옵션 시사",
+        "impact": "한국 금리 인하 사이클 종착 신호"
+      },
+      {
+        "date": "2026-03-18",
+        "event": "Citi, BOK 가 2026년 안에 기준금리 3%까지 인상할 것이라는 보고서",
+        "impact": "한국 인상 사이클 가능성 시장 반영 시작"
+      },
+      {
+        "date": "2026-04-01",
+        "event": "한국 WGBI(세계국채지수) 8개월 단계 편입 시작",
+        "impact": "패시브 자금 최대 700억 달러 유입 가능 — 한국 10Y 금리 최대 20bp 하락 압력"
+      },
+      {
+        "date": "2026-04 (중)",
+        "event": "BOK 기준금리 2.5% 7회 연속 동결",
+        "impact": "이란 전쟁 영향 평가 차원"
+      },
+      {
+        "date": "2026-04-30",
+        "event": "한국 CPI 2.6% (2024년 7월 이후 최고)",
+        "impact": "BOK 의 인하 → 인상 피벗 압력"
+      },
+      {
+        "date": "2026-05-04",
+        "event": "BOK 부총재 류상대 '이제 인상을 고려할 때'",
+        "impact": "인상 사이클 공식 신호화"
+      },
+      {
+        "date": "2026-05-13",
+        "event": "미 재무부 30년물 250억 달러 입찰, 5.046% 낙찰 (2007년 이후 첫 5% 돌파, bid-to-cover 2.303)",
+        "impact": "장기물 수요 약화, 텀 프리미엄 부활 확인"
+      },
+      {
+        "date": "2026-05-15",
+        "event": "미 4월 PPI 충격 + 미 10Y 14bp 점프 4.595%, 30Y 11bp 점프 5.121%",
+        "impact": "1년 최고치 — 인플레 끈적임 + Warsh 정책 노선 재가격"
+      },
+      {
+        "date": "2026-05-15",
+        "event": "한 10Y 4.25% (전일 +18bp), 한 달 +57bp, 전년 +156bp",
+        "impact": "한국도 동반 상승하나 미국 대비 폭은 작음"
+      },
+      {
+        "date": "2026-05-28",
+        "event": "BOK 차기 정책회의 예정",
+        "impact": "인상 여부 / 동결 후 매파 톤 여부 결정"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "미 10년물 금리",
+        "value": "4.59%",
+        "context": "2026-05-15, 일간 +14bp, 2025년 2월 이후 최고"
+      },
+      {
+        "label": "미 30년물 금리",
+        "value": "5.12%",
+        "context": "2026-05-15, 일간 +11bp, 2023년 10월 이후 최고권"
+      },
+      {
+        "label": "30년물 입찰 낙찰금리",
+        "value": "5.046%",
+        "context": "2026-05-13, 2007년 이후 첫 5% 돌파"
+      },
+      {
+        "label": "30년물 입찰 bid-to-cover",
+        "value": "2.303",
+        "context": "전월 2.385 / 6회 평균 2.43 대비 약화, 2025년 11월 이후 최저"
+      },
+      {
+        "label": "외국인 indirect 응찰 비중 (30Y 입찰)",
+        "value": "66.6%",
+        "context": "전월 64.1% 대비 상승 — 해외 수요는 유지"
+      },
+      {
+        "label": "미 2년물 금리",
+        "value": "4.09%",
+        "context": "2026-05-15, 2025년 2월 이후 최고"
+      },
+      {
+        "label": "한 10년물 금리",
+        "value": "4.18~4.25%",
+        "context": "2026-05-15, 2023년 11월 이후 최고. 1개월 +57bp, 1년 +156bp"
+      },
+      {
+        "label": "한미 10Y 스프레드",
+        "value": "약 -34~-41bp (미국이 한국보다 높음)",
+        "context": "전통적으로 한국이 미국보다 낮은 구조 유지 중이나 격차는 좁아지는 흐름"
+      },
+      {
+        "label": "BOK 기준금리",
+        "value": "2.50%",
+        "context": "7회 연속 동결, 2026-05-28 회의에서 인상 검토 가능성"
+      },
+      {
+        "label": "한국 4월 CPI(전년동월대비)",
+        "value": "2.6%",
+        "context": "BOK 목표 2% 상회, 2024년 7월 이후 최고"
+      },
+      {
+        "label": "미 4월 재정수지",
+        "value": "2,150억 달러 흑자",
+        "context": "세수 유입 계절성. 전년 동월 대비 -17%, 이자비용 970억 달러는 사회보장 다음 2위 지출"
+      },
+      {
+        "label": "한국 거주자 해외 증권투자 (2025-01~10 누적)",
+        "value": "1,171억 달러 순매수",
+        "context": "주식 899억 + 채권 272억. 10월 단월 173억 달러로 사상 최대 — 구조적 자본유출"
+      },
+      {
+        "label": "WGBI 편입 예상 패시브 유입",
+        "value": "최대 700억 달러",
+        "context": "8개월 단계 편입. 한 10Y 최대 -20bp / 원/달러 약 -5% 압력 잠재"
+      }
+    ],
+    "background": "미국채 금리 폭등은 단일 변수 이슈가 아니라 다층 폭격임. ① 공급 — 미국 재정적자가 만성화되고 이자비용 자체가 사회보장 다음의 2위 지출이 되면서 장기물 발행이 끊임없이 늘어남. ② 수요 — 외국인 응찰 비중은 유지(66.6%)되나 전체 bid-to-cover 가 떨어져 텀 프리미엄(장기물 보유 위험에 대한 추가 보상)이 부활하는 중. ③ 통화정책 — 새 연준 의장 Kevin Warsh 는 대차대조표 정상화(QT) 가속과 forward guidance 축소를 선호 → 시장이 연준 안전망을 덜 신뢰. ④ 인플레 — 이란 전쟁발 유가 충격 + 4월 PPI 가속이 '끈적한 인플레' 이미지를 굳힘. 한국은 ① 인플레 재가속(2.6%) + BOK 인상 사이클 시사 + ② WGBI 편입 패시브 유입이라는 상반된 압력이 동시 작용 — 미국만큼 격하게 안 오르는 이유.",
+    "sources": [
+      "https://www.cnbc.com/2026/05/15/treasury-yields-surge-as-inflation-data-points-to-tricky-rates-path.html",
+      "https://www.bloomberg.com/news/articles/2026-05-13/treasury-buyers-get-5-long-bond-rate-for-first-time-since-2007",
+      "https://fortune.com/2026/05/15/us-debt-demand-long-bond-yield-treasury-auction-inflation-iran-war-us-china-summit/",
+      "https://www.advisorperspectives.com/dshort/updates/2026/05/15/treasury-yields-snapshot-may-15-2026",
+      "https://soliswealth.com/a-new-fed-regime-warsh-policy-direction-and-treasury-market-consequences-weekly-market-commentary-may-11-2026/",
+      "https://tradingeconomics.com/south-korea/government-bond-yield",
+      "https://www.bloomberg.com/news/articles/2026-05-04/top-bank-of-korea-official-says-it-s-time-to-consider-rate-hike",
+      "https://en.sedaily.com/news/2026/03/09/won-stability-key-to-unlocking-foreign-capital-inflows",
+      "https://www.top1000funds.com/2026/04/nps-raises-hedging-ratio-as-koreas-capital-outflows-weigh-on-won/",
+      "https://en.sedaily.com/international/2026/05/14/us-30-year-treasury-yield-tops-5-percent-casting-shadow",
+      "https://www.bok.or.kr/eng/bbs/E0000634/view.do?nttId=10095362&menuNo=400069"
+    ],
+    "glossary": [
+      {
+        "term": "기점금리(베이시스 포인트, bp)",
+        "definition": "0.01%포인트. 14bp 상승 = 0.14%포인트 상승"
+      },
+      {
+        "term": "텀 프리미엄(term premium)",
+        "definition": "투자자가 만기가 긴 채권을 보유하는 대가로 요구하는 추가 금리. 미래 금리·인플레·재정 불확실성이 클수록 커짐"
+      },
+      {
+        "term": "bid-to-cover 비율",
+        "definition": "국채 입찰에서 응찰액 ÷ 발행액. 2 이상이면 보통, 떨어질수록 수요 약화"
+      },
+      {
+        "term": "indirect bidder",
+        "definition": "프라이머리 딜러를 거치지 않고 응찰하는 측. 통상 외국 중앙은행·국부펀드를 가리키며 해외 수요 지표로 쓰임"
+      },
+      {
+        "term": "QT(양적긴축, quantitative tightening)",
+        "definition": "중앙은행이 보유 채권을 줄여 시중 유동성을 흡수하는 정책. 장기물 금리 상승 압력"
+      },
+      {
+        "term": "PPI(생산자물가지수)",
+        "definition": "기업이 받는 가격의 변동. CPI(소비자물가) 의 선행 지표로 활용"
+      },
+      {
+        "term": "WGBI(세계국채지수, World Government Bond Index)",
+        "definition": "FTSE 가 산출하는 글로벌 국채 벤치마크. 편입되면 이를 추종하는 패시브 펀드 자금이 자동 유입"
+      },
+      {
+        "term": "forward guidance",
+        "definition": "중앙은행이 향후 금리 경로를 미리 시사해 시장 기대를 안정시키는 커뮤니케이션 도구"
+      },
+      {
+        "term": "한미 금리 역전",
+        "definition": "미국 금리가 한국 금리보다 높은 상태. 자본이 미국으로 빠지는 압력 — 원/달러 환율 상승 요인"
+      }
+    ],
+    "confidence_score": 0.85,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께. 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "Transmission Channel (재정→공급, 통화→정책, 인플레→기대, 환율→자본 4 채널 분해)",
+        "Flow of Funds (미 재무부 발행 → 외국인 indirect / 국내 dealer / Fed 흡수 별 분해)",
+        "Pre-mortem (한미 디커플링이 깨질 시나리오 / 미 30Y 5.5% 돌파 시나리오 역추적)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기. 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실(미국·한국 금리 현황) → 메커니즘(공급/수요/통화/인플레 4 채널) → 함의(한미 스프레드·환율·자본흐름) → 반례·미해결(WGBI 효과 / Warsh 후퇴 가능성).",
+      "override_reason": ""
+    },
+    "instruments_mentioned": [
+      "미국채 10Y",
+      "미국채 1Y",
+      "국고채 10Y",
+      "원/달러 환율",
+      "달러인덱스",
+      "WTI"
+    ],
+    "time_series": [
+      {
+        "instrument": "미국채 10Y",
+        "source": "FRED",
+        "code": "DGS10",
+        "unit": "%",
+        "chart_type": "line",
+        "start_date": "2026-02-12",
+        "end_date": "2026-05-15",
+        "data": [
+          {
+            "date": "2026-02-12",
+            "open": 4.09,
+            "high": 4.09,
+            "low": 4.09,
+            "close": 4.09,
+            "volume": null
+          },
+          {
+            "date": "2026-02-13",
+            "open": 4.04,
+            "high": 4.04,
+            "low": 4.04,
+            "close": 4.04,
+            "volume": null
+          },
+          {
+            "date": "2026-02-17",
+            "open": 4.05,
+            "high": 4.05,
+            "low": 4.05,
+            "close": 4.05,
+            "volume": null
+          },
+          {
+            "date": "2026-02-18",
+            "open": 4.09,
+            "high": 4.09,
+            "low": 4.09,
+            "close": 4.09,
+            "volume": null
+          },
+          {
+            "date": "2026-02-19",
+            "open": 4.08,
+            "high": 4.08,
+            "low": 4.08,
+            "close": 4.08,
+            "volume": null
+          },
+          {
+            "date": "2026-02-20",
+            "open": 4.08,
+            "high": 4.08,
+            "low": 4.08,
+            "close": 4.08,
+            "volume": null
+          },
+          {
+            "date": "2026-02-23",
+            "open": 4.03,
+            "high": 4.03,
+            "low": 4.03,
+            "close": 4.03,
+            "volume": null
+          },
+          {
+            "date": "2026-02-24",
+            "open": 4.04,
+            "high": 4.04,
+            "low": 4.04,
+            "close": 4.04,
+            "volume": null
+          },
+          {
+            "date": "2026-02-25",
+            "open": 4.05,
+            "high": 4.05,
+            "low": 4.05,
+            "close": 4.05,
+            "volume": null
+          },
+          {
+            "date": "2026-02-26",
+            "open": 4.02,
+            "high": 4.02,
+            "low": 4.02,
+            "close": 4.02,
+            "volume": null
+          },
+          {
+            "date": "2026-02-27",
+            "open": 3.97,
+            "high": 3.97,
+            "low": 3.97,
+            "close": 3.97,
+            "volume": null
+          },
+          {
+            "date": "2026-03-02",
+            "open": 4.05,
+            "high": 4.05,
+            "low": 4.05,
+            "close": 4.05,
+            "volume": null
+          },
+          {
+            "date": "2026-03-03",
+            "open": 4.06,
+            "high": 4.06,
+            "low": 4.06,
+            "close": 4.06,
+            "volume": null
+          },
+          {
+            "date": "2026-03-04",
+            "open": 4.09,
+            "high": 4.09,
+            "low": 4.09,
+            "close": 4.09,
+            "volume": null
+          },
+          {
+            "date": "2026-03-05",
+            "open": 4.13,
+            "high": 4.13,
+            "low": 4.13,
+            "close": 4.13,
+            "volume": null
+          },
+          {
+            "date": "2026-03-06",
+            "open": 4.15,
+            "high": 4.15,
+            "low": 4.15,
+            "close": 4.15,
+            "volume": null
+          },
+          {
+            "date": "2026-03-09",
+            "open": 4.12,
+            "high": 4.12,
+            "low": 4.12,
+            "close": 4.12,
+            "volume": null
+          },
+          {
+            "date": "2026-03-10",
+            "open": 4.15,
+            "high": 4.15,
+            "low": 4.15,
+            "close": 4.15,
+            "volume": null
+          },
+          {
+            "date": "2026-03-11",
+            "open": 4.21,
+            "high": 4.21,
+            "low": 4.21,
+            "close": 4.21,
+            "volume": null
+          },
+          {
+            "date": "2026-03-12",
+            "open": 4.27,
+            "high": 4.27,
+            "low": 4.27,
+            "close": 4.27,
+            "volume": null
+          },
+          {
+            "date": "2026-03-13",
+            "open": 4.28,
+            "high": 4.28,
+            "low": 4.28,
+            "close": 4.28,
+            "volume": null
+          },
+          {
+            "date": "2026-03-16",
+            "open": 4.23,
+            "high": 4.23,
+            "low": 4.23,
+            "close": 4.23,
+            "volume": null
+          },
+          {
+            "date": "2026-03-17",
+            "open": 4.2,
+            "high": 4.2,
+            "low": 4.2,
+            "close": 4.2,
+            "volume": null
+          },
+          {
+            "date": "2026-03-18",
+            "open": 4.26,
+            "high": 4.26,
+            "low": 4.26,
+            "close": 4.26,
+            "volume": null
+          },
+          {
+            "date": "2026-03-19",
+            "open": 4.25,
+            "high": 4.25,
+            "low": 4.25,
+            "close": 4.25,
+            "volume": null
+          },
+          {
+            "date": "2026-03-20",
+            "open": 4.39,
+            "high": 4.39,
+            "low": 4.39,
+            "close": 4.39,
+            "volume": null
+          },
+          {
+            "date": "2026-03-23",
+            "open": 4.34,
+            "high": 4.34,
+            "low": 4.34,
+            "close": 4.34,
+            "volume": null
+          },
+          {
+            "date": "2026-03-24",
+            "open": 4.39,
+            "high": 4.39,
+            "low": 4.39,
+            "close": 4.39,
+            "volume": null
+          },
+          {
+            "date": "2026-03-25",
+            "open": 4.33,
+            "high": 4.33,
+            "low": 4.33,
+            "close": 4.33,
+            "volume": null
+          },
+          {
+            "date": "2026-03-26",
+            "open": 4.42,
+            "high": 4.42,
+            "low": 4.42,
+            "close": 4.42,
+            "volume": null
+          },
+          {
+            "date": "2026-03-27",
+            "open": 4.44,
+            "high": 4.44,
+            "low": 4.44,
+            "close": 4.44,
+            "volume": null
+          },
+          {
+            "date": "2026-03-30",
+            "open": 4.35,
+            "high": 4.35,
+            "low": 4.35,
+            "close": 4.35,
+            "volume": null
+          },
+          {
+            "date": "2026-03-31",
+            "open": 4.3,
+            "high": 4.3,
+            "low": 4.3,
+            "close": 4.3,
+            "volume": null
+          },
+          {
+            "date": "2026-04-01",
+            "open": 4.33,
+            "high": 4.33,
+            "low": 4.33,
+            "close": 4.33,
+            "volume": null
+          },
+          {
+            "date": "2026-04-02",
+            "open": 4.31,
+            "high": 4.31,
+            "low": 4.31,
+            "close": 4.31,
+            "volume": null
+          },
+          {
+            "date": "2026-04-03",
+            "open": 4.35,
+            "high": 4.35,
+            "low": 4.35,
+            "close": 4.35,
+            "volume": null
+          },
+          {
+            "date": "2026-04-06",
+            "open": 4.34,
+            "high": 4.34,
+            "low": 4.34,
+            "close": 4.34,
+            "volume": null
+          },
+          {
+            "date": "2026-04-07",
+            "open": 4.33,
+            "high": 4.33,
+            "low": 4.33,
+            "close": 4.33,
+            "volume": null
+          },
+          {
+            "date": "2026-04-08",
+            "open": 4.29,
+            "high": 4.29,
+            "low": 4.29,
+            "close": 4.29,
+            "volume": null
+          },
+          {
+            "date": "2026-04-09",
+            "open": 4.29,
+            "high": 4.29,
+            "low": 4.29,
+            "close": 4.29,
+            "volume": null
+          },
+          {
+            "date": "2026-04-10",
+            "open": 4.31,
+            "high": 4.31,
+            "low": 4.31,
+            "close": 4.31,
+            "volume": null
+          },
+          {
+            "date": "2026-04-13",
+            "open": 4.3,
+            "high": 4.3,
+            "low": 4.3,
+            "close": 4.3,
+            "volume": null
+          },
+          {
+            "date": "2026-04-14",
+            "open": 4.26,
+            "high": 4.26,
+            "low": 4.26,
+            "close": 4.26,
+            "volume": null
+          },
+          {
+            "date": "2026-04-15",
+            "open": 4.29,
+            "high": 4.29,
+            "low": 4.29,
+            "close": 4.29,
+            "volume": null
+          },
+          {
+            "date": "2026-04-16",
+            "open": 4.32,
+            "high": 4.32,
+            "low": 4.32,
+            "close": 4.32,
+            "volume": null
+          },
+          {
+            "date": "2026-04-17",
+            "open": 4.26,
+            "high": 4.26,
+            "low": 4.26,
+            "close": 4.26,
+            "volume": null
+          },
+          {
+            "date": "2026-04-20",
+            "open": 4.26,
+            "high": 4.26,
+            "low": 4.26,
+            "close": 4.26,
+            "volume": null
+          },
+          {
+            "date": "2026-04-21",
+            "open": 4.3,
+            "high": 4.3,
+            "low": 4.3,
+            "close": 4.3,
+            "volume": null
+          },
+          {
+            "date": "2026-04-22",
+            "open": 4.3,
+            "high": 4.3,
+            "low": 4.3,
+            "close": 4.3,
+            "volume": null
+          },
+          {
+            "date": "2026-04-23",
+            "open": 4.34,
+            "high": 4.34,
+            "low": 4.34,
+            "close": 4.34,
+            "volume": null
+          },
+          {
+            "date": "2026-04-24",
+            "open": 4.31,
+            "high": 4.31,
+            "low": 4.31,
+            "close": 4.31,
+            "volume": null
+          },
+          {
+            "date": "2026-04-27",
+            "open": 4.35,
+            "high": 4.35,
+            "low": 4.35,
+            "close": 4.35,
+            "volume": null
+          },
+          {
+            "date": "2026-04-28",
+            "open": 4.36,
+            "high": 4.36,
+            "low": 4.36,
+            "close": 4.36,
+            "volume": null
+          },
+          {
+            "date": "2026-04-29",
+            "open": 4.42,
+            "high": 4.42,
+            "low": 4.42,
+            "close": 4.42,
+            "volume": null
+          },
+          {
+            "date": "2026-04-30",
+            "open": 4.4,
+            "high": 4.4,
+            "low": 4.4,
+            "close": 4.4,
+            "volume": null
+          },
+          {
+            "date": "2026-05-01",
+            "open": 4.39,
+            "high": 4.39,
+            "low": 4.39,
+            "close": 4.39,
+            "volume": null
+          },
+          {
+            "date": "2026-05-04",
+            "open": 4.45,
+            "high": 4.45,
+            "low": 4.45,
+            "close": 4.45,
+            "volume": null
+          },
+          {
+            "date": "2026-05-05",
+            "open": 4.43,
+            "high": 4.43,
+            "low": 4.43,
+            "close": 4.43,
+            "volume": null
+          },
+          {
+            "date": "2026-05-06",
+            "open": 4.36,
+            "high": 4.36,
+            "low": 4.36,
+            "close": 4.36,
+            "volume": null
+          },
+          {
+            "date": "2026-05-07",
+            "open": 4.41,
+            "high": 4.41,
+            "low": 4.41,
+            "close": 4.41,
+            "volume": null
+          },
+          {
+            "date": "2026-05-08",
+            "open": 4.38,
+            "high": 4.38,
+            "low": 4.38,
+            "close": 4.38,
+            "volume": null
+          },
+          {
+            "date": "2026-05-11",
+            "open": 4.42,
+            "high": 4.42,
+            "low": 4.42,
+            "close": 4.42,
+            "volume": null
+          },
+          {
+            "date": "2026-05-12",
+            "open": 4.46,
+            "high": 4.46,
+            "low": 4.46,
+            "close": 4.46,
+            "volume": null
+          },
+          {
+            "date": "2026-05-13",
+            "open": 4.46,
+            "high": 4.46,
+            "low": 4.46,
+            "close": 4.46,
+            "volume": null
+          },
+          {
+            "date": "2026-05-14",
+            "open": 4.47,
+            "high": 4.47,
+            "low": 4.47,
+            "close": 4.47,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "미국채 1Y",
+        "source": "FRED",
+        "code": "DGS1",
+        "unit": "%",
+        "chart_type": "line",
+        "start_date": "2026-02-12",
+        "end_date": "2026-05-15",
+        "data": [
+          {
+            "date": "2026-02-12",
+            "open": 3.45,
+            "high": 3.45,
+            "low": 3.45,
+            "close": 3.45,
+            "volume": null
+          },
+          {
+            "date": "2026-02-13",
+            "open": 3.42,
+            "high": 3.42,
+            "low": 3.42,
+            "close": 3.42,
+            "volume": null
+          },
+          {
+            "date": "2026-02-17",
+            "open": 3.48,
+            "high": 3.48,
+            "low": 3.48,
+            "close": 3.48,
+            "volume": null
+          },
+          {
+            "date": "2026-02-18",
+            "open": 3.49,
+            "high": 3.49,
+            "low": 3.49,
+            "close": 3.49,
+            "volume": null
+          },
+          {
+            "date": "2026-02-19",
+            "open": 3.5,
+            "high": 3.5,
+            "low": 3.5,
+            "close": 3.5,
+            "volume": null
+          },
+          {
+            "date": "2026-02-20",
+            "open": 3.51,
+            "high": 3.51,
+            "low": 3.51,
+            "close": 3.51,
+            "volume": null
+          },
+          {
+            "date": "2026-02-23",
+            "open": 3.5,
+            "high": 3.5,
+            "low": 3.5,
+            "close": 3.5,
+            "volume": null
+          },
+          {
+            "date": "2026-02-24",
+            "open": 3.52,
+            "high": 3.52,
+            "low": 3.52,
+            "close": 3.52,
+            "volume": null
+          },
+          {
+            "date": "2026-02-25",
+            "open": 3.53,
+            "high": 3.53,
+            "low": 3.53,
+            "close": 3.53,
+            "volume": null
+          },
+          {
+            "date": "2026-02-26",
+            "open": 3.52,
+            "high": 3.52,
+            "low": 3.52,
+            "close": 3.52,
+            "volume": null
+          },
+          {
+            "date": "2026-02-27",
+            "open": 3.48,
+            "high": 3.48,
+            "low": 3.48,
+            "close": 3.48,
+            "volume": null
+          },
+          {
+            "date": "2026-03-02",
+            "open": 3.54,
+            "high": 3.54,
+            "low": 3.54,
+            "close": 3.54,
+            "volume": null
+          },
+          {
+            "date": "2026-03-03",
+            "open": 3.55,
+            "high": 3.55,
+            "low": 3.55,
+            "close": 3.55,
+            "volume": null
+          },
+          {
+            "date": "2026-03-04",
+            "open": 3.58,
+            "high": 3.58,
+            "low": 3.58,
+            "close": 3.58,
+            "volume": null
+          },
+          {
+            "date": "2026-03-05",
+            "open": 3.59,
+            "high": 3.59,
+            "low": 3.59,
+            "close": 3.59,
+            "volume": null
+          },
+          {
+            "date": "2026-03-06",
+            "open": 3.55,
+            "high": 3.55,
+            "low": 3.55,
+            "close": 3.55,
+            "volume": null
+          },
+          {
+            "date": "2026-03-09",
+            "open": 3.56,
+            "high": 3.56,
+            "low": 3.56,
+            "close": 3.56,
+            "volume": null
+          },
+          {
+            "date": "2026-03-10",
+            "open": 3.56,
+            "high": 3.56,
+            "low": 3.56,
+            "close": 3.56,
+            "volume": null
+          },
+          {
+            "date": "2026-03-11",
+            "open": 3.6,
+            "high": 3.6,
+            "low": 3.6,
+            "close": 3.6,
+            "volume": null
+          },
+          {
+            "date": "2026-03-12",
+            "open": 3.66,
+            "high": 3.66,
+            "low": 3.66,
+            "close": 3.66,
+            "volume": null
+          },
+          {
+            "date": "2026-03-13",
+            "open": 3.66,
+            "high": 3.66,
+            "low": 3.66,
+            "close": 3.66,
+            "volume": null
+          },
+          {
+            "date": "2026-03-16",
+            "open": 3.64,
+            "high": 3.64,
+            "low": 3.64,
+            "close": 3.64,
+            "volume": null
+          },
+          {
+            "date": "2026-03-17",
+            "open": 3.63,
+            "high": 3.63,
+            "low": 3.63,
+            "close": 3.63,
+            "volume": null
+          },
+          {
+            "date": "2026-03-18",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-03-19",
+            "open": 3.73,
+            "high": 3.73,
+            "low": 3.73,
+            "close": 3.73,
+            "volume": null
+          },
+          {
+            "date": "2026-03-20",
+            "open": 3.8,
+            "high": 3.8,
+            "low": 3.8,
+            "close": 3.8,
+            "volume": null
+          },
+          {
+            "date": "2026-03-23",
+            "open": 3.76,
+            "high": 3.76,
+            "low": 3.76,
+            "close": 3.76,
+            "volume": null
+          },
+          {
+            "date": "2026-03-24",
+            "open": 3.81,
+            "high": 3.81,
+            "low": 3.81,
+            "close": 3.81,
+            "volume": null
+          },
+          {
+            "date": "2026-03-25",
+            "open": 3.77,
+            "high": 3.77,
+            "low": 3.77,
+            "close": 3.77,
+            "volume": null
+          },
+          {
+            "date": "2026-03-26",
+            "open": 3.83,
+            "high": 3.83,
+            "low": 3.83,
+            "close": 3.83,
+            "volume": null
+          },
+          {
+            "date": "2026-03-27",
+            "open": 3.77,
+            "high": 3.77,
+            "low": 3.77,
+            "close": 3.77,
+            "volume": null
+          },
+          {
+            "date": "2026-03-30",
+            "open": 3.71,
+            "high": 3.71,
+            "low": 3.71,
+            "close": 3.71,
+            "volume": null
+          },
+          {
+            "date": "2026-03-31",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-04-01",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-04-02",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-04-03",
+            "open": 3.72,
+            "high": 3.72,
+            "low": 3.72,
+            "close": 3.72,
+            "volume": null
+          },
+          {
+            "date": "2026-04-06",
+            "open": 3.72,
+            "high": 3.72,
+            "low": 3.72,
+            "close": 3.72,
+            "volume": null
+          },
+          {
+            "date": "2026-04-07",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-04-08",
+            "open": 3.69,
+            "high": 3.69,
+            "low": 3.69,
+            "close": 3.69,
+            "volume": null
+          },
+          {
+            "date": "2026-04-09",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-04-10",
+            "open": 3.7,
+            "high": 3.7,
+            "low": 3.7,
+            "close": 3.7,
+            "volume": null
+          },
+          {
+            "date": "2026-04-13",
+            "open": 3.7,
+            "high": 3.7,
+            "low": 3.7,
+            "close": 3.7,
+            "volume": null
+          },
+          {
+            "date": "2026-04-14",
+            "open": 3.71,
+            "high": 3.71,
+            "low": 3.71,
+            "close": 3.71,
+            "volume": null
+          },
+          {
+            "date": "2026-04-15",
+            "open": 3.7,
+            "high": 3.7,
+            "low": 3.7,
+            "close": 3.7,
+            "volume": null
+          },
+          {
+            "date": "2026-04-16",
+            "open": 3.69,
+            "high": 3.69,
+            "low": 3.69,
+            "close": 3.69,
+            "volume": null
+          },
+          {
+            "date": "2026-04-17",
+            "open": 3.64,
+            "high": 3.64,
+            "low": 3.64,
+            "close": 3.64,
+            "volume": null
+          },
+          {
+            "date": "2026-04-20",
+            "open": 3.65,
+            "high": 3.65,
+            "low": 3.65,
+            "close": 3.65,
+            "volume": null
+          },
+          {
+            "date": "2026-04-21",
+            "open": 3.69,
+            "high": 3.69,
+            "low": 3.69,
+            "close": 3.69,
+            "volume": null
+          },
+          {
+            "date": "2026-04-22",
+            "open": 3.69,
+            "high": 3.69,
+            "low": 3.69,
+            "close": 3.69,
+            "volume": null
+          },
+          {
+            "date": "2026-04-23",
+            "open": 3.7,
+            "high": 3.7,
+            "low": 3.7,
+            "close": 3.7,
+            "volume": null
+          },
+          {
+            "date": "2026-04-24",
+            "open": 3.67,
+            "high": 3.67,
+            "low": 3.67,
+            "close": 3.67,
+            "volume": null
+          },
+          {
+            "date": "2026-04-27",
+            "open": 3.69,
+            "high": 3.69,
+            "low": 3.69,
+            "close": 3.69,
+            "volume": null
+          },
+          {
+            "date": "2026-04-28",
+            "open": 3.71,
+            "high": 3.71,
+            "low": 3.71,
+            "close": 3.71,
+            "volume": null
+          },
+          {
+            "date": "2026-04-29",
+            "open": 3.75,
+            "high": 3.75,
+            "low": 3.75,
+            "close": 3.75,
+            "volume": null
+          },
+          {
+            "date": "2026-04-30",
+            "open": 3.72,
+            "high": 3.72,
+            "low": 3.72,
+            "close": 3.72,
+            "volume": null
+          },
+          {
+            "date": "2026-05-01",
+            "open": 3.73,
+            "high": 3.73,
+            "low": 3.73,
+            "close": 3.73,
+            "volume": null
+          },
+          {
+            "date": "2026-05-04",
+            "open": 3.78,
+            "high": 3.78,
+            "low": 3.78,
+            "close": 3.78,
+            "volume": null
+          },
+          {
+            "date": "2026-05-05",
+            "open": 3.77,
+            "high": 3.77,
+            "low": 3.77,
+            "close": 3.77,
+            "volume": null
+          },
+          {
+            "date": "2026-05-06",
+            "open": 3.73,
+            "high": 3.73,
+            "low": 3.73,
+            "close": 3.73,
+            "volume": null
+          },
+          {
+            "date": "2026-05-07",
+            "open": 3.76,
+            "high": 3.76,
+            "low": 3.76,
+            "close": 3.76,
+            "volume": null
+          },
+          {
+            "date": "2026-05-08",
+            "open": 3.75,
+            "high": 3.75,
+            "low": 3.75,
+            "close": 3.75,
+            "volume": null
+          },
+          {
+            "date": "2026-05-11",
+            "open": 3.79,
+            "high": 3.79,
+            "low": 3.79,
+            "close": 3.79,
+            "volume": null
+          },
+          {
+            "date": "2026-05-12",
+            "open": 3.8,
+            "high": 3.8,
+            "low": 3.8,
+            "close": 3.8,
+            "volume": null
+          },
+          {
+            "date": "2026-05-13",
+            "open": 3.79,
+            "high": 3.79,
+            "low": 3.79,
+            "close": 3.79,
+            "volume": null
+          },
+          {
+            "date": "2026-05-14",
+            "open": 3.79,
+            "high": 3.79,
+            "low": 3.79,
+            "close": 3.79,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "국고채 10Y",
+        "source": "ECOS",
+        "code": "817Y002/010210000",
+        "unit": "%",
+        "chart_type": "line",
+        "start_date": "2026-02-12",
+        "end_date": "2026-05-15",
+        "data": [
+          {
+            "date": "2026-02-12",
+            "open": 3.618,
+            "high": 3.618,
+            "low": 3.618,
+            "close": 3.618,
+            "volume": null
+          },
+          {
+            "date": "2026-02-13",
+            "open": 3.571,
+            "high": 3.571,
+            "low": 3.571,
+            "close": 3.571,
+            "volume": null
+          },
+          {
+            "date": "2026-02-19",
+            "open": 3.588,
+            "high": 3.588,
+            "low": 3.588,
+            "close": 3.588,
+            "volume": null
+          },
+          {
+            "date": "2026-02-20",
+            "open": 3.54,
+            "high": 3.54,
+            "low": 3.54,
+            "close": 3.54,
+            "volume": null
+          },
+          {
+            "date": "2026-02-23",
+            "open": 3.578,
+            "high": 3.578,
+            "low": 3.578,
+            "close": 3.578,
+            "volume": null
+          },
+          {
+            "date": "2026-02-24",
+            "open": 3.593,
+            "high": 3.593,
+            "low": 3.593,
+            "close": 3.593,
+            "volume": null
+          },
+          {
+            "date": "2026-02-25",
+            "open": 3.556,
+            "high": 3.556,
+            "low": 3.556,
+            "close": 3.556,
+            "volume": null
+          },
+          {
+            "date": "2026-02-26",
+            "open": 3.47,
+            "high": 3.47,
+            "low": 3.47,
+            "close": 3.47,
+            "volume": null
+          },
+          {
+            "date": "2026-02-27",
+            "open": 3.446,
+            "high": 3.446,
+            "low": 3.446,
+            "close": 3.446,
+            "volume": null
+          },
+          {
+            "date": "2026-03-03",
+            "open": 3.594,
+            "high": 3.594,
+            "low": 3.594,
+            "close": 3.594,
+            "volume": null
+          },
+          {
+            "date": "2026-03-04",
+            "open": 3.632,
+            "high": 3.632,
+            "low": 3.632,
+            "close": 3.632,
+            "volume": null
+          },
+          {
+            "date": "2026-03-05",
+            "open": 3.589,
+            "high": 3.589,
+            "low": 3.589,
+            "close": 3.589,
+            "volume": null
+          },
+          {
+            "date": "2026-03-06",
+            "open": 3.616,
+            "high": 3.616,
+            "low": 3.616,
+            "close": 3.616,
+            "volume": null
+          },
+          {
+            "date": "2026-03-09",
+            "open": 3.739,
+            "high": 3.739,
+            "low": 3.739,
+            "close": 3.739,
+            "volume": null
+          },
+          {
+            "date": "2026-03-10",
+            "open": 3.629,
+            "high": 3.629,
+            "low": 3.629,
+            "close": 3.629,
+            "volume": null
+          },
+          {
+            "date": "2026-03-11",
+            "open": 3.608,
+            "high": 3.608,
+            "low": 3.608,
+            "close": 3.608,
+            "volume": null
+          },
+          {
+            "date": "2026-03-12",
+            "open": 3.649,
+            "high": 3.649,
+            "low": 3.649,
+            "close": 3.649,
+            "volume": null
+          },
+          {
+            "date": "2026-03-13",
+            "open": 3.701,
+            "high": 3.701,
+            "low": 3.701,
+            "close": 3.701,
+            "volume": null
+          },
+          {
+            "date": "2026-03-16",
+            "open": 3.68,
+            "high": 3.68,
+            "low": 3.68,
+            "close": 3.68,
+            "volume": null
+          },
+          {
+            "date": "2026-03-17",
+            "open": 3.692,
+            "high": 3.692,
+            "low": 3.692,
+            "close": 3.692,
+            "volume": null
+          },
+          {
+            "date": "2026-03-18",
+            "open": 3.606,
+            "high": 3.606,
+            "low": 3.606,
+            "close": 3.606,
+            "volume": null
+          },
+          {
+            "date": "2026-03-19",
+            "open": 3.693,
+            "high": 3.693,
+            "low": 3.693,
+            "close": 3.693,
+            "volume": null
+          },
+          {
+            "date": "2026-03-20",
+            "open": 3.736,
+            "high": 3.736,
+            "low": 3.736,
+            "close": 3.736,
+            "volume": null
+          },
+          {
+            "date": "2026-03-23",
+            "open": 3.879,
+            "high": 3.879,
+            "low": 3.879,
+            "close": 3.879,
+            "volume": null
+          },
+          {
+            "date": "2026-03-24",
+            "open": 3.835,
+            "high": 3.835,
+            "low": 3.835,
+            "close": 3.835,
+            "volume": null
+          },
+          {
+            "date": "2026-03-25",
+            "open": 3.859,
+            "high": 3.859,
+            "low": 3.859,
+            "close": 3.859,
+            "volume": null
+          },
+          {
+            "date": "2026-03-26",
+            "open": 3.865,
+            "high": 3.865,
+            "low": 3.865,
+            "close": 3.865,
+            "volume": null
+          },
+          {
+            "date": "2026-03-27",
+            "open": 3.915,
+            "high": 3.915,
+            "low": 3.915,
+            "close": 3.915,
+            "volume": null
+          },
+          {
+            "date": "2026-03-30",
+            "open": 3.891,
+            "high": 3.891,
+            "low": 3.891,
+            "close": 3.891,
+            "volume": null
+          },
+          {
+            "date": "2026-03-31",
+            "open": 3.879,
+            "high": 3.879,
+            "low": 3.879,
+            "close": 3.879,
+            "volume": null
+          },
+          {
+            "date": "2026-04-01",
+            "open": 3.689,
+            "high": 3.689,
+            "low": 3.689,
+            "close": 3.689,
+            "volume": null
+          },
+          {
+            "date": "2026-04-02",
+            "open": 3.804,
+            "high": 3.804,
+            "low": 3.804,
+            "close": 3.804,
+            "volume": null
+          },
+          {
+            "date": "2026-04-03",
+            "open": 3.747,
+            "high": 3.747,
+            "low": 3.747,
+            "close": 3.747,
+            "volume": null
+          },
+          {
+            "date": "2026-04-06",
+            "open": 3.725,
+            "high": 3.725,
+            "low": 3.725,
+            "close": 3.725,
+            "volume": null
+          },
+          {
+            "date": "2026-04-07",
+            "open": 3.754,
+            "high": 3.754,
+            "low": 3.754,
+            "close": 3.754,
+            "volume": null
+          },
+          {
+            "date": "2026-04-08",
+            "open": 3.628,
+            "high": 3.628,
+            "low": 3.628,
+            "close": 3.628,
+            "volume": null
+          },
+          {
+            "date": "2026-04-09",
+            "open": 3.66,
+            "high": 3.66,
+            "low": 3.66,
+            "close": 3.66,
+            "volume": null
+          },
+          {
+            "date": "2026-04-10",
+            "open": 3.686,
+            "high": 3.686,
+            "low": 3.686,
+            "close": 3.686,
+            "volume": null
+          },
+          {
+            "date": "2026-04-13",
+            "open": 3.715,
+            "high": 3.715,
+            "low": 3.715,
+            "close": 3.715,
+            "volume": null
+          },
+          {
+            "date": "2026-04-14",
+            "open": 3.658,
+            "high": 3.658,
+            "low": 3.658,
+            "close": 3.658,
+            "volume": null
+          },
+          {
+            "date": "2026-04-15",
+            "open": 3.655,
+            "high": 3.655,
+            "low": 3.655,
+            "close": 3.655,
+            "volume": null
+          },
+          {
+            "date": "2026-04-16",
+            "open": 3.675,
+            "high": 3.675,
+            "low": 3.675,
+            "close": 3.675,
+            "volume": null
+          },
+          {
+            "date": "2026-04-17",
+            "open": 3.717,
+            "high": 3.717,
+            "low": 3.717,
+            "close": 3.717,
+            "volume": null
+          },
+          {
+            "date": "2026-04-20",
+            "open": 3.688,
+            "high": 3.688,
+            "low": 3.688,
+            "close": 3.688,
+            "volume": null
+          },
+          {
+            "date": "2026-04-21",
+            "open": 3.655,
+            "high": 3.655,
+            "low": 3.655,
+            "close": 3.655,
+            "volume": null
+          },
+          {
+            "date": "2026-04-22",
+            "open": 3.697,
+            "high": 3.697,
+            "low": 3.697,
+            "close": 3.697,
+            "volume": null
+          },
+          {
+            "date": "2026-04-23",
+            "open": 3.791,
+            "high": 3.791,
+            "low": 3.791,
+            "close": 3.791,
+            "volume": null
+          },
+          {
+            "date": "2026-04-24",
+            "open": 3.817,
+            "high": 3.817,
+            "low": 3.817,
+            "close": 3.817,
+            "volume": null
+          },
+          {
+            "date": "2026-04-27",
+            "open": 3.82,
+            "high": 3.82,
+            "low": 3.82,
+            "close": 3.82,
+            "volume": null
+          },
+          {
+            "date": "2026-04-28",
+            "open": 3.861,
+            "high": 3.861,
+            "low": 3.861,
+            "close": 3.861,
+            "volume": null
+          },
+          {
+            "date": "2026-04-29",
+            "open": 3.843,
+            "high": 3.843,
+            "low": 3.843,
+            "close": 3.843,
+            "volume": null
+          },
+          {
+            "date": "2026-04-30",
+            "open": 3.923,
+            "high": 3.923,
+            "low": 3.923,
+            "close": 3.923,
+            "volume": null
+          },
+          {
+            "date": "2026-05-04",
+            "open": 3.932,
+            "high": 3.932,
+            "low": 3.932,
+            "close": 3.932,
+            "volume": null
+          },
+          {
+            "date": "2026-05-06",
+            "open": 3.932,
+            "high": 3.932,
+            "low": 3.932,
+            "close": 3.932,
+            "volume": null
+          },
+          {
+            "date": "2026-05-07",
+            "open": 3.888,
+            "high": 3.888,
+            "low": 3.888,
+            "close": 3.888,
+            "volume": null
+          },
+          {
+            "date": "2026-05-08",
+            "open": 3.909,
+            "high": 3.909,
+            "low": 3.909,
+            "close": 3.909,
+            "volume": null
+          },
+          {
+            "date": "2026-05-11",
+            "open": 3.95,
+            "high": 3.95,
+            "low": 3.95,
+            "close": 3.95,
+            "volume": null
+          },
+          {
+            "date": "2026-05-12",
+            "open": 4.056,
+            "high": 4.056,
+            "low": 4.056,
+            "close": 4.056,
+            "volume": null
+          },
+          {
+            "date": "2026-05-13",
+            "open": 4.044,
+            "high": 4.044,
+            "low": 4.044,
+            "close": 4.044,
+            "volume": null
+          },
+          {
+            "date": "2026-05-14",
+            "open": 4.085,
+            "high": 4.085,
+            "low": 4.085,
+            "close": 4.085,
+            "volume": null
+          },
+          {
+            "date": "2026-05-15",
+            "open": 4.217,
+            "high": 4.217,
+            "low": 4.217,
+            "close": 4.217,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "원/달러 환율",
+        "source": "ECOS",
+        "code": "731Y001/0000001",
+        "unit": "원",
+        "chart_type": "line",
+        "start_date": "2026-02-12",
+        "end_date": "2026-05-15",
+        "data": [
+          {
+            "date": "2026-02-12",
+            "open": 1454.4,
+            "high": 1454.4,
+            "low": 1454.4,
+            "close": 1454.4,
+            "volume": null
+          },
+          {
+            "date": "2026-02-13",
+            "open": 1443.4,
+            "high": 1443.4,
+            "low": 1443.4,
+            "close": 1443.4,
+            "volume": null
+          },
+          {
+            "date": "2026-02-19",
+            "open": 1443.1,
+            "high": 1443.1,
+            "low": 1443.1,
+            "close": 1443.1,
+            "volume": null
+          },
+          {
+            "date": "2026-02-20",
+            "open": 1450.7,
+            "high": 1450.7,
+            "low": 1450.7,
+            "close": 1450.7,
+            "volume": null
+          },
+          {
+            "date": "2026-02-23",
+            "open": 1448.7,
+            "high": 1448.7,
+            "low": 1448.7,
+            "close": 1448.7,
+            "volume": null
+          },
+          {
+            "date": "2026-02-24",
+            "open": 1442.0,
+            "high": 1442.0,
+            "low": 1442.0,
+            "close": 1442.0,
+            "volume": null
+          },
+          {
+            "date": "2026-02-25",
+            "open": 1445.8,
+            "high": 1445.8,
+            "low": 1445.8,
+            "close": 1445.8,
+            "volume": null
+          },
+          {
+            "date": "2026-02-26",
+            "open": 1435.3,
+            "high": 1435.3,
+            "low": 1435.3,
+            "close": 1435.3,
+            "volume": null
+          },
+          {
+            "date": "2026-02-27",
+            "open": 1424.5,
+            "high": 1424.5,
+            "low": 1424.5,
+            "close": 1424.5,
+            "volume": null
+          },
+          {
+            "date": "2026-03-03",
+            "open": 1435.4,
+            "high": 1435.4,
+            "low": 1435.4,
+            "close": 1435.4,
+            "volume": null
+          },
+          {
+            "date": "2026-03-04",
+            "open": 1464.5,
+            "high": 1464.5,
+            "low": 1464.5,
+            "close": 1464.5,
+            "volume": null
+          },
+          {
+            "date": "2026-03-05",
+            "open": 1478.8,
+            "high": 1478.8,
+            "low": 1478.8,
+            "close": 1478.8,
+            "volume": null
+          },
+          {
+            "date": "2026-03-06",
+            "open": 1464.3,
+            "high": 1464.3,
+            "low": 1464.3,
+            "close": 1464.3,
+            "volume": null
+          },
+          {
+            "date": "2026-03-09",
+            "open": 1474.5,
+            "high": 1474.5,
+            "low": 1474.5,
+            "close": 1474.5,
+            "volume": null
+          },
+          {
+            "date": "2026-03-10",
+            "open": 1493.1,
+            "high": 1493.1,
+            "low": 1493.1,
+            "close": 1493.1,
+            "volume": null
+          },
+          {
+            "date": "2026-03-11",
+            "open": 1472.8,
+            "high": 1472.8,
+            "low": 1472.8,
+            "close": 1472.8,
+            "volume": null
+          },
+          {
+            "date": "2026-03-12",
+            "open": 1467.3,
+            "high": 1467.3,
+            "low": 1467.3,
+            "close": 1467.3,
+            "volume": null
+          },
+          {
+            "date": "2026-03-13",
+            "open": 1479.8,
+            "high": 1479.8,
+            "low": 1479.8,
+            "close": 1479.8,
+            "volume": null
+          },
+          {
+            "date": "2026-03-16",
+            "open": 1489.5,
+            "high": 1489.5,
+            "low": 1489.5,
+            "close": 1489.5,
+            "volume": null
+          },
+          {
+            "date": "2026-03-17",
+            "open": 1496.0,
+            "high": 1496.0,
+            "low": 1496.0,
+            "close": 1496.0,
+            "volume": null
+          },
+          {
+            "date": "2026-03-18",
+            "open": 1491.6,
+            "high": 1491.6,
+            "low": 1491.6,
+            "close": 1491.6,
+            "volume": null
+          },
+          {
+            "date": "2026-03-19",
+            "open": 1486.0,
+            "high": 1486.0,
+            "low": 1486.0,
+            "close": 1486.0,
+            "volume": null
+          },
+          {
+            "date": "2026-03-20",
+            "open": 1499.7,
+            "high": 1499.7,
+            "low": 1499.7,
+            "close": 1499.7,
+            "volume": null
+          },
+          {
+            "date": "2026-03-23",
+            "open": 1494.9,
+            "high": 1494.9,
+            "low": 1494.9,
+            "close": 1494.9,
+            "volume": null
+          },
+          {
+            "date": "2026-03-24",
+            "open": 1509.6,
+            "high": 1509.6,
+            "low": 1509.6,
+            "close": 1509.6,
+            "volume": null
+          },
+          {
+            "date": "2026-03-25",
+            "open": 1498.3,
+            "high": 1498.3,
+            "low": 1498.3,
+            "close": 1498.3,
+            "volume": null
+          },
+          {
+            "date": "2026-03-26",
+            "open": 1495.6,
+            "high": 1495.6,
+            "low": 1495.6,
+            "close": 1495.6,
+            "volume": null
+          },
+          {
+            "date": "2026-03-27",
+            "open": 1506.2,
+            "high": 1506.2,
+            "low": 1506.2,
+            "close": 1506.2,
+            "volume": null
+          },
+          {
+            "date": "2026-03-30",
+            "open": 1508.1,
+            "high": 1508.1,
+            "low": 1508.1,
+            "close": 1508.1,
+            "volume": null
+          },
+          {
+            "date": "2026-03-31",
+            "open": 1513.4,
+            "high": 1513.4,
+            "low": 1513.4,
+            "close": 1513.4,
+            "volume": null
+          },
+          {
+            "date": "2026-04-01",
+            "open": 1530.5,
+            "high": 1530.5,
+            "low": 1530.5,
+            "close": 1530.5,
+            "volume": null
+          },
+          {
+            "date": "2026-04-02",
+            "open": 1507.8,
+            "high": 1507.8,
+            "low": 1507.8,
+            "close": 1507.8,
+            "volume": null
+          },
+          {
+            "date": "2026-04-03",
+            "open": 1518.8,
+            "high": 1518.8,
+            "low": 1518.8,
+            "close": 1518.8,
+            "volume": null
+          },
+          {
+            "date": "2026-04-06",
+            "open": 1507.6,
+            "high": 1507.6,
+            "low": 1507.6,
+            "close": 1507.6,
+            "volume": null
+          },
+          {
+            "date": "2026-04-07",
+            "open": 1507.2,
+            "high": 1507.2,
+            "low": 1507.2,
+            "close": 1507.2,
+            "volume": null
+          },
+          {
+            "date": "2026-04-08",
+            "open": 1506.8,
+            "high": 1506.8,
+            "low": 1506.8,
+            "close": 1506.8,
+            "volume": null
+          },
+          {
+            "date": "2026-04-09",
+            "open": 1476.1,
+            "high": 1476.1,
+            "low": 1476.1,
+            "close": 1476.1,
+            "volume": null
+          },
+          {
+            "date": "2026-04-10",
+            "open": 1481.1,
+            "high": 1481.1,
+            "low": 1481.1,
+            "close": 1481.1,
+            "volume": null
+          },
+          {
+            "date": "2026-04-13",
+            "open": 1479.8,
+            "high": 1479.8,
+            "low": 1479.8,
+            "close": 1479.8,
+            "volume": null
+          },
+          {
+            "date": "2026-04-14",
+            "open": 1489.8,
+            "high": 1489.8,
+            "low": 1489.8,
+            "close": 1489.8,
+            "volume": null
+          },
+          {
+            "date": "2026-04-15",
+            "open": 1481.4,
+            "high": 1481.4,
+            "low": 1481.4,
+            "close": 1481.4,
+            "volume": null
+          },
+          {
+            "date": "2026-04-16",
+            "open": 1473.1,
+            "high": 1473.1,
+            "low": 1473.1,
+            "close": 1473.1,
+            "volume": null
+          },
+          {
+            "date": "2026-04-17",
+            "open": 1472.6,
+            "high": 1472.6,
+            "low": 1472.6,
+            "close": 1472.6,
+            "volume": null
+          },
+          {
+            "date": "2026-04-20",
+            "open": 1480.0,
+            "high": 1480.0,
+            "low": 1480.0,
+            "close": 1480.0,
+            "volume": null
+          },
+          {
+            "date": "2026-04-21",
+            "open": 1475.6,
+            "high": 1475.6,
+            "low": 1475.6,
+            "close": 1475.6,
+            "volume": null
+          },
+          {
+            "date": "2026-04-22",
+            "open": 1470.8,
+            "high": 1470.8,
+            "low": 1470.8,
+            "close": 1470.8,
+            "volume": null
+          },
+          {
+            "date": "2026-04-23",
+            "open": 1477.6,
+            "high": 1477.6,
+            "low": 1477.6,
+            "close": 1477.6,
+            "volume": null
+          },
+          {
+            "date": "2026-04-24",
+            "open": 1480.6,
+            "high": 1480.6,
+            "low": 1480.6,
+            "close": 1480.6,
+            "volume": null
+          },
+          {
+            "date": "2026-04-27",
+            "open": 1482.9,
+            "high": 1482.9,
+            "low": 1482.9,
+            "close": 1482.9,
+            "volume": null
+          },
+          {
+            "date": "2026-04-28",
+            "open": 1473.1,
+            "high": 1473.1,
+            "low": 1473.1,
+            "close": 1473.1,
+            "volume": null
+          },
+          {
+            "date": "2026-04-29",
+            "open": 1473.3,
+            "high": 1473.3,
+            "low": 1473.3,
+            "close": 1473.3,
+            "volume": null
+          },
+          {
+            "date": "2026-04-30",
+            "open": 1476.1,
+            "high": 1476.1,
+            "low": 1476.1,
+            "close": 1476.1,
+            "volume": null
+          },
+          {
+            "date": "2026-05-04",
+            "open": 1484.8,
+            "high": 1484.8,
+            "low": 1484.8,
+            "close": 1484.8,
+            "volume": null
+          },
+          {
+            "date": "2026-05-06",
+            "open": 1470.5,
+            "high": 1470.5,
+            "low": 1470.5,
+            "close": 1470.5,
+            "volume": null
+          },
+          {
+            "date": "2026-05-07",
+            "open": 1456.8,
+            "high": 1456.8,
+            "low": 1456.8,
+            "close": 1456.8,
+            "volume": null
+          },
+          {
+            "date": "2026-05-08",
+            "open": 1450.8,
+            "high": 1450.8,
+            "low": 1450.8,
+            "close": 1450.8,
+            "volume": null
+          },
+          {
+            "date": "2026-05-11",
+            "open": 1466.0,
+            "high": 1466.0,
+            "low": 1466.0,
+            "close": 1466.0,
+            "volume": null
+          },
+          {
+            "date": "2026-05-12",
+            "open": 1473.0,
+            "high": 1473.0,
+            "low": 1473.0,
+            "close": 1473.0,
+            "volume": null
+          },
+          {
+            "date": "2026-05-13",
+            "open": 1484.3,
+            "high": 1484.3,
+            "low": 1484.3,
+            "close": 1484.3,
+            "volume": null
+          },
+          {
+            "date": "2026-05-14",
+            "open": 1495.1,
+            "high": 1495.1,
+            "low": 1495.1,
+            "close": 1495.1,
+            "volume": null
+          },
+          {
+            "date": "2026-05-15",
+            "open": 1491.8,
+            "high": 1491.8,
+            "low": 1491.8,
+            "close": 1491.8,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "달러인덱스",
+        "source": "YAHOO",
+        "code": "DX-Y.NYB",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-02-12",
+        "end_date": "2026-05-15",
+        "data": [
+          {
+            "date": "2026-02-12",
+            "open": 96.95999908447266,
+            "high": 97.06999969482422,
+            "low": 96.73999786376953,
+            "close": 96.93000030517578,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-13",
+            "open": 96.94000244140625,
+            "high": 97.16000366210938,
+            "low": 96.80000305175781,
+            "close": 96.87999725341797,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-17",
+            "open": 97.12000274658203,
+            "high": 97.55000305175781,
+            "low": 97.06999969482422,
+            "close": 97.16000366210938,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-18",
+            "open": 97.13999938964844,
+            "high": 97.73999786376953,
+            "low": 97.12000274658203,
+            "close": 97.69999694824219,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-19",
+            "open": 97.7300033569336,
+            "high": 98.06999969482422,
+            "low": 97.56999969482422,
+            "close": 97.93000030517578,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-20",
+            "open": 97.9000015258789,
+            "high": 98.08000183105469,
+            "low": 97.58999633789062,
+            "close": 97.80000305175781,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-23",
+            "open": 97.69999694824219,
+            "high": 97.8499984741211,
+            "low": 97.36000061035156,
+            "close": 97.69999694824219,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-24",
+            "open": 97.69999694824219,
+            "high": 97.98999786376953,
+            "low": 97.69999694824219,
+            "close": 97.87999725341797,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-25",
+            "open": 97.8499984741211,
+            "high": 98.0,
+            "low": 97.62000274658203,
+            "close": 97.69999694824219,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-26",
+            "open": 97.58999633789062,
+            "high": 97.9800033569336,
+            "low": 97.48999786376953,
+            "close": 97.79000091552734,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-02-27",
+            "open": 97.75,
+            "high": 97.8499984741211,
+            "low": 97.55999755859375,
+            "close": 97.61000061035156,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-02",
+            "open": 97.87000274658203,
+            "high": 98.75,
+            "low": 97.7699966430664,
+            "close": 98.37999725341797,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-03",
+            "open": 98.55999755859375,
+            "high": 99.68000030517578,
+            "low": 98.44000244140625,
+            "close": 99.05000305175781,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-04",
+            "open": 99.11000061035156,
+            "high": 99.33000183105469,
+            "low": 98.69999694824219,
+            "close": 98.7699966430664,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-05",
+            "open": 98.7699966430664,
+            "high": 99.41000366210938,
+            "low": 98.66999816894531,
+            "close": 99.31999969482422,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-06",
+            "open": 99.01000213623047,
+            "high": 99.44000244140625,
+            "low": 98.83999633789062,
+            "close": 98.98999786376953,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-09",
+            "open": 98.86000061035156,
+            "high": 99.69999694824219,
+            "low": 98.72000122070312,
+            "close": 99.18000030517578,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-10",
+            "open": 98.80000305175781,
+            "high": 98.94999694824219,
+            "low": 98.48999786376953,
+            "close": 98.83000183105469,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-11",
+            "open": 98.94000244140625,
+            "high": 99.30000305175781,
+            "low": 98.69999694824219,
+            "close": 99.2300033569336,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-12",
+            "open": 99.44999694824219,
+            "high": 99.76000213623047,
+            "low": 99.25,
+            "close": 99.73999786376953,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-13",
+            "open": 99.69000244140625,
+            "high": 100.54000091552734,
+            "low": 99.58999633789062,
+            "close": 100.36000061035156,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-16",
+            "open": 100.43000030517578,
+            "high": 100.4800033569336,
+            "low": 99.66000366210938,
+            "close": 99.70999908447266,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-17",
+            "open": 99.86000061035156,
+            "high": 100.12000274658203,
+            "low": 99.5,
+            "close": 99.58000183105469,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-18",
+            "open": 99.55000305175781,
+            "high": 100.30999755859375,
+            "low": 99.47000122070312,
+            "close": 100.08999633789062,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-19",
+            "open": 100.2300033569336,
+            "high": 100.30999755859375,
+            "low": 98.9800033569336,
+            "close": 99.2300033569336,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-20",
+            "open": 99.29000091552734,
+            "high": 99.79000091552734,
+            "low": 99.25,
+            "close": 99.6500015258789,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-23",
+            "open": 99.68000030517578,
+            "high": 100.1500015258789,
+            "low": 98.87999725341797,
+            "close": 98.94999694824219,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-24",
+            "open": 99.13999938964844,
+            "high": 99.62000274658203,
+            "low": 99.05999755859375,
+            "close": 99.43000030517578,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-25",
+            "open": 99.19999694824219,
+            "high": 99.66999816894531,
+            "low": 99.06999969482422,
+            "close": 99.5999984741211,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-26",
+            "open": 99.62999725341797,
+            "high": 100.01000213623047,
+            "low": 99.55999755859375,
+            "close": 99.9000015258789,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-27",
+            "open": 99.87000274658203,
+            "high": 100.20999908447266,
+            "low": 99.80000305175781,
+            "close": 100.1500015258789,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-30",
+            "open": 100.22000122070312,
+            "high": 100.61000061035156,
+            "low": 100.05000305175781,
+            "close": 100.51000213623047,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-03-31",
+            "open": 100.58999633789062,
+            "high": 100.63999938964844,
+            "low": 99.80999755859375,
+            "close": 99.95999908447266,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-01",
+            "open": 99.79000091552734,
+            "high": 99.87999725341797,
+            "low": 99.30000305175781,
+            "close": 99.6500015258789,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-02",
+            "open": 99.54000091552734,
+            "high": 100.26000213623047,
+            "low": 99.44999694824219,
+            "close": 100.02999877929688,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-06",
+            "open": 100.18000030517578,
+            "high": 100.29000091552734,
+            "low": 99.76000213623047,
+            "close": 99.9800033569336,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-07",
+            "open": 100.01000213623047,
+            "high": 100.16000366210938,
+            "low": 99.5999984741211,
+            "close": 99.63999938964844,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-08",
+            "open": 98.94999694824219,
+            "high": 99.18000030517578,
+            "low": 98.52999877929688,
+            "close": 99.12999725341797,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-09",
+            "open": 99.05999755859375,
+            "high": 99.16000366210938,
+            "low": 98.62999725341797,
+            "close": 98.81999969482422,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-10",
+            "open": 98.87000274658203,
+            "high": 99.01000213623047,
+            "low": 98.54000091552734,
+            "close": 98.6500015258789,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-13",
+            "open": 99.05000305175781,
+            "high": 99.18000030517578,
+            "low": 98.36000061035156,
+            "close": 98.37000274658203,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-14",
+            "open": 98.37000274658203,
+            "high": 98.41000366210938,
+            "low": 97.97000122070312,
+            "close": 98.12000274658203,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-15",
+            "open": 98.06999969482422,
+            "high": 98.29000091552734,
+            "low": 98.01000213623047,
+            "close": 98.05999755859375,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-16",
+            "open": 98.01000213623047,
+            "high": 98.29000091552734,
+            "low": 97.83000183105469,
+            "close": 98.22000122070312,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-17",
+            "open": 98.19000244140625,
+            "high": 98.29000091552734,
+            "low": 97.62999725341797,
+            "close": 98.0999984741211,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-20",
+            "open": 98.27999877929688,
+            "high": 98.4000015258789,
+            "low": 98.01000213623047,
+            "close": 98.05000305175781,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-21",
+            "open": 98.05999755859375,
+            "high": 98.56999969482422,
+            "low": 98.05999755859375,
+            "close": 98.41000366210938,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-22",
+            "open": 98.4000015258789,
+            "high": 98.63999938964844,
+            "low": 98.20999908447266,
+            "close": 98.58999633789062,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-23",
+            "open": 98.62000274658203,
+            "high": 98.94000244140625,
+            "low": 98.52999877929688,
+            "close": 98.80000305175781,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-24",
+            "open": 98.81999969482422,
+            "high": 98.91999816894531,
+            "low": 98.48999786376953,
+            "close": 98.51000213623047,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-27",
+            "open": 99.33000183105469,
+            "high": 99.33999633789062,
+            "low": 98.20999908447266,
+            "close": 98.4800033569336,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-28",
+            "open": 98.47000122070312,
+            "high": 98.87000274658203,
+            "low": 98.43000030517578,
+            "close": 98.62000274658203,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-29",
+            "open": 98.61000061035156,
+            "high": 99.05000305175781,
+            "low": 98.56999969482422,
+            "close": 98.91999816894531,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-04-30",
+            "open": 98.8499984741211,
+            "high": 99.08999633789062,
+            "low": 98.01000213623047,
+            "close": 98.08000183105469,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-01",
+            "open": 98.12999725341797,
+            "high": 98.23999786376953,
+            "low": 97.72000122070312,
+            "close": 98.20999908447266,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-04",
+            "open": 98.05000305175781,
+            "high": 98.54000091552734,
+            "low": 97.97000122070312,
+            "close": 98.47000122070312,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-05",
+            "open": 98.47000122070312,
+            "high": 98.58000183105469,
+            "low": 98.30999755859375,
+            "close": 98.4800033569336,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-06",
+            "open": 98.30999755859375,
+            "high": 98.33999633789062,
+            "low": 97.62999725341797,
+            "close": 98.0199966430664,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-07",
+            "open": 98.02999877929688,
+            "high": 98.27999877929688,
+            "low": 97.81999969482422,
+            "close": 98.25,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-08",
+            "open": 98.25,
+            "high": 98.27999877929688,
+            "low": 97.83000183105469,
+            "close": 97.83999633789062,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-11",
+            "open": 98.04000091552734,
+            "high": 98.1500015258789,
+            "low": 97.8499984741211,
+            "close": 97.94000244140625,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-12",
+            "open": 97.95999908447266,
+            "high": 98.45999908447266,
+            "low": 97.94999694824219,
+            "close": 98.29000091552734,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-13",
+            "open": 98.30999755859375,
+            "high": 98.5999984741211,
+            "low": 98.26000213623047,
+            "close": 98.4800033569336,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-14",
+            "open": 98.45999908447266,
+            "high": 98.91000366210938,
+            "low": 98.41999816894531,
+            "close": 98.87999725341797,
+            "volume": 0.0
+          },
+          {
+            "date": "2026-05-15",
+            "open": 98.93000030517578,
+            "high": 99.31999969482422,
+            "low": 98.91999816894531,
+            "close": 99.2699966430664,
+            "volume": 0.0
+          }
+        ]
+      },
+      {
+        "instrument": "WTI 유가",
+        "source": "FRED",
+        "code": "DCOILWTICO",
+        "unit": "$",
+        "chart_type": "area",
+        "start_date": "2026-02-12",
+        "end_date": "2026-05-15",
+        "data": [
+          {
+            "date": "2026-02-12",
+            "open": 63.08,
+            "high": 63.08,
+            "low": 63.08,
+            "close": 63.08,
+            "volume": null
+          },
+          {
+            "date": "2026-02-13",
+            "open": 63.05,
+            "high": 63.05,
+            "low": 63.05,
+            "close": 63.05,
+            "volume": null
+          },
+          {
+            "date": "2026-02-17",
+            "open": 62.53,
+            "high": 62.53,
+            "low": 62.53,
+            "close": 62.53,
+            "volume": null
+          },
+          {
+            "date": "2026-02-18",
+            "open": 65.33,
+            "high": 65.33,
+            "low": 65.33,
+            "close": 65.33,
+            "volume": null
+          },
+          {
+            "date": "2026-02-19",
+            "open": 66.66,
+            "high": 66.66,
+            "low": 66.66,
+            "close": 66.66,
+            "volume": null
+          },
+          {
+            "date": "2026-02-20",
+            "open": 66.69,
+            "high": 66.69,
+            "low": 66.69,
+            "close": 66.69,
+            "volume": null
+          },
+          {
+            "date": "2026-02-23",
+            "open": 66.36,
+            "high": 66.36,
+            "low": 66.36,
+            "close": 66.36,
+            "volume": null
+          },
+          {
+            "date": "2026-02-24",
+            "open": 65.62,
+            "high": 65.62,
+            "low": 65.62,
+            "close": 65.62,
+            "volume": null
+          },
+          {
+            "date": "2026-02-25",
+            "open": 65.3,
+            "high": 65.3,
+            "low": 65.3,
+            "close": 65.3,
+            "volume": null
+          },
+          {
+            "date": "2026-02-26",
+            "open": 65.1,
+            "high": 65.1,
+            "low": 65.1,
+            "close": 65.1,
+            "volume": null
+          },
+          {
+            "date": "2026-02-27",
+            "open": 66.96,
+            "high": 66.96,
+            "low": 66.96,
+            "close": 66.96,
+            "volume": null
+          },
+          {
+            "date": "2026-03-02",
+            "open": 71.13,
+            "high": 71.13,
+            "low": 71.13,
+            "close": 71.13,
+            "volume": null
+          },
+          {
+            "date": "2026-03-03",
+            "open": 74.48,
+            "high": 74.48,
+            "low": 74.48,
+            "close": 74.48,
+            "volume": null
+          },
+          {
+            "date": "2026-03-04",
+            "open": 74.58,
+            "high": 74.58,
+            "low": 74.58,
+            "close": 74.58,
+            "volume": null
+          },
+          {
+            "date": "2026-03-05",
+            "open": 80.88,
+            "high": 80.88,
+            "low": 80.88,
+            "close": 80.88,
+            "volume": null
+          },
+          {
+            "date": "2026-03-06",
+            "open": 90.77,
+            "high": 90.77,
+            "low": 90.77,
+            "close": 90.77,
+            "volume": null
+          },
+          {
+            "date": "2026-03-09",
+            "open": 94.65,
+            "high": 94.65,
+            "low": 94.65,
+            "close": 94.65,
+            "volume": null
+          },
+          {
+            "date": "2026-03-10",
+            "open": 83.71,
+            "high": 83.71,
+            "low": 83.71,
+            "close": 83.71,
+            "volume": null
+          },
+          {
+            "date": "2026-03-11",
+            "open": 86.8,
+            "high": 86.8,
+            "low": 86.8,
+            "close": 86.8,
+            "volume": null
+          },
+          {
+            "date": "2026-03-12",
+            "open": 95.61,
+            "high": 95.61,
+            "low": 95.61,
+            "close": 95.61,
+            "volume": null
+          },
+          {
+            "date": "2026-03-13",
+            "open": 98.48,
+            "high": 98.48,
+            "low": 98.48,
+            "close": 98.48,
+            "volume": null
+          },
+          {
+            "date": "2026-03-16",
+            "open": 93.39,
+            "high": 93.39,
+            "low": 93.39,
+            "close": 93.39,
+            "volume": null
+          },
+          {
+            "date": "2026-03-17",
+            "open": 96.01,
+            "high": 96.01,
+            "low": 96.01,
+            "close": 96.01,
+            "volume": null
+          },
+          {
+            "date": "2026-03-18",
+            "open": 96.12,
+            "high": 96.12,
+            "low": 96.12,
+            "close": 96.12,
+            "volume": null
+          },
+          {
+            "date": "2026-03-19",
+            "open": 96.11,
+            "high": 96.11,
+            "low": 96.11,
+            "close": 96.11,
+            "volume": null
+          },
+          {
+            "date": "2026-03-20",
+            "open": 98.71,
+            "high": 98.71,
+            "low": 98.71,
+            "close": 98.71,
+            "volume": null
+          },
+          {
+            "date": "2026-03-23",
+            "open": 89.33,
+            "high": 89.33,
+            "low": 89.33,
+            "close": 89.33,
+            "volume": null
+          },
+          {
+            "date": "2026-03-24",
+            "open": 93.18,
+            "high": 93.18,
+            "low": 93.18,
+            "close": 93.18,
+            "volume": null
+          },
+          {
+            "date": "2026-03-25",
+            "open": 91.51,
+            "high": 91.51,
+            "low": 91.51,
+            "close": 91.51,
+            "volume": null
+          },
+          {
+            "date": "2026-03-26",
+            "open": 96.18,
+            "high": 96.18,
+            "low": 96.18,
+            "close": 96.18,
+            "volume": null
+          },
+          {
+            "date": "2026-03-27",
+            "open": 101.26,
+            "high": 101.26,
+            "low": 101.26,
+            "close": 101.26,
+            "volume": null
+          },
+          {
+            "date": "2026-03-30",
+            "open": 104.69,
+            "high": 104.69,
+            "low": 104.69,
+            "close": 104.69,
+            "volume": null
+          },
+          {
+            "date": "2026-03-31",
+            "open": 102.86,
+            "high": 102.86,
+            "low": 102.86,
+            "close": 102.86,
+            "volume": null
+          },
+          {
+            "date": "2026-04-01",
+            "open": 101.9,
+            "high": 101.9,
+            "low": 101.9,
+            "close": 101.9,
+            "volume": null
+          },
+          {
+            "date": "2026-04-02",
+            "open": 113.23,
+            "high": 113.23,
+            "low": 113.23,
+            "close": 113.23,
+            "volume": null
+          },
+          {
+            "date": "2026-04-06",
+            "open": 114.01,
+            "high": 114.01,
+            "low": 114.01,
+            "close": 114.01,
+            "volume": null
+          },
+          {
+            "date": "2026-04-07",
+            "open": 114.58,
+            "high": 114.58,
+            "low": 114.58,
+            "close": 114.58,
+            "volume": null
+          },
+          {
+            "date": "2026-04-08",
+            "open": 96.17,
+            "high": 96.17,
+            "low": 96.17,
+            "close": 96.17,
+            "volume": null
+          },
+          {
+            "date": "2026-04-09",
+            "open": 99.62,
+            "high": 99.62,
+            "low": 99.62,
+            "close": 99.62,
+            "volume": null
+          },
+          {
+            "date": "2026-04-10",
+            "open": 98.34,
+            "high": 98.34,
+            "low": 98.34,
+            "close": 98.34,
+            "volume": null
+          },
+          {
+            "date": "2026-04-13",
+            "open": 100.72,
+            "high": 100.72,
+            "low": 100.72,
+            "close": 100.72,
+            "volume": null
+          },
+          {
+            "date": "2026-04-14",
+            "open": 93.07,
+            "high": 93.07,
+            "low": 93.07,
+            "close": 93.07,
+            "volume": null
+          },
+          {
+            "date": "2026-04-15",
+            "open": 93.04,
+            "high": 93.04,
+            "low": 93.04,
+            "close": 93.04,
+            "volume": null
+          },
+          {
+            "date": "2026-04-16",
+            "open": 96.46,
+            "high": 96.46,
+            "low": 96.46,
+            "close": 96.46,
+            "volume": null
+          },
+          {
+            "date": "2026-04-17",
+            "open": 85.91,
+            "high": 85.91,
+            "low": 85.91,
+            "close": 85.91,
+            "volume": null
+          },
+          {
+            "date": "2026-04-20",
+            "open": 91.06,
+            "high": 91.06,
+            "low": 91.06,
+            "close": 91.06,
+            "volume": null
+          },
+          {
+            "date": "2026-04-21",
+            "open": 93.64,
+            "high": 93.64,
+            "low": 93.64,
+            "close": 93.64,
+            "volume": null
+          },
+          {
+            "date": "2026-04-22",
+            "open": 94.76,
+            "high": 94.76,
+            "low": 94.76,
+            "close": 94.76,
+            "volume": null
+          },
+          {
+            "date": "2026-04-23",
+            "open": 99.27,
+            "high": 99.27,
+            "low": 99.27,
+            "close": 99.27,
+            "volume": null
+          },
+          {
+            "date": "2026-04-24",
+            "open": 98.42,
+            "high": 98.42,
+            "low": 98.42,
+            "close": 98.42,
+            "volume": null
+          },
+          {
+            "date": "2026-04-27",
+            "open": 99.89,
+            "high": 99.89,
+            "low": 99.89,
+            "close": 99.89,
+            "volume": null
+          },
+          {
+            "date": "2026-04-28",
+            "open": 103.45,
+            "high": 103.45,
+            "low": 103.45,
+            "close": 103.45,
+            "volume": null
+          },
+          {
+            "date": "2026-04-29",
+            "open": 110.47,
+            "high": 110.47,
+            "low": 110.47,
+            "close": 110.47,
+            "volume": null
+          },
+          {
+            "date": "2026-04-30",
+            "open": 108.64,
+            "high": 108.64,
+            "low": 108.64,
+            "close": 108.64,
+            "volume": null
+          },
+          {
+            "date": "2026-05-01",
+            "open": 105.38,
+            "high": 105.38,
+            "low": 105.38,
+            "close": 105.38,
+            "volume": null
+          },
+          {
+            "date": "2026-05-04",
+            "open": 109.76,
+            "high": 109.76,
+            "low": 109.76,
+            "close": 109.76,
+            "volume": null
+          },
+          {
+            "date": "2026-05-05",
+            "open": 105.66,
+            "high": 105.66,
+            "low": 105.66,
+            "close": 105.66,
+            "volume": null
+          },
+          {
+            "date": "2026-05-06",
+            "open": 98.75,
+            "high": 98.75,
+            "low": 98.75,
+            "close": 98.75,
+            "volume": null
+          },
+          {
+            "date": "2026-05-07",
+            "open": 98.38,
+            "high": 98.38,
+            "low": 98.38,
+            "close": 98.38,
+            "volume": null
+          },
+          {
+            "date": "2026-05-08",
+            "open": 98.87,
+            "high": 98.87,
+            "low": 98.87,
+            "close": 98.87,
+            "volume": null
+          },
+          {
+            "date": "2026-05-11",
+            "open": 101.56,
+            "high": 101.56,
+            "low": 101.56,
+            "close": 101.56,
+            "volume": null
+          }
+        ]
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "30년물 5%, 한미 동조가 약해진 5월",
+    "deck": "이란 전쟁발 유가 충격, 워시(Warsh) 의 매파 노선, 만성 재정적자가 미 장기물을 한꺼번에 밀어올렸다. 한국은 인플레 가속과 WGBI 편입이 충돌하며 미국만큼은 안 따라간다.",
+    "sections": [
+      {
+        "heading": "장기물 5%의 시대가 돌아왔다",
+        "kicker": "재가격 / 1",
+        "prose": "5월 15일 미 10년물 금리는 하루 14bp(베이시스포인트, 0.01%포인트) 점프해 4.59%로 1년 만의 최고점을 찍었다. 30년물은 11bp 올라 5.12%였다. 이틀 전인 13일에는 재무부 30년물 250억 달러 입찰에서 낙찰 금리가 5.046%로 결정되면서 2007년 이후 처음 5%를 넘었다 (출처: bloomberg.com).\n\n이것이 단발성 이벤트라면 다음 입찰에서 식을 것이다. 그러나 같은 입찰장의 응찰배수(bid-to-cover, 발행액 대비 응찰액 배수)가 2.303으로 전월 2.385, 최근 6회 평균 2.43 대비 약화됐다. 수요가 가격을 따라가지 못한다는 신호다.\n\n핵심은 단일 변수가 아니다. 공급, 수요, 통화, 인플레의 네 갈래가 동시에 같은 방향으로 누른다. 그래서 시장은 이것을 '평균 회귀가 가능한 충격' 이 아닌 '구조 재가격' 으로 받아들이는 중이다.",
+        "charts": [
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "미국채 10Y",
+            "title": "미국채 10Y",
+            "subtitle": "2026-02-12 ~ 2026-05-15 · +9.29% (4.09 → 4.47)",
+            "last_value_formatted": "4.47%",
+            "change_day_pct": 0.22,
+            "change_day_pct_formatted": "+0.22%",
+            "data": [
+              {
+                "x": "2026-02-12",
+                "y": 4.09
+              },
+              {
+                "x": "2026-02-13",
+                "y": 4.04
+              },
+              {
+                "x": "2026-02-17",
+                "y": 4.05
+              },
+              {
+                "x": "2026-02-18",
+                "y": 4.09
+              },
+              {
+                "x": "2026-02-19",
+                "y": 4.08
+              },
+              {
+                "x": "2026-02-20",
+                "y": 4.08
+              },
+              {
+                "x": "2026-02-23",
+                "y": 4.03
+              },
+              {
+                "x": "2026-02-24",
+                "y": 4.04
+              },
+              {
+                "x": "2026-02-25",
+                "y": 4.05
+              },
+              {
+                "x": "2026-02-26",
+                "y": 4.02
+              },
+              {
+                "x": "2026-02-27",
+                "y": 3.97
+              },
+              {
+                "x": "2026-03-02",
+                "y": 4.05
+              },
+              {
+                "x": "2026-03-03",
+                "y": 4.06
+              },
+              {
+                "x": "2026-03-04",
+                "y": 4.09
+              },
+              {
+                "x": "2026-03-05",
+                "y": 4.13
+              },
+              {
+                "x": "2026-03-06",
+                "y": 4.15
+              },
+              {
+                "x": "2026-03-09",
+                "y": 4.12
+              },
+              {
+                "x": "2026-03-10",
+                "y": 4.15
+              },
+              {
+                "x": "2026-03-11",
+                "y": 4.21
+              },
+              {
+                "x": "2026-03-12",
+                "y": 4.27
+              },
+              {
+                "x": "2026-03-13",
+                "y": 4.28
+              },
+              {
+                "x": "2026-03-16",
+                "y": 4.23
+              },
+              {
+                "x": "2026-03-17",
+                "y": 4.2
+              },
+              {
+                "x": "2026-03-18",
+                "y": 4.26
+              },
+              {
+                "x": "2026-03-19",
+                "y": 4.25
+              },
+              {
+                "x": "2026-03-20",
+                "y": 4.39
+              },
+              {
+                "x": "2026-03-23",
+                "y": 4.34
+              },
+              {
+                "x": "2026-03-24",
+                "y": 4.39
+              },
+              {
+                "x": "2026-03-25",
+                "y": 4.33
+              },
+              {
+                "x": "2026-03-26",
+                "y": 4.42
+              },
+              {
+                "x": "2026-03-27",
+                "y": 4.44
+              },
+              {
+                "x": "2026-03-30",
+                "y": 4.35
+              },
+              {
+                "x": "2026-03-31",
+                "y": 4.3
+              },
+              {
+                "x": "2026-04-01",
+                "y": 4.33
+              },
+              {
+                "x": "2026-04-02",
+                "y": 4.31
+              },
+              {
+                "x": "2026-04-03",
+                "y": 4.35
+              },
+              {
+                "x": "2026-04-06",
+                "y": 4.34
+              },
+              {
+                "x": "2026-04-07",
+                "y": 4.33
+              },
+              {
+                "x": "2026-04-08",
+                "y": 4.29
+              },
+              {
+                "x": "2026-04-09",
+                "y": 4.29
+              },
+              {
+                "x": "2026-04-10",
+                "y": 4.31
+              },
+              {
+                "x": "2026-04-13",
+                "y": 4.3
+              },
+              {
+                "x": "2026-04-14",
+                "y": 4.26
+              },
+              {
+                "x": "2026-04-15",
+                "y": 4.29
+              },
+              {
+                "x": "2026-04-16",
+                "y": 4.32
+              },
+              {
+                "x": "2026-04-17",
+                "y": 4.26
+              },
+              {
+                "x": "2026-04-20",
+                "y": 4.26
+              },
+              {
+                "x": "2026-04-21",
+                "y": 4.3
+              },
+              {
+                "x": "2026-04-22",
+                "y": 4.3
+              },
+              {
+                "x": "2026-04-23",
+                "y": 4.34
+              },
+              {
+                "x": "2026-04-24",
+                "y": 4.31
+              },
+              {
+                "x": "2026-04-27",
+                "y": 4.35
+              },
+              {
+                "x": "2026-04-28",
+                "y": 4.36
+              },
+              {
+                "x": "2026-04-29",
+                "y": 4.42
+              },
+              {
+                "x": "2026-04-30",
+                "y": 4.4
+              },
+              {
+                "x": "2026-05-01",
+                "y": 4.39
+              },
+              {
+                "x": "2026-05-04",
+                "y": 4.45
+              },
+              {
+                "x": "2026-05-05",
+                "y": 4.43
+              },
+              {
+                "x": "2026-05-06",
+                "y": 4.36
+              },
+              {
+                "x": "2026-05-07",
+                "y": 4.41
+              },
+              {
+                "x": "2026-05-08",
+                "y": 4.38
+              },
+              {
+                "x": "2026-05-11",
+                "y": 4.42
+              },
+              {
+                "x": "2026-05-12",
+                "y": 4.46
+              },
+              {
+                "x": "2026-05-13",
+                "y": 4.46
+              },
+              {
+                "x": "2026-05-14",
+                "y": 4.47
+              }
+            ],
+            "source": "FRED / 2026-02-12 ~ 2026-05-15 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "미국채 1Y",
+            "title": "미국채 1Y",
+            "subtitle": "2026-02-12 ~ 2026-05-15 · +9.86% (3.45 → 3.79)",
+            "last_value_formatted": "3.79%",
+            "change_day_pct": 0.0,
+            "change_day_pct_formatted": "+0.00%",
+            "data": [
+              {
+                "x": "2026-02-12",
+                "y": 3.45
+              },
+              {
+                "x": "2026-02-13",
+                "y": 3.42
+              },
+              {
+                "x": "2026-02-17",
+                "y": 3.48
+              },
+              {
+                "x": "2026-02-18",
+                "y": 3.49
+              },
+              {
+                "x": "2026-02-19",
+                "y": 3.5
+              },
+              {
+                "x": "2026-02-20",
+                "y": 3.51
+              },
+              {
+                "x": "2026-02-23",
+                "y": 3.5
+              },
+              {
+                "x": "2026-02-24",
+                "y": 3.52
+              },
+              {
+                "x": "2026-02-25",
+                "y": 3.53
+              },
+              {
+                "x": "2026-02-26",
+                "y": 3.52
+              },
+              {
+                "x": "2026-02-27",
+                "y": 3.48
+              },
+              {
+                "x": "2026-03-02",
+                "y": 3.54
+              },
+              {
+                "x": "2026-03-03",
+                "y": 3.55
+              },
+              {
+                "x": "2026-03-04",
+                "y": 3.58
+              },
+              {
+                "x": "2026-03-05",
+                "y": 3.59
+              },
+              {
+                "x": "2026-03-06",
+                "y": 3.55
+              },
+              {
+                "x": "2026-03-09",
+                "y": 3.56
+              },
+              {
+                "x": "2026-03-10",
+                "y": 3.56
+              },
+              {
+                "x": "2026-03-11",
+                "y": 3.6
+              },
+              {
+                "x": "2026-03-12",
+                "y": 3.66
+              },
+              {
+                "x": "2026-03-13",
+                "y": 3.66
+              },
+              {
+                "x": "2026-03-16",
+                "y": 3.64
+              },
+              {
+                "x": "2026-03-17",
+                "y": 3.63
+              },
+              {
+                "x": "2026-03-18",
+                "y": 3.68
+              },
+              {
+                "x": "2026-03-19",
+                "y": 3.73
+              },
+              {
+                "x": "2026-03-20",
+                "y": 3.8
+              },
+              {
+                "x": "2026-03-23",
+                "y": 3.76
+              },
+              {
+                "x": "2026-03-24",
+                "y": 3.81
+              },
+              {
+                "x": "2026-03-25",
+                "y": 3.77
+              },
+              {
+                "x": "2026-03-26",
+                "y": 3.83
+              },
+              {
+                "x": "2026-03-27",
+                "y": 3.77
+              },
+              {
+                "x": "2026-03-30",
+                "y": 3.71
+              },
+              {
+                "x": "2026-03-31",
+                "y": 3.68
+              },
+              {
+                "x": "2026-04-01",
+                "y": 3.68
+              },
+              {
+                "x": "2026-04-02",
+                "y": 3.68
+              },
+              {
+                "x": "2026-04-03",
+                "y": 3.72
+              },
+              {
+                "x": "2026-04-06",
+                "y": 3.72
+              },
+              {
+                "x": "2026-04-07",
+                "y": 3.68
+              },
+              {
+                "x": "2026-04-08",
+                "y": 3.69
+              },
+              {
+                "x": "2026-04-09",
+                "y": 3.68
+              },
+              {
+                "x": "2026-04-10",
+                "y": 3.7
+              },
+              {
+                "x": "2026-04-13",
+                "y": 3.7
+              },
+              {
+                "x": "2026-04-14",
+                "y": 3.71
+              },
+              {
+                "x": "2026-04-15",
+                "y": 3.7
+              },
+              {
+                "x": "2026-04-16",
+                "y": 3.69
+              },
+              {
+                "x": "2026-04-17",
+                "y": 3.64
+              },
+              {
+                "x": "2026-04-20",
+                "y": 3.65
+              },
+              {
+                "x": "2026-04-21",
+                "y": 3.69
+              },
+              {
+                "x": "2026-04-22",
+                "y": 3.69
+              },
+              {
+                "x": "2026-04-23",
+                "y": 3.7
+              },
+              {
+                "x": "2026-04-24",
+                "y": 3.67
+              },
+              {
+                "x": "2026-04-27",
+                "y": 3.69
+              },
+              {
+                "x": "2026-04-28",
+                "y": 3.71
+              },
+              {
+                "x": "2026-04-29",
+                "y": 3.75
+              },
+              {
+                "x": "2026-04-30",
+                "y": 3.72
+              },
+              {
+                "x": "2026-05-01",
+                "y": 3.73
+              },
+              {
+                "x": "2026-05-04",
+                "y": 3.78
+              },
+              {
+                "x": "2026-05-05",
+                "y": 3.77
+              },
+              {
+                "x": "2026-05-06",
+                "y": 3.73
+              },
+              {
+                "x": "2026-05-07",
+                "y": 3.76
+              },
+              {
+                "x": "2026-05-08",
+                "y": 3.75
+              },
+              {
+                "x": "2026-05-11",
+                "y": 3.79
+              },
+              {
+                "x": "2026-05-12",
+                "y": 3.8
+              },
+              {
+                "x": "2026-05-13",
+                "y": 3.79
+              },
+              {
+                "x": "2026-05-14",
+                "y": 3.79
+              }
+            ],
+            "source": "FRED / 2026-02-12 ~ 2026-05-15 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "국고채 10Y",
+            "title": "국고채 10Y",
+            "subtitle": "2026-02-12 ~ 2026-05-15 · +16.56% (3.62 → 4.22)",
+            "last_value_formatted": "4.22%",
+            "change_day_pct": 3.23,
+            "change_day_pct_formatted": "+3.23%",
+            "data": [
+              {
+                "x": "2026-02-12",
+                "y": 3.618
+              },
+              {
+                "x": "2026-02-13",
+                "y": 3.571
+              },
+              {
+                "x": "2026-02-19",
+                "y": 3.588
+              },
+              {
+                "x": "2026-02-20",
+                "y": 3.54
+              },
+              {
+                "x": "2026-02-23",
+                "y": 3.578
+              },
+              {
+                "x": "2026-02-24",
+                "y": 3.593
+              },
+              {
+                "x": "2026-02-25",
+                "y": 3.556
+              },
+              {
+                "x": "2026-02-26",
+                "y": 3.47
+              },
+              {
+                "x": "2026-02-27",
+                "y": 3.446
+              },
+              {
+                "x": "2026-03-03",
+                "y": 3.594
+              },
+              {
+                "x": "2026-03-04",
+                "y": 3.632
+              },
+              {
+                "x": "2026-03-05",
+                "y": 3.589
+              },
+              {
+                "x": "2026-03-06",
+                "y": 3.616
+              },
+              {
+                "x": "2026-03-09",
+                "y": 3.739
+              },
+              {
+                "x": "2026-03-10",
+                "y": 3.629
+              },
+              {
+                "x": "2026-03-11",
+                "y": 3.608
+              },
+              {
+                "x": "2026-03-12",
+                "y": 3.649
+              },
+              {
+                "x": "2026-03-13",
+                "y": 3.701
+              },
+              {
+                "x": "2026-03-16",
+                "y": 3.68
+              },
+              {
+                "x": "2026-03-17",
+                "y": 3.692
+              },
+              {
+                "x": "2026-03-18",
+                "y": 3.606
+              },
+              {
+                "x": "2026-03-19",
+                "y": 3.693
+              },
+              {
+                "x": "2026-03-20",
+                "y": 3.736
+              },
+              {
+                "x": "2026-03-23",
+                "y": 3.879
+              },
+              {
+                "x": "2026-03-24",
+                "y": 3.835
+              },
+              {
+                "x": "2026-03-25",
+                "y": 3.859
+              },
+              {
+                "x": "2026-03-26",
+                "y": 3.865
+              },
+              {
+                "x": "2026-03-27",
+                "y": 3.915
+              },
+              {
+                "x": "2026-03-30",
+                "y": 3.891
+              },
+              {
+                "x": "2026-03-31",
+                "y": 3.879
+              },
+              {
+                "x": "2026-04-01",
+                "y": 3.689
+              },
+              {
+                "x": "2026-04-02",
+                "y": 3.804
+              },
+              {
+                "x": "2026-04-03",
+                "y": 3.747
+              },
+              {
+                "x": "2026-04-06",
+                "y": 3.725
+              },
+              {
+                "x": "2026-04-07",
+                "y": 3.754
+              },
+              {
+                "x": "2026-04-08",
+                "y": 3.628
+              },
+              {
+                "x": "2026-04-09",
+                "y": 3.66
+              },
+              {
+                "x": "2026-04-10",
+                "y": 3.686
+              },
+              {
+                "x": "2026-04-13",
+                "y": 3.715
+              },
+              {
+                "x": "2026-04-14",
+                "y": 3.658
+              },
+              {
+                "x": "2026-04-15",
+                "y": 3.655
+              },
+              {
+                "x": "2026-04-16",
+                "y": 3.675
+              },
+              {
+                "x": "2026-04-17",
+                "y": 3.717
+              },
+              {
+                "x": "2026-04-20",
+                "y": 3.688
+              },
+              {
+                "x": "2026-04-21",
+                "y": 3.655
+              },
+              {
+                "x": "2026-04-22",
+                "y": 3.697
+              },
+              {
+                "x": "2026-04-23",
+                "y": 3.791
+              },
+              {
+                "x": "2026-04-24",
+                "y": 3.817
+              },
+              {
+                "x": "2026-04-27",
+                "y": 3.82
+              },
+              {
+                "x": "2026-04-28",
+                "y": 3.861
+              },
+              {
+                "x": "2026-04-29",
+                "y": 3.843
+              },
+              {
+                "x": "2026-04-30",
+                "y": 3.923
+              },
+              {
+                "x": "2026-05-04",
+                "y": 3.932
+              },
+              {
+                "x": "2026-05-06",
+                "y": 3.932
+              },
+              {
+                "x": "2026-05-07",
+                "y": 3.888
+              },
+              {
+                "x": "2026-05-08",
+                "y": 3.909
+              },
+              {
+                "x": "2026-05-11",
+                "y": 3.95
+              },
+              {
+                "x": "2026-05-12",
+                "y": 4.056
+              },
+              {
+                "x": "2026-05-13",
+                "y": 4.044
+              },
+              {
+                "x": "2026-05-14",
+                "y": 4.085
+              },
+              {
+                "x": "2026-05-15",
+                "y": 4.217
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-02-12 ~ 2026-05-15 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "원/달러 환율",
+            "title": "원/달러 환율",
+            "subtitle": "2026-02-12 ~ 2026-05-15 · +2.57% (1,454 → 1,492)",
+            "last_value_formatted": "1,492",
+            "change_day_pct": -0.22,
+            "change_day_pct_formatted": "-0.22%",
+            "data": [
+              {
+                "x": "2026-02-12",
+                "y": 1454.4
+              },
+              {
+                "x": "2026-02-13",
+                "y": 1443.4
+              },
+              {
+                "x": "2026-02-19",
+                "y": 1443.1
+              },
+              {
+                "x": "2026-02-20",
+                "y": 1450.7
+              },
+              {
+                "x": "2026-02-23",
+                "y": 1448.7
+              },
+              {
+                "x": "2026-02-24",
+                "y": 1442.0
+              },
+              {
+                "x": "2026-02-25",
+                "y": 1445.8
+              },
+              {
+                "x": "2026-02-26",
+                "y": 1435.3
+              },
+              {
+                "x": "2026-02-27",
+                "y": 1424.5
+              },
+              {
+                "x": "2026-03-03",
+                "y": 1435.4
+              },
+              {
+                "x": "2026-03-04",
+                "y": 1464.5
+              },
+              {
+                "x": "2026-03-05",
+                "y": 1478.8
+              },
+              {
+                "x": "2026-03-06",
+                "y": 1464.3
+              },
+              {
+                "x": "2026-03-09",
+                "y": 1474.5
+              },
+              {
+                "x": "2026-03-10",
+                "y": 1493.1
+              },
+              {
+                "x": "2026-03-11",
+                "y": 1472.8
+              },
+              {
+                "x": "2026-03-12",
+                "y": 1467.3
+              },
+              {
+                "x": "2026-03-13",
+                "y": 1479.8
+              },
+              {
+                "x": "2026-03-16",
+                "y": 1489.5
+              },
+              {
+                "x": "2026-03-17",
+                "y": 1496.0
+              },
+              {
+                "x": "2026-03-18",
+                "y": 1491.6
+              },
+              {
+                "x": "2026-03-19",
+                "y": 1486.0
+              },
+              {
+                "x": "2026-03-20",
+                "y": 1499.7
+              },
+              {
+                "x": "2026-03-23",
+                "y": 1494.9
+              },
+              {
+                "x": "2026-03-24",
+                "y": 1509.6
+              },
+              {
+                "x": "2026-03-25",
+                "y": 1498.3
+              },
+              {
+                "x": "2026-03-26",
+                "y": 1495.6
+              },
+              {
+                "x": "2026-03-27",
+                "y": 1506.2
+              },
+              {
+                "x": "2026-03-30",
+                "y": 1508.1
+              },
+              {
+                "x": "2026-03-31",
+                "y": 1513.4
+              },
+              {
+                "x": "2026-04-01",
+                "y": 1530.5
+              },
+              {
+                "x": "2026-04-02",
+                "y": 1507.8
+              },
+              {
+                "x": "2026-04-03",
+                "y": 1518.8
+              },
+              {
+                "x": "2026-04-06",
+                "y": 1507.6
+              },
+              {
+                "x": "2026-04-07",
+                "y": 1507.2
+              },
+              {
+                "x": "2026-04-08",
+                "y": 1506.8
+              },
+              {
+                "x": "2026-04-09",
+                "y": 1476.1
+              },
+              {
+                "x": "2026-04-10",
+                "y": 1481.1
+              },
+              {
+                "x": "2026-04-13",
+                "y": 1479.8
+              },
+              {
+                "x": "2026-04-14",
+                "y": 1489.8
+              },
+              {
+                "x": "2026-04-15",
+                "y": 1481.4
+              },
+              {
+                "x": "2026-04-16",
+                "y": 1473.1
+              },
+              {
+                "x": "2026-04-17",
+                "y": 1472.6
+              },
+              {
+                "x": "2026-04-20",
+                "y": 1480.0
+              },
+              {
+                "x": "2026-04-21",
+                "y": 1475.6
+              },
+              {
+                "x": "2026-04-22",
+                "y": 1470.8
+              },
+              {
+                "x": "2026-04-23",
+                "y": 1477.6
+              },
+              {
+                "x": "2026-04-24",
+                "y": 1480.6
+              },
+              {
+                "x": "2026-04-27",
+                "y": 1482.9
+              },
+              {
+                "x": "2026-04-28",
+                "y": 1473.1
+              },
+              {
+                "x": "2026-04-29",
+                "y": 1473.3
+              },
+              {
+                "x": "2026-04-30",
+                "y": 1476.1
+              },
+              {
+                "x": "2026-05-04",
+                "y": 1484.8
+              },
+              {
+                "x": "2026-05-06",
+                "y": 1470.5
+              },
+              {
+                "x": "2026-05-07",
+                "y": 1456.8
+              },
+              {
+                "x": "2026-05-08",
+                "y": 1450.8
+              },
+              {
+                "x": "2026-05-11",
+                "y": 1466.0
+              },
+              {
+                "x": "2026-05-12",
+                "y": 1473.0
+              },
+              {
+                "x": "2026-05-13",
+                "y": 1484.3
+              },
+              {
+                "x": "2026-05-14",
+                "y": 1495.1
+              },
+              {
+                "x": "2026-05-15",
+                "y": 1491.8
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-02-12 ~ 2026-05-15 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "달러인덱스",
+            "title": "달러인덱스",
+            "subtitle": "2026-02-12 ~ 2026-05-15 · +2.41% (96.93 → 99.27)",
+            "last_value_formatted": "99.27",
+            "change_day_pct": 0.39,
+            "change_day_pct_formatted": "+0.39%",
+            "data": [
+              {
+                "x": "2026-02-12",
+                "y": 96.93000030517578
+              },
+              {
+                "x": "2026-02-13",
+                "y": 96.87999725341797
+              },
+              {
+                "x": "2026-02-17",
+                "y": 97.16000366210938
+              },
+              {
+                "x": "2026-02-18",
+                "y": 97.69999694824219
+              },
+              {
+                "x": "2026-02-19",
+                "y": 97.93000030517578
+              },
+              {
+                "x": "2026-02-20",
+                "y": 97.80000305175781
+              },
+              {
+                "x": "2026-02-23",
+                "y": 97.69999694824219
+              },
+              {
+                "x": "2026-02-24",
+                "y": 97.87999725341797
+              },
+              {
+                "x": "2026-02-25",
+                "y": 97.69999694824219
+              },
+              {
+                "x": "2026-02-26",
+                "y": 97.79000091552734
+              },
+              {
+                "x": "2026-02-27",
+                "y": 97.61000061035156
+              },
+              {
+                "x": "2026-03-02",
+                "y": 98.37999725341797
+              },
+              {
+                "x": "2026-03-03",
+                "y": 99.05000305175781
+              },
+              {
+                "x": "2026-03-04",
+                "y": 98.7699966430664
+              },
+              {
+                "x": "2026-03-05",
+                "y": 99.31999969482422
+              },
+              {
+                "x": "2026-03-06",
+                "y": 98.98999786376953
+              },
+              {
+                "x": "2026-03-09",
+                "y": 99.18000030517578
+              },
+              {
+                "x": "2026-03-10",
+                "y": 98.83000183105469
+              },
+              {
+                "x": "2026-03-11",
+                "y": 99.2300033569336
+              },
+              {
+                "x": "2026-03-12",
+                "y": 99.73999786376953
+              },
+              {
+                "x": "2026-03-13",
+                "y": 100.36000061035156
+              },
+              {
+                "x": "2026-03-16",
+                "y": 99.70999908447266
+              },
+              {
+                "x": "2026-03-17",
+                "y": 99.58000183105469
+              },
+              {
+                "x": "2026-03-18",
+                "y": 100.08999633789062
+              },
+              {
+                "x": "2026-03-19",
+                "y": 99.2300033569336
+              },
+              {
+                "x": "2026-03-20",
+                "y": 99.6500015258789
+              },
+              {
+                "x": "2026-03-23",
+                "y": 98.94999694824219
+              },
+              {
+                "x": "2026-03-24",
+                "y": 99.43000030517578
+              },
+              {
+                "x": "2026-03-25",
+                "y": 99.5999984741211
+              },
+              {
+                "x": "2026-03-26",
+                "y": 99.9000015258789
+              },
+              {
+                "x": "2026-03-27",
+                "y": 100.1500015258789
+              },
+              {
+                "x": "2026-03-30",
+                "y": 100.51000213623047
+              },
+              {
+                "x": "2026-03-31",
+                "y": 99.95999908447266
+              },
+              {
+                "x": "2026-04-01",
+                "y": 99.6500015258789
+              },
+              {
+                "x": "2026-04-02",
+                "y": 100.02999877929688
+              },
+              {
+                "x": "2026-04-06",
+                "y": 99.9800033569336
+              },
+              {
+                "x": "2026-04-07",
+                "y": 99.63999938964844
+              },
+              {
+                "x": "2026-04-08",
+                "y": 99.12999725341797
+              },
+              {
+                "x": "2026-04-09",
+                "y": 98.81999969482422
+              },
+              {
+                "x": "2026-04-10",
+                "y": 98.6500015258789
+              },
+              {
+                "x": "2026-04-13",
+                "y": 98.37000274658203
+              },
+              {
+                "x": "2026-04-14",
+                "y": 98.12000274658203
+              },
+              {
+                "x": "2026-04-15",
+                "y": 98.05999755859375
+              },
+              {
+                "x": "2026-04-16",
+                "y": 98.22000122070312
+              },
+              {
+                "x": "2026-04-17",
+                "y": 98.0999984741211
+              },
+              {
+                "x": "2026-04-20",
+                "y": 98.05000305175781
+              },
+              {
+                "x": "2026-04-21",
+                "y": 98.41000366210938
+              },
+              {
+                "x": "2026-04-22",
+                "y": 98.58999633789062
+              },
+              {
+                "x": "2026-04-23",
+                "y": 98.80000305175781
+              },
+              {
+                "x": "2026-04-24",
+                "y": 98.51000213623047
+              },
+              {
+                "x": "2026-04-27",
+                "y": 98.4800033569336
+              },
+              {
+                "x": "2026-04-28",
+                "y": 98.62000274658203
+              },
+              {
+                "x": "2026-04-29",
+                "y": 98.91999816894531
+              },
+              {
+                "x": "2026-04-30",
+                "y": 98.08000183105469
+              },
+              {
+                "x": "2026-05-01",
+                "y": 98.20999908447266
+              },
+              {
+                "x": "2026-05-04",
+                "y": 98.47000122070312
+              },
+              {
+                "x": "2026-05-05",
+                "y": 98.4800033569336
+              },
+              {
+                "x": "2026-05-06",
+                "y": 98.0199966430664
+              },
+              {
+                "x": "2026-05-07",
+                "y": 98.25
+              },
+              {
+                "x": "2026-05-08",
+                "y": 97.83999633789062
+              },
+              {
+                "x": "2026-05-11",
+                "y": 97.94000244140625
+              },
+              {
+                "x": "2026-05-12",
+                "y": 98.29000091552734
+              },
+              {
+                "x": "2026-05-13",
+                "y": 98.4800033569336
+              },
+              {
+                "x": "2026-05-14",
+                "y": 98.87999725341797
+              },
+              {
+                "x": "2026-05-15",
+                "y": 99.2699966430664
+              }
+            ],
+            "source": "Yahoo Finance / 2026-02-12 ~ 2026-05-15 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "WTI 유가",
+            "title": "WTI 유가",
+            "subtitle": "2026-02-12 ~ 2026-05-15 · +61.00% (63.08 → 101.56)",
+            "last_value_formatted": "101.56",
+            "change_day_pct": 2.72,
+            "change_day_pct_formatted": "+2.72%",
+            "data": [
+              {
+                "x": "2026-02-12",
+                "y": 63.08
+              },
+              {
+                "x": "2026-02-13",
+                "y": 63.05
+              },
+              {
+                "x": "2026-02-17",
+                "y": 62.53
+              },
+              {
+                "x": "2026-02-18",
+                "y": 65.33
+              },
+              {
+                "x": "2026-02-19",
+                "y": 66.66
+              },
+              {
+                "x": "2026-02-20",
+                "y": 66.69
+              },
+              {
+                "x": "2026-02-23",
+                "y": 66.36
+              },
+              {
+                "x": "2026-02-24",
+                "y": 65.62
+              },
+              {
+                "x": "2026-02-25",
+                "y": 65.3
+              },
+              {
+                "x": "2026-02-26",
+                "y": 65.1
+              },
+              {
+                "x": "2026-02-27",
+                "y": 66.96
+              },
+              {
+                "x": "2026-03-02",
+                "y": 71.13
+              },
+              {
+                "x": "2026-03-03",
+                "y": 74.48
+              },
+              {
+                "x": "2026-03-04",
+                "y": 74.58
+              },
+              {
+                "x": "2026-03-05",
+                "y": 80.88
+              },
+              {
+                "x": "2026-03-06",
+                "y": 90.77
+              },
+              {
+                "x": "2026-03-09",
+                "y": 94.65
+              },
+              {
+                "x": "2026-03-10",
+                "y": 83.71
+              },
+              {
+                "x": "2026-03-11",
+                "y": 86.8
+              },
+              {
+                "x": "2026-03-12",
+                "y": 95.61
+              },
+              {
+                "x": "2026-03-13",
+                "y": 98.48
+              },
+              {
+                "x": "2026-03-16",
+                "y": 93.39
+              },
+              {
+                "x": "2026-03-17",
+                "y": 96.01
+              },
+              {
+                "x": "2026-03-18",
+                "y": 96.12
+              },
+              {
+                "x": "2026-03-19",
+                "y": 96.11
+              },
+              {
+                "x": "2026-03-20",
+                "y": 98.71
+              },
+              {
+                "x": "2026-03-23",
+                "y": 89.33
+              },
+              {
+                "x": "2026-03-24",
+                "y": 93.18
+              },
+              {
+                "x": "2026-03-25",
+                "y": 91.51
+              },
+              {
+                "x": "2026-03-26",
+                "y": 96.18
+              },
+              {
+                "x": "2026-03-27",
+                "y": 101.26
+              },
+              {
+                "x": "2026-03-30",
+                "y": 104.69
+              },
+              {
+                "x": "2026-03-31",
+                "y": 102.86
+              },
+              {
+                "x": "2026-04-01",
+                "y": 101.9
+              },
+              {
+                "x": "2026-04-02",
+                "y": 113.23
+              },
+              {
+                "x": "2026-04-06",
+                "y": 114.01
+              },
+              {
+                "x": "2026-04-07",
+                "y": 114.58
+              },
+              {
+                "x": "2026-04-08",
+                "y": 96.17
+              },
+              {
+                "x": "2026-04-09",
+                "y": 99.62
+              },
+              {
+                "x": "2026-04-10",
+                "y": 98.34
+              },
+              {
+                "x": "2026-04-13",
+                "y": 100.72
+              },
+              {
+                "x": "2026-04-14",
+                "y": 93.07
+              },
+              {
+                "x": "2026-04-15",
+                "y": 93.04
+              },
+              {
+                "x": "2026-04-16",
+                "y": 96.46
+              },
+              {
+                "x": "2026-04-17",
+                "y": 85.91
+              },
+              {
+                "x": "2026-04-20",
+                "y": 91.06
+              },
+              {
+                "x": "2026-04-21",
+                "y": 93.64
+              },
+              {
+                "x": "2026-04-22",
+                "y": 94.76
+              },
+              {
+                "x": "2026-04-23",
+                "y": 99.27
+              },
+              {
+                "x": "2026-04-24",
+                "y": 98.42
+              },
+              {
+                "x": "2026-04-27",
+                "y": 99.89
+              },
+              {
+                "x": "2026-04-28",
+                "y": 103.45
+              },
+              {
+                "x": "2026-04-29",
+                "y": 110.47
+              },
+              {
+                "x": "2026-04-30",
+                "y": 108.64
+              },
+              {
+                "x": "2026-05-01",
+                "y": 105.38
+              },
+              {
+                "x": "2026-05-04",
+                "y": 109.76
+              },
+              {
+                "x": "2026-05-05",
+                "y": 105.66
+              },
+              {
+                "x": "2026-05-06",
+                "y": 98.75
+              },
+              {
+                "x": "2026-05-07",
+                "y": 98.38
+              },
+              {
+                "x": "2026-05-08",
+                "y": 98.87
+              },
+              {
+                "x": "2026-05-11",
+                "y": 101.56
+              }
+            ],
+            "source": "FRED / 2026-02-12 ~ 2026-05-15 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "bar",
+            "title": "주요 금리 현황 (2026-05-15)",
+            "subtitle": "장기로 갈수록 5% 가까이 — 텀 프리미엄의 귀환",
+            "data": [
+              {
+                "label": "미 2년",
+                "value": 4.09,
+                "note": "단기 정책 기대"
+              },
+              {
+                "label": "미 10년",
+                "value": 4.59,
+                "note": "1년 최고"
+              },
+              {
+                "label": "미 30년",
+                "value": 5.12,
+                "note": "2023-10 이후 최고"
+              },
+              {
+                "label": "한 10년",
+                "value": 4.25,
+                "note": "2023-11 이후 최고"
+              },
+              {
+                "label": "BOK 기준",
+                "value": 2.5,
+                "note": "7회 동결"
+              }
+            ],
+            "source": "CNBC / Bloomberg / TradingEconomics, 2026-05-15 종가",
+            "takeaway": "미 장단기 곡선이 가팔라지는 동시에 한국이 미국 아래에 자리한 구조는 유지 — 단 격차가 좁아지는 중"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "응찰배수가 가격을 따라가지 못한다. 5%로도 부족하다는 뜻이다.",
+        "cited_claim_ids": [],
+        "lede": "30년물 입찰 낙찰 금리 5.046%. 2007년 이후 처음으로 5% 선이 깨졌다. 시장은 한 시대의 종결을 확인했다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": true
+      },
+      {
+        "heading": "네 갈래의 폭격 — 공급, 수요, 통화, 인플레",
+        "kicker": "메커니즘 / 2",
+        "prose": "왜 하필 지금일까. 어느 하나의 충격으로는 14bp 점프가 설명되지 않는다. 네 채널이 동시 작동했다.\n\n첫째, 공급. 미국 재정적자는 만성이 됐다. 4월에 2,150억 달러 흑자를 냈지만 이는 세수 계절성이다 (전년 동월 대비 -17%). 같은 달 이자비용만 970억 달러로 사회보장 다음의 2위 지출이다 (출처: fortune.com). 발행 규모가 줄어들 동력은 보이지 않는다.\n\n둘째, 수요. 30년물 외국인 indirect (간접 응찰, 주로 외국 중앙은행과 펀드) 비중은 66.6%로 전월 64.1% 대비 오히려 올랐다. 즉 수요의 양적 약화는 외국인이 아니라 직접 응찰자 (딜러·자기매매) 쪽이다. 텀 프리미엄, 즉 장기물을 들고 있는 위험에 대한 추가 보상이 부활한 결과로 본다.\n\n셋째, 통화정책. 새 연준 의장 케빈 워시(Kevin Warsh) 는 대차대조표 축소(QT, 양적 긴축) 가속과 forward guidance (미래 금리 경로 시그널) 축소를 선호한다. 시장은 연준 안전망을 덜 신뢰하기 시작했다 (출처: soliswealth.com).\n\n넷째, 인플레. 이란 전쟁발 유가 충격과 4월 PPI (생산자물가지수) 가속이 '끈적한 인플레' 이미지를 굳혔다. 인하 기대는 미뤄지고 동시에 장기 인플레 보상이 가격에 반영된다.\n\n네 채널이 다른 시점이었다면 어느 하나는 다른 하나를 상쇄했을 것이다. 5월 중순의 충돌은 그 동시성이 만든 가격이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "텀 프리미엄은 '장기 보유의 보험료'",
+          "body": "은행에 1년 정기예금을 들 때보다 10년 만기를 묶을 때 더 높은 금리를 요구하는 것과 같다. 미래의 인플레, 금리 변동, 신용 위험을 길게 부담해야 하므로 추가 보상이 필요하다. 2010년대 후반에는 이 보험료가 거의 0에 가까웠다. 5월 입찰은 그 보험료가 다시 두툼하게 돌아왔음을 확인했다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "30년물 입찰 해부 — 누가 덜 사는가",
+        "kicker": "수요 해부 / 3",
+        "prose": "수요 약화는 누구에게서 왔는가. 이 질문이 향후 6개월의 미 장기물 경로를 결정한다.\n\n30년물 입찰의 응찰배수는 단계적으로 약화됐다. 최근 6회 평균 2.43, 직전 회차 2.385, 5월 13일 회차 2.303. 직전 대비 약 3.4% 약화, 최근 평균 대비 5.4% 약화다. 같은 입찰에서 외국인 indirect 응찰 비중은 66.6%로 오히려 상승했다. 차감하면 약화의 출처는 국내 직접 응찰 쪽이다.\n\n해석은 두 가지다. 하나는 미국 은행·딜러가 보유 한도와 자본 비용을 의식해 장기물 인수에 신중해졌다는 것. 다른 하나는 헤지펀드·자기매매가 곡선 단기-장기 스프레드 베팅에서 이익을 실현하고 빠졌다는 것. 두 해석은 양립한다.\n\n핵심은 외국인 indirect 의 응찰 비중이 유지된다는 사실이다. 일본·한국·중국 등의 외환보유고 운용 주체가 미 장기물을 여전히 인수하고 있다는 뜻이다. 만약 indirect 비중이 60% 아래로 깨지면 그것은 별개의 사건이다. 환율과 자본흐름의 결정적 분기점이 된다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "미 30년물 입찰 응찰배수 추이",
+            "subtitle": "수요 약화는 직접 응찰자 쪽 — 외국인 indirect 는 오히려 상승",
+            "data": [
+              {
+                "label": "최근 6회 평균",
+                "value": 2.43
+              },
+              {
+                "label": "전월",
+                "value": 2.385
+              },
+              {
+                "label": "2026-05-13",
+                "value": 2.303,
+                "note": "5.046% 낙찰"
+              }
+            ],
+            "source": "U.S. Treasury / Bloomberg, 2026-05-13",
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 2.43,
+                "label": "6회 평균"
+              }
+            ],
+            "takeaway": "응찰배수의 단계적 하락 — 텀 프리미엄 부활의 정량적 증거"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "낙찰 금리",
+            "value": "5.046%",
+            "sublabel": "2007 이후 첫 5% 돌파"
+          },
+          {
+            "label": "응찰배수",
+            "value": "2.303",
+            "sublabel": "2025-11 이후 최저"
+          },
+          {
+            "label": "외국인 indirect",
+            "value": "66.6%",
+            "sublabel": "전월 64.1% 대비 상승"
+          },
+          {
+            "label": "발행 규모",
+            "value": "250억 달러",
+            "sublabel": "30년물 단일 회차"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "한국이 덜 따라가는 이유 — 인상 압력과 WGBI 의 충돌",
+        "kicker": "디커플링 / 4",
+        "prose": "한국 10년물은 5월 15일 4.18~4.25%로 2023년 11월 이후 최고를 찍었다. 한 달 만에 57bp, 1년 만에 156bp 올랐다. 그러나 미국 10년물의 변동 폭에 비하면 따라가는 정도가 약하다. 한미 10년 스프레드는 약 -34~-41bp (미국이 한국보다 높음). 전통적으로 한국이 미국보다 낮은 구조는 유지되지만 격차는 좁아지는 흐름이다.\n\n동조가 약해지는 이유는 한국 내부의 두 힘이 반대 방향으로 작동하기 때문이다.\n\n한쪽은 인상 압력이다. 4월 CPI (소비자물가지수) 2.6%는 2024년 7월 이후 최고다. BOK (한국은행) 부총재 류상대는 5월 4일 '이제 인상을 고려할 때' 라고 언급했다 (출처: bloomberg.com). 시티는 3월에 이미 BOK 가 2026년 안에 기준금리를 3%까지 인상할 것이라는 보고서를 냈다. 즉 한국 10년물은 단순히 미국을 따라가는 게 아니라 자체 정책 경로의 재가격을 함께 반영한다.\n\n다른 쪽은 WGBI (세계국채지수) 편입이다. 4월 1일부터 8개월 단계 편입이 시작됐고 패시브 자금 최대 700억 달러가 한국 국채로 유입될 잠재력이 있다. 이는 한 10년물 금리를 최대 20bp 끌어내리는 압력으로 추정된다 (출처: en.sedaily.com).\n\n두 힘이 동시에 작용하면 결과는 '미국만큼 격하게 안 오르되, 미국이 떨어질 때 한국이 미국만큼 빠르게 따라 떨어지지도 않는' 비대칭이 된다. 5월의 그림이 그렇다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "한국 10년물 — 1년 누적 +156bp",
+            "subtitle": "공시된 변동폭으로 환산한 1년·1개월 전 수준",
+            "data": [
+              {
+                "label": "1년 전",
+                "value": 2.69,
+                "note": "-156bp 환산"
+              },
+              {
+                "label": "1개월 전",
+                "value": 3.68,
+                "note": "-57bp 환산"
+              },
+              {
+                "label": "현재",
+                "value": 4.25,
+                "note": "2026-05-15"
+              }
+            ],
+            "source": "TradingEconomics 공시 변동폭 기준 환산, 2026-05-15",
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 4.59,
+                "label": "미 10년 (참고)"
+              }
+            ],
+            "takeaway": "격차는 좁아지나 미국이 여전히 위 — 단순 동조가 아닌 자체 경로"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "시나리오 분기 — 5월 28일과 6월 FOMC 가 결정한다",
+        "kicker": "분기 / 5",
+        "prose": "다섯 시나리오로 정리한다. 확률은 현 시점의 시장 단서로 본 상대 가중치다.\n\n첫째, 기준선. BOK 5월 28일 동결 + 매파 톤, 6월 FOMC 가 워시 라인을 재확인. 미 10년 4.5~4.7%, 한 10년 4.0~4.3%, 원/달러 1,420~1,460. 가장 가능성 높음.\n\n둘째, 한국 선제 인상. BOK 가 5월 28일 25bp 인상. 인플레 우선 모드 진입. 미 10년 4.7~4.9%, 한 10년 4.3~4.5%, 원/달러 1,400~1,440. 한미 스프레드 추가 축소.\n\n셋째, 미 위기 진정. 이란 전선 안정 + 워시가 시장 반응을 보고 톤을 약간 낮춤. 미 10년 4.3~4.5%, 한 10년 3.9~4.1%, 원/달러 안정. 단 워시가 취임 직후 노선을 바꿀 정치적 비용을 감안하면 가능성 제한적.\n\n넷째, 미 장기물 추가 폭등. 6월 FOMC 가 QT 가속을 공식화하거나 유가가 추가 충격을 주면 미 30년 5.5% 돌파, 미 10년 4.9% 이상. 한 10년 4.5% 이상, 원/달러 1,500 돌파. 가장 위험한 꼬리.\n\n다섯째, 외국인 indirect 이탈. 30년물 입찰 indirect 비중이 60% 아래로 깨짐. 외환보유고 운용 주체의 미 장기물 이탈 신호. 이 경우 미국 장기물 + 달러 동시 약세라는 비전형 조합. 확률은 낮으나 발생 시 환율·자본흐름 충격이 가장 크다.\n\n다섯 시나리오 중 어느 쪽으로 갈지는 두 사건이 사실상 결정한다. 5월 28일 BOK 회의와 6월 18일 전후의 FOMC. 그 사이의 미 입찰 일정 (7년·10년·30년) 이 가격에서 먼저 답을 낼 것이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "봉합하지 않은 모순 — 무엇이 아직 답이 아닌가",
+        "kicker": "반대 가설 / 6",
+        "prose": "지금까지의 그림에서 봉합하지 않고 남겨둘 모순이 있다.\n\n첫째, '미국 인플레는 끈적하다' 와 '미국 성장은 둔화한다' 가 같은 주에 공존한다. PPI 가속과 유가 충격은 인플레의 지속성을, 그러나 동시에 진행 중인 기업 실적 둔화는 침체 진입 가능성을 가리킨다. 워시의 QT 가속이 옳다면 인플레가 우선이지만, 침체가 먼저 도착하면 시장은 6월 안에 다시 인하 기대를 가격에 넣을 수 있다.\n\n둘째, 한국에서는 BOK 인상 압력과 WGBI 패시브 유입이 충돌한다. 한쪽은 금리를 끌어올리고 다른 쪽은 끌어내린다. 8개월 단계 편입의 분기별 트랜치 집행 시점과 BOK 회의 시점이 어긋날 가능성이 있어, 둘의 순효과는 사후적으로만 측정 가능하다.\n\n셋째, 외국인 indirect 비중 유지(66.6%) 와 전체 응찰배수 약화(2.303) 의 공존. 표면적으로는 '해외는 사는데 국내가 안 산다'. 그러나 indirect 채널을 통과한 일부 응찰이 사실은 미국계 자산운용사의 외국 법인을 경유한 위장 국내 수요라는 해석이 시장 일각에 있다. 현 시점 증거는 부족하다. 음모적 단정은 기각한다. 다만 6월 입찰의 indirect 분해가 추가 단서를 줄 것이다.\n\n어느 모순도 지금 봉합하지 않는다. 각각이 5월 28일과 6월 18일 사이에 부분적으로만 풀릴 것이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "5월의 금리 폭등은 단발성 충격이 아니라 네 채널의 동시 가격 재조정이다. 한국이 덜 따라가는 것은 동조가 끊겼기 때문이 아니라 인상 압력과 WGBI 가 서로 상쇄하기 때문이다. 5월 28일과 6월 FOMC 사이의 3주가 다음 6개월의 경로를 결정한다.",
+    "watch_signals": [
+      {
+        "signal": "BOK 5월 28일 정책회의",
+        "description": "기준금리 동결 유지 여부 + 회의 후 성명서의 인플레·환율 톤 강도",
+        "indicates": "기준선 vs 한국 선제 인상 시나리오 분기",
+        "deadline": "2026-05-28",
+        "icon": "🇰🇷"
+      },
+      {
+        "signal": "6월 FOMC 점도표 + 워시 의장 회견",
+        "description": "QT 가속 공식화 / forward guidance 축소 명시 여부",
+        "indicates": "미 위기 진정 vs 장기물 추가 폭등 시나리오 분기",
+        "deadline": "2026-06-18",
+        "icon": "🇺🇸"
+      },
+      {
+        "signal": "다음 미 30년물 입찰 응찰배수",
+        "description": "2.303 대비 추가 약화 / 외국인 indirect 비중의 60% 방어 여부",
+        "indicates": "텀 프리미엄 추가 부활 또는 외국인 indirect 이탈 시나리오 분기",
+        "deadline": "2026-06 중",
+        "icon": "📊"
+      },
+      {
+        "signal": "WGBI 분기 트랜치 집행과 한 10년 반응",
+        "description": "패시브 유입 분기별 집행 시점에 한국 10년물이 미국과 디커플링을 더 키우는지",
+        "indicates": "한미 결합도 약화의 구조적 정착 여부",
+        "deadline": "2026-07 중",
+        "icon": "🔁"
+      },
+      {
+        "signal": "이란 전선과 유가",
+        "description": "WTI 추가 충격 / 호르무즈 항행 위협 격화 여부",
+        "indicates": "장기 인플레 가격 재조정 + 미 장기물 추가 폭등 시나리오 트리거",
+        "deadline": "상시",
+        "icon": "⚠️"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "미국 인플레는 끈적하다 (PPI 가속 + 유가 충격 + 임금 견조) → 워시의 QT 가속이 옳다",
+        "side_b": "미국 성장은 둔화한다 (기업 실적·고용 약화) → 침체가 먼저 도착하면 6월 안에 인하 기대 재가격",
+        "evidence": "5월 PPI 가속과 동시에 같은 주에 발표된 매크로 약화 신호가 공존",
+        "resolution": "현 시점 시장은 인플레 우선 가설을 우세로 본다 (장기물 5% 돌파가 그 증거). 단 침체 가설은 6월 FOMC 직후 한 번의 매크로 약화 데이터로 즉시 부활할 수 있다."
+      },
+      {
+        "side_a": "한국 10년물은 미국을 따라가야 한다 (한미 자본시장 통합도 + 환율 채널)",
+        "side_b": "한국 10년물은 미국과 디커플링한다 (자체 인상 압력 + WGBI 패시브 유입의 반대 압력)",
+        "evidence": "5월 한 달 한 10년물 +57bp 는 의미 있는 동조지만 미 10년물의 같은 기간 폭에 비하면 약하다. 한미 스프레드는 -34~-41bp 로 좁아지되 역전은 아니다.",
+        "resolution": "5월 시점에는 디커플링 가설이 우세. 단 WGBI 트랜치 집행이 BOK 인상과 같은 분기에 겹치면 두 힘이 상쇄되며 동조가 일시적으로 복원될 수 있다."
+      },
+      {
+        "side_a": "외국인 indirect 66.6% 유지는 해외 수요가 견조하다는 증거다",
+        "side_b": "indirect 채널에 미국계 자산운용사의 외국 법인 경유 응찰이 섞여 있어 신호 가치가 낮다",
+        "evidence": "현 시점에서 둘 중 어느 가설을 단정할 정량 증거는 부족하다. 시장 일각의 의혹 수준.",
+        "resolution": "현 시점에는 1번 가설을 채택한다 (공식 통계 우선). 단 6월·7월 입찰의 indirect 분해가 일관되게 약화되면 2번 가설이 부활. 음모로 단정하지 않되 indirect 비중의 신호 가중치는 낮춰야 한다."
+      }
+    ],
+    "confidence_summary": "출처 다양성 양호 (통신·전문지·중앙은행 보도자료 혼합). 수치는 입찰·CPI·금리 모두 1차 출처 가능. 단 워시 정책 의도와 외국인 indirect 의 구성 분해는 시장 해석 영역 — 단정 표현 피함.",
+    "confidence_score": 0.78,
+    "embedded_map": null
+  },
+  "executive_summary": "이란 전쟁발 유가 충격, 워시(Warsh) 의 매파 노선, 만성 재정적자가 미 장기물을 한꺼번에 밀어올렸다. 한국은 인플레 가속과 WGBI 편입이 충돌하며 미국만큼은 안 따라간다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260517_002115.html",
+  "report_theme": "editorial_cream",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-16T15:13:00.483366",
+  "total_duration_seconds": 494.764347076416,
+  "system_version": "v5.2.7",
+  "revision": 0
+}
