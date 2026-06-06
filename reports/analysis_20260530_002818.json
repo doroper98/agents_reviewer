@@ -1,0 +1,311 @@
+{
+  "request": {
+    "event_description": "tiny corp이라는 tinygrad를 만든다고 주장하는 기업(혹은 스타트업)에 대해 경영진은 누구고 언제 세워졌으며 어떤 영역의 사업을 추진 중이고 어떤 강점이 있는지 낱낱히 분석해서 deep한 보고서 생성해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "George Hotz (1989년생) 는 iPhone (2007) 과 PS3 (2010) 최초 탈옥으로 알려진 해커 출신으로, 2015년 자율주행 스타트업 comma.ai 를 창업했음. 2022년 10월 comma.ai 일상 경영에서 손을 떼면서 ML 시스템 / 가속기 영역으로 풀타임 전환을 선언했고, 같은 해 11월 tiny corp 를 설립함. 회사 비전은 두 축 — ① 'AI 컴퓨트는 임대가 아니라 소유' 라는 명제로 클라우드 의존을 거부하는 오프라인 워크스테이션 (tinybox) 판매, ② NVIDIA CUDA 독점 구조를 깨기 위한 *벤더 중립* ML 스택 (tinygrad + 자체 driver) 개발. 두 축 모두 '극단적 코드 경량화' 라는 단일 미학으로 묶여 있음 — tinygrad 본체 약 1만 줄, AMD 주권 스택 약 1.2만 줄. 시드 단계 자금만으로 4년째 단일 라운드 운영 — VC 의존도를 낮춘 매출형 비즈니스 모델.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2022-10",
+            "event": "George Hotz, comma.ai CEO 직 사임 (board 의장은 유지)",
+            "impact": "tiny corp 창업으로 가는 신호탄. ML 가속기 / 프레임워크 쪽 풀타임 전환"
+          },
+          {
+            "date": "2022-11-05",
+            "event": "Tinygrad, Corp. 캘리포니아주 법인 등기 (3900 Harney St, San Diego)",
+            "impact": "법적 설립일. comma.ai 사옥과 같은 지역 — 인력/문화 공유 시너지"
+          },
+          {
+            "date": "2022-11",
+            "event": "tinygrad 프로젝트 (2020년 시작한 Hotz 개인 OSS) 를 회사의 핵심 자산으로 이관",
+            "impact": "PyTorch / JAX 대비 약 1만 줄 안팎의 초경량 코드베이스가 회사의 차별화 축"
+          },
+          {
+            "date": "2023-05-24",
+            "event": "$5.1M 시드 라운드 클로즈 (단일 라운드, 이후 추가 라운드 미공시)",
+            "impact": "투자자: 1517 Fund 외. 'Tinybox 를 만들겠다' 는 약속 단계의 자금. 2026 현재까지 추가 라운드 없음 — 매출 의존도 ↑"
+          },
+          {
+            "date": "2024",
+            "event": "tinybox red / green 1세대 출하 시작 + MLPerf Training 4.0 벤치 제출 (10배 비싼 시스템과 비교)",
+            "impact": "벤치마크 정통성 확보. '저렴한 박스로 자이언트 와 붙는다' 마케팅 축 정립"
+          },
+          {
+            "date": "2026-01-12",
+            "event": "tinygrad v0.12 릴리스 — Mesa NIR 백엔드 통합, 오픈소스 NVIDIA (NVK Vulkan + NAK 컴파일러) 호환",
+            "impact": "독점 CUDA 우회 경로 확보. 'sovereign stack' 비전의 실증"
+          },
+          {
+            "date": "2026-03",
+            "event": "tinybox v2 발표 (Red v2 / Green v2) — Red v2 778 TFLOPS FP16 / $12K, Green v2 3,086 TFLOPS FP16 / $65K",
+            "impact": "RDNA4 (Radeon 9070 XT) 및 Blackwell PRO 6000 채택. 가격대 폭 확장으로 SMB·연구실 양쪽 커버"
+          },
+          {
+            "date": "2026-03-31",
+            "event": "Apple, tiny corp 의 TinyGPU 드라이버 익스텐션 승인 — Apple Silicon Mac 에서 Thunderbolt/USB4 외장 NVIDIA·AMD GPU 사용 가능 (2020년 이후 처음)",
+            "impact": "macOS 생태계 진입로 확보. Mac 사용자 베이스로 잠재 고객 확장"
+          },
+          {
+            "date": "2026-05 (현재)",
+            "event": "AMD 'completely sovereign' 스택 발표 — RDNA3 어셈블러 한 조각만 남음, 총 12,000 LOC 수준",
+            "impact": "ROCm 의존 탈피 임박. AMD GPU 의 ML 활용 가치 재평가 트리거 가능"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "tiny corp 심층 분석 — 경영진·연혁·사업영역·강점",
+    "event_name_en": "tiny corp Deep-Dive: Leadership, History, Business Lines, Strengths (as of May 2026)",
+    "date": "2026-05-29",
+    "category": "기업 분석 / AI 인프라 스타트업",
+    "summary": "tiny corp 는 George Hotz 가 2022년 11월 설립한 샌디에이고 소재 AI 인프라 스타트업으로, 자체 ML 프레임워크 tinygrad 와 오프라인 AI 워크스테이션 tinybox 로 단일 비즈니스를 운영함. 2026년 5월 현재 RDNA3 어셈블러 한 조각만 남기고 NVIDIA·AMD 양쪽에서 '주권 컴퓨트 스택' (자체 driver/runtime/library, 약 12,000 LOC) 을 거의 완성했고, tinybox Red v2 ($12K) / Green v2 ($65K) 두 라인을 주간 단위로 출하 중. 직원 5명 미만의 초소형 조직이라는 점이 가장 큰 특징.",
+    "timeline": [
+      {
+        "date": "2022-10",
+        "event": "George Hotz, comma.ai CEO 직 사임 (board 의장은 유지)",
+        "impact": "tiny corp 창업으로 가는 신호탄. ML 가속기 / 프레임워크 쪽 풀타임 전환"
+      },
+      {
+        "date": "2022-11-05",
+        "event": "Tinygrad, Corp. 캘리포니아주 법인 등기 (3900 Harney St, San Diego)",
+        "impact": "법적 설립일. comma.ai 사옥과 같은 지역 — 인력/문화 공유 시너지"
+      },
+      {
+        "date": "2022-11",
+        "event": "tinygrad 프로젝트 (2020년 시작한 Hotz 개인 OSS) 를 회사의 핵심 자산으로 이관",
+        "impact": "PyTorch / JAX 대비 약 1만 줄 안팎의 초경량 코드베이스가 회사의 차별화 축"
+      },
+      {
+        "date": "2023-05-24",
+        "event": "$5.1M 시드 라운드 클로즈 (단일 라운드, 이후 추가 라운드 미공시)",
+        "impact": "투자자: 1517 Fund 외. 'Tinybox 를 만들겠다' 는 약속 단계의 자금. 2026 현재까지 추가 라운드 없음 — 매출 의존도 ↑"
+      },
+      {
+        "date": "2024",
+        "event": "tinybox red / green 1세대 출하 시작 + MLPerf Training 4.0 벤치 제출 (10배 비싼 시스템과 비교)",
+        "impact": "벤치마크 정통성 확보. '저렴한 박스로 자이언트 와 붙는다' 마케팅 축 정립"
+      },
+      {
+        "date": "2026-01-12",
+        "event": "tinygrad v0.12 릴리스 — Mesa NIR 백엔드 통합, 오픈소스 NVIDIA (NVK Vulkan + NAK 컴파일러) 호환",
+        "impact": "독점 CUDA 우회 경로 확보. 'sovereign stack' 비전의 실증"
+      },
+      {
+        "date": "2026-03",
+        "event": "tinybox v2 발표 (Red v2 / Green v2) — Red v2 778 TFLOPS FP16 / $12K, Green v2 3,086 TFLOPS FP16 / $65K",
+        "impact": "RDNA4 (Radeon 9070 XT) 및 Blackwell PRO 6000 채택. 가격대 폭 확장으로 SMB·연구실 양쪽 커버"
+      },
+      {
+        "date": "2026-03-31",
+        "event": "Apple, tiny corp 의 TinyGPU 드라이버 익스텐션 승인 — Apple Silicon Mac 에서 Thunderbolt/USB4 외장 NVIDIA·AMD GPU 사용 가능 (2020년 이후 처음)",
+        "impact": "macOS 생태계 진입로 확보. Mac 사용자 베이스로 잠재 고객 확장"
+      },
+      {
+        "date": "2026-05 (현재)",
+        "event": "AMD 'completely sovereign' 스택 발표 — RDNA3 어셈블러 한 조각만 남음, 총 12,000 LOC 수준",
+        "impact": "ROCm 의존 탈피 임박. AMD GPU 의 ML 활용 가치 재평가 트리거 가능"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "설립일",
+        "value": "2022-11-05",
+        "context": "Hotz 의 comma.ai 사임 직후 약 한 달 만에 법인 등기"
+      },
+      {
+        "label": "총 조달 금액",
+        "value": "$5.1M (시드)",
+        "context": "2023-05 단일 라운드. 2026-05 현재까지 추가 라운드 공시 없음 — 매출 + 자기자본 운영"
+      },
+      {
+        "label": "직원 규모",
+        "value": "5명 미만 (추정)",
+        "context": "Hotz 발언상 '3명 이내로 일한다'. PitchBook 등 외부 DB 도 single-digit 추정. comma.ai 의 ~30명 대비 1/6"
+      },
+      {
+        "label": "본사 위치",
+        "value": "3900 Harney St, San Diego CA 92110",
+        "context": "comma.ai 사옥과 동일 — Hotz 의 두 회사 인력·시설 공유"
+      },
+      {
+        "label": "tinybox Red v2 가격",
+        "value": "$12,000",
+        "context": "4x AMD Radeon 9070 XT, 64GB RAM, 778 TFLOPS FP16. 4x H100 박스 (시중 $300K+) 의 1/25 가격대"
+      },
+      {
+        "label": "tinybox Green v2 가격",
+        "value": "$65,000",
+        "context": "4x NVIDIA RTX PRO 6000 Blackwell, 384GB RAM, 3,086 TFLOPS FP16. DGX H100 ($400K) 대비 1/6 가격, 동등 FP16 TFLOPS 수준"
+      },
+      {
+        "label": "Exabox 출시 예정",
+        "value": "2027 / ~$10M",
+        "context": "exascale 급 — 회사 로드맵의 장기 베팅. 데이터센터 시장 진입 시도"
+      },
+      {
+        "label": "Sovereign stack LOC",
+        "value": "약 12,000 줄",
+        "context": "AMD GPU 용 자체 driver+runtime+library+emulator 총합. ROCm (수백만 LOC) 대비 압도적 경량"
+      },
+      {
+        "label": "tinygrad LOC 상한",
+        "value": "~10,000 LOC (정책)",
+        "context": "PyTorch (3M+ LOC) / JAX (수십만 LOC) 와 비교. '읽을 수 있는 ML 프레임워크' 표방"
+      },
+      {
+        "label": "백엔드 지원",
+        "value": "NVIDIA / AMD / Apple Metal / Qualcomm",
+        "context": "MLPerf CI 로 4종 모두 회귀 검증. 멀티벤더 추상화가 sovereign 전략의 기반"
+      },
+      {
+        "label": "채용 방식",
+        "value": "GitHub 바운티 기여만 인정",
+        "context": "외부 이력서 / 면접 일체 미시행. 누적 34명의 바운티 솔버 — 그중 약 80% 인턴 전환"
+      }
+    ],
+    "background": "George Hotz (1989년생) 는 iPhone (2007) 과 PS3 (2010) 최초 탈옥으로 알려진 해커 출신으로, 2015년 자율주행 스타트업 comma.ai 를 창업했음. 2022년 10월 comma.ai 일상 경영에서 손을 떼면서 ML 시스템 / 가속기 영역으로 풀타임 전환을 선언했고, 같은 해 11월 tiny corp 를 설립함. 회사 비전은 두 축 — ① 'AI 컴퓨트는 임대가 아니라 소유' 라는 명제로 클라우드 의존을 거부하는 오프라인 워크스테이션 (tinybox) 판매, ② NVIDIA CUDA 독점 구조를 깨기 위한 *벤더 중립* ML 스택 (tinygrad + 자체 driver) 개발. 두 축 모두 '극단적 코드 경량화' 라는 단일 미학으로 묶여 있음 — tinygrad 본체 약 1만 줄, AMD 주권 스택 약 1.2만 줄. 시드 단계 자금만으로 4년째 단일 라운드 운영 — VC 의존도를 낮춘 매출형 비즈니스 모델.",
+    "sources": [
+      "https://en.wikipedia.org/wiki/George_Hotz",
+      "https://geohot.github.io/blog/jekyll/update/2023/05/24/the-tiny-corp-raised-5M.html",
+      "https://www.crunchbase.com/organization/tiny-corp",
+      "https://www.bizprofile.net/ca/san-diego/tinygrad-corp",
+      "https://tinygrad.org/",
+      "https://www.phoronix.com/news/Tiny-Sovereign-Stack-AMD-Close",
+      "https://www.signalstack.news/blog/tinybox-unleashing-affordable-deep-learning-power-with-tinygrad/",
+      "https://www.prismnews.com/news/george-hotzs-tiny-corp-brought-high-end-ai-hardware-to-your",
+      "https://www.techpowerup.com/320804/tiny-corp-prepping-separate-amd-nvidia-gpu-based-ai-compute-systems",
+      "https://deepwiki.com/tinygrad/tinygrad/10.3-mlperf-benchmarks",
+      "https://forums.macrumors.com/threads/apple-approves-driver-for-nvidia-egpu-on-arm-mac-for-accelerated-compute-news-stories.2480483/",
+      "https://pulse24.ai/news/2026/3/22/8/tiny-corp-ships-tinybox-computers",
+      "https://aitoolly.com/ai-news/article/2026-03-22-tiny-corp-unveils-tinybox-high-performance-offline-ai-hardware-supporting-massive-parameter-models"
+    ],
+    "glossary": [
+      {
+        "term": "tinygrad",
+        "definition": "tiny corp 가 개발하는 오픈소스 신경망 프레임워크. PyTorch 와 유사한 자동미분 + 텐서 추상화를 제공하지만, 본체 코드를 1만 줄 이내로 의도적으로 제약함"
+      },
+      {
+        "term": "tinybox",
+        "definition": "tiny corp 가 판매하는 AI 워크스테이션. 4개의 GPU 를 한 박스에 묶어 클라우드 없이 로컬에서 거대 모델을 학습/추론할 수 있게 한 제품"
+      },
+      {
+        "term": "TFLOPS (FP16)",
+        "definition": "초당 부동소수점 연산 횟수 — 1조 번 단위. FP16 은 16비트 정밀도로, 신경망 학습에서 표준적으로 쓰이는 단위"
+      },
+      {
+        "term": "Sovereign stack (주권 컴퓨트 스택)",
+        "definition": "외부 벤더 (AMD ROCm, NVIDIA CUDA) 의 클로즈드 소프트웨어에 의존하지 않고 driver / runtime / 컴파일러를 모두 자체 보유한 상태"
+      },
+      {
+        "term": "ROCm",
+        "definition": "AMD 의 공식 GPU 컴퓨트 플랫폼. 안정성·드라이버 이슈가 잦다는 평이 있어 tiny corp 가 우회 스택을 만드는 동기"
+      },
+      {
+        "term": "CUDA",
+        "definition": "NVIDIA 의 독점 GPU 컴퓨트 플랫폼. 사실상 ML 산업 표준이지만 NVIDIA 종속을 강요함"
+      },
+      {
+        "term": "MLPerf",
+        "definition": "AI 하드웨어·프레임워크 성능을 표준 워크로드로 측정하는 업계 벤치마크. tinybox 도 여기에 제출해 가격 대비 성능을 입증"
+      },
+      {
+        "term": "Mesa NIR / NVK / NAK",
+        "definition": "리눅스 오픈소스 그래픽 스택의 중간 표현 (NIR) 및 NVIDIA 용 오픈드라이버 (NVK) / 셰이더 컴파일러 (NAK). v0.12 부터 tinygrad 가 이 경로로 NVIDIA GPU 를 다룸"
+      },
+      {
+        "term": "RDNA3 / RDNA4",
+        "definition": "AMD GPU 아키텍처 세대명. RDNA4 가 2024~2025년 출시된 최신 세대로 Radeon 9070 XT 가 대표"
+      },
+      {
+        "term": "Blackwell",
+        "definition": "NVIDIA 의 2024~2025년 데이터센터/프로 GPU 아키텍처 세대명. RTX PRO 6000 이 워크스테이션 라인의 대표 제품"
+      },
+      {
+        "term": "comma.ai",
+        "definition": "George Hotz 가 2015년 창업한 오픈소스 자율주행 스타트업. tiny corp 와 본사·인력 일부 공유"
+      },
+      {
+        "term": "바운티 (Bounty)",
+        "definition": "특정 GitHub issue 해결 시 현금을 지급하는 방식. tiny corp 는 이를 *유일한* 채용 통로로 사용 — 기여 이력만이 입사 자격"
+      }
+    ],
+    "confidence_score": 0.82,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "tiny corp 심층 분석 — 경영진·연혁·사업영역·강점",
+    "deck": "tiny corp 는 George Hotz 가 2022년 11월 설립한 샌디에이고 소재 AI 인프라 스타트업으로, 자체 ML 프레임워크 tinygrad 와 오프라인 AI 워크스테이션 tinybox 로 단일 비즈니스를 운영함. 2026년 5월 현재 RDNA3 어셈블러 한 조각만 남기고 NVIDIA·AMD 양쪽에서 '주권 컴퓨트 스택' (자체 driver/ru",
+    "sections": [
+      {
+        "heading": "요약",
+        "kicker": "",
+        "prose": "tiny corp 는 George Hotz 가 2022년 11월 설립한 샌디에이고 소재 AI 인프라 스타트업으로, 자체 ML 프레임워크 tinygrad 와 오프라인 AI 워크스테이션 tinybox 로 단일 비즈니스를 운영함. 2026년 5월 현재 RDNA3 어셈블러 한 조각만 남기고 NVIDIA·AMD 양쪽에서 '주권 컴퓨트 스택' (자체 driver/runtime/library, 약 12,000 LOC) 을 거의 완성했고, tinybox Red v2 ($12K) / Green v2 ($65K) 두 라인을 주간 단위로 출하 중. 직원 5명 미만의 초소형 조직이라는 점이 가장 큰 특징.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      }
+    ],
+    "closing": "",
+    "watch_signals": [],
+    "contradictions": [],
+    "contradictions_heading": "",
+    "timeline_flow": null,
+    "confidence_summary": "composer 호출 실패. 사실 자료만 표시.",
+    "confidence_score": 0.0,
+    "embedded_map": null,
+    "hero_image": null
+  },
+  "executive_summary": "tiny corp 는 George Hotz 가 2022년 11월 설립한 샌디에이고 소재 AI 인프라 스타트업으로, 자체 ML 프레임워크 tinygrad 와 오프라인 AI 워크스테이션 tinybox 로 단일 비즈니스를 운영함. 2026년 5월 현재 RDNA3 어셈블러 한 조각만 남기고 NVIDIA·AMD 양쪽에서 '주권 컴퓨트 스택' (자체 driver/ru",
+  "report_url": "",
+  "report_path": "reports/analysis_20260530_002818.html",
+  "report_theme": "paper_classic",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-29T15:16:49.346161",
+  "total_duration_seconds": 688.8865270614624,
+  "system_version": "v5.5.11",
+  "revision": 0
+}
