@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v6.0.1
+last_synced_with: v6.0.2
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -701,6 +701,19 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   getBBox 실패 시 (레이아웃 전) try/catch 로 기존 viewBox 유지 — graceful.
 - 교훈: **라벨 길이가 가변인 SVG 차트는 고정 margin 이 아니라 렌더 후 bbox 기반
   content-fit 으로 프레이밍한다** (network 재설계 CHART-AP-25 와 동일 원칙).
+
+**재발 2 (v6.0.2) — expand-only content-fit 의 좌측 쏠림**:
+- 증상: v6.0.1 적용 후 라벨 잘림은 사라졌으나(전부 보임) 차트가 *왼쪽으로 쏠리고*
+  오른쪽에 ~150px 빈 여백이 남음 (사용자 재보고, IMG_2629).
+- 근본 원인: v6.0.1 의 content-fit 이 **확장만(expand-only)** — `maxX = max(vx+vw,
+  bb.x+bb.width+pad)` 로 원본 우측 경계(W=760)를 *유지*했다. 컨텐츠 우측 끝은 ~608
+  인데 viewBox 우측은 760 → 그 사이 ~150px 가 빈 채로 viewBox 에 포함되어,
+  `xMidYMid` 가 (빈 공간 포함) 전체를 중앙에 놓다 보니 컨텐츠는 좌측으로 쏠림.
+- **Fix (v6.0.2)**: viewBox x/width 를 원본 프레임과 무관하게 **content bbox +
+  동일 pad 로 양쪽 모두 타이트하게** 설정 (`x = bb.x - pad`, `w = bb.width +
+  2*pad`). 빈 여백이 사라져 `xMidYMid` 가 컨텐츠를 폭에 맞춰 정확히 중앙 배치.
+- 교훈 (보강): content-fit 은 **양방향 tight-fit** 이어야 한다. expand-only 는
+  잘림은 막아도 비대칭 여백으로 정렬을 깬다 — 원본 프레임을 lower bound 로 쓰지 말 것.
 
 **한계 — 향후 강화 옵션**:
 - (A) 동적 margin 계산 — 실제 라벨 텍스트 너비 (canvas.measureText) 측정 후
