@@ -20,6 +20,21 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.0.5 — 발행본 revision 을 major.minor 로 분리 (내용=정수부 / 표현=소수부)
+
+- **동기(사용자 제안)** — `--rerender-only` 가 revision 을 아예 안 올려서, 차트
+  레이아웃·정적 자산만 바꿔 재배포했을 때 "바뀐 게 맞나" 추적이 안 됐다.
+- **변경** — revision 을 **major.minor** 로 분리:
+  - `revision`(정수부) = **내용/데이터 수정** (`--replace`/`--add-footnote`/`--edit`/
+    `--recompose`). 데이터 변경 시 소수부는 0 으로 리셋(새 내용 baseline).
+  - `render_revision`(소수부, 신규) = **표현/레이아웃 수정** (`--rerender-only` —
+    새 charts.js/CSS, 차트 정렬 등). 내용 그대로면 소수부만 +1.
+  - 표기는 `FullAnalysisResult.revision_label` → `Rev 1.2` 처럼 한 덩어리(major.minor).
+    진짜 소수가 아니라 `1.10 > 1.9`. hero eyebrow 가 `Rev {revision_label}` 렌더.
+- **하위호환** — 구 보고서 JSON 엔 `render_revision` 없음 → Pydantic 기본 0 (`Rev N.0`).
+- 동시 갱신: `src/models.py`(필드+property), `scripts/patch_report.py`(증가 로직),
+  `freeform_essay.html`(표기), `docs/DATA_MODELS.md`, CLAUDE.md 핫픽스 시퀀스 SSOT.
+
 ## v6.0.4 — sankey 끝-컬럼 라벨 2줄 줄바꿈 (CHART-AP-21 재발 4, 비대칭 overhang 해소)
 
 - **증상(사용자 재보고, IMG_2642)** — v6.0.3 코어 중앙정렬 후에도 우측에 큰 빈

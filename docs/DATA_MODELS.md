@@ -33,7 +33,7 @@ flowchart TD
     CTXA --> COMP["NarrativeComposer<br/>(Opus 4.7, v4.5.4 max_tokens fast 12K / std 20K / deep 32K)"]
     COMP --> CR["ComposedReport<br/>(headline / deck / sections[] / closing /<br/>watch_signals[] / contradictions[] /<br/>confidence_score / confidence_summary /<br/>embedded_map [v4.2.0])"]
     CR --> SECS["ComposedSection (sections 안)<br/>(heading / kicker / lede [v4.5.0] / analogy [v4.5.0] /<br/>fact_grid [v4.5.0] / dropcap [v4.5.0] / footnotes [v5.5.5] /<br/>prose / charts [v4.2.0] / pull_quote / cited_claim_ids)"]
-    CR --> FULL["FullAnalysisResult<br/>(request / context / composed_report /<br/>report_theme / report_url / report_path /<br/>system_version [v4.5.5] / revision [v4.5.5] /<br/>analysis_timestamp / total_duration_seconds)"]
+    CR --> FULL["FullAnalysisResult<br/>(request / context / composed_report /<br/>report_theme / report_url / report_path /<br/>system_version [v4.5.5] / revision + render_revision [v6.0.5] /<br/>analysis_timestamp / total_duration_seconds)"]
     FULL --> SYNTH["ReportSynthesizer (코드, LLM 0)<br/>→ freeform_essay.html → Cloudflare Pages"]
     FULL --> WL["WatchlistRegistry.register()<br/>→ WatchSignal[] → SQLite"]
 
@@ -138,7 +138,9 @@ NarrativeComposer (Opus 4.7) 의 단일 호출 산출. v4.0.0 부터 `freeform_e
 - `report_theme`: `lens_policy.select_theme(category)` 결과 (`editorial_cream` 또는 `burgundy_mono`).
 - `executive_summary`: composer 의 `deck` 또는 `headline` (markdown index 공통 텍스트).
 - `system_version` (v4.5.5): 매 렌더 시점의 `orchestrator.VERSION`. 재렌더 시엔 *재렌더 시점* 으로 갱신.
-- `revision` (v4.5.5): 0 = 최초 생성, 1+ = patch_report.py 로 수정됨. v4.5.6 부터 0 도 항상 hero eyebrow 에 표기.
+- `revision` (v4.5.5): **내용/데이터 수정 횟수 (정수부)**. 0 = 최초 생성, 1+ = patch_report.py 의 데이터 변경 패치(--replace/--add-footnote/--edit/--recompose 등). v4.5.6 부터 0 도 항상 hero eyebrow 에 표기.
+- `render_revision` (v6.0.5): **표현/레이아웃 수정 횟수 (소수부)**. 내용은 그대로 두고 양식·차트 레이아웃·정적 자산(charts.js 등)만 바뀐 `--rerender-only` 마다 +1. 데이터(정수부) 변경 시 0 리셋. 구 보고서 JSON 엔 없음 → 기본 0 (하위호환).
+- `revision_label` (property, v6.0.5): 발행본 표기용 `'major.minor'` 문자열 (예: `'1.2'` = 내용 1회 + 재렌더 2회). 진짜 소수가 아닌 major.minor 라 `1.10 > 1.9`. hero eyebrow 가 `Rev {revision_label}` 로 렌더.
 - `analysis_timestamp`, `total_duration_seconds`: 메타데이터.
 - (legacy optional) `strategy`, `blocks`, `findings`, `judgment`, `players`, `dynamics`, `chain_reaction`, `scenarios`, `visuals`: v3 시대 흐름의 잔존 필드. v4.5.7 호출 경로에서는 None.
 

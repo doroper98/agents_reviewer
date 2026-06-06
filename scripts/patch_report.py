@@ -840,13 +840,21 @@ async def main() -> int:
         else:
             print("[patch] --ensure-time-series: 변경 없음 (composer 가 이미 다 박았거나 time_series 비어있음)")
 
-    # 수정 사항 있으면 JSON 다시 저장 + revision +1 (v4.5.5).
-    # --rerender-only / --edit 만은 데이터 변경 X 라 revision 안 올림.
-    # --edit 는 사용자가 raw JSON 직접 편집 → 변경 여부 모르니 안전하게 +1.
+    # 리비전 관리 (v6.0.5 — major.minor 분리).
+    #  - 내용/데이터 변경 (mutated 또는 --edit) → 정수부 +1, 소수부(render) 0 리셋.
+    #    --edit 는 raw JSON 직접 편집 → 변경 여부 모르니 안전하게 데이터 변경으로 취급.
+    #  - 표현/레이아웃만 변경 (--rerender-only, 새 charts.js/CSS 적용 등) → 소수부 +1.
+    #    이전(v4.5.5~v6.0.4)엔 --rerender-only 가 revision 을 아예 안 올려 "바뀐 게
+    #    맞나" 추적 불가였다. 이제 소수부로 표현 변경 이력을 남긴다.
     if mutated or args.edit:
         result.revision = (getattr(result, "revision", 0) or 0) + 1
+        result.render_revision = 0
         write_json(result, json_path)
-        print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision})")
+        print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision_label} · 내용 변경)")
+    elif args.rerender_only:
+        result.render_revision = (getattr(result, "render_revision", 0) or 0) + 1
+        write_json(result, json_path)
+        print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision_label} · 표현/레이아웃 변경)")
 
     # 재렌더
     synth = ReportSynthesizer(config)
