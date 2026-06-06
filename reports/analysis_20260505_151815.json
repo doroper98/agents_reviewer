@@ -1,0 +1,354 @@
+{
+  "request": {
+    "event_description": "Mac Studio M3 Ultra 256GB 도입 시 비용·성능·확장성을 고려한 전략 어떻게 해야 할까",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 0,
+    "mode": "standard"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "Apple 은 2023년 M2 Ultra 이후 칩 세대마다 Ultra 를 내던 패턴을 깨고 M4 세대에서 Ultra 를 건너뛰었음. 그래서 2025-03 에 출시된 Mac Studio 는 최상위가 M3 Ultra 이고, 그 다음 Ultra 칩은 M5 Ultra 로 직행. 한편 2025년 후반부터 글로벌 데이터센터 AI 투자 확대로 HBM·DDR5 등 메모리 가격이 급등했고, 이 여파로 Apple 은 2026-03 에 512GB 옵션을 떼고 256GB 가격을 올림. 동시에 로컬 LLM 사용자 (개발자·연구자) 가 256GB 를 노리면서 출하가 5월로 밀리는 상황. 즉 '큰 메모리 통합 구조' 라는 Mac 의 강점이 가장 비싸게 팔리는 시기.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-03",
+            "event": "Apple, Mac Studio (Early 2025) 출시. 최상위 칩으로 M4 Ultra 대신 M3 Ultra 채택, 메모리 최대 512GB 까지 옵션 개방",
+            "impact": "M4 Ultra 는 끝내 출시 안 됨. M3 Ultra 가 2026-10 까지 약 19개월간 Apple 최상위 데스크톱 칩 자리 유지"
+          },
+          {
+            "date": "2026-03-06",
+            "event": "Apple, 512GB 메모리 업그레이드 옵션 삭제. 96GB→256GB 업그레이드 가격 $1,600 → $2,000 ($400 인상)",
+            "impact": "AI 수요로 인한 DRAM 가격 급등 직접 반영. 256GB 가 사실상 새 상한선이 됨"
+          },
+          {
+            "date": "2026-04-19",
+            "event": "Bloomberg Mark Gurman, '공급망 차질로 차기 Mac Studio 출시 2026-10 로 밀릴 가능성' 보도",
+            "impact": "M5 Max/Ultra 기반 차기 Mac Studio 대기 시 약 5개월 공백 발생"
+          },
+          {
+            "date": "2026-05",
+            "event": "256GB 구성 배송 예상이 5월로 밀림 (DRAM 부족 + 로컬 AI 수요 증가)",
+            "impact": "지금 주문해도 즉시 수령 불확실. 구매 결정과 실제 도착 사이 시차 고려 필요"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "Mac Studio M3 Ultra 256GB 도입 전략 검토",
+    "event_name_en": "Mac Studio M3 Ultra 256GB Procurement Strategy",
+    "date": "2026-05-05",
+    "category": "기술·구매전략",
+    "summary": "M3 Ultra Mac Studio 는 2026-05 현재 Apple 최상위 데스크톱. M4 Ultra 는 건너뛰었고 M5 Ultra Mac Studio 는 2026-10 출시 예상. DRAM 글로벌 부족으로 2026-03 부터 256GB 업그레이드 가격 +$400 인상, 512GB 옵션은 사라짐. 로컬 대형언어모델(LLM) 구동에는 강하나 5개월 후 차세대 출시·Mac 의 무확장 구조라는 두 변수가 결정의 축.",
+    "timeline": [
+      {
+        "date": "2025-03",
+        "event": "Apple, Mac Studio (Early 2025) 출시. 최상위 칩으로 M4 Ultra 대신 M3 Ultra 채택, 메모리 최대 512GB 까지 옵션 개방",
+        "impact": "M4 Ultra 는 끝내 출시 안 됨. M3 Ultra 가 2026-10 까지 약 19개월간 Apple 최상위 데스크톱 칩 자리 유지"
+      },
+      {
+        "date": "2026-03-06",
+        "event": "Apple, 512GB 메모리 업그레이드 옵션 삭제. 96GB→256GB 업그레이드 가격 $1,600 → $2,000 ($400 인상)",
+        "impact": "AI 수요로 인한 DRAM 가격 급등 직접 반영. 256GB 가 사실상 새 상한선이 됨"
+      },
+      {
+        "date": "2026-04-19",
+        "event": "Bloomberg Mark Gurman, '공급망 차질로 차기 Mac Studio 출시 2026-10 로 밀릴 가능성' 보도",
+        "impact": "M5 Max/Ultra 기반 차기 Mac Studio 대기 시 약 5개월 공백 발생"
+      },
+      {
+        "date": "2026-05",
+        "event": "256GB 구성 배송 예상이 5월로 밀림 (DRAM 부족 + 로컬 AI 수요 증가)",
+        "impact": "지금 주문해도 즉시 수령 불확실. 구매 결정과 실제 도착 사이 시차 고려 필요"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "256GB 업그레이드 비용 (96GB 기준)",
+        "value": "$2,000",
+        "context": "2026-03 인상 후. 인상 전 $1,600 대비 +25%"
+      },
+      {
+        "label": "한국 M3 Ultra 베이스 가격",
+        "value": "₩6,590,000",
+        "context": "28코어 CPU / 60코어 GPU / 96GB / 1TB 기준 (apple.com/kr). 256GB + 추가 SSD 시 1,000만 원 안팎까지 상승"
+      },
+      {
+        "label": "차기 M5 Ultra Mac Studio 예상 출시",
+        "value": "2026-10",
+        "context": "현재 시점 기준 약 5개월 뒤. Bloomberg 보도, 공급망 사유로 추가 지연 가능성"
+      },
+      {
+        "label": "DeepSeek R1 4-bit 추론 속도",
+        "value": "약 17~18 tokens/sec",
+        "context": "M3 Ultra 256GB 실측. 코드 생성·일반 챗봇 용도로 실사용 가능 수준"
+      },
+      {
+        "label": "Llama 3.1 405B Q4 메모리 점유",
+        "value": "약 235GB",
+        "context": "256GB 구성에서만 들어감. 96GB·128GB 로는 불가"
+      },
+      {
+        "label": "DeepSeek V3 671B (1.5~2bit 동적 양자화)",
+        "value": "약 192~226GB",
+        "context": "256GB 에서 구동은 되나 양자화로 인한 품질 손실 측정 가능 수준"
+      },
+      {
+        "label": "메모리·SSD 확장성",
+        "value": "0 (불가)",
+        "context": "Mac Studio 는 메모리·SSD 모두 통합 패키지. 구매 후 업그레이드 사실상 불가 — 처음 사양이 끝까지 그 사양"
+      }
+    ],
+    "background": "Apple 은 2023년 M2 Ultra 이후 칩 세대마다 Ultra 를 내던 패턴을 깨고 M4 세대에서 Ultra 를 건너뛰었음. 그래서 2025-03 에 출시된 Mac Studio 는 최상위가 M3 Ultra 이고, 그 다음 Ultra 칩은 M5 Ultra 로 직행. 한편 2025년 후반부터 글로벌 데이터센터 AI 투자 확대로 HBM·DDR5 등 메모리 가격이 급등했고, 이 여파로 Apple 은 2026-03 에 512GB 옵션을 떼고 256GB 가격을 올림. 동시에 로컬 LLM 사용자 (개발자·연구자) 가 256GB 를 노리면서 출하가 5월로 밀리는 상황. 즉 '큰 메모리 통합 구조' 라는 Mac 의 강점이 가장 비싸게 팔리는 시기.",
+    "sources": [
+      "Macworld — 'Mac Studio 2026: M5 Max & Ultra release date, price, specs & RAM shortages' (2026)",
+      "Tom's Hardware — 'Apple pulls $4,000 512GB Mac Studio upgrade option as AI RAM squeeze continues' (2026-03)",
+      "MacDailyNews — 'Apple drops 512GB M3 Ultra Mac Studio option, ups 256GB memory upgrade by $400' (2026-03-06)",
+      "9to5Mac — 'New Mac Studio may not arrive until October' (2026-04-19, Bloomberg/Gurman 인용)",
+      "MacRumors — 'What's Next for the Mac Studio' 2026 rumor recap (2026-04)",
+      "Apple 한국 스토어 (apple.com/kr) Mac Studio 가격표",
+      "Julien Simon — 'What to Buy for Local LLMs (April 2026)' Medium",
+      "Silicon Score — 'Best local LLMs for Mac Studio M3 Ultra 256GB in 2026'",
+      "Creative Strategies — 'Apple Mac Studio with M3 Ultra Review: AI Developer Workstation'"
+    ],
+    "glossary": [
+      {
+        "term": "M3 Ultra",
+        "definition": "Apple 이 자체 설계한 데스크톱급 칩. M3 Max 두 개를 UltraFusion 인터커넥트로 이어 붙인 구조. CPU 28~32코어, GPU 60~80코어"
+      },
+      {
+        "term": "Unified Memory (통합 메모리)",
+        "definition": "CPU·GPU·Neural Engine 이 같은 메모리 풀을 공유하는 구조. PC 처럼 GPU VRAM 따로, RAM 따로 나뉘지 않음. 이 구조 덕에 큰 LLM 을 통째로 메모리에 올릴 수 있음"
+      },
+      {
+        "term": "양자화 (Quantization)",
+        "definition": "LLM 가중치를 16/32비트 대신 4비트, 2비트 등으로 줄여 저장. 메모리 사용량은 대폭 줄지만 답변 품질이 일부 손상됨"
+      },
+      {
+        "term": "tokens/sec",
+        "definition": "LLM 이 1초에 만들어 내는 단어 조각 수. 대화 체감 속도의 척도. 보통 15 이상이면 사람이 답답하지 않게 읽음"
+      },
+      {
+        "term": "TCO (Total Cost of Ownership)",
+        "definition": "총소유비용. 구매가뿐 아니라 전기·유지보수·재판매 손실까지 합친 값"
+      },
+      {
+        "term": "MLX",
+        "definition": "Apple 이 만든 머신러닝 프레임워크. Apple Silicon 의 통합 메모리·Metal 가속을 활용하도록 설계되어 같은 칩에서 llama.cpp / Ollama 보다 빠른 경우가 많음"
+      }
+    ],
+    "confidence_score": 0.82,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '$2,000 — 2026-03 인상 후, 직전 $1,600 대비 +25%'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "TCO (Total Cost of Ownership) — 구매가 + 5개월 대기 비용 + 재판매 감가 통합 비교",
+        "Decision Tree — '지금 256GB / 96GB 후 차기 / 10월 M5 대기' 3 분기 비교",
+        "Pre-mortem — 6개월 뒤 '왜 이 결정이 실패했나' 가설 3종 (DRAM 추가 인상, M5 Ultra 메모리 상한 변화, 로컬 LLM 워크로드의 클라우드 회귀)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: TCO (총소유비용)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실(가격·일정·성능) → 메커니즘(통합 메모리 / DRAM 가격 / Mac 의 무확장 구조) → 함의(어느 사용자에게 256GB 가 필요한가) → 반례·미해결(5개월 대기 vs 즉시 도입, M5 Ultra 가 256GB 더 비싸질 가능성).",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "5개월의 공백, 256GB의 무게",
+    "deck": "M3 Ultra 256GB 는 지금 정점이다. 단 가격은 어제보다 25% 올랐고, 차세대는 다섯 달 앞에 있다.",
+    "sections": [
+      {
+        "heading": "결정의 윤곽",
+        "kicker": "구매 결정 / 1",
+        "prose": "M4 Ultra 는 끝내 출시되지 않았다. 2025년 3월에 나온 M3 Ultra Mac Studio 가 약 19개월간 Apple 의 최상위 데스크톱 자리를 지켜왔고, 다음 차례인 M5 Ultra Mac Studio 는 2026년 10월로 예상된다. Bloomberg 의 마크 거먼은 공급망 사정상 출시가 더 밀릴 가능성도 보도했다.\n\n결정의 축은 둘이다. 첫째, 다섯 달 뒤 차세대가 온다는 사실. 둘째, Mac Studio 는 메모리도 SSD 도 한 번 사면 끝까지 그 사양이라는 사실. 두 변수가 교차하는 지점에서 256GB 라는 숫자가 의미를 얻는다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "M3 Ultra Mac Studio 256GB 는 2026년 5월 현재 Apple 데스크톱의 정점이다. 정점을 지금 살 것인가, 다섯 달을 기다릴 것인가. 이 검토는 그 둘의 무게를 재본다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "M3 Ultra 한국 베이스가",
+            "value": "₩659만",
+            "sublabel": "96GB / 1TB / apple.com/kr"
+          },
+          {
+            "label": "256GB 업그레이드 비용",
+            "value": "+$2,000",
+            "sublabel": "2026-03 인상, 직전 $1,600"
+          },
+          {
+            "label": "차기 M5 Ultra 예상",
+            "value": "2026-10",
+            "sublabel": "약 5개월 뒤 / Bloomberg"
+          },
+          {
+            "label": "메모리·SSD 확장성",
+            "value": "0",
+            "sublabel": "통합 패키지, 사후 업그레이드 불가"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "왜 지금이 가장 비싼가",
+        "kicker": "가격 메커니즘 / 2",
+        "prose": "왜 하필 지금 가격이 올랐을까. 답은 Apple 안이 아니라 DRAM 시장에 있다.\n\n2025년 후반부터 글로벌 데이터센터의 AI 투자가 급증했고, HBM (고대역폭 메모리) 과 DDR5 가격이 동반 상승했다. Apple 이 Mac Studio 에 쓰는 통합 메모리 (Unified Memory — CPU·GPU·뉴럴엔진이 같은 DRAM 풀을 공유하는 구조) 도 같은 DRAM 시장에서 부품을 가져온다. 2026년 3월, Apple 은 512GB 옵션을 떼고 96GB→256GB 업그레이드 가격을 $1,600 에서 $2,000 으로 올렸다. 25% 인상이다.\n\n동시에 로컬 대형언어모델 (LLM — 자기 컴퓨터에서 직접 돌리는 AI 모델) 을 노리는 개발자 수요가 256GB 구성에 몰리면서 2026년 5월 출하분이 밀리고 있다. 사실은 단순하다. ‘Mac 의 큰 통합 메모리’ 라는 강점이 가장 비싸게 팔리는 시기다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "DRAM 가격이 데이터센터로 흘러간 만큼, Mac 의 메모리 옵션도 함께 비싸진다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "누구에게 256GB 가 필요한가",
+        "kicker": "사용자 적합성 / 3",
+        "prose": "256GB 라는 숫자가 의미를 얻는 곳은 결국 로컬 LLM 의 메모리 요구다. 405B 급 모델은 4비트 양자화 (모델 가중치를 4비트 정수로 압축해 메모리 사용량을 약 1/4 로 줄이는 기법) 를 거쳐도 200GB 를 넘긴다.\n\nLlama 3.1 405B 4비트는 약 235GB 를 차지한다. 96GB 나 128GB 구성에는 들어가지 않는다. DeepSeek V3 671B 를 1.5~2비트로 더 강하게 양자화하면 192~226GB 까지 떨어지지만, 양자화 강도가 올라간 만큼 답변 품질의 미세한 손실이 측정된다. 한편 DeepSeek R1 의 4비트 추론은 256GB 구성에서 초당 17~18 토큰을 낸다. 코드 생성과 일반 챗봇 용도로는 실사용 가능한 속도다.\n\n반대로 70B 이하 작은 모델만 다룬다면 96GB 구성으로도 충분하다. 핵심은 이렇다 — 256GB 의 정당화는 ‘큰 모델을 켜둘 수 있다’ 는 한 가지 명분에 거의 전부 걸려 있다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "4비트 양자화 후 모델 메모리 점유 (GB)",
+            "subtitle": "두 모델 모두 96/128GB 구성에 들어가지 않는다",
+            "data": [
+              {
+                "label": "Llama 3.1 405B (4bit)",
+                "value": 235,
+                "note": "256GB 필요"
+              },
+              {
+                "label": "DeepSeek V3 671B (1.5~2bit)",
+                "value": 210,
+                "note": "양자화 손실 동반 (192~226 범위)"
+              }
+            ],
+            "source": "Julien Simon Medium (2026-04), Silicon Score 실측",
+            "takeaway": "200GB 전후 모델 구동이 256GB 구성의 유일한 실용 명분"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "세 갈래 길",
+        "kicker": "결정 트리 / 4",
+        "prose": "이 결정은 누구에게 어떤 부담을 떠넘기는가. 선택지는 셋이다.\n\n첫째, 지금 256GB 를 산다. 다섯 달의 공백을 즉시 작업으로 메우고, DRAM 가격이 더 오르기 전에 마지막 256GB 를 잡는다. 위험은 둘이다. M5 Ultra 가 메모리 옵션을 더 키우거나 토큰 처리 속도를 의미 있게 끌어올리면, 5개월 만에 정점이 옛 모델로 내려앉는다. 그리고 Mac 은 사후 업그레이드가 불가능하니 그 옛 모델이 끝까지 그 사양이다.\n\n둘째, 지금 96GB 베이스를 사고 차세대로 갈아탄다. 한국 기준 약 ₩659만, 256GB 구성보다 300만 원 이상 절약. 단 70B 이하 모델만 돌릴 수 있고, 차세대 출시 시점에 다시 풀가격을 지불해야 한다. 두 번 사는 결정이며, 총소유비용 (TCO) 은 단일 256GB 구매보다 높아질 가능성이 크다.\n\n셋째, 10월 M5 Ultra 까지 기다린다. 다섯 달 동안 로컬 LLM 작업이 멈추거나 클라우드 (AWS·Azure 의 GPU 인스턴스) 로 우회한다. 거먼의 보도대로 출시가 더 밀리면 공백은 늘어난다. M5 Ultra 가 256GB 옵션을 유지할지, 가격이 어떻게 책정될지는 현재 미지수라는 점이 이 갈래의 가장 큰 부담이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "Mac Studio 는 옷이 아니라 가구다",
+          "body": "옷은 사이즈가 안 맞으면 바꾸거나 재단할 수 있다. 가구는 한 번 들이면 그 자리에 그 크기로 끝까지 산다. Mac Studio 의 메모리·SSD 도 그렇다. 처음 사양이 곧 마지막 사양이다. 그래서 ‘일단 사고 부족하면 더 끼우지’ 라는 통상적 컴퓨터 구매 셈법은 이 결정에 적용되지 않는다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "무엇이 결정을 뒤집는가",
+        "kicker": "모순과 신호 / 5",
+        "prose": "두 가지 모순이 결정 위에 떠 있다.\n\n하나는 가격 방향에 대한 것이다. 한쪽은 ‘2026-03 인상으로 지금이 가장 비싸다, 더 기다리면 차세대 신모델로 가는 게 합리적’ 이라 본다. 반대편은 ‘DRAM squeeze 가 진행형이라 5~6월에 추가 인상이 가능하고, 차세대도 그 가격대를 그대로 물려받는다’ 고 본다. 두 입장 모두 같은 DRAM 시장 데이터를 다르게 읽는다.\n\n다른 하나는 M5 Ultra 의 메모리 상한이다. M5 가 256GB 이상 옵션을 열면 M3 256GB 는 즉시 한계 모델이 된다. 반대로 M5 가 DRAM 비용 부담으로 256GB 옵션을 빼고 192GB 같은 새 상한을 두면, 지금 256GB 가 ‘마지막 큰 메모리 Mac’ 으로 남는다. Apple 의 5개월 후 SKU 구성이 결정의 사후 가치를 좌우한다.\n\n결정이 6개월 뒤 실패한 시나리오를 미리 그려본다 (pre-mortem 기법). 첫째, DRAM 가격이 더 올라 M5 Ultra 256GB 가 지금보다 비싸졌다 — 지금 산 사람의 승. 둘째, M5 Ultra 가 320GB·384GB 옵션을 열며 토큰 속도도 30% 빨라졌다 — 기다린 사람의 승. 셋째, 로컬 LLM 워크로드가 의외로 클라우드 GPU 로 회귀했다 — 둘 다 패배. 셋 중 어느 가지가 현실이 될지가 다섯 달의 본질이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "256GB 의 가치는 ‘돌릴 모델이 200GB 를 넘느냐’ 라는 한 가지 질문에 거의 전부 걸려 있다. 그 답이 분명하다면 결정은 이미 끝나 있다.",
+    "watch_signals": [
+      {
+        "signal": "M5 Ultra Mac Studio 공식 발표",
+        "description": "메모리 상한 (192/256/384) 과 가격 책정",
+        "indicates": "M3 256GB 의 사후 가치 분기 — 한계 모델 vs 마지막 큰 메모리 Mac",
+        "deadline": "2026-10",
+        "icon": "🖥️"
+      },
+      {
+        "signal": "DRAM 현물가 (HBM3E·DDR5) 5~6월 추이",
+        "description": "AI capex 가 추가로 메모리 가격을 끌어올리는지",
+        "indicates": "Apple 의 추가 가격 인상 또는 옵션 재편 가능성",
+        "deadline": "2026-06",
+        "icon": "📈"
+      },
+      {
+        "signal": "Bloomberg / Gurman 의 Mac Studio 출시 일정 업데이트",
+        "description": "10월 출시가 유지되는지, 더 밀리는지",
+        "indicates": "대기 시나리오의 공백 길이 — 5개월 vs 그 이상",
+        "icon": "🗓️"
+      },
+      {
+        "signal": "로컬 LLM 커뮤니티의 256GB 실측 보고",
+        "description": "DeepSeek V3·Llama 405B 의 실제 토큰 속도와 안정성",
+        "indicates": "256GB 구성의 실사용 가치 검증",
+        "icon": "🧪"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "2026-03 인상으로 지금이 정점 가격이며, 다섯 달 기다려 차세대를 사는 편이 합리적이다.",
+        "side_b": "DRAM squeeze 가 진행형이라 5~6월 추가 인상 가능성이 있고, 차세대도 그 가격대를 물려받는다.",
+        "evidence": "같은 DRAM 시장 데이터의 다른 해석. 인하 신호는 아직 없고, 인상 압력은 산업 전반에 남아 있다.",
+        "resolution": "현재 출처 기준 ‘지금이 정점’ 쪽이 약간 우세 — Apple 이 이미 옵션 축소와 인상을 단행했다. 반대 입장은 6월 DRAM 현물가가 다시 두 자릿수 인상되면 살아난다."
+      },
+      {
+        "side_a": "M5 Ultra 는 메모리 옵션을 더 키울 것이고, 토큰 속도도 의미 있게 빨라진다.",
+        "side_b": "M5 Ultra 는 DRAM 비용 압박으로 256GB 옵션을 빼거나 192GB 새 상한을 둘 수 있다.",
+        "evidence": "Apple 이 이미 512GB 옵션을 폐지한 전례가 있어 옵션 축소 가능성을 배제할 수 없다. 반면 M5 세대 동안 DRAM 가격이 안정되면 옵션 확대도 가능.",
+        "resolution": "2026-05 현재 어느 쪽도 단정 불가. 결정을 ‘M5 가 256GB 이상을 보장한다’ 가정에 의존시키지 말 것. side_b 가 실현되면 지금의 256GB 구매가 사후적으로 합리화된다."
+      }
+    ],
+    "confidence_summary": "가격·일정·메모리 점유 수치는 1차 출처 (Apple 스토어, Bloomberg, Macworld, 실측 글) 가 다수 확보됐다. 단 M5 Ultra 의 메모리 상한과 가격은 모두 추정이며, 시나리오 분기의 핵심 변수다.",
+    "confidence_score": 0.72,
+    "embedded_map": null
+  },
+  "executive_summary": "M3 Ultra 256GB 는 지금 정점이다. 단 가격은 어제보다 25% 올랐고, 차세대는 다섯 달 앞에 있다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260505_151815.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-05T06:11:51.927372",
+  "total_duration_seconds": 383.37107157707214,
+  "system_version": "v4.5.7",
+  "revision": 0
+}
