@@ -1,0 +1,733 @@
+{
+  "request": {
+    "event_description": "세레브라스라는\n기업의 주 사업 영역과 요즘 hype 받고 있는 이유는 무엇인지, 강점은 무엇이고 명백한 단점을 무엇이며, 앞으로의 포텐셜과 한계점에 대해 깊이있는 deep한 보고서를 작성해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "GPU 아키텍처는 작은 다이를 수천 개 연결해 거대 모델을 학습시키는 방식이지만, 칩 간 통신이 병목이 됨. 세레브라스 창업자들은 12인치 웨이퍼를 *자르지 않고* 통째로 단일 칩으로 사용하면 통신 병목을 칩 내부로 흡수할 수 있다는 가설로 출발 (2016년). 초기에는 학습 (training) 시장을 노렸으나 GPU 의 CUDA 생태계 벽에 막혀 고전. 2024년 'Cerebras Inference' 출시로 *추론* 으로 방향 전환 — 모델 가중치를 통째로 SRAM 에 올려두는 구조가 GPU 의 HBM 왕복보다 압도적으로 빠르다는 점을 무기화. 2024~2025년 UAE 의 국가 AI 전략 (MBZUAI, G42 의 G42 Cloud) 과 맞물려 매출이 급팽창. 2026년 1월 OpenAI 와의 다년 계약이 IPO 의 기폭제가 됨.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2016",
+            "event": "Andrew Feldman 등 SeaMicro 출신 5인 공동 창업",
+            "impact": "GPU 가 아닌 웨이퍼 스케일 노선 채택"
+          },
+          {
+            "date": "2019-08",
+            "event": "초대 WSE-1 발표 (1.2T 트랜지스터, 40만 코어)",
+            "impact": "단일 칩으로는 사상 최대 — '웨이퍼 스케일' 카테고리 개창"
+          },
+          {
+            "date": "2024-03",
+            "event": "WSE-3 공개 (4T 트랜지스터, 90만 코어, 125 PFLOPS, 44GB SRAM)",
+            "impact": "엔비디아 B200 대비 트랜지스터 19배 · 연산 28배"
+          },
+          {
+            "date": "2024-09",
+            "event": "Cerebras Inference 서비스 출시 (Llama 3.1 70B 기준 GPU 대비 약 20배 빠른 추론)",
+            "impact": "B2C/API 시장 진입 — 토큰/초 단위 속도가 마케팅 무기"
+          },
+          {
+            "date": "2024 (전체)",
+            "event": "순손실 -4억 8200만 달러 기록",
+            "impact": "수익성 위기 — IPO 직전 마지막 적자 해"
+          },
+          {
+            "date": "2025",
+            "event": "매출 5억 1천만 달러 (YoY +76%), 순이익 2억 3800만 달러 흑자 전환",
+            "impact": "흑자 전환 + 고성장 동시 달성 — IPO 스토리의 핵심"
+          },
+          {
+            "date": "2025-12",
+            "event": "엔비디아, Groq 자산 약 200억 달러에 인수",
+            "impact": "추론 전용 시장에 엔비디아가 직접 진입 — 세레브라스의 해자에 균열"
+          },
+          {
+            "date": "2026-01",
+            "event": "OpenAI 와 200억 달러 이상 / 750MW 다년 계약 체결",
+            "impact": "고객 다변화의 결정타. Sam Altman 이 IPO 로드쇼에 직접 등장"
+          },
+          {
+            "date": "2026-04",
+            "event": "SEC 에 S-1 제출",
+            "impact": "IPO 절차 공식화"
+          },
+          {
+            "date": "2026-05-13",
+            "event": "나스닥 상장, 공모가 185달러 (가격 범위 2회 상향), 5.55B 달러 조달 — 2026년 최대 IPO",
+            "impact": "수요 20배 초과 청약. 티커 CBRS"
+          },
+          {
+            "date": "2026-05-14",
+            "event": "상장 첫날 종가 311.07달러 (+68.2%), 장중 386.34달러 고점",
+            "impact": "AI 반도체 IPO 열기 정점"
+          },
+          {
+            "date": "2026-05-22",
+            "event": "주가 250.27달러까지 -35% 조정",
+            "impact": "고평가 부담 + lockup 우려 노출"
+          },
+          {
+            "date": "2026-05-29",
+            "event": "주가 약 242달러, 시총 ~480억 달러 수준",
+            "impact": "공모가 대비 +31% 유지 중이나 고점 대비 -37%"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "세레브라스 시스템즈 심층 분석 — 웨이퍼 한 장으로 엔비디아에 맞서는 추론 전용 칩 기업",
+    "event_name_en": "Cerebras Systems Deep Dive: The Wafer-Scale Bet on Inference",
+    "date": "2026-05-29",
+    "category": "기업 분석 / AI 반도체",
+    "summary": "세레브라스는 단일 12인치 웨이퍼 한 장을 통째로 칩 하나로 쓰는 '웨이퍼 스케일' 설계로 GPU 대비 추론 속도에서 큰 우위 확보. 2026-05-13 나스닥 IPO 에서 185달러로 가격 책정, 초일 68% 급등 후 5/29 현재 약 242달러 — 시가총액 ~480억 달러. 매출 5억 1천만 달러 (2025) 중 86% 가 UAE 의 MBZUAI / G42 2곳에 묶인 고객 집중도가 최대 약점, 엔비디아의 Groq 인수 (2025-12, 200억 달러) 로 추론 시장 직접 경쟁 격화.",
+    "timeline": [
+      {
+        "date": "2016",
+        "event": "Andrew Feldman 등 SeaMicro 출신 5인 공동 창업",
+        "impact": "GPU 가 아닌 웨이퍼 스케일 노선 채택"
+      },
+      {
+        "date": "2019-08",
+        "event": "초대 WSE-1 발표 (1.2T 트랜지스터, 40만 코어)",
+        "impact": "단일 칩으로는 사상 최대 — '웨이퍼 스케일' 카테고리 개창"
+      },
+      {
+        "date": "2024-03",
+        "event": "WSE-3 공개 (4T 트랜지스터, 90만 코어, 125 PFLOPS, 44GB SRAM)",
+        "impact": "엔비디아 B200 대비 트랜지스터 19배 · 연산 28배"
+      },
+      {
+        "date": "2024-09",
+        "event": "Cerebras Inference 서비스 출시 (Llama 3.1 70B 기준 GPU 대비 약 20배 빠른 추론)",
+        "impact": "B2C/API 시장 진입 — 토큰/초 단위 속도가 마케팅 무기"
+      },
+      {
+        "date": "2024 (전체)",
+        "event": "순손실 -4억 8200만 달러 기록",
+        "impact": "수익성 위기 — IPO 직전 마지막 적자 해"
+      },
+      {
+        "date": "2025",
+        "event": "매출 5억 1천만 달러 (YoY +76%), 순이익 2억 3800만 달러 흑자 전환",
+        "impact": "흑자 전환 + 고성장 동시 달성 — IPO 스토리의 핵심"
+      },
+      {
+        "date": "2025-12",
+        "event": "엔비디아, Groq 자산 약 200억 달러에 인수",
+        "impact": "추론 전용 시장에 엔비디아가 직접 진입 — 세레브라스의 해자에 균열"
+      },
+      {
+        "date": "2026-01",
+        "event": "OpenAI 와 200억 달러 이상 / 750MW 다년 계약 체결",
+        "impact": "고객 다변화의 결정타. Sam Altman 이 IPO 로드쇼에 직접 등장"
+      },
+      {
+        "date": "2026-04",
+        "event": "SEC 에 S-1 제출",
+        "impact": "IPO 절차 공식화"
+      },
+      {
+        "date": "2026-05-13",
+        "event": "나스닥 상장, 공모가 185달러 (가격 범위 2회 상향), 5.55B 달러 조달 — 2026년 최대 IPO",
+        "impact": "수요 20배 초과 청약. 티커 CBRS"
+      },
+      {
+        "date": "2026-05-14",
+        "event": "상장 첫날 종가 311.07달러 (+68.2%), 장중 386.34달러 고점",
+        "impact": "AI 반도체 IPO 열기 정점"
+      },
+      {
+        "date": "2026-05-22",
+        "event": "주가 250.27달러까지 -35% 조정",
+        "impact": "고평가 부담 + lockup 우려 노출"
+      },
+      {
+        "date": "2026-05-29",
+        "event": "주가 약 242달러, 시총 ~480억 달러 수준",
+        "impact": "공모가 대비 +31% 유지 중이나 고점 대비 -37%"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "공모가 / 첫날 종가 / 5월29일 주가",
+        "value": "$185 / $311 / ~$242",
+        "context": "수요 20배 초과 청약. 5/14 장중 고점 $386 → 5/22 저점 $250 의 변동성"
+      },
+      {
+        "label": "조달액",
+        "value": "55억 5천만 달러",
+        "context": "2026년 미국 최대 IPO. 시총 IPO 시점 ~440억 달러"
+      },
+      {
+        "label": "2025년 매출 / 증가율",
+        "value": "5억 1천만 달러 / YoY +76%",
+        "context": "2022년 2460만 달러 → 2025년 5억 1천만 달러로 4년간 약 19배"
+      },
+      {
+        "label": "2025년 순이익",
+        "value": "+2억 3800만 달러",
+        "context": "2024년 -4억 8200만 달러 적자에서 흑자 전환"
+      },
+      {
+        "label": "고객 집중도",
+        "value": "UAE 2곳에 매출 86%",
+        "context": "MBZUAI 62% + G42 24%. 한 지역 / 한 그룹 의존이 단일 최대 리스크"
+      },
+      {
+        "label": "OpenAI 계약 규모",
+        "value": "200억 달러 이상 / 750MW",
+        "context": "다년 마스터 계약. 추론 워크로드 전용. UAE 의존도 희석 효과"
+      },
+      {
+        "label": "WSE-3 다이 면적",
+        "value": "46,225 mm²",
+        "context": "엔비디아 B200 대비 약 58배. 단일 칩 사상 최대"
+      },
+      {
+        "label": "WSE-3 트랜지스터 / 코어",
+        "value": "4조 개 / 90만 개",
+        "context": "B200 대비 트랜지스터 19배, AI 연산 28배 (125 PFLOPS)"
+      },
+      {
+        "label": "온칩 SRAM 용량 / 대역폭",
+        "value": "44GB / 21 PB/s",
+        "context": "GPU HBM 대비 약 7000배 빠른 메모리 접근 — 추론 속도 우위의 근원"
+      },
+      {
+        "label": "추론 속도 우위",
+        "value": "GPU 대비 최대 약 15~20배",
+        "context": "Llama 3.1 70B 등 지원 모델 기준. 학습이 아닌 '추론' 한정"
+      },
+      {
+        "label": "엔비디아 Groq 인수가",
+        "value": "200억 달러 (2025-12)",
+        "context": "엔비디아가 SRAM 기반 저지연 추론 영역에 직접 진입"
+      }
+    ],
+    "background": "GPU 아키텍처는 작은 다이를 수천 개 연결해 거대 모델을 학습시키는 방식이지만, 칩 간 통신이 병목이 됨. 세레브라스 창업자들은 12인치 웨이퍼를 *자르지 않고* 통째로 단일 칩으로 사용하면 통신 병목을 칩 내부로 흡수할 수 있다는 가설로 출발 (2016년). 초기에는 학습 (training) 시장을 노렸으나 GPU 의 CUDA 생태계 벽에 막혀 고전. 2024년 'Cerebras Inference' 출시로 *추론* 으로 방향 전환 — 모델 가중치를 통째로 SRAM 에 올려두는 구조가 GPU 의 HBM 왕복보다 압도적으로 빠르다는 점을 무기화. 2024~2025년 UAE 의 국가 AI 전략 (MBZUAI, G42 의 G42 Cloud) 과 맞물려 매출이 급팽창. 2026년 1월 OpenAI 와의 다년 계약이 IPO 의 기폭제가 됨.",
+    "sources": [
+      "https://www.theregister.com/ai-ml/2026/05/15/cerebras-wafer-scale-ai-bet-delivers-blockbuster-ipo/5240821",
+      "https://www.sec.gov/Archives/edgar/data/2021728/000162828026025762/cerebras-sx1april2026.htm",
+      "https://www.techtimes.com/articles/316698/20260515/cerebras-raises-555-billion-ai-chip-ipo-86-revenue-dependence-uae-entities-unresolved.htm",
+      "https://www.tradingkey.com/analysis/stocks/us-stocks/261879673-cerebras-systems-ipo-wafer-scale-engine-openai-deal-nvidia-competition-valuation-profitability-cbrs-tradingkey",
+      "https://www.fool.com/investing/2026/05/14/cbrs-stock-ai-chip-stocks-nvda-stock-competitor/",
+      "https://finance.yahoo.com/markets/article/cerebras-stock-slides-after-near-70-surge-in-biggest-ipo-of-2026-130757084.html",
+      "https://www.cerebras.ai/chip",
+      "https://spectrum.ieee.org/cerebras-chip-cs3",
+      "https://arxiv.org/html/2503.11698v1",
+      "https://www.blackscarab.ai/insights/cerebras-wse-3-guide",
+      "https://seekingalpha.com/article/4906059-cerebras-ipo-wafer-scale-performance-wafer-scale-pricing",
+      "https://seekingalpha.com/article/4905797-cerebras-ipo-lockup-comes-fast",
+      "https://www.investing.com/analysis/cerebras-48-billion-ipo-tests-the-markets-inference-bet-200680080"
+    ],
+    "glossary": [
+      {
+        "term": "WSE (Wafer-Scale Engine)",
+        "definition": "12인치 (300mm) 실리콘 웨이퍼를 잘라 작은 칩 수백 개로 만들지 않고, 웨이퍼 한 장 전체를 단일 칩으로 사용하는 설계. 세레브라스가 상용화한 유일한 방식."
+      },
+      {
+        "term": "추론 (Inference)",
+        "definition": "이미 학습이 끝난 AI 모델이 실제로 답을 생성·예측하는 단계. 학습 (training) 과 구분됨. ChatGPT 가 답을 내놓을 때마다 일어나는 연산이 추론."
+      },
+      {
+        "term": "SRAM / HBM",
+        "definition": "SRAM 은 칩 안에 내장된 초고속 메모리. HBM 은 GPU 옆에 붙이는 외부 고대역폭 메모리. SRAM 이 훨씬 빠르지만 용량이 작고 비쌈. 세레브라스는 44GB SRAM 을 칩 안에 다 박음."
+      },
+      {
+        "term": "PFLOPS (페타플롭스)",
+        "definition": "초당 1000조 회의 부동소수점 연산을 처리하는 속도 단위. WSE-3 는 125 PFLOPS — 엔비디아 최신 B200 의 약 28배."
+      },
+      {
+        "term": "G42 / MBZUAI",
+        "definition": "G42 는 UAE 의 국영급 AI·클라우드 지주회사. MBZUAI 는 UAE 정부 가 세운 AI 전문 대학원이자 연구기관으로 G42 의 관계회사. 두 곳 모두 세레브라스의 최대 고객."
+      },
+      {
+        "term": "Groq",
+        "definition": "세레브라스와 비슷하게 SRAM 기반 저지연 추론을 노린 미국 스타트업. 2025년 12월 엔비디아가 약 200억 달러에 인수해 추론 시장에 직접 진입."
+      },
+      {
+        "term": "lockup (보호예수 해제)",
+        "definition": "IPO 이후 일정 기간 (보통 90~180일) 동안 내부자와 기존 투자자가 주식을 못 팔게 묶어두는 약정. 풀리는 시점에 매도 물량 출회 우려."
+      },
+      {
+        "term": "고객 집중도",
+        "definition": "전체 매출 중 상위 몇 곳이 차지하는 비중. 세레브라스는 상위 2곳 (모두 UAE) 이 86% — '한 고객이 떠나면 회사 절반 이상이 흔들리는' 구조."
+      }
+    ],
+    "confidence_score": 0.85,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "available_images": [
+      {
+        "source_url": "https://www.theregister.com/ai-ml/2026/05/15/cerebras-wafer-scale-ai-bet-delivers-blockbuster-ipo/5240821",
+        "image_url": "https://image.theregister.com/5240836.jpg?imageId=5240836&x=0&y=0&cropw=100&croph=100&panox=0&panoy=0&panow=100&panoh=100&width=1200&height=683",
+        "title": "Cerebras risked it all on dinner plate-sized AI accelerators a decade ago. Today it",
+        "description": "Here",
+        "publisher": "theregister.com"
+      },
+      {
+        "source_url": "https://spectrum.ieee.org/cerebras-chip-cs3",
+        "image_url": "https://spectrum.ieee.org/media-library/image.png?id=51721250&width=1200&height=600&coordinates=0%2C56%2C0%2C56",
+        "title": "Cerebras Unveils Its Next Waferscale AI Chip",
+        "description": "Which will power an 8-exaflop AI supercomputer",
+        "publisher": "spectrum.ieee.org"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "웨이퍼 한 장 칩, 세레브라스의 480억 달러 도박",
+    "deck": "엔비디아와 다른 길로 만든 추론 전용 칩이 IPO 첫날 68% 올랐다. 그러나 매출의 86%가 아랍에미리트 두 곳에 묶여 있고, 엔비디아가 같은 추론 시장으로 직접 들어왔다.",
+    "sections": [
+      {
+        "heading": "480억 달러 데뷔, 그리고 첫 2주의 출렁임",
+        "kicker": "2026 최대 IPO",
+        "prose": "공모가는 185달러였다. 가격 범위는 두 차례 위로 조정됐고, 청약 수요는 공모 물량의 20배가 몰렸다. 첫날 종가는 311달러, 장중에는 386달러까지 갔다. 그러나 5월 22일에는 250달러까지 빠졌고, 29일 현재는 약 242달러 — 공모가 대비로는 31% 위, 첫날 고점 대비로는 37% 아래에 있다.\n\n회사가 모은 자금 55억 5천만 달러는 올해 미국 IPO 가운데 가장 큰 규모다. 시가총액 480억 달러를 2025년 매출 5억 1천만 달러로 나누면 매출 대비 약 94배. 같은 지표로 엔비디아는 20배대 후반, AMD 는 10배 초반이다. 시장이 세레브라스에 미래의 매출 성장을 미리 지불하고 있다는 뜻이다.\n\n상장 직후의 출렁임은 두 흐름이 부딪힌 결과다. 한쪽에서는 추론 전용 칩의 속도 우위를 사 모으는 매수세가 들어왔다. 다른 쪽에서는 매출의 86%가 한 지역에 묶여 있다는 사실, 그리고 락업 해제가 비교적 빠르게 다가온다는 점이 매도 압력으로 돌아왔다. 두 힘의 균형이 앞으로 90일의 핵심이다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "CBRS 주가 — IPO 부터 5월 29일까지",
+            "subtitle": "공모가 $185 → 첫날 고점 $386 → 5/22 저점 $250 → 5/29 약 $242",
+            "data": [
+              {
+                "x": "2026-05-13",
+                "y": 185,
+                "event": "공모가 책정 (수요 20배)"
+              },
+              {
+                "x": "2026-05-14",
+                "y": 311,
+                "event": "첫날 종가 +68%, 장중 $386"
+              },
+              {
+                "x": "2026-05-22",
+                "y": 250,
+                "event": "고점 대비 -35% 조정"
+              },
+              {
+                "x": "2026-05-29",
+                "y": 242
+              }
+            ],
+            "source": "Yahoo Finance, Investing.com / 2026-05-29 기준",
+            "takeaway": "공모가 위 31%, 첫날 고점 아래 37% — 평가 균형의 첫 시험대"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "5월 13일, 세레브라스는 나스닥에 상장하며 55억 5천만 달러를 모았다. 다음 날 주가는 68% 뛰었고, 일주일도 지나지 않아 35% 내려앉았다. 5월 29일 현재 주가는 약 242달러, 시가총액은 480억 달러 안팎이다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": true,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "락업 (lockup)",
+            "explanation": "회사 임직원과 초기 투자자가 IPO 직후 일정 기간 (보통 180일) 동안 주식을 팔지 못하도록 묶어두는 약속이다. 이 기간이 끝나면 잠겨 있던 물량이 시장에 풀려나올 수 있어 주가에 매도 압력이 생기는 경향이 있다."
+          }
+        ]
+      },
+      {
+        "heading": "웨이퍼 한 장이라는 도박",
+        "kicker": "기술의 본질",
+        "prose": "기존 그래픽처리장치 (GPU) 는 지름 30센티미터짜리 둥근 실리콘 원판 (웨이퍼) 한 장에서 작은 칩 수십 개를 잘라낸 뒤, 그 칩들을 다시 보드 위에서 케이블처럼 연결한다. 큰 인공지능 모델을 돌리려면 이런 칩 수천 개를 묶어야 하는데, 묶을수록 칩 사이를 오가는 통신이 병목이 된다.\n\n세레브라스는 그 발상을 뒤집었다. 웨이퍼를 자르지 않고 한 장을 통째로 한 칩으로 쓴다. 이름이 그래서 '웨이퍼 스케일' 이다. 칩 사이 통신이 사라지지는 않지만, 적어도 같은 칩 안에서 짧은 회로로 처리되므로 보드 위 전선을 거치지 않는다.\n\n대표 제품인 WSE-3 는 다이 면적이 46,225 mm² 로, 엔비디아의 최신 학습용 칩 B200 보다 58배 크다. 트랜지스터는 4조 개로 19배, AI 연산 능력은 125 PFLOPS 로 28배다.\n\n다만 트랜지스터 자체가 우위의 핵심은 아니다. 진짜 차이는 메모리에 있다. GPU 는 칩 옆에 붙은 외부 고속 메모리 (HBM) 에 모델 가중치를 올려놓고 연산할 때마다 가져온다. 세레브라스는 칩 안쪽 회로 바로 옆 메모리 (SRAM) 에 가중치를 통째로 올려두고 한 번도 외부로 나가지 않는다.\n\n용량은 44GB 로 B200 의 HBM 192GB 보다 작다. 그 대신 SRAM 대역폭이 초당 21 페타바이트 — GPU 의 HBM 대비 약 7000배 빠르다. 모델이 44GB 안에 들어가는 경우라면 GPU 가 외부 메모리를 들락거리는 사이에 세레브라스는 이미 답을 내놓는다. 메타의 Llama 3.1 70B 같은 모델에서 GPU 대비 15~20배 빠른 추론 속도가 여기서 나온다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "WSE-3 가 엔비디아 B200 보다 몇 배 큰가",
+            "subtitle": "단일 칩 사양 비교 (B200 = 1.0 기준). SRAM 대역폭은 별도 단위 — 약 7000배",
+            "data": [
+              {
+                "label": "다이 면적",
+                "value": 58,
+                "note": "사상 최대 단일 칩"
+              },
+              {
+                "label": "AI 연산 (PFLOPS)",
+                "value": 28
+              },
+              {
+                "label": "트랜지스터",
+                "value": 19
+              }
+            ],
+            "source": "Cerebras S-1, IEEE Spectrum / 2024-03 WSE-3 발표 기준",
+            "takeaway": "면적·연산 모두 압도하나, 진짜 우위는 표시되지 않은 메모리 대역폭에 있다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "도서관과 책상의 차이",
+          "body": "GPU 는 책상에서 일하다가 필요한 책이 있을 때마다 도서관 (HBM) 까지 걸어가 찾아 오는 방식이다. 세레브라스는 책상 위에 그 도서관의 가장 자주 보는 책들을 처음부터 다 올려놓는다. 책상이 비좁다 (44GB) 는 단점이 있지만, 책상 안에서 모든 일이 처리되니 걸어다닐 시간이 사라진다. 챗봇 응답 속도의 격차가 여기서 만들어진다."
+        },
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/eb737fc2dba573a0.webp",
+            "caption": "WSE-3 는 단일 칩으로는 사상 최대 — 다이 한 장이 식판만 하다.",
+            "credit": "© IEEE Spectrum",
+            "source_url": "https://spectrum.ieee.org/cerebras-chip-cs3",
+            "alt": "둥근 실리콘 웨이퍼 한 장을 그대로 패키징한 정사각형 칩의 정면 사진"
+          }
+        ],
+        "footnotes": [
+          {
+            "term": "HBM (고대역폭 메모리)",
+            "explanation": "고대역폭 메모리의 줄임말로, GPU 옆에 수직으로 쌓아 붙이는 외부 고속 메모리다. 모델 가중치처럼 큰 데이터를 담아두고 연산할 때마다 GPU 가 꺼내 쓴다. 용량은 크지만 칩 바깥에 있어 가져올 때마다 약간의 시간이 든다."
+          },
+          {
+            "term": "SRAM (정적 메모리)",
+            "explanation": "칩 회로에 가장 가까운 곳에 박혀 있는 가장 빠른 종류의 메모리다. 보통은 작은 캐시 용도로만 쓰는데, 세레브라스는 칩 자체를 키워서 모델 가중치 전체를 통째로 올릴 만큼의 SRAM 을 확보했다. 외부 메모리로 나가지 않으니 속도가 빠르다."
+          },
+          {
+            "term": "PFLOPS (페타플롭스)",
+            "explanation": "초당 1000조 회의 부동소수점 연산을 처리하는 속도 단위다. AI 칩의 처리 성능을 비교할 때 가장 흔히 쓰는 지표로, 125 PFLOPS 는 초당 약 12경 5천조 회 계산이 가능하다는 뜻이다."
+          }
+        ]
+      },
+      {
+        "heading": "매출의 86%가 아랍에미리트 두 곳에",
+        "kicker": "고객의 그늘",
+        "prose": "매출 구조는 우아하지 않다. 2025년 매출 5억 1천만 달러 가운데 62% 인 약 3억 1600만 달러가 MBZUAI (모하메드 빈 자이드 인공지능대학교 — 아랍에미리트 정부가 세운 AI 연구기관) 한 곳에서 나왔다. 또 24% 인 약 1억 2200만 달러가 G42 (역시 아랍에미리트의 국영급 AI 인프라 기업) 다. 합치면 86%, 그리고 두 고객은 모두 아랍에미리트 정부 자금줄에 직간접으로 묶여 있다.\n\n흑자는 났다. 2024년 4억 8200만 달러 적자에서 2025년 2억 3800만 달러 흑자로, 한 해 만에 7억 달러 가까이 손익이 개선됐다. 매출이 2022년 2460만 달러에서 4년 만에 약 19배 늘었고, 영업비용이 매출 증가 속도를 따라가지 않고 통제됐다는 점이 흑자 전환의 두 축이다.\n\n그러나 두 고객 의존은 손익의 우아함을 가려버리는 문제다. 아랍에미리트의 AI 예산이 5% 만 줄어도 회사 매출에 직격이고, 두 고객 가운데 하나가 엔비디아로 갈아탄다고 결정하면 매출의 24~62% 가 사라진다. 같은 86% 의 집중도라도 100여 개 고객에 분산돼 있다면 통계적 변동이지만, 두 곳이라면 그것은 거버넌스 결정의 문제로 바뀐다.\n\n또 한 가지 — G42 는 미국 정부가 중국 기술 흐름과의 연관성을 두고 여러 차례 조사한 회사다. 미국 측 규제가 G42 의 칩 조달에 제한을 걸 경우, 세레브라스 매출의 24% 가 정책 결정 한 줄에 묶여 움직일 수 있다.",
+        "charts": [
+          {
+            "type": "sankey",
+            "title": "2025 매출 5억 1천만 달러 — 누구에게서 와서 어디로 가는가",
+            "subtitle": "고객 두 곳에서 86% 가 들어와 비용과 이익으로 갈라진다",
+            "data": {
+              "nodes": [
+                {
+                  "id": "mbzuai",
+                  "label": "MBZUAI",
+                  "value_label": "316M"
+                },
+                {
+                  "id": "g42",
+                  "label": "G42",
+                  "value_label": "122M"
+                },
+                {
+                  "id": "etc",
+                  "label": "기타 고객",
+                  "value_label": "72M"
+                },
+                {
+                  "id": "revenue",
+                  "label": "2025 총매출",
+                  "value_label": "510M"
+                },
+                {
+                  "id": "cost",
+                  "label": "운영비용",
+                  "value_label": "272M"
+                },
+                {
+                  "id": "profit",
+                  "label": "순이익",
+                  "value_label": "238M",
+                  "accent": true
+                }
+              ],
+              "links": [
+                {
+                  "source": "mbzuai",
+                  "target": "revenue",
+                  "value": 316
+                },
+                {
+                  "source": "g42",
+                  "target": "revenue",
+                  "value": 122
+                },
+                {
+                  "source": "etc",
+                  "target": "revenue",
+                  "value": 72
+                },
+                {
+                  "source": "revenue",
+                  "target": "cost",
+                  "value": 272
+                },
+                {
+                  "source": "revenue",
+                  "target": "profit",
+                  "value": 238
+                }
+              ]
+            },
+            "source": "Cerebras SEC S-1 (2026-04 제출) / 2025 회계연도 기준",
+            "takeaway": "왼쪽 두 노드의 두께를 합치면 86% — 회사 손익의 절반 이상이 단일 정부 자금줄에 묶여 있다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "2025 매출",
+            "value": "5억 1천만 달러",
+            "sublabel": "YoY +76%"
+          },
+          {
+            "label": "2025 순이익",
+            "value": "+2.38억 달러",
+            "sublabel": "2024년 -4.82억 적자에서 전환"
+          },
+          {
+            "label": "MBZUAI 비중",
+            "value": "62%",
+            "sublabel": "약 3.16억 달러"
+          },
+          {
+            "label": "G42 비중",
+            "value": "24%",
+            "sublabel": "약 1.22억 달러"
+          },
+          {
+            "label": "WSE-3 SRAM",
+            "value": "44GB / 21PB/s",
+            "sublabel": "HBM 대비 ~7000배 대역폭"
+          },
+          {
+            "label": "OpenAI 계약",
+            "value": "200억+달러 / 750MW",
+            "sublabel": "2027~ 단계 인도"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "OpenAI 계약 — 다변화의 기폭제, 그러나 시점은 멀다",
+        "kicker": "",
+        "prose": "2026년 1월, OpenAI 가 세레브라스와 200억 달러 이상, 750 메가와트 (MW) 규모의 다년 마스터 계약을 체결했다. 추론 워크로드 전용이고, 본격 인도 시점은 2027년부터 단계적 확대로 알려졌다.\n\n이 계약은 IPO 로드쇼의 핵심 무기였다. Sam Altman 이 직접 등장해 세레브라스 칩을 '추론 인프라의 보완재' 라고 설명했다. 보완재라는 단어가 중요하다 — OpenAI 가 엔비디아 칩을 버리고 갈아탄다는 신호가 아니라, 학습은 엔비디아, 추론 일부는 세레브라스라는 분담 구조를 의미한다.\n\n아랍에미리트 의존도 희석 효과는 시점이 관건이다. OpenAI 가 계약 첫해부터 매출의 큰 몫을 차지하는 구조가 아니다. 750MW 규모의 데이터센터 인프라 구축은 통상 18~24개월이 걸리므로, 2026년 매출에는 거의 반영되지 않고 2027~2028년부터 본격화한다. 그 사이 아랍에미리트 비중은 그대로다.\n\n또 한 가지. 다년 마스터 계약은 최소 구매 의무가 있는 보장 매출이라기보다, 상한과 인도 일정의 뼈대만 정한 '틀 계약' 인 경우가 일반적이다. OpenAI 가 실제로 750MW 를 다 채워서 가져간다는 약속은 아닐 수 있다. S-1 의 정확한 문구는 IPO 이후 1년 동안 추가 공시를 기다려봐야 할 부분이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "엔비디아가 추론 시장에 들어왔다",
+        "kicker": "경쟁의 윤곽",
+        "prose": "2025년 12월, 엔비디아가 Groq 의 자산 일부를 200억 달러에 인수했다. Groq 는 세레브라스와 같은 길 — 즉 SRAM 기반 저지연 추론 — 을 다른 방식으로 풀어온 회사다.\n\n엔비디아의 메시지는 명확하다. 추론 시장은 학습 시장만큼 빠르게 자라고 있고, 학습용 GPU 와는 다른 구조의 칩이 필요하다. 자기네 GPU 만으로 추론 시장 전부를 막을 자신은 없다는 사실을 본인들이 인정한 셈이다.\n\n세레브라스 입장에서는 두 가지가 동시에 일어났다. 좋은 쪽으로는 시장 검증이다. 엔비디아가 200억 달러를 쓰는 시장이라면 진짜 시장이다. 나쁜 쪽으로는 직접 경쟁이다. CUDA (엔비디아의 GPU 소프트웨어 환경 — AI 모델 개발자들이 거의 표준으로 쓰는 도구 묶음) 생태계의 압도적 점유율이 그대로 추론 칩에까지 따라붙을 수 있다.\n\n세레브라스의 방어선은 '속도가 한 차원 다르다' 다. Groq 의 추론 속도가 GPU 대비 약 5~10배라면, 세레브라스는 15~20배다. 다만 이 차이가 사용자 체감으로 이어지는가는 별개다. 챗봇이 0.1초 응답과 0.5초 응답이라면 둘 다 충분히 빠르고, 그 차이가 가격 프리미엄을 정당화할지는 시장이 정한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "엔비디아가 200억 달러를 쓰는 시장이라면 진짜 시장이다. 그리고 그 시장에 엔비디아가 직접 들어왔다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "CUDA",
+            "explanation": "엔비디아가 만든 GPU 프로그래밍 환경이다. 거의 모든 AI 모델 개발자가 이 도구로 칩을 다루기 때문에, 다른 회사가 새 칩을 내놓아도 개발자가 도구를 바꾸기 싫어해 진입이 어려운 것이 업계 통념이다. 흔히 엔비디아의 '소프트웨어 해자' 라고 부른다."
+          }
+        ]
+      },
+      {
+        "heading": "앞으로 12개월 — 다섯 갈래 시나리오",
+        "kicker": "분기점",
+        "prose": "첫째 — 점진 다변화 (확률 35%). OpenAI 인도가 2027년에 정상 시작되고, 그 사이 미국·유럽 클라우드 사업자가 추가로 두세 곳 들어온다. 아랍에미리트 비중은 2027년 말 50%대로 자연 하락. 주가는 공모가 위에서 안정적으로 거래된다. 신호 — 분기마다 신규 고객 한 곳 이상 발표.\n\n둘째 — 아랍에미리트 충격 (확률 20%). 중동 지정학 또는 G42 의 미국 규제 노출로 두 고객 중 한 곳이 흔들리면 매출의 24~62% 가 일시 증발한다. 주가는 공모가 아래로 내려간다. 신호 — G42 관련 미국 상무부 추가 조치, 또는 아랍에미리트 AI 예산 삭감 보도.\n\n셋째 — 엔비디아 잠식 (확률 25%). Groq 통합 칩이 2026년 말~2027년 초 출시되고 CUDA 호환성이 동시에 따라온다. 신규 고객 유치가 막혀 세레브라스는 기존 두 발 (아랍에미리트와 OpenAI) 만 들고 가야 한다. 매출 성장률은 둔화, 주가는 정체. 신호 — 엔비디아의 추론 전용 SKU 출시 일정 공식화.\n\n넷째 — 추론 시장 폭증 (확률 15%). 차세대 거대 모델이 추론 속도를 더 강하게 요구하면서 세레브라스의 SRAM 우위가 일반 클라우드 사업자에게 확산된다. 아랍에미리트 비중은 30%대로 떨어지고 신규 대형 계약이 분기마다 발표된다. 주가는 첫날 고점을 회복한다. 신호 — 마이크로소프트·구글·아마존 중 한 곳의 다년 계약 발표.\n\n다섯째 — 매크로 충격 (확률 5%). AI 자본지출 사이클의 일시 둔화 또는 미국 금리 급변으로 AI 반도체 전반이 흔들린다. 세레브라스의 회사 단위 시나리오와는 무관한 외부 변수.\n\n다섯 시나리오의 분기는 한 가지 데이터에서 결정될 가능성이 높다 — 2026년 8월에 나올 첫 분기 실적이다. 그날 아랍에미리트 비중이 80% 이상으로 유지되는지, 신규 고객 매출이 한 자릿수라도 등장하는지, OpenAI 인도의 첫 인식 매출이 언제로 가이드되는지가 한 번에 드러난다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      }
+    ],
+    "closing": "480억 달러는 한 회사의 의지가 아니라 시장의 베팅이다. 세레브라스가 모은 55억 5천만 달러가 OpenAI 와의 데이터센터 인프라를 채우는 데 충분한지, 아랍에미리트 매출이 다음 분기에도 같은 속도를 유지하는지가 베팅의 첫 정산이다. 다음 정산은 2026년 8월 — 첫 분기 실적 발표가 그날이다.",
+    "watch_signals": [
+      {
+        "signal": "2026년 2분기 실적 발표",
+        "description": "상장 후 첫 분기 실적. 아랍에미리트 매출 비중, 신규 고객 매출 등장 여부, OpenAI 인도의 매출 인식 시점 가이드가 한 번에 드러남",
+        "indicates": "점진 다변화 vs 아랍에미리트 충격 시나리오 분기",
+        "deadline": "2026-08-31",
+        "icon": "📊"
+      },
+      {
+        "signal": "락업 해제일 (D+180)",
+        "description": "공모 시 잠겨 있던 임직원·초기투자자 물량이 시장에 풀려나오기 시작",
+        "indicates": "주가 안정 vs 추가 조정 시나리오 분기",
+        "deadline": "2026-11-09",
+        "icon": "🔓"
+      },
+      {
+        "signal": "OpenAI 첫 인도 분기",
+        "description": "200억 달러+ 마스터 계약의 실제 매출 전환이 시작되는 시점. S-1 가이드는 2027년 단계 확대",
+        "indicates": "추론 시장 폭증 시나리오 진입의 핵심 트리거",
+        "deadline": "2027-03-31",
+        "icon": "🚀"
+      },
+      {
+        "signal": "엔비디아 Groq 통합 칩 출시",
+        "description": "엔비디아의 추론 전용 SKU 가 시장에 등장. CUDA 호환성 여부가 세레브라스 신규 고객 유치 가능성을 결정",
+        "indicates": "엔비디아 잠식 시나리오의 본격 발동",
+        "deadline": "2026-12-31",
+        "icon": "⚔️"
+      },
+      {
+        "signal": "G42 관련 미국 규제 조치",
+        "description": "미국 상무부의 G42 추가 제재 가능성. 아랍에미리트-중국 기술 흐름 우려가 재점화되면 매출 24% 가 정책 한 줄에 묶임",
+        "indicates": "아랍에미리트 충격 시나리오의 직접 트리거",
+        "deadline": "",
+        "icon": "🛂"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "44GB SRAM 의 21 PB/s 대역폭은 GPU 가 구조적으로 따라잡을 수 없는 우위다. 메모리와 연산이 같은 웨이퍼 위에서 만나는 설계는 엔비디아가 즉시 모방할 수 없는 제조 패러다임이다.",
+        "side_b": "SRAM 용량 44GB 는 70B 매개변수급 모델까지만 한 장에 담는 한계가 있다. 1조 매개변수 이상의 차세대 거대 모델은 결국 다중 칩 클러스터를 요구하고, 그 영역에서는 엔비디아의 NVL72 같은 GPU 클러스터가 여전히 합리적이다.",
+        "evidence": "WSE-3 44GB SRAM 대 B200 192GB HBM 의 용량 비대칭. Llama 3.1 70B 기준 우위는 명확하나, 1조 매개변수급에서는 검증되지 않음.",
+        "resolution": "70B 안팎의 중형 추론 시장은 세레브라스의 영역으로 본다. 다만 모델 크기가 위로 가속할수록 우위 영역이 좁아진다는 압력은 진짜다. 패배 입장 (해자가 좁다) 은 차세대 모델이 거꾸로 작아지는 방향 — 예를 들어 활성 매개변수만 적게 쓰는 혼합 전문가 (Mixture-of-Experts) 구조의 확산 — 으로 진화하면 다시 살아난다."
+      },
+      {
+        "side_a": "아랍에미리트 매출 86% 는 단일 최대 리스크다. 한 지역의 정치와 예산 변동에 회사의 분기 매출이 직격으로 묶인다.",
+        "side_b": "OpenAI 200억 달러+ 계약이 2027년부터 본격 인도되면 아랍에미리트 비중은 자연 희석된다 — 일시적 집중일 뿐이다.",
+        "evidence": "750MW 데이터센터 인프라 구축에는 통상 18~24개월이 필요. 따라서 2026년 내내 아랍에미리트 비중은 70~80%대 유지가 기본 전망.",
+        "resolution": "단기 (2026년) 는 아랍에미리트 의존이 그대로 지속된다고 본다. 중기 (2027~2028년) 에서는 OpenAI 인도가 정상 진행되는 시나리오에서만 희석이 일어난다. 패배 입장 (단순 일시적 집중) 은 OpenAI 인도가 6개월 이상 지연되거나 마스터 계약이 최소 구매 의무가 없는 '틀 계약' 임이 추가 공시에서 드러나면 살아난다."
+      }
+    ],
+    "contradictions_heading": "단일 칩의 우위, 단일 고객의 그늘",
+    "timeline_flow": {
+      "heading": "세레브라스 10년 — 그리고 다음 12개월",
+      "past": [
+        {
+          "date": "2016-01-01",
+          "label": "GPU 가 아닌 웨이퍼 스케일로 창업",
+          "note": "SeaMicro 출신 5인"
+        },
+        {
+          "date": "2019-08-01",
+          "label": "WSE-1 발표 — 단일 칩 사상 최대 카테고리 개창",
+          "note": ""
+        },
+        {
+          "date": "2024-09-01",
+          "label": "Cerebras Inference 출시 — 추론으로 방향 전환",
+          "note": "Llama 3.1 70B 기준 GPU 대비 ~20배"
+        },
+        {
+          "date": "2025-12-01",
+          "label": "엔비디아의 Groq 인수 — 직접 경쟁의 신호탄",
+          "note": "200억 달러"
+        },
+        {
+          "date": "2026-01-15",
+          "label": "OpenAI 200억+달러 다년 계약 체결",
+          "note": "추론 워크로드, 750MW"
+        },
+        {
+          "date": "2026-05-13",
+          "label": "나스닥 IPO — 2026년 최대 규모",
+          "note": "55.5억 달러 조달"
+        },
+        {
+          "date": "2026-05-29",
+          "label": "주가 약 242달러, 시총 약 480억 달러",
+          "note": "공모가 +31%, 첫날 고점 -37%"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-08-31",
+          "label": "첫 분기 실적 — 아랍에미리트 비중의 첫 검증",
+          "branch": "점진 다변화 vs 아랍에미리트 충격"
+        },
+        {
+          "date": "2026-11-09",
+          "label": "락업 해제 (D+180) — 내부자 물량 출회 가능",
+          "branch": "주가 안정 vs 추가 조정"
+        },
+        {
+          "date": "2026-12-31",
+          "label": "엔비디아 추론 전용 SKU 출시 추정 시점",
+          "branch": "엔비디아 잠식 시나리오 발동"
+        },
+        {
+          "date": "2027-03-31",
+          "label": "OpenAI 첫 인도 분기 — 매출 다변화의 실질 시작",
+          "branch": "추론 시장 폭증 시나리오 진입"
+        }
+      ]
+    },
+    "confidence_summary": "1차 출처 풍부 — SEC S-1 + IEEE Spectrum + 주요 매체 7곳 + 금융 분석 3곳. 핵심 수치 (매출, 고객 비중, WSE-3 사양, 주가) 는 공시 또는 거래소 데이터 기반으로 확신도 높음. 시나리오 확률과 OpenAI 계약의 '틀 계약' 여부는 분석자 추정.",
+    "confidence_score": 0.78,
+    "embedded_map": null,
+    "hero_image": {
+      "image_url": "img/75c582360a319c63.jpg",
+      "caption": "10년 전 식판만 한 AI 가속기에 모든 것을 건 세레브라스는 5월 13일 나스닥에 안착했다.",
+      "credit": "© The Register",
+      "source_url": "https://www.theregister.com/ai-ml/2026/05/15/cerebras-wafer-scale-ai-bet-delivers-blockbuster-ipo/5240821",
+      "alt": "세레브라스의 웨이퍼 스케일 AI 가속기 보드를 손에 든 인물의 사진"
+    }
+  },
+  "executive_summary": "엔비디아와 다른 길로 만든 추론 전용 칩이 IPO 첫날 68% 올랐다. 그러나 매출의 86%가 아랍에미리트 두 곳에 묶여 있고, 엔비디아가 같은 추론 시장으로 직접 들어왔다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260530_001632.html",
+  "report_theme": "paper_classic",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-29T15:05:52.114977",
+  "total_duration_seconds": 638.7931168079376,
+  "system_version": "v5.5.11",
+  "revision": 0
+}
