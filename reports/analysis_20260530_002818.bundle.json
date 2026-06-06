@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-29T15:28:18.452444+00:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.5.11",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260530_002818",
+    "headline": "tiny corp 심층 분석 — 경영진·연혁·사업영역·강점",
+    "deck": "tiny corp 는 George Hotz 가 2022년 11월 설립한 샌디에이고 소재 AI 인프라 스타트업으로, 자체 ML 프레임워크 tinygrad 와 오프라인 AI 워크스테이션 tinybox 로 단일 비즈니스를 운영함. 2026년 5월 현재 RDNA3 어셈블러 한 조각만 남기고 NVIDIA·AMD 양쪽에서 '주권 컴퓨트 스택' (자체 driver/ru",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260530_002818.html",
+    "theme": {
+      "id": "paper_classic",
+      "tokens": {
+        "bg": "#FAFAF6",
+        "card": "#F2F2EE",
+        "border": "#C8C8C0",
+        "text": "#0F0F0F",
+        "muted": "#5A5A5A",
+        "accent": "#C4392B",
+        "up": "#2D6B3E",
+        "down": "#A03030"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "tiny corp 는 George Hotz 가 2022년 11월 설립한 샌디에이고 소재 AI 인프라 스타트업으로, 자체 ML 프레임워크 tinygrad 와 오프라인 AI 워크스테이션 tinybox 로 단일 비즈니스를 운영함. 2026년 5월 현재 RDNA3 어셈블러 한 조각만 남기고 NVIDIA·AMD 양쪽에서 '주권 컴퓨트 스택' (자체 driver/runtime/library, 약 12,000 LOC) 을 거의 완성했고, tinybox Red v2 ($12K) / Green v2 ($65K) 두 라인을 주간 단위로 출하 중. 직원 5명 미만의 초소형 조직이라는 점이 가장 큰 특징.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://en.wikipedia.org/wiki/George_Hotz",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://geohot.github.io/blog/jekyll/update/2023/05/24/the-tiny-corp-raised-5M.html",
+      "publisher": "geohot.github.io",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.crunchbase.com/organization/tiny-corp",
+      "publisher": "crunchbase.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.bizprofile.net/ca/san-diego/tinygrad-corp",
+      "publisher": "bizprofile.net",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://tinygrad.org/",
+      "publisher": "tinygrad.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.phoronix.com/news/Tiny-Sovereign-Stack-AMD-Close",
+      "publisher": "phoronix.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://www.signalstack.news/blog/tinybox-unleashing-affordable-deep-learning-power-with-tinygrad/",
+      "publisher": "signalstack.news",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://www.prismnews.com/news/george-hotzs-tiny-corp-brought-high-end-ai-hardware-to-your",
+      "publisher": "prismnews.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://www.techpowerup.com/320804/tiny-corp-prepping-separate-amd-nvidia-gpu-based-ai-compute-systems",
+      "publisher": "techpowerup.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://deepwiki.com/tinygrad/tinygrad/10.3-mlperf-benchmarks",
+      "publisher": "deepwiki.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-11",
+      "url": "https://forums.macrumors.com/threads/apple-approves-driver-for-nvidia-egpu-on-arm-mac-for-accelerated-compute-news-stories.2480483/",
+      "publisher": "forums.macrumors.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-12",
+      "url": "https://pulse24.ai/news/2026/3/22/8/tiny-corp-ships-tinybox-computers",
+      "publisher": "pulse24.ai",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-13",
+      "url": "https://aitoolly.com/ai-news/article/2026-03-22-tiny-corp-unveils-tinybox-high-performance-offline-ai-hardware-supporting-massive-parameter-models",
+      "publisher": "aitoolly.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2022-11-05",
+        "label": "Tinygrad, Corp. 캘리포니아주 법인 등기 (3900 Harney St, San Diego)",
+        "phase": "past",
+        "note": "법적 설립일. comma.ai 사옥과 같은 지역 — 인력/문화 공유 시너지"
+      },
+      {
+        "date": "2023-05-24",
+        "label": "$5.1M 시드 라운드 클로즈 (단일 라운드, 이후 추가 라운드 미공시)",
+        "phase": "past",
+        "note": "투자자: 1517 Fund 외. 'Tinybox 를 만들겠다' 는 약속 단계의 자금. 2026 현재까지 추가 라운드 없음 — 매출 의존도 ↑"
+      },
+      {
+        "date": "2026-01-12",
+        "label": "tinygrad v0.12 릴리스 — Mesa NIR 백엔드 통합, 오픈소스 NVIDIA (NVK Vulkan + NAK 컴파일러) 호환",
+        "phase": "past",
+        "note": "독점 CUDA 우회 경로 확보. 'sovereign stack' 비전의 실증"
+      },
+      {
+        "date": "2026-03-31",
+        "label": "Apple, tiny corp 의 TinyGPU 드라이버 익스텐션 승인 — Apple Silicon Mac 에서 Thunderbolt/USB4 외장 NVIDIA·AMD GPU 사용 가능 (2020년 이후 처음)",
+        "phase": "past",
+        "note": "macOS 생태계 진입로 확보. Mac 사용자 베이스로 잠재 고객 확장"
+      },
+      {
+        "date": "2026-05-29",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      }
+    ]
+  }
+}
