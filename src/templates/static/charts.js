@@ -2062,6 +2062,41 @@
 
     // 노드 그리기 — node.color (palette 또는 composer 지정). accent 는 opacity 1.0.
     const nodeG = svg.append('g').attr('class', 'sankey-nodes');
+
+    // v6.0.4 — 첫·마지막 컬럼의 긴 라벨을 2줄로 줄바꿈 (CHART-AP-21).
+    // 배경: 끝-컬럼 라벨이 길면("Colossus 2 (블랙웰 GPU 55.5만 발주)" ~28자) 가로
+    // overhang 이 커져, 코어를 중앙에 둬도 반대쪽(짧은 라벨 측)에 빈 여백이 남아
+    // 여전히 "치우침" 으로 보인다. 라벨을 " (" 또는 공백에서 2줄로 접으면 overhang
+    // 이 ~40% 줄고 좌·우가 대칭에 가까워져 흐름이 빈 공간 없이 중앙에 온다.
+    function wrapEndLabel(s, maxChars) {
+      s = String(s == null ? '' : s);
+      if (s.length <= maxChars) return [s];
+      const p = s.indexOf(' (');               // "이름 (부연)" → 괄호 앞에서 접기
+      if (p > 0 && p <= maxChars + 6) return [s.slice(0, p), s.slice(p + 1)];
+      const c = s.lastIndexOf(' ', maxChars);   // 아니면 maxChars 직전 공백
+      if (c > 0) return [s.slice(0, c), s.slice(c + 1)];
+      return [s];                               // 접을 곳 없으면 그대로(드묾)
+    }
+    // 끝-컬럼 라벨(+값) 을 노드에 세로 중앙 정렬해 다줄 렌더.
+    function drawEndLabel(ax, anchor, node, lblText, valText, weight) {
+      const lines = wrapEndLabel(lblText, 14);
+      const lineH = 13;
+      const nLines = lines.length + (valText ? 1 : 0);
+      const cy = node.y0 + node.height / 2;
+      const yTop = cy - ((nLines - 1) * lineH) / 2;
+      lines.forEach((ln, i) => {
+        nodeG.append('text').attr('x', ax).attr('y', yTop + i * lineH + 4)
+          .attr('text-anchor', anchor).attr('font-size', 11)
+          .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
+          .attr('font-weight', weight).text(ln);
+      });
+      if (valText) {
+        nodeG.append('text').attr('x', ax).attr('y', yTop + lines.length * lineH + 4)
+          .attr('text-anchor', anchor).attr('font-size', 10)
+          .attr('fill', t.muted).text(valText);
+      }
+    }
+
     nodes.forEach(n => {
       nodeG.append('rect')
         .attr('x', n.x0).attr('y', n.y0)
@@ -2078,24 +2113,9 @@
       const isLast = n.col === maxCol;
       const labelWeight = n.accent ? 700 : 500;
       if (isFirst) {
-        nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 - 2)
-          .attr('text-anchor', 'end').attr('font-size', 11)
-          .attr('font-family', 'Noto Sans KR').attr('fill', t.text)
-          .attr('font-weight', labelWeight).text(labelText);
-        if (valueText) {
-          nodeG.append('text').attr('x', n.x0 - 6).attr('y', n.y0 + n.height / 2 + 12)
-            .attr('text-anchor', 'end').attr('font-size', 10)
-            .attr('fill', t.muted).text(valueText);
-        }
+        drawEndLabel(n.x0 - 6, 'end', n, labelText, valueText, labelWeight);
       } else if (isLast) {
-        nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 - 2)
-          .attr('font-size', 11).attr('font-family', 'Noto Sans KR')
-          .attr('fill', t.text)
-          .attr('font-weight', labelWeight).text(labelText);
-        if (valueText) {
-          nodeG.append('text').attr('x', n.x1 + 6).attr('y', n.y0 + n.height / 2 + 12)
-            .attr('font-size', 10).attr('fill', t.muted).text(valueText);
-        }
+        drawEndLabel(n.x1 + 6, 'start', n, labelText, valueText, labelWeight);
       } else {
         // 중간 컬럼 — 라벨은 노드 위쪽
         nodeG.append('text').attr('x', n.x0 + (n.x1 - n.x0) / 2).attr('y', n.y0 - 6)

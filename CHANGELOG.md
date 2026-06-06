@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.0.3
+last_synced_with: v6.0.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,21 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.0.4 — sankey 끝-컬럼 라벨 2줄 줄바꿈 (CHART-AP-21 재발 4, 비대칭 overhang 해소)
+
+- **증상(사용자 재보고, IMG_2642)** — v6.0.3 코어 중앙정렬 후에도 우측에 큰 빈
+  여백 → 여전히 좌측 치우침으로 보임.
+- **근본 원인** — 끝-컬럼 라벨이 길면("Colossus 2 (블랙웰 GPU 55.5만 발주)" ~28자)
+  그쪽 overhang 이 커진다. 코어를 중앙에 둬도 좌·우 margin 을 `max(overhang)` 로
+  동일하게 잡으니 짧은 라벨 측에 `overhangL − overhangR` 만큼 빈 여백이 남아,
+  코어는 수학적으로 중앙이어도 시각적 "치우침" 인상.
+- **Fix** — 첫·마지막 컬럼의 긴 라벨을 **2줄로 줄바꿈**(`wrapEndLabel` — " (" 또는
+  공백에서 접기, max ~14자/줄) + 노드에 세로 중앙정렬(`drawEndLabel`). overhang 이
+  ~40% 줄고 좌·우 대칭에 가까워져, 코어 중앙정렬(v6.0.3)과 결합 시 빈 여백 최소화
+  (≈pad) → 흐름이 빈 공간 없이 중앙. 중간 컬럼 라벨/수직 정렬은 불변.
+- charts.js 만 변경. 발행본은 `patch_report.py <id> --rerender-only` 로 동일 URL
+  재렌더 시 적용. CHART-AP-21 "재발 4" 항목 추가.
 
 ## v6.0.3 — sankey 흐름 코어 중앙 정렬 (CHART-AP-21 재발 3, bbox → 코어 기준)
 
