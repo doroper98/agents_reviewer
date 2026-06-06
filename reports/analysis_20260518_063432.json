@@ -1,0 +1,627 @@
+{
+  "request": {
+    "event_description": "스웨덴 주식 sivers semiconductor에 대해 팩트 기반으로 주가부터 사업영역, 수주 내용, 재무상태, 주가 상승 잠재력에 대해 투자은행처럼 deep하고 체계적이고 층위적으로 분석해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "Sivers는 (1) mmWave 무선 IC — SUMMIT 빔포머/TRB 트랜시버로 SATCOM·5G FWA·국방 — 와 (2) Glasgow 기반 InP DFB 레이저 포토닉스로 구성된 2-segment 소형주. 포토닉스가 AI 데이터센터의 Co-Packaged Optics(CPO, GPU/스위치 패키지에 광부품 통합 — 구리 대비 에너지 80% 절감) 트렌드와 자율주행 LiDAR 광원 시장의 핵심 부품인 InP 레이저 chokepoint를 차지하면서 재평가 대상이 됨. 2025–2026년에 걸쳐 ① O-Net·Enablence 협력으로 CPO용 ELS 모듈, ② POET Technologies와 라이트엔진 협력, ③ 단일 LiDAR 고객의 다중 플랫폼 양산 채택 (LTV USD 53–138M)이 연달아 발표되며 디자인윈→양산 전환 가시화. 동시에 PCAOB 기준 audit uplift, Nasdaq 듀얼리스팅 검토, SEK 125M 신주발행 등 자본구조 정비가 6/15 AGM에서 결의될 예정 — 사업 성장과 재무 정상화가 같은 분기에 수렴 중.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-02-26",
+            "event": "Q4/FY25 잠정실적 공시 (Original)",
+            "impact": "FY25 매출 SEK 306.6M, 순손실 (조정전) 공개"
+          },
+          {
+            "date": "2026-03-11",
+            "event": "전략적 LiDAR 고객 양산 채택 발표 — 자동차/산업/로보틱스 플랫폼 전체 적용, 라이프타임 매출 잠재력 USD 53–138M",
+            "impact": "포토닉스 부문 가시성 대폭 상승, 양산 램프 Q4'26 시작 예정"
+          },
+          {
+            "date": "2026-03 중순",
+            "event": "O-Net Technologies·Enablence와 CPO용 External Light Source(ELS) 모듈 협력 발표",
+            "impact": "AI 데이터센터 CPO 밸류체인 진입 — Sivers는 InP DFB 레이저 어레이 공급"
+          },
+          {
+            "date": "2026-04-16",
+            "event": "Nasdaq 뉴욕 듀얼리스팅 검토 공시 (Sweden domicile 유지)",
+            "impact": "주가 급등 트리거 — Simply Wall St 보도상 누적 +99%"
+          },
+          {
+            "date": "2026-04-27 → 05-15",
+            "event": "2025 연차보고서 발간 연기. PCAOB 표준 정합 위한 audit uplift 동반",
+            "impact": "FY24·FY25 재무 재작성 — FY25 순손실 약 SEK 70M 추가 인식 (재고가치·SBC fair value·자본화 R&D 상각)"
+          },
+          {
+            "date": "2026-05-13",
+            "event": "스톡홀름 종가 SEK 54.80, +27.03% (+11.66)",
+            "impact": "듀얼리스팅·LiDAR 모멘텀 + PCAOB 보고서 게시 후 재평가"
+          },
+          {
+            "date": "2026-05-15",
+            "event": "2025 연차보고서 정식 공시 — FY25 매출 SEK 306.6M, 순손실 SEK -222.6M (조정후)",
+            "impact": "재무투명성 정합 완료, IPO 로드쇼 전제 충족"
+          },
+          {
+            "date": "2026-05-29 (예정)",
+            "event": "Q1'26 잠정실적 공시 (4-27 → 5-29 연기)",
+            "impact": "PCAOB 정합 후 첫 분기 실적 — 듀얼리스팅 표결 직전 핵심 이벤트"
+          },
+          {
+            "date": "2026-06-15 (예정)",
+            "event": "정기주총 — 듀얼리스팅 + SEK 125M 신주 8.62M주 (@SEK 14.50) 결의 안건",
+            "impact": "통과 시 CPO/LiDAR 양산 자본 확보, 부결 시 자금경색 심화 위험"
+          },
+          {
+            "date": "2026 Q4 (예정)",
+            "event": "LiDAR 고객 양산 램프 개시 + Sivers 신규 트랜시버 프로젝트 생산 본격화",
+            "impact": "FY27 매출 가시화의 출발점"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "Sivers Semiconductors — 포토닉스/무선 듀얼리스팅 직전 심층 분석",
+    "event_name_en": "Sivers Semiconductors: Pre-Nasdaq Dual-Listing Deep Dive",
+    "date": "2026-05-17",
+    "category": "기업분석 / 반도체(포토닉스·mmWave)",
+    "summary": "스웨덴 소형 반도체 Sivers (OMXSTO:SIVE)는 mmWave 무선·InP 레이저 포토닉스 2개 부문 구조. FY25 매출 SEK 306.6M (+25% YoY), 순손실 SEK -222.6M, Q4'25 말 가용현금 SEK 43.5M로 자본구조 압박. 2026년 들어 LiDAR 양산 (라이프타임 $53–138M), CPO용 ELS (O-Net·Enablence 협력), Nasdaq 듀얼리스팅 + SEK 125M 신주발행을 동시에 추진 — 5월 13일 단일일 +27% 급등 (SEK 54.80) 등 주가가 카탈리스트 반응형으로 작동 중. 6월 15일 AGM에서 듀얼리스팅·신주 결의, Q1'26 잠정실적은 5월 29일로 연기.",
+    "timeline": [
+      {
+        "date": "2026-02-26",
+        "event": "Q4/FY25 잠정실적 공시 (Original)",
+        "impact": "FY25 매출 SEK 306.6M, 순손실 (조정전) 공개"
+      },
+      {
+        "date": "2026-03-11",
+        "event": "전략적 LiDAR 고객 양산 채택 발표 — 자동차/산업/로보틱스 플랫폼 전체 적용, 라이프타임 매출 잠재력 USD 53–138M",
+        "impact": "포토닉스 부문 가시성 대폭 상승, 양산 램프 Q4'26 시작 예정"
+      },
+      {
+        "date": "2026-03 중순",
+        "event": "O-Net Technologies·Enablence와 CPO용 External Light Source(ELS) 모듈 협력 발표",
+        "impact": "AI 데이터센터 CPO 밸류체인 진입 — Sivers는 InP DFB 레이저 어레이 공급"
+      },
+      {
+        "date": "2026-04-16",
+        "event": "Nasdaq 뉴욕 듀얼리스팅 검토 공시 (Sweden domicile 유지)",
+        "impact": "주가 급등 트리거 — Simply Wall St 보도상 누적 +99%"
+      },
+      {
+        "date": "2026-04-27 → 05-15",
+        "event": "2025 연차보고서 발간 연기. PCAOB 표준 정합 위한 audit uplift 동반",
+        "impact": "FY24·FY25 재무 재작성 — FY25 순손실 약 SEK 70M 추가 인식 (재고가치·SBC fair value·자본화 R&D 상각)"
+      },
+      {
+        "date": "2026-05-13",
+        "event": "스톡홀름 종가 SEK 54.80, +27.03% (+11.66)",
+        "impact": "듀얼리스팅·LiDAR 모멘텀 + PCAOB 보고서 게시 후 재평가"
+      },
+      {
+        "date": "2026-05-15",
+        "event": "2025 연차보고서 정식 공시 — FY25 매출 SEK 306.6M, 순손실 SEK -222.6M (조정후)",
+        "impact": "재무투명성 정합 완료, IPO 로드쇼 전제 충족"
+      },
+      {
+        "date": "2026-05-29 (예정)",
+        "event": "Q1'26 잠정실적 공시 (4-27 → 5-29 연기)",
+        "impact": "PCAOB 정합 후 첫 분기 실적 — 듀얼리스팅 표결 직전 핵심 이벤트"
+      },
+      {
+        "date": "2026-06-15 (예정)",
+        "event": "정기주총 — 듀얼리스팅 + SEK 125M 신주 8.62M주 (@SEK 14.50) 결의 안건",
+        "impact": "통과 시 CPO/LiDAR 양산 자본 확보, 부결 시 자금경색 심화 위험"
+      },
+      {
+        "date": "2026 Q4 (예정)",
+        "event": "LiDAR 고객 양산 램프 개시 + Sivers 신규 트랜시버 프로젝트 생산 본격화",
+        "impact": "FY27 매출 가시화의 출발점"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "FY25 매출 (조정후)",
+        "value": "SEK 306.6M",
+        "context": "FY24 SEK 219.2M 대비 +25% YoY. 약달러에도 불구 성장 유지"
+      },
+      {
+        "label": "FY25 순손실 (조정후)",
+        "value": "SEK -222.6M",
+        "context": "PCAOB 정합 위한 audit uplift로 약 SEK 70M 추가 손실 인식. EPS TTM 약 USD -0.07"
+      },
+      {
+        "label": "TTM 매출 (USD)",
+        "value": "USD 30.9M",
+        "context": "시가총액 대비 PSR ≈4–5배 추정 — 성장주 멀티플 영역"
+      },
+      {
+        "label": "Q4'25 가용현금",
+        "value": "SEK 43.5M",
+        "context": "단기 예치 SEK 13.8M 포함. FY25 연간 적자 규모 대비 약 2.4개월치 cash burn — 신주발행 SEK 125M 필요성의 정량적 근거"
+      },
+      {
+        "label": "신주발행",
+        "value": "SEK 125M / 8.62M주 / @SEK 14.50",
+        "context": "5/13 종가 SEK 54.80 대비 약 -74% 디스카운트 — 발행대상은 specific (targeted) 기관"
+      },
+      {
+        "label": "Wireless 부문 매출 (FY25)",
+        "value": "SEK 211.7M (~69%)",
+        "context": "SUMMIT 빔포머·TRB 트랜시버 중심. SATCOM·FWA·국방·5G/6G 인프라"
+      },
+      {
+        "label": "Photonics 부문 매출 (FY25)",
+        "value": "SEK 92.4M (~30%), 조정 EBITDA +SEK 1.5M",
+        "context": "글래스고 거점, InP DFB 레이저. 부문 첫 흑자 — 외부조사가 강조하는 변곡점"
+      },
+      {
+        "label": "LiDAR 라이프타임 매출 잠재력",
+        "value": "USD 53–138M",
+        "context": "단일 고객 다년치 누적. 글로벌 자동차 LiDAR 시장 CAGR 28% (USD 861M '24 → USD 3.8B '30, Yole 등 보도 기반)"
+      },
+      {
+        "label": "중기 매출 가이던스",
+        "value": "4–5년 내 3–4배 성장 목표",
+        "context": "AI 데이터센터(CPO) + SatCom 리딩 시나리오. 회사 자체 목표, 비공식 IR 코멘터리"
+      },
+      {
+        "label": "5/13 주가",
+        "value": "SEK 54.80 (+27.03%)",
+        "context": "FY25 발표 직후 단일일 변동. 4/16 듀얼리스팅 공시 이후 누적 보도상 약 +99%"
+      },
+      {
+        "label": "주식 식별",
+        "value": "OMXSTO:SIVE / SIVE.ST / OTC:SIVEF",
+        "context": "본업 거래소는 Stockholm Nasdaq Main. 통화 SEK. 미국 OTC ADR pink market 존재"
+      }
+    ],
+    "background": "Sivers는 (1) mmWave 무선 IC — SUMMIT 빔포머/TRB 트랜시버로 SATCOM·5G FWA·국방 — 와 (2) Glasgow 기반 InP DFB 레이저 포토닉스로 구성된 2-segment 소형주. 포토닉스가 AI 데이터센터의 Co-Packaged Optics(CPO, GPU/스위치 패키지에 광부품 통합 — 구리 대비 에너지 80% 절감) 트렌드와 자율주행 LiDAR 광원 시장의 핵심 부품인 InP 레이저 chokepoint를 차지하면서 재평가 대상이 됨. 2025–2026년에 걸쳐 ① O-Net·Enablence 협력으로 CPO용 ELS 모듈, ② POET Technologies와 라이트엔진 협력, ③ 단일 LiDAR 고객의 다중 플랫폼 양산 채택 (LTV USD 53–138M)이 연달아 발표되며 디자인윈→양산 전환 가시화. 동시에 PCAOB 기준 audit uplift, Nasdaq 듀얼리스팅 검토, SEK 125M 신주발행 등 자본구조 정비가 6/15 AGM에서 결의될 예정 — 사업 성장과 재무 정상화가 같은 분기에 수렴 중.",
+    "sources": [
+      "Sivers IR: 2025 Annual Report (PRNewswire, 2026-05-15)",
+      "Sivers IR: Q4 2025 Interim Report (2026-02-26, correction publ.)",
+      "Sivers IR: Nasdaq NY Dual Listing Evaluation (2026-04-16)",
+      "Sivers IR: Strategic LiDAR Customer Ramps (2026-03-11) / Semiconductor Today 보도",
+      "Sivers IR: O-Net & Enablence ELS for CPO (2026-03)",
+      "MarketScreener: Sivers adjusts earnings ahead of US listing",
+      "ad-hoc-news: Sivers restates two years of results / 125M SEK raise",
+      "Yahoo Finance SIVE.ST / SIVEF, stockanalysis.com SIVE, TradingView OMXSTO:SIVE",
+      "Simply Wall St: SIVE +99% after photonics wins (2026)",
+      "Seeking Alpha: 'Sivers Stock: Small-cap CPO hypergrowth'",
+      "siliconmatter.substack / globalequitybriefing — independent analyst notes"
+    ],
+    "glossary": [
+      {
+        "term": "CPO (Co-Packaged Optics)",
+        "definition": "GPU/스위치 ASIC 패키지 안에 광송수신 부품을 함께 집적해 단거리 광인터커넥트를 구현하는 차세대 기술. 기존 구리 대비 에너지 약 80% 절감"
+      },
+      {
+        "term": "InP DFB Laser",
+        "definition": "Indium Phosphide(InP) 기판에 만들어진 Distributed Feedback 레이저. 광통신·LiDAR의 핵심 광원으로, 파장 안정성·노이즈 특성이 우수"
+      },
+      {
+        "term": "ELS (External Light Source)",
+        "definition": "CPO 모듈 외부에서 광을 공급하는 별도 광원 모듈. CPO 패키지 발열·수율 부담을 분리하기 위한 아키텍처"
+      },
+      {
+        "term": "mmWave Beamformer",
+        "definition": "28~80GHz 대역에서 다수 안테나 위상을 제어해 빔을 형성·조향하는 RFIC. 5G·SatCom 단말의 핵심"
+      },
+      {
+        "term": "PCAOB Standard",
+        "definition": "미국 상장사 회계감독위원회 회계감사 기준. Nasdaq 상장 위해 비미국 기업도 정합 필요"
+      },
+      {
+        "term": "Targeted Issuance",
+        "definition": "특정 투자자 대상의 사모형 신주발행. 기존 주주 권리 희석 가능성을 동반"
+      },
+      {
+        "term": "SatCom (Satellite Communications)",
+        "definition": "위성 통신. LEO/MEO 위성 단말기에 mmWave IC 수요가 발생"
+      },
+      {
+        "term": "LiDAR (Light Detection and Ranging)",
+        "definition": "레이저 펄스로 거리·형상을 측정하는 센서. 자율주행·산업 자동화의 핵심 센서"
+      }
+    ],
+    "confidence_score": 0.78,
+    "instruments_mentioned": [],
+    "time_series": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "Sivers, 자본과 성장이 한 표결로",
+    "deck": "5월 13일 +27% 급등 직후, 6월 15일 정기주총에 미국 듀얼리스팅과 SEK 125M 신주발행이 함께 걸렸다. CPO·LiDAR 디자인윈이 자금 압박과 같은 분기에 수렴한다.",
+    "sections": [
+      {
+        "heading": "한 분기에 모인 자본과 성장",
+        "kicker": "자본 X 성장 / 1",
+        "prose": "사건의 핵심은 자본 정비와 사업 성장이 한 분기에 겹쳐 있다는 점이다. CPO (Co-Packaged Optics — GPU·스위치 칩 옆에 광부품을 함께 패키징해 구리 배선 대비 에너지 소비를 80% 가까이 줄이는 차세대 데이터센터 기술) 협력 발표가 3월, 단일 LiDAR (빛으로 거리를 재는 센서) 고객의 양산 채택이 같은 달, Nasdaq 듀얼리스팅 공시가 4월, FY25 재무 재작성이 5월에 차례로 이어졌다.\n\n그러나 Q4'25 말 가용현금은 SEK 43.5M — 연간 적자 SEK -222.6M 대비 약 2.4개월치다. 사실은 6/15 표결이 통과되지 않으면 LiDAR 양산 램프 자체가 지연될 수 있는 자금 구조다. 본 보고서는 이 두 다리 (사업·자본) 가 어떻게 한 분기에 모였고, 다음 4분기에 어디로 갈지를 본다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "5월 13일, Sivers Semiconductors 주가는 단일일 27% 올랐다 (종가 SEK 54.80). 같은 분기에 회사는 PCAOB (미국 상장기업 회계감독위원회) 기준에 맞춰 FY24·FY25 재무를 다시 썼고, 6월 15일 정기주주총회에서 미국 Nasdaq 듀얼리스팅과 SEK 125M 신주발행을 표결에 부친다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": true
+      },
+      {
+        "heading": "두 다리: 무선 IC와 InP 광부품",
+        "kicker": "사업 구조 / 2",
+        "prose": "FY25 매출 SEK 306.6M (조정후) 가운데 무선 IC 부문이 SEK 211.7M (약 69%), 포토닉스 부문이 SEK 92.4M (약 30%) 다. 두 부문은 시장도 기술도 다르게 움직인다.\n\n무선 IC 부문은 mmWave (밀리미터파 — 5G·위성통신·국방용 고주파 무선) 빔포머 제품 SUMMIT 과 트랜시버 제품 TRB 가 중심이다. 고객은 SATCOM (위성통신) 단말 제조사, FWA (고정형 무선 인터넷) 사업자, 국방 OEM 으로 분산되어 있다. 매출의 약 70% 를 차지하지만 성장률은 한 자리수 후반대로 관측된다.\n\n포토닉스 부문은 글래스고 거점의 InP (인듐 인화물 — 실리콘과 달리 자체로 빛을 내는 반도체 소재) DFB (Distributed Feedback — 좁은 단일 파장을 안정적으로 만드는) 레이저 제조 라인이다. FY25 조정 EBITDA 가 SEK 1.5M 로 부문 첫 흑자를 냈다. 매출은 전체의 30% 지만 외부 분석가들이 재평가 근거로 꼽는 쪽은 이 부문이다 (Simply Wall St, Seeking Alpha 보도).",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "왜 지금 재평가되는가 — CPO와 LiDAR의 동시 진입",
+        "kicker": "재평가 동인 / 3",
+        "prose": "포토닉스 부문이 주목받는 이유는 두 시장이 같은 시기에 열렸기 때문이다. 첫째는 AI 데이터센터의 CPO 채택, 둘째는 자율주행 LiDAR 의 양산 진입이다. 두 시장 모두 InP 레이저를 *광원* 단계에서 요구한다.\n\nCPO 쪽에서는 O-Net Technologies 와 Enablence 두 협력사가 Sivers 의 InP 레이저 어레이를 받아 ELS (External Light Source, 외부 광원 모듈) 를 만든다. ELS 는 GPU/스위치 패키지에 빛을 공급하는 부품으로, AI 데이터센터의 칩 간 통신을 광신호로 바꿀 때 반드시 필요하다. POET Technologies 와는 라이트엔진 공동개발 계약이 따로 있다.\n\nLiDAR 쪽에서는 단일 고객 한 곳이 자동차·산업·로보틱스 세 플랫폼 전체에 Sivers 레이저를 채택했다 (회사 공시, 2026-03-11). 라이프타임 매출 잠재력은 USD 53M~138M 범위로 공시됐다. 시장조사사 Yole 기준 자동차 LiDAR 시장은 USD 861M ('24) → USD 3.8B ('30) 로 추정되며 (CAGR 28%), Sivers 는 이 가운데 광원 단계만 차지한다.\n\nFY25 매출 USD 30.9M 와 비교하면 단일 LiDAR 고객 한 건의 라이프타임 잠재력만으로도 1.7~4.5배 규모다. 단 라이프타임은 다년치 누적이고, 양산 램프 (Q4'26 개시 예정) 속도에 따라 인식 시점이 달라진다.",
+        "charts": [
+          {
+            "type": "network",
+            "title": "Sivers 포토닉스 협력 생태계",
+            "subtitle": "InP 레이저 공급자에서 CPO·LiDAR 최종 시장까지",
+            "data": {
+              "nodes": [
+                {
+                  "id": "sivers",
+                  "label": "Sivers (InP DFB 레이저)",
+                  "group": "core"
+                },
+                {
+                  "id": "onet",
+                  "label": "O-Net Technologies",
+                  "group": "cpo"
+                },
+                {
+                  "id": "enablence",
+                  "label": "Enablence",
+                  "group": "cpo"
+                },
+                {
+                  "id": "poet",
+                  "label": "POET (라이트엔진)",
+                  "group": "cpo"
+                },
+                {
+                  "id": "hyperscaler",
+                  "label": "AI 데이터센터 (GPU·스위치)",
+                  "group": "end"
+                },
+                {
+                  "id": "lidar",
+                  "label": "LiDAR 단일 고객 (자동차·산업·로보틱스)",
+                  "group": "end"
+                },
+                {
+                  "id": "satcom",
+                  "label": "SATCOM·국방 OEM",
+                  "group": "end"
+                }
+              ],
+              "links": [
+                {
+                  "source": "sivers",
+                  "target": "onet",
+                  "type": "ELS 어레이"
+                },
+                {
+                  "source": "sivers",
+                  "target": "enablence",
+                  "type": "ELS 어레이"
+                },
+                {
+                  "source": "sivers",
+                  "target": "poet",
+                  "type": "라이트엔진 공동개발"
+                },
+                {
+                  "source": "onet",
+                  "target": "hyperscaler",
+                  "type": "CPO 모듈"
+                },
+                {
+                  "source": "enablence",
+                  "target": "hyperscaler",
+                  "type": "CPO 모듈"
+                },
+                {
+                  "source": "sivers",
+                  "target": "lidar",
+                  "type": "InP 레이저 (다중 플랫폼)"
+                },
+                {
+                  "source": "sivers",
+                  "target": "satcom",
+                  "type": "SUMMIT·TRB IC"
+                }
+              ]
+            },
+            "source": "Sivers IR (2026-03, 03-11) · O-Net·Enablence·POET 공시 종합",
+            "takeaway": "Sivers 는 광원 단계만 가지고 두 시장 (CPO 데이터센터·LiDAR) 의 분기점에 동시에 진입했다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "단일 LiDAR 고객 한 건의 라이프타임만 USD 53~138M — FY25 전체 매출의 1.7~4.5배다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "InP DFB 레이저는 반도체 산업의 조명 회사다",
+          "body": "GPU·스위치·LiDAR 센서가 광신호로 통신하려면 빛을 만들어주는 부품이 따로 필요하다. 좁은 단일 파장을 안정적으로 양산하는 InP DFB 레이저 회사는 전 세계에 한 손가락 안에 든다. Sivers 의 협력 구도가 갑자기 늘어난 이유는, AI 데이터센터와 LiDAR 가 동시에 이 조명을 더 많이 요구하기 시작했기 때문이다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "현금 2.4개월, 그리고 74% 디스카운트",
+        "kicker": "자본 압박 / 4",
+        "prose": "신주발행 조건이 재무 압박의 정량적 근거다. Q4'25 말 가용현금 SEK 43.5M 은 FY25 연간 적자 SEK -222.6M 기준으로 약 2.4개월치다 (단기 예치 SEK 13.8M 포함).\n\n발행 조건은 SEK 125M / 8.62M주 / 주당 SEK 14.50, specific (사전 지정) 기관 대상이다. 5월 13일 종가 SEK 54.80 대비 약 -74% 디스카운트다. 시장 가격과 발행가의 갭이 이렇게 크면 두 해석이 가능하다. 첫째, 회사가 자금 확보를 우선해 가격을 양보했다. 둘째, 발행 대상이 lock-up (의무 보유 기간) 조건을 받아 가격이 낮게 책정됐다. 회사 공시 톤은 후자에 가깝지만, 일반 투자자의 EPS (주당순이익) 희석은 어느 쪽이든 발생한다.\n\nPCAOB audit uplift 에 따른 FY25 추가 손실 약 SEK 70M 은 재고가치 평가, SBC (Stock-Based Compensation, 주식기반 보상) 의 fair value 재인식, 자본화 R&D 의 상각 분이다. 스웨덴·미국 회계 차이에서 흔히 나오는 항목이지만, 적자 규모가 한 분기에 30% 가량 커진 것은 사실이다 (ad-hoc-news, MarketScreener 보도).",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "발행가 SEK 14.50 은 5/13 종가의 약 1/4 — 표결이 통과되면 신주 8.62M주가 늘어나고, 부결되면 현금이 2.4개월치만 남는다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "Q4'25 가용현금",
+            "value": "SEK 43.5M",
+            "sublabel": "단기 예치 SEK 13.8M 포함"
+          },
+          {
+            "label": "FY25 적자 (조정후)",
+            "value": "SEK -222.6M",
+            "sublabel": "PCAOB uplift 약 +SEK 70M"
+          },
+          {
+            "label": "신주발행 총액",
+            "value": "SEK 125M",
+            "sublabel": "8.62M주 @ SEK 14.50"
+          },
+          {
+            "label": "발행가 디스카운트",
+            "value": "-74%",
+            "sublabel": "vs 5/13 종가 SEK 54.80"
+          },
+          {
+            "label": "현금 런웨이",
+            "value": "약 2.4개월",
+            "sublabel": "FY25 적자 기준"
+          },
+          {
+            "label": "EPS TTM",
+            "value": "USD -0.07",
+            "sublabel": "약달러 환산 기준"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "5월 29일과 6월 15일 — 두 표결 사이",
+        "kicker": "결정적 시점 / 5",
+        "prose": "5월 15일에 PCAOB 정합 연차보고서가 정식 공시되면서 미국 IPO 로드쇼의 회계 전제는 충족됐다. 다음 두 시점이 결정적이다.\n\n첫 시점은 5월 29일 Q1'26 잠정실적이다. 원래 4월 27일 예정이었으나 약 한 달 연기됐다. PCAOB 정합 이후 첫 분기 실적이고, 6월 15일 표결 직전에 나오는 숫자다. 이 시점에 LiDAR 양산 진행도와 CPO ELS 출하 신호가 본문에 얼마나 잡히는지가 표심을 좌우한다.\n\n두 번째 시점은 6월 15일 정기주주총회다. 안건은 두 가지 — 미국 Nasdaq 듀얼리스팅 (스웨덴 도미사일 유지) 결의와 SEK 125M 신주발행 결의다. 통과 시 양산 자본을 확보하고, 부결 시 2.4개월치 현금 위에서 다음 자금조달을 다시 설계해야 한다. 두 안건은 같은 분기에 묶여 있지만 표결은 별개로 진행될 가능성이 있다.\n\n세 번째 시점은 Q4'26 으로, 두 표결의 결과와 무관하게 LiDAR 고객의 양산 램프가 개시되는 분기다. 단 양산 램프는 자본이 받쳐줘야 인력·재고·웨이퍼 캐파 (capacity, 생산 능력) 모두 늘릴 수 있다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "PCAOB 정합 → AGM 표결 → LiDAR 램프",
+            "subtitle": "5/15 회계 정합 완료 직후 두 표결, 그리고 Q4 양산 개시까지의 구간",
+            "data": [
+              {
+                "label": "PCAOB audit uplift 작업",
+                "start": "2026-04-27",
+                "end": "2026-05-15",
+                "note": "FY24·FY25 재무 재작성"
+              },
+              {
+                "label": "Q1'26 실적 발표 윈도",
+                "start": "2026-05-15",
+                "end": "2026-05-29",
+                "note": "5/29 잠정실적 공시"
+              },
+              {
+                "label": "AGM 표결 준비",
+                "start": "2026-05-29",
+                "end": "2026-06-15",
+                "note": "듀얼리스팅 + SEK 125M 결의"
+              },
+              {
+                "label": "CPO ELS 양산 윈도",
+                "start": "2026-09-01",
+                "end": "2027-06-30",
+                "note": "O-Net·Enablence 모듈 출하"
+              },
+              {
+                "label": "LiDAR 양산 램프",
+                "start": "2026-10-01",
+                "end": "2027-03-31",
+                "note": "Q4'26 개시 예정"
+              }
+            ],
+            "source": "Sivers IR 공시 종합 (2026-02-26, 03-11, 04-16, 05-15)",
+            "takeaway": "한 분기 안에 회계 정합·실적 공시·자본 결의가 차례로 배치되고, 양산 램프는 가을부터 열린다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "네 갈래의 다음 4분기",
+        "kicker": "시나리오 / 6",
+        "prose": "앞으로 4분기에 네 갈래가 보인다. 확률·영향은 외부 정량 모델이 아닌 본 보고서의 정성 추정이다.\n\n첫째, 기본 시나리오 — AGM 통과 + Q1'26 실적 무난. 확률 약 45%. 신주발행으로 SEK 125M 을 확보하고, LiDAR Q4 램프가 정상 개시되며, CPO ELS 출하가 시작된다. FY27 매출 가시화의 출발점이 된다.\n\n둘째, 강세 시나리오 — AGM 통과 + 추가 CPO 디자인윈 공개. 확률 약 20%. 첫 ELS 모듈이 하이퍼스케일러 (대형 클라우드 사업자) 양산 BOM (Bill of Materials, 부품 자재 목록) 에 들어간 정황이 Q2~Q3 안에 보도되는 경우다. 멀티플 (주가 매출 배수) 재평가가 추가로 일어난다.\n\n셋째, 지연 시나리오 — AGM 통과는 됐으나 Q4 램프 미달. 확률 약 25%. 단일 LiDAR 고객 의존도가 약점으로 드러나거나, InP 웨이퍼 수율 이슈가 양산 단계에서 부상하는 경우다. 라이프타임 매출은 USD 53~138M 범위의 하단으로 수렴한다.\n\n넷째, 표결 부결 시나리오. 확률 약 10%. SEK 125M 발행이 부결되면 현금 2.4개월치 위에서 다음 자금조달을 다시 설계해야 한다. 디자인윈 자체는 살아있지만 양산 캐파 확장 일정이 한두 분기 미뤄진다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "네 시나리오 — 확률 × 영향",
+            "subtitle": "x = 6/15 이후 12개월 발생 확률, y = 회사 가치 영향 (음수는 하방)",
+            "data": [
+              {
+                "label": "기본 (AGM 통과·램프 정상)",
+                "x": 0.45,
+                "y": 60,
+                "size": 45
+              },
+              {
+                "label": "강세 (추가 CPO 디자인윈)",
+                "x": 0.2,
+                "y": 90,
+                "size": 20
+              },
+              {
+                "label": "지연 (Q4 램프 미달)",
+                "x": 0.25,
+                "y": -40,
+                "size": 25
+              },
+              {
+                "label": "부결 (자본 재설계)",
+                "x": 0.1,
+                "y": -75,
+                "size": 10
+              }
+            ],
+            "source": "본 보고서 정성 추정 / 2026-05-17",
+            "takeaway": "확률 가중 합은 기본 시나리오 쪽이 우세 — 단 부결·지연 두 갈래의 하방 영향이 비대칭으로 크다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "모순과 감시 신호",
+        "kicker": "관점 충돌 / 7",
+        "prose": "세 가지 모순이 표면 위에 있다.\n\n첫째, 매출은 +25% 성장하는데 손실은 PCAOB 정합으로 SEK 70M 더 커졌다. 외부 분석가들은 audit uplift 를 일회성·회계성 항목으로 본다. 반면 보수적 관점에서는 SBC fair value 와 자본화 R&D 의 재인식이 영업 외 손실이 아니라 사업 운영의 실질 비용이라는 해석이 가능하다. 본 보고서는 회계성 해석에 무게를 두되, 적자 흐름이 한 분기에 30% 커진 사실 자체는 보존해 둔다.\n\n둘째, 5/13 종가 SEK 54.80 과 신주 발행가 SEK 14.50 의 74% 갭이다. 시장은 모멘텀 가격을, 발행은 lock-up·long-term 가격을 매긴 셈인데, 어느 쪽이 정합한 가치인지는 6/15 이후 일반 시장 가격이 어디로 수렴하는지로 판가름 난다. 두 가격이 모두 옳을 수는 없다.\n\n셋째, 포토닉스 부문이 첫 흑자 (조정 EBITDA SEK 1.5M) 를 냈지만 회사 전체로는 적자가 더 깊어졌다. 한 부문의 turnaround 가 전체 손익을 가리는 구조다. 무선 IC 부문의 성장률·마진 회복 없이는 회사 차원의 흑자 전환이 멀다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "시장은 SEK 54.80 을, 발행은 SEK 14.50 을 매겼다. 두 가격이 모두 옳을 수는 없다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "다음 한 분기는 Sivers 가 디자인윈을 갖춘 회사에서 양산 자본을 갖춘 회사로 넘어가는지를 판가름한다. 사실은 두 번의 표결 — 5/29 실적과 6/15 결의 — 이 한 점에 모인 상태다.",
+    "watch_signals": [
+      {
+        "signal": "Q1'26 잠정실적 (5/29)",
+        "description": "PCAOB 정합 이후 첫 분기 실적. LiDAR 양산 진행도와 CPO ELS 출하 신호를 본문에서 확인",
+        "indicates": "기본 vs 지연 시나리오 분기 — Q1 매출 가이던스 미스 시 지연 쪽으로 확률 이동",
+        "deadline": "2026-05-29",
+        "icon": "📋"
+      },
+      {
+        "signal": "정기주주총회 표결 (6/15)",
+        "description": "Nasdaq 듀얼리스팅 결의 + SEK 125M 신주 8.62M주 @ SEK 14.50 결의",
+        "indicates": "통과 시 기본·강세 시나리오, 부결 시 부결 시나리오로 직행",
+        "deadline": "2026-06-15",
+        "icon": "🗳️"
+      },
+      {
+        "signal": "CPO ELS 첫 출하 / 추가 디자인윈 보도",
+        "description": "O-Net 또는 Enablence 의 ELS 모듈이 하이퍼스케일러 양산 BOM 에 들어갔다는 정황",
+        "indicates": "강세 시나리오 트리거 — Q2~Q3 안에 보도되면 멀티플 재평가 가속",
+        "deadline": "2026 Q3",
+        "icon": "🔆"
+      },
+      {
+        "signal": "LiDAR 양산 램프 Q4'26 개시 확인",
+        "description": "단일 LiDAR 고객의 자동차·산업·로보틱스 플랫폼 중 첫 번째 양산 라인 시작",
+        "indicates": "기본 시나리오의 핵심 확인 포인트 — 지연 시 라이프타임 USD 53M 하단 수렴",
+        "deadline": "2026-12-31",
+        "icon": "🚗"
+      },
+      {
+        "signal": "SUMMIT·TRB 신규 SATCOM/국방 수주",
+        "description": "무선 IC 부문의 성장률 회복 여부 — 포토닉스 외 두 번째 다리 점검",
+        "indicates": "회사 차원 흑자 전환 가능성 — 부재 시 포토닉스 단일 의존 구조 고착",
+        "deadline": "2026 Q4",
+        "icon": "📡"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "매출 +25% YoY 성장 — 디자인윈 가시화의 성장주 시그널",
+        "side_b": "PCAOB 정합으로 FY25 손실 SEK 70M 추가 인식 — 적자 흐름이 한 분기에 30% 커짐",
+        "evidence": "성장률은 회사 IR 공시 (2026-05-15), 손실 확대는 ad-hoc-news·MarketScreener 보도. 두 수치 모두 사실이고 같은 보고서에서 나온다",
+        "resolution": "본 보고서는 audit uplift 를 일회성 회계성 항목으로 해석 (외부 분석가 다수 입장과 일치). 단 SBC·자본화 R&D 의 재인식이 운영 실비용으로 굳어진다면 보수 입장이 옳고, Q1'26 실적에서 같은 항목이 재현되는지로 검증된다"
+      },
+      {
+        "side_a": "시장 가격 SEK 54.80 — 5/13 +27% 급등 후 모멘텀 반영",
+        "side_b": "신주 발행가 SEK 14.50 — 시장 대비 -74% 디스카운트",
+        "evidence": "동일 회사·동일 시점에 두 가격이 공존한다. 회사는 발행 대상 (specific 기관) 의 long-term lock-up 으로 디스카운트를 설명",
+        "resolution": "6/15 이후 일반 시장 가격이 SEK 14.50 쪽으로 수렴하면 발행이 정합한 가격, SEK 54.80 부근에 머물면 lock-up 디스카운트 해석이 정합. 어느 쪽이든 EPS 희석은 동일하게 발생"
+      },
+      {
+        "side_a": "포토닉스 부문 첫 흑자 (조정 EBITDA SEK 1.5M) — 재평가 근거",
+        "side_b": "회사 전체 적자는 더 깊어짐 — 무선 IC 부문이 성장률·마진 회복 부재",
+        "evidence": "FY25 부문별 손익 공시 — 포토닉스 흑자전환, 무선 IC 비공시지만 회사 차원 적자 SEK -222.6M",
+        "resolution": "재평가 동력은 포토닉스가 맞지만, 회사 차원 흑자 전환은 무선 IC 의 성장률 회복이 동반되어야 한다. 단일 부문 의존 구조가 강세 시나리오의 잠재 한계"
+      }
+    ],
+    "confidence_summary": "출처는 회사 IR + Yahoo·stockanalysis·TradingView + Simply Wall St·Seeking Alpha + ad-hoc-news·MarketScreener + 독립 애널리스트 노트로 다양함. 신선도 5/15~5/17. 단 회사 자체 매출 가이던스 (4-5년 3-4배) 와 단일 LiDAR LTV USD 53-138M 범위는 회사 공시·외부 시장조사 추정에 기반해 보수 표현 권장. 시나리오 확률은 정성 추정",
+    "confidence_score": 0.72,
+    "embedded_map": null
+  },
+  "executive_summary": "5월 13일 +27% 급등 직후, 6월 15일 정기주총에 미국 듀얼리스팅과 SEK 125M 신주발행이 함께 걸렸다. CPO·LiDAR 디자인윈이 자금 압박과 같은 분기에 수렴한다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260518_063432.html",
+  "report_theme": "dusk_rose",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-17T21:26:26.072235",
+  "total_duration_seconds": 485.965744972229,
+  "system_version": "v5.2.12",
+  "revision": 0
+}
