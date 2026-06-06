@@ -1,0 +1,473 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-29T10:49:33.248751+00:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.5.8",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260529_194933",
+    "headline": "$24M vs $100M, 같은 워크로드 다른 추론 엔진",
+    "deck": "딥코딩 모델 + 1M 문맥 + 256 사용자 동시. 세레브라스는 한 요청의 지연으로 이기고, 엔비디아 GB300 은 KV 캐시 용량으로 이긴다.",
+    "closing": "두 진영은 같은 추론 시장을 위에서 갈라 쓴다. 산술은 이미 일치하고, 남은 것은 워크로드를 어디로 분류할 것인가의 결정이다.",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260529_194933.html",
+    "theme": {
+      "id": "forest_sage",
+      "tokens": {
+        "bg": "#E8EDE5",
+        "card": "#F0F4ED",
+        "border": "#BCC8B6",
+        "text": "#1F2A24",
+        "muted": "#5C6E60",
+        "accent": "#4A7C5B",
+        "up": "#3D6B4D",
+        "down": "#A8584A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "원 게시글의 산술은 대체로 맞다",
+      "kicker": "쟁점 정리",
+      "prose": "수치부터 정리한다. CS-3 한 대의 대량 클라우드 단가는 약 $1M, 24대면 $24M 이다. 각 시스템에 내장된 온칩 SRAM 은 44 GB 이므로 24대 합산 용량은 1.06 TB, 시스템 내부 대역폭은 504 PB/s 다. 반대편에서 GB300 NVL72 한 랙은 시세상 $3.7~4M 선이고 $100M 이면 약 26 랙을 살 수 있다. 26 랙의 HBM3e 합산 용량은 520 TB, 합산 대역폭은 14.8 PB/s 다.\n\n그러니 같은 예산을 들이부었을 때 GB300 진영은 메모리 용량 약 491배, 세레브라스 진영은 명목 대역폭 약 34배 우위를 갖는다. 단가도, 용량도, 대역폭도 어느 한쪽이 모두 이기지 않는다.\n\n속도 한 가지만 떼어 보면 CS-3 가 분명히 빠르다. gpt-oss-120B 단일 요청 처리량이 CS-3 에서 초당 2,700 토큰 (단어 한 토막 단위) 인 반면 엔비디아 B200 에서는 900 토큰 — 약 3배 차다. Llama 4 Maverick 도 2,522 대 1,038 으로 비슷한 격차다. 다만 이 숫자는 사용자가 한 명일 때 한정이다. 동시 사용자가 늘면 두 진영의 차이는 좁혀지다 역전한다.\n\n원 게시글의 화법은 우열을 가린다기보다 *워크로드를 어떻게 분류하느냐* 의 문제를 드러낸다. 256명 × 1M 문맥이라는 조건은 단일 요청 지연이 아니라 메모리 용량을 거세게 압박한다. 산술이 맞는 것과 그 산술이 의사결정에 충분한 것은 별개다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s2",
+      "heading": "두 갈래의 메모리 철학",
+      "kicker": "구조적 분기",
+      "prose": "두 진영의 차이는 칩 위 메모리를 어디에 두느냐의 선택에서 시작된다. 세레브라스는 TSMC 12인치 웨이퍼 한 장을 통째로 한 개의 칩 (WSE-3) 으로 만든다. 그 위에 90만 개의 코어와 44 GB 분량의 SRAM 을 박는다. 외부 메모리를 거치지 않고 칩 안에서 모든 가중치를 읽어내기에 시스템 내부 대역폭이 21 PB/s 에 이른다 — GB300 한 랙의 569 TB/s 보다 37배 많다.\n\n대가는 용량이다. 44 GB 로는 요즘의 큰 모델 한 종을 통째로 올릴 수 없다. 예컨대 Llama-3 70B 의 가중치만 해도 약 140 GB 이므로 CS-3 네 대를 묶어 모델을 층 단위로 쪼개 분산해야 한다. 더 큰 모델은 24대 단위로 묶인다.\n\n엔비디아는 정반대 길을 택했다. GB300 NVL72 한 랙은 Blackwell Ultra (B300) 가속기 72개를 NVLink 라는 초고속 통로로 묶고, 각 가속기에 HBM3e 메모리 288 GB 를 붙여 한 랙에 20 TB 를 모았다. 대역폭은 569 TB/s 로 세레브라스보다 낮지만 용량이 454배 크다. 가중치도 KV 캐시도 한 랙에 다 들어간다.\n\n두 철학을 한 평면에 펴면 좌표는 갈라진다. CS-3 는 대역폭 축에서 압도적인 좌상단, GB300 NVL72 와 다음 세대 Rubin VR200 은 용량 축에서 압도적인 우측 — 가운데에 엔비디아 B200 DGX 가 놓인다. 어느 한 점이 다른 점을 모든 차원에서 이기는 그림이 아니다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-2"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s3",
+      "heading": "256 사용자 × 1M 문맥, KV 캐시가 결정한다",
+      "kicker": "",
+      "prose": "원 게시글이 잡은 워크로드는 큰 모델·아주 긴 문맥·동시에 256명이라는 세 조건이 겹친다. 이 조합에서 가장 빠르게 부풀어 오르는 것은 모델 가중치가 아니라 KV 캐시다.\n\nKV 캐시는 사용자별로 따로 잡힌다. 사용자가 늘면 곱셈으로 늘어난다. 딥코딩 모델이 1M 토큰 문맥을 다룰 때 사용자당 KV 캐시 크기는 DeepSeek V4-Pro 처럼 압축이 잘 된 모델에서도 15 GB 안팎, 압축 없이는 50 GB 수준으로 추정된다. 256명을 동시에 받으면 총 KV 수요가 3.84 TB (압축) 에서 12.8 TB (비압축) 사이로 부푼다.\n\n여기서 산술이 거꾸로 굴러간다. CS-3 24대의 합산 SRAM 은 1.06 TB. 가장 적극적인 KV 압축을 가정해도 12 명을 넘는 시점에서 SRAM 이 바닥난다. 50 GB/사용자 기준이면 21명 부근에서 천장에 닿는다. 원 게시글이 말한 \"256명 동시 처리\" 는 24대로는 사실상 불가능하고, KV 를 외부 메모리에 흘리는 순간 세레브라스가 자랑하던 한 요청 지연도 무너진다.\n\n반면 GB300 NVL72 한 랙의 HBM 20 TB 는 50 GB/사용자 기준으로도 400명을 단일 랙에서 수용한다. 26 랙이면 약 1만 명까지 같은 워크로드를 수평으로 늘릴 여유가 생긴다. 원 게시글의 비교는 결국 \"같은 예산으로 어느 진영이 256명까지 끌고 갈 수 있느냐\" 의 질문이고, 그 질문 안에서는 GB300 진영이 구조적으로 유리하다.",
+      "pull_quote": "256명 × 1M 문맥의 KV 수요는 약 12.8 TB. CS-3 24대 합산 SRAM 1.06 TB로는 21명 부근에서 천장에 닿는다.",
+      "chart_refs": [
+        "ch-3"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s4",
+      "heading": "토큰 1개 단가, 추론 경제학의 진짜 무게중심",
+      "kicker": "",
+      "prose": "학습용 칩 시장의 화두는 한때 \"초당 몇 FLOPS\" 였다. 지금의 추론 시장은 \"토큰 한 개를 얼마에 뽑아내느냐\" 로 갈아탔다. Deloitte 는 2026년 AI 컴퓨트의 약 3분의 2가 추론 쪽에 쓰일 것으로 본다 — 2023년 3분의 1이었던 비중이 3년 만에 뒤집힌다. 총 소유 비용에서 추론이 차지하는 비중도 80~90% 라는 추정이 통상치다.\n\n이 좌표 위에서 엔비디아는 노골적으로 단가를 내려 왔다. 호퍼 세대 (H100/H200) 대비 GB300 NVL72 의 토큰 단가는 약 35분의 1 수준으로 떨어졌다는 것이 엔비디아의 자체 발표다. 그 35배 가운데 큰 비중은 FP4 양자화 (모델 숫자 정밀도를 16비트에서 4비트로 줄여 한 번에 처리할 수 있는 양을 늘리는 기법) 와 한 랙당 HBM 용량을 20 TB 까지 끌어올린 두 변화에서 나온다.\n\n같은 시장에서 세레브라스의 단가 계산은 다른 좌표를 잡는다. 한 요청의 지연이 곧 단가인 워크로드 — 코딩 IDE 의 자동완성, 음성 대화, 도구를 호출하는 에이전트 — 에서는 토큰 한 개를 빨리 만드는 것이 결국 사용자 수익으로 이어진다. OpenAI 가 $10B 짜리 계약으로 세레브라스를 확보한 것은 일반 추론용 GPU 가 부족해서가 아니라, 지연 SLA 가 까다로운 워크로드의 단가 곡선에서 세레브라스가 유리했기 때문이다.\n\n다만 \"35배 절감\" 의 효과는 시장 전체에 골고루 적용되지 않는다. 장문맥·다중 사용자 추론에서는 메모리 용량이 풀려야 단가 절감이 실현된다. 단일 사용자 짧은 응답에는 호퍼나 블랙웰의 단가 차이가 의미를 잃는다. 같은 \"$/토큰\" 이라는 표현이 두 진영에서 다른 그래프를 그린다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-4"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s5",
+      "heading": "GB300의 유통 기한은 6개월이다",
+      "kicker": "",
+      "prose": "엔비디아는 자기 세대를 자기가 가장 빨리 무력화하는 회사다. GB300 NVL72 가 본격 출하되기 시작한 2026년 상반기, 같은 회사는 1월 CES 에서 차세대 Vera Rubin (R200) NVL144 를 발표했다. 출하 예정 시점은 2026년 하반기다.\n\nRubin VR200 NVL144 는 한 랙의 메모리 용량을 100 TB 로, 대역폭을 1.7 PB/s 로 끌어올린다. 추론 성능은 GB300 대비 3.3배라는 것이 엔비디아 자체 수치다. 세 항목 모두 GB300 의 2배에서 5배 사이다. 즉 지금 GB300 26 랙을 들이는 결정은 6개월 안에 다음 세대 설계가 출현하는 것을 알면서 내리는 결정이다.\n\n3월 AI Infra Summit 에서 발표된 Rubin CPX 아키텍처는 더 무겁다. 엔비디아는 추론 과정을 두 단계 — prefill (긴 프롬프트를 한꺼번에 읽어들이는 연산 바운드 단계) 와 decode (토큰을 한 개씩 뽑아내는 메모리 바운드 단계) — 로 분해해 각기 다른 가속기에 태우는 설계를 공개했다. 메모리 대역폭이 결정짓는 decode 단계를 별도 가속기로 떼어내겠다는 발상이다. 이 분해 자체가 세레브라스가 \"우리는 대역폭으로 이긴다\" 라고 말해 온 논리를 엔비디아가 자체 아키텍처로 흡수하는 움직임이다.\n\n그럼에도 세레브라스의 입지가 단번에 무너지지는 않는다. OpenAI 와 묶은 $10B / 750 MW 계약은 2026년부터 2028년까지 단계 배치 — Rubin 이 시장에 풀리는 시기를 일부 덮어쓴 일정이다. 세레브라스는 이 계약 기간 동안 \"이미 인도된 시스템\" 이라는 단단한 발판을 확보한 상태에서 다음 세대 WSE-4 를 준비하면 된다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s6",
+      "heading": "워크로드 분류가 진영을 결정한다",
+      "kicker": "",
+      "prose": "두 진영의 우열은 단일 지표로 매겨지지 않는다. 배치 크기 (한 번에 묶어 처리하는 요청 수), 문맥 길이, 지연 약속의 강도라는 세 축의 조합에서 어느 좌표에 떨어지느냐가 진영을 결정한다.\n\n첫째, 한 사용자가 한 박자 안에 답을 기다리는 워크로드 — 음성 대화, 코딩 IDE 자동완성, 도구를 호출하는 에이전트 — 는 세레브라스가 이긴다. 한 요청의 지연이 곧 사용자 만족이고, KV 캐시 부담도 1인분 안에서 끝난다. OpenAI 가 $10B 짜리 계약으로 묶은 영역이 바로 여기다.\n\n둘째, 다중 사용자가 긴 문맥을 동시에 처리하는 워크로드 — 클라우드 API 의 일반 추론, 코드 리뷰 봇, 대형 문서 분석 — 는 GB300 NVL72 와 후속 Rubin 의 영역이다. KV 캐시가 수십 TB 로 부풀어 오르는 순간 SRAM 진영의 천장이 보이고, HBM 용량과 토큰 단가가 결정 인자가 된다.\n\n셋째, 학습 — 즉 모델 자체를 만드는 단계 — 는 여전히 엔비디아가 지배적이다. 세레브라스는 이 시장에서 적극적인 점유 의도를 보이지 않는다. 시장 평가도 그 분류를 반영한다. 세레브라스 IPO 첫날 +68%, 추정 시가 약 $63B 은 인상적이지만 매출 FY2026 $510M 은 엔비디아 데이터센터 한 분기 매출의 약 1.7% 수준이다. 시장은 세레브라스를 *틈새 챔피언* 으로, 엔비디아를 *기본값* 으로 가격 매긴다.\n\n원 게시글이 짚은 \"$24M vs $100M\" 의 산술은 그 자체로 옳지만, 의사결정의 충분조건은 아니다. 산술 다음에 묻는 질문 — \"이 256명이 같은 시간에 같은 길이의 글을 처리하는가, 아니면 한 사람씩 빠른 응답을 기다리는가\" — 가 진영을 결정한다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "bar",
+      "title": "단일 요청 토큰 처리 속도",
+      "data": [
+        {
+          "label": "CS-3 · gpt-oss-120B",
+          "value": 2700,
+          "note": "tok/s"
+        },
+        {
+          "label": "CS-3 · Llama 4 Maverick",
+          "value": 2522
+        },
+        {
+          "label": "B200 · Llama 4 Maverick",
+          "value": 1038
+        },
+        {
+          "label": "B200 · gpt-oss-120B",
+          "value": 900
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "scatter",
+      "title": "메모리 용량 × 대역폭 — 두 진영의 좌표",
+      "data": [
+        {
+          "label": "CS-3 (1대)",
+          "x": 44,
+          "y": 21000,
+          "accent": true
+        },
+        {
+          "label": "B200 DGX (8 GPU)",
+          "x": 1440,
+          "y": 64
+        },
+        {
+          "label": "GB300 NVL72 (1랙)",
+          "x": 20000,
+          "y": 569
+        },
+        {
+          "label": "Rubin VR200 NVL144 (예상)",
+          "x": 100000,
+          "y": 1700
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-3",
+      "type": "line",
+      "title": "256 사용자 × 1M 문맥 — KV 캐시 수요 곡선",
+      "data": [
+        {
+          "x": "1명",
+          "y": 50
+        },
+        {
+          "x": "32명",
+          "y": 1600
+        },
+        {
+          "x": "64명",
+          "y": 3200
+        },
+        {
+          "x": "128명",
+          "y": 6400
+        },
+        {
+          "x": "256명",
+          "y": 12800,
+          "event": "최대 워크로드 12.8 TB"
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-4",
+      "type": "waterfall",
+      "title": "토큰 100만 개당 단가, 세대별 변화",
+      "data": [
+        {
+          "label": "Hopper (H100/H200) 기준",
+          "value": 100,
+          "type": "total"
+        },
+        {
+          "label": "FP4 + 메모리 확장 효과",
+          "value": 97.1,
+          "type": "neg"
+        },
+        {
+          "label": "GB300 NVL72",
+          "value": 2.9,
+          "type": "total"
+        },
+        {
+          "label": "Rubin VR200 추가 절감 (예상)",
+          "value": 2.0,
+          "type": "neg"
+        },
+        {
+          "label": "Rubin (2H 2026 예상)",
+          "value": 0.9,
+          "type": "total"
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [
+    {
+      "signal": "Rubin VR200 NVL144 첫 출하",
+      "description": "2026년 하반기 예정된 첫 양산 출하가 일정대로 진행되는지, 그리고 첫 벤치마크가 GB300 대비 3.3배라는 자체 발표를 실제로 입증하는지.",
+      "indicates": "GB300 의 유통 기한과 클라우드 사업자 capex 사이클의 분기점. Rubin 지연 시 GB300 진영의 회수 기간 늘어남.",
+      "deadline": "2026-12-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "OpenAI–세레브라스 계약 2단계 배치 페이스",
+      "description": "$10B / 750 MW 계약의 2027년 분기 배치 일정과 OpenAI의 capex 발표에 적용 워크로드 범위가 명시되는지.",
+      "indicates": "세레브라스가 음성·에이전트 외 일반 추론으로 확장되는지, 아니면 지연 민감 워크로드에 머무는지의 신호.",
+      "deadline": "2027-03",
+      "verification": "unverified"
+    },
+    {
+      "signal": "Rubin CPX 분해 아키텍처의 첫 실측 벤치마크",
+      "description": "prefill / decode 를 별도 가속기로 분리한 설계가 장문맥 워크로드의 토큰 단가를 추가로 얼마나 낮추는지.",
+      "indicates": "엔비디아가 세레브라스의 대역폭 우위 논리를 자체 아키텍처로 흡수하는 데 성공했는지의 판가름.",
+      "deadline": "2027-06",
+      "verification": "unverified"
+    },
+    {
+      "signal": "DeepSeek V4-Pro 류 KV 압축 모델의 상용 채택률",
+      "description": "사용자당 KV 캐시를 15 GB 수준까지 줄이는 압축 기법이 OpenAI / Anthropic / Google 의 주력 모델에 채택되는지.",
+      "indicates": "KV 용량 제약이 완화되면 세레브라스의 동시 사용자 천장이 함께 올라가, 진영 경계가 다시 흔들림.",
+      "deadline": "2026-12",
+      "verification": "unverified"
+    },
+    {
+      "signal": "세레브라스 FY2027 매출 가이던스",
+      "description": "FY2026 $510M 의 매출이 다년에 걸쳐 어떻게 다변화되는지, 그리고 OpenAI 의존도가 몇 %로 공시되는지.",
+      "indicates": "세레브라스의 *틈새 챔피언* 좌표가 안정화되는지, 단일 고객 위험으로 시장이 재평가하는지.",
+      "deadline": "2027-Q1 실적 발표",
+      "verification": "unverified"
+    }
+  ],
+  "contradictions": [
+    {
+      "side_a": "세레브라스는 단일 요청 지연을 2.5~3배 단축한다. 음성·에이전트·코딩 IDE 자동완성처럼 한 사용자가 한 박자 안에 응답을 기다리는 워크로드에서는 CS-3 의 SRAM 21 PB/s 대역폭이 분명한 우위다.",
+      "side_b": "딥코딩 모델 × 1M 문맥 × 256 사용자 동시처럼 KV 캐시가 총 4~13 TB로 부풀어 오르는 워크로드에서는 SRAM 1 TB 천장이 발목을 잡고, 같은 예산으로 GB300 26 랙이 520 TB 의 HBM 용량을 제공한다.",
+      "evidence": "OpenAI 의 $10B / 750 MW 계약이 음성·에이전트라는 지연 민감 영역을 명시한 반면, 학습과 일반 추론은 여전히 엔비디아로 남겼다는 사실 자체가 두 진영이 같은 시장의 다른 좌표를 점한다는 신호다.",
+      "resolution": "원 게시글이 잡은 \"256명 × 1M 문맥\" 워크로드에서는 후자, 즉 GB300 NVL72 와 후속 Rubin 진영이 구조적으로 옳다. KV 캐시가 결정 인자가 되는 순간 SRAM 진영의 천장이 산술적으로 드러난다. 다만 세레브라스의 입지는 *지연 SLA 가 계약의 핵심 조항인 워크로드* — 실시간 음성, 코딩 자동완성, 에이전트의 도구 호출 — 에서 살아남는다. 이 영역은 작지만 사라지지 않으며, 시장이 세레브라스를 $63B 로 가격 매긴 근거다."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.cerebras.ai/system",
+      "publisher": "cerebras.ai",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://en.wikipedia.org/wiki/Cerebras",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.cerebras.ai/blog/cerebras-cs-3-vs-nvidia-dgx-b200-blackwell",
+      "publisher": "cerebras.ai",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.nextplatform.com/2026/01/15/cerebras-inks-transformative-10-billion-inference-deal-with-openai/",
+      "publisher": "nextplatform.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.nvidia.com/en-us/data-center/gb300-nvl72/",
+      "publisher": "nvidia.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://buy.hpe.com/us/en/compute/rack-scale-system/nvidia-nvl-system/nvidia-gb300-nvl72-by-hpe/p/1014890105",
+      "publisher": "buy.hpe.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://www.supermicro.com/datasheet/datasheet_SuperCluster_GB300_NVL72.pdf",
+      "publisher": "supermicro.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://verda.com/blog/gb300-nvl72-architecture",
+      "publisher": "verda.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://nvidianews.nvidia.com/news/rubin-platform-ai-supercomputer",
+      "publisher": "nvidianews.nvidia.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://www.tomshardware.com/pc-components/gpus/nvidia-announces-rubin-gpus-in-2026-rubin-ultra-in-2027-feynam-after",
+      "publisher": "tomshardware.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-11",
+      "url": "https://www.nextplatform.com/ai/2026/01/06/nvidias-vera-rubin-platform-obsoletes-current-ai-iron-six-months-ahead-of-launch/4092179",
+      "publisher": "nextplatform.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-12",
+      "url": "https://introl.com/blog/cerebras-wafer-scale-engine-cs3-alternative-ai-architecture-guide-2025",
+      "publisher": "introl.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-13",
+      "url": "https://news.ycombinator.com/item?id=44660438",
+      "publisher": "news.ycombinator.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-14",
+      "url": "https://www.morphllm.com/llm-inference",
+      "publisher": "morphllm.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-15",
+      "url": "https://huggingface.co/blog/deepseekv4",
+      "publisher": "huggingface.co",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-16",
+      "url": "https://arxiv.org/html/2503.11698v1",
+      "publisher": "arxiv.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-17",
+      "url": "https://machine-learning-made-simple.medium.com/why-cerebras-raised-at-56-4-billion-usd-to-attack-nvidias-memory-bottleneck-c11bfe81f417",
+      "publisher": "machine-learning-made-simple.medium.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-18",
+      "url": "https://tech-insider.org/cerebras-ipo-filing-510m-revenue-openai-deal-23b-valuation-2026/",
+      "publisher": "tech-insider.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-19",
+      "url": "https://stocktwits.com/news-articles/markets/equity/openai-partners-with-cerebras-for-750-mw-computing-power-deal-through-2028/cmULoDCR47T",
+      "publisher": "stocktwits.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-20",
+      "url": "https://www.storagereview.com/news/nvidia-unveils-roadmap-at-ai-infra-summit-from-blackwell-ultra-to-vera-rubin-cpx-architecture",
+      "publisher": "storagereview.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    }
+  ],
+  "confidence": {
+    "score": 0.78,
+    "summary": "단가·용량·대역폭 수치는 Cerebras / Nvidia / HPE / Supermicro 1차 발표와 nextplatform·tomshardware 의 산업지 보도가 교차 일치. KV 캐시 사용자당 추정치와 Rubin 의 GB300 대비 3.3배 인용은 발표자 자체 수치라 검증 여지 있음. 결론의 방향성은 견고하나 단가 절감 배수는 양자화 정밀도 손실 차감을 감안할 필요."
+  },
+  "timeline": {
+    "heading": "두 진영이 갈라진 궤적",
+    "points": [
+      {
+        "date": "2026-01-06",
+        "label": "Rubin VR200 NVL144 발표, 2H 2026 출하 — GB300 의 6개월짜리 유통 기한 확정",
+        "phase": "past",
+        "note": ""
+      },
+      {
+        "date": "2026-01-14",
+        "label": "OpenAI–세레브라스 $10B / 750 MW 계약 — 지연 민감 워크로드 한정 채택",
+        "phase": "past",
+        "note": ""
+      },
+      {
+        "date": "2026-05-29",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      }
+    ]
+  }
+}
