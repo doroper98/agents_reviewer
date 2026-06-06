@@ -1,0 +1,672 @@
+{
+  "request": {
+    "event_description": "하이퍼스케일러(구글 아마존 테슬라 포함) ceo들은 앞으로 얼마나 데이터센터에 투자를 해야 한다고 생각하는지, 그리고 그에 비춰봤을때 cpu, gpu, 메모리는 얼마나 필요한지, 그리고 그것이 삼성전자와 하이닉스에는 어떤 매출과 영업이익을 발생시킬 수 있는지 정량적이고 수치적인 분석을 deep 하게 해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2024~2025 년 OpenAI Stargate 발표·NVIDIA Blackwell 출시·xAI 콜로서스 가동이 누적되며 2025 4분기부터 하이퍼스케일러가 일제히 capex 가이던스를 30~110% 상향함. HBM·CoWoS·고용량 enterprise SSD 가 동시 병목이 되면서 메모리 계약가가 분기마다 두 자릿수 상승하는 슈퍼사이클이 시작됨. NVIDIA Vera Rubin 출하 일정과 맞물려 SK하이닉스 HBM4 캐파는 향후 3 년 치 수요까지 이미 팔린 상태. 삼성은 2025 년 4분기 NVIDIA HBM4 검증 통과 후 2026 년부터 SK하이닉스와 유사 단가에 진입, 점유율 따라잡기가 시작됨. 동시에 일반(legacy) DRAM 도 분기 단위 가격 협상 덕분에 HBM 보다 마진율이 더 높게 잡히는 역전 현상이 발생.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-12-16",
+            "event": "SK하이닉스·삼성 NVIDIA 에 유상 HBM4 샘플 납품(1Q26 계약 협상)",
+            "impact": "HBM4 단가 mid-$500 합의 시발점"
+          },
+          {
+            "date": "2025-12-24",
+            "event": "삼성·SK하이닉스 HBM3E 가격 약 20% 인상 계획 (2026 적용)",
+            "impact": "AI 메모리 가격 결정권이 공급자로 이동"
+          },
+          {
+            "date": "2026-01-05",
+            "event": "TrendForce: 1Q26 DRAM·NAND 전 카테고리 분기 대비 두 자릿수 상승 전망",
+            "impact": "메모리 슈퍼사이클 공식 진입"
+          },
+          {
+            "date": "2026-01",
+            "event": "Tesla Dojo 프로젝트 재가동, 2026 capex $25B 로 상향",
+            "impact": "비전통 하이퍼스케일러도 AI 인프라 경쟁 가세"
+          },
+          {
+            "date": "2026-02-02",
+            "event": "PC DRAM 계약가 1Q26 분기 대비 100%+ 폭등 (역대 최대)",
+            "impact": "PC OEM 마진 압박, 서버 우선 배정"
+          },
+          {
+            "date": "2026-04-22",
+            "event": "SK하이닉스 1Q26 실적: 매출 ₩52.58조, 영업이익 ₩37.61조 (영업이익률 72%)",
+            "impact": "분기 영업이익 분기 대비 두 배"
+          },
+          {
+            "date": "2026-04-30",
+            "event": "삼성전자 1Q26 실적: 메모리 영업이익 ₩53.7조 (전년 동기 대비 약 48배)",
+            "impact": "삼성 시가총액 1조 달러 진입"
+          },
+          {
+            "date": "2026-04",
+            "event": "NVIDIA Blackwell(B200/GB200) 백로그 360만 대, mid-2026 까지 매진",
+            "impact": "HBM·CoWoS 병목이 메모리 사이클을 2027 까지 연장"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "하이퍼스케일러 2026 데이터센터 capex 폭증과 한국 메모리 양사 영향",
+    "event_name_en": "Hyperscaler 2026 Data Center Capex Surge and Its Impact on Korean Memory Duopoly",
+    "date": "2026-05-11",
+    "category": "산업·경제",
+    "summary": "Big 4 하이퍼스케일러(아마존·구글·MS·메타) 2026 capex 가이던스가 전년 대비 77% 증가한 약 7,250억 달러로 확정됨. 약 75%가 AI 인프라(GPU·HBM·서버 DRAM). 그 결과 1분기 DRAM 계약가가 분기 대비 90~95% 폭등, HBM4 스택 단가는 HBM3E 대비 50%+ 상승. SK하이닉스 1Q26 영업이익률 72%, 삼성전자 메모리 영업이익은 전년 동기 대비 약 48배.",
+    "timeline": [
+      {
+        "date": "2025-12-16",
+        "event": "SK하이닉스·삼성 NVIDIA 에 유상 HBM4 샘플 납품(1Q26 계약 협상)",
+        "impact": "HBM4 단가 mid-$500 합의 시발점"
+      },
+      {
+        "date": "2025-12-24",
+        "event": "삼성·SK하이닉스 HBM3E 가격 약 20% 인상 계획 (2026 적용)",
+        "impact": "AI 메모리 가격 결정권이 공급자로 이동"
+      },
+      {
+        "date": "2026-01-05",
+        "event": "TrendForce: 1Q26 DRAM·NAND 전 카테고리 분기 대비 두 자릿수 상승 전망",
+        "impact": "메모리 슈퍼사이클 공식 진입"
+      },
+      {
+        "date": "2026-01",
+        "event": "Tesla Dojo 프로젝트 재가동, 2026 capex $25B 로 상향",
+        "impact": "비전통 하이퍼스케일러도 AI 인프라 경쟁 가세"
+      },
+      {
+        "date": "2026-02-02",
+        "event": "PC DRAM 계약가 1Q26 분기 대비 100%+ 폭등 (역대 최대)",
+        "impact": "PC OEM 마진 압박, 서버 우선 배정"
+      },
+      {
+        "date": "2026-04-22",
+        "event": "SK하이닉스 1Q26 실적: 매출 ₩52.58조, 영업이익 ₩37.61조 (영업이익률 72%)",
+        "impact": "분기 영업이익 분기 대비 두 배"
+      },
+      {
+        "date": "2026-04-30",
+        "event": "삼성전자 1Q26 실적: 메모리 영업이익 ₩53.7조 (전년 동기 대비 약 48배)",
+        "impact": "삼성 시가총액 1조 달러 진입"
+      },
+      {
+        "date": "2026-04",
+        "event": "NVIDIA Blackwell(B200/GB200) 백로그 360만 대, mid-2026 까지 매진",
+        "impact": "HBM·CoWoS 병목이 메모리 사이클을 2027 까지 연장"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "Amazon 2026 capex 가이던스",
+        "value": "$200B",
+        "context": "2025년 $125B 대비 +60%"
+      },
+      {
+        "label": "Alphabet(Google) 2026 capex",
+        "value": "$190B",
+        "context": "2025년 $91B 대비 +109%"
+      },
+      {
+        "label": "Microsoft 2026 capex",
+        "value": "$190B",
+        "context": "2025년 $90B 대비 +111%, 컨센서스 $152B 상회"
+      },
+      {
+        "label": "Meta 2026 capex 가이던스",
+        "value": "$125~145B",
+        "context": "데이터센터 부품 가격 인상 반영해 상향"
+      },
+      {
+        "label": "Tesla 2026 capex",
+        "value": "$25B",
+        "context": "Cortex 2 AI 클러스터 + Dojo 2 + Terafab"
+      },
+      {
+        "label": "Big 4 합산 2026 capex",
+        "value": "약 $725B",
+        "context": "전년 대비 +77%, AI 인프라 비중 약 75%"
+      },
+      {
+        "label": "1Q26 PC DRAM 계약가 변동",
+        "value": "+100% QoQ",
+        "context": "역대 단일 분기 최대 상승폭"
+      },
+      {
+        "label": "1Q26 서버 DRAM 계약가 변동",
+        "value": "+60% QoQ 이상",
+        "context": "CSP(클라우드 서비스 사업자) 장기 계약 선점"
+      },
+      {
+        "label": "1Q26 enterprise SSD 가격 변동",
+        "value": "+53~58% QoQ",
+        "context": "AI 추론용 고용량 SSD 수요 급증"
+      },
+      {
+        "label": "2Q26 전망: DRAM/NAND",
+        "value": "DRAM +58~63% / NAND +70~75% QoQ",
+        "context": "공급 확대는 2027 말~2028 까지 어려움"
+      },
+      {
+        "label": "HBM4 12-layer 스택 단가 (NVIDIA 공급)",
+        "value": "약 $500~560 (mid-$500)",
+        "context": "HBM3E mid-$350 대비 +50% 이상"
+      },
+      {
+        "label": "Samsung HBM4 gross margin",
+        "value": "80%+",
+        "context": "단가 mid-$500, 원가 우위 — wccftech 인용"
+      },
+      {
+        "label": "NVIDIA HBM4 SK하이닉스 점유율",
+        "value": "약 2/3 (≈67%)",
+        "context": "삼성·Micron 이 잔여 1/3 경쟁"
+      },
+      {
+        "label": "SK하이닉스 1Q26 매출",
+        "value": "₩52.58조",
+        "context": "사상 최초 분기 매출 ₩50조 돌파"
+      },
+      {
+        "label": "SK하이닉스 1Q26 영업이익",
+        "value": "₩37.61조 (영업이익률 72%)",
+        "context": "직전 분기 대비 영업이익 약 2배"
+      },
+      {
+        "label": "SK하이닉스 HBM 시장점유율",
+        "value": "57%",
+        "context": "2026년 1분기 기준, 단일 공급사 1위"
+      },
+      {
+        "label": "삼성전자 1Q26 메모리 영업이익",
+        "value": "약 ₩53.7조 (≈ $33.6B)",
+        "context": "전년 동기 대비 약 48배, 전사 영업이익의 90% 이상"
+      },
+      {
+        "label": "삼성전자 1Q26 전사 매출/영업이익",
+        "value": "₩133.9조 / ₩57.2조",
+        "context": "전년 동기 대비 영업이익 +756%"
+      },
+      {
+        "label": "NVIDIA Blackwell 백로그",
+        "value": "약 360만 대",
+        "context": "2026년 4월 기준, mid-2026 까지 sold out"
+      },
+      {
+        "label": "NVIDIA 확보 CoWoS-L 캐파",
+        "value": "약 70%",
+        "context": "패키징 병목이 메모리 출하 상한 결정"
+      }
+    ],
+    "background": "2024~2025 년 OpenAI Stargate 발표·NVIDIA Blackwell 출시·xAI 콜로서스 가동이 누적되며 2025 4분기부터 하이퍼스케일러가 일제히 capex 가이던스를 30~110% 상향함. HBM·CoWoS·고용량 enterprise SSD 가 동시 병목이 되면서 메모리 계약가가 분기마다 두 자릿수 상승하는 슈퍼사이클이 시작됨. NVIDIA Vera Rubin 출하 일정과 맞물려 SK하이닉스 HBM4 캐파는 향후 3 년 치 수요까지 이미 팔린 상태. 삼성은 2025 년 4분기 NVIDIA HBM4 검증 통과 후 2026 년부터 SK하이닉스와 유사 단가에 진입, 점유율 따라잡기가 시작됨. 동시에 일반(legacy) DRAM 도 분기 단위 가격 협상 덕분에 HBM 보다 마진율이 더 높게 잡히는 역전 현상이 발생.",
+    "sources": [
+      "https://www.tomshardware.com/tech-industry/big-tech/big-techs-ai-spending-plans-reach-725-billion",
+      "https://www.cnbc.com/2026/02/06/google-microsoft-meta-amazon-ai-cash.html",
+      "https://datacenterrichness.substack.com/p/hyperscalers-plan-630-billion-in",
+      "https://futurumgroup.com/insights/ai-capex-2026-the-690b-infrastructure-sprint/",
+      "https://www.cnbc.com/2026/04/23/sk-hynix-earnings-ai-memory-shortage-hbm-demand.html",
+      "https://www.kedglobal.com/earnings/newsView/ked202604230001",
+      "https://news.samsung.com/global/samsung-electronics-announces-first-quarter-2026-results",
+      "https://www.cnbc.com/2026/04/30/samsung-q1-earnings-ai-memory-chip-demand-profit-record.html",
+      "https://wccftech.com/samsung-q1-2026-earnings-conventional-dram-more-profitable-than-hbm-right-now/",
+      "https://www.trendforce.com/news/2026/01/28/news-sk-hynix-reportedly-to-supply-about-two-thirds-of-nvidia-hbm4-samsung-targets-early-delivery/",
+      "https://www.trendforce.com/news/2025/12/24/news-samsung-sk-hynix-reportedly-plan-20-hbm3e-price-hike-for-2026-as-nvidia-h200-asic-demand-rises/",
+      "https://www.trendforce.com/presscenter/news/20260105-12860.html",
+      "https://www.trendforce.com/presscenter/news/20260331-12995.html",
+      "https://www.tomshardware.com/pc-components/dram/dram-and-nand-contract-prices-to-climb-again-in-q2",
+      "https://techcrunch.com/2026/04/22/tesla-just-increased-its-capex-to-25b-heres-where-the-money-is-going/",
+      "https://markets.financialcontent.com/wral/article/tokenring-2025-12-29-nvidias-blackwell-dynasty-b200-and-gb200-sold-out-through-mid-2026-as-backlog-hits-36-million-units"
+    ],
+    "glossary": [
+      {
+        "term": "하이퍼스케일러(hyperscaler)",
+        "definition": "수십만~수백만 대 서버를 운영하는 초대형 클라우드/AI 사업자. 아마존(AWS), 구글(GCP), 마이크로소프트(Azure), 메타가 흔히 묶이고 Tesla·xAI 도 자체 인프라로 합류 중."
+      },
+      {
+        "term": "capex(자본적 지출)",
+        "definition": "공장·서버·데이터센터처럼 여러 해 동안 쓰는 자산을 사는 데 드는 돈. 손익계산서가 아니라 대차대조표에 자산으로 잡힘."
+      },
+      {
+        "term": "HBM (고대역폭 메모리)",
+        "definition": "여러 장의 DRAM 칩을 수직으로 쌓아 GPU 옆에 붙이는 메모리. 일반 DRAM 보다 5~10배 빠른 데이터 전송이 가능해 AI GPU 에 필수."
+      },
+      {
+        "term": "HBM3E / HBM4",
+        "definition": "HBM 의 세대 이름. HBM4 는 2025~2026 년 양산 시작된 최신 세대로 한 스택당 단가가 mid-$500 대."
+      },
+      {
+        "term": "CoWoS-L (Chip-on-Wafer-on-Substrate)",
+        "definition": "TSMC 가 만드는 첨단 패키징 기술. GPU 칩과 HBM 을 한 패키지에 묶는 공정. 이게 막히면 Blackwell 도 못 나옴."
+      },
+      {
+        "term": "enterprise SSD",
+        "definition": "데이터센터용 대용량·고내구성 낸드(NAND) 저장장치. AI 학습·추론 데이터를 빠르게 읽어들이는 데 쓰임."
+      },
+      {
+        "term": "CSP (클라우드 서비스 사업자)",
+        "definition": "AWS·Azure·GCP 같이 클라우드 인프라를 임대해주는 회사. 하이퍼스케일러와 거의 같은 뜻으로 쓰임."
+      },
+      {
+        "term": "QoQ (분기 대비)",
+        "definition": "Quarter-over-Quarter. 직전 분기와 비교한 변동률. YoY(전년 동기 대비)와 구분됨."
+      },
+      {
+        "term": "영업이익률",
+        "definition": "매출 대비 영업이익의 비율. SK하이닉스 1Q26 의 72% 는 매출 100 원당 72 원이 영업이익으로 남았다는 뜻 — 제조업으로는 비정상적으로 높음."
+      }
+    ],
+    "confidence_score": 0.88,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '+60% QoQ — 2026년 1분기 서버 DRAM 계약가'). 결정적 수치 1~2개(예: Big 4 capex $725B, SK하이닉스 영업이익률 72%)를 본문에 녹이고 capex 분해·HBM 단가표·메모리 매출 추정 등은 차트 데이터로 위임.",
+      "frameworks": [
+        "Transmission Channel (capex → GPU 수요 → HBM/DRAM 수요 → 한국 메모리 매출·이익)",
+        "Flow of Funds (하이퍼스케일러 현금흐름 → NVIDIA → TSMC → SK하이닉스/삼성)",
+        "Pre-mortem (슈퍼사이클 붕괴 시나리오: capex 디지털화 회의론·CoWoS 캐파 조기 해소·AI 수익화 실패)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: HBM (고대역폭 메모리)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: ①Big 4 capex 절대치와 증가율 → ②AI 인프라 비중에서 GPU/CPU/메모리 비중 분해 → ③NVIDIA Blackwell·Vera Rubin BOM(자재 명세서) 안에서 HBM·DRAM·NAND 단가와 수량 → ④SK하이닉스·삼성전자의 HBM·일반 DRAM·NAND 매출과 영업이익 정량 추정 → ⑤반례·미해결(capex 회의론, 일반 DRAM 이 HBM 보다 마진 높은 역설, 삼성의 HBM4 점유율 추격 변수). 각 섹션이 이전 섹션 결론을 입력으로 받는 누적 구조.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "7,250억 달러가 만든 메모리 슈퍼사이클",
+    "deck": "거대 클라우드 사업자 네 곳의 2026년 자본적 지출이 한 해 만에 77% 폭증했다. 그 충격은 분기 영업이익률 72%라는 전례 없는 숫자로 한국 메모리 두 회사 손익계산서에 도착했다.",
+    "sections": [
+      {
+        "heading": "7,250억 달러가 한꺼번에 풀렸다",
+        "kicker": "자본의 변곡 / 1",
+        "prose": "Amazon 이 2,000억 달러 (전년 +60%), Alphabet 1,900억 달러 (+109%), Microsoft 1,900억 달러 (+111%), Meta 1,250~1,450억 달러를 제시했다. 컨센서스가 잡고 있던 Microsoft 의 2026 capex 전망치는 1,520억 달러였다. 가이던스가 컨센서스를 약 250억 달러 초과한다는 뜻이다.\n\n증가율 77%는 단순히 큰 숫자가 아니다. 2024년 OpenAI Stargate 발표, NVIDIA Blackwell 출시, xAI 콜로서스 가동이 누적된 결과가 2025년 4분기부터 일제히 capex 가이던스로 옮겨붙은 결과다. 여기에 Tesla 가 2026 자본적 지출을 250억 달러로 상향하며 Cortex 2 AI 클러스터와 Dojo 2 를 가세시켰다. 전통적인 클라우드 사업자만의 게임이 아니다.\n\n왜 하필 지금일까. 사실은 단순하다. NVIDIA Blackwell (B200/GB200) 백로그가 2026년 4월 기준 약 360만 대로 mid-2026까지 매진된 상태다. 칩을 사겠다는 줄이 이미 형성되어 있고, 자리를 잡지 못한 사업자는 향후 2~3년 AI 경쟁에서 캐파 (capacity·생산능력) 자체가 부족해진다. capex 의 절대치는 결국 GPU 를 얼마나 많이 끌어올 수 있느냐의 다른 표현이다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "하이퍼스케일러 2026 capex 가이던스 (단위 $B)",
+            "subtitle": "Microsoft 와 Alphabet 이 각각 110%+ 증액 — 컨센서스 상회 폭은 Microsoft 가 가장 크다",
+            "data": [
+              {
+                "label": "Amazon",
+                "value": 200,
+                "note": "2025 $125B → 2026 $200B (+60%)"
+              },
+              {
+                "label": "Alphabet",
+                "value": 190,
+                "note": "2025 $91B → 2026 $190B (+109%)"
+              },
+              {
+                "label": "Microsoft",
+                "value": 190,
+                "note": "컨센서스 $152B 상회 (+111%)"
+              },
+              {
+                "label": "Meta",
+                "value": 135,
+                "note": "$125~145B 레인지, 부품가 인상 반영"
+              },
+              {
+                "label": "Tesla",
+                "value": 25,
+                "note": "Cortex 2 + Dojo 2 + Terafab"
+              }
+            ],
+            "source": "Tom's Hardware·CNBC / 2026-02 가이던스 기준 · N=5",
+            "takeaway": "Big 4 합산만 $725B. Tesla 등 비전통 가세분까지 더하면 $750B 를 넘는다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "한 해 전엔 4,100억 달러였다. 다음 해 7,250억 달러다.",
+        "cited_claim_ids": [],
+        "lede": "한 해 전엔 약 4,100억 달러였다. 2026년 들어 미국의 네 거대 클라우드 사업자, 곧 하이퍼스케일러 (Amazon·Alphabet·Microsoft·Meta) 가 발표한 자본적 지출 (capex·설비투자) 계획은 한 번에 약 7,250억 달러로 뛰었다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "Big 4 합산 2026 capex",
+            "value": "$725B",
+            "sublabel": "전년 대비 +77%"
+          },
+          {
+            "label": "AI 인프라 비중",
+            "value": "약 75%",
+            "sublabel": "GPU·HBM·서버 DRAM·고용량 SSD"
+          },
+          {
+            "label": "NVIDIA Blackwell 백로그",
+            "value": "360만 대",
+            "sublabel": "mid-2026까지 매진"
+          },
+          {
+            "label": "Tesla 2026 capex",
+            "value": "$25B",
+            "sublabel": "비전통 하이퍼스케일러 가세"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "75%는 어디로 가는가",
+        "kicker": "자금 흐름 / 2",
+        "prose": "전체 7,250억 달러 가운데 약 75%, 그러니까 5,400억 달러 안팎이 AI 인프라로 직행한다. 이 가운데 가장 큰 항목은 NVIDIA GPU 와 그 주변 부품이다. GPU 1장의 원가 안에는 HBM (High Bandwidth Memory·고대역폭 메모리), CoWoS (Chip-on-Wafer-on-Substrate·TSMC 첨단 패키징), 그리고 서버랙에 함께 들어가는 DRAM 과 NAND 가 묶여 있다.\n\n자금의 흐름을 한 줄로 다시 적으면 이렇다. 하이퍼스케일러 → NVIDIA → TSMC + SK하이닉스 + 삼성전자 + Micron. 클라우드 사업자가 푼 자본은 NVIDIA 의 매출이 되고, NVIDIA 가 받은 매출은 패키징 (TSMC) 과 메모리 (양사+Micron) 의 매출로 변환된다. 한국 메모리 두 회사는 이 사슬의 마지막 정류장에 있다.\n\n핵심은 비중이 아니라 병목이다. NVIDIA 는 2026년 출하 예정 GPU 의 HBM4 12단 스택을 mid-$500, 곧 한 스택당 약 500~560 달러로 합의했다. HBM3E mid-$350 대비 50% 이상 인상된 가격이다. 즉 capex 가 77% 늘어도 메모리 회사가 받아가는 단가는 그보다 빠르게 뛴다. 출하 수량 증가와 단가 인상이 동시에 발생하는 구조다.",
+        "charts": [
+          {
+            "type": "donut",
+            "title": "Big 4 2026 capex 약 $725B 의 용도 분해 (추정)",
+            "subtitle": "AI 인프라 75% 안에서도 GPU·메모리·서버랙이 절반 이상을 차지",
+            "data": [
+              {
+                "label": "GPU·HBM·서버 DRAM·SSD",
+                "value": 543,
+                "note": "Big 4 가이던스 × 75% AI 비중"
+              },
+              {
+                "label": "데이터센터 건설·전력",
+                "value": 110,
+                "note": "토지·건물·HVAC·전력 인프라"
+              },
+              {
+                "label": "네트워킹·스토리지·기타 IT",
+                "value": 50,
+                "note": "광 네트워킹, 백본, 일반 서버"
+              },
+              {
+                "label": "비-AI 일반 capex",
+                "value": 22,
+                "note": "마진율 높은 기존 사업 유지 투자"
+              }
+            ],
+            "source": "datacenterrichness·futurumgroup / 2026-02 자체 분해 (단위 $B)",
+            "takeaway": "5,400억 달러가 AI 인프라로 들어가고, 그 안에서 메모리 비중은 매년 확대 중이다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "capex 는 강물, 메모리는 마지막 둑",
+          "body": "거대한 강물이 상류에서 풀리면 가장 하류의 좁은 둑이 가장 큰 압력을 받는다. 하이퍼스케일러의 자본은 NVIDIA 를 거쳐 TSMC 의 CoWoS 라인과 한국 메모리 두 회사의 HBM 라인이라는 좁은 둑에 도달한다. 둑이 넓어지지 않는 한 ― 곧 캐파가 늘지 않는 한 ― 둑을 통과하는 물의 단가는 계속 오른다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "GPU 한 장 안의 단가표",
+        "kicker": "BOM 해부 / 3",
+        "prose": "Blackwell B200 안에는 HBM3E 8단 스택이 8개 들어간다. 그 차세대인 Rubin 세대는 HBM4 12단 스택을 동일하게 8개 탑재한다. 단순 산수다. 한 GPU 당 HBM 원가가 HBM3E 시대 약 2,800달러에서 HBM4 시대 약 4,400달러로 뛴다. NVIDIA 가 단가 인상을 수용한 이유는 분명하다. HBM 없이는 GPU 가 동작하지 않고, HBM4 12단을 적기에 양산할 수 있는 회사는 사실상 SK하이닉스와 삼성전자 둘뿐이다.\n\n공급 사슬의 진짜 병목은 메모리 자체가 아니라 패키징이다. CoWoS-L 캐파의 약 70%를 NVIDIA 가 이미 확보했다. 패키징 라인이 늘어나야 GPU 가 더 나오고, GPU 가 더 나와야 HBM 출하가 더 늘어난다. CoWoS 증설은 2027년 말부터 2028년에야 본격적으로 풀린다는 것이 TSMC 자체 가이던스다. 메모리 슈퍼사이클의 끝이 단기간에 오지 않는 구조적 이유가 여기에 있다.\n\n메모리 가격은 어디까지 뛰었나. 2026년 1분기 PC DRAM 계약가는 직전 분기 대비 100% 넘게 폭등했다. 단일 분기 기준 역대 최대 상승폭이다. 서버 DRAM 은 60% 이상, 기업용 SSD 는 53~58% 올랐다. 클라우드 사업자가 장기 계약으로 물량을 선점하면서 PC OEM 은 후순위로 밀려 단기간 마진 압박을 받는다. 2분기에도 DRAM 추가 58~63%, NAND 70~75% 인상이 예상된다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "1Q26 메모리 계약가 분기 대비 변동률 (%)",
+            "subtitle": "PC DRAM 의 100%+ 상승은 단일 분기 기준 역대 최대 — 서버는 장기 계약이 흡수",
+            "data": [
+              {
+                "label": "PC DRAM",
+                "value": 100,
+                "note": "단일 분기 역대 최대"
+              },
+              {
+                "label": "서버 DRAM",
+                "value": 60,
+                "note": "CSP 장기 계약 선점"
+              },
+              {
+                "label": "기업용 SSD",
+                "value": 55,
+                "note": "AI 추론용 고용량 수요"
+              },
+              {
+                "label": "HBM3E 단가",
+                "value": 20,
+                "note": "2026 적용 인상분"
+              },
+              {
+                "label": "HBM4 (vs 3E)",
+                "value": 55,
+                "note": "스택당 mid-$350 → mid-$500"
+              }
+            ],
+            "source": "TrendForce·Tom's Hardware / 2026-Q1 계약가 기준",
+            "takeaway": "PC 가격이 가장 크게 튀었지만 마진은 결국 서버·HBM 으로 흘러간다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "HBM3E mid-$350",
+            "value": "$2,800/GPU",
+            "sublabel": "8 스택 × $350"
+          },
+          {
+            "label": "HBM4 mid-$500",
+            "value": "$4,400/GPU",
+            "sublabel": "8 스택 × $550, +57%"
+          },
+          {
+            "label": "1Q26 PC DRAM",
+            "value": "+100% QoQ",
+            "sublabel": "역대 최대 단일 분기 상승"
+          },
+          {
+            "label": "1Q26 서버 DRAM",
+            "value": "+60%+ QoQ",
+            "sublabel": "CSP 장기 계약 선점"
+          },
+          {
+            "label": "1Q26 기업용 SSD",
+            "value": "+53~58% QoQ",
+            "sublabel": "AI 추론용 고용량 수요"
+          },
+          {
+            "label": "CoWoS-L NVIDIA 점유",
+            "value": "약 70%",
+            "sublabel": "패키징이 출하 상한 결정"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "두 회사의 분기 결산",
+        "kicker": "매출 폭증 / 4",
+        "prose": "SK하이닉스의 2026년 1분기 매출은 ₩52.58조다. 사상 처음 분기 매출 50조 원 선을 넘었다. 영업이익은 ₩37.61조, 영업이익률은 72%로 직전 분기 대비 영업이익이 약 두 배가 됐다. 메모리 회사가 분기 영업이익률 70%대를 기록한 것은 산업 통계가 작성된 이래 처음이다. HBM 시장 점유율은 57%로 단일 공급사 1위를 유지하고 있다.\n\n삼성전자는 더 극적이다. 2026년 1분기 전사 매출 ₩133.9조, 영업이익 ₩57.2조 (전년 동기 대비 +756%). 그 가운데 메모리 사업부 영업이익만 약 ₩53.7조, 달러 환산 약 336억 달러다. 메모리 단일 부문이 전사 영업이익의 90% 이상을 차지한다. 전년 동기 대비 약 48배 증가다. 결과적으로 삼성전자의 시가총액이 1조 달러 선에 진입했다.\n\n두 회사의 출발점은 같지 않다. SK하이닉스는 HBM 점유율 57%, NVIDIA HBM4 공급 비중 약 3분의 2를 기반으로 한 '프리미엄 + 점유율' 구조다. 반면 삼성은 일반 DRAM 캐파가 SK하이닉스보다 크고, HBM4 는 2025년 4분기 NVIDIA 검증을 통과해 2026년부터 SK하이닉스와 유사한 단가에 진입했다. 곧 삼성의 점프는 일반 DRAM 슈퍼사이클이 본진이고, HBM 은 이제부터의 게임이다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "1Q26 메모리 영업이익 비교 (단위 ₩조)",
+            "subtitle": "삼성 메모리 단일 부문이 SK하이닉스 전사 영업이익을 넘긴 분기 — 일반 DRAM 캐파 차이가 핵심",
+            "data": [
+              {
+                "label": "삼성 메모리",
+                "value": 53.7,
+                "note": "전사 OP 의 93%, 전년비 약 48배"
+              },
+              {
+                "label": "SK하이닉스 (전사)",
+                "value": 37.6,
+                "note": "영업이익률 72%"
+              }
+            ],
+            "source": "Samsung Newsroom·KED Global / 2026-04 잠정 실적",
+            "takeaway": "삼성은 일반 DRAM 캐파로, SK 는 HBM 점유율로 같은 슈퍼사이클을 다르게 먹었다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "메모리 회사가 분기 영업이익률 70%대를 기록한 것은 산업 통계가 작성된 이래 처음이다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "역설: 일반 DRAM 이 HBM 보다 남는다",
+        "kicker": "마진 역전 / 5",
+        "prose": "직관에 맞지 않는 사실이 하나 있다. 2026년 1분기, 삼성의 일반 DRAM 마진율이 HBM 마진율보다 높았다. 프리미엄 제품인 HBM4 가 mid-$500 단가에 gross margin 80%대를 찍는다는 보도가 있는데, 그보다 일반 DRAM 의 분기 마진이 더 높게 잡혔다는 것이다.\n\n왜 이런 일이 벌어졌나. HBM 은 NVIDIA 와 1년 단위 장기 계약으로 단가가 잠겨 있다. 단가는 분명히 올랐지만, 시장에서 실시간으로 형성되는 스팟 가격을 따라가지 못한다. 반면 일반 DRAM 은 분기 단위 협상이다. PC DRAM 100%, 서버 DRAM 60% 라는 1분기 분기 대비 상승률이 곧바로 매출 단가에 반영된다. 락인된 프리미엄과 폭주하는 스팟 사이의 역전 현상이다.\n\n이 사실의 함의는 두 갈래다. 하나, 삼성은 HBM 점유율 추격이라는 미래 가치와 일반 DRAM 슈퍼사이클의 현재 가치를 동시에 누리는 드문 위치에 있다. 둘, 이 마진 역전은 영구적이지 않다. HBM4 계약이 분기 단위 또는 인덱싱 방식으로 재협상되거나, 일반 DRAM 가격이 캐파 증설로 누그러지는 순간 정상 위계가 복원된다. 즉 지금 보이는 그림은 슈퍼사이클의 초기 비대칭이지 새로운 평형이 아니다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "락인된 프리미엄과 폭주하는 스팟 사이의 역전이다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "어디서 갈래가 갈리나",
+        "kicker": "시나리오와 신호 / 6",
+        "prose": "슈퍼사이클이 어디까지 이어질지는 네 가지 변수 위에서 결정된다. capex 가이던스의 지속성, CoWoS 캐파 확장 속도, 삼성의 HBM4 점유율 추격, 그리고 AI 추론의 실제 수익화다. 각 변수의 조합이 시나리오를 만든다.\n\n기준선은 'capex 가이던스 유지 + CoWoS 2028 증설 + 삼성 HBM4 점유율 25%로 수렴'이다. 이 경우 메모리 슈퍼사이클은 2027년 4분기까지 단가 인상이 분기마다 이어지고, 2028년부터 캐파 증설이 풀리며 가격이 안정된다. SK하이닉스는 점유율을, 삼성은 캐파 마진을 각각 누린다.\n\n상방 분기는 'Rubin 세대 조기 출시 + Tesla·xAI 캐파 추가 가세 + AI 추론 수익화 가속'이다. 7,250억 달러로도 부족해지면서 2027년 capex 가 다시 한 자릿수~두 자릿수 추가 상향된다. 메모리 사이클이 2029년까지 연장된다. 하방 분기는 'OpenAI·Anthropic 등 주요 사용처의 단위경제 악화 + capex 컨센서스 회의론 확산 + CoWoS 조기 해소'다. 2026년 4분기~2027년 1분기에 일부 하이퍼스케일러가 가이던스를 하향하면 분기 단가 협상이 즉시 역방향으로 작동한다. 끝으로 와일드카드는 '중국 메모리 추격이 예상보다 빨라 일반 DRAM 캐파를 흡수'하는 시나리오다. HBM 은 여전히 안전하나 일반 DRAM 마진 역전이 먼저 풀린다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "2026~2028 시나리오 × 확률 × 메모리 매출 영향",
+            "subtitle": "기준선이 가장 두꺼우나 상방·하방 두 시나리오의 임팩트 차이가 매우 크다",
+            "data": [
+              {
+                "label": "기준선 (캐파 ~2028 증설)",
+                "x": 50,
+                "y": 6,
+                "size": 50
+              },
+              {
+                "label": "상방: Rubin 조기 + 수익화 가속",
+                "x": 22,
+                "y": 9,
+                "size": 25
+              },
+              {
+                "label": "하방: capex 가이던스 하향",
+                "x": 18,
+                "y": -5,
+                "size": 22
+              },
+              {
+                "label": "와일드카드: 중국 일반 DRAM 추격",
+                "x": 10,
+                "y": -3,
+                "size": 12
+              }
+            ],
+            "source": "자체 분석 / x=확률(%), y=메모리 매출 임팩트(상대점수)",
+            "takeaway": "기준선만 50% 확률. 나머지 절반이 상·하·와일드로 갈린다는 점이 사이클 후반 변동성의 원천."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "7,250억 달러는 출발점이지 종착점이 아니다. 둑이 얼마나 빨리 넓어지느냐, 그리고 위에서 흐르는 강물이 멈추지 않느냐, 두 변수가 다음 6분기를 결정한다.",
+    "watch_signals": [
+      {
+        "signal": "Microsoft·Alphabet 2Q26 capex 가이던스 재확인",
+        "description": "2026년 7월 발표될 2분기 실적에서 연간 capex 가이던스 유지·상향·하향 여부",
+        "indicates": "기준선 vs 상방 vs 하방 시나리오 1차 분기점",
+        "deadline": "2026-07-31",
+        "icon": "📈"
+      },
+      {
+        "signal": "NVIDIA Vera Rubin 출하 일정 공식 발표",
+        "description": "GTC 또는 분기 컨퍼런스에서 Rubin (HBM4 12단) 양산·출하 시점 공개",
+        "indicates": "HBM4 단가 락인 기간 + SK·삼성 점유율 분배 시점",
+        "deadline": "2026-10-31",
+        "icon": "🟩"
+      },
+      {
+        "signal": "TSMC CoWoS-L 캐파 증설 진행률",
+        "description": "TSMC 분기 실적에서 CoWoS 월 캐파 wafer 수 추이",
+        "indicates": "메모리 출하 상한 해소 시점 — 슈퍼사이클 후반 단가 안정 시그널",
+        "deadline": "2026-10-15",
+        "icon": "🏭"
+      },
+      {
+        "signal": "삼성전자 HBM4 NVIDIA 점유율 분기 변화",
+        "description": "TrendForce·DigiTimes 등이 추적하는 NVIDIA HBM4 공급 점유율",
+        "indicates": "삼성 추격 시나리오 vs SK 점유율 유지 시나리오 분기",
+        "deadline": "2026-09-30",
+        "icon": "🥈"
+      },
+      {
+        "signal": "OpenAI·Anthropic·MS Copilot ARR 분기 공시",
+        "description": "주요 AI 추론 서비스의 연환산매출 (ARR) 성장률 둔화 여부",
+        "indicates": "하방 시나리오 (capex 회의론 확산) 의 1차 트리거",
+        "deadline": "2026-08-31",
+        "icon": "💵"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "7,250억 달러 capex 는 AI 수요의 실체를 반영하며 2027년까지 단가 상승이 이어진다.",
+        "side_b": "capex 의 75%가 AI 인프라로 가지만, OpenAI·Anthropic 등 최종 사용처의 단위경제가 아직 흑자가 아니다. 자본이 매출로 회수되지 못하면 2027 가이던스는 하향 압력을 받는다.",
+        "evidence": "Big 4 capex +77%는 가이던스 단계이고, 실제 분기 capex 집행률은 90% 안팎에 머문 전례가 있다. 동시에 NVIDIA Blackwell 백로그 360만 대는 실수요의 실체적 증거다.",
+        "resolution": "현 시점 손은 side_a. 백로그·HBM4 락인 계약·CoWoS 증설 일정이 2027년 1분기까지의 단가 인상을 떠받친다. 단 패배한 입장은 2026년 4분기~2027년 1분기 사이 하이퍼스케일러 중 한 곳이라도 가이던스를 명시적으로 하향하는 순간 즉시 살아난다."
+      },
+      {
+        "side_a": "HBM4 는 mid-$500, gross margin 80%대의 명백한 프리미엄 제품이다.",
+        "side_b": "2026년 1분기 삼성의 일반 DRAM 마진율이 HBM 마진율보다 높았다 (wccftech 인용).",
+        "evidence": "HBM 은 1년 단위 장기 계약으로 단가 락인. 일반 DRAM 은 분기 협상으로 PC +100%, 서버 +60% 의 1분기 가격 상승을 즉시 반영. 결과적으로 분기 단위로는 일반 DRAM 이 더 남는다.",
+        "resolution": "양쪽 모두 사실이다. 봉합하지 않는다. 단기 (분기) 에는 일반 DRAM 이, 중기 (1~2년) 에는 HBM4 가 더 남는다. 일반 DRAM 마진이 캐파 증설이나 중국 추격으로 누그러지는 순간 정상 위계가 복원된다."
+      },
+      {
+        "side_a": "SK하이닉스의 NVIDIA HBM4 약 3분의 2 점유율은 2026년에 깨지지 않는다.",
+        "side_b": "삼성이 2025년 4분기 NVIDIA HBM4 검증을 통과했고 SK 와 유사 단가에 진입했다. 점유율 추격은 시간 문제다.",
+        "evidence": "TrendForce 추적치는 1Q26 현재 SK 약 67% / 삼성+Micron 약 33%. 단 NVIDIA 가 공급선 다변화를 명시적으로 추구하는 가운데, 삼성의 일반 DRAM 캐파 우위가 HBM4 캐파 증설에도 적용될 가능성.",
+        "resolution": "현 시점 손은 side_a. 2026년 안에 SK 점유율이 60% 아래로 내려갈 가능성은 낮다. 단 패배한 입장은 NVIDIA 가 Rubin 세대 (HBM4 12단 8개 탑재) 출하 비중을 2027년 공식 분배할 때 살아난다."
+      }
+    ],
+    "confidence_summary": "Big 4 capex 가이던스·SK·삼성 1Q26 잠정 실적·TrendForce 분기 가격 데이터는 모두 공식·1차 출처. HBM4 단가와 마진 추정치는 TrendForce·wccftech 의 업계 추정에 의존해 불확실성이 더 크다. 시나리오 확률은 자체 평가.",
+    "confidence_score": 0.78,
+    "embedded_map": null
+  },
+  "executive_summary": "거대 클라우드 사업자 네 곳의 2026년 자본적 지출이 한 해 만에 77% 폭증했다. 그 충격은 분기 영업이익률 72%라는 전례 없는 숫자로 한국 메모리 두 회사 손익계산서에 도착했다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260511_191643.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-11T10:11:39.015211",
+  "total_duration_seconds": 304.62941431999207,
+  "system_version": "v5.0.0",
+  "revision": 0
+}
