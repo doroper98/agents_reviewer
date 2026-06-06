@@ -1,0 +1,486 @@
+{
+  "request": {
+    "event_description": "정말 끈질긴 생명력의 MMFs 자금 증시 대기설\n\nMMFs 잔고를 sideline cash로 보는 낚시가 많이 있음\n\n특히 금리 떨어지면 MMFs 잔고가 증시로 올 것이라는 기대\n\n그러나 현실은 그럴 수도 있고 아닐 수도 있다. \n\n중요한 사실은 sideline cash(어딘가로 투입되기 위해 기다리고 있는 자금)은 없다는 것\n\n주식을 사면 누군가는 주식을 팔아 예금이 생김\n주식을 판 사람이 그 예금으로 다른 주식을 살 것인가 아파트를 살 것인가는 알 수 없는 영역임\n\nMMF 자금 증시투입대기설에 대한 팩트체크를 상세히 수행한 보고서를 작성하고 mmf의 정체와 주가에서의 역할 혹은 금융에서의 역할에 대해 상세히 설명해줘",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "standard"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "MMF는 1971년 美 Reserve Fund 출시 이후 단기 채권·CP·repo 에 투자해 시장금리 수준의 일일 수익을 주는 펀드. 1$ = 1주 NAV(순자산가치) 유지가 관행. 2008년 Reserve Primary Fund 의 'breaking the buck' 사태 후 SEC 가 2010·2014·2023 세 차례 규제 개혁 — institutional prime 펀드는 변동 NAV 적용, 유동성 수수료/게이트 도입. 본질은 '예금 비슷하지만 예금이 아닌' 단기 현금 관리 도구. 기업의 운영자금 보관, 가계의 비상금·단기 목적자금, 브로커 sweep 계정 등 용도 다양. '증시 진입 대기 자금' 이라는 단일 정체성은 처음부터 없었음.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2022-2023",
+            "event": "Fed 공격적 금리 인상으로 단기물 수익률 5%대 진입. MMF 수익률 vs 은행 예금 격차 확대",
+            "impact": "은행 예금에서 MMF 로 자금 대이동 시작. MMF 잔고 4조→6조 달러 구간 진입"
+          },
+          {
+            "date": "2024",
+            "event": "Fed 100bp 인하. 시장은 'MMF 증시 대이동' 기대",
+            "impact": "MMF 잔고 오히려 증가. 가설 1차 반증"
+          },
+          {
+            "date": "2025-12",
+            "event": "2025년 한 해 MMF 순자산 +15%. Fed 75bp 추가 인하에도 MMF 유입 지속",
+            "impact": "금리-MMF 잔고 단순 음의 상관 가설 추가 반증"
+          },
+          {
+            "date": "2026-01-29",
+            "event": "FOMC 동결 (3.50~3.75%)",
+            "impact": "단기 수익률 매력 유지. MMF 유입 동력 잔존"
+          },
+          {
+            "date": "2026-03-04",
+            "event": "MMF 잔고 사상 최대 7.817조 달러 (ICI 주간)",
+            "impact": "'대기 자금' 서사 미디어 재가열"
+          },
+          {
+            "date": "2026-03-19",
+            "event": "Fed 동결 + 점도표 연말 중앙값 3.4% (연내 25bp 1회 인하 시사)",
+            "impact": "급격한 인하 기대 약화"
+          },
+          {
+            "date": "2026-04-29",
+            "event": "FOMC 동결, 일부 인하 dissent. MMF 잔고 7.63조 달러",
+            "impact": "잔고 소폭 감소했으나 절대 수준은 여전히 역대급"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "MMF 잔고 '증시 대기설' 팩트체크 — sideline cash 신화 검증",
+    "event_name_en": "Money Market Fund 'Sideline Cash' Myth — A Fact-Check",
+    "date": "2026-05-03",
+    "category": "금융/시장구조 해설",
+    "summary": "미국 MMF(머니마켓펀드) 잔고가 2026년 3월 사상 최대 7.82조 달러 돌파, 4월 말에도 7.63조 달러. '금리 내리면 이 돈이 증시로 쏟아진다'는 속설이 또 등장. 하지만 회계 항등식(accounting identity)상 sideline cash 자체가 존재하지 않음 — 누가 주식을 사면 누군가는 팔고 그 돈은 다시 어딘가의 잔고로 옮겨갈 뿐.",
+    "timeline": [
+      {
+        "date": "2022-2023",
+        "event": "Fed 공격적 금리 인상으로 단기물 수익률 5%대 진입. MMF 수익률 vs 은행 예금 격차 확대",
+        "impact": "은행 예금에서 MMF 로 자금 대이동 시작. MMF 잔고 4조→6조 달러 구간 진입"
+      },
+      {
+        "date": "2024",
+        "event": "Fed 100bp 인하. 시장은 'MMF 증시 대이동' 기대",
+        "impact": "MMF 잔고 오히려 증가. 가설 1차 반증"
+      },
+      {
+        "date": "2025-12",
+        "event": "2025년 한 해 MMF 순자산 +15%. Fed 75bp 추가 인하에도 MMF 유입 지속",
+        "impact": "금리-MMF 잔고 단순 음의 상관 가설 추가 반증"
+      },
+      {
+        "date": "2026-01-29",
+        "event": "FOMC 동결 (3.50~3.75%)",
+        "impact": "단기 수익률 매력 유지. MMF 유입 동력 잔존"
+      },
+      {
+        "date": "2026-03-04",
+        "event": "MMF 잔고 사상 최대 7.817조 달러 (ICI 주간)",
+        "impact": "'대기 자금' 서사 미디어 재가열"
+      },
+      {
+        "date": "2026-03-19",
+        "event": "Fed 동결 + 점도표 연말 중앙값 3.4% (연내 25bp 1회 인하 시사)",
+        "impact": "급격한 인하 기대 약화"
+      },
+      {
+        "date": "2026-04-29",
+        "event": "FOMC 동결, 일부 인하 dissent. MMF 잔고 7.63조 달러",
+        "impact": "잔고 소폭 감소했으나 절대 수준은 여전히 역대급"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "美 MMF 총자산 (2026-04-29)",
+        "value": "7.63조 달러",
+        "context": "전주 대비 -110억, 52주 누적 +7,910억 달러 (+11.3%). 출처: ICI Weekly"
+      },
+      {
+        "label": "美 MMF 사상 최고치 (2026-03-04)",
+        "value": "7.817조 달러",
+        "context": "1주 만에 +201억 달러 유입. 출처: ICI"
+      },
+      {
+        "label": "MMF 유형별 비중",
+        "value": "Government 6.27조 / Prime 1.23조 / Tax-exempt 0.14조 달러",
+        "context": "Government 비중 약 82% — 대부분 美 국채·환매조건부채권(repo) 보유. 개별 투자자 증시 대기 자금이라 보기 어려움"
+      },
+      {
+        "label": "투자자 구분",
+        "value": "기관 4.57조 / 개인 3.07조 달러",
+        "context": "기관 비중 60%. 기업 운영자금·결제·재무관리 용도가 다수. 출처: ICI 2026년 중반"
+      },
+      {
+        "label": "가구 현금성 자산 비중",
+        "value": "약 15%",
+        "context": "美 가구 총 금융자산 대비 현금·MMF 비중. 20년 이상 거의 고정. 출처: Morningstar / Fed Z.1 분석"
+      },
+      {
+        "label": "Fed Funds Target Range",
+        "value": "3.50~3.75%",
+        "context": "2026-04 FOMC 동결. 점도표 중앙값 연말 3.4% — 25bp 1회 인하 시사. 출처: CNBC / Fed"
+      },
+      {
+        "label": "2025년 MMF 순자산 증가율",
+        "value": "+15%",
+        "context": "Fed 75bp 인하했음에도 자금 유입. '금리↓ → MMF↓' 가설과 정반대 결과. 출처: ICI 2026 Fact Book"
+      }
+    ],
+    "background": "MMF는 1971년 美 Reserve Fund 출시 이후 단기 채권·CP·repo 에 투자해 시장금리 수준의 일일 수익을 주는 펀드. 1$ = 1주 NAV(순자산가치) 유지가 관행. 2008년 Reserve Primary Fund 의 'breaking the buck' 사태 후 SEC 가 2010·2014·2023 세 차례 규제 개혁 — institutional prime 펀드는 변동 NAV 적용, 유동성 수수료/게이트 도입. 본질은 '예금 비슷하지만 예금이 아닌' 단기 현금 관리 도구. 기업의 운영자금 보관, 가계의 비상금·단기 목적자금, 브로커 sweep 계정 등 용도 다양. '증시 진입 대기 자금' 이라는 단일 정체성은 처음부터 없었음.",
+    "sources": [
+      "ICI Weekly Money Market Fund Assets (https://www.ici.org/research/stats/mmf)",
+      "ICI 2026 Investment Company Fact Book",
+      "Morningstar — 'Is There Really a Historic Level of Cash on the Stock Market's Sidelines?'",
+      "Real Investment Advice / Advisorpedia — 'Money Market Cash on the Sidelines: A Myth That Won't Die'",
+      "Aptus Capital Advisors — 'The Myth of Cash on the Sidelines'",
+      "Fisher Investments — 'The Trouble With the Sidelined Cash Theory'",
+      "Cliff Asness (AQR) commentary on accounting identity of cash and stocks",
+      "Office of Financial Research — Money Market Fund Monitor (financialresearch.gov)",
+      "Federal Reserve Z.1 Financial Accounts of the U.S. (2026-03-19 release)",
+      "CNBC — Fed interest rate decision April 2026",
+      "SEC Money Market Fund Reform 2023 final rule"
+    ],
+    "glossary": [
+      {
+        "term": "MMF (Money Market Fund, 머니마켓펀드)",
+        "definition": "美 단기 채권·CP·repo 등에 투자해 시장 단기금리 수준의 수익을 매일 지급하는 펀드. 통상 1주당 NAV 1달러 유지"
+      },
+      {
+        "term": "Sideline cash (사이드라인 캐시)",
+        "definition": "'증시 바깥에서 진입을 기다리는 자금'을 가리키는 시장 속어. 본 보고서가 검증하는 신화의 핵심 단어"
+      },
+      {
+        "term": "Accounting identity (회계 항등식)",
+        "definition": "거래에서 한쪽의 자산 변화는 반드시 반대쪽의 동일 금액 변화로 상쇄된다는 항등 관계. 시장 전체 합산에서 sideline 은 존재할 수 없게 만드는 원리"
+      },
+      {
+        "term": "Government MMF / Prime MMF",
+        "definition": "Government 는 美 국채·정부기관 채권·국채 repo 만 보유. Prime 은 기업 CP·CD 등 신용물 포함. 2023년 SEC 개혁 후 institutional prime 은 변동 NAV"
+      },
+      {
+        "term": "CP (Commercial Paper, 기업어음)",
+        "definition": "기업이 단기 자금조달용으로 발행하는 무담보 약속어음. 통상 만기 270일 이내"
+      },
+      {
+        "term": "Repo (Repurchase agreement, 환매조건부채권)",
+        "definition": "채권을 팔면서 정해진 가격·날짜에 되사기로 약정하는 단기 담보부 자금거래"
+      },
+      {
+        "term": "Sweep account (스윕 계정)",
+        "definition": "증권사 고객의 미투자 현금을 자동으로 MMF 등으로 옮겨주는 계정. MMF 잔고의 상당 부분이 이 자동화된 잔여 현금"
+      },
+      {
+        "term": "Flow of Funds (자금순환계정, Fed Z.1)",
+        "definition": "Fed 가 작성하는 부문별·금융상품별 자산·부채 흐름 통계. 가계·기업·정부 간 자금 이동의 거시 지도"
+      },
+      {
+        "term": "Breaking the buck",
+        "definition": "MMF NAV 가 1달러 미만으로 떨어지는 사태. 2008년 Reserve Primary Fund 가 Lehman 채권 보유로 발생, MMF 규제개혁 촉발"
+      }
+    ],
+    "confidence_score": 0.92,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '7.63조 달러 — 2026-04-29 ICI 주간, 52주 +11.3%'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "Accounting Identity (자금의 보존)",
+        "Flow of Funds (Fed Z.1 부문별 자금이동 분석)",
+        "Transmission Channel (금리-MMF-자산시장 경로 검증)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: MMF (머니마켓펀드)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: ① MMF 의 정체와 실제 구성 → ② '대기 자금' 서사의 메커니즘적 결함 (회계 항등식) → ③ 과거 금리 인하기 데이터 검증 → ④ 그럼에도 잔고 변화가 가격에 미치는 *간접* 경로와 미해결 질문. 각 섹션이 이전 섹션 결론을 입력으로 받음.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "7.63조 달러는 어디로도 가지 않는다",
+    "deck": "MMF 잔고 사상 최대 — '금리 내리면 증시로 쏟아진다'는 속설은 회계 항등식 앞에서 무너진다. 그래도 살아남는 질문이 하나 있다.",
+    "sections": [
+      {
+        "heading": "또 등장한 '대기 자금' 서사",
+        "kicker": "도입 / 1",
+        "prose": "수치 자체는 사실이다. 미국투자회사협회(ICI) 주간 통계 기준 2026년 3월 4일 7.817조 달러, 4월 29일에도 7.63조 달러로 52주 누적 +7,910억 달러(+11.3%)다 (출처: ici.org). 문제는 이 숫자가 끌고 다니는 서사다. '대기 자금(sideline cash) — 증시 진입을 기다리는 현금' 이라는 그림이 다시 미디어를 돌고 있다.\n\n이 그림이 그럴듯해 보이는 이유는 단순하다. 잔고는 보이고, 변화는 측정 가능하며, 인과는 직관적이다. 금리가 내려가면 단기 수익률이 떨어지니 MMF에서 빠져나와 더 높은 기대수익을 좇아 증시로 간다 — 마치 댐 수문이 열리듯이.\n\n단 직관은 회계 앞에서 자주 진다. 그리고 데이터는 이미 두 차례 가설을 반증했다. 2024년 Fed가 100bp(1.0%포인트), 2025년 75bp(0.75%포인트)를 내렸음에도 MMF 순자산은 같은 기간 +15% 증가했다 (ICI 2026 Fact Book). 댐은 열리지 않았다. 오히려 물이 더 차올랐다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "댐은 열리지 않았다. 오히려 물이 더 차올랐다.",
+        "cited_claim_ids": [],
+        "lede": "7.82조 달러. 2026년 3월 美 머니마켓펀드(MMF) 잔고가 사상 최고치를 찍자 헤드라인이 다시 한 줄로 모였다. '금리 내리면 이 돈이 증시로 쏟아진다.' 익숙한 그림이다. 그리고 거의 매번 틀렸다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": true
+      },
+      {
+        "heading": "MMF는 정확히 무엇인가",
+        "kicker": "정체 해부 / 2",
+        "prose": "서사를 따지기 전에 대상을 먼저 본다. MMF(머니마켓펀드)는 1971년 美 Reserve Fund 출시 이후 단기 채권·기업어음(CP)·환매조건부채권(repo, 단기 담보대출과 비슷한 거래)에 투자해 시장금리 수준의 일일 수익을 주는 펀드다. 1주 = 1달러 순자산가치(NAV)를 유지하는 것이 관행이라 '예금 비슷하지만 예금이 아닌' 단기 현금 관리 도구로 자리잡았다.\n\n잔고의 내부 구성을 들여다보면 '대기 자금' 이미지와 충돌하는 그림이 나온다. ICI 분류상 Government MMF가 6.27조 달러로 전체의 약 82%를 차지하고, 나머지가 Prime 1.23조, Tax-exempt 0.14조다. Government 펀드의 자산은 거의 전부 美 국채와 repo다. 즉 잔고의 대부분은 처음부터 단기 안전자산을 쥐기 위해 들어온 돈이지, 주식 매수 타이밍을 재고 있는 돈이 아니다.\n\n투자자 구성도 마찬가지다. 기관 투자자가 4.57조 달러로 60%, 개인이 3.07조 달러로 40%다 (ICI 2026 중반). 기관 비중에는 기업의 운영자금·결제·재무관리 잔고가 다수다. 임금 지급일을 앞둔 회사가 MMF에 잠시 둔 자금을 두고 '증시 대기 자금' 이라 부르는 건 의미를 비튼 것이다. 가계 쪽도 비슷하다. 美 가구 총 금융자산 대비 현금·MMF 비중은 약 15%로 20년 이상 거의 고정이다 (Morningstar / Fed Z.1 분석). 비율이 안 변한다는 건 가계가 'MMF는 잠깐 머무는 곳' 이 아니라 '포트폴리오의 항상적 일부' 로 다루고 있다는 뜻이다.",
+        "charts": [
+          {
+            "type": "donut",
+            "title": "MMF 자산 유형별 구성",
+            "subtitle": "Government 82% — '주식 대기 자금' 으로 보기 어려운 이유",
+            "data": [
+              {
+                "label": "Government",
+                "value": 6.27,
+                "note": "국채·repo 중심"
+              },
+              {
+                "label": "Prime",
+                "value": 1.23,
+                "note": "CP·은행 단기물"
+              },
+              {
+                "label": "Tax-exempt",
+                "value": 0.14,
+                "note": "지방채"
+              }
+            ],
+            "source": "ICI 2026년 중반 / 단위: 조 달러",
+            "takeaway": "잔고의 5분의 4는 처음부터 안전자산을 쥐기 위해 들어온 돈이다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "MMF는 '주차장' 이 아니라 '차고'",
+          "body": "대기 자금 서사는 MMF를 운전자들이 신호 바뀌길 기다리는 단기 주차장으로 그린다. 실제는 다르다. 기업의 운영자금, 가계의 비상금, 브로커 sweep 계정(증권 계좌의 미투자 잔고를 자동으로 MMF에 옮겨두는 기능)은 차고에 가깝다. 매일 거기서 출발하지만 결국 매일 거기로 돌아온다. 차고를 비울 이유 자체가 없다."
+        },
+        "fact_grid": [
+          {
+            "label": "MMF 총자산",
+            "value": "7.63조 달러",
+            "sublabel": "2026-04-29 / ICI 주간"
+          },
+          {
+            "label": "Government 비중",
+            "value": "약 82%",
+            "sublabel": "국채·repo 보유"
+          },
+          {
+            "label": "기관 비중",
+            "value": "60%",
+            "sublabel": "기관 4.57조 / 개인 3.07조"
+          },
+          {
+            "label": "가계 현금 비율",
+            "value": "약 15%",
+            "sublabel": "20년 이상 거의 고정"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "회계 항등식이라는 벽",
+        "kicker": "메커니즘 결함 / 3",
+        "prose": "구성을 떠나, 서사 자체에 더 근본적인 문제가 있다. 회계 항등식(accounting identity, 자금이 보존된다는 항등 관계)이다. 핵심은 한 줄이다 — 누가 주식을 사면, 누군가는 그 주식을 판다.\n\n투자자 A가 MMF에서 1억 원을 빼서 주식을 산다고 하자. A의 MMF 잔고는 1억 줄고 주식 보유는 1억 늘었다. 단 A에게 주식을 판 투자자 B는 정확히 그 반대다 — 주식 1억 줄고, 현금 1억 늘었다. 그 현금은 어디로 갈까. 대부분 다시 어딘가의 단기 잔고로 — MMF, 은행 예금, 브로커 sweep 계정 — 들어간다. 즉 시장 전체의 'MMF 잔고' 는 거의 변하지 않은 채, 소유자만 A에서 B로 바뀐다.\n\n이 항등식을 이해하면 '대기 자금이 증시로 쏟아진다' 라는 표현이 왜 어색한지 보인다. 거시적으로는 그럴 수 있는 메커니즘 자체가 없다. AQR의 클리프 애스니스(Cliff Asness)는 이 점을 더 단호하게 표현했다 — 'sideline cash 라는 개념은 거시적으로는 존재하지 않는다. 누가 산 모든 주식은 누군가가 판 주식이다' (출처: aqr.com / advisorpedia.com).\n\n그래서 잔고 절대치는 가격을 직접 끌어올리는 변수가 아니다. 댐과 수문의 비유가 틀린 곳이 여기다. 자산시장은 닫힌 계가 아니라 회전하는 계다. 같은 1억이 주식과 MMF를 오가는 동안, 합계는 그대로다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "누가 산 모든 주식은 누군가가 판 주식이다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "두 번의 인하기, 두 번의 반증",
+        "kicker": "데이터 검증 / 4",
+        "prose": "이론은 그렇다 치고, 데이터는 어떨까. 가장 단순한 검증 — 금리가 내려가면 MMF 잔고가 줄어드는가 — 은 이미 두 차례 답을 내놨다.\n\n2024년 Fed는 누적 100bp를 내렸다. 단순 가설대로라면 단기 수익률이 떨어지면서 MMF에서 자금이 빠져 나가야 했다. 결과는 반대였다. 잔고는 오히려 늘어 6조대 후반에 정착했다. 2025년에도 추가 75bp 인하 — 같은 가설이 다시 실패했다. 한 해 MMF 순자산은 +15% 증가했다 (ICI 2026 Fact Book).\n\n왜일까. 단순 비교가 누락하는 변수가 많다. 첫째, 인하기에도 단기물 수익률이 여전히 은행 예금 평균을 웃돌면 MMF는 매력적이다. 둘째, 기업 운영자금·결제 잔고는 금리 수준과 무관하게 흘러 들어온다. 셋째, 가계의 포트폴리오 내 현금 비율 15%가 고정이라면, 주식 시가총액이 커질 때 MMF도 함께 커져야 비율이 유지된다 (Fed Z.1).\n\n2026년 4월 FOMC 동결 + 점도표 중앙값 3.4% — 연내 25bp 1회 인하 시사 — 도 같은 그림을 강화한다 (출처: cnbc.com). 단기 수익률이 한동안 3% 중반대를 유지하면 MMF는 매력적인 차고로 남는다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "MMF 잔고 vs Fed 정책금리",
+            "subtitle": "두 차례 인하 사이클에도 잔고는 우상향",
+            "data": [
+              {
+                "x": "2022-12",
+                "y": 4.78,
+                "event": "단기물 5%대 진입"
+              },
+              {
+                "x": "2023-06",
+                "y": 5.42
+              },
+              {
+                "x": "2023-12",
+                "y": 5.97,
+                "event": "은행 예금→MMF 대이동"
+              },
+              {
+                "x": "2024-06",
+                "y": 6.15
+              },
+              {
+                "x": "2024-12",
+                "y": 6.84,
+                "event": "Fed 100bp 인하 완료"
+              },
+              {
+                "x": "2025-06",
+                "y": 7.12
+              },
+              {
+                "x": "2025-12",
+                "y": 7.55,
+                "event": "추가 75bp 인하"
+              },
+              {
+                "x": "2026-03",
+                "y": 7.82,
+                "event": "사상 최고"
+              },
+              {
+                "x": "2026-04",
+                "y": 7.63
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "vline",
+                "x": "2024-12",
+                "label": "Fed 100bp 인하",
+                "sublabel": "2024 누적"
+              },
+              {
+                "kind": "vline",
+                "x": "2025-12",
+                "label": "추가 75bp",
+                "sublabel": "2025 누적"
+              },
+              {
+                "kind": "point",
+                "x": "2026-03",
+                "y": 7.82,
+                "label": "역대 최고"
+              }
+            ],
+            "source": "ICI Weekly / 단위: 조 달러 / 분기말 기준 추정",
+            "takeaway": "금리 인하기와 MMF 잔고 사이의 단순 음의 상관은 두 사이클 연속 성립하지 않았다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "그래도 살아남는 질문",
+        "kicker": "간접 경로 / 5",
+        "prose": "여기서 멈추면 한쪽 손만 들어준 셈이다. '대기 자금이 증시로 쏟아진다' 가 회계 항등식 앞에서 무너지는 것은 분명하다. 단 그렇다고 잔고 변화가 가격과 완전히 무관하다고 단정하기에는 살아남는 메커니즘이 몇 가지 있다.\n\n첫째, 자산 배분(asset allocation) 효과다. 가계가 포트폴리오 비율을 현금 15% / 주식 60% / 채권 20% 식으로 유지한다면, 주식이 빠질 때 비율을 맞추기 위해 MMF에서 주식으로 옮기는 rebalancing(재조정) 흐름이 발생한다. 거시 합계는 변하지 않아도, 시점·종목별 매수 압력은 실재한다.\n\n둘째, 심리적 신호다. MMF 잔고가 사상 최고라는 헤드라인 자체가 매수 심리를 자극한다. 회계 항등식과 별개로, '들어올 자금이 많다' 는 인식이 valuation 멀티플(주가수익비율 같은 평가 배수)을 끌어올릴 수 있다. 효과는 잠시지만 무시할 수준은 아니다.\n\n셋째, 자금 회전 속도(velocity)다. 잔고 절대치보다 MMF에서 다른 자산으로의 *흐름* 이 가격에 미치는 영향이 크다. Fed Z.1 부문별 자금이동 데이터는 가계 부문이 어디로 자금을 옮기고 있는지를 분기별로 보여준다 (출처: federalreserve.gov/releases/z1). 잔고 7.63조보다 분기 동안 +/- 2,000억의 흐름이 더 결정적이다.\n\n즉 MMF 잔고는 '댐' 이 아니지만 '온도계' 일 수는 있다. 단 온도계가 보여주는 건 '쏟아질 물의 양' 이 아니라 '계 안의 긴장도' 다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "댐은 아니다. 단 온도계는 될 수 있다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "모순과 다음에 볼 것",
+        "kicker": "남은 질문 / 6",
+        "prose": "이 사건의 핵심 모순은 두 입장 사이에 있다. 한쪽은 '대기 자금 7.63조' 가 곧 매수 잠재력이라는 시장 해설가들이다. 다른 쪽은 회계 항등식과 가계 비율의 항상성을 들어 그 잠재력 자체가 환상이라는 학계·정량 분석가들이다.\n\n현 시점 데이터는 후자 쪽 손을 들어준다. 두 차례 인하 사이클에서 잔고는 줄지 않았고, MMF 구성의 82%는 처음부터 안전자산용 자금이다. 단 전자 입장이 부활할 조건이 있다 — 단기 수익률이 가계 현금 비율의 임계점을 밑돌 만큼 빠르게 떨어질 때, 그리고 risk-on 심리(위험자산 선호 심리)가 동시에 강해질 때다. 이 두 조건이 겹치면 rebalancing 흐름이 가속되며 잔고가 의미 있게 줄어들 수 있다. 그 순간이 오면 '대기 자금' 이라는 표현이 일부 진실을 가질 수 있다 — 거시 합계가 아니라 *흐름의 방향* 으로서.\n\n그래서 다음 분기 무엇을 볼지가 이 보고서의 종착점이다. 잔고 절대치보다 *흐름* 을 본다. Fed Z.1 가계 부문 자금 이동, ICI 주간 유출입 (특히 4주 이동평균), 그리고 Fed 점도표가 더 가파른 인하로 기울어지는지 — 이 셋을 묶어서 본다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "7.63조는 신호가 아니라 잔액이다. 신호는 그 안에서 매주 빠져나가고 들어오는 +/- 수백억 달러의 흐름에 있다. 헤드라인이 자주 놓치는 곳이 거기다.",
+    "watch_signals": [
+      {
+        "signal": "ICI 주간 MMF 유출입 4주 이동평균",
+        "description": "절대 잔고가 아닌 주간 +/- 흐름의 추세 전환",
+        "indicates": "정체 가설 vs rebalancing 가속 가설 분기",
+        "deadline": "매주 목요일 발표",
+        "icon": "📉"
+      },
+      {
+        "signal": "Fed Z.1 가계 부문 자금 이동 (Q2 release)",
+        "description": "현금 비율 15% 항상성 유지 여부",
+        "indicates": "가계 포트폴리오 구조 변화 시작 여부",
+        "deadline": "2026-09 (Q2 분기 발표)",
+        "icon": "📊"
+      },
+      {
+        "signal": "Fed 6월 FOMC 점도표",
+        "description": "연말 중앙값 3.4% → 추가 하향 시사 여부",
+        "indicates": "단기 수익률 매력 급락 시나리오 트리거",
+        "deadline": "2026-06-18",
+        "icon": "🏛️"
+      },
+      {
+        "signal": "Government MMF 비중",
+        "description": "82% 수준에서 Prime/Tax-exempt 쪽으로의 이동",
+        "indicates": "투자자가 안전자산보다 수익을 좇기 시작한다는 미세 신호",
+        "icon": "🔍"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "MMF 7.63조는 증시 진입을 기다리는 거대한 매수 잠재력이다 (시장 해설가 다수).",
+        "side_b": "회계 항등식상 거시 sideline cash 는 존재하지 않는다. 잔고 절대치는 가격을 직접 움직일 수 없다 (AQR 애스니스 / Morningstar / Aptus).",
+        "evidence": "2024년 100bp, 2025년 75bp Fed 인하에도 MMF 잔고는 +15% 증가. 가계 현금 비중 15%는 20년째 고정 (Fed Z.1). 단순 가설은 두 사이클 연속 반증.",
+        "resolution": "현 시점은 side_b 우세. 단 단기 수익률이 가계 비율 임계점을 빠르게 하회 + risk-on 심리 동시 강화 시 rebalancing 흐름이 가속되면 side_a 가 *흐름 차원에서* 부활할 수 있음. '대기 자금' 이 아니라 '비율 조정 자금' 이라는 표현으로."
+      },
+      {
+        "side_a": "MMF는 단기 cash management 도구일 뿐 가격에 무관하다.",
+        "side_b": "잔고 변화가 자산 배분 rebalancing 과 심리 신호를 통해 valuation 멀티플에 간접 영향을 준다.",
+        "resolution": "둘 다 부분적으로 맞다. 거시 합계 차원에서는 side_a, 시점/종목별 흐름과 심리 차원에서는 side_b. 보고서는 잔고 절대치 → 흐름 (flow) 으로 관측 단위를 옮길 것을 권한다."
+      }
+    ],
+    "confidence_summary": "1차 출처(ICI Weekly, Fed Z.1, FOMC) 및 학계·자산운용사 분석(Morningstar, AQR, Aptus, Fisher) 다층 교차 확인. 수치는 2026-04-29 ICI 주간 + 2026-04 FOMC 기준으로 신선. 회계 항등식 논거는 학계·실무 양쪽에서 합의 수준. 미해결 영역은 'rebalancing 임계점' 의 정량적 추정으로, 본문에서 보수적으로 다룸.",
+    "confidence_score": 0.82,
+    "embedded_map": null
+  },
+  "executive_summary": "MMF 잔고 사상 최대 — '금리 내리면 증시로 쏟아진다'는 속설은 회계 항등식 앞에서 무너진다. 그래도 살아남는 질문이 하나 있다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260503_115359.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-03T02:49:30.612762",
+  "total_duration_seconds": 268.98167610168457
+}
