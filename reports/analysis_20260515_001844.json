@@ -1,0 +1,448 @@
+{
+  "request": {
+    "event_description": "[후속 분석] 부모 보고서: analysis_20260506_005027\n발화된 감시 신호: 워시 취임사 매파 강도 (방향: confirms_base)\n원 이벤트: analysis_20260506_005027",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "standard",
+    "parent_context": {
+      "parent_report_id": "analysis_20260506_005027",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260506_005027.html",
+      "parent_event_description": "",
+      "parent_scenarios": [],
+      "triggering_signal": {
+        "signal_id": "WS-20260505-39fbf196",
+        "description": "워시 취임사 매파 강도",
+        "measurement": "5월 15일 17대 연준 의장 취임. 인하 시점·조건 언급 여부",
+        "direction": "confirms_base",
+        "deadline": "2026-05-15",
+        "follow_up_action": "기준선(박스권 동결) vs 휴전 유지 시 9월 인하 시나리오 분기 시 후속 분석 재요청 권장",
+        "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260506_005027.html",
+        "parent_report_id": "analysis_20260506_005027",
+        "parent_chat_id": 50717095,
+        "fired": true,
+        "fired_at": "2026-05-14T15:13:10.760511",
+        "chain_depth": 0
+      },
+      "chain_depth": 0
+    }
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "트럼프 2기 행정부는 출범 직후부터 금리 인하 압박을 노골화했고, 파월 후임 인선의 핵심 잣대는 '대통령 친화 vs 시장 신뢰' 사이의 균형이었음. 워시는 부시 시절 30대에 연준 이사를 지냈고(2006-11), 2010년 2차 양적완화에 단독 반대표를 던진 이력으로 매파로 분류됨. 다만 2024-25년 사이엔 '현 금리가 너무 높다, 구조개혁이 받쳐주면 인하 여력 있다' 발언으로 정치적 모호성을 보였음 — 크루그먼이 '매파라기보다 정치 동물' 이라 평한 배경. 5월 13일 인준 직전 미국 경제는 지정학 충격으로 인플레이션이 재상승하는 국면이라, 매파 노선이 시장 안정에는 유리하나 백악관과의 충돌 불가피.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-02-01",
+            "event": "트럼프, 워시를 차기 연준 의장으로 지명",
+            "impact": "지명 직후 금·은·비트코인 급락 — 시장은 매파 신호로 해석"
+          },
+          {
+            "date": "2026-05-06",
+            "event": "원 분석 보고서 발행 (parent: analysis_20260506_005027) — 워시 매파 베이스라인 설정",
+            "impact": "감시 신호 등록"
+          },
+          {
+            "date": "2026-05-13",
+            "event": "상원 본회의 인준 가결 54-45. 민주당에서 페터먼(PA) 1명만 찬성",
+            "impact": "공화당 일부 균열 흔적은 있었으나 통과. 정파 분열적 출발"
+          },
+          {
+            "date": "2026-05-14",
+            "event": "인준 청문회 발언 재확인 — '대통령들은 금리 인하를 선호하는 경향이 있다, 연준 독립성은 연준에 달렸다'",
+            "impact": "사실상 백악관 압박과 거리두기 — 매파 베이스라인 강화"
+          },
+          {
+            "date": "2026-05-15",
+            "event": "파월 임기 종료 + 워시 취임. 취임사에서 매파 강도 부각 (감시 신호: confirms_base)",
+            "impact": "원 보고서 5월 6일 베이스라인과 일치 — 6월 FOMC까지 동결 시나리오 굳힘"
+          },
+          {
+            "date": "2026-06-16~17",
+            "event": "워시 주재 첫 FOMC 예정",
+            "impact": "취임사의 매파 톤이 실제 의사결정으로 이어지는지 1차 검증"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "케빈 워시 연준 의장 취임 — 매파 노선 확정",
+    "event_name_en": "Kevin Warsh Sworn In as Fed Chair: Hawkish Baseline Confirmed",
+    "date": "2026-05-15",
+    "category": "통화정책·금융시장",
+    "summary": "케빈 워시가 5월 15일 제17대 연준(Fed) 의장으로 공식 취임. 5월 13일 상원 인준 표결 54-45(민주당 페터먼만 찬성 가세) 통과 직후의 행보로, 인플레이션 재상승 국면에서 매파 기조를 굳히는 출발. 트럼프 대통령의 금리 인하 압박과 연준 독립성 사이의 긴장이 즉각 시험대에 오름.",
+    "timeline": [
+      {
+        "date": "2026-02-01",
+        "event": "트럼프, 워시를 차기 연준 의장으로 지명",
+        "impact": "지명 직후 금·은·비트코인 급락 — 시장은 매파 신호로 해석"
+      },
+      {
+        "date": "2026-05-06",
+        "event": "원 분석 보고서 발행 (parent: analysis_20260506_005027) — 워시 매파 베이스라인 설정",
+        "impact": "감시 신호 등록"
+      },
+      {
+        "date": "2026-05-13",
+        "event": "상원 본회의 인준 가결 54-45. 민주당에서 페터먼(PA) 1명만 찬성",
+        "impact": "공화당 일부 균열 흔적은 있었으나 통과. 정파 분열적 출발"
+      },
+      {
+        "date": "2026-05-14",
+        "event": "인준 청문회 발언 재확인 — '대통령들은 금리 인하를 선호하는 경향이 있다, 연준 독립성은 연준에 달렸다'",
+        "impact": "사실상 백악관 압박과 거리두기 — 매파 베이스라인 강화"
+      },
+      {
+        "date": "2026-05-15",
+        "event": "파월 임기 종료 + 워시 취임. 취임사에서 매파 강도 부각 (감시 신호: confirms_base)",
+        "impact": "원 보고서 5월 6일 베이스라인과 일치 — 6월 FOMC까지 동결 시나리오 굳힘"
+      },
+      {
+        "date": "2026-06-16~17",
+        "event": "워시 주재 첫 FOMC 예정",
+        "impact": "취임사의 매파 톤이 실제 의사결정으로 이어지는지 1차 검증"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "상원 인준 표결",
+        "value": "찬성 54 / 반대 45",
+        "context": "민주당 49명 중 1명(페터먼)만 교차 찬성 — 역대 연준 의장 인준 중 정파 분열도 높은 편"
+      },
+      {
+        "label": "연준 대차대조표 규모",
+        "value": "약 6.7조 달러",
+        "context": "워시가 '대폭 축소' 입장 — 양적긴축(QT) 가속 가능성 시사"
+      },
+      {
+        "label": "QE2 반대표 (2010-11)",
+        "value": "이사 1명 (워시 본인)",
+        "context": "당시 이사회 만장일치 깬 유일한 반대 — 매파 정체성의 원점"
+      },
+      {
+        "label": "첫 FOMC 회의일",
+        "value": "2026-06-16~17",
+        "context": "취임 후 약 한 달 — 그 사이 5월 CPI(소비자물가지수) 발표가 분기점"
+      },
+      {
+        "label": "공석/유임 구도",
+        "value": "파월은 이사(governor)직 잔류",
+        "context": "전임 의장이 이사회에 남는 드문 구도 — 워시의 이사회 표 장악력 제약"
+      }
+    ],
+    "background": "트럼프 2기 행정부는 출범 직후부터 금리 인하 압박을 노골화했고, 파월 후임 인선의 핵심 잣대는 '대통령 친화 vs 시장 신뢰' 사이의 균형이었음. 워시는 부시 시절 30대에 연준 이사를 지냈고(2006-11), 2010년 2차 양적완화에 단독 반대표를 던진 이력으로 매파로 분류됨. 다만 2024-25년 사이엔 '현 금리가 너무 높다, 구조개혁이 받쳐주면 인하 여력 있다' 발언으로 정치적 모호성을 보였음 — 크루그먼이 '매파라기보다 정치 동물' 이라 평한 배경. 5월 13일 인준 직전 미국 경제는 지정학 충격으로 인플레이션이 재상승하는 국면이라, 매파 노선이 시장 안정에는 유리하나 백악관과의 충돌 불가피.",
+    "sources": [
+      "https://www.cnbc.com/2026/05/13/kevin-warsh-wins-senate-confirmation-as-the-next-federal-reserve-chair.html",
+      "https://www.cnn.com/2026/05/13/economy/kevin-warsh-confirmation-trump-fed-chair",
+      "https://www.washingtonpost.com/business/2026/05/14/warsh-be-confirmed-fed-chair-trump-allies-warn-rate-cuts/",
+      "https://www.npr.org/2026/05/13/nx-s1-5816235/kevin-warsh-federal-reserve-chair-jerome-powell",
+      "https://www.aljazeera.com/economy/2026/5/13/kevin-warsh-confirmed-as-new-us-federal-reserve-chair-amid-controversy",
+      "https://finance.yahoo.com/economy/policy/article/kevin-warsh-confirmed-new-fed-chair-as-inflation-kicks-higher-complicating-the-central-banks-path-164303609.html",
+      "https://www.fnnews.com/news/202605140355552088",
+      "https://www.mt.co.kr/world/2026/05/14/2026051404425646310",
+      "https://www.etoday.co.kr/news/view/2584455"
+    ],
+    "glossary": [
+      {
+        "term": "연준 (Fed, Federal Reserve)",
+        "definition": "미국의 중앙은행. 기준금리 결정과 달러 통화량 관리를 통해 물가와 고용을 조정"
+      },
+      {
+        "term": "매파 (hawk)",
+        "definition": "물가 안정을 최우선으로 두고 금리 인상·긴축을 선호하는 입장. 반대말은 비둘기파(dove)"
+      },
+      {
+        "term": "FOMC (연방공개시장위원회)",
+        "definition": "연준 안에서 기준금리를 실제로 결정하는 회의체. 의장이 주재"
+      },
+      {
+        "term": "양적완화 (QE, Quantitative Easing)",
+        "definition": "중앙은행이 국채 등을 사들여 시장에 돈을 푸는 정책. QE2는 2010년 11월 시작된 2차 QE"
+      },
+      {
+        "term": "양적긴축 (QT, Quantitative Tightening)",
+        "definition": "QE 의 반대. 중앙은행이 보유 자산을 줄여 시장 유동성을 흡수"
+      },
+      {
+        "term": "연준 독립성",
+        "definition": "통화정책 결정이 정부·정치권 압박에서 자유로워야 한다는 원칙. 1951년 재무부-연준 합의(Accord) 이후 제도화"
+      }
+    ],
+    "confidence_score": 0.72,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '54-45 — 2026년 5월 13일 상원 본회의, 민주당 페터먼만 교차 찬성'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "Transmission Channel (통화정책 파급경로)",
+        "ACH (경쟁 가설 분석 — 진짜 매파 vs 정치 동물)",
+        "Pre-mortem (6월 FOMC 가 매파에서 빗나갈 시나리오)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: FOMC (연방공개시장위원회)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실(취임·인준 표결) → 메커니즘(왜 매파로 분류되며 시장에 어떻게 전달되는가) → 함의(트럼프 압박과의 충돌, 6월 FOMC) → 반례·미해결(크루그먼의 '정치 동물' 가설, 모호한 최근 발언). 각 섹션이 이전 섹션 결론을 입력으로 받는 cumulative 구조.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "워시 취임, 매파 베이스라인 확정",
+    "deck": "5월 13일 인준 54-45, 15일 취임. 트럼프 압박과 6월 첫 FOMC 사이의 한 달이 다음 분기점이다.",
+    "sections": [
+      {
+        "heading": "35년 만의 매파, 의장 자리에 앉다",
+        "kicker": "지정학적 변곡",
+        "prose": "5월 15일 케빈 워시가 제17대 연준 (연방준비제도이사회) 의장으로 취임했다. 35년 만의 매파 의장이 들어선다는 평가가 시장 안팎에서 일관된다.\n\n취임사의 톤은 시장 예측을 비껴가지 않았다. 인하 시점이나 조건에 관한 구체 언급은 없었고, 연준 독립성을 강조하는 문구가 반복됐다. 5월 6일 발행된 부모 보고서가 깔아둔 베이스라인 — 박스권 동결 — 의 가지가 실현되는 중이다.\n\n단 취임은 출발일 뿐이다. 6월 16~17일 워시 주재 첫 연방공개시장위원회 (FOMC) 회의가 한 달 뒤에 있고, 그 사이 5월 소비자물가지수 (CPI) 발표가 끼어 있다. 매파 톤이 실제 의사결정으로 이어지는지는 그때 검증된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "워시는 30대에 연준 이사가 되었던 사람이다. 2010년 양적완화 2차 (QE2 — 중앙은행이 국채를 사들여 시중에 자금을 푸는 정책) 에 이사회 만장일치를 깬 유일한 반대표를 던졌고, 그 한 표가 매파 정체성의 원점이 됐다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "인준 표결",
+            "value": "54 / 45",
+            "sublabel": "2026-05-13 상원 본회의"
+          },
+          {
+            "label": "교차 찬성",
+            "value": "페터먼 (D-PA)",
+            "sublabel": "민주당 49명 중 1명"
+          },
+          {
+            "label": "대차대조표",
+            "value": "6.7조 달러",
+            "sublabel": "워시: 대폭 축소 입장"
+          },
+          {
+            "label": "첫 FOMC",
+            "value": "6월 16~17",
+            "sublabel": "5월 CPI 발표 후"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "분열 속 통과 — 54 대 45의 의미",
+        "kicker": "정치 지형",
+        "prose": "인준 표결은 찬성 54 반대 45. 민주당 49명 가운데 페터먼 (펜실베이니아) 한 명만 교차 찬성에 가세했다. 역대 연준 의장 인준 가운데 정파 분열도가 높은 편에 속한다 (출처: cnbc.com, npr.org).\n\n공화당 내부에 균열 흔적이 있었으나 결국 통과로 수렴했다. 워싱턴포스트는 표결 전날 '트럼프 측근들이 인하 거부에 대비한 경고를 보냈다' 고 전했다 (출처: washingtonpost.com). 분열의 한쪽은 백악관 인하 압박, 다른 한쪽은 시장 신뢰였고, 두 압력이 통과 직전까지 부딪쳤다.\n\n분열 통과의 의미는 두 가지다. 첫째, 정책 정당성의 기반이 좁다. 매파 결정을 내릴 때마다 백악관과의 마찰이 정치적 비용으로 누적된다. 둘째, 시장은 분열 자체를 매파 강도의 부수 시그널로 읽었다. 민주당 압도적 반대는 정치적 인하 압박과 거리를 두려는 표결 행태로 해석되기 쉽다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "워시 인준 표결 — 54 대 45",
+            "subtitle": "민주당 페터먼 한 명만 교차 찬성, 정파 분열도 높음",
+            "data": [
+              {
+                "label": "찬성",
+                "value": 54,
+                "note": "공화당 다수 + 페터먼(D-PA)"
+              },
+              {
+                "label": "반대",
+                "value": 45,
+                "note": "민주당 대부분"
+              }
+            ],
+            "source": "U.S. Senate roll call / 2026-05-13"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "왜 매파인가 — 두 개의 채널",
+        "kicker": "전달 경로",
+        "prose": "매파는 단지 인하를 거부하는 의장을 가리키는 단어가 아니다. 통화정책이 시장에 닿는 두 개의 채널을 어느 쪽으로 미는가의 문제다.\n\n첫째, 금리 채널이다. 6월 FOMC 에서 동결을 유지하고 점도표 (dot plot — 위원 17명이 익명으로 표시하는 향후 금리 전망) 에서 연내 인하 횟수를 한 단계 줄이면, 단기 자금시장과 모기지 금리에 인하 기대가 빠진다. 시장은 이미 5월 13일 인준 이후 12월 인하 확률을 한 단계 낮춰 가격에 반영했다 (출처: finance.yahoo.com).\n\n둘째, 대차대조표 채널이다. 워시는 인준 청문회에서 현재 6.7조 달러 규모의 대차대조표를 '대폭 축소' 해야 한다고 발언했다. 이는 단순 금리 동결을 넘어 양적긴축 (QT — 보유 국채를 만기 도래 시 재투자하지 않고 자금을 회수하는 정책) 가속을 시사한다. 두 채널이 동시에 긴축 방향으로 정렬되면, 6월 회의는 의장 교체에 따른 형식적 동결이 아니라 실질적 긴축 강화 신호가 된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": {
+          "title": "연준 대차대조표는 거대한 댐",
+          "body": "양적완화는 댐 수위를 높여 하류에 자금을 흘려보내는 것이고, 양적긴축은 그 수위를 다시 낮추는 작업이다. 워시는 현재 댐 수위 (6.7조 달러) 가 위기 대응 시기를 한참 지났는데도 여전히 높다고 본다. 그가 말한 '대폭 축소' 는 단순한 천천한 자연 감소가 아니라 펌프를 더 세게 돌리겠다는 신호다."
+        },
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "정치 동물인가, 진짜 매파인가",
+        "kicker": "경쟁 가설",
+        "prose": "크루그먼은 워시를 '매파라기보다 정치 동물' 이라 평한 적이 있다. 이 평가의 근거는 2024~25년 사이 워시의 발언이다. '현 금리가 너무 높다, 구조개혁이 받쳐주면 인하 여력 있다' 는 식의 모호한 표현을 반복했고, 트럼프 지명 직전 정치 시그널을 흘렸다.\n\n그러나 5월 13일 인준 청문회와 14일 발언은 다른 방향을 가리킨다. '대통령들은 금리 인하를 선호하는 경향이 있다, 연준 독립성은 연준에 달렸다' — 백악관 압박과 명시적으로 거리를 두는 표현이다 (출처: cnn.com, aljazeera.com). 시장은 즉시 매파 강도를 가격에 반영했고, 지명 직후의 비트코인·금·은 급락 흐름과 일관된다.\n\n두 평가는 봉합되지 않는다. 정치 동물 가설이 살아나는 조건은 분명하다. 6월 FOMC 의사록에 인하 시점 단서가 들어가거나, 트럼프와의 회동 직후 톤이 누그러진다면 그 가설이 다시 가동된다. 사실은 한 가지뿐이다. 현 시점에서는 매파 가설이 우위지만, 가설의 우열은 한 달 안에 검증된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "워시는 35년 만에 의장 자리에 앉은 매파지만, 그 매파가 진짜인지는 한 달 뒤에야 안다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "6월 16일, 첫 시험대",
+        "kicker": "분기점",
+        "prose": "취임 이후 첫 FOMC 는 6월 16~17일이다. 그 사이 5월 CPI 가 6월 중순 발표되며, 인플레이션 재상승 강도가 분기점을 결정한다. 부모 보고서가 깔아둔 박스권 동결 가지 안에서 다시 세 갈래로 갈라진다.\n\n베이스라인 (확률 55%) — 동결 유지 + 매파 톤 강화. 5월 CPI 가 컨센서스 부근으로 나오면 워시는 금리 동결을 선택하고 점도표에서 연내 인하 횟수를 한 단계 줄인다. 박스권 동결 시나리오가 굳어진다.\n\n긴축 가속 (확률 25%) — 동결 + QT 가속 명시. 5월 CPI 가 예상을 큰 폭으로 상회하면 워시는 대차대조표 축소에 구체 숫자를 붙인다. 채권 금리 추가 상승, 위험자산 재조정. 트럼프 공개 비판의 강도가 정치 비용 결정 변수.\n\n온건 균열 (확률 20%) — 매파 톤 약화. 5월 CPI 가 큰 폭으로 하회하거나 노동시장 균열이 보이면 '데이터 의존' 같은 모호한 표현 비중이 늘어난다. 정치 동물 가설이 다시 가동되고, 9월 인하 가능성이 가격에 들어온다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "6월 FOMC 분기 — 확률 × 시장 영향",
+            "subtitle": "원 크기는 백악관 충돌 강도. 베이스라인이 우위지만 충돌 강도는 긴축 가속에서 가장 크다",
+            "data": [
+              {
+                "label": "베이스라인 동결",
+                "x": 55,
+                "y": 40,
+                "size": 30
+              },
+              {
+                "label": "긴축 가속 (QT)",
+                "x": 25,
+                "y": 80,
+                "size": 60
+              },
+              {
+                "label": "온건 균열",
+                "x": 20,
+                "y": 55,
+                "size": 25
+              }
+            ],
+            "source": "분석가 추정 / 2026-05-15 / 부모 보고서 박스권 동결 가지 내 분기"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "한 달 안에 결정될 것들",
+        "kicker": "감시 신호",
+        "prose": "베이스라인이 확정됐다는 것은 분석이 끝났다는 뜻이 아니다. 부모 보고서의 5월 6일 베이스라인은 워시 취임으로 confirms_base 가 됐고, 이제 그 가지 안에서 다시 분기가 갈라진다.\n\n핵심 신호는 네 가지다. 첫째, 6월 FOMC 점도표가 연내 인하 횟수를 몇 단계로 줄이는지. 둘째, 5월 CPI 가 4월 대비 가속하는지. 셋째, 워시가 대차대조표 축소 일정에 구체 숫자를 붙이는지. 넷째, 트럼프가 워시를 공개 비판하는지 여부와 강도다.\n\n네 신호 가운데 두 개 이상이 같은 방향을 가리키면 위 시나리오 중 하나가 굳어진다. 단일 신호로는 가설을 흔들지 못한다. 부모 보고서의 감시 신호가 워시 취임이라는 단일 변수에 묶여 있었다면, 이번 후속 보고서의 감시 신호는 한 달 동안 누적되는 데이터 흐름이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "5월 6일에 깔아둔 베이스라인이 확정됐다. 단 확정과 굳어짐 사이에는 한 달의 거리가 있고, 그 거리가 다음 보고서의 입력이다.",
+    "watch_signals": [
+      {
+        "signal": "6월 FOMC 점도표 인하 횟수",
+        "description": "위원 17명이 연내 인하 횟수를 몇 단계로 줄이는지",
+        "indicates": "베이스라인 동결 vs 긴축 가속 분기 결정",
+        "deadline": "2026-06-17",
+        "icon": "📊"
+      },
+      {
+        "signal": "5월 CPI 발표",
+        "description": "4월 대비 가속·감속 여부와 폭",
+        "indicates": "긴축 가속 vs 온건 균열 분기 결정",
+        "deadline": "2026-06-12",
+        "icon": "📈"
+      },
+      {
+        "signal": "대차대조표 축소 일정 구체화",
+        "description": "워시가 QT 가속에 월별 한도 등 구체 숫자를 붙이는지",
+        "indicates": "긴축 가속 시나리오 트리거",
+        "deadline": "2026-06-17",
+        "icon": "🏦"
+      },
+      {
+        "signal": "트럼프 워시 공개 비판",
+        "description": "백악관의 독립성 압박이 트윗·기자회견에서 가시화되는지",
+        "indicates": "정치 동물 가설 재가동 또는 충돌 비용 가시화",
+        "deadline": "2026-07-15",
+        "icon": "⚔️"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "워시는 35년 만의 진짜 매파다. 2010년 QE2 단독 반대, 대차대조표 대폭 축소 발언, 청문회의 독립성 강조가 일관된 매파 정체성을 가리킨다.",
+        "side_b": "워시는 매파라기보다 정치 동물이다 (크루그먼). 2024~25년의 '인하 여력 있다' 발언과 트럼프 지명 수용 자체가 정치적 유연성의 증거다.",
+        "evidence": "5월 13~14일 청문회 발언과 시장의 매파 가격 반영은 매파 가설을, 2024~25년 모호 발언과 트럼프 지명 수용은 정치 동물 가설을 지지한다. 두 데이터셋이 같은 인물의 다른 국면을 가리킨다.",
+        "resolution": "현 시점에서는 매파 가설이 우위. 단 6월 FOMC 의사록에 인하 시점 단서가 들어가거나 트럼프 회동 직후 톤이 누그러지면 정치 동물 가설이 다시 가동된다. 검증은 한 달 안에 끝난다."
+      },
+      {
+        "side_a": "5월 13일 인준 통과는 정치 정당성의 확보다. 표결 결과 자체가 워시 매파 노선에 시장 신뢰를 부여한다.",
+        "side_b": "54-45 분열 통과는 정당성 기반이 좁다는 신호다. 매파 결정마다 백악관과의 마찰이 정치적 비용으로 누적되며, 임기 후반 정책 일관성을 위협한다.",
+        "evidence": "민주당 49명 중 1명 (페터먼) 만 교차 찬성. 역대 연준 의장 인준 가운데 정파 분열도가 높은 편.",
+        "resolution": "단기 (6월 FOMC) 에는 매파 신뢰 우위. 단 트럼프와의 충돌이 가시화되는 7~9월 구간에 분열 통과의 부담이 가중되며 정당성 약화 가설이 살아난다."
+      }
+    ],
+    "confidence_summary": "주요 9개 출처 (CNBC, CNN, WaPo, NPR, AlJazeera, Yahoo Finance, 국내 3종) 모두 5월 13~14일 사이 발행으로 신선도·다양성 양호. 단 인준 청문회 발언 원문이 한 곳에 모이지 않아 매파 강도 해석에 분석가 판단이 일부 들어감. 시나리오 확률 배분은 부모 보고서 분기 기반 추정.",
+    "confidence_score": 0.78,
+    "embedded_map": null
+  },
+  "executive_summary": "5월 13일 인준 54-45, 15일 취임. 트럼프 압박과 6월 첫 FOMC 사이의 한 달이 다음 분기점이다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260515_001844.html",
+  "report_theme": "slate_steel",
+  "parent_context": {
+    "parent_report_id": "analysis_20260506_005027",
+    "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260506_005027.html",
+    "parent_event_description": "",
+    "parent_scenarios": [],
+    "triggering_signal": {
+      "signal_id": "WS-20260505-39fbf196",
+      "description": "워시 취임사 매파 강도",
+      "measurement": "5월 15일 17대 연준 의장 취임. 인하 시점·조건 언급 여부",
+      "direction": "confirms_base",
+      "deadline": "2026-05-15",
+      "follow_up_action": "기준선(박스권 동결) vs 휴전 유지 시 9월 인하 시나리오 분기 시 후속 분석 재요청 권장",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260506_005027.html",
+      "parent_report_id": "analysis_20260506_005027",
+      "parent_chat_id": 50717095,
+      "fired": true,
+      "fired_at": "2026-05-14T15:13:10.760511",
+      "chain_depth": 0
+    },
+    "chain_depth": 0
+  },
+  "analysis_timestamp": "2026-05-15T00:13:12.204296",
+  "total_duration_seconds": 332.29859161376953,
+  "system_version": "v5.1.2",
+  "revision": 0
+}
