@@ -2110,24 +2110,32 @@
       }
     });
 
-    // v6.0.2 — 수평 content-fit viewBox: 실제 content bbox 에 *타이트하게* 맞춰
-    // 정확히 중앙 정렬 (CHART-AP-21).
-    // 배경: 첫 컬럼 라벨은 text-anchor:end 로 x0-6 (≈82px) 에서 왼쪽으로, 마지막
-    // 컬럼 라벨은 오른쪽으로 뻗어 고정 margin(left80/right120)을 넘으면 잘린다.
-    // v6.0.1 은 라벨이 렌더된 뒤 bbox 로 viewBox 를 넓혔으나 *확장만(expand-only)*
-    // — 원본 우측 경계(W=760)를 유지해, 컨텐츠 우측 끝(~608)과 760 사이 ~150px 가
-    // 빈 채로 남아 차트가 좌측으로 쏠려 보였다 (라벨은 안 잘리지만 중앙 정렬 실패).
-    // 픽스: viewBox x/width 를 content extent + 동일 pad 로 *양쪽 모두* 잡는다.
-    // preserveAspectRatio=xMidYMid 가 컨텐츠를 폭에 맞춰 정확히 중앙 배치 →
-    // 좌·우 어느 라벨도 안 잘리고 빈 여백도 없다. 수직(위 content-fit)은 vy/vh 보존.
+    // v6.0.3 — 수평 정렬: *흐름 코어(노드 컬럼)* 를 카드 중앙에 맞춘다 (CHART-AP-21).
+    // 배경/경위:
+    //  - 첫 컬럼 라벨(text-anchor:end, x0-6)은 왼쪽, 마지막 컬럼 라벨(x1+6)은 오른쪽
+    //    으로 뻗어 고정 margin(v5.4.7 left80/right120)을 넘으면 잘린다.
+    //  - v6.0.1 expand-only → 우측 빈 여백(좌측 쏠림). v6.0.2 bbox tight-fit →
+    //    라벨 포함 bbox 를 중앙에 두나, 좌·우 라벨 폭이 비대칭이면(여기선 좌측
+    //    "Colossus 2 (블랙웰 GPU 55.5만 발주)" ≫ 우측) *흐름 코어가 오른쪽으로 쏠림*.
+    // 픽스(핵심): 라벨 포함 bbox 가 아니라 **노드 코어**(첫 컬럼 x0 ~ 마지막 컬럼 x1)
+    // 를 중앙에 둔다. 좌·우 여백 m 을 *양쪽 라벨 overhang 중 큰 값* 으로 동일하게
+    // 잡으면 ① 코어 중심이 viewBox 중심과 일치(코어 중앙정렬) ② m ≥ 각 overhang
+    // 이라 어느 라벨도 안 잘림. 짧은 라벨 쪽엔 여분 여백이 생기지만 코어는 정중앙.
+    // preserveAspectRatio=xMidYMid 가 viewBox 중심을 카드 중심에 매핑. 수직 보존.
     try {
       const cur = (svg.attr('viewBox') || `0 0 ${W} ${H}`).split(/\s+/).map(Number);
       const vy = cur[1], vh = cur[3];
-      const bb = svg.node().getBBox();
+      const bb = svg.node().getBBox();              // 라벨 포함 실제 extent
+      const coreLeft = d3.min(nodes, n => n.x0);    // 첫 컬럼 노드 좌변
+      const coreRight = d3.max(nodes, n => n.x1);   // 마지막 컬럼 노드 우변
       const padX = 14;
-      if (bb.width > 0) {
-        svg.attr('viewBox',
-          `${(bb.x - padX).toFixed(1)} ${vy} ${(bb.width + 2 * padX).toFixed(1)} ${vh}`);
+      const overhangL = Math.max(0, coreLeft - bb.x);
+      const overhangR = Math.max(0, (bb.x + bb.width) - coreRight);
+      const m = Math.max(overhangL, overhangR) + padX;
+      const vx = coreLeft - m;
+      const vw = (coreRight - coreLeft) + 2 * m;
+      if (vw > 0) {
+        svg.attr('viewBox', `${vx.toFixed(1)} ${vy} ${vw.toFixed(1)} ${vh}`);
       }
     } catch (e) { /* getBBox 불가(레이아웃 전) — 기존 viewBox 유지 */ }
   }

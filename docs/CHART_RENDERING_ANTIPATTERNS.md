@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v6.0.2
+last_synced_with: v6.0.3
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -714,6 +714,19 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   2*pad`). 빈 여백이 사라져 `xMidYMid` 가 컨텐츠를 폭에 맞춰 정확히 중앙 배치.
 - 교훈 (보강): content-fit 은 **양방향 tight-fit** 이어야 한다. expand-only 는
   잘림은 막아도 비대칭 여백으로 정렬을 깬다 — 원본 프레임을 lower bound 로 쓰지 말 것.
+
+**재발 3 (v6.0.3) — 라벨 포함 bbox 중앙정렬 ≠ 흐름 코어 중앙정렬**:
+- 증상: v6.0.2 tight-fit 적용 후에도 "중앙이 아니다" (사용자 재보고, IMG_2641).
+- 근본 원인: v6.0.2 는 **라벨 포함 bbox** 를 중앙에 뒀다. 좌·우 라벨 폭이 비대칭
+  이면(여기선 좌측 "Colossus 2 (블랙웰 GPU 55.5만 발주)" ≫ 우측 "월 임대 매출
+  21.7억 달러") bbox 중심은 맞아도 *흐름 코어(노드/리본)는 넓은 라벨 반대쪽으로
+  쏠린다*. 사람 눈은 라벨이 아니라 **흐름 다이어그램** 의 중앙을 본다.
+- **Fix (v6.0.3)**: 정렬 기준을 라벨 포함 bbox → **노드 코어**(첫 컬럼 `x0` ~ 마지막
+  컬럼 `x1`)로 변경. 좌·우 여백 `m = max(overhangL, overhangR) + pad` 로 *동일* 하게
+  잡아 ① 코어 중심 = viewBox 중심(코어 중앙정렬) ② `m ≥ 각 overhang` 으로 무클립.
+  짧은 라벨 쪽에 여분 여백이 생기나 흐름은 정중앙.
+- 교훈 (재보강): "차트 중앙정렬" 의 기준은 **시각적 주체(흐름/플롯 영역)** 이지
+  텍스트 라벨 포함 bbox 가 아니다. 라벨은 비대칭 장식 — 코어를 기준으로 대칭 margin.
 
 **한계 — 향후 강화 옵션**:
 - (A) 동적 margin 계산 — 실제 라벨 텍스트 너비 (canvas.measureText) 측정 후
