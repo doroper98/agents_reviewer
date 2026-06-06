@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.0.2
+last_synced_with: v6.0.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.0.3 — sankey 흐름 코어 중앙 정렬 (CHART-AP-21 재발 3, bbox → 코어 기준)
+
+- **증상(사용자 재보고, IMG_2641)** — v6.0.2 tight-fit 후에도 "중앙이 아니다".
+- **근본 원인** — v6.0.2 는 **라벨 포함 bbox** 를 중앙에 뒀다. 좌·우 라벨 폭이
+  비대칭(좌측 "Colossus 2 (블랙웰 GPU 55.5만 발주)" ≫ 우측)이면 bbox 중심은 맞아도
+  *흐름 코어(노드/리본)가 넓은 라벨 반대쪽으로 쏠린다*. 사람 눈은 라벨이 아니라
+  흐름 다이어그램의 중앙을 본다.
+- **Fix** — 정렬 기준을 라벨 포함 bbox → **노드 코어**(첫 컬럼 `x0` ~ 마지막 컬럼
+  `x1`)로 변경. 좌·우 여백 `m = max(overhangL, overhangR) + pad(14)` 로 동일하게
+  잡아 ① 코어 중심 = viewBox 중심 ② `m ≥ 각 overhang` 으로 무클립. 짧은 라벨 쪽에
+  여분 여백이 생기나 흐름은 정중앙. 수직 content-fit(CHART-AP-20)은 vy/vh 보존.
+- charts.js 만 변경. 발행본은 `patch_report.py <id> --rerender-only` 로 동일 URL
+  재렌더 시 적용. CHART-AP-21 "재발 3" 항목 추가.
 
 ## v6.0.2 — sankey 중앙 정렬 fix (CHART-AP-21 재발 2, expand-only → tight-fit)
 
