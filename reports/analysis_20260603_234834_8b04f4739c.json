@@ -1,0 +1,507 @@
+{
+  "request": {
+    "event_description": "다음에 대해 상세한 분석 보고서를 내.\nNorth Korea conducted a live-fire test of a modular missile launcher that resembled a US HIMARS and a tactical cruise missile launcher on May  26 as part of its efforts to improve its conventional artillery capabilities. These systems may have the ability to be nuclear armed,  which would complicate US and South Korean efforts to neutralize North  Korean nuclear strike capabilities.\n\nMore:\nNorth Korea invited Singaporean Foreign Minister  Vivian Balakrishnan to Pyongyang for the first time in seven years.  North Korea is likely seeking to gain diplomatic support from Southeast  Asian states, challenge nonproliferation norms, and improve perceptions of the regime. Singapore denied that it will facilitate dialogue between the United States and North Korea.",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "북한은 2019년 KN-25 (600mm 초대형 방사포) 이래 다목적·다구경 발사대로 재래식 화력과 전술핵 투발수단의 경계를 흐려 왔다. 2023년 군사 퍼레이드에서 HIMARS 유사 발사대를 처음 공개한 뒤 약 3년 만에 실사격 시험에 도달했고, 이번 모듈형 설계는 단일 차량으로 유도 로켓·전술 탄도미사일을 모두 운용함으로써 표적 식별·선제 무력화를 어렵게 만드는 방향. AI 종말유도 전술 순항미사일은 저고도 회피기동으로 한국·미국의 미사일 방어망 (PAC-3 / L-SAM / THAAD) 하단을 노린 설계로 보임. 한편 싱가포르의 방북은 2018년 미·북 정상회담 개최국으로서의 위상에 기댄 동남아 외교 카드 — 북한은 동남아 우호국 확대로 비확산 규범에 도전하고 제재 이행국 풀을 약화시키려는 의도로 풀이됨. 다만 싱가포르가 미·북 대화 중재 역할을 즉시 부인한 점은 이 채널이 '중재'가 아닌 '청취·관찰'에 머무름을 시사함.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-05-26",
+            "event": "김정은 참관, 경량 다목적 발사대·240mm 유도 로켓·AI 전술 순항미사일 3종 시험발사",
+            "impact": "올해 8번째 시험. KCNA '뚜렷한 군사적 전진의 신호'로 보도"
+          },
+          {
+            "date": "2026-05-26",
+            "event": "싱가포르 외무장관 발라크리쉬난, 평양 도착 (5/26~27 공식 방문)",
+            "impact": "2018년 이후 첫 싱가포르 외무장관 방북. 최선희 북한 외무상과 양자 회담"
+          },
+          {
+            "date": "2026-05-27",
+            "event": "발라크리쉬난, 최고인민회의 상임위원장 조용원 예방",
+            "impact": "북한 내부 정치 동향 브리핑 받음"
+          },
+          {
+            "date": "2026-05-28",
+            "event": "발라크리쉬난, 싱가포르 언론 인터뷰",
+            "impact": "'북한은 미·한과의 대외관여보다 군사적 억지력 강화에 더 집중' 발언. 싱가포르의 미·북 중재 가능성 부인"
+          },
+          {
+            "date": "2026-05-29",
+            "event": "발라크리쉬난 '북한은 남북통일을 명확히 거부' 공개 발언",
+            "impact": "방북 직후 북측 입장을 외부에 전달"
+          },
+          {
+            "date": "2026-06-02",
+            "event": "AEI 한반도 업데이트, 이번 시험의 핵 무장 가능성·미한 핵억지 영향 분석",
+            "impact": "이중용도(재래·핵) 탑재 가능성이 사전 무력화 작전 복잡화"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "북한, 미국 HIMARS 닮은 모듈형 발사대·전술 순항미사일 발사 시험",
+    "event_name_en": "North Korea Tests HIMARS-Like Modular Launcher and AI-Guided Tactical Cruise Missile",
+    "date": "2026-05-26",
+    "category": "안보·군사 / 한반도",
+    "summary": "북한이 5월 26일 김정은 참관 아래 ① 미국 HIMARS 와 외형이 닮은 경량 모듈형 다목적 발사대 ② 사거리를 늘린 240mm 유도 로켓 ③ AI 종말유도 저고도 전술 순항미사일 3종을 동시 시험함. 발사대는 240mm 유도 로켓과 화성-11Ra 단거리 탄도미사일을 교환 장착 가능한 구조로, 핵탄두 호환 가능성이 미국·한국의 핵 무력화 시나리오를 복잡하게 만들 우려가 제기됨. 같은 26~27일 싱가포르 비비안 발라크리쉬난 외무장관이 평양을 방문(2018년 이후 8년 만)했으나, 싱가포르는 미·북 대화 중재 가능성은 명확히 부인함.",
+    "timeline": [
+      {
+        "date": "2026-05-26",
+        "event": "김정은 참관, 경량 다목적 발사대·240mm 유도 로켓·AI 전술 순항미사일 3종 시험발사",
+        "impact": "올해 8번째 시험. KCNA '뚜렷한 군사적 전진의 신호'로 보도"
+      },
+      {
+        "date": "2026-05-26",
+        "event": "싱가포르 외무장관 발라크리쉬난, 평양 도착 (5/26~27 공식 방문)",
+        "impact": "2018년 이후 첫 싱가포르 외무장관 방북. 최선희 북한 외무상과 양자 회담"
+      },
+      {
+        "date": "2026-05-27",
+        "event": "발라크리쉬난, 최고인민회의 상임위원장 조용원 예방",
+        "impact": "북한 내부 정치 동향 브리핑 받음"
+      },
+      {
+        "date": "2026-05-28",
+        "event": "발라크리쉬난, 싱가포르 언론 인터뷰",
+        "impact": "'북한은 미·한과의 대외관여보다 군사적 억지력 강화에 더 집중' 발언. 싱가포르의 미·북 중재 가능성 부인"
+      },
+      {
+        "date": "2026-05-29",
+        "event": "발라크리쉬난 '북한은 남북통일을 명확히 거부' 공개 발언",
+        "impact": "방북 직후 북측 입장을 외부에 전달"
+      },
+      {
+        "date": "2026-06-02",
+        "event": "AEI 한반도 업데이트, 이번 시험의 핵 무장 가능성·미한 핵억지 영향 분석",
+        "impact": "이중용도(재래·핵) 탑재 가능성이 사전 무력화 작전 복잡화"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "5월 26일 시험 무기 체계 수",
+        "value": "3종 동시",
+        "context": "경량 다목적 발사대 + 240mm 유도 로켓 + 전술 순항미사일. 단일 시험행사로는 이례적 규모"
+      },
+      {
+        "label": "전술 순항미사일 사거리",
+        "value": "약 100km",
+        "context": "북한 측 주장. 활공·추진 결합 비행, AI 종말유도. 서울~휴전선 종심 전 영역 사정권"
+      },
+      {
+        "label": "발사대 호환 무장",
+        "value": "2종 (240mm 유도 로켓 + 화성-11Ra)",
+        "context": "발사관 교체식 모듈 설계. 화성-11Ra(KN-23 계열)는 북한이 핵탄두 호환 가능하다고 주장한 단거리 탄도미사일"
+      },
+      {
+        "label": "북한의 2026년 시험 횟수",
+        "value": "8회",
+        "context": "5/26 시험 포함. 연초부터 전구급(theater) 타격체계 모더나이즈 가속"
+      },
+      {
+        "label": "싱가포르~북한 외교관계 햇수",
+        "value": "51년 (2025년 50주년)",
+        "context": "1975년 수교. 2018년 트럼프-김정은 1차 정상회담 개최지"
+      },
+      {
+        "label": "발라크리쉬난 직전 방북 이후 경과",
+        "value": "8년 (2018→2026)",
+        "context": "사용자 메모의 '7년'은 부정확. 싱가포르 외교부 공식 발표 기준 2018년이 마지막"
+      }
+    ],
+    "background": "북한은 2019년 KN-25 (600mm 초대형 방사포) 이래 다목적·다구경 발사대로 재래식 화력과 전술핵 투발수단의 경계를 흐려 왔다. 2023년 군사 퍼레이드에서 HIMARS 유사 발사대를 처음 공개한 뒤 약 3년 만에 실사격 시험에 도달했고, 이번 모듈형 설계는 단일 차량으로 유도 로켓·전술 탄도미사일을 모두 운용함으로써 표적 식별·선제 무력화를 어렵게 만드는 방향. AI 종말유도 전술 순항미사일은 저고도 회피기동으로 한국·미국의 미사일 방어망 (PAC-3 / L-SAM / THAAD) 하단을 노린 설계로 보임. 한편 싱가포르의 방북은 2018년 미·북 정상회담 개최국으로서의 위상에 기댄 동남아 외교 카드 — 북한은 동남아 우호국 확대로 비확산 규범에 도전하고 제재 이행국 풀을 약화시키려는 의도로 풀이됨. 다만 싱가포르가 미·북 대화 중재 역할을 즉시 부인한 점은 이 채널이 '중재'가 아닌 '청취·관찰'에 머무름을 시사함.",
+    "sources": [
+      "https://news.usni.org/2026/05/27/north-korea-tests-new-lightweight-launch-system-and-tactical-cruise-missiles",
+      "https://www.nknews.org/2026/05/north-korea-tests-new-modular-missile-launcher-and-tactical-cruise-missiles/",
+      "https://www.france24.com/en/asia-pacific/20260527-north-korea-tests-new-lightweight-multi-purpose-missile-launch-system",
+      "https://en.defence-ua.com/industries/north_korea_tests_juche_himars_likely_hermes_clone_what_two_new_systems_reveal-18653.html",
+      "https://www.armyrecognition.com/news/army-news/2026/north-korea-tests-low-altitude-tactical-cruise-missile-designed-to-penetrate-south-korean-defenses",
+      "https://www.aei.org/articles/korean-peninsula-update-june-2-2026/",
+      "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/working-visit-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-to-pyongyang--the-democratic-people-s-republic-of-korea--26-to-27-may-2026/",
+      "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/transcript-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-s-wrap-up-interview-with-singapore-media--28-may-2026/",
+      "https://thediplomat.com/2026/05/singaporean-foreign-minister-winds-up-working-visit-to-north-korea/",
+      "https://en.sedaily.com/finance/2026/05/29/north-korea-clearly-rejects-unification-with-south",
+      "https://en.wikipedia.org/wiki/KN-25"
+    ],
+    "glossary": [
+      {
+        "term": "HIMARS (High Mobility Artillery Rocket System)",
+        "definition": "미국 록히드마틴이 만든 차량 탑재 다연장 로켓·전술 미사일 발사체. 트럭 1대에 발사관 모듈을 통째로 교체해 로켓과 미사일을 가려 쏠 수 있는 게 핵심 장점. 우크라이나 전쟁에서 명성을 얻음"
+      },
+      {
+        "term": "모듈형 발사대 (modular launcher)",
+        "definition": "발사관·탄약을 한 덩어리(포드)로 교체할 수 있는 구조. 같은 차량으로 로켓·미사일을 골라 쏠 수 있어 표적 분류가 어려워짐"
+      },
+      {
+        "term": "전술 순항미사일 (tactical cruise missile)",
+        "definition": "낮은 고도로 날아가는 단거리 비행 미사일. 탄도미사일과 달리 비행 내내 추진력이 있어 회피 기동과 종말 유도가 쉬움"
+      },
+      {
+        "term": "AI 종말유도 (AI terminal guidance)",
+        "definition": "비행 마지막 단계에서 인공지능이 표적 영상·신호를 식별해 명중률을 높이는 방식. 표적의 모양·열·전파 특성을 학습해 회피·기만에 강함"
+      },
+      {
+        "term": "이중용도(dual-capable) 무기",
+        "definition": "재래식 탄두와 핵탄두를 모두 장착할 수 있는 무기. 외형만으로 핵 여부를 식별할 수 없어 선제 타격이 어려움 — 핵 억지의 회색지대"
+      },
+      {
+        "term": "화성-11Ra",
+        "definition": "북한의 단거리 탄도미사일(KN-23 계열)의 개량형. 북한은 소형 핵탄두(화산-31) 호환 가능을 주장"
+      },
+      {
+        "term": "KCNA (조선중앙통신)",
+        "definition": "북한 관영 통신사. 무기 시험·외교 일정의 공식 발표 창구"
+      },
+      {
+        "term": "ARF (ASEAN Regional Forum, 아세안지역안보포럼)",
+        "definition": "동남아·동북아 안보 협의체. 북한도 회원국. 발라크리쉬난이 이번에 최선희를 초청한 무대"
+      },
+      {
+        "term": "비확산 규범 (nonproliferation norms)",
+        "definition": "핵무기·운반체계의 확산을 막기 위한 국제 합의 체계 (NPT·UN 제재 결의 등). 북한과의 우호 외교는 이 규범에 균열을 일으킬 수 있음"
+      }
+    ],
+    "confidence_score": 0.85,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "provenance": [
+      {
+        "fact": "북한이 2026-05-26 김정은 참관 아래 3종 무기 동시 시험",
+        "source_date": "2026-05-27",
+        "scope_note": "시험 당일은 5/26, 발표·보도는 5/27",
+        "source_url": "https://news.usni.org/2026/05/27/north-korea-tests-new-lightweight-launch-system-and-tactical-cruise-missiles"
+      },
+      {
+        "fact": "전술 순항미사일 사거리 약 100km, AI 종말유도",
+        "source_date": "2026-05-27",
+        "scope_note": "북한 측 주장치. 활공·추진 결합 비행. 100km 는 단일 미사일 최대 사거리, 발사대 사거리 아님",
+        "source_url": "https://english.alarabiya.net/News/world/2026/05/27/north-korea-tests-new-multipurpose-missile-launch-system-kcna"
+      },
+      {
+        "fact": "발사대가 240mm 유도 로켓과 화성-11Ra 두 종을 교환 장착",
+        "source_date": "2026-05-27",
+        "scope_note": "발사관 모듈 단위 교체. 동시 발사 아님",
+        "source_url": "https://en.defence-ua.com/industries/north_korea_tests_juche_himars_likely_hermes_clone_what_two_new_systems_reveal-18653.html"
+      },
+      {
+        "fact": "올해(2026년) 북한의 8번째 시험",
+        "source_date": "2026-05-27",
+        "scope_note": "1~5월 누적, 미사일·로켓 시험 통합 집계",
+        "source_url": "https://www.manilatimes.net/2026/05/28/world/asia-oceania/north-korea-tests-new-multi-purpose-missile-launch-system/2352993"
+      },
+      {
+        "fact": "발라크리쉬난 평양 방문 (2026-05-26~27, 2018년 이후 첫 방북)",
+        "source_date": "2026-05-27",
+        "scope_note": "싱가포르 외교부 공식 발표. 사용자 메모의 '7년'은 부정확, 실제 8년",
+        "source_url": "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/working-visit-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-to-pyongyang--the-democratic-people-s-republic-of-korea--26-to-27-may-2026/"
+      },
+      {
+        "fact": "싱가포르, 미·북 대화 중재 가능성 부인",
+        "source_date": "2026-05-28",
+        "scope_note": "발라크리쉬난 본인 발언 (싱가포르 매체 인터뷰)",
+        "source_url": "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/transcript-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-s-wrap-up-interview-with-singapore-media--28-may-2026/"
+      },
+      {
+        "fact": "북한은 미·한과의 외교 관여보다 군사적 억지력 강화에 집중 — 발라크리쉬난 평가",
+        "source_date": "2026-05-29",
+        "scope_note": "방북 직후 본인의 외부 평가. 북한 공식 입장 아님",
+        "source_url": "https://www.freemalaysiatoday.com/category/world/2026/05/29/north-korea-not-keen-to-engage-with-the-us-or-south-korea-says-singapores-foreign-minister"
+      },
+      {
+        "fact": "이번 시험 체계의 핵 무장 가능성이 미한 핵억지 작전을 복잡하게 만듦 — 분석",
+        "source_date": "2026-06-02",
+        "scope_note": "AEI 분석가 견해. 북한이 직접 핵 탑재를 입증한 시험은 아님",
+        "source_url": "https://www.aei.org/articles/korean-peninsula-update-june-2-2026/"
+      }
+    ],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "북한, 발사대 하나에 무기 둘. 같은 날 평양에 싱가포르",
+    "deck": "지난 26일 김정은이 본 시험은 차량 한 대로 유도 로켓과 단거리 미사일을 바꿔 끼우는 새 발사대였다. 같은 날 평양을 찾은 싱가포르 외무장관은 미국과 북한 사이 다리 역할은 하지 않는다고 곧장 선을 그었다.",
+    "sections": [
+      {
+        "heading": "같은 날 평양에서 일어난 두 일",
+        "kicker": "한반도, 두 갈래 신호",
+        "prose": "북한이 같은 날 두 가지 신호를 보냈다는 점이 이 사건의 출발선이다. 하나는 무기, 다른 하나는 외교다. 두 사건은 별개로 진행됐지만 묶어서 읽으면 북한이 외부 세계에 어떤 메시지를 던지려 했는지가 보인다.\n\n무기 쪽 시험에는 세 종류가 한 자리에 모였다. 첫째는 미국 육군의 차량형 다연장 로켓 체계와 외형이 닮은 새 경량 발사대였다. 차량 한 대에 발사관을 통째로 갈아 끼우는 모듈식 구조로, 240mm 유도 로켓과 KN-23 계열로 분류되는 화성-11 계열 단거리 탄도미사일을 모두 쏠 수 있다고 한다. 둘째는 사거리를 늘렸다는 240mm 유도 로켓이고, 셋째는 사거리 약 100km를 주장한 저고도 전술 순항미사일이다. 북한은 이 순항미사일에 인공지능 종말 유도 기능을 넣었다고 발표했다.\n\n외교 쪽에서는 싱가포르 외무장관이 8년 만에 평양을 찾았다. 2018년 트럼프와 김정은의 첫 정상회담이 싱가포르에서 열렸던 인연이 다시 부각됐다. 그러나 발라크리쉬난은 평양에서 돌아온 직후 자국 언론에 미국과 북한을 잇는 중재 역할은 맡지 않는다고 분명히 밝혔다. 방북의 성격은 청취와 관찰에 가까웠다는 뜻이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "오늘은 6월 3일이다. 일주일 전인 지난 5월 26일 평양 인근에서는 김정은이 지켜보는 가운데 세 종류의 무기가 동시에 발사됐다. 그날 오후, 평양 순안공항에는 싱가포르 외무장관 비비안 발라크리쉬난을 태운 비행기가 내렸다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "같은 날 시험 무기",
+            "value": "3종",
+            "sublabel": "발사대·240mm 유도 로켓·전술 순항미사일"
+          },
+          {
+            "label": "순항미사일 사거리",
+            "value": "약 100km",
+            "sublabel": "북한 측 주장"
+          },
+          {
+            "label": "발사대 호환 무장",
+            "value": "2종",
+            "sublabel": "240mm 로켓과 화성-11Ra 교체식"
+          },
+          {
+            "label": "올해 북한 시험",
+            "value": "8회",
+            "sublabel": "5/26 시험 포함, 1~5월 누계"
+          },
+          {
+            "label": "직전 싱가포르 외무장관 방북",
+            "value": "8년 전",
+            "sublabel": "2018년 이후 처음"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "HIMARS",
+            "explanation": "미국 육군이 운용하는 차량형 다연장 로켓 체계. 한 대의 차량에 여러 발의 로켓이나 단거리 미사일을 실어 빠르게 쏘고 곧장 이동하는 것이 특징이다."
+          },
+          {
+            "term": "화성-11Ra",
+            "explanation": "북한이 개발한 단거리 탄도미사일 계열로, 외부에서는 KN-23으로 부른다. 북한은 이 미사일에 작은 핵탄두를 실을 수 있다고 주장해 왔다."
+          }
+        ]
+      },
+      {
+        "heading": "발사대 하나에 무기 둘, 그 자체가 메시지",
+        "kicker": "",
+        "prose": "이번 시험의 핵심은 발사대다. 같은 차량에서 유도 로켓과 단거리 미사일을 모두 쏠 수 있게 되면, 외부에서 위성이나 정찰 자산으로 차량을 식별하는 것만으로는 그 안에 무엇이 들어 있는지 알기 어려워진다. 차량을 봐도 사격 직전까지는 그 발사관 안에 재래식 로켓이 든 것인지, 단거리 탄도미사일이 든 것인지 가려내기가 어렵다는 뜻이다.\n\n문제는 이 단거리 탄도미사일이 북한이 핵탄두 탑재 가능성을 주장해 온 KN-23 계열이라는 점이다. 같은 차량에 핵을 실을 수도, 재래식을 실을 수도 있다고 하면 한국과 미국이 오랫동안 다듬어 온 사전 무력화 구상이 흔들린다. 사전 무력화는 북한이 핵미사일을 쏘기 전 단계에 미리 발사대를 타격해 무력화한다는 구상이다. 어느 차량이 핵 차량인지 가릴 수 없는 환경에서는 모든 의심 차량을 같은 강도로 다뤄야 하는데, 그러면 작전 부담이 폭증한다.\n\n이런 다목적 발사대의 흐름은 2019년 KN-25라 부르는 초대형 방사포 등장에서 시작됐다. 2023년 군사 퍼레이드에서 외형이 미국 발사대와 닮은 차량이 처음 모습을 드러냈고, 약 3년 만에 실사격 시험까지 왔다. 시제품 단계를 지나 실험 단계에 들어왔다는 신호로 받아들이는 분석가가 많다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "어느 차량에 핵이 들었는지 알 수 없는 전장에서, 모든 차량은 똑같이 의심받는다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "낮게 나는 미사일, 인공지능이라는 수식어",
+        "kicker": "",
+        "prose": "발사대 못지않게 신경 쓰이는 것이 세 번째 무기인 저고도 전술 순항미사일이다. 북한은 사거리 약 100km에 인공지능 종말 유도 기능을 넣었다고 발표했다. 종말 유도는 미사일이 표적 가까이에 닿았을 때 마지막 단계에서 스스로 진로를 조정하는 기능을 가리킨다.\n\n낮게 난다는 점이 핵심이다. 한국과 미국이 한반도에 깔아 둔 미사일 방어망은 패트리엇 PAC-3, 한국형 장거리 지대공 미사일 L-SAM, 사드(THAAD) 세 층으로 이뤄져 있다. 이 체계는 대체로 고도 어느 선 위에서 날아오는 표적을 잡도록 설계됐다. 저고도로 회피기동을 하는 순항미사일은 이 망의 아래로 빠져나갈 가능성이 있다. 사거리 100km는 휴전선 일대에서 쏘면 수도권 깊숙한 곳까지 사정권에 들어오는 거리다.\n\n다만 인공지능이라는 수식어는 그대로 받아 적기 어렵다. 어떤 알고리즘이, 어떤 센서로, 어느 표적 라이브러리를 학습했는지 외부에 공개된 자료는 없다. 영상 매칭 수준의 단순 패턴 인식부터 표적 자율 선정까지 폭이 매우 넓다. 북한 측 주장으로만 다루는 편이 안전하다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "PAC-3, L-SAM, THAAD",
+            "explanation": "한국과 미군이 운용하는 미사일 요격 체계. PAC-3는 비교적 낮은 고도, L-SAM은 중간 고도, THAAD는 더 높은 고도에서 날아오는 표적을 잡도록 설계돼 있다. 한반도에 세 층으로 깔려 있다."
+          }
+        ]
+      },
+      {
+        "heading": "싱가포르의 방북, 다리가 아니라 창문",
+        "kicker": "",
+        "prose": "같은 날 평양에 도착한 싱가포르 외무장관은 그 자체로도 외교 신호였지만, 거의 곧바로 그 의미의 한계가 분명해졌다. 발라크리쉬난은 5월 28일 자국 언론과의 마무리 인터뷰에서 북한이 지금 미국·한국과의 대외 관여보다는 군사 억지력 강화에 더 집중하고 있다고 평가했다. 미·북 사이 중재 가능성에는 분명히 선을 그었다.\n\n싱가포르가 방북 자체는 진행하면서 중재 역할은 부인한 것이 이 외교의 성격을 보여 준다. 싱가포르는 1975년부터 북한과 외교 관계를 유지해 온 동남아 우호국 중 하나다. 2018년 미·북 정상회담 개최국이라는 외교 자산도 있다. 그렇지만 미국 트럼프 행정부 2기와 북한 사이의 거리가 멀어진 지금, 누가 다리를 자처할 만한 환경은 아니다. 싱가포르 입장에서는 채널을 끊지 않은 채 평양의 현 분위기를 직접 듣고 오는 것이 실리에 더 가깝다.\n\n발라크리쉬난이 방북 직후 공개석상에서 북한이 남북통일을 명확히 거부하더라는 메시지를 전한 점도 같은 맥락에서 읽을 수 있다. 평양 내부에서 직접 들은 입장을 외부에 정확히 전달한다는 점에서, 이 방문은 다리보다는 창문에 가깝다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "남북통일 거부 발언",
+            "explanation": "북한은 2024년 김정은의 통일 노선 폐기 선언 이후 남북을 별개의 국가 사이 관계로 다시 정의하는 움직임을 이어 왔다. 싱가포르 외무장관은 평양에서 이 입장을 재확인했다고 밝혔다."
+          }
+        ]
+      },
+      {
+        "heading": "앞으로 갈 수 있는 네 갈래 길",
+        "kicker": "",
+        "prose": "여기서부터는 추정의 영역이다. 어느 길로 가는지는 앞으로 몇 달 사이의 신호가 결정한다.\n\n첫째, 무기 양산과 추가 시험으로 굳어지는 길이다. 이번 시험이 시제품의 자축 행사에 그치지 않고 같은 발사대와 미사일이 부대 단위로 배치되는 단계로 넘어가면, 한미는 사전 무력화가 아니라 발사 후 대응 위주로 셈을 다시 짜야 한다. 가능성이 가장 높은 시나리오로 본다.\n\n둘째, 한미가 사전 무력화 교리를 보강하는 길이다. 차량 식별이 어려워진 상황에서 위성·인공지능 정찰을 더 촘촘히 깔고, 발사대 자체보다 보급·지휘소 등 후방 핵심 노드를 노리는 방향으로 옮겨 갈 수 있다. 올가을 한미 안보협의회 회의에서 관련 문구가 나오는지를 지켜봐야 한다.\n\n셋째, 동남아 우호국 다변화로 북한이 제재 이행 압박을 우회하는 길이다. 싱가포르 방문 자체는 중재가 아니었지만, 북한이 동남아 국가들과 정상급·장관급 만남 빈도를 늘리는 흐름이 지속되면 비확산 규범의 그물망에 빈자리가 늘어난다. 다만 싱가포르가 곧장 거리를 둔 점은 이 길의 성공이 쉽지 않음을 보여 준다.\n\n넷째, 위기 진정의 길이다. 가능성이 가장 낮은 시나리오지만 완전히 닫혀 있지는 않다. 미국 행정부가 깜짝 외교 카드를 꺼내거나, 북한 내부의 경제 사정이 군비 우선순위를 흔드는 시점이 오면 시험 빈도가 일시적으로 줄어들 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "단단해진 칼인가, 떨리는 손인가",
+        "kicker": "",
+        "prose": "지난 한 달 사이 북한의 무기 시험과 외교 행보를 어떻게 읽을지는 분석가들 사이에서 갈린다. 양쪽 의견은 같은 사실을 보고도 다른 결론을 낸다.\n\n한쪽은 이 시험을 북한의 자신감으로 본다. 모듈식 발사대 같은 통합 무기는 단기간에 만들어지지 않는다. 2023년 외형 공개에서 2026년 실사격까지 3년이 걸렸다는 사실은 북한이 무기 개발 흐름을 안정적으로 끌고 가고 있다는 신호로 읽을 수 있다.\n\n다른 쪽은 이번 시험의 빈도와 강도 자체를 불안의 표출로 본다. 올해 5월까지만 시험이 8회다. 평소보다 잦은 시험은 협상 카드가 약해진 상황에서 외부에 자신을 과시해야 하는 압박 때문일 수 있다는 해석이다. 싱가포르의 방북이 중재가 아닌 청취에 머문 점도 북한이 외부로부터 진지한 협상 의사를 받지 못하고 있다는 사실을 우회적으로 보여 준다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "같은 발사 영상을 보고도 누구는 칼이 단단해지는 소리를 듣고, 누구는 손이 떨리는 모습을 본다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      }
+    ],
+    "closing": "지난 26일 평양에서 같은 날 일어난 두 일은 따로 보면 흔한 시험과 흔한 방문이다. 묶어서 보면 북한이 무력은 굳히고 외교는 닫지 않으려 한다는 두 갈래 신호다. 다음 한두 달의 시험 빈도와 한미 회의 문구가 어느 갈래를 굵게 만들지 결정한다.",
+    "watch_signals": [
+      {
+        "signal": "북한 6월 추가 시험 빈도",
+        "description": "이번에 시험한 발사대·240mm 유도 로켓·전술 순항미사일 중 어느 무기가 다시 등장하는지, 6월 한 달 동안의 시험 횟수 추이",
+        "indicates": "양산·배치 가속 시나리오 vs 일회성 자축 시나리오 분기",
+        "deadline": "2026-06-30",
+        "icon": "🛰"
+      },
+      {
+        "signal": "올가을 한미 안보협의회 발표문",
+        "description": "한국 국방장관과 미국 국방장관의 한미 안보협의회 공동 성명에서 사전 무력화·확장억지 관련 문구가 어떻게 바뀌는지",
+        "indicates": "한미가 사전 무력화 교리를 보강하는 길로 갈지의 1차 신호",
+        "deadline": "2026-10 또는 2026-11",
+        "icon": "📋"
+      },
+      {
+        "signal": "북한 외무성 답방·후속 외교",
+        "description": "최선희 외무상 또는 부상급 인사의 싱가포르 답방, 추가 동남아 순방 일정 공개 여부",
+        "indicates": "동남아 우호국 다변화 시나리오의 추진력",
+        "deadline": "2026-09",
+        "icon": "✈"
+      },
+      {
+        "signal": "AI 종말유도 미사일 양산 신호",
+        "description": "위성 영상으로 포착되는 관련 공장의 확장 공사, 추가 시험 영상에서 동일 미사일의 부대 단위 운용 정황",
+        "indicates": "기술 시연 단계에서 실전 배치 단계로 넘어가는지의 신호",
+        "icon": "🏭"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "이번 3종 동시 시험은 북한이 3년에 걸친 모듈식 무기 통합 작업을 시제품에서 실사격 단계로 끌어올린 자신감의 표현이다.",
+        "side_b": "다만 같은 시험을 올해 들어 8번이나 몰아쓴 빈도는 외부로부터 진지한 협상 의사를 얻지 못한 상황에서 자기 존재를 끌어올리려는 조바심에 더 가깝다.",
+        "evidence": "한쪽은 2023년 발사대 외형 공개부터 2026년 실사격까지의 안정적 일정과 모듈식 통합의 기술적 난이도를 가리킨다. 다른 쪽은 5개월 만에 8회라는 시험 빈도, 싱가포르가 곧장 중재 가능성을 부인한 점, 트럼프 행정부 2기와의 외교 채널 부재를 가리킨다.",
+        "resolution": "현 시점에서는 자신감 쪽에 약간 더 무게를 둔다. 시험 빈도만으로 조바심이라 단정하기에는 무기 시스템의 완성도가 너무 일관되게 올라가고 있다. 다만 6월 안에 외교 채널이 더 열리지 않은 채 시험 빈도가 다시 늘면 조바심 쪽 가설이 살아난다."
+      }
+    ],
+    "contradictions_heading": "단단해진 칼인가, 떨리는 손인가",
+    "timeline_flow": {
+      "heading": "다목적 발사대가 걸어온 길과 갈 길",
+      "past": [
+        {
+          "date": "2019-08",
+          "label": "KN-25 초대형 방사포 첫 공개",
+          "note": "다구경 발사대 흐름의 출발"
+        },
+        {
+          "date": "2023-02",
+          "label": "군사 퍼레이드에서 미국 발사대 닮은 차량 등장",
+          "note": "외형 단계 공개"
+        },
+        {
+          "date": "2026-05-26",
+          "label": "김정은 참관 아래 모듈식 발사대 실사격 시험",
+          "note": "시제품에서 실험 단계로"
+        },
+        {
+          "date": "2026-05-26",
+          "label": "싱가포르 외무장관, 8년 만에 평양 도착",
+          "note": "같은 날 외교 신호"
+        },
+        {
+          "date": "2026-05-28",
+          "label": "싱가포르, 미·북 중재 가능성 명시적 부인",
+          "note": "방북의 성격이 청취·관찰임이 드러남"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-06-30",
+          "label": "6월 한 달 시험 빈도 집계",
+          "branch": "양산 가속 시나리오"
+        },
+        {
+          "date": "2026-09",
+          "label": "북한 외무성의 동남아 후속 외교 여부",
+          "branch": "동남아 우호국 다변화 시나리오"
+        },
+        {
+          "date": "2026-10",
+          "label": "한미 안보협의회 공동 성명 발표",
+          "branch": "사전 무력화 교리 보강 시나리오"
+        }
+      ]
+    },
+    "confidence_summary": "1차 출처가 미·영·싱가포르·한국·북한 측 6개국 매체와 정부 발표로 다양하다. 무기 제원은 북한 측 주장이라는 한계가 있어 사거리·인공지능 기능 부분은 보수적으로 표현했다.",
+    "confidence_score": 0.74,
+    "broadcast_summary": "지난 5월 26일 평양에서 같은 날 두 일이 겹쳤어요. 김정은이 직접 본 새 무기 시험과 싱가포르 외무장관의 8년 만의 평양 방문입니다.\n\n무기 쪽이 까다롭습니다. 차량 한 대로 유도 로켓과 단거리 미사일을 바꿔 끼우는 새 발사대인데, 그 단거리 미사일은 북한이 핵탄두를 실을 수 있다고 주장해 온 화성-11Ra예요.\n\n같은 차량에 핵이 들었는지 재래식이 들었는지 밖에서는 가리기가 어렵습니다. 그러면 한미가 다듬어 온 사전 무력화 구상의 셈이 복잡해져요.\n\n같이 시험한 저고도 순항미사일은 사거리 약 100km로 한반도 방공망 아래쪽을 노린 설계라고 합니다. 다만 인공지능이라는 수식어는 북한 측 주장이라 그대로 받아 적기는 이릅니다.\n\n싱가포르의 방북은 외교 신호처럼 보였지만, 외무장관이 돌아오는 길에 미·북 중재 역할은 하지 않겠다고 곧장 선을 그었어요. 다리가 아니라 창문, 청취와 관찰에 가까운 방문이었습니다.\n\n결국 단기간에 결정되는 건 이번 무기가 얼마나 빨리 부대 단위로 배치되느냐와 가을 한미 안보협의회의 톤이에요. 자세한 시나리오와 신호 목록은 보고서 본문에 정리해 두었습니다.",
+    "embedded_map": null,
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 3,
+      "unresolved": 0,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 3건 반영"
+    }
+  },
+  "executive_summary": "지난 26일 김정은이 본 시험은 차량 한 대로 유도 로켓과 단거리 미사일을 바꿔 끼우는 새 발사대였다. 같은 날 평양을 찾은 싱가포르 외무장관은 미국과 북한 사이 다리 역할은 하지 않는다고 곧장 선을 그었다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260603_234834_8b04f4739c.html",
+  "report_theme": "dusk_rose",
+  "parent_context": null,
+  "analysis_timestamp": "2026-06-03T23:38:16.712867+09:00",
+  "total_duration_seconds": 617.9849982261658,
+  "system_version": "v6.0.0",
+  "revision": 0
+}
