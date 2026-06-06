@@ -1,0 +1,291 @@
+{
+  "request": {
+    "event_description": "다음에 대해 상세한 분석 보고서를 내.\nNorth Korea conducted a live-fire test of a modular missile launcher that resembled a US HIMARS and a tactical cruise missile launcher on May  26 as part of its efforts to improve its conventional artillery capabilities. These systems may have the ability to be nuclear armed,  which would complicate US and South Korean efforts to neutralize North  Korean nuclear strike capabilities.\n\nMore:\nNorth Korea invited Singaporean Foreign Minister  Vivian Balakrishnan to Pyongyang for the first time in seven years.  North Korea is likely seeking to gain diplomatic support from Southeast  Asian states, challenge nonproliferation norms, and improve perceptions of the regime. Singapore denied that it will facilitate dialogue between the United States and North Korea.",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "북한은 2021년 8차 당 대회의 '5개년 국방력 발전계획' 마지막 해를 맞아 재래식 포병의 정밀유도화·다목적화를 가속 중. 240mm 다연장과 단거리탄도탄을 한 차체에서 운용하는 모듈식 발사대는 한미 정찰자산이 발사 직전 단계에서 탄종을 구분하기 어렵게 만들어, 전시 선제타격(킬체인) 계산을 복잡하게 함. 핵 탑재 가능성이 거론되는 단거리 체계(KN-23·KN-24 계열)와 결합 시 전술핵 운용 폭이 넓어짐. 동시에 평양은 2025년 국경 재개방 후 ASEAN 양자 외교를 확장 중이며, 싱가포르(2018년 미·북 정상회담 개최지·금융 허브)를 끌어들여 비핵화 압박을 우회하고 '정상 사회주의 국가' 이미지를 재구축하려는 의도로 평가됨. 싱가포르 측은 중개 역할은 공식 부인.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025년",
+            "event": "북·싱가포르 수교 50주년. 북한 국경 재개방 후 베트남·라오스·인도네시아 등 ASEAN 양자 교류 확대 시작",
+            "impact": "동남아 외교 채널 복구의 토대"
+          },
+          {
+            "date": "2026-04월",
+            "event": "북한 집속탄두 시험. 이후 37일간 무기 시험 공백",
+            "impact": "5/26 시험의 '공백 후 재개' 맥락"
+          },
+          {
+            "date": "2026-05-26",
+            "event": "북한, 평안북도 정주 일대서 모듈식 경량 발사대('주체-HIMARS')·240mm 유도 로켓·AI 보조 전술 순항미사일 시험. 다발 발사체가 황해 방향 약 80km 비행. 2026년 들어 8번째 무기 시험",
+            "impact": "재래식 포병의 정밀유도화·핵 탑재 우려 (US/ROK 선제타격 계산 복잡화)"
+          },
+          {
+            "date": "2026-05-26",
+            "event": "싱가포르 외교장관 발라크리쉬난 평양 도착, 최선희 북한 외무상 초청. 2018년 이후 첫 방북",
+            "impact": "북한의 동남아 외교 신호. 무기시험과 동일 일자 겹침"
+          },
+          {
+            "date": "2026-05-27",
+            "event": "발라크리쉬난, 조용원 최고인민회의 상임위원장 예방 후 방북 일정 종료. 싱가포르는 '미·북 대화 중개 안 함' 공식 부인",
+            "impact": "외교적 신호와 중개 역할 사이 선긋기"
+          },
+          {
+            "date": "2026-06-02",
+            "event": "AEI '한반도 업데이트' 발간, 두 사건을 연결해 분석",
+            "impact": "워싱턴 정책권 평가 정착"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "북한 '주체-HIMARS' 모듈식 발사대·전술 순항미사일 시험과 싱가포르 외교 정초",
+    "event_name_en": "North Korea's 'Juche-HIMARS' Test and Singapore Diplomatic Overture",
+    "date": "2026-05-26",
+    "category": "안보·외교",
+    "summary": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+    "timeline": [
+      {
+        "date": "2025년",
+        "event": "북·싱가포르 수교 50주년. 북한 국경 재개방 후 베트남·라오스·인도네시아 등 ASEAN 양자 교류 확대 시작",
+        "impact": "동남아 외교 채널 복구의 토대"
+      },
+      {
+        "date": "2026-04월",
+        "event": "북한 집속탄두 시험. 이후 37일간 무기 시험 공백",
+        "impact": "5/26 시험의 '공백 후 재개' 맥락"
+      },
+      {
+        "date": "2026-05-26",
+        "event": "북한, 평안북도 정주 일대서 모듈식 경량 발사대('주체-HIMARS')·240mm 유도 로켓·AI 보조 전술 순항미사일 시험. 다발 발사체가 황해 방향 약 80km 비행. 2026년 들어 8번째 무기 시험",
+        "impact": "재래식 포병의 정밀유도화·핵 탑재 우려 (US/ROK 선제타격 계산 복잡화)"
+      },
+      {
+        "date": "2026-05-26",
+        "event": "싱가포르 외교장관 발라크리쉬난 평양 도착, 최선희 북한 외무상 초청. 2018년 이후 첫 방북",
+        "impact": "북한의 동남아 외교 신호. 무기시험과 동일 일자 겹침"
+      },
+      {
+        "date": "2026-05-27",
+        "event": "발라크리쉬난, 조용원 최고인민회의 상임위원장 예방 후 방북 일정 종료. 싱가포르는 '미·북 대화 중개 안 함' 공식 부인",
+        "impact": "외교적 신호와 중개 역할 사이 선긋기"
+      },
+      {
+        "date": "2026-06-02",
+        "event": "AEI '한반도 업데이트' 발간, 두 사건을 연결해 분석",
+        "impact": "워싱턴 정책권 평가 정착"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "시험 발사체 비행거리",
+        "value": "약 80km",
+        "context": "정주 → 황해 방향. 한미 발표 기준. 단거리 탄도탄 카테고리"
+      },
+      {
+        "label": "주체-HIMARS 탑재 무기 호환",
+        "value": "240mm 유도 로켓 + 화성-11Ra 단거리탄도탄",
+        "context": "포드 교체식 모듈 설계. 미국 HIMARS 의 GMLRS/ATACMS 이중운용과 유사"
+      },
+      {
+        "label": "전술 순항미사일 사거리",
+        "value": "약 100km",
+        "context": "북측 주장. 저고도 비행 + TERCOM (Terrain Contour Matching, 지형대조항법) + AI 종말유도"
+      },
+      {
+        "label": "2026년 무기 시험 횟수",
+        "value": "8회 (5/26 기준)",
+        "context": "직전 시험 이후 37일 공백 끝. 2025년 동기간 대비 페이스 유사"
+      },
+      {
+        "label": "발라크리쉬난 방북 간격",
+        "value": "7년 (2018 → 2026)",
+        "context": "2018년 트럼프-김정은 싱가포르 정상회담 직후 이후 첫 방북. 양국 수교 50주년 (2025) 직후"
+      },
+      {
+        "label": "북한 ASEAN 양자 교류 재개",
+        "value": "2025년 국경 재개방 이후",
+        "context": "베트남·라오스·인도네시아 등으로 확대. 싱가포르가 가장 격이 높은 케이스"
+      }
+    ],
+    "background": "북한은 2021년 8차 당 대회의 '5개년 국방력 발전계획' 마지막 해를 맞아 재래식 포병의 정밀유도화·다목적화를 가속 중. 240mm 다연장과 단거리탄도탄을 한 차체에서 운용하는 모듈식 발사대는 한미 정찰자산이 발사 직전 단계에서 탄종을 구분하기 어렵게 만들어, 전시 선제타격(킬체인) 계산을 복잡하게 함. 핵 탑재 가능성이 거론되는 단거리 체계(KN-23·KN-24 계열)와 결합 시 전술핵 운용 폭이 넓어짐. 동시에 평양은 2025년 국경 재개방 후 ASEAN 양자 외교를 확장 중이며, 싱가포르(2018년 미·북 정상회담 개최지·금융 허브)를 끌어들여 비핵화 압박을 우회하고 '정상 사회주의 국가' 이미지를 재구축하려는 의도로 평가됨. 싱가포르 측은 중개 역할은 공식 부인.",
+    "sources": [
+      "https://www.nknews.org/2026/05/north-korea-tests-new-modular-missile-launcher-and-tactical-cruise-missiles/",
+      "https://news.usni.org/2026/05/27/north-korea-tests-new-lightweight-launch-system-and-tactical-cruise-missiles",
+      "https://en.defence-ua.com/industries/north_korea_tests_juche_himars_likely_hermes_clone_what_two_new_systems_reveal-18653.html",
+      "https://www.armyrecognition.com/news/army-news/2026/north-korea-tests-low-altitude-tactical-cruise-missile-designed-to-penetrate-south-korean-defenses",
+      "https://www.aei.org/articles/korean-peninsula-update-june-2-2026/",
+      "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/working-visit-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-to-pyongyang--the-democratic-people-s-republic-of-korea--26-to-27-may-2026/",
+      "https://thediplomat.com/2026/05/singaporean-foreign-minister-winds-up-working-visit-to-north-korea/",
+      "https://www.theedgesingapore.com/news/geopolitics/foreign-minister-vivian-meets-kim-jong-uns-close-aide-rare-trip",
+      "https://www.realclearworld.com/articles/2026/06/01/singapores_quiet_diplomacy_1185959.html"
+    ],
+    "glossary": [
+      {
+        "term": "HIMARS",
+        "definition": "High Mobility Artillery Rocket System (고기동 포병 로켓 시스템). 미군의 차륜형 다연장 로켓. 6연장 로켓 또는 ATACMS 단거리탄도탄 1발을 교체 운용"
+      },
+      {
+        "term": "주체-HIMARS",
+        "definition": "북한의 모듈식 경량 발사대를 분석가들이 부르는 별칭 (공식 명칭 아님). 240mm 유도 로켓과 화성-11Ra 단거리탄도탄을 호환 발사"
+      },
+      {
+        "term": "TERCOM",
+        "definition": "Terrain Contour Matching (지형대조항법). 미리 저장된 지형 고도지도와 실제 비행 지형을 대조해 저고도 비행 중 위치를 보정하는 순항미사일 항법. 레이더 회피에 유리"
+      },
+      {
+        "term": "화성-11Ra",
+        "definition": "북한의 단거리탄도탄 계열. KN-23/KN-24 단거리탄도탄 가족과 연계, 사거리 약 300~400km 추정"
+      },
+      {
+        "term": "킬체인",
+        "definition": "한미가 북한 핵·미사일을 발사 전 선제타격하기 위한 탐지→식별→타격 일련 절차. 발사대 모듈화는 식별 단계를 어렵게 함"
+      },
+      {
+        "term": "ARF",
+        "definition": "ASEAN Regional Forum (아세안 지역안보포럼). 북한이 가입한 몇 안 되는 다자안보 협의체"
+      },
+      {
+        "term": "비핵화 규범",
+        "definition": "북한의 핵보유국 지위를 불인정하고 핵·미사일 프로그램 폐기를 요구하는 유엔 안보리 결의 기반 국제 규범"
+      }
+    ],
+    "confidence_score": 0.82,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "provenance": [
+      {
+        "fact": "5/26 정주에서 모듈식 발사대·240mm 유도 로켓·AI 보조 순항미사일 시험, 약 80km 황해 방향 비행",
+        "source_date": "2026-05-27",
+        "scope_note": "한미 군 발표 기준 비행거리. 단거리 탄도탄 포함",
+        "source_url": "https://news.usni.org/2026/05/27/north-korea-tests-new-lightweight-launch-system-and-tactical-cruise-missiles"
+      },
+      {
+        "fact": "발사대는 240mm 유도 로켓과 화성-11Ra 단거리탄도탄을 호환",
+        "source_date": "2026-05-28",
+        "scope_note": "분석가 추정 (북한 공개 이미지 기반)",
+        "source_url": "https://en.defence-ua.com/industries/north_korea_tests_juche_himars_likely_hermes_clone_what_two_new_systems_reveal-18653.html"
+      },
+      {
+        "fact": "전술 순항미사일 사거리 약 100km, TERCOM + AI 종말유도",
+        "source_date": "2026-05-27",
+        "scope_note": "북한 KCNA 주장. 외부 검증 미완",
+        "source_url": "https://www.armyrecognition.com/news/army-news/2026/north-korea-tests-low-altitude-tactical-cruise-missile-designed-to-penetrate-south-korean-defenses"
+      },
+      {
+        "fact": "2026년 들어 8번째 무기 시험, 직전 시험과 37일 간격",
+        "source_date": "2026-05-27",
+        "scope_note": "남측 합참·NK News 집계 기준",
+        "source_url": "https://www.nknews.org/2026/05/north-korea-tests-new-modular-missile-launcher-and-tactical-cruise-missiles/"
+      },
+      {
+        "fact": "발라크리쉬난 5/26~27 평양 방문, 최선희 초청, 조용원 예방",
+        "source_date": "2026-05-27",
+        "scope_note": "싱가포르 외교부 공식 보도자료. 2018년 이후 첫 방북",
+        "source_url": "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/working-visit-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-to-pyongyang--the-democratic-people-s-republic-of-korea--26-to-27-may-2026/"
+      },
+      {
+        "fact": "싱가포르는 미·북 대화 중개 역할을 공식 부인",
+        "source_date": "2026-05-29",
+        "scope_note": "Diplomat 보도. 발라크리쉬난 발언 인용",
+        "source_url": "https://thediplomat.com/2026/05/singaporean-foreign-minister-winds-up-working-visit-to-north-korea/"
+      },
+      {
+        "fact": "북한 ASEAN 양자 교류 (베트남·라오스·인도네시아) 2025년 국경 재개방 이후 확대",
+        "source_date": "2026-06-02",
+        "scope_note": "AEI 한반도 업데이트 평가",
+        "source_url": "https://www.aei.org/articles/korean-peninsula-update-june-2-2026/"
+      },
+      {
+        "fact": "발라크리쉬난, 핵·미사일 능력의 핵 탑재 가능성이 한미 무력화 노력을 복잡하게 한다는 평가는 AEI 분석 채택",
+        "source_date": "2026-06-02",
+        "scope_note": "분석 의견 (공식 정부 평가 아님)",
+        "source_url": "https://www.aei.org/articles/korean-peninsula-update-june-2-2026/"
+      }
+    ],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "북한 '주체-HIMARS' 모듈식 발사대·전술 순항미사일 시험과 싱가포르 외교 정초",
+    "deck": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+    "sections": [
+      {
+        "heading": "요약",
+        "kicker": "",
+        "prose": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      }
+    ],
+    "closing": "",
+    "watch_signals": [],
+    "contradictions": [],
+    "contradictions_heading": "",
+    "timeline_flow": null,
+    "confidence_summary": "composer 호출 실패. 사실 자료만 표시.",
+    "confidence_score": 0.0,
+    "broadcast_summary": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+    "embedded_map": null,
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 0,
+      "unresolved": 0,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 없음 통과"
+    }
+  },
+  "executive_summary": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260603_225606_916844e7e9.html",
+  "report_theme": "forest_sage",
+  "parent_context": null,
+  "analysis_timestamp": "2026-06-03T22:53:06.758264+09:00",
+  "total_duration_seconds": 179.70055985450745,
+  "system_version": "v6.0.0",
+  "revision": 0
+}
