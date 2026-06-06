@@ -25,6 +25,30 @@ class Config(BaseSettings):
     model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True
 
+    # v6.1.0 — GitHub raw mirror (src/tools/github_mirror.py).
+    # 보고서 산출물(.html/.md/.json/.bundle.json)을 Cloudflare Pages 외에 공개
+    # GitHub repo 에도 미러해, ``*.pages.dev`` 를 egress 허용목록에서 막는 샌드박스
+    # 환경(Claude Code on the web 등)의 다른 AI 가 ``raw.githubusercontent.com``
+    # 링크로 보고서를 직접 열람할 수 있게 한다. 토큰/repo 미설정 시 graceful skip
+    # — Cloudflare 흐름 byte-equal 보존. PAT 는 단일 공개 repo Contents read/write
+    # 권한이면 충분 (.env 에만 보관, git 커밋 금지).
+    github_mirror_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("GITHUB_MIRROR_TOKEN", "github_mirror_token"),
+    )
+    github_mirror_repo: str = Field(  # "owner/repo" 형식
+        default="",
+        validation_alias=AliasChoices("GITHUB_MIRROR_REPO", "github_mirror_repo"),
+    )
+    github_mirror_branch: str = Field(
+        default="main",
+        validation_alias=AliasChoices("GITHUB_MIRROR_BRANCH", "github_mirror_branch"),
+    )
+    github_mirror_path: str = Field(  # repo 안 보고서 경로 prefix (빈 값=루트)
+        default="reports",
+        validation_alias=AliasChoices("GITHUB_MIRROR_PATH", "github_mirror_path"),
+    )
+
     # v5.2.0 — Market data fetcher API keys (src/tools/market_fetcher.py).
     # 셋 다 비어있어도 보고서 정상 진행 — 차트만 빈 series 로 emit. 각 키는
     # 무료 발급:

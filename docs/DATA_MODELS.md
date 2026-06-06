@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.5
+last_synced_with: v6.1.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -135,6 +135,7 @@ NarrativeComposer (Opus 4.7) 의 단일 호출 산출. v4.0.0 부터 `freeform_e
 - `context: ContextAnalysis | None`: Phase 1 출력.
 - `composed_report: ComposedReport | None`: Phase 2 출력. v4.0.0 부터 보고서 SSOT.
 - `report_url`, `report_path`: Phase 3 산출 — 배포된 URL 과 로컬 HTML 경로.
+- `mirror_url` (v6.1.0): GitHub raw 미러 HTML URL (`raw.githubusercontent.com/.../analysis_{id}.html`). `src/tools/github_mirror.py:GitHubMirror` 가 Cloudflare 배포와 함께 보고서 산출물을 공개 GitHub repo 에 push 성공 시 채워짐. 텔레그램 메시지가 여기서 `.md`/`.bundle.json` 을 파생해 "AI 직접 열람용" 링크로 안내 — `*.pages.dev` 를 egress 허용목록에서 막는 샌드박스 AI(Claude Code on the web 등)가 보고서를 직접 열람하게 한다. 미러 비활성(토큰/repo 미설정)/실패 시 빈 문자열 → 메시지 흐름 byte-equal 불변.
 - `report_theme`: `lens_policy.select_theme(category)` 결과 (`editorial_cream` 또는 `burgundy_mono`).
 - `executive_summary`: composer 의 `deck` 또는 `headline` (markdown index 공통 텍스트).
 - `system_version` (v4.5.5): 매 렌더 시점의 `orchestrator.VERSION`. 재렌더 시엔 *재렌더 시점* 으로 갱신.

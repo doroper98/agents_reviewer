@@ -903,6 +903,11 @@ class FullAnalysisResult(BaseModel):
     executive_summary: str = ""
     report_url: str = ""
     report_path: str = ""
+    # v6.1.0 — GitHub raw 미러 HTML URL (src/tools/github_mirror.py). 설정 시
+    # raw.githubusercontent.com/.../analysis_{id}.html. 텔레그램 메시지가 여기서
+    # .md/.bundle.json 을 파생해 함께 안내 — pages.dev 를 막는 샌드박스 AI 가
+    # 보고서를 직접 열람할 수 있게. 미러 비활성/실패 시 빈 문자열(흐름 불변).
+    mirror_url: str = ""
     # v3.4.3 — block builder 가 light/burgundy 분기 위해 사용 (synthesize() 초입에 설정).
     # 이 필드 없이 v3.4.0 _payload_map() 이 result.report_theme 읽다가 Pydantic 거부 → 분석 실패.
     report_theme: str = ""
