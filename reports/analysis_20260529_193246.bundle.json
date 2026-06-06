@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-05-29T10:32:46.064468+00:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.5.8",
+    "mode": "fast"
+  },
+  "report": {
+    "report_id": "analysis_20260529_193246",
+    "headline": "달에서 돌아온 뒤, 6월은 잠시 비어 있다",
+    "deck": "Artemis II 가 4월에 성공적으로 귀환한 뒤 NASA 의 2026년 중반 발사 캘린더는 ISS 운용과 학생 사운딩 로켓 중심으로 다시 정렬되었다.",
+    "closing": "Artemis II 의 귀환은 끝이 아니라 다음 일정표의 시작 신호였다. 6월의 빈칸은 그 일정표가 어디로 향할지 다듬는 짧은 정적이다.",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260529_193246.html",
+    "theme": {
+      "id": "dusk_rose",
+      "tokens": {
+        "bg": "#F2E8E5",
+        "card": "#F8EFEB",
+        "border": "#D6C2BE",
+        "text": "#2A1F1D",
+        "muted": "#7A5C58",
+        "accent": "#B85968",
+        "up": "#6B8550",
+        "down": "#A8584A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "Artemis II 가 끝낸 뒤 남은 것",
+      "kicker": "사실 정리",
+      "prose": "NASA 의 2026년 최대 변수였던 Artemis II 가 끝난 자리에는, 다음 큰 행사인 Artemis III (유인 달 착륙) 까지의 공백이 남는다. 그 공백을 채우는 것은 두 종류의 일이다. 하나는 국제우주정거장 ISS 의 화물·우주인 교대 운용이고, 다른 하나는 버지니아 월롭스 (Wallops) 의 작은 사운딩 로켓 발사다.\n\n5월 12일에는 SpaceX 의 화물선 CRS-34 가 케이프 커내버럴 SLC-40 에서 떠올라 ISS 로 약 2,900 kg 의 실험·식량·하드웨어를 올렸다. 6월에는 NASA 자체 발사 캘린더가 비교적 한산하다. 가장 가까운 일정은 6월 24~25일 월롭스에서 떠오를 Terrier-Improved Malemute 사운딩 로켓이며, 학생 설계 실험을 준궤도까지 올렸다 내리는 짧은 비행이다.\n\n7월 14일에는 Soyuz MS-29 가 NASA 의 Anil Menon 과 러시아 우주인 두 명을 ISS 로 실어 나를 예정이다. 그 뒤 9월 중순으로 당겨진 SpaceX Crew-13 까지가 여름과 초가을의 큰 축이다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s2",
+      "heading": "왜 Crew-13 은 두 달이나 앞당겨졌나",
+      "kicker": "구조",
+      "prose": "5월 1일 NASA 가 갱신한 ISS 비행 계획에서 가장 눈에 띄는 조정은 SpaceX Crew-13 의 일정이다. 당초 11월로 잡혀 있던 이 미국 측 우주인 교대 임무는 9월 중순으로 약 두 달 당겨졌다. 한 번의 일정 변경처럼 보이지만, 그 배경에는 두 가지 구조가 겹쳐 있다.\n\n첫째는 ISS 자체의 잔여 기간이다. 정거장은 2030년 퇴역이 예정되어 있고, 그때까지 남은 4년 안에 미국 측이 확보할 수 있는 장기 체류·실험 시간은 점점 더 귀해진다. 교대 주기를 빠르게 가져가면 같은 기간 안에 더 많은 우주인이 더 많은 실험을 돌릴 수 있다.\n\n둘째는 발사 수단의 단일화다. 미국 우주인의 ISS 접근은 사실상 SpaceX 의 Falcon 9 과 Dragon 우주선 한 줄기로 좁혀져 있다. Boeing 의 Starliner 가 시험 단계에서 빠져 있는 동안 SpaceX 라인의 cadence (발사 빈도) 를 그대로 운용 일정의 척추로 삼는 흐름이 굳어졌다. 6월에 NASA 자체 발사가 비어 보이는 까닭도 같은 맥락이다. NASA 는 자체 로켓을 거의 띄우지 않고, 민간 사업자의 일정에 맞춰 ISS 와 달 프로그램을 운용한다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s3",
+      "heading": "한산한 6월, 그 뒤의 분기점",
+      "kicker": "시나리오",
+      "prose": "6월의 NASA 캘린더가 비어 있다는 사실 자체는 큰 뉴스가 아니다. 다만 그 한산함이 그대로 이어질지, 아니면 작은 변수 하나가 가을 일정 전체를 흔들지는 다음 몇 주 안에 갈릴 수 있다.\n\n기준선은 단순하다. 6월 24~25일 월롭스 사운딩 로켓이 정상 발사되고, 7월 14일 Soyuz MS-29 가 예정대로 떠오르며, 9월 중순 Crew-13 이 ISS 에 도킹한다. 이 경우 NASA 의 여름은 ISS 운용에 집중되는 비교적 조용한 분기로 정리된다.\n\n두 번째 시나리오는 Crew-13 의 재지연이다. Falcon 9 또는 Dragon 운용 측의 사소한 점검 사안이 발견되면 9월 일정이 다시 10~11월대로 밀릴 수 있다. 그 경우 ISS 운용은 큰 차질 없이 이어지지만, 미국 측 교대 주기를 빠르게 가져가려던 5월 1일의 결정 자체가 무효가 된다.\n\n세 번째 시나리오는 Artemis III 의 일정표가 7~8월 사이에 공식화되는 경우다. Artemis II 검증을 마친 직후이므로, NASA 가 유인 달 착륙 후보일을 구체화하면 2027~2028년 일정 전체의 골격이 잡힌다. 6월의 한산함은 그 다음 큰 일을 준비하는 정적이 된다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "gantt",
+      "title": "2026년 4~9월 NASA 주요 운용 일정",
+      "data": [
+        {
+          "label": "Artemis II 비행",
+          "start": "2026-04-01",
+          "end": "2026-04-10",
+          "note": "유인 달 비행"
+        },
+        {
+          "label": "CRS-34 화물",
+          "start": "2026-05-12",
+          "end": "2026-07-15",
+          "note": "ISS 도킹·체류·귀환 추정 구간"
+        },
+        {
+          "label": "Wallops 사운딩 로켓 창",
+          "start": "2026-06-24",
+          "end": "2026-06-25",
+          "note": "RockSat-X 학생 실험"
+        },
+        {
+          "label": "Soyuz MS-29 장기 체류",
+          "start": "2026-07-14",
+          "end": "2026-09-30",
+          "note": "체류 일부 표시"
+        },
+        {
+          "label": "Crew-13 ISS 로테이션",
+          "start": "2026-09-15",
+          "end": "2026-09-30",
+          "note": "발사·도킹·교대"
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [
+    {
+      "signal": "Crew-13 9월 발사일 확정",
+      "description": "Falcon 9 / Dragon 점검 결과에 따른 9월 중순 일자 고정 여부",
+      "indicates": "기준선 시나리오 vs Crew-13 재지연 시나리오 분기",
+      "deadline": "2026-08-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "Artemis III 일정 공식화",
+      "description": "NASA 가 유인 달 착륙 후보일을 공식 발표하는지 여부",
+      "indicates": "2027~2028년 NASA 전체 캘린더 골격 결정",
+      "deadline": "2026-08-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "Soyuz MS-29 발사 정상 수행",
+      "description": "7월 14일 Anil Menon 탑승 발사의 정시 수행",
+      "indicates": "미·러 좌석 교환 체제의 지속 여부",
+      "deadline": "2026-07-14",
+      "verification": "unverified"
+    }
+  ],
+  "contradictions": [
+    {
+      "side_a": "6월 일정의 한산함은 Artemis II 직후의 자연스러운 정비 구간으로, NASA 운용이 안정적으로 굴러가고 있음을 보여준다.",
+      "side_b": "Crew-13 의 두 달 앞당김은 ISS 의 2030년 퇴역을 앞두고 가용 시간을 짜내려는 시간 압축이 이미 시작되었음을 가리킨다.",
+      "evidence": "5월 1일 ISS 비행 계획 갱신은 cadence 강화 방향이지만, 6월의 빈 캘린더 자체는 그 압축이 아직 본격화되지 않았음을 뜻한다.",
+      "resolution": "현재 단계에서는 후자 쪽이 무게를 더 받는다. 한 번의 일정 조정으로 두 달을 당긴 결정은 일회성 정비라기보다 잔여 4년에 대한 cadence 재설계의 신호로 읽히기 때문이다. 다만 Crew-13 이 다시 11월대로 밀린다면 전자 해석이 살아난다."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.nasa.gov/mission/artemis-ii/",
+      "publisher": "nasa.gov",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://en.wikipedia.org/wiki/Artemis_II",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.nasa.gov/news-release/nasa-welcomes-record-setting-artemis-ii-moonfarers-back-to-earth/",
+      "publisher": "nasa.gov",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.nasa.gov/blogs/commercialcrew/2026/05/01/nasa-partners-update-international-space-station-2026-flight-plan/",
+      "publisher": "nasa.gov",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.nasa.gov/wallops-launch-schedule/",
+      "publisher": "nasa.gov",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://en.wikipedia.org/wiki/List_of_spaceflight_launches_in_April%E2%80%93June_2026",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://en.wikipedia.org/wiki/2026_in_spaceflight",
+      "publisher": "en.wikipedia.org",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://spaceflightnow.com/launch-schedule/",
+      "publisher": "spaceflightnow.com",
+      "title": "",
+      "fetched_at": "2026-05-29"
+    }
+  ],
+  "confidence": {
+    "score": 0.78,
+    "summary": "NASA 공식 보도자료와 Wallops 발사 캘린더, Wikipedia 의 2026년 발사 목록을 교차 확인. Artemis II 와 CRS-34 는 사실 확정, 6월 이후 일정은 변경 가능한 예정."
+  },
+  "timeline": {
+    "heading": "Artemis II 에서 Crew-13 까지",
+    "points": [
+      {
+        "date": "2026-04-01",
+        "label": "Artemis II 발사",
+        "phase": "past",
+        "note": "53년 만의 유인 달 비행 개시"
+      },
+      {
+        "date": "2026-04-10",
+        "label": "Orion 캡슐 귀환",
+        "phase": "past",
+        "note": "Artemis III 게이트 통과"
+      },
+      {
+        "date": "2026-05-01",
+        "label": "ISS 비행 계획 갱신",
+        "phase": "past",
+        "note": "Crew-13 두 달 앞당김"
+      },
+      {
+        "date": "2026-05-12",
+        "label": "CRS-34 화물 발사",
+        "phase": "past",
+        "note": "ISS 보급"
+      },
+      {
+        "date": "2026-05-29",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      },
+      {
+        "date": "2026-06-24",
+        "label": "월롭스 사운딩 로켓 창",
+        "phase": "future",
+        "note": "기준선 시나리오"
+      },
+      {
+        "date": "2026-07-14",
+        "label": "Soyuz MS-29 발사",
+        "phase": "future",
+        "note": "미·러 좌석 교환 지속"
+      },
+      {
+        "date": "2026-09-15",
+        "label": "Crew-13 ISS 로테이션",
+        "phase": "future",
+        "note": "cadence 압축 본격화"
+      }
+    ]
+  }
+}
