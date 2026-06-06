@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v6.1.0
+last_synced_with: v6.1.1
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -376,7 +376,7 @@ ReportBundle
 ├─ producer        BundleProducer (system, version, mode)
 ├─ report          BundleReport (report_id, headline, deck, closing, html_url, theme→BundleTheme)
 ├─ sections[]      BundleSection (chart_refs / map_ref / image_refs / claim_refs — §8 resolve)
-├─ charts[]        BundleChart (type, data=schemas.py shape, provenance→BundleProvenance, prerendered_svg)
+├─ charts[]        BundleChart (type, data=schemas.py shape, display [v6.1.1 strip|full], provenance→BundleProvenance, prerendered_svg)
 ├─ map?            BundleMap (id, center, zoom, markers, arcs, legend, provenance)
 ├─ claims[]        BundleClaim (status, evidence→BundleEvidence)   ← v5.5.0 라이브 경로엔 빈 list
 ├─ signals[]       BundleSignal      ├─ contradictions[]  BundleContradiction
@@ -387,6 +387,10 @@ ReportBundle
   `ConfidenceLevel`(low/medium/high) / `ProvenanceOrigin`(measured/narrative_inference/model_forecast) /
   `EvidenceStance`(supports/refutes/contextual). 매핑 SSOT: `ORIGIN_TO_VERIFICATION`.
 - **차트 data shape 은 재정의 안 함** — `src/visual/schemas.py` pin (계약 §9).
+- **`charts[].display` (v6.1.1, 계약 §12 additive)**: `"strip"`(보고서에서 작은 sparkline
+  한 줄로 묶이는 보조 시계열) vs `"full"`(본문 단일차트). 영상 파이프라인이 비주얼
+  배치를 구분하는 축. composed chart 의 `role=='compact'` → `"strip"`, 그 외 → `"full"`.
+  렌더러(`freeform_essay.html` 의 `ch.role=='compact'` 분기)와 동일 규칙. 항상 존재(기본 `"full"`).
 - **참조 무결성** `ReportBundle._validate_refs_and_ids` (계약 §8).
 
 ## 6. Out of scope

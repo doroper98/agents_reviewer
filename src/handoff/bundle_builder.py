@@ -212,6 +212,9 @@ def build_report_bundle(
                     title=ch.get("title") or "",
                     data=ch.get("data"),
                     note=ch.get("note") or "",
+                    # v6.1.1 — 계약 §12: compact strip(보조 시계열 묶음) vs 본문 단일차트.
+                    # 렌더러(freeform_essay.html)와 동일 규칙 — role=='compact' → strip.
+                    display="strip" if (ch.get("role") == "compact") else "full",
                     provenance=prov,
                 ))
                 sec_chart_refs.append(chart_id)
