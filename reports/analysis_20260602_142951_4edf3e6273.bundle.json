@@ -1,0 +1,573 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-06-02T14:29:53.976633+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v5.8.6",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260602_142951_4edf3e6273",
+    "headline": "화웨이·샤오펑 자율주행이 한국 안방에 발을 디뎠다",
+    "deck": "테슬라가 한국에 자율주행 SW를 들고 오기 전에 중국의 두 진영이 먼저 정식 인증을 마쳤다. 점유율 6%는 가격만의 결과가 아니다.",
+    "closing": "테슬라가 한국 도로에 차를 들이기 전부터 중국의 두 진영이 먼저 안방에 들어와 있다. 현대차의 시계가 1년 안에 어디까지 당겨지는지가 다음 보고서의 분기점이 된다.",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260602_142951_4edf3e6273.html",
+    "theme": {
+      "id": "paper_classic",
+      "tokens": {
+        "bg": "#FAFAF6",
+        "card": "#F2F2EE",
+        "border": "#C8C8C0",
+        "text": "#0F0F0F",
+        "muted": "#5A5A5A",
+        "accent": "#C4392B",
+        "up": "#2D6B3E",
+        "down": "#A03030"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "사건의 윤곽",
+      "kicker": "산업 변동 / 1",
+      "prose": "지난 4월, 중국차의 한국 시장 점유율이 6.0%를 찍었다. 1년 전 같은 달의 0.5%에서 여덟 배가 뛴 수치다. 이 한 달 만에 중국차는 일본차(5.8%)를 처음으로 넘어섰다. 가격을 무기로 들어온 BYD(비야디) 한 회사가 4월에만 2,023대를 신규 등록했다. 같은 달 렉서스(1,079대)와 도요타(829대)를 합친 것보다 많다.\n\n수치가 빠르게 움직이는 만큼 원인 분석도 갈린다. 가격 공습으로 보는 시각이 가장 흔하다. 그러나 같은 시점에 중국 두 진영이 자율주행 소프트웨어를 들고 들어왔다는 점이 더 무겁게 다가온다. 화웨이는 자율주행에 5년 동안 117억 달러(약 15조 9천억원)를 쏟겠다고 4월 24일 못 박았고, 샤오펑은 환경부와 국토부 인증을 마무리하는 단계에 진입했다. 폭스바겐이 샤오펑 VLA를 채택하는 1호 외부 OEM(완성차 업체)으로 확정 공시되면서, 한국과 유럽이 같은 시기에 중국 SW의 영향권 안에 들어왔다.\n\n현대차의 시계는 다르다. 같은 날 그랜저와 싼타페 페이스리프트 모델에 Pleos OS가 본격 적용됐지만, 고속도로에서 손을 떼고 차에 맡기는 단계인 HDP의 양산은 2027년 일정을 유지하고 있다. 정부의 자율주행 법·제도 정비 일정 역시 2026년 안에 마무리되는 그림이고, 국가표준은 2027년이다. 정책 일정과 OEM 양산 일정이 같이 후행하는 구간에 한국 산업이 들어섰다.",
+      "pull_quote": "중국차 점유율 0.5%에서 6.0%로의 점프는 가격만의 결과가 아니다.",
+      "chart_refs": [
+        "ch-1"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s2",
+      "heading": "세 진영, 세 가지 SW 모델",
+      "kicker": "구조 / 2",
+      "prose": "한국 자율주행 시장에 지금 들어와 있는 SW는 성격이 셋으로 갈린다. 첫째, 화웨이 ADS는 여러 완성차 회사에 같은 자율주행 패키지를 공급하는 플랫폼형이다. BYD의 프리미엄 라인, 팡청바오, 덴자 같은 OEM이 이미 ADS를 얹어 차를 만든다. 화웨이가 5년 동안 117억 달러를 자율주행에 쓰겠다고 밝힌 배경에는 단일 회사 외주가 아니라 SW 플랫폼 표준화를 노린다는 계산이 깔려 있다.\n\n둘째, 샤오펑 VLA는 비전, 언어, 행동을 하나의 모델로 묶은 신형 자율주행 두뇌다. 자기 회사 차에 먼저 깔고, 그다음 외부 OEM에 라이선스를 주는 양다리 전략을 쓴다. 폭스바겐이 5월에 외부 1호 OEM으로 확정됐다. 샤오펑은 같은 모델을 로보택시와 휴머노이드 로봇, 비행 자동차로도 확장한다고 공언한 상태다.\n\n셋째, 테슬라 FSD는 자기 회사 차에서만 도는 폐쇄형이다. 외부에 팔지 않는다. 2025년 11월 한국 출시를 공식 발표한 뒤 임시운행허가 절차와 6~12개월 시범운행을 거치는 일정이고, 2026년 상반기에서 중반 사이가 실 출시 시점으로 거론된다.\n\n그리고 네 번째 자리에 현대 HDP가 있다. 자사 차량 안에서 굴리는 폐쇄형이라는 점에서 테슬라와 모양은 같지만, 양산 시점이 2027년이다. 화웨이·샤오펑·테슬라의 한국 진입 시점과 비교하면 1년에서 2년이 비어 있다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-2"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s3",
+      "heading": "한국이 후행 구간에 들어선 이유",
+      "kicker": "타이밍 / 3",
+      "prose": "한국 자율주행 양산이 1년에서 2년 늦은 데는 단순한 기술 격차 외에 구조적인 이유가 있다. 첫째, 한국 정부의 자율주행 법·제도 정비가 2026년까지의 로드맵 위에 있다. 시범운행을 위한 임시운행허가 절차는 살아 있으나, 전국 양산을 받쳐 줄 책임 소재와 보험 체계는 아직 작업 중이다. 테슬라 FSD의 한국 시범운행도 6~12개월의 시범 구간을 먼저 거쳐야 한다.\n\n둘째, V2X(차량과 도로·다른 차량 사이의 통신)와 정밀지도의 국가표준이 2027년에 잡힌다. 인프라가 표준화되기 전에 양산을 키우면 회수 위험이 커진다. 현대차 HDP가 2027년에 맞춰진 데에는 이 일정 정합이 있다.\n\n셋째, 중국은 같은 일을 다른 순서로 했다. 정부 표준이 정해지기 전에 거대한 데이터를 먼저 모았고, 모델을 키운 다음 표준을 끌어왔다. 화웨이가 컴퓨팅 인프라 한 항목에만 800억 위안을 박은 것은 데이터 확장의 가속을 사겠다는 의미다. 한국이 표준을 먼저 묶고 양산을 그 위에 올리는 길을 택한 사이, 중국 진영은 모델 성능을 끌어올린 채로 한국 안방에 들어왔다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-3"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s4",
+      "heading": "현대차의 1~2년 노출 구간",
+      "kicker": "한국 OEM / 4",
+      "prose": "현대차의 위치는 흥미롭다. 운영체제 Pleos OS는 그랜저와 싼타페 페이스리프트부터 본격 적용이다. 신차의 사용자 경험은 빠르게 좋아질 가능성이 있다. 다만 사용자가 손을 떼고 차에 맡기는 단계인 HDP의 양산은 2027년이다. 같은 시기 테슬라 FSD가 한국에서 시범운행을 마치고 일반 판매로 넘어가면, 그리고 화웨이 ADS를 얹은 BYD 프리미엄 라인이 한국 인증을 받으면, 같은 가격대에서 운전 보조 성능을 비교당하는 구간이 그대로 노출된다.\n\n샤오펑 VLA가 폭스바겐을 거쳐 한국에 들어오는 경로도 살아 있다. 폭스바겐코리아가 VLA를 얹은 차종을 한국에 들여올 시점은 2027년 상반기로 가늠된다. 그 시점이 현대 HDP 양산과 겹친다. 같은 가격대의 폭스바겐과 같은 가격대의 현대차가 같은 해에 자율주행 성능을 두고 비교당하는 그림이다.\n\n현대차가 회복할 수 있는 길이 없는 것은 아니다. 한국 도로의 특성, 한국 사용자 데이터, 한국어 음성·인터페이스 같은 부분에서 외산 SW가 곧장 따라잡기 어려운 영역이 분명히 있다. 양산 시점이 1년 늦는다 해도 2027년에 한국 시장 안에서 비교 시험을 다시 받을 기회는 남는다.",
+      "pull_quote": "2026년 하반기와 2027년 상반기, 같은 가격대 차들이 한국 도로에서 자율주행 성능을 직접 비교당한다.",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s5",
+      "heading": "네 가지 시나리오",
+      "kicker": "분기 / 5",
+      "prose": "앞으로 12~18개월 안에 시장이 어떻게 갈리는지 네 갈래로 묶어 본다.\n\n첫째, 가격과 SW가 동시에 잠식하는 시나리오다. 화웨이 ADS를 얹은 BYD 프리미엄 라인이 한국 인증을 통과하고, 샤오펑 P7과 G6도 2026년 하반기 출시에 성공한다. 이 경우 중국차 점유율은 2027년 안에 10%선을 넘본다. 발생 확률은 중간이지만 영향은 크다.\n\n둘째, SW 종속만 진행되고 가격 잠식은 정체되는 시나리오다. 한국 정부가 중국차에 대한 안전 규제와 인증을 강화하면서 등록 속도가 느려지지만, 폭스바겐 같은 외부 OEM이 샤오펑 VLA를 얹어 들어온다. 한국 소비자는 중국 SW를 유럽 브랜드로 만난다.\n\n셋째, 인증과 시범운행 단계에서 진입이 지연되는 시나리오다. 테슬라 FSD가 한국 임시운행허가에서 보완을 요구받고, 샤오펑·화웨이도 추가 인증을 거치면서 2026년 안의 실제 적용이 늦춰진다. 이 경우 현대 HDP 2027 양산이 상대적으로 살아난다.\n\n넷째, 현대 HDP 양산이 1년 슬립하는 시나리오다. V2X·정밀지도 표준화가 지연되거나 책임 소재 정비가 늦어지면 2028년으로 미뤄진다. 그 시점에는 외산 SW가 이미 한국 도로 데이터를 1~2년 더 축적한 뒤다.\n\n다섯째, 한국 OEM이 외산 SW를 들여오는 시나리오다. 가능성은 낮지만 폭스바겐의 샤오펑 채택이 선례로 작동하면 일부 중견 브랜드에서 라이선스 검토가 시작될 수 있다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-4"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    },
+    {
+      "section_id": "s6",
+      "heading": "관점이 갈리는 두 지점",
+      "kicker": "쟁점 / 6",
+      "prose": "이 사건을 읽는 시각은 두 곳에서 정면으로 갈린다. 어느 쪽도 봉합되지 않는다.\n\n첫 갈래는 중국차 점유율 6%의 본질에 대한 해석이다. 부모 보고서가 식별한 위협 시나리오, 즉 자율주행 SW 본격 진입이 한국 안에서 실현됐는지에 관한 판단이 여기에 달려 있다.\n\n둘째 갈래는 현대차의 1~2년 양산 격차가 만회 가능한지에 대한 판단이다. Pleos OS 본격 적용이 시작된 만큼 SW 전환의 시작점에 들어선 것은 맞지만, 자율주행의 핵심인 양산 시점 격차가 이미 구조적인 잠금으로 굳어졌다고 보는 시각과, 아직 회복 가능한 시간이 남아 있다고 보는 시각이 부딪친다.\n\n부모 보고서가 경고한 분기 가운데 첫째 시나리오, 즉 중국 자율주행 SW의 본격 진입이 2026년 상반기에 현실화한 부분은 확인됐다. 다만 같은 분기 안에서 다시 두 갈래가 열린다. 이 두 갈래의 향방은 다음 12개월의 인증·양산 일정이 결정한다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "bar",
+      "title": "2026년 4월 한국 수입 신차 등록 (대)",
+      "data": [
+        {
+          "label": "BYD",
+          "value": 2023,
+          "note": "전월비 두 자릿수 증가"
+        },
+        {
+          "label": "렉서스",
+          "value": 1079
+        },
+        {
+          "label": "도요타",
+          "value": 829
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "network",
+      "title": "한국 자율주행 SW 진영 관계도",
+      "data": {
+        "nodes": [
+          {
+            "id": "huawei_ads",
+            "label": "화웨이 ADS",
+            "group": "china"
+          },
+          {
+            "id": "xpeng_vla",
+            "label": "샤오펑 VLA",
+            "group": "china"
+          },
+          {
+            "id": "tesla_fsd",
+            "label": "테슬라 FSD",
+            "group": "us"
+          },
+          {
+            "id": "hyundai_hdp",
+            "label": "현대 HDP",
+            "group": "korea"
+          },
+          {
+            "id": "byd",
+            "label": "BYD·덴자",
+            "group": "oem"
+          },
+          {
+            "id": "vw",
+            "label": "폭스바겐",
+            "group": "oem"
+          }
+        ],
+        "links": [
+          {
+            "source": "huawei_ads",
+            "target": "byd",
+            "type": "공급"
+          },
+          {
+            "source": "xpeng_vla",
+            "target": "vw",
+            "type": "채택"
+          },
+          {
+            "source": "huawei_ads",
+            "target": "xpeng_vla",
+            "type": "경쟁"
+          },
+          {
+            "source": "huawei_ads",
+            "target": "tesla_fsd",
+            "type": "경쟁"
+          },
+          {
+            "source": "xpeng_vla",
+            "target": "tesla_fsd",
+            "type": "경쟁"
+          },
+          {
+            "source": "tesla_fsd",
+            "target": "hyundai_hdp",
+            "type": "경쟁"
+          },
+          {
+            "source": "huawei_ads",
+            "target": "hyundai_hdp",
+            "type": "경쟁"
+          },
+          {
+            "source": "xpeng_vla",
+            "target": "hyundai_hdp",
+            "type": "경쟁"
+          }
+        ]
+      },
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-3",
+      "type": "gantt",
+      "title": "한국 자율주행 SW 진입·양산 일정 비교",
+      "data": [
+        {
+          "label": "테슬라 FSD 한국 시범운행",
+          "start": "2026-06-01",
+          "end": "2026-12-31",
+          "note": "임시운행허가 6~12개월"
+        },
+        {
+          "label": "화웨이 ADS 한국 진입 검토",
+          "start": "2026-04-01",
+          "end": "2026-12-31",
+          "note": "BYD 프리미엄 라인 우선"
+        },
+        {
+          "label": "샤오펑 VLA 환경부·국토부 인증",
+          "start": "2026-05-01",
+          "end": "2026-08-31"
+        },
+        {
+          "label": "폭스바겐 VLA 양산 적용",
+          "start": "2026-09-01",
+          "end": "2027-06-30",
+          "note": "샤오펑 1호 외부 OEM"
+        },
+        {
+          "label": "현대 Pleos OS 신차 확산",
+          "start": "2026-06-01",
+          "end": "2027-12-31"
+        },
+        {
+          "label": "현대 HDP 양산",
+          "start": "2027-01-01",
+          "end": "2027-12-31",
+          "note": "L3 부분 자율"
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-4",
+      "type": "bubble",
+      "title": "12~18개월 시나리오, 확률과 영향",
+      "data": [
+        {
+          "label": "가격+SW 동시 잠식",
+          "x": 0.4,
+          "y": 8.5,
+          "size": 9
+        },
+        {
+          "label": "SW 종속, 가격은 정체",
+          "x": 0.35,
+          "y": 7,
+          "size": 7
+        },
+        {
+          "label": "인증 지연으로 진입 늦춤",
+          "x": 0.15,
+          "y": 4,
+          "size": 4
+        },
+        {
+          "label": "현대 HDP 양산 1년 슬립",
+          "x": 0.25,
+          "y": 8,
+          "size": 8
+        },
+        {
+          "label": "한국 OEM, 샤오펑 VLA 외주",
+          "x": 0.1,
+          "y": 6,
+          "size": 5
+        }
+      ],
+      "note": "",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [
+    {
+      "signal": "폭스바겐 VLA 양산 첫 출고",
+      "description": "샤오펑 VLA를 얹은 폭스바겐 첫 양산차의 라인 오프 시점",
+      "indicates": "둘째 시나리오(SW 종속, 가격은 정체)의 실현 여부",
+      "deadline": "2027-06-30",
+      "verification": "unverified"
+    },
+    {
+      "signal": "현대 HDP 양산 공식 일정 변동",
+      "description": "현대차 IR 또는 신차 캘린더에서 HDP 양산 시점이 유지되는지 슬립되는지",
+      "indicates": "넷째 시나리오(현대 HDP 1년 슬립) 분기",
+      "deadline": "2027-01-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "테슬라 FSD 한국 임시운행허가 결과",
+      "description": "6~12개월 시범운행 통과 여부와 보완 요구 사항",
+      "indicates": "셋째 시나리오(진입 지연) 트리거",
+      "deadline": "2026-12-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "BYD 프리미엄 라인 ADS 적용 모델 한국 인증",
+      "description": "화웨이 ADS를 얹은 BYD 프리미엄 차종의 환경부·국토부 인증 통과 시점",
+      "indicates": "첫째 시나리오(가격+SW 동시 잠식) 가속 신호",
+      "deadline": "2026-12-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "한국 V2X·정밀지도 국가표준 고시",
+      "description": "2027년으로 잡힌 국가표준 고시의 실제 진행 상황",
+      "indicates": "넷째 시나리오(HDP 슬립) 차단 또는 가속",
+      "deadline": "2027-06-30",
+      "verification": "unverified"
+    },
+    {
+      "signal": "한국 중견 OEM의 외산 자율주행 SW 라이선스 검토",
+      "description": "기아·르노코리아·KGM 등에서 샤오펑 또는 화웨이 SW 검토 보도",
+      "indicates": "다섯째 시나리오(외산 SW 외주) 진입 신호",
+      "deadline": "2027-03-31",
+      "verification": "unverified"
+    }
+  ],
+  "contradictions": [
+    {
+      "side_a": "중국차 점유율 0.5%에서 6.0%로의 점프는 BYD가 같은 차급에서 천만 원 단위로 싸게 들어온 결과이며, 한국 소비자는 자율주행보다 가격표를 보고 움직였다고 본다.",
+      "side_b": "같은 시기 화웨이 ADS와 샤오펑 VLA가 동시에 정식 인증 단계에 진입했고, 4월 등록의 80% 이상이 ADAS를 얹을 수 있는 라인업이라는 점에서 SW 차별화가 점유율 폭증의 진짜 동력으로 작동했다고 본다.",
+      "evidence": "BYD 4월 등록 2,023대 가운데 ADAS 옵션 적용 차종의 비중과 화웨이 ADS 적용 모델의 한국 인증 일정 보도",
+      "resolution": "2026년 4월 데이터만 놓고 보면 가격 효과가 절반 이상이라는 해석이 더 보수적이다. 본 보고서는 가격이 1차 동력이라는 쪽에 무게를 둔다. 다만 SW 효과는 인증이 끝나는 2026년 하반기부터 누적 점유율의 두 번째 추진력이 될 가능성이 높으며, BYD 프리미엄 라인 ADS 적용 모델이 한국 인증을 통과하는 순간 SW 본질론이 다시 살아난다."
+    },
+    {
+      "side_a": "현대차의 1~2년 양산 격차는 Pleos OS 본격 적용과 자체 데이터 축적, 한국 도로 특성과 한국어 인터페이스의 장벽으로 충분히 회복 가능한 일시적 지체로 본다.",
+      "side_b": "자율주행 모델 성능은 학습 데이터 양과 컴퓨팅 인프라에 비례하는데, 화웨이가 5년 117억 달러를 박는 동안 현대차의 같은 항목 투자 규모는 그 절반 미만으로 추정되며, 시간이 갈수록 격차는 더 벌어지는 구조적 잠금으로 본다.",
+      "evidence": "화웨이 5년 117억 달러 vs 현대차 그룹의 자율주행·AI 관련 공개 투자 규모, Pleos OS 적용 신차의 자율주행 등급 명세",
+      "resolution": "본 보고서는 격차가 1년 안에는 회복 가능한 영역이지만 2년을 넘기면 잠금으로 굳어질 가능성이 높다는 쪽에 선다. 회복 시나리오가 살아나려면 2026년 안에 HDP의 시범운행 데이터가 공개되고 2027년 양산이 일정대로 떨어져야 한다. 이 둘 중 하나라도 슬립하면 둘째 입장(구조적 잠금)의 무게가 빠르게 커진다."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://zdnet.co.kr/view/?no=20260514153358",
+      "publisher": "zdnet.co.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://econmingle.com/car/chinese-ev-second-wave-zeekr-xpeng-korea-premiu/",
+      "publisher": "econmingle.com",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.khan.co.kr/article/202604261501001",
+      "publisher": "khan.co.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.bloter.net/news/articleView.html?idxno=630052",
+      "publisher": "bloter.net",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.ddaily.co.kr/page/view/2026042510150426594",
+      "publisher": "ddaily.co.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://dream.kotra.or.kr/kotranews/cms/news/actionKotraBoardDetail.do?SITE_NO=3&MENU_ID=1420&CONTENTS_NO=1&bbsGbn=506&bbsSn=506&pNttSn=218008",
+      "publisher": "dream.kotra.or.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://www.carguy.kr/news/articleView.html?idxno=54765",
+      "publisher": "carguy.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://www.irobotnews.com/news/articleView.html?idxno=43233",
+      "publisher": "irobotnews.com",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://www.reportera.co.kr/car/byd-983-percent-surge-hyundai-domestic-market-threat-2026/",
+      "publisher": "reportera.co.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://www.kukimedi.com/kukimedi/view/kuk202604070214",
+      "publisher": "kukimedi.com",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-11",
+      "url": "https://v.daum.net/v/20260526110106060",
+      "publisher": "v.daum.net",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-12",
+      "url": "https://www.bizhankook.com/bk/article/30840",
+      "publisher": "bizhankook.com",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-13",
+      "url": "https://web.getcha.kr/blog/hyundai-fsd-autonomous-driving-technology-2026",
+      "publisher": "web.getcha.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-14",
+      "url": "https://www.bloter.net/news/articleView.html?idxno=649123",
+      "publisher": "bloter.net",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-15",
+      "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148960028",
+      "publisher": "korea.kr",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    },
+    {
+      "source_id": "src-16",
+      "url": "https://x.com/simula007/status/1988696185364992214",
+      "publisher": "x.com",
+      "title": "",
+      "fetched_at": "2026-06-02"
+    }
+  ],
+  "confidence": {
+    "score": 0.72,
+    "summary": "1차 출처는 KOTRA·경향·블로터·디지털데일리·카가이 등 다섯 매체 이상에 분산돼 있어 다양성은 확보됐다. 단, 폭스바겐의 샤오펑 VLA 채택 시점과 현대 HDP 2027 양산 일정은 회사 공시 시점과 보도 사이에 시차가 있어 확정도는 보통 수준이다."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2025-06-23",
+        "label": "샤오펑, 서울에 한국 법인 등기",
+        "phase": "past",
+        "note": "VLA의 법적 거점 확보"
+      },
+      {
+        "date": "2025-11-12",
+        "label": "테슬라 FSD 한국 출시 공식 발표",
+        "phase": "past",
+        "note": "임시운행허가 절차 개시"
+      },
+      {
+        "date": "2026-04-24",
+        "label": "화웨이, 자율주행 5년 117억 달러 투자 못 박음",
+        "phase": "past",
+        "note": "SW 플랫폼 표준화 선언"
+      },
+      {
+        "date": "2026-04-30",
+        "label": "중국차 한국 점유율 6.0%, 일본 첫 추월",
+        "phase": "past",
+        "note": "BYD 4월 2,023대 등록"
+      },
+      {
+        "date": "2026-05-31",
+        "label": "샤오펑 VLA 한국 인증 마무리, 폭스바겐 1호 OEM 확정",
+        "phase": "past",
+        "note": "한국·유럽 동시 진입"
+      },
+      {
+        "date": "2026-06-02",
+        "label": "현대 Pleos OS 본격 적용 + HDP 2027 양산 일정 재확인",
+        "phase": "present",
+        "note": "SW 전환은 시작, 자율주행은 후행"
+      },
+      {
+        "date": "2026-12-31",
+        "label": "테슬라 FSD 한국 시범운행 결과",
+        "phase": "future",
+        "note": "셋째 시나리오 분기"
+      },
+      {
+        "date": "2026-12-31",
+        "label": "BYD 프리미엄 ADS 모델 한국 인증",
+        "phase": "future",
+        "note": "첫째 시나리오 분기"
+      },
+      {
+        "date": "2027-01-31",
+        "label": "현대 HDP 양산 공식 일정 재확인 시점",
+        "phase": "future",
+        "note": "넷째 시나리오 분기"
+      },
+      {
+        "date": "2027-06-30",
+        "label": "폭스바겐 VLA 양산 첫 출고",
+        "phase": "future",
+        "note": "둘째 시나리오 분기"
+      },
+      {
+        "date": "2027-06-30",
+        "label": "한국 V2X·정밀지도 국가표준 고시",
+        "phase": "future",
+        "note": "넷째 시나리오 잠금 또는 해소"
+      }
+    ]
+  }
+}
