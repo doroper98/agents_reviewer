@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.0.1
+last_synced_with: v6.0.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,21 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.0.2 — sankey 중앙 정렬 fix (CHART-AP-21 재발 2, expand-only → tight-fit)
+
+- **증상(사용자 재보고, IMG_2629)** — v6.0.1 로 라벨 잘림은 사라졌으나 차트가
+  *왼쪽으로 쏠리고* 오른쪽에 ~150px 빈 여백이 남음.
+- **근본 원인** — v6.0.1 의 content-fit 이 **확장만(expand-only)**: `maxX =
+  max(vx+vw, …)` 로 원본 우측 경계(W=760)를 유지. 컨텐츠 우측 끝(~608)과 760 사이
+  ~150px 가 빈 채로 viewBox 에 들어가, `xMidYMid` 가 빈 공간 포함 전체를 중앙에
+  놓으며 컨텐츠는 좌측 쏠림.
+- **Fix** — `drawSankey` 수평 content-fit 을 **양쪽 tight-fit** 으로: viewBox x/width
+  를 원본 프레임과 무관하게 content bbox + 동일 pad(14)로 설정(`x = bb.x - pad`,
+  `w = bb.width + 2*pad`). 빈 여백 제거 → `xMidYMid` 가 컨텐츠를 폭에 맞춰 정확히
+  중앙 배치. 수직 content-fit(CHART-AP-20)은 vy/vh 보존.
+- charts.js 만 변경. 발행본은 `patch_report.py <id> --rerender-only` 로 동일 URL
+  재렌더 시 적용. CHART-AP-21 "재발 2" 항목 추가.
 
 ## v6.0.1 — sankey 첫 컬럼 라벨 잘림 fix (CHART-AP-21 재발, 수평 content-fit)
 

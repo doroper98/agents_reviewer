@@ -2110,24 +2110,26 @@
       }
     });
 
-    // v6.0.1 — 수평 content-fit viewBox (CHART-AP-21 재발 차단).
-    // 첫 컬럼 라벨은 text-anchor:end 로 x0-6 (≈82px) 에서 *왼쪽* 으로 뻗는다.
-    // 라벨이 긴 한국어("(Col 1 … MW, GPU 22만+)")면 고정 left margin(80) 을 넘어
-    // 음수 좌표로 빠져 viewBox 밖에서 잘린다 (마지막 컬럼 라벨은 우측 동일 위험).
-    // 픽스: 모든 라벨이 렌더된 *뒤* 실제 content bbox 를 측정해 viewBox 를 가로로
-    // 넓혀 라벨 overflow 를 포함시킨다. preserveAspectRatio=xMidYMid 가 자동 중앙
-    // 정렬 → 차트가 살짝 축소되며 중앙으로 모인다. 수직(위 content-fit)은 보존.
+    // v6.0.2 — 수평 content-fit viewBox: 실제 content bbox 에 *타이트하게* 맞춰
+    // 정확히 중앙 정렬 (CHART-AP-21).
+    // 배경: 첫 컬럼 라벨은 text-anchor:end 로 x0-6 (≈82px) 에서 왼쪽으로, 마지막
+    // 컬럼 라벨은 오른쪽으로 뻗어 고정 margin(left80/right120)을 넘으면 잘린다.
+    // v6.0.1 은 라벨이 렌더된 뒤 bbox 로 viewBox 를 넓혔으나 *확장만(expand-only)*
+    // — 원본 우측 경계(W=760)를 유지해, 컨텐츠 우측 끝(~608)과 760 사이 ~150px 가
+    // 빈 채로 남아 차트가 좌측으로 쏠려 보였다 (라벨은 안 잘리지만 중앙 정렬 실패).
+    // 픽스: viewBox x/width 를 content extent + 동일 pad 로 *양쪽 모두* 잡는다.
+    // preserveAspectRatio=xMidYMid 가 컨텐츠를 폭에 맞춰 정확히 중앙 배치 →
+    // 좌·우 어느 라벨도 안 잘리고 빈 여백도 없다. 수직(위 content-fit)은 vy/vh 보존.
     try {
-      const vb = (svg.attr('viewBox') || `0 0 ${W} ${H}`).split(/\s+/).map(Number);
-      const [vx, vy, vw, vh] = vb;
+      const cur = (svg.attr('viewBox') || `0 0 ${W} ${H}`).split(/\s+/).map(Number);
+      const vy = cur[1], vh = cur[3];
       const bb = svg.node().getBBox();
-      const padX = 12;
-      const minX = Math.min(vx, bb.x - padX);
-      const maxX = Math.max(vx + vw, bb.x + bb.width + padX);
-      if (maxX - minX > vw + 0.5 || minX < vx - 0.5) {
-        svg.attr('viewBox', `${minX.toFixed(1)} ${vy} ${(maxX - minX).toFixed(1)} ${vh}`);
+      const padX = 14;
+      if (bb.width > 0) {
+        svg.attr('viewBox',
+          `${(bb.x - padX).toFixed(1)} ${vy} ${(bb.width + 2 * padX).toFixed(1)} ${vh}`);
       }
-    } catch (e) { /* getBBox 불가(레이아웃 전) — 위에서 계산한 viewBox 유지 */ }
+    } catch (e) { /* getBBox 불가(레이아웃 전) — 기존 viewBox 유지 */ }
   }
 
   // ----- RANGE BAR (Dumbbell) -----
