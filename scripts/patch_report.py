@@ -162,6 +162,19 @@ def parse_args() -> argparse.Namespace:
         help="composed_report.confidence_summary 교체.",
     )
     p.add_argument(
+        "--contradictions-heading",
+        metavar="TEXT",
+        help="쟁점(모순) 섹션 제목(contradictions_heading) 교체. 섹션 제목과 중복될 때 정정용.",
+    )
+    p.add_argument(
+        "--section-heading",
+        metavar="IDX=TEXT",
+        action="append",
+        default=[],
+        help="특정 섹션(0-based)의 제목 교체. 제목 중복 정정용. 여러 번 가능. "
+             "예: --section-heading \"5=궤도로 가는 다리, 그 가능성\".",
+    )
+    p.add_argument(
         "--replace",
         metavar="OLD=NEW",
         action="append",
@@ -362,8 +375,30 @@ def patch_remove_marker(result: FullAnalysisResult, marker_id: str) -> bool:
     return True
 
 
+def patch_set_section_heading(result: FullAnalysisResult, spec: str) -> bool:
+    """특정 섹션(0-based)의 heading 교체. spec='IDX=TEXT'. 제목 중복 정정용."""
+    cr = result.composed_report
+    if not cr:
+        print("[patch] composed_report 없음", file=sys.stderr)
+        return False
+    try:
+        idx_s, text = spec.split("=", 1)
+        idx = int(idx_s.strip())
+    except ValueError:
+        print(f"[patch] --section-heading 형식 오류: {spec!r} (예: '5=새 제목')", file=sys.stderr)
+        return False
+    if idx < 0 or idx >= len(cr.sections):
+        print(f"[patch] 섹션 인덱스 {idx} 범위 초과 (0~{len(cr.sections)-1})", file=sys.stderr)
+        return False
+    old = cr.sections[idx].heading
+    cr.sections[idx].heading = text
+    print(f"[patch] 섹션[{idx}] 제목: '{old}' → '{text}'")
+    return True
+
+
 def patch_set_text(result: FullAnalysisResult, field: str, value: str) -> bool:
-    """ComposedReport 의 단일 텍스트 필드 (deck/headline/closing/confidence_summary) 교체."""
+    """ComposedReport 의 단일 텍스트 필드 (deck/headline/closing/confidence_summary/
+    contradictions_heading) 교체."""
     if not result.composed_report:
         print("[patch] composed_report 없음", file=sys.stderr)
         return False
@@ -693,11 +728,16 @@ async def main() -> int:
         ("headline", args.headline),
         ("closing", args.closing),
         ("confidence_summary", args.confidence_summary),
+        ("contradictions_heading", args.contradictions_heading),
     ):
         if val is not None:
             if not patch_set_text(result, field, val):
                 return 1
             mutated = True
+    for spec in args.section_heading:
+        if not patch_set_section_heading(result, spec):
+            return 1
+        mutated = True
 
     # v5.5.5 — 전문 용어 평이화 (--replace) + 문단 하단 각주 (--add-footnote).
     if args.replace:

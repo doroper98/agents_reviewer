@@ -192,6 +192,39 @@ def test_deterministic_detection_rate() -> None:
     assert rate >= 0.9, f"결정적 검출률 {rate:.0%} < 90%"
 
 
+def test_duplicate_heading_guard() -> None:
+    from src.factcheck.deterministic_guards import duplicate_heading_guard
+    dup = ComposedReport(headline="h", sections=[
+        ComposedSection(heading="시장의 첫 반응", prose="a"),
+        ComposedSection(heading="생태계 확장", prose="b"),
+        ComposedSection(heading="시장의 첫 반응", prose="c"),  # 중복
+    ])
+    flags = duplicate_heading_guard(dup)
+    assert any(f.flag == "duplicate_heading" for f in flags)
+    assert "시장의 첫 반응" in flags[0].quote
+    # 정규화 동일(공백·구두점 차이)도 중복으로.
+    near = ComposedReport(headline="h", sections=[
+        ComposedSection(heading="다음 수", prose="a"),
+        ComposedSection(heading="다음수", prose="b"),
+    ])
+    assert duplicate_heading_guard(near)
+    # ★ 실제 회귀 — 섹션 제목 = 쟁점(모순) 섹션 제목(contradictions_heading) 중복.
+    real = ComposedReport(
+        headline="h",
+        contradictions_heading="임대업인가, 궤도로 가는 다리인가",
+        sections=[
+            ComposedSection(heading="임대업인가, 궤도로 가는 다리인가", prose="a"),
+            ComposedSection(heading="감시 신호", prose="b"),
+        ],
+    )
+    rflags = duplicate_heading_guard(real)
+    assert rflags and "쟁점 섹션" in rflags[0].detail
+    # 중복 없으면 빈 list.
+    ok = ComposedReport(headline="h", sections=[
+        ComposedSection(heading="첫째", prose="a"), ComposedSection(heading="둘째", prose="b")])
+    assert duplicate_heading_guard(ok) == []
+
+
 def test_nan_exposure_guard() -> None:
     report = ComposedReport(
         headline="시장 브리핑",

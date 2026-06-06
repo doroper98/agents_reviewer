@@ -34,6 +34,7 @@ GUARD_SCOPE = "ScopeBarewordGuard"
 GUARD_NOVELTY = "NoveltyDeltaGuard"
 GUARD_MARKET = "MarketDataSourceGuard"
 GUARD_NAN = "NaNExposureGuard"
+GUARD_DUP_HEADING = "DuplicateHeadingGuard"
 
 
 class ProseBlock(BaseModel):
@@ -362,6 +363,48 @@ def nan_exposure_guard(
     return flags
 
 
+def _norm_heading(h: str) -> str:
+    return re.sub(r"[\s·,.\-–—:()]+", "", (h or "")).lower()
+
+
+def duplicate_heading_guard(report: ComposedReport) -> list[GuardFlag]:
+    """제목이 보고서 내에서 *중복/유사 중복* 되면 flag (사용자 지시).
+
+    검사 대상: 일반 섹션 제목 + **쟁점(모순) 섹션 제목(`contradictions_heading`)** + 헤드라인.
+    공백·구두점 무시 정규화 후 동일하면 중복으로 간주(low-FP). 동일 제목이 여러 곳에
+    (특히 섹션 제목 = 쟁점 섹션 제목) 나오는 회귀를 매 보고서 결정적 검출 → loop HARD 트리거.
+    """
+    items: list[tuple[str, str]] = [
+        ("섹션", sec.heading) for sec in report.sections if sec.heading
+    ]
+    if getattr(report, "contradictions_heading", ""):
+        items.append(("쟁점 섹션", report.contradictions_heading))
+    if report.headline:
+        items.append(("헤드라인", report.headline))
+
+    norm_map: dict[str, list[tuple[str, str]]] = {}
+    for label, h in items:
+        nh = _norm_heading(h)
+        if nh:
+            norm_map.setdefault(nh, []).append((label, h))
+
+    flags: list[GuardFlag] = []
+    for _nh, group in norm_map.items():
+        if len(group) > 1:
+            where = " / ".join(f"{lbl}('{h}')" for lbl, h in group)
+            flags.append(
+                GuardFlag(
+                    guard=GUARD_DUP_HEADING,
+                    flag="duplicate_heading",
+                    location="headings",
+                    quote=group[0][1],
+                    detail=f"제목 중복 ({len(group)}곳): {where}",
+                    severity="high",
+                )
+            )
+    return flags
+
+
 # --------------------------------------------------------------------------
 # 집계
 # --------------------------------------------------------------------------
@@ -399,4 +442,5 @@ def run_fact_guards(
     )
     flags += market_data_source_guard(blocks, market_series)
     flags += nan_exposure_guard(blocks, report)
+    flags += duplicate_heading_guard(report)
     return flags
