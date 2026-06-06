@@ -1,0 +1,513 @@
+{
+  "request": {
+    "event_description": "엔 캐리 unwind 가 KOSPI 200 옵션 변동성에 미치는 전이 채널 자세히 분석",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 0,
+    "mode": "deep"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "엔 캐리 트레이드는 저금리 엔화를 빌려 고수익 자산(미국 채권, 신흥국 주식, 가상자산 등)에 투자하는 전략임. BOJ 가 2025-12 0.75% 로 인상하면서 funding cost 가 올라 carry 의 수익성이 약해짐. 한국은 글로벌 위험 자산 중 유동성·접근성이 높아 carry unwind 시 매도 1순위 시장 중 하나로 꼽힘. 2024-08 1차 unwind 때 KOSPI 200 선물이 5% 넘게 빠지며 sidecar(프로그램 매매 호가 효력 정지) 가 발동된 전례 있음. 옵션 시장은 현물·선물 매도 압력을 vega(변동성 민감도) 와 skew(좌측 꼬리 옵션 프리미엄) 로 흡수하기 때문에 unwind 의 거의 모든 충격이 VKOSPI 에 빠르게 누적됨.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2025-12",
+            "event": "BOJ 정책금리 0.50% → 0.75% 인상 (30년 만 최고)",
+            "impact": "엔 캐리 funding cost 상승 본격화. JPY 강세 전환 시작점"
+          },
+          {
+            "date": "2026-03-04",
+            "event": "미국·이란 충돌 격화 + 글로벌 risk-off",
+            "impact": "VKOSPI 80.37 까지 급등 (당해 최고)"
+          },
+          {
+            "date": "2026-03-19",
+            "event": "BOJ 정책회의, 0.75% 동결",
+            "impact": "단기 안도, VKOSPI 48.51 까지 후퇴"
+          },
+          {
+            "date": "2026-04-28",
+            "event": "BOJ 회의 — 9명 위원 중 3명이 인상 의견, 우에다 총재는 신중론 유지",
+            "impact": "엔 강세 재개, VKOSPI 56 까지 재상승"
+          },
+          {
+            "date": "2026-04-30",
+            "event": "KOSPI 28년 만 최고 월간 상승, VKOSPI 54.34 마감",
+            "impact": "지수 상승과 변동성 동반 상승 (vol-up rally)"
+          },
+          {
+            "date": "2026-05-03",
+            "event": "JPY/KRW 9.37 (100엔 = 937원)",
+            "impact": "최근 1주간 9.22~9.45 대 변동, 엔 강세 지속"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "엔 캐리 트레이드 unwind 가 KOSPI 200 옵션 변동성으로 전이되는 경로 분석",
+    "event_name_en": "Yen Carry Unwind Transmission Channels into KOSPI 200 Option Volatility",
+    "date": "2026-05-05",
+    "category": "거시·자본시장",
+    "summary": "BOJ(일본은행) 가 2025-12 정책금리를 0.75% 로 30년 만에 최고로 올린 뒤 추가 인상 기대가 살아있음. 미결제 엔 캐리 포지션 약 5,000억 달러(모건스탠리 추정) 가 부분적으로 풀리면서 한국 주식·옵션 시장으로 변동성이 흘러들어옴. 4월 KOSPI 는 28년 만에 최고 월간 상승률을 기록했으나, VKOSPI 는 같은 기간 80 → 48 → 54 사이에서 큰 진폭으로 출렁임.",
+    "timeline": [
+      {
+        "date": "2025-12",
+        "event": "BOJ 정책금리 0.50% → 0.75% 인상 (30년 만 최고)",
+        "impact": "엔 캐리 funding cost 상승 본격화. JPY 강세 전환 시작점"
+      },
+      {
+        "date": "2026-03-04",
+        "event": "미국·이란 충돌 격화 + 글로벌 risk-off",
+        "impact": "VKOSPI 80.37 까지 급등 (당해 최고)"
+      },
+      {
+        "date": "2026-03-19",
+        "event": "BOJ 정책회의, 0.75% 동결",
+        "impact": "단기 안도, VKOSPI 48.51 까지 후퇴"
+      },
+      {
+        "date": "2026-04-28",
+        "event": "BOJ 회의 — 9명 위원 중 3명이 인상 의견, 우에다 총재는 신중론 유지",
+        "impact": "엔 강세 재개, VKOSPI 56 까지 재상승"
+      },
+      {
+        "date": "2026-04-30",
+        "event": "KOSPI 28년 만 최고 월간 상승, VKOSPI 54.34 마감",
+        "impact": "지수 상승과 변동성 동반 상승 (vol-up rally)"
+      },
+      {
+        "date": "2026-05-03",
+        "event": "JPY/KRW 9.37 (100엔 = 937원)",
+        "impact": "최근 1주간 9.22~9.45 대 변동, 엔 강세 지속"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "BOJ 정책금리",
+        "value": "0.75%",
+        "context": "2025-12 인상 후 동결. 시장은 2026년 중반 추가 인상 가격에 반영"
+      },
+      {
+        "label": "미결제 엔 캐리 포지션 추정",
+        "value": "약 5,000억 달러",
+        "context": "모건스탠리 추정. 2024-08 1차 unwind 이후 잔존분"
+      },
+      {
+        "label": "VKOSPI 4월 최고/최저",
+        "value": "56.00 / 48.51",
+        "context": "2026-04 한 달 변동폭. 평년(20~25) 대비 2배 수준"
+      },
+      {
+        "label": "KOSPI 4월 상승률",
+        "value": "+30.61%",
+        "context": "검색 결과 인용 — 28년 만 최고 월간 상승, CNBC. 추가 검증 필요(이상치)"
+      },
+      {
+        "label": "USD/KRW",
+        "value": "1,468.92원",
+        "context": "2026-05 초. 원화 약세 + 엔 강세가 동시 진행"
+      },
+      {
+        "label": "JPY/KRW",
+        "value": "9.37원/엔",
+        "context": "2026-05-03. 최근 1주 9.22~9.45 박스"
+      },
+      {
+        "label": "BOJ 위원 인상 표결",
+        "value": "3 / 9명",
+        "context": "2026-04-28 회의. 매파 비중 확대 신호"
+      }
+    ],
+    "background": "엔 캐리 트레이드는 저금리 엔화를 빌려 고수익 자산(미국 채권, 신흥국 주식, 가상자산 등)에 투자하는 전략임. BOJ 가 2025-12 0.75% 로 인상하면서 funding cost 가 올라 carry 의 수익성이 약해짐. 한국은 글로벌 위험 자산 중 유동성·접근성이 높아 carry unwind 시 매도 1순위 시장 중 하나로 꼽힘. 2024-08 1차 unwind 때 KOSPI 200 선물이 5% 넘게 빠지며 sidecar(프로그램 매매 호가 효력 정지) 가 발동된 전례 있음. 옵션 시장은 현물·선물 매도 압력을 vega(변동성 민감도) 와 skew(좌측 꼬리 옵션 프리미엄) 로 흡수하기 때문에 unwind 의 거의 모든 충격이 VKOSPI 에 빠르게 누적됨.",
+    "sources": [
+      "Reuters/Coindesk — BOJ 2026-04-28 회의 (3명 인상 표결, 우에다 신중론)",
+      "Morgan Stanley — 잔존 엔 캐리 포지션 약 $500B 추정 (Wellington/Investing.com 인용)",
+      "CNBC — 'South Korea's Kospi clocks best month in 28 years' (2026-04-30)",
+      "Korea Times — 2024-08 yen carry reversal 시 KOSPI 200 선물 5%+ 급락, sidecar 발동",
+      "Investing.com — VKOSPI 시계열 (2026-03 ~ 04)",
+      "MUFG Research — Monthly FX Outlook April 2026 (BOJ 추가 인상 경로)",
+      "Wise/OFX — JPY/KRW, USD/KRW 환율 (2026-04~05)",
+      "BIS Quarterly Review — carry trade unwind 의 cross-currency 전이 메커니즘"
+    ],
+    "glossary": [
+      {
+        "term": "엔 캐리 트레이드",
+        "definition": "낮은 금리의 엔화를 빌려 더 높은 수익이 나는 다른 나라 자산에 투자하는 거래"
+      },
+      {
+        "term": "unwind",
+        "definition": "쌓아둔 거래 포지션을 되돌려 청산하는 행위. 환율·금리 환경이 바뀌어 수익 구조가 깨질 때 발생"
+      },
+      {
+        "term": "VKOSPI",
+        "definition": "KOSPI 200 옵션 가격에서 역산한 향후 30일 예상 변동성 지수. 한국판 VIX(공포지수)"
+      },
+      {
+        "term": "vega",
+        "definition": "옵션 가격이 변동성에 얼마나 민감한지 나타내는 그리스 문자. unwind 때 변동성 매수 수요로 vega 가 폭증"
+      },
+      {
+        "term": "skew",
+        "definition": "같은 만기 옵션에서 행사가별 내재변동성 차이. 좌측(풋) 비대칭이 커지면 시장이 폭락을 우려한다는 신호"
+      },
+      {
+        "term": "sidecar",
+        "definition": "한국거래소가 프로그램 매매로 인한 급변동을 5분간 정지시키는 안전장치. KOSPI 200 선물 5% 이상 변동 등 조건 발동"
+      },
+      {
+        "term": "funding cost",
+        "definition": "거래 자금을 빌리는 데 드는 이자 비용. BOJ 인상 시 엔화 funding cost 상승"
+      },
+      {
+        "term": "JGB",
+        "definition": "Japanese Government Bond — 일본 국채. JGB 금리 상승은 캐리 수익률 차이를 좁힘"
+      },
+      {
+        "term": "term structure",
+        "definition": "만기별 변동성·금리 곡선. unwind 시 단기 변동성이 장기보다 더 튀어 backwardation(역전) 발생"
+      }
+    ],
+    "confidence_score": 0.72,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: 'VKOSPI 56.00 — 2026-04-29, 평년 20~25 대비 2배'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "Transmission Channel (FX → funding → equity → vol)",
+        "Flow of Funds (carry capital reallocation)",
+        "Pre-mortem (다음 unwind 시나리오 역설계)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: VKOSPI(한국 변동성 지수)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실(BOJ 인상 + carry 잔존액) → 메커니즘(전이 채널 5종) → 함의(VKOSPI 구조 변화) → 반례·미해결(2024-08 vs 2026 차이, 한일 통화스왑 안전판). 각 섹션이 이전 섹션 결론을 입력으로 받는 cumulative 구조.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "엔 캐리가 풀린다, 한국 변동성이 받는다",
+    "deck": "BOJ 0.75% 인상 이후 잔존 5,000억 달러 캐리 포지션이 외국인 매도와 옵션 vega 로 흘러들며 VKOSPI 가 평년의 두 배 수준에 자리 잡았다.",
+    "sections": [
+      {
+        "heading": "30년 만의 인상이 만든 새 지형",
+        "kicker": "지정학·자본 변곡 / 1",
+        "prose": "한국 시장이 받은 충격은 두 얼굴이다. KOSPI 는 4월 한 달 가파르게 올랐고 (CNBC 보도 기준 28년 만의 최고 월간 상승률, 다만 +30.61% 라는 수치 자체는 이상치 가능성이 있어 보수적으로 해석한다), 같은 기간 VKOSPI (한국 변동성 지수) 는 48.51 에서 56.00 사이에서 출렁였다. 평년 VKOSPI 가 20~25 대 박스라는 점을 고려하면 두 배 수준이다 (출처: Investing.com).\n\n지수와 변동성이 함께 오르는 이른바 vol-up rally 는 흔하지 않다. 통상 지수가 오르면 변동성은 내려간다. 그런데 4월의 한국은 두 곡선이 동시에 위로 향했다. 그 이유를 파고들면 도쿄로 돌아간다. 지수 자체는 외국인의 매수 회전과 환율 약세 효과로 끌어 올려졌지만, 옵션 시장은 다음 unwind (포지션 청산) 의 가능성을 미리 가격에 반영하고 있었다.\n\n왜 하필 한국일까. 한국 시장은 글로벌 위험 자산 가운데 유동성이 깊고 외국인 접근성이 좋다. 캐리 자금이 들어올 때 1순위 입금처였고, 빠질 때 1순위 출금처가 되는 비대칭이 여기서 나온다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "BOJ (일본은행) 가 정책금리를 0.75% 로 올린 지 5개월. 엔 캐리 트레이드 (저금리 엔화를 빌려 고수익 자산에 투자하는 전략) 의 funding cost (자금 조달 비용) 가 본격적으로 밀려 올라왔다. 그리고 그 압력은 도쿄에 머물지 않았다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "BOJ 정책금리",
+            "value": "0.75%",
+            "sublabel": "2025-12 인상 후 동결"
+          },
+          {
+            "label": "잔존 엔 캐리",
+            "value": "약 5,000억 달러",
+            "sublabel": "Morgan Stanley 추정"
+          },
+          {
+            "label": "VKOSPI 4월 최고",
+            "value": "56.00",
+            "sublabel": "2026-04-29 / 평년 20~25"
+          },
+          {
+            "label": "USD/KRW",
+            "value": "1,468.92원",
+            "sublabel": "2026-05 초"
+          },
+          {
+            "label": "JPY/KRW",
+            "value": "9.37원/엔",
+            "sublabel": "2026-05-03"
+          },
+          {
+            "label": "BOJ 인상 표결",
+            "value": "3 / 9명",
+            "sublabel": "2026-04-28 회의"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "도쿄에서 서울로 — 다섯 개의 전이 채널",
+        "kicker": "메커니즘 / 2",
+        "prose": "첫 번째는 환율 채널이다. BOJ 인상으로 USD/JPY 가 떨어지면 carry trader 의 funding leg 손실이 커진다. 한국 시장에는 JPY/KRW 동조 압력이 따라붙는다. 5월 초 9.37원/엔 (100엔 = 937원) 은 최근 1주 9.22~9.45 박스의 상단부에 가깝다. 엔 강세가 길어질수록 carry leg 이 더 빨리 풀린다.\n\n두 번째는 funding 채널이다. 엔 차입 비용이 오르면 carry book 전체의 net carry (순이자 마진) 가 얇아진다. 마진이 얇아진 순간 small loss 도 청산 트리거가 된다. 5,000억 달러 잔존분이 한꺼번에 풀릴 가능성은 낮지만, 10% 만 풀려도 500억 달러다.\n\n세 번째는 현물 채널이다. unwind 의 매도 1차 표적은 미국 채권과 신흥국 주식이다. 한국 시장에서는 외국인 KOSPI 200 선물 매도로 우선 표면화한다. 2024-08 1차 unwind 때 KOSPI 200 선물이 5% 넘게 급락하며 sidecar (프로그램 매매 호가 효력 정지) 가 발동된 전례가 있다 (출처: Korea Times).\n\n네 번째는 vega 채널이다. 옵션 마켓메이커는 현물·선물 매도 압력을 즉시 헤지해야 하므로 implied vol 자체를 끌어 올린다. VKOSPI 가 56 까지 튄 것은 이 채널이 작동했다는 신호다.\n\n다섯 번째는 skew 채널이다. unwind 우려가 커지면 좌측 꼬리 옵션 (out-of-the-money 풋) 의 프리미엄이 가파르게 비싸진다. 즉 25델타 풋 IV 와 콜 IV 의 차이 (스큐) 가 벌어진다. 지수가 오르는데 변동성도 오르는 4월의 vol-up rally 는 사실상 이 스큐 압력의 표현이다.",
+        "charts": [
+          {
+            "type": "heatmap",
+            "title": "5개 전이 채널의 충격 강도",
+            "subtitle": "vega·skew·equity 채널이 4월 VKOSPI 급등의 주범",
+            "data": [
+              {
+                "title": "FX (엔 강세 → 원화 동조 압력)",
+                "severity": "high"
+              },
+              {
+                "title": "Funding (엔 차입 비용 ↑, net carry 압축)",
+                "severity": "medium"
+              },
+              {
+                "title": "Equity (외국인 KOSPI 200 선물 매도)",
+                "severity": "high"
+              },
+              {
+                "title": "Vega (마켓메이커 즉시 헤지 → IV 점프)",
+                "severity": "high"
+              },
+              {
+                "title": "Skew (좌측 꼬리 풋 프리미엄 확대)",
+                "severity": "high"
+              }
+            ],
+            "source": "BIS Quarterly Review (carry unwind 전이 메커니즘) + 본 분석",
+            "takeaway": "현물 채널보다 옵션 채널 (vega·skew) 이 먼저 흔들린다 — VKOSPI 가 선행 지표"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "캐리 unwind 는 단일 충격이 아니다. 환율, funding, 현물, vega, skew 라는 다섯 개의 도관을 차례로 통과하면서 옵션 시장 안에 누적된다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "결정권자, 이득자, 손해자",
+        "kicker": "행위자 / 3",
+        "prose": "결정권자는 BOJ 다. 우에다 총재는 4월 28일 회의에서 신중론을 유지했지만, 9명 위원 중 3명이 인상 의견을 냈다 (출처: Reuters/Coindesk). 매파 비중이 1/3 까지 올라온 것은 의미 있는 변화다. 시장은 6월 회의에서 이 비율이 4/9 로 한 단계 더 확대되는지 본다.\n\n이득자는 두 그룹이다. 하나는 미리 unwind 한 carry 청산자들로, 엔 강세에서 환차익을 얻었다. 다른 하나는 한국 옵션 마켓메이커 가운데 long vega 포지션을 짧게 유지한 쪽이다. 단 이들의 이익은 일시적이다. 변동성이 다시 평년 수준으로 회귀하면 short vega 로 돌아서야 한다.\n\n손해자는 명확하다. 첫째, 잔존 carry 포지션 보유자. 5,000억 달러의 절반만이라도 추가 unwind 되면 환손실 + 자산가격 손실의 이중타격을 받는다. 둘째, KOSPI 200 풋 매도 (short put) 포지션의 개인투자자다. 4월의 vol-up rally 에서 많이 다쳤다. 셋째는 한국 수출기업 일부로, 원화 약세는 호재지만 글로벌 risk-off 가 동반되면 수요 자체가 위축된다.\n\n숨은 영향력자는 일본 보험사·연기금이다. 외환 헤지 비용이 오르면 미국 채권 비중을 줄이게 되고, 그 매물이 글로벌 채권 금리를 자극해 carry 채산성을 다시 흔든다. 도쿄의 자산배분 회의가 서울 옵션 호가를 흔드는 사슬이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "VKOSPI 의 새 박스, 평년의 두 배",
+        "kicker": "구조 변화 / 4",
+        "prose": "3월 4일 미국·이란 충돌 격화로 VKOSPI 는 80.37 까지 치솟았다. 이는 risk-off 충격이 더해진 일회성 점프다. 그 뒤 BOJ 가 3월 19일 동결하면서 48.51 까지 후퇴했고, 4월 28일 회의에서 매파 표결이 부각되자 다시 56.00 으로 올라섰다 (출처: Investing.com).\n\n핵심은 후퇴 구간의 바닥이 48 이었다는 점이다. 평년 박스의 상단 (25) 의 거의 두 배다. 즉 시장이 carry unwind 의 잔존 위험을 이미 가격에 박아 두고 있다. 일종의 새 평형이다.\n\n변동성 시장에서 새 평형은 옵션 매도 전략의 손익 구조를 바꾼다. 평년 박스를 가정하고 풋을 팔던 자들은 더 비싼 값을 받지만, 더 큰 꼬리 위험에 노출된다. 단기에 한 번의 sidecar 만 발동돼도 누적 프리미엄을 한 번에 잃을 수 있다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "VKOSPI 주요 지점 (2026-03 ~ 04)",
+            "subtitle": "4월 박스 하단 48 — 평년 상단 25 의 두 배",
+            "data": [
+              {
+                "x": "2026-03-04",
+                "y": 80.37,
+                "event": "미·이란 risk-off"
+              },
+              {
+                "x": "2026-03-19",
+                "y": 48.51,
+                "event": "BOJ 동결"
+              },
+              {
+                "x": "2026-04-28",
+                "y": 54.0,
+                "event": "BOJ 회의 (3/9 인상)"
+              },
+              {
+                "x": "2026-04-29",
+                "y": 56.0,
+                "event": "월중 최고"
+              },
+              {
+                "x": "2026-04-30",
+                "y": 54.34,
+                "event": "월말 마감"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "hline",
+                "y": 25,
+                "label": "평년 박스 상단"
+              },
+              {
+                "kind": "vline",
+                "x": "2026-04-28",
+                "label": "BOJ 매파 표결",
+                "sublabel": "3 / 9명"
+              }
+            ],
+            "source": "Investing.com VKOSPI / 2026-03~04 종가",
+            "takeaway": "후퇴 구간 바닥 (48) 이 새 평형의 위치"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "평년 박스 상단의 두 배가 후퇴의 바닥이 됐다.",
+        "cited_claim_ids": [],
+        "lede": "사실 한 줄로 정리하자. 2026년 4월의 VKOSPI 는 일시 급등이 아니라, 새 평형 박스의 가능성을 보여준다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "다음 unwind 의 네 갈래",
+        "kicker": "시나리오 / 5",
+        "prose": "첫 번째 시나리오는 점진 unwind 다. 확률은 높게 본다. BOJ 가 6월 또는 9월에 0.25%p 추가 인상을 단행하고, carry 포지션이 분기 단위로 10~15% 씩 정리된다. VKOSPI 는 35~50 박스에 머물고, 한국 옵션 시장은 비싸진 평형에 적응한다.\n\n두 번째는 급격 unwind 다. 확률은 낮지만 충격은 가장 크다. BOJ 의 surprise hike 또는 미국 측 신용 이벤트와 겹치면 carry book 의 30% 이상이 1주 안에 풀린다. KOSPI 200 선물 5% 이상 급락 + sidecar 발동, VKOSPI 80 재돌파. 2024-08 시나리오의 재현이다.\n\n세 번째는 정체·박스권이다. BOJ 가 추가 인상을 6개월 이상 미루고, 미국 측에서도 큰 신용 이벤트가 없는 경우다. carry 의 net carry 가 얇아진 채로 유지되며 unwind 가 천천히 진행된다. VKOSPI 는 30~45 박스로 한 단계 내려오지만 평년 회귀는 못 한다.\n\n네 번째는 정책 개입이다. 한국은행이 외환 시장 안정 조치 또는 한일 통화스왑 재개 카드로 위험 프리미엄을 일부 흡수한다. 이 경우 VKOSPI 는 빠르게 30 대로 후퇴할 수 있지만, 시장은 곧 다음 트리거를 찾기 시작한다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "시나리오 확률 × VKOSPI 영향",
+            "subtitle": "급격 unwind 는 꼬리지만 가장 무거운 꼬리",
+            "data": [
+              {
+                "label": "점진 unwind",
+                "x": 0.45,
+                "y": 35,
+                "size": 35
+              },
+              {
+                "label": "급격 unwind",
+                "x": 0.2,
+                "y": 85,
+                "size": 85
+              },
+              {
+                "label": "정체·박스권",
+                "x": 0.25,
+                "y": 20,
+                "size": 20
+              },
+              {
+                "label": "정책 개입",
+                "x": 0.1,
+                "y": 15,
+                "size": 15
+              }
+            ],
+            "source": "본 분석 / 확률은 정성 평가, 영향은 VKOSPI 추정 peak",
+            "takeaway": "가운데 두 시나리오 (점진·정체) 에 약 70% 의 확률 — 단 꼬리 시나리오의 손실이 비대칭"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "Pre-mortem 으로 역설계해 본다. 다음 6개월, 어디에서 무엇이 깨질 수 있는가.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "안전판은 진짜 안전한가",
+        "kicker": "모순·반대 가설 / 6",
+        "prose": "표면 narrative 는 두 가지 안전판을 든다. 하나는 한일 통화스왑이다. 위기 시 원화 유동성을 일본으로부터 끌어 올 수 있다는 논리다. 다른 하나는 한국 외환보유고 (4,000억 달러대) 와 한국은행의 시장 안정화 의지다. 이 둘이 있는 한 2024-08 같은 sidecar 사태는 재현되지 않는다는 입장이다.\n\n그러나 이 안전판들이 옵션 시장의 vega 압력을 즉시 흡수할 수는 없다. 통화스왑은 외환 위기를 막지만 변동성 자체를 낮추지는 못한다. 외환보유고 개입은 환율을 잡지만 마켓메이커의 헤지 부담을 줄이지는 못한다. 즉 안전판은 systemic risk 에 대한 보험이지, vol risk 에 대한 보험이 아니다.\n\n또 다른 모순은 BOJ 의 인상 경로 자체다. 시장은 점진 인상을 기본 시나리오로 가격에 반영했다. 그러나 일본 인플레 압력이 잔존하면 9월 surprise hike 가능성이 살아난다. 점진 시나리오의 가격에 surprise 가 끼어들면 vega 점프가 더 커진다.\n\n반대 가설을 짧게 적는다. 일부 분석가는 4월의 VKOSPI 56 이 carry unwind 가 아니라 4월 KOSPI 의 가파른 상승률 자체가 만든 일회성 신호라고 본다. 이 입장에서는 unwind 채널은 부수적이고, 5월 이후 VKOSPI 가 30 대로 빠르게 회귀할 것이라 말한다. 본 보고서는 이를 채택하지 않는다 — vol-up rally 의 동시성과 5,000억 달러 잔존분이 차지하는 무게 때문이다. 다만 5월 중순까지 VKOSPI 가 35 이하로 후퇴하고 외국인 KOSPI 200 선물 누적 순매도가 멈추면, 반대 가설이 다시 살아난다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "도쿄에서 정한 0.25%p 의 한 칸이 서울 옵션 호가창의 IV 한 자릿수를 흔든다. 새 평형은 더 비싸진 보험료의 다른 이름이다.",
+    "watch_signals": [
+      {
+        "signal": "BOJ 6월 정책회의 표결 분포",
+        "description": "9명 중 인상 의견 위원 수가 3명 → 4명 이상으로 확대되는지",
+        "indicates": "점진 unwind vs 급격 unwind 분기 — 매파 4명 이상이면 surprise hike 확률 ↑",
+        "deadline": "2026-06-17",
+        "icon": "🏦"
+      },
+      {
+        "signal": "VKOSPI 25델타 풋·콜 IV 스큐",
+        "description": "좌측 꼬리 풋의 IV 와 콜 IV 차이가 현재 평년 대비 어느 수준에 있는지",
+        "indicates": "급격 unwind 시나리오의 선행 지표 — 스큐가 4월 평균 위로 더 벌어지면 경계",
+        "deadline": "주간 모니터링",
+        "icon": "📐"
+      },
+      {
+        "signal": "외국인 KOSPI 200 선물 누적 순매도",
+        "description": "주간 누적 순매도 규모가 -1조원을 넘는지 여부",
+        "indicates": "현물 채널 가동 여부 — 임계 돌파 시 sidecar 가능성 재고",
+        "deadline": "주간 모니터링",
+        "icon": "📉"
+      },
+      {
+        "signal": "USD/JPY 145 라인",
+        "description": "5월 초 148~150 박스에서 145 아래로 빠지는 시점",
+        "indicates": "엔 강세 가속의 문턱 — 통과 시 carry leg 손실 임계 진입",
+        "deadline": "수시",
+        "icon": "💴"
+      },
+      {
+        "signal": "한일 통화스왑 재개 협상 진척",
+        "description": "정책 개입 시나리오의 핵심 카드 — 협상 본격 개시 보도 여부",
+        "indicates": "정책 개입 시나리오 활성화 신호 — VKOSPI 30 대 후퇴 확률 ↑",
+        "deadline": "분기 모니터링",
+        "icon": "🤝"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "한일 통화스왑 + 외환보유고 4,000억 달러대 + BOK 시장 안정 의지가 sidecar 재발을 막는 안전판이다",
+        "side_b": "통화스왑·외환보유고는 systemic risk 보험일 뿐 옵션 시장 vega·skew 압력을 직접 흡수하지 못한다 — vol risk 는 따로다",
+        "evidence": "2024-08 sidecar 발동 전례, VKOSPI 4월 박스 하단 48 (평년 상단 25 의 2배), 안전판은 환율·유동성 위기를 다루지 변동성 평형을 옮기지 못함",
+        "resolution": "현 시점에서는 side_b 채택. 안전판은 위기 차단 도구이지 변동성 정상화 도구가 아니다. 단 한일 통화스왑 재개가 공식화되고 BOK 가 risk premium 흡수에 직접 나서면 side_a 가 부분 부활."
+      },
+      {
+        "side_a": "BOJ 가 점진 인상 경로를 유지한다는 시장 컨센서스 — 6월 또는 9월 0.25%p 가 기본 시나리오",
+        "side_b": "일본 인플레 압력 잔존 시 surprise hike 가능성이 살아있어 점진 가격에 비대칭 위험이 깔려있다",
+        "evidence": "4월 28일 회의에서 9명 중 3명이 인상 의견. 매파 비중이 6월에 4명까지 확대되면 표결 모멘텀이 surprise 로 이어질 수 있음",
+        "resolution": "기본은 side_a 채택 (확률 우위). 단 6월 회의 표결 분포가 4/9 이상이면 즉시 side_b 로 무게 이동. 점진 가격에 surprise 가 들어오면 vega 점프가 더 커진다."
+      },
+      {
+        "side_a": "4월 VKOSPI 56 은 carry unwind 가 아니라 KOSPI 자체의 가파른 4월 상승이 만든 일회성 신호",
+        "side_b": "vol-up rally 의 동시성 + 5,000억 달러 잔존 carry 가 새 평형 박스를 만든 구조 변화",
+        "evidence": "4월 KOSPI 28년 만 최고 월간 상승률 (CNBC, 단 +30.61% 수치는 이상치 가능성 — 보수 해석), VKOSPI 후퇴 바닥 48 이 평년 상단 25 의 2배",
+        "resolution": "side_b 채택. 후퇴 바닥의 위치가 결정적. 단 5월 중순까지 VKOSPI 가 35 이하로 후퇴하고 외국인 선물 누적 순매도가 멈추면 side_a 가 부분 부활."
+      }
+    ],
+    "confidence_summary": "BOJ 회의·환율·VKOSPI 시계열은 2026-04~05 신선도, 출처 다양성 (Reuters, CNBC, Investing.com, MUFG, BIS) 양호. KOSPI 4월 +30.61% 는 이상치 가능성이 있어 본문에서 보수 해석. 시나리오 확률은 정성 평가.",
+    "confidence_score": 0.72,
+    "embedded_map": null
+  },
+  "executive_summary": "BOJ 0.75% 인상 이후 잔존 5,000억 달러 캐리 포지션이 외국인 매도와 옵션 vega 로 흘러들며 VKOSPI 가 평년의 두 배 수준에 자리 잡았다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260505_143500.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-05T05:30:35.443936",
+  "total_duration_seconds": 264.98616909980774,
+  "system_version": "v4.5.7",
+  "revision": 0
+}
