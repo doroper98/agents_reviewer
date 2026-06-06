@@ -1,0 +1,544 @@
+{
+  "request": {
+    "event_description": "nasa 최신 발사일정",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "standard",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "NASA 의 2026 년 상반기는 Artemis II 의 성공 귀환이 최대 성과. 이는 1972 년 이래 처음으로 인간을 달 부근까지 보낸 비행으로, SLS (Space Launch System) 로켓과 Orion 캡슐의 유인 검증을 끝낸 의미. 그 직후 5월은 ISS 화물 보급 (CRS-34, Cygnus XL) 위주로 비교적 조용한 흐름이고, 시선은 6월 9일 Artemis III 승무원 발표로 옮겨간 상황. Artemis III 는 SpaceX Starship HLS (달 착륙선) 의 준비 지연으로 당초 2025~2026 일정에서 2027 로 한 차례 밀린 상태이며, 이번 발표에서 새 일정과 비행 형상 (저궤도 시험 비행 모드) 도 함께 공개될 전망. 한편 상업 화물 공급에서는 Boeing Starliner (2024 CFT 기술 이슈로 검토 지속) 와 Sierra Space Dream Chaser (Q4 데뷔 예정) 가 하반기 주요 변수.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-02-13",
+            "event": "SpaceX Crew-12 발사 (NASA Jack Hathaway·Jessica Meir, ESA Sophie Adenot, Roscosmos 1인)",
+            "impact": "현재 ISS Expedition 74 주력 승무원"
+          },
+          {
+            "date": "2026-04-01",
+            "event": "Artemis II 발사 (SLS, 케네디우주센터 LC-39B, 18:35 EDT)",
+            "impact": "1972 년 Apollo 17 이후 첫 유인 달 영역 비행"
+          },
+          {
+            "date": "2026-04-11",
+            "event": "Artemis II 캡슐 (Orion) 태평양 착수 — 캘리포니아 샌디에이고 남서 해상 17:07 PDT",
+            "impact": "10일 임무 무사 완료. 승무원 4인 (Wiseman, Glover, Koch, Hansen) 귀환"
+          },
+          {
+            "date": "2026-04-11",
+            "event": "Cygnus XL (NG-24) ISS 도착 — Northrop Grumman 사상 최대 화물 캡슐 첫 임무",
+            "impact": "Expedition 74 보급"
+          },
+          {
+            "date": "2026-05-15",
+            "event": "SpaceX CRS-34 화물 드래곤 발사 (Cape Canaveral SLC-40, 18:05 EDT). 5/12 기상 스크럽 후 재시도",
+            "impact": "ISS 화물·과학 실험 보급"
+          },
+          {
+            "date": "2026-05-26",
+            "event": "SpaceX Starlink 24기 발사 (Vandenberg, NASA 미션 아님 — 참고)",
+            "impact": "이번 분기 미국 발사 캐던스 유지"
+          },
+          {
+            "date": "2026-06-09",
+            "event": "Artemis III 승무원 4인 공식 발표 + 미션 진행 업데이트 (JSC, 11:00 EDT, NASA+/YouTube 생중계)",
+            "impact": "달 착륙 미션 인적 구성 확정 — 임무는 2027 목표"
+          },
+          {
+            "date": "2026-09 중순 (NET)",
+            "event": "SpaceX Crew-13 ISS 장기 체류 발사 — 3 기관 4인",
+            "impact": "다음 유인 ISS 교대"
+          },
+          {
+            "date": "2026 Q4 (NET)",
+            "event": "Sierra Space Dream Chaser Demo-1 (Vulcan Centaur, SLC-41) — 무인 화물 우주비행기 첫 자유비행",
+            "impact": "신규 ISS 화물 공급 라인 검증"
+          },
+          {
+            "date": "미정 (검토 중)",
+            "event": "Boeing Starliner-1 무인 화물 임무 — 2024 CFT 기술 이슈 사후 조치 진행",
+            "impact": "Starliner 유인 운용 복귀 전 검증 단계"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "NASA 2026년 5~6월 발사 일정 — Artemis II 귀환 직후 정비 구간, 6월 9일 Artemis III 승무원 발표 대기",
+    "event_name_en": "NASA Launch Schedule, Late May–June 2026: Post-Artemis II Lull and Artemis III Crew Reveal",
+    "date": "2026-05-29",
+    "category": "우주개발 / 항공우주",
+    "summary": "오늘 (2026-05-29) 기준 NASA 의 직접 운영 발사 일정은 일시적 소강 국면. 4월 1일 Artemis II 가 50여 년 만의 유인 달 비행으로 성공 귀환 (4/11 태평양 착수) 한 뒤, 5월 15일 SpaceX CRS-34 화물 운송이 ISS 로 발사된 것이 최근 NASA 주관 미션. 다음 주요 마일스톤은 6월 9일 (화) 휴스턴 존슨우주센터에서 열리는 Artemis III 승무원 공식 발표 행사이며, 유인 다음 미션 Crew-13 은 9월 중순으로 예정.",
+    "timeline": [
+      {
+        "date": "2026-02-13",
+        "event": "SpaceX Crew-12 발사 (NASA Jack Hathaway·Jessica Meir, ESA Sophie Adenot, Roscosmos 1인)",
+        "impact": "현재 ISS Expedition 74 주력 승무원"
+      },
+      {
+        "date": "2026-04-01",
+        "event": "Artemis II 발사 (SLS, 케네디우주센터 LC-39B, 18:35 EDT)",
+        "impact": "1972 년 Apollo 17 이후 첫 유인 달 영역 비행"
+      },
+      {
+        "date": "2026-04-11",
+        "event": "Artemis II 캡슐 (Orion) 태평양 착수 — 캘리포니아 샌디에이고 남서 해상 17:07 PDT",
+        "impact": "10일 임무 무사 완료. 승무원 4인 (Wiseman, Glover, Koch, Hansen) 귀환"
+      },
+      {
+        "date": "2026-04-11",
+        "event": "Cygnus XL (NG-24) ISS 도착 — Northrop Grumman 사상 최대 화물 캡슐 첫 임무",
+        "impact": "Expedition 74 보급"
+      },
+      {
+        "date": "2026-05-15",
+        "event": "SpaceX CRS-34 화물 드래곤 발사 (Cape Canaveral SLC-40, 18:05 EDT). 5/12 기상 스크럽 후 재시도",
+        "impact": "ISS 화물·과학 실험 보급"
+      },
+      {
+        "date": "2026-05-26",
+        "event": "SpaceX Starlink 24기 발사 (Vandenberg, NASA 미션 아님 — 참고)",
+        "impact": "이번 분기 미국 발사 캐던스 유지"
+      },
+      {
+        "date": "2026-06-09",
+        "event": "Artemis III 승무원 4인 공식 발표 + 미션 진행 업데이트 (JSC, 11:00 EDT, NASA+/YouTube 생중계)",
+        "impact": "달 착륙 미션 인적 구성 확정 — 임무는 2027 목표"
+      },
+      {
+        "date": "2026-09 중순 (NET)",
+        "event": "SpaceX Crew-13 ISS 장기 체류 발사 — 3 기관 4인",
+        "impact": "다음 유인 ISS 교대"
+      },
+      {
+        "date": "2026 Q4 (NET)",
+        "event": "Sierra Space Dream Chaser Demo-1 (Vulcan Centaur, SLC-41) — 무인 화물 우주비행기 첫 자유비행",
+        "impact": "신규 ISS 화물 공급 라인 검증"
+      },
+      {
+        "date": "미정 (검토 중)",
+        "event": "Boeing Starliner-1 무인 화물 임무 — 2024 CFT 기술 이슈 사후 조치 진행",
+        "impact": "Starliner 유인 운용 복귀 전 검증 단계"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "Artemis II 비행 일수",
+        "value": "10일",
+        "context": "2026-04-01 발사 ~ 04-11 착수. Apollo 17 (1972) 이후 첫 유인 달 영역 비행"
+      },
+      {
+        "label": "Artemis II 승무원",
+        "value": "4인",
+        "context": "Reid Wiseman (선장) · Victor Glover (조종사) · Christina Koch · Jeremy Hansen (CSA). Hansen 은 캐나다인 첫 달 비행"
+      },
+      {
+        "label": "Artemis III 발사 목표",
+        "value": "2027",
+        "context": "당초 2025~2026 → 슬립. 6/9 발표에서 일정 재확인 예정"
+      },
+      {
+        "label": "다음 유인 발사까지 공백",
+        "value": "약 4개월",
+        "context": "5/29 기준 ~ Crew-13 9월 중순. 그 사이 NASA 발사는 화물·로보틱 미션 중심"
+      },
+      {
+        "label": "Cygnus XL 적재 능력",
+        "value": "Northrop Grumman 사상 최대",
+        "context": "기존 Cygnus 대비 화물 적재 확대형, NG-24 가 첫 임무"
+      },
+      {
+        "label": "Artemis III 발표 행사 시간",
+        "value": "2026-06-09 11:00 EDT",
+        "context": "한국시간 6월 10일 0시. 휴스턴 JSC, NASA+/YouTube 생중계"
+      }
+    ],
+    "background": "NASA 의 2026 년 상반기는 Artemis II 의 성공 귀환이 최대 성과. 이는 1972 년 이래 처음으로 인간을 달 부근까지 보낸 비행으로, SLS (Space Launch System) 로켓과 Orion 캡슐의 유인 검증을 끝낸 의미. 그 직후 5월은 ISS 화물 보급 (CRS-34, Cygnus XL) 위주로 비교적 조용한 흐름이고, 시선은 6월 9일 Artemis III 승무원 발표로 옮겨간 상황. Artemis III 는 SpaceX Starship HLS (달 착륙선) 의 준비 지연으로 당초 2025~2026 일정에서 2027 로 한 차례 밀린 상태이며, 이번 발표에서 새 일정과 비행 형상 (저궤도 시험 비행 모드) 도 함께 공개될 전망. 한편 상업 화물 공급에서는 Boeing Starliner (2024 CFT 기술 이슈로 검토 지속) 와 Sierra Space Dream Chaser (Q4 데뷔 예정) 가 하반기 주요 변수.",
+    "sources": [
+      "https://www.nasa.gov/news-release/nasa-welcomes-record-setting-artemis-ii-moonfarers-back-to-earth/",
+      "https://www.nasa.gov/blogs/missions/2026/04/01/live-artemis-ii-launch-day-updates/",
+      "https://www.nasa.gov/news-release/nasa-to-announce-artemis-iii-crew-provide-mission-progress-update/",
+      "https://www.space.com/space-exploration/artemis/nasa-will-reveal-the-artemis-3-astronauts-on-june-9",
+      "https://www.nasa.gov/blogs/commercialcrew/2026/05/01/nasa-partners-update-international-space-station-2026-flight-plan/",
+      "https://spaceflightnow.com/2026/05/12/live-coverage-nasa-spacex-to-launch-34th-cargo-dragon-mission-to-the-space-station/",
+      "https://en.wikipedia.org/wiki/SpaceX_Crew-12",
+      "https://en.wikipedia.org/wiki/Cygnus_NG-24",
+      "https://en.wikipedia.org/wiki/2026_in_spaceflight",
+      "https://en.wikipedia.org/wiki/List_of_spaceflight_launches_in_April%E2%80%93June_2026",
+      "https://spaceflightnow.com/launch-schedule/"
+    ],
+    "glossary": [
+      {
+        "term": "Artemis 프로그램",
+        "definition": "NASA 주도의 유인 달 복귀 계획. Artemis I (2022 무인 시험) → Artemis II (2026/4 유인 달 플라이바이) → Artemis III (2027 목표, 달 착륙) 순"
+      },
+      {
+        "term": "SLS (Space Launch System)",
+        "definition": "NASA 가 직접 개발한 대형 발사체. Artemis 미션의 주 로켓"
+      },
+      {
+        "term": "Orion",
+        "definition": "Artemis 의 유인 캡슐. ESA 가 서비스 모듈을 공급"
+      },
+      {
+        "term": "ISS (International Space Station)",
+        "definition": "국제우주정거장. 미·러·EU·일·캐 협력 운영"
+      },
+      {
+        "term": "CRS (Commercial Resupply Services)",
+        "definition": "NASA 가 SpaceX (Dragon) · Northrop Grumman (Cygnus) 등 민간에 외주한 ISS 화물 보급. CRS-34 는 SpaceX 의 34 번째 운송"
+      },
+      {
+        "term": "Cygnus XL",
+        "definition": "Northrop Grumman 의 화물 캡슐 Cygnus 의 적재 확대형. 2026 년 NG-24 부터 운용"
+      },
+      {
+        "term": "Crew Dragon",
+        "definition": "SpaceX 의 유인 캡슐. Crew-1~Crew-N 으로 ISS 승무원 교대 운송"
+      },
+      {
+        "term": "Dream Chaser",
+        "definition": "Sierra Space 가 개발한 우주비행기형 화물 운송선. Vulcan Centaur 로 발사 예정"
+      },
+      {
+        "term": "Starliner",
+        "definition": "Boeing 의 유인 캡슐. 2024 년 CFT (유인 시험비행) 에서 추력기 이슈 발생 후 검토 지속"
+      },
+      {
+        "term": "NET (No Earlier Than)",
+        "definition": "발사 일정 표기. '이 시점보다 빠르지 않게' = 사실상의 잠정 최저 시점"
+      },
+      {
+        "term": "JSC (Johnson Space Center)",
+        "definition": "휴스턴 소재 NASA 유인 우주비행 본부. 승무원 훈련·관제 담당"
+      }
+    ],
+    "confidence_score": 0.82,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "달 다녀온 직후의 정적, 그리고 6월 9일",
+    "deck": "Artemis II 가 50여 년 만의 유인 달 비행을 끝내고 돌아온 뒤 NASA 의 발사판은 한 박자 쉬고 있다. 다음 분수령은 6월 9일 휴스턴에서 공개될 Artemis III 의 사람과 일정이다.",
+    "sections": [
+      {
+        "heading": "Artemis II 귀환, 그리고 비어 있는 5월",
+        "kicker": "유인 달 비행 / 정적",
+        "prose": "Artemis II 는 NASA 가 새로 만든 대형 로켓 SLS 와 캡슐 Orion 의 사람 태운 첫 시험 비행이었다. 4월 1일 케네디우주센터에서 떠난 4인은 10일 동안 달 부근까지 다녀와 17시 7분 (현지시간) 태평양에 착수했다. 캐나다인 Jeremy Hansen 이 캐나다 국적자로는 처음 달 영역을 돌았다.\n\n관심사는 그 다음이었다. 4월 11일 같은 날 Cygnus XL 화물선이 국제우주정거장에 도착해 보급을 끝냈고, 5월 15일에는 SpaceX 의 화물 드래곤 CRS-34 가 우주정거장으로 떠났다. 그게 이번 분기 NASA 가 직접 손댄 마지막 발사다. 5월의 나머지는 비어 있다.\n\n비어 있는 이유는 단순하다. 사람을 태우고 가는 다음 미션 Crew-13 은 9월 중순으로 잡혀 있고, 그 사이 NASA 의 손이 들어가는 일정은 보급과 무인 시험 중심이다. 사람의 발사·귀환만 따라 그래프를 그려 보면 4월 11일에서 9월 중순까지가 한 토막의 공백이다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "2026년 NASA 미션 일정",
+            "subtitle": "발사 잦은 분기에 가려진 5~8월의 인적 공백",
+            "data": [
+              {
+                "label": "Crew-12 (ISS 장기 체류)",
+                "start": "2026-02-13",
+                "end": "2026-09-15",
+                "note": "Hathaway·Meir·Adenot·Roscosmos 1인"
+              },
+              {
+                "label": "Artemis II (유인 달 비행)",
+                "start": "2026-04-01",
+                "end": "2026-04-11",
+                "note": "10일 임무, 4인 귀환"
+              },
+              {
+                "label": "Cygnus XL NG-24 (화물)",
+                "start": "2026-04-11",
+                "end": "2026-08-15",
+                "note": "사상 최대 화물 적재"
+              },
+              {
+                "label": "CRS-34 화물 드래곤",
+                "start": "2026-05-15",
+                "end": "2026-06-20",
+                "note": "약 한 달 도킹 후 귀환"
+              },
+              {
+                "label": "Artemis III 승무원 발표",
+                "start": "2026-06-09",
+                "end": "2026-06-09",
+                "note": "JSC 11:00 EDT"
+              },
+              {
+                "label": "Crew-13 (다음 유인)",
+                "start": "2026-09-15",
+                "end": "2027-03-15",
+                "note": "약 6개월 체류 예정"
+              },
+              {
+                "label": "Dream Chaser Demo-1",
+                "start": "2026-10-01",
+                "end": "2026-12-31",
+                "note": "신규 화물 라인 데뷔"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "band",
+                "x_from": "2026-04-12",
+                "x_to": "2026-09-14",
+                "label": "유인 발사 공백"
+              },
+              {
+                "kind": "vline",
+                "x": "2026-06-09",
+                "label": "Artemis III 발표"
+              }
+            ],
+            "source": "NASA / Spaceflight Now / 2026-05-29 기준",
+            "takeaway": "Artemis II 직후 5~8월이 사람의 발사·귀환이 없는 한 토막의 공백이고, 그 한가운데 6월 9일 발표가 놓여 있다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "4월 11일 오후, 캘리포니아 남서 해상에 Orion 캡슐이 내려앉았다. 1972년 Apollo 17 이후 처음으로 사람이 달 부근까지 다녀온 비행이 무사히 끝났다. 그 다음 6주는 의외로 조용했다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "Artemis II 비행",
+            "value": "10일",
+            "sublabel": "4/1 발사 ~ 4/11 착수"
+          },
+          {
+            "label": "승무원",
+            "value": "4명",
+            "sublabel": "Wiseman·Glover·Koch·Hansen"
+          },
+          {
+            "label": "다음 유인 발사까지",
+            "value": "약 4개월",
+            "sublabel": "Crew-13, 9월 중순 예정"
+          },
+          {
+            "label": "Artemis III 발사 목표",
+            "value": "2027년",
+            "sublabel": "당초 2025~2026 → 슬립"
+          },
+          {
+            "label": "Cygnus XL 첫 임무",
+            "value": "NG-24",
+            "sublabel": "Northrop Grumman 사상 최대 화물 캡슐"
+          }
+        ],
+        "dropcap": true,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "SLS",
+            "explanation": "Space Launch System. NASA 가 Apollo 시대의 새턴 로켓을 잇겠다며 새로 만든 초대형 로켓이다. 사람과 화물을 달까지 보낼 수 있는 추력이 핵심."
+          },
+          {
+            "term": "착수 (스플래시다운)",
+            "explanation": "캡슐이 바다에 낙하해 회수되는 방식의 귀환을 가리킨다. 활주로에 내려앉는 우주왕복선과 달리 Apollo 와 Orion 이 쓰는 전통적 귀환 방법이다."
+          }
+        ]
+      },
+      {
+        "heading": "6월 9일이 결정하는 것 — 사람, 그리고 임무의 모양",
+        "kicker": "분기점",
+        "prose": "6월 9일 오전 11시 (현지시간, 한국시간 6월 10일 자정) 휴스턴 존슨우주센터에서 NASA 는 Artemis III 의 승무원 4인을 공개한다. 행사 제목은 '승무원 발표 + 미션 진행 업데이트' 다. 두 번째 항목이 더 중요할 수 있다.\n\n사람을 정하는 일은 임무 형상과 분리되지 않는다. 누가 가느냐는 어떤 비행이 될 것인가를 거꾸로 비춘다. 당초 Artemis III 는 2025~2026 안에 사람 두 명을 달 남극에 내려보내는 것이 목표였다. 그 일정은 SpaceX 의 달 착륙선 Starship HLS 가 시험 일정에서 거듭 밀리며 2027년으로 한 차례 미뤄졌다. 항공우주 매체들은 이번 발표에서 NASA 가 착륙 대신 달 궤도 내 시험 비행으로 임무 형상을 한 차례 더 조정할 가능성도 제기하고 있다.\n\n사실 6월 9일 발표는 두 가지 신호를 동시에 보낼 자리다. 첫째는 NASA 가 Artemis II 의 성공으로 다음 단계의 사람 명단을 자신 있게 내놓을 수 있다는 의지. 둘째는 그 사람들이 정말 달 표면에 발을 디딜지, 아니면 우선 달 부근까지 다녀오는 시험 비행 한 번이 더 끼는지를 비추는 첫 그림자다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "사람을 정하는 일은 임무 형상과 분리되지 않는다. 누가 가느냐는 어떤 비행이 될 것인가를 거꾸로 비춘다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "Starship HLS",
+            "explanation": "Human Landing System. NASA 가 SpaceX 에 위탁한 Artemis 프로그램의 달 착륙선이다. 거대한 Starship 우주선을 달 착륙용으로 개조한 변형이며, 궤도 급유와 무인 시험 착륙이 끝나야 사람을 실어 보낼 수 있다."
+          }
+        ]
+      },
+      {
+        "heading": "보급 라인의 분기 — 한 척에서 네 척으로",
+        "kicker": "공급 다각화",
+        "prose": "유인 발사가 비어 있는 사이 NASA 의 시선이 가장 먼저 닿는 곳은 화물 공급망이다. 2024년 Boeing Starliner 의 유인 시험 비행이 기술 이슈로 발이 묶인 뒤 NASA 는 한 척에 의존하는 위험을 줄이는 쪽으로 움직였다.\n\n현재 우주정거장 화물 라인은 네 갈래로 갈라지는 중이다. SpaceX 의 화물 드래곤 (CRS-34 가 5월 15일 발사), Northrop Grumman 의 Cygnus 가 4월 11일 첫 임무를 마친 확대형 Cygnus XL, 4분기 데뷔를 노리는 Sierra Space 의 무인 우주비행기 Dream Chaser, 그리고 2024 년 시험에서 막혀 있는 Boeing Starliner. 네 척 중 한 척이 막혀도 임무가 멈추지 않는 형태로 짜고 있다.\n\n하반기 진짜 시험대는 Dream Chaser 다. 이번이 활주로에 내려앉는 형태의 무인 화물 우주비행기가 처음으로 자유 비행을 하는 자리이고, 성공하면 NASA 는 회수가 부드러운 새 옵션을 손에 쥔다. 실패 또는 슬립이면 2027년 보급 그림이 한 칸씩 빈다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "유인 비행 시험 (CFT)",
+            "explanation": "Crewed Flight Test. 사람이 직접 타서 우주선이 사람을 안전하게 실어 나를 수 있는지 검증하는 단계다. Boeing Starliner 는 2024년 CFT 에서 추진 계통 문제가 드러나 후속 운용이 보류된 상태다."
+          }
+        ]
+      },
+      {
+        "heading": "세 갈래의 다음 한 해",
+        "kicker": "시나리오",
+        "prose": "Artemis III 의 행보는 6월 9일 발표 이후 세 갈래로 갈린다. 어느 쪽으로 가느냐는 결국 Starship HLS 의 무인 시험 일정이 좌우한다.\n\n첫째, 기준선 시나리오는 2027년 달 착륙 일정 유지다. 6월 9일 발표가 승무원 4인을 호명하고 2027 일정과 남극 착륙 형상을 재확인하는 모습이다. 이 경우 2026년 하반기 NASA 의 손은 무인 Starship HLS 시험과 SLS Block 1B 준비에 집중된다. 가능성은 가장 높지만 확신할 일은 아니다.\n\n둘째, 임무 형상 조정 시나리오. NASA 가 사람의 안전을 우선해 Artemis III 를 달 궤도 시험 비행으로 한 단계 낮추고, 실제 착륙은 Artemis IV 또는 별도 미션으로 미루는 그림이다. 6월 9일 발표가 '착륙' 대신 '달 영역 비행' 같은 표현으로 바뀌면 이 신호다.\n\n셋째, 추가 슬립 시나리오. Starship HLS 의 무인 착륙 시험이 2026년 말까지 마무리되지 못해 Artemis III 가 2028 년 또는 그 이후로 한 번 더 밀리는 경우다. 발표가 사람만 호명하고 일정에는 '검토 중' 단서가 붙으면 이 신호에 가깝다.\n\n세 가닥은 서로 엇갈리지 않는다. 가장 그럴듯한 결말은 둘째와 셋째의 혼합 — 사람은 발표되되 임무 형상은 한 번 더 조정되는 모습이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "성공한 비행과 미루어진 착륙",
+        "kicker": "정전이냐 잠복이냐",
+        "prose": "Artemis II 의 성공을 두고 두 갈래 해석이 부딪힌다. 한쪽은 NASA 가 50여 년의 공백을 끊었고 사람과 장비 모두 검증이 끝났으니 Artemis III 의 추진력에 가속이 붙는다고 본다. 다른 쪽은 사람 검증과 착륙선 준비는 같은 시계가 아니라고 본다. SLS·Orion 은 준비를 끝냈지만 Starship HLS 는 아직 무인 착륙 시험조차 끝내지 못한 상태다. 한 축에서 잘 돌아가는 일이 다른 축의 지체를 가리기 어렵다는 것이다.\n\n5월 한 달의 정적이 이 충돌의 작은 증거다. 사람의 검증이 끝났음에도 다음 유인 발사가 4개월 뒤로 잡힌 것은, NASA 시스템이 4월의 성공을 자동으로 이어받지 못한다는 의미이기도 하다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      }
+    ],
+    "closing": "6월 9일의 발표가 끝나면 2026년 하반기의 그림이 비로소 보인다. 그때까지는 사람의 명단보다 임무의 형상이 더 많은 것을 말한다.",
+    "watch_signals": [
+      {
+        "signal": "Artemis III 승무원 발표 (6월 9일)",
+        "description": "휴스턴 JSC 행사에서 4인 승무원과 미션 진행 업데이트 공개. 발표의 '미션 형상' 문구가 핵심",
+        "indicates": "기준선 (2027 착륙 유지) vs 형상 조정 (궤도 시험으로 격하) vs 추가 슬립 시나리오 분기",
+        "deadline": "2026-06-09",
+        "icon": "🚀"
+      },
+      {
+        "signal": "Starship HLS 무인 착륙 시험 일정",
+        "description": "Artemis III 의 실제 일정을 좌우하는 핵심 변수. 2026년 하반기 내 시험 진척이 분기점",
+        "indicates": "Artemis III 2027 vs 2028+ 슬립 시나리오 분기",
+        "icon": "🌙"
+      },
+      {
+        "signal": "Dream Chaser Demo-1 (4분기)",
+        "description": "Sierra Space 의 무인 화물 우주비행기 첫 자유비행. ISS 화물 공급 다각화의 시험대",
+        "indicates": "성공 시 NASA 보급 라인 4척 체제 안정 / 실패·슬립 시 2027년 공급 그림 재조정",
+        "deadline": "2026-12-31",
+        "icon": "🛬"
+      },
+      {
+        "signal": "Boeing Starliner 후속 비행 결정",
+        "description": "2024 CFT 기술 이슈 사후 조치 결과. 무인 화물 임무로 복귀하는 시기와 형태",
+        "indicates": "유인 운용 복귀 일정 및 NASA 유인 캡슐 이중화 회복 여부",
+        "icon": "✈️"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "Artemis II 의 성공은 SLS·Orion 의 사람 검증을 끝낸 사건이며, NASA 의 달 프로그램은 50여 년의 공백을 끊고 본격적 가속 구간에 진입했다.",
+        "side_b": "사람의 검증과 착륙선의 준비는 같은 시계가 아니며, Starship HLS 가 아직 무인 착륙 시험조차 끝내지 못한 한 Artemis III 의 실제 착륙은 여전히 잠복 변수다.",
+        "evidence": "Artemis II 4월 11일 무사 귀환 vs Artemis III 가 2025~2026 에서 2027 로 한 차례 슬립, 5~8월 약 4개월의 유인 발사 공백.",
+        "resolution": "둘째 관점에 무게를 둔다. 4월의 성공이 5월의 공백으로 곧장 이어진 것이 핵심 단서다 — 한 축의 검증 완료가 다른 축의 지체를 자동으로 덮어주지 않는다. 다만 6월 9일 발표가 2027 일정과 남극 착륙 형상을 확약하고 같은 분기 안에 Starship HLS 무인 착륙 시험이 가시화되면 첫째 관점이 다시 살아난다."
+      }
+    ],
+    "contradictions_heading": "정전이냐 잠복이냐",
+    "timeline_flow": {
+      "heading": "사건의 궤적",
+      "past": [
+        {
+          "date": "2026-02-13",
+          "label": "Crew-12 발사, ISS Expedition 74 진입",
+          "note": "현 ISS 주력 승무원"
+        },
+        {
+          "date": "2026-04-01",
+          "label": "Artemis II 케네디센터 발사",
+          "note": "SLS·Orion 유인 첫 비행"
+        },
+        {
+          "date": "2026-04-11",
+          "label": "Orion 태평양 착수 — 50여 년 만의 유인 달 영역 비행 완료",
+          "note": "Cygnus XL NG-24 도 같은 날 ISS 도착"
+        },
+        {
+          "date": "2026-05-15",
+          "label": "SpaceX CRS-34 화물 드래곤 발사",
+          "note": "이번 분기 마지막 NASA 주관 발사"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-06-09",
+          "label": "Artemis III 승무원 4인 + 미션 형상 공개",
+          "branch": "기준선 vs 형상 조정 vs 추가 슬립 분기"
+        },
+        {
+          "date": "2026-09-15",
+          "label": "Crew-13 ISS 장기 체류 발사 (예상)",
+          "branch": "유인 발사 공백 종료"
+        },
+        {
+          "date": "2026-Q4",
+          "label": "Dream Chaser Demo-1 무인 화물 첫 자유비행 (예상)",
+          "branch": "보급 라인 4척 체제 시험대"
+        },
+        {
+          "date": "2027",
+          "label": "Artemis III 달 미션 (예상)",
+          "branch": "Starship HLS 준비 시점에 종속"
+        }
+      ]
+    },
+    "confidence_summary": "1차 출처 (NASA 공식 보도자료·블로그) 중심에 항공우주 전문 매체 (Spaceflight Now, Space.com) 와 Wikipedia 발사 일정 페이지가 보조. 발사 일자·승무원 명단은 확정 사실, Artemis III 일정과 임무 형상은 6월 9일 발표 전까지 보수적 표현으로 다뤘다.",
+    "confidence_score": 0.78,
+    "embedded_map": null,
+    "hero_image": null
+  },
+  "executive_summary": "Artemis II 가 50여 년 만의 유인 달 비행을 끝내고 돌아온 뒤 NASA 의 발사판은 한 박자 쉬고 있다. 다음 분수령은 6월 9일 휴스턴에서 공개될 Artemis III 의 사람과 일정이다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260529_192001.html",
+  "report_theme": "editorial_cream",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-29T10:15:00.327305",
+  "total_duration_seconds": 301.1942346096039,
+  "system_version": "v5.5.7",
+  "revision": 0
+}
