@@ -1,0 +1,378 @@
+{
+  "request": {
+    "event_description": "테슬라의 FSD 대비하여 한국 완성차 업체의 움직임은 최근 3년간 어떠 하였고, 향후 어떤 움직임을 가져갈 것인가. 그리고 중국 업체 대비 어느정도의 경쟁력을 확보하였고 확보할 수 있을까. 한국 완성차 업체의 위기와 기회에 대한 상세 보고서를 작성해. 가능하다면 한국의 자율주행 인프라에 대한 프론티어기업 및 정책에 대한 분석까지 함께 수행하는 방대하고 면밀한 분석 보고서를 작성해.",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "한국 완성차의 자율주행 전략은 지난 3년간 '안전 우선' 명분으로 레벨3(HDP/HDA3) 양산을 거듭 연기해 왔음. 그 사이 테슬라는 FSD 의 데이터·뉴럴넷 학습을 누적했고, 중국 BYD·샤오펑·화웨이는 '저가 EV + 고도 자율주행 SW' 묶음으로 내수를 장악한 뒤 글로벌 OEM 에 SW 를 팔기 시작. 테슬라가 2026년 초 한국에서 감독형 FSD 를 배포하면서 '국내 안방 위협' 이 현실화됐고, 이에 현대차그룹은 자체 NPU·E2E 자율주행 개발 노선을 포기하고 엔비디아 DRIVE Hyperion + 구글 딥마인드 VLA 모델 도입으로 방향을 급선회. 동시에 자회사 포티투닷의 1.4조원 투자 대비 누적 손실 누적, 모셔널은 라스베이거스 로보택시로 우회 상용화. 정부는 자율주행자동차법 개정·시범운행지구 확대·국가대표 기업 지정으로 산업 정책 드라이브를 걸었지만, 양산차 적용 시점은 여전히 2029년으로 글로벌 톱 그룹 대비 2~3년 후행.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2023~2024",
+            "event": "현대차·기아 'HDP(고속도로 자율주행, 레벨3)' 출시 연이어 연기. 'HDA3' 로 명칭 바꾸고 2026년 상용화로 후퇴",
+            "impact": "안전 검증을 명분으로 한 보수 노선이 굳어지면서 테슬라·중국 업체 대비 양산 속도 격차 확대"
+          },
+          {
+            "date": "2025-01",
+            "event": "현대차·기아, 엔비디아와 차세대 자율주행 전략적 파트너십 확대 발표",
+            "impact": "자체 칩·플랫폼 노선에서 엔비디아 의존 노선으로 전환의 신호탄"
+          },
+          {
+            "date": "2025년 중",
+            "event": "테슬라, 한국 임시운행 허가 신청 및 안전 검증 시작",
+            "impact": "국토부 자율주행 안전기준 심사 절차 진입"
+          },
+          {
+            "date": "2025년 한 해",
+            "event": "포티투닷(42dot) 매출 277억원(전년 대비 +10.9%), 영업손실 3,498억원(+98.7%), 순손실 3,639억원(+107.6%)",
+            "impact": "1.4조원 누적 투자에도 손실 폭증. 그룹 내부 회의론 확산"
+          },
+          {
+            "date": "2025년",
+            "event": "BYD 글로벌 전기차 1,210만 대 판매 — 글로벌 1위 굳힘",
+            "impact": "규모의 경제로 SDV·자율주행 R&D 비용 분산 가능"
+          },
+          {
+            "date": "2026-01-13",
+            "event": "현대차그룹, 박민우 신임 AVP 본부장 겸 포티투닷 대표 선임. 자율주행 기술 노선을 E2E(End-to-End)에서 VLA(비전-언어-행동) 모델로 전환 추진",
+            "impact": "조직·기술 노선 동시 리셋. 모셔널·포티투닷 분산 역량을 엔비디아 플랫폼 위로 통합"
+          },
+          {
+            "date": "2026-02-01",
+            "event": "「자율주행자동차 상용화 촉진 및 지원에 관한 법률」 개정 시행",
+            "impact": "시범운행지구 17곳 운영 근거·보험 의무 한도(사망 1인 1.5억) 등 정비"
+          },
+          {
+            "date": "2026년 1분기",
+            "event": "테슬라, 한국에서 '감독형 FSD(supervised)' 첫 배포 — 모델 S·X 중 HW 4.0 탑재 약 2,600대 한정. 모델 3·Y 는 미적용",
+            "impact": "심리적 충격은 크나 적용 모수 작음. 정의선 회장 \"우리가 좀 늦은 편\" 시인"
+          },
+          {
+            "date": "2026년 1분기",
+            "event": "중국 승용차 판매 전년 동기 대비 -17%(보조금 종료 영향). BYD 내수 7개월 연속 감소",
+            "impact": "중국 업체가 SDV 구독 매출로 수익 모델 재편 가속 — 본격 SW 경쟁 본격화"
+          },
+          {
+            "date": "2026-03-15",
+            "event": "모셔널, 우버와 라스베이거스 로보택시(아이오닉 5 기반, SAE 레벨4) 시범 서비스 개시. 연말 완전 무인 전환 예정",
+            "impact": "현대차그룹의 '해외 우회' 자율주행 상용화 카드"
+          },
+          {
+            "date": "2026-04 (베이징 모터쇼)",
+            "event": "샤오펑(XPeng) CEO 허샤오펑, '8월까지 중국 시장에서 테슬라 FSD 완전 추월' 선언. VLA 2.0 전 라인업 + 폭스바겐 공급",
+            "impact": "중국 토종 자율주행 SW가 폭스바겐 플랫폼 통해 글로벌 수출 — 한국 업체에 직접 위협"
+          },
+          {
+            "date": "2026-04-28",
+            "event": "정부, '국가대표 자율주행 기업' 으로 현대차·에이투지·라이드플럭스 선정",
+            "impact": "B2G 자금·실증 우선권 집중. 중소 스타트업은 B2B 전환 압박"
+          },
+          {
+            "date": "2026-04",
+            "event": "기아, CEO 인베스터 데이에서 엔비디아·구글 딥마인드 협력 공개. 2027년 말 고속도로 레벨2+ SDV, 2029년 도심 레벨2++ 양산 로드맵 제시",
+            "impact": "테슬라(FSD)·샤오펑(VLA 2.0) 대비 양산 시점 2~3년 후행 확정"
+          },
+          {
+            "date": "2026년 하반기 예정",
+            "event": "테슬라 FSD 모델 3·Y 정식 한국 출시 가시권. 현대차그룹은 라스베이거스에서 완전 무인 로보택시 공개 예정",
+            "impact": "본격 자율주행 마케팅·여론전 시작"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "테슬라 FSD 한국 상륙과 현대차그룹·중국 업체 자율주행 3파전",
+    "event_name_en": "Tesla FSD Lands in Korea: Hyundai vs. Chinese Rivals in the Autonomous Driving Race",
+    "date": "2026-05-03",
+    "category": "산업/기술 — 자동차 / 자율주행 / SDV",
+    "summary": "테슬라가 2026년 한국에서 감독형 FSD 배포를 시작(약 2,600대 한정)하면서 자율주행 경쟁이 국내 시장으로 옮겨붙음. 현대차그룹은 자체 NPU를 포기하고 엔비디아 DRIVE Hyperion·구글 딥마인드 동맹으로 방향을 틀었으며 양산형 레벨2++ 양산은 2029년으로 밀림. 중국은 BYD·샤오펑·화웨이 ADS가 'VLA(비전-언어-행동) 2.0' 시대로 먼저 진입.",
+    "timeline": [
+      {
+        "date": "2023~2024",
+        "event": "현대차·기아 'HDP(고속도로 자율주행, 레벨3)' 출시 연이어 연기. 'HDA3' 로 명칭 바꾸고 2026년 상용화로 후퇴",
+        "impact": "안전 검증을 명분으로 한 보수 노선이 굳어지면서 테슬라·중국 업체 대비 양산 속도 격차 확대"
+      },
+      {
+        "date": "2025-01",
+        "event": "현대차·기아, 엔비디아와 차세대 자율주행 전략적 파트너십 확대 발표",
+        "impact": "자체 칩·플랫폼 노선에서 엔비디아 의존 노선으로 전환의 신호탄"
+      },
+      {
+        "date": "2025년 중",
+        "event": "테슬라, 한국 임시운행 허가 신청 및 안전 검증 시작",
+        "impact": "국토부 자율주행 안전기준 심사 절차 진입"
+      },
+      {
+        "date": "2025년 한 해",
+        "event": "포티투닷(42dot) 매출 277억원(전년 대비 +10.9%), 영업손실 3,498억원(+98.7%), 순손실 3,639억원(+107.6%)",
+        "impact": "1.4조원 누적 투자에도 손실 폭증. 그룹 내부 회의론 확산"
+      },
+      {
+        "date": "2025년",
+        "event": "BYD 글로벌 전기차 1,210만 대 판매 — 글로벌 1위 굳힘",
+        "impact": "규모의 경제로 SDV·자율주행 R&D 비용 분산 가능"
+      },
+      {
+        "date": "2026-01-13",
+        "event": "현대차그룹, 박민우 신임 AVP 본부장 겸 포티투닷 대표 선임. 자율주행 기술 노선을 E2E(End-to-End)에서 VLA(비전-언어-행동) 모델로 전환 추진",
+        "impact": "조직·기술 노선 동시 리셋. 모셔널·포티투닷 분산 역량을 엔비디아 플랫폼 위로 통합"
+      },
+      {
+        "date": "2026-02-01",
+        "event": "「자율주행자동차 상용화 촉진 및 지원에 관한 법률」 개정 시행",
+        "impact": "시범운행지구 17곳 운영 근거·보험 의무 한도(사망 1인 1.5억) 등 정비"
+      },
+      {
+        "date": "2026년 1분기",
+        "event": "테슬라, 한국에서 '감독형 FSD(supervised)' 첫 배포 — 모델 S·X 중 HW 4.0 탑재 약 2,600대 한정. 모델 3·Y 는 미적용",
+        "impact": "심리적 충격은 크나 적용 모수 작음. 정의선 회장 \"우리가 좀 늦은 편\" 시인"
+      },
+      {
+        "date": "2026년 1분기",
+        "event": "중국 승용차 판매 전년 동기 대비 -17%(보조금 종료 영향). BYD 내수 7개월 연속 감소",
+        "impact": "중국 업체가 SDV 구독 매출로 수익 모델 재편 가속 — 본격 SW 경쟁 본격화"
+      },
+      {
+        "date": "2026-03-15",
+        "event": "모셔널, 우버와 라스베이거스 로보택시(아이오닉 5 기반, SAE 레벨4) 시범 서비스 개시. 연말 완전 무인 전환 예정",
+        "impact": "현대차그룹의 '해외 우회' 자율주행 상용화 카드"
+      },
+      {
+        "date": "2026-04 (베이징 모터쇼)",
+        "event": "샤오펑(XPeng) CEO 허샤오펑, '8월까지 중국 시장에서 테슬라 FSD 완전 추월' 선언. VLA 2.0 전 라인업 + 폭스바겐 공급",
+        "impact": "중국 토종 자율주행 SW가 폭스바겐 플랫폼 통해 글로벌 수출 — 한국 업체에 직접 위협"
+      },
+      {
+        "date": "2026-04-28",
+        "event": "정부, '국가대표 자율주행 기업' 으로 현대차·에이투지·라이드플럭스 선정",
+        "impact": "B2G 자금·실증 우선권 집중. 중소 스타트업은 B2B 전환 압박"
+      },
+      {
+        "date": "2026-04",
+        "event": "기아, CEO 인베스터 데이에서 엔비디아·구글 딥마인드 협력 공개. 2027년 말 고속도로 레벨2+ SDV, 2029년 도심 레벨2++ 양산 로드맵 제시",
+        "impact": "테슬라(FSD)·샤오펑(VLA 2.0) 대비 양산 시점 2~3년 후행 확정"
+      },
+      {
+        "date": "2026년 하반기 예정",
+        "event": "테슬라 FSD 모델 3·Y 정식 한국 출시 가시권. 현대차그룹은 라스베이거스에서 완전 무인 로보택시 공개 예정",
+        "impact": "본격 자율주행 마케팅·여론전 시작"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "현대차그룹 미래사업 투자 계획",
+        "value": "125조원(향후 10년) 중 AI·로봇·수소 50.5조원",
+        "context": "2026년 발표 기준 — 자체 NPU 포기 후 엔비디아 의존도 확대 비용 포함"
+      },
+      {
+        "label": "포티투닷 2025년 영업손실",
+        "value": "-3,498억원",
+        "context": "전년 대비 +98.7% 확대. 누적 투자 1.4조원 대비 매출 277억원에 그침"
+      },
+      {
+        "label": "테슬라 한국 FSD 1차 적용 대수",
+        "value": "약 2,600대(HW 4.0 모델 S·X 한정)",
+        "context": "한국 누적 등록 테슬라 차량 중 5% 미만으로 추정. 모델 3·Y 다수는 대기"
+      },
+      {
+        "label": "BYD 2025년 글로벌 EV 판매",
+        "value": "1,210만 대",
+        "context": "글로벌 1위 — 현대차그룹 전체 판매(약 720만 대 추정)와 비교 시 1.7배"
+      },
+      {
+        "label": "샤오펑 자율주행 목표",
+        "value": "2026년 8월까지 중국 내 테슬라 FSD 완전 추월 선언",
+        "context": "VLA 2.0 — 비전·언어·행동 통합 모델. 폭스바겐에도 공급"
+      },
+      {
+        "label": "한국 자율주행 시범운행지구",
+        "value": "17곳(전국 모든 광역지자체)",
+        "context": "2026년 광주 200대 실증 + 고속도로 전 구간 시범지구 지정 추진"
+      },
+      {
+        "label": "한국 정부 레벨4 상용화 목표",
+        "value": "2027년",
+        "context": "2030년까지 자율주행차 1.5만 대 상용화 목표"
+      },
+      {
+        "label": "현대차그룹 양산형 도심 자율주행(레벨2++) 시점",
+        "value": "2029년",
+        "context": "샤오펑·화웨이 ADS 의 2026~2027 상용화 대비 2~3년 후행"
+      },
+      {
+        "label": "Huawei ADS 탑재 모델 수",
+        "value": "38개 모델(아우디·도요타 등 포함)",
+        "context": "2026 베이징 모터쇼 공개 — 글로벌 OEM 으로 외연 확장"
+      },
+      {
+        "label": "자율주행차 의무보험 한도",
+        "value": "사망·후유장애 각 1인 1.5억원",
+        "context": "2026년 시행 자율주행자동차법 — 책임 주체 분류 연구는 2025년 말 완료, 2026년 법령 정비"
+      }
+    ],
+    "background": "한국 완성차의 자율주행 전략은 지난 3년간 '안전 우선' 명분으로 레벨3(HDP/HDA3) 양산을 거듭 연기해 왔음. 그 사이 테슬라는 FSD 의 데이터·뉴럴넷 학습을 누적했고, 중국 BYD·샤오펑·화웨이는 '저가 EV + 고도 자율주행 SW' 묶음으로 내수를 장악한 뒤 글로벌 OEM 에 SW 를 팔기 시작. 테슬라가 2026년 초 한국에서 감독형 FSD 를 배포하면서 '국내 안방 위협' 이 현실화됐고, 이에 현대차그룹은 자체 NPU·E2E 자율주행 개발 노선을 포기하고 엔비디아 DRIVE Hyperion + 구글 딥마인드 VLA 모델 도입으로 방향을 급선회. 동시에 자회사 포티투닷의 1.4조원 투자 대비 누적 손실 누적, 모셔널은 라스베이거스 로보택시로 우회 상용화. 정부는 자율주행자동차법 개정·시범운행지구 확대·국가대표 기업 지정으로 산업 정책 드라이브를 걸었지만, 양산차 적용 시점은 여전히 2029년으로 글로벌 톱 그룹 대비 2~3년 후행.",
+    "sources": [
+      "블로터 — '2026 아웃룩: 현대차, 테슬라보다 늦은 자율주행 차별화 숙제' (https://www.bloter.net/news/articleView.html?idxno=650975)",
+      "블로터 — '정의선도 인정한 자율주행 문제' (https://www.bloter.net/news/articleView.html?idxno=649123)",
+      "비즈한국 — '테슬라 FSD 상륙…현대기아차 2027 자율주행 경쟁전' (https://www.bizhankook.com/bk/article/30840)",
+      "ZDNet Korea — '안전 자율주행 외치다 보낸 3년' (https://zdnet.co.kr/view/?no=20251208161413)",
+      "디일렉 — '1조4000억 투자했는데...포티투닷 저성과 내부 부글' (https://www.thelec.kr/news/articleView.html?idxno=35110)",
+      "CEOSCOREDAILY — 포티투닷 실적 추이 (https://m.ceoscoredaily.com/page/view/2026040210535185808)",
+      "현대차그룹 뉴스룸 — 엔비디아 자율주행 파트너십 확대 (https://www.hyundaimotorgroup.com/en/news/CONT0000000000206046)",
+      "with news (위드뉴스) — '1조 부었는데 싹 다 갈아엎어라' 현대차 NPU 노선 폐기 (https://car.withnews.kr/newcar/hyundai-autonomous-driving-nvidia-deepmind-alliance)",
+      "Reportera — 현대차·엔비디아 레벨4 동맹 (https://www.reportera.co.kr/car/hyundai-nvidia-autonomous-driving-partnership-level2-to-level4/)",
+      "데일리바이트 — 테슬라 FSD 한국 상륙 (https://www.mydailybyte.com/post/%ED%85%8C%EC%8A%AC%EB%9D%BC-fsd-%ED%95%9C%EA%B5%AD-2512)",
+      "블로터 — 테슬라 FSD 한국 도입 모델3·Y 적용 시기 (https://www.bloter.net/news/articleView.html?idxno=647466)",
+      "로봇신문 — 모셔널 우버 라스베이거스 로보택시 시범 (https://www.irobotnews.com/news/articleView.html?idxno=45359)",
+      "KED Global — Motional Las Vegas IONIQ 5 robotaxis late 2026 (https://www.kedglobal.com/future-mobility/newsView/ked202601120004)",
+      "Cibercuba EN — Dongfeng-Huawei vs BYD vs XPeng 2026 (https://en.cibercuba.com/noticias/2026-04-26-u1-e13-s54124-nid327226-china-pone-competir-sus-gigantes-dongfeng-huawei-vs-byd)",
+      "CarNewsChina — 2026 Beijing Auto Show key stories (https://carnewschina.com/2026/04/21/here-are-all-key-stories-to-watch-at-2026-beijing-auto-show-as-years-biggest-ev-event-opens-friday/)",
+      "MTN뉴스 — 중국차 BYD 한국 진출 (https://news.mtn.co.kr/news-detail/2026042716363926073)",
+      "뉴스핌 — 중국 AI·L4 자동차 대역습 (https://www.newspim.com/news/view/20260428000985)",
+      "대한민국 정책브리핑 — '2027년 레벨4 완전자율주행 상용화 로드맵' (https://www.korea.kr/news/policyNewsView.do?newsId=148960802)",
+      "국가법령정보센터 — 자율주행자동차 상용화 촉진 및 지원에 관한 법률 (https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=234277)",
+      "EBN — 라이드플럭스 화성 레벨4 카셰어링 실증 (https://www.ebn.co.kr/news/articleView.html?idxno=1688194)",
+      "EBN — 박중희 라이드플럭스 인터뷰: 2027 K-로보택시 (https://www.ebn.co.kr/news/articleView.html?idxno=1700476)",
+      "서울신문 — 국가대표 자율주행 기업 선정(현대차·A2Z·라이드플럭스) (https://www.seoul.co.kr/news/economy/2026/04/28/20260428500255)",
+      "머니투데이 — 서울로보틱스 코스닥 예심 자진철회 (https://www.mt.co.kr/future/2026/01/02/2026010216213118017)",
+      "PRNewswire — STRADVISION CES 2026 (https://www.prnewswire.com/news-releases/stradvision-to-showcase-scalable-ecosystem-integrations-at-ces-2026-302647766.html)",
+      "다자비 — 자율주행차 사고 보상 책임기준 마련 (https://dazabi.com/insurance_magazine/article.php?id=15210)",
+      "EBN — 현대차 125조 투자(AI·로봇·수소 50.5조) (https://www.ebn.co.kr/news/articleView.html?idxno=1686968)"
+    ],
+    "glossary": [
+      {
+        "term": "FSD(Full Self-Driving, 완전자율주행)",
+        "definition": "테슬라가 자사 차량에 적용하는 자율주행 소프트웨어 패키지. 정식 명칭은 'FSD(Supervised)' 로 운전자가 항상 주의를 기울여야 함. 미국 분류상 SAE 레벨2."
+      },
+      {
+        "term": "SAE 레벨2/3/4",
+        "definition": "국제자동차기술자협회(SAE)가 만든 자율주행 단계 구분. 레벨2 는 운전자가 항상 책임, 레벨3 는 특정 조건에서 운전자 손을 떼도 됨, 레벨4 는 정해진 구역 안에서 차량이 모든 운전을 책임짐."
+      },
+      {
+        "term": "SDV(Software-Defined Vehicle, 소프트웨어 정의 차량)",
+        "definition": "차량의 핵심 기능을 하드웨어가 아니라 소프트웨어로 결정·갱신하는 차. 출고 후에도 OTA(무선 업데이트)로 자율주행 성능 향상 가능."
+      },
+      {
+        "term": "VLA(Vision-Language-Action) 모델",
+        "definition": "카메라가 본 장면(Vision)을 자연어(Language)로 이해해 핸들·가속·제동(Action)으로 옮기는 통합 AI. 기존 'E2E(End-to-End, 입력→출력 직결)' 모델보다 상황 설명 가능."
+      },
+      {
+        "term": "NPU(Neural Processing Unit, 신경망처리장치)",
+        "definition": "AI 연산 전용 반도체. 차량의 카메라·라이다 데이터를 실시간 처리. 현대차는 2026년 자체 개발을 사실상 중단하고 엔비디아 플랫폼으로 전환."
+      },
+      {
+        "term": "엔비디아 DRIVE Hyperion",
+        "definition": "엔비디아가 만든 자율주행용 통합 컴퓨팅 플랫폼. 칩(Thor) + 운영체제 + 센서 표준을 한 묶음으로 제공해 OEM 의 개발 부담을 줄여 줌."
+      },
+      {
+        "term": "HDP/HDA3(Highway Driving Pilot/Assist 3세대)",
+        "definition": "현대차의 고속도로 자율주행 보조 기술. HDP 는 레벨3, HDA3 는 향상된 레벨2+. 2023년부터 양산 일정이 거듭 연기되어 2026년으로 후퇴."
+      },
+      {
+        "term": "포티투닷(42dot)",
+        "definition": "현대차그룹의 SDV·자율주행 자회사. AVP(첨단차플랫폼) 본부와 함께 'Pleos' 차량 OS 와 자율주행 SW 를 개발."
+      },
+      {
+        "term": "Pleos / Pleos Connect",
+        "definition": "포티투닷·현대차그룹이 개발 중인 차량용 통합 OS 와 인포테인먼트 플랫폼. OTA·앱·자율주행 기능의 공통 기반."
+      },
+      {
+        "term": "모셔널(Motional)",
+        "definition": "현대차그룹과 미국 앱티브의 자율주행 합작사. 라스베이거스에서 우버 통해 아이오닉 5 기반 레벨4 로보택시 시범 서비스 운영."
+      },
+      {
+        "term": "화웨이 ADS(Advanced Driving System)",
+        "definition": "화웨이의 자율주행 솔루션. 차량을 만들지 않고 둥펑·아우디·도요타 등 38개 모델에 SW·센서 패키지 공급."
+      },
+      {
+        "term": "VLA 2.0(샤오펑)",
+        "definition": "샤오펑의 2세대 비전-언어-행동 자율주행 모델. 폭스바겐에도 공급 예정."
+      },
+      {
+        "term": "시범운행지구",
+        "definition": "자율주행자동차법에 따라 임시운행 허가·여객운송 특례 등이 적용되는 지정 구역. 현재 전국 17곳 지정."
+      },
+      {
+        "term": "EREV(Extended Range Electric Vehicle, 주행거리 연장형 전기차)",
+        "definition": "엔진을 발전기로만 쓰고 바퀴는 전기 모터로 구동하는 차. 현대차가 900km 급 EREV 를 미래차 로드맵에 포함."
+      }
+    ],
+    "confidence_score": 0.86,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팩트 근거 위에서 공식 발표·주류 해석 너머의 가능성을 진지하게 검토하되, 음모적 narrative 가 사실에 부합하지 않으면 단호히 기각. 깊은 개념까지 탐구하는 지적 유희가 살아있되, 위트가 가독성을 해치지 않음. 모순·반대 가설은 봉합하지 않고 드러냄.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께 (예: '12% — 2025년 4분기, 전년 동기 대비'). 결정적 수치 1~2개를 본문에 녹이고 나머지는 차트 데이터로 위임.",
+      "frameworks": [
+        "Porter 5 Forces (자율주행 SW 시장 경쟁구조)",
+        "Bow-Tie (위협→사건→귀결, 위기·기회 양쪽 가지)",
+        "Decision Tree (현대차의 NPU 자체개발 vs 엔비디아 전환 분기점)"
+      ],
+      "vocabulary": "평이한 문장. 어려운 개념은 처음 등장 시 한두 문장으로 풀이. 영어 약어 첫 등장 시 괄호로 풀어쓰기 (예: PER (주가수익비율)). 한 문장에 두 새 개념 도입 금지.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: 사실 → 메커니즘 → 함의 → 반례·미해결. 각 섹션이 이전 섹션 결론을 입력으로 받는 cumulative 구조. 독자가 '이 문장이 어디서 도출됐나' 추적 가능해야 함.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "테슬라 FSD 한국 상륙과 현대차그룹·중국 업체 자율주행 3파전",
+    "deck": "테슬라가 2026년 한국에서 감독형 FSD 배포를 시작(약 2,600대 한정)하면서 자율주행 경쟁이 국내 시장으로 옮겨붙음. 현대차그룹은 자체 NPU를 포기하고 엔비디아 DRIVE Hyperion·구글 딥마인드 동맹으로 방향을 틀었으며 양산형 레벨2++ 양산은 2029년으로 밀림. 중국은 BYD·샤오펑·화웨이 ADS가 'VLA(비전-언어-행동) 2.0' 시",
+    "sections": [
+      {
+        "heading": "요약",
+        "kicker": "",
+        "prose": "테슬라가 2026년 한국에서 감독형 FSD 배포를 시작(약 2,600대 한정)하면서 자율주행 경쟁이 국내 시장으로 옮겨붙음. 현대차그룹은 자체 NPU를 포기하고 엔비디아 DRIVE Hyperion·구글 딥마인드 동맹으로 방향을 틀었으며 양산형 레벨2++ 양산은 2029년으로 밀림. 중국은 BYD·샤오펑·화웨이 ADS가 'VLA(비전-언어-행동) 2.0' 시대로 먼저 진입.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "",
+    "watch_signals": [],
+    "contradictions": [],
+    "confidence_summary": "composer 호출 실패. 사실 자료만 표시.",
+    "confidence_score": 0.0,
+    "embedded_map": null
+  },
+  "executive_summary": "테슬라가 2026년 한국에서 감독형 FSD 배포를 시작(약 2,600대 한정)하면서 자율주행 경쟁이 국내 시장으로 옮겨붙음. 현대차그룹은 자체 NPU를 포기하고 엔비디아 DRIVE Hyperion·구글 딥마인드 동맹으로 방향을 틀었으며 양산형 레벨2++ 양산은 2029년으로 밀림. 중국은 BYD·샤오펑·화웨이 ADS가 'VLA(비전-언어-행동) 2.0' 시",
+  "report_url": "",
+  "report_path": "reports/analysis_20260503_164450.html",
+  "report_theme": "editorial_cream",
+  "analysis_timestamp": "2026-05-03T07:36:52.713535",
+  "total_duration_seconds": 477.53363037109375,
+  "system_version": "v4.5.6",
+  "revision": 0
+}
