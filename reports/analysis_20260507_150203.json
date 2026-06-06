@@ -1,0 +1,524 @@
+{
+  "request": {
+    "event_description": "기업이, 특히 2차전지 기업이 palantir를 도임해야 하는것이 정당한가? roi가 명확한 투자인가? 유사 피어기업 중에서 palantir 도입한 실적(특히 국내기업)에 대해 deep한 분석을 수행하고 보고서로 생성해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "Palantir 의 핵심 가치는 '이질적 데이터 통합 + 온톨로지 + AIP(LLM 결합 의사결정)'. 2차전지 제조는 셀 수만 일 수백만개·공정 수십단계·품질 변수 수천종이라 데이터 통합 가치가 큰 영역. 그러나 같은 효과를 노리는 경쟁군(GE Proficy, Honeywell Forge, Siemens Opcenter, camLine, 자체 구축 데이터 레이크)도 존재하고 Foundry 만의 우위는 '복잡 온톨로지·외부 데이터 결합'에 한정. 2026년 현재 국내 3사는 1분기 적자·미국 IRA 정책 변동·중국 LFP 추격으로 자본지출 우선순위가 '북미 증설·LFP 라인 전환·고체전지 R&D' 에 집중돼 있고, 신규 전사 SaaS 라이선스(수십~수백억) 결재 여력은 줄어든 상태. 도입 정당성은 '같은 효과를 더 싼 대안으로 못 내느냐' 와 'AIP 가 풀 수 있는 비정형 의사결정 문제가 실제로 존재하는가' 두 질문에 답해야 결정됨.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2022-01-06",
+            "event": "HD현대중공업그룹-Palantir 빅데이터 플랫폼 MOU 체결, 합작사 설립 합의",
+            "impact": "한국 대기업 최초 전략적 파트너 — 이후 7년치 도입 효과 측정 기준점"
+          },
+          {
+            "date": "2023-04",
+            "event": "Palantir-Panasonic Energy of North America(PENA) 다년 계약 — Sparks(Nevada) 기가팩토리 Smart Factory 도입",
+            "impact": "2차전지 제조에 Foundry 가 적용된 가장 명시적인 글로벌 레퍼런스"
+          },
+          {
+            "date": "2024",
+            "event": "Palantir AIP 한국 시장 공식 런칭 — 한국어 인터페이스·맞춤 온톨로지 지원",
+            "impact": "보안·규제 제약 일부 해소, 국내 도입 진입장벽 낮아짐"
+          },
+          {
+            "date": "2025-03",
+            "event": "KT-Palantir 전략적 파트너십 체결 — AIP 부트캠프, 산업별 솔루션 공동 개발",
+            "impact": "국내에 '구축 채널' 형성 — 도입 희망 기업이 KT 통해 접근 가능"
+          },
+          {
+            "date": "2025-10-14~15",
+            "event": "Palantir 서울 성수동 팝업스토어 운영 (세계 최초)",
+            "impact": "한국 시장 적극 공략 신호, 채용·홍보 가속"
+          },
+          {
+            "date": "2026-01",
+            "event": "HD현대-Palantir 다보스포럼 발표 — 사업부 단위에서 전사 엔터프라이즈 계약으로 확대 (수억달러 규모)",
+            "impact": "기존 도입사 효과 입증된 후 락인(lock-in)·확장 단계 진입"
+          },
+          {
+            "date": "2026-Q1",
+            "event": "LG엔솔·삼성SDI 1분기 동반 적자, SK온 통합론 부상",
+            "impact": "비용 절감 압박 극대화 — 신규 거대 SaaS 라이선스 결재 환경 악화"
+          },
+          {
+            "date": "2026-03~",
+            "event": "인터배터리 2026 — 3사 모두 ESS·AI 데이터센터 배터리 전환 비전 발표, 그러나 Palantir 언급 부재",
+            "impact": "공식 사용 사례 발표 없음 = 도입 미정 또는 비공개 단계"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "Palantir 도입의 정당성 — 국내 2차전지 기업 ROI 회의론 검증",
+    "event_name_en": "Is Palantir Worth It? An ROI Audit for Korean Battery Makers",
+    "date": "2026-05-07",
+    "category": "산업·IT·기업전략",
+    "summary": "글로벌에선 Panasonic Energy NA·HD현대가 Foundry/AIP 로 폐기물·건조속도 개선을 보고했지만, 국내 2차전지 3사(LG엔솔·삼성SDI·SK온)의 Palantir 공식 도입 사례는 2026-05-07 기준 확인되지 않음. 도입 비용은 비공개·맞춤형이며 'ROI 명확'이라기보단 '대형 자본·전사 데이터 통합'을 전제로 한 베팅에 가까움. 같은 효과(스크랩 10~30%↓, FPY 10~25%↑)는 일반 MES/Smart Factory 로도 수치상 도달 가능해 단순 ROI 만으로는 정당화 어려움.",
+    "timeline": [
+      {
+        "date": "2022-01-06",
+        "event": "HD현대중공업그룹-Palantir 빅데이터 플랫폼 MOU 체결, 합작사 설립 합의",
+        "impact": "한국 대기업 최초 전략적 파트너 — 이후 7년치 도입 효과 측정 기준점"
+      },
+      {
+        "date": "2023-04",
+        "event": "Palantir-Panasonic Energy of North America(PENA) 다년 계약 — Sparks(Nevada) 기가팩토리 Smart Factory 도입",
+        "impact": "2차전지 제조에 Foundry 가 적용된 가장 명시적인 글로벌 레퍼런스"
+      },
+      {
+        "date": "2024",
+        "event": "Palantir AIP 한국 시장 공식 런칭 — 한국어 인터페이스·맞춤 온톨로지 지원",
+        "impact": "보안·규제 제약 일부 해소, 국내 도입 진입장벽 낮아짐"
+      },
+      {
+        "date": "2025-03",
+        "event": "KT-Palantir 전략적 파트너십 체결 — AIP 부트캠프, 산업별 솔루션 공동 개발",
+        "impact": "국내에 '구축 채널' 형성 — 도입 희망 기업이 KT 통해 접근 가능"
+      },
+      {
+        "date": "2025-10-14~15",
+        "event": "Palantir 서울 성수동 팝업스토어 운영 (세계 최초)",
+        "impact": "한국 시장 적극 공략 신호, 채용·홍보 가속"
+      },
+      {
+        "date": "2026-01",
+        "event": "HD현대-Palantir 다보스포럼 발표 — 사업부 단위에서 전사 엔터프라이즈 계약으로 확대 (수억달러 규모)",
+        "impact": "기존 도입사 효과 입증된 후 락인(lock-in)·확장 단계 진입"
+      },
+      {
+        "date": "2026-Q1",
+        "event": "LG엔솔·삼성SDI 1분기 동반 적자, SK온 통합론 부상",
+        "impact": "비용 절감 압박 극대화 — 신규 거대 SaaS 라이선스 결재 환경 악화"
+      },
+      {
+        "date": "2026-03~",
+        "event": "인터배터리 2026 — 3사 모두 ESS·AI 데이터센터 배터리 전환 비전 발표, 그러나 Palantir 언급 부재",
+        "impact": "공식 사용 사례 발표 없음 = 도입 미정 또는 비공개 단계"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "Palantir Foundry NPV (3년, Forrester TEI 합성 조직)",
+        "value": "$262M",
+        "context": "비용 $83.2M 대비 편익 $345M, ROI 315% — Palantir 의뢰 보고서임을 감안 필요"
+      },
+      {
+        "label": "Foundry 도입 평균 비용 절감",
+        "value": "30%",
+        "context": "Forrester TEI 표본 기업 평균. 단, '비용' 정의가 광범위(인력·재고·에너지 등)"
+      },
+      {
+        "label": "HD현대 자체 보고 선박 건조 속도 향상",
+        "value": "약 30%",
+        "context": "Palantir 도입 후. 2030 FOS 프로젝트 최종 단계 목표치와 동일 — 자체 발표 수치"
+      },
+      {
+        "label": "PENA 공장 운영 규모",
+        "value": "350명 기술자, 일 550만개 배터리 셀",
+        "context": "Foundry 가 지원하는 라인. 라인 가동률·스크랩 개선 보고(구체 수치 미공개)"
+      },
+      {
+        "label": "일반 스마트팩토리/MES 도입 시 스크랩 감축",
+        "value": "10~30%",
+        "context": "Palantir 가 아닌 GE Vernova·Honeywell·camLine 등 비교군 — Palantir 차별 효과 분리 측정 어려움"
+      },
+      {
+        "label": "2차전지 라인 1% 품질 손실 비용",
+        "value": "약 100만 달러/GWh·년",
+        "context": "업계 통상치(camLine 분석). 200GWh 규모 LG엔솔 기준 1%↓ = 연 약 2억달러 절감 잠재"
+      },
+      {
+        "label": "리튬이온 배터리 정상상태 스크랩률 상한",
+        "value": "최대 30%",
+        "context": "기존 분리 시스템 사용 시. 가동 초기엔 더 높음 — 절감 여지 큰 영역"
+      },
+      {
+        "label": "2차전지 3사(LG엔솔·삼성SDI·SK온) Palantir 도입 공식 사례",
+        "value": "0건 (확인 기준 2026-05-07)",
+        "context": "공시·보도자료·인터배터리 2026 발표 어디에도 명시 없음"
+      },
+      {
+        "label": "LG엔솔·삼성SDI 2026년 1분기 영업이익",
+        "value": "동반 적자",
+        "context": "신규 대형 SaaS 도입 의사결정 환경 — 라이선스비 부담 가중"
+      },
+      {
+        "label": "Palantir 라이선스 가격",
+        "value": "비공개·맞춤형",
+        "context": "기업별 데이터 규모·범위 협상. 국내 보도는 'HD현대 수억달러'·'KT 미공개' 만 존재"
+      }
+    ],
+    "background": "Palantir 의 핵심 가치는 '이질적 데이터 통합 + 온톨로지 + AIP(LLM 결합 의사결정)'. 2차전지 제조는 셀 수만 일 수백만개·공정 수십단계·품질 변수 수천종이라 데이터 통합 가치가 큰 영역. 그러나 같은 효과를 노리는 경쟁군(GE Proficy, Honeywell Forge, Siemens Opcenter, camLine, 자체 구축 데이터 레이크)도 존재하고 Foundry 만의 우위는 '복잡 온톨로지·외부 데이터 결합'에 한정. 2026년 현재 국내 3사는 1분기 적자·미국 IRA 정책 변동·중국 LFP 추격으로 자본지출 우선순위가 '북미 증설·LFP 라인 전환·고체전지 R&D' 에 집중돼 있고, 신규 전사 SaaS 라이선스(수십~수백억) 결재 여력은 줄어든 상태. 도입 정당성은 '같은 효과를 더 싼 대안으로 못 내느냐' 와 'AIP 가 풀 수 있는 비정형 의사결정 문제가 실제로 존재하는가' 두 질문에 답해야 결정됨.",
+    "sources": [
+      "Palantir & Panasonic Energy NA 다년 계약 (PRNewswire, 2023): https://www.prnewswire.com/news-releases/palantir-and-panasonic-energy-of-north-america-sign-multi-year-agreement-301844035.html",
+      "Forrester Total Economic Impact of Palantir Foundry (Palantir 의뢰): https://www.palantir.com/assets/xrfr7uokpv1b/7h0zi3GZrU3L7AM2HO1Q6O/1ad26eaa42ad949f8e3c80ea22f96b7a/The_Total_Economic_Impact_of_Palantir_Foundry.pdf",
+      "HD현대-Palantir 협력 발표 (HD현대중공업, 2022): https://www.hhi.co.kr/Public/pub01_2?page=2&ndate=2022-01-06&bidx=2902",
+      "HD현대-Palantir 다보스 엔터프라이즈 계약 (이투데이, 2026): https://www.etoday.co.kr/news/view/2547599",
+      "KT-Palantir 전략적 파트너십 (KT Enterprise): https://enterprise.kt.com/bt/dxstory/3347.do",
+      "한국일보 — HD현대 이어 KT도 손잡은 팔란티어: https://www.hankookilbo.com/News/Read/A2025031310540002283",
+      "Newsspace — KT·HD현대·LIG넥스원·DL이앤씨·코오롱베니트가 Palantir 를 선택한 이유: https://www.newsspace.kr/news/article.html?no=9508",
+      "camLine — 배터리 제조 1% 품질 손실 비용 분석: https://www.camline.com/industries/battery-manufacturing/",
+      "Voltaiq — 기가팩토리 도전과제: https://www.voltaiq.com/blog/challenges-building-gigafactory-ebi",
+      "GE Vernova — Battery Manufacturing Software (MES 비교군): https://www.gevernova.com/software/battery-manufacturing-solutions",
+      "디일렉 — 인터배터리 2026 (3사 발표, Palantir 언급 없음): https://www.thelec.kr/news/articleView.html?idxno=52899",
+      "뉴스웨이 — LG엔솔·삼성SDI 1분기 적자, SK온 (2026-04-29): https://www.newsway.co.kr/news/view?ud=2026042915352236406",
+      "블로터 — SK온 통합론·3사 자본 환경: https://www.bloter.net/news/articleView.html?idxno=655167",
+      "한경매거진 — 국내 최초 팔란티어 구축 경험자 인터뷰: https://magazine.hankyung.com/business/article/202508275787b"
+    ],
+    "glossary": [
+      {
+        "term": "Palantir Foundry",
+        "definition": "여러 시스템에 흩어진 데이터를 하나의 의미체계(온톨로지)로 묶어 분석·운영 의사결정에 쓰게 해주는 데이터 통합·운영 플랫폼"
+      },
+      {
+        "term": "AIP (Artificial Intelligence Platform)",
+        "definition": "Foundry 위에서 LLM 을 실제 업무 의사결정에 안전하게 붙이는 Palantir 의 AI 계층"
+      },
+      {
+        "term": "MES (Manufacturing Execution System)",
+        "definition": "공장 현장의 작업 지시·실행·품질·설비 데이터를 실시간으로 모으고 통제하는 시스템"
+      },
+      {
+        "term": "FPY (First Pass Yield)",
+        "definition": "재작업 없이 한 번에 합격한 제품 비율. 2차전지에서 1%p 변동이 연 수백억 손익을 가름"
+      },
+      {
+        "term": "ROI (Return on Investment)",
+        "definition": "투자 대비 수익. (편익-비용)/비용. 본 사안에선 라이선스+구축비 vs 스크랩 절감+가동률 향상이 비교 대상"
+      },
+      {
+        "term": "TCO (Total Cost of Ownership)",
+        "definition": "도입가뿐 아니라 운영·교육·유지보수까지 포함한 총소유비용"
+      },
+      {
+        "term": "온톨로지 (ontology)",
+        "definition": "조직의 자산·공정·사람을 컴퓨터가 이해하는 의미관계로 정의한 지식체계"
+      },
+      {
+        "term": "GWh (기가와트시)",
+        "definition": "배터리 생산능력 단위. 1GWh = 약 1.5만대 전기차 분량"
+      },
+      {
+        "term": "Lock-in (락인)",
+        "definition": "특정 벤더의 데이터·툴에 깊게 의존해 전환 비용이 커지는 상태. 엔터프라이즈 계약 확대 단계의 위험요소"
+      },
+      {
+        "term": "TEI (Total Economic Impact)",
+        "definition": "Forrester 가 만든 ROI 평가 프레임. 벤더 의뢰 보고서일 때 편향 가능성 있음"
+      }
+    ],
+    "confidence_score": 0.78,
+    "recommended_persona": {
+      "tone": "객관적이며 수치에 강함. 팔란티어 마케팅 narrative 와 회의론자 narrative 양쪽을 사실 위에서 검증하되, 어느 쪽이든 근거 부족하면 단호히 기각. 'ROI 315%' 같은 벤더 의뢰 수치는 출처·표본·정의를 함께 제시해 독자가 가중치 매길 수 있게. 모순(공식 사례 부재 vs 글로벌 효과 보고)은 봉합하지 말고 드러낼 것.",
+      "numeric_principle": "출처 명시된 수치만 본문 인용. 단위·시점·비교 기준 항상 함께. 결정적 수치 1~2개(예: '1% 품질 손실 = GWh당 100만달러/년', 'PENA 일 550만셀')를 본문에 녹이고 나머지는 차트/표로 위임.",
+      "frameworks": [
+        "Build-vs-Buy 의사결정 프레임",
+        "TCO vs Benefit ROI 모델",
+        "Innovation Adoption Curve (early/late mover)",
+        "Porter 5 Forces (벤더 협상력 + 락인 리스크)"
+      ],
+      "vocabulary": "평이한 문장. SaaS·MES·온톨로지·FPY·TCO 등 첫 등장 시 한 문장 풀이. 한 문장에 두 개념 도입 금지. '왜 비싼가'·'대안은 무엇인가' 를 일반 독자도 따라올 수 있게.",
+      "analytical_pressure": "기초→깊이 단계적. 권장 흐름: ① Palantir 가 약속하는 것 ② 글로벌 2차전지 도입 사례(PENA) 의 실제 측정치 ③ 국내 3사 도입 부재 사실 + 가능한 이유 ④ 같은 효과를 내는 대안군 비교(MES·자체구축) ⑤ 도입 정당성 의사결정 트리(어떤 조건이면 ROI 명확, 어떤 조건이면 불명확) ⑥ 반례·미해결 질문. 각 섹션이 이전 결론을 입력으로.",
+      "override_reason": ""
+    }
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "Palantir 의 약속과 한국 3사의 빈 자리",
+    "deck": "글로벌은 PENA·HD현대로 사례를 쌓았지만, 국내 2차전지 3사는 인터배터리 2026 에서도 언급조차 없었다. 적자와 대안 사이에 ROI 산수가 답을 미루고 있다.",
+    "sections": [
+      {
+        "heading": "Palantir 가 파는 것은 통합이지 ROI 가 아니다",
+        "kicker": "약속의 해부 · 1",
+        "prose": "Palantir 의 핵심 상품은 두 가지다. 하나는 Foundry — 사내 흩어진 데이터를 한 곳으로 끌어올려 관계를 정의하는 통합 플랫폼이다. 또 하나는 AIP (Artificial Intelligence Platform — Foundry 위에 LLM 을 얹어 비정형 의사결정을 돕는 계층) 다. 회사는 '데이터 통합 + 온톨로지 (시스템 안에서 실체와 관계를 정의하는 사전) + LLM 결합' 이라는 묶음을 판다. 즉 Palantir 가 파는 본질은 '데이터를 어떻게 묶을 것인가' 이지 '몇 % 절감할 것인가' 가 아니다.\n\n그런데 시장에 먼저 도착하는 숫자는 후자다. Forrester 의 Total Economic Impact 보고서가 합성 표본 조직을 기준으로 3년 NPV $262M, ROI 315% 를 제시했다. 표본은 비용 $83.2M 대비 편익 $345M 이고, 평균 비용 절감 30% 다. 이 보고서는 Palantir 의뢰로 작성됐다는 점이 본문 첫 줄에 밝혀져 있다.\n\n벤더 의뢰 보고서가 거짓이라는 뜻은 아니다. 단, '비용' 의 정의가 인력·재고·에너지·중복 시스템 폐기까지 포괄적이고, 표본은 합성 (composite) — 여러 도입사를 가상의 한 조직으로 합친 결과다. 실제 한 회사의 incremental ROI 가 아니다. 독자가 가중치를 매기려면 이 두 정보가 항상 함께 와야 한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "ROI 315% 는 도입을 정당화하는 숫자가 아니라, 도입을 권유하는 숫자다.",
+        "cited_claim_ids": [],
+        "lede": "ROI 315% 라는 숫자가 먼저 도착한다. 그 뒤에야 비용 정의·표본·의뢰 주체가 따라온다. 순서가 거꾸로일 때 의사결정은 흔들린다.",
+        "analogy": {
+          "title": "Foundry 는 도서관 사서, AIP 는 사서의 조수",
+          "body": "흩어진 책을 분류·관계 짓고 어느 책이 어디 있는지 알려주는 게 사서 (Foundry) 다. AIP 는 그 사서 옆에 붙어 '이 질문엔 어떤 책 묶음을 봐야 하나' 를 자연어로 답한다. 책이 적은 도서관이라면 사서를 새로 들이는 비용이 책값보다 클 수 있다. 책이 수십만 권 흩어졌고 매일 새 책이 들어오는 거대 도서관일수록 사서의 가치가 살아난다."
+        },
+        "fact_grid": [
+          {
+            "label": "Forrester TEI NPV (3년)",
+            "value": "$262M",
+            "sublabel": "비용 $83.2M · 편익 $345M — Palantir 의뢰"
+          },
+          {
+            "label": "평균 비용 절감",
+            "value": "30%",
+            "sublabel": "합성 표본 · 비용 정의 광범위"
+          },
+          {
+            "label": "라이선스 가격",
+            "value": "비공개",
+            "sublabel": "맞춤형 — HD현대 수억달러 보도 (이투데이)"
+          }
+        ],
+        "dropcap": true
+      },
+      {
+        "heading": "글로벌의 명시 사례는 단 둘 — PENA 와 HD현대",
+        "kicker": "입증의 현주소 · 2",
+        "prose": "2차전지에 한정하면 Palantir 의 가장 분명한 글로벌 레퍼런스는 하나다. Panasonic Energy of North America (PENA) — 미국 네바다주 스파크스 (Sparks) 기가팩토리. 2023년 4월 다년 계약이 체결됐고, 350명의 기술자가 일 550만 개 셀이 흐르는 라인 위에서 Foundry 를 사용한다. 라인 가동률·스크랩 개선이 '보고됐다' 고만 알려졌고, 구체 수치는 공개되지 않았다.\n\n조선·중공업 쪽엔 HD현대가 있다. 2022년 1월 MOU 로 시작해 2026년 1월 다보스에서 사업부 단위 계약을 전사 엔터프라이즈 계약으로 확대했다. 보도된 규모는 '수억 달러'. 같은 자리에서 HD현대는 자체 측정으로 선박 건조 속도가 약 30% 향상됐다고 밝혔다. 이 수치는 회사가 직접 발표한 자체 보고치라는 점이 함께 따라다닌다.\n\n질문 하나. PENA 도 HD현대도 효과가 있었다면, 왜 Palantir 의 *차별* 기여가 분리 측정되지 않을까? 두 회사 모두 Palantir 도입과 동시에 다른 변화를 진행했다. PENA 는 Sparks 라인 자체가 새 라인이고, HD현대는 2030 FOS 프로젝트 (스마트조선 자체 디지털 전환) 의 최종 단계와 시점이 겹친다. 효과는 도입 후 *함께* 발생했고, 그중 얼마가 Palantir 때문인지는 통제 실험이 아니라서 분리할 수 없다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "Palantir 의 한국 발자국",
+            "subtitle": "MOU 에서 전사 계약까지 4년, 그러나 2차전지 3사는 빈 자리",
+            "data": [
+              {
+                "label": "HD현대 MOU",
+                "start": "2022-01",
+                "end": "2023-12",
+                "note": "빅데이터 플랫폼"
+              },
+              {
+                "label": "PENA 다년 계약",
+                "start": "2023-04",
+                "end": "2026-05",
+                "note": "Sparks 기가팩토리"
+              },
+              {
+                "label": "AIP 한국 런칭",
+                "start": "2024-01",
+                "end": "2026-05",
+                "note": "한국어 인터페이스"
+              },
+              {
+                "label": "KT 파트너십",
+                "start": "2025-03",
+                "end": "2026-05",
+                "note": "국내 구축 채널"
+              },
+              {
+                "label": "성수동 팝업",
+                "start": "2025-10",
+                "end": "2025-11",
+                "note": "세계 최초"
+              },
+              {
+                "label": "HD현대 전사 계약",
+                "start": "2026-01",
+                "end": "2026-05",
+                "note": "수억 달러"
+              }
+            ],
+            "source": "PRNewswire, HHI, KT Enterprise, 이투데이 / 2026-05",
+            "takeaway": "조선·통신 채널은 깔렸지만, 2차전지 3사 발표는 한 줄도 없다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "효과는 보고됐으나, 분리는 측정되지 않았다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "국내 3사의 침묵 — 적자가 결재라인을 막았다",
+        "kicker": "빈 자리 · 3",
+        "prose": "LG에너지솔루션·삼성SDI·SK온. 2026년 5월 7일 기준 어느 쪽에도 Palantir 공식 도입 사례는 확인되지 않는다. 공시·보도자료·인터배터리 2026 발표 어디에도 명시되지 않았다. 이 부재는 우연이라기보다 환경의 결과다.\n\n2026년 1분기에 LG에너지솔루션과 삼성SDI 가 동반 적자를 냈다. SK온은 통합론이 다시 부상했다. 자본지출 우선순위는 세 갈래로 좁혀져 있다 — 북미 IRA 대응 증설, LFP (리튬인산철) 라인 전환, 고체전지 R&D. 신규 전사 SaaS 라이선스 — 보도된 도입 사례 기준 수십~수백억 — 결재는 이 우선순위 뒤에 줄을 선다.\n\n왜 하필 지금 사기 어려운가. 도입 효과가 매출 증대가 아니라 비용 절감 쪽이라서다. 적자 국면에선 비용 절감 자체가 시급하지만, 그 절감을 위해 새 큰 비용을 지불하는 결재는 역설적으로 더 어려워진다. CFO 입장에서 '확실한 절감은 없는데 라이선스비는 확실' 한 거래는 통과시키기 부담스럽다. 같은 효과를 더 싸게 낼 수 있다는 의심이 더해지면 결재는 멈춘다 — 다음 섹션의 주제다.\n\nKT-Palantir 파트너십 (2025-03) 으로 국내 구축 채널은 만들어졌다. 성수동 팝업 (2025-10) 으로 인지도도 올렸다. 채널과 인지도가 '결재' 를 만들지는 못했다. 2026년 인터배터리에서 3사는 ESS·AI 데이터센터용 배터리 비전을 발표했지만, 그 데이터를 누가 묶을지는 말하지 않았다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "결재는 채널과 인지도가 아니라, 손익계산서가 통과시킨다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "Palantir 도입 공식 사례",
+            "value": "0건",
+            "sublabel": "LG엔솔·삼성SDI·SK온 / 2026-05-07"
+          },
+          {
+            "label": "LG엔솔·삼성SDI 1Q26",
+            "value": "동반 적자",
+            "sublabel": "신규 SaaS 결재 환경 악화"
+          },
+          {
+            "label": "자본지출 우선순위",
+            "value": "북미·LFP·고체전지",
+            "sublabel": "전사 SaaS 라이선스는 그 뒤"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "같은 효과 더 싸게 — MES 대안군의 산수",
+        "kicker": "대안의 산수 · 4",
+        "prose": "2차전지 라인의 1% 품질 손실은 GWh 당 약 100만 달러/년의 비용으로 계산된다 (camLine 분석). LG에너지솔루션의 가용 생산능력 200GWh 를 기준으로 환산하면 1% 개선이 연 약 2억 달러 절감 잠재로 이어진다. 절감 여지가 크니 도입 동기 자체는 분명하다. 문제는 *어떤 도구로* 그 1% 를 줄이느냐다.\n\nFoundry 만 풀 수 있는 문제인가? 부분적으로만 그렇다. 일반 MES (Manufacturing Execution System — 공정 데이터 수집·관리 표준 시스템) 와 Smart Factory 솔루션도 스크랩 10~30% 감축을 보고한다. GE Vernova 의 Proficy, Honeywell Forge, Siemens Opcenter, camLine, 그리고 자체 구축 데이터 레이크가 같은 영역을 두고 경쟁한다. 셀 단위 수만~수십만 건의 정형 데이터에 대해선 이 대안군이 더 싸고, 라인 엔지니어가 직접 손에 익히기도 쉽다.\n\nFoundry 의 *차별* 우위는 다른 곳에 있다. 이질적 데이터 — 생산 라인 + R&D 실험 + 공급망 + 외부 시장 데이터 — 를 하나의 온톨로지로 묶어 *교차* 질의가 필요할 때다. 예를 들어 '특정 양극재 배치가 특정 고객사의 ESS 운영 데이터에서 어떤 열화 패턴을 보이는가' 같은 질문은 단일 공장 MES 로 답할 수 없다. AIP 는 여기서 의미가 살아난다. 즉 Foundry 의 가격은 'MES 가 못 푸는 질문' 의 빈도와 가치에 따라 정당화된다.\n\n3사가 그런 질문을 매주 던지고 있는가? 공개 자료로는 알 수 없다. 적어도 인터배터리 2026 의 발표 톤은 단일 라인 효율보다 *제품 포트폴리오* 다변화에 더 가까웠다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "스크랩 감축 폭 — 공개된 수치 비교",
+            "subtitle": "Foundry 의 차별 기여는 분리 측정되지 않았다",
+            "data": [
+              {
+                "label": "일반 MES 통상치 (camLine·GE·Honeywell)",
+                "value": 20,
+                "note": "% — 10~30 범위 중앙값"
+              },
+              {
+                "label": "Forrester TEI 평균 (Foundry 합성 표본)",
+                "value": 30,
+                "note": "% — 비용 정의 광범위, 벤더 의뢰"
+              }
+            ],
+            "source": "camLine, GE Vernova, Forrester TEI / 단위: %",
+            "takeaway": "두 막대가 나란히 서지만, 어느 쪽도 incremental 효과를 분리하지 않는다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "Foundry 의 가격은 'MES 가 못 푸는 질문' 의 빈도가 정당화한다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "1% 품질 손실 비용",
+            "value": "$1M / GWh·년",
+            "sublabel": "camLine 업계 통상 분석"
+          },
+          {
+            "label": "LG엔솔 200GWh 환산",
+            "value": "약 $200M/년",
+            "sublabel": "1% 개선 시 절감 잠재"
+          },
+          {
+            "label": "Foundry 차별 우위",
+            "value": "이질·외부 데이터 결합",
+            "sublabel": "단일 공장 정형 데이터엔 MES 우위"
+          }
+        ],
+        "dropcap": false
+      },
+      {
+        "heading": "도입 정당성의 의사결정 트리",
+        "kicker": "조건의 분기 · 5",
+        "prose": "ROI 산수만으로 결정되는 건 없다. 의사결정은 네 갈래의 조건 위에 선다. 핵심은 'Palantir 인가 아닌가' 가 아니라 '회사가 어느 갈래에 서 있는가' 다.\n\n첫째, 데이터의 이질성. 묶어야 할 데이터가 한 공장 안 정형 센서 로그뿐이라면 MES 가 우세하다. R&D 실험·공급망·고객 운영 데이터까지 교차해야 한다면 Foundry 의 통합 가치가 살아난다. SK온 통합 시나리오가 현실화되면 *세 회사 시스템 통합* 이라는 거대한 이질성 문제가 등장한다 — Palantir 검토 트리거가 될 수 있다.\n\n둘째, 비정형 의사결정의 빈도. AIP 가 답해야 할 질문 — 공급망 disruption 시 라인 재배치, 고객별 셀 사양 트레이드오프, 신규 화학 공정 스케일업 의사결정 — 이 매주 발생하는가, 분기에 한 번인가. 빈도가 낮으면 인간 분석가 + Excel 로 충분하다. 빈도가 높고 데이터가 매번 다르면 AIP 의 한계비용이 낮아진다.\n\n셋째, 락인 (lock-in) 리스크 수용도. Palantir 는 한 번 도입하면 빼기 어려운 구조다. 온톨로지가 사내 의사결정 언어가 돼버리면 교체 비용이 가격표보다 훨씬 커진다. HD현대가 사업부 단위에서 전사 계약으로 *확장* 한 것이 그 증거다 — 줄이는 방향이 아니라 늘리는 방향이다. CFO 가 이 비대칭을 받아들일 준비가 됐는가.\n\n넷째, 자본 여력의 시점. 적자 국면의 결재는 어렵다. 2026년 2분기 실적이 흑자 전환되면 결재 환경이 풀린다. 2027년에 LFP 와 고체전지 라인이 안정화되면 자본 우선순위에 여백이 생긴다. 도입 시점은 'ROI 가 명확해지는 시점' 이 아니라 *현금흐름이 결재를 허용하는 시점* 이다.\n\n네 조건을 동시에 만족하면 도입은 합리적이다. 한두 개만 만족하면 MES 또는 자체 구축이 더 합리적이다. 2026년 5월 시점의 한국 3사는 둘째·넷째 조건에서 명확한 답을 주지 못했다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "도입 시점은 ROI 가 명확해지는 시점이 아니라, 현금흐름이 결재를 허용하는 시점이다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      },
+      {
+        "heading": "남은 질문 — 효과는 보고됐으나 분리는 측정되지 않았다",
+        "kicker": "남은 질문 · 6",
+        "prose": "두 개의 사실이 한 자리에 서면 모순처럼 보인다. 글로벌에선 PENA·HD현대가 효과를 보고했고, Palantir 는 한국 시장에 채널·법인·팝업·KT 파트너십까지 깔았다. 동시에 한국 2차전지 3사의 도입 사례는 0건이다. 둘 중 하나는 잘못 읽힌 사실이거나, 둘은 같은 시점의 다른 진실이다.\n\n현재 시점에서 더 무게가 실리는 해석은 후자다. 글로벌 효과가 *Palantir 의 차별 기여* 로 분리 측정되지 않았기 때문에, 결재 권한자가 그 효과를 자기 회사로 이전하는 데 베팅하기 어렵다. 동시에 적자 국면이라 결재 환경 자체가 좁다. 두 사실은 모순이 아니라, 공존하는 두 조건이다.\n\n그렇다고 도입이 결코 일어나지 않을 것이라는 뜻은 아니다. SK온 통합 결정이 단일 데이터 플랫폼 선정 트리거가 될 수 있다. 2분기 실적이 흑자 전환되면 결재 환경이 바뀐다. KT 채널이 첫 2차전지 도입 사례를 만들면 도입 비용·기간·절감 효과가 *국내 데이터* 로 처음 공개된다 — 그 순간 ROI 산수의 입력값이 달라진다.\n\n그때까지 회의론은 'Palantir 가 나쁜 도구다' 가 아니라 '아직 우리에게 incremental 가치가 있다는 증거가 부족하다' 의 형태로 살아있다. 이 회의는 추가 측정 결과 — PENA 의 분리 측정치, KT 채널 첫 사례, 또는 SK온 통합 후 단일 플랫폼 결정 — 가 등장할 때 비로소 닫힌다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false
+      }
+    ],
+    "closing": "한국 3사의 빈 자리는 'Palantir 가 잘못된 답' 이라는 증거가 아니라, '아직 우리에게 맞는 답이라는 증거가 부족하다' 는 표지다. 회의론과 도입은 같은 데이터를 기다린다.",
+    "watch_signals": [
+      {
+        "signal": "LG엔솔·삼성SDI 2026-Q2 실적",
+        "description": "동반 적자 탈출 여부. 흑자 전환이면 신규 SaaS 결재 환경 회복",
+        "indicates": "기준선(도입 지연) vs 도입 검토 가속 시나리오 분기",
+        "deadline": "2026-08",
+        "icon": "📊"
+      },
+      {
+        "signal": "KT 채널 첫 2차전지 도입 발표",
+        "description": "KT-Palantir 채널이 만드는 국내 첫 2차전지 사례 등장 여부",
+        "indicates": "국내 ROI 산수 입력값 공개 — 회의론 닫히는 분기점",
+        "icon": "🔌"
+      },
+      {
+        "signal": "SK온 통합 결정 + 단일 데이터 플랫폼 선정",
+        "description": "통합 시 세 회사 시스템 통합이라는 거대 이질성 문제 등장",
+        "indicates": "Foundry 검토 트리거 — 통합 시나리오 → 도입 가속",
+        "icon": "🔗"
+      },
+      {
+        "signal": "인터배터리 2027 발표",
+        "description": "1년 후 3사 발표에 Palantir·AIP·온톨로지 언급 등장 여부",
+        "indicates": "결재 통과 vs 부재 지속 시나리오 분기",
+        "deadline": "2027-03",
+        "icon": "🎙️"
+      },
+      {
+        "signal": "Palantir 한국법인 분기 매출",
+        "description": "2차전지 외 도입 (방산·통신) 으로만 성장하는지, 제조 진입하는지",
+        "indicates": "한국 시장 후순위 vs 핵심 시장 신호",
+        "icon": "💼"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "글로벌 도입사 (PENA·HD현대) 가 효과를 보고했고 Palantir 는 한국에 채널까지 깔았으니 국내 3사도 곧 따라온다",
+        "side_b": "보고된 효과의 *Palantir 차별 기여* 가 분리 측정되지 않았고, 적자 국면이라 결재 환경이 좁다",
+        "evidence": "PENA 구체 수치 비공개 / HD현대 30% 는 자체 발표 / Forrester 는 합성 표본 + Palantir 의뢰 / 인터배터리 2026 에서 3사 언급 0건",
+        "resolution": "현재는 side_b 우세. 단 SK온 통합 시 단일 데이터 플랫폼 결정이 필요해지거나, KT 채널이 국내 첫 사례를 만들어 incremental ROI 가 공개되면 side_a 가 부활한다."
+      },
+      {
+        "side_a": "ROI 315% 가 사실이라면 도입을 안 하는 게 비합리적 — 적자일수록 더 시급",
+        "side_b": "ROI 315% 는 합성 표본·광범위 비용 정의·벤더 의뢰 보고서의 결과. 같은 효과를 일반 MES 로도 10~30% 스크랩 감축으로 도달 가능 — incremental ROI 는 훨씬 작거나 음수일 수 있다",
+        "evidence": "Forrester TEI 의뢰 표시 / camLine·GE·Honeywell 보고 스크랩 감축 범위 / Foundry 차별 우위는 이질·외부 데이터 결합에 한정",
+        "resolution": "ROI 절대값만으로는 정당화 불가. 경영진이 봐야 할 숫자는 'MES 대비 incremental ROI' 이고, 그 값은 '회사가 비정형·교차 데이터 질문을 얼마나 자주 던지는가' 에 따라 결정된다. 패배한 side_a 는 SK온 통합 같은 거대 이질성 사건이 발생하면 살아난다."
+      }
+    ],
+    "confidence_summary": "출처는 다양 (벤더 자료·언론 보도·업계 분석) 하나 핵심 빈 자리 — 한국 3사 의사결정 내부 — 는 공시·발표 부재로만 추정. PENA 측정치 비공개와 Forrester 의뢰 표시가 양쪽 narrative 의 신뢰도를 동시에 누르고 있다. 사실 그 자체보다 '분리 측정 부재' 라는 메타 사실의 신뢰도가 높다.",
+    "confidence_score": 0.65,
+    "embedded_map": null
+  },
+  "executive_summary": "글로벌은 PENA·HD현대로 사례를 쌓았지만, 국내 2차전지 3사는 인터배터리 2026 에서도 언급조차 없었다. 적자와 대안 사이에 ROI 산수가 답을 미루고 있다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260507_150203.html",
+  "report_theme": "paper_classic",
+  "analysis_timestamp": "2026-05-07T05:54:12.838692",
+  "total_duration_seconds": 470.69932436943054,
+  "system_version": "v5.0.0",
+  "revision": 0
+}
