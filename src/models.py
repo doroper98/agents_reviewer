@@ -917,9 +917,21 @@ class FullAnalysisResult(BaseModel):
     """보고서 생성 시점의 src/orchestrator.py:VERSION (예: 'v4.5.4').
     재렌더 시엔 *재렌더 시점 버전* 으로 갱신 (CSS/JS 변경이 그 버전 따름)."""
     revision: int = 0
-    """patch_report.py 로 수정될 때마다 +1. 0 = 최초 생성, 1+ = 패치됨.
-    초기 생성 보고서는 0. 사용자가 같은 사건 재생성하면 *새 보고서 ID* 라
-    revision 0 부터 시작. revision 은 *동일 보고서의 수정 횟수* 만 추적."""
+    """내용/데이터 수정 횟수 (정수부). patch_report.py 의 *데이터 변경* 패치
+    (--replace / --add-footnote / --edit / --recompose 등) 마다 +1. 0 = 최초 생성.
+    사용자가 같은 사건 재생성하면 *새 보고서 ID* 라 revision 0 부터 시작.
+    데이터 변경 시 render_revision 은 0 으로 리셋 (새 내용 baseline)."""
+    render_revision: int = 0
+    """표현/레이아웃 수정 횟수 (소수부, v6.0.5). 내용은 그대로 둔 채 양식·표현·
+    차트 레이아웃·정적 자산(charts.js 등) 만 바뀐 재렌더 (--rerender-only) 마다 +1.
+    예: 데이터 1회 + 재렌더 2회 → revision=1, render_revision=2 → 'Rev 1.2'.
+    데이터(정수부) 변경 시 0 으로 리셋."""
+
+    @property
+    def revision_label(self) -> str:
+        """발행본 표기용 'major.minor' 문자열 (예: '1.2'). 정수부=내용 수정,
+        소수부=표현/레이아웃 수정. 진짜 소수가 아니라 major.minor 라 1.10 > 1.9."""
+        return f"{self.revision}.{self.render_revision}"
     # NOTE (V3 Step 4 / Anti-pattern #10): ``ContextAnalysis.confidence_score`` 등 기존
     # ``confidence_score: float`` 필드들은 v2 호환 목적으로 보존되며 deprecated 상태.
     # 신규 코드는 ``ConfidenceProfile`` (3축) 을 사용. v3.0.0 릴리스 시점에 일괄 정리 예정.

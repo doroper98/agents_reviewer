@@ -19,7 +19,7 @@ last_review: 2026-05-05
 > **🔴 제1규칙 — 보고서 핫픽스 시퀀스 (사용자가 발행된 보고서의 결함을 지적하면 *즉시* 이 순서로).**
 > 사용자가 발행된 보고서(보통 `analysis-reports.pages.dev/...` 링크 + "이 문구 / 이 차트 / 이 표현 고쳐"
 > 형태)의 결함을 지적하면 — 되묻지 말고 — 아래 시퀀스로 이해·진행한다. SSOT 도구는
-> [scripts/patch_report.py](scripts/patch_report.py) (LLM 0, ~$0, **URL 보존**, `revision +1`).
+> [scripts/patch_report.py](scripts/patch_report.py) (LLM 0, ~$0, **URL 보존**, `revision` 증가 — 내용 변경=정수부 +1·소수부 리셋 / `--rerender-only` 표현·레이아웃 변경=소수부 +1, 표기 `Rev major.minor`, v6.0.5).
 >
 > **① 트리거 인식.** "이거 고쳐 / 패치해 / 무슨 뜻이야 + 보완" + 보고서 링크·문구 인용 = 핫픽스. 즉시 착수.
 >
