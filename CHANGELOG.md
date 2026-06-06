@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.1.0
+last_synced_with: v6.1.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.1.1 — 번들 차트에 display(strip/full) 플래그 (영상 파이프라인이 스트립 vs 본문차트 구분)
+
+- **동기(사용자 보고)** — 영상 제작 AI(osint_generator)가 보고서의 *작게 묶여
+  나오는 보조 지표 스트립*(여러 종목 sparkline 한 줄)과 *본문에 크게 박히는 단일
+  차트*(sankey/waterfall/gantt 등)를 구분 못 해 비주얼 배치가 어려웠다. 렌더러는
+  `freeform_essay.html` 의 `ch.role == 'compact'` 로 이미 둘을 가르지만, 영상이
+  읽는 `.bundle.json` 의 `BundleChart` 엔 그 신호가 없었다.
+- **변경** — `BundleChart.display: str`("strip" | "full", default "full") 추가
+  (계약 §12, **additive** → schema_version 불변). `bundle_builder` 가 렌더러와
+  동일 규칙으로 매핑 — composed chart 의 `role == "compact"` → `"strip"`, 그 외
+  → `"full"`.
+  - `composed_report` JSON 은 이미 차트별 `role` 필드로 구분됨 (변경 불요).
+- **동시 갱신** — `docs/CONTRACTS/report_bundle_v1.md`(§12 신설 + 스키마),
+  `docs/CONTRACTS/report_bundle_v1.example.json`(parity), `docs/DATA_MODELS.md §5.5`,
+  `tests/test_report_bundle.py`(display 매핑 회귀).
+- **하위호환** — 구 consumer 는 필드 무시해도 무해. 구 번들 JSON 엔 없음 → 기본 "full".
 
 ## v6.1.0 — GitHub raw 미러 (pages.dev 를 막는 샌드박스 AI 도 보고서 직접 열람)
 

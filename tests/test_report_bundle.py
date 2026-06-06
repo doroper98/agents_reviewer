@@ -40,6 +40,10 @@ def _make_result() -> FullAnalysisResult:
                     {"date": "2026-03-02", "open": 1, "high": 2, "low": 1, "close": 2},
                     {"date": "2026-03-09", "open": 2, "high": 3, "low": 2, "close": 3},
                 ]},
+                # v6.1.1 — compact strip(보조 시계열) 차트. display="strip" 매핑 대상.
+                {"type": "line", "title": "코스피", "role": "compact", "data": [
+                    {"x": "2026-03-02", "y": 2600}, {"x": "2026-03-09", "y": 2650},
+                ]},
             ]),
             ComposedSection(heading="점유율", prose="본문2", charts=[
                 {"type": "bar", "title": "점유율", "data": [{"label": "a", "value": 1}]},
@@ -76,6 +80,19 @@ def test_deterministic_provenance():
     assert by_type["candle"].provenance.sources[0].provider == "KRX"
     assert by_type["bar"].provenance.origin == "narrative_inference"
     assert by_type["bar"].provenance.verification == "inferred"
+
+
+def test_chart_display_strip_vs_full():
+    """§12 (v6.1.1): role=='compact' → display='strip', 그 외 → 'full'."""
+    b = build_report_bundle(_make_result())
+    by_type = {c.type: c for c in b.charts}
+    # 보조 시계열(compact strip)
+    assert by_type["line"].display == "strip"
+    # 본문 단일차트
+    assert by_type["candle"].display == "full"
+    assert by_type["bar"].display == "full"
+    # 항상 존재 (default 'full', null/'' 금지)
+    assert all(c.display in ("strip", "full") for c in b.charts)
 
 
 def test_theme_tokens_from_css():

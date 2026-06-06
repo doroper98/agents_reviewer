@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v5.5.6
+last_synced_with: v6.1.1
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -133,6 +133,22 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
 - 지리 없는 보고서: `map`/`signals`/`contradictions`/`confidence` 통째 absent 허용 (seam 검증됨).
 - `map.markers[].id`, `map.legend[].kind` 는 consumer 미러됨 — 그대로 emit.
 
+### §12 차트 display (스트립 vs 본문 단일차트) — v6.1.1 additive
+`charts[].display` 는 그 차트가 보고서에서 *어떻게* 렌더되는지를 명시한다. 영상
+파이프라인(osint_generator)이 "작게 묶여 나오는 보조 지표"와 "본문에 크게 박히는
+단일 차트"를 구분해 비주얼을 배치하기 위함. SSOT 는 렌더러(`freeform_essay.html`
+의 `ch.role == 'compact'` 분기)와 동일 규칙.
+
+| 값 | 의미 | 영상 사용 가이드 |
+|---|---|---|
+| `"strip"` | 보고서에서 작은 sparkline 한 줄(compact strip)로 렌더되는 **보조 시계열** 차트. 여러 종목/지표를 한 줄에 묶은 것 (보통 `type: line/candle/area`). | 단독 풀화면 차트로 크게 쓰지 말 것 — 보조 지표 묶음(티커 스트립)으로 취급. 묶어서 한 컷. |
+| `"full"` | **본문 단일 차트** (sankey/waterfall/gantt/scatter/bar/donut/…​ 및 strip 아닌 모든 차트). | 개별 비주얼로 한 컷씩 사용. |
+
+- producer 매핑: composed chart 의 `role == "compact"` → `"strip"`, 그 외 → `"full"`.
+- **항상 존재** (default `"full"`). `null`/`""` 금지 — §11 의 자유 스칼라 규약과 별개로
+  고정 enum(`strip`/`full`).
+- additive (§7) — schema_version 증분 안 함. 구 consumer 는 필드 무시해도 무해.
+
 ## 2. 번들 스키마 (필드 / 타입)
 
 > chart `data` 내부 모양은 §9 에 따라 schemas.py 참조. 아래는 *컨테이너* 계약.
@@ -177,6 +193,7 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
     "title": "str",
     "data": "<schemas.py type별 shape>",
     "note": "str | null",
+    "display": "strip|full",                  // §12 — 스트립(보조) vs 본문 단일차트
     "provenance": {                           // [신규] §2/§3/§4
       "origin": "measured|narrative_inference|model_forecast",
       "verification": "<§1 enum>",            // 미지정 시 §2 매핑

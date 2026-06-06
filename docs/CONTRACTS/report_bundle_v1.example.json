@@ -56,6 +56,7 @@
         { "date": "2026-03-16", "open": 73900, "high": 75000, "low": 73200, "close": 74100 }
       ],
       "note": "사건일 전후 ±2주",
+      "display": "full",
       "provenance": {
         "origin": "measured",
         "verification": "confirmed",
@@ -82,6 +83,7 @@
         "fork_at": "2025"
       },
       "note": "전망 구간은 시나리오 파생 추정 — 실측 아님",
+      "display": "full",
       "provenance": {
         "origin": "model_forecast",
         "verification": "inferred",

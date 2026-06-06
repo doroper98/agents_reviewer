@@ -1042,6 +1042,14 @@ class BundleChart(BaseModel):
     title: str = ""
     data: Any = None         # shape = schemas.py
     note: str = ""
+    # v6.1.1 — 렌더 형태 명시 (계약 §12, additive). 영상 파이프라인(osint_generator)이
+    # "스트립 차트 vs 본문 단일 차트" 를 구분해 비주얼을 배치할 수 있게 한다.
+    #  - "strip": 보고서에서 작은 sparkline 한 줄(compact strip)로 렌더되는 보조
+    #             시계열 차트. 여러 종목 지표를 한 줄에 묶은 것 — 영상에서 *단독 풀차트*
+    #             로 크게 쓰지 말 것 (보조 지표 묶음으로 취급).
+    #  - "full":  본문 단일 차트. 영상에서 개별 비주얼로 사용.
+    # composed chart 의 role=='compact' → "strip", 그 외 → "full".
+    display: str = "full"
     provenance: BundleProvenance
     prerendered_svg: str | None = None  # 계약 §5 — A안 차트는 null. B안 4종(network/choropleth/sankey)은 prerender 가용 시 폴백 SVG (v5.5.6, svg_prerender.py)
 
