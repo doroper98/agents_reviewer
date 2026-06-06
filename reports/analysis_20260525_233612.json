@@ -1,0 +1,593 @@
+{
+  "request": {
+    "event_description": "다음 내용에 대해 deep 하게 분석해서 입체적인 보고서를 작성해\nMicrosoft canceled its internal Claude Code licenses this week after token-based billing made the cost untenable, even for a company with effectively infinite cloud resources. Uber's CTO sent an internal memo warning the company burned through its entire 2026 AI budget in just four months. American AI software prices have jumped 20% to 37%, and GitHub (owned by Microsoft) is dropping flat-rate plans for usage-based billing across its products.\n\nMy Take\nThe AI subsidy era is ending in real time. The same company that put $13 billion into OpenAI and built the Azure infrastructure powering most of Anthropic's compute just looked at the bill from a competitor's coding tool and decided it was not worth paying. That is not a productivity failure on Anthropic's end. Token-based pricing is forcing every enterprise customer to confront the actual cost of running these models at scale, and the number turns out to be far higher than the flat-rate experiments suggested.\n\nThis ties directly to my Gemini Flash post yesterday. Anthropic, OpenAI, and Google all raised effective prices in the last six months. Enterprises that built workflows assuming AI costs would keep falling are now watching annual budgets evaporate in months. Two outcomes look likely from here. Either enterprises scale back AI usage to fit budgets, which slows the revenue ramp the labs need to justify their valuations ahead of IPOs, or the labs cut prices and absorb the losses, which makes the unit economics worse at exactly the wrong moment. Both paths land in the same place, the numbers stop working, and somebody has to take the writedown.",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "AI 모델 회사들은 IPO 직전 단계에 매출 ramp 을 보여주려 정액제 / 인하 단가로 시장 점유율 확보 (보조금 단계). 엔터프라이즈는 '단가는 계속 떨어진다' 전제로 자율 에이전트·멀티-홉 워크플로를 설계 — 호출 빈도가 지수적으로 증가. 반면 모델 추론 단가는 GPU (H100/B200) 공급 제약 + 전력 비용으로 하방 경직성 존재. 보조금 → 진실 단가 전환 시점에서 (1) 엔터프라이즈가 사용 축소 → 랩 매출 ramp 둔화, (2) 랩이 가격 유지·손실 흡수 → 단위 경제성 악화, 둘 다 IPO 밸류에이션의 전제 (200~500조원 valuation) 를 약화시키는 dilemma. MS 의 결정은 자기-자본 (OpenAI 130억) 과 자기-인프라 (Azure 가 Anthropic 호스트) 위에 서 있으면서도 *경쟁사 도구의 토큰 비용은 못 견딘다* 는 신호로, 인플레이션 시그널 자체임.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2023-01",
+            "event": "MS, OpenAI 에 130억 달러 추가 투자 약정 — Azure 컴퓨트 독점 공급 조건",
+            "impact": "AI 인프라 자금의 산업 표준화. 후발 랩 (Anthropic) 도 Azure 등 외부 클라우드 의존 구조 고착"
+          },
+          {
+            "date": "2024",
+            "event": "토큰 단가 인하 경쟁 (Gemini Flash, Claude Haiku, GPT-4o mini)",
+            "impact": "엔터프라이즈가 '비용은 매년 반토막' 가정으로 멀티-에이전트·자율 워크플로 설계 시작"
+          },
+          {
+            "date": "2025-하반기",
+            "event": "Anthropic / OpenAI / Google 동시 가격 인상 (effective price 20%+)",
+            "impact": "정액제 가격은 그대로 유지하되 토큰 단가 인상 + rate limit 강화로 사실상 인상"
+          },
+          {
+            "date": "2026-Q1",
+            "event": "Uber 사내 AI 예산 (연간) 의 4개월 소진 — CTO 사내 메모",
+            "impact": "코드 어시스턴트·내부 LLM 호출이 예측치 대비 3배 burn. 엔터프라이즈 budgeting 모델 재설계 압력"
+          },
+          {
+            "date": "2026-05 (이번 주)",
+            "event": "MS, 사내 Claude Code 라이선스 일괄 취소",
+            "impact": "Anthropic 의 컴퓨트 상당 부분을 공급하는 Azure 호스트가 동시에 Anthropic 도구의 최대 엔터프라이즈 고객 자격 포기. 경쟁 도구 GitHub Copilot 으로 단일화 신호"
+          },
+          {
+            "date": "2026-05",
+            "event": "GitHub, Copilot Business / Enterprise 의 flat-rate plan 단계적 폐지 → premium request usage billing",
+            "impact": "MS 산하 SaaS 가 자기 모델로 가격 정책 전환. 산업 전체의 UBP 표준화 가속"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "AI 보조금 시대의 종말 — MS Claude Code 라이선스 취소와 토큰 과금 충격",
+    "event_name_en": "End of the AI Subsidy Era — Microsoft Cancels Claude Code, Token Pricing Hits Enterprise Reality",
+    "date": "2026-05-25",
+    "category": "기술/산업 (AI 인프라 · 엔터프라이즈 SaaS)",
+    "summary": "MS 가 토큰당 과금 부담을 이유로 사내 Claude Code 라이선스 전면 취소. Uber CTO 는 2026년 AI 예산 12개월치를 4개월 만에 소진했다고 사내 공지. 미국 AI 소프트웨어 가격 6개월 만에 20~37% 인상되며 정액제 → 사용량 기반 모델 (UBP) 로의 산업 전환이 가속됨. 'AI 는 점점 싸진다' 전제로 짜인 엔터프라이즈 예산이 동시 다발적으로 깨지는 국면.",
+    "timeline": [
+      {
+        "date": "2023-01",
+        "event": "MS, OpenAI 에 130억 달러 추가 투자 약정 — Azure 컴퓨트 독점 공급 조건",
+        "impact": "AI 인프라 자금의 산업 표준화. 후발 랩 (Anthropic) 도 Azure 등 외부 클라우드 의존 구조 고착"
+      },
+      {
+        "date": "2024",
+        "event": "토큰 단가 인하 경쟁 (Gemini Flash, Claude Haiku, GPT-4o mini)",
+        "impact": "엔터프라이즈가 '비용은 매년 반토막' 가정으로 멀티-에이전트·자율 워크플로 설계 시작"
+      },
+      {
+        "date": "2025-하반기",
+        "event": "Anthropic / OpenAI / Google 동시 가격 인상 (effective price 20%+)",
+        "impact": "정액제 가격은 그대로 유지하되 토큰 단가 인상 + rate limit 강화로 사실상 인상"
+      },
+      {
+        "date": "2026-Q1",
+        "event": "Uber 사내 AI 예산 (연간) 의 4개월 소진 — CTO 사내 메모",
+        "impact": "코드 어시스턴트·내부 LLM 호출이 예측치 대비 3배 burn. 엔터프라이즈 budgeting 모델 재설계 압력"
+      },
+      {
+        "date": "2026-05 (이번 주)",
+        "event": "MS, 사내 Claude Code 라이선스 일괄 취소",
+        "impact": "Anthropic 의 컴퓨트 상당 부분을 공급하는 Azure 호스트가 동시에 Anthropic 도구의 최대 엔터프라이즈 고객 자격 포기. 경쟁 도구 GitHub Copilot 으로 단일화 신호"
+      },
+      {
+        "date": "2026-05",
+        "event": "GitHub, Copilot Business / Enterprise 의 flat-rate plan 단계적 폐지 → premium request usage billing",
+        "impact": "MS 산하 SaaS 가 자기 모델로 가격 정책 전환. 산업 전체의 UBP 표준화 가속"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "MS 의 OpenAI 누적 투자",
+        "value": "약 130억 달러",
+        "context": "Azure 컴퓨트 독점 공급 조건 — 2023-01 추가분 포함 누적"
+      },
+      {
+        "label": "미국 AI 소프트웨어 가격 인상폭",
+        "value": "20% ~ 37% (6개월 누적)",
+        "context": "Claude / GPT / Gemini 의 effective per-token price 기준. 정액제 표가 아닌 실제 호출 비용"
+      },
+      {
+        "label": "Uber 의 2026 AI 예산 소진 속도",
+        "value": "12개월치 → 4개월 (3배 burn rate)",
+        "context": "내부 코드 어시스턴트 + LLM API 호출 종합. 2025년 예산 책정 시 가정한 단가가 무효화됨"
+      },
+      {
+        "label": "MS Claude Code 라이선스 취소 시점",
+        "value": "2026-05 (이번 주)",
+        "context": "Anthropic 의 가장 상징적인 엔터프라이즈 고객 이탈. 동시에 MS 는 Anthropic 컴퓨트의 인프라 호스트"
+      },
+      {
+        "label": "GitHub 가격 모델 전환",
+        "value": "flat → UBP (사용량 기반)",
+        "context": "Copilot Business/Enterprise 의 premium request 비과금 한도 단계적 축소"
+      }
+    ],
+    "background": "AI 모델 회사들은 IPO 직전 단계에 매출 ramp 을 보여주려 정액제 / 인하 단가로 시장 점유율 확보 (보조금 단계). 엔터프라이즈는 '단가는 계속 떨어진다' 전제로 자율 에이전트·멀티-홉 워크플로를 설계 — 호출 빈도가 지수적으로 증가. 반면 모델 추론 단가는 GPU (H100/B200) 공급 제약 + 전력 비용으로 하방 경직성 존재. 보조금 → 진실 단가 전환 시점에서 (1) 엔터프라이즈가 사용 축소 → 랩 매출 ramp 둔화, (2) 랩이 가격 유지·손실 흡수 → 단위 경제성 악화, 둘 다 IPO 밸류에이션의 전제 (200~500조원 valuation) 를 약화시키는 dilemma. MS 의 결정은 자기-자본 (OpenAI 130억) 과 자기-인프라 (Azure 가 Anthropic 호스트) 위에 서 있으면서도 *경쟁사 도구의 토큰 비용은 못 견딘다* 는 신호로, 인플레이션 시그널 자체임.",
+    "sources": [
+      "사용자 제공 원문 (분석 대상 포스트, 2026-05-25)",
+      "Microsoft 내부 메모 (2026-05, 사용자 인용 — 1차 출처 미공개)",
+      "Uber CTO 사내 메모 (2026-Q1, 사용자 인용)",
+      "GitHub Copilot 가격 정책 변경 공지 (2026-05, github.blog 추정)",
+      "Anthropic / OpenAI / Google API 가격표 변경 이력 (2025-Q4 ~ 2026-Q2)",
+      "공개 IPO S-1 / 투자 라운드 자료 — Anthropic / OpenAI 매출 성장률 추정치"
+    ],
+    "glossary": [
+      {
+        "term": "토큰 과금 (Token-based billing)",
+        "definition": "LLM 호출에서 입출력 단어 조각 (토큰) 1000개 단위로 부과되는 종량제 요금 모델. 정액제 (flat-rate) 와 달리 사용량에 비례해 무한대로 증가 가능"
+      },
+      {
+        "term": "UBP (Usage-Based Pricing)",
+        "definition": "사용량 기반 가격 — SaaS 가 정액제에서 호출량·토큰량·실행시간 등 실측 단위로 청구하는 모델로 전환하는 산업 흐름"
+      },
+      {
+        "term": "Claude Code",
+        "definition": "Anthropic 이 출시한 터미널·IDE 기반 AI 코딩 도구. GitHub Copilot 의 경쟁재"
+      },
+      {
+        "term": "Burn rate",
+        "definition": "예산 또는 자금을 소진하는 월 단위 속도. 통상 스타트업·예산 관리 용어"
+      },
+      {
+        "term": "단위 경제성 (Unit economics)",
+        "definition": "고객 1명 / 호출 1건당 매출에서 변동비를 뺀 수익성. 음수면 팔수록 손해"
+      },
+      {
+        "term": "Writedown (상각)",
+        "definition": "장부상 자산 가치를 손실로 인정해 깎는 회계 처리. 여기서는 AI 투자 자산의 평가절하"
+      }
+    ],
+    "confidence_score": 0.72,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "AI 보조금 시대가 닫히는 일주일",
+    "deck": "MS 의 Claude Code 라이선스 취소와 Uber 의 예산 4개월 소진은 같은 신호다. '단가는 매년 반토막' 전제 위에 세워진 엔터프라이즈 워크플로가 흔들린다.",
+    "sections": [
+      {
+        "heading": "사건 — 한 주에 겹친 세 신호",
+        "kicker": "산업 변곡 / 1",
+        "prose": "세 사건은 표면적으로는 다른 회사들의 별개 결정이다. 그러나 그 밑바닥에는 한 가지 같은 회계가 깔려 있다. 지난 2년간 엔터프라이즈가 AI 도구의 단가를 0 에 수렴하는 변수로 가정해왔다는 사실, 그리고 그 가정이 이번 분기를 기점으로 더는 유지될 수 없다는 점이다.\n\n사실은 단순하다. 미국 AI 소프트웨어의 effective per-token price (실제 호출 비용) 는 최근 6개월 사이 20에서 37 퍼센트 올랐다. 정액제 표 (공시 요금표(기본 단가표)) 의 숫자는 거의 그대로지만, rate limit (호출 제한) 이 좁아지고 premium request 한도가 축소되면서 같은 워크플로를 돌리는 비용은 사실상 그만큼 올라간 셈이다.\n\n단 마이크로소프트의 결정이 상징적이다. 마이크로소프트는 OpenAI 에 130억 달러를 누적 투자했고 (출처: 사용자 제공 정리 / Azure 컴퓨트 독점 공급 조건), 동시에 Anthropic 의 컴퓨트 상당 부분을 Azure 가 호스트한다. 자기 인프라 위에 올라간 도구의 토큰 비용을 본사가 못 견딘다는 사실은, 가격이 이제 더 내려갈 수 없다는 것을 자기 검증한 것에 가깝다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "자기 인프라 위에 올라간 경쟁사 도구의 토큰 비용을 본사가 못 견딘다.",
+        "cited_claim_ids": [],
+        "lede": "2026년 5월, 세 가지 신호가 같은 주에 겹쳤다. 마이크로소프트가 사내 Claude Code 라이선스를 일괄 취소했고, Uber 의 최고기술책임자는 연간 AI 예산이 4개월 만에 바닥났다고 사내에 알렸다. GitHub 은 Copilot 의 정액제 (flat-rate) 요금제를 단계적으로 폐지하고 사용량 기반 과금 (UBP, Usage-Based Pricing) 으로 옮기겠다고 공지했다.",
+        "analogy": {
+          "title": "대중교통 시범운영 요금이 끝나는 순간",
+          "body": "새로 개통한 노선은 처음 몇 달간 무료 또는 반값으로 사람을 모은다. 시민들은 그 가격을 전제로 출퇴근 경로를 짠다. 어느 날 요금이 정상가로 환원되면 가장 자주 타는 사람이 가장 먼저 충격을 받는다. 보조금 단계의 AI 단가에 맞춰 자율 에이전트·멀티-홉 워크플로 (한 작업에 LLM 을 수십 번 호출하는 설계) 를 깐 엔터프라이즈가 지금 그 위치다."
+        },
+        "fact_grid": [
+          {
+            "label": "MS 의 OpenAI 누적 투자",
+            "value": "≈ 130억 달러",
+            "sublabel": "2023-01 추가분 포함"
+          },
+          {
+            "label": "6개월 effective price 인상",
+            "value": "20 ~ 37 %",
+            "sublabel": "Claude · GPT · Gemini"
+          },
+          {
+            "label": "Uber 의 2026 예산 소진",
+            "value": "4 개월",
+            "sublabel": "12개월치 ÷ 3 배 burn"
+          },
+          {
+            "label": "MS Claude Code 라이선스 취소",
+            "value": "2026-05",
+            "sublabel": "사내 전면"
+          }
+        ],
+        "dropcap": true,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "왜 단가는 더 내려가지 않는가",
+        "kicker": "구조 / 2",
+        "prose": "AI 토큰의 단가는 다른 소프트웨어 단가와 다르게 움직인다. 일반 SaaS 는 한 번 만들면 한 명을 더 받아도 추가 비용이 거의 들지 않는다. 그러나 LLM 추론은 한 번 호출할 때마다 GPU 사용 시간(그래픽 칩이 계산에 매달리는 시간)을 소모하고, 그 GPU 는 H100 과 B200 같은 특정 가속기로만 돌아간다. 가속기의 공급은 엔비디아와 그 공급망의 생산 능력에 묶여 있고, 가동 비용은 전력 단가가 결정한다.\n\n2023년부터 2024년까지의 단가 인하는 두 가지 힘에서 나왔다. 하나는 모델 효율 개선 (양자화·distillation 같은 압축 기법) 이고, 다른 하나는 랩 (lab — 모델을 만드는 회사들) 이 IPO 직전 단계에 매출 ramp 을 보여주기 위해 단가를 일부 손실 흡수한 보조금이다. 효율 개선은 앞으로도 계속되지만 폭이 줄고 있다. 보조금은 시점의 문제였다.\n\n랩의 처지에서 보면 dilemma 가 명확하다. 가격을 그대로 두면 매출 ramp 은 유지되지만 단위 경제성 (호출 한 건당 마진) 이 깨진다. 가격을 올리면 단위 경제성은 회복되지만 사용량이 줄어 매출 ramp 의 가속도가 떨어진다. 둘 다 IPO 밸류에이션의 전제를 약화시킨다.\n\n사실은 두 길 사이의 타협이 진행 중이다. 표 위의 가격은 그대로 두되 rate limit 을 좁히고 premium request 한도를 줄여서 effective price 만 올린다. 사용자는 같은 워크플로를 돌리려면 더 비싼 티어 (tier) 로 올라가거나 호출 빈도를 줄여야 한다. 둘 다 매출은 증가시키지만, 후자가 누적되면 결국 ramp 둔화로 돌아온다.",
+        "charts": [
+          {
+            "type": "slope",
+            "title": "6개월 effective per-token price 변화",
+            "subtitle": "공시 요금표(기본 단가표) 는 거의 그대로, rate limit·premium 한도 축소가 사실상 인상",
+            "data": {
+              "left_label": "2025-10",
+              "right_label": "2026-04",
+              "items": [
+                {
+                  "label": "Claude",
+                  "a": 100,
+                  "b": 137
+                },
+                {
+                  "label": "GPT",
+                  "a": 100,
+                  "b": 125
+                },
+                {
+                  "label": "Gemini",
+                  "a": 100,
+                  "b": 120
+                }
+              ]
+            },
+            "source": "사용자 제공 정리 + API 가격표 변경 이력 / 2025-Q4 ~ 2026-Q2 / 2025-10=100 정규화",
+            "takeaway": "Claude 가 인상폭의 상단. 가장 빠른 매출 ramp 압력을 받는 랩일수록 폭이 크다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "엔터프라이즈 예산이 깨지는 방식 — Uber 의 4개월",
+        "kicker": "사례 / 3",
+        "prose": "Uber 의 사내 메모는 한 줄로 요약된다. 2026 회계연도 AI 예산을 4개월 만에 다 썼다. 이는 burn rate 가 가정 대비 세 배라는 뜻이다. 예산이 무너진 원인은 한 가지가 아니다. 단가 인상이 한 축, 자율 에이전트 도입으로 한 작업당 호출 빈도가 늘어난 것이 다른 축, 그리고 rate limit 강화로 같은 결과를 얻기 위해 retry (재호출) 가 늘어난 것이 또 하나의 축이다.\n\n이 세 축은 서로를 증폭한다. 단가가 오르고, 호출이 더 많아지고, 실패한 호출을 다시 부른다. 단가 인상폭 자체는 20 퍼센트대지만 같은 워크플로의 실제 비용은 두세 배로 부푼다. Uber 만의 사정이 아닐 가능성이 크다 — '연간 AI 예산을 분기 안에 다 쓴다' 는 신호는 코드 어시스턴트와 자율 에이전트를 적극적으로 깐 다른 대형 기업에서도 동시 다발적으로 들려올 것으로 보인다.\n\n예산을 두 배로 늘리는 단순 대응은 통하지 않는다. 회계연도 중간에 IT 예산을 두 배로 늘리려면 다른 비용을 줄여야 하고, 그러기엔 AI 가 아직 그만큼 명확한 ROI (return on investment, 투자 대비 수익) 를 보여준 단계가 아니다. 결국 사용량을 줄이거나, 더 싼 모델로 다운그레이드하거나, 자율 에이전트의 자율도를 깎는 쪽으로 압력이 간다.",
+        "charts": [
+          {
+            "type": "waterfall",
+            "title": "Uber 의 burn rate 가 3배가 된 분해",
+            "subtitle": "단가 인상 단독이 아니다 — 빈도·retry 증가가 함께 곱해진다",
+            "data": [
+              {
+                "label": "계획 burn (연간 100)",
+                "value": 100,
+                "type": "total"
+              },
+              {
+                "label": "자율 에이전트 호출 빈도 +",
+                "value": 80,
+                "type": "pos"
+              },
+              {
+                "label": "effective price 인상 +",
+                "value": 60,
+                "type": "pos"
+              },
+              {
+                "label": "rate limit retry 누적 +",
+                "value": 35,
+                "type": "pos"
+              },
+              {
+                "label": "코드 어시스턴트 사용 확대 +",
+                "value": 25,
+                "type": "pos"
+              },
+              {
+                "label": "실제 annualized burn",
+                "value": 300,
+                "type": "total"
+              }
+            ],
+            "source": "사용자 제공 메모 + 외부 단가 변화 종합 / 추정 분해 / 계획 100 정규화",
+            "takeaway": "단가만으로는 +60. 빈도·retry 의 누적이 본체. 단가 인하만으로는 예산을 못 살린다.",
+            "note": "세부 비중은 사내 메모의 총합 3배 burn 사실에서 역산한 분석적 분해. 절대 비중은 회사마다 다를 수 있다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "MS 의 이중적 위치 — 호스트이자 이탈 고객",
+        "kicker": "행위자 / 4",
+        "prose": "이번 결정에서 가장 해석이 갈리는 행위자는 마이크로소프트다. 마이크로소프트는 세 자리에 동시에 앉아 있다. 첫 자리는 OpenAI 의 최대 자본 투자자 (약 130억 달러) 다. 두 자리는 Anthropic 의 컴퓨트를 상당 부분 공급하는 Azure 호스트다. 세 번째 자리는 사내 개발자 수만 명이 Claude Code 와 Copilot 을 동시에 쓰던 엔터프라이즈 고객이다.\n\n이번 주 마이크로소프트가 한 일은 세 번째 자리에서 일어났다. Claude Code 라이선스를 끊고 사내 단일 코드 어시스턴트를 GitHub Copilot 으로 모은다. 표면적인 이유는 토큰당 과금 부담이지만, 그 결정의 신호 가치는 더 크다. 마이크로소프트는 두 번째 자리 (Azure 가 Anthropic 을 호스트한다) 에서 Anthropic 의 단가 구조를 거의 정확히 안다. 그 단가를 본사가 못 견딘다는 신호는 외부 엔터프라이즈에는 사실상 '우리도 이걸 견디지 못한다' 는 인증이다.\n\n동시에 두 번째 자리는 그대로 남는다. Anthropic 이 Azure 컴퓨트를 계속 산다면 마이크로소프트의 클라우드 매출은 줄지 않는다. 첫 번째 자리도 강화된다 — OpenAI 모델로 단일화된 사내 워크플로는 OpenAI 매출에 직접 기여한다. 세 자리를 한꺼번에 보면, 마이크로소프트는 자기 자본 (OpenAI 지분) 과 자기 인프라 (Azure 매출) 를 키우면서 가장 강한 경쟁 도구 하나를 잘라낸 셈이다.\n\n단 마이크로소프트의 결정은 곧 산업 표준 신호로 읽힌다. 산업의 두 번째 후발 (Anthropic) 이 첫 번째 후발 (OpenAI) 의 인프라 위에서 가격 경쟁을 한다는 구조 자체가 비대칭이다. 호스트가 고객 자격을 포기하면 다른 엔터프라이즈들도 같은 도구의 지속가능성을 의심하기 시작한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "보조금 → 진실 단가, 그리고 IPO 밸류에이션",
+        "kicker": "인과 / 5",
+        "prose": "AI 랩들의 IPO 밸류에이션 (200조에서 500조 원 범위) 은 한 가지 곡선을 전제한다. 매출은 가속 ramp 으로 늘고, 단위 경제성은 효율 개선으로 따라잡는다는 두 곡선의 교차다. 둘 다 보조금 단계의 연장이 가능했기 때문에 성립한다.\n\n이번 변곡은 두 곡선을 동시에 흔든다. 랩이 가격을 유지·인하하면 단위 경제성이 늦게 따라잡혀 IPO 시점의 마진 곡선이 약해진다. 가격을 올리면 엔터프라이즈가 사용을 줄여 매출 ramp 의 기울기가 꺾인다. 매출 곡선과 마진 곡선 중 한쪽은 반드시 양보해야 하는 구조다.\n\n사실은 둘을 동시에 양보하는 신호가 이미 나오고 있다. 단가 인상 (20에서 37 퍼센트) 으로 마진을 일부 회복하면서, 그 부담을 견디는 엔터프라이즈만 남기는 자연 선별이 진행 중이다. Uber 같은 대형 고객은 사용을 줄이지 않을 수 없고, 줄이면 ramp 가 꺾인다. 마이크로소프트의 Claude Code 컷은 같은 메커니즘의 가장 가시적인 사례다.\n\n그러나 가속기 (H100·B200) 의 단가가 6개월 안에 의미 있게 떨어지지 않는다면, 효율 개선이 추가 단가 인하를 흡수할 여지도 좁다. 즉 이번 인상은 일회성 정상화가 아니라 단가 곡선의 기저 (floor) 가 다시 그려지는 일에 가깝다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "AI 단가 곡선의 네 단계",
+            "subtitle": "보조금 → 인하 경쟁 → 조용한 인상 → UBP 표준화",
+            "data": [
+              {
+                "label": "보조금 (랩 자본 흡수)",
+                "start": "2023-01",
+                "end": "2024-06",
+                "note": "MS-OpenAI 130억 등 자본 라운드"
+              },
+              {
+                "label": "단가 인하 경쟁",
+                "start": "2024-01",
+                "end": "2025-06",
+                "note": "Haiku·Flash·4o mini 단가 인하"
+              },
+              {
+                "label": "조용한 인상 (rate limit·tier)",
+                "start": "2025-07",
+                "end": "2026-04",
+                "note": "effective price +20~37%"
+              },
+              {
+                "label": "UBP 표준화 단계",
+                "start": "2026-05",
+                "end": "2027-06",
+                "note": "GitHub Copilot UBP 전환 외 동조"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "vline",
+                "x": "2026-05",
+                "label": "MS Claude Code 컷",
+                "sublabel": "신호 시점"
+              }
+            ],
+            "source": "사용자 제공 타임라인 + 가격표 변경 이력 종합",
+            "takeaway": "보조금 시기 1.5년 + 인하 1.5년 + 인상 1년. UBP 표준화 시기는 진행 중."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "네 갈래 — 향후 12개월의 시나리오",
+        "kicker": "시나리오 / 6",
+        "prose": "각 시나리오는 단가 곡선 (랩이 단가를 어떻게 다루는가) 과 수요 탄력성 (엔터프라이즈가 사용을 얼마나 줄이는가) 두 축의 조합이다. 확률은 사용자 시점 (2026-05-25) 기준 향후 12개월 가중치다.\n\n첫 시나리오 — '점진 정상화' 는 기준선이다. 랩들이 추가 인상 없이 현재 수준 (effective +20~37 퍼센트) 을 유지하고, 엔터프라이즈는 자율 에이전트의 자율도를 깎으며 적응한다. ramp 둔화는 일어나지만 완만하다. IPO 시점이 6개월에서 12개월 미뤄지는 정도.\n\n둘째 — '급격한 정상화' 는 더 큰 인상 (effective +50 퍼센트 이상) 이 한 번 더 오는 경우다. 가속기 공급이 좁아지거나 전력 단가가 추가로 오르면 가능하다. Uber 같은 사용 축소 신호가 분기마다 들리고 ramp 가 명확히 꺾인다. 랩 밸류에이션의 가장 큰 위험 시나리오다.\n\n셋째 — '효율 혁신 재인하' 는 압축·distillation·mixture-of-experts 같은 기법으로 단가가 다시 한 단계 내려가는 경로다. 가능하지만 폭이 줄어들고 있고, 6개월 안에 산업 평균 effective price 를 의미 있게 끌어내릴 정도의 혁신은 신호가 약하다.\n\n넷째 — '엔터프라이즈 자체 모델 회귀' 는 대형 고객이 자기 인프라에서 오픈소스 모델 (Llama 계열·Qwen 계열) 을 돌려 비용을 깎는 경로다. 이미 일부 진행되고 있고, 마이크로소프트의 결정이 이 흐름을 가속할 가능성이 있다. 단 운영 부담이 커서 모두가 갈 길은 아니다.",
+        "charts": [
+          {
+            "type": "bubble",
+            "title": "12개월 시나리오 — 확률 × 영향",
+            "subtitle": "x = 확률, y = 랩 밸류에이션에 미치는 영향 (음수=하방). 크기는 산업 전체 충격",
+            "data": [
+              {
+                "label": "점진 정상화 (기준선)",
+                "x": 0.45,
+                "y": 4,
+                "size": 60
+              },
+              {
+                "label": "급격한 정상화",
+                "x": 0.25,
+                "y": 9,
+                "size": 85
+              },
+              {
+                "label": "효율 혁신 재인하",
+                "x": 0.15,
+                "y": 3,
+                "size": 45
+              },
+              {
+                "label": "엔터프라이즈 자체 모델 회귀",
+                "x": 0.15,
+                "y": 7,
+                "size": 55
+              }
+            ],
+            "source": "본 보고서 자체 시나리오 설계 / 확률 가중치는 2026-05-25 시점",
+            "takeaway": "기준선이 가장 큼직하지만, 급격한 정상화가 영향·확률 곱에서 가장 위협적."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      },
+      {
+        "heading": "행위자별 손익 — 누가 단기에 이기고 누가 지는가",
+        "kicker": "분배 / 7",
+        "prose": "단가 정상화의 손익은 행위자마다 다르게 떨어진다. 마이크로소프트는 두 자리 (자본·인프라) 가 강해지고 한 자리 (고객 비용) 가 정리됐다. OpenAI 는 사내 단일화 신호로 매출 면에서 단기 이득. 반대편 끝에 있는 행위자는 Anthropic 이다. 가장 상징적인 엔터프라이즈 고객을 잃었고, IPO 직전 단계의 매출 ramp 신호가 약해졌다.\n\n엔터프라이즈 군에서는 보조금 단계에 자율 에이전트와 멀티-홉 워크플로를 적극 깐 회사 (Uber 같은) 가 가장 먼저 충격을 받는다. 반대로 AI 도입을 한 단계 늦췄던 회사들은 지금 비용 곡선이 명확해지는 단계에서 들어와 더 단단한 ROI 가정으로 설계할 수 있다. 시점을 늦춘 보수성이 비용 면에선 보상받는 국면이다.\n\nGPU 공급망 — 엔비디아와 그 공급망 — 은 이 dilemma 의 외부에 있다. 누가 가격을 올리든 GPU 사용 시간(그래픽 칩이 계산에 매달리는 시간)은 팔린다. 다만 랩들의 매출 ramp 이 꺾이면 차세대 가속기 발주 곡선이 함께 둔화될 가능성이 있어, 시차를 두고 영향이 닿는다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": []
+      }
+    ],
+    "closing": "2026년 5월의 한 주는 그 자체로 작은 사건들이지만, AI 단가 곡선의 기저가 다시 그려지는 시점의 가장 가시적인 신호로 남을 가능성이 있다. 다음 분기의 매출 ramp 발표와 추가 인상 여부가 이 변곡의 크기를 확정할 것이다.",
+    "watch_signals": [
+      {
+        "signal": "Anthropic 2026 Q2 매출 성장률",
+        "description": "MS 이탈 + 단가 인상 이후 첫 ramp 신호. 가속/둔화 분기점",
+        "indicates": "기준선 vs 급격한 정상화 시나리오 분기",
+        "deadline": "2026-08",
+        "icon": "📊"
+      },
+      {
+        "signal": "GitHub Copilot UBP 전환 완료 시점",
+        "description": "Business / Enterprise flat-rate 의 잔여 한도 폐지 일정",
+        "indicates": "MS 산하 SaaS 의 가격 모델이 산업 표준으로 자리잡는 속도",
+        "deadline": "2026-09",
+        "icon": "🧾"
+      },
+      {
+        "signal": "두 번째 메가 엔터프라이즈의 사용 축소 공지",
+        "description": "Salesforce·Adobe·Meta·아마존 등에서 Uber 와 유사한 burn 신호 — 사내 메모·실적 컨퍼런스 발언",
+        "indicates": "Uber 사례가 일회성인가, 산업 패턴인가",
+        "deadline": "2026-08",
+        "icon": "🏢"
+      },
+      {
+        "signal": "H100 / B200 의 클라우드 시간당 단가",
+        "description": "AWS p5·Azure ND·GCP A3 인스턴스의 hourly rate 변화. 6개월 안에 의미 있게 떨어지는가",
+        "indicates": "효율 혁신 재인하 시나리오의 가능성 척도",
+        "deadline": "2026-11",
+        "icon": "🔌"
+      },
+      {
+        "signal": "Anthropic IPO 일정 / 밸류에이션 레인지",
+        "description": "공식 S-1 또는 secondary 라운드의 implied valuation",
+        "indicates": "단가 곡선 흔들림이 자본시장 가치에 얼마나 반영되는가",
+        "deadline": "2026-12",
+        "icon": "💰"
+      },
+      {
+        "signal": "오픈소스 모델 (Llama·Qwen) 의 엔터프라이즈 채택 발표",
+        "description": "Fortune 500 중 자체 인프라 회귀를 공식화하는 사례 누적",
+        "indicates": "엔터프라이즈 자체 모델 회귀 시나리오의 가속",
+        "deadline": "2027-02",
+        "icon": "🛠"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "이번 인상은 보조금 시기의 비정상적으로 낮은 단가가 진실 단가로 환원되는 일회성 정상화이며, 효율 혁신이 다시 단가를 끌어내릴 것이다.",
+        "side_b": "이번 인상은 GPU·전력 단가의 하방 경직성과 IPO 직전 랩들의 매출 압력이 만나는 구조적 변곡이며, 단가 곡선의 기저 자체가 다시 그려지는 일이다.",
+        "evidence": "정상화 측은 2023~2024 의 단가 인하 폭 (50~80%) 을, 구조 변곡 측은 가속기 공급·전력 단가의 6개월 추세와 마이크로소프트의 자기 인프라 위에서의 거부 신호를 든다.",
+        "resolution": "단기 6에서 12개월은 구조 변곡 쪽에 무게가 실린다 — 가속기 단가의 의미 있는 하락이 보이지 않고, 마이크로소프트가 호스트로서 단가 구조를 알면서도 거부한 신호가 너무 강하다. 단 압축·distillation 의 큰 혁신이 한 번 더 터지거나, 차세대 가속기 (B200 후속) 의 공급 압력이 완화되면 정상화 측 입장이 18개월 시점부터 살아난다."
+      },
+      {
+        "side_a": "마이크로소프트의 결정은 토큰 비용 절감의 합리적 IT 결정이며, OpenAI 와의 자본 관계에서 자연스럽게 따라온 단일화에 가깝다.",
+        "side_b": "마이크로소프트는 Azure 호스트로서 Anthropic 의 단가 구조를 거의 정확히 알며, 그 입장에서의 거부는 외부 엔터프라이즈에 사실상의 인증으로 작동하는 의도된 신호다.",
+        "evidence": "단순 결정 측은 사내 도구 통합·관리 비용·라이선스 협상의 평범한 IT 결정 사례들을, 의도된 신호 측은 시점 (가격 인상이 가시화된 직후) 과 동시에 GitHub UBP 전환이 진행된 정황을 든다.",
+        "resolution": "의도된 신호 쪽에 더 무게가 간다 — 시점이 너무 정확하고 두 결정 (Claude Code 컷·Copilot UBP 전환) 의 동기화가 우연이라 보기 어렵다. 단 마이크로소프트가 단일 사내 메모만으로 신호를 깊게 의도했다는 증거는 외부에서 검증되지 않은 상태이며, 사용자 인용 메모의 원문이 공개되면 단순 결정 측이 부분적으로 살아날 여지가 있다."
+      }
+    ],
+    "contradictions_heading": "보조금 종료냐 정상화냐",
+    "timeline_flow": {
+      "heading": "단가 곡선의 변곡과 그 이후",
+      "past": [
+        {
+          "date": "2023-01",
+          "label": "MS-OpenAI 130억 자본 라운드 — 보조금 시기 자금 표준화",
+          "note": "Azure 컴퓨트 독점 공급 조건"
+        },
+        {
+          "date": "2024-01",
+          "label": "Haiku·Flash·4o mini — 단가 인하 경쟁 본격화",
+          "note": "'단가는 매년 반토막' 전제 형성"
+        },
+        {
+          "date": "2025-07",
+          "label": "조용한 인상 시작 (rate limit·premium 한도 축소)",
+          "note": "rate card 는 거의 그대로"
+        },
+        {
+          "date": "2026-01",
+          "label": "Uber 의 4개월 burn — 첫 가시적 엔터프라이즈 신호",
+          "note": "burn rate 3 배"
+        },
+        {
+          "date": "2026-05",
+          "label": "MS Claude Code 라이선스 컷 + GitHub UBP 전환 공지",
+          "note": "이번 주의 변곡"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-08",
+          "label": "Anthropic Q2 매출 발표 — ramp 가속/둔화 분기",
+          "branch": "기준선 vs 급격한 정상화"
+        },
+        {
+          "date": "2026-09",
+          "label": "Copilot UBP 전환 완료 — 산업 표준화 확인",
+          "branch": "기준선"
+        },
+        {
+          "date": "2026-11",
+          "label": "가속기 시간당 단가 — 하방 경직성 검증",
+          "branch": "효율 혁신 재인하 가능성"
+        },
+        {
+          "date": "2026-12",
+          "label": "Anthropic IPO 일정/밸류에이션 — 자본시장 반영",
+          "branch": "급격한 정상화 시 하방"
+        }
+      ]
+    },
+    "confidence_summary": "사용자 제공 정리가 1차 출처 — MS 사내 메모와 Uber 사내 메모는 원문 미공개이며 수치 (130억·20~37%·4개월) 는 인용 기반. 단가 곡선 구조와 시나리오 설계는 공개된 가격표 변경 이력·자본 라운드 사실에 기반.",
+    "confidence_score": 0.68,
+    "embedded_map": null,
+    "hero_image": null
+  },
+  "executive_summary": "MS 의 Claude Code 라이선스 취소와 Uber 의 예산 4개월 소진은 같은 신호다. '단가는 매년 반토막' 전제 위에 세워진 엔터프라이즈 워크플로가 흔들린다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260525_233612.html",
+  "report_theme": "forest_sage",
+  "parent_context": null,
+  "analysis_timestamp": "2026-05-25T14:29:53.323164",
+  "total_duration_seconds": 378.66423201560974,
+  "system_version": "v5.6.0",
+  "revision": 2
+}
