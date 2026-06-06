@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-06-03T22:56:06.654620+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v6.0.0",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260603_225606_916844e7e9",
+    "headline": "북한 '주체-HIMARS' 모듈식 발사대·전술 순항미사일 시험과 싱가포르 외교 정초",
+    "deck": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260603_225606_916844e7e9.html",
+    "theme": {
+      "id": "forest_sage",
+      "tokens": {
+        "bg": "#E8EDE5",
+        "card": "#F0F4ED",
+        "border": "#BCC8B6",
+        "text": "#1F2A24",
+        "muted": "#5C6E60",
+        "accent": "#4A7C5B",
+        "up": "#3D6B4D",
+        "down": "#A8584A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "북한이 5/26 평안북도 정주 일대에서 미국 HIMARS 를 닮은 모듈식 다목적 발사대와 지형대조항법(TERCOM)·인공지능 종말유도를 갖춘 전술 순항미사일을 김정은 참관하 시험발사함. 같은 날 싱가포르 외교장관 비비안 발라크리쉬난이 7년 만에 평양을 방문(5/26~27), 북한의 동남아 외교 확장 신호가 군사 시위와 같은 주에 겹침.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": []
+    }
+  ],
+  "charts": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.nknews.org/2026/05/north-korea-tests-new-modular-missile-launcher-and-tactical-cruise-missiles/",
+      "publisher": "nknews.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://news.usni.org/2026/05/27/north-korea-tests-new-lightweight-launch-system-and-tactical-cruise-missiles",
+      "publisher": "news.usni.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://en.defence-ua.com/industries/north_korea_tests_juche_himars_likely_hermes_clone_what_two_new_systems_reveal-18653.html",
+      "publisher": "en.defence-ua.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.armyrecognition.com/news/army-news/2026/north-korea-tests-low-altitude-tactical-cruise-missile-designed-to-penetrate-south-korean-defenses",
+      "publisher": "armyrecognition.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.aei.org/articles/korean-peninsula-update-june-2-2026/",
+      "publisher": "aei.org",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.mfa.gov.sg/newsroom/press-statements-transcripts-and-photos/working-visit-of-minister-for-foreign-affairs-dr-vivian-balakrishnan-to-pyongyang--the-democratic-people-s-republic-of-korea--26-to-27-may-2026/",
+      "publisher": "mfa.gov.sg",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://thediplomat.com/2026/05/singaporean-foreign-minister-winds-up-working-visit-to-north-korea/",
+      "publisher": "thediplomat.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://www.theedgesingapore.com/news/geopolitics/foreign-minister-vivian-meets-kim-jong-uns-close-aide-rare-trip",
+      "publisher": "theedgesingapore.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://www.realclearworld.com/articles/2026/06/01/singapores_quiet_diplomacy_1185959.html",
+      "publisher": "realclearworld.com",
+      "title": "",
+      "fetched_at": "2026-05-26"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2026-05-26",
+        "label": "북한, 평안북도 정주 일대서 모듈식 경량 발사대('주체-HIMARS')·240mm 유도 로켓·AI 보조 전술 순항미사일 시험. 다발 발사체가 황해 방향 약 80km 비행. 2026년 들어 8번째 무기 시험",
+        "phase": "present",
+        "note": "재래식 포병의 정밀유도화·핵 탑재 우려 (US/ROK 선제타격 계산 복잡화)"
+      },
+      {
+        "date": "2026-05-26",
+        "label": "싱가포르 외교장관 발라크리쉬난 평양 도착, 최선희 북한 외무상 초청. 2018년 이후 첫 방북",
+        "phase": "present",
+        "note": "북한의 동남아 외교 신호. 무기시험과 동일 일자 겹침"
+      },
+      {
+        "date": "2026-05-27",
+        "label": "발라크리쉬난, 조용원 최고인민회의 상임위원장 예방 후 방북 일정 종료. 싱가포르는 '미·북 대화 중개 안 함' 공식 부인",
+        "phase": "future",
+        "note": "외교적 신호와 중개 역할 사이 선긋기"
+      },
+      {
+        "date": "2026-06-02",
+        "label": "AEI '한반도 업데이트' 발간, 두 사건을 연결해 분석",
+        "phase": "future",
+        "note": "워싱턴 정책권 평가 정착"
+      }
+    ]
+  }
+}
