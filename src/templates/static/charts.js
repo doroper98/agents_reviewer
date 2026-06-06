@@ -2109,6 +2109,25 @@
         }
       }
     });
+
+    // v6.0.1 — 수평 content-fit viewBox (CHART-AP-21 재발 차단).
+    // 첫 컬럼 라벨은 text-anchor:end 로 x0-6 (≈82px) 에서 *왼쪽* 으로 뻗는다.
+    // 라벨이 긴 한국어("(Col 1 … MW, GPU 22만+)")면 고정 left margin(80) 을 넘어
+    // 음수 좌표로 빠져 viewBox 밖에서 잘린다 (마지막 컬럼 라벨은 우측 동일 위험).
+    // 픽스: 모든 라벨이 렌더된 *뒤* 실제 content bbox 를 측정해 viewBox 를 가로로
+    // 넓혀 라벨 overflow 를 포함시킨다. preserveAspectRatio=xMidYMid 가 자동 중앙
+    // 정렬 → 차트가 살짝 축소되며 중앙으로 모인다. 수직(위 content-fit)은 보존.
+    try {
+      const vb = (svg.attr('viewBox') || `0 0 ${W} ${H}`).split(/\s+/).map(Number);
+      const [vx, vy, vw, vh] = vb;
+      const bb = svg.node().getBBox();
+      const padX = 12;
+      const minX = Math.min(vx, bb.x - padX);
+      const maxX = Math.max(vx + vw, bb.x + bb.width + padX);
+      if (maxX - minX > vw + 0.5 || minX < vx - 0.5) {
+        svg.attr('viewBox', `${minX.toFixed(1)} ${vy} ${(maxX - minX).toFixed(1)} ${vh}`);
+      }
+    } catch (e) { /* getBBox 불가(레이아웃 전) — 위에서 계산한 viewBox 유지 */ }
   }
 
   // ----- RANGE BAR (Dumbbell) -----

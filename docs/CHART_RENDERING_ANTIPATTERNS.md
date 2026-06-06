@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.8.8
+last_synced_with: v6.0.1
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -683,6 +683,24 @@ mono 톤 (신문/잡지) 과 충돌 (지나친 bounce / glow / hue shift), (c)
   x≈490 부터 시작해 ~615 에서 끝나며 viewBox 안 fits (~145px 여유)
 - 좌·우 비대칭 (left<right) — 한국어 sankey 의 last col 라벨이 first col 라벨
   보다 평균 1.5~2× 길다는 휴리스틱 반영
+
+**재발 (v6.0.1) — 고정 margin 의 구조적 한계**:
+- 증상 재현 (analysis_20260606_114653, Colossus sankey): 첫 컬럼 라벨이
+  "(Col 1, … MW, GPU 22만+)" / "(Col 2, … GPU 55.5만 발주)" 처럼 18~25자로
+  길어지자 left=80 으로도 부족 — 라벨 앞부분 "(Col 1, …" 가 음수 좌표로 빠져
+  잘리고 화면엔 "MW, GPU 22만+)" 만 남음.
+- 근본 원인: **고정 margin 은 라벨 길이가 가변인 한 항상 어떤 입력에서 깨진다.**
+  v5.4.7 의 left=80/right=120 은 ≤8자/≤15자 휴리스틱에 맞춘 값 — 그 가정을
+  벗어나는 긴 라벨엔 무력. margin 을 더 키우면 짧은 라벨에선 과도한 공백.
+- **Fix (v6.0.1) — 수평 content-fit viewBox** (`drawSankey` 끝, 라벨 렌더 후):
+  모든 라벨이 그려진 뒤 `svg.node().getBBox()` 로 실제 content extent 측정 →
+  viewBox 를 가로로 넓혀(`minX = min(vx, bb.x-12)`, `maxX = max(vx+vw,
+  bb.x+bb.width+12)`) 라벨 overflow 를 포함. `preserveAspectRatio=xMidYMid` 가
+  자동 중앙 정렬 → 차트가 살짝 축소되며 중앙으로 모이고, 좌·우 어느 쪽 라벨도
+  잘리지 않는다. 수직 content-fit (CHART-AP-20) 은 보존 (vy/vh 그대로 사용).
+  getBBox 실패 시 (레이아웃 전) try/catch 로 기존 viewBox 유지 — graceful.
+- 교훈: **라벨 길이가 가변인 SVG 차트는 고정 margin 이 아니라 렌더 후 bbox 기반
+  content-fit 으로 프레이밍한다** (network 재설계 CHART-AP-25 와 동일 원칙).
 
 **한계 — 향후 강화 옵션**:
 - (A) 동적 margin 계산 — 실제 라벨 텍스트 너비 (canvas.measureText) 측정 후

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.0.0
+last_synced_with: v6.0.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,25 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.0.1 — sankey 첫 컬럼 라벨 잘림 fix (CHART-AP-21 재발, 수평 content-fit)
+
+- **증상(사용자 스크린샷, analysis_20260606_114653)** — Colossus sankey 의 첫 컬럼
+  라벨이 "(Col 1, … MW, GPU 22만+)" / "(Col 2, … GPU 55.5만 발주)" 처럼 18~25자로
+  길어지자, `text-anchor:end at x0-6 (≈82px)` 라벨이 음수 좌표로 빠져 앞부분
+  "(Col 1, …" 가 viewBox 왼쪽 밖에서 잘리고 화면엔 "MW, GPU 22만+)" 만 남음.
+- **근본 원인** — v5.4.7 의 `{left:80, right:120}` 고정 margin 은 ≤8자/≤15자 한국어
+  라벨 가정. **고정 margin 은 라벨 길이가 가변인 한 항상 어떤 입력에서 깨진다.**
+- **Fix** — `src/templates/static/charts.js:drawSankey` 끝에 **수평 content-fit
+  viewBox** 추가: 모든 라벨이 렌더된 뒤 `svg.node().getBBox()` 로 실제 content extent
+  를 측정해 viewBox 를 가로로 확장(라벨 overflow 포함). `preserveAspectRatio=xMidYMid`
+  가 자동 중앙 정렬 → 차트가 살짝 축소되며 중앙으로 모이고 좌·우 어느 라벨도 안 잘림.
+  수직 content-fit(CHART-AP-20)은 vy/vh 그대로 보존. getBBox 실패 시 try/catch 로
+  기존 viewBox 유지(graceful). 교훈: 가변 라벨 SVG 는 고정 margin 이 아닌 렌더 후
+  bbox content-fit 으로 프레이밍(network 재설계 CHART-AP-25 동일 원칙).
+- charts.js 만 변경(Pydantic/코드/계약 무변경). 발행본은 `patch_report.py <id>
+  --rerender-only` 로 동일 URL 재렌더 시 적용(인라인 charts.js 갱신).
+- 문서 동시 갱신: CHART_RENDERING_ANTIPATTERNS.md CHART-AP-21 재발 항목 추가.
 
 ## v6.0.0 — 검수 강도 ↑: 실시간성 엄격 + 반복 섹션 제목 강제교정 (사용자 지시)
 
