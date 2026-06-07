@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v6.1.1
+last_synced_with: v6.2.0
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -169,7 +169,7 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
     "closing": "str",                         // [기존] optional
     "html_url": "str",                        // [기존] Pages 보고서 URL
     "theme": {                                // [신규] 선택된 테마 박제 (random 이므로 필수)
-      "id": "editorial_cream|burgundy_mono|slate_steel|forest_sage|midnight_indigo|dusk_rose|paper_classic",
+      "id": "editorial_cream|burgundy_mono|midnight_indigo|pine_forest|graphite_slate",  // v6.2.0 5종 풀
       "tokens": { "bg","card","text","muted","accent","up","down","border": "#hex" },
       "fonts": { "serif":"Noto Serif KR", "sans":"Noto Sans KR", "mono":"IBM Plex Mono" }
     }

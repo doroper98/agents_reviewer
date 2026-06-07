@@ -140,14 +140,15 @@ def select_lenses(
 # v5.0.2 — 7개 테마 풀 (사용자 요청). 카테고리 기반 라우팅 폐기 → 보고서마다 랜덤.
 # SSOT: src/templates/report.css 의 [data-theme="..."] 블록.
 # 모든 테마는 *동일한 레이아웃* — bg/card/text/accent 만 다름.
+# v6.2.0 — 짙은(다크) 계열 중심으로 풀 재편 (사용자 요청). editorial_cream(라이트)
+# + 다크 4종. slate_steel/forest_sage/dusk_rose/paper_classic 은 풀에서 제거
+# (CSS 블록도 삭제). pine_forest(짙은 녹색)/graphite_slate(짙은 회색) 신설.
 ALL_THEMES: tuple[str, ...] = (
-    "editorial_cream",     # warm cream + terracotta
-    "burgundy_mono",       # dark wine + amber gold
-    "slate_steel",         # cool gray + steel blue
-    "forest_sage",         # sage paper + forest green
+    "editorial_cream",     # warm cream + terracotta (라이트)
+    "burgundy_mono",       # dark wine + amber gold (다크)
     "midnight_indigo",     # deep indigo + sky blue (다크)
-    "dusk_rose",           # dusk paper + deep rose
-    "paper_classic",       # newspaper white + red ink
+    "pine_forest",         # deep pine green + jade (다크, v6.2.0)
+    "graphite_slate",      # deep graphite gray + copper (다크, v6.2.0)
 )
 
 # legacy: 카테고리 기반 매핑은 보존 (호환). 직접 호출 시 사용 가능하지만
@@ -166,8 +167,9 @@ _THEME_BY_CATEGORY: dict[str, str] = {
 def select_theme(event_type: str) -> str:
     """event_type → 보고서 테마. LLM 호출 없이 결정.
 
-    v5.0.2: 7개 테마 풀에서 *랜덤 선택* (사용자 요청). event_type 무관 —
-    시각적 다양성. random.choice 사용 — 보고서마다 새 테마.
+    v5.0.2: 테마 풀에서 *랜덤 선택* (사용자 요청). event_type 무관 — 시각적
+    다양성. random.choice 사용 — 보고서마다 새 테마.
+    v6.2.0: 풀을 5종(라이트 1 + 다크 4)으로 재편.
     """
     import random
     return random.choice(ALL_THEMES)

@@ -20,6 +20,26 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v6.2.0 — 테마 풀을 짙은(다크) 계열 중심 5종으로 재편
+
+- **동기(사용자 요청)** — 라이트 톤 테마들을 빼고 짙은 계열 중심으로.
+- **변경** — `ALL_THEMES` 풀을 7종 → **5종**:
+  - 유지: `editorial_cream`(유일 라이트) · `burgundy_mono` · `midnight_indigo`
+  - 삭제(풀+CSS 블록): `slate_steel` · `forest_sage` · `dusk_rose` · `paper_classic`
+  - 신설(다크): `pine_forest`(짙은 녹색 + jade 액센트) · `graphite_slate`(짙은 회색 + copper 액센트)
+  - 결과: 라이트 1 + 다크 4. 보고서마다 `random.choice` 는 동일.
+- **신규 테마 토큰** — `midnight_indigo` 구조를 그대로 따라 전체 CSS 변수 세트
+  정의 (bg/card/border/text/muted/accent/up/down/map-*/alias/bg-3/border-soft).
+  다크 3종 액센트 구분: indigo=skyblue / pine=jade / graphite=copper.
+- **동시 갱신** — `src/lens_policy.py:ALL_THEMES` · `src/templates/report.css`
+  (4종 블록 삭제 + 2종 추가) · `samples/v5_themes_showcase.html`(5종 쇼케이스
+  재작성) · `docs/CONTRACTS/report_bundle_v1.md`(theme id enum) · CLAUDE.md(3곳).
+- **하위호환** — 이미 배포된 보고서는 정적 스냅샷이라 영향 없음. 삭제된 테마로
+  생성된 옛 보고서를 *재렌더*하면 해당 CSS 블록이 없어 기본(editorial_cream)
+  토큰으로 폴백 (깨지지 않음). `light_mono` 와 동일하게 풀에서만 빠지는 게 아니라
+  CSS 까지 삭제한 점이 차이 — 4종은 완전 제거.
+- **쇼케이스**: https://doroper98.github.io/agents_reviewer/samples/v5_themes_showcase.html
+
 ## v6.1.2 — GitHub 미러에 보고서 목록 README 자동 생성 (제목·날짜·링크)
 
 - **동기(사용자 보고)** — 미러된 `reports/` 폴더가 `analysis_<timestamp>_<hash>`
