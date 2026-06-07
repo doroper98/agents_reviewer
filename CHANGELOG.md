@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.1.1
+last_synced_with: v6.1.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,22 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v6.1.2 — GitHub 미러에 보고서 목록 README 자동 생성 (제목·날짜·링크)
+
+- **동기(사용자 보고)** — 미러된 `reports/` 폴더가 `analysis_<timestamp>_<hash>`
+  파일명만 나열돼 무슨 보고서인지 알 수 없었다.
+- **변경** — `src/tools/github_mirror.py:build_reports_index()` 신설 — `reports/`
+  의 `analysis_*.md` 헤더(첫 `# 제목` + `**Category:**`)를 싸게 읽어 **제목·날짜·
+  분류·md/json/bundle 상대링크 표**를 `reports/README.md` 로 생성(최신순). GitHub 이
+  폴더 화면 아래에 자동 렌더. `report_synthesizer.synthesize` 가 보고서 미러와 함께
+  매번 갱신.
+  - 파일명(`analysis_<id>`)은 system-wide `report_id` 참조라 **그대로 유지**(rename
+    금지 — 텔레그램 링크·patch_report 계약 보존). 제목은 *별도 인덱스* 로만 노출.
+  - `GitHubMirror.path_prefix` 프로퍼티 추가 — prefix 가 비면(루트 미러) 루트 README
+    덮어쓰기 방지 위해 인덱스 스킵.
+- **테스트** — `tests/test_github_mirror.py` 인덱스 빌더 2종(최신순/제목·링크/limit).
+- **graceful** — 인덱스 빌드 실패해도 보고서 미러는 정상 진행.
 
 ## v6.1.1 — 번들 차트에 display(strip/full) 플래그 (영상 파이프라인이 스트립 vs 본문차트 구분)
 

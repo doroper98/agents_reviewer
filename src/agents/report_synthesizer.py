@@ -1228,12 +1228,23 @@ class ReportSynthesizer:
         # 환경(Claude Code on the web 등)의 다른 AI 가 보고서를 직접 열람할 수 있게
         # 동일 파일을 공개 GitHub repo 에도 push. 토큰/repo 미설정 시 graceful skip.
         try:
-            from src.tools.github_mirror import GitHubMirror
+            from src.tools.github_mirror import GitHubMirror, build_reports_index
             mirror = GitHubMirror(self.config)
             if mirror.enabled:
                 mirror_targets = [filepath, md_filepath, json_filepath]
                 if bundle_filepath and os.path.exists(bundle_filepath):
                     mirror_targets.append(bundle_filepath)
+                # v6.1.2 — 보고서 목록 README 갱신해 같이 미러. 파일명만으론 주제를
+                # 알 수 없어 제목·날짜·링크 표를 reports/README.md 로 (GitHub 자동 렌더).
+                # prefix 가 비면(루트 미러) 루트 README 덮어쓰기 방지 위해 스킵.
+                if mirror.path_prefix:
+                    try:
+                        idx_path = os.path.join(output_dir, "README.md")
+                        with open(idx_path, "w", encoding="utf-8") as f:
+                            f.write(build_reports_index(output_dir))
+                        mirror_targets.append(idx_path)
+                    except Exception as e:
+                        logger.warning(f"[report_synthesizer] reports index build failed: {e}")
                 raw_html_url = await mirror.mirror(mirror_targets)
                 if raw_html_url:
                     result.mirror_url = raw_html_url

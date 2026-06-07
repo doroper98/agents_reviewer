@@ -37,8 +37,10 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import glob
 import logging
 import os
+import re
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -51,6 +53,88 @@ logger = logging.getLogger(__name__)
 _API_ROOT = "https://api.github.com"
 _RAW_ROOT = "https://raw.githubusercontent.com"
 _TIMEOUT = aiohttp.ClientTimeout(total=20)
+
+
+# ─── 보고서 목록(README) 인덱스 빌더 ─────────────────────────────
+# 파일명(analysis_<id>)만으로는 무슨 보고서인지 안 보인다. reports/ 폴더에
+# 제목·날짜·링크 표를 담은 README.md 를 생성해 같이 미러 — GitHub 이 폴더
+# 화면 아래에 자동 렌더한다. 제목은 .md 첫 헤딩에서 싸게 추출(큰 JSON 안 읽음).
+
+def _report_id_from_md(path: str) -> str:
+    base = os.path.basename(path)
+    if base.startswith("analysis_") and base.endswith(".md"):
+        return base[len("analysis_"):-len(".md")]
+    return ""
+
+
+def _date_from_report_id(rid: str) -> str:
+    m = re.match(r"(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})", rid)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)} {m.group(4)}:{m.group(5)}"
+    return ""
+
+
+def _title_category_from_md(path: str) -> tuple[str, str]:
+    """보고서 .md 의 첫 헤딩(제목) + Category 줄을 헤더 일부만 읽어 추출."""
+    title, category = "", ""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for _ in range(15):
+                line = f.readline()
+                if not line:
+                    break
+                s = line.strip()
+                if not title and s.startswith("# "):
+                    title = s[2:].strip()
+                elif s.startswith("**Category:**"):
+                    category = s.replace("**Category:**", "").strip()
+                if title and category:
+                    break
+    except Exception:
+        pass
+    return title, category
+
+
+def _md_cell(s: str) -> str:
+    """markdown 표 셀 안전화 — 파이프/줄바꿈 이스케이프."""
+    return (s or "").replace("|", "\\|").replace("\n", " ").strip()
+
+
+def build_reports_index(reports_dir: str, *, limit: int | None = None) -> str:
+    """reports/analysis_*.md 를 스캔해 제목·날짜·링크 markdown 표(README) 생성.
+
+    최신순(파일명=시간순) 정렬. 링크는 같은 폴더 상대경로 — GitHub 렌더 시
+    md/json/bundle 로 바로 이동. limit 지정 시 최신 N건만.
+    """
+    mds = sorted(glob.glob(os.path.join(reports_dir, "analysis_*.md")), reverse=True)
+    if limit:
+        mds = mds[:limit]
+    lines = [
+        "# 분석 보고서 목록",
+        "",
+        f"> 자동 생성 (agents_reviewer). 총 {len(mds)}건 · 최신순. "
+        "각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.",
+        "",
+        "| 날짜(KST) | 제목 | 분류 | 파일 |",
+        "|---|---|---|---|",
+    ]
+    for md in mds:
+        rid = _report_id_from_md(md)
+        if not rid:
+            continue
+        stem = f"analysis_{rid}"
+        title, category = _title_category_from_md(md)
+        date = _date_from_report_id(rid)
+        links = [f"[md]({stem}.md)"]
+        if os.path.exists(os.path.join(reports_dir, f"{stem}.json")):
+            links.append(f"[json]({stem}.json)")
+        if os.path.exists(os.path.join(reports_dir, f"{stem}.bundle.json")):
+            links.append(f"[bundle]({stem}.bundle.json)")
+        lines.append(
+            f"| {date} | {_md_cell(title) or rid} | {_md_cell(category)} | {' · '.join(links)} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
 
 
 class GitHubMirror:
@@ -67,6 +151,12 @@ class GitHubMirror:
     def enabled(self) -> bool:
         """토큰과 repo(owner/name) 가 모두 설정됐을 때만 동작."""
         return bool(self._token and self._repo and "/" in self._repo)
+
+    @property
+    def path_prefix(self) -> str:
+        """repo 안 보고서 경로 prefix. 빈 값이면 repo 루트(이 경우 README 인덱스
+        미생성 — 루트 README 덮어쓰기 방지)."""
+        return self._prefix
 
     def _repo_path(self, filename: str) -> str:
         """repo 안에서의 파일 경로 (prefix 적용)."""
