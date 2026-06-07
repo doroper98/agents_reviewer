@@ -417,7 +417,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-2",
@@ -697,7 +698,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-3",
@@ -977,7 +979,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-4",
@@ -1257,7 +1260,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-5",
@@ -1537,7 +1541,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-6",
@@ -1817,7 +1822,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-7",
@@ -2097,7 +2103,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "strip"
     },
     {
       "chart_id": "ch-8",
@@ -2154,7 +2161,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-9",
@@ -2195,7 +2203,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-10",
@@ -2235,7 +2244,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-11",
@@ -2291,7 +2301,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     }
   ],
   "map": null,
