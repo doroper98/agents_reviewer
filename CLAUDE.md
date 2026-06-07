@@ -68,7 +68,7 @@ last_review: 2026-05-05
 - Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
 - Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **20종 type** — v5.3.0 부터 FT/Economist 스타일 신규 7종 포함)
 - Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
-- Theme: 7종 풀 (editorial_cream / burgundy_mono / slate_steel / forest_sage / midnight_indigo / dusk_rose / paper_classic). v5.0.2 부터 보고서마다 `random.choice` 로 선택 (event_type 무관, 시각 다양성 목적). 모든 테마는 *동일 레이아웃* — bg/card/text/accent 만 다름. SSOT 는 [src/lens_policy.py:ALL_THEMES](src/lens_policy.py) + [src/templates/report.css](src/templates/report.css) 의 `[data-theme="..."]` 블록. legacy `light_mono` CSS 는 보존되었으나 풀에서 빠짐 — 직접 지정 시만 사용 가능.
+- Theme: **5종 풀 (라이트 1 + 다크 4, v6.2.0)** — editorial_cream(라이트) / burgundy_mono / midnight_indigo / pine_forest(짙은 녹색) / graphite_slate(짙은 회색). v5.0.2 부터 보고서마다 `random.choice` 로 선택 (event_type 무관, 시각 다양성 목적). 모든 테마는 *동일 레이아웃* — bg/card/text/accent 만 다름. SSOT 는 [src/lens_policy.py:ALL_THEMES](src/lens_policy.py) + [src/templates/report.css](src/templates/report.css) 의 `[data-theme="..."]` 블록. v6.2.0 에서 slate_steel / forest_sage / dusk_rose / paper_classic 4종 풀+CSS 삭제 (짙은 계열 중심 재편, 사용자 요청). legacy `light_mono` CSS 는 보존되었으나 풀에서 빠짐 — 직접 지정 시만 사용 가능.
 - Font: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. Noto Serif KR 한국어 폴백.
 - Hosting: Cloudflare Pages (wrangler CLI 배포)
 - Infra: Oracle Cloud VM (무료 티어)
@@ -293,12 +293,12 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 ## Key Directories (v4.5.7 — 호출되는 것만)
 - `src/agents/` — 살아있는 에이전트: `context_analyst.py` (사실 수집) + `narrative_composer.py` (본문 작성) + `report_synthesizer.py` (HTML 렌더) + `research_director.py` (V5 Phase 1A, opt-in). v5.2.9 에서 dead persona 7개 모듈 삭제.
 - `src/templates/archetypes/freeform_essay.html` — 유일하게 사용되는 보고서 템플릿
-- `src/templates/report.css` — 7테마 풀 (editorial_cream / burgundy_mono / slate_steel / forest_sage / midnight_indigo / dusk_rose / paper_classic) `[data-theme="..."]` 블록 정의 SSOT. legacy `light_mono` 블록도 보존 (v5.0.2 부터 풀 제외)
+- `src/templates/report.css` — 5테마 풀 (editorial_cream / burgundy_mono / midnight_indigo / pine_forest / graphite_slate, v6.2.0) `[data-theme="..."]` 블록 정의 SSOT. legacy `light_mono` 블록도 보존 (v5.0.2 부터 풀 제외)
 - `src/templates/static/` — d3.v7.min.js / charts.js / maps.js / charts.css / maps.css (보고서 dir 로 동기화)
 - `src/orchestrator.py` — 4단계 (context → composer → render → watchlist) 진입점, `VERSION` SSOT
 - `src/models.py` — Pydantic 데이터 모델 SSOT (`ComposedReport.charts` / `embedded_map` 포함)
 - `src/token_budget.py` — mode 별 정책. v4.5.7 에선 모든 모드 동일하게 2 LLM 호출. mode 는 composer prompt 깊이 지시 + composer/context max_tokens 한도 (v4.5.4/v4.5.7) 결정
-- `src/lens_policy.py` — `select_theme(event_type)` 가 `ALL_THEMES` 7종 풀에서 `random.choice` (v5.0.2). `select_lenses()` 는 호출 안 됨
+- `src/lens_policy.py` — `select_theme(event_type)` 가 `ALL_THEMES` 5종 풀(v6.2.0)에서 `random.choice` (v5.0.2). `select_lenses()` 는 호출 안 됨
 - `src/telemetry.py` — LLM 호출 / 단계별 elapsed 기록
 - `src/watchlist/` — SQLite Watchlist Registry (composed_report.watch_signals 에서 등록)
 - `docs/` — 모든 정규 문서. `MONO_THEME_GUIDE.md` 가 차트/지도/테마 SSOT.
