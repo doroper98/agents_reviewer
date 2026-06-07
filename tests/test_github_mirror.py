@@ -10,7 +10,7 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from src.tools.github_mirror import GitHubMirror
+from src.tools.github_mirror import GitHubMirror, build_reports_index
 
 
 def _cfg(**kw) -> SimpleNamespace:
@@ -132,6 +132,43 @@ def test_mirror_happy_path(tmp_path) -> None:
         "https://raw.githubusercontent.com/owner/repo/main/reports/analysis_20260606_x.html"
     )
     assert len(fake.puts) == 2
+
+
+# ─── 보고서 목록 인덱스(README) ─────────────────────────────────
+
+
+def test_build_reports_index(tmp_path) -> None:
+    # 두 보고서 .md (헤더에 제목/분류) + 일부 산출물
+    (tmp_path / "analysis_20260606_114653_aa.md").write_text(
+        "# SpaceX 구글 컴퓨팅 임대\n\n**Category:** 기업·AI\n\n본문", encoding="utf-8"
+    )
+    (tmp_path / "analysis_20260606_114653_aa.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "analysis_20260606_114653_aa.bundle.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "analysis_20260501_090000_bb.md").write_text(
+        "# 환율 급등 분석\n\n**Category:** 거시", encoding="utf-8"
+    )
+
+    md = build_reports_index(str(tmp_path))
+    # 최신순 — 6/6 가 5/1 보다 먼저
+    assert md.index("SpaceX") < md.index("환율 급등")
+    # 제목·분류·상대링크
+    assert "SpaceX 구글 컴퓨팅 임대" in md and "기업·AI" in md
+    assert "[md](analysis_20260606_114653_aa.md)" in md
+    assert "[json](analysis_20260606_114653_aa.json)" in md
+    assert "[bundle](analysis_20260606_114653_aa.bundle.json)" in md
+    # 날짜 파생 + 산출물 없는 항목은 링크 생략 (bb 는 json/bundle 없음)
+    assert "2026-06-06 11:46" in md
+    assert "[json](analysis_20260501_090000_bb.json)" not in md
+
+
+def test_build_reports_index_limit(tmp_path) -> None:
+    for i in range(5):
+        (tmp_path / f"analysis_2026060{i}_090000_x.md").write_text(
+            f"# 보고서{i}", encoding="utf-8"
+        )
+    md = build_reports_index(str(tmp_path), limit=2)
+    assert "총 2건" in md
+    assert "보고서4" in md and "보고서3" in md and "보고서2" not in md
 
 
 def test_mirror_skips_missing_files(tmp_path) -> None:
