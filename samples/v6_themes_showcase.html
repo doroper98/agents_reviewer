@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v6.2.0 — 5 Theme Showcase · Event Analysis Team</title>
+<meta name="description" content="v6.2.0 의 5개 테마 (editorial_cream / burgundy_mono / midnight_indigo / pine_forest / graphite_slate). 라이트 1 + 다크 4. 보고서마다 랜덤 선택.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=Noto+Serif+KR:wght@400;700;900&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* === Page chrome (theme-agnostic dark page) === */
+:root {
+  --page-bg: #0E1014;
+  --page-bg-2: #14171D;
+  --page-text: #E8E8E8;
+  --page-muted: #888888;
+  --page-accent: #D4A858;
+  --page-border: #2A2D34;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  background: var(--page-bg);
+  color: var(--page-text);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.page-container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero */
+.page-hero {
+  padding: 72px 0 48px;
+  border-bottom: 1px solid var(--page-border);
+}
+.page-hero .eyebrow {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--page-accent); margin-bottom: 16px; font-weight: 700;
+}
+.page-hero h1 {
+  font-family: 'Newsreader', 'Noto Serif KR', Georgia, serif;
+  font-size: 48px; font-weight: 800; line-height: 1.1;
+  letter-spacing: -1.2px; margin-bottom: 14px;
+}
+.page-hero h1 em { font-style: italic; color: var(--page-accent); }
+.page-hero .deck {
+  font-size: 17px; color: var(--page-muted); max-width: 720px;
+  font-weight: 300; line-height: 1.6;
+}
+.page-hero .meta {
+  margin-top: 24px; padding-top: 18px;
+  border-top: 1px solid var(--page-border);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  color: var(--page-muted); display: flex; gap: 18px; flex-wrap: wrap;
+}
+.page-hero .meta strong { color: var(--page-accent); }
+
+/* Theme grid */
+.theme-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 24px; padding: 56px 0 88px;
+}
+
+/* Each theme card — uses its own data-theme tokens but is self-contained */
+.theme-card {
+  background: var(--bg);
+  color: var(--text, #1F1814);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(0,0,0,0.1));
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  display: flex; flex-direction: column;
+}
+.theme-header {
+  padding: 24px 26px 18px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.theme-header .theme-id {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 2.4px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px; font-weight: 700;
+}
+.theme-header .theme-name {
+  font-family: 'Newsreader', 'Noto Serif KR', Georgia, serif;
+  font-size: 26px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.4px; margin-bottom: 4px;
+}
+.theme-header .theme-tagline {
+  font-size: 13px; color: var(--muted); font-style: italic;
+}
+
+/* Body — sample report mini-preview */
+.theme-body {
+  padding: 22px 26px 28px;
+  background: var(--bg);
+}
+.theme-body .ed-eyebrow {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px; font-weight: 700;
+}
+.theme-body .ed-headline {
+  font-family: 'Newsreader', 'Noto Serif KR', Georgia, serif;
+  font-size: 18px; font-weight: 700; color: var(--text);
+  line-height: 1.3; margin-bottom: 10px; letter-spacing: -0.3px;
+}
+.theme-body .ed-prose {
+  font-size: 13px; color: var(--text); opacity: 0.85;
+  line-height: 1.65; margin-bottom: 12px;
+}
+.theme-body .ed-prose strong { color: var(--text); font-weight: 600; }
+.theme-body .ed-prose em { color: var(--accent); font-style: italic; }
+
+/* Inline stat — accent highlight test */
+.theme-body .ed-stat-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  padding: 14px; background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 12px;
+}
+.theme-body .ed-stat-row .stat .label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+  letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.theme-body .ed-stat-row .stat .value {
+  font-family: 'Newsreader', 'Noto Serif KR', Georgia, serif; font-size: 24px; font-weight: 800;
+  color: var(--text); line-height: 1;
+}
+.theme-body .ed-stat-row .stat .delta {
+  font-size: 11px; margin-top: 4px; font-weight: 600;
+}
+.theme-body .ed-stat-row .stat .delta.up { color: var(--up); }
+.theme-body .ed-stat-row .stat .delta.down { color: var(--down); }
+
+/* Pull quote */
+.theme-body .ed-quote {
+  border-left: 3px solid var(--accent);
+  padding: 8px 14px;
+  font-family: 'Newsreader', 'Noto Serif KR', Georgia, serif;
+  font-size: 14px; font-style: italic; color: var(--text);
+  line-height: 1.5; margin-bottom: 12px; opacity: 0.9;
+}
+
+/* Token swatches */
+.theme-tokens {
+  padding: 16px 22px 18px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+.theme-tokens .label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px; font-weight: 700;
+}
+.theme-tokens .swatches {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+}
+.theme-tokens .swatch {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.theme-tokens .swatch .chip {
+  width: 100%; height: 26px; border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.theme-tokens .swatch .name {
+  font-family: 'IBM Plex Mono', monospace; font-size: 8.5px;
+  color: var(--muted); text-align: center;
+}
+
+/* Page footer */
+.page-footer {
+  padding: 40px 0 60px;
+  border-top: 1px solid var(--page-border);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  color: var(--page-muted);
+}
+.page-footer a { color: var(--page-accent); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 720px) {
+  .page-hero h1 { font-size: 34px; }
+  .theme-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================ */
+/* Theme tokens — 5개 (src/templates/report.css 와 정합)          */
+/* ============================================================ */
+
+[data-theme="editorial_cream"] {
+  --bg: #F2EBDB; --card: #ECE3D0; --border: #D4C8B0;
+  --text: #1F1814; --muted: #6B5C4A;
+  --accent: #B05A38; --up: #4A6B3E; --down: #8B2A2A;
+}
+[data-theme="burgundy_mono"] {
+  --bg: #2A0F18; --card: #371721; --border: #5A2832;
+  --text: #EFE5D1; --muted: #A88E7A;
+  --accent: #D4A858; --up: #A8B582; --down: #C9837A;
+}
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E; --card: #1F2440; --border: #3A4060;
+  --text: #E8ECEF; --muted: #8A92A8;
+  --accent: #6FB3FF; --up: #88B888; --down: #DC7A7A;
+}
+[data-theme="pine_forest"] {
+  --bg: #132019; --card: #1B2C22; --border: #32503E;
+  --text: #E7EEE8; --muted: #8AA294;
+  --accent: #7CC6A4; --up: #88B888; --down: #DC7A7A;
+}
+[data-theme="graphite_slate"] {
+  --bg: #191B1E; --card: #23262B; --border: #3D424A;
+  --text: #E9EBED; --muted: #969BA3;
+  --accent: #D69A5E; --up: #88B888; --down: #DC7A7A;
+}
+</style>
+</head>
+<body>
+
+<header class="page-hero">
+  <div class="page-container">
+    <div class="eyebrow">Event Analysis Team · v6.2.0</div>
+    <h1>5 <em>Themes</em>, One Layout</h1>
+    <p class="deck">
+      모든 보고서는 동일한 레이아웃을 따른다 — 차이는 조색뿐. 보고서마다 5개 테마 중 *랜덤* 선택. 짙은(다크) 계열 중심: 라이트 1 + 다크 4. 단일 액센트 (mono guide §3.3) 로 강조는 확실하게, 본문은 가독성 우선.
+    </p>
+    <div class="meta">
+      <span><strong>5</strong> themes · 라이트 1 + 다크 4</span>
+      <span>random selection</span>
+      <span>SSOT: <code>src/templates/report.css</code></span>
+      <span>policy: <code>src/lens_policy.py:select_theme</code></span>
+    </div>
+  </div>
+</header>
+
+<main class="page-container">
+  <div class="theme-grid">
+
+    <!-- 1. Editorial Cream (라이트) -->
+    <article class="theme-card" data-theme="editorial_cream">
+      <header class="theme-header">
+        <div class="theme-id">01 · editorial_cream</div>
+        <div class="theme-name">Editorial Cream</div>
+        <div class="theme-tagline">warm cream + terracotta · 유일한 라이트 테마</div>
+      </header>
+      <div class="theme-body">
+        <div class="ed-eyebrow">Event Analysis · Composed</div>
+        <h2 class="ed-headline">반도체 공급망의 구조적 균열, <em>장기 기조</em>로</h2>
+        <p class="ed-prose">
+          미국과 대만의 정책 충돌이 <strong>HBM 공급망</strong> 전반을 재편한다. 단순한 가격 변동이 아니라 <em>15년 만의 구조 전환</em> 이다.
+        </p>
+        <div class="ed-stat-row">
+          <div class="stat">
+            <div class="label">HBM 단가</div>
+            <div class="value">+38%</div>
+            <div class="delta up">YoY</div>
+          </div>
+          <div class="stat">
+            <div class="label">대만 비중</div>
+            <div class="value">68%</div>
+            <div class="delta down">−4pt</div>
+          </div>
+        </div>
+        <div class="ed-quote">"이건 사이클이 아니라 *구조* 다."</div>
+      </div>
+      <div class="theme-tokens">
+        <div class="label">tokens</div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#F2EBDB"></div><div class="name">bg</div></div>
+          <div class="swatch"><div class="chip" style="background:#ECE3D0"></div><div class="name">card</div></div>
+          <div class="swatch"><div class="chip" style="background:#1F1814"></div><div class="name">text</div></div>
+          <div class="swatch"><div class="chip" style="background:#6B5C4A"></div><div class="name">muted</div></div>
+          <div class="swatch"><div class="chip" style="background:#B05A38"></div><div class="name">accent</div></div>
+          <div class="swatch"><div class="chip" style="background:#4A6B3E"></div><div class="name">up</div></div>
+          <div class="swatch"><div class="chip" style="background:#8B2A2A"></div><div class="name">down</div></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 2. Burgundy Mono (다크) -->
+    <article class="theme-card" data-theme="burgundy_mono">
+      <header class="theme-header">
+        <div class="theme-id">02 · burgundy_mono</div>
+        <div class="theme-name">Burgundy Mono</div>
+        <div class="theme-tagline">dark wine + amber · 짙은 와인, gravitas</div>
+      </header>
+      <div class="theme-body">
+        <div class="ed-eyebrow">Geopolitical · Crisis</div>
+        <h2 class="ed-headline">호르무즈 봉쇄, <em>20년 만의 임계점</em>으로</h2>
+        <p class="ed-prose">
+          이란의 해상 차단이 <strong>유가 $130</strong> 을 넘긴다. 동맹 균열은 더 깊다 — <em>각자도생</em> 의 시대.
+        </p>
+        <div class="ed-stat-row">
+          <div class="stat">
+            <div class="label">유가</div>
+            <div class="value">$132</div>
+            <div class="delta up">+18%</div>
+          </div>
+          <div class="stat">
+            <div class="label">통과량</div>
+            <div class="value">−42%</div>
+            <div class="delta down">7일</div>
+          </div>
+        </div>
+        <div class="ed-quote">"방관할 옵션은 사라졌다."</div>
+      </div>
+      <div class="theme-tokens">
+        <div class="label">tokens</div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#2A0F18"></div><div class="name">bg</div></div>
+          <div class="swatch"><div class="chip" style="background:#371721"></div><div class="name">card</div></div>
+          <div class="swatch"><div class="chip" style="background:#EFE5D1"></div><div class="name">text</div></div>
+          <div class="swatch"><div class="chip" style="background:#A88E7A"></div><div class="name">muted</div></div>
+          <div class="swatch"><div class="chip" style="background:#D4A858"></div><div class="name">accent</div></div>
+          <div class="swatch"><div class="chip" style="background:#A8B582"></div><div class="name">up</div></div>
+          <div class="swatch"><div class="chip" style="background:#C9837A"></div><div class="name">down</div></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 3. Midnight Indigo (다크) -->
+    <article class="theme-card" data-theme="midnight_indigo">
+      <header class="theme-header">
+        <div class="theme-id">03 · midnight_indigo</div>
+        <div class="theme-name">Midnight Indigo</div>
+        <div class="theme-tagline">deep indigo + sky blue · 짙은 남색, 기술·심층</div>
+      </header>
+      <div class="theme-body">
+        <div class="ed-eyebrow">Tech · Deep Analysis</div>
+        <h2 class="ed-headline">LLM 가격 전쟁이 <em>인프라 비용</em>을 드러낸다</h2>
+        <p class="ed-prose">
+          입력 토큰 단가가 <strong>분기 −52%</strong>. 사용자에겐 호재지만 <em>모델 회사들</em> 의 손익은 적자 구간으로.
+        </p>
+        <div class="ed-stat-row">
+          <div class="stat">
+            <div class="label">입력 단가</div>
+            <div class="value">−52%</div>
+            <div class="delta down">QoQ</div>
+          </div>
+          <div class="stat">
+            <div class="label">호출량</div>
+            <div class="value">3.2×</div>
+            <div class="delta up">YoY</div>
+          </div>
+        </div>
+        <div class="ed-quote">"속도가 곧 가격이다."</div>
+      </div>
+      <div class="theme-tokens">
+        <div class="label">tokens</div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#161A2E"></div><div class="name">bg</div></div>
+          <div class="swatch"><div class="chip" style="background:#1F2440"></div><div class="name">card</div></div>
+          <div class="swatch"><div class="chip" style="background:#E8ECEF"></div><div class="name">text</div></div>
+          <div class="swatch"><div class="chip" style="background:#8A92A8"></div><div class="name">muted</div></div>
+          <div class="swatch"><div class="chip" style="background:#6FB3FF"></div><div class="name">accent</div></div>
+          <div class="swatch"><div class="chip" style="background:#88B888"></div><div class="name">up</div></div>
+          <div class="swatch"><div class="chip" style="background:#DC7A7A"></div><div class="name">down</div></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 4. Pine Forest (다크, 신규) -->
+    <article class="theme-card" data-theme="pine_forest">
+      <header class="theme-header">
+        <div class="theme-id">04 · pine_forest · NEW</div>
+        <div class="theme-name">Pine Forest</div>
+        <div class="theme-tagline">deep pine green + jade · 짙은 녹색 (v6.2.0 신설)</div>
+      </header>
+      <div class="theme-body">
+        <div class="ed-eyebrow">Energy · Grid</div>
+        <h2 class="ed-headline">전력망 한계가 <em>AI 확장</em>의 첫 병목으로</h2>
+        <p class="ed-prose">
+          데이터센터 <strong>수도권 집중</strong>이 송전 용량에 부딪힌다. <em>탈탄소 약속</em> 과 충돌하며 새 정책선이 그어진다.
+        </p>
+        <div class="ed-stat-row">
+          <div class="stat">
+            <div class="label">신청 용량</div>
+            <div class="value">12.4GW</div>
+            <div class="delta up">2026</div>
+          </div>
+          <div class="stat">
+            <div class="label">송전 여유</div>
+            <div class="value">−1.8GW</div>
+            <div class="delta down">분기</div>
+          </div>
+        </div>
+        <div class="ed-quote">"녹지 위에 세운 연산이 결국 전력을 부른다."</div>
+      </div>
+      <div class="theme-tokens">
+        <div class="label">tokens</div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#132019"></div><div class="name">bg</div></div>
+          <div class="swatch"><div class="chip" style="background:#1B2C22"></div><div class="name">card</div></div>
+          <div class="swatch"><div class="chip" style="background:#E7EEE8"></div><div class="name">text</div></div>
+          <div class="swatch"><div class="chip" style="background:#8AA294"></div><div class="name">muted</div></div>
+          <div class="swatch"><div class="chip" style="background:#7CC6A4"></div><div class="name">accent</div></div>
+          <div class="swatch"><div class="chip" style="background:#88B888"></div><div class="name">up</div></div>
+          <div class="swatch"><div class="chip" style="background:#DC7A7A"></div><div class="name">down</div></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 5. Graphite Slate (다크, 신규) -->
+    <article class="theme-card" data-theme="graphite_slate">
+      <header class="theme-header">
+        <div class="theme-id">05 · graphite_slate · NEW</div>
+        <div class="theme-name">Graphite Slate</div>
+        <div class="theme-tagline">deep graphite gray + copper · 짙은 회색 (v6.2.0 신설)</div>
+      </header>
+      <div class="theme-body">
+        <div class="ed-eyebrow">Macro · Markets</div>
+        <h2 class="ed-headline">FOMC 동결이 <em>달러 강세</em>를 한 번 더 연장한다</h2>
+        <p class="ed-prose">
+          파월의 마지막 회의가 <strong>3.75% 동결</strong>로 닫힌다. 한은의 첫 메시지가 <em>1,500원</em> 의 향배를 가른다.
+        </p>
+        <div class="ed-stat-row">
+          <div class="stat">
+            <div class="label">기준금리</div>
+            <div class="value">3.75%</div>
+            <div class="delta up">동결</div>
+          </div>
+          <div class="stat">
+            <div class="label">원·달러</div>
+            <div class="value">1,498</div>
+            <div class="delta down">+2.4%</div>
+          </div>
+        </div>
+        <div class="ed-quote">"동결은 신호가 아니라 *공백* 이다."</div>
+      </div>
+      <div class="theme-tokens">
+        <div class="label">tokens</div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:#191B1E"></div><div class="name">bg</div></div>
+          <div class="swatch"><div class="chip" style="background:#23262B"></div><div class="name">card</div></div>
+          <div class="swatch"><div class="chip" style="background:#E9EBED"></div><div class="name">text</div></div>
+          <div class="swatch"><div class="chip" style="background:#969BA3"></div><div class="name">muted</div></div>
+          <div class="swatch"><div class="chip" style="background:#D69A5E"></div><div class="name">accent</div></div>
+          <div class="swatch"><div class="chip" style="background:#88B888"></div><div class="name">up</div></div>
+          <div class="swatch"><div class="chip" style="background:#DC7A7A"></div><div class="name">down</div></div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</main>
+
+<footer class="page-footer">
+  <div class="page-container">
+    Event Analysis Team v6.2.0 · 5 Themes (라이트 1 + 다크 4) · random selection ·
+    <a href="https://github.com/doroper98/agents_reviewer/blob/main/src/templates/report.css">report.css</a> ·
+    <a href="https://github.com/doroper98/agents_reviewer/blob/main/src/lens_policy.py">select_theme</a> ·
+    <a href="index.html">samples index</a>
+  </div>
+</footer>
+
+</body>
+</html>
