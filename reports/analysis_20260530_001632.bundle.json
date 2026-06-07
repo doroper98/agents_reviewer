@@ -139,7 +139,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-2",
@@ -167,7 +168,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-3",
@@ -242,7 +244,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     }
   ],
   "map": null,
