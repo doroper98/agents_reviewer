@@ -384,7 +384,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-2",
@@ -672,7 +673,8 @@
           }
         ]
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-3",
@@ -746,7 +748,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-4",
@@ -797,7 +800,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-5",
@@ -827,7 +831,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     },
     {
       "chart_id": "ch-6",
@@ -872,7 +877,8 @@
         "confidence": "medium",
         "sources": []
       },
-      "prerendered_svg": null
+      "prerendered_svg": null,
+      "display": "full"
     }
   ],
   "map": {
