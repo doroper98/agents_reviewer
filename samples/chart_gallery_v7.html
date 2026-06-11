@@ -29,9 +29,12 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="gal-head">
   <h1>Chart Gallery V7 — 베이스라인</h1>
-  <p>production charts.js 가 렌더하는 전 타입 (기존 21 + v7.0.0 신규 bump / bullet / connected_scatter)
-     의 fixture 갤러리. Track A 리디자인의 전·후 비교 기준 아티팩트 (REFACTOR_V7_PLAN.md §1.5).
-     테마 버튼은 페이지를 다시 그려 SVG 색을 재적용한다. annotation 데모는 line / candle / bullet 카드 참조.</p>
+  <p>production charts.js 가 렌더하는 전 24종 fixture 갤러리 — 기존 13종 + FT/Economist 7종 +
+     v7.0.0 신규 3종 (bump / bullet / connected_scatter) + choropleth. (보고서당 1개의 embedded_map 은
+     별도 채널 maps.js — 본 갤러리 범위 밖.) Track A 리디자인의 전·후 비교 기준 아티팩트
+     (REFACTOR_V7_PLAN.md §1.5). 테마 버튼은 페이지를 다시 그려 SVG 색을 재적용한다.
+     annotation 데모는 line / candle / bullet / scatter 카드 참조. line / candle 은 실보고서와 같은
+     일별 밀도 (62 / 40 거래일).</p>
   <div class="gal-themes" id="themes"></div>
 </div>
 <div class="gal-grid" id="grid"></div>
@@ -95,6 +98,9 @@ var PAYLOADS = [
   { type: 'heatmap', title: '공급망 위험도', data: [{title:'첨단 노광장비',severity:'high'},{title:'희토류',severity:'high'},{title:'레거시 칩',severity:'medium'},{title:'패키징 소재',severity:'medium'},{title:'웨이퍼',severity:'low'}] },
   { type: 'dual_line', title: '미 10년물 금리 vs 원/달러', data: { left: {label:'UST 10Y', unit:'%', series:[{x:'01',y:4.4},{x:'02',y:4.2},{x:'03',y:4.0},{x:'04',y:3.8},{x:'05',y:3.7},{x:'06',y:3.5}]}, right: {label:'원/달러', unit:'KRW', series:[{x:'01',y:1480},{x:'02',y:1462},{x:'03',y:1445},{x:'04',y:1430},{x:'05',y:1418},{x:'06',y:1402}]} } },
   { type: 'forecast', title: '연말 코스피 전망', data: { actual: [{x:'2025-12',y:2620},{x:'2026-03',y:2701},{x:'2026-06',y:2948}], forecast: [{x:'2026-09',mid:3050,low:2880,high:3220},{x:'2026-12',mid:3150,low:2870,high:3430}], fork_at: '2026-06' } },
+  { type: 'choropleth', title: '주요국 대미 반도체 수출 의존도', value_label: '의존도 (%)', scale: 'quantile',
+    data: [{country_code:'KR',value:38},{country_code:'TW',value:42},{country_code:'JP',value:21},{country_code:'CN',value:12},{country_code:'NL',value:17},{country_code:'DE',value:9},{country_code:'MY',value:24},{country_code:'VN',value:15}],
+    source: '무역통계 종합 (예시 데이터)' },
   { type: 'scatter', title: '주요국 R&D 집약도 × 성장률', x_label: 'R&D/GDP (%)', y_label: '성장률 (%)',
     data: [{label:'한국',x:4.9,y:2.2,accent:true},{label:'미국',x:3.5,y:2.6},{label:'일본',x:3.3,y:0.9},{label:'독일',x:3.1,y:0.4},{label:'중국',x:2.6,y:4.6},{label:'대만',x:4.0,y:3.1}],
     annotations: [{kind:'hline', y:2.0, label:'선진국 평균 성장'}] },
