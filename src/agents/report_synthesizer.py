@@ -1116,6 +1116,15 @@ class ReportSynthesizer:
                 len(blocks), block_types_used,
             )
             from src.timeline_flow import build_timeline_flow
+            # V7 Track B — 기승전결 스크롤 아크 (flag OFF = None → 템플릿 분기
+            # 전부 미진입 = v6.2.0 byte-equal 출력). 매핑 실패가 발행을 막지 않음.
+            scroll_arc = None
+            if getattr(self.config, "enable_scroll_arc", False) and result.composed_report:
+                try:
+                    from src.visual.scroll_arc import build_scroll_arc
+                    scroll_arc = build_scroll_arc(result.composed_report)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("[report_synthesizer] scroll_arc skipped: %s", exc)
             html = template.render(
                 result=result,
                 css_content=css_content,
@@ -1126,6 +1135,7 @@ class ReportSynthesizer:
                 archetype_id=archetype.archetype_id,
                 archetype_name=archetype.name,
                 report_timeline=build_timeline_flow(result.context, result.composed_report),
+                scroll_arc=scroll_arc,
             )
 
         if standalone:

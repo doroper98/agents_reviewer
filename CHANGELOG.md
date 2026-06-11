@@ -47,8 +47,22 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
     §13 신설 + 치명적 등급에 wrong_timeframe 등재.
 - **회귀** — `fact_discipline_scenarios.yaml` 에 `wrong_timeframe_01` (6/1↔6/5 케이스 박제),
   V7 가드 8케이스 + 루프 5케이스 + 프롬프트 게이트 4케이스 신규. flag OFF inert 검증 포함.
+- **Track B — 기승전결(起承轉結) 스크롤 아크 (`V7_SCROLL_ARC`, default OFF)** —
+  freeform_essay 배경에 블러된 한자 워터마크 1자가 화면 중앙 고정, 스크롤 진행에 따라
+  다음 단계 한자가 이전 한자를 *연속 보간* 으로 밀어올림 (역방향 동일 — 인터랙티브).
+  - 매핑: `ComposedSection.narrative_phase` (composer emit, additive·Optional) +
+    **위치 기반 결정적 폴백** ([src/visual/scroll_arc.py](src/visual/scroll_arc.py) —
+    첫 섹션=기 / 중간=승 / 마지막 본문=전 / 쟁점=전 / 감시신호·타임라인·맺음=결, AP-V7-4).
+    구 JSON·recompose·LLM 누락 전부 회복.
+  - 렌더: freeform_essay.html **인라인** CSS/JS 만 — charts.js 등 공유 자산 불변이라
+    발행본 소급 영향 0 (REFACTOR_V7_PLAN.md §2.5). 블러는 요소 1회 래스터 + transform
+    보간만 (AP-V7-2), 색은 --fg-1 저알파 워터마크 (라이트 테마 알파 하향), 차트·본문
+    정보는 불변·영구 (AP-V7-3, CHART-AP-18 상속).
+  - prefers-reduced-motion / print → 백드롭 전체 숨김 (사용자 결정). flag OFF 렌더는
+    v6.2.0 템플릿과 **byte-equal 검증 통과** (Jinja whitespace control).
 - **마스터 플랜** — [REFACTOR_V7_PLAN.md](REFACTOR_V7_PLAN.md) (3-트랙: A 차트 에디토리얼
-  리디자인 / B 스크롤 내러티브 아크 / C 기준시점 계약). 본 릴리스 = Track C (Phase V7-C1~C3).
+  리디자인 / B 스크롤 내러티브 아크 / C 기준시점 계약). 본 릴리스 = Track C (V7-C1~C3) +
+  Track B (V7-B1).
 
 ## v6.2.0 — 테마 풀을 짙은(다크) 계열 중심 5종으로 재편
 

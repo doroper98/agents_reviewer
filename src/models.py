@@ -617,6 +617,18 @@ class ComposedSection(BaseModel):
     # 비면 각주 블록 자체가 렌더 안 됨. SSOT: docs/REPORT_STYLE_GUIDE.md §0/§2.2.
     footnotes: list[dict] = Field(default_factory=list)
 
+    # v7.0.0 (Track B) — 서사 단계 라벨 (기승전결). V7_SCROLL_ARC 켜진 환경에서
+    # composer 가 emit — 스크롤 아크 배경(起承轉結 워터마크)의 섹션→단계 매핑에만
+    # 쓰인다. additive·Optional: 구 JSON / flag OFF / LLM 누락 모두 "" — 그땐
+    # src/visual/scroll_arc.py 의 위치 기반 결정적 폴백이 대신 매핑 (AP-V7-4).
+    narrative_phase: str = ""
+
+    @field_validator("narrative_phase", mode="before")
+    @classmethod
+    def _normalize_narrative_phase(cls, v):
+        # 유효값 기/승/전/결 외(null·오타·영문)는 "" 로 — 폴백 경로로 회복.
+        return v if v in ("기", "승", "전", "결") else ""
+
     @field_validator("footnotes", mode="before")
     @classmethod
     def _normalize_footnotes(cls, v):

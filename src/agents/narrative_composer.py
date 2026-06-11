@@ -627,6 +627,21 @@ _FACT_DISCIPLINE_BLOCK = (
 )
 
 
+# V7 Track B — 서사 단계 라벨 블록 (opt-in, V7_SCROLL_ARC). 각 섹션에 기/승/전/결
+# 1자 라벨을 emit — 스크롤 아크 배경(起承轉結 워터마크)의 섹션 매핑에만 쓰인다.
+# 누락·오기는 ComposedSection validator 가 "" 로 회복 → 위치 기반 폴백 (AP-V7-4).
+# flag OFF 면 미주입 → compose 프롬프트 byte-equal.
+_SCROLL_ARC_BLOCK = (
+    "\n\n=== 서사 단계 라벨 (V7 scroll arc) ===\n"
+    "각 sections[i] 객체에 \"narrative_phase\" 필드를 추가하라 — 값은 \"기\"|\"승\"|"
+    "\"전\"|\"결\" 중 1자.\n"
+    "- 기(사건 제시) → 승(전개·심화) → 전(쟁점·반전) → 결(전망·착지) 순서를 따르고,\n"
+    "  단계는 섹션 순서에서 *되돌아가지 않는다* (예: 전 다음에 승 금지).\n"
+    "- 첫 섹션은 \"기\". 이 필드는 페이지 배경 연출에만 쓰이며 본문 내용·문체에 영향을\n"
+    "  주지 않는다 — 본문을 이 라벨에 맞춰 변형하지 마라.\n"
+)
+
+
 # V7 Track C — 기준시점 계약 블록 (opt-in, V7_REF_FRAME). 작성 단계에서 "옛 날짜의
 # 정확한 수치" 채택 자체를 차단 (WRITE-AP-22, REFACTOR_V7_PLAN.md §3.4). flag OFF
 # 면 미주입 → compose 프롬프트 byte-equal.
@@ -702,6 +717,8 @@ class NarrativeComposer:
             prompt += _FACT_DISCIPLINE_BLOCK
         if getattr(self.config, "enable_ref_frame", False):
             prompt += _REF_FRAME_BLOCK
+        if getattr(self.config, "enable_scroll_arc", False):
+            prompt += _SCROLL_ARC_BLOCK
         return prompt
 
     async def compose_unified(
