@@ -22,6 +22,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## v7.2.0 — 지도 어휘 격상 (사용자 승인, 발행본 소급)
 
+- **ops** — VM-AP-9 등재 ([docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md) §2):
+  봇 미러 산출물 `reports/README.md` 가 pull 을 상습 차단 (하루 3회 재발). §1 Stage 1
+  에 자동 폐기 가드 추가 — 해당 파일 단독 잔재면 자동 `git checkout --` 후 진행.
+
 - **동기(사용자 지적)** — 지도의 선·관계가 단조로움. 현행 어휘가 마커 2종(강조/일반 점)
   + 호 2종(실선/점선)뿐이라 봉쇄·회랑·대립·우회가 전부 같은 그림.
 - **변경 (maps.js — 전부 additive, 무지정 payload 는 기존 렌더와 byte-동일 로직)** —

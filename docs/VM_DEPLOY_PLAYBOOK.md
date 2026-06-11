@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v5.8.6
+last_synced_with: v7.2.0
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -49,6 +49,12 @@ idempotent — 봇이 떠있든 안 떠있든 같은 결과.
   # ─── Stage 1: pull 전 working tree 정리 (VM-AP-3 가드) ───
   # untracked(-uno) 제외 — bot.log 백업 등은 pull 을 막지 않는다 (VM-AP-7).
   # tracked 수정(삭제된 파일의 VM 잔재 등)만 pull 차단 위험.
+  # VM-AP-9 — 봇이 자동 재생성하는 미러 산출물(reports/README.md)은 pull 을 막는
+  # 단골 잔재 (2026-06-11 하루 3회 재발). 자동 폐기 후 진행 — 다음 미러 때 재생성됨.
+  if git status --porcelain --untracked-files=no | grep -q '^ M reports/README.md$'; then
+    echo "ⓘ reports/README.md 미러 잔재 자동 폐기 (VM-AP-9 — 봇이 재생성)"
+    git checkout -- reports/README.md
+  fi
   DIRTY=$(git status --porcelain --untracked-files=no)
   if [ -n "$DIRTY" ]; then
     echo "⚠️ 로컬 tracked 수정사항 발견 (pull 차단 위험):"
@@ -264,6 +270,23 @@ v5.6.7 의 이미지로 도는 중. 사용자에게 "재배포 완료" 로 보�
 으로 빠지지 않는다. VM-AP-7 의 SSH-종료 안전성은 서브셸의 `exit 1`(부모 셸 미종료)
 으로 동일하게 보존. 함수 안의 `return 1` → 서브셸의 `exit 1` 로 일괄 치환.
 
+### VM-AP-9 — 봇의 미러 산출물(reports/README.md)이 pull 을 상습 차단 (2026-06-11, 하루 3회 발생)
+
+**증상**: `git pull origin main` 이 "Your local changes to reports/README.md would be
+overwritten" 로 중단 → 사용자에겐 "pull 했는데 버전이 안 올라간다" 로 보임 (VM-AP-4 와
+결합해 옛 버전 봇 재기동까지 이어짐). v7.0.2→v7.1.0→v7.2.0 배포에서 연속 3회 재발.
+
+**원인**: 봇이 보고서를 발행할 때마다 `github_mirror.build_reports_index()` 가
+`reports/README.md` 를 로컬에서 재생성 — 이 파일은 tracked 라 다음 pull 의 충돌
+대상이 된다. 운영 중인 봇이 있는 한 거의 항상 dirty 상태.
+
+**관찰된 흔적**: `git status --porcelain --untracked-files=no` 에 ` M reports/README.md`
+단독으로 잡힘. pull 출력에 "Please commit your changes or stash them" + Aborting.
+
+**Fix**: §1 Stage 1 에 자동 가드 — 잔재가 정확히 `reports/README.md` 면 자동
+`git checkout --` 후 진행 (자동 재생성 파일이라 폐기 안전). 그 외 파일이 함께 dirty
+면 기존대로 멈추고 사람이 판단.
+
 ---
 
 ## §3 진단 명령어
@@ -308,7 +331,7 @@ tail -500 bot.log | grep -E '(narrative_composer|unified_composer|composer 호�
 
 CHART-AP / WRITE-AP 와 동일 패턴 (append-only):
 
-1. **번호 부여**: 다음 VM-AP-N (현재 7 까지 사용). 같은 패턴은 기존 항목에 사례 추가.
+1. **번호 부여**: 다음 VM-AP-N (현재 9 까지 사용). 같은 패턴은 기존 항목에 사례 추가.
 2. **§2 에 새 항목 append** — 증상 / 관찰된 흔적 / Fix 3 섹션.
 3. **§1 표준 절차에 가드 추가** — Fix 가 명령어 단계인 경우.
 4. **CLAUDE.md 의 본 playbook 참조 라인이 있으면** `last_synced_with` 갱신.
