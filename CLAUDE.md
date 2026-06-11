@@ -66,7 +66,7 @@ last_review: 2026-05-05
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
 - Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
-- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **20종 type** — v5.3.0 부터 FT/Economist 스타일 신규 7종 포함)
+- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **23종 type** — v5.3.0 FT/Economist 7종 + v7.0.0 bump/bullet/connected_scatter 3종)
 - Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
 - Theme: **5종 풀 (라이트 1 + 다크 4, v6.2.0)** — editorial_cream(라이트) / burgundy_mono / midnight_indigo / pine_forest(짙은 녹색) / graphite_slate(짙은 회색). v5.0.2 부터 보고서마다 `random.choice` 로 선택 (event_type 무관, 시각 다양성 목적). 모든 테마는 *동일 레이아웃* — bg/card/text/accent 만 다름. SSOT 는 [src/lens_policy.py:ALL_THEMES](src/lens_policy.py) + [src/templates/report.css](src/templates/report.css) 의 `[data-theme="..."]` 블록. v6.2.0 에서 slate_steel / forest_sage / dusk_rose / paper_classic 4종 풀+CSS 삭제 (짙은 계열 중심 재편, 사용자 요청). legacy `light_mono` CSS 는 보존되었으나 풀에서 빠짐 — 직접 지정 시만 사용 가능.
 - Font: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. Noto Serif KR 한국어 폴백.
@@ -161,7 +161,7 @@ playbook §3 에 텍스트로 박는다. 부득이하면 `git add <file>` 직후
 
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
-- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **20종** (v5.3.0 부터). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 신규 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar). 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). 신규 7종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수.
+- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **23종** (v7.0.0 부터). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar, v5.3.0) + **v7.0.0 신규 3종 (bump 순위경쟁 / bullet 목표대비 / connected_scatter 2변수 궤적)**. 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). v5.3.0 7종 + v7.0.0 3종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수. v7.0.0 부터 annotation 레이어(vline/hline/band/point, 차트당 ≤3 — AP-V7-6)가 cartesian 전 type 개방. 전 타입 갤러리 베이스라인: [samples/chart_gallery_v7.html](samples/chart_gallery_v7.html).
 - **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6).
 - **폰트**: Noto Serif KR (숫자/타이틀), Noto Sans KR (라벨/본문/지도 라벨)
 - **색**: 큰 숫자에 액센트 색 금지 → `--text` 만 (mono guide §3.3)
@@ -320,11 +320,13 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `src/state/models.py:EvidencePack.recommended_persona`, `AnalysisBrief.recommended_persona` 필드 삭제
 - `src/token_budget.py` 의 dead flag 6종 (`use_llm_quality_gate / use_llm_narrative_plan / use_llm_executive_summary / use_llm_visuals / use_llm_synthesis / use_legacy_personas`) 삭제. 본문 문체 SSOT 는 [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) 로 통합.
 
-## Chart System (v5.3.0)
+## Chart System (v7.0.0)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
-- **20종 type**:
+- **23종 type**:
   - 기존 13종 (v5.2.13 까지): bar / donut / line / gantt / network / stacked / bubble / heatmap / dual_line / forecast / choropleth / candle / area
   - v5.3.0 신규 7종 (FT/Economist 스타일, **guarded** tier): scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar
+  - v7.0.0 신규 3종 (**guarded** tier, REFACTOR_V7_PLAN.md §1.3): bump (시기별 순위 경쟁) / bullet (목표 대비 실적) / connected_scatter (2변수 시간 경로)
+- **annotation 레이어 (v7.0.0 개방)**: `{kind: vline|hline|band|point}` 를 cartesian 전 type (기존 bar/line/gantt/bubble/dual_line/forecast + candle/area/scatter/stacked_area/lollipop/range_bar/bullet/connected_scatter) 이 지원. 차트당 ≤3 (AP-V7-6, `ComposedSection._drop_invalid_charts` 가 정제). 에디토리얼 헤더 `unit_line` (단위·기간 라인) 도 v7.0.0 additive.
 - 각 차트는 `ComposedSection.charts: list[dict]` 의 dict 1개 — `{type, title, data, note?}`.
 - 렌더링: `freeform_essay.html` 이 chart-card SVG + inline JSON payload emit → `charts.js` 가 스캔/렌더 (mono guide §4 패턴 자동 적용).
 - **차트 type 결정 트리** — composer SYSTEM_PROMPT 의 결정 트리 (v5.3.0 신설). LLM 의 line/bar default bias 차단 (negative constraint 패턴).

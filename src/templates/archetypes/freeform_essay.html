@@ -410,6 +410,7 @@
         <div class="chart-card">
           <div class="chart-card-title">{{ (ch.title or '차트') | strip_md }}</div>
           {% if ch.subtitle %}<div class="chart-card-subtitle">{{ ch.subtitle | strip_md }}</div>{% endif %}
+          {% if ch.unit_line %}<div class="chart-card-unitline">{{ ch.unit_line | strip_md }}</div>{% endif %}
           <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}"
                data-chart-type="{{ ch.type or 'bar' }}"
                data-chart-id="ch-s{{ loop.index0 }}-{{ loop.index }}">

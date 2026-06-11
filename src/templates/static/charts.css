@@ -38,6 +38,16 @@
   height: auto;
   font-family: 'Noto Sans KR', sans-serif;
 }
+/* v7.0.0 — 에디토리얼 헤더 4단의 '단위·기간 라인' (제목/부제 아래, 차트 위).
+   composer 가 unit_line 을 emit 한 신규 보고서에서만 나타남 (additive — 구 보고서 불변). */
+.chart-card-unitline {
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  margin: -6px 0 10px;
+}
+
 .chart-card-note{
   font-size: 10.5px;
   color: var(--muted);

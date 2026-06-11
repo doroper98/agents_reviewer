@@ -47,6 +47,26 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
     §13 신설 + 치명적 등급에 wrong_timeframe 등재.
 - **회귀** — `fact_discipline_scenarios.yaml` 에 `wrong_timeframe_01` (6/1↔6/5 케이스 박제),
   V7 가드 8케이스 + 루프 5케이스 + 프롬프트 게이트 4케이스 신규. flag OFF inert 검증 포함.
+- **Track A — 차트 에디토리얼 확장 (additive — 발행본 소급 영향 0)** —
+  - **신규 3종 (guarded tier, 7단 절차 완주)**: `bump` (시기별 순위 경쟁 — slope/line 이
+    못 덮는 순위 축), `bullet` (실적 vs 목표/컨센서스 — target 양수 강제),
+    `connected_scatter` (2변수 시간 궤적 — dual_line 과 구분, 진행 방향 화살촉).
+    RENDERERS + SYSTEM_PROMPT 스키마·결정트리 + `_TYPE_TO_GUARD` 3종 + registry
+    (guarded 10→13, 총 23→26) + `KNOWN_CHART_TYPES` + fixture 시나리오 + 회귀 테스트.
+  - **annotation 레이어 개방**: 기존 bar/line/gantt/bubble/dual_line/forecast 에 더해
+    candle/area/scatter/stacked_area/lollipop/range_bar (+신규 2종) wiring — 사건
+    vline·임계 hline·국면 band·강조 point 를 어느 cartesian 차트에나. 기존 payload 에
+    annotations 없으면 렌더 불변 (additive-by-construction). 차트당 ≤3 정제 (AP-V7-6,
+    `_drop_invalid_charts` 합류). top 마진이 좁은 type 은 vline 잘림 회피 (필터/마진 확장).
+  - **에디토리얼 헤더**: `unit_line` (단위·기간 라인) optional 필드 + `.chart-card-unitline`
+    (additive CSS — 구 보고서 불변).
+  - **A-0 갤러리 베이스라인**: `samples/chart_gallery_v7.html` — 전 23종 × 5테마 fixture
+    갤러리 (Track A 후속 리디자인의 전·후 비교 기준). headless Chromium 으로 전 타입
+    렌더 검증 (마크 0 차트 없음) + 신규 3종·annotation 데모 스크린샷 검수 완료.
+  - 기존 20종 렌더러의 *비-additive* 비주얼 리디자인 (§1.2 의 축 경제·직접 라벨링
+    일괄 격상) 은 A-0 갤러리 기준의 시각 리뷰 게이트 뒤로 — 그때 자산 버저닝
+    (charts.v7.js, AP-V7-1) 발동. 본 릴리스의 charts.js 변경은 전부 additive 라
+    발행본 렌더 불변.
 - **Track B — 기승전결(起承轉結) 스크롤 아크 (`V7_SCROLL_ARC`, default OFF)** —
   freeform_essay 배경에 블러된 한자 워터마크 1자가 화면 중앙 고정, 스크롤 진행에 따라
   다음 단계 한자가 이전 한자를 *연속 보간* 으로 밀어올림 (역방향 동일 — 인터랙티브).
@@ -61,8 +81,7 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
   - prefers-reduced-motion / print → 백드롭 전체 숨김 (사용자 결정). flag OFF 렌더는
     v6.2.0 템플릿과 **byte-equal 검증 통과** (Jinja whitespace control).
 - **마스터 플랜** — [REFACTOR_V7_PLAN.md](REFACTOR_V7_PLAN.md) (3-트랙: A 차트 에디토리얼
-  리디자인 / B 스크롤 내러티브 아크 / C 기준시점 계약). 본 릴리스 = Track C (V7-C1~C3) +
-  Track B (V7-B1).
+  리디자인 / B 스크롤 내러티브 아크 / C 기준시점 계약). 본 릴리스 = Track C (V7-C1~C3) + Track B (V7-B1) + Track A (V7-A0/A2 + annotation 개방).
 
 ## v6.2.0 — 테마 풀을 짙은(다크) 계열 중심 5종으로 재편
 

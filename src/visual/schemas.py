@@ -798,6 +798,103 @@ class SankeyLink(BaseModel):
         return self
 
 
+# --------------------------------------------------------------------------
+# v7.0.0 — Track A 신규 3종 (REFACTOR_V7_PLAN.md §1.3, guarded tier)
+# --------------------------------------------------------------------------
+
+
+class BumpItem(BaseModel):
+    name: str = Field(min_length=1)
+    ranks: list[float] = Field(min_length=2, max_length=6)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_ranks(self) -> "BumpItem":
+        for r in self.ranks:
+            if not math.isfinite(r) or r < 1:
+                raise ValueError(
+                    f"CHART-AP-3 가드: bump rank 가 NaN/inf 또는 1 미만 — {self.name}"
+                )
+        return self
+
+
+class BumpChartGuard(BaseModel):
+    """bump: 시기별 순위 경쟁 (v7.0.0).
+
+    {periods: [...], items: [{name, ranks: [...]}]}. 2~6 시기 × 3~8 항목,
+    모든 항목의 ranks 길이 = periods 길이 (격자 정합).
+    slope 는 2시점·값 축, line 은 값 축 — '순위' 축 다시점은 본 type.
+    """
+    periods: list[str | int | float] = Field(min_length=2, max_length=6)
+    items: list[BumpItem] = Field(min_length=3, max_length=8)
+
+    @model_validator(mode="after")
+    def validate_rank_grid(self) -> "BumpChartGuard":
+        n = len(self.periods)
+        for it in self.items:
+            if len(it.ranks) != n:
+                raise ValueError(
+                    f"bump 항목 '{it.name}' 의 ranks 길이 {len(it.ranks)} != "
+                    f"periods 길이 {n} — 격자 불일치"
+                )
+        return self
+
+
+class BulletRow(BaseModel):
+    label: str = Field(min_length=1)
+    value: float
+    target: float
+    ranges: list[float] = Field(default_factory=list, max_length=4)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "BulletRow":
+        for fld in ("value", "target"):
+            if not math.isfinite(getattr(self, fld)):
+                raise ValueError(f"CHART-AP-3 가드: bullet {fld} NaN/inf — {self.label}")
+        if self.target <= 0:
+            raise ValueError(f"bullet target 은 양수여야 함 — {self.label}")
+        for r in self.ranges:
+            if not math.isfinite(r):
+                raise ValueError(f"CHART-AP-3 가드: bullet ranges NaN/inf — {self.label}")
+        return self
+
+
+class BulletGuard(BaseModel):
+    """bullet: 목표 대비 실적 (v7.0.0).
+
+    [{label, value, target, ranges?}] 1~7행. bar 는 단일 값 — 실적 vs
+    가이던스/컨센서스/목표의 중첩 비교는 본 type.
+    """
+    data: list[BulletRow] = Field(min_length=1, max_length=7)
+
+
+class ConnectedScatterPoint(BaseModel):
+    x: float
+    y: float
+    label: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "ConnectedScatterPoint":
+        for fld in ("x", "y"):
+            if not math.isfinite(getattr(self, fld)):
+                raise ValueError(f"CHART-AP-3 가드: connected_scatter {fld} NaN/inf")
+        return self
+
+
+class ConnectedScatterGuard(BaseModel):
+    """connected_scatter: 2변수의 시간 경로 (v7.0.0).
+
+    [{x, y, label?}] *시간 순서* 4~30점. dual_line 은 두 축 분리 —
+    두 변수가 함께 그리는 궤적 서사 (금리×환율 등) 는 본 type.
+    """
+    data: list[ConnectedScatterPoint] = Field(min_length=4, max_length=30)
+
+
 class SankeyGuard(BaseModel):
     """sankey: 다단계 흐름 분해 (재무제표 / 자본 배분 / 수익성 분석).
 
@@ -887,6 +984,10 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "range_bar":    RangeBarGuard,
     # v5.3.0 — Sankey (재무 분해 / 자본 배분). registry orphan 해결.
     "sankey":       SankeyGuard,
+    # v7.0.0 — Track A 신규 3종 (REFACTOR_V7_PLAN.md §1.3)
+    "bump":         BumpChartGuard,
+    "bullet":       BulletGuard,
+    "connected_scatter": ConnectedScatterGuard,
 }
 
 
@@ -965,6 +1066,12 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "sankey 는 {nodes, links} dict 형식 필요"
+        elif chart_type == "bump":
+            # {periods: [...], items: [{name, ranks}]}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "bump 는 {periods, items} dict 형식 필요"
         else:
             # bar / line / donut / bubble / heatmap / choropleth / scatter /
             # lollipop / waterfall / range_bar — list[dict]

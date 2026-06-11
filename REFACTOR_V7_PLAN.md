@@ -1,9 +1,9 @@
 ---
 tier: 1
-status: proposal (초안 — 사용자 게이트 대기, 구현 착수 전)
+status: in-progress (v7.0.0 — C/B/A-additive 랜딩, A-1 비주얼 리디자인은 갤러리 리뷰 게이트 대기)
 target_version: v7.0.0
 based_on_baseline: v6.2.0
-last_synced_with: v6.2.0
+last_synced_with: v7.0.0
 ssot_for:
   - "V7 마스터 플랜 (차트 에디토리얼 리디자인 + 스크롤 내러티브 아크 + 기준시점 맥락 검수)"
   - "V7 요구사항 (REQ-V7-N) 정본"
@@ -339,16 +339,24 @@ AP-V6-9) — 본 plan 승인 시 함께 승인 항목으로 처리. 동시 갱�
 
 ## §5. 추진 순서·Phase 분해 (요약)
 
-| Phase | 내용 | flag / 격리 | 선행 조건 |
-|-------|------|-------------|-----------|
-| V7-C1 | 결정적 가드 2종 (§3.2) | `V7_REF_FRAME` OFF | 없음 — 즉시 가능 |
-| V7-C2 | reference_frame 양측 주입 (§3.3) | 동일 flag | C1 |
-| V7-C3 | `wrong_timeframe` + 페르소나·fixture (§3.4~3.5) | 동일 flag | ★ 사용자 게이트 |
-| V7-B1 | narrative_phase 필드 + 폴백 + 배경 아크 (§2.2~2.3) | `V7_SCROLL_ARC` OFF, 템플릿 인라인 | 없음 |
-| V7-B2 | 진입 연출 시퀀싱 정련 (§2.4) | 템플릿 인라인 | B1 |
-| V7-A0 | 갤러리 베이스라인 + 캡처 (§1.5) | 산출물만 (samples/) | 없음 |
-| V7-A1 | 공유 에디토리얼 레이어 + 타입별 격상 (§1.2) | `charts.v7.js` 자산 버저닝 | A0 + ★ §1.6 결정 |
-| V7-A2 | 신규 타입 (1차 3종, §1.3) | guarded tier, 7단 절차 | A1 + ★ 채택 게이트 |
+| Phase | 내용 | flag / 격리 | 상태 (v7.0.0, 2026-06-11) |
+|-------|------|-------------|---------------------------|
+| V7-C1 | 결정적 가드 2종 (§3.2) | `V7_REF_FRAME` OFF | ✅ 랜딩 (DateAnchoredMarket/StaleAnchor, T-1 검출 100%·FP 0) |
+| V7-C2 | reference_frame 양측 주입 (§3.3) | 동일 flag | ✅ 랜딩 (composer/codex/reviser 3곳, flag OFF byte-equal 검증) |
+| V7-C3 | `wrong_timeframe` + 페르소나·fixture (§3.4~3.5) | 동일 flag | ✅ 랜딩 (사용자 게이트 승인 2026-06-11, WRITE-AP-22 등재, 착지 drop) |
+| V7-B1 | narrative_phase 필드 + 폴백 + 배경 아크 (§2.2~2.3) | `V7_SCROLL_ARC` OFF, 템플릿 인라인 | ✅ 랜딩 (OFF 렌더 byte-equal 검증 + headless 스크롤 3지점 시각 확인) |
+| V7-B2 | 진입 연출 시퀀싱 정련 (§2.4) | 템플릿 인라인 | ⏸ 보류 — 현행 IO 연출이 요구 스펙 충족, 아크와의 체감 평가 후 |
+| V7-A0 | 갤러리 베이스라인 + 캡처 (§1.5) | 산출물만 (samples/) | ✅ 랜딩 (chart_gallery_v7.html — 전 23종×5테마, headless 전 타입 렌더 검증) |
+| V7-A1 | 공유 에디토리얼 레이어 + 타입별 격상 (§1.2) | `charts.v7.js` 자산 버저닝 | 🔶 부분 — *additive* 분 선랜딩 (annotation 전 type 개방 + unit_line). 비-additive 비주얼 격상은 A0 갤러리 시각 리뷰 게이트 후 (그때 AP-V7-1 버저닝 발동) |
+| V7-A2 | 신규 타입 (1차 3종, §1.3) | guarded tier, 7단 절차 | ✅ 랜딩 (bump/bullet/connected_scatter — 7단 절차 완주 + headless 시각 검수) |
+
+> **v7.0.0 구현 노트 — A-1 의 additive 우선 원칙.** charts.js/charts.css 는 발행된
+> 전 보고서가 공유하므로 (§1.6), v7.0.0 의 차트 변경은 전부 *additive-by-construction*
+> (annotations 없는 기존 payload·기존 class 의 렌더 결과 불변) 으로 랜딩했다 — 버저닝
+> 없이도 발행본 소급 0 이 구조적으로 보장된다. 기존 렌더러의 픽셀이 바뀌는 비-additive
+> 리디자인 (축 경제 일괄, 직접 라벨링 default 화, donut emphasis 모드 등) 은
+> chart_gallery_v7.html 전·후 비교 + 사용자 시각 리뷰를 게이트로 두고, 통과분만
+> `charts.v7.js` 분기로 적용한다 (AP-V7-1).
 
 ## §6. 사용자 결정 필요 항목 (구현 착수 전)
 

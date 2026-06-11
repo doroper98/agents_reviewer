@@ -49,6 +49,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "small_multiples", "waterfall", "range_bar",
     # v5.3.0 — Sankey (재무 분해 / 자본 배분, registry orphan 해결)
     "sankey",
+    # v7.0.0 — Track A 신규 3종 (REFACTOR_V7_PLAN.md §1.3)
+    "bump", "bullet", "connected_scatter",
     # embedded_map (별도 채널)
     "map",
 )

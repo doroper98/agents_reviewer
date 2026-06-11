@@ -687,6 +687,20 @@ class ComposedSection(BaseModel):
                 valid.append(ch)
                 continue
             if ok:
+                # v7.0.0 (AP-V7-6) — annotation 정제: dict + 유효 kind 만, 차트당
+                # 최대 3개 (맥락이 소음이 되는 지점). 위반 annotation 만 조용히
+                # 제거하고 차트는 보존 — 차트 전체 drop 사유가 아님.
+                ann = ch.get("annotations")
+                if ann is not None:
+                    cleaned = [
+                        a for a in (ann if isinstance(ann, list) else [])
+                        if isinstance(a, dict)
+                        and a.get("kind") in ("vline", "hline", "band", "point")
+                    ][:3]
+                    if cleaned:
+                        ch["annotations"] = cleaned
+                    else:
+                        ch.pop("annotations", None)
                 valid.append(ch)
             else:
                 dropped += 1
