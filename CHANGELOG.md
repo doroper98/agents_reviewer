@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v6.1.2
+last_synced_with: v7.0.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,36 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.0.0 — V7 Track C: 기준시점 계약 (정확하지만 시점이 틀린 시장 수치 차단)
+
+- **동기(사용자 보고 회귀)** — 6/5 발행 보고서에 6/4 종가가 가용한데 본문이 6/1 종가를 인용.
+  수치는 6/1 기준으로 *정확* 해서 codex 사실 검수가 통과시키고, 보완 패스(Opus)도 같은
+  맹점을 공유해 루프가 "정확하지만 시점이 틀린" 문장으로 수렴 (WRITE-AP-22 신설).
+- **근본 원인** — ① 작성·검수·보완 어디에도 "이 보고서가 어느 시점의 값을 필요로 하는가"
+  계약이 없음. ② `MarketDataSourceGuard` 가 날짜 비앵커 — 본문 수치가 시계열의 *어느*
+  종가와든 일치하면 통과 (AP-V7-5).
+- **변경 (`V7_REF_FRAME`, default OFF = v6.2.0 byte-equal)** —
+  - 결정적 가드 2종 신설 ([src/factcheck/deterministic_guards.py](src/factcheck/deterministic_guards.py)):
+    `DateAnchoredMarketGuard` (날짜 명시 수치를 *그 날짜의* bar OHLC 와 대조 — 다른 날짜
+    값 귀속 시그니처만 flag, low-FP) + `StaleAnchorGuard` (종목별 최신 인용 시점이 가용
+    시계열보다 1거래일 초과 뒤처지면 flag — 직전 거래일 lag 허용, 종목별 최신 인용 기준).
+  - `reference_frame` 계약 ([src/factcheck/reference_frame.py](src/factcheck/reference_frame.py)
+    신설 — 종목별 최신 가용 일자·종가·전일대비, 0-LLM) 을 composer 작성 payload +
+    codex 검수 프롬프트 + Opus 보완 payload **3곳에 동일 주입** (루프 양 패스의 맹점
+    공유 해소).
+  - codex error_class **`wrong_timeframe`** 신설 (사용자 게이트 승인 2026-06-11) —
+    "사실로서 정확하지만 보고서 기준 시점과 다른 날짜의 값". recency_violation(출처
+    신선도)과 구분. 잔존 시 `apply_landing` 결정적 drop (unsourced/market 과 동급).
+  - 시점 지적엔 `timeframe_correction_hint` — time_series *최신* bar 의 종가·전일대비를
+    역산해 Opus 보완 지시에 덧댐 (drop 전에 교체 우선, market hint 의 거울상).
+  - 페르소나 동시 갱신 (SOP 준수): [prompts/codex_critic_persona.md](prompts/codex_critic_persona.md)
+    ★기준시점 정합 포커스 + [prompts/market_factcheck_desk_v6.md](prompts/market_factcheck_desk_v6.md)
+    §13 신설 + 치명적 등급에 wrong_timeframe 등재.
+- **회귀** — `fact_discipline_scenarios.yaml` 에 `wrong_timeframe_01` (6/1↔6/5 케이스 박제),
+  V7 가드 8케이스 + 루프 5케이스 + 프롬프트 게이트 4케이스 신규. flag OFF inert 검증 포함.
+- **마스터 플랜** — [REFACTOR_V7_PLAN.md](REFACTOR_V7_PLAN.md) (3-트랙: A 차트 에디토리얼
+  리디자인 / B 스크롤 내러티브 아크 / C 기준시점 계약). 본 릴리스 = Track C (Phase V7-C1~C3).
 
 ## v6.2.0 — 테마 풀을 짙은(다크) 계열 중심 5종으로 재편
 

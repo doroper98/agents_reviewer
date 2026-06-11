@@ -270,7 +270,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 21개 패턴 누적 (v5.8.8 — WRITE-AP-15 시장수치 자유서술[최우선] / 16 주장→사실 / 17 인과 과장 / 18 행사 혼동 / 19 일방서사 / 20 제목·본문 무게 / 21 신뢰도% 노출, 2026-06-03 일일 브리핑 회귀):
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 22개 패턴 누적 (v5.8.8 — WRITE-AP-15 시장수치 자유서술[최우선] / 16 주장→사실 / 17 인과 과장 / 18 행사 혼동 / 19 일방서사 / 20 제목·본문 무게 / 21 신뢰도% 노출, 2026-06-03 일일 브리핑 회귀. v7.0.0 — WRITE-AP-22 기준시점 오선택):
 
 > **★ 최우선 가치 — 일반 독자 우선 (v5.5.5).** 보고서는 *비전문가* 가 읽는다. ①
 > 전문 용어·영어 표현·은어는 평이한 우리말로 바꾼다. ② 못 바꾸는 핵심 용어만 본문에
@@ -287,6 +287,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - WRITE-AP-12: AI 가 인지되는 기호 (마크다운 강조 `**`/`*`/백틱, em·en dash `—`/`–`) 사용 (v5.6.7 신설, 사용자 최우선 규칙). SYSTEM_PROMPT 의 "★ 기호 금지" 블록 + `NarrativeComposer._sanitize_symbols` 결정적 후처리 (모든 사용자 노출 텍스트 정화, dash 자연 치환: 삽입구→쉼표·숫자범위→`~`·단어인접→공백, URL/좌표 보존) + orchestrator 최종 호출로 모든 경로 보장. `_strip_inline_md` (broadcast 폴백) 동일 규칙
 - WRITE-AP-13: LLM 이 SYSTEM_PROMPT 의 JSON 예시 들여쓰기를 따라가다 응답 시작(`{`/headline/deck/sections 배열 시작) 을 통째로 누락하고 `      "prose":` / `      "side_a":` 같은 sections 객체 *중간 줄* 부터 출력 (v5.6.8 신설, Claude Opus 4.7 회귀). SYSTEM_PROMPT 의 ★★★ 강조 instruction (`{` 로 시작 강제) + `NarrativeComposer._recover_head_loss` 결정적 후처리 (body 가 `"key":` 시작이면 `{...}` wrap → 부분 객체에서 prose/heading 추출 → 1-섹션 ComposedReport 재조립, confidence 0.3)
 - WRITE-AP-14: 미래 사건 카운트다운(D-N)을 발행일이 아닌 출처 작성일 기준으로 표기 (v5.8.3 신설 — 6/1 발행 보고서가 6/3 지방선거를 "사흘 앞"=5/31 기준으로 베껴 표기, 실제론 이틀 뒤/모레). WRITE-AP-11 의 거울상(과거 거리 누락 ↔ 미래 카운트다운 오기준). composer SYSTEM_PROMPT `=== 시점 앵커링 ===` 블록에 미래 카운트다운 규칙 추가 — D-N·'사흘 앞'·'내일'·'모레' 는 publication_date 와 사건일 실제 차이로 직접 셈, 출처 문구 베끼기 금지, 불확실하면 절대 날짜만)
+- WRITE-AP-22: 최신 가용 데이터를 두고 옛 일자의 (정확한) 시장 수치를 무표기 채택 (v7.0.0 신설 — 6/5 발행 보고서가 6/4 종가 가용한데 6/1 종가를 인용, codex 는 '6/1 기준 정확' 으로 통과 → 정확하지만 시점이 틀린 문장으로 루프 수렴. WRITE-AP-11/14 가 시점 *표기* 회귀라면 이건 시점 *선택* 회귀. V7 Track C `V7_REF_FRAME` — `reference_frame` 계약을 composer/codex/reviser 3곳 주입 + 결정적 가드 2종(DateAnchoredMarket/StaleAnchor) + codex error_class `wrong_timeframe` 신설[사용자 게이트 2026-06-11] + 잔존 착지 drop. SSOT: [REFACTOR_V7_PLAN.md §3](REFACTOR_V7_PLAN.md))
 
 회귀 발견 시 본 문서에 새 항목 (WRITE-AP-N) append. 차트 anti-pattern 과 분리 유지.
 

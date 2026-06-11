@@ -627,6 +627,20 @@ _FACT_DISCIPLINE_BLOCK = (
 )
 
 
+# V7 Track C — 기준시점 계약 블록 (opt-in, V7_REF_FRAME). 작성 단계에서 "옛 날짜의
+# 정확한 수치" 채택 자체를 차단 (WRITE-AP-22, REFACTOR_V7_PLAN.md §3.4). flag OFF
+# 면 미주입 → compose 프롬프트 byte-equal.
+_REF_FRAME_BLOCK = (
+    "\n\n=== 기준시점 계약 (V7 — reference_frame) ===\n"
+    "입력에 ``reference_frame.instruments`` 가 있으면, 시장 수치(지수·환율·주가)는 각\n"
+    "종목의 ``last_available_date`` 데이터를 *기본 시점* 으로 쓴다 (WRITE-AP-22).\n"
+    "- 그보다 옛 날짜의 값을 인용할 때는 반드시 절대 날짜를 명기하고, 왜 그 시점을\n"
+    "  쓰는지(예: 사건 당일 종가 비교)가 문장에 드러나야 한다.\n"
+    "- '현재/지금/최근' 으로 서술하는 시장 수치는 last_available_date 의 값만 허용.\n"
+    "- 옛 날짜의 수치가 사실로서 정확해도, 무표기로 쓰면 시점 오류다.\n"
+)
+
+
 class NarrativeComposer:
     """Opus 4.7 단일 콜로 보고서를 자유 형식으로 작성.
 
@@ -683,9 +697,12 @@ class NarrativeComposer:
         flag OFF 면 모듈 SYSTEM_PROMPT 그대로 → ``_call_cli(system_prompt=SYSTEM_PROMPT)``
         는 미지정(None) 경로와 byte-equal (full_prompt 동일).
         """
+        prompt = SYSTEM_PROMPT
         if getattr(self.config, "enable_fact_prompt", False):
-            return SYSTEM_PROMPT + _FACT_DISCIPLINE_BLOCK
-        return SYSTEM_PROMPT
+            prompt += _FACT_DISCIPLINE_BLOCK
+        if getattr(self.config, "enable_ref_frame", False):
+            prompt += _REF_FRAME_BLOCK
+        return prompt
 
     async def compose_unified(
         self,
@@ -705,6 +722,12 @@ class NarrativeComposer:
         에 명시 (Anti-pattern #5).
         """
         user_payload = self._build_unified_payload(context, mode, parent_context)
+        # V7 Track C — 기준시점 계약 데이터 주입 (flag OFF = payload byte-equal).
+        if getattr(self.config, "enable_ref_frame", False):
+            from src.factcheck.reference_frame import build_reference_frame
+            frame = build_reference_frame(context)
+            if frame.get("instruments"):
+                user_payload["reference_frame"] = frame
         user_message = json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
 
         # v5.5.9 — 복원력: CLI 가 degraded/짧은/잘린 응답을 줘 _parse_response 가 None 인
@@ -931,17 +954,32 @@ class NarrativeComposer:
                 "closing": report.closing,
             },
         }
+        # V7 Track C — 보완 패스에도 동일 계약 주입 (루프 양 패스의 맹점 공유 해소,
+        # REFACTOR_V7_PLAN.md §3.5). flag OFF = payload·프롬프트 byte-equal.
+        revise_prompt = self.REVISE_SYSTEM_PROMPT
+        if getattr(self.config, "enable_ref_frame", False):
+            from src.factcheck.reference_frame import build_reference_frame
+            frame = build_reference_frame(context)
+            if frame.get("instruments"):
+                payload["reference_frame"] = frame
+            revise_prompt += (
+                "\n\n=== 기준시점 정정 (V7) ===\n"
+                "시점 지적(wrong_timeframe/stale_anchor)은 evidence.time_series 의 *최신* "
+                "일자(reference_frame.last_available_date) 값으로 교체하고 날짜를 명기한다. "
+                "해당 일자 데이터가 없으면 그 수치 문장을 완화하거나 덜어낸다 — 옛 날짜 "
+                "수치를 무표기로 남기지 마라."
+            )
         user_message = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
         try:
             if self.config.use_cli_mode:
                 raw = await self._call_cli(
                     user_message, timeout_s=300.0,
-                    system_prompt=self.REVISE_SYSTEM_PROMPT,
+                    system_prompt=revise_prompt,
                 )
             else:
                 raw = await self._call_api(
                     user_message, mode="standard",
-                    system_prompt=self.REVISE_SYSTEM_PROMPT,
+                    system_prompt=revise_prompt,
                 )
         except Exception as exc:  # noqa: BLE001 — 보완 실패 → 원본 유지
             logger.warning("[revise_for_facts] LLM call failed: %s", exc)

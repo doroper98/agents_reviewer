@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.8.8
+last_synced_with: v7.0.0
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -9,7 +9,7 @@ depends_on:
   - "src/agents/report_synthesizer.py:_format_structured_text (fallback 변환)"
   - "docs/REPORT_STYLE_GUIDE.md (본문 문체 SSOT — v5.2.9 부터)"
   - "docs/CHART_RENDERING_ANTIPATTERNS.md (코드/렌더링 anti-pattern 별도)"
-last_review: 2026-05-17
+last_review: 2026-06-11
 ---
 
 # Report Writing Anti-Patterns
@@ -526,6 +526,25 @@ Taipei 키노트는 *별개 행사*(부대 일정으로 겹침). "컴퓨텍스�
 **Fix 방향**: 독자 노출에서 raw "신뢰도 N%" 제거. 필요하면 "검증 한계" 산문 문단으로
 대체(어떤 부분이 확인됐고 어떤 부분이 추정인지). 결정적: 템플릿에서 confidence 수치
 렌더 차단. ReportBundle 내부 메타로만 보존.
+
+## WRITE-AP-22: 최신 가용 데이터를 두고 옛 일자의 (정확한) 시장 수치를 무표기 채택 (v7.0.0 신설)
+
+**증상**: 6/5 발행 브리핑에 time_series 엔 6/4 종가까지 있는데 본문이 6/1 종가를 인용.
+수치 자체는 6/1 기준으로 *정확* — 그래서 "사실 검증" 만 하는 검수(codex)가 통과시키고,
+보완 패스(Opus)도 같은 맹점을 공유해 루프가 "정확하지만 시점이 틀린" 문장으로 수렴.
+WRITE-AP-11/14 가 시점 *표기* (거리 환산·카운트다운)의 회귀라면, 본 항목은 시점 *선택*
+(어느 날짜의 값을 쓸 것인가)의 회귀.
+
+**원인**: ① 작성·검수·보완 어디에도 "이 보고서가 어느 시점의 값을 필요로 하는가" 계약이
+없음. ② 결정적 가드(MarketDataSourceGuard)가 날짜 비앵커 — 본문 수치가 시계열의 *어느*
+종가와든 일치하면 통과 (AP-V7-5).
+
+**Fix 방향 (V7 Track C, `V7_REF_FRAME`)**: ① 결정적 가드 2종 — `DateAnchoredMarketGuard`
+(날짜 명시 수치를 *그 날짜* bar 와 대조) + `StaleAnchorGuard` (종목별 최신 인용 시점이
+가용 시계열보다 1거래일 초과 뒤처지면 flag). ② `reference_frame` (종목별 최신 가용 일자,
+[src/factcheck/reference_frame.py](../src/factcheck/reference_frame.py)) 을 composer 작성·
+codex 검수·Opus 보완 3곳에 동일 주입. ③ codex error_class `wrong_timeframe` 신설 (사용자
+게이트 승인 2026-06-11) — 잔존 시 착지 drop. 옛 일자 값은 절대 날짜+사유 명시 시에만 허용.
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)
