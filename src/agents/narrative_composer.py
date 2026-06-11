@@ -432,19 +432,37 @@ SYSTEM_PROMPT = (
     "  - orchestrator 의 ``_ensure_time_series_chart`` 안전망이 composer 가\n"
     "    빠뜨려도 첫 섹션에 자동 보충. 하지만 *composer 가 직접 정확한 위치·\n"
     "    이벤트 마커와 함께 emit 하는 것이 1순위*. hook 은 fallback.\n\n"
-    "=== 지도 (v4.2.0 — 지리적 사건일 때만) ===\n"
+    "=== 지도 (v4.2.0 — 지리적 사건일 때만 · v7.2.0 어휘 확장) ===\n"
     "- 사건이 *명백히 지리적* 일 때만 (해협 봉쇄 / 무역 회랑 / 분쟁 지역 등).\n"
     "- 보고서 레벨 1개 (top-level ``embedded_map``). 섹션별 지도 없음.\n"
-    "- 형식:\n"
+    "- 형식 (v7.2.0 — kind/weight/value/regions/sea_labels 는 전부 선택):\n"
     "  ```json\n"
     "  {\n"
     '    \"center\": [경도, 위도],\n'
     '    \"zoom\": 3.0,\n'
-    '    \"markers\": [{\"id\":\"hormuz\",\"name\":\"호르무즈\",\"lng\":56.4,\"lat\":26.6,\"highlight\":true}],\n'
-    '    \"arcs\": [{\"from_id\":\"hormuz\",\"to_id\":\"singapore\",\"highlight\":true,\"label\":\"원유 회랑\"}],\n'
-    '    \"legend\": [{\"label\":\"중점 회랑\",\"kind\":\"line\",\"highlight\":true}]\n'
+    '    \"markers\": [{\"id\":\"hormuz\",\"name\":\"호르무즈 해협\",\"lng\":56.4,\"lat\":26.6,\"highlight\":true,\n'
+    '                 \"kind\":\"chokepoint\", \"value\":\"세계 원유 20% 통과\", \"label_side\":\"top\"}],\n'
+    '    \"arcs\": [{\"from_id\":\"hormuz\",\"to_id\":\"singapore\",\"kind\":\"flow\",\"weight\":3,\"label\":\"원유 회랑\",\"label_t\":0.6}],\n'
+    '    \"regions\": [{\"name\":\"Iran\",\"role\":\"rival\",\"label\":\"이란\"}],\n'
+    '    \"sea_labels\": [{\"name\":\"아라비아해\",\"lng\":64.5,\"lat\":8.5}],\n'
+    '    \"legend\": [{\"label\":\"원유 흐름\",\"kind\":\"flow\"},{\"label\":\"군사 긴장\",\"kind\":\"tension\"}]\n'
     "  }\n"
     "  ```\n"
+    "- 지도 어휘 (v7.2.0 — 지도가 사건의 *구조* 를 직접 말하게):\n"
+    "  · arcs.kind: ``flow``(이동·수출 — 실선+방향 화살촉. from→to 방향 주의) /\n"
+    "    ``alt``(우회·대안 경로 — 점선) / ``tension``(대립·긴장 — 하락색+✕) / 생략(일반 연결).\n"
+    "  · arcs.weight 1~3: 물동량·중요도 → 선 굵기. 주 회랑 3, 보조 2, 지선 1.\n"
+    "  · arcs.label_t 0~1: 라벨이 붙을 경로상 위치 (혼잡 회피용, 기본 0.5).\n"
+    "  · markers.kind: ``chokepoint``(해협·운하·관문 병목 ◆) / ``port``(항만 ◎) /\n"
+    "    ``military``(군사 거점 ▲) / 생략(도시·일반 점).\n"
+    "  · markers.value: 그 지점의 핵심 수치 한 줄 (예: '원유 수입 70% 경유'). 본문 근거 있는 것만.\n"
+    "  · markers.label_side: top/bottom/left/right — 마커가 밀집한 권역의 라벨 혼잡 회피 힌트.\n"
+    "  · regions: 국가 역할 색조 — role ``subject``(보고서 주인공) / ``ally``(우방·협력) /\n"
+    "    ``rival``(대립) / ``contested``(분쟁 중). name 은 *영문 국가명* (world-atlas 표기:\n"
+    "    'South Korea', 'Iran', 'United States of America', 'China', 'Saudi Arabia' 등).\n"
+    "    최대 4개 — 본문이 실제로 그 역할로 다루는 국가만.\n"
+    "  · sea_labels: 무대가 되는 바다·해역 이름 워터마크. 최대 3개, 마커·경로와 안 겹치는 좌표로.\n"
+    "- 절제: markers ≤8 / arcs ≤8. 본문에 언급 안 된 지점·관계 금지 (CHART-AP-14).\n"
     "- d3-geo + TopoJSON 베이스맵 위에 mono 톤으로 렌더 (외부 타일 의존 없음).\n\n"
     "=== 사진 (v5.4.0 — 출처 기사의 og:image) ===\n"
     "- 입력에 ``available_images`` 가 있을 때만 사용 가능 — orchestrator 가\n"
@@ -1657,14 +1675,16 @@ class NarrativeComposer:
         if not isinstance(m, dict):
             return m
         nm = dict(m)
-        for coll_key in ("markers", "arcs", "legend"):
+        # v7.2.0 — regions/sea_labels 합류 + value(마커 보조 수치 행)도 사용자
+        # 노출 텍스트라 함께 정화. 신규 필드는 전부 additive (없으면 그대로).
+        for coll_key in ("markers", "arcs", "legend", "regions", "sea_labels"):
             coll = nm.get(coll_key)
             if isinstance(coll, list):
                 new_coll = []
                 for item in coll:
                     if isinstance(item, dict):
                         it = dict(item)
-                        for tk in ("name", "label"):
+                        for tk in ("name", "label", "value"):
                             if isinstance(it.get(tk), str) and it[tk]:
                                 it[tk] = cls._clean_text(it[tk])
                         new_coll.append(it)

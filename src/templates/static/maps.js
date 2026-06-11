@@ -3,6 +3,11 @@
  * v3.4.0~v4.1.0 의 maplibre-gl 의존 폐기 (mono guide §2).
  * v4.4.6 추가: d3.zoom() pan/zoom 인터랙션 + 소말릴란드 해칭 폴리곤.
  * v4.5.x: 소말릴란드 폴리곤·legend 를 viewport 가시성으로 게이트 (CHART-AP-13).
+ * v7.2.0: 지도 어휘 격상 (사용자 승인 — samples/map_redesign_v7_compare.html).
+ *   additive 신규 필드 — arcs.kind(flow/alt/tension)·weight(1~3)·label_t,
+ *   markers.kind(chokepoint/port/military/city)·value·label_side,
+ *   regions(국가 역할 색조), sea_labels(세리프 워터마크). 무지정 payload 는
+ *   기존 렌더와 동일 (구 발행본 소급 안전). + graticule·해안 정의선·라벨 pill/헤일로.
  *   해당 지역이 화면에 안 잡히는 보고서에서는 둘 다 자동으로 사라짐 —
  *   "지도 = 보고서 주제와 정합" 원칙.
  *
@@ -28,6 +33,7 @@
       text: r('--text') || '#EFE5D1',
       muted: r('--muted') || '#A88E7A',
       accent: r('--accent') || '#D4A858',
+      down: r('--down') || '#C9837A',
       land: r('--map-land') || r('--bg') || '#3D1820',
       water: r('--map-water') || '#2A0E16',
       boundary: r('--map-boundary') || r('--text') || '#EFE5D1',
@@ -97,6 +103,16 @@
           .attr('stroke', t.accent).attr('stroke-width', 1.4).attr('stroke-opacity', 0.85);
       });
 
+    // v7.2.0 — flow 방향 화살촉 + contested 지역 해치
+    defs.append('marker').attr('id', 'map-arrow').attr('viewBox', '0 0 10 10')
+      .attr('refX', 8).attr('refY', 5).attr('markerWidth', 5.5).attr('markerHeight', 5.5)
+      .attr('orient', 'auto-start-reverse')
+      .append('path').attr('d', 'M 0 1 L 9 5 L 0 9 Z').attr('fill', t.accent);
+    defs.append('pattern').attr('id', 'map-contested').attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 5).attr('height', 5).attr('patternTransform', 'rotate(45)')
+      .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 5)
+      .attr('stroke', t.accent).attr('stroke-width', 1).attr('stroke-opacity', 0.5);
+
     svg.append('rect').attr('width', W).attr('height', H).attr('fill', t.water);
 
     const center = payload.center || [0, 0];
@@ -126,12 +142,66 @@
       if (!world) return;
       const countries = topojson.feature(world, world.objects.countries);
       const borders = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+      // v7.2.0 — 경위선 graticule (카르토그래피 질감, 아주 옅게)
+      gMap.append('path').datum(d3.geoGraticule10())
+        .attr('d', path).attr('fill', 'none')
+        .attr('stroke', t.text).attr('stroke-opacity', 0.045).attr('stroke-width', 0.5)
+        .attr('vector-effect', 'non-scaling-stroke');
       gMap.selectAll('path.country').data(countries.features).join('path')
         .attr('class', 'country').attr('d', path).attr('fill', t.land).attr('stroke', 'none');
+      // v7.2.0 — 해안 정의선 (대륙 외곽) + 내부 국경
+      gMap.append('path').datum(topojson.merge(world, world.objects.countries.geometries))
+        .attr('d', path).attr('fill', 'none')
+        .attr('stroke', t.boundary).attr('stroke-width', 0.5).attr('stroke-opacity', 0.35)
+        .attr('vector-effect', 'non-scaling-stroke');
       gMap.append('path').datum(borders)
         .attr('class', 'country-border').attr('d', path).attr('fill', 'none')
         .attr('stroke', t.boundary).attr('stroke-width', 0.7).attr('stroke-opacity', 0.7)
         .attr('vector-effect', 'non-scaling-stroke');
+
+      // v7.2.0 — regions: 국가 역할 색조 (subject/ally/rival/contested).
+      // composer 가 명시 emit 한 국가만 (CHART-AP-14/15 원칙 유지).
+      const ROLE = {
+        subject:   { fill: t.accent, op: 0.20 },
+        ally:      { fill: t.text,   op: 0.10 },
+        rival:     { fill: t.down,   op: 0.16 },
+        contested: { fill: 'url(#map-contested)', op: null },
+      };
+      (payload.regions || []).forEach(rg => {
+        if (!rg || !rg.name) return;
+        const feat = countries.features.find(f =>
+          f.properties && f.properties.name === rg.name);
+        if (!feat) return;
+        const role = ROLE[String(rg.role || 'ally').toLowerCase()] || ROLE.ally;
+        const rp = gMap.append('path').attr('d', path(feat)).attr('fill', role.fill);
+        if (role.op != null) rp.attr('fill-opacity', role.op);
+        rp.attr('stroke', role.fill === 'url(#map-contested)' ? t.accent : role.fill)
+          .attr('stroke-opacity', 0.5).attr('stroke-width', 0.7)
+          .attr('vector-effect', 'non-scaling-stroke');
+        if (rg.label) {
+          const c = path.centroid(feat);
+          gMap.append('text').attr('x', c[0]).attr('y', c[1]).attr('text-anchor', 'middle')
+            .attr('font-family', 'IBM Plex Sans KR, Noto Sans KR').attr('font-size', 10)
+            .attr('letter-spacing', 2).attr('font-weight', 600)
+            .attr('fill', String(rg.role) === 'rival' ? t.down : t.text)
+            .attr('fill-opacity', 0.75)
+            .attr('data-region-label', '1').attr('data-base-font', 10)
+            .text(rg.label);
+        }
+      });
+
+      // v7.2.0 — sea_labels: 바다·해역 세리프 이탤릭 워터마크 (FT 지도 문법).
+      (payload.sea_labels || []).forEach(sl => {
+        if (!sl || !sl.name) return;
+        const p = project(+sl.lng, +sl.lat);
+        if (!p) return;
+        gMap.append('text').attr('x', p[0]).attr('y', p[1]).attr('text-anchor', 'middle')
+          .attr('font-family', 'Newsreader, Noto Serif KR, serif')
+          .attr('font-style', 'italic').attr('font-size', 15).attr('letter-spacing', 5)
+          .attr('fill', t.text).attr('fill-opacity', 0.30)
+          .attr('data-sea-label', '1').attr('data-base-font', 15)
+          .text(sl.name);
+      });
 
       // CHART-AP-15: 소말릴란드 자동 렌더 제거. composer 가 명시 요청한 경우만.
     }
@@ -140,6 +210,9 @@
       renderBase(world);
 
       const markersById = Object.fromEntries((payload.markers || []).map(m => [m.id, m]));
+      // v7.2.0 — 선 굵기 사다리 (weight 1~3 = 물동량·중요도)
+      const ARC_WEIGHT = { 1: 1.2, 2: 2.1, 3: 3.2 };
+      const usedArcKinds = new Set();
       (payload.arcs || []).forEach(a => {
         const f = markersById[a.from_id], to = markersById[a.to_id];
         if (!f || !to) return;
@@ -147,20 +220,84 @@
         const p2 = project(+to.lng, +to.lat);
         if (!p1 || !p2) return;
         const bow = Math.min(70, Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * 0.22);
-        const color = a.highlight ? t.accent : t.muted;
-        const dash = a.highlight ? null : '5,3';
+        const kind = String(a.kind || '').toLowerCase();
         const g = gArc.append('g').attr('class', 'arc');
-        g.append('path').attr('d', curvedPath(p1, p2, bow))
-          .attr('fill', 'none').attr('stroke', color)
-          .attr('stroke-width', a.highlight ? 2.4 : 1.6)
-          .attr('stroke-dasharray', dash).attr('opacity', 0.9)
-          .attr('vector-effect', 'non-scaling-stroke');
+        let labelColor;
+        if (kind === 'flow') {
+          // 이동·수출 흐름 — 물색 헤일로 + 실선 + 방향 화살촉, 굵기 = weight
+          usedArcKinds.add('flow');
+          const sw = ARC_WEIGHT[a.weight] || 2.1;
+          const d = curvedPath(p1, p2, bow);
+          g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', t.water).attr('stroke-width', sw + 2.6).attr('stroke-opacity', 0.65)
+            .attr('vector-effect', 'non-scaling-stroke');
+          g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', t.accent).attr('stroke-width', sw).attr('stroke-opacity', 0.95)
+            .attr('marker-end', 'url(#map-arrow)')
+            .attr('vector-effect', 'non-scaling-stroke');
+          labelColor = t.accent;
+        } else if (kind === 'alt') {
+          // 우회·대안 경로 — 긴 점선
+          usedArcKinds.add('alt');
+          g.append('path').attr('d', curvedPath(p1, p2, bow))
+            .attr('fill', 'none').attr('stroke', t.muted)
+            .attr('stroke-width', Math.max(1.2, (ARC_WEIGHT[a.weight] || 1.6) - 0.4))
+            .attr('stroke-dasharray', '7,5').attr('stroke-opacity', 0.9)
+            .attr('vector-effect', 'non-scaling-stroke');
+          labelColor = t.muted;
+        } else if (kind === 'tension') {
+          // 대립·긴장 — 하락색 짧은 점선 + 중간 ✕ 글리프
+          usedArcKinds.add('tension');
+          const tp = g.append('path').attr('d', curvedPath(p1, p2, bow))
+            .attr('fill', 'none').attr('stroke', t.down).attr('stroke-width', 1.3)
+            .attr('stroke-dasharray', '2,4').attr('stroke-opacity', 0.85)
+            .attr('vector-effect', 'non-scaling-stroke');
+          try {
+            const node = tp.node();
+            const mid = node.getPointAtLength(node.getTotalLength() / 2);
+            [[-1, -1, 1, 1], [-1, 1, 1, -1]].forEach(seg => {
+              g.append('line')
+                .attr('x1', mid.x + seg[0] * 4).attr('y1', mid.y + seg[1] * 4)
+                .attr('x2', mid.x + seg[2] * 4).attr('y2', mid.y + seg[3] * 4)
+                .attr('stroke', t.down).attr('stroke-width', 1.8)
+                .attr('stroke-linecap', 'round')
+                .attr('vector-effect', 'non-scaling-stroke');
+            });
+          } catch (e) { /* getPointAtLength 미지원 환경 — 글리프만 생략 */ }
+          labelColor = t.down;
+        } else {
+          // 무지정 — 기존 렌더와 동일 (구 발행본 소급 안전)
+          const color = a.highlight ? t.accent : t.muted;
+          const dash = a.highlight ? null : '5,3';
+          g.append('path').attr('d', curvedPath(p1, p2, bow))
+            .attr('fill', 'none').attr('stroke', color)
+            .attr('stroke-width', a.highlight ? 2.4 : 1.6)
+            .attr('stroke-dasharray', dash).attr('opacity', 0.9)
+            .attr('vector-effect', 'non-scaling-stroke');
+          labelColor = color;
+        }
         if (a.label) {
-          const mx = (p1[0] + p2[0]) / 2 + 4, my = (p1[1] + p2[1]) / 2 - 6 - bow * 0.5;
-          g.append('text').attr('x', mx).attr('y', my).attr('text-anchor', 'middle')
-            .attr('fill', color).attr('font-family', 'Noto Sans KR').attr('font-size', 10)
-            .attr('font-weight', 600)
-            .attr('data-arc-label', '1')
+          // v7.2.0 — 경로 위 t 지점 (label_t 0~1, 기본 0.5) 의 물색 pill 라벨.
+          // 줌 시 마커처럼 카운터-스케일 (.arc-pill + data-px/py).
+          let pt;
+          try {
+            const node = g.select('path').node();
+            const L = node.getTotalLength();
+            pt = node.getPointAtLength(L * (a.label_t != null ? +a.label_t : 0.5));
+          } catch (e) {
+            pt = { x: (p1[0] + p2[0]) / 2, y: (p1[1] + p2[1]) / 2 - bow * 0.5 };
+          }
+          const tw = String(a.label).length * 10 + 14;
+          const pill = gArc.append('g').attr('class', 'arc-pill')
+            .attr('transform', `translate(${pt.x},${pt.y - 13})`)
+            .attr('data-px', pt.x).attr('data-py', pt.y - 13);
+          pill.append('rect').attr('x', -tw / 2).attr('y', -10).attr('width', tw)
+            .attr('height', 16).attr('rx', 8)
+            .attr('fill', t.water).attr('fill-opacity', 0.82)
+            .attr('stroke', labelColor).attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
+          pill.append('text').attr('x', 0).attr('y', 2).attr('text-anchor', 'middle')
+            .attr('fill', labelColor).attr('font-family', 'Noto Sans KR')
+            .attr('font-size', 10).attr('font-weight', 600)
             .text(a.label);
         }
       });
@@ -175,19 +312,48 @@
         };
       })();
       const markerPositions = [];
+      const usedMarkerKinds = new Set();
       (payload.markers || []).forEach(m => {
         const p = project(+m.lng, +m.lat);
         if (!p) return;
         const isHL = !!m.highlight;
-        const r = isHL ? 6 : 4;
         const color = isHL ? t.accent : t.muted;
+        const kind = String(m.kind || '').toLowerCase();
         const g = gMarker.append('g').attr('class', 'marker')
           .attr('transform', `translate(${p[0]},${p[1]})`)
           .attr('data-px', p[0]).attr('data-py', p[1]);
-        g.append('circle').attr('r', r + 2).attr('fill', t.water).attr('opacity', 0.85);
-        g.append('circle').attr('r', r).attr('fill', color)
-          .attr('stroke', t.text).attr('stroke-width', isHL ? 1.0 : 0.6)
-          .attr('vector-effect', 'non-scaling-stroke');
+        let r;
+        if (kind === 'chokepoint') {
+          // 병목 지점 — ◆ + 이중 링 (해협·운하·관문)
+          usedMarkerKinds.add('chokepoint');
+          r = 8;
+          g.append('circle').attr('r', 11).attr('fill', 'none')
+            .attr('stroke', t.accent).attr('stroke-opacity', 0.4).attr('stroke-width', 1);
+          g.append('rect').attr('x', -5).attr('y', -5).attr('width', 10).attr('height', 10)
+            .attr('transform', 'rotate(45)').attr('fill', t.accent)
+            .attr('stroke', t.water).attr('stroke-width', 1.2);
+        } else if (kind === 'port') {
+          // 항만·터미널 — 이중 원
+          usedMarkerKinds.add('port');
+          r = isHL ? 6.5 : 5;
+          g.append('circle').attr('r', r).attr('fill', t.water)
+            .attr('stroke', color).attr('stroke-width', 1.6);
+          g.append('circle').attr('r', isHL ? 2.6 : 2).attr('fill', color);
+        } else if (kind === 'military') {
+          // 군사 거점 — ▲
+          usedMarkerKinds.add('military');
+          r = 6;
+          g.append('path').attr('d', 'M 0 -6 L 5.5 4 L -5.5 4 Z')
+            .attr('fill', t.text).attr('fill-opacity', 0.85)
+            .attr('stroke', t.water).attr('stroke-width', 1);
+        } else {
+          // 무지정/city — 기존 점 렌더와 동일 (구 발행본 소급 안전)
+          r = isHL ? 6 : 4;
+          g.append('circle').attr('r', r + 2).attr('fill', t.water).attr('opacity', 0.85);
+          g.append('circle').attr('r', r).attr('fill', color)
+            .attr('stroke', t.text).attr('stroke-width', isHL ? 1.0 : 0.6)
+            .attr('vector-effect', 'non-scaling-stroke');
+        }
         markerPositions.push({ m, px: p[0], py: p[1], r, isHL, gNode: g.node() });
       });
       const sorted = markerPositions.slice().sort((a, b) => (b.isHL ? 1 : 0) - (a.isHL ? 1 : 0));
@@ -197,12 +363,17 @@
         const fontSize = 11;
         const labelW = text.length * 6.8;
         const labelH = fontSize + 2;
-        const candidates = [
-          { x: px + r + 6,         y: py - labelH / 2,  anchor: 'start' },
-          { x: px - r - 6 - labelW, y: py - labelH / 2, anchor: 'start' },
-          { x: px - labelW / 2,     y: py - r - 14,     anchor: 'start' },
-          { x: px - labelW / 2,     y: py + r + 4,      anchor: 'start' },
-        ];
+        // v7.2.0 — label_side 힌트가 있으면 그 후보를 1순위로 (composer 가
+        // 권역 혼잡을 알고 지정한 경우). 없으면 기존 occupancy 순서 그대로.
+        const SIDE = {
+          right:  { x: px + r + 6,          y: py - labelH / 2, anchor: 'start' },
+          left:   { x: px - r - 6 - labelW, y: py - labelH / 2, anchor: 'start' },
+          top:    { x: px - labelW / 2,     y: py - r - 14,     anchor: 'start' },
+          bottom: { x: px - labelW / 2,     y: py + r + 4,      anchor: 'start' },
+        };
+        let candidates = [SIDE.right, SIDE.left, SIDE.top, SIDE.bottom];
+        const hint = SIDE[String(m.label_side || '').toLowerCase()];
+        if (hint) candidates = [hint, ...candidates.filter(c => c !== hint)];
         let placed = null;
         for (const c of candidates) {
           if (!labelOcc.hits(c.x - 2, c.y - 2, labelW + 4, labelH + 4)) {
@@ -210,10 +381,12 @@
           }
         }
         if (!placed) placed = candidates[0];
+        // v7.2.0 — paint-order 물색 헤일로 (육지·경계선 위 가독)
         gLabel.append('text').attr('x', placed.x).attr('y', placed.y + labelH - 3)
           .attr('text-anchor', placed.anchor)
           .attr('font-family', 'Noto Sans KR').attr('font-size', fontSize)
           .attr('font-weight', isHL ? 700 : 500).attr('fill', t.text)
+          .attr('stroke', t.water).attr('stroke-width', 3).attr('paint-order', 'stroke')
           .attr('data-marker-label', '1')
           .text(text);
         const labelCenterX = placed.x + labelW / 2;
@@ -228,6 +401,20 @@
             .attr('vector-effect', 'non-scaling-stroke');
         }
         labelOcc.add(placed.x - 2, placed.y - 2, labelW + 4, labelH + 4);
+        // v7.2.0 — value 보조 행 (세리프, 이름 아래) — 마커가 수치 근거까지 운반
+        if (m.value) {
+          const vText = String(m.value);
+          const vW = vText.length * 6.2;
+          const vy = placed.y + labelH + 9;
+          gLabel.append('text').attr('x', placed.x).attr('y', vy)
+            .attr('text-anchor', placed.anchor)
+            .attr('font-family', 'Noto Serif KR, serif').attr('font-size', 9.5)
+            .attr('fill', isHL ? t.accent : t.muted)
+            .attr('stroke', t.water).attr('stroke-width', 3).attr('paint-order', 'stroke')
+            .attr('data-marker-label', '1')
+            .text(vText);
+          labelOcc.add(placed.x - 2, vy - 10, vW + 4, 12);
+        }
       });
     });
 
@@ -238,7 +425,23 @@
       payload.legend.forEach((l, i) => {
         const y = i * 16;
         const color = l.highlight ? t.accent : t.muted;
-        if (l.kind === 'line') {
+        if (l.kind === 'flow') {
+          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+            .attr('stroke', t.accent).attr('stroke-width', 3)
+            .attr('marker-end', 'url(#map-arrow)');
+        } else if (l.kind === 'alt') {
+          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+            .attr('stroke', t.muted).attr('stroke-width', 1.4).attr('stroke-dasharray', '7,5');
+        } else if (l.kind === 'tension') {
+          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+            .attr('stroke', t.down).attr('stroke-width', 1.3).attr('stroke-dasharray', '2,4');
+        } else if (l.kind === 'chokepoint') {
+          lg.append('rect').attr('x', 5).attr('y', y + 1).attr('width', 8).attr('height', 8)
+            .attr('transform', `rotate(45 9 ${y + 5})`).attr('fill', t.accent);
+        } else if (l.kind === 'military') {
+          lg.append('path').attr('d', `M 9 ${y - 1} L 14 ${y + 9} L 4 ${y + 9} Z`)
+            .attr('fill', t.text).attr('fill-opacity', 0.85);
+        } else if (l.kind === 'line') {
           lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
             .attr('stroke', color).attr('stroke-width', l.highlight ? 2.4 : 1.6)
             .attr('stroke-dasharray', l.highlight ? null : '5,3');
@@ -273,6 +476,17 @@
           .attr('font-size', 11 / k);
         gArc.selectAll('text[data-arc-label]')
           .attr('font-size', 10 / k);
+        // v7.2.0 — arc 라벨 pill 은 마커처럼 그룹째 카운터-스케일
+        gArc.selectAll('.arc-pill').each(function () {
+          const sel = d3.select(this);
+          const px = +sel.attr('data-px'), py = +sel.attr('data-py');
+          sel.attr('transform', `translate(${px},${py}) scale(${1 / k})`);
+        });
+        // v7.2.0 — 바다·지역 워터마크도 화면상 크기 유지
+        gMap.selectAll('text[data-sea-label], text[data-region-label]').each(function () {
+          const sel = d3.select(this);
+          sel.attr('font-size', (+sel.attr('data-base-font') || 12) / k);
+        });
       });
 
     svg.call(zoomBehavior);

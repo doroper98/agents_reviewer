@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.1.0
+last_synced_with: v7.2.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,29 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.2.0 — 지도 어휘 격상 (사용자 승인, 발행본 소급)
+
+- **동기(사용자 지적)** — 지도의 선·관계가 단조로움. 현행 어휘가 마커 2종(강조/일반 점)
+  + 호 2종(실선/점선)뿐이라 봉쇄·회랑·대립·우회가 전부 같은 그림.
+- **변경 (maps.js — 전부 additive, 무지정 payload 는 기존 렌더와 byte-동일 로직)** —
+  - `arcs.kind`: **flow**(물색 헤일로+실선+방향 화살촉) / **alt**(우회 점선) /
+    **tension**(하락색+중간 ✕) + `weight` 1~3 굵기 사다리 + `label_t`(경로상 라벨 위치).
+  - arc 라벨 → 물색 pill (줌 시 마커처럼 카운터-스케일).
+  - `markers.kind`: **chokepoint**(◆+이중 링) / **port**(이중 원) / **military**(▲) +
+    `value`(세리프 보조 수치 행) + `label_side`(밀집 권역 라벨 힌트 — 기존 occupancy
+    충돌 회피의 1순위 후보로 합류).
+  - `regions`: 국가 역할 색조 — subject(액센트)/ally(잉크)/rival(하락색)/contested(45° 해치).
+    world-atlas 영문 국가명 매칭, composer 명시 emit 만 (CHART-AP-14/15 유지).
+  - `sea_labels`: 바다·해역 세리프 이탤릭 워터마크 (FT 지도 문법).
+  - graticule 텍스처 + 해안 정의선 + 마커 라벨 paint-order 물색 헤일로.
+  - 범례 kind 확장 (flow/alt/tension/chokepoint/military).
+- **composer** — SYSTEM_PROMPT 지도 섹션에 신규 어휘 스키마·사용 원칙 (regions ≤4 /
+  sea_labels ≤3 / markers·arcs ≤8, 본문 언급 근거 필수). `_clean_map` 이 regions/
+  sea_labels/value 텍스트도 정화.
+- **검증** — [samples/map_redesign_v7_compare.html](samples/map_redesign_v7_compare.html)
+  좌측을 production+신규 스키마로 교체, headless 렌더로 목업과 동등 확인.
+  베이스맵 로컬 사본 (samples/vendor/) 으로 차단망에서도 목업 동작.
 
 ## v7.1.0 — 초기 7종 차트 비주얼 격상 (사용자 승인, 과거 발행본 소급)
 

@@ -38,41 +38,50 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="rd-head">
   <h1>지도 — 어휘 격상 비교 목업</h1>
-  <p>현행 embedded_map 의 어휘는 <b>마커 2종 (강조/일반 점) + 호 2종 (액센트 실선 / muted 점선)</b> 이
-     전부 — 봉쇄·회랑·대립·우회 어떤 사건이든 같은 그림이 나온다. 리디자인은 mono 제약 안에서
-     <b>선의 종류·굵기·방향, 마커의 역할 글리프, 지역 역할 색조, 바다 라벨</b> 로 지도가 사건의
-     구조를 직접 말하게 한다. 데이터 계약은 전부 additive (구 보고서 payload 는 기존 렌더와 동일).</p>
+  <p><b>★ v7.2.0 에서 production 이식 완료 (사용자 승인).</b> 좌측은 production maps.js 가
+     *신규 스키마 payload* 를 렌더한 결과 (이식 검증), 우측은 목업 레퍼런스. 기존 payload
+     (kind/regions 무지정) 는 종전 렌더와 동일 — additive 라 구 발행본 소급 안전.
+     원 제안: 마커 2종+호 2종뿐이던 어휘를 <b>선의 종류·굵기·방향, 역할 글리프, 지역 색조,
+     바다 라벨</b> 로 확장해 지도가 사건의 구조를 직접 말하게 한다.</p>
   <div class="rd-themes" id="themes"></div>
 </div>
 <div class="rd-wrap">
   <div class="map-shell">
-    <span class="rd-tag cur">현행 (production maps.js)</span>
+    <span class="rd-tag cur">production maps.js (v7.2.0 — 신규 스키마)</span>
     <h2>호르무즈 봉쇄 리스크 — 아시아 원유 회랑</h2>
-    <p class="sub">마커 = 점 2종, 선 = 실선/점선 2종. 회랑·우회로·대립이 모두 같은 문법.</p>
+    <p class="sub">이식 검증 — 아래 지도는 production 렌더러가 신규 어휘 payload 를 그린 결과.</p>
     <div class="map-box map-stage" id="freeform-map"></div>
     <script type="application/json" id="map-payload">{
-      "center": [78, 17], "zoom": 1.55,
+      "center": [82, 16], "zoom": 1.75,
+      "regions": [
+        {"name":"Iran","role":"rival","label":"이란"},
+        {"name":"Saudi Arabia","role":"ally"},
+        {"name":"South Korea","role":"subject"}
+      ],
+      "sea_labels": [
+        {"name":"아라비아해","lng":64.5,"lat":8.5},
+        {"name":"벵골만","lng":88,"lat":11},
+        {"name":"남중국해","lng":113.5,"lat":17.5}
+      ],
       "markers": [
-        {"id":"hormuz","name":"호르무즈 해협","lng":56.5,"lat":26.6,"highlight":true},
-        {"id":"ras","name":"라스 타누라","lng":50.15,"lat":26.64},
-        {"id":"yanbu","name":"얀부 (홍해)","lng":38.06,"lat":24.09},
-        {"id":"sg","name":"싱가포르","lng":103.8,"lat":1.35},
-        {"id":"busan","name":"부산","lng":129.05,"lat":35.1,"highlight":true},
-        {"id":"ningbo","name":"닝보","lng":121.55,"lat":29.87},
-        {"id":"diego","name":"디에고가르시아 (미군)","lng":72.41,"lat":-7.31}
+        {"id":"hormuz","name":"호르무즈 해협","lng":56.5,"lat":26.6,"kind":"chokepoint","highlight":true,"value":"세계 원유 20% 통과","label_side":"top"},
+        {"id":"ras","name":"라스 타누라","lng":50.15,"lat":26.64,"kind":"port","label_side":"left"},
+        {"id":"sg","name":"싱가포르","lng":103.8,"lat":1.35,"kind":"port","label_side":"bottom"},
+        {"id":"busan","name":"부산","lng":129.05,"lat":35.1,"kind":"port","highlight":true,"value":"원유 수입 70% 경유","label_side":"right"},
+        {"id":"ningbo","name":"닝보","lng":121.55,"lat":29.87,"kind":"port","label_side":"left"},
+        {"id":"diego","name":"디에고가르시아","lng":72.41,"lat":-7.31,"kind":"military","value":"미군 기지","label_side":"bottom"}
       ],
       "arcs": [
-        {"from_id":"ras","to_id":"hormuz","highlight":true},
-        {"from_id":"hormuz","to_id":"sg","highlight":true,"label":"원유 회랑"},
-        {"from_id":"sg","to_id":"busan","highlight":true},
-        {"from_id":"sg","to_id":"ningbo"},
-        {"from_id":"ras","to_id":"yanbu","label":"동서 파이프라인 (우회)"},
-        {"from_id":"hormuz","to_id":"diego"}
+        {"from_id":"ras","to_id":"hormuz","kind":"flow","weight":3},
+        {"from_id":"hormuz","to_id":"sg","kind":"flow","weight":3,"label":"원유 회랑","label_t":0.62},
+        {"from_id":"sg","to_id":"busan","kind":"flow","weight":2},
+        {"from_id":"sg","to_id":"ningbo","kind":"flow","weight":1},
+        {"from_id":"hormuz","to_id":"diego","kind":"tension","label":"군사 긴장","label_t":0.5}
       ],
       "legend": [
-        {"label":"중점 회랑","kind":"line","highlight":true},
-        {"label":"우회·기타","kind":"line"},
-        {"label":"핵심 지점","kind":"dot","highlight":true}
+        {"label":"흐름 (굵기 = 물동량)","kind":"flow"},
+        {"label":"대립","kind":"tension"},
+        {"label":"병목 지점","kind":"chokepoint"}
       ]
     }</script>
   </div>

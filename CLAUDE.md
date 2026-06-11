@@ -355,8 +355,9 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - Graceful degrade — sources 빈 list / 모든 URL 403·timeout / 네트워크 차단된 환경 / composer 가 자신 없어 사진 emit X 모두 보고서 정상 진행. `market_fetcher` 와 동일 패턴.
 - **주의**: 사용자에게 노출되는 *유일한 외부 이미지 출처*. 광고·placeholder·매체 보일러플레이트 사진이 박힐 위험 — composer `SYSTEM_PROMPT` 의 *선택 원칙 #3* (title 에 'logo' / 'newsletter' / 'subscribe' 만 있으면 emit X) 으로 차단하지만 100% 아님. 봇 본인 사용 목적이므로 저작권은 출처표기 (© Publisher) 로 갈음.
 
-## Map System (v4.5.7)
+## Map System (v7.2.0)
 - composer 가 `ComposedReport.embedded_map` 에 보고서당 1개 emit (지리적 사건일 때만).
+- **v7.2.0 어휘 확장 (additive — 무지정 payload 는 기존 렌더 동일)**: `arcs.kind`(flow 방향 화살촉+weight 1~3 굵기 / alt 우회 점선 / tension 하락색 ✕) + `arcs.label_t`, `markers.kind`(chokepoint ◆ / port ◎ / military ▲) + `value`(보조 수치 행) + `label_side`, `regions`(국가 역할 색조 subject/ally/rival/contested — world-atlas 영문명 매칭), `sea_labels`(세리프 워터마크), graticule·해안 정의선·라벨 pill/헤일로. 비교 목업: [samples/map_redesign_v7_compare.html](samples/map_redesign_v7_compare.html).
 - 베이스맵: d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl 의존 폐기.
 - 렌더링: `maps.js` 가 `#freeform-map` 컨테이너 + `#map-payload` 스크립트 읽어 SVG 그림.
 - mono guide §2.2: 외부 타일 서비스 / 글리프 PBF 호출 금지. world-atlas 한 번 fetch (~100KB) 후 캐시.
