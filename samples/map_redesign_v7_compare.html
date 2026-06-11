@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="midnight_indigo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Redesign V7 — 지도 어휘 격상 비교 목업 (현행 vs 리디자인)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/templates/report.css">
+<link rel="stylesheet" href="../src/templates/static/maps.css">
+<style>
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR', sans-serif; margin: 0; }
+.rd-head { max-width: 1240px; margin: 0 auto; padding: 36px 18px 6px; }
+.rd-head h1 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 27px; margin: 0 0 8px; color: var(--fg-1, var(--text)); }
+.rd-head p { font-size: 13.5px; line-height: 1.7; color: var(--fg-2, var(--muted)); margin: 0 0 12px; max-width: 920px; }
+.rd-themes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.rd-themes button { font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border-soft, var(--border)); background: var(--card); color: var(--text); cursor: pointer; }
+.rd-themes button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.rd-wrap { max-width: 1240px; margin: 0 auto; padding: 8px 18px 90px; display: grid;
+  grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1000px) { .rd-wrap { grid-template-columns: 1fr; } }
+.rd-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 4px; margin-bottom: 8px; }
+.rd-tag.cur { color: var(--fg-3, var(--muted)); border: 1px solid var(--border-soft, var(--border)); }
+.rd-tag.new { color: var(--accent); border: 1px solid var(--accent); }
+.map-shell { background: var(--card); border: 1px solid var(--border-soft, var(--border));
+  border-radius: 10px; padding: 14px; }
+.map-shell h2 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 16px; margin: 0 0 4px; color: var(--fg-1, var(--text)); }
+.map-shell .sub { font-size: 12px; font-style: italic; color: var(--fg-2, var(--muted)); margin: 0 0 10px; }
+.map-box { position: relative; width: 100%; aspect-ratio: 720 / 420; background: var(--map-water, rgba(0,0,0,0.3)); border-radius: 6px; overflow: hidden; }
+.map-box svg { width: 100%; height: 100%; display: block; }
+.rd-notes { grid-column: 1 / -1; font-size: 13px; line-height: 1.75; color: var(--fg-2, var(--muted)); max-width: 1000px; }
+.rd-notes b { color: var(--fg-1, var(--text)); }
+</style>
+</head>
+<body>
+<div class="rd-head">
+  <h1>지도 — 어휘 격상 비교 목업</h1>
+  <p>현행 embedded_map 의 어휘는 <b>마커 2종 (강조/일반 점) + 호 2종 (액센트 실선 / muted 점선)</b> 이
+     전부 — 봉쇄·회랑·대립·우회 어떤 사건이든 같은 그림이 나온다. 리디자인은 mono 제약 안에서
+     <b>선의 종류·굵기·방향, 마커의 역할 글리프, 지역 역할 색조, 바다 라벨</b> 로 지도가 사건의
+     구조를 직접 말하게 한다. 데이터 계약은 전부 additive (구 보고서 payload 는 기존 렌더와 동일).</p>
+  <div class="rd-themes" id="themes"></div>
+</div>
+<div class="rd-wrap">
+  <div class="map-shell">
+    <span class="rd-tag cur">현행 (production maps.js)</span>
+    <h2>호르무즈 봉쇄 리스크 — 아시아 원유 회랑</h2>
+    <p class="sub">마커 = 점 2종, 선 = 실선/점선 2종. 회랑·우회로·대립이 모두 같은 문법.</p>
+    <div class="map-box map-stage" id="freeform-map"></div>
+    <script type="application/json" id="map-payload">{
+      "center": [78, 17], "zoom": 1.55,
+      "markers": [
+        {"id":"hormuz","name":"호르무즈 해협","lng":56.5,"lat":26.6,"highlight":true},
+        {"id":"ras","name":"라스 타누라","lng":50.15,"lat":26.64},
+        {"id":"yanbu","name":"얀부 (홍해)","lng":38.06,"lat":24.09},
+        {"id":"sg","name":"싱가포르","lng":103.8,"lat":1.35},
+        {"id":"busan","name":"부산","lng":129.05,"lat":35.1,"highlight":true},
+        {"id":"ningbo","name":"닝보","lng":121.55,"lat":29.87},
+        {"id":"diego","name":"디에고가르시아 (미군)","lng":72.41,"lat":-7.31}
+      ],
+      "arcs": [
+        {"from_id":"ras","to_id":"hormuz","highlight":true},
+        {"from_id":"hormuz","to_id":"sg","highlight":true,"label":"원유 회랑"},
+        {"from_id":"sg","to_id":"busan","highlight":true},
+        {"from_id":"sg","to_id":"ningbo"},
+        {"from_id":"ras","to_id":"yanbu","label":"동서 파이프라인 (우회)"},
+        {"from_id":"hormuz","to_id":"diego"}
+      ],
+      "legend": [
+        {"label":"중점 회랑","kind":"line","highlight":true},
+        {"label":"우회·기타","kind":"line"},
+        {"label":"핵심 지점","kind":"dot","highlight":true}
+      ]
+    }</script>
+  </div>
+  <div class="map-shell">
+    <span class="rd-tag new">리디자인 제안</span>
+    <h2>호르무즈 봉쇄 리스크 — 아시아 원유 회랑</h2>
+    <p class="sub">흐름(굵기=물동량·화살촉=방향) / 차단 ⊘ / 대립 ✕ / 우회 점선 / 지역 역할 색조 / 바다 라벨.</p>
+    <div class="map-box" id="redesign-map"></div>
+  </div>
+  <div class="rd-notes" id="notes"></div>
+</div>
+
+<script>
+(function () {
+  var THEMES = ['editorial_cream', 'burgundy_mono', 'midnight_indigo', 'pine_forest', 'graphite_slate'];
+  var cur = localStorage.getItem('rdmap_theme') || 'midnight_indigo';
+  document.documentElement.setAttribute('data-theme', cur);
+  var wrap = document.getElementById('themes');
+  THEMES.forEach(function (th) {
+    var b = document.createElement('button');
+    b.textContent = th;
+    if (th === cur) b.className = 'on';
+    b.onclick = function () { localStorage.setItem('rdmap_theme', th); location.reload(); };
+    wrap.appendChild(b);
+  });
+})();
+document.getElementById('notes').innerHTML =
+  '<b>제안 어휘 (전부 additive — 기존 payload 필드는 그대로 동작)</b><br>' +
+  '① <b>arcs.kind</b>: flow(이동·수출 — 실선+방향 화살촉) / alt(우회·대안 — 긴 점선) / tension(대립 — 하락색 + 중간 ✕) / 기존 무지정 = 현행 렌더. ' +
+  '② <b>arcs.weight</b> 1~3: 물동량·중요도를 선 굵기 사다리로. ' +
+  '③ <b>arcs.label</b> 은 물 배경 pill 로 가독 보강. ' +
+  '④ <b>markers.kind</b>: chokepoint(◆+이중 링) / port(이중 원) / military(▲) / city(점, 기존). ' +
+  '⑤ <b>markers.value</b>: 마커 옆 보조 수치 행 (세리프). ' +
+  '⑥ <b>regions</b>: 국가별 역할 색조 — subject(액센트) / ally(잉크 옅음) / rival(하락색) / contested(45° 해치). ' +
+  '⑦ <b>sea_labels</b>: 바다·해역 대형 이탤릭 세리프 워터마크 (FT 지도 문법). ' +
+  '⑧ 경위선 graticule 텍스처 + 범례 자동 생성 (등장한 어휘만).';
+</script>
+
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="vendor/countries-110m.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="../src/templates/static/maps.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   리디자인 지도 렌더러 (목업 전용 — production 미반영, 승인 후 이식)
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  var d3 = window.d3, topojson = window.topojson;
+  if (!d3 || !topojson || !window.__WORLD_TOPO__) return;
+
+  function theme() {
+    var cs = getComputedStyle(document.documentElement);
+    var r = function (n) { return cs.getPropertyValue(n).trim(); };
+    return {
+      bg: r('--bg') || '#161A2E', text: r('--text') || '#E9ECF5',
+      muted: r('--muted') || '#8C93AC', accent: r('--accent') || '#6FB3FF',
+      down: r('--down') || '#E08A8A',
+      land: r('--map-land') || r('--bg') || '#1A1F33',
+      water: r('--map-water') || '#10141F',
+      boundary: r('--map-boundary') || r('--text') || '#E9ECF5',
+    };
+  }
+
+  var PAYLOAD = {
+    center: [82, 16], zoom: 1.75,
+    regions: [
+      { name: 'Iran', role: 'rival', label: '이란' },
+      { name: 'Saudi Arabia', role: 'ally' },
+      { name: 'South Korea', role: 'subject' },
+    ],
+    sea_labels: [
+      { name: '아라비아해', lng: 64.5, lat: 8.5 },
+      { name: '벵골만', lng: 88, lat: 11 },
+      { name: '남중국해', lng: 113.5, lat: 17.5 },
+    ],
+    markers: [
+      { id: 'hormuz', name: '호르무즈 해협', lng: 56.5, lat: 26.6, kind: 'chokepoint', highlight: true, value: '세계 원유 20% 통과', label_side: 'top' },
+      { id: 'ras', name: '라스 타누라', lng: 50.15, lat: 26.64, kind: 'port', label_side: 'left' },
+      { id: 'sg', name: '싱가포르', lng: 103.8, lat: 1.35, kind: 'port', label_side: 'bottom' },
+      { id: 'busan', name: '부산', lng: 129.05, lat: 35.1, kind: 'port', highlight: true, value: '원유 수입 70% 경유', label_side: 'right' },
+      { id: 'ningbo', name: '닝보', lng: 121.55, lat: 29.87, kind: 'port', label_side: 'left' },
+      { id: 'diego', name: '디에고가르시아', lng: 72.41, lat: -7.31, kind: 'military', value: '미군 기지', label_side: 'bottom' },
+    ],
+    arcs: [
+      { from_id: 'ras', to_id: 'hormuz', kind: 'flow', weight: 3 },
+      { from_id: 'hormuz', to_id: 'sg', kind: 'flow', weight: 3, label: '원유 회랑', label_t: 0.62 },
+      { from_id: 'sg', to_id: 'busan', kind: 'flow', weight: 2 },
+      { from_id: 'sg', to_id: 'ningbo', kind: 'flow', weight: 1 },
+      { from_id: 'hormuz', to_id: 'diego', kind: 'tension', label: '군사 긴장', label_t: 0.5 },
+    ],
+  };
+
+  function curvedPath(p1, p2, bow) {
+    var mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
+    var dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    var nx = -dy / dist, ny = dx / dist;
+    return { d: 'M' + p1[0] + ',' + p1[1] + ' Q' + (mx + nx * bow) + ',' + (my + ny * bow) + ' ' + p2[0] + ',' + p2[1] };
+  }
+
+  function render() {
+    var t = theme();
+    var container = document.getElementById('redesign-map');
+    var W = 720, H = 420;
+    var svg = d3.select(container).append('svg')
+      .attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    // 해치 defs (contested 지역용 — 45° 단방향, mono 어휘)
+    var defs = svg.append('defs');
+    defs.append('pattern').attr('id', 'rd-contested').attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 5).attr('height', 5).attr('patternTransform', 'rotate(45)')
+      .call(function (p) {
+        p.append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 5)
+          .attr('stroke', t.accent).attr('stroke-width', 1).attr('stroke-opacity', 0.5);
+      });
+
+    svg.append('rect').attr('width', W).attr('height', H).attr('fill', t.water);
+    var projection = d3.geoMercator().center(PAYLOAD.center)
+      .scale(110 * PAYLOAD.zoom).translate([W / 2, H * 0.52]);
+    var path = d3.geoPath(projection);
+    var world = window.__WORLD_TOPO__;
+    var countries = topojson.feature(world, world.objects.countries);
+    var borders = topojson.mesh(world, world.objects.countries, function (a, b) { return a !== b; });
+
+    // ① 경위선 graticule — 카르토그래피 질감 (아주 옅게)
+    svg.append('path').datum(d3.geoGraticule10())
+      .attr('d', path).attr('fill', 'none')
+      .attr('stroke', t.text).attr('stroke-opacity', 0.045).attr('stroke-width', 0.5);
+
+    // ② 베이스 land + 해안 정의선
+    svg.selectAll('path.country').data(countries.features).join('path')
+      .attr('class', 'country').attr('d', path).attr('fill', t.land);
+    svg.append('path').datum(topojson.merge(world, world.objects.countries.geometries))
+      .attr('d', path).attr('fill', 'none')
+      .attr('stroke', t.boundary).attr('stroke-width', 0.5).attr('stroke-opacity', 0.35);
+    svg.append('path').datum(borders).attr('d', path).attr('fill', 'none')
+      .attr('stroke', t.boundary).attr('stroke-width', 0.5).attr('stroke-opacity', 0.55);
+
+    // ③ regions — 국가 역할 색조
+    var ROLE = {
+      subject:   { fill: t.accent, op: 0.20 },
+      ally:      { fill: t.text,   op: 0.10 },
+      rival:     { fill: t.down,   op: 0.16 },
+      contested: { fill: 'url(#rd-contested)', op: 1 },
+    };
+    (PAYLOAD.regions || []).forEach(function (rg) {
+      var feat = countries.features.find(function (f) {
+        return (f.properties && f.properties.name) === rg.name;
+      });
+      if (!feat) return;
+      var role = ROLE[rg.role] || ROLE.ally;
+      svg.append('path').attr('d', path(feat))
+        .attr('fill', role.fill).attr('fill-opacity', role.op === 1 ? null : role.op)
+        .attr('stroke', role.fill === 'url(#rd-contested)' ? t.accent : role.fill)
+        .attr('stroke-opacity', 0.5).attr('stroke-width', 0.7);
+      if (rg.label) {
+        var c = path.centroid(feat);
+        svg.append('text').attr('x', c[0]).attr('y', c[1]).attr('text-anchor', 'middle')
+          .attr('font-family', 'IBM Plex Sans KR').attr('font-size', 10)
+          .attr('letter-spacing', 2).attr('font-weight', 600)
+          .attr('fill', rg.role === 'rival' ? t.down : t.text).attr('fill-opacity', 0.75)
+          .text(rg.label);
+      }
+    });
+
+    // ④ 바다 라벨 — 대형 이탤릭 세리프 워터마크 (FT 지도 문법)
+    (PAYLOAD.sea_labels || []).forEach(function (sl) {
+      var p = projection([sl.lng, sl.lat]);
+      if (!p) return;
+      svg.append('text').attr('x', p[0]).attr('y', p[1]).attr('text-anchor', 'middle')
+        .attr('font-family', 'Newsreader, Noto Serif KR, serif').attr('font-style', 'italic')
+        .attr('font-size', 15).attr('letter-spacing', 5)
+        .attr('fill', t.text).attr('fill-opacity', 0.30)
+        .text(sl.name);
+    });
+
+    // ⑤ arcs — kind/weight 어휘
+    var byId = {};
+    PAYLOAD.markers.forEach(function (m) { byId[m.id] = m; });
+    var WEIGHT = { 1: 1.2, 2: 2.1, 3: 3.2 };
+    // 화살촉 마커 defs (flow 색)
+    defs.append('marker').attr('id', 'rd-arrow').attr('viewBox', '0 0 10 10')
+      .attr('refX', 8).attr('refY', 5).attr('markerWidth', 5.5).attr('markerHeight', 5.5)
+      .attr('orient', 'auto-start-reverse')
+      .append('path').attr('d', 'M 0 1 L 9 5 L 0 9 Z').attr('fill', t.accent);
+
+    (PAYLOAD.arcs || []).forEach(function (a) {
+      var f = byId[a.from_id], to = byId[a.to_id];
+      if (!f || !to) return;
+      var p1 = projection([+f.lng, +f.lat]), p2 = projection([+to.lng, +to.lat]);
+      if (!p1 || !p2) return;
+      var bow = Math.min(64, Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * 0.20);
+      var kind = a.kind || 'flow';
+      var sw = WEIGHT[a.weight] || 1.6;
+      var g = svg.append('g');
+      var pd = curvedPath(p1, p2, bow);
+      if (kind === 'flow') {
+        // 헤일로 (water 색 굵은 밑선) → 본선 + 방향 화살촉
+        g.append('path').attr('d', pd.d).attr('fill', 'none')
+          .attr('stroke', t.water).attr('stroke-width', sw + 2.6).attr('stroke-opacity', 0.65);
+        g.append('path').attr('d', pd.d).attr('fill', 'none')
+          .attr('stroke', t.accent).attr('stroke-width', sw)
+          .attr('stroke-opacity', 0.95).attr('marker-end', 'url(#rd-arrow)');
+      } else if (kind === 'alt') {
+        g.append('path').attr('d', pd.d).attr('fill', 'none')
+          .attr('stroke', t.muted).attr('stroke-width', Math.max(1.2, sw - 0.4))
+          .attr('stroke-dasharray', '7 5').attr('stroke-opacity', 0.9);
+      } else if (kind === 'tension') {
+        g.append('path').attr('d', pd.d).attr('fill', 'none')
+          .attr('stroke', t.down).attr('stroke-width', 1.3)
+          .attr('stroke-dasharray', '2 4').attr('stroke-opacity', 0.85);
+        // 중간 ✕ 글리프
+        var midT = (function () {
+          var el = g.select('path').node();
+          var L = el.getTotalLength();
+          return el.getPointAtLength(L / 2);
+        })();
+        [[-1, -1, 1, 1], [-1, 1, 1, -1]].forEach(function (seg) {
+          g.append('line')
+            .attr('x1', midT.x + seg[0] * 4).attr('y1', midT.y + seg[1] * 4)
+            .attr('x2', midT.x + seg[2] * 4).attr('y2', midT.y + seg[3] * 4)
+            .attr('stroke', t.down).attr('stroke-width', 1.8).attr('stroke-linecap', 'round');
+        });
+      }
+      // 라벨 — 경로 위 t 지점의 water pill (label_t 0~1, 기본 0.5)
+      if (a.label) {
+        var pathNode = g.select('path').node();
+        var L0 = pathNode.getTotalLength();
+        var pt = pathNode.getPointAtLength(L0 * (a.label_t != null ? a.label_t : 0.5));
+        var mx = pt.x, my = pt.y - 13;
+        var tw = a.label.length * 10 + 14;
+        var color = kind === 'alt' ? t.muted : (kind === 'tension' ? t.down : t.accent);
+        g.append('rect').attr('x', mx - tw / 2).attr('y', my - 10).attr('width', tw)
+          .attr('height', 16).attr('rx', 8)
+          .attr('fill', t.water).attr('fill-opacity', 0.82)
+          .attr('stroke', color).attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
+        g.append('text').attr('x', mx).attr('y', my + 2).attr('text-anchor', 'middle')
+          .attr('font-family', 'IBM Plex Sans KR').attr('font-size', 10)
+          .attr('font-weight', 600).attr('fill', color).text(a.label);
+      }
+    });
+
+    // ⑥ markers — 역할 글리프
+    function drawMarker(m) {
+      var p = projection([+m.lng, +m.lat]);
+      if (!p) return;
+      var hl = !!m.highlight;
+      var color = hl ? t.accent : t.muted;
+      var g = svg.append('g').attr('transform', 'translate(' + p[0] + ',' + p[1] + ')');
+      var kind = m.kind || 'city';
+      if (kind === 'chokepoint') {
+        g.append('circle').attr('r', 11).attr('fill', 'none')
+          .attr('stroke', t.accent).attr('stroke-opacity', 0.4).attr('stroke-width', 1);
+        g.append('rect').attr('x', -5).attr('y', -5).attr('width', 10).attr('height', 10)
+          .attr('transform', 'rotate(45)').attr('fill', t.accent)
+          .attr('stroke', t.water).attr('stroke-width', 1.2);
+      } else if (kind === 'port') {
+        g.append('circle').attr('r', hl ? 6.5 : 5).attr('fill', t.water)
+          .attr('stroke', color).attr('stroke-width', 1.6);
+        g.append('circle').attr('r', hl ? 2.6 : 2).attr('fill', color);
+      } else if (kind === 'military') {
+        g.append('path').attr('d', 'M 0 -6 L 5.5 4 L -5.5 4 Z')
+          .attr('fill', t.text).attr('fill-opacity', 0.85)
+          .attr('stroke', t.water).attr('stroke-width', 1);
+      } else {
+        g.append('circle').attr('r', hl ? 6 : 4).attr('fill', color)
+          .attr('stroke', t.text).attr('stroke-width', hl ? 1 : 0.6);
+      }
+      // 이름 + 보조 수치 행 — label_side 힌트 (top/bottom/left/right, 기본 right)
+      var side = m.label_side || (p[0] > W - 120 ? 'left' : 'right');
+      var lx = p[0] + 11, ly = p[1] - 1, anchor = 'start';
+      if (side === 'left') { lx = p[0] - 11; anchor = 'end'; }
+      else if (side === 'top') { lx = p[0]; ly = p[1] - 16; anchor = 'middle'; }
+      else if (side === 'bottom') { lx = p[0]; ly = p[1] + 18; anchor = 'middle'; }
+      svg.append('text').attr('x', lx).attr('y', ly).attr('text-anchor', anchor)
+        .attr('font-family', 'IBM Plex Sans KR').attr('font-size', 11)
+        .attr('font-weight', hl ? 700 : 500).attr('fill', t.text)
+        .attr('stroke', t.water).attr('stroke-width', 3).attr('paint-order', 'stroke')
+        .text(m.name);
+      if (m.value) {
+        svg.append('text').attr('x', lx).attr('y', ly + 13).attr('text-anchor', anchor)
+          .attr('font-family', 'Noto Serif KR').attr('font-size', 9.5)
+          .attr('fill', hl ? t.accent : t.muted)
+          .attr('stroke', t.water).attr('stroke-width', 3).attr('paint-order', 'stroke')
+          .text(m.value);
+      }
+    }
+    (PAYLOAD.markers || []).forEach(drawMarker);
+
+    // ⑦ 범례 — 등장 어휘만 자동
+    var lgItems = [
+      { draw: function (g, y) { g.append('line').attr('x1', 0).attr('x2', 20).attr('y1', y).attr('y2', y).attr('stroke', t.accent).attr('stroke-width', 3).attr('marker-end', 'url(#rd-arrow)'); }, label: '흐름 (굵기 = 물동량)' },
+      { draw: function (g, y) { g.append('line').attr('x1', 0).attr('x2', 20).attr('y1', y).attr('y2', y).attr('stroke', t.muted).attr('stroke-width', 1.4).attr('stroke-dasharray', '7 5'); }, label: '우회·대안' },
+      { draw: function (g, y) { g.append('line').attr('x1', 0).attr('x2', 20).attr('y1', y).attr('y2', y).attr('stroke', t.down).attr('stroke-width', 1.3).attr('stroke-dasharray', '2 4'); }, label: '대립' },
+      { draw: function (g, y) { g.append('rect').attr('x', 6).attr('y', y - 4).attr('width', 8).attr('height', 8).attr('transform', 'rotate(45 10 ' + y + ')').attr('fill', t.accent); }, label: '병목 지점' },
+    ];
+    var lg = svg.append('g').attr('transform', 'translate(14,' + (H - 14 - lgItems.length * 17) + ')');
+    lg.append('rect').attr('x', -6).attr('y', -10).attr('width', 158)
+      .attr('height', lgItems.length * 17 + 14).attr('rx', 5)
+      .attr('fill', t.water).attr('fill-opacity', 0.78);
+    lgItems.forEach(function (item, i) {
+      var y = i * 17 + 2;
+      item.draw(lg, y);
+      lg.append('text').attr('x', 27).attr('y', y + 3.5)
+        .attr('font-family', 'IBM Plex Sans KR').attr('font-size', 9.5)
+        .attr('fill', t.text).text(item.label);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
+  else render();
+})();
+</script>
+</body>
+</html>
