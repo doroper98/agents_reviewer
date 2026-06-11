@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="midnight_indigo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart Redesign V7 — 초기 7종 비주얼 격상 비교 목업 (현행 vs 리디자인)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/templates/report.css">
+<link rel="stylesheet" href="../src/templates/static/charts.css">
+<style>
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR', sans-serif; margin: 0; }
+.rd-head { max-width: 1180px; margin: 0 auto; padding: 36px 18px 6px; }
+.rd-head h1 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 27px; margin: 0 0 8px; color: var(--fg-1, var(--text)); }
+.rd-head p { font-size: 13.5px; line-height: 1.7; color: var(--fg-2, var(--muted)); margin: 0 0 12px; max-width: 860px; }
+.rd-themes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.rd-themes button { font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border-soft, var(--border)); background: var(--card); color: var(--text); cursor: pointer; }
+.rd-themes button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.rd-wrap { max-width: 1180px; margin: 0 auto; padding: 8px 18px 90px; }
+.rd-section { margin: 34px 0 0; }
+.rd-type { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--accent); }
+.rd-rationale { font-size: 13px; line-height: 1.7; color: var(--fg-2, var(--muted)); margin: 4px 0 12px; max-width: 980px; }
+.rd-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 980px) { .rd-pair { grid-template-columns: 1fr; } }
+.rd-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 4px; margin-bottom: 8px; }
+.rd-tag.cur { color: var(--fg-3, var(--muted)); border: 1px solid var(--border-soft, var(--border)); }
+.rd-tag.new { color: var(--accent); border: 1px solid var(--accent); }
+.redesign-stage { background: var(--card-deep, rgba(0,0,0,0.18)); border-radius: 8px; padding: 10px; width: 100%; box-sizing: border-box; }
+.redesign-stage svg { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="rd-head">
+  <h1>초기 7종 차트 — 비주얼 격상 비교 목업</h1>
+  <p>bar / donut / stacked / bubble / heatmap / network / waterfall — 초창기에 추가돼 디자인 어휘가
+     오래된 7종의 리디자인 제안. 좌측이 production 현행, 우측이 리디자인 (같은 데이터). mono 테마
+     제약 (단일 액센트 · 45° 단방향 해치 · 다색 금지) 은 유지하되, <b>카테고리 구분이 아닌 곳의 해치
+     노이즈를 걷어내고</b> 단일 색조의 농도 위계 + 세리프 숫자 + 직접 라벨링으로 교체했다.</p>
+  <p><b>병합 제안</b> — ① stacked 는 bar 와 같은 "가로 막대 문법" 으로 통일 (type·데이터 계약은 그대로,
+     시각 어휘만 패밀리화). ② heatmap 과 network(인접행렬) 는 같은 셀-그리드 엔진을 공유.
+     ③ donut 은 유지하되 "핵심 1조각" 강조 문법으로 — 구성비의 주인공이 한눈에.</p>
+  <div class="rd-themes" id="themes"></div>
+</div>
+<div class="rd-wrap" id="wrap"></div>
+
+<script>
+// ── 테마 스위처 ──
+(function () {
+  var THEMES = ['editorial_cream', 'burgundy_mono', 'midnight_indigo', 'pine_forest', 'graphite_slate'];
+  var cur = localStorage.getItem('rd_theme') || 'midnight_indigo';
+  document.documentElement.setAttribute('data-theme', cur);
+  var wrap = document.getElementById('themes');
+  THEMES.forEach(function (th) {
+    var b = document.createElement('button');
+    b.textContent = th;
+    if (th === cur) b.className = 'on';
+    b.onclick = function () { localStorage.setItem('rd_theme', th); location.reload(); };
+    wrap.appendChild(b);
+  });
+})();
+
+// ── 공용 fixture (양쪽 동일 데이터) ──
+var FIXTURES = {
+  bar: {
+    type: 'bar', title: '주요국 반도체 보조금', subtitle: '미국이 2위와 2배 격차', unit_line: '단위: 조원 환산',
+    data: [{label:'미국',value:69,note:'CHIPS Act 2단계 포함'},{label:'중국',value:33},{label:'EU',value:30},{label:'일본',value:18},{label:'한국',value:9,note:'세액공제 제외'}],
+    source: '각국 정부 발표 집계',
+    rationale: '현행: 막대마다 다른 해치 패턴 — 같은 변수의 순위 비교인데 카테고리처럼 읽히고 노이즈가 큼. 리디자인: 해치 제거, 전체를 잉크 농도 하나로 통일하고 1위만 액센트. 옅은 풀폭 트랙이 상대 크기를 받쳐주고, 값은 세리프로 막대 끝에 직접. note 는 라벨 아래 보조 행.'
+  },
+  donut: {
+    type: 'donut', title: '파운드리 점유율', subtitle: 'TSMC 독주 속 2위권 혼전',
+    data: [{label:'TSMC',value:62},{label:'삼성',value:11},{label:'SMIC',value:6},{label:'기타',value:21}],
+    rationale: '현행: 균등 톤의 패턴 조각 + 의미 약한 중앙 TOTAL. 리디자인: 핵심 조각만 액센트, 나머지는 농도 사다리 — 구성비의 주인공이 즉시 읽힘. 중앙은 핵심 점유율 큰 숫자, 우측 범례는 값 정렬 열로.'
+  },
+  stacked: {
+    type: 'stacked', title: '시나리오별 영향 구성', subtitle: '악화 시나리오는 수출 충격이 절반 이상',
+    data: { scenarios: [{name:'완화',segments:[{label:'수출',value:30},{label:'환율',value:18},{label:'내수',value:12}]},{name:'기준',segments:[{label:'수출',value:42},{label:'환율',value:26},{label:'내수',value:17}]},{name:'악화',segments:[{label:'수출',value:55},{label:'환율',value:38},{label:'내수',value:24}]}] },
+    rationale: '병합 제안의 본체 — stacked 를 bar 와 같은 가로 막대 문법으로. 세그먼트는 액센트 + 농도 2단, 1px 배경 갭으로 구분. 합계는 막대 끝 세리프 볼드, 세그먼트 값은 폭이 충분할 때만 안에 직접. 세로 막대 + 하단 범례의 옛 문법 폐기.'
+  },
+  bubble: {
+    type: 'bubble', title: '시나리오 확률 × 영향', subtitle: '저확률·고충격 꼬리가 진짜 리스크', x_label: '발생 확률 (%)', y_label: '시장 영향 (pt)',
+    data: [{label:'관세 유예 연장',x:55,y:30,size:3},{label:'부분 타결',x:30,y:55,size:5},{label:'전면 확전',x:15,y:85,size:8},{label:'현상 유지',x:62,y:18,size:2},{label:'기술 통제 확대',x:38,y:62,size:4}],
+    rationale: '현행: 균일한 점 + 라벨뿐 — 사분면 판단을 독자가 직접 해야 함. 리디자인: 중앙값 십자선으로 사분면을 그려주고 모서리에 캡션 (고확률·고충격 등). 버블은 윤곽 + 옅은 면, 최대 충격 항목만 진하게. 크기 범례 추가.'
+  },
+  heatmap: {
+    type: 'heatmap', title: '공급망 위험도', subtitle: '장비·소재 상류가 고위험에 몰림',
+    data: [{title:'첨단 노광장비',severity:'high'},{title:'희토류',severity:'high'},{title:'레거시 칩',severity:'medium'},{title:'패키징 소재',severity:'medium'},{title:'웨이퍼',severity:'low'}],
+    rationale: '현행: 풀폭 해치 띠 — 행마다 같은 폭이라 강도 차이가 패턴 식별 퀴즈가 됨. 리디자인: 5-칸 강도 트랙 (채운 칸 수 = 위험도) + 우측 등급 태그. 정량 게이지처럼 즉독되고, 농도/칸수가 서수 위계를 그대로 운반.'
+  },
+  network: {
+    type: 'network', title: '행위자 관계도', subtitle: '미·중 대립축이 업계를 양쪽에서 당긴다',
+    data: { nodes: [{id:'us',label:'미 행정부',group:'승인'},{id:'kr',label:'한국 정부',group:'검토'},{id:'semis',label:'반도체 업계',group:'검토'},{id:'cn',label:'중국 상무부',group:'반대'}], links: [{source:'us',target:'kr',type:'influence'},{source:'us',target:'cn',type:'conflict'},{source:'kr',target:'semis',type:'ally'},{source:'cn',target:'semis',type:'influence'}] },
+    rationale: '인접행렬 유지 (CHART-AP-25 — hairball 금지) 하되 격자 어휘를 정련: 칸 테두리 대신 1px 갭 그리드, 관계 글리프 4종 (대립 ✕ 액센트 / 동맹 ● / 영향 ▸ 방향 / 연관 ○), 그룹 색띠 + 칩 범례. heatmap 과 같은 셀-그리드 엔진의 두 얼굴.'
+  },
+  waterfall: {
+    type: 'waterfall', title: '영업이익 브리지 — 2024 → 1Q26', subtitle: 'DS 회복이 개선분의 대부분', unit_line: '단위: 조원',
+    data: [{label:'2024',value:6.6,type:'total'},{label:'DS 회복',value:24.5,type:'pos'},{label:'모바일',value:3.0,type:'neg'},{label:'디스플레이',value:2.0,type:'pos'},{label:'환율 효과',value:1.1,type:'pos'},{label:'1Q26',value:31.2,type:'total'}],
+    rationale: '현행: 회전 라벨 + 부호 없는 값 + 음·양이 액센트/muted 로만 갈림. 리디자인: 증가=액센트·감소=하락색·합계=잉크색의 3색 의미론, 부호 라벨 (+24.5 / −3.0), 단정한 수평 라벨, 시작·끝 합계 기둥 배경 밴드, 연결선은 가는 실선.'
+  },
+};
+
+// ── 페이지 구성 (좌: production charts.js / 우: 리디자인 렌더러) ──
+(function () {
+  var wrap = document.getElementById('wrap');
+  var order = ['bar', 'stacked', 'donut', 'waterfall', 'heatmap', 'network', 'bubble'];
+  order.forEach(function (key) {
+    var p = FIXTURES[key];
+    var sec = document.createElement('div');
+    sec.className = 'rd-section';
+    sec.id = 'sec-' + key;
+    sec.innerHTML =
+      '<div class="rd-type">' + key + '</div>' +
+      '<div class="rd-rationale">' + p.rationale + '</div>' +
+      '<div class="rd-pair">' +
+        '<div><span class="rd-tag cur">현행 (production)</span>' +
+          '<div class="chart-card">' +
+            '<div class="chart-card-title">' + p.title + '</div>' +
+            (p.subtitle ? '<div class="chart-card-subtitle">' + p.subtitle + '</div>' : '') +
+            '<div class="chart-card-stage chart-stage-' + p.type + '" data-chart-type="' + p.type + '" data-chart-id="cur-' + key + '"><svg></svg></div>' +
+          '</div></div>' +
+        '<div><span class="rd-tag new">리디자인 제안</span>' +
+          '<div class="chart-card">' +
+            '<div class="chart-card-title">' + p.title + '</div>' +
+            (p.subtitle ? '<div class="chart-card-subtitle">' + p.subtitle + '</div>' : '') +
+            (p.unit_line ? '<div class="chart-card-unitline">' + p.unit_line + '</div>' : '') +
+            '<div class="redesign-stage" data-rd="' + key + '"><svg></svg></div>' +
+            (p.source ? '<div class="chart-card-source"><span class="chart-card-source-label">출처:</span> ' + p.source + '</div>' : '') +
+          '</div></div>' +
+      '</div>';
+    var script = document.createElement('script');
+    script.type = 'application/json';
+    script.className = 'chart-payload-inline';
+    script.textContent = JSON.stringify(p);
+    sec.querySelector('.chart-card').appendChild(script);
+    wrap.appendChild(sec);
+  });
+})();
+</script>
+
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="../src/templates/static/charts.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   리디자인 렌더러 (목업 전용 — production 미반영, 승인 후 이식)
+   공유 어휘: ① 해치는 '카테고리 구분' 에만 ② 서수/강도는 단일 색조의
+   농도 사다리 ③ 값은 Newsreader 세리프 ④ 그리드 최소·0-기준선만 crisp
+   ⑤ 직접 라벨링 우선, 범례는 어쩔 수 없을 때만
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  if (!window.d3) return;
+  var d3 = window.d3;
+
+  function theme() {
+    var cs = getComputedStyle(document.documentElement);
+    var r = function (n) { return cs.getPropertyValue(n).trim(); };
+    return {
+      bg: r('--bg') || '#161A2E', card: r('--card') || '#1E2336',
+      text: r('--text') || '#E9ECF5', muted: r('--muted') || '#8C93AC',
+      accent: r('--accent') || '#6FB3FF', up: r('--up') || '#7CC6A4',
+      down: r('--down') || '#E08A8A', border: r('--border') || '#333A52',
+    };
+  }
+  var SANS = 'IBM Plex Sans KR, Noto Sans KR, sans-serif';
+  var SERIF = 'Newsreader, Noto Serif KR, serif';
+  var MONO = 'IBM Plex Mono, monospace';
+  function fmt(v) {
+    var a = Math.abs(+v);
+    if (a >= 100) return d3.format(',.0f')(+v);
+    if (a >= 10) return d3.format(',.1f')(+v);
+    return d3.format(',.2f')(+v);
+  }
+
+  // ── BAR — ranked bar (해치 제거, 농도 위계 + 직접 라벨) ──
+  function rdBar(svg, p, t) {
+    var data = p.data || [];
+    var W = 720, rowH = 38, top = 18;
+    var H = top + data.length * rowH + 26;
+    var x0 = 168, x1 = W - 86;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var max = d3.max(data, function (d) { return Math.abs(+d.value); }) || 1;
+    var xs = function (v) { return x0 + (Math.abs(+v) / max) * (x1 - x0); };
+    data.forEach(function (d, i) {
+      var y = top + i * rowH + 6;
+      var key = i === 0;
+      // 라벨 (+ 보조 note)
+      svg.append('text').attr('x', x0 - 14).attr('y', y + 11).attr('text-anchor', 'end')
+        .attr('font-family', SANS).attr('font-size', 12).attr('font-weight', key ? 700 : 400)
+        .attr('fill', t.text).text(String(d.label || ''));
+      if (d.note) {
+        svg.append('text').attr('x', x0 - 14).attr('y', y + 24).attr('text-anchor', 'end')
+          .attr('font-family', SANS).attr('font-size', 9).attr('fill', t.muted)
+          .text(String(d.note));
+      }
+      // 옅은 풀폭 트랙 + 막대
+      svg.append('rect').attr('x', x0).attr('y', y).attr('width', x1 - x0).attr('height', 13)
+        .attr('rx', 1).attr('fill', t.text).attr('fill-opacity', 0.055);
+      svg.append('rect').attr('x', x0).attr('y', y).attr('width', Math.max(2, xs(d.value) - x0))
+        .attr('height', 13).attr('rx', 1)
+        .attr('fill', key ? t.accent : t.text).attr('fill-opacity', key ? 1 : 0.30);
+      // 값 — 세리프, 막대 끝
+      svg.append('text').attr('x', xs(d.value) + 9).attr('y', y + 11.5)
+        .attr('font-family', SERIF).attr('font-size', 13).attr('font-weight', 700)
+        .attr('fill', key ? t.accent : t.text).text(fmt(d.value));
+    });
+    // 0-기준선만 crisp
+    svg.append('line').attr('x1', x0).attr('x2', x0)
+      .attr('y1', top - 2).attr('y2', top + data.length * rowH + 2)
+      .attr('stroke', t.text).attr('stroke-opacity', 0.55).attr('stroke-width', 1);
+  }
+
+  // ── STACKED — bar 문법으로 병합 (가로 세그먼트 막대) ──
+  function rdStacked(svg, p, t) {
+    var rows = (p.data && p.data.scenarios) || [];
+    var segNames = [];
+    rows.forEach(function (r) { (r.segments || []).forEach(function (s) {
+      if (segNames.indexOf(s.label) < 0) segNames.push(s.label); }); });
+    var W = 720, rowH = 46, top = 34;
+    var H = top + rows.length * rowH + 14;
+    var x0 = 92, x1 = W - 96;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var maxTotal = d3.max(rows, function (r) {
+      return d3.sum(r.segments || [], function (s) { return +s.value; }); }) || 1;
+    var segFill = function (idx) {
+      return idx === 0 ? { f: t.accent, o: 1 } : { f: t.text, o: [0.42, 0.22, 0.12][Math.min(idx - 1, 2)] };
+    };
+    // 상단 범례 (스와치 + 라벨)
+    var lg = svg.append('g').attr('transform', 'translate(' + x0 + ',10)');
+    var lx = 0;
+    segNames.forEach(function (nm, i) {
+      var f = segFill(i);
+      lg.append('rect').attr('x', lx).attr('y', 0).attr('width', 11).attr('height', 11)
+        .attr('rx', 2).attr('fill', f.f).attr('fill-opacity', f.o);
+      lg.append('text').attr('x', lx + 16).attr('y', 9.5).attr('font-family', SANS)
+        .attr('font-size', 10.5).attr('fill', t.muted).text(nm);
+      lx += 16 + nm.length * 11 + 22;
+    });
+    rows.forEach(function (r, ri) {
+      var y = top + ri * rowH + 9;
+      svg.append('text').attr('x', x0 - 14).attr('y', y + 13).attr('text-anchor', 'end')
+        .attr('font-family', SANS).attr('font-size', 12).attr('font-weight', 600)
+        .attr('fill', t.text).text(r.name);
+      var acc = 0, total = d3.sum(r.segments || [], function (s) { return +s.value; });
+      (r.segments || []).forEach(function (s, si) {
+        var w = (+s.value / maxTotal) * (x1 - x0);
+        var x = x0 + (acc / maxTotal) * (x1 - x0);
+        var f = segFill(segNames.indexOf(s.label));
+        svg.append('rect').attr('x', x + (si ? 1.5 : 0)).attr('y', y)
+          .attr('width', Math.max(0, w - (si ? 1.5 : 0))).attr('height', 18).attr('rx', 1)
+          .attr('fill', f.f).attr('fill-opacity', f.o);
+        if (w >= 36) {
+          svg.append('text').attr('x', x + w / 2).attr('y', y + 13).attr('text-anchor', 'middle')
+            .attr('font-family', SANS).attr('font-size', 10).attr('font-weight', 600)
+            .attr('fill', segNames.indexOf(s.label) === 0 ? t.bg : t.text)
+            .attr('fill-opacity', segNames.indexOf(s.label) === 0 ? 0.95 : 0.85)
+            .text(fmt(s.value));
+        }
+        acc += +s.value;
+      });
+      svg.append('text').attr('x', x0 + (total / maxTotal) * (x1 - x0) + 10).attr('y', y + 13.5)
+        .attr('font-family', SERIF).attr('font-size', 13.5).attr('font-weight', 700)
+        .attr('fill', t.text).text(fmt(total));
+    });
+    svg.append('line').attr('x1', x0).attr('x2', x0).attr('y1', top).attr('y2', top + rows.length * rowH - 8)
+      .attr('stroke', t.text).attr('stroke-opacity', 0.55).attr('stroke-width', 1);
+  }
+
+  // ── DONUT — 핵심 1조각 강조 ──
+  function rdDonut(svg, p, t) {
+    var data = (p.data || []).slice();
+    var W = 560, H = 230;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var cx = 122, cy = H / 2, R = 84, IR = 62;
+    var total = d3.sum(data, function (d) { return +d.value; }) || 1;
+    var keyIdx = data.reduce(function (best, d, i) { return +d.value > +data[best].value ? i : best; }, 0);
+    var ladder = [0.32, 0.20, 0.12, 0.07];
+    var pie = d3.pie().value(function (d) { return +d.value; }).sort(null).padAngle(0.018);
+    var arc = d3.arc().innerRadius(IR).outerRadius(R).cornerRadius(2);
+    var li = 0;
+    pie(data).forEach(function (a, i) {
+      var key = i === keyIdx;
+      svg.append('path').attr('d', arc(a)).attr('transform', 'translate(' + cx + ',' + cy + ')')
+        .attr('fill', key ? t.accent : t.text)
+        .attr('fill-opacity', key ? 1 : ladder[Math.min(li++, ladder.length - 1)]);
+    });
+    // 중앙 — 핵심 점유율
+    var keyPct = (+data[keyIdx].value / total * 100);
+    svg.append('text').attr('x', cx).attr('y', cy + 2).attr('text-anchor', 'middle')
+      .attr('font-family', SERIF).attr('font-size', 30).attr('font-weight', 800)
+      .attr('fill', t.text).text(d3.format('.0f')(keyPct) + '%');
+    svg.append('text').attr('x', cx).attr('y', cy + 22).attr('text-anchor', 'middle')
+      .attr('font-family', SANS).attr('font-size', 10.5).attr('fill', t.muted)
+      .text(String(data[keyIdx].label || ''));
+    // 우측 범례 — 값 정렬 열
+    var ly0 = cy - (data.length * 26) / 2 + 8;
+    li = 0;
+    data.forEach(function (d, i) {
+      var key = i === keyIdx;
+      var y = ly0 + i * 26;
+      svg.append('circle').attr('cx', 262).attr('cy', y).attr('r', 4.5)
+        .attr('fill', key ? t.accent : t.text)
+        .attr('fill-opacity', key ? 1 : ladder[Math.min(li++, ladder.length - 1)]);
+      svg.append('text').attr('x', 276).attr('y', y + 4)
+        .attr('font-family', SANS).attr('font-size', 12)
+        .attr('font-weight', key ? 700 : 400).attr('fill', t.text)
+        .text(String(d.label || ''));
+      svg.append('text').attr('x', 470).attr('y', y + 4).attr('text-anchor', 'end')
+        .attr('font-family', SERIF).attr('font-size', 12.5).attr('font-weight', 700)
+        .attr('fill', key ? t.accent : t.text)
+        .text(fmt(d.value) + ' · ' + d3.format('.0f')(+d.value / total * 100) + '%');
+      svg.append('line').attr('x1', 262 - 8).attr('x2', 470).attr('y1', y + 12).attr('y2', y + 12)
+        .attr('stroke', t.border).attr('stroke-opacity', 0.5).attr('stroke-width', 0.5);
+    });
+  }
+
+  // ── WATERFALL — 3색 의미론 브리지 ──
+  function rdWaterfall(svg, p, t) {
+    var items = (p.data || []).slice();
+    var running = 0;
+    items.forEach(function (it) {
+      if (it.type === 'total') { it.y0 = 0; it.y1 = +it.value; running = +it.value; }
+      else if (it.type === 'pos') { it.y0 = running; it.y1 = running + (+it.value); running = it.y1; }
+      else { it.y0 = running - (+it.value); it.y1 = running; running = it.y0; }
+    });
+    var W = 720, H = 330;
+    var x0 = 56, x1 = W - 24, yTop = 30, yBot = H - 58;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var xs = d3.scaleBand().domain(items.map(function (d, i) { return i; }))
+      .range([x0, x1]).padding(0.34);
+    var yMax = d3.max(items, function (d) { return Math.max(d.y0, d.y1); }) * 1.12;
+    var ys = d3.scaleLinear().domain([0, yMax]).range([yBot, yTop]);
+    // y 눈금 — 라인 대신 좌측 숫자만 + 0 기준선
+    ys.ticks(4).forEach(function (v) {
+      svg.append('text').attr('x', x0 - 8).attr('y', ys(v) + 3).attr('text-anchor', 'end')
+        .attr('font-family', MONO).attr('font-size', 9).attr('fill', t.muted).text(fmt(v));
+      if (v !== 0) svg.append('line').attr('x1', x0).attr('x2', x1).attr('y1', ys(v)).attr('y2', ys(v))
+        .attr('stroke', t.text).attr('stroke-opacity', 0.06);
+    });
+    svg.append('line').attr('x1', x0).attr('x2', x1).attr('y1', ys(0)).attr('y2', ys(0))
+      .attr('stroke', t.text).attr('stroke-opacity', 0.55).attr('stroke-width', 1);
+    items.forEach(function (it, i) {
+      var bx = xs(i), bw = xs.bandwidth();
+      var isTotal = it.type === 'total';
+      var col = isTotal ? t.text : (it.type === 'pos' ? t.accent : t.down);
+      // 합계 기둥 배경 밴드 (시작·끝 앵커)
+      if (isTotal) {
+        svg.append('rect').attr('x', bx - 7).attr('y', yTop - 6).attr('width', bw + 14)
+          .attr('height', yBot - yTop + 30).attr('fill', t.text).attr('fill-opacity', 0.045).attr('rx', 4);
+      }
+      svg.append('rect').attr('x', bx).attr('y', ys(it.y1)).attr('width', bw)
+        .attr('height', Math.max(1.5, ys(it.y0) - ys(it.y1))).attr('rx', 1.5)
+        .attr('fill', col).attr('fill-opacity', isTotal ? 0.92 : 0.88);
+      // 부호 값 라벨
+      var sign = isTotal ? '' : (it.type === 'pos' ? '+' : '−');
+      svg.append('text').attr('x', bx + bw / 2).attr('y', ys(it.y1) - 7).attr('text-anchor', 'middle')
+        .attr('font-family', SERIF).attr('font-size', isTotal ? 13.5 : 12)
+        .attr('font-weight', 700).attr('fill', col)
+        .text(sign + fmt(it.value));
+      // 연결선 (가는 실선)
+      if (i < items.length - 1) {
+        var yc = ys(it.type === 'neg' ? it.y0 : it.y1);
+        svg.append('line').attr('x1', bx + bw).attr('x2', xs(i + 1))
+          .attr('y1', yc).attr('y2', yc)
+          .attr('stroke', t.text).attr('stroke-opacity', 0.35).attr('stroke-width', 0.8);
+      }
+      // 수평 라벨 (회전 금지) — 길면 2줄
+      var lbl = String(it.label || '');
+      var lines = lbl.length > 6 ? [lbl.slice(0, Math.ceil(lbl.length / 2)), lbl.slice(Math.ceil(lbl.length / 2))] : [lbl];
+      lines.forEach(function (ln, k) {
+        svg.append('text').attr('x', bx + bw / 2).attr('y', yBot + 16 + k * 12).attr('text-anchor', 'middle')
+          .attr('font-family', SANS).attr('font-size', 10.5)
+          .attr('font-weight', isTotal ? 700 : 400)
+          .attr('fill', isTotal ? t.text : t.muted).text(ln);
+      });
+    });
+  }
+
+  // ── HEATMAP — 5칸 강도 트랙 ──
+  function rdHeatmap(svg, p, t) {
+    var data = p.data || [];
+    var W = 720, rowH = 34, top = 30;
+    var H = top + data.length * rowH + 10;
+    var x0 = 170, cellW = 64, gap = 5, cells = 5;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var SPEC = {
+      high:   { n: 5, f: t.accent, o: 0.92, tag: '높음', tagC: t.accent },
+      medium: { n: 3, f: t.text,   o: 0.38, tag: '중간', tagC: t.text },
+      low:    { n: 1, f: t.text,   o: 0.20, tag: '낮음', tagC: t.muted },
+    };
+    // 범례
+    var lg = svg.append('g').attr('transform', 'translate(' + (W - 248) + ',8)');
+    [['high', 0], ['medium', 92], ['low', 178]].forEach(function (pair) {
+      var s = SPEC[pair[0]];
+      lg.append('rect').attr('x', pair[1]).attr('y', 0).attr('width', 10).attr('height', 10)
+        .attr('rx', 2).attr('fill', s.f).attr('fill-opacity', s.o);
+      lg.append('text').attr('x', pair[1] + 14).attr('y', 9).attr('font-family', SANS)
+        .attr('font-size', 9.5).attr('fill', t.muted).text(s.tag + ' ' + s.n + '/5');
+    });
+    data.forEach(function (d, i) {
+      var y = top + i * rowH + 6;
+      var s = SPEC[String(d.severity || 'low').toLowerCase()] || SPEC.low;
+      svg.append('text').attr('x', x0 - 14).attr('y', y + 12).attr('text-anchor', 'end')
+        .attr('font-family', SANS).attr('font-size', 12)
+        .attr('font-weight', s.n === 5 ? 600 : 400).attr('fill', t.text)
+        .text(String(d.title || ''));
+      for (var c = 0; c < cells; c++) {
+        var filled = c < s.n;
+        svg.append('rect').attr('x', x0 + c * (cellW + gap)).attr('y', y)
+          .attr('width', cellW).attr('height', 15).attr('rx', 2)
+          .attr('fill', filled ? s.f : t.text)
+          .attr('fill-opacity', filled ? s.o : 0.06);
+      }
+      svg.append('text').attr('x', x0 + cells * (cellW + gap) + 10).attr('y', y + 12)
+        .attr('font-family', SANS).attr('font-size', 10.5).attr('font-weight', 700)
+        .attr('fill', s.tagC).attr('fill-opacity', s.n === 1 ? 0.9 : 1).text(s.tag);
+    });
+  }
+
+  // ── NETWORK — 인접행렬 2.0 (셀-그리드 + 글리프 + 그룹 색띠) ──
+  function rdNetwork(svg, p, t) {
+    var nodes = (p.data && p.data.nodes) || [];
+    var links = (p.data && p.data.links) || [];
+    var groupRank = { '승인': 0, '검토': 1, '반대': 2 };
+    var rank = function (g) { return groupRank[g] !== undefined ? groupRank[g] : 9; };
+    nodes = nodes.slice().sort(function (a, b) { return rank(a.group) - rank(b.group); });
+    var n = nodes.length, cell = 58, gap = 4;
+    var x0 = 168, y0 = 96;
+    var W = Math.max(x0 + n * (cell + gap) + 28, x0 + 330);  // content-fit + 범례 폭 확보
+    var H = y0 + n * (cell + gap) + 64;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var idx = {}; nodes.forEach(function (nd, i) { idx[nd.id] = i; });
+    var rel = {};
+    links.forEach(function (l) {
+      rel[idx[l.source] + ',' + idx[l.target]] = { type: l.type || 'assoc', dir: 1 };
+      if (!rel[idx[l.target] + ',' + idx[l.source]])
+        rel[idx[l.target] + ',' + idx[l.source]] = { type: l.type || 'assoc', dir: -1 };
+    });
+    var groupColor = function (g) {
+      return g === '반대' ? t.down : (g === '승인' ? t.accent : t.muted);
+    };
+    // 헤더 (열) — 기울임 + 그룹 점
+    nodes.forEach(function (nd, j) {
+      var cxx = x0 + j * (cell + gap) + cell / 2;
+      svg.append('circle').attr('cx', cxx).attr('cy', y0 - 14).attr('r', 3)
+        .attr('fill', groupColor(nd.group));
+      svg.append('text').attr('x', cxx + 4).attr('y', y0 - 24)
+        .attr('font-family', SANS).attr('font-size', 10.5).attr('fill', t.text)
+        .attr('text-anchor', 'start')
+        .attr('transform', 'rotate(-32 ' + (cxx + 4) + ',' + (y0 - 24) + ')')
+        .text(String(nd.label || nd.id));
+    });
+    // 행 라벨 + 그룹 색띠
+    nodes.forEach(function (nd, i) {
+      var yy = y0 + i * (cell + gap);
+      svg.append('rect').attr('x', x0 - 10).attr('y', yy).attr('width', 3).attr('height', cell)
+        .attr('rx', 1.5).attr('fill', groupColor(nd.group)).attr('fill-opacity', 0.85);
+      svg.append('text').attr('x', x0 - 20).attr('y', yy + cell / 2 + 4).attr('text-anchor', 'end')
+        .attr('font-family', SANS).attr('font-size', 11.5).attr('fill', t.text)
+        .text(String(nd.label || nd.id));
+    });
+    // 셀 + 글리프
+    function glyph(g, cxx, cyy, r) {
+      if (r.type === 'conflict') {
+        [[-1, -1, 1, 1], [-1, 1, 1, -1]].forEach(function (seg) {
+          g.append('line').attr('x1', cxx + seg[0] * 6).attr('y1', cyy + seg[1] * 6)
+            .attr('x2', cxx + seg[2] * 6).attr('y2', cyy + seg[3] * 6)
+            .attr('stroke', t.down).attr('stroke-width', 2.4).attr('stroke-linecap', 'round');
+        });
+      } else if (r.type === 'ally') {
+        g.append('circle').attr('cx', cxx).attr('cy', cyy).attr('r', 6)
+          .attr('fill', t.accent).attr('fill-opacity', 0.95);
+      } else if (r.type === 'influence') {
+        var dirX = r.dir >= 0 ? 1 : -1;
+        g.append('path')
+          .attr('d', 'M ' + (cxx - 5 * dirX) + ' ' + (cyy - 6) + ' L ' + (cxx + 6 * dirX) + ' ' + cyy +
+                     ' L ' + (cxx - 5 * dirX) + ' ' + (cyy + 6) + ' Z')
+          .attr('fill', t.text).attr('fill-opacity', 0.72);
+      } else {
+        g.append('circle').attr('cx', cxx).attr('cy', cyy).attr('r', 5.5)
+          .attr('fill', 'none').attr('stroke', t.muted).attr('stroke-width', 1.6);
+      }
+    }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var xx = x0 + j * (cell + gap), yy = y0 + i * (cell + gap);
+        var base = svg.append('rect').attr('x', xx).attr('y', yy)
+          .attr('width', cell).attr('height', cell).attr('rx', 3)
+          .attr('fill', t.text).attr('fill-opacity', i === j ? 0.025 : 0.055);
+        if (i === j) {
+          svg.append('line').attr('x1', xx + 14).attr('y1', yy + cell - 14)
+            .attr('x2', xx + cell - 14).attr('y2', yy + 14)
+            .attr('stroke', t.muted).attr('stroke-opacity', 0.4).attr('stroke-width', 1);
+          continue;
+        }
+        var r = rel[i + ',' + j];
+        if (r) glyph(svg, xx + cell / 2, yy + cell / 2, r);
+      }
+    }
+    // 범례 칩
+    var ly = y0 + n * (cell + gap) + 26;
+    var chips = [
+      ['conflict', '대립'], ['ally', '동맹'], ['influence', '영향 (행→열)'], ['assoc', '연관'],
+    ];
+    var lx = x0;
+    chips.forEach(function (cdef) {
+      var g = svg.append('g');
+      glyph(g, lx + 8, ly, { type: cdef[0], dir: 1 });
+      g.append('text').attr('x', lx + 22).attr('y', ly + 4)
+        .attr('font-family', SANS).attr('font-size', 10).attr('fill', t.muted).text(cdef[1]);
+      lx += 22 + cdef[1].length * 10 + 34;
+    });
+  }
+
+  // ── BUBBLE — 사분면 산점 ──
+  function rdBubble(svg, p, t) {
+    var data = p.data || [];
+    var W = 720, H = 380;
+    var x0 = 64, x1 = W - 36, yTop = 26, yBot = H - 52;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    var xExt = d3.extent(data, function (d) { return +d.x; });
+    var yExt = d3.extent(data, function (d) { return +d.y; });
+    var xPad = (xExt[1] - xExt[0]) * 0.18 || 1, yPad = (yExt[1] - yExt[0]) * 0.18 || 1;
+    var xs = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad]).range([x0, x1]);
+    var ys = d3.scaleLinear().domain([yExt[0] - yPad, yExt[1] + yPad]).range([yBot, yTop]);
+    var rMax = d3.max(data, function (d) { return +d.size || 1; }) || 1;
+    var rs = function (s) { return 8 + 20 * Math.sqrt((+s || 1) / rMax); };
+    // 사분면 십자선 (중앙값)
+    var mx = d3.median(data, function (d) { return +d.x; });
+    var my = d3.median(data, function (d) { return +d.y; });
+    svg.append('line').attr('x1', xs(mx)).attr('x2', xs(mx)).attr('y1', yTop).attr('y2', yBot)
+      .attr('stroke', t.muted).attr('stroke-opacity', 0.45).attr('stroke-dasharray', '3 4');
+    svg.append('line').attr('x1', x0).attr('x2', x1).attr('y1', ys(my)).attr('y2', ys(my))
+      .attr('stroke', t.muted).attr('stroke-opacity', 0.45).attr('stroke-dasharray', '3 4');
+    // 사분면 캡션
+    var cap = function (x, y, txt, anchor) {
+      svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', anchor)
+        .attr('font-family', SANS).attr('font-size', 9).attr('letter-spacing', 1)
+        .attr('fill', t.muted).attr('fill-opacity', 0.85).text(txt);
+    };
+    cap(x1 - 4, yTop + 12, '고확률 · 고충격', 'end');
+    cap(x0 + 4, yTop + 12, '저확률 · 고충격', 'start');
+    cap(x1 - 4, yBot - 6, '고확률 · 저충격', 'end');
+    cap(x0 + 4, yBot - 6, '저확률 · 저충격', 'start');
+    // 축 (숫자만, 도메인 패스 없이)
+    xs.ticks(5).forEach(function (v) {
+      svg.append('text').attr('x', xs(v)).attr('y', yBot + 18).attr('text-anchor', 'middle')
+        .attr('font-family', MONO).attr('font-size', 9).attr('fill', t.muted).text(v);
+    });
+    ys.ticks(5).forEach(function (v) {
+      svg.append('text').attr('x', x0 - 10).attr('y', ys(v) + 3).attr('text-anchor', 'end')
+        .attr('font-family', MONO).attr('font-size', 9).attr('fill', t.muted).text(v);
+    });
+    if (p.x_label) svg.append('text').attr('x', (x0 + x1) / 2).attr('y', H - 10)
+      .attr('text-anchor', 'middle').attr('font-family', SANS).attr('font-size', 10.5)
+      .attr('fill', t.muted).text(p.x_label);
+    if (p.y_label) svg.append('text').attr('transform', 'rotate(-90)')
+      .attr('x', -(yTop + yBot) / 2).attr('y', 16).attr('text-anchor', 'middle')
+      .attr('font-family', SANS).attr('font-size', 10.5).attr('fill', t.muted).text(p.y_label);
+    // 버블 — 윤곽 + 옅은 면, 최대 충격(y) 강조
+    var keyIdx = data.reduce(function (b, d, i) { return +d.y > +data[b].y ? i : b; }, 0);
+    data.forEach(function (d, i) {
+      var key = i === keyIdx;
+      var cxx = xs(+d.x), cyy = ys(+d.y), r = rs(d.size);
+      svg.append('circle').attr('cx', cxx).attr('cy', cyy).attr('r', r)
+        .attr('fill', t.accent).attr('fill-opacity', key ? 0.45 : 0.16)
+        .attr('stroke', t.accent).attr('stroke-width', key ? 1.8 : 1.1);
+      svg.append('text').attr('x', cxx).attr('y', cyy - r - 7).attr('text-anchor', 'middle')
+        .attr('font-family', SANS).attr('font-size', 10.5)
+        .attr('font-weight', key ? 700 : 500)
+        .attr('fill', key ? t.accent : t.text).text(String(d.label || ''));
+    });
+    // 크기 범례 — 플롯 *밖* 하단 우측 (데이터·라벨과 절대 안 겹침)
+    var lgy = H - 16, lgx = x1 - 6;
+    svg.append('text').attr('x', lgx).attr('y', lgy + 3).attr('text-anchor', 'end')
+      .attr('font-family', SANS).attr('font-size', 9).attr('fill', t.muted).text('크기 = 비중');
+    var off = 64;
+    [rMax / 3, rMax].forEach(function (sv) {
+      var r = Math.max(3.5, rs(sv) * 0.42);
+      svg.append('circle').attr('cx', lgx - off).attr('cy', lgy).attr('r', r)
+        .attr('fill', 'none').attr('stroke', t.muted).attr('stroke-opacity', 0.7).attr('stroke-width', 0.9);
+      off += r * 2 + 12;
+    });
+  }
+
+  var RD = { bar: rdBar, stacked: rdStacked, donut: rdDonut, waterfall: rdWaterfall,
+             heatmap: rdHeatmap, network: rdNetwork, bubble: rdBubble };
+
+  function init() {
+    var t = theme();
+    document.querySelectorAll('.redesign-stage[data-rd]').forEach(function (stage) {
+      var key = stage.getAttribute('data-rd');
+      var fn = RD[key];
+      if (!fn) return;
+      var card = stage.closest('.rd-pair') ? stage.closest('.rd-section') : null;
+      var payload = FIXTURES[key];
+      try { fn(d3.select(stage).select('svg'), payload, t); }
+      catch (e) { console.warn('[redesign] render fail', key, e); }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
