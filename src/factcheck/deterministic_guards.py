@@ -35,6 +35,9 @@ GUARD_NOVELTY = "NoveltyDeltaGuard"
 GUARD_MARKET = "MarketDataSourceGuard"
 GUARD_NAN = "NaNExposureGuard"
 GUARD_DUP_HEADING = "DuplicateHeadingGuard"
+# V7 Track C — 기준시점 가드 2종 (REFACTOR_V7_PLAN.md §3.2, V7_REF_FRAME 게이트).
+GUARD_DATE_ANCHOR = "DateAnchoredMarketGuard"
+GUARD_STALE_ANCHOR = "StaleAnchorGuard"
 
 
 class ProseBlock(BaseModel):
@@ -83,6 +86,13 @@ _PRICE_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+|\d{4,}")
 # 신규성 단어.
 _ABSOLUTE_NOVELTY = ("오늘", "방금", "지금 막", "막 공개", "오늘 공개", "오늘 발표", "이날 공개")
 _RELATIVE_NOVELTY = ("이틀 전", "사흘 전", "어젯밤", "어제", "엊그제", "간밤", "하루 전")
+
+# V7 — 본문 날짜 표현 ("6월 1일" / "2026-06-01" / "2026.6.1"). 기준시점 가드용.
+_MD_DATE_RE = re.compile(r"(\d{1,2})\s*월\s*(\d{1,2})\s*일")
+_YMD_DATE_RE = re.compile(r"(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})")
+# 종목명 주변에서 날짜·가격을 같이 보는 윈도우 폭 (앞: 날짜 선행 / 뒤: 수치 후행).
+_ANCHOR_WIN_BEFORE = 25
+_ANCHOR_WIN_AFTER = 45
 
 
 def _norm_num(s: str) -> str:
@@ -329,6 +339,186 @@ def market_series_from_context(context: ContextAnalysis) -> dict:
     return out
 
 
+# --------------------------------------------------------------------------
+# V7 Track C — 기준시점 가드 (REFACTOR_V7_PLAN.md §3.2, AP-V7-5)
+# --------------------------------------------------------------------------
+
+
+def market_bars_from_context(context: ContextAnalysis) -> dict[str, list[dict]]:
+    """context.time_series → {종목명: [bar dict (date 오름차순)]} (V7 기준시점 가드 공급).
+
+    market_series_from_context 와 달리 *날짜를 보존* 한다 — "수치가 어느 날짜든
+    맞으면 통과" 가 아니라 날짜 앵커 판정(AP-V7-5)을 하기 위해.
+    """
+    out: dict[str, list[dict]] = {}
+    for ts in getattr(context, "time_series", []) or []:
+        if not isinstance(ts, dict):
+            continue
+        name = ts.get("instrument") or ts.get("name")
+        bars = [
+            d for d in (ts.get("data") or [])
+            if isinstance(d, dict) and d.get("date") and d.get("close")
+        ]
+        if name and bars:
+            out[name] = sorted(bars, key=lambda d: str(d["date"]))
+    return out
+
+
+def _window_dates(window: str, default_year: str) -> list[str]:
+    """윈도우 텍스트 내 날짜 표현 → ISO 문자열 list (등장 순서)."""
+    found: list[str] = []
+    for m in _YMD_DATE_RE.finditer(window):
+        found.append(f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}")
+    if default_year:
+        for m in _MD_DATE_RE.finditer(window):
+            found.append(f"{default_year}-{int(m.group(1)):02d}-{int(m.group(2)):02d}")
+    return found
+
+
+def _strip_dates(window: str) -> str:
+    """날짜 표현을 공백으로 치환 — 연도(4자리)가 가격 정규식에 잡히는 오염 방지."""
+    out = _YMD_DATE_RE.sub(lambda m: " " * len(m.group()), window)
+    return _MD_DATE_RE.sub(lambda m: " " * len(m.group()), out)
+
+
+def _bar_values(bar: dict) -> list[float]:
+    vals: list[float] = []
+    for k in ("open", "high", "low", "close"):
+        v = bar.get(k)
+        try:
+            if v and float(v):
+                vals.append(float(v))
+        except (TypeError, ValueError):
+            continue
+    return vals
+
+
+def date_anchored_market_guard(
+    blocks: list[ProseBlock],
+    market_bars: dict[str, list[dict]],
+    *,
+    default_year: str = "",
+    tolerance: float = 0.005,
+) -> list[GuardFlag]:
+    """*날짜가 명시된* 시장 수치를 **그 날짜의** bar 와 대조 (V7, AP-V7-5).
+
+    MarketDataSourceGuard 는 "어느 종가든 맞으면 통과" (날짜 비앵커) — 그래서
+    '6월 1일 코스피 2,948' 처럼 *다른 날짜의 정확한 값* 을 쓴 회귀가 통과했다.
+    본 가드는 종목명 주변에 날짜+가격이 함께 있을 때 그 날짜 bar 의 OHLC 와
+    대조하고, 불일치인데 *다른 날짜 종가와는 일치* 하는 시그니처만 flag (low-FP —
+    아예 안 맞는 값은 기존 market_value_mismatch 가 잡는다).
+    """
+    flags: list[GuardFlag] = []
+    for name, bars in market_bars.items():
+        if not name or not bars:
+            continue
+        by_date = {str(b["date"]): b for b in bars}
+        all_closes = [float(b["close"]) for b in bars]
+        for blk in blocks:
+            start = 0
+            while True:
+                p = blk.text.find(name, start)
+                if p < 0:
+                    break
+                start = p + len(name)
+                window = blk.text[max(0, p - _ANCHOR_WIN_BEFORE):start + _ANCHOR_WIN_AFTER]
+                dates = _window_dates(window, default_year)
+                if not dates:
+                    continue
+                bar = by_date.get(dates[0])
+                if bar is None:  # 비거래일/시계열 밖 날짜 — 보수적 skip (codex 담당)
+                    continue
+                ohlc = _bar_values(bar)
+                clean = _strip_dates(window)
+                for m in _PRICE_RE.finditer(clean):
+                    if clean[m.end():m.end() + 1] == "%":
+                        continue
+                    try:
+                        got = float(_norm_num(m.group()))
+                    except ValueError:
+                        continue
+                    if got == 0:
+                        continue
+                    if any(abs(got - v) / v <= tolerance for v in ohlc):
+                        continue  # 해당 일자 값과 정합
+                    if any(abs(got - c) / c <= tolerance for c in all_closes):
+                        flags.append(
+                            GuardFlag(
+                                guard=GUARD_DATE_ANCHOR,
+                                flag="date_anchor_mismatch",
+                                location=blk.location,
+                                quote=f"{name} {dates[0]} {m.group()}",
+                                detail=(
+                                    f"'{name}' {dates[0]} 로 인용된 수치 {got} 가 해당 일자 "
+                                    "OHLC 와 불일치 — 다른 날짜의 값을 그 날짜에 귀속한 시그니처"
+                                ),
+                                severity="high",
+                            )
+                        )
+    return flags
+
+
+def stale_anchor_guard(
+    blocks: list[ProseBlock],
+    market_bars: dict[str, list[dict]],
+    *,
+    default_year: str = "",
+    lag_bars: int = 1,
+) -> list[GuardFlag]:
+    """보고서의 종목별 *최신* 인용 시점이 가용 시계열보다 lag_bars 거래일 초과
+    뒤처지면 flag (V7 — '6/4 종가가 있는데 본문 최신 수치가 6/1' 직격, AP-V7-5).
+
+    FP 억제: ① 날짜+가격이 *함께* 있는 인용만 anchor 로 인정 (역사 서술 제외),
+    ② 종목별 **최댓값** 만 본다 — 과거 시점을 회고하는 문장이 있어도 같은 종목의
+    더 최신 인용이 하나라도 있으면 통과, ③ 직전 1거래일 lag 는 허용 (작성 중
+    당일 종가 미반영 케이스 보호).
+    """
+    flags: list[GuardFlag] = []
+    for name, bars in market_bars.items():
+        if not name or not bars:
+            continue
+        series_dates = [str(b["date"]) for b in bars]
+        cited: list[tuple[str, str]] = []  # (date, location)
+        for blk in blocks:
+            start = 0
+            while True:
+                p = blk.text.find(name, start)
+                if p < 0:
+                    break
+                start = p + len(name)
+                window = blk.text[max(0, p - _ANCHOR_WIN_BEFORE):start + _ANCHOR_WIN_AFTER]
+                dates = _window_dates(window, default_year)
+                if not dates:
+                    continue
+                clean = _strip_dates(window)
+                has_price = any(
+                    clean[m.end():m.end() + 1] != "%"
+                    for m in _PRICE_RE.finditer(clean)
+                )
+                if has_price:
+                    cited.append((dates[0], blk.location))
+        if not cited:
+            continue
+        d_cited, loc = max(cited)
+        after = [d for d in series_dates if d > d_cited]
+        if len(after) > lag_bars:
+            flags.append(
+                GuardFlag(
+                    guard=GUARD_STALE_ANCHOR,
+                    flag="stale_anchor",
+                    location=loc,
+                    quote=f"{name} {d_cited}",
+                    detail=(
+                        f"'{name}' 본문 최신 인용 시점이 {d_cited} 인데 time_series 엔 "
+                        f"그 뒤 거래일 {len(after)}일치({after[-1]} 까지)가 있음 — "
+                        "최신 가용 데이터를 두고 옛 일자 수치를 채택"
+                    ),
+                    severity="high",
+                )
+            )
+    return flags
+
+
 def nan_exposure_guard(
     blocks: list[ProseBlock], report: ComposedReport | None = None,
 ) -> list[GuardFlag]:
@@ -418,29 +608,42 @@ def run_fact_guards(
     source_dates: list[str] | None = None,
     market_series: dict | None = None,
     scope_notes: list[str] | None = None,
+    market_bars: dict[str, list[dict]] | None = None,
+    base: bool = True,
+    ref_frame: bool = False,
 ) -> list[GuardFlag]:
     """모든 결정적 가드를 돌려 GuardFlag 목록을 반환 (log-only — drop 안 함).
 
     날짜·시장·scope 부가 입력이 안 주어지면 context 에서 best-effort 로 끌어온다
     (Phase 2 단계에선 호출측이 명시 제공; Phase 8 provenance 가 정식 소스).
+
+    V7 — ``base`` 는 V6 가드 6종 (기존 동작), ``ref_frame`` 은 기준시점 가드 2종
+    (V7_REF_FRAME). 디폴트 ``base=True, ref_frame=False`` = v6.2.0 byte-equal.
     """
     blocks = blocks_from_report(report)
-    corpus = evidence_corpus_from_context(context)
-    # Phase V6-8 — 명시 인자 없으면 context.provenance 에서 데이터로 끌어온다
-    # (provenance 비면 [] → 가드 inert = 기존 동작, byte-equal).
-    if scope_notes is None:
-        scope_notes = scope_notes_from_context(context)
-    if source_dates is None:
-        source_dates = source_dates_from_context(context)
-    if market_series is None:
-        market_series = market_series_from_context(context)
     flags: list[GuardFlag] = []
-    flags += unsourced_number_guard(blocks, corpus)
-    flags += scope_bareword_guard(blocks, scope_notes)
-    flags += novelty_delta_guard(
-        blocks, publication_date or context.date, source_dates,
-    )
-    flags += market_data_source_guard(blocks, market_series)
-    flags += nan_exposure_guard(blocks, report)
-    flags += duplicate_heading_guard(report)
+    if base:
+        corpus = evidence_corpus_from_context(context)
+        # Phase V6-8 — 명시 인자 없으면 context.provenance 에서 데이터로 끌어온다
+        # (provenance 비면 [] → 가드 inert = 기존 동작, byte-equal).
+        if scope_notes is None:
+            scope_notes = scope_notes_from_context(context)
+        if source_dates is None:
+            source_dates = source_dates_from_context(context)
+        if market_series is None:
+            market_series = market_series_from_context(context)
+        flags += unsourced_number_guard(blocks, corpus)
+        flags += scope_bareword_guard(blocks, scope_notes)
+        flags += novelty_delta_guard(
+            blocks, publication_date or context.date, source_dates,
+        )
+        flags += market_data_source_guard(blocks, market_series)
+        flags += nan_exposure_guard(blocks, report)
+        flags += duplicate_heading_guard(report)
+    if ref_frame:
+        if market_bars is None:
+            market_bars = market_bars_from_context(context)
+        year = (publication_date or context.date or "")[:4]
+        flags += date_anchored_market_guard(blocks, market_bars, default_year=year)
+        flags += stale_anchor_guard(blocks, market_bars, default_year=year)
     return flags

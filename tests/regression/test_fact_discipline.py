@@ -51,8 +51,14 @@ EXPANDED_ERROR_CLASSES = {
     "metric_label_ambiguity",
 }
 
+# 3차 확장 1종 (V7 Track C, 사용자 게이트 승인 2026-06-11 — REFACTOR_V7_PLAN.md §3.4).
+# "사실로서 정확하지만 보고서 기준 시점과 다른 날짜의 값" (6/1↔6/5 회귀).
+V7_ERROR_CLASSES = {
+    "wrong_timeframe",
+}
+
 # 임의 확장 차단용 전체 enum (가드 대상 = 알려진 class 전체).
-ALL_ERROR_CLASSES = FROZEN_ERROR_CLASSES | EXPANDED_ERROR_CLASSES
+ALL_ERROR_CLASSES = FROZEN_ERROR_CLASSES | EXPANDED_ERROR_CLASSES | V7_ERROR_CLASSES
 
 _REQUIRED_KEYS = {
     "id",
@@ -232,6 +238,130 @@ def test_nan_exposure_guard() -> None:
     )
     flags = nan_exposure_guard([], report) + run_fact_guards(report, ContextAnalysis())
     assert any(f.flag == "nan_exposed" for f in flags)
+
+
+# ==========================================================================
+# V7 Track C — 기준시점 가드 (REFACTOR_V7_PLAN.md §3.2, AP-V7-5)
+#
+# 날짜 비앵커 검증 회귀 차단: "수치가 어느 날짜든 맞으면 통과" 금지. ① 날짜가
+# 명시된 시장 수치는 *그 날짜의* bar 와 대조 (date_anchor_mismatch) ② 종목별 최신
+# 인용 시점이 가용 시계열보다 1거래일 초과 뒤처지면 stale_anchor. 둘 다 ref_frame
+# opt-in — 디폴트 OFF 경로는 기존 run_fact_guards 와 byte-equal.
+# ==========================================================================
+
+_V7_BARS = {
+    "코스피": [
+        {"date": "2026-06-01", "close": 2901.50},
+        {"date": "2026-06-02", "close": 2920.00},
+        {"date": "2026-06-03", "close": 2935.40},
+        {"date": "2026-06-04", "close": 2948.12},
+    ],
+}
+
+
+def _v7_report(prose: str) -> ComposedReport:
+    return ComposedReport(
+        headline="일일 브리핑",
+        sections=[ComposedSection(heading="시장", prose=prose)],
+    )
+
+
+def test_stale_anchor_guard_detects_old_citation() -> None:
+    """6/4 종가가 가용한데 본문 최신 인용이 6/1 → stale_anchor (wrong_timeframe_01)."""
+    sc = _SCENARIOS_BY_ID["wrong_timeframe_01"]
+    flags = run_fact_guards(
+        _v7_report(sc["bad_prose"]), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+        base=False, ref_frame=True,
+    )
+    assert any(f.flag == "stale_anchor" for f in flags), {f.flag for f in flags}
+
+
+def test_stale_anchor_guard_passes_latest_citation() -> None:
+    """최신 가용 일자(6/4) 인용 (good_prose) → 0-FP."""
+    sc = _SCENARIOS_BY_ID["wrong_timeframe_01"]
+    flags = run_fact_guards(
+        _v7_report(sc["good_prose"]), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+        base=False, ref_frame=True,
+    )
+    assert not any(f.flag in ("stale_anchor", "date_anchor_mismatch") for f in flags)
+
+
+def test_stale_anchor_allows_one_bar_lag() -> None:
+    """직전 거래일(6/3) 인용은 1-bar lag 허용 — 작성 중 당일 종가 미반영 보호."""
+    flags = run_fact_guards(
+        _v7_report("6월 3일 코스피는 2,935.40으로 마감했다"), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+        base=False, ref_frame=True,
+    )
+    assert not any(f.flag == "stale_anchor" for f in flags)
+
+
+def test_stale_anchor_respects_newest_mention() -> None:
+    """과거 회고 + 더 최신 인용이 공존하면 종목별 최댓값으로 판정 → 0-FP."""
+    prose = (
+        "6월 1일 코스피는 2,901.50에서 출발했지만, 6월 4일 코스피는 2,948.12로 마감하며 "
+        "한 주를 강세로 마무리했다"
+    )
+    flags = run_fact_guards(
+        _v7_report(prose), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+        base=False, ref_frame=True,
+    )
+    assert not any(f.flag == "stale_anchor" for f in flags)
+
+
+def test_date_anchor_mismatch_detects_value_from_other_date() -> None:
+    """'6월 1일 코스피 2,948.12' — 값은 6/4 종가 (다른 날짜의 정확한 값) → flag."""
+    flags = run_fact_guards(
+        _v7_report("6월 1일 코스피는 2,948.12로 마감했다"), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+        base=False, ref_frame=True,
+    )
+    assert any(f.flag == "date_anchor_mismatch" for f in flags), {f.flag for f in flags}
+
+
+def test_date_anchor_passes_correct_dated_value() -> None:
+    """'6월 1일 코스피 2,901.50' — 그 날짜의 실제 종가 → date_anchor 0-FP
+    (시점 선택 문제는 stale_anchor 가 따로 잡는다)."""
+    flags = run_fact_guards(
+        _v7_report("6월 1일 코스피는 2,901.50으로 마감했다"), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+        base=False, ref_frame=True,
+    )
+    assert not any(f.flag == "date_anchor_mismatch" for f in flags)
+
+
+def test_ref_frame_off_is_inert() -> None:
+    """ref_frame=False (디폴트) 면 bad_prose 라도 V7 가드 미작동 — byte-equal 경로."""
+    sc = _SCENARIOS_BY_ID["wrong_timeframe_01"]
+    flags = run_fact_guards(
+        _v7_report(sc["bad_prose"]), ContextAnalysis(),
+        publication_date="2026-06-05", market_bars=_V7_BARS,
+    )
+    assert not any(f.flag in ("stale_anchor", "date_anchor_mismatch") for f in flags)
+
+
+def test_reference_frame_builder() -> None:
+    """build_reference_frame — 종목별 최신 가용 일자·종가·전일대비 추출, 빈 입력 inert."""
+    from src.factcheck.reference_frame import build_reference_frame
+    ctx = ContextAnalysis(
+        time_series=[
+            {"instrument": "코스피", "data": _V7_BARS["코스피"]},
+            {"name": "환율", "data": []},  # 빈 시계열은 제외
+        ],
+    )
+    frame = build_reference_frame(ctx)
+    assert frame["instruments"] == [
+        {
+            "name": "코스피",
+            "last_available_date": "2026-06-04",
+            "last_close": 2948.12,
+            "last_day_change_pct": 0.43,
+        }
+    ]
+    assert build_reference_frame(ContextAnalysis()) == {"instruments": []}
 
 
 def test_clean_report_zero_flags() -> None:

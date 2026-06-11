@@ -194,7 +194,7 @@ SYSTEM_PROMPT = (
     "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식 (v4.4.0):\n"
     "  ```json\n"
     "  {\n"
-    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey\",\n'
+    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey|bump|bullet|connected_scatter\",\n'
     '    \"title\": \"차트 제목\",\n'
     '    \"subtitle\": \"한 줄 thesis — 제목과 다른 결론. 예: 동진 7.9는 OP 기준, 회계는 23.08\",\n'
     '    \"data\": [...],            // type 별 스키마 (아래 참조)\n'
@@ -204,6 +204,7 @@ SYSTEM_PROMPT = (
     '      {\"kind\":\"band\",  \"x_from\":\"2025-07\", \"x_to\":\"2025-12\", \"label\":\"박스권\"},\n'
     '      {\"kind\":\"point\", \"x\":\"2024-12\", \"y\":150, \"label\":\"전환점\"}\n'
     "    ],\n"
+    '    \"unit_line\": \"단위: 조원 · 2024.1Q~2026.1Q (선택 — 제목 아래 단위·기간 라인)\",\n'
     '    \"source\": \"Bloomberg, KRX / 2026-04 종가 기준 · N=5\",\n'
     '    \"takeaway\": \"차트가 보여준 한 줄 인사이트 (선택)\",\n'
     '    \"note\": \"부가 설명 (선택, 더 긴 caption 용)\"\n'
@@ -215,6 +216,11 @@ SYSTEM_PROMPT = (
     "  · band:  음영 영역 (침체기·박스권·위기 구간). *최대 1개*.\n"
     "  · point: 인플렉션 데이터 점 강조. *최대 2개*.\n"
     "  · 차트 1개에 4종 모두 박지 말 것 (산만). 합산 최대 3개.\n"
+    "  · 적용 가능 type (v7.0.0 확장): bar/line/gantt/bubble/dual_line/forecast 에 더해\n"
+    "    candle/area/scatter/stacked_area/lollipop/range_bar/bullet/connected_scatter 도 지원.\n"
+    "    본문에 사건 시점·임계값·국면이 언급되면 해당 차트에 annotation 으로 박아라 —\n"
+    "    데이터만 있는 차트와 *이야기가 있는 차트* 의 차이가 여기서 갈린다.\n"
+    "    (scatter/stacked_area/connected_scatter 는 vline 대신 point/band 사용.)\n"
     "- subtitle 은 *제목과 다른 thesis*. '5종목 PER 비교' (제목) 와 '동진 7.9는\n"
     "  OP 기준 — 회계 PER 23.08' (subtitle) 같이 *서로 다른 정보*.\n"
     "- source 는 출처·시점·관측 N 항상 함께 (예: 'Bloomberg / 2026-04 / N=5').\n"
@@ -294,6 +300,21 @@ SYSTEM_PROMPT = (
     "              가드: 노드 2-12, 링크 ≥1, source/target 가 nodes.id 존재,\n"
     "              self-loop 금지, DAG (순환 금지). 적자/손실 flow 는 negative=true\n"
     "              (빨간 색 자동). accent=true 면 강조 노드 (보통 최종 이익 노드).\n\n"
+    "신규 3종 (v7.0.0 — Track A):\n"
+    "  · bump:     {periods:[\"2023\",\"2024\",\"2025\"], items:[{name, ranks:[2,1,1], accent?:bool}]}\n"
+    "              *시기별 순위 경쟁* — 점유율 순위·시총 순위·수출 품목 순위의 변동.\n"
+    "              2-6 시기 × 3-8 항목. ranks 는 1부터 (1=1위), 모든 항목 길이 = periods 길이.\n"
+    "              slope(2시점)·line(값 축)과 구분 — '순위가 바뀌었다' 가 thesis 일 때만.\n"
+    "              accent=true 항목 강조 (없으면 최종 1위 자동 강조).\n\n"
+    "  · bullet:   [{label, value:number, target:number, ranges?:[60,75,90]}]\n"
+    "              *목표 대비 실적* — 실적 vs 가이던스/컨센서스/정책 목표. 1-7행.\n"
+    "              target 은 양수 필수. ranges 는 낮음/중간/높음 구간 경계 (선택, 오름차순 ≤4).\n"
+    "              단순 크기 비교는 bar — '목표 대비 어디까지 왔나' 가 thesis 일 때만.\n\n"
+    "  · connected_scatter: [{x:number, y:number, label?}]  + x_label/y_label 권장\n"
+    "              *2변수의 시간 경로(궤적)* — 금리×환율, 물가×실업이 함께 그리는 동선.\n"
+    "              배열은 *시간 순서* 4-30점. label 은 변곡점에만 (첫·끝은 자동 라벨).\n"
+    "              dual_line(두 축 분리 시계열)과 구분 — '평면 위 경로의 방향 전환' 이\n"
+    "              thesis 일 때만. 화살촉이 최신 방향을 가리킨다.\n\n"
     "- 모든 차트는 mono guide 의 45° 패턴 + 단일 액센트. 색은 자동 적용.\n"
     "- *데이터가 비어있으면 차트 자체를 emit 하지 말 것* (charts 배열에 추가 금지).\n"
     "  · bar/donut/line/gantt/heatmap/candle/area: data 가 빈 배열이면 emit X\n"
@@ -309,6 +330,9 @@ SYSTEM_PROMPT = (
     "  · waterfall: 첫·끝 row 가 type='total' 이 아니면 emit X\n"
     "  · range_bar: 임의 row 의 low >= high 면 emit X\n"
     "  · sankey: nodes <2 또는 >12, links <1, 참조 깨짐 (source/target 미존재), self-loop, 순환 그래프면 emit X\n"
+    "  · bump: periods <2 또는 items <3, ranks 길이 불일치면 emit X\n"
+    "  · bullet: target 없거나 ≤0 이면 emit X (그땐 bar)\n"
+    "  · connected_scatter: 4 포인트 미만이거나 시간 순서가 아니면 emit X\n"
     "  · 모르는 수치를 *추정해서* 차트 만들지 말 것 — 진짜 출처 데이터만.\n\n"
 
     "[차트 type 결정 트리 — v5.2.14 신설, v5.4.3 보강]\n"
@@ -334,12 +358,15 @@ SYSTEM_PROMPT = (
     "     ├─ 단일 시리즈 + 예측·신뢰구간 → forecast (line 금지)\n"
     "     ├─ 단일 시리즈 (그 외) → line\n"
     "     ├─ 두 시리즈 (다른 단위/비교 anchor) → dual_line\n"
+    "     ├─ 두 변수의 *평면 궤적* (방향 전환이 thesis) → connected_scatter (dual_line 금지)\n"
+    "     ├─ 시기별 *순위* 경쟁 (3-8 항목 × 2-6 시기) → bump (line 금지)\n"
     "     ├─ 시리즈 ≥3 + 합 의미 (점유율) → stacked_area (line 금지)\n"
     "     └─ 같은 구조 그룹 4-9개 → small_multiples\n"
     "  2. 지리 데이터 있음?\n"
     "     ├─ 경로/이동/마커 → embedded_map\n"
     "     └─ 지역별 값 (≥3 국가) → choropleth\n"
     "  3. 카테고리 비교? (시계열 X, 지리 X)\n"
+    "     ├─ 실적 vs 목표/가이던스 (target 있음) → bullet (bar 금지)\n"
     "     ├─ 카테고리 ≤8, 순위/크기 → bar\n"
     "     ├─ 카테고리 8-15, 격차 강조 → lollipop (bar 의 우아한 대안)\n"
     "     ├─ 2 시점 비교 (같은 카테고리 a vs b) → slope\n"
@@ -627,6 +654,35 @@ _FACT_DISCIPLINE_BLOCK = (
 )
 
 
+# V7 Track B — 서사 단계 라벨 블록 (opt-in, V7_SCROLL_ARC). 각 섹션에 기/승/전/결
+# 1자 라벨을 emit — 스크롤 아크 배경(起承轉結 워터마크)의 섹션 매핑에만 쓰인다.
+# 누락·오기는 ComposedSection validator 가 "" 로 회복 → 위치 기반 폴백 (AP-V7-4).
+# flag OFF 면 미주입 → compose 프롬프트 byte-equal.
+_SCROLL_ARC_BLOCK = (
+    "\n\n=== 서사 단계 라벨 (V7 scroll arc) ===\n"
+    "각 sections[i] 객체에 \"narrative_phase\" 필드를 추가하라 — 값은 \"기\"|\"승\"|"
+    "\"전\"|\"결\" 중 1자.\n"
+    "- 기(사건 제시) → 승(전개·심화) → 전(쟁점·반전) → 결(전망·착지) 순서를 따르고,\n"
+    "  단계는 섹션 순서에서 *되돌아가지 않는다* (예: 전 다음에 승 금지).\n"
+    "- 첫 섹션은 \"기\". 이 필드는 페이지 배경 연출에만 쓰이며 본문 내용·문체에 영향을\n"
+    "  주지 않는다 — 본문을 이 라벨에 맞춰 변형하지 마라.\n"
+)
+
+
+# V7 Track C — 기준시점 계약 블록 (opt-in, V7_REF_FRAME). 작성 단계에서 "옛 날짜의
+# 정확한 수치" 채택 자체를 차단 (WRITE-AP-22, REFACTOR_V7_PLAN.md §3.4). flag OFF
+# 면 미주입 → compose 프롬프트 byte-equal.
+_REF_FRAME_BLOCK = (
+    "\n\n=== 기준시점 계약 (V7 — reference_frame) ===\n"
+    "입력에 ``reference_frame.instruments`` 가 있으면, 시장 수치(지수·환율·주가)는 각\n"
+    "종목의 ``last_available_date`` 데이터를 *기본 시점* 으로 쓴다 (WRITE-AP-22).\n"
+    "- 그보다 옛 날짜의 값을 인용할 때는 반드시 절대 날짜를 명기하고, 왜 그 시점을\n"
+    "  쓰는지(예: 사건 당일 종가 비교)가 문장에 드러나야 한다.\n"
+    "- '현재/지금/최근' 으로 서술하는 시장 수치는 last_available_date 의 값만 허용.\n"
+    "- 옛 날짜의 수치가 사실로서 정확해도, 무표기로 쓰면 시점 오류다.\n"
+)
+
+
 class NarrativeComposer:
     """Opus 4.7 단일 콜로 보고서를 자유 형식으로 작성.
 
@@ -683,9 +739,14 @@ class NarrativeComposer:
         flag OFF 면 모듈 SYSTEM_PROMPT 그대로 → ``_call_cli(system_prompt=SYSTEM_PROMPT)``
         는 미지정(None) 경로와 byte-equal (full_prompt 동일).
         """
+        prompt = SYSTEM_PROMPT
         if getattr(self.config, "enable_fact_prompt", False):
-            return SYSTEM_PROMPT + _FACT_DISCIPLINE_BLOCK
-        return SYSTEM_PROMPT
+            prompt += _FACT_DISCIPLINE_BLOCK
+        if getattr(self.config, "enable_ref_frame", False):
+            prompt += _REF_FRAME_BLOCK
+        if getattr(self.config, "enable_scroll_arc", False):
+            prompt += _SCROLL_ARC_BLOCK
+        return prompt
 
     async def compose_unified(
         self,
@@ -705,6 +766,12 @@ class NarrativeComposer:
         에 명시 (Anti-pattern #5).
         """
         user_payload = self._build_unified_payload(context, mode, parent_context)
+        # V7 Track C — 기준시점 계약 데이터 주입 (flag OFF = payload byte-equal).
+        if getattr(self.config, "enable_ref_frame", False):
+            from src.factcheck.reference_frame import build_reference_frame
+            frame = build_reference_frame(context)
+            if frame.get("instruments"):
+                user_payload["reference_frame"] = frame
         user_message = json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
 
         # v5.5.9 — 복원력: CLI 가 degraded/짧은/잘린 응답을 줘 _parse_response 가 None 인
@@ -931,17 +998,32 @@ class NarrativeComposer:
                 "closing": report.closing,
             },
         }
+        # V7 Track C — 보완 패스에도 동일 계약 주입 (루프 양 패스의 맹점 공유 해소,
+        # REFACTOR_V7_PLAN.md §3.5). flag OFF = payload·프롬프트 byte-equal.
+        revise_prompt = self.REVISE_SYSTEM_PROMPT
+        if getattr(self.config, "enable_ref_frame", False):
+            from src.factcheck.reference_frame import build_reference_frame
+            frame = build_reference_frame(context)
+            if frame.get("instruments"):
+                payload["reference_frame"] = frame
+            revise_prompt += (
+                "\n\n=== 기준시점 정정 (V7) ===\n"
+                "시점 지적(wrong_timeframe/stale_anchor)은 evidence.time_series 의 *최신* "
+                "일자(reference_frame.last_available_date) 값으로 교체하고 날짜를 명기한다. "
+                "해당 일자 데이터가 없으면 그 수치 문장을 완화하거나 덜어낸다 — 옛 날짜 "
+                "수치를 무표기로 남기지 마라."
+            )
         user_message = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
         try:
             if self.config.use_cli_mode:
                 raw = await self._call_cli(
                     user_message, timeout_s=300.0,
-                    system_prompt=self.REVISE_SYSTEM_PROMPT,
+                    system_prompt=revise_prompt,
                 )
             else:
                 raw = await self._call_api(
                     user_message, mode="standard",
-                    system_prompt=self.REVISE_SYSTEM_PROMPT,
+                    system_prompt=revise_prompt,
                 )
         except Exception as exc:  # noqa: BLE001 — 보완 실패 → 원본 유지
             logger.warning("[revise_for_facts] LLM call failed: %s", exc)

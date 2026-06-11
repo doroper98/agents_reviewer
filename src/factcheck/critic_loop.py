@@ -203,6 +203,39 @@ def market_correction_hint(quote: str, context: ContextAnalysis) -> str | None:
     return None
 
 
+def timeframe_correction_hint(quote: str, context: ContextAnalysis) -> str | None:
+    """V7 Track C — wrong_timeframe/stale_anchor 지적의 *최신 가용* 값을 time_series 에서
+    역산해 Opus 에게 제공 (REFACTOR_V7_PLAN.md §3.5).
+
+    market_correction_hint 는 인용구의 *그 날짜* bar 를 찾지만 (틀린 수치 교정), 시점
+    지적은 반대로 **마지막 bar** 가 정답 — "옛 날짜 기준으로 정확" 한 수치를 최신 시점
+    값으로 갈아끼우게 한다. 매치 실패 시 None (그땐 착지 drop 으로 폴백).
+    """
+    for ts in getattr(context, "time_series", []) or []:
+        if not isinstance(ts, dict):
+            continue
+        name = ts.get("instrument") or ts.get("name")
+        data = [
+            d for d in (ts.get("data") or [])
+            if isinstance(d, dict) and d.get("date") and d.get("close")
+        ]
+        if not name or name not in (quote or "") or not data:
+            continue
+        data = sorted(data, key=lambda d: str(d["date"]))
+        bar = data[-1]
+        parts = [f"{name} 최신 가용 {bar['date']} 종가 {_fmt_price(float(bar['close']))}"]
+        if len(data) > 1 and data[-2].get("close"):
+            prior = float(data[-2]["close"])
+            pct = (float(bar["close"]) - prior) / prior * 100
+            parts.append(f"전일 대비 {pct:+.2f}%")
+        return (
+            "[기준시점 정정 참고] " + ", ".join(parts)
+            + " — 본문의 해당 시장 수치를 이 *최신 시점* 값으로 교체하고 날짜를 명기하라"
+            "(옛 날짜 값을 유지하려면 절대 날짜와 사유를 본문에 명시할 것, 삭제는 말 것)."
+        )
+    return None
+
+
 def _clip(s: str, n: int = 140) -> str:
     s = (s or "").replace("\n", " ").strip()
     return s if len(s) <= n else s[:n] + "…"
@@ -252,17 +285,23 @@ def _diff_reports(orig: ComposedReport, final: ComposedReport) -> list[str]:
 def apply_landing(
     report: ComposedReport, residual_claims: list,
 ) -> tuple[ComposedReport, list[str]]:
-    """확인패스 후 잔존 위반 착지 — `unsourced_number`·`market_data_mismatch` 결정적 drop.
+    """확인패스 후 잔존 위반 착지 — `unsourced_number`·`market_data_mismatch`·
+    `wrong_timeframe` 결정적 drop.
 
     Opus 보완이 이미 헤지/교정을 수행했으므로, 여기서는 *출처 없는 특정 수치* 와 *틀린
     시장 수치* 가 그래도 남았을 때만 그 인용구를 본문에서 제거한다 (시장 수치는 최우선 —
-    틀린 채 발행하느니 빼는 게 낫다, WRITE-AP-15 / Phase V6-8/A). 그 외 error_class 는
-    surgery 하지 않는다 (FP 가 멀쩡한 본문을 망치지 않게, log-only).
+    틀린 채 발행하느니 빼는 게 낫다, WRITE-AP-15 / Phase V6-8/A). V7 — *시점이 틀린*
+    시장 수치(wrong_timeframe)도 동급으로 drop: 정확하지만 옛 날짜인 수치를 무표기로
+    내보내는 것이 무수치보다 해롭다 (WRITE-AP-22, REFACTOR_V7_PLAN.md §3.6). 그 외
+    error_class 는 surgery 하지 않는다 (FP 가 멀쩡한 본문을 망치지 않게, log-only).
     """
     drop_quotes = [
         c.quote
         for c in residual_claims
-        if any(k in getattr(c, "error_class", "").lower() for k in ("unsourced", "market"))
+        if any(
+            k in getattr(c, "error_class", "").lower()
+            for k in ("unsourced", "market", "wrong_timeframe")
+        )
         and getattr(c, "quote", "")
     ]
     if not drop_quotes:
@@ -326,10 +365,12 @@ class CriticLoop:
         # 1. 결정적 사전필터. 대부분은 codex 힌트(soft)지만, *고신뢰* 결정 신호(제목
         #    중복·NaN)는 codex 와 무관하게 revision 을 *강제 트리거* 한다 (HARD).
         guard_flags = []
-        if self.config.enable_fact_guards:
+        if self.config.enable_fact_guards or self.config.enable_ref_frame:
             try:
                 guard_flags = run_fact_guards(
                     report, context, publication_date=publication_date,
+                    base=self.config.enable_fact_guards,
+                    ref_frame=self.config.enable_ref_frame,
                 )
             except Exception as exc:  # noqa: BLE001
                 logger.warning("[critic_loop] pre-filter guards skipped: %s", exc)
@@ -397,8 +438,14 @@ class CriticLoop:
         fix_instructions: list[str] = []
         for c in v1.claims:
             instr = c.fix_instruction
-            if "market" in (c.error_class or "").lower():
+            ec = (c.error_class or "").lower()
+            if "market" in ec:
                 hint = market_correction_hint(c.quote, context)
+                if hint:
+                    instr = f"{instr} {hint}"
+            elif "timeframe" in ec or "stale_anchor" in ec:
+                # V7 — 시점 지적은 최신 가용 bar 가 정답 (틀린 날짜 bar 가 아니라).
+                hint = timeframe_correction_hint(c.quote, context)
                 if hint:
                     instr = f"{instr} {hint}"
             fix_instructions.append(instr)

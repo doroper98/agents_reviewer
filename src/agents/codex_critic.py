@@ -483,6 +483,27 @@ class CodexCritic:
             .replace("__EVIDENCE_JSON__", evidence_json)
             .replace("__REPORT_JSON__", report_json)
         )
+        # V7 Track C — 기준시점 계약 (REFACTOR_V7_PLAN.md §3.4). flag OFF 면 미주입
+        # = 기존 프롬프트 byte-equal. "사실로서 정확하지만 보고서 기준 시점과 다른
+        # 날짜의 값" 을 wrong_timeframe 으로 분류 — 기존 recency/stale 류(출처 신선도)
+        # 와 구분되는 V7 신설 class (사용자 게이트 승인 2026-06-11).
+        if getattr(self.config, "enable_ref_frame", False):
+            from src.factcheck.reference_frame import build_reference_frame
+            frame_json = json.dumps(
+                build_reference_frame(context), ensure_ascii=False, separators=(",", ":"),
+            )
+            prompt += (
+                "\n\n=== 기준시점 계약 (V7 reference_frame) ===\n"
+                f"{frame_json}\n"
+                "추가 error_class: wrong_timeframe — *사실로서는 정확하지만* 이 보고서의 기준\n"
+                "시점과 다른 날짜·기간의 값을 현재 값처럼 제시 (예: 발행일 6/5 브리핑에 6/4\n"
+                "종가가 가용한데 6/1 종가를 무표기로 인용). 검수 0순위로 본다:\n"
+                "- 본문의 각 시장 수치가 위 instruments 의 last_available_date 와 같은 *시점*\n"
+                "  의 값인지 확인하라. 숫자가 그 옛 날짜 기준으로 '정확' 해도 면책되지 않는다.\n"
+                "- 더 옛 날짜의 값을 쓰려면 본문에 절대 날짜와 그 시점을 쓰는 사유가 명시돼\n"
+                "  있어야 한다. 없으면 wrong_timeframe(high).\n"
+                "- fix_instruction 엔 last_available_date 의 값으로 교체 + 날짜 명기 지시를 준다.\n"
+            )
         # Phase V6-5 — 웹 verify. 근거에 없는 사실은 웹으로 ≤N 대조 + URL 인용 강제 (bound).
         if webverify:
             prompt += (

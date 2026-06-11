@@ -604,3 +604,131 @@ def test_validate_chart_data_candle_fail_propagates() -> None:
     ])
     assert not ok
     assert "CHART-AP" in reason or "Candle" in reason or "candle" in reason
+
+
+# ==========================================================================
+# v7.0.0 Track A — 신규 3종 가드 (REFACTOR_V7_PLAN.md §1.3, guarded tier)
+# ==========================================================================
+
+_BUMP_OK = {
+    "periods": ["2023", "2024", "2025"],
+    "items": [
+        {"name": "TSMC", "ranks": [1, 1, 1]},
+        {"name": "삼성", "ranks": [2, 2, 3]},
+        {"name": "SMIC", "ranks": [4, 3, 2]},
+    ],
+}
+
+
+def test_bump_guard_accepts_realistic() -> None:
+    ok, reason = validate_chart_data("bump", _BUMP_OK)
+    assert ok, reason
+
+
+def test_bump_guard_rejects_rank_grid_mismatch() -> None:
+    bad = {
+        "periods": ["2023", "2024", "2025"],
+        "items": [
+            {"name": "A", "ranks": [1, 1]},  # 길이 2 != periods 3
+            {"name": "B", "ranks": [2, 2, 2]},
+            {"name": "C", "ranks": [3, 3, 3]},
+        ],
+    }
+    ok, reason = validate_chart_data("bump", bad)
+    assert not ok and "격자" in reason
+
+
+def test_bump_guard_rejects_sub_one_rank_and_too_few_items() -> None:
+    ok, _ = validate_chart_data("bump", {
+        "periods": ["23", "24"],
+        "items": [
+            {"name": "A", "ranks": [0, 1]},  # rank < 1
+            {"name": "B", "ranks": [2, 2]},
+            {"name": "C", "ranks": [3, 3]},
+        ],
+    })
+    assert not ok
+    ok, _ = validate_chart_data("bump", {
+        "periods": ["23", "24"],
+        "items": [{"name": "A", "ranks": [1, 1]}, {"name": "B", "ranks": [2, 2]}],
+    })
+    assert not ok  # 항목 <3 → 본문 한 문장으로 충분
+
+
+def test_bump_guard_rejects_list_payload() -> None:
+    ok, reason = validate_chart_data("bump", [{"name": "A", "ranks": [1, 2]}])
+    assert not ok and "dict" in reason
+
+
+def test_bullet_guard_accepts_realistic() -> None:
+    ok, reason = validate_chart_data("bullet", [
+        {"label": "매출", "value": 133.9, "target": 128.0, "ranges": [100, 120, 140]},
+        {"label": "영업이익", "value": 31.2, "target": 33.5},
+    ])
+    assert ok, reason
+
+
+def test_bullet_guard_rejects_nonpositive_target_and_nan() -> None:
+    ok, _ = validate_chart_data("bullet", [{"label": "매출", "value": 10.0, "target": 0}])
+    assert not ok  # target ≤0 → bar 로 (가드가 강제)
+    ok, _ = validate_chart_data("bullet", [
+        {"label": "매출", "value": float("nan"), "target": 100.0},
+    ])
+    assert not ok
+
+
+def test_bullet_guard_rejects_too_many_rows() -> None:
+    rows = [{"label": f"r{i}", "value": 1.0, "target": 2.0} for i in range(8)]
+    ok, _ = validate_chart_data("bullet", rows)
+    assert not ok  # 1~7행 한정
+
+
+def test_connected_scatter_guard_accepts_path() -> None:
+    ok, reason = validate_chart_data("connected_scatter", [
+        {"x": 4.6, "y": 1495, "label": "25.7"},
+        {"x": 4.4, "y": 1480},
+        {"x": 4.0, "y": 1445},
+        {"x": 3.5, "y": 1402, "label": "26.6"},
+    ])
+    assert ok, reason
+
+
+def test_connected_scatter_guard_rejects_short_and_nan() -> None:
+    ok, _ = validate_chart_data("connected_scatter", [{"x": 1, "y": 2}, {"x": 2, "y": 3}])
+    assert not ok  # <4 점 — 궤적이 아님
+    ok, _ = validate_chart_data("connected_scatter", [
+        {"x": 1, "y": 2}, {"x": 2, "y": float("inf")}, {"x": 3, "y": 4}, {"x": 4, "y": 5},
+    ])
+    assert not ok
+
+
+def test_composed_section_caps_annotations_at_three() -> None:
+    """v7.0.0 (AP-V7-6) — 유효 차트의 annotation 은 dict+유효 kind 만, 최대 3개."""
+    from src.models import ComposedSection
+    sec = ComposedSection(heading="h", prose="p", charts=[{
+        "type": "line",
+        "title": "t",
+        "data": [{"x": "1", "y": 1.0}, {"x": "2", "y": 2.0}],
+        "annotations": [
+            {"kind": "vline", "x": "1", "label": "a"},
+            {"kind": "hline", "y": 1.5, "label": "b"},
+            {"kind": "band", "x_from": "1", "x_to": "2"},
+            {"kind": "point", "x": "2", "y": 2.0},   # 4번째 — 잘림
+            {"kind": "blink", "x": "1"},              # 무효 kind — 제거
+            "문자열",                                  # 비 dict — 제거
+        ],
+    }])
+    anns = sec.charts[0]["annotations"]
+    assert len(anns) == 3
+    assert all(a["kind"] in ("vline", "hline", "band", "point") for a in anns)
+
+
+def test_composed_section_strips_empty_annotations_key() -> None:
+    from src.models import ComposedSection
+    sec = ComposedSection(heading="h", prose="p", charts=[{
+        "type": "line",
+        "title": "t",
+        "data": [{"x": "1", "y": 1.0}, {"x": "2", "y": 2.0}],
+        "annotations": ["전부", "무효"],
+    }])
+    assert "annotations" not in sec.charts[0]

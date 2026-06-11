@@ -431,3 +431,73 @@ def test_pre_flags_alone_do_not_trigger_rewrite() -> None:
     loop = CriticLoop(_cfg(enable_fact_guards=True), critic, reviser)
     res = _run(loop.run(_report(), ctx, publication_date="2026-06-01"))
     assert reviser.calls == 0 and not res.revised
+
+
+# --------------------------------------------------------------------------
+# V7 Track C — 기준시점 계약 (REFACTOR_V7_PLAN.md §3)
+# --------------------------------------------------------------------------
+
+_V7_TS = [{"instrument": "코스피", "data": [
+    {"date": "2026-06-01", "close": 2901.50},
+    {"date": "2026-06-02", "close": 2920.00},
+    {"date": "2026-06-03", "close": 2935.40},
+    {"date": "2026-06-04", "close": 2948.12},
+]}]
+
+
+def test_timeframe_correction_hint_uses_latest_bar() -> None:
+    # 시점 지적은 인용된 옛 날짜가 아니라 *최신 가용* bar 가 정답.
+    from src.factcheck.critic_loop import timeframe_correction_hint
+    ctx = ContextAnalysis(date="2026-06-05", time_series=_V7_TS)
+    hint = timeframe_correction_hint("6월 1일 코스피는 2,901.50으로 마감", ctx)
+    assert hint and "2026-06-04" in hint and "2,948" in hint and "+0.43%" in hint
+    assert "날짜를 명기" in hint
+    assert timeframe_correction_hint("없는종목 9999", ctx) is None
+
+
+def test_wrong_timeframe_claim_revision_gets_latest_hint() -> None:
+    # 루프가 wrong_timeframe 지적의 fix_instruction 에 최신 bar 힌트를 덧대 전달.
+    ctx = ContextAnalysis(date="2026-06-05", time_series=_V7_TS)
+    claim = _claim(
+        error_class="wrong_timeframe", quote="6월 1일 코스피는 2,901.50으로 마감",
+    )
+    reviser = StubReviser(_report(prose="보완본"))
+    loop = CriticLoop(_cfg(), StubCritic([_violations(claim), _clean()]), reviser)
+    _run(loop.run(_report(), ctx))
+    joined = " ".join(reviser.fix_instructions_seen[0])
+    assert "2026-06-04" in joined and "2,948" in joined
+
+
+def test_landing_drops_wrong_timeframe_residual() -> None:
+    # V7 — 잔존 wrong_timeframe 도 drop (정확하지만 옛 시점인 수치 무표기 발행 방지).
+    from src.factcheck.critic_loop import apply_landing
+    rep = _report(prose="6월 1일 코스피는 2,901.50으로 마감했다. 다음 문장은 남는다.")
+    claim = _claim(
+        error_class="wrong_timeframe", quote="6월 1일 코스피는 2,901.50으로 마감했다.",
+    )
+    out, dropped = apply_landing(rep, [claim])
+    assert "2,901.50" not in out.sections[0].prose
+    assert "다음 문장은 남는다" in out.sections[0].prose
+    assert dropped
+
+
+def test_ref_frame_guards_join_pre_flags_without_fact_guards() -> None:
+    # V7_REF_FRAME 단독으로도 기준시점 가드가 pre_flags 로 합류 (V6_FACT_GUARDS 불요).
+    ctx = ContextAnalysis(date="2026-06-05", time_series=_V7_TS)
+    stale = _report(prose="6월 1일 코스피는 2,901.50으로 마감했고 방향성이 없다.")
+    critic = StubCritic([_clean()])
+    loop = CriticLoop(
+        _cfg(enable_ref_frame=True), critic, StubReviser(),
+    )
+    _run(loop.run(stale, ctx, publication_date="2026-06-05"))
+    assert any("stale_anchor" in f for f in critic.pre_flags_seen[0])
+
+
+def test_ref_frame_off_no_v7_pre_flags() -> None:
+    # 디폴트(OFF) — 같은 입력에서 V7 pre_flag 미합류 (byte-equal 경로).
+    ctx = ContextAnalysis(date="2026-06-05", time_series=_V7_TS)
+    stale = _report(prose="6월 1일 코스피는 2,901.50으로 마감했고 방향성이 없다.")
+    critic = StubCritic([_clean()])
+    loop = CriticLoop(_cfg(enable_fact_guards=True), critic, StubReviser())
+    _run(loop.run(stale, ctx, publication_date="2026-06-05"))
+    assert not any("stale_anchor" in f for f in critic.pre_flags_seen[0])

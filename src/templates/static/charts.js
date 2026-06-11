@@ -1,4 +1,7 @@
 /* charts.js — v4.4.0 zone-based layout + annotations + 11 chart types.
+ * v7.0.0 — annotation 레이어를 cartesian 전 type 으로 개방 (area/candle/scatter/
+ *          stacked_area/lollipop/range_bar 추가 wiring — 기존 payload 무변경이면
+ *          렌더 결과 불변, additive) + 신규 3종 (bump/bullet/connected_scatter).
  *
  * 핵심 설계: 모든 차트 SVG = 4 zone 으로 명확 분리, annotation 끼리 절대 겹치지
  * 않도록 OccupancyTracker (bbox 충돌 검사) + staggering fallback.
@@ -244,6 +247,21 @@
     return occupancy;
   }
 
+  // v7.0.0 — 세로 라벨 dodge (CHART-AP-26 의 일반화). 동일/근접 y 라벨을 최소
+  // 간격으로 밀어내고 [lo, hi] 범위로 클램프. slope 의 로컬 dodge 와 동일 알고리즘.
+  function dodgeYs(ys, minGap, lo, hi) {
+    const order = ys.map((y, i) => i).sort((p, q) => ys[p] - ys[q]);
+    const adj = order.map(i => ys[i]);
+    for (let i = 1; i < adj.length; i++)
+      if (adj[i] - adj[i - 1] < minGap) adj[i] = adj[i - 1] + minGap;
+    const over = adj[adj.length - 1] - hi;
+    if (over > 0) for (let i = 0; i < adj.length; i++) adj[i] -= over;
+    if (adj[0] < lo) { const d = lo - adj[0]; for (let i = 0; i < adj.length; i++) adj[i] += d; }
+    const out = new Array(ys.length);
+    order.forEach((origI, k) => { out[origI] = adj[k]; });
+    return out;
+  }
+
   // End label placement helper (used by line/dual_line/forecast)
   function placeEndLabel(svg, x, y, text, t, occupancy, zones, color) {
     const labelW = Math.min(120, (String(text).length * 7) + 6);
@@ -446,9 +464,12 @@
     grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
     grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
 
-    const line = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    // v7.0.1 (CHART-AP-30, 사용자 catch) — curveMonotoneX 는 점 사이를 베지에로
+    // 평탄화해 실제 가격 경로를 왜곡. v5.2.9 가 sparkline 만 curveLinear 로 고치고
+    // 풀 카드엔 잔재가 남았었다. 시장 시계열 전 렌더러 curveLinear 통일.
+    const line = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);
     const area = d3.area().x(d => x(String(d.x))).y0(zones.data.y + zones.data.h)
-      .y1(d => y(+d.y)).curve(d3.curveMonotoneX);
+      .y1(d => y(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', area(data)).attr('fill', `url(#${gradId})`);
     svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', t.text).attr('stroke-width', 1.4);
 
@@ -996,8 +1017,9 @@
       (xv) => x(String(xv)), null);  // y not unique — annotations use x only
 
     // Lines
-    const lineL = d3.line().x(d => x(String(d.x))).y(d => yL(+d.y)).curve(d3.curveMonotoneX);
-    const lineR = d3.line().x(d => x(String(d.x))).y(d => yR(+d.y)).curve(d3.curveMonotoneX);
+    // CHART-AP-30 — 실제 데이터 경로 (곡선 보간 금지).
+    const lineL = d3.line().x(d => x(String(d.x))).y(d => yL(+d.y)).curve(d3.curveLinear);
+    const lineR = d3.line().x(d => x(String(d.x))).y(d => yR(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', lineL(left.series)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.6);
     svg.append('path').attr('d', lineR(right.series)).attr('fill', 'none')
@@ -1075,18 +1097,18 @@
     // Forecast cone (low~high) — render before lines so it's behind
     if (forecastBridge.length) {
       const area = d3.area().x(d => x(String(d.x)))
-        .y0(d => y(+d.low)).y1(d => y(+d.high)).curve(d3.curveMonotoneX);
+        .y0(d => y(+d.low)).y1(d => y(+d.high)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').attr('d', area(forecastBridge))
         .attr('fill', t.accent).attr('fill-opacity', 0.15);
     }
 
     // Actual line
-    const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);  // CHART-AP-30
     svg.append('path').attr('d', lineA(actual)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.6);
     // Forecast (mid) dashed line — bridge prepended for visual continuity
     if (forecastBridge.length) {
-      const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveMonotoneX);
+      const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').attr('d', lineF(forecastBridge)).attr('fill', 'none')
         .attr('stroke', t.accent).attr('stroke-width', 1.6).attr('stroke-dasharray', '3,2');
     }
@@ -1292,6 +1314,12 @@
         .text(v >= 1000 ? d3.format(',.0f')(v) : d3.format('.2f')(v));
     });
 
+    // v7.0.0 — annotation 개방 (사건 vline·임계 hline·국면 band). 기존 payload
+    // 에 annotations 가 없으면 no-op (렌더 불변).
+    renderAnnotations(svg, payload, zones, t,
+      (xv) => { const px = x(String(xv)); return px == null ? null : px + x.bandwidth() / 2; },
+      (yv) => y(+yv));
+
     // Candles — body + wick. accent = bull (close>=open), down = bear.
     raw.forEach(d => {
       const cx = x(String(d.date)) + x.bandwidth() / 2;
@@ -1364,6 +1392,10 @@
         .text(v >= 1000 ? d3.format(',.0f')(v) : d3.format('.2f')(v));
     });
 
+    // v7.0.0 — annotation 개방 (line 과 동일 계약). payload 에 없으면 no-op.
+    renderAnnotations(svg, payload, zones, t,
+      (xv) => x(String(xv)), (yv) => y(+yv));
+
     // Gradient fill
     const gradId = `grad-area-${stage.getAttribute('data-chart-id') || Math.random().toString(36).slice(2,8)}`;
     const grad = svg.append('defs').append('linearGradient')
@@ -1371,9 +1403,10 @@
     grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
     grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
 
-    const lineGen = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    // CHART-AP-30 — 실제 데이터 경로 (곡선 보간 금지).
+    const lineGen = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);
     const areaGen = d3.area().x(d => x(String(d.x)))
-      .y0(zones.data.y + zones.data.h).y1(d => y(+d.y)).curve(d3.curveMonotoneX);
+      .y0(zones.data.y + zones.data.h).y1(d => y(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', areaGen(data)).attr('fill', `url(#${gradId})`);
     svg.append('path').attr('d', lineGen(data)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.4);
@@ -1563,6 +1596,12 @@
       svg.append('text').attr('transform', `rotate(-90)`).attr('x', -H / 2).attr('y', 14)
         .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', t.muted).text(payload.y_label);
     }
+    // v7.0.0 — annotation 개방. top 마진(30px)이 vline callout(32px)보다 작아
+    // vline 은 제외 (잘림 = CHART-AP-5 회피) — 사건 점 강조는 'point' kind 로.
+    renderAnnotations(svg,
+      { annotations: (payload.annotations || []).filter(a => a.kind !== 'vline') },
+      zones, t, xScale, yScale);
+
     // points + labels
     data.forEach(d => {
       const cx = xScale(+d.x), cy = yScale(+d.y);
@@ -1603,13 +1642,19 @@
     const area = d3.area()
       .x((d, i) => isNumX ? xScale(+xs[i]) : xScale(String(xs[i])))
       .y0(d => yScale(d[0])).y1(d => yScale(d[1]))
-      .curve(d3.curveMonotoneX);
+      .curve(d3.curveLinear);  // CHART-AP-30 — 점유율도 실제 데이터 경로
     // grid
     yScale.ticks(5).forEach(yt => {
       svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
         .attr('y1', yScale(yt)).attr('y2', yScale(yt))
         .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
     });
+    // v7.0.0 — annotation 개방. 상단 legend 와 vline callout 충돌 → vline 제외.
+    renderAnnotations(svg,
+      { annotations: (payload.annotations || []).filter(a => a.kind !== 'vline') },
+      zones, t,
+      (xv) => isNumX ? xScale(+xv) : xScale(String(xv)), yScale);
+
     // layers
     const idp = (n) => `${prefix}-${n}`;
     stack.forEach((layer, i) => {
@@ -1639,8 +1684,10 @@
     const data = (payload.data || []).filter(d => isFinite(+d.value));
     if (data.length < 8 || data.length > 15) return;
     const W = 720, rowH = 26;
-    const H = 50 + data.length * rowH + 30;
-    const zones = computeZones(W, H, { left: 160, right: 60, top: 24, bottom: 30 });
+    // v7.0.0 — vline annotation (값 임계 콜아웃) 동반 시 top 마진 확장 (잘림 방지).
+    const annTop = (payload.annotations || []).some(a => a.kind === 'vline') ? 60 : 24;
+    const H = annTop + 26 + data.length * rowH + 30;
+    const zones = computeZones(W, H, { left: 160, right: 60, top: annTop, bottom: 30 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     const max = d3.max(data, d => Math.abs(+d.value)) || 1;
@@ -1671,6 +1718,8 @@
     svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h + 4})`)
       .call(d3.axisBottom(xScale).ticks(5))
       .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
+    // v7.0.0 — annotation 개방 (값 축 기준: vline=임계값, band=값 구간).
+    renderAnnotations(svg, payload, zones, t, xScale, null);
   }
 
   // ----- SLOPE (slopegraph) -----
@@ -1765,7 +1814,7 @@
       const xExt = d3.extent(xs.map(v => +v));
       const xScale = d3.scaleLinear().domain(xExt).range([cx + 8, cx + cellW - 8]);
       const yScale = d3.scaleLinear().domain(yDomain).range([cy + cellH - 12, cy + 24]);
-      const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveMonotoneX);
+      const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').datum(data).attr('fill', 'none')
         .attr('stroke', t.text).attr('stroke-width', 1.4).attr('d', line);
     });
@@ -2165,8 +2214,10 @@
     const data = (payload.data || []).filter(d => isFinite(+d.low) && isFinite(+d.high) && +d.low < +d.high);
     if (data.length < 3 || data.length > 15) return;
     const W = 720, rowH = 26;
-    const H = 50 + data.length * rowH + 40;
-    const zones = computeZones(W, H, { left: 140, right: 60, top: 24, bottom: 30 });
+    // v7.0.0 — vline annotation 동반 시 top 마진 확장 (콜아웃 잘림 방지).
+    const annTop = (payload.annotations || []).some(a => a.kind === 'vline') ? 60 : 24;
+    const H = annTop + 36 + data.length * rowH + 30;
+    const zones = computeZones(W, H, { left: 140, right: 60, top: annTop, bottom: 30 });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     const lo = d3.min(data, d => +d.low), hi = d3.max(data, d => +d.high);
@@ -2197,6 +2248,249 @@
     lg.append('text').attr('x', 8).attr('y', 8).attr('font-size', 10).attr('fill', t.text).text(payload.low_label || 'low');
     lg.append('circle').attr('cx', 60).attr('cy', 4).attr('r', 4).attr('fill', t.accent);
     lg.append('text').attr('x', 68).attr('y', 8).attr('font-size', 10).attr('fill', t.accent).text(payload.high_label || 'high');
+    // v7.0.0 — annotation 개방 (값 축 기준).
+    renderAnnotations(svg, payload, zones, t, xScale, null);
+  }
+
+
+  // ----- BUMP (시기별 순위 변화, v7.0.0) -----
+  // data: {periods: ["2023","2024","2025"], items: [{name, ranks: [2,1,1], accent?}]}
+  // slope 는 2 시점뿐, line 은 값 축 — '순위' 축의 다시점 경쟁은 본 type 이 SSOT.
+  function drawBump(stage, payload, t) {
+    const d0 = payload.data || {};
+    const periods = (d0.periods || []).map(String);
+    const items = (d0.items || []).filter(it => Array.isArray(it.ranks)
+      && it.ranks.length === periods.length
+      && it.ranks.every(r => isFinite(+r) && +r >= 1));
+    if (periods.length < 2 || periods.length > 6) return;
+    if (items.length < 3 || items.length > 8) return;
+    const n = items.length;
+    const W = 720, rowH = 34;
+    const H = 56 + n * rowH + 30;
+    const zones = computeZones(W, H, { left: 170, right: 170, top: 34, bottom: 24 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const x = d3.scalePoint().domain(periods)
+      .range([zones.data.x, zones.data.x + zones.data.w]).padding(0.06);
+    const maxRank = Math.max(n, d3.max(items, it => d3.max(it.ranks.map(Number))));
+    const y = (rank) => zones.data.y + 10
+      + ((+rank - 1) / Math.max(1, maxRank - 1)) * (zones.data.h - 20);
+    // 시기 헤더 + 옅은 세로 가이드
+    periods.forEach(pv => {
+      svg.append('text').attr('x', x(pv)).attr('y', zones.data.y - 12).attr('text-anchor', 'middle')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('font-weight', 700)
+        .attr('fill', t.muted).text(pv);
+      svg.append('line').attr('x1', x(pv)).attr('x2', x(pv))
+        .attr('y1', zones.data.y).attr('y2', zones.data.y + zones.data.h)
+        .attr('stroke', t.border).attr('stroke-opacity', 0.35).attr('stroke-dasharray', '2 3');
+    });
+    // 강조: accent 플래그 항목, 없으면 최종 1위 항목.
+    const accentIdx = (() => {
+      const fl = items.findIndex(it => it.accent);
+      if (fl >= 0) return fl;
+      return items.findIndex(it => +it.ranks[it.ranks.length - 1] === 1);
+    })();
+    const lineGen = (ranks) => d3.line()
+      .x((_, k) => x(periods[k])).y(r => y(r)).curve(d3.curveMonotoneX)(ranks.map(Number));
+    items.forEach((it, i) => {
+      const isAccent = i === accentIdx;
+      const col = isAccent ? t.accent : t.muted;
+      svg.append('path').attr('d', lineGen(it.ranks)).attr('fill', 'none')
+        .attr('stroke', col).attr('stroke-width', isAccent ? 2.2 : 1.3)
+        .attr('stroke-opacity', isAccent ? 1 : 0.8);
+      it.ranks.forEach((r, k) => {
+        svg.append('circle').attr('cx', x(periods[k])).attr('cy', y(r))
+          .attr('r', isAccent ? 5 : 3.8)
+          .attr('fill', isAccent ? t.accent : t.text)
+          .attr('stroke', t.bg).attr('stroke-width', 1);
+      });
+    });
+    // 좌·우 끝 라벨 (이름 + 순위) — 동순위 충돌은 dodgeYs 로 (CHART-AP-26 일반화).
+    const lo = zones.data.y - 2, hi = zones.data.y + zones.data.h + 10;
+    const lY = dodgeYs(items.map(it => y(it.ranks[0])), 14, lo, hi);
+    const rY = dodgeYs(items.map(it => y(it.ranks[it.ranks.length - 1])), 14, lo, hi);
+    items.forEach((it, i) => {
+      const isAccent = i === accentIdx;
+      const col = isAccent ? t.accent : t.text;
+      svg.append('text').attr('x', zones.data.x - 12).attr('y', lY[i] + 4).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11)
+        .attr('font-weight', isAccent ? 700 : 400).attr('fill', col)
+        .text(`${String(it.name || '').slice(0, 14)} ${Math.round(+it.ranks[0])}위`);
+      svg.append('text').attr('x', zones.data.x + zones.data.w + 12).attr('y', rY[i] + 4)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11)
+        .attr('font-weight', isAccent ? 700 : 400).attr('fill', col)
+        .text(`${Math.round(+it.ranks[it.ranks.length - 1])}위 ${String(it.name || '').slice(0, 14)}`);
+    });
+  }
+
+  // ----- BULLET (목표 대비 실적, v7.0.0) -----
+  // data: [{label, value, target, ranges?: [경계 오름차순 ≤4]}] 1~7행.
+  // bar 는 단일 값 — 실적 vs 가이던스/컨센서스의 목표 중첩은 본 type 이 SSOT.
+  function drawBullet(stage, payload, t) {
+    const data = (payload.data || []).filter(d =>
+      isFinite(+d.value) && isFinite(+d.target) && +d.target > 0);
+    if (!data.length || data.length > 7) return;
+    const W = 720, rowH = 44;
+    const annTop = (payload.annotations || []).some(a => a.kind === 'vline') ? 60 : 28;
+    const H = annTop + data.length * rowH + 34;
+    const zones = computeZones(W, H, { left: 150, right: 96, top: annTop, bottom: 30 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const maxVal = d3.max(data, d => Math.max(
+      Math.abs(+d.value), Math.abs(+d.target),
+      ...((d.ranges || []).map(Number).filter(isFinite).map(Math.abs)),
+    )) || 1;
+    const xScale = d3.scaleLinear().domain([0, maxVal * 1.06])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    const fmt = (v) => {
+      const av = Math.abs(+v);
+      if (av >= 100) return d3.format(',.0f')(+v);
+      if (av >= 10) return d3.format(',.1f')(+v);
+      return d3.format(',.2f')(+v);
+    };
+    data.forEach((d, i) => {
+      const yRow = zones.data.y + 8 + i * rowH;
+      svg.append('text').attr('x', zones.data.x - 8).attr('y', yRow + 13).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text)
+        .text(String(d.label || '').slice(0, 18));
+      // 배경 구간 밴드 (낮음→높음, 옅은 단계).
+      const bounds = (d.ranges || []).map(Number).filter(v => isFinite(v) && v > 0)
+        .sort((a, b) => a - b).slice(0, 4);
+      let xPrev = zones.data.x;
+      bounds.forEach((b, k) => {
+        const xB = xScale(Math.min(b, maxVal * 1.06));
+        if (xB > xPrev) {
+          svg.append('rect').attr('x', xPrev).attr('y', yRow).attr('width', xB - xPrev)
+            .attr('height', 18).attr('fill', t.text)
+            .attr('fill-opacity', 0.05 + k * 0.045).attr('data-static', '1');
+        }
+        xPrev = xB;
+      });
+      // 실적 바 (accent, 중앙 절반 높이) — entry 애니메이션 호환 (bar-grow).
+      const barW = Math.max(2, xScale(+d.value) - zones.data.x);
+      svg.append('rect').attr('x', zones.data.x).attr('y', yRow + 5)
+        .attr('width', barW).attr('height', 8).attr('fill', t.accent)
+        .attr('data-anim', 'bar-grow').attr('data-final-w', barW);
+      // 목표 tick (text 색 세로 마커 — 큰 숫자 accent 금지 정신과 별개의 기준선).
+      const xT = xScale(+d.target);
+      svg.append('line').attr('x1', xT).attr('x2', xT)
+        .attr('y1', yRow - 3).attr('y2', yRow + 21)
+        .attr('stroke', t.text).attr('stroke-width', 2).attr('data-static', '1');
+      // 우측 값 라벨: 실적 (목표 대비 %).
+      const pct = (+d.value / +d.target) * 100;
+      svg.append('text').attr('x', zones.data.x + zones.data.w + 8).attr('y', yRow + 13)
+        .attr('font-family', 'Noto Serif KR').attr('font-size', 11).attr('font-weight', 700)
+        .attr('fill', t.text)
+        .text(`${fmt(+d.value)} (${d3.format('.0f')(pct)}%)`);
+    });
+    // X 축
+    svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+      .attr('y1', zones.data.y + zones.data.h + 4).attr('y2', zones.data.y + zones.data.h + 4)
+      .attr('stroke', t.muted).attr('stroke-opacity', 0.4).attr('stroke-width', 0.5);
+    xScale.ticks(5).forEach(v => {
+      svg.append('text').attr('x', xScale(v)).attr('y', zones.data.y + zones.data.h + 18)
+        .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 9).attr('fill', t.muted).text(fmt(v));
+    });
+    // 미니 범례 (우상단): 실적 바 + 목표 tick.
+    const lg = svg.append('g').attr('transform', `translate(${W - 150},${annTop - 18})`);
+    lg.append('rect').attr('x', 0).attr('y', 2).attr('width', 16).attr('height', 6)
+      .attr('fill', t.accent).attr('data-static', '1');
+    lg.append('text').attr('x', 20).attr('y', 9).attr('font-size', 9.5).attr('fill', t.muted).text('실적');
+    lg.append('line').attr('x1', 62).attr('x2', 62).attr('y1', 0).attr('y2', 10)
+      .attr('stroke', t.text).attr('stroke-width', 2).attr('data-static', '1');
+    lg.append('text').attr('x', 68).attr('y', 9).attr('font-size', 9.5).attr('fill', t.muted).text('목표');
+    // annotation 개방 (값 축 기준).
+    renderAnnotations(svg, payload, zones, t, xScale, null);
+  }
+
+  // ----- CONNECTED SCATTER (2변수 시간 경로, v7.0.0) -----
+  // data: [{x, y, label?}] *시간 순서* 4~30점. dual_line 은 두 축 분리 — 두 변수가
+  // 함께 그리는 '궤적' 서사 (금리×환율, 물가×실업 등) 는 본 type 이 SSOT.
+  function drawConnectedScatter(stage, payload, t) {
+    const data = (payload.data || []).filter(d => isFinite(+d.x) && isFinite(+d.y));
+    if (data.length < 4 || data.length > 30) return;
+    const W = 720, H = 380;
+    const zones = computeZones(W, H, { left: 64, right: 44, top: 30, bottom: 44 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const xExt = d3.extent(data, d => +d.x), yExt = d3.extent(data, d => +d.y);
+    const xPad = (xExt[1] - xExt[0]) * 0.1 || 1;
+    const yPad = (yExt[1] - yExt[0]) * 0.1 || 1;
+    const xScale = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    const yScale = d3.scaleLinear().domain([yExt[0] - yPad, yExt[1] + yPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    // grid + axes (scatter 와 동일 문법)
+    yScale.ticks(5).forEach(yt => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yScale(yt)).attr('y2', yScale(yt))
+        .attr('stroke', t.border).attr('stroke-opacity', 0.4).attr('stroke-dasharray', '2 3');
+    });
+    svg.append('g').attr('transform', `translate(0,${zones.data.y + zones.data.h})`)
+      .call(d3.axisBottom(xScale).ticks(6))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    svg.append('g').attr('transform', `translate(${zones.data.x},0)`)
+      .call(d3.axisLeft(yScale).ticks(5))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 10);
+    if (payload.x_label) {
+      svg.append('text').attr('x', W / 2).attr('y', H - 8).attr('text-anchor', 'middle')
+        .attr('font-size', 11).attr('fill', t.muted).text(payload.x_label);
+    }
+    if (payload.y_label) {
+      svg.append('text').attr('transform', 'rotate(-90)').attr('x', -H / 2).attr('y', 14)
+        .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', t.muted).text(payload.y_label);
+    }
+    // annotation 개방 (vline 은 top 30 잘림 → point 로 대체 유도).
+    renderAnnotations(svg,
+      { annotations: (payload.annotations || []).filter(a => a.kind !== 'vline') },
+      zones, t, xScale, yScale);
+    // 경로 (시간 순서, muted 가는 선 — 점이 주연, 선은 동선).
+    // CHART-AP-30 — CatmullRom 은 점 사이가 부풀어 실제 좌표 경로를 왜곡. 직선 연결.
+    const lineGen = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y))
+      .curve(d3.curveLinear);
+    svg.append('path').attr('d', lineGen(data)).attr('fill', 'none')
+      .attr('stroke', t.muted).attr('stroke-width', 1.2).attr('stroke-opacity', 0.85);
+    // 진행 방향 화살촉 (마지막 구간 각도).
+    const pn = data[data.length - 1], pp = data[data.length - 2];
+    const angle = Math.atan2(
+      yScale(+pn.y) - yScale(+pp.y), xScale(+pn.x) - xScale(+pp.x),
+    ) * 180 / Math.PI;
+    svg.append('path').attr('d', 'M 0 -4 L 8 0 L 0 4 Z')
+      .attr('fill', t.accent)
+      .attr('transform',
+        `translate(${xScale(+pn.x)},${yScale(+pn.y)}) rotate(${angle}) translate(10,0)`);
+    // 점: 시작 hollow / 중간 작은 점 / 끝 accent 강조.
+    const occ = makeOccupancy();
+    data.forEach((d, i) => {
+      const cx = xScale(+d.x), cy = yScale(+d.y);
+      const first = i === 0, last = i === data.length - 1;
+      svg.append('circle').attr('cx', cx).attr('cy', cy)
+        .attr('r', first ? 4.5 : (last ? 6 : 2.6))
+        .attr('fill', first ? t.bg : (last ? t.accent : t.text))
+        .attr('fill-opacity', first || last ? 1 : 0.8)
+        .attr('stroke', first ? t.text : (last ? t.text : 'none'))
+        .attr('stroke-width', first ? 1.4 : (last ? 0.8 : 0));
+      // 라벨: label 있는 점 + 시작·끝 (renderPoint 와 동일 4-후보 충돌 회피).
+      const text = d.label || (first ? '시작' : (last ? '최근' : ''));
+      if (!text) return;
+      const labelW = String(text).length * 7 + 4, labelH = 14;
+      const candidates = [
+        { x: cx + 9, y: cy - 9 }, { x: cx - labelW - 9, y: cy - 9 },
+        { x: cx + 9, y: cy + 13 }, { x: cx - labelW - 9, y: cy + 13 },
+      ];
+      let placed = candidates[0];
+      for (const c of candidates) {
+        if (c.x >= zones.data.x - 30 && c.x + labelW <= zones.W - 2
+            && c.y >= zones.data.y - 4 && c.y + labelH <= zones.data.y + zones.data.h + 12
+            && !occ.hits(c.x, c.y, labelW, labelH)) { placed = c; break; }
+      }
+      svg.append('text').attr('x', placed.x).attr('y', placed.y + 10)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+        .attr('font-weight', first || last ? 700 : 400)
+        .attr('fill', last ? t.accent : t.text).text(text);
+      occ.add(placed.x, placed.y, labelW, labelH);
+    });
   }
 
   // ============================================================
@@ -2321,6 +2615,8 @@
     waterfall: drawWaterfall, range_bar: drawRangeBar,
     // v5.3.0 — Sankey (재무 분해 / 자본 배분). orphan 해결.
     sankey: drawSankey,
+    // v7.0.0 — Track A 신규 3종 (순위 경쟁 / 목표 대비 / 2변수 궤적)
+    bump: drawBump, bullet: drawBullet, connected_scatter: drawConnectedScatter,
   };
 
   async function renderStage(stage, idx) {

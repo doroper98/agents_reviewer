@@ -193,3 +193,20 @@ scenarios:
     good_prose: "환율 흐름이 가장 빠른 신호이며, 특정 임계선을 제시하려면 그 산출 근거를 함께 밝힌다"
     expected_flag: unsourced_threshold
     guard: UnsourcedNumberGuard
+
+  # ------------------------------------------------------------------------
+  # 3차 확장 (V7 Track C, 사용자 게이트 승인 2026-06-11 — REFACTOR_V7_PLAN.md §3.4).
+  # "사실로서 정확하지만 보고서 기준 시점과 다른 날짜의 값" — 6/1↔6/5 회귀 박제.
+  # ------------------------------------------------------------------------
+
+  - id: wrong_timeframe_01
+    error_class: wrong_timeframe
+    evidence:
+      fact: "코스피 time_series 최신 가용 거래일 2026-06-04 종가 2,948.12. 2026-06-01 종가는 2,901.50 (그 날짜 기준으로는 정확한 값)."
+      source_date: "2026-06-04"
+      scope_note: "발행일 6/5 브리핑의 기본 시점은 최신 가용 거래일(6/4). 옛 일자(6/1) 값 인용은 절대 날짜+사유 명시 시에만 허용."
+      source_url: "https://www.krx.co.kr/"
+    bad_prose: "6월 1일 코스피는 2,901.50으로 마감했고, 시장은 여전히 방향을 못 잡고 있다"
+    good_prose: "6월 4일 코스피는 2,948.12로 마감했고, 시장은 여전히 방향을 못 잡고 있다"
+    expected_flag: stale_anchor
+    guard: StaleAnchorGuard

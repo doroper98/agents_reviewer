@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="midnight_indigo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart Gallery V7 — 전 타입 × 5테마 베이스라인 (REFACTOR_V7_PLAN.md §1.5)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<!-- SSOT 참조 — 토큰/스타일을 복제하지 않고 본 repo 의 정본을 직접 링크.
+     GitHub Pages (repo 루트 배포) 기준 상대 경로. -->
+<link rel="stylesheet" href="../src/templates/report.css">
+<link rel="stylesheet" href="../src/templates/static/charts.css">
+<style>
+/* 갤러리 전용 셸 — 차트 스타일은 charts.css 정본 그대로. */
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR', sans-serif; margin: 0; }
+.gal-head { max-width: 860px; margin: 0 auto; padding: 36px 18px 8px; }
+.gal-head h1 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 27px; margin: 0 0 8px; color: var(--fg-1, var(--text)); }
+.gal-head p { font-size: 13.5px; line-height: 1.7; color: var(--fg-2, var(--muted)); margin: 0 0 14px; }
+.gal-themes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.gal-themes button { font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border-soft, var(--border)); background: var(--card); color: var(--text); cursor: pointer; }
+.gal-themes button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.gal-grid { max-width: 860px; margin: 0 auto; padding: 10px 18px 80px; display: flex; flex-direction: column; gap: 22px; }
+.gal-type { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="gal-head">
+  <h1>Chart Gallery V7 — 베이스라인</h1>
+  <p>production charts.js 가 렌더하는 전 타입 (기존 21 + v7.0.0 신규 bump / bullet / connected_scatter)
+     의 fixture 갤러리. Track A 리디자인의 전·후 비교 기준 아티팩트 (REFACTOR_V7_PLAN.md §1.5).
+     테마 버튼은 페이지를 다시 그려 SVG 색을 재적용한다. annotation 데모는 line / candle / bullet 카드 참조.</p>
+  <div class="gal-themes" id="themes"></div>
+</div>
+<div class="gal-grid" id="grid"></div>
+
+<script>
+// ── 테마 스위처 (렌더된 SVG 는 색이 박제되므로 reload 로 재렌더) ──
+(function () {
+  var THEMES = ['editorial_cream', 'burgundy_mono', 'midnight_indigo', 'pine_forest', 'graphite_slate'];
+  var cur = localStorage.getItem('gal_theme') || 'midnight_indigo';
+  document.documentElement.setAttribute('data-theme', cur);
+  var wrap = document.getElementById('themes');
+  THEMES.forEach(function (th) {
+    var b = document.createElement('button');
+    b.textContent = th;
+    if (th === cur) b.className = 'on';
+    b.onclick = function () { localStorage.setItem('gal_theme', th); location.reload(); };
+    wrap.appendChild(b);
+  });
+})();
+
+// ── fixture payloads (전 타입) ──
+// 일별 밀도 합성기 (결정적) — 실보고서의 market_fetcher 일별 3M 데이터 질감 재현.
+function dailySeries(n, start, drift, vol) {
+  var out = [], v = start, seed = 7;
+  var rand = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
+  for (var i = 0; i < n; i++) {
+    var m = 3 + Math.floor(i / 22), d = (i % 22) + 1 + (m === 6 ? 0 : 4);
+    var date = '2026-' + String(m).padStart(2, '0') + '-' + String(Math.min(d, 28)).padStart(2, '0');
+    var chg = drift + rand() * vol * 2;
+    var open = v, close = v + chg;
+    var high = Math.max(open, close) + Math.abs(rand()) * vol;
+    var low = Math.min(open, close) - Math.abs(rand()) * vol;
+    out.push({ date: date, open: +open.toFixed(2), high: +high.toFixed(2), low: +low.toFixed(2), close: +close.toFixed(2) });
+    v = close;
+  }
+  return out;
+}
+var KOSPI_D = dailySeries(62, 2701, 4.0, 14);     // 62거래일, 완만 상승 + 일별 변동
+var SAMSUNG_D = dailySeries(40, 296000, 700, 2600);
+KOSPI_D[24].event = '관세 충격';
+KOSPI_D[48].event = '외국인 순매수 전환';
+SAMSUNG_D[29].event = '1Q 실적 서프라이즈';
+
+var PAYLOADS = [
+  { type: 'line', title: '코스피 — 3개월 (일별 종가)', subtitle: '반등으로 박스권 상단 복귀', unit_line: '단위: pt · 일별 종가 · 2026.3~2026.6',
+    get data() { return KOSPI_D.map(function (d) { var r = { x: d.date, y: d.close }; if (d.event) r.event = d.event; return r; }); },
+    annotations: [{kind:'hline', y:2800, label:'연초 박스 상단'}],
+    source: 'KRX / 일별 종가 62거래일' },
+  { type: 'candle', title: '삼성전자 — 일간 OHLC (40거래일)', subtitle: '실적 발표 후 갭 상승 유지', unit_line: '단위: 원 · 일간 OHLC',
+    get data() { return SAMSUNG_D; },
+    annotations: [{kind:'hline', y:316000, label:'증권가 평균 목표 하단'}],
+    source: 'KRX / 일간 40거래일' },
+  { type: 'area', title: 'WTI 선물', subtitle: '감산 연장에도 수요 둔화가 상단 제한', data: [{x:'01',y:78.2},{x:'02',y:80.1},{x:'03',y:76.4},{x:'04',y:72.9},{x:'05',y:74.5},{x:'06',y:71.8}], source: 'NYMEX / 월말 종가' },
+  { type: 'bar', title: '주요국 반도체 보조금', subtitle: '미국이 2위와 2배 격차', unit_line: '단위: 조원 환산',
+    data: [{label:'미국',value:69},{label:'중국',value:33},{label:'EU',value:30},{label:'일본',value:18},{label:'한국',value:9}], source: '각국 정부 발표 집계' },
+  { type: 'donut', title: '파운드리 점유율', subtitle: 'TSMC 독주 속 2위권 혼전', data: [{label:'TSMC',value:62},{label:'삼성',value:11},{label:'SMIC',value:6},{label:'기타',value:21}] },
+  { type: 'gantt', title: '관세 협상 일정', data: [{label:'1차 실무협상',start:'2026-04-10',end:'2026-04-24'},{label:'고위급 회담',start:'2026-05-02',end:'2026-05-06'},{label:'잠정 합의 검토',start:'2026-05-20',end:'2026-06-10',note:'진행 중'},{label:'발효 목표',start:'2026-07-01',end:'2026-07-15'}] },
+  { type: 'network', title: '행위자 관계도', data: { nodes: [{id:'us',label:'미 행정부',group:'승인'},{id:'kr',label:'한국 정부',group:'검토'},{id:'semis',label:'반도체 업계',group:'검토'},{id:'cn',label:'중국 상무부',group:'반대'}], links: [{source:'us',target:'kr',type:'influence'},{source:'us',target:'cn',type:'conflict'},{source:'kr',target:'semis',type:'ally'},{source:'cn',target:'semis',type:'influence'}] } },
+  { type: 'stacked', title: '시나리오별 영향 구성', data: { scenarios: [{name:'완화',segments:[{label:'수출',value:30},{label:'환율',value:18},{label:'내수',value:12}]},{name:'기준',segments:[{label:'수출',value:42},{label:'환율',value:26},{label:'내수',value:17}]},{name:'악화',segments:[{label:'수출',value:55},{label:'환율',value:38},{label:'내수',value:24}]}] } },
+  { type: 'bubble', title: '시나리오 확률 × 영향', data: [{label:'관세 유예 연장',x:55,y:30,size:3},{label:'부분 타결',x:30,y:55,size:5},{label:'전면 확전',x:15,y:85,size:8}] },
+  { type: 'heatmap', title: '공급망 위험도', data: [{title:'첨단 노광장비',severity:'high'},{title:'희토류',severity:'high'},{title:'레거시 칩',severity:'medium'},{title:'패키징 소재',severity:'medium'},{title:'웨이퍼',severity:'low'}] },
+  { type: 'dual_line', title: '미 10년물 금리 vs 원/달러', data: { left: {label:'UST 10Y', unit:'%', series:[{x:'01',y:4.4},{x:'02',y:4.2},{x:'03',y:4.0},{x:'04',y:3.8},{x:'05',y:3.7},{x:'06',y:3.5}]}, right: {label:'원/달러', unit:'KRW', series:[{x:'01',y:1480},{x:'02',y:1462},{x:'03',y:1445},{x:'04',y:1430},{x:'05',y:1418},{x:'06',y:1402}]} } },
+  { type: 'forecast', title: '연말 코스피 전망', data: { actual: [{x:'2025-12',y:2620},{x:'2026-03',y:2701},{x:'2026-06',y:2948}], forecast: [{x:'2026-09',mid:3050,low:2880,high:3220},{x:'2026-12',mid:3150,low:2870,high:3430}], fork_at: '2026-06' } },
+  { type: 'scatter', title: '주요국 R&D 집약도 × 성장률', x_label: 'R&D/GDP (%)', y_label: '성장률 (%)',
+    data: [{label:'한국',x:4.9,y:2.2,accent:true},{label:'미국',x:3.5,y:2.6},{label:'일본',x:3.3,y:0.9},{label:'독일',x:3.1,y:0.4},{label:'중국',x:2.6,y:4.6},{label:'대만',x:4.0,y:3.1}],
+    annotations: [{kind:'hline', y:2.0, label:'선진국 평균 성장'}] },
+  { type: 'stacked_area', title: '전력원별 발전 비중', data: { series: [{name:'재생',values:[{x:'20',y:7},{x:'21',y:8},{x:'22',y:9},{x:'23',y:10},{x:'24',y:11},{x:'25',y:13}]},{name:'원전',values:[{x:'20',y:29},{x:'21',y:27},{x:'22',y:30},{x:'23',y:31},{x:'24',y:32},{x:'25',y:32}]},{name:'화석',values:[{x:'20',y:64},{x:'21',y:65},{x:'22',y:61},{x:'23',y:59},{x:'24',y:57},{x:'25',y:55}]}] } },
+  { type: 'lollipop', title: '품목별 대미 수출 증가율', data: [{label:'반도체',value:34.2},{label:'이차전지',value:28.7},{label:'자동차',value:18.9},{label:'바이오',value:15.3},{label:'조선',value:12.8},{label:'석유화학',value:9.4},{label:'철강',value:6.1},{label:'디스플레이',value:4.7},{label:'기계',value:3.2},{label:'섬유',value:1.8}] },
+  { type: 'slope', title: '산업별 영업이익률 — 2024 vs 2026', data: { left_label:'2024', right_label:'2026', items: [{label:'반도체',a:8.1,b:24.3},{label:'자동차',b:9.8,a:10.2},{label:'배터리',a:5.4,b:3.1},{label:'철강',a:4.0,b:4.2},{label:'정유',a:6.5,b:5.0}] } },
+  { type: 'small_multiples', title: '주요국 물가 경로', data: { panels: [{label:'한국',series:[{x:1,y:3.1},{x:2,y:2.8},{x:3,y:2.5},{x:4,y:2.3},{x:5,y:2.1}]},{label:'미국',series:[{x:1,y:3.4},{x:2,y:3.2},{x:3,y:2.9},{x:4,y:2.7},{x:5,y:2.6}]},{label:'유로존',series:[{x:1,y:2.9},{x:2,y:2.6},{x:3,y:2.4},{x:4,y:2.2},{x:5,y:2.0}]},{label:'일본',series:[{x:1,y:2.2},{x:2,y:2.4},{x:3,y:2.6},{x:4,y:2.5},{x:5,y:2.3}]}] } },
+  { type: 'waterfall', title: '영업이익 브리지 — 2024 → 1Q26', unit_line: '단위: 조원',
+    data: [{label:'2024',value:6.6,type:'total'},{label:'DS 회복',value:24.5,type:'pos'},{label:'모바일',value:3.0,type:'neg'},{label:'디스플레이',value:2.0,type:'pos'},{label:'환율 효과',value:1.1,type:'pos'},{label:'1Q26',value:31.2,type:'total'}] },
+  { type: 'range_bar', title: 'OECD 남녀 임금격차 범위', low_label:'최저', high_label:'최고', data: [{label:'한국',low:26,high:31},{label:'일본',low:21,high:24},{label:'미국',low:16,high:18},{label:'독일',low:14,high:17},{label:'스웨덴',low:7,high:9}] },
+  { type: 'sankey', title: '매출 → 이익 분해', unit_line: '단위: 조원 · 1Q26',
+    data: { nodes: [{id:'rev',label:'총매출 133.9'},{id:'ds',label:'DS 70.0'},{id:'mx',label:'모바일 38.0'},{id:'etc',label:'기타 25.9'},{id:'cost',label:'비용 102.7'},{id:'op',label:'영업이익 31.2',accent:true}], links: [{source:'rev',target:'ds',value:70},{source:'rev',target:'mx',value:38},{source:'rev',target:'etc',value:25.9},{source:'ds',target:'op',value:24.5},{source:'ds',target:'cost',value:45.5},{source:'mx',target:'op',value:4.2},{source:'mx',target:'cost',value:33.8},{source:'etc',target:'op',value:2.5},{source:'etc',target:'cost',value:23.4}] } },
+  /* ── v7.0.0 신규 3종 ── */
+  { type: 'bump', title: '파운드리 점유율 순위 — 3년', subtitle: '2위 경쟁이 핵심 서사', unit_line: '순위 · 2023~2025',
+    data: { periods: ['2023','2024','2025'], items: [{name:'TSMC',ranks:[1,1,1]},{name:'삼성',ranks:[2,2,3],accent:true},{name:'SMIC',ranks:[4,3,2]},{name:'글로벌파운드리',ranks:[3,4,4]},{name:'UMC',ranks:[5,5,5]}] } },
+  { type: 'bullet', title: '1Q 실적 vs 컨센서스', subtitle: '매출은 초과, 마진은 목표 미달', unit_line: '단위: 조원 (마진은 %)',
+    data: [{label:'매출',value:133.9,target:128.0,ranges:[100,120,140]},{label:'영업이익',value:31.2,target:33.5,ranges:[20,28,36]},{label:'영업이익률(%)',value:23.3,target:26.2,ranges:[15,22,30]}],
+    annotations: [{kind:'vline', x:128.0, label:'컨센서스 매출', sublabel:'128.0조'}] },
+  { type: 'connected_scatter', title: '미 금리 × 원/달러 — 12개월 궤적', subtitle: '인하 국면 진입 후 원화 강세 경로', x_label: 'UST 10Y (%)', y_label: '원/달러',
+    data: [{x:4.6,y:1495,label:'25.7'},{x:4.5,y:1488},{x:4.4,y:1480},{x:4.3,y:1471},{x:4.2,y:1462,label:'첫 인하'},{x:4.0,y:1445},{x:3.9,y:1438},{x:3.8,y:1430},{x:3.7,y:1418},{x:3.6,y:1410},{x:3.5,y:1402,label:'26.6'}] }
+];
+
+// ── 카드 DOM 생성 (charts.js init 의 .chart-card-stage 스캔과 동일 계약) ──
+(function () {
+  var grid = document.getElementById('grid');
+  PAYLOADS.forEach(function (p, i) {
+    var wrap = document.createElement('div');
+    var typeLabel = '<div class="gal-type">' + p.type + '</div>';
+    wrap.innerHTML = typeLabel +
+      '<div class="chart-card">' +
+        '<div class="chart-card-title">' + p.title + '</div>' +
+        (p.subtitle ? '<div class="chart-card-subtitle">' + p.subtitle + '</div>' : '') +
+        (p.unit_line ? '<div class="chart-card-unitline">' + p.unit_line + '</div>' : '') +
+        '<div class="chart-card-stage chart-stage-' + p.type + '" data-chart-type="' + p.type + '" data-chart-id="gal-' + i + '"><svg></svg></div>' +
+        (p.source ? '<div class="chart-card-source"><span class="chart-card-source-label">출처:</span> ' + p.source + '</div>' : '') +
+      '</div>';
+    var script = document.createElement('script');
+    script.type = 'application/json';
+    script.className = 'chart-payload-inline';
+    script.textContent = JSON.stringify(p);
+    wrap.querySelector('.chart-card').appendChild(script);
+    grid.appendChild(wrap);
+  });
+})();
+</script>
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="../src/templates/static/charts.js"></script>
+</body>
+</html>

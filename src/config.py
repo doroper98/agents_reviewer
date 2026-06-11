@@ -318,6 +318,26 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("V6_PROVENANCE", "ENABLE_PROVENANCE", "enable_provenance"),
     )
 
+    # === V7 Track C — 기준시점 계약 (REFACTOR_V7_PLAN.md §3) ===
+    # "사실은 맞지만 보고서가 필요로 하는 시점과 다른" 팩트(6/1↔6/5 회귀) 차단.
+    # 켜지면 ① 결정적 가드 2종(DateAnchoredMarket/StaleAnchor)이 critic 사전필터에 합류,
+    # ② composer/codex/reviser 3곳에 reference_frame(종목별 최신 가용 일자) 블록 주입,
+    # ③ codex error_class 에 wrong_timeframe 추가 + 잔존 시 착지 drop.
+    # 디폴트 OFF — 프롬프트·가드 모두 미주입 = v6.2.0 byte-equal. env: V7_REF_FRAME=1.
+    enable_ref_frame: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V7_REF_FRAME", "ENABLE_REF_FRAME", "enable_ref_frame"),
+    )
+
+    # === V7 Track B — 스크롤 내러티브 아크 (REFACTOR_V7_PLAN.md §2) ===
+    # 켜지면 freeform_essay 보고서에 기승전결(起承轉結) 한자 배경 워터마크 + 스크롤
+    # 연동 전환 엔진(템플릿 인라인)이 렌더된다. 발행본 소급 영향 없음(템플릿/CSS 는
+    # 보고서 HTML 에 인라인). 디폴트 OFF = v6.2.0 byte-equal. env: V7_SCROLL_ARC=1.
+    enable_scroll_arc: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("V7_SCROLL_ARC", "ENABLE_SCROLL_ARC", "enable_scroll_arc"),
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

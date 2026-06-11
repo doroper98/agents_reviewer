@@ -196,8 +196,31 @@
   .epilogue-watch-signal{font-size:15px}
 }
 </style>
+{%- if scroll_arc %}
+<style>
+/* v7.0.0 (Track B, V7_SCROLL_ARC) — 기승전결(起承轉結) 스크롤 아크 배경.
+   워터마크 레벨 한자 1자가 화면 중앙에 고정되고, 스크롤 진행에 따라 다음 단계
+   한자가 이전 한자를 위로 밀어올린다 (인라인 엔진, 아래 body 끝).
+   - 블러는 요소에 1회 래스터, 이후 transform(translateY) 보간만 — 합성 비용만 발생.
+   - 색은 --fg-1 + 저알파 (본문 대비 간섭 없는 워터마크, accent 금지 — AP-V7-2).
+   - prefers-reduced-motion / print → 전체 숨김 (사용자 결정, REFACTOR_V7_PLAN.md §6). */
+.arc-backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.arc-glyph{position:absolute;left:50%;top:50%;font-family:'Noto Serif KR','Newsreader',serif;font-weight:900;font-size:min(68vh,68vw);line-height:1;color:var(--fg-1,var(--text,#888));opacity:var(--arc-alpha,0.08);filter:blur(14px);transform:translate(-50%,-50%) translateY(120vh);will-change:transform;user-select:none}
+/* 라이트 테마는 잉크가 진해 알파를 더 낮춘다 (다크 4종은 기본 0.08). */
+[data-theme="editorial_cream"] .arc-backdrop .arc-glyph,
+[data-theme="light_mono"] .arc-backdrop .arc-glyph{--arc-alpha:0.055}
+@media (prefers-reduced-motion: reduce){.arc-backdrop{display:none}}
+@media print{.arc-backdrop{display:none}}
+@media (max-width:640px){.arc-glyph{font-size:62vw;filter:blur(10px)}}
+</style>
+{%- endif %}
 </head>
 <body>
+{%- if scroll_arc %}
+<div class="arc-backdrop" id="arc-backdrop" aria-hidden="true">
+  {% for ph in scroll_arc.order %}<span class="arc-glyph" data-phase="{{ ph }}">{{ scroll_arc.glyphs[ph] }}</span>{% endfor %}
+</div>
+{%- endif %}
 
 {# v4.2.0 — composed 변수는 head 에서 이미 set (line 9). 추가 set 불필요.
    blocks_by_type 은 embedded_blocks 렌더링용 (composer 가 actor_cards 등 명시 시). #}
@@ -292,7 +315,7 @@
 
 {% if composed and composed.sections %}
 {% for sec in composed.sections %}
-<section id="sec-{{ loop.index }}" class="freeform-section fade-in">
+<section id="sec-{{ loop.index }}" class="freeform-section fade-in"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.section_phases[loop.index0] }}"{% endif %}>
   <div class="container">
     {% if sec.kicker %}<div class="freeform-kicker">{{ sec.kicker | strip_md }}</div>{% endif %}
     <h2 class="freeform-heading">{{ sec.heading | strip_md }}</h2>
@@ -387,6 +410,7 @@
         <div class="chart-card">
           <div class="chart-card-title">{{ (ch.title or '차트') | strip_md }}</div>
           {% if ch.subtitle %}<div class="chart-card-subtitle">{{ ch.subtitle | strip_md }}</div>{% endif %}
+          {% if ch.unit_line %}<div class="chart-card-unitline">{{ ch.unit_line | strip_md }}</div>{% endif %}
           <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}"
                data-chart-type="{{ ch.type or 'bar' }}"
                data-chart-id="ch-s{{ loop.index0 }}-{{ loop.index }}">
@@ -461,7 +485,7 @@
    보고서마다 다르게 emit (판단형). 정적 '봉합하지 않은 충돌' 폐기 (WRITE-AP-9).
    resolution 을 단락의 마지막 문장으로 흐르게 해 판단으로 착지 (각주형 라벨 제거). #}
 {% if composed and composed.contradictions %}
-<section class="freeform-section fade-in">
+<section class="freeform-section fade-in"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.contradictions_phase }}"{% endif %}>
   <div class="container">
     <div class="freeform-kicker">쟁점</div>
     <h2 class="freeform-heading">{{ composed.contradictions_heading | strip_md if composed.contradictions_heading else '쟁점과 판단' }}</h2>
@@ -484,7 +508,7 @@
    contradiction-prose 의 ct-resolve 와 같은 italic + accent border-left 어휘로 통일.
    composed.watch_signals 데이터 계약 무변경 — convert_watch_signals() / SQLite 등록 경로 동일. #}
 {% if composed and composed.watch_signals %}
-<section class="freeform-section fade-in">
+<section class="freeform-section fade-in"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     <p class="epilogue-watch-lede">
       본 분석의 가정이 다음 <strong>{{ composed.watch_signals | length }}개 지점</strong>에서 시험된다.
@@ -510,7 +534,7 @@
    src/timeline_flow.py:build_timeline_flow (결정론 backbone + composer 윤색, 하이브리드).
    과거=실선/채운 점, 현재=accent 앵커, 미래=점선/빈 점/예상 태그. #}
 {% if report_timeline and report_timeline.points %}
-<section class="freeform-section fade-in">
+<section class="freeform-section fade-in"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     <div class="freeform-kicker">시간의 흐름</div>
     <h2 class="freeform-heading">{{ report_timeline.heading | strip_md }}</h2>
@@ -528,7 +552,7 @@
 {% endif %}
 
 {% if composed and (composed.closing or composed.confidence_summary) %}
-<section class="freeform-closing">
+<section class="freeform-closing"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     {% if composed.confidence_summary %}
     <div class="freeform-closing-label">신뢰도 ({{ '%.0f'|format(composed.confidence_score * 100) }}%)</div>
@@ -554,7 +578,7 @@
 </section>
 {% elif result.parent_context %}
 {# closing 이 없어도 후속 보고서면 매리말 출발점 링크는 남긴다. #}
-<section class="freeform-closing">
+<section class="freeform-closing"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     {% set pc = result.parent_context %}
     {% set origin_label = (pc.parent_report_title or pc.parent_report_id or '') | strip_md %}
@@ -587,6 +611,62 @@
 var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.06});
 document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
 </script>
+{%- if scroll_arc %}
+
+<script>
+/* v7.0.0 (Track B) — 기승전결 스크롤 아크 엔진. rAF-throttle 스크롤 핸들러가
+   data-arc-phase 경계로 진행도 p 를 계산해 현재 글리프 translateY(-p*vh), 다음
+   글리프 translateY((1-p)*vh) 연속 보간 — 역방향 스크롤도 같은 식으로 자연 복원.
+   정보 휘발 없음: 차트/본문은 건드리지 않는 배경 전용 레이어 (AP-V7-3). */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var backdrop=document.getElementById('arc-backdrop');
+  if(!backdrop) return;
+  var order=['기','승','전','결'];
+  var glyphs={};
+  backdrop.querySelectorAll('.arc-glyph').forEach(function(g){glyphs[g.getAttribute('data-phase')]=g});
+  var bounds=[];
+  function measure(){
+    bounds=[]; var seen={};
+    document.querySelectorAll('[data-arc-phase]').forEach(function(el){
+      var p=el.getAttribute('data-arc-phase');
+      if(!p||seen[p])return; seen[p]=true;
+      bounds.push({phase:p,top:el.getBoundingClientRect().top+window.scrollY});
+    });
+    bounds.sort(function(a,b){return a.top-b.top});
+  }
+  var ticking=false;
+  function update(){
+    ticking=false;
+    if(!bounds.length)return;
+    var vh=window.innerHeight;
+    var y=window.scrollY+vh*0.5;
+    var i=0;
+    for(var k=0;k<bounds.length;k++){if(y>=bounds[k].top)i=k}
+    var start=bounds[i].top;
+    var end=(i+1<bounds.length)?bounds[i+1].top:document.documentElement.scrollHeight;
+    var p=(end>start)?Math.min(1,Math.max(0,(y-start)/(end-start))):0;
+    var idx={};
+    bounds.forEach(function(b,k){idx[b.phase]=k});
+    order.forEach(function(ph){
+      var g=glyphs[ph]; if(!g)return;
+      var k=idx[ph], off;
+      if(k===undefined)off=1.2*vh;
+      else if(k<i)off=-1.2*vh;
+      else if(k===i)off=-p*vh;
+      else if(k===i+1)off=(1-p)*vh;
+      else off=1.2*vh;
+      g.style.transform='translate(-50%,-50%) translateY('+off+'px)';
+    });
+  }
+  function onScroll(){if(!ticking){ticking=true;requestAnimationFrame(update)}}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',function(){measure();onScroll()},{passive:true});
+  window.addEventListener('load',function(){measure();update()});
+  measure();update();
+})();
+</script>
+{%- endif %}
 
 {# v4.2.0 — 차트/지도 모두 d3 SVG. maplibre 폐기. TopoJSON 은 지도 있을 때만 로드. #}
 {% if has_inline_charts or has_inline_map %}
