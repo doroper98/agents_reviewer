@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 195건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 196건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-06-11 13:06 | 삼성전자·SK하이닉스 실적·주가 전망 점검 | 기업·시장 분석 | [md](analysis_20260611_130642_9f7fbb749d.md) · [json](analysis_20260611_130642_9f7fbb749d.json) · [bundle](analysis_20260611_130642_9f7fbb749d.bundle.json) |
 | 2026-06-11 13:02 | 삼성전자·SK하이닉스 2026년 실적·주가 전망 정리 (국내·외국계 증권사) | 시장/리서치 정리 | [md](analysis_20260611_130224_7090e8b543.md) · [json](analysis_20260611_130224_7090e8b543.json) · [bundle](analysis_20260611_130224_7090e8b543.bundle.json) |
 | 2026-06-11 12:15 | SRAM의 DRAM 대체 위협 점검 — AI 추론칩 부상과 한국 메모리 진영의 위치 | 반도체·메모리 시장 구조 분석 | [md](analysis_20260611_121538_4075508ba6.md) · [json](analysis_20260611_121538_4075508ba6.json) · [bundle](analysis_20260611_121538_4075508ba6.bundle.json) |
 | 2026-06-11 10:11 | 스페이스X 공모가 135달러 확정 — 사상 최대 IPO 가격 결정일 | 글로벌 자본시장 / IPO | [md](analysis_20260611_101105_34ce42f086.md) · [json](analysis_20260611_101105_34ce42f086.json) · [bundle](analysis_20260611_101105_34ce42f086.bundle.json) |
