@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v6.0.4
+last_synced_with: v7.0.1
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -8,7 +8,7 @@ depends_on:
   - "src/templates/static/charts.js"
   - "src/templates/static/maps.js"
   - "src/agents/narrative_composer.py:SYSTEM_PROMPT (차트 섹션)"
-last_review: 2026-05-05
+last_review: 2026-06-11
 ---
 
 # Chart Rendering Anti-Patterns
@@ -1038,6 +1038,25 @@ fixture 에 type 별 empty-data 케이스 추가.
 3. 이 보고서만 영향 → `scripts/patch_report.py` 로 데이터 수정 (LLM 0)
 4. fix 후 *DEVLOG.md* 에 commit 사유 + 본 문서 항목 reference
 5. 다음 commit 부터 본 문서 체크리스트 점검 (PR 시 자동 점검 가능 → 향후 GitHub Action 으로 확장)
+
+---
+
+## CHART-AP-30: 시장 시계열 풀 차트의 곡선 보간 — 실제 가격 경로 왜곡 (v7.0.1 신설, 사용자 catch)
+
+**증상**: 코스피·환율 같은 지수/가격 line 차트가 부드러운 곡선으로 그려져 실제 가격의
+움직임(segment-by-segment jaggedness)이 시각적으로 사라짐. `curveMonotoneX` 가 점 사이를
+베지에로 평탄화 — 데이터에 없는 중간 경로를 그려넣는 *왜곡*.
+
+**경위**: v5.2.9 에서 *같은 이유로* compact strip sparkline 은 `curveLinear` 로 교정됐으나
+(당시에도 사용자 catch), 풀 카드 렌더러들(line/area/dual_line/forecast/stacked_area/
+small_multiples)과 connected_scatter(CatmullRom — 점 사이가 부풀어 좌표 경로 왜곡)에는
+곡선 보간이 잔존. 2026-06-11 사용자 재지적으로 전면 교정.
+
+**Fix**: 시장·값 시계열 렌더러 전부 `curveLinear` 통일 (v7.0.1). 유일한 예외 = `bump`
+(순위 축 — 값이 아닌 서수 전환의 관례적 s-curve 연출이라 monotoneX 유지).
+
+**가드**: 신규 시계열 렌더러 추가 시 곡선 보간 금지가 기본값. 곡선을 쓰려면 "값이 아닌
+서수/연출 축" 임을 본 항목에 예외로 등재하고 사유를 적을 것.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.0.0
+last_synced_with: v7.0.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.0.1 — CHART-AP-30: 시장 시계열의 곡선 보간 왜곡 교정 (사용자 catch)
+
+- **동기(사용자 지적)** — 지수/가격 line 차트가 부드러운 곡선으로 그려져 실제 가격
+  움직임이 안 보임. `curveMonotoneX` 는 데이터에 없는 중간 경로를 그려넣는 왜곡.
+- **변경** — line/area/dual_line/forecast(실측·cone·mid)/stacked_area/small_multiples
+  `curveLinear` 통일 + connected_scatter 의 CatmullRom (점 사이 부풀음) 도 직선 연결.
+  v5.2.9 sparkline 교정의 풀 카드 완성판. 예외 = bump (순위 축의 관례적 전환 연출).
+- 개별 종목은 기존대로 candle (OHLC). CHART-AP-30 등재 — 신규 시계열 렌더러의 곡선
+  보간은 기본 금지, 예외는 사유와 함께 등재.
 
 ## v7.0.0 — V7 Track C: 기준시점 계약 (정확하지만 시점이 틀린 시장 수치 차단)
 

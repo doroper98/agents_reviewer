@@ -464,9 +464,12 @@
     grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
     grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
 
-    const line = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    // v7.0.1 (CHART-AP-30, 사용자 catch) — curveMonotoneX 는 점 사이를 베지에로
+    // 평탄화해 실제 가격 경로를 왜곡. v5.2.9 가 sparkline 만 curveLinear 로 고치고
+    // 풀 카드엔 잔재가 남았었다. 시장 시계열 전 렌더러 curveLinear 통일.
+    const line = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);
     const area = d3.area().x(d => x(String(d.x))).y0(zones.data.y + zones.data.h)
-      .y1(d => y(+d.y)).curve(d3.curveMonotoneX);
+      .y1(d => y(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', area(data)).attr('fill', `url(#${gradId})`);
     svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', t.text).attr('stroke-width', 1.4);
 
@@ -1014,8 +1017,9 @@
       (xv) => x(String(xv)), null);  // y not unique — annotations use x only
 
     // Lines
-    const lineL = d3.line().x(d => x(String(d.x))).y(d => yL(+d.y)).curve(d3.curveMonotoneX);
-    const lineR = d3.line().x(d => x(String(d.x))).y(d => yR(+d.y)).curve(d3.curveMonotoneX);
+    // CHART-AP-30 — 실제 데이터 경로 (곡선 보간 금지).
+    const lineL = d3.line().x(d => x(String(d.x))).y(d => yL(+d.y)).curve(d3.curveLinear);
+    const lineR = d3.line().x(d => x(String(d.x))).y(d => yR(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', lineL(left.series)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.6);
     svg.append('path').attr('d', lineR(right.series)).attr('fill', 'none')
@@ -1093,18 +1097,18 @@
     // Forecast cone (low~high) — render before lines so it's behind
     if (forecastBridge.length) {
       const area = d3.area().x(d => x(String(d.x)))
-        .y0(d => y(+d.low)).y1(d => y(+d.high)).curve(d3.curveMonotoneX);
+        .y0(d => y(+d.low)).y1(d => y(+d.high)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').attr('d', area(forecastBridge))
         .attr('fill', t.accent).attr('fill-opacity', 0.15);
     }
 
     // Actual line
-    const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);  // CHART-AP-30
     svg.append('path').attr('d', lineA(actual)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.6);
     // Forecast (mid) dashed line — bridge prepended for visual continuity
     if (forecastBridge.length) {
-      const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveMonotoneX);
+      const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').attr('d', lineF(forecastBridge)).attr('fill', 'none')
         .attr('stroke', t.accent).attr('stroke-width', 1.6).attr('stroke-dasharray', '3,2');
     }
@@ -1399,9 +1403,10 @@
     grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
     grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
 
-    const lineGen = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveMonotoneX);
+    // CHART-AP-30 — 실제 데이터 경로 (곡선 보간 금지).
+    const lineGen = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);
     const areaGen = d3.area().x(d => x(String(d.x)))
-      .y0(zones.data.y + zones.data.h).y1(d => y(+d.y)).curve(d3.curveMonotoneX);
+      .y0(zones.data.y + zones.data.h).y1(d => y(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', areaGen(data)).attr('fill', `url(#${gradId})`);
     svg.append('path').attr('d', lineGen(data)).attr('fill', 'none')
       .attr('stroke', t.text).attr('stroke-width', 1.4);
@@ -1637,7 +1642,7 @@
     const area = d3.area()
       .x((d, i) => isNumX ? xScale(+xs[i]) : xScale(String(xs[i])))
       .y0(d => yScale(d[0])).y1(d => yScale(d[1]))
-      .curve(d3.curveMonotoneX);
+      .curve(d3.curveLinear);  // CHART-AP-30 — 점유율도 실제 데이터 경로
     // grid
     yScale.ticks(5).forEach(yt => {
       svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
@@ -1809,7 +1814,7 @@
       const xExt = d3.extent(xs.map(v => +v));
       const xScale = d3.scaleLinear().domain(xExt).range([cx + 8, cx + cellW - 8]);
       const yScale = d3.scaleLinear().domain(yDomain).range([cy + cellH - 12, cy + 24]);
-      const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveMonotoneX);
+      const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').datum(data).attr('fill', 'none')
         .attr('stroke', t.text).attr('stroke-width', 1.4).attr('d', line);
     });
@@ -2441,8 +2446,9 @@
       { annotations: (payload.annotations || []).filter(a => a.kind !== 'vline') },
       zones, t, xScale, yScale);
     // 경로 (시간 순서, muted 가는 선 — 점이 주연, 선은 동선).
+    // CHART-AP-30 — CatmullRom 은 점 사이가 부풀어 실제 좌표 경로를 왜곡. 직선 연결.
     const lineGen = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y))
-      .curve(d3.curveCatmullRom.alpha(0.6));
+      .curve(d3.curveLinear);
     svg.append('path').attr('d', lineGen(data)).attr('fill', 'none')
       .attr('stroke', t.muted).attr('stroke-width', 1.2).attr('stroke-opacity', 0.85);
     // 진행 방향 화살촉 (마지막 구간 각도).
