@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.0.1
+last_synced_with: v7.0.2
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1057,6 +1057,25 @@ small_multiples)과 connected_scatter(CatmullRom — 점 사이가 부풀어 좌
 
 **가드**: 신규 시계열 렌더러 추가 시 곡선 보간 금지가 기본값. 곡선을 쓰려면 "값이 아닌
 서수/연출 축" 임을 본 항목에 예외로 등재하고 사유를 적을 것.
+
+---
+
+## CHART-AP-31: composer 가 시계열 차트 데이터를 듬성하게 추려 emit (일별 밀도 손실) (v7.0.2 신설, 사용자 catch)
+
+**증상**: 지수/가격 차트가 8~12 포인트로 납작하게 렌더 — "일별 종가가 기준이어야
+하는데 정보가 너무 없다" (사용자). market_fetcher 는 일별 3M (~60거래일) 을 공급하지만,
+차트 데이터를 *composer LLM 이 손으로 emit* 하는 구조라 토큰 절약으로 듬성하게 추려
+쓴다. SYSTEM_PROMPT 의 "row 그대로 변환" 지시는 *지시 준수* 에 의존 — 100% 보장 안 됨
+(`_ensure_time_series_chart` 의 교훈과 동일 패턴: 누락은 막았지만 *밀도* 는 안 봤다).
+
+**Fix**: `src/orchestrator.py:_densify_ts_charts` (v7.0.2, 결정적 0-LLM, 디폴트 ON) —
+composer 가 emit 한 line/candle/area 차트의 title 에서 instrument 매칭 → 차트 *자신의
+날짜 창* 안에 실 데이터 행이 더 많으면 그 창의 전체 일별 행으로 데이터 교체. 의도적
+확대 창 (사건 주간) 보존, 단축 날짜 표기는 전체 series 폴백, 이벤트 마커 (row.event) 는
+날짜/suffix 매칭으로 보존. type·제목·해석은 composer 권한 그대로 — 데이터 행만 실측 치환.
+
+**가드**: `tests/regression/test_ts_densify.py` 6케이스 (창 내 교체 / 확대 창 보존 /
+단축 표기 폴백 / 이벤트 보존 / candle OHLC / 불변 케이스).
 
 ---
 

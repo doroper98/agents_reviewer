@@ -247,7 +247,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **30개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1 — CHART-AP-30 시장 시계열 곡선 보간 왜곡, curveLinear 통일):
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **31개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit, 둘 다 사용자 catch):
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -264,6 +264,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 - CHART-AP-23: forecast 차트 y축 도메인이 actual 점을 제외 (v5.4.8 신설 — `?? fallback` 으로 forecast 가 있으면 actual 무시 → actual 의 값이 forecast 범위 밖이면 데이터 점이 차트 영역 밖에 박힘. actual + forecast 모든 값 산입으로 픽스)
 - CHART-AP-24: forecast 차트 actual ↔ forecast 선 단절 (v5.4.8 신설 — actual 선과 forecast 선/cone 이 별도 path 로 그려져 boundary 에서 1년치 gap. actual 마지막 점을 forecast bridge 의 첫 점으로 prepend → cone 이 fork 시점에서 한 점, 미래로 fan 형태로 확장)
 - CHART-AP-25: 행위자 관계도를 radial network (hairball) 로 렌더 (v5.5.5 신설 — 노드 위치 무의미 → 중심 관통 실타래, 시인성 최악. `drawNetwork` 렌더러를 **인접행렬** 로 교체. 데이터 계약 (nodes/links) · NetworkGuard · registry · usage_log 불변, type 명 `network` 유지. 셀이 관계 type 인코딩 (대립/동맹/영향/연관), getBBox content-fit viewBox 로 자동 중앙정렬. 모크업: `samples/actor_relationship_redesign_compare.html`)
+- CHART-AP-31: composer 가 시계열 차트 데이터를 듬성하게 추려 emit (v7.0.2 신설, 사용자 catch — LLM 토큰 절약으로 일별 60거래일을 8~12 포인트로 축약. `orchestrator._densify_ts_charts` 가 차트의 날짜 창 안 실 데이터 행으로 결정적 교체, 확대 창·이벤트 마커 보존, 디폴트 ON)
 - CHART-AP-30: 시장 시계열 풀 차트의 곡선 보간 (v7.0.1 신설, 사용자 catch — curveMonotoneX 가 실제 가격 경로를 평탄화. v5.2.9 가 sparkline 만 고치고 풀 카드에 잔재. line/area/dual_line/forecast/stacked_area/small_multiples/connected_scatter 전부 curveLinear 통일, 예외는 bump 순위 축뿐)
 - CHART-AP-26: slope 차트 좌·우 라벨 충돌 (v5.5.8 신설 — 동일/근접 값 다수 시 라벨이 같은 y 에 겹쳐 판독 불가. 기준선 정규화(모두 100.0) 차트에서 특히 빈발. `drawSlope` 에 라벨 baseline dodge (minGap 13 + 범위 클램프) + 점→라벨 connector 추가. 점·선은 실제 값 위치 유지)
 
@@ -341,7 +342,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 
 ## Market Data Fetcher (v5.2.0)
 - ContextAnalyst 가 LLM 출력에 `instruments_mentioned: list[str]` emit → orchestrator 가 `src/tools/market_fetcher.py` 의 `fetch_many` 호출 → `ContextAnalysis.time_series` 채움 → composer 가 candle / line / area 차트로 emit.
-- 4 source: KRX (한국 개별주, 무인증) / YAHOO (한국·미국 지수 + 미국 개별주 + DXY, 무인증) / FRED (미국 매크로 — UST/WTI/금, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 24 종목). v5.6.9 — 미국 빅테크/반도체 개별주 10종 (NVDA/TSLA/AAPL/MSFT/GOOGL/AMZN/META/AMD/TSM/AVGO, Yahoo candle) + 미국 지수 3종 (S&P500 `^GSPC` / 나스닥 `^IXIC` / 필라델피아 반도체 `^SOX`, Yahoo line) 추가. YahooFetcher 는 범용 — 레지스트리 항목만 추가하면 KOSPI 와 동일 경로로 fetch. `_ensure_time_series_chart` 가 주제(event_name>summary) 등장 종목을 우선 차트화 (`_topic_priority_key`, 'NVIDIA 보고서엔 NVIDIA 차트' 보장). v5.2.6 — DXY 는 FRED/DTWEXBGS (Fed Broad TWI, 117~125 레인지의 다른 지수) 에서 Yahoo/DX-Y.NYB (진짜 ICE DXY, 99~110 레인지) 로 교체.
+- 4 source: KRX (한국 개별주, 무인증) / YAHOO (한국·미국 지수 + 미국 개별주 + DXY, 무인증) / FRED (미국 매크로 — UST/WTI/금, free key) / ECOS (한국은행 macro, free key). SSOT `src/tools/market_fetcher.py:INSTRUMENT_REGISTRY` (현재 24 종목). v5.6.9 — 미국 빅테크/반도체 개별주 10종 (NVDA/TSLA/AAPL/MSFT/GOOGL/AMZN/META/AMD/TSM/AVGO, Yahoo candle) + 미국 지수 3종 (S&P500 `^GSPC` / 나스닥 `^IXIC` / 필라델피아 반도체 `^SOX`, Yahoo line) 추가. YahooFetcher 는 범용 — 레지스트리 항목만 추가하면 KOSPI 와 동일 경로로 fetch. `_ensure_time_series_chart` 가 주제(event_name>summary) 등장 종목을 우선 차트화 (`_topic_priority_key`, 'NVIDIA 보고서엔 NVIDIA 차트' 보장). v7.0.2 — `_densify_ts_charts` 가 composer emit 차트의 *일별 밀도* 도 보장 (CHART-AP-31, 듬성 데이터를 실측 행으로 교체). v5.2.6 — DXY 는 FRED/DTWEXBGS (Fed Broad TWI, 117~125 레인지의 다른 지수) 에서 Yahoo/DX-Y.NYB (진짜 ICE DXY, 99~110 레인지) 로 교체.
 - Graceful degradation — API key 누락·HTTP fail 시 빈 series + warning log. 보고서는 정상 진행, 해당 instrument 차트만 emit X.
 - 기본 기간 3M (사건 보고서 event-anchored). 사건 일자 = `context.date` 기준. 향후 mode-aware period (daily=1M / historical=3Y) 확장 예정.
 - 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.0.1
+last_synced_with: v7.0.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.0.2 — CHART-AP-31: 시계열 차트의 일별 밀도 보장 (사용자 catch)
+
+- **동기(사용자 지적)** — "지수 차트는 캔들이든 라인이든 일별 종가가 기준이어야 —
+  저렇게는 너무 정보가 없다." market_fetcher 는 일별 3M(~60거래일)을 공급하는데,
+  차트 데이터를 composer LLM 이 손으로 emit 하는 구조라 토큰 절약으로 8~12 포인트로
+  추려 쓰는 회귀 경로가 열려 있었다 (지시 준수 의존 — 보장 없음).
+- **변경** — `orchestrator._densify_ts_charts` 신설 (결정적 0-LLM, 디폴트 ON):
+  composer emit line/candle/area 차트를 title 의 instrument 로 실 series 와 매칭,
+  차트 *자신의 날짜 창* 안 실 데이터 행이 더 많으면 전체 일별 행으로 교체.
+  의도적 확대 창(사건 주간) 보존 / 단축 날짜 표기는 전체 series 폴백 / 이벤트 마커
+  날짜·suffix 매칭 보존. type·제목·해석은 composer 권한 그대로.
+- 갤러리(chart_gallery_v7.html) line/candle fixture 도 일별 밀도(62/40거래일)로 교체 —
+  베이스라인이 실보고서 질감을 반영. 회귀 6케이스 (`test_ts_densify.py`).
 
 ## v7.0.1 — CHART-AP-30: 시장 시계열의 곡선 보간 왜곡 교정 (사용자 catch)
 

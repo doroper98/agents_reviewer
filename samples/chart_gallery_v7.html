@@ -53,15 +53,37 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 })();
 
 // ── fixture payloads (전 타입) ──
+// 일별 밀도 합성기 (결정적) — 실보고서의 market_fetcher 일별 3M 데이터 질감 재현.
+function dailySeries(n, start, drift, vol) {
+  var out = [], v = start, seed = 7;
+  var rand = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
+  for (var i = 0; i < n; i++) {
+    var m = 3 + Math.floor(i / 22), d = (i % 22) + 1 + (m === 6 ? 0 : 4);
+    var date = '2026-' + String(m).padStart(2, '0') + '-' + String(Math.min(d, 28)).padStart(2, '0');
+    var chg = drift + rand() * vol * 2;
+    var open = v, close = v + chg;
+    var high = Math.max(open, close) + Math.abs(rand()) * vol;
+    var low = Math.min(open, close) - Math.abs(rand()) * vol;
+    out.push({ date: date, open: +open.toFixed(2), high: +high.toFixed(2), low: +low.toFixed(2), close: +close.toFixed(2) });
+    v = close;
+  }
+  return out;
+}
+var KOSPI_D = dailySeries(62, 2701, 4.0, 14);     // 62거래일, 완만 상승 + 일별 변동
+var SAMSUNG_D = dailySeries(40, 296000, 700, 2600);
+KOSPI_D[24].event = '관세 충격';
+KOSPI_D[48].event = '외국인 순매수 전환';
+SAMSUNG_D[29].event = '1Q 실적 서프라이즈';
+
 var PAYLOADS = [
-  { type: 'line', title: '코스피 — 3개월', subtitle: '6/4 반등으로 박스권 상단 복귀', unit_line: '단위: pt · 2026.3~2026.6',
-    data: [{x:'03-09',y:2701},{x:'03-23',y:2748},{x:'04-06',y:2690},{x:'04-20',y:2762},{x:'05-04',y:2811},{x:'05-18',y:2854,event:'외국인 순매수 전환'},{x:'06-01',y:2901},{x:'06-04',y:2948}],
-    annotations: [{kind:'hline', y:2800, label:'연초 박스 상단'}, {kind:'band', x_from:'04-06', x_to:'04-20', label:'관세 충격'}],
-    source: 'KRX / 2026-06-04 종가' },
-  { type: 'candle', title: '삼성전자 — 일간 OHLC', subtitle: '실적 발표 후 갭 상승 유지', unit_line: '단위: 원 · 최근 8거래일',
-    data: [{date:'2026-05-26',open:296000,high:301000,low:294500,close:299000},{date:'2026-05-27',open:299500,high:304000,low:298000,close:303000},{date:'2026-05-28',open:303000,high:306500,low:300000,close:301500},{date:'2026-05-29',open:305000,high:319000,low:304000,close:318500,event:'1Q 실적 서프라이즈'},{date:'2026-06-01',open:318000,high:322000,low:315000,close:316500},{date:'2026-06-02',open:317000,high:321500,low:316000,close:320500},{date:'2026-06-03',open:321000,high:324000,low:318500,close:319500},{date:'2026-06-04',open:320000,high:326000,low:319000,close:325000}],
-    annotations: [{kind:'hline', y:310000, label:'증권가 평균 목표 하단'}],
-    source: 'KRX / 2026-06-04' },
+  { type: 'line', title: '코스피 — 3개월 (일별 종가)', subtitle: '반등으로 박스권 상단 복귀', unit_line: '단위: pt · 일별 종가 · 2026.3~2026.6',
+    get data() { return KOSPI_D.map(function (d) { var r = { x: d.date, y: d.close }; if (d.event) r.event = d.event; return r; }); },
+    annotations: [{kind:'hline', y:2800, label:'연초 박스 상단'}],
+    source: 'KRX / 일별 종가 62거래일' },
+  { type: 'candle', title: '삼성전자 — 일간 OHLC (40거래일)', subtitle: '실적 발표 후 갭 상승 유지', unit_line: '단위: 원 · 일간 OHLC',
+    get data() { return SAMSUNG_D; },
+    annotations: [{kind:'hline', y:316000, label:'증권가 평균 목표 하단'}],
+    source: 'KRX / 일간 40거래일' },
   { type: 'area', title: 'WTI 선물', subtitle: '감산 연장에도 수요 둔화가 상단 제한', data: [{x:'01',y:78.2},{x:'02',y:80.1},{x:'03',y:76.4},{x:'04',y:72.9},{x:'05',y:74.5},{x:'06',y:71.8}], source: 'NYMEX / 월말 종가' },
   { type: 'bar', title: '주요국 반도체 보조금', subtitle: '미국이 2위와 2배 격차', unit_line: '단위: 조원 환산',
     data: [{label:'미국',value:69},{label:'중국',value:33},{label:'EU',value:30},{label:'일본',value:18},{label:'한국',value:9}], source: '각국 정부 발표 집계' },

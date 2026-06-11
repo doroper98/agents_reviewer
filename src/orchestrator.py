@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v7.0.1"
+VERSION = "v7.0.2"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -630,6 +630,98 @@ def _strip_inline_md(text: str) -> str:
     out = re.sub(r"[—–―]", " ", out)
     out = re.sub(r"\s+,", ",", out)
     return " ".join(out.split())
+
+
+def _densify_ts_charts(composed, context) -> None:
+    """v7.0.2 (CHART-AP-31, 사용자 catch) — composer 시계열 차트의 *일별 밀도* 보장.
+
+    composer LLM 이 차트 데이터를 손으로 emit 하면서 토큰 절약으로 일별 series
+    (3M ≈ 60거래일) 를 듬성하게 추려 쓰는 회귀 — 지수/가격 차트가 8~12 포인트로
+    납작해져 "실제 가격의 움직임" 이 사라진다. 본 패스는 0-LLM 으로:
+
+    - 차트 title 에서 instrument 매칭 → context.time_series 의 실 데이터와 대조
+    - 차트 *자신의 날짜 창* (composer 가 의도적으로 사건 주간만 확대했을 수 있음)
+      안에 실 데이터 행이 더 많으면 → 그 창의 *전체 일별 행* 으로 데이터 교체
+    - 날짜 창을 못 읽으면 (단축 표기 등) → 전체 series 로 교체 (일별 종가 기준 원칙)
+    - composer 가 단 이벤트 마커 (row.event) 는 날짜(suffix) 매칭으로 보존
+
+    type/제목/해석은 composer 권한 그대로 — 데이터 행만 실측으로 치환.
+    """
+    if composed is None or not getattr(composed, "sections", None):
+        return
+    series_list = [
+        s for s in (getattr(context, "time_series", None) or [])
+        if isinstance(s, dict) and s.get("instrument") and s.get("data")
+    ]
+    if not series_list:
+        return
+    import logging
+    import re as _re
+    _iso = _re.compile(r"^\d{4}-\d{2}-\d{2}")
+
+    def _row_key(row: dict) -> str:
+        return str(row.get("date") or row.get("x") or "")
+
+    for sec in composed.sections:
+        for ch in (sec.charts or []):
+            if not isinstance(ch, dict) or ch.get("role") == "compact":
+                continue
+            ctype = (ch.get("type") or "").lower()
+            if ctype not in _TS_CHART_TYPES:
+                continue
+            title = ch.get("title") or ""
+            series = next((s for s in series_list if s["instrument"] in title), None)
+            if series is None:
+                continue
+            old = ch.get("data")
+            if not isinstance(old, list) or len(old) < 2:
+                continue
+            old_keys = [k for k in (_row_key(r) for r in old if isinstance(r, dict)) if k]
+            if not old_keys:
+                continue
+            all_rows = [
+                d for d in series["data"]
+                if isinstance(d, dict) and d.get("date") and d.get("close") is not None
+            ]
+            if all(_iso.match(k) for k in old_keys):
+                lo, hi = min(old_keys), max(old_keys)
+                rows = [d for d in all_rows if lo <= str(d["date"]) <= hi]
+            else:
+                rows = all_rows  # 날짜 창 해석 불가 → 전체 일별 series (원칙 우선)
+            if len(rows) <= len(old):
+                continue  # 이미 일별 밀도 (또는 series 가 더 빈약)
+            # 이벤트 마커 보존 — composer 가 쓴 날짜 표기(단축 포함)와 suffix 매칭.
+            events: dict[str, str] = {}
+            for r in old:
+                if isinstance(r, dict) and r.get("event"):
+                    k = _row_key(r)
+                    if k:
+                        events[k] = r["event"]
+            if ctype == "candle":
+                new_data = [
+                    {
+                        "date": d.get("date"),
+                        "open": d.get("open"),
+                        "high": d.get("high"),
+                        "low": d.get("low"),
+                        "close": d.get("close"),
+                        **({"volume": d.get("volume")} if d.get("volume") else {}),
+                    }
+                    for d in rows
+                ]
+            else:
+                new_data = [{"x": d["date"], "y": d["close"]} for d in rows]
+            for nd in new_data:
+                full = str(nd.get("date") or nd.get("x"))
+                for ek, ev in events.items():
+                    if full == ek or full.endswith(ek):
+                        nd["event"] = ev
+                        break
+            ch["data"] = new_data
+            logging.getLogger(__name__).info(
+                "[orchestrator] _densify_ts_charts: '%s' %d → %d points (일별 밀도 교체)",
+                title, len(old), len(new_data),
+            )
 
 
 def _ensure_broadcast_summary(composed, context) -> None:
@@ -1600,6 +1692,12 @@ class Orchestrator:
             _ensure_time_series_chart(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
+        # v7.0.2 (CHART-AP-31) — composer 가 직접 emit 한 시계열 차트의 일별 밀도
+        # 보장. LLM 이 토큰 절약으로 듬성하게 추린 데이터를 실측 행으로 교체.
+        try:
+            _densify_ts_charts(result.composed_report, result.context)
+        except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] _densify_ts_charts skipped: %s", _e)
         # v5.6.6 — SNS broadcast 문구 결정적 폴백 (composer 누락/부분 살림본 대비).
         try:
             _ensure_broadcast_summary(result.composed_report, result.context)
