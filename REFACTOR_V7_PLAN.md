@@ -1,9 +1,9 @@
 ---
 tier: 1
-status: in-progress (v7.0.0 — C/B/A-additive 랜딩, A-1 비주얼 리디자인은 갤러리 리뷰 게이트 대기)
+status: in-progress (v7.1.0 — C/B 랜딩 + A-1 초기 7종 리디자인 이식 완료. 잔여: 시계열·신규류 격상 2차)
 target_version: v7.0.0
 based_on_baseline: v6.2.0
-last_synced_with: v7.0.0
+last_synced_with: v7.1.0
 ssot_for:
   - "V7 마스터 플랜 (차트 에디토리얼 리디자인 + 스크롤 내러티브 아크 + 기준시점 맥락 검수)"
   - "V7 요구사항 (REQ-V7-N) 정본"
@@ -347,7 +347,7 @@ AP-V6-9) — 본 plan 승인 시 함께 승인 항목으로 처리. 동시 갱�
 | V7-B1 | narrative_phase 필드 + 폴백 + 배경 아크 (§2.2~2.3) | `V7_SCROLL_ARC` OFF, 템플릿 인라인 | ✅ 랜딩 (OFF 렌더 byte-equal 검증 + headless 스크롤 3지점 시각 확인) |
 | V7-B2 | 진입 연출 시퀀싱 정련 (§2.4) | 템플릿 인라인 | ⏸ 보류 — 현행 IO 연출이 요구 스펙 충족, 아크와의 체감 평가 후 |
 | V7-A0 | 갤러리 베이스라인 + 캡처 (§1.5) | 산출물만 (samples/) | ✅ 랜딩 (chart_gallery_v7.html — 전 23종×5테마, headless 전 타입 렌더 검증) |
-| V7-A1 | 공유 에디토리얼 레이어 + 타입별 격상 (§1.2) | `charts.v7.js` 자산 버저닝 | 🔶 부분 — *additive* 분 선랜딩 (annotation 전 type 개방 + unit_line). 비-additive 비주얼 격상은 A0 갤러리 시각 리뷰 게이트 후 (그때 AP-V7-1 버저닝 발동) |
+| V7-A1 | 공유 에디토리얼 레이어 + 타입별 격상 (§1.2) | 소급 적용 (사용자 결정) | ✅ 랜딩 (v7.1.0 — 초기 7종 리디자인 이식. 목업 chart_redesign_v7_compare.html 승인 → **사용자가 발행본 소급을 명시 선택** 해 AP-V7-1 버저닝 대신 charts.js 직접 적용. 어휘 SSOT: MONO_THEME_GUIDE §10) |
 | V7-A2 | 신규 타입 (1차 3종, §1.3) | guarded tier, 7단 절차 | ✅ 랜딩 (bump/bullet/connected_scatter — 7단 절차 완주 + headless 시각 검수) |
 
 > **v7.0.0 구현 노트 — A-1 의 additive 우선 원칙.** charts.js/charts.css 는 발행된

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.0.2
+last_synced_with: v7.1.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,26 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.1.0 — 초기 7종 차트 비주얼 격상 (사용자 승인, 과거 발행본 소급)
+
+- **범위** — bar / donut / stacked / bubble / heatmap / network / waterfall. 목업
+  ([samples/chart_redesign_v7_compare.html](samples/chart_redesign_v7_compare.html))
+  승인 후 production charts.js 직접 이식 — **사용자 결정으로 발행본 소급 적용**
+  (Cloudflare 재업로드 시 과거 보고서도 신 디자인).
+- **공통 어휘** ([docs/MONO_THEME_GUIDE.md §10](docs/MONO_THEME_GUIDE.md) 신설) —
+  해치 = 명목 카테고리 전용으로 환원, 순위·서수·구성 위계 = 단일 잉크 농도 사다리
+  (≤4단) + 핵심 1개 액센트, 값 = Newsreader 세리프 직접 라벨, 그리드 최소·0-기준선 crisp.
+- **타입별** — bar: 풀폭 트랙 + note 보조 행 + annotations 유지 / donut: 핵심 점유율
+  중앙 큰 숫자 + 값 정렬 범례 (arc sweep 애니메이션·CHART-AP-16 유지) / stacked:
+  **bar 문법으로 병합** (가로 세그먼트 막대 + 상단 범례, label→농도 일관 매핑 유지) /
+  bubble: 중앙값 십자선 + 강조 1개 + 크기 범례 (CHART-AP-12 스케일 가드·annotations
+  유지) / heatmap: 5칸 강도 트랙 + 등급 태그 / network: 갭 그리드 + 글리프 4종 +
+  진영 색띠 + **영향 방향(▸) 보존** (기존 대칭 인코딩은 방향 소실; v5.5.5 골격·
+  content-fit·CHART-AP-25 유지) / waterfall: 3색 의미론 + 부호 라벨 + 수평 라벨 —
+  **neg row 가 magnitude 든 음수든 동일 동작** (CHART-AP-27 의 잔존 렌더 경로까지 봉합).
+- entry 애니메이션 계약 (bar-grow / donut-arc / static 태그) 전부 보존. headless
+  Chromium 으로 7종 전 타입 렌더·시각 검수.
 
 ## v7.0.2 — CHART-AP-31: 시계열 차트의 일별 밀도 보장 (사용자 catch)
 

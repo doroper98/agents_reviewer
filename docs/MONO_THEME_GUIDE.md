@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.5.5
+last_synced_with: v7.1.0
 ssot_for:
   - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
@@ -214,3 +214,25 @@ repo settings 에서 두 곳을 한 번만 켜두면 끝:
 - 지도 라이브러리 변경 → 본 문서 §2 + 샘플의 `buildMap()` + `buildColumn` 의 viz-desc 텍스트 동시 갱신
 - 신규 샘플 추가 → `samples/` 에 파일 추가 + 본 문서 §7.1 활성 샘플 목록에 라이브 URL 등재
 - Pages 워크플로우 변경 → `.github/workflows/pages.yml` + 본 문서 §7.2 트리거 조건 동시 갱신
+
+---
+
+## 10. v7.1.0 — 잉크 농도 위계 어휘 (초기 7종 리디자인, 사용자 승인)
+
+bar / donut / stacked / bubble / heatmap / network / waterfall 의 리디자인
+(samples/chart_redesign_v7_compare.html 목업 승인 후 charts.js 이식, 과거 발행본 소급)
+에서 확정된 어휘 규칙 — 본 가이드 §4 패턴 시스템의 *적용 범위 정밀화*:
+
+- **해치(45° 단방향)는 '명목 카테고리' 전용으로 환원.** 순위(bar)·서수 강도(heatmap)·
+  구성 위계(stacked/donut)처럼 *한 변수의 위계* 인 곳에 해치를 쓰면 카테고리처럼
+  오독되고 노이즈가 된다 — 그곳은 **단일 잉크(--text)의 농도 사다리** (예: 0.42/0.24/
+  0.13, ≤4단) + 핵심 1개만 --accent.
+- **값 라벨은 Newsreader 세리프 직접 라벨** (막대 끝·조각 중앙·기둥 위). 범례는 직접
+  라벨이 불가능할 때만.
+- **그리드 최소화** — 0-기준선만 crisp(--text, opacity ~0.55), 보조선은 opacity ≤0.06.
+- **waterfall 3색 의미론**: 증가=--accent / 감소=--down / 합계=--text. 부호는 라벨에
+  명시(+/−).
+- **network 인접행렬**: 갭 그리드(테두리 폐기) + 관계 글리프 4종(대립 ✕ --down /
+  동맹 ● --accent / 영향 ▸ 방향 운반 / 연관 ○ 윤곽) + 진영 색띠.
+- 기존 §4 의 해치 패턴은 stacked_area·choropleth 등 *명목 카테고리 대면적* 에서 계속
+  유효 — 폐기가 아니라 역할 정밀화다.
