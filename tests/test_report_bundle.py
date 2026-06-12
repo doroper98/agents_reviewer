@@ -216,6 +216,32 @@ def test_report_video_mapping():
     assert b2.report.video is None
 
 
+def test_report_video_tts_channel(caplog):
+    """§13 v7.4.1: report.video 의 intro/outro 발화 채널 + 누락 warn."""
+    import logging
+    res = _make_result()
+    res.composed_report.video = {
+        "intro_narration": ["SpaceX가 컴퓨팅을 빌려주고 있습니다."],
+        "outro_narration": ["다음 주에 정해집니다."],
+        "intro_narration_tts": ["스페이스엑스가 컴퓨팅을 빌려주고 있습니다."],
+    }
+    with caplog.at_level(logging.WARNING):
+        b = build_report_bundle(res)
+    v = b.report.video
+    assert v is not None
+    assert v.intro_narration_tts == ["스페이스엑스가 컴퓨팅을 빌려주고 있습니다."]
+    # outro 는 위험 표기 없음 → tts 생략해도 warn 없음
+    assert v.outro_narration_tts == []
+    assert not any("report.video(outro)" in r.message for r in caplog.records)
+    # intro 에 위험 표기 있는데 tts 누락이면 warn
+    caplog.clear()
+    res2 = _make_result()
+    res2.composed_report.video = {"intro_narration": ["IPO를 앞두고 있습니다."]}
+    with caplog.at_level(logging.WARNING):
+        build_report_bundle(res2)
+    assert any("report.video(intro)" in r.message for r in caplog.records)
+
+
 def test_tts_gap_warn(caplog):
     """§13 v7.4.0: narration 에 TTS 위험 표기 있는데 narration_tts 누락 시 warn."""
     import logging

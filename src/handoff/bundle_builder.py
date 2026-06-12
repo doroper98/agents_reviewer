@@ -145,14 +145,25 @@ def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | 
 
 
 def _report_video(video: dict | None) -> BundleReportVideo | None:
-    """계약 §13 — 보고서 레벨 intro/outro 내레이션. 둘 다 비면 None."""
+    """계약 §13 — 보고서 레벨 intro/outro 내레이션. 둘 다 비면 None.
+
+    v7.4.1 — 섹션과 동일한 표기/발화 분리: `intro_narration_tts` /
+    `outro_narration_tts` (위험 표기 누락 시 `_warn_tts_gap` warn).
+    """
     if not isinstance(video, dict):
         return None
     intro = _strs(video.get("intro_narration"), _REPORT_NARRATION_MAX_ITEMS)
     outro = _strs(video.get("outro_narration"), _REPORT_NARRATION_MAX_ITEMS)
     if not intro and not outro:
         return None
-    return BundleReportVideo(intro_narration=intro, outro_narration=outro)
+    intro_tts = _strs(video.get("intro_narration_tts"), _REPORT_NARRATION_MAX_ITEMS)
+    outro_tts = _strs(video.get("outro_narration_tts"), _REPORT_NARRATION_MAX_ITEMS)
+    _warn_tts_gap(intro, intro_tts, "report.video(intro)")
+    _warn_tts_gap(outro, outro_tts, "report.video(outro)")
+    return BundleReportVideo(
+        intro_narration=intro, outro_narration=outro,
+        intro_narration_tts=intro_tts, outro_narration_tts=outro_tts,
+    )
 
 
 def _theme_tokens(theme_id: str, css_path: Path = _CSS_PATH) -> dict[str, str]:

@@ -26,6 +26,8 @@
    `narration_tts` 를 **반드시** 채운다. `narration_tts` 는 `narration` 과 *같은
    순서·같은 개수* 의 배열이다. 바꿀 게 없는 문장은 동일 문장을 그대로 둔다.
 2. TTS가 깨뜨릴 표기가 *전혀 없는* 섹션(순한 한국어 문장만)은 `narration_tts` 생략 가능.
+2-1. 보고서 레벨 `report.video` 의 intro/outro 도 동일하다 (v7.4.1) —
+   `intro_narration_tts` / `outro_narration_tts` 를 같은 순서·개수로 채운다.
 3. `emphasis` 는 *자막(`narration`/`highlights`)* 기준이다. `narration_tts` 가 아니다.
 4. 자막과 음성의 *의미·수치·순서* 는 반드시 일치 — 자막은 "7.68%", 음성은 "칠 점
    육팔 퍼센트" 처럼 *표기만* 다르고 내용은 같아야 한다 (불일치는 즉시 어색함, §44).

@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v7.4.0
+last_synced_with: v7.4.1
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -167,7 +167,11 @@ emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (
 | `narration_tts` | `string[]` | **자막=narration, 음성=narration_tts (표기용/발화용 분리).** narration 에 TTS가 깨뜨릴 표기(숫자·영문 약어·기호·단위)가 한 문장이라도 있으면 producer 가 채운다 — narration 과 *같은 순서·개수*, 바꿀 게 없는 문장은 동일하게 둠. 순한 한국어뿐이면 생략 OK (그땐 consumer 발음 사전이 처리). 작성 규칙 SSOT: `prompts/tts_narration_guide.md` (v7.4.0) |
 
 **`report.video`** (optional 객체): `{ "intro_narration": string[] (1~2문장,
-타이틀 씬), "outro_narration": string[] (1~2문장, 클로징 씬) }`.
+타이틀 씬), "outro_narration": string[] (1~2문장, 클로징 씬),
+"intro_narration_tts": string[], "outro_narration_tts": string[] }`.
+`*_narration_tts` (v7.4.1 additive) 는 섹션 `narration_tts` 와 같은 규칙 —
+intro/outro 에 TTS 위험 표기가 있으면 같은 순서·개수의 발화용 배열을 채운다
+(자막=`*_narration`, 음성=`*_narration_tts`). 비면 consumer 발음 사전이 처리.
 
 **의미론 (consumer 측 확정 동작):**
 - `video` 있음 → highlights 는 스테이트먼트 씬, narration 은 해당 구간 자막.
@@ -234,7 +238,9 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
     },
     "video": {                                // [신규 v7.3.0] §13 — 타이틀/클로징 씬 대본 (optional)
       "intro_narration": ["str (1~2문장, ≤58자)"],
-      "outro_narration": ["str (1~2문장, ≤58자)"]
+      "outro_narration": ["str (1~2문장, ≤58자)"],
+      "intro_narration_tts": ["str (선택 — 발화용, v7.4.1)"],
+      "outro_narration_tts": ["str (선택 — 발화용, v7.4.1)"]
     }
   },
 
@@ -343,3 +349,4 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 | 1 (draft) | 2026-05-25 | seam 보정: §10 map 참조 해소 (map.id) + §11 빈값/optional emit 규약 | schema_version 무증분 (draft 보정, 양측 합의) |
 | 1 | 2026-06-12 | §13 video 내레이션 (`sections[].video` + `report.video`) — 영상 자막·음성 대본을 producer 가 emit | additive (§7), schema_version 무증분. osint_generator 검수 대기 (샘플: `reports/analysis_20260612_061311_2c19018118.bundle.json`) |
 | 1 | 2026-06-12 | §13 TTS 발화 규칙 명문화 — 표기용(narration)/발화용(narration_tts) 분리 + 작성 가이드 SSOT(`prompts/tts_narration_guide.md`) | additive, schema_version 무증분 (필드 의미 정밀화, 새 필드 없음). 샘플 2건 narration_tts 채움 |
+| 1 | 2026-06-12 | §13 `report.video.intro_narration_tts` / `outro_narration_tts` 추가 — 타이틀/클로징 씬도 표기/발화 분리 (사용자 확정) | additive (§7), schema_version 무증분. 구 consumer 는 무시해도 무해 |

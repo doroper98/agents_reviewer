@@ -4,7 +4,7 @@
   "generated_at": "2026-06-12T20:17:10.783209+09:00",
   "producer": {
     "system": "agents_reviewer",
-    "version": "v7.4.0",
+    "version": "v7.4.1",
     "mode": "deep"
   },
   "report": {
@@ -39,6 +39,10 @@
       "outro_narration": [
         "컨센서스는 단단하지만, 그 안의 시간 가정이 남았습니다.",
         "다음 한 분기가 그 가정을 시험합니다."
+      ],
+      "intro_narration_tts": [
+        "삼성과 에스케이하이닉스, 컨센서스는 굳어졌습니다.",
+        "그런데 목표가는 회사마다 두 배 넘게 갈립니다."
       ]
     }
   },

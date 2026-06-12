@@ -599,6 +599,8 @@ SYSTEM_PROMPT = (
     "     빠진다 (이 필드의 존재 이유다).\n"
     "  6) 최상위 video.intro_narration 은 headline/deck 기반 오프닝(타이틀 씬) 1~2문장,\n"
     "     outro_narration 은 closing 기반 클로징 씬 1~2문장. 같은 58자/문장 한도.\n"
+    "     intro/outro 에도 위험 표기가 있으면 intro_narration_tts / outro_narration_tts\n"
+    "     를 같은 순서·개수로 채운다 (섹션 narration_tts 와 같은 규칙).\n"
     "★ TTS 발화 규칙 (narration_tts 만드는 법, v7.4.0 — 전체 기준서: prompts/tts_narration_guide.md) ★\n"
     "  AI 음성 티는 기계음이 아니라 *사람이라면 절대 그렇게 안 읽는 표기 해석* 에서 난다.\n"
     "  narration_tts 는 TTS가 틀릴 표기를 *사람이 말하는 형태* 로 미리 바꿔 둔 발화 대본이다.\n"
@@ -708,7 +710,9 @@ SYSTEM_PROMPT = (
     '  "broadcast_summary": "broadcast_summary 지침대로 — 5~6개 짧은 문단, 해요/습니다 혼합, 문단당 2문장 이내, 라벨 없이 본문만",\n'
     '  "video": {\n'
     '    "intro_narration": ["오프닝(타이틀 씬) 대본 1~2문장 (각 58자 이내)"],\n'
-    '    "outro_narration": ["클로징 씬 대본 1~2문장 (각 58자 이내)"]\n'
+    '    "outro_narration": ["클로징 씬 대본 1~2문장 (각 58자 이내)"],\n'
+    '    "intro_narration_tts": ["위험 표기 있을 때만 — 발화형, intro 와 같은 개수"],\n'
+    '    "outro_narration_tts": ["위험 표기 있을 때만 — 발화형, outro 와 같은 개수"]\n'
     "  }\n"
     "}\n"
     "```\n"

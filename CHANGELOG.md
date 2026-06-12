@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.4.0
+last_synced_with: v7.4.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.4.1 — report.video 에도 TTS 발화 채널 (사용자 확정)
+
+- **계약 §13 additive** — `report.video.intro_narration_tts` / `outro_narration_tts`
+  추가 (schema_version 1 유지). v7.4.0 이 섹션 narration 에만 표기/발화 분리를 적용해
+  타이틀/클로징 씬의 "SpaceX" 류 표기가 음성에서 영어로 읽히던 갭 해소. 섹션
+  `narration_tts` 와 같은 규칙 (같은 순서·개수, 위험 표기 없으면 생략).
+- `BundleReportVideo` 필드 2종 + `ComposedReport.video` 정규화 키 + `_report_video`
+  매핑·`_warn_tts_gap` 적용 + composer SYSTEM_PROMPT 규칙 6/JSON 예시 +
+  가이드 §0 규칙 2-1. 검수 샘플 3건의 report.video 에 tts 채움.
 
 ## v7.4.0 — TTS 내레이션 발화 규칙 체계 (사용자 제공 가이드 반영)
 

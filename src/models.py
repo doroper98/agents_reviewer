@@ -818,7 +818,10 @@ class ComposedReport(BaseModel):
     @field_validator("video", mode="before")
     @classmethod
     def _normalize_report_video(cls, v):
-        return _normalize_video_dict(v, ("intro_narration", "outro_narration"))
+        return _normalize_video_dict(v, (
+            "intro_narration", "outro_narration",
+            "intro_narration_tts", "outro_narration_tts",  # v7.4.1 — 발화용 채널
+        ))
 
     # v4.2.0 — 보고서 레벨 단일 지도. 지리적 사건일 때만 composer 가 채움.
     # 형식: {"center": [lng, lat], "zoom": float,
@@ -1090,10 +1093,17 @@ class BundleSectionVideo(BaseModel):
 
 
 class BundleReportVideo(BaseModel):
-    """v7.3.0 — 보고서 레벨 영상 내레이션 (계약 §13). intro=타이틀 씬 / outro=클로징 씬."""
+    """v7.3.0 — 보고서 레벨 영상 내레이션 (계약 §13). intro=타이틀 씬 / outro=클로징 씬.
+
+    v7.4.1 — 섹션과 동일한 표기용/발화용 분리: intro/outro 에 TTS 위험 표기
+    (숫자·영문 약어·기호)가 있으면 `*_narration_tts` 를 같은 순서·개수로 채운다
+    (SSOT: prompts/tts_narration_guide.md). 비면 consumer 발음 사전이 처리.
+    """
 
     intro_narration: list[str] = Field(default_factory=list)  # 1~2문장
     outro_narration: list[str] = Field(default_factory=list)  # 1~2문장
+    intro_narration_tts: list[str] = Field(default_factory=list)  # 발화용 (선택)
+    outro_narration_tts: list[str] = Field(default_factory=list)  # 발화용 (선택)
 
 
 class BundleReport(BaseModel):
