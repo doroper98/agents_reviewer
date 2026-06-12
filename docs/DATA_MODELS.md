@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.3.0
+last_synced_with: v7.4.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -400,6 +400,10 @@ ReportBundle
   58/40자 한도는 warn-only) 를 거쳐 `BundleSectionVideo`(narration/highlights/emphasis/
   narration_tts) + `BundleReportVideo`(intro_narration/outro_narration) 로 매핑.
   부재 시 `null` — consumer(osint_generator) 는 기존 템플릿 동작 유지.
+- **TTS 발화 (v7.4.0)**: `narration`=자막(표기용), `narration_tts`=음성(발화용) 분리.
+  작성 규칙 SSOT 는 `prompts/tts_narration_guide.md` + composer SYSTEM_PROMPT
+  "★ TTS 발화 규칙" 블록. 빌더 `_warn_tts_gap` 가 narration 위험 표기 대비 narration_tts
+  누락/개수불일치를 warn (자동 보정 X).
 
 ## 6. Out of scope
 

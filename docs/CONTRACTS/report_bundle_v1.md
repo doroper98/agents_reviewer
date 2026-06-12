@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v7.3.0
+last_synced_with: v7.4.0
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -164,7 +164,7 @@ emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (
 | `narration` | `string[]` | 2~4문장. 그 섹션 씬(차트 씬 포함)의 자막·음성 대본. **한 문장 ≤58자** (자막 2줄 한도 — 초과분은 consumer 가 … 절단) |
 | `highlights` | `string[]` | 1~3개. 화면에 크게 띄울 key takeaway — 스테이트먼트 씬(대형 타이포). 문장보다 문구, **≤40자** |
 | `emphasis` | `string[]` | narration/highlights 안의 **정확한 부분 문자열**만. 화면에서 액센트 색 강조 |
-| `narration_tts` | `string[]` | 선택. 발음이 갈리는 표기(영문 약어·단위)가 있을 때만 — 자막=narration, 음성=narration_tts. 없으면 consumer 발음 사전이 처리 |
+| `narration_tts` | `string[]` | **자막=narration, 음성=narration_tts (표기용/발화용 분리).** narration 에 TTS가 깨뜨릴 표기(숫자·영문 약어·기호·단위)가 한 문장이라도 있으면 producer 가 채운다 — narration 과 *같은 순서·개수*, 바꿀 게 없는 문장은 동일하게 둠. 순한 한국어뿐이면 생략 OK (그땐 consumer 발음 사전이 처리). 작성 규칙 SSOT: `prompts/tts_narration_guide.md` (v7.4.0) |
 
 **`report.video`** (optional 객체): `{ "intro_narration": string[] (1~2문장,
 타이틀 씬), "outro_narration": string[] (1~2문장, 클로징 씬) }`.
@@ -184,6 +184,14 @@ emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (
   귀로 듣는 말, 짧은 문장의 연쇄(앞 문장을 다음 문장이 받아 잇기), 한 문장 한
   정보, 명사 나열 대신 동사, 쉽되 가볍지 않은 경어체. SSOT 는 composer
   SYSTEM_PROMPT 의 "★ 내레이터 페르소나" 블록 (consumer 계약 의미론 무변경).
+- TTS 발화 규칙 (v7.4.0, 사용자 제공 가이드 반영): AI 음성 티는 *사람이라면 안 읽는
+  표기 해석* 에서 난다. `narration_tts` 는 TTS가 틀릴 표기를 발화형으로 미리 바꾼다 —
+  숫자 이중 체계(2차전지→이차전지, 6월→유월, 3개→세 개), 영문 약어 한글 음·영상 내
+  통일(HBM→에이치비엠), 기호 의미 변환(`→`→'…에서 …로'), URL·파일명 미낭독. 전체
+  기준서 SSOT: `prompts/tts_narration_guide.md`, 런타임 단축본: composer SYSTEM_PROMPT
+  "★ TTS 발화 규칙" 블록 (둘은 항상 정합). producer 는 narration 에 위험 표기가 있는데
+  narration_tts 누락/개수불일치면 `bundle_builder._warn_tts_gap` 로 warn (자동 보정 X —
+  문맥 의존이라 결정적 변환이 오독을 만든다). consumer 계약 의미론 무변경.
 
 **producer 측 결정론 가드** (`src/handoff/bundle_builder.py:_section_video`):
 - `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 캡 (초과분 절단).
@@ -334,3 +342,4 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 | 1 (draft) | 2026-05-25 | 초안 확정 (§1~9) | producer PR 머지 시 active |
 | 1 (draft) | 2026-05-25 | seam 보정: §10 map 참조 해소 (map.id) + §11 빈값/optional emit 규약 | schema_version 무증분 (draft 보정, 양측 합의) |
 | 1 | 2026-06-12 | §13 video 내레이션 (`sections[].video` + `report.video`) — 영상 자막·음성 대본을 producer 가 emit | additive (§7), schema_version 무증분. osint_generator 검수 대기 (샘플: `reports/analysis_20260612_061311_2c19018118.bundle.json`) |
+| 1 | 2026-06-12 | §13 TTS 발화 규칙 명문화 — 표기용(narration)/발화용(narration_tts) 분리 + 작성 가이드 SSOT(`prompts/tts_narration_guide.md`) | additive, schema_version 무증분 (필드 의미 정밀화, 새 필드 없음). 샘플 2건 narration_tts 채움 |

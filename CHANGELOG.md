@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.3.0
+last_synced_with: v7.4.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,27 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.4.0 — TTS 내레이션 발화 규칙 체계 (사용자 제공 가이드 반영)
+
+- **문제 (사용자 지적)** — narration 을 JSON 에 채우게 되는데, 내레이션이 이상하게
+  생성되면 TTS 발화가 매우 어색해지고 "AI가 만들었다"는 걸 듣는 즉시 알아챈다. AI 음성
+  티는 기계음이 아니라 *사람이라면 절대 그렇게 안 읽는 표기 해석* 에서 난다 (16시를
+  '열여섯 시', 2차전지를 '두 차 전지', 6월을 '육월', 7.68%를 '칠 점 육팔'…).
+- **신규 SSOT 가이드** — [prompts/tts_narration_guide.md](prompts/tts_narration_guide.md):
+  사용자가 작성한 53항목 TTS 오류 리스트를 Opus 작성 에이전트가 지킬 수 있는 규칙으로
+  distill. 핵심 = ① 표기용(narration)/발화용(narration_tts) 분리 ② 숫자 이중 체계
+  (개수·살·번=고유어, 차수·연도·금액·비율=한자어, 월 예외 6월→유월/10월→시월)
+  ③ 영문 약어 한글 음·영상 내 통일 ④ 기호 의미 변환 ⑤ URL·파일명 미낭독 + 문장
+  구어체·연쇄·강조 위치.
+- **체계화 (3중)** — ① composer SYSTEM_PROMPT 에 "★ TTS 발화 규칙" 런타임 단축본
+  주입(가이드와 정합) + narration_tts 를 "위험 표기 있으면 필수"로 격상 ② JSON 예시에
+  narration_tts 추가 ③ `bundle_builder._warn_tts_gap` 결정적 탐지 — narration 에 TTS
+  위험 표기가 있는데 narration_tts 누락/개수불일치면 warn (자동 재작성 X — 한자어/고유어
+  문맥 의존이라 결정적 변환이 오히려 오독을 만든다, 가이드 원칙).
+- **계약 §13 명문화** — 표기/발화 분리 + 가이드 SSOT 참조 (consumer 의미론·schema_version
+  무변경, additive). 샘플 번들 2건(20260606 SpaceX / 20260611 삼성·SK)의 narration_tts
+  를 가이드대로 채워 재생성.
 
 ## v7.3.1 — video narration 내레이터 페르소나 (사용자 지시)
 

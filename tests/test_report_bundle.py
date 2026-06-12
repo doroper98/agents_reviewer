@@ -216,6 +216,35 @@ def test_report_video_mapping():
     assert b2.report.video is None
 
 
+def test_tts_gap_warn(caplog):
+    """§13 v7.4.0: narration 에 TTS 위험 표기 있는데 narration_tts 누락 시 warn."""
+    import logging
+    from src.handoff.bundle_builder import _section_video, _warn_tts_gap, _TTS_RISK_RE
+    # 위험 표기 탐지
+    assert _TTS_RISK_RE.search("7.68% 빠졌습니다")
+    assert _TTS_RISK_RE.search("GPU를 빌렸습니다")
+    assert _TTS_RISK_RE.search("14일 → 4일")
+    assert not _TTS_RISK_RE.search("목표가는 그대로였습니다")
+    # narration_tts 누락 → warn
+    with caplog.at_level(logging.WARNING):
+        v = _section_video({"narration": ["삼성전자가 6.06% 내렸습니다."]}, "s1")
+    assert v is not None
+    assert any("narration_tts 누락" in r.message for r in caplog.records)
+    # 개수 불일치 → warn
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _section_video({
+            "narration": ["삼성전자가 6.06% 내렸습니다.", "코스피는 7,634.76입니다."],
+            "narration_tts": ["삼성전자가 육 점 영육 퍼센트 내렸습니다."],
+        }, "s2")
+    assert any("불일치" in r.message for r in caplog.records)
+    # 위험 표기 없는 순한 한국어 → warn 없음
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _section_video({"narration": ["목표가는 그대로였습니다."]}, "s3")
+    assert not any("narration_tts" in r.message for r in caplog.records)
+
+
 def test_composed_video_normalization():
     """ComposedSection/ComposedReport.video 비정형 emit 회복 (validator)."""
     sec = ComposedSection(heading="h", prose="p", video={"narration": "단일 문자열입니다."})

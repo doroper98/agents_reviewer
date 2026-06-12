@@ -66,10 +66,36 @@ _NARRATION_MAX_ITEMS = 4
 _HIGHLIGHT_MAX_ITEMS = 3
 _REPORT_NARRATION_MAX_ITEMS = 2
 
+# 계약 §13 / prompts/tts_narration_guide.md — TTS가 깨뜨릴 표기 탐지 (warn-only).
+# 영문(약어), 숫자(콤마·소수·범위 포함), 발화 변환 필요한 기호. 자동 재작성은 안 한다
+# (한자어/고유어·문맥 의존이라 결정적 변환은 오히려 오독을 만든다 — 가이드 §0/§6).
+_TTS_RISK_RE = re.compile(r"[A-Za-z]|[0-9]|[%/:~→±<>]")
+
 
 def _strs(items, cap: int | None = None) -> list[str]:
     out = [s.strip() for s in (items or []) if isinstance(s, str) and s.strip()]
     return out[:cap] if cap else out
+
+
+def _warn_tts_gap(narration: list[str], narration_tts: list[str], where: str) -> None:
+    """narration 에 TTS 위험 표기가 있는데 narration_tts 누락/개수불일치면 warn.
+
+    영상 음성 품질의 1차 방어는 composer SYSTEM_PROMPT(★ TTS 발화 규칙) + 가이드.
+    여기선 누락만 표면화 (운영자가 bot.log 로 인지) — 자동 보정은 하지 않는다.
+    """
+    risky = [s for s in narration if _TTS_RISK_RE.search(s)]
+    if not risky:
+        return
+    if not narration_tts:
+        logger.warning(
+            "[bundle] §13 %s: narration 에 TTS 위험 표기 있음(%d문장)인데 narration_tts 누락 "
+            "— 음성 오독 위험. 예: %r", where, len(risky), risky[0],
+        )
+    elif len(narration_tts) != len(narration):
+        logger.warning(
+            "[bundle] §13 %s: narration_tts 개수(%d)가 narration(%d)과 불일치 "
+            "— consumer 정렬 깨짐 위험.", where, len(narration_tts), len(narration),
+        )
 
 
 def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | None:
@@ -111,6 +137,7 @@ def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | 
                 "[bundle] §13 %s: highlight %d자 > %d자 한도 (영상에서 잘림): %r",
                 section_id, len(s), _HIGHLIGHT_MAX_CHARS, s,
             )
+    _warn_tts_gap(narration, narration_tts, section_id)
     return BundleSectionVideo(
         narration=narration, highlights=highlights,
         emphasis=emphasis, narration_tts=narration_tts,
