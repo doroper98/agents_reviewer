@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v7.4.1
+last_synced_with: v7.6.0
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -161,7 +161,7 @@ emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (
 
 | 키 | 타입 | 규칙 |
 |---|---|---|
-| `narration` | `string[]` | 2~4문장. 그 섹션 씬(차트 씬 포함)의 자막·음성 대본. **한 문장 ≤58자** (자막 2줄 한도 — 초과분은 consumer 가 … 절단) |
+| `narration` | `string[]` | 2~4문장. 그 섹션 씬(차트 씬 포함)의 자막·음성 대본. **한 문장 ≤75자** (v7.6.0 1차 음성 검수 — 축약 금지·말하듯 풀어쓰기 위해 58→75 완화, 양측 합의값. 자막 줄바꿈은 consumer 처리, 초과분만 … 절단) |
 | `highlights` | `string[]` | 1~3개. 화면에 크게 띄울 key takeaway — 스테이트먼트 씬(대형 타이포). 문장보다 문구, **≤40자** |
 | `emphasis` | `string[]` | narration/highlights 안의 **정확한 부분 문자열**만. 화면에서 액센트 색 강조 |
 | `narration_tts` | `string[]` | **자막=narration, 음성=narration_tts (표기용/발화용 분리).** narration 에 TTS가 깨뜨릴 표기(숫자·영문 약어·기호·단위)가 한 문장이라도 있으면 producer 가 채운다 — narration 과 *같은 순서·개수*, 바꿀 게 없는 문장은 동일하게 둠. 순한 한국어뿐이면 생략 OK (그땐 consumer 발음 사전이 처리). 작성 규칙 SSOT: `prompts/tts_narration_guide.md` (v7.4.0) |
@@ -172,6 +172,25 @@ emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (
 `*_narration_tts` (v7.4.1 additive) 는 섹션 `narration_tts` 와 같은 규칙 —
 intro/outro 에 TTS 위험 표기가 있으면 같은 순서·개수의 발화용 배열을 채운다
 (자막=`*_narration`, 음성=`*_narration_tts`). 비면 consumer 발음 사전이 처리.
+
+**`timeline.video`** (optional 객체 — v7.6.0 additive, 1차 음성 검수 반영):
+`{ "narration": string[] (3~4문장, 각 ≤75자), "narration_tts": string[] }`.
+타임라인 씬에 video 가 없어 consumer 가 기계 문장으로 메우던 것을 producer
+대본으로 대체. narration 은 분기점들을 *이야기로 잇는* 문장 — **분기점 라벨
+낭독 금지** (라벨은 화면이 보여줌). composer 는 `timeline_flow.video` 로 emit,
+`src/timeline_flow.py` 패스스루 → `bundle_builder._timeline_video` 결정론 가드
+(≤4 캡, 길이·TTS gap warn). highlights/emphasis 없음.
+
+**작성 규칙 개정 (v7.6.0 — 1차 음성 영상 검수, analysis_20260606_114653):**
+스키마 구조는 그대로, "쓰는 법" 개정. 전체 기준서 SSOT 는
+`prompts/tts_narration_guide.md` (v7.6.0 §1/§2/§6):
+1. **축약 금지 — 말하듯 풀어쓰기 (최우선).** narration 은 자막용 요약문이 아니라
+   성우가 읽는 구어체 대본. 한 문장 한 정보, 명사 나열 대신 주어-동사 문장.
+   한도 75자로 완화된 만큼 조사·서술어를 삭제하지 말 것.
+2. **날짜 콤마 나열 금지** — "{날짜}, {문장}" 가 아니라 "{날짜}에는 ~했습니다".
+3. **제목·라벨 낭독 금지** — 섹션/차트 제목·타임라인 분기점 라벨은 화면이 보여줌.
+4. **narration_tts 발음 강화** — 숫자 전부 한글+자연 띄어쓰기("삼십이 개월",
+   "일곱 개"), 경음화 표기("해지꿘", "조껀"). 원칙: "한글로 받아쓴 발음 그대로".
 
 **의미론 (consumer 측 확정 동작):**
 - `video` 있음 → highlights 는 스테이트먼트 씬, narration 은 해당 구간 자막.
@@ -197,11 +216,13 @@ intro/outro 에 TTS 위험 표기가 있으면 같은 순서·개수의 발화�
   narration_tts 누락/개수불일치면 `bundle_builder._warn_tts_gap` 로 warn (자동 보정 X —
   문맥 의존이라 결정적 변환이 오독을 만든다). consumer 계약 의미론 무변경.
 
-**producer 측 결정론 가드** (`src/handoff/bundle_builder.py:_section_video`):
-- `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 캡 (초과분 절단).
+**producer 측 결정론 가드** (`src/handoff/bundle_builder.py:_section_video` /
+`_timeline_video`):
+- `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 / timeline narration ≤4 캡
+  (초과분 절단).
 - `emphasis` 불일치 항목(부분 문자열 아님)은 emit 전에 drop + warn — consumer
   액센트 매칭이 어차피 실패하므로 producer 가 미리 정리.
-- 길이 한도(58/40자) 초과는 **drop 하지 않고 warn** — consumer 의 … 절단이
+- 길이 한도(75/40자) 초과는 **drop 하지 않고 warn** — consumer 의 … 절단이
   정보 파괴보다 낫다. 1차 방어는 composer SYSTEM_PROMPT 의 길이 지시.
 - `narration`/`highlights` 둘 다 비면 `video: null` (= 부재).
 - WRITE-AP-12 기호 정화(`_sanitize_symbols`)는 video 텍스트에도 적용 —
@@ -237,8 +258,8 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
       "fonts": { "serif":"Noto Serif KR", "sans":"Noto Sans KR", "mono":"IBM Plex Mono" }
     },
     "video": {                                // [신규 v7.3.0] §13 — 타이틀/클로징 씬 대본 (optional)
-      "intro_narration": ["str (1~2문장, ≤58자)"],
-      "outro_narration": ["str (1~2문장, ≤58자)"],
+      "intro_narration": ["str (1~2문장, ≤75자)"],
+      "outro_narration": ["str (1~2문장, ≤75자)"],
       "intro_narration_tts": ["str (선택 — 발화용, v7.4.1)"],
       "outro_narration_tts": ["str (선택 — 발화용, v7.4.1)"]
     }
@@ -255,7 +276,7 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
     "image_refs": ["image id"],
     "claim_refs": ["claim_id"],               // §8
     "video": {                                // [신규 v7.3.0] §13 — 섹션 씬 대본 (optional)
-      "narration": ["str (2~4문장, 각 ≤58자)"],
+      "narration": ["str (2~4문장, 각 ≤75자 — v7.6.0 풀어쓰기 완화)"],
       "highlights": ["str (1~3개, ≤40자)"],
       "emphasis": ["narration/highlights 의 정확한 부분 문자열만"],
       "narration_tts": ["str (선택 — 발음용)"]
@@ -301,7 +322,16 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
   "signals": [{ "signal","description","indicates","deadline","verification" }],  // [기존] watch_signals
   "contradictions": [{ "side_a","side_b","evidence","resolution" }],              // [기존] (봉합 금지 보존)
   "sources": [{ "source_id":"str (unique)","url","publisher","title","fetched_at" }],  // [신규] context.sources 정규화
-  "confidence": { "score": 0.0, "summary": "str" }                                // [기존] report-level
+  "confidence": { "score": 0.0, "summary": "str" },                               // [기존] report-level
+
+  "timeline": {                              // [v5.5.2] 시간 척추 (optional, §7 additive)
+    "heading": "str",
+    "points": [{ "date":"YYYY-MM-DD", "label":"str", "phase":"past|present|future", "note":"str" }],
+    "video": {                                // [신규 v7.6.0] §13 — 타임라인 씬 대본 (optional)
+      "narration": ["str (3~4문장, 각 ≤75자 — 분기점 라벨 낭독 금지)"],
+      "narration_tts": ["str (선택 — 발화용)"]
+    }
+  }
 }
 ```
 
@@ -350,3 +380,4 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 | 1 | 2026-06-12 | §13 video 내레이션 (`sections[].video` + `report.video`) — 영상 자막·음성 대본을 producer 가 emit | additive (§7), schema_version 무증분. osint_generator 검수 대기 (샘플: `reports/analysis_20260612_061311_2c19018118.bundle.json`) |
 | 1 | 2026-06-12 | §13 TTS 발화 규칙 명문화 — 표기용(narration)/발화용(narration_tts) 분리 + 작성 가이드 SSOT(`prompts/tts_narration_guide.md`) | additive, schema_version 무증분 (필드 의미 정밀화, 새 필드 없음). 샘플 2건 narration_tts 채움 |
 | 1 | 2026-06-12 | §13 `report.video.intro_narration_tts` / `outro_narration_tts` 추가 — 타이틀/클로징 씬도 표기/발화 분리 (사용자 확정) | additive (§7), schema_version 무증분. 구 consumer 는 무시해도 무해 |
+| 1 | 2026-06-12 | §13 1차 음성 영상 검수 반영 (v7.6.0): `timeline.video` 신설 (타임라인 씬 대본 — 라벨 낭독 금지) + narration 문장 한도 58→75자 완화 (축약 금지·말하듯 풀어쓰기, 양측 합의값) + 작성 규칙 개정 (날짜 조사 연결 / 제목·라벨 낭독 금지 / 발음 강화 — 숫자 전부 한글·띄어쓰기, 경음화) | additive (§7), schema_version 무증분. 영상 쪽도 같은 검수 반영 (템플릿 문장·발음 사전·자막 폭) |

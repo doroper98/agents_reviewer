@@ -32,8 +32,11 @@ def _parse_date(raw: Any) -> datetime | None:
 def build_timeline_flow(context: Any, composed: Any) -> dict | None:
     """ComposedReport + ContextAnalysis → 시간 흐름도 dict 또는 None.
 
-    반환: ``{"heading": str, "points": [{"date","label","phase","note"}]}``
-    phase ∈ {"past","present","future"}. points 는 date 오름차순.
+    반환: ``{"heading": str, "points": [{"date","label","phase","note"}],
+    "video"?: dict}``. phase ∈ {"past","present","future"}. points 는 date 오름차순.
+    "video" (v7.6.0, 계약 §13) 는 composer 의 timeline_flow.video 패스스루 —
+    타임라인 씬 내레이션. 가드는 bundle_builder._timeline_video 가 담당,
+    렌더(report_synthesizer)는 heading/points 만 읽으므로 무해.
     """
     if context is None or composed is None:
         return None
@@ -108,4 +111,7 @@ def build_timeline_flow(context: Any, composed: Any) -> dict | None:
 
     points.sort(key=lambda p: p["date"])
     heading = (tf.get("heading") or "").strip() or "사건의 궤적"
-    return {"heading": heading, "points": points}
+    out: dict = {"heading": heading, "points": points}
+    if isinstance(tf.get("video"), dict):  # v7.6.0 — 타임라인 씬 내레이션 패스스루
+        out["video"] = tf["video"]
+    return out

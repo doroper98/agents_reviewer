@@ -47,6 +47,7 @@ from src.models import (
     BundleTheme,
     BundleTimeline,
     BundleTimelinePoint,
+    BundleTimelineVideo,
     BundleTopSource,
     FullAnalysisResult,
     ReportBundle,
@@ -60,7 +61,9 @@ _TOKEN_NAMES = ("bg", "card", "text", "muted", "accent", "up", "down", "border")
 _MARKET_CHART_TYPES = ("candle", "line", "area")
 
 # 계약 §13 — 영상 자막 한도 (consumer 가 초과분을 … 로 자르므로 producer 는 warn).
-_NARRATION_MAX_CHARS = 58
+# v7.6.0 — 1차 음성 검수: 축약 금지·말하듯 풀어쓰기 위해 58→75 완화 (자막 줄바꿈은
+# 영상 쪽 처리, 양측 합의값).
+_NARRATION_MAX_CHARS = 75
 _HIGHLIGHT_MAX_CHARS = 40
 _NARRATION_MAX_ITEMS = 4
 _HIGHLIGHT_MAX_ITEMS = 3
@@ -68,7 +71,7 @@ _REPORT_NARRATION_MAX_ITEMS = 2
 
 # 계약 §13 / prompts/tts_narration_guide.md — TTS가 깨뜨릴 표기 탐지 (warn-only).
 # 영문(약어), 숫자(콤마·소수·범위 포함), 발화 변환 필요한 기호. 자동 재작성은 안 한다
-# (한자어/고유어·문맥 의존이라 결정적 변환은 오히려 오독을 만든다 — 가이드 §0/§6).
+# (한자어/고유어·문맥 의존이라 결정적 변환은 오히려 오독을 만든다 — 가이드 §0/§7).
 _TTS_RISK_RE = re.compile(r"[A-Za-z]|[0-9]|[%/:~→±<>]")
 
 
@@ -104,7 +107,7 @@ def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | 
     - narration ≤4 / highlights ≤3 캡 (초과분 절단).
     - emphasis 는 narration/highlights 안의 *정확한 부분 문자열* 만 보존 — 불일치
       항목은 drop (consumer 액센트 매칭이 어차피 실패하므로 emit 전에 정리).
-    - 길이 한도(58/40자) 초과는 drop 하지 않고 warn (consumer 가 … 로 자름 — 정보
+    - 길이 한도(75/40자) 초과는 drop 하지 않고 warn (consumer 가 … 로 자름 — 정보
       파괴보다 graceful 절단이 낫다. 1차 방어는 composer SYSTEM_PROMPT).
     - narration/highlights 둘 다 비면 None (= video 부재, consumer 기존 동작).
     """
@@ -164,6 +167,30 @@ def _report_video(video: dict | None) -> BundleReportVideo | None:
         intro_narration=intro, outro_narration=outro,
         intro_narration_tts=intro_tts, outro_narration_tts=outro_tts,
     )
+
+
+def _timeline_video(video: dict | None) -> BundleTimelineVideo | None:
+    """계약 §13 (v7.6.0) — 타임라인 씬 내레이션. narration 비면 None.
+
+    composer 의 timeline_flow.video 패스스루(src/timeline_flow.py)를 섹션과 같은
+    결정론 가드(캡·길이 warn·TTS gap warn)로 정리해 emit. 영상 쪽 기계 문장
+    폴백을 producer 대본으로 대체하는 채널 — 분기점 라벨 낭독 금지 등 작성
+    규칙의 1차 방어는 composer SYSTEM_PROMPT.
+    """
+    if not isinstance(video, dict):
+        return None
+    narration = _strs(video.get("narration"), _NARRATION_MAX_ITEMS)
+    if not narration:
+        return None
+    narration_tts = _strs(video.get("narration_tts"))
+    for s in narration:
+        if len(s) > _NARRATION_MAX_CHARS:
+            logger.warning(
+                "[bundle] §13 timeline.video: narration %d자 > %d자 한도 (영상에서 잘림): %r",
+                len(s), _NARRATION_MAX_CHARS, s,
+            )
+    _warn_tts_gap(narration, narration_tts, "timeline.video")
+    return BundleTimelineVideo(narration=narration, narration_tts=narration_tts)
 
 
 def _theme_tokens(theme_id: str, css_path: Path = _CSS_PATH) -> dict[str, str]:
@@ -416,6 +443,7 @@ def build_report_bundle(
         bundle_timeline = BundleTimeline(
             heading=tf.get("heading", ""),
             points=[BundleTimelinePoint(**p) for p in tf["points"]],
+            video=_timeline_video(tf.get("video")),  # 계약 §13 (v7.6.0)
         )
 
     return ReportBundle(

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.5.1
+last_synced_with: v7.6.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,39 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.6.0 — video 대본 작성 규칙 개정 + timeline.video (1차 음성 영상 검수 반영)
+
+첫 음성 합성 영상 (analysis_20260606_114653) 사람 검수 결과를 narration 생성
+규칙에 반영. 스키마 구조는 그대로, "쓰는 법" 이 바뀜 — 영상 쪽도 같은 검수로
+템플릿 문장·발음 사전·자막 폭을 수정한다.
+
+- **문체 — 축약 금지, 말하듯 풀어쓰기 (검수 최우선 지적: "너무 축약해서 대본이
+  써졌고 그걸 읽음")**: narration 은 자막용 요약문이 아니라 *성우가 읽는 구어체
+  대본*. 한 문장 한 정보, 명사 나열 대신 주어-동사 문장. **문장 한도 58→75자
+  완화** (풀어쓰기용, 자막 줄바꿈은 영상 쪽 처리 — 양측 합의값). 짧게 줄이려고
+  조사·서술어 삭제 금지. composer SYSTEM_PROMPT "★ 1차 음성 영상 검수 반영" 블록
+  + `bundle_builder._NARRATION_MAX_CHARS = 75`.
+- **날짜·시간 표현 — 콤마 나열 금지, 조사로 연결**: "{날짜}, {문장}" 금지 →
+  "{날짜}에는/{날짜}에 ~했습니다" ("실제로 1월에는 최대 100만 위성 규모를
+  신청했습니다").
+- **제목·라벨 낭독 금지**: 섹션·차트 제목, 타임라인 분기점 라벨은 화면이 이미
+  보여줌 — 내레이션은 그 내용을 *이야기* 로 푼다.
+- **(신규) `timeline.video` — 타임라인 씬 내레이션 (계약 §13 additive,
+  schema_version 1 유지)**: timeline 에 video 가 없어 영상 쪽이 기계 문장으로
+  메우던 것을 producer 대본으로 대체. composer 가 `timeline_flow.video`
+  (`{narration, narration_tts}`, 분기점들을 이야기로 잇는 3~4문장) emit →
+  `src/timeline_flow.py` 패스스루 → `bundle_builder._timeline_video` 결정론 가드
+  (≤4 캡 + 길이·TTS gap warn) → `BundleTimeline.video: BundleTimelineVideo`.
+- **narration_tts 발음 표기 강화 (검수 실사고 기준)**: ① 숫자는 *전부 한글로* +
+  자연 발음 단위 띄어쓰기 — "32개월"→"삼십이 개월" (붙이면 '개'에 강세), "7개"→
+  "일곱 개". ② 경음화 표기 — "해지권"→"해지꿘", "조건"→"조껀". ③ 영문 약어 한글
+  표기는 유지 (에스원·에프씨씨 — 잘 되고 있음). 대원칙: narration_tts 는 *한글로
+  받아쓴 발음 그대로*. SSOT `prompts/tts_narration_guide.md` §1/§2/§6 개정
+  (자가 체크리스트 §7 로 재번호) + composer 단축본 정합.
+- **불변**: 사실 근거 검증 (수치는 번들에 실재), highlights ≤40자, emphasis 정확한
+  부분 문자열 규칙 그대로. 회귀: `tests/test_report_bundle.py` 에 timeline.video
+  매핑/캡/warn + 75자 경계 3종 추가 (19 pass).
 
 ## v7.5.1 — 실데이터 목업 + CHART-AP-32 (sankey 라벨 수치 중복, 사용자 catch)
 

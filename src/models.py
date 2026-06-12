@@ -648,7 +648,8 @@ class ComposedSection(BaseModel):
     # 이 섹션이 브리핑 영상에 나오는 동안의 자막·음성 대본을 직접 emit.
     # 형식: {"narration": [str], "highlights": [str], "emphasis": [str],
     #        "narration_tts"?: [str]}.
-    #  - narration: 2~4문장, 한 문장 ≤58자 (자막 2줄 한도). 다큐 브리핑체.
+    #  - narration: 2~4문장, 한 문장 ≤75자 (v7.6.0 — 1차 음성 검수: 축약 금지·
+    #    말하듯 풀어쓰기 위해 58→75 완화, 자막 줄바꿈은 영상 쪽 처리). 구어체 대본.
     #  - highlights: 화면에 크게 띄울 key takeaway 1~3개 (문구, ≤40자).
     #  - emphasis: narration/highlights 안의 *정확한 부분 문자열* 만 — 영상에서
     #    액센트 색 강조. 불일치 항목은 bundle_builder 가 결정적으로 drop.
@@ -792,10 +793,13 @@ class ComposedReport(BaseModel):
     timeline_flow: dict | None = None
     """v5.5.2 — 시간 흐름도(감시 신호 직후 capstone)의 composer *선택적* 윤색.
     형식: {"heading"?: str, "past": [{date, label, note?}],
-           "future": [{date, label, note?, branch?}]}.
+           "future": [{date, label, note?, branch?}],
+           "video"?: {"narration": [str], "narration_tts"?: [str]}}.
     None/생략 시 결정론 backbone (context.timeline + watch_signals) 으로 조립.
     실제 렌더 데이터는 src/timeline_flow.py:build_timeline_flow 가 병합 (하이브리드).
     미래 분기는 *토픽이 받쳐줄 때만* (과신 금지) — 렌더는 점선/'예상' 라벨로 투사 표시.
+    "video" (v7.6.0, 계약 §13) 는 타임라인 씬 내레이션 — 분기점들을 이야기로 잇는
+    3~4문장 (라벨 낭독 금지). 없으면 영상 쪽이 기계 문장으로 폴백.
     """
 
     confidence_summary: str = ""
@@ -811,8 +815,8 @@ class ComposedReport(BaseModel):
 
     # v7.3.0 — 보고서 레벨 영상 내레이션 (osint_generator 계약 §13, additive).
     # 형식: {"intro_narration": [str], "outro_narration": [str]} — 각 1~2문장,
-    # 한 문장 ≤58자. intro=타이틀 씬(headline/deck 기반), outro=클로징 씬(closing
-    # 기반) 대본. None=영상 쪽이 기존 템플릿 오프닝/클로징 유지 (graceful).
+    # 한 문장 ≤75자 (v7.6.0). intro=타이틀 씬(headline/deck 기반), outro=클로징 씬
+    # (closing 기반) 대본. None=영상 쪽이 기존 템플릿 오프닝/클로징 유지 (graceful).
     video: dict | None = None
 
     @field_validator("video", mode="before")
@@ -1086,7 +1090,7 @@ class BundleSectionVideo(BaseModel):
     narration_tts 는 발음용 대체 배열 (자막=narration, 음성=narration_tts).
     """
 
-    narration: list[str] = Field(default_factory=list)       # 2~4문장, 문장 ≤58자
+    narration: list[str] = Field(default_factory=list)       # 2~4문장, 문장 ≤75자 (v7.6.0)
     highlights: list[str] = Field(default_factory=list)      # 1~3개, ≤40자
     emphasis: list[str] = Field(default_factory=list)        # 정확한 부분 문자열만
     narration_tts: list[str] = Field(default_factory=list)   # 선택 (비면 발음 사전 처리)
@@ -1234,12 +1238,26 @@ class BundleTimelinePoint(BaseModel):
     note: str = ""           # future: '감시'/'예상' 등 투사 라벨
 
 
+class BundleTimelineVideo(BaseModel):
+    """v7.6.0 — 타임라인 씬 내레이션 (계약 §13, additive — 1차 음성 검수 반영).
+
+    timeline 에 video 가 없어 영상 쪽이 기계 문장으로 메우던 것을 producer 대본으로
+    대체. narration 은 분기점들을 *이야기로 잇는* 3~4문장 — 분기점 라벨을 그대로
+    낭독하는 문장 금지 (라벨은 화면이 보여줌). narration_tts 는 섹션과 같은
+    표기용/발화용 분리 규칙 (SSOT: prompts/tts_narration_guide.md).
+    """
+
+    narration: list[str] = Field(default_factory=list)       # 3~4문장, 문장 ≤75자
+    narration_tts: list[str] = Field(default_factory=list)   # 선택 (비면 발음 사전 처리)
+
+
 class BundleTimeline(BaseModel):
     """v5.5.2 — 보고서 시간 척추 (과거→현재→미래). 영상 타임라인 세그먼트용.
     phase 가 confirmed-past vs projected-future 구분 (정직성)."""
 
     heading: str = ""
     points: list[BundleTimelinePoint] = Field(default_factory=list)
+    video: BundleTimelineVideo | None = None  # 계약 §13 (v7.6.0 additive) — 없으면 null
 
 
 class ReportBundle(BaseModel):

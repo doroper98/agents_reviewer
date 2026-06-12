@@ -281,6 +281,63 @@ def test_composed_video_normalization():
     assert rep.video == {"intro_narration": ["인트로."]}
 
 
+def test_timeline_video_mapping(caplog):
+    """§13 v7.6.0: timeline_flow.video → BundleTimeline.video (타임라인 씬 대본)."""
+    import logging
+    res = _make_result()
+    res.context.timeline = [{"date": "2025-09-27", "event": "협정", "impact": "x"}]
+    res.composed_report.timeline_flow = {
+        "video": {
+            "narration": ["이 일이 어떻게 시작됐는지, 처음부터 따라가 보겠습니다.",
+                          "다음 분기점은 9월 말로 예고된 공시입니다."],
+            "narration_tts": ["이 일이 어떻게 시작됐는지, 처음부터 따라가 보겠습니다.",
+                              "다음 분기점은 구월 말로 예고된 공시입니다."],
+        },
+    }
+    with caplog.at_level(logging.WARNING):
+        b = build_report_bundle(res)
+    assert b.timeline is not None and b.timeline.video is not None
+    assert len(b.timeline.video.narration) == 2
+    assert b.timeline.video.narration_tts[1].startswith("다음 분기점은 구월")
+    # tts 가 정확히 채워졌으므로 timeline.video gap warn 없음
+    assert not any("timeline.video" in r.message for r in caplog.records)
+    # 직렬화에 포함 (additive)
+    assert b.model_dump(mode="json")["timeline"]["video"]["narration"]
+
+
+def test_timeline_video_absent_caps_and_warn(caplog):
+    """§13 v7.6.0: 부재 시 null + narration ≤4 캡 + TTS gap warn."""
+    import logging
+    res = _make_result()
+    res.context.timeline = [{"date": "2025-09-27", "event": "협정", "impact": "x"}]
+    b = build_report_bundle(res)
+    assert b.timeline is not None and b.timeline.video is None
+    # 캡 + 위험 표기(숫자) 있는데 tts 누락 → warn
+    res.composed_report.timeline_flow = {
+        "video": {"narration": [f"{i + 1}번째 분기점을 지나갑니다." for i in range(6)]},
+    }
+    with caplog.at_level(logging.WARNING):
+        b2 = build_report_bundle(res)
+    assert b2.timeline.video is not None
+    assert len(b2.timeline.video.narration) == 4
+    assert any("timeline.video" in r.message for r in caplog.records)
+
+
+def test_narration_75_char_limit(caplog):
+    """§13 v7.6.0: 문장 한도 58→75 완화 — 60자대 문장은 warn 없이 통과, 75자 초과만 warn."""
+    import logging
+    from src.handoff.bundle_builder import _section_video
+    ok = "가" * 70 + "입니다."          # 74자 — v7.6.0 부터 합법
+    too_long = "가" * 73 + "입니다."    # 77자 — warn
+    with caplog.at_level(logging.WARNING):
+        _section_video({"narration": [ok]}, "s1")
+    assert not any("한도" in r.message for r in caplog.records)
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _section_video({"narration": [too_long]}, "s2")
+    assert any("75자 한도" in r.message for r in caplog.records)
+
+
 def test_bundle_reload_path():
     """/bundle 재emit: model_dump → model_validate → rebuild 동등."""
     res = _make_result()
