@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.5.0
+last_synced_with: v7.5.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.5.1 — 실데이터 목업 + CHART-AP-32 (sankey 라벨 수치 중복, 사용자 catch)
+
+- **실데이터 목업** — [samples/v7_5_realdata_mockup.html](samples/v7_5_realdata_mockup.html):
+  v7.5.0 신규 어휘 + sankey 를 전부 실제 공표치 (2026-06-12 수집) 로 채운 베이스라인.
+  combo=삼성전자 5개 분기 매출×영업이익률 (1Q25 79.1조/8.5% → 1Q26 133.9조/42.7%),
+  sankey=1Q26 부문 매출→비용/영업이익 (DS 81.7·DX 52.7·SDC 6.7·하만 3.8 → 영업이익
+  57.2), pyramid=한국갤럽 6월 2주 연령대별 직무 긍정/부정 (N=1,002), diverging_bar=
+  2022 국방백서 남북 상비병력 (128만 vs 50만), dot_matrix=통계청 2025.8 비정규직
+  38.2%, 지구본=평양 중심 노동 1,300km·화성-12 4,500km 사거리권 + 괌·앵커리지 위협축.
+  카드별 출처 라인 + 하단 출처 목록. 헤드리스 렌더 검증.
+- **CHART-AP-32 (사용자 보고 "실보고서 sankey 가 마음에 안 듦" → 목업 제작 중 재현)** —
+  sankey 노드 라벨에 수치를 박으면 렌더러 자동 합계와 *이중 표기* ('하만 3.8'+'3.8').
+  원인은 composer SYSTEM_PROMPT 의 구체 예 ('총매출 133.9조' 식) 가 가르친 라벨 문법.
+  픽스 이중화: ① `drawSankey` 결정적 dedup (라벨에 같은 수치 있으면 자동 값 생략,
+  value_label 은 존중) ② SYSTEM_PROMPT 예시를 '라벨은 이름만' 으로 교정. 갤러리
+  fixture 도 클린 문법으로. SSOT: [docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md) CHART-AP-32.
 
 ## v7.5.0 — 시각화 어휘 확장: 차트 4종 + 지구본 투영 + 사거리권 (사용자 요청, 식별→반영)
 

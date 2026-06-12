@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.0.2
+last_synced_with: v7.5.1
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1076,6 +1076,30 @@ composer 가 emit 한 line/candle/area 차트의 title 에서 instrument 매칭 
 
 **가드**: `tests/regression/test_ts_densify.py` 6케이스 (창 내 교체 / 확대 창 보존 /
 단축 표기 폴백 / 이벤트 보존 / candle OHLC / 불변 케이스).
+
+---
+
+## CHART-AP-32: sankey 노드 라벨의 수치 + 자동 값 라벨 중복 표기 (v7.5.1 신설, 사용자 catch)
+
+**증상**: 실보고서 sankey 노드에 같은 숫자가 두 번 — '하만 3.8' (라벨) 바로 아래
+'3.8' (렌더러 자동 합계). 사용자가 "목업 sankey 는 마음에 드는데 실보고서 sankey 는
+마음에 안 들었다" 로 보고 — 실데이터 목업 제작 중 재현.
+
+**원인**: `drawSankey` 는 노드 통과량(in/out 합)을 *자동으로* 보조행에 표기하는데,
+composer SYSTEM_PROMPT 의 sankey 구체 예가 'nodes=[총매출 133.9조 / ... / 영업이익
+57.2조]' 식으로 **라벨에 수치를 박도록** 가르쳤다 (갤러리 fixture 도 동일). LLM 이
+예시를 따르면 모든 노드가 이중 표기.
+
+**Fix (v7.5.1, 이중)**:
+1. 렌더러 결정적 가드 — 자동 값(`,.1f` 포맷 또는 정수형)이 라벨 문자열에 이미
+   포함돼 있으면 자동 값 라벨 생략. `value_label` 명시는 항상 존중.
+2. composer SYSTEM_PROMPT 구체 예를 '라벨은 이름만 + ★ 수치 박지 말 것' 으로 교정.
+   `value_label` 은 자동 수치를 *대체* 하므로 '마진 42.7%' 같은 *다른* 정보만,
+   수치도 함께 보이려면 '57.2 · 마진 42.7%' 처럼 직접 결합.
+
+**가드**: 위 1 의 렌더러 dedup 이 프롬프트 미준수(구 패턴 emit)도 흡수. 갤러리·실데이터
+목업 fixture 를 클린 문법으로 교정 (`samples/chart_gallery_v7.html`,
+`samples/v7_5_realdata_mockup.html`).
 
 ---
 

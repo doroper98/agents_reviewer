@@ -2267,9 +2267,16 @@
       // 라벨 — 첫 컬럼은 노드 왼쪽 / 마지막 컬럼은 노드 오른쪽 / 그 외는 위쪽.
       // accent 노드는 weight 700, 일반은 500 (이전 600 → 정류장 격하).
       const labelText = String(n.label || n.id);
-      const valueText = n.value_label || (n.outValue > 0
-        ? d3.format(',.1f')(n.outValue)
-        : (n.inValue > 0 ? d3.format(',.1f')(n.inValue) : ''));
+      // CHART-AP-32 — 라벨에 같은 수치가 이미 박혀 있으면 자동 값 라벨 생략.
+      // composer 가 'DS 81.7' 식으로 emit 하면 아래 자동 합계와 중복 표기
+      // ('하만 3.8' + '3.8') 되던 회귀의 결정적 가드. value_label 명시는 존중.
+      const autoVal = n.outValue > 0 ? d3.format(',.1f')(n.outValue)
+        : (n.inValue > 0 ? d3.format(',.1f')(n.inValue) : '');
+      const plainLabel = labelText.replace(/,/g, '');
+      const dupInLabel = autoVal && (
+        plainLabel.includes(autoVal.replace(/,/g, '')) ||
+        plainLabel.includes(String(+autoVal.replace(/,/g, ''))));
+      const valueText = n.value_label || (dupInLabel ? '' : autoVal);
       const isFirst = n.col === 0;
       const isLast = n.col === maxCol;
       const labelWeight = n.accent ? 700 : 500;
