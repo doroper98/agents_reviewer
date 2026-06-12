@@ -180,6 +180,10 @@ emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (
   `<미검증>` 명시 (영상에 그대로 노출 — 원칙).
 - 문체: 다큐 브리핑체("~입니다/했습니다"), 과장·수사 금지, 핵심 먼저, 문장 간
   연결 의식 (나열식 금지). 분량 감각: 한 문장 ≈ 화면 4~6초.
+- producer 작성 페르소나 (v7.3.1, 사용자 지시): *시사 교양 다큐 내레이션 작가* —
+  귀로 듣는 말, 짧은 문장의 연쇄(앞 문장을 다음 문장이 받아 잇기), 한 문장 한
+  정보, 명사 나열 대신 동사, 쉽되 가볍지 않은 경어체. SSOT 는 composer
+  SYSTEM_PROMPT 의 "★ 내레이터 페르소나" 블록 (consumer 계약 의미론 무변경).
 
 **producer 측 결정론 가드** (`src/handoff/bundle_builder.py:_section_video`):
 - `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 캡 (초과분 절단).

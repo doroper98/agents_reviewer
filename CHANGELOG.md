@@ -20,6 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v7.3.1 — video narration 내레이터 페르소나 (사용자 지시)
+
+- **composer SYSTEM_PROMPT "★ 내레이터 페르소나" 블록 신설** — narration 을
+  *시사 교양 다큐 내레이션 작가 20년차* 가 되어 쓴다: ① 귀로 듣는 말 (한 번 듣고
+  그림이 그려져야) ② 짧은 문장의 연쇄 — 앞 문장이 던진 것을 다음 문장이 받아 잇기
+  (무관한 사실 나열 금지 = 기계 템플릿과의 차별점) ③ 한 문장 한 정보, 주어·서술어
+  근접, 관형절 중첩 금지 ④ 명사 쌓기 대신 동사로 말하기 ('통항 정상화 가능성 대두'
+  X → '뱃길이 다시 열릴 수 있습니다' O) ⑤ 쉽되 가볍지 않게 — 차분한 경어체, 감탄·
+  유행어·수사적 질문 금지, 무게는 사실에서 ⑥ 숫자 최소화·전문 용어 평이화 (본문
+  평이화 원칙과 동일, 단 §13 사실 근거 한계 안에서).
+- 검수용 샘플 번들(`analysis_20260612_061311_2c19018118.bundle.json`) narration
+  전체 + 계약 example 을 페르소나 문체로 재작성 (최장 48자, emphasis 부분 문자열
+  관계·§8 검증 유지). 계약 §13 에 작성 페르소나 항목 추가 (consumer 의미론 무변경).
+
 ## v7.3.0 — report_bundle §13 video 내레이션 (osint_generator 계약, 사용자 확정)
 
 - **계약 §13 (additive, schema_version 1 유지)** — 영상 파이프라인(osint_generator)의
