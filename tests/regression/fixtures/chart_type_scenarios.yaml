@@ -18,9 +18,11 @@
 #   expected_chart_type — composer 가 emit 해야 할 type (id 와 동일하나 명시)
 #   negative_examples   — 헷갈리지만 *이 type 이 아닌* 시나리오 (decision tree 가드용)
 #
-# 21종 = production 20 chart types + 1 embedded_map (v5.3.0 에 모두 active).
+# 29종 = production 28 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
 # 7종 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall /
-# range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화.
+# range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화. v7.0.0 에서
+# bump / bullet / connected_scatter 3종, v7.5.0 에서 combo / diverging_bar /
+# pyramid / dot_matrix 4종 (이중 축 결합 + 사회 이슈 어휘) 추가.
 
 scenarios:
 
@@ -295,13 +297,61 @@ scenarios:
       - "시간 순서 없는 단면 비교 → scatter"
       - "3 변수 (size 의미) → bubble"
 
+  # ─────────────────────────────────────────────────────────────
+  # v7.5.0 신규 4종 (이중 축 결합 + 사회 이슈 어휘, guarded tier)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: combo
+    status: active
+    data_shape: "{bars: {label, unit, series}, line: {label, unit, series}} — 부피 시리즈 + 수준 시리즈"
+    scenario: "이중 축 막대+선 — 거래대금×지수, 미분양 건수×가격지수, 발행량×금리"
+    sample_prompt: "최근 코스피 거래대금과 지수가 같이 어떻게 움직였는지 분석해줘"
+    expected_chart_type: combo
+    negative_examples:
+      - "두 시리즈 모두 수준 (가격·지수·금리) → dual_line"
+      - "두 변수의 평면 궤적이 thesis → connected_scatter"
+      - "단일 시리즈 → line/area"
+
+  - id: diverging_bar
+    status: active
+    data_shape: "[{label, neg, pos}] 2~15행 — 0 공유 기준선의 대립 쌍 (양수 magnitude)"
+    scenario: "여론 찬/반, 동의/비동의, 인구 유입/유출, 수출/수입 — 사회 이슈·여론조사 기본 어휘"
+    sample_prompt: "연금 개혁안에 대한 세대별 찬반 여론 분석해줘"
+    expected_chart_type: diverging_bar
+    negative_examples:
+      - "부호 있는 단일 증감값 → bar"
+      - "두 값 사이 갭 (low<high) → range_bar"
+      - "5단계 리커트 척도 → stacked (이산 구성비)"
+
+  - id: pyramid
+    status: active
+    data_shape: "[{bracket, left, right}] 4~25행 — 연령대 × 두 집단 (젊은층부터)"
+    scenario: "인구 구조 — 고령화·저출산, 병력 구조, 서비스 이용자 연령×성별 분포"
+    sample_prompt: "한국 저출산 고령화가 인구 구조를 어떻게 바꿨는지 보여줘"
+    expected_chart_type: pyramid
+    negative_examples:
+      - "연령대 아닌 일반 카테고리 두 값 → range_bar 또는 diverging_bar"
+      - "단일 집단 연령 분포 → bar"
+      - "행 <4 → bar"
+
+  - id: dot_matrix
+    status: active
+    data_shape: "[{label, value, accent?}] 2~6 segment — 렌더러가 100칸 정규화"
+    scenario: "'100명 중 N명' 사회 통계 체감 — 비정규직 비율, 1인 가구, 무주택 가구, 빈곤율"
+    sample_prompt: "한국 노인 빈곤율이 OECD 에서 어떤 수준인지 체감되게 분석해줘"
+    expected_chart_type: dot_matrix
+    negative_examples:
+      - "기업 점유율 등 사람 단위 아닌 구성비 → donut"
+      - "segment ≥7 → bar"
+      - "시점 다중 구성비 → stacked"
+
 # ─────────────────────────────────────────────────────────────
 # 메타데이터 — test_chart_type_diversity.py 가 검증
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 25
-  active_count: 25     # production 활성 (v7.0.0) — 24 chart types + map (bump/bullet/connected_scatter 포함)
+  total_scenarios: 29
+  active_count: 29     # production 활성 (v7.5.0) — 28 chart types + map (combo/diverging_bar/pyramid/dot_matrix 포함)
   pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"

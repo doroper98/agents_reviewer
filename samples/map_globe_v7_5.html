@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="midnight_indigo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Globe V7.5 — 지구본 투영 + 사거리권 베이스라인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<!-- SSOT 참조 — 토큰/스타일을 복제하지 않고 본 repo 의 정본을 직접 링크.
+     GitHub Pages (repo 루트 배포) 기준 상대 경로. -->
+<link rel="stylesheet" href="../src/templates/report.css">
+<link rel="stylesheet" href="../src/templates/static/maps.css">
+<style>
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR', sans-serif; margin: 0; }
+.demo-head { max-width: 860px; margin: 0 auto; padding: 36px 18px 8px; }
+.demo-head h1 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 27px; margin: 0 0 8px; }
+.demo-head p { font-size: 13.5px; line-height: 1.7; color: var(--fg-2, var(--muted)); margin: 0 0 14px; }
+.demo-wrap { max-width: 860px; margin: 0 auto; padding: 10px 18px 80px; }
+</style>
+</head>
+<body>
+<div class="demo-head">
+  <h1>Map Globe V7.5 — 베이스라인</h1>
+  <p>maps.js 의 v7.5.0 additive 어휘 데모 — <code>projection: "globe"</code> (정사영 지구본,
+     드래그 = 회전 / 버튼 = 줌) + <code>rings</code> (사거리권·작전반경 동심원, kind
+     range/coverage). 호는 대권(great-circle) 측지선으로 렌더 — 탄도 궤적·항공로·위성 통과
+     경로·극지 토픽의 정본. fixture 는 가상의 미사일 사거리 시나리오 (예시 데이터).</p>
+</div>
+<div class="demo-wrap">
+  <div class="map-card">
+    <div class="map-controls">
+      <button type="button" data-map-zoom="in" aria-label="확대">＋</button>
+      <button type="button" data-map-zoom="out" aria-label="축소">−</button>
+      <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
+    </div>
+    <div id="freeform-map" class="map-stage"></div>
+    <script type="application/json" id="map-payload">
+    {
+      "projection": "globe",
+      "center": [128.0, 38.5],
+      "zoom": 2.4,
+      "markers": [
+        {"id": "pyongyang", "name": "평양", "lng": 125.75, "lat": 39.03, "highlight": true, "kind": "military", "label_side": "left"},
+        {"id": "seoul", "name": "서울", "lng": 126.98, "lat": 37.57},
+        {"id": "tokyo", "name": "도쿄", "lng": 139.69, "lat": 35.69},
+        {"id": "guam", "name": "괌 (앤더슨 기지)", "lng": 144.93, "lat": 13.58, "kind": "military", "value": "B-52 전개 거점"},
+        {"id": "anchorage", "name": "앵커리지", "lng": -149.9, "lat": 61.2}
+      ],
+      "arcs": [
+        {"from_id": "pyongyang", "to_id": "guam", "kind": "tension", "label": "IRBM 위협축", "label_t": 0.45},
+        {"from_id": "pyongyang", "to_id": "anchorage", "kind": "tension"},
+        {"from_id": "guam", "to_id": "seoul", "kind": "flow", "weight": 2, "label": "증원 전개"}
+      ],
+      "rings": [
+        {"from_id": "pyongyang", "radius_km": 1300, "label": "노동 사거리 1,300km", "kind": "range"},
+        {"from_id": "pyongyang", "radius_km": 4500, "label": "화성-12 사거리 4,500km", "kind": "range"},
+        {"from_id": "guam", "radius_km": 3000, "label": "전략폭격기 작전반경", "kind": "coverage"}
+      ],
+      "regions": [
+        {"name": "South Korea", "role": "subject"},
+        {"name": "North Korea", "role": "rival"},
+        {"name": "Japan", "role": "ally"}
+      ],
+      "sea_labels": [{"name": "태평양", "lng": 160.0, "lat": 22.0}],
+      "legend": [
+        {"label": "탄도미사일 사거리", "kind": "range"},
+        {"label": "작전반경", "kind": "coverage"},
+        {"label": "위협축", "kind": "tension"},
+        {"label": "전개 경로", "kind": "flow"}
+      ]
+    }
+    </script>
+    <div class="map-hint">드래그 = 지구본 회전 · 버튼 = 확대/축소</div>
+  </div>
+</div>
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script src="../src/templates/static/maps.js"></script>
+</body>
+</html>

@@ -29,8 +29,9 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="gal-head">
   <h1>Chart Gallery V7 — 베이스라인</h1>
-  <p>production charts.js 가 렌더하는 전 24종 fixture 갤러리 — 기존 13종 + FT/Economist 7종 +
-     v7.0.0 신규 3종 (bump / bullet / connected_scatter) + choropleth. (보고서당 1개의 embedded_map 은
+  <p>production charts.js 가 렌더하는 전 28종 fixture 갤러리 — 기존 13종 + FT/Economist 7종 + sankey +
+     v7.0.0 신규 3종 (bump / bullet / connected_scatter) + v7.5.0 신규 4종 (combo / diverging_bar /
+     pyramid / dot_matrix) + choropleth. (보고서당 1개의 embedded_map 은
      별도 채널 maps.js — 본 갤러리 범위 밖.) Track A 리디자인의 전·후 비교 기준 아티팩트
      (REFACTOR_V7_PLAN.md §1.5). 테마 버튼은 페이지를 다시 그려 SVG 색을 재적용한다.
      annotation 데모는 line / candle / bullet / scatter 카드 참조. line / candle 은 실보고서와 같은
@@ -120,7 +121,24 @@ var PAYLOADS = [
     data: [{label:'매출',value:133.9,target:128.0,ranges:[100,120,140]},{label:'영업이익',value:31.2,target:33.5,ranges:[20,28,36]},{label:'영업이익률(%)',value:23.3,target:26.2,ranges:[15,22,30]}],
     annotations: [{kind:'vline', x:128.0, label:'컨센서스 매출', sublabel:'128.0조'}] },
   { type: 'connected_scatter', title: '미 금리 × 원/달러 — 12개월 궤적', subtitle: '인하 국면 진입 후 원화 강세 경로', x_label: 'UST 10Y (%)', y_label: '원/달러',
-    data: [{x:4.6,y:1495,label:'25.7'},{x:4.5,y:1488},{x:4.4,y:1480},{x:4.3,y:1471},{x:4.2,y:1462,label:'첫 인하'},{x:4.0,y:1445},{x:3.9,y:1438},{x:3.8,y:1430},{x:3.7,y:1418},{x:3.6,y:1410},{x:3.5,y:1402,label:'26.6'}] }
+    data: [{x:4.6,y:1495,label:'25.7'},{x:4.5,y:1488},{x:4.4,y:1480},{x:4.3,y:1471},{x:4.2,y:1462,label:'첫 인하'},{x:4.0,y:1445},{x:3.9,y:1438},{x:3.8,y:1430},{x:3.7,y:1418},{x:3.6,y:1410},{x:3.5,y:1402,label:'26.6'}] },
+  /* ── v7.5.0 신규 4종 (이중 축 결합 + 사회 이슈 어휘) ── */
+  { type: 'combo', title: '코스피 거래대금 × 지수', subtitle: '거래대금 증가가 지수 상승을 동반', unit_line: '단위: 조원(막대) · pt(선) · 2026.1~2026.6',
+    data: { bars: {label:'거래대금', unit:'조원', series:[{x:'01',y:9.8},{x:'02',y:11.2},{x:'03',y:12.1},{x:'04',y:15.4},{x:'05',y:11.0},{x:'06',y:18.9}]},
+            line: {label:'코스피', unit:'pt', series:[{x:'01',y:2604},{x:'02',y:2655},{x:'03',y:2701},{x:'04',y:2748},{x:'05',y:2810},{x:'06',y:2948}]} },
+    annotations: [{kind:'vline', x:'04', label:'외국인 순매수 전환', sublabel:'2026-04'}],
+    source: 'KRX / 월간 집계 (예시 데이터)' },
+  { type: 'diverging_bar', title: '연금 개혁안 — 세대별 찬반', subtitle: '60대 이상에서만 찬성 우위', unit_line: '단위: %',
+    neg_label: '반대', pos_label: '찬성',
+    data: [{label:'20대',neg:48,pos:31},{label:'30대',neg:45,pos:36},{label:'40대',neg:41,pos:42},{label:'50대',neg:35,pos:49},{label:'60대 이상',neg:22,pos:61}],
+    source: '여론조사 (예시 데이터) / N=1,000' },
+  { type: 'pyramid', title: '한국 인구 구조 — 2026', subtitle: '40~50대가 가장 두꺼운 항아리형', unit_line: '단위: 만명',
+    left_label: '남', right_label: '여',
+    data: [{bracket:'0-9',left:166,right:158},{bracket:'10-19',left:232,right:219},{bracket:'20-29',left:310,right:283},{bracket:'30-39',left:351,right:330},{bracket:'40-49',left:405,right:392},{bracket:'50-59',left:428,right:421},{bracket:'60-69',left:381,right:397},{bracket:'70-79',left:201,right:243},{bracket:'80+',left:84,right:153}],
+    source: '통계청 (예시 데이터)' },
+  { type: 'dot_matrix', title: '임금근로자 100명 중 비정규직', subtitle: '셋 중 한 명꼴',
+    data: [{label:'비정규직',value:37,accent:true},{label:'정규직',value:63}],
+    source: '경제활동인구조사 (예시 데이터)' }
 ];
 
 // ── 카드 DOM 생성 (charts.js init 의 .chart-card-stage 스캔과 동일 계약) ──

@@ -954,6 +954,123 @@ class SankeyGuard(BaseModel):
         return self
 
 
+# --------------------------------------------------------------------------
+# v7.5.0 — 신규 4종 (이중 축 결합 + 사회 이슈 어휘, guarded tier)
+# --------------------------------------------------------------------------
+
+
+class ComboGuard(BaseModel):
+    """combo: 이중 축 막대+선 결합 (v7.5.0).
+
+    {bars: {label, unit, series: [{x, y}]}, line: {label, unit, series: [{x, y}]}}.
+    dual_line 은 선×선 — 한쪽 metric 이 부피·건수 성격 (거래량/체결 건수/재고)
+    이라 막대가 정직한 결합은 본 type. 막대 3~60 (밴드 폭 가독 한계), 선 ≤200.
+    """
+    bars: DualLineAxis
+    line: DualLineAxis
+
+    @model_validator(mode="after")
+    def validate_size(self) -> "ComboGuard":
+        if len(self.bars.series) < 3:
+            raise ValueError("combo bars.series 는 3 포인트 이상 — 그 미만은 bar")
+        if len(self.bars.series) > 60:
+            raise ValueError(
+                f"CHART-AP-7 가드: combo bars.series {len(self.bars.series)} "
+                f"포인트 — 60 초과는 밴드 폭 소실"
+            )
+        if len(self.line.series) > 200:
+            raise ValueError(
+                f"CHART-AP-7 가드: combo line.series {len(self.line.series)} "
+                f"포인트 — 200 초과는 line 가시성 손상"
+            )
+        return self
+
+
+class DivergingBarRow(BaseModel):
+    label: str = Field(min_length=1)
+    neg: float = Field(ge=0)
+    pos: float = Field(ge=0)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "DivergingBarRow":
+        for fld in ("neg", "pos"):
+            if not math.isfinite(getattr(self, fld)):
+                raise ValueError(
+                    f"CHART-AP-3 가드: diverging_bar {fld} NaN/inf — {self.label}"
+                )
+        if self.neg == 0 and self.pos == 0:
+            raise ValueError(
+                f"diverging_bar 행 '{self.label}' 의 neg/pos 가 둘 다 0 — 빈 행"
+            )
+        return self
+
+
+class DivergingBarGuard(BaseModel):
+    """diverging_bar: 대립 쌍 발산 막대 (v7.5.0 — 사회 이슈·여론 어휘).
+
+    [{label, neg, pos}] 2~15행 + payload 레벨 neg_label/pos_label.
+    찬성/반대, 동의/비동의, 유입/유출 — 0 을 공유 기준선으로 좌(neg)·우(pos)
+    발산. neg/pos 는 양수 magnitude (좌우 방향이 부호 역할). 부호 있는 단일
+    증감값은 bar — 두 *독립* 크기의 대립이 thesis 일 때만 본 type.
+    """
+    data: list[DivergingBarRow] = Field(min_length=2, max_length=15)
+
+
+class PyramidRow(BaseModel):
+    bracket: str = Field(min_length=1)
+    left: float = Field(ge=0)
+    right: float = Field(ge=0)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "PyramidRow":
+        for fld in ("left", "right"):
+            if not math.isfinite(getattr(self, fld)):
+                raise ValueError(
+                    f"CHART-AP-3 가드: pyramid {fld} NaN/inf — {self.bracket}"
+                )
+        return self
+
+
+class PyramidGuard(BaseModel):
+    """pyramid: 인구 피라미드 (v7.5.0 — 인구·연령 구조 어휘).
+
+    [{bracket, left, right}] 4~25행. 배열 순서 = 젊은층부터 (렌더러가 아래→위
+    적층). 고령화·저출산·병력 구조·이용자 연령 분포 등 *연령대 × 두 집단*
+    구조가 thesis 일 때. 값은 양수 (명/만명/%).
+    """
+    data: list[PyramidRow] = Field(min_length=4, max_length=25)
+
+
+class DotMatrixSegment(BaseModel):
+    label: str = Field(min_length=1)
+    value: float = Field(gt=0)
+    accent: bool = False
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "DotMatrixSegment":
+        if not math.isfinite(self.value):
+            raise ValueError(
+                f"CHART-AP-3 가드: dot_matrix value NaN/inf — {self.label}"
+            )
+        return self
+
+
+class DotMatrixGuard(BaseModel):
+    """dot_matrix: 100칸 와플 / 아이소타입 (v7.5.0 — 사회 통계 체감 어휘).
+
+    [{label, value, accent?}] 2~6 segment. 렌더러가 largest-remainder 로 정확히
+    100칸 배분 — value 는 % 든 절대값이든 합 > 0 이면 됨. donut 과 구분:
+    '100명 중 N명' 식 *사람·가구 단위 비율의 체감 전달* 이 thesis 일 때만.
+    """
+    data: list[DotMatrixSegment] = Field(min_length=2, max_length=6)
+
+
 # ─── Type → Guard 매핑 ────────────────────────────────────────────────
 
 
@@ -988,6 +1105,11 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "bump":         BumpChartGuard,
     "bullet":       BulletGuard,
     "connected_scatter": ConnectedScatterGuard,
+    # v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종
+    "combo":        ComboGuard,
+    "diverging_bar": DivergingBarGuard,
+    "pyramid":      PyramidGuard,
+    "dot_matrix":   DotMatrixGuard,
 }
 
 
@@ -1072,9 +1194,16 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "bump 는 {periods, items} dict 형식 필요"
+        elif chart_type == "combo":
+            # {bars: {label, unit, series}, line: {label, unit, series}}
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "combo 는 {bars, line} dict 형식 필요"
         else:
             # bar / line / donut / bubble / heatmap / choropleth / scatter /
-            # lollipop / waterfall / range_bar — list[dict]
+            # lollipop / waterfall / range_bar / diverging_bar / pyramid /
+            # dot_matrix — list[dict]
             if isinstance(data, list):
                 guard(data=data)  # type: ignore[arg-type]
             else:

@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v6.0.0
+last_synced_with: v7.5.0
 ssot_for:
   - "AI 에이전트 행동 규칙 (Execution Rules)"
   - "Change Propagation 매트릭스 (코드 변경 → 갱신할 문서)"
@@ -66,7 +66,7 @@ last_review: 2026-05-05
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
 - Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
-- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **23종 type** — v5.3.0 FT/Economist 7종 + v7.0.0 bump/bullet/connected_scatter 3종)
+- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **28종 type** — v5.3.0 FT/Economist 7종 + sankey + v7.0.0 bump/bullet/connected_scatter 3종 + v7.5.0 combo/diverging_bar/pyramid/dot_matrix 4종)
 - Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
 - Theme: **5종 풀 (라이트 1 + 다크 4, v6.2.0)** — editorial_cream(라이트) / burgundy_mono / midnight_indigo / pine_forest(짙은 녹색) / graphite_slate(짙은 회색). v5.0.2 부터 보고서마다 `random.choice` 로 선택 (event_type 무관, 시각 다양성 목적). 모든 테마는 *동일 레이아웃* — bg/card/text/accent 만 다름. SSOT 는 [src/lens_policy.py:ALL_THEMES](src/lens_policy.py) + [src/templates/report.css](src/templates/report.css) 의 `[data-theme="..."]` 블록. v6.2.0 에서 slate_steel / forest_sage / dusk_rose / paper_classic 4종 풀+CSS 삭제 (짙은 계열 중심 재편, 사용자 요청). legacy `light_mono` CSS 는 보존되었으나 풀에서 빠짐 — 직접 지정 시만 사용 가능.
 - Font: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. Noto Serif KR 한국어 폴백.
@@ -161,8 +161,8 @@ playbook §3 에 텍스트로 박는다. 부득이하면 `git add <file>` 직후
 
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
-- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **23종** (v7.0.0 부터). v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/network/waterfall) 비주얼 격상: 해치=명목 카테고리 전용, 위계=잉크 농도 사다리, 세리프 직접 라벨 (어휘 SSOT: [MONO_THEME_GUIDE §10](docs/MONO_THEME_GUIDE.md)). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar, v5.3.0) + **v7.0.0 신규 3종 (bump 순위경쟁 / bullet 목표대비 / connected_scatter 2변수 궤적)**. 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). v5.3.0 7종 + v7.0.0 3종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수. v7.0.0 부터 annotation 레이어(vline/hline/band/point, 차트당 ≤3 — AP-V7-6)가 cartesian 전 type 개방. 전 타입 갤러리 베이스라인: [samples/chart_gallery_v7.html](samples/chart_gallery_v7.html).
-- **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6).
+- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **28종** (v7.5.0 부터). v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/network/waterfall) 비주얼 격상: 해치=명목 카테고리 전용, 위계=잉크 농도 사다리, 세리프 직접 라벨 (어휘 SSOT: [MONO_THEME_GUIDE §10](docs/MONO_THEME_GUIDE.md)). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar, v5.3.0) + sankey (v5.3.0) + **v7.0.0 신규 3종 (bump 순위경쟁 / bullet 목표대비 / connected_scatter 2변수 궤적)** + **v7.5.0 신규 4종 (combo 이중축 막대+선 / diverging_bar 대립쌍 발산 / pyramid 인구 피라미드 / dot_matrix 100칸 와플 — 이중 축 결합 + 사회 이슈 어휘)**. 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). v5.3.0 7종 + v7.0.0 3종 + v7.5.0 4종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수. v7.0.0 부터 annotation 레이어(vline/hline/band/point, 차트당 ≤3 — AP-V7-6)가 cartesian 전 type 개방 (combo 포함). 전 타입 갤러리 베이스라인: [samples/chart_gallery_v7.html](samples/chart_gallery_v7.html).
+- **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6). v7.5.0 부터 `projection: "globe"` (정사영 지구본 — 대권 호, 탄도·위성·극지 토픽) + `rings` (사거리권·작전반경 동심원) additive 지원.
 - **폰트**: Noto Serif KR (숫자/타이틀), Noto Sans KR (라벨/본문/지도 라벨)
 - **색**: 큰 숫자에 액센트 색 금지 → `--text` 만 (mono guide §3.3)
 - **사선**: 45° 한 방향만. cross-hatch / 반대 방향 / 회전 패턴 안에 dash 모두 금지 (mono guide §6.1~6.3).
@@ -322,13 +322,15 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `src/state/models.py:EvidencePack.recommended_persona`, `AnalysisBrief.recommended_persona` 필드 삭제
 - `src/token_budget.py` 의 dead flag 6종 (`use_llm_quality_gate / use_llm_narrative_plan / use_llm_executive_summary / use_llm_visuals / use_llm_synthesis / use_legacy_personas`) 삭제. 본문 문체 SSOT 는 [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) 로 통합.
 
-## Chart System (v7.0.0)
+## Chart System (v7.5.0)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
-- **23종 type**:
+- **28종 type**:
   - 기존 13종 (v5.2.13 까지): bar / donut / line / gantt / network / stacked / bubble / heatmap / dual_line / forecast / choropleth / candle / area
   - v5.3.0 신규 7종 (FT/Economist 스타일, **guarded** tier): scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar
+  - v5.3.0 sankey (**guarded** tier — 재무 분해 / 자본 배분)
   - v7.0.0 신규 3종 (**guarded** tier, REFACTOR_V7_PLAN.md §1.3): bump (시기별 순위 경쟁) / bullet (목표 대비 실적) / connected_scatter (2변수 시간 경로)
-- **annotation 레이어 (v7.0.0 개방)**: `{kind: vline|hline|band|point}` 를 cartesian 전 type (기존 bar/line/gantt/bubble/dual_line/forecast + candle/area/scatter/stacked_area/lollipop/range_bar/bullet/connected_scatter) 이 지원. 차트당 ≤3 (AP-V7-6, `ComposedSection._drop_invalid_charts` 가 정제). 에디토리얼 헤더 `unit_line` (단위·기간 라인) 도 v7.0.0 additive.
+  - v7.5.0 신규 4종 (**guarded** tier — 이중 축 결합 + 사회 이슈 어휘): combo (이중 축 막대+선 — 부피·건수 × 수준) / diverging_bar (대립 쌍 발산 막대 — 찬반·유입유출, 사회 이슈·여론 SSOT) / pyramid (인구 피라미드 — 연령 × 두 집단) / dot_matrix (100칸 와플 — '100명 중 N명' 체감)
+- **annotation 레이어 (v7.0.0 개방)**: `{kind: vline|hline|band|point}` 를 cartesian 전 type (기존 bar/line/gantt/bubble/dual_line/forecast + candle/area/scatter/stacked_area/lollipop/range_bar/bullet/connected_scatter + v7.5.0 combo) 이 지원. 차트당 ≤3 (AP-V7-6, `ComposedSection._drop_invalid_charts` 가 정제). 에디토리얼 헤더 `unit_line` (단위·기간 라인) 도 v7.0.0 additive.
 - 각 차트는 `ComposedSection.charts: list[dict]` 의 dict 1개 — `{type, title, data, note?}`.
 - 렌더링: `freeform_essay.html` 이 chart-card SVG + inline JSON payload emit → `charts.js` 가 스캔/렌더 (mono guide §4 패턴 자동 적용).
 - **차트 type 결정 트리** — composer SYSTEM_PROMPT 의 결정 트리 (v5.3.0 신설). LLM 의 line/bar default bias 차단 (negative constraint 패턴).
@@ -337,7 +339,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
   ② 결정 트리 (SYSTEM_PROMPT)
   ③ method × exhibit 매트릭스 (`research_director.py:_DEFAULT_REQUIRED_EXHIBITS` — fault_tree→waterfall, pre_mortem→scatter)
   ④ 다양성 쿼터 (`deterministic_gate.py:chart_type_monotony` soft fail — standard ≥3 차트에 distinct <2 면 hold)
-  ⑤ 회귀 fixture (`tests/regression/fixtures/chart_type_scenarios.yaml` — 21 시나리오 SSOT, `KNOWN_CHART_TYPES` 와 1:1)
+  ⑤ 회귀 fixture (`tests/regression/fixtures/chart_type_scenarios.yaml` — 29 시나리오 SSOT, `KNOWN_CHART_TYPES` 와 1:1)
 - 신규 type 추가 절차: ① `charts.js` 의 `RENDERERS` dict 에 함수 추가 ② composer SYSTEM_PROMPT 의 type 별 data 스키마 섹션에 추가 ③ `src/visual/schemas.py` 의 `_TYPE_TO_GUARD` 에 가드 추가 ④ `docs/VISUAL_CAPABILITY_REGISTRY.yaml` 등록 ⑤ `src/visual/usage_log.py:KNOWN_CHART_TYPES` 추가 ⑥ `tests/regression/fixtures/chart_type_scenarios.yaml` 시나리오 추가 ⑦ 회귀 테스트.
 
 ## Market Data Fetcher (v5.2.0)
@@ -355,9 +357,10 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - Graceful degrade — sources 빈 list / 모든 URL 403·timeout / 네트워크 차단된 환경 / composer 가 자신 없어 사진 emit X 모두 보고서 정상 진행. `market_fetcher` 와 동일 패턴.
 - **주의**: 사용자에게 노출되는 *유일한 외부 이미지 출처*. 광고·placeholder·매체 보일러플레이트 사진이 박힐 위험 — composer `SYSTEM_PROMPT` 의 *선택 원칙 #3* (title 에 'logo' / 'newsletter' / 'subscribe' 만 있으면 emit X) 으로 차단하지만 100% 아님. 봇 본인 사용 목적이므로 저작권은 출처표기 (© Publisher) 로 갈음.
 
-## Map System (v7.2.0)
+## Map System (v7.5.0)
 - composer 가 `ComposedReport.embedded_map` 에 보고서당 1개 emit (지리적 사건일 때만).
 - **v7.2.0 어휘 확장 (additive — 무지정 payload 는 기존 렌더 동일)**: `arcs.kind`(flow 방향 화살촉+weight 1~3 굵기 / alt 우회 점선 / tension 하락색 ✕) + `arcs.label_t`, `markers.kind`(chokepoint ◆ / port ◎ / military ▲) + `value`(보조 수치 행) + `label_side`, `regions`(국가 역할 색조 subject/ally/rival/contested — world-atlas 영문명 매칭), `sea_labels`(세리프 워터마크), graticule·해안 정의선·라벨 pill/헤일로. 비교 목업: [samples/map_redesign_v7_compare.html](samples/map_redesign_v7_compare.html).
+- **v7.5.0 투영·어휘 확장 (additive)**: `projection: "globe"` — 정사영(orthographic) 지구본. 대권(great-circle) 경로가 휘지 않는 투영 — 탄도미사일 사거리·위성 통과·극항로·대양 횡단 공급망 등 *대륙 간 스케일* 토픽 전용 (지역 사건은 평면 유지). 드래그=회전·버튼=줌, arcs 는 측지선 렌더, v7.2.0 어휘 전부 동일 계약. + `rings: [{from_id|lng/lat, radius_km, label?, kind?}]` — 사거리권·작전반경·도달권 동심원 (d3.geoCircle, 평면·지구본 공통). kind `range`(위협·사거리, 하락색 점선 — 기본) / `coverage`(도달, 액센트 점선), ≤4개, radius_km 는 본문 근거 수치만 (WRITE-AP-5). 베이스라인: [samples/map_globe_v7_5.html](samples/map_globe_v7_5.html).
 - 베이스맵: d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl 의존 폐기.
 - 렌더링: `maps.js` 가 `#freeform-map` 컨테이너 + `#map-payload` 스크립트 읽어 SVG 그림.
 - mono guide §2.2: 외부 타일 서비스 / 글리프 PBF 호출 금지. world-atlas 한 번 fetch (~100KB) 후 캐시.

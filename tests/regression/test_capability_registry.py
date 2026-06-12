@@ -43,12 +43,15 @@ def test_registry_loads_without_error() -> None:
 
 
 def test_registry_distribution_matches_plan_9_3() -> None:
-    """v7.0.0 정본 분포 — safe 11 / guarded 13 / experimental 2 (총 26).
+    """v7.5.0 정본 분포 — safe 11 / guarded 17 / experimental 2 (총 30).
 
     v5.2.14 변경: Plan §9.3 의 원본 (safe 11 / guarded 3 / experimental 2 / 총 16)
     에서 FT/Economist 스타일 신규 7종을 guarded 로 추가 → guarded 10 / 총 23.
     v7.0.0 변경 (REFACTOR_V7_PLAN.md §1.3, 사용자 게이트 승인): bump / bullet /
     connected_scatter 3종을 guarded 로 추가 → guarded 13 / 총 26.
+    v7.5.0 변경 (사용자 요청 — 시각화 유형 확장): combo / diverging_bar /
+    pyramid / dot_matrix 4종 (이중 축 결합 + 사회 이슈 어휘) 을 guarded 로
+    추가 → guarded 17 / 총 30.
     신규 type 의 chart_critic 통과율이 충분히 측정되면 safe 승격 검토.
     """
     safe = list_safe_types()
@@ -57,9 +60,9 @@ def test_registry_distribution_matches_plan_9_3() -> None:
     total = list_all_types()
 
     assert len(safe) == 11, f"safe types: 11 expected, got {len(safe)}: {safe}"
-    assert len(guarded) == 13, f"guarded types: 13 expected, got {len(guarded)}: {guarded}"
+    assert len(guarded) == 17, f"guarded types: 17 expected, got {len(guarded)}: {guarded}"
     assert len(experimental) == 2, f"experimental types: 2 expected, got {len(experimental)}"
-    assert len(total) == 26, f"total: 26 expected, got {len(total)}"
+    assert len(total) == 30, f"total: 30 expected, got {len(total)}"
 
 
 def test_registry_safe_types_match_plan_9_3() -> None:
@@ -76,7 +79,7 @@ def test_registry_safe_types_match_plan_9_3() -> None:
 
 
 def test_registry_guarded_types_match_plan_9_3() -> None:
-    """v7.0.0 정본 — guarded 13종 (3 원본 + 7 FT/Economist + 3 V7 신규)."""
+    """v7.5.0 정본 — guarded 17종 (3 원본 + 7 FT/Economist + 3 V7 + 4 v7.5.0)."""
     expected_guarded = {
         "choropleth", "network", "sankey",
         # v5.2.14 — FT/Economist 스타일 신규 7종
@@ -84,6 +87,8 @@ def test_registry_guarded_types_match_plan_9_3() -> None:
         "small_multiples", "waterfall", "range_bar",
         # v7.0.0 — Track A 신규 3종 (REFACTOR_V7_PLAN.md §1.3)
         "bump", "bullet", "connected_scatter",
+        # v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종
+        "combo", "diverging_bar", "pyramid", "dot_matrix",
     }
     assert set(list_guarded_types()) == expected_guarded
 
@@ -99,9 +104,9 @@ def test_registry_distribution_section_consistent() -> None:
     reg = load_registry()
     declared = reg.get("distribution", {})
     assert declared.get("safe") == 11
-    assert declared.get("guarded") == 13
+    assert declared.get("guarded") == 17
     assert declared.get("experimental") == 2
-    assert reg.get("total") == 26
+    assert reg.get("total") == 30
 
 
 def test_each_capability_has_required_fields() -> None:

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.4.1
+last_synced_with: v7.5.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,40 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.5.0 — 시각화 어휘 확장: 차트 4종 + 지구본 투영 + 사거리권 (사용자 요청, 식별→반영)
+
+- **배경 (사용자 요청)** — "차트 유형에 더해 지도 유형·시각화 유형을 더 늘리자. 지구본
+  지도 (탄도미사일·위성 토픽), 사회 이슈 차트, 이중 축 차트 등 상황별 시각화 기법을
+  더 흡수. 식별 먼저, 그다음 반영."
+- **식별 카탈로그 (선정 7 + 보류)**:
+  - 선정 — 차트 4종 (guarded): `combo` (이중 축 막대+선 — 부피·건수 × 수준, dual_line
+    의 자매), `diverging_bar` (대립 쌍 발산 막대 — 찬반·동의/비동의·유입/유출, 사회
+    이슈·여론 기본 어휘), `pyramid` (인구 피라미드 — 연령 × 두 집단, 고령화·병력 구조),
+    `dot_matrix` (100칸 와플/아이소타입 — '100명 중 N명' 사회 통계 체감).
+  - 선정 — 지도 2종 (additive): `projection: "globe"` (정사영 지구본 — 대권 호가 직선,
+    탄도 궤적·위성 통과·극항로·대양 횡단 토픽. 드래그=회전, 버튼=줌), `rings`
+    (사거리권·작전반경·도달권 측지 동심원 — kind range/coverage, 평면·지구본 공통).
+  - 보류 (후속 게이트) — radar (다축 왜곡 논란), histogram/beeswarm (원시 관측치
+    파이프라인 부재), calendar heatmap, marimekko, ridgeline; chord/treemap 은 기존
+    experimental 등재 유지 (렌더러 없는 orphan — 도입 시 5-Layer 절차로); 지도는
+    azimuthal equidistant, proportional symbol (markers.value 로 부분 커버), hexbin.
+- **차트 wiring (7-step 전체)** — `charts.js` 렌더러 4종 (combo 는 annotation 레이어
+  지원, dot_matrix 는 largest-remainder 정확 100칸, pyramid 는 아래→위 적층 + 최대
+  행만 세리프 라벨, diverging_bar 는 waterfall 의 pos=액센트/neg=하락색 계약) +
+  composer SYSTEM_PROMPT (스키마 4종·emit 금지 규칙·결정 트리 분기 4개·사회 이슈
+  anti-bias 가드) + `schemas.py` 가드 4종 (`_TYPE_TO_GUARD` / combo dict 분기) +
+  `VISUAL_CAPABILITY_REGISTRY.yaml` (guarded 13→17, 총 26→30) +
+  `usage_log.py:KNOWN_CHART_TYPES` + `chart_type_scenarios.yaml` 시나리오 4종
+  (메타 25→29) + 회귀 테스트 11종 신규. 갤러리 베이스라인 4 fixture 추가.
+- **지도 wiring** — `maps.js` 에 `renderGlobe` (orthographic, land merge 2-path 라
+  드래그 재투영 저비용, 뒷면 마커/라벨 culling, 측지 arcs + 기존 kind 어휘 전부) +
+  `drawRings` / `renderLegend` (range/coverage 글리프) 공용화 + 평면 renderMap 에도
+  rings 연결. composer 지도 스키마에 projection/rings 추가 (radius_km 본문 근거
+  강제 — WRITE-AP-5). 무지정 payload 는 기존 렌더와 byte-equal (구 발행본 소급 안전).
+  베이스라인: `samples/map_globe_v7_5.html` (가상 사거리 시나리오).
+- 헤드리스 렌더 검증 — 신규 4종 차트 + 지구본 (회전·줌·사거리권) 스크린샷 확인.
+  전체 회귀 실패 목록은 변경 전후 동일 (환경 의존 기존 실패 67건, 신규 0).
 
 ## v7.4.1 — report.video 에도 TTS 발화 채널 (사용자 확정)
 

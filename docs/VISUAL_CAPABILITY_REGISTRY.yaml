@@ -201,6 +201,38 @@ visual_capabilities:
     added_in: v7_0_0
     notes: "2변수 시간 경로(궤적) — 시간 순서 4-30점. dual_line(두 축 분리)과 구분, 금리×환율 류."
 
+  # ─── v7.5.0 신규 4종 (이중 축 결합 + 사회 이슈 어휘) ─────────────────────
+  # 도입 시점 guarded — chart_critic 통과율 측정 후 safe 승격 검토 (v5.2.14 와
+  # 동일 정책). 모두 d3_custom.
+
+  combo:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [bars, line]
+    added_in: v7_5_0
+    notes: "이중 축 막대+선 — 부피·건수(막대, 좌축) × 수준(선, 우축). dual_line(선×선)과 구분. 막대 3-60."
+
+  diverging_bar:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, neg, pos]
+    added_in: v7_5_0
+    notes: "대립 쌍 발산 막대 (사회 이슈·여론) — 찬/반·유입/유출. neg/pos 양수 magnitude, 2-15행."
+
+  pyramid:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [bracket, left, right]
+    added_in: v7_5_0
+    notes: "인구 피라미드 — 연령대 × 두 집단. 4-25행, 입력 순서 = 젊은층부터."
+
+  dot_matrix:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [label, value]
+    added_in: v7_5_0
+    notes: "100칸 와플/아이소타입 — '100명 중 N명' 사회 통계 체감. 2-6 segment, largest-remainder 정규화."
+
   # ─── Tier — experimental (2종): 기본 forbidden, must_have 시만 ─────────
 
   chord:
@@ -237,6 +269,6 @@ visual_capabilities:
 # ─── 분포 (test_capability_registry 가 자동 검증) ─────────────────────────
 distribution:
   safe:         11
-  guarded:      13   # v5.2.14: 3 (choropleth/network/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter)
+  guarded:      17   # v5.2.14: 3 (choropleth/network/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix)
   experimental: 2
-total: 26
+total: 30

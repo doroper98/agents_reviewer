@@ -732,3 +732,110 @@ def test_composed_section_strips_empty_annotations_key() -> None:
         "annotations": ["전부", "무효"],
     }])
     assert "annotations" not in sec.charts[0]
+
+# ─────────────────────────────────────────────────────────────
+# v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종 (combo / diverging_bar /
+# pyramid / dot_matrix) 가드
+# ─────────────────────────────────────────────────────────────
+
+_COMBO_OK = {
+    "bars": {"label": "거래대금", "unit": "조원", "series": [
+        {"x": "03", "y": 12.1}, {"x": "04", "y": 15.4}, {"x": "05", "y": 11.0},
+        {"x": "06", "y": 18.9},
+    ]},
+    "line": {"label": "코스피", "unit": "pt", "series": [
+        {"x": "03", "y": 2701}, {"x": "04", "y": 2748}, {"x": "05", "y": 2810},
+        {"x": "06", "y": 2948},
+    ]},
+}
+
+
+def test_combo_guard_accepts_realistic() -> None:
+    ok, reason = validate_chart_data("combo", _COMBO_OK)
+    assert ok, reason
+
+
+def test_combo_guard_rejects_too_few_bars() -> None:
+    bad = {
+        "bars": {"label": "b", "series": [{"x": 1, "y": 1}, {"x": 2, "y": 2}]},
+        "line": {"label": "l", "series": [{"x": 1, "y": 1}, {"x": 2, "y": 2}]},
+    }
+    ok, _ = validate_chart_data("combo", bad)
+    assert not ok  # bars <3 — bar 로 대체해야
+
+
+def test_combo_guard_rejects_list_payload() -> None:
+    ok, reason = validate_chart_data("combo", [{"x": 1, "bar": 2, "line": 3}])
+    assert not ok
+    assert "dict" in reason
+
+
+def test_diverging_bar_guard_accepts_realistic() -> None:
+    ok, reason = validate_chart_data("diverging_bar", [
+        {"label": "20대", "neg": 41.0, "pos": 35.0},
+        {"label": "30대", "neg": 38.0, "pos": 40.0},
+        {"label": "60대 이상", "neg": 22.0, "pos": 61.0},
+    ])
+    assert ok, reason
+
+
+def test_diverging_bar_guard_rejects_negative_and_single_row() -> None:
+    ok, _ = validate_chart_data("diverging_bar", [
+        {"label": "a", "neg": -5.0, "pos": 10.0},
+        {"label": "b", "neg": 3.0, "pos": 4.0},
+    ])
+    assert not ok  # neg/pos 는 양수 magnitude — 좌우 방향이 부호
+    ok, _ = validate_chart_data("diverging_bar", [{"label": "a", "neg": 1.0, "pos": 2.0}])
+    assert not ok  # 1행 — 대립 쌍 비교가 아님
+
+
+def test_diverging_bar_guard_rejects_all_zero_row() -> None:
+    ok, _ = validate_chart_data("diverging_bar", [
+        {"label": "a", "neg": 0, "pos": 0},
+        {"label": "b", "neg": 3.0, "pos": 4.0},
+    ])
+    assert not ok
+
+
+def test_pyramid_guard_accepts_realistic() -> None:
+    ok, reason = validate_chart_data("pyramid", [
+        {"bracket": "0-9", "left": 180.0, "right": 171.0},
+        {"bracket": "10-19", "left": 232.0, "right": 219.0},
+        {"bracket": "20-29", "left": 340.0, "right": 308.0},
+        {"bracket": "30-39", "left": 351.0, "right": 330.0},
+        {"bracket": "40-49", "left": 405.0, "right": 392.0},
+    ])
+    assert ok, reason
+
+
+def test_pyramid_guard_rejects_too_few_brackets_and_nan() -> None:
+    rows = [{"bracket": f"b{i}", "left": 1.0, "right": 2.0} for i in range(3)]
+    ok, _ = validate_chart_data("pyramid", rows)
+    assert not ok  # <4행 — 피라미드 형태가 아님
+    rows = [{"bracket": f"b{i}", "left": 1.0, "right": 2.0} for i in range(4)]
+    rows[0]["left"] = float("nan")
+    ok, _ = validate_chart_data("pyramid", rows)
+    assert not ok
+
+
+def test_dot_matrix_guard_accepts_realistic() -> None:
+    ok, reason = validate_chart_data("dot_matrix", [
+        {"label": "비정규직", "value": 37.0, "accent": True},
+        {"label": "정규직", "value": 63.0},
+    ])
+    assert ok, reason
+
+
+def test_dot_matrix_guard_rejects_nonpositive_and_too_many() -> None:
+    ok, _ = validate_chart_data("dot_matrix", [
+        {"label": "a", "value": 0}, {"label": "b", "value": 10.0},
+    ])
+    assert not ok  # value 는 양수만
+    segs = [{"label": f"s{i}", "value": 10.0} for i in range(7)]
+    ok, _ = validate_chart_data("dot_matrix", segs)
+    assert not ok  # 2~6 segment 한정
+
+
+def test_dot_matrix_guard_rejects_single_segment() -> None:
+    ok, _ = validate_chart_data("dot_matrix", [{"label": "전체", "value": 100.0}])
+    assert not ok

@@ -51,6 +51,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "sankey",
     # v7.0.0 — Track A 신규 3종 (REFACTOR_V7_PLAN.md §1.3)
     "bump", "bullet", "connected_scatter",
+    # v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종
+    "combo", "diverging_bar", "pyramid", "dot_matrix",
     # embedded_map (별도 채널)
     "map",
 )

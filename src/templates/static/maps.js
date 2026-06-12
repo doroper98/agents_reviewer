@@ -10,6 +10,14 @@
  *   기존 렌더와 동일 (구 발행본 소급 안전). + graticule·해안 정의선·라벨 pill/헤일로.
  *   해당 지역이 화면에 안 잡히는 보고서에서는 둘 다 자동으로 사라짐 —
  *   "지도 = 보고서 주제와 정합" 원칙.
+ * v7.5.0: 투영·어휘 확장 (additive, 무지정 payload 는 기존 렌더 동일).
+ *   - projection: "globe" — 정사영(orthographic) 지구본. 대권(great-circle)
+ *     경로가 직선으로 보이는 투영 — 탄도 궤적·항공로·위성 통과·극지 토픽의
+ *     정본. 드래그 = 회전, 컨트롤 버튼 = 줌(스케일). arcs 는 측지선으로 렌더.
+ *   - rings: [{from_id|lng/lat, radius_km, label?, kind?}] — 사거리권·작전
+ *     반경·도달권 동심원 (d3.geoCircle, 평면·지구본 공통). kind:
+ *     range(위협·사거리, 하락색 긴 점선 — 기본) / coverage(도달·커버리지,
+ *     액센트 짧은 점선).
  *
  * 데이터 입력: <script type="application/json" id="map-payload">
  *   { center: [lng, lat], zoom: float,
@@ -79,6 +87,139 @@
     return `M${p1[0]},${p1[1]} Q${cx},${cy} ${p2[0]},${p2[1]}`;
   }
 
+  // v7.2.0 regions 역할 색조 표 — 평면·지구본 공통 (contested 해치 패턴 id 만 다름).
+  function roleStyles(t, contestedUrl) {
+    return {
+      subject:   { fill: t.accent, op: 0.20 },
+      ally:      { fill: t.text,   op: 0.10 },
+      rival:     { fill: t.down,   op: 0.16 },
+      contested: { fill: contestedUrl, op: null },
+    };
+  }
+
+  // v7.2.0 마커 글리프 (kind 별) — 평면·지구본 공통. 라벨 배치용 반지름 r 반환.
+  function appendMarkerGlyph(g, kind, isHL, t) {
+    const color = isHL ? t.accent : t.muted;
+    let r;
+    if (kind === 'chokepoint') {
+      // 병목 지점 — ◆ + 이중 링 (해협·운하·관문)
+      r = 8;
+      g.append('circle').attr('r', 11).attr('fill', 'none')
+        .attr('stroke', t.accent).attr('stroke-opacity', 0.4).attr('stroke-width', 1);
+      g.append('rect').attr('x', -5).attr('y', -5).attr('width', 10).attr('height', 10)
+        .attr('transform', 'rotate(45)').attr('fill', t.accent)
+        .attr('stroke', t.water).attr('stroke-width', 1.2);
+    } else if (kind === 'port') {
+      // 항만·터미널 — 이중 원
+      r = isHL ? 6.5 : 5;
+      g.append('circle').attr('r', r).attr('fill', t.water)
+        .attr('stroke', color).attr('stroke-width', 1.6);
+      g.append('circle').attr('r', isHL ? 2.6 : 2).attr('fill', color);
+    } else if (kind === 'military') {
+      // 군사 거점 — ▲
+      r = 6;
+      g.append('path').attr('d', 'M 0 -6 L 5.5 4 L -5.5 4 Z')
+        .attr('fill', t.text).attr('fill-opacity', 0.85)
+        .attr('stroke', t.water).attr('stroke-width', 1);
+    } else {
+      // 무지정/city — 기존 점 렌더와 동일 (구 발행본 소급 안전)
+      r = isHL ? 6 : 4;
+      g.append('circle').attr('r', r + 2).attr('fill', t.water).attr('opacity', 0.85);
+      g.append('circle').attr('r', r).attr('fill', color)
+        .attr('stroke', t.text).attr('stroke-width', isHL ? 1.0 : 0.6)
+        .attr('vector-effect', 'non-scaling-stroke');
+    }
+    return r;
+  }
+
+  // v7.5.0 — rings: 사거리권·작전반경·도달권 동심원. d3.geoCircle 이 측지 원을
+  // 만들어 메르카토르·정사영 모두에서 정확 (1° ≈ 111.32km). isFront 는 지구본
+  // 의 뒷면 라벨 차단용 (평면은 null).
+  function drawRings(g, path, projection, payload, markersById, t, isFront) {
+    (payload.rings || []).forEach(rg => {
+      if (!rg) return;
+      let c = null;
+      if (rg.from_id && markersById[rg.from_id]) {
+        c = [+markersById[rg.from_id].lng, +markersById[rg.from_id].lat];
+      } else if (rg.lng != null && rg.lat != null) {
+        c = [+rg.lng, +rg.lat];
+      }
+      const rkm = +rg.radius_km;
+      if (!c || !isFinite(c[0]) || !isFinite(c[1]) || !isFinite(rkm) || rkm <= 0) return;
+      const deg = Math.min(89, rkm / 111.32);
+      const circle = d3.geoCircle().center(c).radius(deg)();
+      const kind = String(rg.kind || 'range').toLowerCase();
+      const color = kind === 'coverage' ? t.accent : t.down;
+      g.append('path').datum(circle).attr('d', path)
+        .attr('fill', color).attr('fill-opacity', 0.05)
+        .attr('stroke', color).attr('stroke-width', 1.1)
+        .attr('stroke-dasharray', kind === 'coverage' ? '2,3' : '7,4')
+        .attr('stroke-opacity', 0.85)
+        .attr('vector-effect', 'non-scaling-stroke');
+      if (!rg.label) return;
+      const topPt = [c[0], Math.min(89, c[1] + deg)];
+      if (isFront && !isFront(topPt[0], topPt[1])) return;
+      const p = projection(topPt);
+      if (!p) return;
+      const tw = String(rg.label).length * 10 + 14;
+      const pill = g.append('g').attr('class', 'arc-pill')
+        .attr('transform', `translate(${p[0]},${p[1] - 10})`)
+        .attr('data-px', p[0]).attr('data-py', p[1] - 10);
+      pill.append('rect').attr('x', -tw / 2).attr('y', -10).attr('width', tw)
+        .attr('height', 16).attr('rx', 8)
+        .attr('fill', t.water).attr('fill-opacity', 0.82)
+        .attr('stroke', color).attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
+      pill.append('text').attr('x', 0).attr('y', 2).attr('text-anchor', 'middle')
+        .attr('fill', color).attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 10).attr('font-weight', 600)
+        .text(rg.label);
+    });
+  }
+
+  // 범례 — 평면·지구본 공통. zoom 영향 안 받게 svg 직속.
+  function renderLegend(svg, payload, t, H) {
+    if (!payload.legend || !payload.legend.length) return;
+    const lg = svg.append('g').attr('class', 'legend')
+      .attr('transform', `translate(12, ${H - 12 - payload.legend.length * 16})`);
+    payload.legend.forEach((l, i) => {
+      const y = i * 16;
+      const color = l.highlight ? t.accent : t.muted;
+      if (l.kind === 'flow') {
+        lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+          .attr('stroke', t.accent).attr('stroke-width', 3)
+          .attr('marker-end', 'url(#map-arrow)');
+      } else if (l.kind === 'alt') {
+        lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+          .attr('stroke', t.muted).attr('stroke-width', 1.4).attr('stroke-dasharray', '7,5');
+      } else if (l.kind === 'tension') {
+        lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+          .attr('stroke', t.down).attr('stroke-width', 1.3).attr('stroke-dasharray', '2,4');
+      } else if (l.kind === 'chokepoint') {
+        lg.append('rect').attr('x', 5).attr('y', y + 1).attr('width', 8).attr('height', 8)
+          .attr('transform', `rotate(45 9 ${y + 5})`).attr('fill', t.accent);
+      } else if (l.kind === 'military') {
+        lg.append('path').attr('d', `M 9 ${y - 1} L 14 ${y + 9} L 4 ${y + 9} Z`)
+          .attr('fill', t.text).attr('fill-opacity', 0.85);
+      } else if (l.kind === 'range' || l.kind === 'coverage') {
+        // v7.5.0 — 사거리권/커버리지 동심원 견본
+        lg.append('circle').attr('cx', 9).attr('cy', y + 5).attr('r', 6)
+          .attr('fill', 'none')
+          .attr('stroke', l.kind === 'coverage' ? t.accent : t.down)
+          .attr('stroke-width', 1.2)
+          .attr('stroke-dasharray', l.kind === 'coverage' ? '2,2' : '4,3');
+      } else if (l.kind === 'line') {
+        lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
+          .attr('stroke', color).attr('stroke-width', l.highlight ? 2.4 : 1.6)
+          .attr('stroke-dasharray', l.highlight ? null : '5,3');
+      } else {
+        lg.append('circle').attr('cx', 9).attr('cy', y + 5).attr('r', l.highlight ? 5 : 3.5)
+          .attr('fill', color).attr('stroke', t.text).attr('stroke-width', 0.6);
+      }
+      lg.append('text').attr('x', 24).attr('y', y + 9).attr('fill', t.text)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10).text(l.label);
+    });
+  }
+
   function renderMap(container, payload) {
     const t = readTheme(container);
     const W = 720, H = 380;
@@ -125,6 +266,7 @@
     // v4.4.6: 모든 콘텐츠를 단일 g 안에 — d3.zoom() transform 적용 대상.
     const gContent = svg.append('g').attr('class', 'map-content');
     const gMap = gContent.append('g').attr('class', 'map-base');
+    const gRing = gContent.append('g').attr('class', 'rings');
     const gArc = gContent.append('g').attr('class', 'arcs');
     const gMarker = gContent.append('g').attr('class', 'markers');
     const gLabel = gContent.append('g').attr('class', 'labels');
@@ -161,12 +303,7 @@
 
       // v7.2.0 — regions: 국가 역할 색조 (subject/ally/rival/contested).
       // composer 가 명시 emit 한 국가만 (CHART-AP-14/15 원칙 유지).
-      const ROLE = {
-        subject:   { fill: t.accent, op: 0.20 },
-        ally:      { fill: t.text,   op: 0.10 },
-        rival:     { fill: t.down,   op: 0.16 },
-        contested: { fill: 'url(#map-contested)', op: null },
-      };
+      const ROLE = roleStyles(t, 'url(#map-contested)');
       (payload.regions || []).forEach(rg => {
         if (!rg || !rg.name) return;
         const feat = countries.features.find(f =>
@@ -210,6 +347,8 @@
       renderBase(world);
 
       const markersById = Object.fromEntries((payload.markers || []).map(m => [m.id, m]));
+      // v7.5.0 — 사거리권·작전반경 동심원 (베이스맵 위·경로 아래)
+      drawRings(gRing, path, projection, payload, markersById, t, null);
       // v7.2.0 — 선 굵기 사다리 (weight 1~3 = 물동량·중요도)
       const ARC_WEIGHT = { 1: 1.2, 2: 2.1, 3: 3.2 };
       const usedArcKinds = new Set();
@@ -317,43 +456,12 @@
         const p = project(+m.lng, +m.lat);
         if (!p) return;
         const isHL = !!m.highlight;
-        const color = isHL ? t.accent : t.muted;
         const kind = String(m.kind || '').toLowerCase();
         const g = gMarker.append('g').attr('class', 'marker')
           .attr('transform', `translate(${p[0]},${p[1]})`)
           .attr('data-px', p[0]).attr('data-py', p[1]);
-        let r;
-        if (kind === 'chokepoint') {
-          // 병목 지점 — ◆ + 이중 링 (해협·운하·관문)
-          usedMarkerKinds.add('chokepoint');
-          r = 8;
-          g.append('circle').attr('r', 11).attr('fill', 'none')
-            .attr('stroke', t.accent).attr('stroke-opacity', 0.4).attr('stroke-width', 1);
-          g.append('rect').attr('x', -5).attr('y', -5).attr('width', 10).attr('height', 10)
-            .attr('transform', 'rotate(45)').attr('fill', t.accent)
-            .attr('stroke', t.water).attr('stroke-width', 1.2);
-        } else if (kind === 'port') {
-          // 항만·터미널 — 이중 원
-          usedMarkerKinds.add('port');
-          r = isHL ? 6.5 : 5;
-          g.append('circle').attr('r', r).attr('fill', t.water)
-            .attr('stroke', color).attr('stroke-width', 1.6);
-          g.append('circle').attr('r', isHL ? 2.6 : 2).attr('fill', color);
-        } else if (kind === 'military') {
-          // 군사 거점 — ▲
-          usedMarkerKinds.add('military');
-          r = 6;
-          g.append('path').attr('d', 'M 0 -6 L 5.5 4 L -5.5 4 Z')
-            .attr('fill', t.text).attr('fill-opacity', 0.85)
-            .attr('stroke', t.water).attr('stroke-width', 1);
-        } else {
-          // 무지정/city — 기존 점 렌더와 동일 (구 발행본 소급 안전)
-          r = isHL ? 6 : 4;
-          g.append('circle').attr('r', r + 2).attr('fill', t.water).attr('opacity', 0.85);
-          g.append('circle').attr('r', r).attr('fill', color)
-            .attr('stroke', t.text).attr('stroke-width', isHL ? 1.0 : 0.6)
-            .attr('vector-effect', 'non-scaling-stroke');
-        }
+        if (kind) usedMarkerKinds.add(kind);
+        const r = appendMarkerGlyph(g, kind, isHL, t);
         markerPositions.push({ m, px: p[0], py: p[1], r, isHL, gNode: g.node() });
       });
       const sorted = markerPositions.slice().sort((a, b) => (b.isHL ? 1 : 0) - (a.isHL ? 1 : 0));
@@ -418,41 +526,8 @@
       });
     });
 
-    // 범례는 zoom 영향 받지 않게 svg 직속.
-    if (payload.legend && payload.legend.length) {
-      const lg = svg.append('g').attr('class', 'legend')
-        .attr('transform', `translate(12, ${H - 12 - payload.legend.length * 16})`);
-      payload.legend.forEach((l, i) => {
-        const y = i * 16;
-        const color = l.highlight ? t.accent : t.muted;
-        if (l.kind === 'flow') {
-          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
-            .attr('stroke', t.accent).attr('stroke-width', 3)
-            .attr('marker-end', 'url(#map-arrow)');
-        } else if (l.kind === 'alt') {
-          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
-            .attr('stroke', t.muted).attr('stroke-width', 1.4).attr('stroke-dasharray', '7,5');
-        } else if (l.kind === 'tension') {
-          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
-            .attr('stroke', t.down).attr('stroke-width', 1.3).attr('stroke-dasharray', '2,4');
-        } else if (l.kind === 'chokepoint') {
-          lg.append('rect').attr('x', 5).attr('y', y + 1).attr('width', 8).attr('height', 8)
-            .attr('transform', `rotate(45 9 ${y + 5})`).attr('fill', t.accent);
-        } else if (l.kind === 'military') {
-          lg.append('path').attr('d', `M 9 ${y - 1} L 14 ${y + 9} L 4 ${y + 9} Z`)
-            .attr('fill', t.text).attr('fill-opacity', 0.85);
-        } else if (l.kind === 'line') {
-          lg.append('line').attr('x1', 0).attr('y1', y + 5).attr('x2', 18).attr('y2', y + 5)
-            .attr('stroke', color).attr('stroke-width', l.highlight ? 2.4 : 1.6)
-            .attr('stroke-dasharray', l.highlight ? null : '5,3');
-        } else {
-          lg.append('circle').attr('cx', 9).attr('cy', y + 5).attr('r', l.highlight ? 5 : 3.5)
-            .attr('fill', color).attr('stroke', t.text).attr('stroke-width', 0.6);
-        }
-        lg.append('text').attr('x', 24).attr('y', y + 9).attr('fill', t.text)
-          .attr('font-family', 'Noto Sans KR').attr('font-size', 10).text(l.label);
-      });
-    }
+    // 범례는 zoom 영향 받지 않게 svg 직속 (v7.5.0 — renderLegend 로 공용화).
+    renderLegend(svg, payload, t, H);
     // CHART-AP-15: 소말릴란드 범례 자동 추가 제거.
 
     // v4.4.6 — d3.zoom() 인터랙션. transform 은 gContent 에만 적용.
@@ -477,7 +552,8 @@
         gArc.selectAll('text[data-arc-label]')
           .attr('font-size', 10 / k);
         // v7.2.0 — arc 라벨 pill 은 마커처럼 그룹째 카운터-스케일
-        gArc.selectAll('.arc-pill').each(function () {
+        // (v7.5.0 — rings 의 pill 도 포함되도록 gContent 범위로 확장)
+        gContent.selectAll('.arc-pill').each(function () {
           const sel = d3.select(this);
           const px = +sel.attr('data-px'), py = +sel.attr('data-py');
           sel.attr('transform', `translate(${px},${py}) scale(${1 / k})`);
@@ -505,6 +581,296 @@
           else if (op === 'reset') svg.transition().duration(280).call(zoomBehavior.transform, d3.zoomIdentity);
         });
       });
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // v7.5.0 — 지구본 (orthographic) 렌더. payload.projection === "globe".
+  // 대권(great-circle) 경로가 휘지 않고 보이는 투영 — 탄도 궤적·항공로·위성
+  // 통과 경로·극지 토픽의 정본. 드래그 = 회전 (재투영 redraw), 컨트롤 버튼 =
+  // 줌(스케일). 어휘 (arcs.kind / markers.kind / regions / sea_labels / rings)
+  // 는 평면 지도와 동일 계약. 베이스는 land merge + borders mesh 2 path 라
+  // 드래그 중 재투영 비용이 낮다.
+  // ───────────────────────────────────────────────────────────
+  function renderGlobe(container, payload) {
+    const t = readTheme(container);
+    const W = 720, H = 380;
+    container.innerHTML = '';
+    const svg = d3.select(container).append('svg')
+      .attr('width', '100%').attr('height', '100%')
+      .attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('preserveAspectRatio', 'xMidYMid meet')
+      .style('display', 'block');
+
+    const defs = svg.append('defs');
+    defs.append('marker').attr('id', 'map-arrow').attr('viewBox', '0 0 10 10')
+      .attr('refX', 8).attr('refY', 5).attr('markerWidth', 5.5).attr('markerHeight', 5.5)
+      .attr('orient', 'auto-start-reverse')
+      .append('path').attr('d', 'M 0 1 L 9 5 L 0 9 Z').attr('fill', t.accent);
+    defs.append('pattern').attr('id', 'map-contested').attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 5).attr('height', 5).attr('patternTransform', 'rotate(45)')
+      .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 5)
+      .attr('stroke', t.accent).attr('stroke-width', 1).attr('stroke-opacity', 0.5);
+
+    const center = payload.center || [0, 0];
+    const baseScale = H / 2 - 16;
+    // 평면의 zoom(3.0 안팎) 의미가 다름 — 지구본은 완화 매핑 (1=반구 전체).
+    const k0 = Math.max(1, Math.min(3, (payload.zoom || 2) / 2));
+    let k = k0;
+    const projection = d3.geoOrthographic()
+      .translate([W / 2, H / 2]).clipAngle(90)
+      .scale(baseScale * k)
+      .rotate([-center[0], -center[1], 0]);
+    const path = d3.geoPath(projection);
+
+    const gBase = svg.append('g').attr('class', 'globe-base');
+    const gDyn = svg.append('g').attr('class', 'globe-dyn');
+    const markersById = Object.fromEntries((payload.markers || []).map(m => [m.id, m]));
+    let landMerged = null, bordersMesh = null, regionFeats = [];
+
+    function isFront(lng, lat) {
+      const r = projection.rotate();
+      return d3.geoDistance([+lng, +lat], [-r[0], -r[1]]) < Math.PI / 2 - 0.02;
+    }
+
+    function draw() {
+      gBase.selectAll('*').remove();
+      gDyn.selectAll('*').remove();
+      // 구체 (물) + 윤곽 + graticule
+      gBase.append('path').datum({ type: 'Sphere' }).attr('d', path)
+        .attr('fill', t.water)
+        .attr('stroke', t.boundary).attr('stroke-opacity', 0.4).attr('stroke-width', 0.8);
+      gBase.append('path').datum(d3.geoGraticule10()).attr('d', path)
+        .attr('fill', 'none')
+        .attr('stroke', t.text).attr('stroke-opacity', 0.05).attr('stroke-width', 0.5);
+      if (landMerged) {
+        gBase.append('path').datum(landMerged).attr('d', path).attr('fill', t.land);
+        gBase.append('path').datum(landMerged).attr('d', path).attr('fill', 'none')
+          .attr('stroke', t.boundary).attr('stroke-width', 0.5).attr('stroke-opacity', 0.35);
+      }
+      if (bordersMesh) {
+        gBase.append('path').datum(bordersMesh).attr('d', path).attr('fill', 'none')
+          .attr('stroke', t.boundary).attr('stroke-width', 0.6).attr('stroke-opacity', 0.6);
+      }
+      // regions 역할 색조 (composer 명시 emit 만 — CHART-AP-14/15)
+      const ROLE = roleStyles(t, 'url(#map-contested)');
+      regionFeats.forEach(({ feat, rg }) => {
+        const d = path(feat);
+        if (!d) return;  // 전부 뒷면이면 path 가 빈 문자열/null
+        const role = ROLE[String(rg.role || 'ally').toLowerCase()] || ROLE.ally;
+        const rp = gBase.append('path').attr('d', d).attr('fill', role.fill);
+        if (role.op != null) rp.attr('fill-opacity', role.op);
+        rp.attr('stroke', role.fill === 'url(#map-contested)' ? t.accent : role.fill)
+          .attr('stroke-opacity', 0.5).attr('stroke-width', 0.7);
+        if (rg.label) {
+          const c = path.centroid(feat);
+          if (isFinite(c[0]) && isFinite(c[1])) {
+            gBase.append('text').attr('x', c[0]).attr('y', c[1]).attr('text-anchor', 'middle')
+              .attr('font-family', 'IBM Plex Sans KR, Noto Sans KR').attr('font-size', 10)
+              .attr('letter-spacing', 2).attr('font-weight', 600)
+              .attr('fill', String(rg.role) === 'rival' ? t.down : t.text)
+              .attr('fill-opacity', 0.75)
+              .text(rg.label);
+          }
+        }
+      });
+      // sea_labels — 앞면만
+      (payload.sea_labels || []).forEach(sl => {
+        if (!sl || !sl.name || !isFront(+sl.lng, +sl.lat)) return;
+        const p = projection([+sl.lng, +sl.lat]);
+        if (!p) return;
+        gBase.append('text').attr('x', p[0]).attr('y', p[1]).attr('text-anchor', 'middle')
+          .attr('font-family', 'Newsreader, Noto Serif KR, serif')
+          .attr('font-style', 'italic').attr('font-size', 15).attr('letter-spacing', 5)
+          .attr('fill', t.text).attr('fill-opacity', 0.30)
+          .text(sl.name);
+      });
+      // rings — 사거리권·작전반경 (clipAngle 이 뒷면을 잘라준다)
+      drawRings(gDyn, path, projection, payload, markersById, t, isFront);
+      // arcs — 대권 측지선 (LineString 을 geoPath 가 great-circle 보간 + 클립)
+      const ARC_WEIGHT = { 1: 1.2, 2: 2.1, 3: 3.2 };
+      (payload.arcs || []).forEach(a => {
+        const f = markersById[a.from_id], to = markersById[a.to_id];
+        if (!f || !to) return;
+        const geo = { type: 'LineString', coordinates: [[+f.lng, +f.lat], [+to.lng, +to.lat]] };
+        const d = path(geo);
+        if (!d) return;
+        const kind = String(a.kind || '').toLowerCase();
+        const g = gDyn.append('g').attr('class', 'arc');
+        let labelColor;
+        if (kind === 'flow') {
+          const sw = ARC_WEIGHT[a.weight] || 2.1;
+          g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', t.water).attr('stroke-width', sw + 2.6).attr('stroke-opacity', 0.65);
+          g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', t.accent).attr('stroke-width', sw).attr('stroke-opacity', 0.95)
+            .attr('marker-end', 'url(#map-arrow)');
+          labelColor = t.accent;
+        } else if (kind === 'alt') {
+          g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', t.muted)
+            .attr('stroke-width', Math.max(1.2, (ARC_WEIGHT[a.weight] || 1.6) - 0.4))
+            .attr('stroke-dasharray', '7,5').attr('stroke-opacity', 0.9);
+          labelColor = t.muted;
+        } else if (kind === 'tension') {
+          const tp = g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', t.down).attr('stroke-width', 1.3)
+            .attr('stroke-dasharray', '2,4').attr('stroke-opacity', 0.85);
+          try {
+            const node = tp.node();
+            const mid = node.getPointAtLength(node.getTotalLength() / 2);
+            [[-1, -1, 1, 1], [-1, 1, 1, -1]].forEach(seg => {
+              g.append('line')
+                .attr('x1', mid.x + seg[0] * 4).attr('y1', mid.y + seg[1] * 4)
+                .attr('x2', mid.x + seg[2] * 4).attr('y2', mid.y + seg[3] * 4)
+                .attr('stroke', t.down).attr('stroke-width', 1.8)
+                .attr('stroke-linecap', 'round');
+            });
+          } catch (e) { /* getPointAtLength 미지원 — 글리프만 생략 */ }
+          labelColor = t.down;
+        } else {
+          const color = a.highlight ? t.accent : t.muted;
+          g.append('path').attr('d', d).attr('fill', 'none')
+            .attr('stroke', color).attr('stroke-width', a.highlight ? 2.4 : 1.6)
+            .attr('stroke-dasharray', a.highlight ? null : '5,3').attr('opacity', 0.9);
+          labelColor = color;
+        }
+        if (a.label) {
+          let pt = null;
+          try {
+            const node = g.select('path').node();
+            const L = node.getTotalLength();
+            if (L > 4) pt = node.getPointAtLength(L * (a.label_t != null ? +a.label_t : 0.5));
+          } catch (e) { /* 클립으로 빈 path — 라벨 생략 */ }
+          if (pt) {
+            const tw = String(a.label).length * 10 + 14;
+            const pill = gDyn.append('g')
+              .attr('transform', `translate(${pt.x},${pt.y - 13})`);
+            pill.append('rect').attr('x', -tw / 2).attr('y', -10).attr('width', tw)
+              .attr('height', 16).attr('rx', 8)
+              .attr('fill', t.water).attr('fill-opacity', 0.82)
+              .attr('stroke', labelColor).attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
+            pill.append('text').attr('x', 0).attr('y', 2).attr('text-anchor', 'middle')
+              .attr('fill', labelColor).attr('font-family', 'Noto Sans KR')
+              .attr('font-size', 10).attr('font-weight', 600)
+              .text(a.label);
+          }
+        }
+      });
+      // markers — 앞면만 + 라벨 (occupancy 충돌 회피, label_side 힌트 존중)
+      const labelOcc = (function () {
+        const taken = [];
+        return {
+          hits: (x, y, w, h) => taken.some(b =>
+            x < b.x + b.w && x + w > b.x && y < b.y + b.h && y + h > b.y),
+          add: (x, y, w, h) => taken.push({ x, y, w, h }),
+        };
+      })();
+      const positions = [];
+      (payload.markers || []).forEach(m => {
+        if (!isFront(+m.lng, +m.lat)) return;
+        const p = projection([+m.lng, +m.lat]);
+        if (!p) return;
+        const isHL = !!m.highlight;
+        const kind = String(m.kind || '').toLowerCase();
+        const g = gDyn.append('g').attr('class', 'marker')
+          .attr('transform', `translate(${p[0]},${p[1]})`);
+        const r = appendMarkerGlyph(g, kind, isHL, t);
+        positions.push({ m, px: p[0], py: p[1], r, isHL });
+      });
+      positions.sort((a, b) => (b.isHL ? 1 : 0) - (a.isHL ? 1 : 0));
+      positions.forEach(({ m, px, py, r, isHL }) => {
+        if (!m.name) return;
+        const text = String(m.name);
+        const fontSize = 11, labelW = text.length * 6.8, labelH = fontSize + 2;
+        const SIDE = {
+          right:  { x: px + r + 6,          y: py - labelH / 2 },
+          left:   { x: px - r - 6 - labelW, y: py - labelH / 2 },
+          top:    { x: px - labelW / 2,     y: py - r - 14 },
+          bottom: { x: px - labelW / 2,     y: py + r + 4 },
+        };
+        let candidates = [SIDE.right, SIDE.left, SIDE.top, SIDE.bottom];
+        const hint = SIDE[String(m.label_side || '').toLowerCase()];
+        if (hint) candidates = [hint, ...candidates.filter(c => c !== hint)];
+        let placed = null;
+        for (const c of candidates) {
+          if (!labelOcc.hits(c.x - 2, c.y - 2, labelW + 4, labelH + 4)) { placed = c; break; }
+        }
+        if (!placed) placed = candidates[0];
+        gDyn.append('text').attr('x', placed.x).attr('y', placed.y + labelH - 3)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', fontSize)
+          .attr('font-weight', isHL ? 700 : 500).attr('fill', t.text)
+          .attr('stroke', t.water).attr('stroke-width', 3).attr('paint-order', 'stroke')
+          .text(text);
+        labelOcc.add(placed.x - 2, placed.y - 2, labelW + 4, labelH + 4);
+        if (m.value) {
+          const vy = placed.y + labelH + 9;
+          gDyn.append('text').attr('x', placed.x).attr('y', vy)
+            .attr('font-family', 'Noto Serif KR, serif').attr('font-size', 9.5)
+            .attr('fill', isHL ? t.accent : t.muted)
+            .attr('stroke', t.water).attr('stroke-width', 3).attr('paint-order', 'stroke')
+            .text(String(m.value));
+          labelOcc.add(placed.x - 2, vy - 10, String(m.value).length * 6.2 + 4, 12);
+        }
+      });
+    }
+
+    draw();  // world 로딩 전에도 구체·graticule 먼저
+    loadWorld().then(world => {
+      if (world) {
+        landMerged = topojson.merge(world, world.objects.countries.geometries);
+        bordersMesh = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+        const countries = topojson.feature(world, world.objects.countries).features;
+        regionFeats = (payload.regions || []).map(rg => {
+          if (!rg || !rg.name) return null;
+          const feat = countries.find(f => f.properties && f.properties.name === rg.name);
+          return feat ? { feat, rg } : null;
+        }).filter(Boolean);
+      }
+      draw();
+    });
+
+    // 드래그 = 회전 (줌 클수록 미세하게)
+    const drag = d3.drag()
+      .on('start', () => container.classList.add('dragging'))
+      .on('end', () => container.classList.remove('dragging'))
+      .on('drag', (event) => {
+        const r = projection.rotate();
+        const s = 90 / (baseScale * k);  // deg/px — 반구 절반 드래그 ≈ 90° 회전
+        projection.rotate([
+          r[0] + event.dx * s,
+          Math.max(-89, Math.min(89, r[1] - event.dy * s)),
+          0,
+        ]);
+        draw();
+      });
+    svg.call(drag);
+
+    // 컨트롤 버튼 — in/out = 스케일, reset = 초기 회전 + 스케일
+    const card = container.closest('.map-card');
+    if (card) {
+      card.querySelectorAll('[data-map-zoom]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const op = btn.getAttribute('data-map-zoom');
+          if (op === 'in') k = Math.min(6, k * 1.4);
+          else if (op === 'out') k = Math.max(0.8, k / 1.4);
+          else { k = k0; projection.rotate([-center[0], -center[1], 0]); }
+          projection.scale(baseScale * k);
+          draw();
+        });
+      });
+    }
+
+    renderLegend(svg, payload, t, H);
+  }
+
+  // v7.5.0 — projection 디스패치. 무지정/평면은 기존 renderMap 그대로.
+  function renderAny(container, payload) {
+    if (String(payload.projection || '').toLowerCase() === 'globe') {
+      renderGlobe(container, payload);
+    } else {
+      renderMap(container, payload);
     }
   }
 
@@ -562,14 +928,14 @@
     // IntersectionObserver 가 있으면 viewport 진입 시 렌더 + 애니메이션.
     // 미지원 브라우저는 backward-compat 즉시 렌더 (애니메이션 X).
     if (!window.IntersectionObserver) {
-      renderMap(container, payload);
+      renderAny(container, payload);
       return;
     }
     const io = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         io.unobserve(container);
-        renderMap(container, payload);
+        renderAny(container, payload);
         // renderMap 은 fetch (TopoJSON) 까지 포함 → fetch 끝나면 SVG 안착.
         // 추가 setTimeout 으로 안착 보장 후 애니메이션.
         setTimeout(() => _applyMapEntryAnimation(container), 50);
