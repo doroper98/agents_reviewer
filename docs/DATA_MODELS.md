@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v6.1.1
+last_synced_with: v7.3.0
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -10,6 +10,8 @@ last_review: 2026-05-26
 
 <!-- v5.5.5: ComposedSection 에 footnotes: list[{term, explanation}] 추가 (전문
      용어 문단 하단 주석 — 일반 독자 우선 최우선 가치). WRITE-AP-10. -->
+<!-- v7.3.0: ComposedSection.video + ComposedReport.video 추가 (영상 자막·음성
+     대본 — osint_generator 계약 §13). 번들 매핑은 §5.5 참조. -->
 <!-- v5.5.1: ComposedReport 에 contradictions_heading: str 추가 (모순 섹션 동적
      제목, composer emit, 비면 '쟁점과 판단' fallback). WRITE-AP-9. -->
 <!-- v5.5.2: ComposedReport.timeline_flow: dict|None (시간 흐름도 composer 윤색,
@@ -374,8 +376,8 @@ V5 의 `DraftReport` 는 v4.5.7 의 `ComposedReport` 와 *역할 일부 중복* 
 ```
 ReportBundle
 ├─ producer        BundleProducer (system, version, mode)
-├─ report          BundleReport (report_id, headline, deck, closing, html_url, theme→BundleTheme)
-├─ sections[]      BundleSection (chart_refs / map_ref / image_refs / claim_refs — §8 resolve)
+├─ report          BundleReport (report_id, headline, deck, closing, html_url, theme→BundleTheme, video?→BundleReportVideo [v7.3.0 §13])
+├─ sections[]      BundleSection (chart_refs / map_ref / image_refs / claim_refs — §8 resolve, video?→BundleSectionVideo [v7.3.0 §13])
 ├─ charts[]        BundleChart (type, data=schemas.py shape, display [v6.1.1 strip|full], provenance→BundleProvenance, prerendered_svg)
 ├─ map?            BundleMap (id, center, zoom, markers, arcs, legend, provenance)
 ├─ claims[]        BundleClaim (status, evidence→BundleEvidence)   ← v5.5.0 라이브 경로엔 빈 list
@@ -392,6 +394,12 @@ ReportBundle
   배치를 구분하는 축. composed chart 의 `role=='compact'` → `"strip"`, 그 외 → `"full"`.
   렌더러(`freeform_essay.html` 의 `ch.role=='compact'` 분기)와 동일 규칙. 항상 존재(기본 `"full"`).
 - **참조 무결성** `ReportBundle._validate_refs_and_ids` (계약 §8).
+- **`video` (v7.3.0, 계약 §13 additive)**: 영상 자막·음성 대본. composer 가
+  `ComposedSection.video` / `ComposedReport.video` 로 emit → 빌더의 결정적 가드
+  (`_section_video`: emphasis 부분 문자열 검증 drop, narration ≤4 / highlights ≤3 캡,
+  58/40자 한도는 warn-only) 를 거쳐 `BundleSectionVideo`(narration/highlights/emphasis/
+  narration_tts) + `BundleReportVideo`(intro_narration/outro_narration) 로 매핑.
+  부재 시 `null` — consumer(osint_generator) 는 기존 템플릿 동작 유지.
 
 ## 6. Out of scope
 

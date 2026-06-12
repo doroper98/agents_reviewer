@@ -39,7 +39,9 @@ from src.models import (
     BundleProducer,
     BundleProvenance,
     BundleReport,
+    BundleReportVideo,
     BundleSection,
+    BundleSectionVideo,
     BundleSignal,
     BundleSource,
     BundleTheme,
@@ -56,6 +58,74 @@ logger = logging.getLogger(__name__)
 _CSS_PATH = Path(__file__).resolve().parent.parent / "templates" / "report.css"
 _TOKEN_NAMES = ("bg", "card", "text", "muted", "accent", "up", "down", "border")
 _MARKET_CHART_TYPES = ("candle", "line", "area")
+
+# 계약 §13 — 영상 자막 한도 (consumer 가 초과분을 … 로 자르므로 producer 는 warn).
+_NARRATION_MAX_CHARS = 58
+_HIGHLIGHT_MAX_CHARS = 40
+_NARRATION_MAX_ITEMS = 4
+_HIGHLIGHT_MAX_ITEMS = 3
+_REPORT_NARRATION_MAX_ITEMS = 2
+
+
+def _strs(items, cap: int | None = None) -> list[str]:
+    out = [s.strip() for s in (items or []) if isinstance(s, str) and s.strip()]
+    return out[:cap] if cap else out
+
+
+def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | None:
+    """계약 §13 — composer 의 섹션 video emit → BundleSectionVideo (결정론 가드).
+
+    - narration ≤4 / highlights ≤3 캡 (초과분 절단).
+    - emphasis 는 narration/highlights 안의 *정확한 부분 문자열* 만 보존 — 불일치
+      항목은 drop (consumer 액센트 매칭이 어차피 실패하므로 emit 전에 정리).
+    - 길이 한도(58/40자) 초과는 drop 하지 않고 warn (consumer 가 … 로 자름 — 정보
+      파괴보다 graceful 절단이 낫다. 1차 방어는 composer SYSTEM_PROMPT).
+    - narration/highlights 둘 다 비면 None (= video 부재, consumer 기존 동작).
+    """
+    if not isinstance(video, dict):
+        return None
+    narration = _strs(video.get("narration"), _NARRATION_MAX_ITEMS)
+    highlights = _strs(video.get("highlights"), _HIGHLIGHT_MAX_ITEMS)
+    if not narration and not highlights:
+        return None
+    narration_tts = _strs(video.get("narration_tts"))
+    haystack = narration + highlights
+    emphasis: list[str] = []
+    for e in _strs(video.get("emphasis")):
+        if any(e in h for h in haystack):
+            emphasis.append(e)
+        else:
+            logger.warning(
+                "[bundle] §13 %s: emphasis %r 가 narration/highlights 의 부분 문자열이 아님 — drop",
+                section_id, e,
+            )
+    for s in narration:
+        if len(s) > _NARRATION_MAX_CHARS:
+            logger.warning(
+                "[bundle] §13 %s: narration %d자 > %d자 한도 (영상에서 잘림): %r",
+                section_id, len(s), _NARRATION_MAX_CHARS, s,
+            )
+    for s in highlights:
+        if len(s) > _HIGHLIGHT_MAX_CHARS:
+            logger.warning(
+                "[bundle] §13 %s: highlight %d자 > %d자 한도 (영상에서 잘림): %r",
+                section_id, len(s), _HIGHLIGHT_MAX_CHARS, s,
+            )
+    return BundleSectionVideo(
+        narration=narration, highlights=highlights,
+        emphasis=emphasis, narration_tts=narration_tts,
+    )
+
+
+def _report_video(video: dict | None) -> BundleReportVideo | None:
+    """계약 §13 — 보고서 레벨 intro/outro 내레이션. 둘 다 비면 None."""
+    if not isinstance(video, dict):
+        return None
+    intro = _strs(video.get("intro_narration"), _REPORT_NARRATION_MAX_ITEMS)
+    outro = _strs(video.get("outro_narration"), _REPORT_NARRATION_MAX_ITEMS)
+    if not intro and not outro:
+        return None
+    return BundleReportVideo(intro_narration=intro, outro_narration=outro)
 
 
 def _theme_tokens(theme_id: str, css_path: Path = _CSS_PATH) -> dict[str, str]:
@@ -190,6 +260,7 @@ def build_report_bundle(
         closing=(composed.closing if composed else ""),
         html_url=html_url or result.report_url or "",
         theme=theme,
+        video=_report_video(composed.video if composed else None),  # 계약 §13
     )
 
     sections: list[BundleSection] = []
@@ -228,6 +299,7 @@ def build_report_bundle(
                 map_ref=None,        # 계약 §10 — v5.5.0 은 null
                 image_refs=[],       # v5.5.0 — 이미지 ref 는 fast-follow
                 claim_refs=[],       # v5.5.0 — claims[] 비어있음
+                video=_section_video(sec.video, f"s{i + 1}"),  # 계약 §13 (v7.3.0)
             ))
 
     bundle_map = None

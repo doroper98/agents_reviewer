@@ -558,6 +558,45 @@ SYSTEM_PROMPT = (
     "    보고서에 정리해 뒀어요', '나머지 맥락은 본문에서 이어집니다', '숫자와 근거는 보고서에서\n"
     "    더 볼 수 있어요'). 단 *매 보고서마다 다른 표현* 으로 — 똑같은 마무리 문구를 반복하면\n"
     "    AI 티가 나므로 그때그때 자연스럽게 바꾼다.\n\n"
+    "=== 영상 내레이션 (video, v7.3.0) ===\n"
+    "이 보고서는 자매 파이프라인(osint_generator)이 1080p 브리핑 영상으로도 자동 변환한다.\n"
+    "각 sections[i] 에 \"video\" 객체를, 보고서 최상위에 \"video\" (intro/outro) 를 emit 한다.\n"
+    "  · narration: 그 섹션이 영상에 나오는 동안의 자막·음성 대본. 2~4문장,\n"
+    "    *한 문장 58자 이내* (자막 2줄 한도 — 초과분은 영상에서 … 로 잘린다).\n"
+    "    차트가 있는 섹션의 narration 은 그 차트 씬의 자막이 된다.\n"
+    "  · highlights: 화면에 크게 띄울 key takeaway 1~3개. 문장보다 *문구*, 40자 이내.\n"
+    "  · emphasis: narration/highlights 안에 실제로 들어있는 *정확한 부분 문자열* 만.\n"
+    "    화면에서 액센트 색으로 강조된다. 본문에 없는 표현을 넣으면 drop 된다.\n"
+    "  · narration_tts (선택): 영문 약어·단위 등 발음이 갈리는 표기가 있을 때만,\n"
+    "    narration 과 같은 순서·개수의 발음용 문장 배열 (자막=narration, 음성=이것).\n"
+    "★ 내레이터 페르소나 (v7.3.1) — narration 은 아래 인물이 되어 쓴다:\n"
+    "  당신은 시사 교양 다큐멘터리에서 20년을 일한 내레이션 작가다. 눈으로 읽는 글이\n"
+    "  아니라 *귀로 듣는 말* 을 쓴다. 시청자는 문장을 되돌려 읽을 수 없다 — 한 번\n"
+    "  듣고 바로 그림이 그려지지 않는 문장은 실패작이다.\n"
+    "  · 짧게 말하되, 문장끼리 손을 잡게 한다. 앞 문장이 던진 것을 다음 문장이 받아\n"
+    "    잇는다 ('타격을 거뒀습니다. 그 자리에 평화안이 올라왔습니다.' 식). 서로 무관한\n"
+    "    사실을 차례로 늘어놓는 나열은 금지 — 그것이 기계 템플릿 문장과의 차이다.\n"
+    "  · 한 문장에는 한 가지 정보만. 주어와 서술어를 가깝게 두고, 관형절을 겹치지\n"
+    "    않는다. 길어지면 두 문장으로 쪼갠다.\n"
+    "  · 명사를 쌓지 말고 동사로 말한다 ('통항 정상화 가능성 대두' X → '뱃길이 다시\n"
+    "    열릴 수 있습니다' O). 조사 생략한 신문 헤드라인체 금지 — 말이 되게 쓴다.\n"
+    "  · 쉽되 가볍지 않게. 차분한 경어체('~입니다/했습니다/~겁니다')를 지키고 감탄·\n"
+    "    유행어·호들갑·수사적 질문은 쓰지 않는다. 무게는 단어가 아니라 사실에서 나온다.\n"
+    "  · 숫자는 꼭 필요한 것만 남기고, 들었을 때 그려지는 형태로 짧게 ('5% 수준').\n"
+    "    전문 용어·영어 표현은 일상어로 풀어 말한다 (본문 평이화 원칙과 동일).\n"
+    "작성 규칙 (영상 쪽 검증기가 결정론으로 강제):\n"
+    "  1) narration/highlights 의 모든 수치·날짜·고유명사는 *같은 섹션의 prose* 또는\n"
+    "     이 보고서의 구조화 데이터(charts/timeline_flow/watch_signals)에 실제로 존재해야\n"
+    "     한다. 불일치 문장은 영상 쪽에서 폐기되고 기계 템플릿 문장으로 폴백된다 —\n"
+    "     번들에 없는 새 사실을 만들어내지 말 것. 페르소나의 '쉽게 풀기' 도 이 한계 안에서.\n"
+    "  2) 문체·호흡은 위 내레이터 페르소나를 따른다. 핵심 먼저, 문장 연쇄, 과장 금지.\n"
+    "  3) 공식 확인이 아닌 주장·추정을 문장에 쓰면 문장 안에 <미검증> 을 명시한다\n"
+    "     (영상 자막에도 그대로 노출된다 — 원칙).\n"
+    "  4) 분량 감각: 한 문장 ≈ 화면 4~6초. narration 3문장이면 그 섹션 씬은 약 15초.\n"
+    "  5) *차트 없는 서술 섹션도 video 를 채운다* — 비우면 그 섹션은 영상에서 통째로\n"
+    "     빠진다 (이 필드의 존재 이유다).\n"
+    "  6) 최상위 video.intro_narration 은 headline/deck 기반 오프닝(타이틀 씬) 1~2문장,\n"
+    "     outro_narration 은 closing 기반 클로징 씬 1~2문장. 같은 58자/문장 한도.\n\n"
     "=== JSON 응답 형식 (반드시 준수) ===\n"
     "★★★ **응답은 반드시 ``{`` 한 글자로 시작한다.** ★★★\n"
     "코드펜스 ```json 직후 첫 비공백 글자가 ``{`` 가 아니면 그 응답은 *전부 무효*\n"
@@ -606,7 +645,12 @@ SYSTEM_PROMPT = (
     "        }\n"
     "      ],\n"
     '      "embedded_blocks": [],\n'
-    '      "pull_quote": "강조 인용 한 문장 (생략 가능)"\n'
+    '      "pull_quote": "강조 인용 한 문장 (생략 가능)",\n'
+    '      "video": {\n'
+    '        "narration": ["이 섹션 씬의 자막·음성 대본 (각 58자 이내, 2~4문장, 내레이터 페르소나 — 짧은 문장 연쇄)"],\n'
+    '        "highlights": ["화면에 크게 띄울 핵심 문구 (40자 이내, 1~3개)"],\n'
+    '        "emphasis": ["narration/highlights 안의 정확한 부분 문자열만"]\n'
+    "      }\n"
     "    }\n"
     "  ],\n"
     '  "closing": "에필로그 1~2 문장 (생략 가능).",\n'
@@ -637,7 +681,11 @@ SYSTEM_PROMPT = (
     "  },\n"
     '  "confidence_summary": "출처 다양성/신선도/확신도 한 줄 자유 평가",\n'
     '  "confidence_score": 0.0~1.0,\n'
-    '  "broadcast_summary": "broadcast_summary 지침대로 — 5~6개 짧은 문단, 해요/습니다 혼합, 문단당 2문장 이내, 라벨 없이 본문만"\n'
+    '  "broadcast_summary": "broadcast_summary 지침대로 — 5~6개 짧은 문단, 해요/습니다 혼합, 문단당 2문장 이내, 라벨 없이 본문만",\n'
+    '  "video": {\n'
+    '    "intro_narration": ["오프닝(타이틀 씬) 대본 1~2문장 (각 58자 이내)"],\n'
+    '    "outro_narration": ["클로징 씬 대본 1~2문장 (각 58자 이내)"]\n'
+    "  }\n"
     "}\n"
     "```\n"
     "JSON 만 출력. 추가 설명 텍스트 금지.\n"
@@ -1081,6 +1129,11 @@ class NarrativeComposer:
                     new.sections[i].heading = rs["heading"]
                 if isinstance(rs.get("prose"), str) and rs["prose"].strip():
                     new.sections[i].prose = rs["prose"]
+                # v7.3.0 — 보완 응답이 video 도 갱신하면 수용 (없으면 원본 보존;
+                # prose 가 고쳐져 narration 과 어긋난 사실은 영상 쪽 검증기가
+                # 결정론으로 폐기 → 템플릿 폴백, 계약 §13).
+                if isinstance(rs.get("video"), dict):
+                    new.sections[i].video = rs["video"]
         return new
 
     async def compose(
@@ -1639,6 +1692,9 @@ class NarrativeComposer:
         composed.contradictions = cls._clean_value(composed.contradictions)
         if composed.timeline_flow:
             composed.timeline_flow = cls._clean_value(composed.timeline_flow)
+        # v7.3.0 — 영상 내레이션(자막·TTS 대본)도 사용자 노출 텍스트 (계약 §13)
+        if composed.video:
+            composed.video = cls._clean_value(composed.video)
 
         # hero_image / embedded_map: URL 제외하고 텍스트 필드만
         cls._clean_media(getattr(composed, "hero_image", None))
@@ -1654,6 +1710,8 @@ class NarrativeComposer:
             if sec.analogy:
                 sec.analogy = cls._clean_value(sec.analogy)
             sec.fact_grid = cls._clean_value(sec.fact_grid)
+            if sec.video:  # v7.3.0 — 계약 §13 (narration/highlights/emphasis 동일 정화로 부분 문자열 관계 보존)
+                sec.video = cls._clean_value(sec.video)
             # charts: title/note/data 내 라벨 텍스트 정화 (URL 없음)
             sec.charts = cls._clean_value(sec.charts)
             # images: caption/credit/alt 만 — URL 키는 보존

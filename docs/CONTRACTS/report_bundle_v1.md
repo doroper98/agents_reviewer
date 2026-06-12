@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v6.2.0
+last_synced_with: v7.3.0
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -129,7 +129,7 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
 |---|---|---|
 | 문자열 스칼라 (`deck`/`closing`/`note`/`pull_quote`/`heading`/`kicker` 등; `headline` 제외) | `""` 또는 키 생략 | `null` |
 | 리스트 (`chart_refs`/`image_refs`/`claim_refs`/`markers`/`arcs`/`legend`/`sections`/`charts`/`claims`/`signals`/`contradictions`/`sources`) | `[]` 또는 생략 (`image_refs` 는 `[]` 권장) | `null` |
-| optional 객체/참조 (`map_ref`/`prerendered_svg`/`theme`/`map`/`confidence`) | `null`·생략·값 모두 | — |
+| optional 객체/참조 (`map_ref`/`prerendered_svg`/`theme`/`map`/`confidence`/`video` [§13]) | `null`·생략·값 모두 | — |
 - 지리 없는 보고서: `map`/`signals`/`contradictions`/`confidence` 통째 absent 허용 (seam 검증됨).
 - `map.markers[].id`, `map.legend[].kind` 는 consumer 미러됨 — 그대로 emit.
 
@@ -148,6 +148,57 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
 - **항상 존재** (default `"full"`). `null`/`""` 금지 — §11 의 자유 스칼라 규약과 별개로
   고정 enum(`strip`/`full`).
 - additive (§7) — schema_version 증분 안 함. 구 consumer 는 필드 무시해도 무해.
+
+### §13 video 내레이션 (영상 자막·음성 대본) — v7.3.0 additive
+
+영상 파이프라인의 자막·내레이션이 고정 템플릿으로 합성돼 기계적이었던 문제 +
+차트 없는 서술(prose) 전용 섹션이 영상에서 통째로 누락되던 문제의 해소.
+**내용을 가장 잘 아는 보고서 생성 시점(composer)에 producer 가 대본을 함께
+emit** 하고, consumer 는 LLM 호출 없이 결정론 렌더를 유지한다 (사용자 확정,
+2026-06-12).
+
+**`sections[].video`** (optional 객체 — `null`·생략·값 모두 valid, §11):
+
+| 키 | 타입 | 규칙 |
+|---|---|---|
+| `narration` | `string[]` | 2~4문장. 그 섹션 씬(차트 씬 포함)의 자막·음성 대본. **한 문장 ≤58자** (자막 2줄 한도 — 초과분은 consumer 가 … 절단) |
+| `highlights` | `string[]` | 1~3개. 화면에 크게 띄울 key takeaway — 스테이트먼트 씬(대형 타이포). 문장보다 문구, **≤40자** |
+| `emphasis` | `string[]` | narration/highlights 안의 **정확한 부분 문자열**만. 화면에서 액센트 색 강조 |
+| `narration_tts` | `string[]` | 선택. 발음이 갈리는 표기(영문 약어·단위)가 있을 때만 — 자막=narration, 음성=narration_tts. 없으면 consumer 발음 사전이 처리 |
+
+**`report.video`** (optional 객체): `{ "intro_narration": string[] (1~2문장,
+타이틀 씬), "outro_narration": string[] (1~2문장, 클로징 씬) }`.
+
+**의미론 (consumer 측 확정 동작):**
+- `video` 있음 → highlights 는 스테이트먼트 씬, narration 은 해당 구간 자막.
+  **차트 있는 섹션의 narration 은 그 차트 씬의 자막이 된다** (템플릿 문장 대체).
+- `video` 없음(`null`) → 기존 동작 (서술 전용 섹션은 영상에서 누락).
+- **사실 근거(최우선)**: narration/highlights 의 모든 수치·날짜·고유명사는 같은
+  섹션 `prose` 또는 번들 구조화 데이터(charts/timeline/signals/…)에 실재해야
+  한다. consumer 검증기가 대조해 **불일치 문장은 폐기 + 템플릿 폴백**.
+- 미검증 주장(verification ≠ official/confirmed)을 문장에 쓰면 문장 안에
+  `<미검증>` 명시 (영상에 그대로 노출 — 원칙).
+- 문체: 다큐 브리핑체("~입니다/했습니다"), 과장·수사 금지, 핵심 먼저, 문장 간
+  연결 의식 (나열식 금지). 분량 감각: 한 문장 ≈ 화면 4~6초.
+- producer 작성 페르소나 (v7.3.1, 사용자 지시): *시사 교양 다큐 내레이션 작가* —
+  귀로 듣는 말, 짧은 문장의 연쇄(앞 문장을 다음 문장이 받아 잇기), 한 문장 한
+  정보, 명사 나열 대신 동사, 쉽되 가볍지 않은 경어체. SSOT 는 composer
+  SYSTEM_PROMPT 의 "★ 내레이터 페르소나" 블록 (consumer 계약 의미론 무변경).
+
+**producer 측 결정론 가드** (`src/handoff/bundle_builder.py:_section_video`):
+- `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 캡 (초과분 절단).
+- `emphasis` 불일치 항목(부분 문자열 아님)은 emit 전에 drop + warn — consumer
+  액센트 매칭이 어차피 실패하므로 producer 가 미리 정리.
+- 길이 한도(58/40자) 초과는 **drop 하지 않고 warn** — consumer 의 … 절단이
+  정보 파괴보다 낫다. 1차 방어는 composer SYSTEM_PROMPT 의 길이 지시.
+- `narration`/`highlights` 둘 다 비면 `video: null` (= 부재).
+- WRITE-AP-12 기호 정화(`_sanitize_symbols`)는 video 텍스트에도 적용 —
+  narration 과 emphasis 가 *같은 변환* 을 거치므로 부분 문자열 관계 보존.
+
+additive (§7) — schema_version **1 유지**. 구 consumer 는 필드 무시해도 무해.
+emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 Opus 보완 패스
+뒤에도 원본 video 가 보존되며, prose 교정으로 narration 과 어긋난 사실은 consumer
+검증기의 결정론 폐기·폴백 경로가 흡수한다.
 
 ## 2. 번들 스키마 (필드 / 타입)
 
@@ -172,6 +223,10 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
       "id": "editorial_cream|burgundy_mono|midnight_indigo|pine_forest|graphite_slate",  // v6.2.0 5종 풀
       "tokens": { "bg","card","text","muted","accent","up","down","border": "#hex" },
       "fonts": { "serif":"Noto Serif KR", "sans":"Noto Sans KR", "mono":"IBM Plex Mono" }
+    },
+    "video": {                                // [신규 v7.3.0] §13 — 타이틀/클로징 씬 대본 (optional)
+      "intro_narration": ["str (1~2문장, ≤58자)"],
+      "outro_narration": ["str (1~2문장, ≤58자)"]
     }
   },
 
@@ -184,7 +239,13 @@ consumer 수신 모델(v0.18.0)의 확정 규약. producer 는 이대로 emit:
     "chart_refs": ["chart_id"],               // §8 resolve
     "map_ref": "map id | null",               // §8
     "image_refs": ["image id"],
-    "claim_refs": ["claim_id"]                // §8
+    "claim_refs": ["claim_id"],               // §8
+    "video": {                                // [신규 v7.3.0] §13 — 섹션 씬 대본 (optional)
+      "narration": ["str (2~4문장, 각 ≤58자)"],
+      "highlights": ["str (1~3개, ≤40자)"],
+      "emphasis": ["narration/highlights 의 정확한 부분 문자열만"],
+      "narration_tts": ["str (선택 — 발음용)"]
+    }
   }],
 
   "charts": [{                               // data shape = §9 schemas.py
@@ -272,3 +333,4 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 |---|---|---|---|
 | 1 (draft) | 2026-05-25 | 초안 확정 (§1~9) | producer PR 머지 시 active |
 | 1 (draft) | 2026-05-25 | seam 보정: §10 map 참조 해소 (map.id) + §11 빈값/optional emit 규약 | schema_version 무증분 (draft 보정, 양측 합의) |
+| 1 | 2026-06-12 | §13 video 내레이션 (`sections[].video` + `report.video`) — 영상 자막·음성 대본을 producer 가 emit | additive (§7), schema_version 무증분. osint_generator 검수 대기 (샘플: `reports/analysis_20260612_061311_2c19018118.bundle.json`) |

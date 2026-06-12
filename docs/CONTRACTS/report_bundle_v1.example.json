@@ -17,6 +17,10 @@
         "accent": "#B05A38", "up": "#4A6B3E", "down": "#8B2A2A", "border": "#D4C8B0"
       },
       "fonts": { "serif": "Noto Serif KR", "sans": "Noto Sans KR", "mono": "IBM Plex Mono" }
+    },
+    "video": {
+      "intro_narration": ["삼성전자가 HBM4 양산 전환에 속도를 내고 있습니다.", "메모리 사이클 반등과 맞물린 변곡점을 짚어봅니다."],
+      "outro_narration": ["다음 확인점은 수율 공시입니다."]
     }
   },
 
@@ -30,7 +34,13 @@
       "chart_refs": ["ch-1"],
       "map_ref": null,
       "image_refs": [],
-      "claim_refs": ["C-1"]
+      "claim_refs": ["C-1"],
+      "video": {
+        "narration": ["최근 3개월, 삼성전자 주가는 71,800원에서 74,100원까지 올라섰습니다.", "특히 HBM 공시가 나온 주에 거래량이 몰렸습니다."],
+        "highlights": ["3개월간 71,800원에서 74,100원"],
+        "emphasis": ["74,100원"],
+        "narration_tts": ["최근 3개월, 삼성전자 주가는 칠만 천팔백 원에서 칠만 사천백 원까지 올라섰습니다.", "특히 에이치비엠 공시가 나온 주에 거래량이 몰렸습니다."]
+      }
     },
     {
       "section_id": "s2",
