@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.2.0
+last_synced_with: v7.3.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,29 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.3.0 — report_bundle §13 video 내레이션 (osint_generator 계약, 사용자 확정)
+
+- **계약 §13 (additive, schema_version 1 유지)** — 영상 파이프라인(osint_generator)의
+  자막·내레이션이 고정 템플릿이라 기계적 + 차트 없는 서술 섹션이 영상에서 통째로
+  누락되던 두 문제를, *내용을 가장 잘 아는 보고서 생성 시점* 에 producer 가 대본을
+  emit 하는 것으로 해소. 계약 SSOT: [docs/CONTRACTS/report_bundle_v1.md §13](docs/CONTRACTS/report_bundle_v1.md).
+- **`sections[].video`** — `{narration(2~4문장, 문장 ≤58자), highlights(1~3개, ≤40자),
+  emphasis(정확한 부분 문자열만), narration_tts?(발음용)}`. **`report.video`** —
+  `{intro_narration, outro_narration}` (타이틀/클로징 씬, 각 1~2문장).
+- **emit 경로** — composer SYSTEM_PROMPT `=== 영상 내레이션 (video) ===` 신설
+  (사실 근거: 같은 섹션 prose·구조화 데이터에 실재하는 수치·날짜·고유명사만 — 영상 쪽
+  검증기가 불일치 문장 폐기·템플릿 폴백 / 다큐 브리핑체 / `<미검증>` 표기) →
+  `ComposedSection.video` / `ComposedReport.video` (정규화 validator) →
+  `bundle_builder._section_video` / `_report_video` 결정적 가드 (emphasis 부분 문자열
+  불일치 drop + warn, narration ≤4 / highlights ≤3 / intro·outro ≤2 캡, 58/40자
+  한도는 warn-only — consumer 의 … 절단이 정보 파괴보다 낫다).
+- **WRITE-AP-12 정합** — `_sanitize_symbols` 가 video 텍스트도 정화 (narration 과
+  emphasis 가 같은 변환을 거쳐 부분 문자열 관계 보존). V6 critic 루프의
+  `_merge_text_revision` 은 원본 video 보존 (보완 응답이 video 를 내면 수용).
+- **검증 플로우** — 최근 발행본 `reports/analysis_20260612_061311_2c19018118.bundle.json`
+  에 video 필드를 채워 push (osint_generator 검수용 샘플). 계약 확정 기록은 양측 검수
+  통과 후.
 
 ## v7.2.0 — 지도 어휘 격상 (사용자 승인, 발행본 소급)
 

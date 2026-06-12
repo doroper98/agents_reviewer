@@ -550,6 +550,27 @@ class AnalysisBrief(BaseModel):
 # - 풍부한 정형 데이터 (행위자 카드, 시나리오 그리드 등) 는 ``embedded_blocks`` 의
 #   BlockType 문자열로 referencing.
 
+def _normalize_video_dict(v, keys: tuple[str, ...]) -> dict | None:
+    """v7.3.0 — composer 의 video emit 정규화 공용 헬퍼 (계약 §13).
+
+    지정 key 의 값을 문자열 리스트로 강제 (단일 str 은 1-원소 리스트로 승격,
+    비문자열·공백 항목 drop). 남는 key 가 하나도 없으면 None — 영상 파이프라인의
+    'video 부재 = 기존 동작' graceful 경로와 동일 의미.
+    """
+    if not isinstance(v, dict):
+        return None
+    out: dict[str, list[str]] = {}
+    for k in keys:
+        items = v.get(k)
+        if isinstance(items, str):
+            items = [items]
+        if isinstance(items, list):
+            cleaned = [s.strip() for s in items if isinstance(s, str) and s.strip()]
+            if cleaned:
+                out[k] = cleaned
+    return out or None
+
+
 class ComposedSection(BaseModel):
     """Composer 가 자유롭게 짠 한 섹션. ``prose`` 가 본문이고, 시각화는 모두 선택적."""
 
@@ -623,11 +644,31 @@ class ComposedSection(BaseModel):
     # src/visual/scroll_arc.py 의 위치 기반 결정적 폴백이 대신 매핑 (AP-V7-4).
     narrative_phase: str = ""
 
+    # v7.3.0 — 영상 내레이션 (osint_generator 계약 §13, additive). composer 가
+    # 이 섹션이 브리핑 영상에 나오는 동안의 자막·음성 대본을 직접 emit.
+    # 형식: {"narration": [str], "highlights": [str], "emphasis": [str],
+    #        "narration_tts"?: [str]}.
+    #  - narration: 2~4문장, 한 문장 ≤58자 (자막 2줄 한도). 다큐 브리핑체.
+    #  - highlights: 화면에 크게 띄울 key takeaway 1~3개 (문구, ≤40자).
+    #  - emphasis: narration/highlights 안의 *정확한 부분 문자열* 만 — 영상에서
+    #    액센트 색 강조. 불일치 항목은 bundle_builder 가 결정적으로 drop.
+    #  - narration_tts: 발음이 갈리는 표기가 있을 때만 (자막=narration, 음성=이것).
+    # 모든 수치·날짜·고유명사는 같은 섹션 prose 또는 번들 구조화 데이터에 실재해야
+    # 한다 (영상 쪽 검증기가 대조, 불일치 문장은 템플릿 폴백). None=영상에서 섹션 누락.
+    video: dict | None = None
+
     @field_validator("narrative_phase", mode="before")
     @classmethod
     def _normalize_narrative_phase(cls, v):
         # 유효값 기/승/전/결 외(null·오타·영문)는 "" 로 — 폴백 경로로 회복.
         return v if v in ("기", "승", "전", "결") else ""
+
+    @field_validator("video", mode="before")
+    @classmethod
+    def _normalize_video(cls, v):
+        # composer LLM 의 null/비정형 emit 회복 — 문자열 리스트만 보존, 빈 항목 drop.
+        # narration/highlights 둘 다 비면 None (영상 쪽 graceful 누락과 동일 의미).
+        return _normalize_video_dict(v, ("narration", "highlights", "emphasis", "narration_tts"))
 
     @field_validator("footnotes", mode="before")
     @classmethod
@@ -767,6 +808,17 @@ class ComposedReport(BaseModel):
     # 얻는 친절한 평문 (해요/습니다 혼합, 문단당 2문장, 라벨 없음). 텔레그램 완료 메시지에
     # 라벨 없이 첨부. 비면 첨부 안 함 (graceful). SSOT: narrative_composer SYSTEM_PROMPT.
     broadcast_summary: str = ""
+
+    # v7.3.0 — 보고서 레벨 영상 내레이션 (osint_generator 계약 §13, additive).
+    # 형식: {"intro_narration": [str], "outro_narration": [str]} — 각 1~2문장,
+    # 한 문장 ≤58자. intro=타이틀 씬(headline/deck 기반), outro=클로징 씬(closing
+    # 기반) 대본. None=영상 쪽이 기존 템플릿 오프닝/클로징 유지 (graceful).
+    video: dict | None = None
+
+    @field_validator("video", mode="before")
+    @classmethod
+    def _normalize_report_video(cls, v):
+        return _normalize_video_dict(v, ("intro_narration", "outro_narration"))
 
     # v4.2.0 — 보고서 레벨 단일 지도. 지리적 사건일 때만 composer 가 채움.
     # 형식: {"center": [lng, lat], "zoom": float,
@@ -1021,6 +1073,29 @@ class BundleTheme(BaseModel):
     fonts: BundleThemeFonts = Field(default_factory=BundleThemeFonts)
 
 
+class BundleSectionVideo(BaseModel):
+    """v7.3.0 — 섹션 영상 내레이션 (계약 §13, additive).
+
+    consumer(osint_generator)가 LLM 호출 없이 결정론 렌더에 쓰는 자막·음성 대본.
+    narration 은 그 섹션 씬(차트 씬 포함)의 자막, highlights 는 스테이트먼트 씬
+    (대형 타이포), emphasis 는 액센트 색 강조 대상 — narration/highlights 안의
+    *정확한 부분 문자열* 만 (불일치는 bundle_builder 가 emit 전에 drop).
+    narration_tts 는 발음용 대체 배열 (자막=narration, 음성=narration_tts).
+    """
+
+    narration: list[str] = Field(default_factory=list)       # 2~4문장, 문장 ≤58자
+    highlights: list[str] = Field(default_factory=list)      # 1~3개, ≤40자
+    emphasis: list[str] = Field(default_factory=list)        # 정확한 부분 문자열만
+    narration_tts: list[str] = Field(default_factory=list)   # 선택 (비면 발음 사전 처리)
+
+
+class BundleReportVideo(BaseModel):
+    """v7.3.0 — 보고서 레벨 영상 내레이션 (계약 §13). intro=타이틀 씬 / outro=클로징 씬."""
+
+    intro_narration: list[str] = Field(default_factory=list)  # 1~2문장
+    outro_narration: list[str] = Field(default_factory=list)  # 1~2문장
+
+
 class BundleReport(BaseModel):
     report_id: str
     headline: str
@@ -1028,6 +1103,7 @@ class BundleReport(BaseModel):
     closing: str = ""
     html_url: str = ""
     theme: BundleTheme | None = None
+    video: BundleReportVideo | None = None  # 계약 §13 (additive) — 없으면 null
 
 
 class BundleSection(BaseModel):
@@ -1040,6 +1116,7 @@ class BundleSection(BaseModel):
     map_ref: str | None = None  # map.id 로 resolve 또는 null (계약 §10)
     image_refs: list[str] = Field(default_factory=list)
     claim_refs: list[str] = Field(default_factory=list)
+    video: BundleSectionVideo | None = None  # 계약 §13 (additive) — 없으면 null
 
 
 class BundleSource(BaseModel):

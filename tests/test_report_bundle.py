@@ -161,6 +161,71 @@ def test_bundle_carries_timeline():
     assert "timeline" in b.model_dump(mode="json")
 
 
+def test_section_video_mapping_and_guards():
+    """§13 (v7.3.0): composer video emit → BundleSectionVideo + 결정적 가드."""
+    res = _make_result()
+    res.composed_report.sections[0].video = {
+        "narration": ["삼성전자 주봉이 두 주 연속 올랐습니다.", "거래량은 공시 주에 집중됐습니다."],
+        "highlights": ["두 주 연속 상승"],
+        "emphasis": ["두 주 연속", "번들에 없는 문구"],  # 후자는 drop 대상
+        "narration_tts": ["삼성전자 주봉이 두 주 연속 올랐습니다."],
+    }
+    b = build_report_bundle(res)
+    v = b.sections[0].video
+    assert v is not None
+    assert len(v.narration) == 2 and len(v.highlights) == 1
+    # emphasis: 정확한 부분 문자열만 보존, 불일치 drop
+    assert v.emphasis == ["두 주 연속"]
+    assert v.narration_tts == ["삼성전자 주봉이 두 주 연속 올랐습니다."]
+    # video 없는 섹션은 null (§11 optional 객체)
+    assert b.sections[1].video is None
+    # JSON 직렬화에 키 존재
+    dumped = b.model_dump(mode="json")
+    assert dumped["sections"][0]["video"]["narration"]
+    assert dumped["sections"][1]["video"] is None
+
+
+def test_section_video_caps_and_empty():
+    """§13: narration ≤4 / highlights ≤3 캡 + 빈 emit → None."""
+    res = _make_result()
+    res.composed_report.sections[0].video = {
+        "narration": [f"문장 {i}입니다." for i in range(6)],
+        "highlights": [f"문구 {i}" for i in range(5)],
+    }
+    # narration/highlights 둘 다 실질 비면 video=None (validator 가 이미 정규화)
+    res.composed_report.sections[1].video = {"narration": ["", "  "], "emphasis": ["x"]}
+    b = build_report_bundle(res)
+    v = b.sections[0].video
+    assert v is not None and len(v.narration) == 4 and len(v.highlights) == 3
+    assert b.sections[1].video is None
+
+
+def test_report_video_mapping():
+    """§13: report.video (intro/outro) 매핑 + 부재 시 null."""
+    res = _make_result()
+    res.composed_report.video = {
+        "intro_narration": ["오프닝입니다.", "두 번째 문장입니다.", "초과분입니다."],
+        "outro_narration": ["클로징입니다."],
+    }
+    b = build_report_bundle(res)
+    assert b.report.video is not None
+    assert len(b.report.video.intro_narration) == 2  # ≤2 캡
+    assert b.report.video.outro_narration == ["클로징입니다."]
+    # 부재 시 null
+    b2 = build_report_bundle(_make_result())
+    assert b2.report.video is None
+
+
+def test_composed_video_normalization():
+    """ComposedSection/ComposedReport.video 비정형 emit 회복 (validator)."""
+    sec = ComposedSection(heading="h", prose="p", video={"narration": "단일 문자열입니다."})
+    assert sec.video == {"narration": ["단일 문자열입니다."]}
+    sec2 = ComposedSection(heading="h", prose="p", video={"narration": [None, 1, " "]})
+    assert sec2.video is None
+    rep = ComposedReport(headline="H", video={"intro_narration": ["인트로."], "junk": ["x"]})
+    assert rep.video == {"intro_narration": ["인트로."]}
+
+
 def test_bundle_reload_path():
     """/bundle 재emit: model_dump → model_validate → rebuild 동등."""
     res = _make_result()
