@@ -1,0 +1,706 @@
+{
+  "request": {
+    "event_description": "앤트로픽의 새로운 모델 fable5에 대해 미국 정부가 미국 외 지역에서의 접속을 차단하는 조치를 취했어. https://www.anthropic.com/news/fable-mythos-access\n이 부분에 대해 어떻게 상황이 돌아가고 있는지 분석해서 알려줘",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "이번 조치는 한 미공개 '제3 회사' 가 상무부에 Mythos 의 jailbreak (안전장치 우회) 기법을 신고·시연한 데서 비롯됨. 트럼프 행정부는 첨단 AI 의 적성국 유출을 막는 수출통제 권한을 2025~2026 년 잇따라 확대해 왔고, 이번 사례는 *상업적으로 이미 배포된 frontier 모델* 에 대해 그 권한이 처음 발동된 사례임. 앤트로픽은 본인들의 안전장치가 '이전 어떤 배포 모델보다 substantially more effective' 라며, 좁은 jailbreak 발견만으로 배포 모델을 회수하는 기준을 산업 전체에 적용하면 모든 frontier 사업자의 신모델 출시가 사실상 정지된다고 경고함. 회사는 위반 시 형사 처벌까지 갈 수 있는 수출통제 법규상 즉시 준수하되, 비공개 채널로 재개 협상 중인 것으로 보임.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-06-12 17:21 ET",
+            "event": "상무장관 Howard Lutnick 이 앤트로픽 CEO Dario Amodei 에 수출통제 지시 letter 발송",
+            "impact": "Fable 5·Mythos 5 두 모델의 외국 국적자 접속 전면 금지(미국 거주 외국인 포함)"
+          },
+          {
+            "date": "2026-06-12 늦은 밤 ET",
+            "event": "앤트로픽이 Fable 5·Mythos 5 접속을 *전 고객* 대상으로 차단(국적 실시간 분리 불가)",
+            "impact": "외국인만이 아닌 미국 시민 고객까지 일시 사용 불가. 다른 Claude 계열 모델은 정상"
+          },
+          {
+            "date": "2026-06-13",
+            "event": "앤트로픽 공식 statement 게시 — 법적 지시 준수, 결정에는 동의 안 함, '오해' 라는 입장",
+            "impact": "Bloomberg/Axios/CNBC 등 주요 매체 일제 보도, 업계 파장 본격화"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "미 상무부, 앤트로픽 Fable 5·Mythos 5 외국인 접속 전면 차단 지시",
+    "event_name_en": "US Commerce Department Orders Anthropic to Block Foreign Access to Fable 5 and Mythos 5",
+    "date": "2026-06-12",
+    "category": "AI 정책·수출통제",
+    "summary": "미 상무부가 2026-06-12 저녁(동부시각 5:21pm) 앤트로픽(Anthropic)에 자사 최상위 모델 Fable 5·Mythos 5 의 외국 국적자 접속을 전면 차단하라는 수출통제 지시를 보냄. 미국 내 외국인까지 포함되어 사실상 전 세계 전 고객 차단으로 귀결됨. 정부는 '제3자가 jailbreak(안전장치 우회) 기법을 시연' 한 점을 안보 우려로 들었으나, 서면 사유는 모호하고 시연된 기법은 다른 공개 모델에서도 가능한 수준이라는 게 앤트로픽 반박임.",
+    "timeline": [
+      {
+        "date": "2026-06-12 17:21 ET",
+        "event": "상무장관 Howard Lutnick 이 앤트로픽 CEO Dario Amodei 에 수출통제 지시 letter 발송",
+        "impact": "Fable 5·Mythos 5 두 모델의 외국 국적자 접속 전면 금지(미국 거주 외국인 포함)"
+      },
+      {
+        "date": "2026-06-12 늦은 밤 ET",
+        "event": "앤트로픽이 Fable 5·Mythos 5 접속을 *전 고객* 대상으로 차단(국적 실시간 분리 불가)",
+        "impact": "외국인만이 아닌 미국 시민 고객까지 일시 사용 불가. 다른 Claude 계열 모델은 정상"
+      },
+      {
+        "date": "2026-06-13",
+        "event": "앤트로픽 공식 statement 게시 — 법적 지시 준수, 결정에는 동의 안 함, '오해' 라는 입장",
+        "impact": "Bloomberg/Axios/CNBC 등 주요 매체 일제 보도, 업계 파장 본격화"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "지시 수신 시각",
+        "value": "2026-06-12 17:21 ET",
+        "context": "Anthropic 공식 statement 가 분 단위로 명시 — 사건의 급박성 시사"
+      },
+      {
+        "label": "차단 대상 모델",
+        "value": "2종 (Fable 5, Mythos 5)",
+        "context": "앤트로픽의 최상위 frontier 모델 두 종. 그 외 Claude 라인업은 정상 운영"
+      },
+      {
+        "label": "실질적 차단 범위",
+        "value": "전 세계 전 고객",
+        "context": "지시는 'foreign national' (미국 외·내 모두) 만 명시하나, 실시간 국적 분리 불가로 미국 시민 포함 전면 차단"
+      },
+      {
+        "label": "정부가 시연한 jailbreak 성격",
+        "value": "narrow, non-universal",
+        "context": "앤트로픽 표현 — 국지적·비범용. 동등 능력이 OpenAI GPT-5.5 등 타 공개 모델에서도 가능하다고 반박"
+      },
+      {
+        "label": "서면 안보 사유",
+        "value": "0건 (구두 시연만)",
+        "context": "letter 에는 구체적 안보 우려 미기재. 정부가 구두로 기법만 시연"
+      }
+    ],
+    "background": "이번 조치는 한 미공개 '제3 회사' 가 상무부에 Mythos 의 jailbreak (안전장치 우회) 기법을 신고·시연한 데서 비롯됨. 트럼프 행정부는 첨단 AI 의 적성국 유출을 막는 수출통제 권한을 2025~2026 년 잇따라 확대해 왔고, 이번 사례는 *상업적으로 이미 배포된 frontier 모델* 에 대해 그 권한이 처음 발동된 사례임. 앤트로픽은 본인들의 안전장치가 '이전 어떤 배포 모델보다 substantially more effective' 라며, 좁은 jailbreak 발견만으로 배포 모델을 회수하는 기준을 산업 전체에 적용하면 모든 frontier 사업자의 신모델 출시가 사실상 정지된다고 경고함. 회사는 위반 시 형사 처벌까지 갈 수 있는 수출통제 법규상 즉시 준수하되, 비공개 채널로 재개 협상 중인 것으로 보임.",
+    "sources": [
+      "https://www.anthropic.com/news/fable-mythos-access",
+      "https://www.bloomberg.com/news/articles/2026-06-13/anthropic-says-us-limits-foreign-access-to-fable-5-mythos-5",
+      "https://www.axios.com/2026/06/12/anthropic-trump-mythos-fable-national-security",
+      "https://www.cnbc.com/2026/06/12/anthropic-disables-access-to-fable-5-and-mythos-5-to-comply-with-government-directive.html",
+      "https://www.nbcnews.com/tech/tech-news/anthropic-suspends-new-ai-models-fable-mythos-government-directive-rcna349901",
+      "https://techcrunch.com/2026/06/12/anthropics-safety-warnings-may-have-just-backfired-the-government-has-pulled-the-plug-on-its-most-powerful-ai/"
+    ],
+    "glossary": [
+      {
+        "term": "수출통제 (Export Control)",
+        "definition": "특정 기술·제품·서비스의 해외 이전을 정부가 허가·금지로 관리하는 제도. 미국에선 상무부 산업안보국(BIS) 이 운용함"
+      },
+      {
+        "term": "jailbreak (안전장치 우회)",
+        "definition": "AI 모델이 거부하도록 학습된 응답(예: 무기 제조법, 악성코드)을 특수한 프롬프트로 유도해 답하게 만드는 기법"
+      },
+      {
+        "term": "foreign national",
+        "definition": "해당 국가의 시민권·영주권이 없는 외국 국적자. 이번 지시에선 *미국 내 거주* 외국 국적자까지 포함"
+      },
+      {
+        "term": "frontier model",
+        "definition": "현재 기술 한계에 가까운 최상위 성능의 대규모 AI 모델. 정책권에서 별도 규제 범주로 다루어지는 중"
+      }
+    ],
+    "confidence_score": 0.85,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "provenance": [
+      {
+        "fact": "상무부 지시 수신 시각 2026-06-12 17:21 ET",
+        "source_date": "2026-06-12",
+        "scope_note": "Anthropic 공식 statement 본인 진술",
+        "source_url": "https://www.anthropic.com/news/fable-mythos-access"
+      },
+      {
+        "fact": "차단 대상: Fable 5, Mythos 5 두 모델 한정",
+        "source_date": "2026-06-12",
+        "scope_note": "다른 Claude 계열 모델은 정상",
+        "source_url": "https://www.anthropic.com/news/fable-mythos-access"
+      },
+      {
+        "fact": "범위: foreign national 전체 (미국 내·외) + 앤트로픽 외국인 직원 포함",
+        "source_date": "2026-06-12",
+        "scope_note": "지시문 원문 기준. 실질 차단은 전 고객(국적 실시간 분리 불가)",
+        "source_url": "https://www.anthropic.com/news/fable-mythos-access"
+      },
+      {
+        "fact": "Commerce Secretary Howard Lutnick → Dario Amodei letter 발송",
+        "source_date": "2026-06-12",
+        "scope_note": "Bloomberg/Axios 동시 확인",
+        "source_url": "https://www.bloomberg.com/news/articles/2026-06-13/anthropic-says-us-limits-foreign-access-to-fable-5-mythos-5"
+      },
+      {
+        "fact": "정부가 jailbreak 기법을 구두 시연. 서면 안보 사유 미기재",
+        "source_date": "2026-06-12",
+        "scope_note": "Anthropic 표현 'narrow, non-universal' — 앤트로픽 측 주장",
+        "source_url": "https://www.anthropic.com/news/fable-mythos-access"
+      },
+      {
+        "fact": "정부 시연 수준의 능력이 OpenAI GPT-5.5 등 타 공개 모델에서도 가능",
+        "source_date": "2026-06-12",
+        "scope_note": "앤트로픽 주장. 정부의 동의 여부는 미확인",
+        "source_url": "https://www.anthropic.com/news/fable-mythos-access"
+      },
+      {
+        "fact": "제3 회사가 jailbreak 신고로 조치 촉발",
+        "source_date": "2026-06-12",
+        "scope_note": "Axios 단독 — 행정부 관계자 익명 발언, 회사명 비공개",
+        "source_url": "https://www.axios.com/2026/06/12/anthropic-trump-mythos-fable-national-security"
+      }
+    ],
+    "available_images": [
+      {
+        "source_url": "https://www.cnbc.com/2026/06/12/anthropic-disables-access-to-fable-5-and-mythos-5-to-comply-with-government-directive.html",
+        "image_url": "https://image.cnbcfm.com/api/v1/image/108267419-1771518692466-gettyimages-2261864825-INDIA_AI_SUMMIT.jpeg?v=1776348710&w=1920&h=1080",
+        "title": "Anthropic disables access to Fable 5 and Mythos 5 to comply with government directive",
+        "description": "Anthropic said it disabled access to its Fable 5 and Mythos 5 models to comply with an export control directive from the U.S. government.",
+        "publisher": "CNBC"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "앤트로픽 최상위 모델 두 종, 어제부터 막혔다",
+    "deck": "미 상무부가 외국인 접속만 막으라고 했지만, 국적 분리가 안 돼 전 세계 전 고객이 막혔다. 공개된 발단은 한 회사가 구두로 시연한 안전장치 우회 기법이다.",
+    "sections": [
+      {
+        "heading": "한 통의 서한, 그리고 막혀버린 접속",
+        "kicker": "어제 저녁의 사실",
+        "prose": "수신자는 앤트로픽 최고경영자 다리오 아모데이, 발신자는 상무장관 하워드 러트닉이다. 내용은 단순했다. 자사 최상위 모델인 페이블 5(Fable 5)와 미토스 5(Mythos 5)의 외국 국적자 접속을 즉시 차단하라는 것. 근거는 수출통제 법규로, 위반하면 형사 처벌까지 가능하다.\n\n앤트로픽은 거부할 선택지가 없었다. 회사는 같은 날 늦은 밤 두 모델의 접속을 막았고, 오늘(6월 13일) 공식 statement(공식 입장문)를 띄우며 사실관계를 공개했다. 입장문 첫 문장은 '법적 지시는 준수하나, 결정에는 동의하지 않는다' 였다.\n\n이상한 점이 두 가지다. 첫째, 이미 상업적으로 배포돼 운영 중인 최첨단 모델에 이런 권한이 처음 발동됐다. 둘째, 서한에 구체적 안보 사유는 적혀 있지 않다. 공개된 자료에서 확인되는 발단은, 한 미공개 제3 회사가 미토스의 안전장치를 우회하는 기법을 상무부 측에 구두로 시연했다는 점이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "법적 지시는 준수합니다. 결정에는 동의하지 않습니다.",
+        "cited_claim_ids": [],
+        "lede": "어제 저녁 미국 동부시각 5시 21분, 상무부가 앤트로픽에 짧은 서한을 보냈다. 그 한 장이 같은 날 밤 자정이 되기 전, 전 세계 사용자의 접속을 끊었다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "지시 수신 시각",
+            "value": "6월 12일 17시 21분",
+            "sublabel": "미 동부시각, 분 단위 명시"
+          },
+          {
+            "label": "차단 대상 모델",
+            "value": "2종",
+            "sublabel": "페이블 5, 미토스 5"
+          },
+          {
+            "label": "실질 차단 범위",
+            "value": "전 세계 전 고객",
+            "sublabel": "미국 시민 포함"
+          },
+          {
+            "label": "서면 안보 사유",
+            "value": "0건",
+            "sublabel": "구두 시연만"
+          },
+          {
+            "label": "기법 성격(앤트로픽 표현)",
+            "value": "좁고 비범용",
+            "sublabel": "타 모델에도 가능"
+          },
+          {
+            "label": "준수 의무",
+            "value": "수출통제 법규",
+            "sublabel": "위반 시 형사 처벌"
+          }
+        ],
+        "dropcap": true,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "수출통제",
+            "explanation": "미국 정부가 안보·외교 목적으로 자국 기술의 해외 이전을 제한하는 법령 체계다. 본래 무기·반도체 장비 등 물리적 품목에 적용돼 왔으며, 소프트웨어와 AI 모델로 확장된 것은 최근 몇 년 사이다."
+          },
+          {
+            "term": "최첨단 모델(frontier model)",
+            "explanation": "업계가 가장 앞선 성능 영역에 도달했다고 보는 AI 모델을 일컫는 표현이다. 어떤 모델이 여기 속하는지에 대한 공식 기준은 없으며, 사업자 스스로 또는 정부가 사후적으로 분류한다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "어제 저녁 5시 21분, 미국 동부시각. 미 상무부가 앤트로픽에 짧은 서한 한 통을 보냈습니다.",
+            "그 한 장으로 회사 최상위 모델 두 종, 페이블 5와 미토스 5의 접속이 막혔습니다.",
+            "근거는 수출통제 법규였습니다. 위반하면 형사 처벌까지 갈 수 있어, 회사는 거부할 수가 없었습니다."
+          ],
+          "highlights": [
+            "어제 5시 21분, 미 동부시각",
+            "최상위 모델 두 종 즉시 차단",
+            "위반 시 형사 처벌까지"
+          ],
+          "emphasis": [
+            "페이블 5",
+            "미토스 5",
+            "수출통제 법규"
+          ],
+          "narration_tts": [
+            "어제 저녁 다섯 시 이십일분, 미국 동부시각. 미 상무부가 앤트로픽에 짧은 서한 한 통을 보냈습니다.",
+            "그 한 장으로 회사 최상위 모델 두 종, 페이블 파이브와 미토스 파이브의 접속이 막혔습니다.",
+            "근거는 수출통제 법규였습니다. 위반하면 형사 처벌까지 갈 수 있어, 회사는 거부할 수가 없었습니다."
+          ]
+        }
+      },
+      {
+        "heading": "'외국인만' 이라는 말의 함정",
+        "kicker": "차단의 실제 범위",
+        "prose": "서한의 문구는 'foreign national', 곧 외국 국적자였다. 미국 외 거주자뿐 아니라 미국 안에 사는 외국 국적자까지 포함된다. 문제는 앤트로픽 입장에서 사용자의 국적을 실시간으로 분리할 방법이 없다는 점이다.\n\n결과는 단순했다. 외국인만 막을 수가 없으니 전 고객을 막는다. 어제 밤 페이블 5와 미토스 5의 접속은 미국 시민 고객을 포함해 전부 끊겼다. 다른 클로드(Claude) 계열 모델은 정상 운영 중이다.\n\n정책의 문구와 실제 결과 사이의 이 간극이 이번 사건의 첫 번째 쟁점이다. 정부가 '외국인 한정' 이라고 적은 명령이 회사의 기술적 한계 때문에 '전원 차단' 으로 귀결된 것은, 행정명령이 실행 가능성을 검토하지 않은 채 발동됐다는 뜻이다. 자국 시민이 자국 회사의 제품을 못 쓰게 만든 결정으로 보기 어려운데, 결과적으로 그렇게 됐다.\n\n앤트로픽은 입장문에서 이 점을 분명히 했다. 회사로서는 국적 필터를 거를 기술적 수단이 없고, 위반 시 형사 책임이 따르는 만큼 일단 전면 차단 외에 다른 선택지가 없었다는 것이다.",
+        "charts": [
+          {
+            "type": "network",
+            "title": "한 통의 서한이 끌어들인 사람들",
+            "subtitle": "외국인 한정 명령이 미국 시민까지 막는 경로",
+            "data": {
+              "nodes": [
+                {
+                  "id": "thirdparty",
+                  "label": "제3 회사",
+                  "group": "actor"
+                },
+                {
+                  "id": "commerce",
+                  "label": "미 상무부",
+                  "group": "government"
+                },
+                {
+                  "id": "anthropic",
+                  "label": "앤트로픽",
+                  "group": "company"
+                },
+                {
+                  "id": "fable",
+                  "label": "페이블 5",
+                  "group": "model"
+                },
+                {
+                  "id": "mythos",
+                  "label": "미토스 5",
+                  "group": "model"
+                },
+                {
+                  "id": "foreign",
+                  "label": "외국 고객",
+                  "group": "user"
+                },
+                {
+                  "id": "us",
+                  "label": "미국 시민",
+                  "group": "user"
+                }
+              ],
+              "links": [
+                {
+                  "source": "thirdparty",
+                  "target": "commerce",
+                  "type": "구두 시연"
+                },
+                {
+                  "source": "commerce",
+                  "target": "anthropic",
+                  "type": "차단 지시"
+                },
+                {
+                  "source": "anthropic",
+                  "target": "fable",
+                  "type": "운영"
+                },
+                {
+                  "source": "anthropic",
+                  "target": "mythos",
+                  "type": "운영"
+                },
+                {
+                  "source": "fable",
+                  "target": "foreign",
+                  "type": "차단(지시)"
+                },
+                {
+                  "source": "mythos",
+                  "target": "foreign",
+                  "type": "차단(지시)"
+                },
+                {
+                  "source": "fable",
+                  "target": "us",
+                  "type": "차단(부수효과)"
+                },
+                {
+                  "source": "mythos",
+                  "target": "us",
+                  "type": "차단(부수효과)"
+                }
+              ]
+            },
+            "source": "Anthropic 공식 입장문(2026-06-13), Bloomberg 보도",
+            "takeaway": "지시는 외국 고객을 향했지만, 국적 분리가 불가능해 미국 시민까지 같은 차단선 안에 들어왔다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "서한이 적시한 대상은 외국 국적자였습니다. 그런데 앤트로픽은 사용자의 국적을 실시간으로 가려낼 방법이 없습니다.",
+            "그래서 외국인을 막으려면, 일단 전부를 막아야 했습니다. 미국 시민 고객까지 함께 끊긴 이유입니다.",
+            "다른 클로드 모델은 그대로 돕니다. 막힌 것은 페이블 5와 미토스 5, 단 두 종입니다."
+          ],
+          "highlights": [
+            "외국인 한정이 전원 차단이 됐다",
+            "다른 클로드 모델은 정상"
+          ],
+          "emphasis": [
+            "외국 국적자",
+            "전부를 막아야",
+            "단 두 종"
+          ],
+          "narration_tts": [
+            "서한이 적시한 대상은 외국 국적자였습니다. 그런데 앤트로픽은 사용자의 국적을 실시간으로 가려낼 방법이 없습니다.",
+            "그래서 외국인을 막으려면, 일단 전부를 막아야 했습니다. 미국 시민 고객까지 함께 끊긴 이유입니다.",
+            "다른 클로드 모델은 그대로 돕니다. 막힌 것은 페이블 파이브와 미토스 파이브, 단 두 종입니다."
+          ]
+        }
+      },
+      {
+        "heading": "공개된 발단, 비어 있는 사유서",
+        "kicker": "발동 근거의 무게",
+        "prose": "정부가 어떤 정보를 근거로 명령을 내렸는지가 두 번째 쟁점이다. 공개된 사실은 이렇다. 한 미공개 제3 회사가 상무부 측에 미토스 5의 안전장치를 우회하는 기법을 신고하고 시연했다. 그 시연을 본 정부 관계자가 안보 우려를 표명했고, 그것이 어제 서한의 공개된 발단이다.\n\n서한 자체에는 어떤 우려인지, 어떤 안보 피해가 예상되는지 적혀 있지 않다. 앤트로픽이 받은 종이는 명령서이지 사유서가 아니었다. 시연된 기법이 무엇이었는지, 그것이 어떤 정보를 끌어낼 수 있었는지에 대한 구체 기술도 회사 쪽에는 전달되지 않은 것으로 보인다.\n\n공개된 서한과 회사 입장문 기준으로는 구체적 사유, 적용 기간, 해제 조건이 확인되지 않는다. 비공개 채널로 어떤 추가 근거가 오갔는지, 정부가 다른 정보를 더 쥐고 있는지는 외부에서 알 수 있는 범위 밖이다. 회사가 직접 받아 든 자료의 폭이 좁다는 점만 확인된다.\n\n물론 안보 영역에서 모든 절차를 공개하지는 않는다. 비공개로 다뤄야 할 사유가 있을 수 있다. 다만 회사 입장에서는 자기가 무엇을 잘못했는지, 무엇을 고치면 명령이 풀리는지 알 수 없는 상태에서 사업이 정지된 셈이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "회사가 받은 종이는 명령서이지 사유서가 아니었다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "안전장치 우회(jailbreak)",
+            "explanation": "AI 모델이 본래 거절하도록 학습된 위험한 요청(폭탄 제조, 개인정보 유출 등)에 응답하게 만드는 입력 기법을 가리킨다. 모델별로 우회 난이도가 다르고, 한 모델에서 통하는 기법이 다른 모델에도 그대로 통하지는 않는다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "정부는 왜 이런 명령을 내렸을까요. 공개된 사실은 짧습니다.",
+            "한 미공개 회사가 미토스 5의 안전장치를 우회하는 기법을 정부 쪽에 직접 시연했고, 그것이 어제 서한의 발단이 됐습니다.",
+            "그런데 서한에는 구체적 안보 사유가 한 줄도 적혀 있지 않습니다. 앤트로픽이 받은 종이는 명령서이지, 사유서가 아니었습니다."
+          ],
+          "highlights": [
+            "근거는 구두 시연 한 번",
+            "서면 안보 사유는 0건"
+          ],
+          "emphasis": [
+            "미공개 회사",
+            "안전장치를 우회",
+            "명령서이지, 사유서가 아니었습니다"
+          ],
+          "narration_tts": [
+            "정부는 왜 이런 명령을 내렸을까요. 공개된 사실은 짧습니다.",
+            "한 미공개 회사가 미토스 파이브의 안전장치를 우회하는 기법을 정부 쪽에 직접 시연했고, 그것이 어제 서한의 발단이 됐습니다.",
+            "그런데 서한에는 구체적 안보 사유가 한 줄도 적혀 있지 않습니다. 앤트로픽이 받은 종이는 명령서이지, 사유서가 아니었습니다."
+          ]
+        }
+      },
+      {
+        "heading": "넓혀 적용하면 산업이 멈춘다",
+        "kicker": "앤트로픽의 반박",
+        "prose": "앤트로픽의 반론은 두 갈래다. 첫째, 시연된 기법은 좁고 비범용이다. 회사 표현으로는 'narrow, non-universal'. 특정 조건과 특정 질문 구성에서 작동하는 국지적 기법이지, 모델의 안전 체계 전반을 뚫는 일반 해법이 아니라는 뜻이다. 둘째, 동등한 수준의 기법은 다른 공개 모델에서도 가능하다. 회사는 오픈에이아이의 지피티 5.5를 직접 거론하며, 같은 기준을 적용하면 그 모델도 시장에서 회수돼야 한다고 주장했다.\n\n여기서 앤트로픽의 진짜 우려가 드러난다. 만약 '제3자가 좁은 안전장치 우회 기법을 시연했다' 는 사실 하나만으로 이미 상업 배포된 최첨단 모델이 회수된다면, 이 기준은 산업 전체에 적용될 수밖에 없다. 그러면 어떤 사업자도 새로운 모델을 자신 있게 출시할 수 없다. 출시 후 한 주 안에 누군가 좁은 우회를 들고 정부 문을 두드리면, 다음 날 모델이 막힐 수 있기 때문이다.\n\n특이한 위치다. 앤트로픽은 그동안 가장 강한 어조로 AI의 안전 위험을 경고해 온 회사다. 직접 운영하는 안전 평가팀의 보고서를 정기적으로 공개하고, 산업 차원의 안전 기준 마련을 옹호해 왔다. 그런 회사가 안전 우려를 근거로 한 정부 명령에 사실상 처음으로 맞서는 모양이 됐다.\n\n회사 측은 이번 모델의 안전장치가 'substantially more effective', 곧 이전 어떤 배포 모델보다 실질적으로 더 효과적이라고 주장한다. 안전을 더 단단하게 만들었다는 모델이, 안전 우려를 명분으로 가장 먼저 막힌 셈이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "앤트로픽의 반론은 두 가지였습니다. 시연된 기법은 좁고 한정적이며, 다른 공개 모델에도 같은 수준의 기법이 가능하다는 것입니다.",
+            "회사가 진짜 걱정하는 것은 따로 있습니다. 이런 기준을 산업 전체에 적용하면, 어떤 사업자도 새 모델을 자신 있게 내놓을 수 없습니다.",
+            "그동안 앤트로픽은 안전을 가장 크게 외쳐 온 회사였습니다. 그런 회사가 안전 명분의 정부 명령에 맞서는 모양이 됐습니다."
+          ],
+          "highlights": [
+            "좁은 기법, 타 모델도 가능",
+            "넓혀 적용하면 신모델 출시가 멈춘다",
+            "안전을 가장 외쳐 온 회사가 맞서다"
+          ],
+          "emphasis": [
+            "좁고 한정적",
+            "산업 전체에 적용하면",
+            "안전을 가장 크게 외쳐 온 회사"
+          ],
+          "narration_tts": [
+            "앤트로픽의 반론은 두 가지였습니다. 시연된 기법은 좁고 한정적이며, 다른 공개 모델에도 같은 수준의 기법이 가능하다는 것입니다.",
+            "회사가 진짜 걱정하는 것은 따로 있습니다. 이런 기준을 산업 전체에 적용하면, 어떤 사업자도 새 모델을 자신 있게 내놓을 수 없습니다.",
+            "그동안 앤트로픽은 안전을 가장 크게 외쳐 온 회사였습니다. 그런 회사가 안전 명분의 정부 명령에 맞서는 모양이 됐습니다."
+          ]
+        }
+      },
+      {
+        "heading": "안전 우선인가, 산업 정지인가",
+        "kicker": "남겨두는 모순",
+        "prose": "두 입장은 양립하기 어렵다. 정부 입장에서, 한 회사가 신고한 기법이 실제로 외국 행위자에게 흘러들면 안보 손실이 발생한다. 모델을 일단 막아 두고 검증하는 편이 사후 수습보다 비용이 작다. 행정의 사전예방 원칙이다.\n\n반대편에서, 공개된 근거가 좁은 시연에 그치는 상황에서 배포 중인 최첨단 모델 두 종을 끄는 결정은 산업의 출시 위험을 정량화할 수 없는 수준으로 끌어올린다. 정부 문턱을 누가, 언제 두드리느냐에 따라 회사의 사업이 흔들리게 되는 구조다.\n\n어느 쪽에 더 무게가 실리는지는 한 가지 사실에 달려 있다. 이 시연이 실제로 어떤 정보를 끌어냈고, 그 정보가 공개된 다른 출처로는 얻을 수 없는 것이었는지다. 그 답이 비공개 채널에서나마 회사 측에 전달되지 않으면, 이번 명령은 '안전' 이라는 단어가 산업 정지의 만능 키처럼 쓰일 수 있다는 선례를 남긴다. 같은 권한이 다음 분기에 누구를 향할지는 그때 가서야 알 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "두 입장은 양립하기 어렵습니다. 정부는 안보 손실을 막기 위한 사전예방이라 보고, 회사는 검증되지 않은 시연 한 번으로 사업이 흔들렸다고 봅니다.",
+            "어느 쪽에 무게가 실리는지는 한 가지에 달려 있습니다. 이 시연이 정말로 다른 출처로는 얻을 수 없는 정보를 끌어냈는지입니다.",
+            "그 답이 회사 쪽에 전달되지 않으면, 안전이라는 단어가 산업 정지의 만능 키처럼 쓰일 수 있다는 선례를 남기게 됩니다."
+          ],
+          "highlights": [
+            "사전예방인가, 검증되지 않은 정지인가",
+            "다음 분기엔 누구 차례인가"
+          ],
+          "emphasis": [
+            "양립하기 어렵습니다",
+            "만능 키처럼 쓰일 수 있다는 선례"
+          ],
+          "narration_tts": [
+            "두 입장은 양립하기 어렵습니다. 정부는 안보 손실을 막기 위한 사전예방이라 보고, 회사는 검증되지 않은 시연 한 번으로 사업이 흔들렸다고 봅니다.",
+            "어느 쪽에 무게가 실리는지는 한 가지에 달려 있습니다. 이 시연이 정말로 다른 출처로는 얻을 수 없는 정보를 끌어냈는지입니다.",
+            "그 답이 회사 쪽에 전달되지 않으면, 안전이라는 단어가 산업 정지의 만능 키처럼 쓰일 수 있다는 선례를 남기게 됩니다."
+          ]
+        }
+      },
+      {
+        "heading": "어디로 갈 것인가, 무엇을 지켜볼 것인가",
+        "kicker": "전망",
+        "prose": "단기 시나리오는 네 갈래로 정리된다.\n\n첫째, 비공개 협상 타결. 앤트로픽이 정부 측 안보 우려를 추가 안전장치로 흡수하고, 며칠에서 몇 주 안에 두 모델의 접속이 재개되는 경로다. 회사가 statement 끝에 '오해' 라는 표현을 쓴 것은 이 시나리오를 염두에 둔 외교적 신호로 읽을 수 있다.\n\n둘째, 부분 재개. 외국 국적자 분리를 위한 기술 솔루션(국적 인증 절차 추가, 미국 결제 수단 한정 등)이 도입돼 미국 사용자만 우선 풀리는 경로다. 외국 고객의 매출 손실은 누적된다.\n\n셋째, 동종 사업자 확산. 같은 권한이 오픈에이아이, 구글의 최첨단 모델에도 발동되며 업계 차원의 출시 일시 중단이 자리잡는 경로다. 앤트로픽이 가장 우려한 경로다.\n\n넷째, 법적 다툼. 앤트로픽이 수출통제 권한의 자의적 적용을 이유로 소송에 들어가는 경로다. 행정명령의 적법성 자체가 법정에서 다뤄지면 결정 시점은 분기를 넘긴다.\n\n어느 갈래로 갈지는 다음 몇 주 동안의 몇 가지 신호로 가려진다. 정부가 다른 사업자에게 비슷한 서한을 보내는지, 의회가 청문회를 여는지, 시연을 신고한 제3 회사의 정체가 드러나는지가 분기점이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "앞으로의 경로는 네 갈래로 보입니다. 비공개 협상으로 풀리거나, 미국 사용자만 우선 풀리거나, 같은 권한이 다른 회사로 번지거나, 법정에서 다뤄지거나입니다.",
+            "회사가 입장문 끝에 '오해' 라는 단어를 쓴 것은, 첫 번째 경로를 염두에 둔 신호로 읽힙니다.",
+            "어느 갈래로 갈지는, 정부가 다른 회사에도 같은 서한을 보내는지, 의회가 청문회를 여는지에서 갈립니다."
+          ],
+          "highlights": [
+            "네 갈래의 단기 시나리오",
+            "다음 분기점은 정부의 다음 서한"
+          ],
+          "emphasis": [
+            "네 갈래",
+            "오해",
+            "다음 서한"
+          ],
+          "narration_tts": [
+            "앞으로의 경로는 네 갈래로 보입니다. 비공개 협상으로 풀리거나, 미국 사용자만 우선 풀리거나, 같은 권한이 다른 회사로 번지거나, 법정에서 다뤄지거나입니다.",
+            "회사가 입장문 끝에 오해라는 단어를 쓴 것은, 첫 번째 경로를 염두에 둔 신호로 읽힙니다.",
+            "어느 갈래로 갈지는, 정부가 다른 회사에도 같은 서한을 보내는지, 의회가 청문회를 여는지에서 갈립니다."
+          ]
+        }
+      }
+    ],
+    "closing": "어제의 서한 한 통은 한 회사의 모델 두 종을 멈춰 세웠다. 다음 한 통이 어디로 향할지는, 오늘 우리가 답을 듣지 못한 그 첫 번째 시연의 실체가 결정한다.",
+    "watch_signals": [
+      {
+        "signal": "정부의 두 번째 서한",
+        "description": "오픈에이아이, 구글 등 다른 최첨단 사업자에게 같은 권한이 발동되는지",
+        "indicates": "동종 사업자 확산 시나리오 vs 앤트로픽 단발 사건",
+        "deadline": "2026-07-15",
+        "icon": "📨"
+      },
+      {
+        "signal": "앤트로픽 모델 재개",
+        "description": "페이블 5·미토스 5 접속이 전면 또는 미국 시민 한정으로 재개되는 시점",
+        "indicates": "비공개 협상 타결 시나리오 vs 부분 재개",
+        "deadline": "2026-06-30",
+        "icon": "🔓"
+      },
+      {
+        "signal": "의회 청문회 소집",
+        "description": "상하원의 상무·정보·법사위가 수출통제 권한의 자의적 적용을 다루는지",
+        "indicates": "정치적 파장 확산 여부",
+        "deadline": "2026-07-31",
+        "icon": "🏛️"
+      },
+      {
+        "signal": "시연을 신고한 제3 회사 정체",
+        "description": "사건 발단인 미공개 회사가 공개되거나 자진 공표하는지",
+        "indicates": "사건의 동기 해석 (경쟁사 신고 vs 진성 안보 신고)",
+        "deadline": "미정",
+        "icon": "🔍"
+      },
+      {
+        "signal": "앤트로픽의 법적 대응",
+        "description": "회사가 행정명령의 적법성에 대한 소송을 제기하는지",
+        "indicates": "법적 다툼 시나리오 진입",
+        "deadline": "2026-08-31",
+        "icon": "⚖️"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "안전 위험이 시연된 모델은 검증 전까지 막아 두는 편이 사후 수습보다 비용이 작다.",
+        "side_b": "검증되지 않은 좁은 시연 한 번으로 배포 중인 최첨단 모델이 회수되면, 산업 전체의 출시 위험이 정량화 불가능한 수준으로 올라간다.",
+        "evidence": "정부의 서면 사유는 0건, 시연은 구두로만 진행. 앤트로픽은 같은 수준 기법이 타 공개 모델에서도 가능하다고 반박.",
+        "resolution": "현재 공개된 정보만으로는 side_b 의 우려에 더 무게가 실린다. 시연이 다른 출처로 얻을 수 없는 정보를 끌어냈다는 증거가 비공개 채널에서나마 회사 측에 전달되지 않은 한, 이번 결정은 '안전' 을 산업 정지의 만능 키로 만드는 선례가 된다. 다만 시연 기법이 외국 행위자에게 실제로 전파됐다는 정황이 드러나면 side_a 가 다시 살아난다."
+      }
+    ],
+    "contradictions_heading": "사전예방이 산업의 만능 키가 될 때",
+    "timeline_flow": {
+      "heading": "사건의 궤적",
+      "past": [
+        {
+          "date": "2026-06-12",
+          "label": "오후 5시 21분(미 동부): 상무장관 러트닉이 앤트로픽 CEO 아모데이에게 차단 지시 서한 발송",
+          "note": "수출통제 법규 근거, 위반 시 형사 처벌"
+        },
+        {
+          "date": "2026-06-12",
+          "label": "같은 날 늦은 밤: 앤트로픽이 페이블 5·미토스 5 접속을 전 고객 대상으로 차단",
+          "note": "국적 분리 불가로 미국 시민 포함"
+        },
+        {
+          "date": "2026-06-13",
+          "label": "회사 공식 입장문 게시: 법적 지시는 준수, 결정에는 동의 안 함",
+          "note": "Bloomberg, CNBC, Axios 등 일제 보도"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-06-30",
+          "label": "모델 재개 여부 1차 분기점",
+          "branch": "비공개 협상 타결 vs 부분 재개"
+        },
+        {
+          "date": "2026-07-15",
+          "label": "정부의 다음 서한이 다른 사업자에게 가는지",
+          "branch": "동종 확산 시나리오"
+        },
+        {
+          "date": "2026-07-31",
+          "label": "의회 청문회 소집 여부",
+          "branch": "정치적 파장 진입"
+        },
+        {
+          "date": "2026-08-31",
+          "label": "법적 대응 진입 가능 시한",
+          "branch": "법정 다툼 시나리오"
+        }
+      ],
+      "video": {
+        "narration": [
+          "사건은 어제 저녁 한 통의 서한에서 시작됐습니다. 같은 날 밤 두 모델의 접속이 끊겼고, 오늘 회사 공식 입장문이 나왔습니다.",
+          "앞으로의 분기점은 짧게는 6월 말, 길게는 8월입니다. 모델이 다시 풀리는지, 다음 서한이 어디로 가는지, 법정으로 갈지가 차례로 가려질 겁니다.",
+          "지금은 분기점을 하나씩 지켜볼 시간입니다."
+        ],
+        "narration_tts": [
+          "사건은 어제 저녁 한 통의 서한에서 시작됐습니다. 같은 날 밤 두 모델의 접속이 끊겼고, 오늘 회사 공식 입장문이 나왔습니다.",
+          "앞으로의 분기점은 짧게는 유월 말, 길게는 팔월입니다. 모델이 다시 풀리는지, 다음 서한이 어디로 가는지, 법정으로 갈지가 차례로 가려질 겁니다.",
+          "지금은 분기점을 하나씩 지켜볼 시간입니다."
+        ]
+      }
+    },
+    "confidence_summary": "출처 다양성 양호(Bloomberg/Axios/CNBC/NBC/TechCrunch + 회사 공식 입장문), 신선도 최상(보고서 발행 전날·당일 보도). 정부 측 비공개 사유는 미확인 영역으로 남음.",
+    "confidence_score": 0.58,
+    "broadcast_summary": "어제 저녁 미국 동부시각 5시 21분, 상무부가 앤트로픽에 짧은 서한 한 통을 보냈습니다. 회사의 최상위 모델 두 종, 페이블 5와 미토스 5의 외국인 접속을 즉시 끊으라는 내용이었어요.\n\n문제는 회사가 사용자의 국적을 실시간으로 가려낼 방법이 없었다는 겁니다. 결국 어제 밤 두 모델은 미국 시민 고객까지 포함해 전 세계 전 고객 대상으로 막혔어요.\n\n근거는 한 미공개 제3 회사가 안전장치를 우회하는 기법을 정부 쪽에 구두로 시연한 한 건이었습니다. 서한 자체에는 구체적 안보 사유가 한 줄도 적혀 있지 않았어요.\n\n앤트로픽은 시연된 기법이 좁고 비범용이며, 같은 수준은 타 공개 모델에도 가능하다고 반박했습니다. 이런 기준이 산업 전체에 적용되면 어떤 사업자도 새 모델을 자신 있게 내놓을 수 없다고 경고했어요.\n\n안전을 가장 크게 외쳐 온 회사가 안전 명분의 정부 명령에 맞서는 모양이 됐다는 게 이번 사건의 묘한 자리입니다. 앞으로 정부의 다음 서한이 다른 회사에도 가는지가 가장 큰 분기점이 될 것 같습니다.\n\n각 시나리오와 우리가 지켜봐야 할 신호들은 본문에 정리해 두었습니다.",
+    "video": {
+      "intro_narration": [
+        "어제 저녁, 미국 상무부가 보낸 서한 한 통이 앤트로픽 최상위 모델 두 종을 멈춰 세웠습니다.",
+        "외국인 한정 명령이었지만 결과는 전 세계 전 고객 차단이었습니다. 무엇이 벌어졌는지 짚어 보겠습니다."
+      ],
+      "outro_narration": [
+        "서한 한 통은 한 회사의 모델 두 종을 멈춰 세웠습니다.",
+        "다음 한 통이 어디로 향할지, 앞으로의 몇 주가 답을 줄 겁니다."
+      ],
+      "intro_narration_tts": [
+        "어제 저녁, 미국 상무부가 보낸 서한 한 통이 앤트로픽 최상위 모델 두 종을 멈춰 세웠습니다.",
+        "외국인 한정 명령이었지만 결과는 전 세계 전 고객 차단이었습니다. 무엇이 벌어졌는지 짚어 보겠습니다."
+      ],
+      "outro_narration_tts": [
+        "서한 한 통은 한 회사의 모델 두 종을 멈춰 세웠습니다.",
+        "다음 한 통이 어디로 향할지, 앞으로의 몇 주가 답을 줄 겁니다."
+      ]
+    },
+    "embedded_map": null,
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 2,
+      "unresolved": 2,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 2건 반영 · 2건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "미 상무부가 외국인 접속만 막으라고 했지만, 국적 분리가 안 돼 전 세계 전 고객이 막혔다. 공개된 발단은 한 회사가 구두로 시연한 안전장치 우회 기법이다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260613_130814_24d6892d16.html",
+  "mirror_url": "",
+  "report_theme": "editorial_cream",
+  "parent_context": null,
+  "analysis_timestamp": "2026-06-13T12:57:26.237570+09:00",
+  "total_duration_seconds": 648.260749578476,
+  "system_version": "v7.6.1",
+  "revision": 0,
+  "render_revision": 0
+}
