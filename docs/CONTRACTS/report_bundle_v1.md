@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v7.6.0
+last_synced_with: v7.6.2
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -181,16 +181,40 @@ intro/outro 에 TTS 위험 표기가 있으면 같은 순서·개수의 발화�
 `src/timeline_flow.py` 패스스루 → `bundle_builder._timeline_video` 결정론 가드
 (≤4 캡, 길이·TTS gap warn). highlights/emphasis 없음.
 
-**작성 규칙 개정 (v7.6.0 — 1차 음성 영상 검수, analysis_20260606_114653):**
+**`contradictions[].video`** (optional 객체 — v7.6.2 additive, 2차 음성 검수 반영):
+
+| 키 | 타입 | 규칙 |
+|---|---|---|
+| `label_a` / `label_b` | `string` | 두 입장의 진영 이름. 한 단어 명사구, **≤8자** (예: "묵인론"/"전술론") |
+| `line_a` / `line_b` | `string` | 각 입장의 한 줄 요약 — 다큐 경어체, **≤40자** (스테이트먼트 씬, 카드에 크게). "~입니다/~수도 있습니다" 로 끝냄 |
+| `narration` | `string[]` | 쟁점 씬 자막 2~3문장(경어체, 각 ≤75자) |
+| `narration_tts` | `string[]` | 섹션과 같은 표기용/발화용 분리 규칙 |
+
+영상이 `side_a`/`side_b` *논설체 원문* ("…정책 전환이다") 을 카드·자막에 그대로
+노출하던 것을 producer 의 다큐 경어체 대본으로 대체. `side_a`/`side_b` 원문은
+그대로 두고 `video` 만 **더한다** (additive). composer 가 `contradictions[].video`
+로 emit → `bundle_builder._contradiction_video` 결정론 가드 (label ≤8 / line ≤40 /
+narration ≤4 캡·길이 warn, TTS gap warn). 모든 필드 비면 `null` (= consumer 기존
+원문 폴백).
+
+**작성 규칙 개정:**
 스키마 구조는 그대로, "쓰는 법" 개정. 전체 기준서 SSOT 는
-`prompts/tts_narration_guide.md` (v7.6.0 §1/§2/§6):
-1. **축약 금지 — 말하듯 풀어쓰기 (최우선).** narration 은 자막용 요약문이 아니라
-   성우가 읽는 구어체 대본. 한 문장 한 정보, 명사 나열 대신 주어-동사 문장.
-   한도 75자로 완화된 만큼 조사·서술어를 삭제하지 말 것.
-2. **날짜 콤마 나열 금지** — "{날짜}, {문장}" 가 아니라 "{날짜}에는 ~했습니다".
-3. **제목·라벨 낭독 금지** — 섹션/차트 제목·타임라인 분기점 라벨은 화면이 보여줌.
-4. **narration_tts 발음 강화** — 숫자 전부 한글+자연 띄어쓰기("삼십이 개월",
-   "일곱 개"), 경음화 표기("해지꿘", "조껀"). 원칙: "한글로 받아쓴 발음 그대로".
+`prompts/tts_narration_guide.md`:
+- **v7.6.0 (1차 검수, §1/§2/§6):**
+  1. **축약 금지 — 말하듯 풀어쓰기 (최우선).** narration 은 자막용 요약문이 아니라
+     성우가 읽는 구어체 대본. 한 문장 한 정보, 명사 나열 대신 주어-동사 문장.
+     한도 75자로 완화된 만큼 조사·서술어를 삭제하지 말 것.
+  2. **날짜 콤마 나열 금지** — "{날짜}, {문장}" 가 아니라 "{날짜}에는 ~했습니다".
+  3. **제목·라벨 낭독 금지** — 섹션/차트 제목·타임라인 분기점 라벨은 화면이 보여줌.
+  4. **narration_tts 발음 강화** — 숫자 전부 한글+자연 띄어쓰기("삼십이 개월",
+     "일곱 개"), 경음화 표기("해지꿘", "조껀"). 원칙: "한글로 받아쓴 발음 그대로".
+- **v7.6.2 (2차 검수, §1 + §0-2-3):**
+  5. **무기 체계명 음차 표기 금지 → 영문** — "장보고-엔"·"장보고 엔" → "장보고 N"
+     (headline/heading/highlights/prose 전반).
+  6. **highlights 가 heading 을 그대로 반복 금지** — heading 이 안 보여준 구체
+     수치·고유명사를 담는다 (producer `_section_video` 가 정확 일치 시 warn).
+  7. **가운뎃점(·)으로 항목 두 개 붙이기 금지** — 조사로 풀거나 ` · `(앞뒤 공백).
+  8. **narration 각 항목은 완결된 한 문장** — 비교·연결 도중 절단 금지.
 
 **의미론 (consumer 측 확정 동작):**
 - `video` 있음 → highlights 는 스테이트먼트 씬, narration 은 해당 구간 자막.
@@ -320,7 +344,8 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
   }],
 
   "signals": [{ "signal","description","indicates","deadline","verification" }],  // [기존] watch_signals
-  "contradictions": [{ "side_a","side_b","evidence","resolution" }],              // [기존] (봉합 금지 보존)
+  "contradictions": [{ "side_a","side_b","evidence","resolution",                // [기존] (봉합 금지 보존)
+    "video": { "label_a","label_b","line_a","line_b","narration":[],"narration_tts":[] } }],  // [신규 v7.6.2] §13 — 쟁점 카드 대본 (optional)
   "sources": [{ "source_id":"str (unique)","url","publisher","title","fetched_at" }],  // [신규] context.sources 정규화
   "confidence": { "score": 0.0, "summary": "str" },                               // [기존] report-level
 
@@ -381,3 +406,4 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 | 1 | 2026-06-12 | §13 TTS 발화 규칙 명문화 — 표기용(narration)/발화용(narration_tts) 분리 + 작성 가이드 SSOT(`prompts/tts_narration_guide.md`) | additive, schema_version 무증분 (필드 의미 정밀화, 새 필드 없음). 샘플 2건 narration_tts 채움 |
 | 1 | 2026-06-12 | §13 `report.video.intro_narration_tts` / `outro_narration_tts` 추가 — 타이틀/클로징 씬도 표기/발화 분리 (사용자 확정) | additive (§7), schema_version 무증분. 구 consumer 는 무시해도 무해 |
 | 1 | 2026-06-12 | §13 1차 음성 영상 검수 반영 (v7.6.0): `timeline.video` 신설 (타임라인 씬 대본 — 라벨 낭독 금지) + narration 문장 한도 58→75자 완화 (축약 금지·말하듯 풀어쓰기, 양측 합의값) + 작성 규칙 개정 (날짜 조사 연결 / 제목·라벨 낭독 금지 / 발음 강화 — 숫자 전부 한글·띄어쓰기, 경음화) | additive (§7), schema_version 무증분. 영상 쪽도 같은 검수 반영 (템플릿 문장·발음 사전·자막 폭) |
+| 1 | 2026-06-13 | §13 2차 음성 영상 검수 반영 (v7.6.2): `contradictions[].video` 신설 (쟁점 카드 대본 — label_a/b ≤8자 / line_a/b ≤40자 경어체 / narration / narration_tts, side 논설체 원문 대체) + 작성 규칙 개정 (무기 체계명 영문 표기 '장보고 N' / highlights 의 heading 반복 금지+producer warn / 가운뎃점 항목 붙이기 금지 / narration 완결 문장) | additive (§7), schema_version 무증분. 영상 쪽도 같은 검수 반영 (쟁점 카드 경어체 변환 제거·자막 폭) |

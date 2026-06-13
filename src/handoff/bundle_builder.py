@@ -35,6 +35,7 @@ from src.models import (
     BundleChart,
     BundleConfidence,
     BundleContradiction,
+    BundleContradictionVideo,
     BundleMap,
     BundleProducer,
     BundleProvenance,
@@ -65,6 +66,8 @@ _MARKET_CHART_TYPES = ("candle", "line", "area")
 # 영상 쪽 처리, 양측 합의값).
 _NARRATION_MAX_CHARS = 75
 _HIGHLIGHT_MAX_CHARS = 40
+_CONTRA_LABEL_MAX_CHARS = 8   # v7.6.2 — 쟁점 진영 이름 (label_a/b)
+_CONTRA_LINE_MAX_CHARS = 40   # v7.6.2 — 쟁점 한 줄 경어체 (line_a/b)
 _NARRATION_MAX_ITEMS = 4
 _HIGHLIGHT_MAX_ITEMS = 3
 _REPORT_NARRATION_MAX_ITEMS = 2
@@ -101,7 +104,9 @@ def _warn_tts_gap(narration: list[str], narration_tts: list[str], where: str) ->
         )
 
 
-def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | None:
+def _section_video(
+    video: dict | None, section_id: str, heading: str = "",
+) -> BundleSectionVideo | None:
     """계약 §13 — composer 의 섹션 video emit → BundleSectionVideo (결정론 가드).
 
     - narration ≤4 / highlights ≤3 캡 (초과분 절단).
@@ -109,6 +114,8 @@ def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | 
       항목은 drop (consumer 액센트 매칭이 어차피 실패하므로 emit 전에 정리).
     - 길이 한도(75/40자) 초과는 drop 하지 않고 warn (consumer 가 … 로 자름 — 정보
       파괴보다 graceful 절단이 낫다. 1차 방어는 composer SYSTEM_PROMPT).
+    - highlight 가 heading 을 그대로 메아리치면 warn (v7.6.2, 2차 음성 검수 —
+      화면에 같은 말 두 번. highlight 는 heading 이 안 보여준 수치·고유명사를 담아야).
     - narration/highlights 둘 다 비면 None (= video 부재, consumer 기존 동작).
     """
     if not isinstance(video, dict):
@@ -134,11 +141,18 @@ def _section_video(video: dict | None, section_id: str) -> BundleSectionVideo | 
                 "[bundle] §13 %s: narration %d자 > %d자 한도 (영상에서 잘림): %r",
                 section_id, len(s), _NARRATION_MAX_CHARS, s,
             )
+    heading_norm = (heading or "").strip()
     for s in highlights:
         if len(s) > _HIGHLIGHT_MAX_CHARS:
             logger.warning(
                 "[bundle] §13 %s: highlight %d자 > %d자 한도 (영상에서 잘림): %r",
                 section_id, len(s), _HIGHLIGHT_MAX_CHARS, s,
+            )
+        if heading_norm and s.strip() == heading_norm:
+            logger.warning(
+                "[bundle] §13 %s: highlight %r 가 heading 을 그대로 반복 (화면 중복) "
+                "— heading 이 안 보여준 수치·고유명사로 교체 권장 (WRITE 2차 검수)",
+                section_id, s,
             )
     _warn_tts_gap(narration, narration_tts, section_id)
     return BundleSectionVideo(
@@ -191,6 +205,48 @@ def _timeline_video(video: dict | None) -> BundleTimelineVideo | None:
             )
     _warn_tts_gap(narration, narration_tts, "timeline.video")
     return BundleTimelineVideo(narration=narration, narration_tts=narration_tts)
+
+
+def _contradiction_video(video: dict | None, where: str) -> BundleContradictionVideo | None:
+    """계약 §13 (v7.6.2) — 쟁점(모순) 카드 내레이션. 모든 필드 비면 None.
+
+    영상이 side_a/side_b 논설체 원문을 카드/자막에 그대로 노출하던 것을 producer
+    의 다큐 경어체 대본으로 대체 (2차 음성 검수). label_a/b(≤8자)·line_a/b(≤40자)
+    초과는 drop 하지 않고 warn (consumer 절단), narration 은 섹션과 동일 규칙.
+    label/line/narration 이 모두 비면 None (= video 부재, consumer 기존 원문 폴백).
+    """
+    if not isinstance(video, dict):
+        return None
+    label_a = (str(video.get("label_a") or "")).strip()
+    label_b = (str(video.get("label_b") or "")).strip()
+    line_a = (str(video.get("line_a") or "")).strip()
+    line_b = (str(video.get("line_b") or "")).strip()
+    narration = _strs(video.get("narration"), _NARRATION_MAX_ITEMS)
+    if not any((label_a, label_b, line_a, line_b)) and not narration:
+        return None
+    narration_tts = _strs(video.get("narration_tts"))
+    for tag, val, cap in (
+        ("label_a", label_a, _CONTRA_LABEL_MAX_CHARS),
+        ("label_b", label_b, _CONTRA_LABEL_MAX_CHARS),
+        ("line_a", line_a, _CONTRA_LINE_MAX_CHARS),
+        ("line_b", line_b, _CONTRA_LINE_MAX_CHARS),
+    ):
+        if len(val) > cap:
+            logger.warning(
+                "[bundle] §13 %s: %s %d자 > %d자 한도 (영상에서 잘림): %r",
+                where, tag, len(val), cap, val,
+            )
+    for s in narration:
+        if len(s) > _NARRATION_MAX_CHARS:
+            logger.warning(
+                "[bundle] §13 %s: narration %d자 > %d자 한도 (영상에서 잘림): %r",
+                where, len(s), _NARRATION_MAX_CHARS, s,
+            )
+    _warn_tts_gap(narration, narration_tts, where)
+    return BundleContradictionVideo(
+        label_a=label_a, label_b=label_b, line_a=line_a, line_b=line_b,
+        narration=narration, narration_tts=narration_tts,
+    )
 
 
 def _theme_tokens(theme_id: str, css_path: Path = _CSS_PATH) -> dict[str, str]:
@@ -364,7 +420,7 @@ def build_report_bundle(
                 map_ref=None,        # 계약 §10 — v5.5.0 은 null
                 image_refs=[],       # v5.5.0 — 이미지 ref 는 fast-follow
                 claim_refs=[],       # v5.5.0 — claims[] 비어있음
-                video=_section_video(sec.video, f"s{i + 1}"),  # 계약 §13 (v7.3.0)
+                video=_section_video(sec.video, f"s{i + 1}", sec.heading),  # 계약 §13 (v7.3.0, heading-echo warn v7.6.2)
             ))
 
     bundle_map = None
@@ -416,8 +472,9 @@ def build_report_bundle(
             side_b=str(c.get("side_b") or ""),
             evidence=str(c.get("evidence") or ""),
             resolution=str(c.get("resolution") or ""),
+            video=_contradiction_video(c.get("video"), f"contradiction[{ci}]"),  # 계약 §13 (v7.6.2)
         )
-        for c in (composed.contradictions if composed else [])
+        for ci, c in enumerate(composed.contradictions if composed else [])
         if isinstance(c, dict)
     ]
 

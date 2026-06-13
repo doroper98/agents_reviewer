@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.6.1
+last_synced_with: v7.6.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,31 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.6.2 — video 쟁점 카드 대본 + 표기 보정 (2차 음성 검수)
+
+2차 음성 영상 검수의 대본 측 보정. 스키마 구조는 그대로, "쓰는 법" + 신규 채널 1종.
+
+- **(신규) `contradictions[].video` — 쟁점 카드 대본 (계약 §13 additive,
+  schema_version 1 유지)**: 영상이 `side_a`/`side_b` *논설체 원문* ("…정책
+  전환이다") 을 카드·자막에 그대로 노출하던 것을 다큐 경어체 대본으로 대체.
+  `{label_a, label_b}` (진영 이름 ≤8자) + `{line_a, line_b}` (한 줄 경어체 ≤40자,
+  스테이트먼트 씬) + `{narration, narration_tts}` (쟁점 씬 자막). composer 가
+  `contradictions[].video` emit → `bundle_builder._contradiction_video` 결정론
+  가드(label ≤8 / line ≤40 / narration ≤4 캡·길이 warn) → `BundleContradictionVideo`.
+  `side_a`/`side_b` 원문은 보존하고 video 만 더한다(additive). 부재 시 null.
+- **표기 — 무기 체계명 음차 → 영문**: "장보고-엔"·"장보고 엔" → "장보고 N"
+  (headline/heading/highlights/prose 전반). narration_tts 발음은 "장보고 엔".
+- **highlights 가 heading 을 그대로 반복 금지**: 화면에 같은 말 두 번 — heading 이
+  안 보여준 구체 수치·고유명사를 담는다. producer `_section_video` 가 정확 일치
+  시 warn (heading 을 매핑부에서 전달, 2차 검수 회귀 표면화).
+- **가운뎃점(·)으로 항목 두 개 붙이기 금지**: "김여정 담화·김정은 핵물질 공장" →
+  조사로 풀거나 " · "(앞뒤 공백). narration·highlights·prose 공통.
+- **narration 각 항목은 완결된 한 문장**: "…침묵보다" 처럼 비교·연결 도중 절단 금지.
+- **불변**: 사실 근거 검증, highlights ≤40자, emphasis 정확한 부분 문자열 규칙
+  그대로. SSOT `prompts/tts_narration_guide.md` §0-2-3/§1 + composer 단축본 정합 +
+  계약 §13/예시 JSON/DATA_MODELS 동시 갱신. 회귀: `tests/test_report_bundle.py`
+  에 쟁점 video 매핑/캡/heading-echo/예시 4종 추가 (23 pass).
 
 ## v7.6.1 — 비공개 전체 보고서 목록을 /{token} 클린 경로로 (사용자 요청)
 

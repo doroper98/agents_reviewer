@@ -338,6 +338,83 @@ def test_narration_75_char_limit(caplog):
     assert any("75자 한도" in r.message for r in caplog.records)
 
 
+def test_contradiction_video_mapping(caplog):
+    """§13 v7.6.2: contradictions[].video → BundleContradiction.video (쟁점 카드 대본)."""
+    import logging
+    res = _make_result()
+    res.composed_report.contradictions = [{
+        "side_a": "수요 견조다.", "side_b": "재고 누적이다.", "resolution": "사이클 분기.",
+        "video": {
+            "label_a": "수요론", "label_b": "재고론",
+            "line_a": "주문 잔량이 쌓이며 수요는 견조합니다.",
+            "line_b": "범용 D램 재고가 동시에 늘고 있습니다.",
+            "narration": ["한쪽은 수요가 탄탄하다고 봅니다.", "다른 쪽은 재고 신호를 짚습니다."],
+            "narration_tts": ["한쪽은 수요가 탄탄하다고 봅니다.", "다른 쪽은 범용 디램 재고 신호를 짚습니다."],
+        },
+    }]
+    with caplog.at_level(logging.WARNING):
+        b = build_report_bundle(res)
+    cv = b.contradictions[0].video
+    assert cv is not None
+    assert cv.label_a == "수요론" and cv.label_b == "재고론"
+    assert cv.line_a.startswith("주문 잔량")
+    assert len(cv.narration) == 2 and len(cv.narration_tts) == 2
+    # 직렬화 (additive) — side 원문은 보존
+    dumped = b.model_dump(mode="json")
+    assert dumped["contradictions"][0]["video"]["label_a"] == "수요론"
+    assert dumped["contradictions"][0]["side_a"] == "수요 견조다."
+
+
+def test_contradiction_video_absent_and_caps(caplog):
+    """§13 v7.6.2: video 없으면 null + label ≤8/line ≤40 초과 warn (drop 아님)."""
+    import logging
+    res = _make_result()
+    # video 없는 contradiction → null
+    res.composed_report.contradictions = [{"side_a": "A", "side_b": "B", "resolution": "R"}]
+    b = build_report_bundle(res)
+    assert b.contradictions[0].video is None
+    # label 9자 / line 41자 → warn (값은 보존)
+    res.composed_report.contradictions = [{
+        "side_a": "A", "side_b": "B",
+        "video": {"label_a": "가" * 9, "line_a": "가" * 41, "narration": ["짧은 문장입니다."]},
+    }]
+    with caplog.at_level(logging.WARNING):
+        b2 = build_report_bundle(res)
+    cv = b2.contradictions[0].video
+    assert cv is not None and len(cv.label_a) == 9 and len(cv.line_a) == 41
+    assert any("label_a" in r.message and "한도" in r.message for r in caplog.records)
+    assert any("line_a" in r.message and "한도" in r.message for r in caplog.records)
+
+
+def test_highlight_echoes_heading_warn(caplog):
+    """§13 v7.6.2: highlight 가 heading 을 그대로 반복하면 warn (2차 검수)."""
+    import logging
+    from src.handoff.bundle_builder import _section_video
+    with caplog.at_level(logging.WARNING):
+        v = _section_video(
+            {"narration": ["완결된 문장입니다."], "highlights": ["묵인이냐 침묵이냐"]},
+            "s1", heading="묵인이냐 침묵이냐",
+        )
+    assert v is not None  # drop 아님 — warn 만
+    assert any("heading 을 그대로 반복" in r.message for r in caplog.records)
+    # heading 과 다른 highlight 는 warn 없음
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _section_video(
+            {"narration": ["완결된 문장입니다."], "highlights": ["비핵화 표현 빠진 공동성명"]},
+            "s2", heading="묵인이냐 침묵이냐",
+        )
+    assert not any("heading 을 그대로 반복" in r.message for r in caplog.records)
+
+
+def test_example_bundle_has_contradiction_video():
+    """예시 번들이 contradictions[].video 를 포함하고 스키마 통과."""
+    data = json.loads(_EXAMPLE.read_text(encoding="utf-8"))
+    b = ReportBundle.model_validate(data)
+    assert b.contradictions and b.contradictions[0].video is not None
+    assert b.contradictions[0].video.label_a == "수요론"
+
+
 def test_bundle_reload_path():
     """/bundle 재emit: model_dump → model_validate → rebuild 동등."""
     res = _make_result()

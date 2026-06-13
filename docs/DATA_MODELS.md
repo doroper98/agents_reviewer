@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.6.0
+last_synced_with: v7.6.2
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -15,6 +15,9 @@ last_review: 2026-05-26
 <!-- v7.6.0: BundleTimeline.video → BundleTimelineVideo{narration, narration_tts}
      추가 (타임라인 씬 대본 — 1차 음성 검수 반영, 계약 §13 additive). narration
      문장 한도 58→75자 완화. composer 는 timeline_flow.video 로 emit. -->
+<!-- v7.6.2: BundleContradiction.video → BundleContradictionVideo{label_a, label_b,
+     line_a, line_b, narration, narration_tts} 추가 (쟁점 카드 대본 — 2차 음성 검수
+     반영, 계약 §13 additive). composer 는 contradictions[].video 로 emit. -->
 <!-- v5.5.1: ComposedReport 에 contradictions_heading: str 추가 (모순 섹션 동적
      제목, composer emit, 비면 '쟁점과 판단' fallback). WRITE-AP-9. -->
 <!-- v5.5.2: ComposedReport.timeline_flow: dict|None (시간 흐름도 composer 윤색,
@@ -384,7 +387,7 @@ ReportBundle
 ├─ charts[]        BundleChart (type, data=schemas.py shape, display [v6.1.1 strip|full], provenance→BundleProvenance, prerendered_svg)
 ├─ map?            BundleMap (id, center, zoom, markers, arcs, legend, provenance)
 ├─ claims[]        BundleClaim (status, evidence→BundleEvidence)   ← v5.5.0 라이브 경로엔 빈 list
-├─ signals[]       BundleSignal      ├─ contradictions[]  BundleContradiction
+├─ signals[]       BundleSignal      ├─ contradictions[]  BundleContradiction (video?→BundleContradictionVideo [v7.6.2 §13])
 ├─ sources[]       BundleTopSource   ├─ confidence?       BundleConfidence
 └─ timeline?       BundleTimeline (heading, points[], video?→BundleTimelineVideo [v7.6.0 §13])
 ```
@@ -405,7 +408,10 @@ ReportBundle
   v7.6.0 검수로 58→75 완화) 를 거쳐 `BundleSectionVideo`(narration/highlights/
   emphasis/narration_tts) + `BundleReportVideo`(intro_narration/outro_narration) +
   `BundleTimelineVideo`(narration/narration_tts — 타임라인 씬, 분기점 라벨 낭독
-  금지) 로 매핑. 부재 시 `null` — consumer(osint_generator) 는 기존 템플릿 동작 유지.
+  금지) + `BundleContradictionVideo`(label_a/label_b/line_a/line_b/narration/
+  narration_tts — 쟁점 카드 대본, v7.6.2 2차 검수, `_contradiction_video` 가드:
+  label ≤8 / line ≤40 / narration ≤4) 로 매핑. 부재 시 `null` — consumer
+  (osint_generator) 는 기존 템플릿/원문 동작 유지.
 - **TTS 발화 (v7.4.0)**: `narration`=자막(표기용), `narration_tts`=음성(발화용) 분리.
   작성 규칙 SSOT 는 `prompts/tts_narration_guide.md` + composer SYSTEM_PROMPT
   "★ TTS 발화 규칙" 블록. 빌더 `_warn_tts_gap` 가 narration 위험 표기 대비 narration_tts

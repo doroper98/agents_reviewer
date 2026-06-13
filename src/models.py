@@ -1211,11 +1211,30 @@ class BundleSignal(BaseModel):
     verification: VerificationStatus = "unverified"
 
 
+class BundleContradictionVideo(BaseModel):
+    """v7.6.2 — 쟁점(모순) 카드 내레이션 (계약 §13, additive — 2차 음성 검수 반영).
+
+    영상이 contradictions 의 side_a/side_b *논설체 원문* ("…정책 전환이다") 을
+    그대로 카드/자막에 노출하던 것을 producer 의 다큐 경어체 대본으로 대체.
+    label_a/label_b 는 진영 이름(짧은 명사구), line_a/line_b 는 각 입장의 한 줄
+    경어체 요약(스테이트먼트 씬), narration 은 쟁점 씬 자막 2~3문장. narration_tts
+    는 섹션과 같은 표기용/발화용 분리 (SSOT: prompts/tts_narration_guide.md).
+    """
+
+    label_a: str = ""        # 진영 이름 ≤8자 (예: 묵인론)
+    label_b: str = ""
+    line_a: str = ""         # 각 입장 한 줄 경어체 ≤40자 (스테이트먼트 씬)
+    line_b: str = ""
+    narration: list[str] = Field(default_factory=list)       # 2~3문장, 문장 ≤75자
+    narration_tts: list[str] = Field(default_factory=list)   # 선택 (비면 발음 사전 처리)
+
+
 class BundleContradiction(BaseModel):
     side_a: str = ""
     side_b: str = ""
     evidence: str = ""
     resolution: str = ""
+    video: BundleContradictionVideo | None = None  # 계약 §13 (v7.6.2 additive) — 없으면 null
 
 
 class BundleTopSource(BaseModel):
