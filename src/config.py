@@ -17,9 +17,11 @@ class Config(BaseSettings):
     cloudflare_api_token: str = ""
     cloudflare_project_name: str = "analysis-reports"
     report_output_dir: str = "reports"
-    # v5.6.3 — 관리자 비공개 목록 페이지 토큰. 설정 시 admin-{token}.html 에 전체
-    # 보고서 목록(토큰 URL 포함)을 생성 — 관리자만 아는 *고정* unlisted 주소(즐겨찾기용).
-    # 미설정 시 미생성 (공개 index 는 목록 없음, /reports 로 대체). 긴 난수 권장.
+    # v5.6.3 — 관리자 비공개 목록 페이지 토큰. 설정 시 {token}.html 에 전체 보고서
+    # 목록(토큰 URL 포함)을 생성 — 접속 주소는 /{token} (Pages 가 .html 숨김 서빙,
+    # v7.6.1 admin- 접두사 제거). 관리자만 아는 *고정* unlisted 주소(즐겨찾기용).
+    # 미설정 시 미생성 (공개 index 는 목록 없음, /reports 로 대체). URL-safe 영숫자
+    # 난수 권장 (파일명으로 그대로 쓰임).
     admin_index_token: str = ""
     model_name: str = "claude-opus-4-6"
     model_name_light: str = "claude-sonnet-4-6"

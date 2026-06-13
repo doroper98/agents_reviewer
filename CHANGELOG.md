@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.6.0
+last_synced_with: v7.6.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.6.1 — 비공개 전체 보고서 목록을 /{token} 클린 경로로 (사용자 요청)
+
+- **`ADMIN_INDEX_TOKEN` 목록 페이지 경로 개정**: 기존 `admin-{token}.html` →
+  **`{token}.html`** 생성. Cloudflare Pages 가 `.html` 을 숨겨 서빙하므로 접속
+  주소는 `https://analysis-reports.pages.dev/{token}` (난수 20자리 고정 주소,
+  즐겨찾기용). 공개 랜딩(`/`)은 v5.6.2 그대로 목록 비공개 유지.
+- 옛 `admin-*.html` 잔재는 `_generate_index` 가 자동 삭제 — stale 목록이 옛
+  주소로 계속 노출되는 누수 차단 (다음 deploy 에서 Pages 에서도 사라짐).
+- 텔레그램 안내 URL 2곳(`/reports` 명령, 분석 완료 메시지) + `.env.example` /
+  `config.py` 주석 동기화. env 변수명(`ADMIN_INDEX_TOKEN`)·생성 트리거(보고서
+  발행 시 재생성)는 불변.
 
 ## v7.6.0 — video 대본 작성 규칙 개정 + timeline.video (1차 음성 영상 검수 반영)
 

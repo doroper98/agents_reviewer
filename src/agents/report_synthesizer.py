@@ -1638,12 +1638,17 @@ class ReportSynthesizer:
                 )
 
     def _generate_index(self, output_dir: str) -> None:
-        """공개 랜딩(목록 비공개) + 관리자 비공개 목록 페이지 생성 (v5.6.3).
+        """공개 랜딩(목록 비공개) + 관리자 비공개 목록 페이지 생성 (v5.6.3, v7.6.1 경로 개정).
 
         - ``index.html``: 구독자 전용 안내만 — 목록 노출 X (unlisted 가드).
-        - ``admin-{token}.html``: 전체 보고서 목록 + 토큰 URL. ``config.admin_index_token``
-          (env ``ADMIN_INDEX_TOKEN``) 설정 시에만 생성. *고정* 난수 주소라 관리자가
-          즐겨찾기 가능. 미설정 시 미생성 (텔레그램 ``/reports`` 로 대체).
+        - ``{token}.html``: 전체 보고서 목록 + 토큰 URL. ``config.admin_index_token``
+          (env ``ADMIN_INDEX_TOKEN``) 설정 시에만 생성. Cloudflare Pages 가 .html 을
+          숨겨 서빙하므로 접속 주소는 ``https://<project>.pages.dev/{token}`` —
+          *고정* 난수 주소라 관리자가 즐겨찾기 가능. 미설정 시 미생성 (텔레그램
+          ``/reports`` 로 대체). v7.6.1 — 기존 ``admin-{token}.html`` 파일명에서
+          접두사 제거 (사용자 요청: '/<난수>' 형태), 옛 ``admin-*.html`` 잔재는
+          자동 삭제 (stale 목록이 옛 주소로 계속 노출되는 누수 차단 — 다음 deploy
+          에서 Pages 에서도 사라짐).
         """
         import glob
 
@@ -1706,6 +1711,14 @@ tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:non
         logger.info(f"[report_synthesizer] Public index updated: {index_path}")
 
         # 2) 관리자 비공개 목록 (고정 토큰 설정 시만). 즐겨찾기용 unlisted 주소.
+        # v7.6.1 — 옛 admin-{token}.html 잔재 정리 (이 함수만 만들던 파일명 패턴).
+        for stale in glob.glob(os.path.join(output_dir, "admin-*.html")):
+            try:
+                os.remove(stale)
+                logger.info("[report_synthesizer] Stale admin index removed: %s",
+                            os.path.basename(stale))
+            except OSError:
+                pass
         token = (getattr(self.config, "admin_index_token", "") or "").strip()
         if not token:
             return
@@ -1744,10 +1757,11 @@ tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:non
             f'<tbody>\n{"".join(rows) if rows else empty_row}\n</tbody>\n</table>\n' + foot
         )
         admin_html = head + f'<body>\n<div class="wrap">\n{admin_body}\n</div>\n</body>\n</html>'
-        admin_path = os.path.join(output_dir, f"admin-{token}.html")
+        admin_path = os.path.join(output_dir, f"{token}.html")
         with open(admin_path, "w", encoding="utf-8") as f:
             f.write(admin_html)
-        logger.info("[report_synthesizer] Admin index updated: admin-%s.html", token)
+        logger.info("[report_synthesizer] Admin index updated: %s.html (URL: /%s)",
+                    token, token)
 
 
 # Populate the block builder registry after class definition.

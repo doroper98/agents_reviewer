@@ -309,7 +309,7 @@ class TelegramBot:
         if admin_token and project:
             await update.message.reply_text(
                 "🔖 즐겨찾기용 전체 목록 페이지 (비공개):\n"
-                f"https://{project}.pages.dev/admin-{admin_token}.html"
+                f"https://{project}.pages.dev/{admin_token}"
             )
 
         lines = [f"📁 전체 보고서 {len(files)}건 (최근순):\n"]
@@ -1133,8 +1133,8 @@ class TelegramBot:
             # Send report list link as separate message.
             # v5.8.7 — 공개 인덱스(/)는 v5.6.2 부터 목록 비공개(빈 랜딩)라, 이를
             # "전체 보고서 목록" 으로 안내하면 눌러도 목록이 안 보이는 회귀였다.
-            # 실제 목록 경로로 정정: admin_index_token 설정 시 admin-{token}.html
-            # (웹 목록 페이지), 미설정 시 /reports 명령 안내.
+            # 실제 목록 경로로 정정: admin_index_token 설정 시 /{token} (웹 목록
+            # 페이지, v7.6.1 — admin- 접두사 제거), 미설정 시 /reports 명령 안내.
             if result.report_url and result.report_url.startswith("http"):
                 base_url = result.report_url.rsplit("/", 1)[0]
                 admin_token = (
@@ -1142,7 +1142,7 @@ class TelegramBot:
                 ).strip()
                 if admin_token:
                     await send(
-                        f"📁 전체 보고서 목록: {base_url}/admin-{admin_token}.html"
+                        f"📁 전체 보고서 목록: {base_url}/{admin_token}"
                     )
                 else:
                     await send(
