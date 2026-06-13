@@ -1,0 +1,501 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-06-13T13:08:21.340053+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v7.6.1",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260613_130814_24d6892d16",
+    "headline": "앤트로픽 최상위 모델 두 종, 어제부터 막혔다",
+    "deck": "미 상무부가 외국인 접속만 막으라고 했지만, 국적 분리가 안 돼 전 세계 전 고객이 막혔다. 공개된 발단은 한 회사가 구두로 시연한 안전장치 우회 기법이다.",
+    "closing": "어제의 서한 한 통은 한 회사의 모델 두 종을 멈춰 세웠다. 다음 한 통이 어디로 향할지는, 오늘 우리가 답을 듣지 못한 그 첫 번째 시연의 실체가 결정한다.",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260613_130814_24d6892d16.html",
+    "theme": {
+      "id": "editorial_cream",
+      "tokens": {
+        "bg": "#F2EBDB",
+        "card": "#ECE3D0",
+        "border": "#D4C8B0",
+        "text": "#1F1814",
+        "muted": "#6B5C4A",
+        "accent": "#B05A38",
+        "up": "#4A6B3E",
+        "down": "#8B2A2A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": {
+      "intro_narration": [
+        "어제 저녁, 미국 상무부가 보낸 서한 한 통이 앤트로픽 최상위 모델 두 종을 멈춰 세웠습니다.",
+        "외국인 한정 명령이었지만 결과는 전 세계 전 고객 차단이었습니다. 무엇이 벌어졌는지 짚어 보겠습니다."
+      ],
+      "outro_narration": [
+        "서한 한 통은 한 회사의 모델 두 종을 멈춰 세웠습니다.",
+        "다음 한 통이 어디로 향할지, 앞으로의 몇 주가 답을 줄 겁니다."
+      ],
+      "intro_narration_tts": [
+        "어제 저녁, 미국 상무부가 보낸 서한 한 통이 앤트로픽 최상위 모델 두 종을 멈춰 세웠습니다.",
+        "외국인 한정 명령이었지만 결과는 전 세계 전 고객 차단이었습니다. 무엇이 벌어졌는지 짚어 보겠습니다."
+      ],
+      "outro_narration_tts": [
+        "서한 한 통은 한 회사의 모델 두 종을 멈춰 세웠습니다.",
+        "다음 한 통이 어디로 향할지, 앞으로의 몇 주가 답을 줄 겁니다."
+      ]
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "한 통의 서한, 그리고 막혀버린 접속",
+      "kicker": "어제 저녁의 사실",
+      "prose": "수신자는 앤트로픽 최고경영자 다리오 아모데이, 발신자는 상무장관 하워드 러트닉이다. 내용은 단순했다. 자사 최상위 모델인 페이블 5(Fable 5)와 미토스 5(Mythos 5)의 외국 국적자 접속을 즉시 차단하라는 것. 근거는 수출통제 법규로, 위반하면 형사 처벌까지 가능하다.\n\n앤트로픽은 거부할 선택지가 없었다. 회사는 같은 날 늦은 밤 두 모델의 접속을 막았고, 오늘(6월 13일) 공식 statement(공식 입장문)를 띄우며 사실관계를 공개했다. 입장문 첫 문장은 '법적 지시는 준수하나, 결정에는 동의하지 않는다' 였다.\n\n이상한 점이 두 가지다. 첫째, 이미 상업적으로 배포돼 운영 중인 최첨단 모델에 이런 권한이 처음 발동됐다. 둘째, 서한에 구체적 안보 사유는 적혀 있지 않다. 공개된 자료에서 확인되는 발단은, 한 미공개 제3 회사가 미토스의 안전장치를 우회하는 기법을 상무부 측에 구두로 시연했다는 점이다.",
+      "pull_quote": "법적 지시는 준수합니다. 결정에는 동의하지 않습니다.",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "어제 저녁 5시 21분, 미국 동부시각. 미 상무부가 앤트로픽에 짧은 서한 한 통을 보냈습니다.",
+          "그 한 장으로 회사 최상위 모델 두 종, 페이블 5와 미토스 5의 접속이 막혔습니다.",
+          "근거는 수출통제 법규였습니다. 위반하면 형사 처벌까지 갈 수 있어, 회사는 거부할 수가 없었습니다."
+        ],
+        "highlights": [
+          "어제 5시 21분, 미 동부시각",
+          "최상위 모델 두 종 즉시 차단",
+          "위반 시 형사 처벌까지"
+        ],
+        "emphasis": [
+          "페이블 5",
+          "미토스 5",
+          "수출통제 법규"
+        ],
+        "narration_tts": [
+          "어제 저녁 다섯 시 이십일분, 미국 동부시각. 미 상무부가 앤트로픽에 짧은 서한 한 통을 보냈습니다.",
+          "그 한 장으로 회사 최상위 모델 두 종, 페이블 파이브와 미토스 파이브의 접속이 막혔습니다.",
+          "근거는 수출통제 법규였습니다. 위반하면 형사 처벌까지 갈 수 있어, 회사는 거부할 수가 없었습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s2",
+      "heading": "'외국인만' 이라는 말의 함정",
+      "kicker": "차단의 실제 범위",
+      "prose": "서한의 문구는 'foreign national', 곧 외국 국적자였다. 미국 외 거주자뿐 아니라 미국 안에 사는 외국 국적자까지 포함된다. 문제는 앤트로픽 입장에서 사용자의 국적을 실시간으로 분리할 방법이 없다는 점이다.\n\n결과는 단순했다. 외국인만 막을 수가 없으니 전 고객을 막는다. 어제 밤 페이블 5와 미토스 5의 접속은 미국 시민 고객을 포함해 전부 끊겼다. 다른 클로드(Claude) 계열 모델은 정상 운영 중이다.\n\n정책의 문구와 실제 결과 사이의 이 간극이 이번 사건의 첫 번째 쟁점이다. 정부가 '외국인 한정' 이라고 적은 명령이 회사의 기술적 한계 때문에 '전원 차단' 으로 귀결된 것은, 행정명령이 실행 가능성을 검토하지 않은 채 발동됐다는 뜻이다. 자국 시민이 자국 회사의 제품을 못 쓰게 만든 결정으로 보기 어려운데, 결과적으로 그렇게 됐다.\n\n앤트로픽은 입장문에서 이 점을 분명히 했다. 회사로서는 국적 필터를 거를 기술적 수단이 없고, 위반 시 형사 책임이 따르는 만큼 일단 전면 차단 외에 다른 선택지가 없었다는 것이다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "서한이 적시한 대상은 외국 국적자였습니다. 그런데 앤트로픽은 사용자의 국적을 실시간으로 가려낼 방법이 없습니다.",
+          "그래서 외국인을 막으려면, 일단 전부를 막아야 했습니다. 미국 시민 고객까지 함께 끊긴 이유입니다.",
+          "다른 클로드 모델은 그대로 돕니다. 막힌 것은 페이블 5와 미토스 5, 단 두 종입니다."
+        ],
+        "highlights": [
+          "외국인 한정이 전원 차단이 됐다",
+          "다른 클로드 모델은 정상"
+        ],
+        "emphasis": [
+          "외국 국적자",
+          "전부를 막아야",
+          "단 두 종"
+        ],
+        "narration_tts": [
+          "서한이 적시한 대상은 외국 국적자였습니다. 그런데 앤트로픽은 사용자의 국적을 실시간으로 가려낼 방법이 없습니다.",
+          "그래서 외국인을 막으려면, 일단 전부를 막아야 했습니다. 미국 시민 고객까지 함께 끊긴 이유입니다.",
+          "다른 클로드 모델은 그대로 돕니다. 막힌 것은 페이블 파이브와 미토스 파이브, 단 두 종입니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s3",
+      "heading": "공개된 발단, 비어 있는 사유서",
+      "kicker": "발동 근거의 무게",
+      "prose": "정부가 어떤 정보를 근거로 명령을 내렸는지가 두 번째 쟁점이다. 공개된 사실은 이렇다. 한 미공개 제3 회사가 상무부 측에 미토스 5의 안전장치를 우회하는 기법을 신고하고 시연했다. 그 시연을 본 정부 관계자가 안보 우려를 표명했고, 그것이 어제 서한의 공개된 발단이다.\n\n서한 자체에는 어떤 우려인지, 어떤 안보 피해가 예상되는지 적혀 있지 않다. 앤트로픽이 받은 종이는 명령서이지 사유서가 아니었다. 시연된 기법이 무엇이었는지, 그것이 어떤 정보를 끌어낼 수 있었는지에 대한 구체 기술도 회사 쪽에는 전달되지 않은 것으로 보인다.\n\n공개된 서한과 회사 입장문 기준으로는 구체적 사유, 적용 기간, 해제 조건이 확인되지 않는다. 비공개 채널로 어떤 추가 근거가 오갔는지, 정부가 다른 정보를 더 쥐고 있는지는 외부에서 알 수 있는 범위 밖이다. 회사가 직접 받아 든 자료의 폭이 좁다는 점만 확인된다.\n\n물론 안보 영역에서 모든 절차를 공개하지는 않는다. 비공개로 다뤄야 할 사유가 있을 수 있다. 다만 회사 입장에서는 자기가 무엇을 잘못했는지, 무엇을 고치면 명령이 풀리는지 알 수 없는 상태에서 사업이 정지된 셈이다.",
+      "pull_quote": "회사가 받은 종이는 명령서이지 사유서가 아니었다.",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "정부는 왜 이런 명령을 내렸을까요. 공개된 사실은 짧습니다.",
+          "한 미공개 회사가 미토스 5의 안전장치를 우회하는 기법을 정부 쪽에 직접 시연했고, 그것이 어제 서한의 발단이 됐습니다.",
+          "그런데 서한에는 구체적 안보 사유가 한 줄도 적혀 있지 않습니다. 앤트로픽이 받은 종이는 명령서이지, 사유서가 아니었습니다."
+        ],
+        "highlights": [
+          "근거는 구두 시연 한 번",
+          "서면 안보 사유는 0건"
+        ],
+        "emphasis": [
+          "미공개 회사",
+          "안전장치를 우회",
+          "명령서이지, 사유서가 아니었습니다"
+        ],
+        "narration_tts": [
+          "정부는 왜 이런 명령을 내렸을까요. 공개된 사실은 짧습니다.",
+          "한 미공개 회사가 미토스 파이브의 안전장치를 우회하는 기법을 정부 쪽에 직접 시연했고, 그것이 어제 서한의 발단이 됐습니다.",
+          "그런데 서한에는 구체적 안보 사유가 한 줄도 적혀 있지 않습니다. 앤트로픽이 받은 종이는 명령서이지, 사유서가 아니었습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s4",
+      "heading": "넓혀 적용하면 산업이 멈춘다",
+      "kicker": "앤트로픽의 반박",
+      "prose": "앤트로픽의 반론은 두 갈래다. 첫째, 시연된 기법은 좁고 비범용이다. 회사 표현으로는 'narrow, non-universal'. 특정 조건과 특정 질문 구성에서 작동하는 국지적 기법이지, 모델의 안전 체계 전반을 뚫는 일반 해법이 아니라는 뜻이다. 둘째, 동등한 수준의 기법은 다른 공개 모델에서도 가능하다. 회사는 오픈에이아이의 지피티 5.5를 직접 거론하며, 같은 기준을 적용하면 그 모델도 시장에서 회수돼야 한다고 주장했다.\n\n여기서 앤트로픽의 진짜 우려가 드러난다. 만약 '제3자가 좁은 안전장치 우회 기법을 시연했다' 는 사실 하나만으로 이미 상업 배포된 최첨단 모델이 회수된다면, 이 기준은 산업 전체에 적용될 수밖에 없다. 그러면 어떤 사업자도 새로운 모델을 자신 있게 출시할 수 없다. 출시 후 한 주 안에 누군가 좁은 우회를 들고 정부 문을 두드리면, 다음 날 모델이 막힐 수 있기 때문이다.\n\n특이한 위치다. 앤트로픽은 그동안 가장 강한 어조로 AI의 안전 위험을 경고해 온 회사다. 직접 운영하는 안전 평가팀의 보고서를 정기적으로 공개하고, 산업 차원의 안전 기준 마련을 옹호해 왔다. 그런 회사가 안전 우려를 근거로 한 정부 명령에 사실상 처음으로 맞서는 모양이 됐다.\n\n회사 측은 이번 모델의 안전장치가 'substantially more effective', 곧 이전 어떤 배포 모델보다 실질적으로 더 효과적이라고 주장한다. 안전을 더 단단하게 만들었다는 모델이, 안전 우려를 명분으로 가장 먼저 막힌 셈이다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "앤트로픽의 반론은 두 가지였습니다. 시연된 기법은 좁고 한정적이며, 다른 공개 모델에도 같은 수준의 기법이 가능하다는 것입니다.",
+          "회사가 진짜 걱정하는 것은 따로 있습니다. 이런 기준을 산업 전체에 적용하면, 어떤 사업자도 새 모델을 자신 있게 내놓을 수 없습니다.",
+          "그동안 앤트로픽은 안전을 가장 크게 외쳐 온 회사였습니다. 그런 회사가 안전 명분의 정부 명령에 맞서는 모양이 됐습니다."
+        ],
+        "highlights": [
+          "좁은 기법, 타 모델도 가능",
+          "넓혀 적용하면 신모델 출시가 멈춘다",
+          "안전을 가장 외쳐 온 회사가 맞서다"
+        ],
+        "emphasis": [
+          "좁고 한정적",
+          "산업 전체에 적용하면",
+          "안전을 가장 크게 외쳐 온 회사"
+        ],
+        "narration_tts": [
+          "앤트로픽의 반론은 두 가지였습니다. 시연된 기법은 좁고 한정적이며, 다른 공개 모델에도 같은 수준의 기법이 가능하다는 것입니다.",
+          "회사가 진짜 걱정하는 것은 따로 있습니다. 이런 기준을 산업 전체에 적용하면, 어떤 사업자도 새 모델을 자신 있게 내놓을 수 없습니다.",
+          "그동안 앤트로픽은 안전을 가장 크게 외쳐 온 회사였습니다. 그런 회사가 안전 명분의 정부 명령에 맞서는 모양이 됐습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s5",
+      "heading": "안전 우선인가, 산업 정지인가",
+      "kicker": "남겨두는 모순",
+      "prose": "두 입장은 양립하기 어렵다. 정부 입장에서, 한 회사가 신고한 기법이 실제로 외국 행위자에게 흘러들면 안보 손실이 발생한다. 모델을 일단 막아 두고 검증하는 편이 사후 수습보다 비용이 작다. 행정의 사전예방 원칙이다.\n\n반대편에서, 공개된 근거가 좁은 시연에 그치는 상황에서 배포 중인 최첨단 모델 두 종을 끄는 결정은 산업의 출시 위험을 정량화할 수 없는 수준으로 끌어올린다. 정부 문턱을 누가, 언제 두드리느냐에 따라 회사의 사업이 흔들리게 되는 구조다.\n\n어느 쪽에 더 무게가 실리는지는 한 가지 사실에 달려 있다. 이 시연이 실제로 어떤 정보를 끌어냈고, 그 정보가 공개된 다른 출처로는 얻을 수 없는 것이었는지다. 그 답이 비공개 채널에서나마 회사 측에 전달되지 않으면, 이번 명령은 '안전' 이라는 단어가 산업 정지의 만능 키처럼 쓰일 수 있다는 선례를 남긴다. 같은 권한이 다음 분기에 누구를 향할지는 그때 가서야 알 수 있다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "두 입장은 양립하기 어렵습니다. 정부는 안보 손실을 막기 위한 사전예방이라 보고, 회사는 검증되지 않은 시연 한 번으로 사업이 흔들렸다고 봅니다.",
+          "어느 쪽에 무게가 실리는지는 한 가지에 달려 있습니다. 이 시연이 정말로 다른 출처로는 얻을 수 없는 정보를 끌어냈는지입니다.",
+          "그 답이 회사 쪽에 전달되지 않으면, 안전이라는 단어가 산업 정지의 만능 키처럼 쓰일 수 있다는 선례를 남기게 됩니다."
+        ],
+        "highlights": [
+          "사전예방인가, 검증되지 않은 정지인가",
+          "다음 분기엔 누구 차례인가"
+        ],
+        "emphasis": [
+          "양립하기 어렵습니다",
+          "만능 키처럼 쓰일 수 있다는 선례"
+        ],
+        "narration_tts": [
+          "두 입장은 양립하기 어렵습니다. 정부는 안보 손실을 막기 위한 사전예방이라 보고, 회사는 검증되지 않은 시연 한 번으로 사업이 흔들렸다고 봅니다.",
+          "어느 쪽에 무게가 실리는지는 한 가지에 달려 있습니다. 이 시연이 정말로 다른 출처로는 얻을 수 없는 정보를 끌어냈는지입니다.",
+          "그 답이 회사 쪽에 전달되지 않으면, 안전이라는 단어가 산업 정지의 만능 키처럼 쓰일 수 있다는 선례를 남기게 됩니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s6",
+      "heading": "어디로 갈 것인가, 무엇을 지켜볼 것인가",
+      "kicker": "전망",
+      "prose": "단기 시나리오는 네 갈래로 정리된다.\n\n첫째, 비공개 협상 타결. 앤트로픽이 정부 측 안보 우려를 추가 안전장치로 흡수하고, 며칠에서 몇 주 안에 두 모델의 접속이 재개되는 경로다. 회사가 statement 끝에 '오해' 라는 표현을 쓴 것은 이 시나리오를 염두에 둔 외교적 신호로 읽을 수 있다.\n\n둘째, 부분 재개. 외국 국적자 분리를 위한 기술 솔루션(국적 인증 절차 추가, 미국 결제 수단 한정 등)이 도입돼 미국 사용자만 우선 풀리는 경로다. 외국 고객의 매출 손실은 누적된다.\n\n셋째, 동종 사업자 확산. 같은 권한이 오픈에이아이, 구글의 최첨단 모델에도 발동되며 업계 차원의 출시 일시 중단이 자리잡는 경로다. 앤트로픽이 가장 우려한 경로다.\n\n넷째, 법적 다툼. 앤트로픽이 수출통제 권한의 자의적 적용을 이유로 소송에 들어가는 경로다. 행정명령의 적법성 자체가 법정에서 다뤄지면 결정 시점은 분기를 넘긴다.\n\n어느 갈래로 갈지는 다음 몇 주 동안의 몇 가지 신호로 가려진다. 정부가 다른 사업자에게 비슷한 서한을 보내는지, 의회가 청문회를 여는지, 시연을 신고한 제3 회사의 정체가 드러나는지가 분기점이다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "앞으로의 경로는 네 갈래로 보입니다. 비공개 협상으로 풀리거나, 미국 사용자만 우선 풀리거나, 같은 권한이 다른 회사로 번지거나, 법정에서 다뤄지거나입니다.",
+          "회사가 입장문 끝에 '오해' 라는 단어를 쓴 것은, 첫 번째 경로를 염두에 둔 신호로 읽힙니다.",
+          "어느 갈래로 갈지는, 정부가 다른 회사에도 같은 서한을 보내는지, 의회가 청문회를 여는지에서 갈립니다."
+        ],
+        "highlights": [
+          "네 갈래의 단기 시나리오",
+          "다음 분기점은 정부의 다음 서한"
+        ],
+        "emphasis": [
+          "네 갈래",
+          "오해",
+          "다음 서한"
+        ],
+        "narration_tts": [
+          "앞으로의 경로는 네 갈래로 보입니다. 비공개 협상으로 풀리거나, 미국 사용자만 우선 풀리거나, 같은 권한이 다른 회사로 번지거나, 법정에서 다뤄지거나입니다.",
+          "회사가 입장문 끝에 오해라는 단어를 쓴 것은, 첫 번째 경로를 염두에 둔 신호로 읽힙니다.",
+          "어느 갈래로 갈지는, 정부가 다른 회사에도 같은 서한을 보내는지, 의회가 청문회를 여는지에서 갈립니다."
+        ]
+      }
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "network",
+      "title": "한 통의 서한이 끌어들인 사람들",
+      "data": {
+        "nodes": [
+          {
+            "id": "thirdparty",
+            "label": "제3 회사",
+            "group": "actor"
+          },
+          {
+            "id": "commerce",
+            "label": "미 상무부",
+            "group": "government"
+          },
+          {
+            "id": "anthropic",
+            "label": "앤트로픽",
+            "group": "company"
+          },
+          {
+            "id": "fable",
+            "label": "페이블 5",
+            "group": "model"
+          },
+          {
+            "id": "mythos",
+            "label": "미토스 5",
+            "group": "model"
+          },
+          {
+            "id": "foreign",
+            "label": "외국 고객",
+            "group": "user"
+          },
+          {
+            "id": "us",
+            "label": "미국 시민",
+            "group": "user"
+          }
+        ],
+        "links": [
+          {
+            "source": "thirdparty",
+            "target": "commerce",
+            "type": "구두 시연"
+          },
+          {
+            "source": "commerce",
+            "target": "anthropic",
+            "type": "차단 지시"
+          },
+          {
+            "source": "anthropic",
+            "target": "fable",
+            "type": "운영"
+          },
+          {
+            "source": "anthropic",
+            "target": "mythos",
+            "type": "운영"
+          },
+          {
+            "source": "fable",
+            "target": "foreign",
+            "type": "차단(지시)"
+          },
+          {
+            "source": "mythos",
+            "target": "foreign",
+            "type": "차단(지시)"
+          },
+          {
+            "source": "fable",
+            "target": "us",
+            "type": "차단(부수효과)"
+          },
+          {
+            "source": "mythos",
+            "target": "us",
+            "type": "차단(부수효과)"
+          }
+        ]
+      },
+      "note": "",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"-76.75 -74.12831115722656 483.7214660644531 499.75830078125\"><rect x=\"-100000\" y=\"-100000\" width=\"200000\" height=\"200000\" fill=\"#ECE3D0\"/><defs><pattern id=\"c-hatch-tight\" patternUnits=\"userSpaceOnUse\" width=\"2.4\" height=\"2.4\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"2.4\" stroke=\"#1F1814\" stroke-width=\"0.85\"></line></pattern><pattern id=\"c-hatch-wide\" patternUnits=\"userSpaceOnUse\" width=\"3.8\" height=\"3.8\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"3.8\" stroke=\"#1F1814\" stroke-width=\"0.7\"></line></pattern><pattern id=\"c-dots\" patternUnits=\"userSpaceOnUse\" width=\"2.4\" height=\"2.4\"><circle cx=\"1.2\" cy=\"1.2\" r=\"0.22\" fill=\"#1F1814\"></circle></pattern><pattern id=\"c-accent-hatch\" patternUnits=\"userSpaceOnUse\" width=\"2.4\" height=\"2.4\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"2.4\" stroke=\"#B05A38\" stroke-width=\"0.85\"></line></pattern></defs><g><rect x=\"0\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"13.26\" y1=\"37.74\" x2=\"37.74\" y2=\"13.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"55\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"80.5\" cy=\"25.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"110\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"165\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"220\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"275\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"330\" y=\"0\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"0\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"25.5\" cy=\"80.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"55\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"68.26\" y1=\"92.74000000000001\" x2=\"92.74000000000001\" y2=\"68.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"110\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"135.5\" cy=\"80.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"165\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"220\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"275\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"330\" y=\"55\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"0\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"55\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"80.5\" cy=\"135.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"110\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"123.26\" y1=\"147.74\" x2=\"147.74\" y2=\"123.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"165\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"190.5\" cy=\"135.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"220\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"245.5\" cy=\"135.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"275\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"330\" y=\"110\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"0\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"55\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"110\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"135.5\" cy=\"190.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"165\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"178.26\" y1=\"202.74\" x2=\"202.74\" y2=\"178.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"220\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"275\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"300.5\" cy=\"190.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"330\" y=\"165\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"355.5\" cy=\"190.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"0\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"55\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"110\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"135.5\" cy=\"245.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"165\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"220\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"233.26\" y1=\"257.74\" x2=\"257.74\" y2=\"233.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"275\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"300.5\" cy=\"245.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"330\" y=\"220\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"355.5\" cy=\"245.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"0\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"55\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"110\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"165\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"190.5\" cy=\"300.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"220\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"245.5\" cy=\"300.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"275\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"288.26\" y1=\"312.74\" x2=\"312.74\" y2=\"288.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"330\" y=\"275\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"0\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"55\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"110\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"165\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"190.5\" cy=\"355.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"220\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><circle cx=\"245.5\" cy=\"355.5\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle><rect x=\"275\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.055\" data-anim=\"static\"></rect><rect x=\"330\" y=\"330\" width=\"51\" height=\"51\" rx=\"3\" fill=\"#1F1814\" fill-opacity=\"0.025\" data-anim=\"static\"></rect><line x1=\"343.26\" y1=\"367.74\" x2=\"367.74\" y2=\"343.26\" stroke=\"#6B5C4A\" stroke-opacity=\"0.4\" stroke-width=\"1\"></line><rect x=\"-10\" y=\"0\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"29.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">제3 회사</text><circle cx=\"25.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"30.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 30.5 -22)\">제3 회사</text><rect x=\"-10\" y=\"55\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"84.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">미 상무부</text><circle cx=\"80.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"85.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 85.5 -22)\">미 상무부</text><rect x=\"-10\" y=\"110\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"139.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">앤트로픽</text><circle cx=\"135.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"140.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 140.5 -22)\">앤트로픽</text><rect x=\"-10\" y=\"165\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"194.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">페이블 5</text><circle cx=\"190.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"195.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 195.5 -22)\">페이블 5</text><rect x=\"-10\" y=\"220\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"249.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">미토스 5</text><circle cx=\"245.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"250.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 250.5 -22)\">미토스 5</text><rect x=\"-10\" y=\"275\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"304.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">외국 고객</text><circle cx=\"300.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"305.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 305.5 -22)\">외국 고객</text><rect x=\"-10\" y=\"330\" width=\"3\" height=\"51\" rx=\"1.5\" fill=\"#6B5C4A\" fill-opacity=\"0.85\" data-anim=\"static\"></rect><text x=\"-18\" y=\"359.35\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\">미국 시민</text><circle cx=\"355.5\" cy=\"-12\" r=\"3.0553331494787077\" fill=\"#6B5C4A\"></circle><text x=\"360.5\" y=\"-22\" text-anchor=\"start\" font-family=\"Noto Sans KR\" font-size=\"11\" fill=\"#1F1814\" transform=\"rotate(-45 360.5 -22)\">미국 시민</text><g><circle cx=\"7\" cy=\"407\" r=\"6.752286260347945\" fill=\"none\" stroke=\"#6B5C4A\" stroke-width=\"1.6\"></circle></g><text x=\"20\" y=\"411\" font-family=\"Noto Sans KR\" font-size=\"10\" fill=\"#6B5C4A\">연관</text></g></svg>"
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [
+    {
+      "signal": "정부의 두 번째 서한",
+      "description": "오픈에이아이, 구글 등 다른 최첨단 사업자에게 같은 권한이 발동되는지",
+      "indicates": "동종 사업자 확산 시나리오 vs 앤트로픽 단발 사건",
+      "deadline": "2026-07-15",
+      "verification": "unverified"
+    },
+    {
+      "signal": "앤트로픽 모델 재개",
+      "description": "페이블 5·미토스 5 접속이 전면 또는 미국 시민 한정으로 재개되는 시점",
+      "indicates": "비공개 협상 타결 시나리오 vs 부분 재개",
+      "deadline": "2026-06-30",
+      "verification": "unverified"
+    },
+    {
+      "signal": "의회 청문회 소집",
+      "description": "상하원의 상무·정보·법사위가 수출통제 권한의 자의적 적용을 다루는지",
+      "indicates": "정치적 파장 확산 여부",
+      "deadline": "2026-07-31",
+      "verification": "unverified"
+    },
+    {
+      "signal": "시연을 신고한 제3 회사 정체",
+      "description": "사건 발단인 미공개 회사가 공개되거나 자진 공표하는지",
+      "indicates": "사건의 동기 해석 (경쟁사 신고 vs 진성 안보 신고)",
+      "deadline": "미정",
+      "verification": "unverified"
+    },
+    {
+      "signal": "앤트로픽의 법적 대응",
+      "description": "회사가 행정명령의 적법성에 대한 소송을 제기하는지",
+      "indicates": "법적 다툼 시나리오 진입",
+      "deadline": "2026-08-31",
+      "verification": "unverified"
+    }
+  ],
+  "contradictions": [
+    {
+      "side_a": "안전 위험이 시연된 모델은 검증 전까지 막아 두는 편이 사후 수습보다 비용이 작다.",
+      "side_b": "검증되지 않은 좁은 시연 한 번으로 배포 중인 최첨단 모델이 회수되면, 산업 전체의 출시 위험이 정량화 불가능한 수준으로 올라간다.",
+      "evidence": "정부의 서면 사유는 0건, 시연은 구두로만 진행. 앤트로픽은 같은 수준 기법이 타 공개 모델에서도 가능하다고 반박.",
+      "resolution": "현재 공개된 정보만으로는 side_b 의 우려에 더 무게가 실린다. 시연이 다른 출처로 얻을 수 없는 정보를 끌어냈다는 증거가 비공개 채널에서나마 회사 측에 전달되지 않은 한, 이번 결정은 '안전' 을 산업 정지의 만능 키로 만드는 선례가 된다. 다만 시연 기법이 외국 행위자에게 실제로 전파됐다는 정황이 드러나면 side_a 가 다시 살아난다."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.anthropic.com/news/fable-mythos-access",
+      "publisher": "anthropic.com",
+      "title": "",
+      "fetched_at": "2026-06-12"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://www.bloomberg.com/news/articles/2026-06-13/anthropic-says-us-limits-foreign-access-to-fable-5-mythos-5",
+      "publisher": "bloomberg.com",
+      "title": "",
+      "fetched_at": "2026-06-12"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.axios.com/2026/06/12/anthropic-trump-mythos-fable-national-security",
+      "publisher": "axios.com",
+      "title": "",
+      "fetched_at": "2026-06-12"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.cnbc.com/2026/06/12/anthropic-disables-access-to-fable-5-and-mythos-5-to-comply-with-government-directive.html",
+      "publisher": "cnbc.com",
+      "title": "",
+      "fetched_at": "2026-06-12"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.nbcnews.com/tech/tech-news/anthropic-suspends-new-ai-models-fable-mythos-government-directive-rcna349901",
+      "publisher": "nbcnews.com",
+      "title": "",
+      "fetched_at": "2026-06-12"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://techcrunch.com/2026/06/12/anthropics-safety-warnings-may-have-just-backfired-the-government-has-pulled-the-plug-on-its-most-powerful-ai/",
+      "publisher": "techcrunch.com",
+      "title": "",
+      "fetched_at": "2026-06-12"
+    }
+  ],
+  "confidence": {
+    "score": 0.58,
+    "summary": "출처 다양성 양호(Bloomberg/Axios/CNBC/NBC/TechCrunch + 회사 공식 입장문), 신선도 최상(보고서 발행 전날·당일 보도). 정부 측 비공개 사유는 미확인 영역으로 남음."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2026-06-12",
+        "label": "오후 5시 21분(미 동부): 상무장관 러트닉이 앤트로픽 CEO 아모데이에게 차단 지시 서한 발송",
+        "phase": "present",
+        "note": "수출통제 법규 근거, 위반 시 형사 처벌"
+      },
+      {
+        "date": "2026-06-12",
+        "label": "같은 날 늦은 밤: 앤트로픽이 페이블 5·미토스 5 접속을 전 고객 대상으로 차단",
+        "phase": "present",
+        "note": "국적 분리 불가로 미국 시민 포함"
+      },
+      {
+        "date": "2026-06-13",
+        "label": "회사 공식 입장문 게시: 법적 지시는 준수, 결정에는 동의 안 함",
+        "phase": "future",
+        "note": "Bloomberg, CNBC, Axios 등 일제 보도"
+      },
+      {
+        "date": "2026-06-30",
+        "label": "모델 재개 여부 1차 분기점",
+        "phase": "future",
+        "note": "비공개 협상 타결 vs 부분 재개"
+      },
+      {
+        "date": "2026-07-15",
+        "label": "정부의 다음 서한이 다른 사업자에게 가는지",
+        "phase": "future",
+        "note": "동종 확산 시나리오"
+      },
+      {
+        "date": "2026-07-31",
+        "label": "의회 청문회 소집 여부",
+        "phase": "future",
+        "note": "정치적 파장 진입"
+      },
+      {
+        "date": "2026-08-31",
+        "label": "법적 대응 진입 가능 시한",
+        "phase": "future",
+        "note": "법정 다툼 시나리오"
+      }
+    ],
+    "video": {
+      "narration": [
+        "사건은 어제 저녁 한 통의 서한에서 시작됐습니다. 같은 날 밤 두 모델의 접속이 끊겼고, 오늘 회사 공식 입장문이 나왔습니다.",
+        "앞으로의 분기점은 짧게는 6월 말, 길게는 8월입니다. 모델이 다시 풀리는지, 다음 서한이 어디로 가는지, 법정으로 갈지가 차례로 가려질 겁니다.",
+        "지금은 분기점을 하나씩 지켜볼 시간입니다."
+      ],
+      "narration_tts": [
+        "사건은 어제 저녁 한 통의 서한에서 시작됐습니다. 같은 날 밤 두 모델의 접속이 끊겼고, 오늘 회사 공식 입장문이 나왔습니다.",
+        "앞으로의 분기점은 짧게는 유월 말, 길게는 팔월입니다. 모델이 다시 풀리는지, 다음 서한이 어디로 가는지, 법정으로 갈지가 차례로 가려질 겁니다.",
+        "지금은 분기점을 하나씩 지켜볼 시간입니다."
+      ]
+    }
+  }
+}
