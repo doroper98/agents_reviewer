@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v7.6.2
+last_synced_with: v7.6.3
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -215,6 +215,15 @@ narration ≤4 캡·길이 warn, TTS gap warn). 모든 필드 비면 `null` (= c
      수치·고유명사를 담는다 (producer `_section_video` 가 정확 일치 시 warn).
   7. **가운뎃점(·)으로 항목 두 개 붙이기 금지** — 조사로 풀거나 ` · `(앞뒤 공백).
   8. **narration 각 항목은 완결된 한 문장** — 비교·연결 도중 절단 금지.
+- **v7.6.3 (3차 검수, §1 — 비문·누락 보정. 모든 narration·line 공통):**
+  9. **부정·불가능 의존명사 "수 없는" 누락 금지 (이번 핵심)** — "절대로/결코" 가
+     앞에 오면 거의 항상 "~할 수 없는" 이 필요. 빠지면 의미가 반전된다.
+  10. **각 narration 문장은 문법적 완결** — "…보다"/"…때문에" 절단 금지, 서술어로 닫음.
+  11. **종결어미는 다큐 경어체** — 논설체·반말("~이다/~한다") 금지, "~입니다/합니다/
+      됩니다". contradictions 의 side/resolution 을 옮길 땐 경어체로 다시 쓴다.
+  - producer 결정론 warn: `bundle_builder._warn_narration_quality` 가 위 3종('절대로/
+    결코' 인데 부정어 없음 / 미완결 종결 / 평서형 '~다')을 모든 narration·line 채널에서
+    warn (drop·재작성 안 함 — 한국어 문법 판정은 휴리스틱이라 보수적, 1차 방어는 프롬프트).
 
 **의미론 (consumer 측 확정 동작):**
 - `video` 있음 → highlights 는 스테이트먼트 씬, narration 은 해당 구간 자막.
@@ -241,13 +250,16 @@ narration ≤4 캡·길이 warn, TTS gap warn). 모든 필드 비면 `null` (= c
   문맥 의존이라 결정적 변환이 오독을 만든다). consumer 계약 의미론 무변경.
 
 **producer 측 결정론 가드** (`src/handoff/bundle_builder.py:_section_video` /
-`_timeline_video`):
-- `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 / timeline narration ≤4 캡
-  (초과분 절단).
+`_report_video` / `_timeline_video` / `_contradiction_video`):
+- `narration` ≤4 / `highlights` ≤3 / intro·outro ≤2 / timeline narration ≤4 /
+  contradiction label ≤8 · line ≤40 캡 (초과분 절단).
 - `emphasis` 불일치 항목(부분 문자열 아님)은 emit 전에 drop + warn — consumer
   액센트 매칭이 어차피 실패하므로 producer 가 미리 정리.
 - 길이 한도(75/40자) 초과는 **drop 하지 않고 warn** — consumer 의 … 절단이
   정보 파괴보다 낫다. 1차 방어는 composer SYSTEM_PROMPT 의 길이 지시.
+- `highlight` 가 `heading` 과 정확히 일치하면 warn (v7.6.2 — 화면 중복).
+- `_warn_narration_quality` (v7.6.3) 가 모든 narration·line 채널에서 비문 3종을 warn:
+  '절대로/결코' 인데 부정어 없음 / 비교·접속 어미 절단 / 평서형 '~다' 종결 (drop 아님).
 - `narration`/`highlights` 둘 다 비면 `video: null` (= 부재).
 - WRITE-AP-12 기호 정화(`_sanitize_symbols`)는 video 텍스트에도 적용 —
   narration 과 emphasis 가 *같은 변환* 을 거치므로 부분 문자열 관계 보존.
@@ -407,3 +419,4 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 | 1 | 2026-06-12 | §13 `report.video.intro_narration_tts` / `outro_narration_tts` 추가 — 타이틀/클로징 씬도 표기/발화 분리 (사용자 확정) | additive (§7), schema_version 무증분. 구 consumer 는 무시해도 무해 |
 | 1 | 2026-06-12 | §13 1차 음성 영상 검수 반영 (v7.6.0): `timeline.video` 신설 (타임라인 씬 대본 — 라벨 낭독 금지) + narration 문장 한도 58→75자 완화 (축약 금지·말하듯 풀어쓰기, 양측 합의값) + 작성 규칙 개정 (날짜 조사 연결 / 제목·라벨 낭독 금지 / 발음 강화 — 숫자 전부 한글·띄어쓰기, 경음화) | additive (§7), schema_version 무증분. 영상 쪽도 같은 검수 반영 (템플릿 문장·발음 사전·자막 폭) |
 | 1 | 2026-06-13 | §13 2차 음성 영상 검수 반영 (v7.6.2): `contradictions[].video` 신설 (쟁점 카드 대본 — label_a/b ≤8자 / line_a/b ≤40자 경어체 / narration / narration_tts, side 논설체 원문 대체) + 작성 규칙 개정 (무기 체계명 영문 표기 '장보고 N' / highlights 의 heading 반복 금지+producer warn / 가운뎃점 항목 붙이기 금지 / narration 완결 문장) | additive (§7), schema_version 무증분. 영상 쪽도 같은 검수 반영 (쟁점 카드 경어체 변환 제거·자막 폭) |
+| 1 | 2026-06-13 | §13 3차 음성 영상 검수 반영 (v7.6.3 — 비문·누락 보정): 작성 규칙 개정 (부정·불가능 의존명사 '수 없는' 누락 금지[핵심] / narration 문법적 완결 문장 / 종결어미 다큐 경어체 통일) + producer `_warn_narration_quality` 결정론 warn 3종('절대로/결코' 인데 부정어 없음 / 미완결 종결 / 평서형 '~다')을 모든 narration·line 채널에 추가 | additive (§7), schema_version 무증분. 새 필드 없음(문구 규율 + warn). 영상 쪽도 같은 검수 반영 |

@@ -415,6 +415,50 @@ def test_example_bundle_has_contradiction_video():
     assert b.contradictions[0].video.label_a == "수요론"
 
 
+def test_narration_quality_warns():
+    """§13 v7.6.3: _warn_narration_quality — '절대로'+부정어 누락 / 미완결 / 평서종결."""
+    from src.handoff.bundle_builder import (
+        _NEG_INTENT_RE, _NEG_WORD_RE, _TRUNCATED_TAIL_RE,
+    )
+    # 1) '절대로' 인데 부정어 없음 (못박다의 '못' 은 부정 아님 — 검수 BAD 예)
+    bad = "절대로 물러설 한계선이라고 못박았습니다."
+    assert _NEG_INTENT_RE.search(bad) and not _NEG_WORD_RE.search(bad)
+    # 교정문은 '없' 으로 부정어 충족
+    good = "절대로 물러설 수 없는 한계선이라고 못박았습니다."
+    assert _NEG_WORD_RE.search(good)
+    # 진짜 '못' 부정 (못합니다) 은 부정어로 인정
+    assert _NEG_WORD_RE.search("가지 못합니다")
+    # 2) 비교·접속 어미 절단
+    assert _TRUNCATED_TAIL_RE.search("침묵보다")
+    assert _TRUNCATED_TAIL_RE.search("재고 때문")
+    assert not _TRUNCATED_TAIL_RE.search("재고가 늘었습니다")
+
+
+def test_narration_quality_warns_in_section(caplog):
+    """§13 v7.6.3: 섹션 video 경로에서 평서종결·미완결·절대로 누락 warn (drop 아님)."""
+    import logging
+    res = _make_result()
+    res.composed_report.sections[0].video = {
+        "narration": [
+            "이것은 정책 전환이다.",                 # 평서형 '~다' → warn
+            "핵보유국 지위는 절대로 물러설 선이라고 했습니다.",  # 절대로+부정어 없음 → warn
+        ],
+    }
+    with caplog.at_level(logging.WARNING):
+        b = build_report_bundle(res)
+    # drop 아님 — 2문장 모두 보존
+    assert b.sections[0].video is not None and len(b.sections[0].video.narration) == 2
+    msgs = " ".join(r.message for r in caplog.records)
+    assert "평서형" in msgs and "의미 반전" in msgs
+    # 경어체 완결 문장은 warn 없음
+    caplog.clear()
+    res.composed_report.sections[0].video = {"narration": ["거래량이 공시 주에 몰렸습니다."]}
+    with caplog.at_level(logging.WARNING):
+        build_report_bundle(res)
+    msgs = " ".join(r.message for r in caplog.records)
+    assert "평서형" not in msgs and "미완결" not in msgs and "의미 반전" not in msgs
+
+
 def test_bundle_reload_path():
     """/bundle 재emit: model_dump → model_validate → rebuild 동등."""
     res = _make_result()

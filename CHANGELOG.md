@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.6.2
+last_synced_with: v7.6.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,30 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.6.3 — narration 비문·누락 보정 (3차 음성 검수)
+
+3차 음성 영상 검수의 문법·완결성 보정. 새 필드 없이 작성 규칙 + producer 결정론 warn.
+
+- **부정·불가능 의존명사 "수 없는" 누락 금지 (이번 핵심)**: "절대로/결코" 가 앞에
+  오면 거의 항상 "~할 수 없는" 이 필요하다 — 빠지면 의미가 뒤집힌다. 사고
+  "절대로 물러설 한계선이라고 못박았습니다." → "절대로 물러설 *수 없는* 한계선…".
+- **각 narration 문장은 문법적으로 완결**: 비교·인용·접속 어미("…보다", "…때문에")
+  도중 절단 금지. 화면 자막 한 cue = 한 완결 문장.
+- **종결어미는 다큐 경어체로 통일**: 논설체·반말("~이다/~한다/~했다") 금지,
+  "~입니다/합니다/됩니다". 특히 contradictions 의 side/resolution 을 narration·line
+  으로 옮길 때 원문(논설체)을 *경어체로 다시 쓴다*.
+- **항목 나열 가운뎃점(·) → 조사 (2차 ⓕ 강화)**: 출처 나열(NPR·CBS) 관용만 · 허용.
+- **표기 (재확인)**: 무기 체계명 영문("장보고 N"), 영문 약어 발음은 narration_tts
+  한글("NCG"→"엔씨지"), 숫자+단위 한글("32개월"→"삼십이 개월"), 날짜 "M월 D일".
+- **producer 결정론 warn**: `bundle_builder._warn_narration_quality` 가 sections/
+  report/timeline/contradictions 의 모든 narration·line 채널에서 3종 사고를 warn —
+  ① '절대로/결코' 인데 부정어(없/않/못) 없음(못박다의 '못' 은 오인 제외) ② 비교·접속
+  어미 절단 ③ 평서형 '~다' 종결. drop·재작성 안 함(휴리스틱이라 보수적, 1차 방어는
+  composer SYSTEM_PROMPT "★ 3차 검수" 블록). contradictions[].video 신설(v7.6.2)은
+  재확인 — 이미 main 에 있음.
+- SSOT `prompts/tts_narration_guide.md` §1/§7 + composer 단축본 + 계약 §13/DATA_MODELS
+  동시 갱신. 회귀: `tests/test_report_bundle.py` 에 narration 품질 warn 2종 추가 (25 pass).
 
 ## v7.6.2 — video 쟁점 카드 대본 + 표기 보정 (2차 음성 검수)
 

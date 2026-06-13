@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.6.2
+last_synced_with: v7.6.3
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -18,6 +18,9 @@ last_review: 2026-05-26
 <!-- v7.6.2: BundleContradiction.video → BundleContradictionVideo{label_a, label_b,
      line_a, line_b, narration, narration_tts} 추가 (쟁점 카드 대본 — 2차 음성 검수
      반영, 계약 §13 additive). composer 는 contradictions[].video 로 emit. -->
+<!-- v7.6.3: 신규 필드 없음 (3차 음성 검수 — 문구 규율). bundle_builder.
+     _warn_narration_quality 가 모든 narration·line 채널에 비문 3종 결정론 warn
+     ('절대로/결코' 부정어 누락 / 미완결 종결 / 평서형 '~다'). drop·재작성 안 함. -->
 <!-- v5.5.1: ComposedReport 에 contradictions_heading: str 추가 (모순 섹션 동적
      제목, composer emit, 비면 '쟁점과 판단' fallback). WRITE-AP-9. -->
 <!-- v5.5.2: ComposedReport.timeline_flow: dict|None (시간 흐름도 composer 윤색,
@@ -417,6 +420,9 @@ ReportBundle
   "★ TTS 발화 규칙" 블록. 빌더 `_warn_tts_gap` 가 narration 위험 표기 대비 narration_tts
   누락/개수불일치를 warn (자동 보정 X). v7.4.1 — `BundleReportVideo` 에도
   `intro_narration_tts`/`outro_narration_tts` (타이틀/클로징 씬 발화용, 같은 규칙).
+- **narration 비문 warn (v7.6.3, 3차 검수)**: `_warn_narration_quality` 가 모든
+  narration·line 채널에서 '절대로/결코' 인데 부정어 없음 / 비교·접속 어미 절단 /
+  평서형 '~다' 종결을 결정론 warn (drop·재작성 안 함, 1차 방어는 프롬프트).
 
 ## 6. Out of scope
 

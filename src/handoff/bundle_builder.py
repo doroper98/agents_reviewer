@@ -77,6 +77,50 @@ _REPORT_NARRATION_MAX_ITEMS = 2
 # (한자어/고유어·문맥 의존이라 결정적 변환은 오히려 오독을 만든다 — 가이드 §0/§7).
 _TTS_RISK_RE = re.compile(r"[A-Za-z]|[0-9]|[%/:~→±<>]")
 
+# 계약 §13 / 3차 음성 검수 (v7.6.3) — narration 비문·완결성·레지스터 결정론 warn
+# (warn-only, 절대 drop·재작성 안 함 — 한국어 문법 판정은 휴리스틱이라 보수적).
+# 1차 방어는 composer SYSTEM_PROMPT(★ 3차 검수) + 가이드 §1.
+_NEG_INTENT_RE = re.compile(r"절대로|결코")          # 부정·불가능 의도 부사
+# 실제 부정어 (수 없는/않는/못 …). '못' 은 부정 보조용언 형태만 — '못박다'(강조
+# 합성동사)의 '못' 을 부정으로 오인하지 않도록 뒤 음절을 제한 (검수 BAD 예 '못박았다').
+_NEG_WORD_RE = re.compile(r"없|않|아니|말[아라]|못(?=\s|하|한|할|해|했|함|합)")
+# 비교·접속 도중 절단 의심: 문장이 이런 연결 형태로 *끝나면* 미완성.
+_TRUNCATED_TAIL_RE = re.compile(
+    r"(보다|보단|때문|위해|통해|대해|에서|으로|로서|면서|지만|는데|"
+    r"그리고|그러나|또는|및|와|과|의)$"
+)
+# 다큐 경어체 평서종결: '다'로 끝나되 '니다'(입니다/합니다/됩니다)가 아니면 논설체 의심.
+_PLAIN_ENDING_TAIL = ".…!?\"')]》」』 \t"
+
+
+def _warn_narration_quality(sentences: list[str], where: str) -> None:
+    """3차 음성 검수 (v7.6.3) — narration 문장의 비문·미완결·논설체 종결을 warn.
+
+    셋 다 검수에서 *반복* 발견된 사고라 결정론으로 표면화한다 (drop 아님):
+    1) '절대로/결코' 부정 의도인데 부정어(없/않/못)가 없음 → 의미 반전 위험.
+    2) 비교·접속 어미('…보다', '…때문에')로 끝나는 절단 문장.
+    3) 종결어미가 경어체(~입니다/합니다/됩니다)가 아닌 평서형 '~다'.
+    """
+    for s in sentences:
+        body = s.rstrip(_PLAIN_ENDING_TAIL)
+        if not body:
+            continue
+        if _NEG_INTENT_RE.search(s) and not _NEG_WORD_RE.search(s):
+            logger.warning(
+                "[bundle] §13 %s: '절대로/결코' 있는데 부정어(수 없는/않는) 없음 "
+                "— 의미 반전 위험: %r", where, s,
+            )
+        if _TRUNCATED_TAIL_RE.search(body):
+            logger.warning(
+                "[bundle] §13 %s: 비교·접속 어미로 끝나는 미완결 문장 (자막 절단) "
+                "— 서술어로 닫을 것: %r", where, s,
+            )
+        if body.endswith("다") and not body.endswith("니다"):
+            logger.warning(
+                "[bundle] §13 %s: 종결어미가 평서형 '~다' (논설체) — 다큐 경어체"
+                "(~입니다/합니다/됩니다)로: %r", where, s,
+            )
+
 
 def _strs(items, cap: int | None = None) -> list[str]:
     out = [s.strip() for s in (items or []) if isinstance(s, str) and s.strip()]
@@ -155,6 +199,7 @@ def _section_video(
                 section_id, s,
             )
     _warn_tts_gap(narration, narration_tts, section_id)
+    _warn_narration_quality(narration, section_id)  # v7.6.3 — 비문·완결성·경어체
     return BundleSectionVideo(
         narration=narration, highlights=highlights,
         emphasis=emphasis, narration_tts=narration_tts,
@@ -177,6 +222,8 @@ def _report_video(video: dict | None) -> BundleReportVideo | None:
     outro_tts = _strs(video.get("outro_narration_tts"), _REPORT_NARRATION_MAX_ITEMS)
     _warn_tts_gap(intro, intro_tts, "report.video(intro)")
     _warn_tts_gap(outro, outro_tts, "report.video(outro)")
+    _warn_narration_quality(intro, "report.video(intro)")    # v7.6.3
+    _warn_narration_quality(outro, "report.video(outro)")    # v7.6.3
     return BundleReportVideo(
         intro_narration=intro, outro_narration=outro,
         intro_narration_tts=intro_tts, outro_narration_tts=outro_tts,
@@ -204,6 +251,7 @@ def _timeline_video(video: dict | None) -> BundleTimelineVideo | None:
                 len(s), _NARRATION_MAX_CHARS, s,
             )
     _warn_tts_gap(narration, narration_tts, "timeline.video")
+    _warn_narration_quality(narration, "timeline.video")  # v7.6.3
     return BundleTimelineVideo(narration=narration, narration_tts=narration_tts)
 
 
@@ -243,6 +291,8 @@ def _contradiction_video(video: dict | None, where: str) -> BundleContradictionV
                 where, len(s), _NARRATION_MAX_CHARS, s,
             )
     _warn_tts_gap(narration, narration_tts, where)
+    # v7.6.3 — narration + 한 줄 경어체(line_a/b) 의 비문·논설체 종결 warn.
+    _warn_narration_quality(narration + [v for v in (line_a, line_b) if v], where)
     return BundleContradictionVideo(
         label_a=label_a, label_b=label_b, line_a=line_a, line_b=line_b,
         narration=narration, narration_tts=narration_tts,
