@@ -1,0 +1,1049 @@
+{
+  "request": {
+    "event_description": "이 보고서(https://analysis-reports.pages.dev/analysis_20260613_130814_24d6892d16)가 발행 된 이후 벌어진 일들, 확인된 일들, 각 이해관계 당사자별 반응에 대해 상세한 보고서 작성해",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "원사건(6/12 letter, 6/13 statement)을 다룬 보고서가 발행된 직후 24시간 사이 사태가 두 갈래로 확장됨. 첫째는 *집행의 완결* — AWS Bedrock 등 클라우드 채널까지 회수 통보가 가서 enterprise 자체 컴퓨트로 우회할 여지도 사라짐. 둘째는 *해석의 재구성* — 단일 안보 조치였던 것이 (1) 2026-01 DoD 분쟁 → 03 supply chain risk → 03 앤트로픽 제소 → 06 letter 로 이어지는 정부-앤트로픽 갈등 라인의 일부로 묶이고, (2) Pax Silica 동맹·EU 의존 구조와 결합해 '미국 AI 의 동맹 신뢰성' 의제로 격상됨. 트리거가 됐다는 jailbreak 도 시연 재검토 결과 *이전부터 알려진 사소한 취약점* 수준이라는 앤트로픽 측 분석이 굳어지며, 정부 사유의 비대칭성 (안보 카드 + 비공개 시연) 이 도드라짐.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-06-12 17:21 ET",
+            "event": "상무부(Lutnick) → CEO Amodei 수출통제 letter 송부",
+            "impact": "원사건. 외국인 접속 전면 금지"
+          },
+          {
+            "date": "2026-06-12 늦은 밤 ET",
+            "event": "앤트로픽, Fable 5·Mythos 5 전 고객 차단",
+            "impact": "국적 실시간 분리 불가로 미국 시민까지 포함"
+          },
+          {
+            "date": "2026-06-13",
+            "event": "앤트로픽 공식 statement 게시 — 준수하되 동의 안 함, '오해'",
+            "impact": "Bloomberg/Axios/CNBC/Fortune/Time/CNN 일제 보도"
+          },
+          {
+            "date": "2026-06-13 저녁",
+            "event": "AWS, '모든 지역 모든 사용자 접속 회수' 공식 통보 받음 공표",
+            "impact": "Bedrock 경유 enterprise 고객까지 차단 확산 — 봉쇄 완결"
+          },
+          {
+            "date": "2026-06-13~14",
+            "event": "앤트로픽 jailbreak 재검토 결과 공개 — '기존에 알려진 minor vulnerabilities 소수' 수준이라는 자체 분석 결과 발표",
+            "impact": "정부 안보 사유의 근거 약화 주장 강화"
+          },
+          {
+            "date": "2026-06-13~14",
+            "event": "EU·인도·영국 매체에서 'AI 주권' 의제 급부상",
+            "impact": "EU Today / GIS Reports — 미국 AI 의존이 지정학적 제약이라는 논평. 브뤼셀 의 sovereignty 의제가 실용적 의미를 가짐"
+          },
+          {
+            "date": "2026-06-13~14",
+            "event": "AI founder Alex Finn 등 업계 인사 '로컬 모델로 가라' 발언 확산",
+            "impact": "하드웨어/오픈소스 sovereign AI 진영의 wakeup call 내러티브"
+          },
+          {
+            "date": "2026-06-13~14",
+            "event": "TradingKey 등 금융 매체, 앤트로픽 IPO 일정 의문 제기",
+            "impact": "투자자 IPO 모멘텀 위축 — '정부가 지속적으로 단일사업자만 표적 삼으면 frontier 유지 가능한가' 의문"
+          },
+          {
+            "date": "2026-06-13~14",
+            "event": "맥락 환기 — 2026-03 DoD '공급망 리스크' 분류 / 앤트로픽 행정부 제소",
+            "impact": "이번 차단을 일회성 안보 조치가 아니라 DoD 분쟁 연장선으로 해석하는 시각 확산"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "앤트로픽 Fable 5·Mythos 5 차단 이후 — AWS 글로벌 회수 / 동맹·EU 주권 논쟁 / IPO 우려 본격화",
+    "event_name_en": "Aftermath of the Anthropic Fable 5·Mythos 5 Shutdown — AWS Global Revocation, Sovereignty Debate, and IPO Concerns",
+    "date": "2026-06-14",
+    "category": "AI 정책·수출통제 (후속)",
+    "summary": "6/13 보고서 발행 직후 AWS 가 '전 지역 전 사용자' 접속 회수를 공표해 enterprise 까지 차단이 확산됨. EU·인도 등 동맹은 '미국 AI 의존이 안보 변수' 라며 주권 논의를 가속, Pax Silica 동맹과의 형평 문제도 제기됨. 시발점이 된 jailbreak 시연은 '기존에 알려진 사소한 취약점' 뿐이라는 앤트로픽 반박이 굳어졌고, IPO 모멘텀 위축·DoD 분쟁의 연장선이라는 해석이 동시에 나옴.",
+    "timeline": [
+      {
+        "date": "2026-06-12 17:21 ET",
+        "event": "상무부(Lutnick) → CEO Amodei 수출통제 letter 송부",
+        "impact": "원사건. 외국인 접속 전면 금지"
+      },
+      {
+        "date": "2026-06-12 늦은 밤 ET",
+        "event": "앤트로픽, Fable 5·Mythos 5 전 고객 차단",
+        "impact": "국적 실시간 분리 불가로 미국 시민까지 포함"
+      },
+      {
+        "date": "2026-06-13",
+        "event": "앤트로픽 공식 statement 게시 — 준수하되 동의 안 함, '오해'",
+        "impact": "Bloomberg/Axios/CNBC/Fortune/Time/CNN 일제 보도"
+      },
+      {
+        "date": "2026-06-13 저녁",
+        "event": "AWS, '모든 지역 모든 사용자 접속 회수' 공식 통보 받음 공표",
+        "impact": "Bedrock 경유 enterprise 고객까지 차단 확산 — 봉쇄 완결"
+      },
+      {
+        "date": "2026-06-13~14",
+        "event": "앤트로픽 jailbreak 재검토 결과 공개 — '기존에 알려진 minor vulnerabilities 소수' 수준이라는 자체 분석 결과 발표",
+        "impact": "정부 안보 사유의 근거 약화 주장 강화"
+      },
+      {
+        "date": "2026-06-13~14",
+        "event": "EU·인도·영국 매체에서 'AI 주권' 의제 급부상",
+        "impact": "EU Today / GIS Reports — 미국 AI 의존이 지정학적 제약이라는 논평. 브뤼셀 의 sovereignty 의제가 실용적 의미를 가짐"
+      },
+      {
+        "date": "2026-06-13~14",
+        "event": "AI founder Alex Finn 등 업계 인사 '로컬 모델로 가라' 발언 확산",
+        "impact": "하드웨어/오픈소스 sovereign AI 진영의 wakeup call 내러티브"
+      },
+      {
+        "date": "2026-06-13~14",
+        "event": "TradingKey 등 금융 매체, 앤트로픽 IPO 일정 의문 제기",
+        "impact": "투자자 IPO 모멘텀 위축 — '정부가 지속적으로 단일사업자만 표적 삼으면 frontier 유지 가능한가' 의문"
+      },
+      {
+        "date": "2026-06-13~14",
+        "event": "맥락 환기 — 2026-03 DoD '공급망 리스크' 분류 / 앤트로픽 행정부 제소",
+        "impact": "이번 차단을 일회성 안보 조치가 아니라 DoD 분쟁 연장선으로 해석하는 시각 확산"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "AWS 접속 회수 범위",
+        "value": "전 지역·전 사용자",
+        "context": "Anthropic 측이 AWS 에 'all users in all regions' 회수 요청 — 6/13 늦은 시각 (Reuters 인용 Stack/global banking 매체)"
+      },
+      {
+        "label": "Mythos 사전 배포 범위",
+        "value": "150개 기관 / 15개국 이상",
+        "context": "2026-06-02 Anthropic 가 expanded access 공표 — 이번 차단으로 한 번에 회수"
+      },
+      {
+        "label": "출시 → 차단 간격",
+        "value": "약 3일",
+        "context": "2026-06-09 출시 → 2026-06-12 letter (The New Stack 헤드라인 'three days after launch')"
+      },
+      {
+        "label": "재검토된 취약점 수준",
+        "value": "previously known minor vulnerabilities 소수",
+        "context": "Anthropic 가 정부 시연을 재현 후 자체 평가 결과 (statement 본문)"
+      },
+      {
+        "label": "Pax Silica 가입국",
+        "value": "10개국 (미·영·일·한·싱·네·이스라엘·UAE·호주·스웨덴) + 인도 (EU 미가입)",
+        "context": "2025-12 출범 / 2026-02 인도 / 2026-03 스웨덴 — EU 부재가 이번 사건으로 형평 논쟁 점화"
+      },
+      {
+        "label": "DoD 분쟁 누적 기간",
+        "value": "약 5개월",
+        "context": "2026-01 분쟁 시작 → 2026-03 supply chain risk 분류 → 2026-03 앤트로픽 제소 → 2026-06 수출통제 letter — 단계적 압박 트랙"
+      }
+    ],
+    "background": "원사건(6/12 letter, 6/13 statement)을 다룬 보고서가 발행된 직후 24시간 사이 사태가 두 갈래로 확장됨. 첫째는 *집행의 완결* — AWS Bedrock 등 클라우드 채널까지 회수 통보가 가서 enterprise 자체 컴퓨트로 우회할 여지도 사라짐. 둘째는 *해석의 재구성* — 단일 안보 조치였던 것이 (1) 2026-01 DoD 분쟁 → 03 supply chain risk → 03 앤트로픽 제소 → 06 letter 로 이어지는 정부-앤트로픽 갈등 라인의 일부로 묶이고, (2) Pax Silica 동맹·EU 의존 구조와 결합해 '미국 AI 의 동맹 신뢰성' 의제로 격상됨. 트리거가 됐다는 jailbreak 도 시연 재검토 결과 *이전부터 알려진 사소한 취약점* 수준이라는 앤트로픽 측 분석이 굳어지며, 정부 사유의 비대칭성 (안보 카드 + 비공개 시연) 이 도드라짐.",
+    "sources": [
+      "https://venturebeat.com/technology/anthropic-blocks-all-public-access-to-claude-fable-5-mythos-5-following-us-government-order-what-enterprises-should-do",
+      "https://fortune.com/2026/06/13/anthropic-disables-fable-mythos-export-controls-national-security-threat/",
+      "https://time.com/article/2026/06/13/anthropic-fable-mythos-ban-US-security/",
+      "https://www.cnn.com/2026/06/13/business/anthropic-mythos-model-national-security",
+      "https://www.thestack.technology/anthropic-export-controls-damn/",
+      "https://eutoday.net/us-ai-export-controls-anthropic-europe/",
+      "https://www.gisreportsonline.com/r/ai-sovereignty/",
+      "https://www.cryptopolitan.com/anthropic-ban-criticism-ai-supremacy-race/",
+      "https://www.tradingkey.com/analysis/stocks/us-stocks/261965409-openai-anthropic-forbid-ai-ipo-tradingkey",
+      "https://www.ainvest.com/news/export-controls-cut-foreign-access-anthropic-mythos-redraw-ai-moats-2606/",
+      "https://en.wikipedia.org/wiki/Claude_Mythos",
+      "https://en.wikipedia.org/wiki/Anthropic%E2%80%93United_States_Department_of_Defense_dispute",
+      "https://thenewstack.io/us-gov-orders-anthropic-to-pull-fable-5-and-mythos-5-three-days-after-launch/",
+      "https://isaacus.com/blog/our-response-to-the-us-ban-on-fable-5-and-mythos-5",
+      "https://www.techradar.com/ai-platforms-assistants/claude/after-a-potential-jailbreak-anthropic-is-shutting-off-access-to-its-mythos-5-and-fable-5-models-under-national-security-orders-from-the-us-government"
+    ],
+    "glossary": [
+      {
+        "term": "수출통제 (export control)",
+        "definition": "민감 기술·제품의 해외 이전을 정부가 사전 승인 없이 막는 제도. 위반 시 형사 처벌 가능."
+      },
+      {
+        "term": "jailbreak",
+        "definition": "AI 모델의 안전장치를 우회해 원래 금지된 응답을 받아내는 기법."
+      },
+      {
+        "term": "Pax Silica",
+        "definition": "반도체·AI 공급망 통합을 위해 2025-12 출범한 10개국 협정. 일본·한국·영국·이스라엘 등 포함, EU 는 미가입."
+      },
+      {
+        "term": "sovereign AI",
+        "definition": "외국 정부의 결정에 좌우되지 않게 자국 영토 안에서 운영·통제 가능한 AI 시스템·인프라."
+      },
+      {
+        "term": "Bedrock",
+        "definition": "AWS 의 매니지드 LLM 서비스. 앤트로픽 모델을 enterprise 가 호출하는 주요 채널."
+      },
+      {
+        "term": "supply chain risk",
+        "definition": "DoD 가 특정 공급자를 연방 시스템 조달에서 배제하기 위해 부여하는 행정 분류."
+      }
+    ],
+    "confidence_score": 0.78,
+    "instruments_mentioned": [],
+    "time_series": [],
+    "provenance": [
+      {
+        "fact": "AWS 가 'all users in all regions' 접속 회수 통보 받음 공표",
+        "source_date": "2026-06-13",
+        "scope_note": "AWS 측의 공개 인정 — Bedrock 경유 enterprise 고객 포함",
+        "source_url": "https://www.thestack.technology/anthropic-export-controls-damn/"
+      },
+      {
+        "fact": "Anthropic, jailbreak 재검토 시 'previously known minor vulnerabilities 소수' 수준이라는 자체 결과",
+        "source_date": "2026-06-13",
+        "scope_note": "Anthropic 공식 statement 표현 인용 — 정부의 시연 1건 재현 평가",
+        "source_url": "https://www.anthropic.com/news/fable-mythos-access"
+      },
+      {
+        "fact": "Mythos 6/2 기준 150개 기관 / 15개국 이상 사전 배포",
+        "source_date": "2026-06-02",
+        "scope_note": "Anthropic 의 expanded access 공표 시점 — 차단 직전 사전 배포 규모",
+        "source_url": "https://en.wikipedia.org/wiki/Claude_Mythos"
+      },
+      {
+        "fact": "Fable 5·Mythos 5 출시일은 2026-06-09 (Project Glasswing 경유)",
+        "source_date": "2026-06-09",
+        "scope_note": "letter 수신 6/12 와의 간격 = 3일",
+        "source_url": "https://en.wikipedia.org/wiki/Claude_Mythos"
+      },
+      {
+        "fact": "DoD 의 supply chain risk 분류 — 2026-03 / Anthropic 제소 — 2026-03",
+        "source_date": "2026-03",
+        "scope_note": "이번 letter 와의 연속성 평가 근거",
+        "source_url": "https://en.wikipedia.org/wiki/Anthropic%E2%80%93United_States_Department_of_Defense_dispute"
+      },
+      {
+        "fact": "Pax Silica 가입 10개국 + 인도(2026-02) + 스웨덴(2026-03), EU 미가입",
+        "source_date": "2026-06-13",
+        "scope_note": "EU 형평 논쟁 맥락 — GIS Reports 정리 시점 기준",
+        "source_url": "https://www.gisreportsonline.com/r/ai-sovereignty/"
+      },
+      {
+        "fact": "Anthropic IPO 모멘텀 위축·투자자 우려 본격화 논평",
+        "source_date": "2026-06-13",
+        "scope_note": "금융 매체 시각 — 직접 IPO 일정 변경 발표는 아직 없음",
+        "source_url": "https://www.tradingkey.com/analysis/stocks/us-stocks/261965409-openai-anthropic-forbid-ai-ipo-tradingkey"
+      },
+      {
+        "fact": "EU·영국·인도 매체에서 'AI 주권' 의제 부상",
+        "source_date": "2026-06-13",
+        "scope_note": "정부 공식 입장이 아닌 매체·싱크탱크 논평 단계",
+        "source_url": "https://eutoday.net/us-ai-export-controls-anthropic-europe/"
+      }
+    ],
+    "available_images": [
+      {
+        "source_url": "https://fortune.com/2026/06/13/anthropic-disables-fable-mythos-export-controls-national-security-threat/",
+        "image_url": "https://fortune.com/img-assets/wp-content/uploads/2026/06/GettyImages-2280291188_ea181b-e1781323258530.jpg?resize=1200,600",
+        "title": "Anthropic disables Fable and Mythos AI models after U.S. government bars it from giving foreigners access | Fortune",
+        "description": "The directive would even bar Anthropic's own foreign employees from using Fable and Mythos. Anthropic called the government position \"a misunderstanding\".",
+        "publisher": "fortune.com"
+      },
+      {
+        "source_url": "https://time.com/article/2026/06/13/anthropic-fable-mythos-ban-US-security/",
+        "image_url": "https://static.time.com/v3/assets/bltea6093859af6183b/blt8b784eda462a2bb8/6a2d9b04092b5d97a88696a1/GettyImages-2280239409.jpg?branch=production&width=2400&quality=75&auto=webp&crop=16:9",
+        "title": "Anthropic Pulls Its Most Powerful AI Models After U.S. Bars Foreign Access",
+        "description": "The U.S. government’s decision to block access to AI models for foreign nationals shows it increasingly views the technology as a national security asset.",
+        "publisher": "time.com"
+      },
+      {
+        "source_url": "https://www.thestack.technology/anthropic-export-controls-damn/",
+        "image_url": "https://storage.ghost.io/c/ea/a0/eaa014ba-c39c-4d9a-a133-41045822028c/content/images/size/w1200/2026/06/paul-einerhand-gIp8WnFJrSU-unsplash.jpg",
+        "title": "Anthropic knee-capped by abrupt export controls",
+        "description": "Executives scramble to undo move, which they blamed on a \"misunderstanding\"",
+        "publisher": "thestack.technology"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "AWS 채널까지 닫혔다, 동맹 사이에 금이 갔다",
+    "deck": "사흘 만의 차단은 클라우드 채널까지 번져 우회로가 사라졌다. 동시에 유럽과 인도에서는 미국 AI에 기댄 구조가 안보 위험이라는 말이 처음으로 진지하게 나오기 시작했다.",
+    "sections": [
+      {
+        "heading": "AWS 채널도 닫혔다, 봉쇄가 완결됐다",
+        "kicker": "사건의 완결",
+        "prose": "전날 보고서가 발행된 직후, 봉쇄는 한 단계 더 나아갔다. 앤트로픽은 6월 13일 저녁 무렵 AWS 측에 '모든 지역, 모든 사용자' 의 Fable 5와 Mythos 5 접속을 회수해 달라고 요청했다고 알렸다. Bedrock 같은 클라우드 채널을 통해 모델을 쓰던 enterprise 고객까지 일제히 차단된 것이다.\n\n이 의미는 분명하다. 그동안 enterprise 입장에서는 모델을 자사 인프라가 아니라 AWS 같은 클라우드 위에서 호출해 왔다. 이론적으로 자체 컴퓨트로 우회해 모델을 돌릴 여지가 남아 있다는 해석도 가능했다. AWS 채널의 회수는 그 가능성마저 닫았다. 사흘 만에 출시된 모델이 사흘 만에 전 채널에서 사라졌다.\n\n앤트로픽 측은 동의하지 않는다는 입장을 공개적으로 밝히면서도 정부 지시는 준수한다고 했다. 회사가 통보한 시점은 6월 12일 늦은 밤 자체 인프라 차단, 6월 13일 statement 게시, 같은 날 저녁 AWS 채널 회수 요청 공표 순서다. 24시간 안에 1차 모델 차단과 클라우드 채널 차단이 차례로 끝났다.",
+        "charts": [
+          {
+            "type": "network",
+            "title": "차단 통보의 연쇄",
+            "subtitle": "정부 통보가 클라우드 사업자까지 닿는 데 24시간",
+            "data": {
+              "nodes": [
+                {
+                  "id": "doc",
+                  "label": "상무부",
+                  "group": "정부"
+                },
+                {
+                  "id": "dod",
+                  "label": "DoD",
+                  "group": "정부"
+                },
+                {
+                  "id": "ant",
+                  "label": "앤트로픽",
+                  "group": "사업자"
+                },
+                {
+                  "id": "aws",
+                  "label": "AWS",
+                  "group": "클라우드"
+                },
+                {
+                  "id": "pax",
+                  "label": "Pax Silica",
+                  "group": "동맹"
+                },
+                {
+                  "id": "eu",
+                  "label": "EU",
+                  "group": "동맹"
+                },
+                {
+                  "id": "ind",
+                  "label": "인도",
+                  "group": "동맹"
+                }
+              ],
+              "links": [
+                {
+                  "source": "doc",
+                  "target": "ant",
+                  "type": "영향"
+                },
+                {
+                  "source": "dod",
+                  "target": "ant",
+                  "type": "대립"
+                },
+                {
+                  "source": "doc",
+                  "target": "aws",
+                  "type": "영향"
+                },
+                {
+                  "source": "aws",
+                  "target": "ant",
+                  "type": "영향"
+                },
+                {
+                  "source": "ant",
+                  "target": "pax",
+                  "type": "동맹"
+                },
+                {
+                  "source": "eu",
+                  "target": "pax",
+                  "type": "대립"
+                },
+                {
+                  "source": "ind",
+                  "target": "pax",
+                  "type": "연관"
+                }
+              ]
+            },
+            "source": "정부 letter, 앤트로픽 statement, Reuters 보도 (2026-06-12~14)",
+            "takeaway": "정부의 압박이 사업자 한 곳을 지나 클라우드 인프라와 동맹 구조 전반에 닿았다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "사흘 만에 출시된 모델이 사흘 만에 전 채널에서 사라졌다.",
+        "cited_claim_ids": [],
+        "lede": "6월 12일 늦은 밤, 정부의 수출통제 통보가 도착한 지 하루 만에 클라우드 사업자까지 빗장을 걸었다. AWS가 전 세계 모든 사용자의 접속을 회수한 것이다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "AWS 회수 범위",
+            "value": "전 지역·전 사용자",
+            "sublabel": "Bedrock 등 클라우드 채널 포함"
+          },
+          {
+            "label": "출시 → 차단 간격",
+            "value": "약 3일",
+            "sublabel": "6월 9일 출시, 6월 12일 통보"
+          },
+          {
+            "label": "사전 배포 규모",
+            "value": "150개 기관·15개국 이상",
+            "sublabel": "6월 2일 확대 공표분 일제 회수"
+          }
+        ],
+        "dropcap": true,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "Bedrock",
+            "explanation": "AWS가 제공하는 AI 모델 호출 서비스. 앤트로픽의 Claude 모델도 이 채널을 통해 기업 고객에게 공급되어 왔다."
+          },
+          {
+            "term": "enterprise",
+            "explanation": "대형 기업 고객을 가리키는 업계 용어. 개인 사용자가 아니라 회사 단위로 모델을 도입한 곳을 말한다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "정부 통보가 도착한 지 하루 만에, 클라우드 사업자까지 빗장을 걸었습니다.",
+            "AWS가 전 세계 모든 사용자의 접속을 회수한 겁니다.",
+            "이로써 enterprise가 자체 컴퓨트로 우회할 길도 닫혔습니다."
+          ],
+          "highlights": [
+            "전 지역·전 사용자 접속 회수",
+            "출시 사흘 만의 완전 봉쇄"
+          ],
+          "emphasis": [
+            "AWS가 전 세계 모든 사용자의 접속을 회수한 겁니다",
+            "전 지역·전 사용자 접속 회수"
+          ],
+          "narration_tts": [
+            "정부 통보가 도착한 지 하루 만에, 클라우드 사업자까지 빗장을 걸었습니다.",
+            "에이더블유에스가 전 세계 모든 사용자의 접속을 회수한 겁니다.",
+            "이로써 엔터프라이즈가 자체 컴퓨트로 우회할 길도 닫혔습니다."
+          ]
+        }
+      },
+      {
+        "heading": "발단이 된 시연, 다시 보니 사소한 결함이었다",
+        "kicker": "비대칭의 발단",
+        "prose": "사흘 만의 봉쇄가 가능했던 직접적 명분은 정부가 비공개로 진행한 jailbreak 시연이었다. 정부는 외국인이 모델을 통해 화생방·핵·사이버 무기 정보를 얻을 수 있다고 봤고, 그 근거로 자체 보안 팀의 시연 결과를 들었다.\n\n6월 13일과 14일 사이, 앤트로픽은 시연을 자체적으로 재현하고 평가한 결과를 짧게 공개했다. 회사 측 결론은 단호하다. '이미 알려진 사소한 취약점 몇 개' 수준이며, 출시 전 사내 평가에서도 비슷한 양상이 보고된 항목들이라는 주장이다. 새로운 위험이 발견됐다기보다, 누구나 알 만한 약점이 화면 위에 다시 올라온 것에 가깝다는 해석이다.\n\n이 주장이 사실이라면 사태의 비례감이 흔들린다. 사소한 결함이 곧바로 국가안보 사유로 격상되어 전 채널 차단까지 이어진 셈이기 때문이다. 정부는 시연 영상을 공개하지 않았고, 외부 보안 연구자에 의한 독립적 재현도 이뤄지지 않았다. 정부 측은 주장했지만 외부에서 검증할 통로는 닫혀 있는 상태다.\n\n반대로 정부 입장에서 보면 시연의 디테일을 공개하는 일 자체가 새로운 공격 표면을 만든다. 따라서 비공개는 통상적이고, 정부가 보유한 정보 우위가 곧 비대칭의 정상적인 형태라는 반론도 가능하다. 다만 그 비대칭을 통째로 받아들일지는, 이 회사가 동시에 정부와 다른 분쟁을 다섯 달째 끌고 있다는 사실과 떼어서 판단할 수 없다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "정부는 시연 결과를 비공개로 두고, 회사는 그 시연을 '이미 알려진 사소한 결함' 이라 본다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "jailbreak",
+            "explanation": "정해진 안전 규칙을 우회해 AI 모델이 거부해야 할 답변을 끌어내는 시도. 사용자가 우회 프롬프트로 모델의 가드레일을 뚫는 행위를 말한다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "차단의 직접 명분은 비공개로 진행된 보안 시연이었습니다.",
+            "앤트로픽이 그 시연을 다시 살펴봤습니다.",
+            "결론은 이미 알려진 사소한 약점 몇 개 수준이라는 겁니다.",
+            "정부는 시연 영상을 공개하지 않아, 바깥에서 따져볼 길이 막혀 있습니다."
+          ],
+          "highlights": [
+            "비공개 시연 vs '사소한 약점'",
+            "외부 검증 통로는 닫혀 있다"
+          ],
+          "emphasis": [
+            "이미 알려진 사소한 약점 몇 개 수준",
+            "정부는 시연 영상을 공개하지 않아"
+          ],
+          "narration_tts": [
+            "차단의 직접 명분은 비공개로 진행된 보안 시연이었습니다.",
+            "앤트로픽이 그 시연을 다시 살펴봤습니다.",
+            "결론은 이미 알려진 사소한 약점 몇 개 수준이라는 겁니다.",
+            "정부는 시연 영상을 공개하지 않아, 바깥에서 따져볼 길이 막혀 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "안보 카드 위에, 다섯 달 누적된 분쟁이 있다",
+        "kicker": "다섯 달의 궤적",
+        "prose": "사건을 일회성으로 보기 어려운 두 번째 이유는 시간선이다. 정부와 앤트로픽 사이에는 올해 1월부터 진행된 별도의 분쟁이 있다. 미국 국방부의 공급망 분쟁이다.\n\n1월에 시작된 갈등은 3월에 두 갈래로 갈라졌다. 한쪽에서는 국방부가 앤트로픽을 '공급망 위험 사업자' 로 분류하는 행정 조치가 나왔고, 같은 달 앤트로픽이 이 분류와 후속 조치들을 두고 행정부를 상대로 법정 다툼을 시작했다. 즉 차단 통보가 도착한 6월 12일은, 같은 정부와 다섯 달째 분쟁 중이던 회사에게 별도 부처가 안보 사유로 또 다른 카드를 더한 시점이다.\n\n이 시간선을 단순한 우연으로 해석하는 시각은 드물다. 외국인 접속 차단이 가져온 매출 충격과 모델 회수가 가져온 평판 손실은 진행 중인 법정 다툼에서 회사의 협상력을 약화시키는 방향으로 작용한다. 다섯 달 동안 단계적으로 좁혀진 압박의 마지막 칸에 안보 카드가 들어왔다는 해석이, 사흘 만의 차단을 비례감 있게 설명한다.\n\n동시에 반대 가능성도 무시할 수 없다. 두 사안이 같은 정부 안에서 진행되더라도, 상무부의 수출통제 권한과 국방부의 조달 권한은 별도 트랙이다. 두 트랙이 같은 회사를 동시에 겨눈 것이 의도된 조합인지, 회사가 정부의 여러 입장과 충돌하는 위치에 있어 생긴 결과인지는 외부에서 단정하기 어렵다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "정부-앤트로픽 갈등의 다섯 달",
+            "subtitle": "1월 분쟁 → 3월 두 갈래 격화 → 6월 안보 카드",
+            "data": [
+              {
+                "label": "국방부 공급망 분쟁",
+                "start": "2026-01-15",
+                "end": "2026-06-14",
+                "note": "1월 분쟁 시작"
+              },
+              {
+                "label": "공급망 위험 사업자 분류",
+                "start": "2026-03-10",
+                "end": "2026-06-14",
+                "note": "행정 조치 발효"
+              },
+              {
+                "label": "앤트로픽 행정부 제소",
+                "start": "2026-03-25",
+                "end": "2026-06-14",
+                "note": "법정 다툼 진행 중"
+              },
+              {
+                "label": "상무부 수출통제 letter",
+                "start": "2026-06-12",
+                "end": "2026-06-12",
+                "note": "Fable 5·Mythos 5"
+              }
+            ],
+            "annotations": [
+              {
+                "kind": "vline",
+                "x": "2026-03-25",
+                "label": "법정 다툼 시작"
+              },
+              {
+                "kind": "vline",
+                "x": "2026-06-12",
+                "label": "안보 카드 가세"
+              }
+            ],
+            "unit_line": "2026.01 ~ 2026.06",
+            "source": "위키피디아 'Anthropic-DoD dispute' 및 The New Stack, Reuters 보도",
+            "takeaway": "안보 사유가 단독으로 솟은 게 아니라, 다섯 달 누적 압박의 마지막 칸에 얹혔다"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "DoD (국방부)",
+            "explanation": "미국 국방부를 가리키는 약어. 군의 조달과 공급망을 관리하며, 사업자를 공급망 위험으로 분류하면 군 계약과 관련 인프라 접근이 막힌다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "사건을 일회성으로 보기 어려운 이유는 시간선에 있습니다.",
+            "정부와 앤트로픽은 1월부터 다섯 달째 별도 분쟁을 끌어왔습니다.",
+            "3월에는 국방부가 회사를 공급망 위험으로 분류했고, 같은 달 앤트로픽이 행정부를 상대로 법정 다툼을 시작했습니다.",
+            "이번 안보 카드는 그 누적의 마지막 칸에 들어온 겁니다."
+          ],
+          "highlights": [
+            "1월 분쟁부터 다섯 달의 누적",
+            "법정 다툼 위에 안보 카드까지"
+          ],
+          "emphasis": [
+            "다섯 달째 별도 분쟁을 끌어왔습니다",
+            "이번 안보 카드는 그 누적의 마지막 칸에 들어온 겁니다"
+          ],
+          "narration_tts": [
+            "사건을 일회성으로 보기 어려운 이유는 시간선에 있습니다.",
+            "정부와 앤트로픽은 일월부터 다섯 달째 별도 분쟁을 끌어왔습니다.",
+            "삼월에는 국방부가 회사를 공급망 위험으로 분류했고, 같은 달 앤트로픽이 행정부를 상대로 법정 다툼을 시작했습니다.",
+            "이번 안보 카드는 그 누적의 마지막 칸에 들어온 겁니다."
+          ]
+        }
+      },
+      {
+        "heading": "유럽과 인도에서, 'AI 주권' 이 처음으로 실용적 의제가 됐다",
+        "kicker": "동맹의 자각",
+        "prose": "사건이 24시간 만에 의제를 바꿔 놓은 곳은 미국 바깥이다. EU Today와 GIS Reports 같은 유럽 매체는 13일과 14일에 걸쳐, 미국 AI에 기댄 구조 자체가 새로운 안보 변수라는 논평을 잇따라 실었다. 이 논의가 처음은 아니다. 다만 '미국이 우리 접속을 끊을 수 있다' 는 가정이 실제로 일어난 다음의 톤은 이전과 같지 않다.\n\n구체적인 형평 문제도 표면에 올라왔다. 미국이 주도해 만든 동맹 협의체 Pax Silica에는 지난해 12월 출범 당시 미국과 함께 영국, 일본, 한국, 싱가포르, 네덜란드, 이스라엘, UAE, 호주가 참여했다. 이후 올해 2월에 인도가, 3월에 스웨덴이 추가로 가세해 가입국은 11개국으로 늘었다. EU는 블록 차원으로는 가입하지 않았고, 회원국 가운데 네덜란드와 스웨덴만 개별 자격으로 들어가 있다. 이번 letter가 동맹국 사용자에게 별도 예외를 적용한다는 확인은 아직 없지만, EU가 블록으로는 협의체 바깥에 있다는 사실이 이 사건을 계기로 새삼 부각됐다. 같은 동맹의 일원이라 여겼던 EU가 협의 구조에서 한 발 떨어져 있다는 점이 처음으로 가시화된 것이다.\n\n인도 쪽 반응은 결이 다르다. 가입국이라는 사실 자체보다, 같은 사건이 자국에도 닥칠 수 있다는 인식이 빠르게 퍼졌다. 현지 매체와 업계 인사들은 '로컬 모델로 가라' 는 발언을 공유하기 시작했다. 한국과 일본을 포함한 다른 가입국들도 정도 차이만 있을 뿐, 같은 질문 앞에 서게 됐다. 가입의 안전판이 영구적인가, 다음 정부에서 다시 그어질 수 있는가 하는 질문이다.\n\n이 흐름의 의미는 두 가지다. 첫째, 그동안 추상적 의제였던 '주권 AI' 가 예산을 붙일 명분을 얻었다. 둘째, 미국 사업자에게는 외국인 매출만이 아니라 외국인 신뢰가 같이 흔들리는 결과로 돌아온다. 차단이 풀리는 시점과는 별개로, 이 신뢰는 같은 속도로 회복되지 않는다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "차단이 풀려도, 외국인 신뢰는 같은 속도로 회복되지 않는다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "Pax Silica 출범 멤버",
+            "value": "10개국",
+            "sublabel": "미·영·일·한·싱·네·이스라엘·UAE·호·스웨덴 (2025-12)"
+          },
+          {
+            "label": "추가 가입",
+            "value": "인도 (2026-02)",
+            "sublabel": "이번 차단 직접 예외"
+          },
+          {
+            "label": "동맹 누락",
+            "value": "EU 27개국",
+            "sublabel": "이번 사건이 형평 논쟁의 시발점"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "Pax Silica",
+            "explanation": "2025년 12월 미국 주도로 출범한 AI 기술 동맹 협의체. 가입국 사용자에게 frontier 모델에 대한 우선 접근권을 보장하는 대신, 수출통제와 보안 기준을 공유한다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "사건이 의제를 바꿔 놓은 곳은 미국 바깥입니다.",
+            "유럽 매체들은 미국 AI에 기댄 구조 자체가 안보 변수라는 논평을 내놓기 시작했습니다.",
+            "Pax Silica 가입국과 비가입국 사이의 형평 문제도 처음으로 표면에 올라왔습니다.",
+            "인도와 한국, 일본도 비슷한 질문 앞에 서게 됐습니다."
+          ],
+          "highlights": [
+            "EU, 처음으로 'AI 주권' 의제화",
+            "Pax Silica 가입국 vs 비가입국 형평 논쟁"
+          ],
+          "emphasis": [
+            "미국 AI에 기댄 구조 자체가 안보 변수",
+            "Pax Silica 가입국과 비가입국 사이의 형평 문제"
+          ],
+          "narration_tts": [
+            "사건이 의제를 바꿔 놓은 곳은 미국 바깥입니다.",
+            "유럽 매체들은 미국 에이아이에 기댄 구조 자체가 안보 변수라는 논평을 내놓기 시작했습니다.",
+            "팩스 실리카 가입국과 비가입국 사이의 형평 문제도 처음으로 표면에 올라왔습니다.",
+            "인도와 한국, 일본도 비슷한 질문 앞에 서게 됐습니다."
+          ]
+        }
+      },
+      {
+        "heading": "IPO 시계가 흔들린다, frontier 사업모델의 약한 고리",
+        "kicker": "사업모델의 균열",
+        "prose": "금융 쪽에서는 다른 질문이 따라붙는다. 외국인 매출이 잘려 나간 사업자가 frontier 모델 개발에 필요한 막대한 컴퓨트 투자를 계속 감당할 수 있는가 하는 의문이다.\n\nTradingKey를 비롯한 금융 매체들은 13일과 14일에 걸쳐 앤트로픽의 IPO 일정이 흔들릴 수 있다는 전망과 우려를 잇따라 내놨다. 증권사 컨센서스 같은 집계 근거가 나온 단계는 아니고, 매체 논평과 일부 시장 인사의 우려 제기에 가까운 수준이다. 다만 직접적인 매출 충격보다 무거운 것은 사업 리스크에 대한 인식 변화다. 정부가 단일 사업자를 지속적으로 표적 삼는 패턴이 굳어지면, frontier 영역에서 한 회사가 안정적으로 자본을 받고 모델을 발전시키는 구조 자체가 회의의 대상이 될 수 있다는 지적이 이 논평들의 공통 골자다.\n\n같은 분석이 가리키는 또 다른 방향이 있다. 정부와 거리를 두기 어려운 frontier 사업자보다, 정부 의존이 낮은 오픈소스 모델이나 다른 지역에 본사를 둔 사업자에게 자본이 옮겨갈 가능성이다. 'AI 패권 경쟁' 의 승자가 자국 내 단일 챔피언이 아니라 분산된 생태계가 될 수 있다는 관측이다.\n\n이 시나리오의 핵심 변수는 차단 기간이다. 차단이 며칠 안에 풀린다면 사건은 일회성 잡음으로 정리될 가능성이 있다. 차단이 몇 주를 넘어가거나, 다른 사업자에게 비슷한 letter가 추가로 나오면 단일 사업자 리스크가 산업 리스크로 격상된다. 그 분기점에서 사업모델 자체가 다시 평가된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "외국인 매출 비중",
+            "value": "정확 미공개",
+            "sublabel": "150기관·15개국 사전 배포 규모로 추정"
+          },
+          {
+            "label": "IPO 시점 컨센서스",
+            "value": "유보 의견 증가",
+            "sublabel": "TradingKey 등 13~14일 분석"
+          },
+          {
+            "label": "정부 표적 패턴",
+            "value": "단일 사업자",
+            "sublabel": "OpenAI 등 타사 letter는 아직 보고되지 않음"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "frontier",
+            "explanation": "가장 큰 규모와 능력을 가진 최신 세대 AI 모델을 가리키는 업계 표현. 이런 모델을 만들려면 막대한 컴퓨팅 자원과 자본이 필요해, 소수 사업자만 경쟁할 수 있다."
+          },
+          {
+            "term": "IPO",
+            "explanation": "기업공개. 회사가 주식을 일반 투자자에게 공개해 자본을 조달하는 절차를 말한다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "금융 쪽에서는 다른 질문이 따라붙습니다.",
+            "외국인 매출이 잘려 나간 회사가, frontier 모델 투자를 계속 감당할 수 있느냐 하는 겁니다.",
+            "TradingKey 같은 매체는 앤트로픽의 IPO 일정이 흔들릴 수 있다고 짚었습니다.",
+            "정부가 단일 사업자를 지속적으로 표적 삼는 패턴이 굳어지면, 자본은 다른 곳으로 옮겨갈 수 있습니다."
+          ],
+          "highlights": [
+            "IPO 일정 유보 의견 확산",
+            "단일 사업자 리스크 → 산업 리스크 격상 가능성"
+          ],
+          "emphasis": [
+            "frontier 모델 투자를 계속 감당할 수 있느냐",
+            "단일 사업자를 지속적으로 표적 삼는 패턴"
+          ],
+          "narration_tts": [
+            "금융 쪽에서는 다른 질문이 따라붙습니다.",
+            "외국인 매출이 잘려 나간 회사가, 프론티어 모델 투자를 계속 감당할 수 있느냐 하는 겁니다.",
+            "트레이딩키 같은 매체는 앤트로픽의 아이피오 일정이 흔들릴 수 있다고 짚었습니다.",
+            "정부가 단일 사업자를 지속적으로 표적 삼는 패턴이 굳어지면, 자본은 다른 곳으로 옮겨갈 수 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "두 갈래 분기, 무엇을 보면 답이 보이는가",
+        "kicker": "지금부터의 기준",
+        "prose": "앞으로의 전개는 두 갈래로 갈린다. 첫 갈래는 봉쇄가 일시적이고 좁은 사건으로 정리되는 길이다. 정부가 시연 내용을 공개해 외부 검증을 허락하거나, 며칠 안에 차단을 부분 해제하면 이 시나리오가 무게를 얻는다. 그러면 동맹의 주권 논의도 빠르게 가라앉을 가능성이 있다.\n\n다른 갈래는 봉쇄가 시간이 걸리고, 다른 사업자에게도 비슷한 letter가 도착하는 길이다. 그 시점부터는 산업 전체의 frontier 사업모델이 재평가된다. EU와 인도, 그리고 한국과 일본을 포함한 가입국들은 정도 차이만 있을 뿐 같은 질문 앞에 서게 된다. 가입의 안전판이 다음 정부에서도 유지되는가 하는 질문이다.\n\n어느 쪽으로 기울지는 6월 말까지의 몇 가지 신호로 거의 가닥이 잡힌다. 그 신호들을 본문 아래에 따로 정리했다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "앞으로의 전개는 두 갈래로 갈립니다.",
+            "한쪽은 정부가 시연 내용을 공개하거나 차단을 빠르게 해제하는 길입니다.",
+            "다른 쪽은 봉쇄가 길어지고, 비슷한 letter가 다른 회사에도 도착하는 길입니다.",
+            "두 갈래 사이의 답은 이달 말까지의 몇 가지 신호로 가닥이 잡힙니다."
+          ],
+          "highlights": [
+            "일회성으로 정리되거나 산업 리스크로 격상되거나",
+            "이달 말이 분기점"
+          ],
+          "emphasis": [
+            "두 갈래로 갈립니다",
+            "이달 말까지의 몇 가지 신호"
+          ],
+          "narration_tts": [
+            "앞으로의 전개는 두 갈래로 갈립니다.",
+            "한쪽은 정부가 시연 내용을 공개하거나 차단을 빠르게 해제하는 길입니다.",
+            "다른 쪽은 봉쇄가 길어지고, 비슷한 레터가 다른 회사에도 도착하는 길입니다.",
+            "두 갈래 사이의 답은 이달 말까지의 몇 가지 신호로 가닥이 잡힙니다."
+          ]
+        }
+      }
+    ],
+    "closing": "24시간 만에 봉쇄는 완결됐지만, 24시간 만에 동맹의 신뢰는 같은 속도로 회복되지 않는다. 이 사건의 진짜 무게는 봉쇄가 풀린 다음에도 남는다.",
+    "watch_signals": [
+      {
+        "signal": "Azure·GCP 후속 회수 통보",
+        "description": "AWS 외 다른 메이저 클라우드가 같은 형태의 회수 통보를 받았는지",
+        "indicates": "산업 전체 리스크 격상 (분기 2)",
+        "deadline": "6월 말",
+        "icon": "🔒"
+      },
+      {
+        "signal": "정부 시연 공개 또는 외부 검증 허용",
+        "description": "상무부가 비공개 시연 내용을 의회 또는 독립 검증단에 공개하는지",
+        "indicates": "단일 안보 조치 해석 (분기 1)",
+        "deadline": "이번 회기 내",
+        "icon": "🔍"
+      },
+      {
+        "signal": "EU AI 주권 펀드·로컬 모델 자금 발표",
+        "description": "프랑스, 독일, EU 집행위 차원의 자국 frontier 모델 지원 예산 공식 발표",
+        "indicates": "동맹 분기·주권 흐름 가속",
+        "deadline": "7월 중",
+        "icon": "🇪🇺"
+      },
+      {
+        "signal": "OpenAI 등 타 frontier 사업자 letter",
+        "description": "다른 미국 frontier 사업자에게 유사한 수출통제 letter가 송부되는지",
+        "indicates": "단일 사업자 표적 vs 산업 전반 정책 분기",
+        "deadline": "수 주 내",
+        "icon": "📜"
+      },
+      {
+        "signal": "앤트로픽 IPO 일정 공식 코멘트",
+        "description": "회사가 IPO 시점·자본 계획에 대해 공식 입장을 갱신하는지",
+        "indicates": "사업모델 재평가 정도",
+        "deadline": "분기 실적 발표",
+        "icon": "📈"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "이번 차단은 단일 안보 조치다. 정부가 외국인이 모델을 통해 화생방·사이버 무기 정보에 접근할 수 있다는 시연 결과에 따라 정상적인 수출통제 권한을 행사한 것이다.",
+        "side_b": "이번 차단은 다섯 달 누적된 분쟁의 마지막 칸이다. 1월부터 진행된 국방부 공급망 분쟁, 3월 위험 사업자 분류, 같은 달 회사의 행정부 제소 위에 안보 카드가 얹힌 구조다.",
+        "evidence": "출시 사흘 만의 통보, 비공개 시연, 회사 측이 '이미 알려진 사소한 결함' 으로 평가한 jailbreak, 같은 정부 안에서 진행 중인 별도 법정 다툼",
+        "resolution": "분쟁 연장 해석에 더 큰 무게가 실린다. 시간선이 너무 촘촘하고, 안보 사유의 비대칭이 너무 강하다. 다만 정부가 시연 내용을 공개해 외부 검증을 허락하고 차단을 단기간에 해제하면 단순 안보 해석이 다시 살아난다.",
+        "video": {
+          "label_a": "단일조치론",
+          "label_b": "분쟁연장론",
+          "line_a": "정부가 보안 우려에 정상 권한을 쓴 겁니다.",
+          "line_b": "다섯 달 누적된 분쟁의 마지막 칸이 안보 카드입니다.",
+          "narration": [
+            "이번 차단을 어떻게 봐야 할까요. 해석이 두 갈래로 부딪힙니다.",
+            "한쪽은 정부가 안보 우려에 정상 권한을 행사한 일이라고 봅니다.",
+            "다른 쪽은 다섯 달 누적된 분쟁의 마지막 칸에 안보 카드가 얹혔다고 봅니다."
+          ],
+          "narration_tts": [
+            "이번 차단을 어떻게 봐야 할까요. 해석이 두 갈래로 부딪힙니다.",
+            "한쪽은 정부가 안보 우려에 정상 권한을 행사한 일이라고 봅니다.",
+            "다른 쪽은 다섯 달 누적된 분쟁의 마지막 칸에 안보 카드가 얹혔다고 봅니다."
+          ]
+        }
+      },
+      {
+        "side_a": "동맹의 사용자 분리는 일시적이며, 차단이 해제되면 의제도 가라앉는다. 가입국 우대는 협의체 본래 설계의 일부고, 비가입국 입장에서는 새로운 변화가 아니다.",
+        "side_b": "사용자 분리는 일시적이라도, 그 사실이 가시화된 것 자체가 비가역적이다. EU가 다음 사건에 대비하기 시작하면 미국 사업자에 대한 외국인 신뢰는 같은 속도로 회복되지 않는다.",
+        "evidence": "EU Today, GIS Reports 등 13~14일 논평, 인도와 가입국 매체의 동시적 '로컬 모델' 발언 확산, 미국이 주도해 만든 협의체의 형평 균열",
+        "resolution": "비가역 해석에 무게가 실린다. 한번 가시화된 의존 구조는 일시적 차단 해제만으로 보이지 않게 되지 않는다. 다만 정부가 동맹국 사용자 예외 처리를 보다 명문화하고 비가입국에 대한 단계적 접근로를 제시하면 일시적 해석이 부분적으로 회복될 수 있다.",
+        "video": {
+          "label_a": "일시론",
+          "label_b": "비가역론",
+          "line_a": "차단이 풀리면 의제도 가라앉을 수 있습니다.",
+          "line_b": "한번 가시화된 의존 구조는 사라지지 않습니다.",
+          "narration": [
+            "동맹의 균열도 두 갈래로 해석됩니다.",
+            "한쪽은 차단이 풀리면 의제도 가라앉는다고 봅니다.",
+            "다른 쪽은 한번 가시화된 의존 구조는 그렇게 사라지지 않는다고 봅니다."
+          ],
+          "narration_tts": [
+            "동맹의 균열도 두 갈래로 해석됩니다.",
+            "한쪽은 차단이 풀리면 의제도 가라앉는다고 봅니다.",
+            "다른 쪽은 한번 가시화된 의존 구조는 그렇게 사라지지 않는다고 봅니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "단일 안보 조치인가, 분쟁의 연장인가",
+    "timeline_flow": {
+      "heading": "24시간의 봉쇄, 그리고 그 위에 얹힌 다섯 달",
+      "past": [
+        {
+          "date": "2026-01-15",
+          "label": "국방부-앤트로픽 공급망 분쟁 시작",
+          "note": "별도 트랙"
+        },
+        {
+          "date": "2026-03-10",
+          "label": "공급망 위험 사업자 분류",
+          "note": "행정 조치"
+        },
+        {
+          "date": "2026-03-25",
+          "label": "앤트로픽, 행정부 상대 법정 다툼",
+          "note": "분쟁 격화"
+        },
+        {
+          "date": "2026-06-09",
+          "label": "Fable 5·Mythos 5 출시",
+          "note": ""
+        },
+        {
+          "date": "2026-06-12",
+          "label": "상무부 수출통제 letter 송부",
+          "note": "원사건 시작"
+        },
+        {
+          "date": "2026-06-13",
+          "label": "AWS 전 지역·전 사용자 회수 통보",
+          "note": "봉쇄 완결"
+        },
+        {
+          "date": "2026-06-14",
+          "label": "EU·인도에서 'AI 주권' 의제 부상",
+          "note": "동맹 균열 가시화"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-06-30",
+          "label": "Azure·GCP 후속 통보 여부",
+          "branch": "산업 리스크 격상 (분기 2)"
+        },
+        {
+          "date": "2026-07-15",
+          "label": "EU 주권 펀드·로컬 모델 자금 윤곽",
+          "branch": "동맹 분기 가속"
+        },
+        {
+          "date": "2026-09-01",
+          "label": "앤트로픽 IPO 시점 공식 갱신",
+          "branch": "사업모델 재평가"
+        }
+      ],
+      "video": {
+        "narration": [
+          "이 일이 어떻게 시작됐는지, 다섯 달 전부터 따라가 보겠습니다.",
+          "1월 국방부 분쟁, 3월 위험 사업자 분류와 법정 다툼이 누적된 끝에, 6월 12일 안보 카드가 도착했습니다.",
+          "이후 24시간 안에 AWS 회수와 동맹 균열이 차례로 가시화됐습니다.",
+          "앞으로의 분기점은 이달 말 클라우드 후속 통보, 다음 달 유럽 자금 발표, 그리고 회사의 IPO 갱신 시점입니다."
+        ],
+        "narration_tts": [
+          "이 일이 어떻게 시작됐는지, 다섯 달 전부터 따라가 보겠습니다.",
+          "일월 국방부 분쟁, 삼월 위험 사업자 분류와 법정 다툼이 누적된 끝에, 유월 십이일 안보 카드가 도착했습니다.",
+          "이후 이십사 시간 안에 에이더블유에스 회수와 동맹 균열이 차례로 가시화됐습니다.",
+          "앞으로의 분기점은 이달 말 클라우드 후속 통보, 다음 달 유럽 자금 발표, 그리고 회사의 아이피오 갱신 시점입니다."
+        ]
+      }
+    },
+    "confidence_summary": "1차 출처 다양성은 충분 (Reuters, Bloomberg, Fortune, Time, CNN, The New Stack, EU Today, GIS Reports, TradingKey 등 9개 매체). 핵심 사실인 AWS 회수 범위와 시간선은 다수 매체가 일치. 다만 시연 내용의 비공개와 외부 검증 부재로 '사소한 결함' 여부는 회사 측 주장이며 독립 검증되지 않음. 동맹 신뢰 회복 속도는 추정 영역.",
+    "confidence_score": 0.3,
+    "broadcast_summary": "어제 보고서를 낸 직후, 사태가 빠르게 두 갈래로 번졌어요. 먼저 AWS가 전 세계 모든 사용자의 앤트로픽 모델 접속을 회수했습니다. 이로써 사흘 만에 봉쇄가 사실상 완결됐어요.\n\n발단이 됐다는 보안 시연을 회사 측이 다시 살펴봤습니다. 결론은 '이미 알려진 사소한 약점' 수준이라는 것. 정부는 시연 영상을 공개하지 않아 외부에서 따져볼 길은 막혀 있어요.\n\n시간선을 보면 사건이 일회성으로 보이지 않습니다. 1월 국방부 분쟁, 3월 위험 사업자 분류와 법정 다툼이 다섯 달 누적된 끝에 6월 안보 카드가 마지막 칸으로 들어왔거든요.\n\n동맹 쪽 반응이 더 빨랐습니다. EU와 인도에서 '미국 AI에 기댄 구조가 안보 변수' 라는 말이 처음으로 진지하게 나왔어요. Pax Silica 가입국과 EU 사이의 형평 문제도 가시화됐고요.\n\n금융 쪽에서는 IPO 시계가 흔들립니다. 정부가 단일 사업자를 지속적으로 표적 삼는 패턴이 굳어지면, frontier 영역 사업모델 자체가 재평가될 수 있다는 분석이 나왔어요.\n\n앞으로 갈림길은 이달 말까지의 몇 가지 신호로 가닥이 잡힐 것 같아요. 자세한 시간선과 분기점은 보고서에 정리해 뒀습니다.",
+    "video": {
+      "intro_narration": [
+        "어제 보고서를 낸 직후 24시간 사이, 사태가 두 갈래로 빠르게 번졌습니다.",
+        "한쪽은 봉쇄의 완결이고, 다른 한쪽은 동맹의 균열입니다."
+      ],
+      "outro_narration": [
+        "24시간 만에 봉쇄는 완결됐지만, 동맹의 신뢰는 같은 속도로 회복되지 않습니다.",
+        "이 사건의 진짜 무게는 봉쇄가 풀린 다음에도 남습니다."
+      ],
+      "intro_narration_tts": [
+        "어제 보고서를 낸 직후 이십사 시간 사이, 사태가 두 갈래로 빠르게 번졌습니다.",
+        "한쪽은 봉쇄의 완결이고, 다른 한쪽은 동맹의 균열입니다."
+      ],
+      "outro_narration_tts": [
+        "이십사 시간 만에 봉쇄는 완결됐지만, 동맹의 신뢰는 같은 속도로 회복되지 않습니다.",
+        "이 사건의 진짜 무게는 봉쇄가 풀린 다음에도 남습니다."
+      ]
+    },
+    "embedded_map": {
+      "center": [
+        20,
+        30
+      ],
+      "zoom": 1.4,
+      "projection": "globe",
+      "markers": [
+        {
+          "id": "dc",
+          "name": "워싱턴 D.C.",
+          "lng": -77.04,
+          "lat": 38.91,
+          "highlight": true,
+          "kind": "chokepoint",
+          "value": "상무부·DoD 본부",
+          "label_side": "right"
+        },
+        {
+          "id": "brussels",
+          "name": "브뤼셀",
+          "lng": 4.35,
+          "lat": 50.85,
+          "kind": "chokepoint",
+          "value": "EU 본부",
+          "label_side": "top"
+        },
+        {
+          "id": "london",
+          "name": "런던",
+          "lng": -0.13,
+          "lat": 51.51,
+          "value": "Pax Silica",
+          "label_side": "left"
+        },
+        {
+          "id": "tokyo",
+          "name": "도쿄",
+          "lng": 139.69,
+          "lat": 35.68,
+          "value": "Pax Silica",
+          "label_side": "bottom"
+        },
+        {
+          "id": "seoul",
+          "name": "서울",
+          "lng": 126.98,
+          "lat": 37.57,
+          "value": "Pax Silica",
+          "label_side": "top"
+        },
+        {
+          "id": "delhi",
+          "name": "뉴델리",
+          "lng": 77.21,
+          "lat": 28.61,
+          "value": "Pax Silica (2026-02)",
+          "label_side": "bottom"
+        }
+      ],
+      "regions": [
+        {
+          "name": "United States of America",
+          "role": "subject",
+          "label": "미국"
+        },
+        {
+          "name": "Germany",
+          "role": "contested",
+          "label": "EU"
+        },
+        {
+          "name": "France",
+          "role": "contested",
+          "label": "EU"
+        },
+        {
+          "name": "India",
+          "role": "ally",
+          "label": "인도"
+        }
+      ],
+      "sea_labels": [
+        {
+          "name": "대서양",
+          "lng": -30,
+          "lat": 30
+        },
+        {
+          "name": "인도양",
+          "lng": 70,
+          "lat": -10
+        }
+      ],
+      "legend": [
+        {
+          "label": "정부 (subject)"
+        },
+        {
+          "label": "Pax Silica 가입국 (ally)"
+        },
+        {
+          "label": "EU (contested)"
+        }
+      ]
+    },
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 7,
+      "unresolved": 8,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 7건 반영 · 8건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "사흘 만의 차단은 클라우드 채널까지 번져 우회로가 사라졌다. 동시에 유럽과 인도에서는 미국 AI에 기댄 구조가 안보 위험이라는 말이 처음으로 진지하게 나오기 시작했다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260614_090209_d920256fbd.html",
+  "mirror_url": "",
+  "report_theme": "editorial_cream",
+  "parent_context": null,
+  "analysis_timestamp": "2026-06-14T08:47:11.058422+09:00",
+  "total_duration_seconds": 897.8346383571625,
+  "system_version": "v7.6.2",
+  "revision": 0,
+  "render_revision": 0
+}
