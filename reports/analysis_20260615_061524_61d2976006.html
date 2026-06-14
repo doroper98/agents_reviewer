@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="graphite_slate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스타게이트가 서울로 왔고, 이란 합의는 미뤄졌다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+
+
+
+
+
+<link rel="stylesheet" href="maps.css">
+
+<style>/* ===== Report Theme System — Mono + Editorial (v4.5.0) =====
+   SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
+   세 톤 (Editorial Cream · Burgundy Mono · Light Mono).
+   - editorial_cream: 디폴트. cream + terracotta. 편집·분석·일반 보고서.
+   - burgundy_mono: 위기·분쟁·사고. dark wine + amber. (v4.5.0 어둡게 보정)
+   - light_mono: 폐기 예정 (legacy). 아래 블록은 호환 위해 보존.
+   카테고리 구분은 hue 가 아닌 border-style + 패턴.
+   ============================================================ */
+
+/* --- Default: Editorial Cream (warm cream + terracotta + warm dark) ---
+   v4.5.0 신규. LG AI Seminar 보고서 톤 차용. 인쇄·캡처·장문 가독성 우위. */
+:root, [data-theme="editorial_cream"] {
+  /* Surfaces */
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-hover: #E5DBC4;
+  --accent-surface: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --divider: #D4C8B0;
+
+  /* Text */
+  --text: #1F1814;       /* warm dark — pure black 보다 따뜻 */
+  --muted: #6B5C4A;      /* warm grey */
+
+  /* Semantic accents — guide §3.2 */
+  --accent: #B05A38;     /* terracotta — editorial 강조, hatch stroke, callout border */
+  --up: #4A6B3E;         /* forest green — 상승·기회 (작은 변동만) */
+  --down: #8B2A2A;       /* deep crimson — 하락·위험 (작은 변동, 이벤트 vline) */
+
+  /* Map tokens */
+  --map-land: #F2EBDB;
+  --map-water: #DFD3B8;  /* sand — water as "aged paper" */
+  --map-boundary: #1F1814;
+  --map-graticule: #D4C8B0;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases (멀티컬러 → mono 매핑 보존) */
+  --text-primary: var(--text);
+  --text-secondary: #2D241B;
+  --text-muted: var(--muted);
+  --text-faded: #8A7A66;
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 톤 변형 토큰 */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --card-deep: #E5DBC4;       /* v4.5.3 — chart-card-stage 배경 (본문보다 한 단계 깊게) */
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+}
+
+/* --- Burgundy Mono (deep wine + amber gold + parchment) — v4.5.0 어둡게 보정 ---
+   이전 #3D1820 은 "맑은 와인" 톤이었고 사용자 피드백으로 더 짙은 dried-blood 톤으로.
+   위기·분쟁·사고 보고서 전용 (lens_policy._THEME_BY_CATEGORY 참조). */
+[data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #2A0F18;             /* v4.5.0: 3D1820 → 2A0F18 (R-22, G-9, B-8) */
+  --card: #371721;           /* 카드는 bg 보다 한 단계 위 */
+  --card-hover: #371721;
+  --accent-surface: #371721;
+  --border: #5A2832;         /* 6E3340 → 5A2832 (어둡게) */
+  --border-light: #371721;
+  --divider: #5A2832;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents */
+  --accent: #D4A858;
+  --up: #A8B582;
+  --down: #C9837A;
+
+  /* Map tokens — water 도 한 단계 더 깊게 */
+  --map-land: #2A0F18;
+  --map-water: #1A0810;      /* 2A0E16 → 1A0810 (near-black wine) */
+  --map-boundary: #EFE5D1;
+  --map-graticule: #5A2832;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases */
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
+  --card-deep: #1A0810;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #D8CCB8;
+  --fg-3: var(--muted);
+  --border-soft: rgba(90,40,50,0.4);
+}
+
+/* --- Light Mono (cream + deep burgundy + forest green) --- */
+[data-theme="light_mono"] {
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-hover: #f8f2e4;
+  --accent-surface: #f8f2e4;
+  --border: #b3a586;
+  --border-light: #d4c8a8;
+  --divider: #b3a586;
+
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+
+  --map-land: #efe8d9;
+  --map-water: #dccea8;
+  --map-boundary: #1a1a1a;
+  --map-graticule: #b3a586;
+
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0, light mono) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --card-deep: #dccea8;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #3a3a3a;
+  --fg-3: var(--muted);
+  --border-soft: rgba(179,165,134,0.4);
+}
+
+/* ================================================================
+   v5.0.2 — 5개 신규 테마 (총 7종 중 5종 추가, 사용자 요청)
+   원칙: mono guide §3.3 단일 액센트. 가독성 우선. 카테고리 무관 랜덤.
+   ================================================================ */
+
+/* --- Midnight Indigo (deep indigo + sky blue) — 다크 모드, 기술·심층 톤 */
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E;
+  --card: #1F2440;
+  --card-hover: #262C4A;
+  --accent-surface: #1F2440;
+  --border: #3A4060;
+  --border-light: #262C4A;
+  --divider: #3A4060;
+
+  --text: #E8ECEF;
+  --muted: #8A92A8;
+
+  --accent: #6FB3FF;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #161A2E;
+  --map-water: #0D1020;
+  --map-boundary: #E8ECEF;
+  --map-graticule: #3A4060;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0D1020;
+  --card-deep: #0D1020;
+  --fg-1: var(--text); --fg-2: #D0D8E0; --fg-3: var(--muted);
+  --border-soft: rgba(58,64,96,0.45);
+}
+
+/* --- Pine Forest (deep pine green + jade) — 다크 모드, 짙은 녹색 (v6.2.0) */
+[data-theme="pine_forest"] {
+  --bg: #132019;
+  --card: #1B2C22;
+  --card-hover: #233529;
+  --accent-surface: #1B2C22;
+  --border: #32503E;
+  --border-light: #233529;
+  --divider: #32503E;
+
+  --text: #E7EEE8;
+  --muted: #8AA294;
+
+  --accent: #7CC6A4;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #132019;
+  --map-water: #0C140F;
+  --map-boundary: #E7EEE8;
+  --map-graticule: #32503E;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0C140F;
+  --card-deep: #0C140F;
+  --fg-1: var(--text); --fg-2: #CFE0D4; --fg-3: var(--muted);
+  --border-soft: rgba(50,80,62,0.45);
+}
+
+/* --- Graphite Slate (deep graphite gray + copper) — 다크 모드, 짙은 회색 (v6.2.0) */
+[data-theme="graphite_slate"] {
+  --bg: #191B1E;
+  --card: #23262B;
+  --card-hover: #2B2F35;
+  --accent-surface: #23262B;
+  --border: #3D424A;
+  --border-light: #2B2F35;
+  --divider: #3D424A;
+
+  --text: #E9EBED;
+  --muted: #969BA3;
+
+  --accent: #D69A5E;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #191B1E;
+  --map-water: #0E0F12;
+  --map-boundary: #E9EBED;
+  --map-graticule: #3D424A;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0E0F12;
+  --card-deep: #0E0F12;
+  --fg-1: var(--text); --fg-2: #D2D6DA; --fg-3: var(--muted);
+  --border-soft: rgba(61,66,74,0.45);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* --- Layout --- */
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
+
+/* --- Hero --- */
+.hero { background: var(--bg); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; }
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(24px, 6vw, 42px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 14px;
+  line-height: 1.7;
+}
+
+/* --- Key Summary (핵심 요약) --- */
+.key-summary {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.key-summary-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.key-summary ol {
+  list-style: none;
+  counter-reset: ks;
+  padding: 0;
+  margin: 0;
+}
+.key-summary li {
+  counter-increment: ks;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding: 3px 0;
+}
+.key-summary li::before {
+  content: counter(ks) ")";
+  color: var(--gold);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* --- Key Metrics Grid --- */
+.key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .key-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 400px) {
+  .key-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.key-metric-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px 8px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.key-metric-icon { font-size: 16px; margin-bottom: 6px; }
+.key-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.key-metric-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+/* --- Canvas Chart Grid --- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span {
+  background: var(--card);
+  padding: 3px 12px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* --- Navigation --- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(43, 26, 26, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-inner { display: flex; white-space: nowrap; padding: 0 4px; }
+.nav a {
+  display: block;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faded);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color .2s;
+}
+.nav a:hover { color: var(--text-muted); }
+.nav a.on { color: var(--text-primary); border-bottom-color: var(--gold); }
+
+/* --- Section Headings --- */
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: var(--text-faded);
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+/* --- Card --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+/* --- Callout --- */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--text-primary); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+/* --- Balance Analysis (균형 분석) ---
+   Long-form structured analysis with paragraph spacing for readability. */
+.balance-analysis {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 18px 20px;
+  margin: 18px 0;
+}
+.balance-analysis-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: 0.3px;
+}
+.balance-analysis-body {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.balance-analysis-body strong {
+  display: inline-block;
+  color: var(--gold);
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+.balance-analysis-body br + br {
+  line-height: 0.5;
+}
+
+/* --- Grid --- */
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* --- Act Cue (막 전환 문구) --- */
+.act-cue {
+  text-align: center;
+  padding: 24px 0 0;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  color: var(--text-faded);
+  font-style: italic;
+}
+
+/* --- Player Cards --- */
+.player-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.player-card.extreme::before { background: var(--red); }
+.player-card.high::before { background: var(--orange); }
+.player-card.medium::before { background: var(--gold); }
+.player-card.low::before { background: var(--green); }
+
+.player-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.player-emoji { font-size: 20px; }
+.player-name { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+
+.badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.badge.extreme { background: var(--red-light); color: var(--red); border: 1px solid var(--red); }
+.badge.high { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange); }
+.badge.medium { background: rgba(201,168,76,.12); color: var(--gold); border: 1px solid var(--gold); }
+.badge.low { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
+
+.player-summary { font-size: 10px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+.player-detail {
+  font-size: 10px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* --- Flow (Chain Reaction) --- */
+.flow-list { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.flow-node {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-align: center;
+  width: 100%;
+  max-width: 440px;
+}
+.flow-node strong { font-size: 12px; color: var(--text-primary); }
+.flow-node span { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+.flow-arrow {
+  width: 1px;
+  height: 16px;
+  background: var(--divider);
+  position: relative;
+}
+.flow-arrow::after {
+  content: '\25BC';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  color: var(--text-faded);
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.data-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 10px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.data-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--card-hover); }
+
+/* --- Signal Grid --- */
+.signal-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .signal-grid { grid-template-columns: 1fr 1fr; } }
+
+.signal-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.signal-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--card-hover);
+}
+.signal-item h4 { font-size: 11px; font-weight: 700; margin-bottom: 1px; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+/* --- Timeline --- */
+.timeline-content { font-size: 10px; line-height: 1.85; color: var(--text-secondary); }
+
+/* --- Gauge Bar --- */
+.gauge-bar { margin-bottom: 8px; }
+.gauge-label {
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+.gauge-label span:last-child { color: var(--text-primary); font-weight: 600; }
+.gauge-track { height: 20px; background: var(--card); border-radius: 3px; overflow: hidden; }
+.gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- Terms --- */
+.terms {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.terms b { color: var(--text-secondary); font-size: 10px; }
+
+/* --- Radar --- */
+.radar-wrap { display: flex; justify-content: center; margin: 20px 0; }
+#radarCanvas { max-width: 100%; }
+
+/* --- Footer --- */
+.footer {
+  background: var(--bg);
+  border-top: 1px solid var(--divider);
+  color: var(--text-faded);
+  padding: 24px 14px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.footer a { color: var(--text-muted); text-decoration: underline; }
+
+/* ============================================================ */
+/* === v5.1.1 — 후속 보고서 헤더 + 출처 footnote 시스템         === */
+/* ============================================================ */
+
+/* --- Followup parent reference (h1 [1] footnote target) --- */
+.followup-parent {
+  padding: 18px 0 6px;
+}
+.followup-parent .container,
+.followup-parent {
+  /* container 안에서 한 단계 들여쓰기. .container 자체는 max-width 적용 됨 */
+}
+.followup-parent-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.followup-parent-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.followup-parent-body { flex: 1; }
+.followup-parent-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faded);
+  margin-bottom: 4px;
+}
+.followup-parent-id { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.followup-parent-id a { color: var(--text); text-decoration: underline; }
+.followup-parent-signal { color: var(--text-secondary); margin-bottom: 4px; }
+.followup-parent-dir {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.followup-parent-dir-confirms_base { background: rgba(74,107,62,0.18); color: var(--up); }
+.followup-parent-dir-rejects_base { background: rgba(139,42,42,0.18); color: var(--down); }
+.followup-parent-dir-ambiguous { background: rgba(176,90,56,0.18); color: var(--accent); }
+.followup-parent-event { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.followup-parent-depth { color: var(--text-faded); font-size: 9px; letter-spacing: 1px; }
+
+/* --- Title footnote mark on h1 (link [1] → #followup-parent) --- */
+.title-footnote-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.45em;
+  vertical-align: super;
+  margin-left: 6px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.title-footnote-mark sup { line-height: 1; }
+
+/* --- Footnote refs (inline ⁽n⁾ markers throughout body) --- */
+.fn-ref {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+.fn-ref:hover { text-decoration: underline; }
+
+/* --- Bottom footnotes section (통합 출처 리스트) --- */
+.footnotes {
+  padding: 28px 0 36px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+}
+.footnotes-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+.footnotes-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.footnotes-item {
+  padding: 4px 0;
+  word-break: break-all;
+}
+.footnotes-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.footnotes-link:hover { color: var(--text); }
+.footnotes-text { color: var(--muted); }
+.footnotes-item:target {
+  background: rgba(176,90,56,0.12);
+  border-radius: 3px;
+  padding-left: 4px;
+}
+
+/* --- Fade-in Animation --- */
+.fade-in { opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+.fade-in.visible { opacity: 1; transform: none; }
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 24px; }
+  .data-table { font-size: 10px; }
+}
+@media (max-width: 540px) {
+  .hero { padding: 36px 12px 28px; }
+  section { padding: 32px 0 24px; }
+  .player-card, .card { padding: 12px; }
+}
+
+/* ============================================================ */
+/* === V3 Step 3 — Block Rendering System (append-only)        === */
+/* === 디자인 토큰(--text-primary, --gold, --red 등) 재사용     === */
+/* ============================================================ */
+
+.report-block-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-section-empty { color: var(--text-muted); font-size: 11px; padding: 8px 0; font-style: italic; }
+.report-block-key-summary-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-fallback { padding: 32px 0; }
+.hero-eyebrow { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faded); margin-bottom: 8px; font-family: 'Noto Serif KR', serif; font-style: italic; }
+.footer-confidence { max-width: 600px; margin: 0 auto 10px; color: var(--text-faded); font-size: 10px; }
+.footer-share { margin-top: 10px; font-size: 11px; }
+.footer-share span { color: rgba(255,255,255,.5); }
+
+/* --- narrative --- */
+.block-narrative { margin-bottom: 14px; }
+.block-narrative-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary); }
+.block-narrative-body { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+.block-narrative-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- claim_card --- */
+.block-claim-card { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-claim-card-header { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-claim-card-id { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+.block-claim-card-type { font-size: 9px; color: var(--text-muted); padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; }
+.block-claim-card-confidence { font-size: 10px; color: var(--blue); font-weight: 600; margin-left: auto; }
+.block-claim-card-statement { font-size: 12px; color: var(--text-primary); line-height: 1.6; margin-bottom: 6px; }
+.block-claim-card-evidence { font-size: 10px; color: var(--text-secondary); }
+.block-claim-card-evidence-label { color: var(--text-muted); margin-right: 4px; }
+.block-claim-card-evidence-id { display: inline-block; padding: 1px 5px; margin: 1px 2px; background: var(--accent); border-radius: 3px; font-size: 9px; color: var(--bg); }
+.block-claim-card-evidence-missing { font-size: 10px; color: var(--orange); font-style: italic; }
+
+/* --- evidence_table --- */
+.block-evidence-table { margin: 12px 0; overflow-x: auto; }
+.block-evidence-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-evidence-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-evidence-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-evidence-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-evidence-table-id { color: var(--gold); font-weight: 600; }
+.block-evidence-table-quote { line-height: 1.6; }
+.block-evidence-table-link { color: var(--blue); text-decoration: none; }
+.block-evidence-table-reliability { font-size: 9px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+.block-evidence-table-rel-primary { background: var(--green-light); color: var(--green); }
+.block-evidence-table-rel-secondary { background: var(--blue-light); color: var(--blue); }
+.block-evidence-table-rel-expert { background: var(--gold); color: var(--bg); }
+.block-evidence-table-rel-model_inference { background: var(--orange-light); color: var(--orange); }
+.block-evidence-table-empty { font-size: 10px; color: var(--text-muted); padding: 12px 0; font-style: italic; }
+
+/* --- timeline --- */
+.block-timeline { margin: 12px 0; }
+.block-timeline-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-timeline-list { list-style: none; padding: 0; margin: 0; }
+.block-timeline-item { display: flex; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 11px; line-height: 1.6; }
+.block-timeline-item:last-child { border-bottom: 0; }
+.block-timeline-date { color: var(--blue); font-weight: 600; min-width: 110px; flex-shrink: 0; white-space: nowrap; }
+.block-timeline-event { color: var(--text-secondary); flex: 1; }
+.block-timeline-impact { color: var(--red); font-weight: 600; margin-left: 6px; }
+.block-timeline-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- matrix --- */
+.block-matrix { margin: 12px 0; overflow-x: auto; }
+.block-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-matrix-corner { background: var(--card); border: 1px solid var(--border); padding: 8px; }
+.block-matrix-col { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; }
+.block-matrix-row-label { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+.block-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- actor_cards --- */
+.block-actor-cards { margin: 12px 0; }
+.block-actor-cards-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-actor-cards-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-actor-cards-grid { grid-template-columns: 1fr 1fr; } }
+.block-actor-cards-card { background: var(--card); border-radius: var(--radius); padding: 12px; border-left: 3px solid var(--gold); }
+.block-actor-cards-risk-극심 { border-left-color: var(--red); }
+.block-actor-cards-risk-높음 { border-left-color: var(--orange); }
+.block-actor-cards-risk-보통 { border-left-color: var(--gold); }
+.block-actor-cards-risk-낮음 { border-left-color: var(--green); }
+.block-actor-cards-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-actor-cards-emoji { font-size: 16px; }
+.block-actor-cards-name { font-weight: 700; font-size: 12px; color: var(--text-primary); }
+.block-actor-cards-role { font-size: 9px; padding: 2px 6px; background: var(--accent); border-radius: 3px; color: var(--bg); font-weight: 600; }
+.block-actor-cards-position { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.6; }
+.block-actor-cards-detail { font-size: 10px; color: var(--text-muted); margin: 3px 0; line-height: 1.6; }
+.block-actor-cards-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- flow_chain --- */
+.block-flow-chain { margin: 12px 0; }
+.block-flow-chain-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-flow-chain-list { list-style: none; padding: 0; margin: 0; }
+.block-flow-chain-step { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); position: relative; }
+.block-flow-chain-step:not(:last-child)::after { content: '↓'; position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); color: var(--text-muted); font-size: 12px; }
+.block-flow-chain-sev-high { border-left-color: var(--red); }
+.block-flow-chain-sev-medium { border-left-color: var(--orange); }
+.block-flow-chain-sev-low { border-left-color: var(--gold); }
+.block-flow-chain-header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.block-flow-chain-num { font-weight: 700; color: var(--gold); font-size: 11px; }
+.block-flow-chain-title-text { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-flow-chain-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0; }
+.block-flow-chain-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-muted); flex-wrap: wrap; }
+.block-flow-chain-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- scenario_table --- */
+.block-scenario-table { margin: 12px 0; overflow-x: auto; }
+.block-scenario-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-scenario-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-scenario-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-scenario-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); vertical-align: top; }
+.block-scenario-table-name strong { color: var(--text-primary); font-size: 11px; }
+.block-scenario-table-tag { font-size: 9px; color: var(--gold); }
+.block-scenario-table-tag-최선 { border-left: 2px solid var(--green); }
+.block-scenario-table-tag-악화 { border-left: 2px solid var(--orange); }
+.block-scenario-table-tag-최악 { border-left: 2px solid var(--red); }
+.block-scenario-table-prob { font-weight: 700; color: var(--text-primary); }
+.block-scenario-table-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- decomposition --- */
+.block-decomposition { margin: 12px 0; }
+.block-decomposition-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decomposition-root { font-weight: 700; font-size: 13px; color: var(--gold); padding: 10px 12px; background: var(--card); border-radius: var(--radius); margin-bottom: 8px; }
+.block-decomposition-tree, .block-decomposition-children { list-style: none; padding-left: 16px; margin: 0; border-left: 1px dashed var(--border); }
+.block-decomposition-node { padding: 6px 0 6px 12px; position: relative; }
+.block-decomposition-node::before { content: '─'; position: absolute; left: -1px; top: 12px; color: var(--border); }
+.block-decomposition-label { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+.block-decomposition-detail { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-decomposition-depth-1 .block-decomposition-label { color: var(--gold); }
+.block-decomposition-depth-2 .block-decomposition-label { color: var(--blue); }
+.block-decomposition-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- argument_pair --- */
+.block-argument-pair { margin: 12px 0; }
+.block-argument-pair-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-argument-pair-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 700px) { .block-argument-pair-grid { grid-template-columns: 1fr 1fr; } }
+.block-argument-pair-side { background: var(--card); padding: 12px; border-radius: var(--radius); border-top: 3px solid var(--gold); }
+.block-argument-pair-side-a { border-top-color: var(--blue); }
+.block-argument-pair-side-b { border-top-color: var(--orange); }
+.block-argument-pair-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.block-argument-pair-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-argument-pair-alignment { margin-top: 10px; padding: 10px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; }
+.block-argument-pair-alignment-title { font-weight: 700; color: var(--gold); margin-bottom: 4px; font-size: 10px; }
+.block-argument-pair-alignment-list { padding-left: 16px; margin: 0; color: var(--text-secondary); }
+
+/* --- data_series --- */
+.block-data-series { margin: 12px 0; }
+.block-data-series-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-data-series-unit { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.block-data-series-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-data-series-grid { grid-template-columns: 1fr 1fr; } }
+.block-data-series-card { background: var(--card); padding: 10px 12px; border-radius: var(--radius); }
+.block-data-series-label { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 6px; }
+.block-data-series-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-data-series-table th { color: var(--text-muted); text-align: left; padding: 4px 6px; font-weight: 600; border-bottom: 1px solid var(--border-light); }
+.block-data-series-table td { padding: 4px 6px; color: var(--text-secondary); }
+.block-data-series-x { color: var(--text-muted); }
+.block-data-series-y { font-weight: 600; color: var(--text-primary); }
+.block-data-series-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- watchlist --- */
+.block-watchlist { margin: 12px 0; }
+.block-watchlist-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-watchlist-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .block-watchlist-grid { grid-template-columns: 1fr 1fr; } }
+.block-watchlist-item { display: flex; gap: 10px; padding: 10px 12px; background: var(--card); border-radius: var(--radius); border-left: 3px solid var(--gold); }
+.block-watchlist-dir-confirms_base { border-left-color: var(--green); }
+.block-watchlist-dir-rejects_base { border-left-color: var(--red); }
+.block-watchlist-dir-ambiguous { border-left-color: var(--gold); }
+.block-watchlist-icon { font-size: 18px; flex-shrink: 0; }
+.block-watchlist-body { flex: 1; }
+.block-watchlist-signal { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-watchlist-desc { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-watchlist-indicates { font-size: 10px; color: var(--blue); margin-top: 2px; }
+.block-watchlist-deadline { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+.block-watchlist-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- qna --- */
+.block-qna { margin: 12px 0; }
+.block-qna-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-qna-list { padding: 0; margin: 0; }
+.block-qna-pair { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px; }
+.block-qna-q { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 4px; }
+.block-qna-a { font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-left: 16px; }
+.block-qna-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- callout --- */
+.block-callout { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-callout-style-warning { border-left-color: var(--orange); }
+.block-callout-style-info { border-left-color: var(--blue); }
+.block-callout-style-insight { border-left-color: var(--gold); }
+.block-callout-title { font-size: 12px; margin-bottom: 4px; color: var(--text-primary); }
+.block-callout-body { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+/* --- counter_hypothesis --- */
+.block-counter-hypothesis { background: var(--card); padding: 12px 14px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin: 12px 0; }
+.block-counter-hypothesis-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--blue); }
+.block-counter-hypothesis-base, .block-counter-hypothesis-counter, .block-counter-hypothesis-required { margin: 8px 0; }
+.block-counter-hypothesis-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.block-counter-hypothesis-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-counter-hypothesis-list { padding-left: 18px; margin: 0; font-size: 10px; color: var(--text-secondary); line-height: 1.6; }
+.block-counter-hypothesis-conflict { margin-top: 8px; font-size: 10px; color: var(--orange); padding-top: 8px; border-top: 1px solid var(--border-light); }
+
+/* --- decision_matrix --- */
+.block-decision-matrix { margin: 12px 0; overflow-x: auto; }
+.block-decision-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decision-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-decision-matrix-corner, .block-decision-matrix-criterion { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); font-weight: 600; }
+.block-decision-matrix-option { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); text-align: left; font-weight: 600; }
+.block-decision-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); text-align: center; }
+.block-decision-matrix-rec { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; color: var(--bg); font-weight: 600; }
+.block-decision-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- risk_matrix --- */
+.block-risk-matrix { margin: 12px 0; overflow-x: auto; }
+.block-risk-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-risk-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-risk-matrix-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-risk-matrix-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-risk-matrix-impact-high { border-left: 3px solid var(--red); }
+.block-risk-matrix-impact-medium { border-left: 3px solid var(--orange); }
+.block-risk-matrix-impact-low { border-left: 3px solid var(--gold); }
+.block-risk-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* ============================================================ */
+/* === Mobile readability (PR1', 2026-05-01)                   === */
+/* === scenario_grid 등은 charts.css 가 처리. 여기는 timeline 과 === */
+/* === evidence/risk_matrix 의 좁은 폭 cram 을 해소.           === */
+/* ============================================================ */
+
+@media (max-width: 540px) {
+  /* timeline: flex 좌우 → 세로 스택. min-width:110px 의 날짜 칸 해제. */
+  .block-timeline-item { flex-direction: column; gap: 2px; padding: 10px 0; align-items: stretch; }
+  .block-timeline-date { min-width: 0; white-space: normal; font-size: 10px; }
+  .block-timeline-event { font-size: 11px; }
+  .block-timeline-impact { margin-left: 0; font-size: 11px; }
+
+  /* table 폰트 10px → 11px (모바일 가독성) */
+  .block-evidence-table-grid,
+  .block-matrix-grid,
+  .block-risk-matrix-grid,
+  .block-decision-matrix-grid { font-size: 11px; }
+
+  /* evidence_table / risk_matrix: thead 숨기고 row → 카드, td → 라벨된 행 */
+  .block-evidence-table-grid thead,
+  .block-risk-matrix-grid thead { display: none; }
+
+  .block-evidence-table-grid,
+  .block-evidence-table-grid tbody,
+  .block-risk-matrix-grid,
+  .block-risk-matrix-grid tbody { display: block; }
+
+  .block-evidence-table-grid tr,
+  .block-risk-matrix-grid tr {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .block-evidence-table-grid td,
+  .block-risk-matrix-grid td {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  /* td[data-label] 가 있으면 라벨 표시 (template 갱신 필요) */
+  .block-evidence-table-grid td[data-label]::before,
+  .block-risk-matrix-grid td[data-label]::before {
+    content: attr(data-label) ":  ";
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  /* matrix 류는 가로 스크롤 유지 (이게 더 읽힘) */
+  .block-matrix, .block-decision-matrix { -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================ */
+/* === PR3 (v3.4.6) — Narrative stage badges + AMC warning      === */
+/* === 5단 DSL 시각 차별화로 단조로움 직접 해소                   === */
+/* ============================================================ */
+
+.section-header { margin-bottom: 16px; }
+.section-stage-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid currentColor;
+  background: var(--accent);
+}
+.section-stage-badge.stage-fact       { color: var(--blue); }
+.section-stage-badge.stage-mechanism  { color: var(--gold); }
+.section-stage-badge.stage-divergence { color: var(--orange); }
+.section-stage-badge.stage-decision   { color: var(--green); }
+.section-stage-badge.stage-trigger    { color: var(--red); }
+
+/* 섹션 자체에도 좌측 컬러 액센트 — 스크롤하면서 단계 흐름이 한눈에 보이게 */
+.report-block-section.stage-fact       { border-left: 2px solid var(--blue);   padding-left: 12px; }
+.report-block-section.stage-mechanism  { border-left: 2px solid var(--gold);   padding-left: 12px; }
+.report-block-section.stage-divergence { border-left: 2px solid var(--orange); padding-left: 12px; }
+.report-block-section.stage-decision   { border-left: 2px solid var(--green);  padding-left: 12px; }
+.report-block-section.stage-trigger    { border-left: 2px solid var(--red);    padding-left: 12px; }
+
+/* AMC 미달 경고 배너 */
+.report-block-amc-warning {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius);
+  background: var(--orange-light);
+}
+.amc-warning-badge {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.amc-warning-badge code {
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.amc-warning-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.amc-stage-missing {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  color: var(--orange);
+  font-weight: 600;
+  font-size: 10px;
+}
+</style>
+<style>
+/* freeform_essay — 산문 우위. 정형 슬롯을 줄이고 단락 호흡을 살림. */
+.freeform-hero{padding:48px 0 32px;background:linear-gradient(180deg,var(--bg-2,#2B1A1A) 0%,var(--bg-1,#1B1010) 100%);border-bottom:1px solid var(--border-light,#3D2828)}
+/* v5.4.5 — hero 사진이 있을 때만 padding-bottom 축소. caption 직후 → 본문 사이의 과한 공백 해소. */
+.freeform-hero:has(.freeform-figure.hero){padding-bottom:14px}
+.freeform-hero .container{max-width:780px}
+.freeform-eyebrow{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:12px}
+.freeform-version{font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:0.4px;color:var(--fg-3,var(--muted));text-transform:none;margin-left:4px}
+.freeform-headline{font-family:'Newsreader','Noto Serif KR',serif;font-size:34px;font-weight:900;line-height:1.25;color:var(--fg-1,#F0E2CC);margin:0 0 14px;letter-spacing:-0.5px}
+.freeform-deck{font-size:17px;line-height:1.6;color:var(--fg-2,#D4C4AA);font-weight:300;margin-bottom:18px}
+.freeform-meta{font-size:12px;color:var(--fg-3,#A89880);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.freeform-meta span+span::before{content:"·";margin-right:10px;color:var(--fg-3,#A89880);opacity:0.5}
+.freeform-section{padding:32px 0;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.freeform-section:last-of-type{border-bottom:none}
+.freeform-section .container{max-width:780px}
+.freeform-kicker{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:8px}
+.freeform-heading{font-family:'Newsreader','Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1,#F0E2CC);margin:0 0 16px}
+.freeform-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400}
+.freeform-prose p{margin:0 0 16px}
+.freeform-prose strong, .freeform-prose b{color:var(--fg-1,#F0E2CC);font-weight:600}
+.freeform-prose em, .freeform-prose i{color:var(--accent,#C9A84C);font-style:normal}
+.freeform-prose blockquote{margin:18px 0;padding:6px 0 6px 16px;border-left:3px solid var(--accent,#C9A84C);color:var(--fg-1,#F0E2CC);font-style:italic;font-size:16.5px}
+.freeform-prose ul, .freeform-prose ol{margin:0 0 16px;padding-left:22px}
+.freeform-prose li{margin-bottom:6px}
+/* v5.8.1 — pull_quote 재설계 (C안 양쪽 룰). 기존 background + border-radius +
+   border-left 4px 의 "AI 인용 박스" 룩 폐기. 배경 제거 + 좌우 가는 룰(accent
+   2px) + 이탤릭 세리프로 편집 디자인 인용 톤. 메시지는 그대로, 형상만 절제. */
+.freeform-pullquote{margin:28px 0 24px;padding:2px 20px;border-left:2px solid var(--accent,#C9A84C);border-right:2px solid var(--accent,#C9A84C);font-family:'Newsreader','Noto Serif KR',serif;font-size:21px;font-weight:700;font-style:italic;line-height:1.5;color:var(--fg-1,#F0E2CC)}
+.freeform-cited{margin-top:10px;font-size:11px;color:var(--fg-3,#A89880);letter-spacing:0.4px}
+.freeform-cited code{background:rgba(201,168,76,0.10);padding:1px 6px;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--accent,#C9A84C);margin-right:4px}
+.freeform-chart-wrap{margin:18px 0}
+.freeform-chart-wrap .chart-card{background:var(--card,var(--bg-2));border:1px solid var(--border-soft,rgba(125,98,76,0.25));border-radius:10px;padding:14px}
+.freeform-chart-wrap .chart-card-title{font-family:'IBM Plex Sans KR',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.6px;color:var(--fg-2,#D4C4AA);margin-bottom:10px;text-transform:uppercase}
+.freeform-block-wrap{margin:18px 0}
+.freeform-closing{padding:32px 0 48px;background:var(--bg-3,#1B1010)}
+.freeform-closing .container{max-width:780px}
+.freeform-closing-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:10px}
+.freeform-closing-body{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2,#D4C4AA);font-style:italic}
+/* v4.5.0 — editorial 컴포넌트 (LG AI Seminar 차용) */
+.freeform-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:18.5px;line-height:1.65;color:var(--fg-1,#F0E2CC);font-weight:400;font-style:italic;margin:0 0 22px;padding:0 0 18px;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.20))}
+.freeform-analogy{margin:24px 0;padding:18px 22px;background:var(--bg-2,rgba(0,0,0,0.10));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-left:4px solid var(--accent,#B05A38);border-radius:0 8px 8px 0}
+.freeform-analogy-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#B05A38);margin-bottom:8px}
+.freeform-analogy-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16.5px;font-weight:700;line-height:1.4;color:var(--fg-1);margin-bottom:8px}
+.freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2)}
+/* v5.5.5 — 전문 용어 주석 (문단 하단 각주). 일반 독자 우선 = 최우선 가치.
+   본문보다 한 단계 작고 차분한 톤으로, 평이한 말로 못 바꾼 용어만 풀어준다. */
+.freeform-footnotes{margin:16px 0 4px;padding:13px 18px;background:var(--bg-2,rgba(0,0,0,0.06));border-left:3px solid var(--border-soft,rgba(125,98,76,0.40));border-radius:0 6px 6px 0}
+.freeform-footnotes-label{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--fg-3,#A89880);margin-bottom:8px}
+.freeform-footnote{font-size:13px;line-height:1.7;color:var(--fg-3,#A89880);margin-bottom:7px}
+.freeform-footnote:last-child{margin-bottom:0}
+.freeform-footnote-term{font-weight:700;color:var(--fg-2,#D4C4AA)}
+.freeform-footnote-term::after{content:' — '}
+/* v5.8.0 — 후속 보고서: '이 분석의 출발점' (원 보고서 제목 + 링크). 서두 + 매리말. */
+.freeform-origin{margin:18px 0 4px;padding:14px 18px;background:var(--bg-2,rgba(0,0,0,0.06));border-left:3px solid var(--accent,#C9A84C);border-radius:0 6px 6px 0}
+.freeform-origin-label{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:7px}
+.freeform-origin-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;font-weight:700;line-height:1.45;color:var(--fg-1,#F0E2CC);margin-bottom:6px}
+.freeform-origin-title a{color:var(--fg-1,#F0E2CC);text-decoration:none;border-bottom:1px solid var(--accent,#C9A84C)}
+.freeform-origin-title a:hover{color:var(--accent,#C9A84C)}
+.freeform-origin-note{font-size:12.5px;line-height:1.65;color:var(--fg-3,#A89880)}
+.freeform-origin-link{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent,#C9A84C);word-break:break-all}
+.freeform-origin.epilogue{margin-top:0}
+/* v5.8.8 — 모든 트랙을 minmax(0,1fr) 로. 1fr 은 사실 minmax(min-content,1fr)
+   이라 "$4.99~5.50/hr" 같이 끊기지 않는 넓은 값 셀의 min-content 가 균등분할을
+   깨고 그리드를 컨테이너 밖으로 밀어 → 일부 셀만 가로로 길어지고 마지막 셀이
+   잘리던 회귀 (사용자 보고). minmax(0,…) 는 셀이 콘텐츠보다 좁아지는 것을 허용해
+   N개가 항상 균등 폭으로 컨테이너 안에 들어온다. 그리고 5·6개는 한 줄에 욱여넣으면
+   데스크탑에서도 셀이 좁아 값이 줄바꿈/잘림 → 3-wide 로 줄바꿈 (6→3+3, 5→3+2).
+   7개 이상은 base(4-wide) 로 자동 wrap. */
+.freeform-fact-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:24px 0;background:var(--border-soft,rgba(125,98,76,0.30));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-radius:6px;overflow:hidden}
+.freeform-fact-grid[data-cols="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.freeform-fact-grid[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.freeform-fact-grid[data-cols="5"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.freeform-fact-grid[data-cols="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.freeform-fact-tile{padding:14px 16px;background:var(--bg-1);display:flex;flex-direction:column}
+/* v5.8.1→v5.8.4 — label 영역을 2줄 높이로 예약 → 1줄/2줄 label 이 섞여도 큰
+   숫자(value)의 세로 시작선이 모든 카드에서 일치. value 는 고정 높이 label 바로
+   아래에서 시작 (위에서 정렬). v5.8.1 의 margin-top:auto 는 value 를 아래로 밀어
+   sublabel 줄 수가 다르면 다시 어긋나던 버그라 제거. */
+.freeform-fact-label{font-size:10.5px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--fg-3,var(--muted));margin-bottom:4px;min-height:2.6em;display:flex;align-items:flex-start}
+.freeform-fact-value{font-family:'Newsreader','Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--fg-1);line-height:1.15;margin-bottom:2px;overflow-wrap:break-word;word-break:keep-all}
+.freeform-fact-sublabel{font-size:11px;color:var(--fg-3,var(--muted));line-height:1.4;overflow-wrap:break-word;word-break:keep-all}
+.freeform-prose.has-dropcap p:first-child::first-letter{font-family:'Newsreader','Noto Serif KR',serif;float:left;font-size:54px;font-weight:900;line-height:0.9;padding:6px 10px 0 0;color:var(--accent,#B05A38)}
+/* v5.5.1 — 모순 섹션 서술형 화. 각 모순 = 한 단락, '그러나' 로 전환, resolution
+   으로 착지. 각주형 라벨('근거 충돌:' / '분석가의 정리 —')·border-left 박스 폐기
+   (WRITE-AP-9). 강조는 전환점(accent) + 판단(fg-1 bold) 2단만. */
+.contradiction-prose{font-size:15.5px;line-height:1.9;color:var(--fg-2,#D4C4AA);font-weight:400}
+.contradiction-prose p{margin:0 0 20px}
+.contradiction-prose p:last-child{margin-bottom:0}
+.contradiction-prose .ct-turn{color:var(--accent,#C9A84C);font-weight:600}
+.contradiction-prose .ct-evidence{color:var(--fg-3,#A89880)}
+.contradiction-prose .ct-resolve{color:var(--fg-1,#F0E2CC);font-weight:600}
+/* v5.5.2 — 시간 흐름도 (감시 신호 직후 capstone). 수직 레일: 과거=실선+채운 점,
+   현재=accent 앵커, 미래=점선 레일+빈 점+예상/감시 태그 (투사 ≠ 사실 시각 구분). */
+.timeline-flow{list-style:none;margin:0;padding:0}
+.timeline-flow .tl-point{position:relative;padding:0 0 20px 26px}
+.timeline-flow .tl-point::before{content:"";position:absolute;left:5px;top:7px;bottom:-5px;width:2px;background:var(--border-soft,rgba(125,98,76,0.28))}
+.timeline-flow .tl-point:last-child::before{display:none}
+.timeline-flow .tl-future::before{background:none;background-image:repeating-linear-gradient(to bottom,var(--fg-3,#A89880) 0 3px,transparent 3px 8px)}
+.timeline-flow .tl-dot{position:absolute;left:0;top:5px;width:12px;height:12px;border-radius:50%;background:var(--fg-1,#F0E2CC);border:2px solid var(--bg,#1B1010)}
+.timeline-flow .tl-future .tl-dot{background:var(--bg,#1B1010);border-color:var(--fg-3,#A89880)}
+.timeline-flow .tl-present .tl-dot{width:14px;height:14px;left:-1px;top:4px;background:var(--accent,#C9A84C);border-color:var(--bg,#1B1010)}
+.timeline-flow .tl-date{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--fg-3,#A89880);letter-spacing:0.3px;margin-bottom:1px}
+.timeline-flow .tl-present .tl-date{color:var(--accent,#C9A84C);font-weight:700}
+.timeline-flow .tl-label{font-family:'Newsreader','Noto Serif KR',serif;font-size:15.5px;color:var(--fg-1,#F0E2CC);line-height:1.5}
+.timeline-flow .tl-future .tl-label{color:var(--fg-2,#D4C4AA)}
+.timeline-flow .tl-present .tl-label{font-weight:700}
+.timeline-flow .tl-tag{font-family:'IBM Plex Sans KR',sans-serif;font-style:normal;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--accent,#C9A84C);border:1px solid var(--border-soft,rgba(125,98,76,0.4));border-radius:3px;padding:1px 5px;margin-left:6px;white-space:nowrap}
+/* v5.3.2 — 감시 신호 editorial epilogue 화. chart-card / takeaway 박스 폐기.
+   epilogue-watch-indicates 가 italic + accent border-left 어휘 보존 (v5.5.1 에서
+   contradiction-prose 는 서술형으로 전환돼 더 이상 box 어휘 공유 안 함).
+   별개 H2 폐기 — lede 한 문단 + deadline 좌측 mono + signal/desc/시사 우측 산문.
+   같은 composed.watch_signals 데이터 (Pydantic 무변경, SQLite 등록 경로 무영향). */
+.epilogue-watch-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:17px;line-height:1.65;color:var(--fg-1);font-style:italic;margin:0 0 22px;font-weight:400}
+.epilogue-watch-lede strong{font-style:normal;font-weight:700;color:var(--accent)}
+.epilogue-watch-list{display:flex;flex-direction:column}
+.epilogue-watch-row{display:grid;grid-template-columns:108px 1fr;gap:18px;padding:16px 0;border-top:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.epilogue-watch-row:last-child{border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.epilogue-watch-row.no-deadline{grid-template-columns:1fr}
+.epilogue-watch-deadline{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:0.4px;line-height:1.5;padding-top:4px;white-space:nowrap}
+.epilogue-watch-signal{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--fg-1);line-height:1.4;margin:0 0 6px}
+.epilogue-watch-desc{font-size:13.5px;line-height:1.7;color:var(--fg-2);margin:0}
+.epilogue-watch-indicates{display:block;margin-top:8px;padding-left:14px;border-left:2px solid var(--accent);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:13.5px;line-height:1.65;color:var(--fg-1)}
+.epilogue-watch-indicates::before{content:"시사 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-right:4px}
+/* v5.4.0 — 사진 figure (hero + inline). FT/Economist 스타일. caption 은 Newsreader
+   italic + credit 은 sans-serif 로 톤다운. 컬러 사진 그대로 (mono 필터 X). */
+.freeform-figure{margin:22px 0 4px}
+.freeform-figure img{display:block;width:100%;height:auto;border-radius:4px;border:1px solid var(--border-soft,rgba(125,98,76,0.25));background:var(--bg-2)}
+/* v5.5.11 — text-align:left 명시. hero figure 가 .hero 클래스를 같이 받아서
+   report.css:.hero{text-align:center} 가 figcaption 까지 inherit 되던 회귀 차단. */
+.freeform-figure figcaption{padding:8px 2px 0;font-family:'Newsreader','Noto Serif KR',serif;font-size:13.5px;line-height:1.55;color:var(--fg-3,var(--muted));font-style:italic;text-align:left}
+.freeform-figure figcaption .credit{font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:11.5px;color:var(--fg-3,var(--muted));margin-left:6px;opacity:0.85}
+.freeform-figure figcaption a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--fg-3,var(--muted))}
+.freeform-figure figcaption a:hover{border-bottom-style:solid}
+.freeform-figure.hero{margin:12px 0 0}
+.freeform-figure.inline img{border-radius:3px}
+.freeform-figure.inline figcaption{font-size:12.5px;padding-top:8px}
+.freeform-figure.inline figcaption .credit{font-size:11px}
+/* TOC — 보고서 상단 (hero 직후, 지도 다음) */
+.freeform-toc{padding:20px 0;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.18))}
+.freeform-toc .container{max-width:780px}
+.freeform-toc-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fg-3,var(--muted));margin-bottom:10px}
+.freeform-toc-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 24px}
+.freeform-toc-item{display:flex;gap:10px;font-size:13px;line-height:1.5}
+.freeform-toc-num{font-family:'Newsreader','Noto Serif KR',serif;font-weight:700;color:var(--accent,#B05A38);min-width:18px}
+.freeform-toc-link{color:var(--fg-2);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s}
+.freeform-toc-link:hover{border-bottom-color:var(--accent,#B05A38);color:var(--fg-1)}
+@media(max-width:640px){
+  .freeform-hero{padding:32px 0 24px}
+  /* v5.4.5 — 모바일에서도 사진 있을 때 bottom 축소 */
+  .freeform-hero:has(.freeform-figure.hero){padding-bottom:12px}
+  .freeform-headline{font-size:26px}
+  .freeform-deck{font-size:15.5px}
+  .freeform-section{padding:24px 0}
+  .freeform-heading{font-size:20px}
+  .freeform-prose{font-size:15px;line-height:1.78}
+  .freeform-pullquote{font-size:16px;padding:2px 14px}
+  .freeform-lede{font-size:16.5px}
+  .freeform-prose.has-dropcap p:first-child::first-letter{font-size:46px}
+  /* fact-grid 좁은 폭 대응 — 한 줄 유지하되 padding/font 축소.
+     value 길면 자동 줄바꿈 + word-break */
+  .freeform-fact-tile{padding:10px 8px}
+  .freeform-fact-label{font-size:9px;letter-spacing:0.4px;margin-bottom:3px;min-height:2.7em}
+  .freeform-fact-value{font-size:15px;word-break:keep-all;overflow-wrap:break-word}
+  .freeform-fact-sublabel{font-size:10px;line-height:1.35}
+  /* 5/6 cols 는 모바일에서 정말 좁으니 더 축소 */
+  .freeform-fact-grid[data-cols="5"] .freeform-fact-tile,
+  .freeform-fact-grid[data-cols="6"] .freeform-fact-tile{padding:8px 6px}
+  .freeform-fact-grid[data-cols="5"] .freeform-fact-value,
+  .freeform-fact-grid[data-cols="6"] .freeform-fact-value{font-size:13px}
+  /* v5.8.8 — 5·6개는 모바일에서 2-wide (데스크탑 3-wide 를 폰에 그대로 두면 값
+     셀이 너무 좁다). 6→2+2+2, 5→2+2+1. */
+  .freeform-fact-grid[data-cols="5"],
+  .freeform-fact-grid[data-cols="6"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* v5.3.2 — epilogue watch 모바일 대응. deadline 을 본문 위로 올려 한 컬럼. */
+  .epilogue-watch-row{grid-template-columns:1fr;gap:6px}
+  .epilogue-watch-deadline{padding-top:0;font-size:11px}
+  .epilogue-watch-lede{font-size:15.5px}
+  .epilogue-watch-signal{font-size:15px}
+}
+</style>
+<style>
+/* v7.0.0 (Track B, V7_SCROLL_ARC) — 기승전결(起承轉結) 스크롤 아크 배경.
+   워터마크 레벨 한자 1자가 화면 중앙에 고정되고, 스크롤 진행에 따라 다음 단계
+   한자가 이전 한자를 위로 밀어올린다 (인라인 엔진, 아래 body 끝).
+   - 블러는 요소에 1회 래스터, 이후 transform(translateY) 보간만 — 합성 비용만 발생.
+   - 색은 --fg-1 + 저알파 (본문 대비 간섭 없는 워터마크, accent 금지 — AP-V7-2).
+   - prefers-reduced-motion / print → 전체 숨김 (사용자 결정, REFACTOR_V7_PLAN.md §6). */
+.arc-backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.arc-glyph{position:absolute;left:50%;top:50%;font-family:'Noto Serif KR','Newsreader',serif;font-weight:900;font-size:min(68vh,68vw);line-height:1;color:var(--fg-1,var(--text,#888));opacity:var(--arc-alpha,0.08);filter:blur(14px);transform:translate(-50%,-50%) translateY(120vh);will-change:transform;user-select:none}
+/* 라이트 테마는 잉크가 진해 알파를 더 낮춘다 (다크 4종은 기본 0.08). */
+[data-theme="editorial_cream"] .arc-backdrop .arc-glyph,
+[data-theme="light_mono"] .arc-backdrop .arc-glyph{--arc-alpha:0.055}
+@media (prefers-reduced-motion: reduce){.arc-backdrop{display:none}}
+@media print{.arc-backdrop{display:none}}
+@media (max-width:640px){.arc-glyph{font-size:62vw;filter:blur(10px)}}
+</style>
+</head>
+<body>
+<div class="arc-backdrop" id="arc-backdrop" aria-hidden="true">
+  <span class="arc-glyph" data-phase="기">起</span><span class="arc-glyph" data-phase="승">承</span><span class="arc-glyph" data-phase="전">轉</span><span class="arc-glyph" data-phase="결">結</span>
+</div>
+
+
+
+
+
+<header class="freeform-hero">
+  <div class="container">
+    <div class="freeform-eyebrow">Event Analysis · Composed · <span class="freeform-version">Analysis Team v7.6.2 · Rev 0.0</span></div>
+    <h1 class="freeform-headline">스타게이트가 서울로 왔고, 이란 합의는 미뤄졌다</h1>
+    <p class="freeform-deck">샘 올트먼이 6월 14일 서울에서 메모리 공급 협상에 나섰고, 트럼프가 약속한 6월 14일 이란 서명은 다음 날까지도 나오지 않았다.</p>
+    <div class="freeform-meta">
+      <span>복합 (산업·지정학·전쟁)</span>
+      <span>2026-06-15</span>
+      <span>2026-06-15 06:15:24</span>
+    </div>
+    
+    
+    
+    
+    <figure class="freeform-figure hero">
+      
+      <img src="img/5af1bd002add7a0f.webp"
+           alt="미·이란 협상 관련 보도 이미지"
+           referrerpolicy="no-referrer"
+           crossorigin="anonymous"
+           loading="eager">
+      
+      <figcaption>
+        어제(6월 14일), 미국과 이란이 합의 직전까지 접근했지만 서명 시점을 두고 입장이 갈렸다.
+        <span class="credit"><a href="https://www.aljazeera.com/news/liveblog/2026/6/14/iran-war-live-trump-says-deal-to-be-signed-today-as-tehran-urges-caution" target="_blank" rel="noopener">© Al Jazeera</a></span>
+      </figcaption>
+      
+    </figure>
+    
+  </div>
+</header>
+
+
+
+<section class="freeform-section freeform-map-section fade-in">
+  <div class="container">
+    <div class="freeform-kicker">지리적 구도</div>
+    <h2 class="freeform-heading">지도</h2>
+    <div class="map-card">
+      <div class="map-controls">
+        <button type="button" data-map-zoom="in" aria-label="확대">＋</button>
+        <button type="button" data-map-zoom="out" aria-label="축소">−</button>
+        <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
+      </div>
+      <div id="freeform-map" class="map-stage" data-theme="graphite_slate"></div>
+      <script type="application/json" id="map-payload">{"arcs": [{"from_id": "tehran", "kind": "tension", "label": "\uc9c1\uc811 \ub300\uce58", "label_t": 0.5, "to_id": "telaviv", "weight": 3}, {"from_id": "telaviv", "kind": "tension", "label": "\ub0a8\ubd80 \uacf5\uc2b5", "label_t": 0.5, "to_id": "beirut", "weight": 2}, {"from_id": "doha", "kind": "flow", "label": "\ud611\uc0c1 \ucc44\ub110", "label_t": 0.55, "to_id": "tehran", "weight": 2}, {"from_id": "hormuz", "kind": "flow", "label": "\uc6d0\uc720 \ud68c\ub791 \ub3d9\ud5a5", "label_t": 0.4, "to_id": "doha", "weight": 3}], "center": [50, 28], "legend": [{"kind": "tension", "label": "\uc9c1\uc811 \ub300\uce58"}, {"kind": "flow", "label": "\ud611\uc0c1\u00b7\uc6d0\uc720 \ud68c\ub791"}, {"kind": "marker", "label": "\ubcd1\ubaa9 \u25c6 / \uad70\uc0ac \u25b2 / \ud56d\ub9cc \u25ce"}], "markers": [{"highlight": true, "id": "hormuz", "kind": "chokepoint", "label_side": "bottom", "lat": 26.6, "lng": 56.4, "name": "\ud638\ub974\ubb34\uc988 \ud574\ud611", "value": "\uc138\uacc4 \uc6d0\uc720 \uc57d 20% \ud1b5\uacfc"}, {"id": "tehran", "kind": "military", "label_side": "top", "lat": 35.7, "lng": 51.4, "name": "\ud14c\ud5e4\ub780"}, {"id": "beirut", "kind": "military", "label_side": "left", "lat": 33.9, "lng": 35.5, "name": "\ubca0\uc774\ub8e8\ud2b8", "value": "\ub0a8\ubd80 \ud5e4\uc988\ubcfc\ub77c \uc2dc\uc124 \ud45c\uc801"}, {"id": "telaviv", "kind": "military", "label_side": "bottom", "lat": 32.1, "lng": 34.8, "name": "\ud154\uc544\ube44\ube0c", "value": "\ubcf8\ud1a0 \ucd5c\uace0 \uacbd\ubcf4 \uaca9\uc0c1"}, {"id": "doha", "kind": "port", "label_side": "bottom", "lat": 25.3, "lng": 51.5, "name": "\ub3c4\ud558", "value": "\uce74\ud0c0\ub974 \ud611\uc0c1\ub2e8 \uac70\uc810"}], "regions": [{"label": "\uc774\ub780", "name": "Iran", "role": "rival"}, {"label": "\uc774\uc2a4\ub77c\uc5d8", "name": "Israel", "role": "subject"}, {"label": "\ub808\ubc14\ub17c", "name": "Lebanon", "role": "contested"}, {"label": "\uc0ac\uc6b0\ub514", "name": "Saudi Arabia", "role": "ally"}], "sea_labels": [{"lat": 27.5, "lng": 52.0, "name": "\ud398\ub974\uc2dc\uc544\ub9cc"}, {"lat": 34.0, "lng": 32.5, "name": "\uc9c0\uc911\ud574 \ub3d9\ubd80"}], "zoom": 3.2}</script>
+      <div class="map-hint">드래그·휠·핀치로 지도 이동·확대</div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<nav class="freeform-toc" aria-label="목차">
+  <div class="container">
+    <div class="freeform-toc-label">목차</div>
+    <ol class="freeform-toc-list">
+      
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">01</span>
+        <a class="freeform-toc-link" href="#sec-1">월요일 아침, 두 신호가 같은 자리에 부딪쳤다</a>
+      </li>
+      
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">02</span>
+        <a class="freeform-toc-link" href="#sec-2">스타게이트가 서울로 왔다</a>
+      </li>
+      
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">03</span>
+        <a class="freeform-toc-link" href="#sec-3">75퍼센트라는 숫자가 가리키는 곳</a>
+      </li>
+      
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">04</span>
+        <a class="freeform-toc-link" href="#sec-4">이란 합의는 미뤄졌다</a>
+      </li>
+      
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">05</span>
+        <a class="freeform-toc-link" href="#sec-5">유가, 환율, 관세의 세 갈래 압력</a>
+      </li>
+      
+      <li class="freeform-toc-item">
+        <span class="freeform-toc-num">06</span>
+        <a class="freeform-toc-link" href="#sec-6">이번 주, 무엇을 봐야 하나</a>
+      </li>
+      
+    </ol>
+  </div>
+</nav>
+
+
+
+
+<section id="sec-1" class="freeform-section fade-in" data-arc-phase="기">
+  <div class="container">
+    <div class="freeform-kicker">오늘의 시작</div>
+    <h2 class="freeform-heading">월요일 아침, 두 신호가 같은 자리에 부딪쳤다</h2>
+    <div class="freeform-lede">어제(6월 14일 일요일) 하루 사이에 한국 시장에는 두 갈래의 무게가 같이 쌓였다. 한쪽 끝에는 서울에 도착한 샘 올트먼이, 다른 쪽 끝에는 베이루트 남부에 떨어진 이스라엘 폭격이 있다.</div>
+    <div class="freeform-prose">6월 15일은 월요일이다. 6월 14일까지 들어온 신호 두 개가 오전 9시 개장과 동시에 같은 호가창에서 만난다. 산업 쪽으로는 OpenAI(오픈에이아이)의 데이터센터 인프라 계획인 스타게이트가 한국 메모리 양사를 정식 공급 계약 단계로 끌어올리는 협상이 진행됐다. 지정학 쪽으로는 트럼프 대통령이 자신의 80세 생일이었던 6월 14일에 서명한다고 공언했던 미·이란 합의가, 같은 날 이스라엘의 베이루트 공습에 막혀 다음 날까지도 발효되지 않았다. 시장은 이미 한쪽에 무게를 실어두고 주말로 들어갔다. 직전 거래일인 6월 12일 종가 기준 코스피는 8,123.62로 전일 대비 4.63퍼센트 올랐고, 같은 날 삼성전자는 종가 32만 2,500원으로 하루에 7.86퍼센트 올랐다. 다만 이 숫자들은 스타게이트 공급 협상이 진전 중이라는 보도와 트럼프의 합의 공언이 동시에 깔린 상태에서 만들어진 것이다. 어느 한쪽이 약해지면 같은 폭으로 되돌릴 여지가 있다. 이 보고서는 두 사건을 따로 다루지 않는다. 둘 다 결국 6월 15일 장중에 같은 외국인 수급 결정 안에서 가중치를 두고 비교될 가능성이 높기 때문이다. 우선 6월 14일에 무엇이 정확히 있었는지부터 본다.</div>
+    
+    
+    <div class="freeform-footnotes" role="doc-endnotes">
+      <div class="freeform-footnotes-label">용어 풀이</div>
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">스타게이트(Stargate)</span>
+          <span class="freeform-footnote-text">OpenAI가 공언한 다년·복수 거점의 글로벌 인공지능 데이터센터 인프라 계획. 누계 투자 규모로 5천억 달러가 거론된다.</span>
+        </div>
+        
+      
+    </div>
+    
+    
+    
+    
+
+    
+    
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+    
+    <div class="compact-strip">
+      
+      
+      <div class="compact-row" data-chart-id="ch-s0-c1">
+        <span class="compact-name">삼성전자</span>
+        <span class="compact-value">322,500</span>
+        <span class="compact-change up">+7.86%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 7.86, "change_day_pct_formatted": "+7.86%", "data": [{"x": "2026-05-18", "y": 281000.0}, {"x": "2026-05-19", "y": 275500.0}, {"x": "2026-05-20", "y": 276000.0}, {"x": "2026-05-21", "y": 299500.0}, {"x": "2026-05-22", "y": 292500.0}, {"x": "2026-05-26", "y": 299000.0}, {"x": "2026-05-27", "y": 307000.0}, {"x": "2026-05-28", "y": 299500.0}, {"x": "2026-05-29", "y": 317000.0}, {"x": "2026-06-01", "y": 349000.0}, {"x": "2026-06-02", "y": 360500.0}, {"x": "2026-06-04", "y": 351500.0}, {"x": "2026-06-05", "y": 329000.0}, {"x": "2026-06-08", "y": 295500.0}, {"x": "2026-06-09", "y": 322000.0}, {"x": "2026-06-10", "y": 302500.0}, {"x": "2026-06-11", "y": 299000.0}, {"x": "2026-06-12", "y": 322500.0}], "instrument": "\uc0bc\uc131\uc804\uc790", "last_value_formatted": "322,500", "period_label": "1M", "role": "compact", "source": "KRX / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 +14.77% (281,000 \u2192 322,500)", "takeaway": "", "title": "\uc0bc\uc131\uc804\uc790", "type": "line"}</script>
+      </div>
+      
+      
+      <div class="compact-row" data-chart-id="ch-s1-c2">
+        <span class="compact-name">SK하이닉스</span>
+        <span class="compact-value">2,150,000</span>
+        <span class="compact-change up">+2.33%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 2.33, "change_day_pct_formatted": "+2.33%", "data": [{"x": "2026-05-18", "y": 1840000.0}, {"x": "2026-05-19", "y": 1745000.0}, {"x": "2026-05-20", "y": 1745000.0}, {"x": "2026-05-21", "y": 1940000.0}, {"x": "2026-05-22", "y": 1941000.0}, {"x": "2026-05-26", "y": 2052000.0}, {"x": "2026-05-27", "y": 2243000.0}, {"x": "2026-05-28", "y": 2289000.0}, {"x": "2026-05-29", "y": 2333000.0}, {"x": "2026-06-01", "y": 2363000.0}, {"x": "2026-06-02", "y": 2360000.0}, {"x": "2026-06-04", "y": 2298000.0}, {"x": "2026-06-05", "y": 2070000.0}, {"x": "2026-06-08", "y": 1911000.0}, {"x": "2026-06-09", "y": 2215000.0}, {"x": "2026-06-10", "y": 2048000.0}, {"x": "2026-06-11", "y": 2101000.0}, {"x": "2026-06-12", "y": 2150000.0}], "instrument": "SK\ud558\uc774\ub2c9\uc2a4", "last_value_formatted": "2,150,000", "period_label": "1M", "role": "compact", "source": "KRX / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 +16.85% (1,840,000 \u2192 2,150,000)", "takeaway": "", "title": "SK\ud558\uc774\ub2c9\uc2a4", "type": "line"}</script>
+      </div>
+      
+      
+      <div class="compact-row" data-chart-id="ch-s2-c3">
+        <span class="compact-name">코스피</span>
+        <span class="compact-value">8,124</span>
+        <span class="compact-change up">+4.63%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 4.63, "change_day_pct_formatted": "+4.63%", "data": [{"x": "2026-05-18", "y": 7516.0400390625}, {"x": "2026-05-19", "y": 7271.66015625}, {"x": "2026-05-20", "y": 7208.9501953125}, {"x": "2026-05-21", "y": 7815.58984375}, {"x": "2026-05-22", "y": 7847.7099609375}, {"x": "2026-05-26", "y": 8047.509765625}, {"x": "2026-05-27", "y": 8228.7001953125}, {"x": "2026-05-28", "y": 8185.2900390625}, {"x": "2026-05-29", "y": 8476.150390625}, {"x": "2026-06-01", "y": 8788.3798828125}, {"x": "2026-06-02", "y": 8801.490234375}, {"x": "2026-06-04", "y": 8639.41015625}, {"x": "2026-06-05", "y": 8160.58984375}, {"x": "2026-06-08", "y": 7484.41015625}, {"x": "2026-06-09", "y": 8096.93017578125}, {"x": "2026-06-10", "y": 7730.81982421875}, {"x": "2026-06-11", "y": 7763.9501953125}, {"x": "2026-06-12", "y": 8123.6201171875}], "instrument": "\ucf54\uc2a4\ud53c", "last_value_formatted": "8,124", "period_label": "1M", "role": "compact", "source": "Yahoo Finance / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 +8.08% (7,516 \u2192 8,124)", "takeaway": "", "title": "\ucf54\uc2a4\ud53c", "type": "line"}</script>
+      </div>
+      
+      
+      <div class="compact-row" data-chart-id="ch-s3-c4">
+        <span class="compact-name">원/달러 환율</span>
+        <span class="compact-value">1,527</span>
+        <span class="compact-change up">+0.30%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 0.3, "change_day_pct_formatted": "+0.30%", "data": [{"x": "2026-05-18", "y": 1499.8}, {"x": "2026-05-19", "y": 1503.4}, {"x": "2026-05-20", "y": 1503.8}, {"x": "2026-05-21", "y": 1509.7}, {"x": "2026-05-22", "y": 1503.5}, {"x": "2026-05-26", "y": 1513.3}, {"x": "2026-05-27", "y": 1507.9}, {"x": "2026-05-28", "y": 1501.6}, {"x": "2026-05-29", "y": 1505.8}, {"x": "2026-06-01", "y": 1503.2}, {"x": "2026-06-02", "y": 1511.3}, {"x": "2026-06-04", "y": 1515.6}, {"x": "2026-06-05", "y": 1528.6}, {"x": "2026-06-08", "y": 1543.0}, {"x": "2026-06-09", "y": 1546.5}, {"x": "2026-06-10", "y": 1518.4}, {"x": "2026-06-11", "y": 1522.4}, {"x": "2026-06-12", "y": 1527.0}], "instrument": "\uc6d0/\ub2ec\ub7ec \ud658\uc728", "last_value_formatted": "1,527", "period_label": "1M", "role": "compact", "source": "\ud55c\uad6d\uc740\ud589 ECOS / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 +1.81% (1,500 \u2192 1,527)", "takeaway": "", "title": "\uc6d0/\ub2ec\ub7ec \ud658\uc728", "type": "line"}</script>
+      </div>
+      
+      
+      <div class="compact-row" data-chart-id="ch-s4-c5">
+        <span class="compact-name">WTI 유가</span>
+        <span class="compact-value">95.00</span>
+        <span class="compact-change up">+0.72%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 0.72, "change_day_pct_formatted": "+0.72%", "data": [{"x": "2026-05-18", "y": 112.25}, {"x": "2026-05-19", "y": 112.09}, {"x": "2026-05-20", "y": 101.69}, {"x": "2026-05-21", "y": 100.2}, {"x": "2026-05-22", "y": 100.35}, {"x": "2026-05-26", "y": 97.63}, {"x": "2026-05-27", "y": 92.35}, {"x": "2026-05-28", "y": 92.65}, {"x": "2026-05-29", "y": 91.16}, {"x": "2026-06-01", "y": 95.96}, {"x": "2026-06-02", "y": 97.47}, {"x": "2026-06-03", "y": 99.76}, {"x": "2026-06-04", "y": 96.83}, {"x": "2026-06-05", "y": 94.32}, {"x": "2026-06-08", "y": 95.0}], "instrument": "WTI \uc720\uac00", "last_value_formatted": "95.00", "period_label": "1M", "role": "compact", "source": "FRED / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 -15.37% (112.25 \u2192 95.00)", "takeaway": "", "title": "WTI \uc720\uac00", "type": "line"}</script>
+      </div>
+      
+      
+      <div class="compact-row" data-chart-id="ch-s5-c6">
+        <span class="compact-name">엔비디아</span>
+        <span class="compact-value">205.19</span>
+        <span class="compact-change up">+0.16%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 0.16, "change_day_pct_formatted": "+0.16%", "data": [{"x": "2026-05-18", "y": 222.0612030029297}, {"x": "2026-05-19", "y": 220.35317993164062}, {"x": "2026-05-20", "y": 223.20985412597656}, {"x": "2026-05-21", "y": 219.25445556640625}, {"x": "2026-05-22", "y": 215.07933044433594}, {"x": "2026-05-26", "y": 214.60987854003906}, {"x": "2026-05-27", "y": 212.35250854492188}, {"x": "2026-05-28", "y": 214.00057983398438}, {"x": "2026-05-29", "y": 210.8942108154297}, {"x": "2026-06-01", "y": 224.09881591796875}, {"x": "2026-06-02", "y": 222.56060791015625}, {"x": "2026-06-03", "y": 214.5}, {"x": "2026-06-04", "y": 218.66000366210938}, {"x": "2026-06-05", "y": 205.10000610351562}, {"x": "2026-06-08", "y": 208.63999938964844}, {"x": "2026-06-09", "y": 208.19000244140625}, {"x": "2026-06-10", "y": 200.4199981689453}, {"x": "2026-06-11", "y": 204.8699951171875}, {"x": "2026-06-12", "y": 205.19000244140625}], "instrument": "\uc5d4\ube44\ub514\uc544", "last_value_formatted": "205.19", "period_label": "1M", "role": "compact", "source": "Yahoo Finance / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 -7.60% (222.06 \u2192 205.19)", "takeaway": "", "title": "\uc5d4\ube44\ub514\uc544", "type": "line"}</script>
+      </div>
+      
+      
+      <div class="compact-row" data-chart-id="ch-s6-c7">
+        <span class="compact-name">S&P 500</span>
+        <span class="compact-value">7,431</span>
+        <span class="compact-change up">+0.50%</span>
+        <span class="compact-period" title="sparkline 기간">1M</span>
+        <span class="compact-spark"><svg width="100%" height="22" class="sparkline"></svg></span>
+        <script type="application/json" class="chart-payload-inline">{"change_day_pct": 0.5, "change_day_pct_formatted": "+0.50%", "data": [{"x": "2026-05-18", "y": 7403.0498046875}, {"x": "2026-05-19", "y": 7353.60986328125}, {"x": "2026-05-20", "y": 7432.97021484375}, {"x": "2026-05-21", "y": 7445.72021484375}, {"x": "2026-05-22", "y": 7473.47021484375}, {"x": "2026-05-26", "y": 7519.1201171875}, {"x": "2026-05-27", "y": 7520.35986328125}, {"x": "2026-05-28", "y": 7563.6298828125}, {"x": "2026-05-29", "y": 7580.06005859375}, {"x": "2026-06-01", "y": 7599.9599609375}, {"x": "2026-06-02", "y": 7609.77978515625}, {"x": "2026-06-03", "y": 7553.68017578125}, {"x": "2026-06-04", "y": 7584.31005859375}, {"x": "2026-06-05", "y": 7383.740234375}, {"x": "2026-06-08", "y": 7405.72998046875}, {"x": "2026-06-09", "y": 7386.64990234375}, {"x": "2026-06-10", "y": 7266.990234375}, {"x": "2026-06-11", "y": 7394.2998046875}, {"x": "2026-06-12", "y": 7431.4599609375}], "instrument": "S\u0026P 500", "last_value_formatted": "7,431", "period_label": "1M", "role": "compact", "source": "Yahoo Finance / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 +0.38% (7,403 \u2192 7,431)", "takeaway": "", "title": "S\u0026P 500", "type": "line"}</script>
+      </div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+      
+        
+          
+        
+      
+
+      
+      <div class="freeform-chart-wrap">
+        <div class="chart-card">
+          <div class="chart-card-title">엔비디아</div>
+          <div class="chart-card-subtitle">2026-05-16 ~ 2026-06-15 · -7.60% (222.06 → 205.19)</div>
+          
+          <div class="chart-card-stage chart-stage-candle"
+               data-chart-type="candle"
+               data-chart-id="ch-s0-1">
+            <svg></svg>
+          </div>
+          
+          <div class="chart-card-source">
+            <span class="chart-card-source-label">출처:</span> Yahoo Finance / 2026-05-16 ~ 2026-06-15 / 일간
+          </div>
+          
+          
+          <div class="chart-card-takeaway">
+            <span class="chart-card-takeaway-label">Takeaway</span>
+            엔비디아 기간 중 200.42~224.10 사이 하락, 마지막 205.19 (-7.60%), 변동폭 11.8%
+          </div>
+          
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"close": 222.0612030029297, "date": "2026-05-18", "high": 229.7322553439391, "low": 218.1157890335498, "open": 229.60240180074675, "volume": 146280900.0}, {"close": 220.35317993164062, "date": "2026-05-19", "high": 224.21866983705235, "low": 217.6563261548179, "open": 219.36432694236115, "volume": 140948200.0}, {"close": 223.20985412597656, "date": "2026-05-20", "high": 225.8667612103758, "low": 220.2433103590018, "open": 222.9201831873553, "volume": 184201600.0}, {"close": 219.25445556640625, "date": "2026-05-21", "high": 227.13526994336974, "low": 217.6762930684293, "open": 222.03121805596584, "volume": 203381800.0}, {"close": 215.07933044433594, "date": "2026-05-22", "high": 220.75271088945502, "low": 214.54994865072538, "open": 220.64283833374193, "volume": 169275700.0}, {"close": 214.60987854003906, "date": "2026-05-26", "high": 217.92600574795006, "low": 211.75320730356688, "open": 216.28791550863897, "volume": 187202600.0}, {"close": 212.35250854492188, "date": "2026-05-27", "high": 213.90069192498567, "low": 208.53694826896, "open": 213.87072806866348, "volume": 167601200.0}, {"close": 214.00057983398438, "date": "2026-05-28", "high": 215.2691056248748, "low": 210.97410844231206, "open": 211.03403615445995, "volume": 143996000.0}, {"close": 210.8942108154297, "date": "2026-05-29", "high": 217.6063892667686, "low": 210.88422794322287, "open": 214.33020874183248, "volume": 289410600.0}, {"close": 224.09881591796875, "date": "2026-06-01", "high": 224.60821672379726, "low": 215.44889364463796, "open": 215.47885750139108, "volume": 212850700.0}, {"close": 222.56060791015625, "date": "2026-06-02", "high": 232.00958636747916, "low": 221.09231801448135, "open": 226.91551751623658, "volume": 193362900.0}, {"close": 214.5, "date": "2026-06-03", "high": 222.56061267075634, "low": 214.2602739078757, "open": 221.46188713313538, "volume": 160907000.0}, {"close": 218.66000366210938, "date": "2026-06-04", "high": 221.60000610351562, "low": 210.97000122070312, "open": 213.91000366210938, "volume": 169022200.0}, {"close": 205.10000610351562, "date": "2026-06-05", "high": 214.8699951171875, "low": 204.3300018310547, "open": 214.52999877929688, "volume": 219655500.0}, {"close": 208.63999938964844, "date": "2026-06-08", "high": 210.47000122070312, "low": 206.0, "open": 210.17999267578125, "volume": 138372800.0}, {"close": 208.19000244140625, "date": "2026-06-09", "high": 211.39999389648438, "low": 199.33999633789062, "open": 210.6199951171875, "volume": 180962500.0}, {"close": 200.4199981689453, "date": "2026-06-10", "high": 207.22000122070312, "low": 199.9199981689453, "open": 204.42999267578125, "volume": 161746600.0}, {"close": 204.8699951171875, "date": "2026-06-11", "high": 205.66000366210938, "low": 199.5399932861328, "open": 201.49000549316406, "volume": 158643200.0}, {"close": 205.19000244140625, "date": "2026-06-12", "high": 207.07000732421875, "low": 203.44000244140625, "open": 204.86000061035156, "volume": 112001800.0}], "source": "Yahoo Finance / 2026-05-16 ~ 2026-06-15 / \uc77c\uac04", "subtitle": "2026-05-16 ~ 2026-06-15 \u00b7 -7.60% (222.06 \u2192 205.19)", "takeaway": "\uc5d4\ube44\ub514\uc544 \uae30\uac04 \uc911 200.42~224.10 \uc0ac\uc774 \ud558\ub77d, \ub9c8\uc9c0\ub9c9 205.19 (-7.60%), \ubcc0\ub3d9\ud3ed 11.8%", "title": "\uc5d4\ube44\ub514\uc544", "type": "candle"}</script>
+        </div>
+      </div>
+      
+    
+      
+      
+      
+        
+          
+        
+      
+
+      
+      <div class="freeform-chart-wrap">
+        <div class="chart-card">
+          <div class="chart-card-title">지난 금요일(6월 12일) 종가 변동률</div>
+          <div class="chart-card-subtitle">스타게이트 보도와 이란 합의 공언이 함께 깔린 날의 마감</div>
+          
+          <div class="chart-card-stage chart-stage-bar"
+               data-chart-type="bar"
+               data-chart-id="ch-s1-2">
+            <svg></svg>
+          </div>
+          
+          <div class="chart-card-source">
+            <span class="chart-card-source-label">출처:</span> 거래소 종가, 단위: 퍼센트, 기준일: 2026-06-12
+          </div>
+          
+          
+          
+          <script type="application/json" class="chart-payload-inline">{"annotations": [{"kind": "hline", "label": "\ubcf4\ud569\uc120", "y": 0}], "data": [{"label": "\uc0bc\uc131\uc804\uc790", "note": "322,500\uc6d0 \ub9c8\uac10", "value": 7.86}, {"label": "\ucf54\uc2a4\ud53c", "note": "8,123.62, \uc0ac\uc0c1 \uccab 8\ucc9c \uc120 \uc704", "value": 4.63}, {"label": "SK\ud558\uc774\ub2c9\uc2a4", "note": "2,150,000\uc6d0", "value": 2.33}, {"label": "S\u0026P 500", "note": "7,431.46", "value": 0.5}, {"label": "\uc5d4\ube44\ub514\uc544", "note": "205.19\ub2ec\ub7ec", "value": 0.16}], "source": "\uac70\ub798\uc18c \uc885\uac00, \ub2e8\uc704: \ud37c\uc13c\ud2b8, \uae30\uc900\uc77c: 2026-06-12", "subtitle": "\uc2a4\ud0c0\uac8c\uc774\ud2b8 \ubcf4\ub3c4\uc640 \uc774\ub780 \ud569\uc758 \uacf5\uc5b8\uc774 \ud568\uaed8 \uae54\ub9b0 \ub0a0\uc758 \ub9c8\uac10", "title": "\uc9c0\ub09c \uae08\uc694\uc77c(6\uc6d4 12\uc77c) \uc885\uac00 \ubcc0\ub3d9\ub960", "type": "bar"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+
+    
+
+    
+  </div>
+</section>
+
+<section id="sec-2" class="freeform-section fade-in" data-arc-phase="승">
+  <div class="container">
+    <div class="freeform-kicker">산업 축</div>
+    <h2 class="freeform-heading">스타게이트가 서울로 왔다</h2>
+    
+    <div class="freeform-prose">6월 14일 샘 올트먼은 서울에 도착해 같은 날 안에 이재명 대통령, 이재용 삼성전자 회장, 최태원 SK그룹 회장을 차례로 만났다. 표면적인 의제는 단순했다. OpenAI가 추진 중인 스타게이트 데이터센터에 들어갈 메모리, 즉 일반 디램과 고대역폭 메모리(AI 가속기 위에 적층되는 디램, 통상 HBM이라 부른다)를 누가 어느 비율로 댈 것인가다. 보도된 숫자는 적지 않다. OpenAI 측은 양사 합산으로 월 90만 장 수준의 웨이퍼(칩 수백 개를 한 번에 찍는 원판) 공급을 요청한 것으로 알려졌다. 이 규모는 삼성전자와 SK하이닉스가 지금 돌리는 디램 생산 캐파 합계의 약 75퍼센트에 해당한다는 게 협상 안팎의 평가다. 단, 이 90만 장은 OpenAI 측이 제시한 요청 상한이다. 즉시 100퍼센트 전환이 아니라 단계적 램프업이 전제이며, 양사가 그대로 수용할지, 어떤 가격·기간 조건이 붙을지는 별개 문제다.</div>
+    
+    
+    <div class="freeform-footnotes" role="doc-endnotes">
+      <div class="freeform-footnotes-label">용어 풀이</div>
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">HBM</span>
+          <span class="freeform-footnote-text">고대역폭 메모리. 일반 디램 칩을 여러 층으로 쌓아 데이터 통로를 넓힌 것이다. AI 가속기 옆에 붙어 학습·추론 속도를 좌우한다.</span>
+        </div>
+        
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">웨이퍼</span>
+          <span class="freeform-footnote-text">지름 30센티미터 안팎의 둥근 실리콘 원판. 한 장에서 칩 수백 개가 동시에 만들어진다. 공급 규모를 셀 때 가장 자주 쓰이는 단위다.</span>
+        </div>
+        
+      
+    </div>
+    
+    
+    <div class="freeform-fact-grid" data-cols="5">
+      
+      <div class="freeform-fact-tile">
+        <div class="freeform-fact-label">스타게이트 누계 투자</div>
+        <div class="freeform-fact-value">5,000억 달러</div>
+        <div class="freeform-fact-sublabel">다년·복수 거점, OpenAI 공언</div>
+      </div>
+      
+      <div class="freeform-fact-tile">
+        <div class="freeform-fact-label">OpenAI 요청 공급</div>
+        <div class="freeform-fact-value">월 90만 장</div>
+        <div class="freeform-fact-sublabel">양사 합산 웨이퍼, 요청 상한</div>
+      </div>
+      
+      <div class="freeform-fact-tile">
+        <div class="freeform-fact-label">양사 캐파 대비</div>
+        <div class="freeform-fact-value">약 75%</div>
+        <div class="freeform-fact-sublabel">보도 기준, 즉시 전환 아님</div>
+      </div>
+      
+      <div class="freeform-fact-tile">
+        <div class="freeform-fact-label">글로벌 디램 점유</div>
+        <div class="freeform-fact-value">약 70%</div>
+        <div class="freeform-fact-sublabel">삼성·SK 합산</div>
+      </div>
+      
+      <div class="freeform-fact-tile">
+        <div class="freeform-fact-label">글로벌 HBM 점유</div>
+        <div class="freeform-fact-value">약 80%</div>
+        <div class="freeform-fact-sublabel">삼성·SK 합산</div>
+      </div>
+      
+    </div>
+    
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+
+    
+    
+
+    
+
+    
+  </div>
+</section>
+
+<section id="sec-3" class="freeform-section fade-in" data-arc-phase="승">
+  <div class="container">
+    <div class="freeform-kicker">메모리 시장의 무게중심</div>
+    <h2 class="freeform-heading">75퍼센트라는 숫자가 가리키는 곳</h2>
+    
+    <div class="freeform-prose">75퍼센트는 확정된 매출 비중이 아니라 OpenAI 측이 양사에 요청한 캐파 할당의 상한이다. 그대로 계약이 굳어진다면, 두 회사가 지금 돌리는 디램 캐파의 약 4분의 3이 한 고객의 일정과 사양에 맞춰 돌아간다는 뜻이 된다. 그 효과는 두 방향으로 동시에 작용할 수 있다.<br><br><strong>첫째,</strong> 단기에는 양사 가동률과 평균판매단가(ASP, 한 칩이 시장에서 받는 평균 가격)가 같이 올라갈 여지가 생긴다. 그동안 디램 사이클의 약점이었던 ‘공급 과잉이 풀려도 가격이 안 따라온다’는 문제가, 단일 대형 고객의 흡수로 일시적으로 해소되는 그림이 가능해진다. 6월 12일 삼성전자 주가가 종가 32만 2,500원으로 하루에 7.86퍼센트 오른 배경에는 이 기대가 깔려 있는 것으로 보인다.<br><br><strong>둘째,</strong> 중기로 갈수록 가격 협상력은 거꾸로 흐를 가능성이 있다. 양사 합산이 글로벌 디램 시장의 약 70퍼센트를 쥐고 있다는 점과는 별개로, 한 고객이 양사 캐파의 다수를 가져가는 구조가 굳어지면 협상 테이블의 우위는 받는 쪽이 아니라 사는 쪽으로 옮겨갈 수 있다. 같은 캐파 안에서 다른 빅테크(구글·마이크로소프트·메타 등)에 돌릴 물량을 줄여야 하기 때문에, 양사는 이들 고객을 상대로 ‘가격을 올려 받기’보다 ‘일정을 못 맞춘다’는 사정을 설명해야 할 가능성이 있다. 단일 고객 의존 구조가 만드는 전형적인 비대칭이다.<br><br><strong>셋째,</strong> 국내 메모리 모듈·서버·완제품 업체가 받을 압력이 있다. 캐파가 OpenAI 쪽으로 우선 배정되면 국내 산업이 쓸 일반 디램의 현물가가 흔들릴 여지가 생긴다. 정부가 ‘AI 전환’ 기조를 유지하더라도, 정작 그 전환에 쓰일 부품의 가격을 자국 기업이 가장 비싸게 살 가능성을 같이 다뤄야 한다.</div>
+    
+    
+    <div class="freeform-footnotes" role="doc-endnotes">
+      <div class="freeform-footnotes-label">용어 풀이</div>
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">ASP</span>
+          <span class="freeform-footnote-text">평균판매단가. 같은 종류의 칩이 시장에서 평균적으로 받는 가격을 가리킨다. 디램 업황을 가늠하는 가장 흔한 지표다.</span>
+        </div>
+        
+      
+    </div>
+    
+    
+    
+    
+
+    
+    
+    
+      
+        
+      
+    
+    
+
+    
+    
+      
+      
+      
+        
+          
+        
+      
+
+      
+      <div class="freeform-chart-wrap">
+        <div class="chart-card">
+          <div class="chart-card-title">한국 양사 디램 캐파의 행선지</div>
+          <div class="chart-card-subtitle">월 90만 장 요청이 그대로 받아들여졌을 때의 흐름, 보도 기준</div>
+          
+          <div class="chart-card-stage chart-stage-sankey"
+               data-chart-type="sankey"
+               data-chart-id="ch-s0-1">
+            <svg></svg>
+          </div>
+          
+          <div class="chart-card-source">
+            <span class="chart-card-source-label">출처:</span> 보도 기준 추정 비율, 2026-06-14
+          </div>
+          
+          
+          <div class="chart-card-takeaway">
+            <span class="chart-card-takeaway-label">Takeaway</span>
+            양사 캐파의 4분의 3이 한 손님에게 들어가면 가격 협상력은 그 손님에게 넘어간다.
+          </div>
+          
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"links": [{"source": "samsung", "target": "stargate", "value": 45}, {"source": "samsung", "target": "others", "value": 15}, {"source": "skhynix", "target": "stargate", "value": 30}, {"source": "skhynix", "target": "others", "value": 10}], "nodes": [{"id": "samsung", "label": "\uc0bc\uc131\uc804\uc790 \uce90\ud30c"}, {"id": "skhynix", "label": "SK\ud558\uc774\ub2c9\uc2a4 \uce90\ud30c"}, {"accent": true, "id": "stargate", "label": "OpenAI \uc2a4\ud0c0\uac8c\uc774\ud2b8", "value_label": "\uc591\uc0ac \ud569\uc0b0 75% \uc218\uc900"}, {"id": "others", "label": "\uae30\ud0c0 \ube45\ud14c\ud06c\u00b7\uad6d\ub0b4\u00b7\ud604\ubb3c"}]}, "source": "\ubcf4\ub3c4 \uae30\uc900 \ucd94\uc815 \ube44\uc728, 2026-06-14", "subtitle": "\uc6d4 90\ub9cc \uc7a5 \uc694\uccad\uc774 \uadf8\ub300\ub85c \ubc1b\uc544\ub4e4\uc5ec\uc84c\uc744 \ub54c\uc758 \ud750\ub984, \ubcf4\ub3c4 \uae30\uc900", "takeaway": "\uc591\uc0ac \uce90\ud30c\uc758 4\ubd84\uc758 3\uc774 \ud55c \uc190\ub2d8\uc5d0\uac8c \ub4e4\uc5b4\uac00\uba74 \uac00\uaca9 \ud611\uc0c1\ub825\uc740 \uadf8 \uc190\ub2d8\uc5d0\uac8c \ub118\uc5b4\uac04\ub2e4.", "title": "\ud55c\uad6d \uc591\uc0ac \ub514\ub7a8 \uce90\ud30c\uc758 \ud589\uc120\uc9c0", "type": "sankey"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+
+    
+
+    
+  </div>
+</section>
+
+<section id="sec-4" class="freeform-section fade-in" data-arc-phase="전">
+  <div class="container">
+    <div class="freeform-kicker">지정학 축</div>
+    <h2 class="freeform-heading">이란 합의는 미뤄졌다</h2>
+    
+    <div class="freeform-prose">트럼프 대통령은 6월 13일 토요일 자신의 SNS에 ‘6월 14일에 미·이란 합의에 서명하고 호르무즈 해협을 즉시 개방한다’고 적었다. 14일은 트럼프 대통령의 80세 생일이기도 하다. 그러나 그 다음 날인 6월 15일 아침까지도 서명 사실은 확인되지 않았다. 6월 14일 하루의 흐름은 이렇다. 오전에는 카타르 협상단이 테헤란으로 들어가 1단계 광역 휴전과 2단계 60일 핵 협상 윈도라는 큰 그림의 조율을 마쳤다고 알려졌다. 오후 들어 이스라엘이 베이루트 남부의 헤즈볼라 시설을 다시 표적으로 삼고, 남부 레바논 13개 마을에 대피 경고를 냈다. 이란 외무부는 곧바로 ‘미국 측이 합의를 관철할 능력이 부족하다’며 서명을 보류한다고 밝혔다. 야간에는 이스라엘 본토 사령부가 경보를 최고 단계로 격상했다. 이란의 반격 가능성에 대비한다는 신호다. 어느 한쪽의 주장만으로 그림이 완성되지는 않는다. 이스라엘 측은 헤즈볼라 시설 타격이 협상과 무관한 별개의 안보 조치라고 주장했다. 이란 측은 같은 사건을 미국이 묵인한 군사 압박으로 받아들였다. 미국 측은 ‘모든 당사자가 자제하라’는 입장을 동시에 냈다. 같은 24시간 안에 세 개의 다른 시점이 공존한다.</div>
+    
+    
+    <div class="freeform-footnotes" role="doc-endnotes">
+      <div class="freeform-footnotes-label">용어 풀이</div>
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">호르무즈 해협</span>
+          <span class="freeform-footnote-text">이란과 오만 사이를 잇는 좁은 바닷길. 세계 원유 해상 운송의 약 20퍼센트가 이곳을 지난다. 이 해협이 닫히면 유가가 즉시 뛴다.</span>
+        </div>
+        
+      
+    </div>
+    
+    
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+
+    
+    
+
+    
+
+    
+  </div>
+</section>
+
+<section id="sec-5" class="freeform-section fade-in" data-arc-phase="전">
+  <div class="container">
+    <div class="freeform-kicker">거시의 누적</div>
+    <h2 class="freeform-heading">유가, 환율, 관세의 세 갈래 압력</h2>
+    
+    <div class="freeform-prose">이란 합의가 발효되면 호르무즈가 다시 열리고 유가가 내려간다. 미뤄지거나 결렬되면 정확히 그 반대 그림이 펼쳐진다. 가장 최근 확인된 더블유티아이(WTI, 미국산 원유 기준 가격) 종가는 6월 8일 기준 95달러였다. 합의가 더 미뤄지거나 이란의 실제 반격이 나오면, 이 95달러 선은 다시 위로 튈 여지가 적지 않다. 환율도 같은 방향으로 움직일 가능성이 있다. 직전 거래일인 6월 12일 원/달러 환율은 1,527원이었다. 한국의 원유 도입 단가가 흔들리면 경상수지 쪽에서 압박이 들어오고, 이는 다시 환율 상단을 자극한다. 다만 스타게이트 호재가 외국인 자금을 한국으로 끌어들이면 같은 시점에 반대 방향의 힘도 같이 들어온다. 6월 15일 장중에 두 힘이 같은 호가창에서 부딪힌다. 관세는 한 켜 더 쌓여 있다. 6월 1일 자 미국 행정포고로 철강·알루미늄·구리에 대한 232조 관세가 50퍼센트로 유지됐고, 6월 2일에는 강제노동을 사유로 한 301조 신규 관세가 주요 15개국 10퍼센트, 추가 45개국 12.5퍼센트로 통보됐다. 한국 포함 여부와 세부 품목은 7월 공청회에서 가려진다. 즉 6월 15일 시장이 만나는 것은 새로 들어오는 호재 한 묶음과, 이미 두 주 가까이 쌓여 있는 비용 압력 한 묶음이다.</div>
+    
+    
+    <div class="freeform-footnotes" role="doc-endnotes">
+      <div class="freeform-footnotes-label">용어 풀이</div>
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">232조 관세</span>
+          <span class="freeform-footnote-text">미국이 안보를 이유로 특정 수입품에 추가로 매기는 관세를 가리킨다. 1962년 무역확장법의 232조에서 이름이 왔다.</span>
+        </div>
+        
+      
+        
+        <div class="freeform-footnote">
+          <span class="freeform-footnote-term">301조 관세</span>
+          <span class="freeform-footnote-text">미국이 불공정 무역 관행을 이유로 매기는 추가 관세. 1974년 통상법 301조 근거다. 강제노동도 사유 중 하나로 들어간다.</span>
+        </div>
+        
+      
+    </div>
+    
+    
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+
+    
+    
+
+    
+
+    
+  </div>
+</section>
+
+<section id="sec-6" class="freeform-section fade-in" data-arc-phase="결">
+  <div class="container">
+    <div class="freeform-kicker">착지</div>
+    <h2 class="freeform-heading">이번 주, 무엇을 봐야 하나</h2>
+    
+    <div class="freeform-prose">6월 15일 월요일 개장 첫 30분이 두 신호의 무게를 가른다. 반도체 대형주의 갭상승 폭과, 항공·정유의 시초가 흐름을 동시에 봐야 한다. 둘이 같은 방향이면 이번 주 외국인 수급의 큰 그림이 한쪽으로 쏠릴 가능성이 있다. 그 뒤로는 두 갈래의 이벤트가 일주일 단위로 따라온다. 한쪽은 산업이다. 스타게이트 공급 조건의 세부, 즉 디램과 HBM의 비중·계약 기간·가격 인덱스가 어떻게 짜이는지에 따라 ‘호재인지 결박인지’의 답이 달라진다. 다른 한쪽은 지정학이다. 미·이란 1단계 광역 휴전의 실제 발효일과, 60일 핵 협상 윈도의 시작 시점이 잡혀야 호르무즈 변수가 일단 진정된다. 결국 이번 주 시장의 진짜 질문은 ‘어느 쪽이 옳은가’가 아니라 ‘두 신호가 같은 방향으로 정렬되는가, 서로를 깎는가’다.</div>
+    
+    
+    
+    
+    
+
+    
+    
+    
+      
+        
+      
+    
+    
+
+    
+    
+      
+      
+      
+        
+          
+        
+      
+
+      
+      <div class="freeform-chart-wrap">
+        <div class="chart-card">
+          <div class="chart-card-title">이번 주 따라가야 할 일정</div>
+          <div class="chart-card-subtitle">산업 라인과 지정학 라인이 같은 주에 겹친다</div>
+          
+          <div class="chart-card-stage chart-stage-gantt"
+               data-chart-type="gantt"
+               data-chart-id="ch-s0-1">
+            <svg></svg>
+          </div>
+          
+          <div class="chart-card-source">
+            <span class="chart-card-source-label">출처:</span> 보고서 본문 일정 정리, 기준일: 2026-06-15
+          </div>
+          
+          
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"end": "2026-06-15", "label": "\ud55c\uad6d \uc99d\uc2dc \uac1c\uc7a5 \uccab \ubc18\uc751", "note": "\uac2d\uc0c1\uc2b9 \ud3ed\uacfc \uc815\uc720\u00b7\ud56d\uacf5 \uc2dc\ucd08\uac00", "start": "2026-06-15"}, {"end": "2026-06-19", "label": "\uc2a4\ud0c0\uac8c\uc774\ud2b8 \uacf5\uae09 \uc870\uac74 \ub514\ud14c\uc77c \uacf5\uc2dc \uac00\ub2a5 \uad6c\uac04", "note": "\uc591\uc0ac IR\u00b7OpenAI \uce21 \ud6c4\uc18d \ubc1c\ud45c", "start": "2026-06-15"}, {"end": "2026-06-21", "label": "\ubbf8\u00b7\uc774\ub780 1\ub2e8\uacc4 \ud734\uc804 \ubc1c\ud6a8 \uc708\ub3c4", "note": "\ubc1c\ud6a8\uc77c\uc774 \uc7a1\ud600\uc57c \ud638\ub974\ubb34\uc988 \uc9c4\uc815", "start": "2026-06-15"}, {"end": "2026-08-20", "label": "60\uc77c \ud575 \ud611\uc0c1 \uc708\ub3c4 \uc2dc\uc791", "note": "\ubc1c\ud6a8\uc77c \uae30\uc900 60\uc77c", "start": "2026-06-22"}, {"end": "2026-07-15", "label": "\ubbf8 301\uc870 \uac15\uc81c\ub178\ub3d9 \uad00\uc138 \uacf5\uccad\ud68c", "note": "\ud55c\uad6d \ud3ec\ud568 \uc5ec\ubd80\u00b7\ud488\ubaa9 \ud655\uc815", "start": "2026-07-01"}], "source": "\ubcf4\uace0\uc11c \ubcf8\ubb38 \uc77c\uc815 \uc815\ub9ac, \uae30\uc900\uc77c: 2026-06-15", "subtitle": "\uc0b0\uc5c5 \ub77c\uc778\uacfc \uc9c0\uc815\ud559 \ub77c\uc778\uc774 \uac19\uc740 \uc8fc\uc5d0 \uacb9\uce5c\ub2e4", "title": "\uc774\ubc88 \uc8fc \ub530\ub77c\uac00\uc57c \ud560 \uc77c\uc815", "type": "gantt"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+
+    
+
+    
+  </div>
+</section>
+
+
+
+
+
+
+<section class="freeform-section fade-in" data-arc-phase="전">
+  <div class="container">
+    <div class="freeform-kicker">쟁점</div>
+    <h2 class="freeform-heading">환영의 자리, 다음 페이지의 청구서</h2>
+    <div class="contradiction-prose">
+      
+      <p>
+        스타게이트는 한국 메모리 산업이 오랜 사이클 둔화에서 단번에 빠져나오는 호재다.
+        <span class="ct-turn">그러나</span> 단일 고객 비중이 양사 캐파의 75퍼센트로 가면 가격 협상력은 거꾸로 그 고객이 가져가는 결박이다.
+        <span class="ct-evidence">지난 금요일 삼성전자의 7.86퍼센트 상승은 수요 폭발의 첫 신호이지만, 동시에 양사가 다른 빅테크 고객에게 ‘가격 인상’보다 ‘일정 부족’을 설명하게 되는 구조가 만들어진다.</span>
+        <span class="ct-resolve">단기 6개월은 호재 쪽에 무게를 둔다. 가동률과 평균판매단가가 같이 오르는 구간이기 때문이다. 다만 1년 이상의 시야에서는 결박 쪽 가설이 살아난다. 공급 조건 세부에 가격 인덱스 연동 조항이 빠져 있고, OpenAI 측이 단가를 후행적으로 조정할 수 있는 구조가 확인되는 경우다.</span>
+      </p>
+      
+      <p>
+        이스라엘의 베이루트 공습은 협상과 무관한 별개의 안보 조치이며, 미국이 묵인한 군사 압박으로 보긴 어렵다.
+        <span class="ct-turn">그러나</span> 공습이 합의 서명일에 맞춰 진행됐다는 사실 자체가, 협상을 깨거나 이란의 양보 한계를 더 끌어내려는 의도로 읽힐 여지가 크다.
+        <span class="ct-evidence">이스라엘 측은 공습이 헤즈볼라 인프라에 한정된 별개 작전이라고 주장했으나, 이란 외무부는 ‘미국의 능력 부족’을 지적하며 서명을 보류했다. 미국은 ‘모든 당사자가 자제하라’는 모호한 입장을 같은 날 냈다.</span>
+        <span class="ct-resolve">현재 정보로는 ‘의도된 압박’ 쪽에 약간 무게를 둔다. 합의 발효 직전의 공습은 협상 비용을 의도적으로 올리는 패턴에 가깝기 때문이다. 다만 이번 주 안에 미국이 이스라엘의 추가 작전을 공개적으로 제어하는 신호가 나오면 ‘별개 작전’ 쪽 가설이 다시 살아난다.</span>
+      </p>
+      
+    </div>
+  </div>
+</section>
+
+
+
+
+<section class="freeform-section fade-in" data-arc-phase="결">
+  <div class="container">
+    <p class="epilogue-watch-lede">
+      본 분석의 가정이 다음 <strong>4개 지점</strong>에서 시험된다.
+      한 곳이라도 반대 방향으로 움직이면 결론은 다시 작성되어야 한다.
+    </p>
+    <div class="epilogue-watch-list">
+      
+      <div class="epilogue-watch-row">
+        <div class="epilogue-watch-deadline">2026-06-15</div>
+        <div class="epilogue-watch-body">
+          <div class="epilogue-watch-signal">📈 한국 증시 개장 첫 30분</div>
+          <p class="epilogue-watch-desc">반도체 대형주 갭상승 폭과 항공·정유 시초가의 방향이 같은가</p>
+          <span class="epilogue-watch-indicates">두 신호가 같은 방향으로 정렬되는지, 서로를 깎는지의 첫 단서</span>
+        </div>
+      </div>
+      
+      <div class="epilogue-watch-row">
+        <div class="epilogue-watch-deadline">2026-06-19</div>
+        <div class="epilogue-watch-body">
+          <div class="epilogue-watch-signal">🏭 스타게이트 공급 조건 공시</div>
+          <p class="epilogue-watch-desc">디램과 HBM 비중, 계약 기간, 가격 인덱스의 세부</p>
+          <span class="epilogue-watch-indicates">‘호재’와 ‘결박’ 시나리오 사이의 무게 이동</span>
+        </div>
+      </div>
+      
+      <div class="epilogue-watch-row">
+        <div class="epilogue-watch-deadline">2026-06-21</div>
+        <div class="epilogue-watch-body">
+          <div class="epilogue-watch-signal">🕊️ 미·이란 1단계 광역 휴전 발효일</div>
+          <p class="epilogue-watch-desc">서명 이후 실제 발효 시점이 잡히는가</p>
+          <span class="epilogue-watch-indicates">호르무즈 변수의 진정 여부와 유가 상단</span>
+        </div>
+      </div>
+      
+      <div class="epilogue-watch-row">
+        <div class="epilogue-watch-deadline">2026-07-15</div>
+        <div class="epilogue-watch-body">
+          <div class="epilogue-watch-signal">⚖️ 미 301조 강제노동 관세 공청회</div>
+          <p class="epilogue-watch-desc">한국 포함 여부와 세부 품목이 가려지는 자리</p>
+          <span class="epilogue-watch-indicates">한국 수출 비용에 한 켜가 더 쌓이는지의 결정</span>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+
+
+<section class="freeform-section fade-in" data-arc-phase="결">
+  <div class="container">
+    <div class="freeform-kicker">시간의 흐름</div>
+    <h2 class="freeform-heading">이틀의 압축, 한 주의 분기</h2>
+    <ol class="timeline-flow">
+      
+      <li class="tl-point tl-past">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-13</span>
+        <span class="tl-label">트럼프, 6월 14일 서명·호르무즈 즉시 개방 공언</span>
+      </li>
+      
+      <li class="tl-point tl-past">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-14</span>
+        <span class="tl-label">샘 올트먼 서울 도착, 양사 회장 면담</span>
+      </li>
+      
+      <li class="tl-point tl-past">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-14</span>
+        <span class="tl-label">이스라엘, 베이루트 남부 공습</span>
+      </li>
+      
+      <li class="tl-point tl-past">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-14</span>
+        <span class="tl-label">이스라엘 본토 사령부 최고 경보 격상</span>
+      </li>
+      
+      <li class="tl-point tl-present">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-15</span>
+        <span class="tl-label">한국 증시 개장 첫 반응</span>
+      </li>
+      
+      <li class="tl-point tl-future">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-19</span>
+        <span class="tl-label">스타게이트 공급 조건 디테일<em class="tl-tag">호재 vs 결박</em></span>
+      </li>
+      
+      <li class="tl-point tl-future">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-06-21</span>
+        <span class="tl-label">미·이란 1단계 휴전 발효일<em class="tl-tag">유가 진정 vs 추가 스파이크</em></span>
+      </li>
+      
+      <li class="tl-point tl-future">
+        <span class="tl-dot"></span>
+        <span class="tl-date">2026-07-15</span>
+        <span class="tl-label">미 301조 강제노동 관세 공청회<em class="tl-tag">한국 비용 한 켜 추가 여부</em></span>
+      </li>
+      
+    </ol>
+  </div>
+</section>
+
+
+
+<section class="freeform-closing" data-arc-phase="결">
+  <div class="container">
+    
+    <div class="freeform-closing-label">신뢰도 (38%)</div>
+    <div class="freeform-closing-body" style="margin-bottom:14px">산업 축의 핵심 수치는 양사·OpenAI 채널과 복수 외신으로 교차 확인됐다. 지정학 축은 24시간 안에 정반대 신호가 같이 나와 추가 검증이 필요하다.</div>
+    
+    
+    <div class="freeform-closing-label">분석가의 한계</div>
+    <div class="freeform-closing-body">두 사건은 같은 월요일 호가창에서 만나지만, 본질은 따로다. 하나는 한국 메모리 산업의 수요 구조를 바꾸고, 다른 하나는 유가와 환율의 상단을 결정한다.</div>
+    
+    
+    
+  </div>
+</section>
+
+
+
+
+<footer class="footer">
+  
+  
+  <div class="footer-byline" style="margin-bottom:10px;font-weight:600;color:var(--accent,#C9A84C)">Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 8건 반영 · 3건 미해결(신뢰도 반영)</div>
+  
+  <div class="footer-confidence">Confidence: Context 72%</div>
+  <div>archetype: freeform_essay · Generated 2026-06-15 06:15:24 · Duration: 921.6s</div>
+  
+</footer>
+
+<script>
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.06});
+document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el)});
+</script>
+
+<script>
+/* v7.0.0 (Track B) — 기승전결 스크롤 아크 엔진. rAF-throttle 스크롤 핸들러가
+   data-arc-phase 경계로 진행도 p 를 계산해 현재 글리프 translateY(-p*vh), 다음
+   글리프 translateY((1-p)*vh) 연속 보간 — 역방향 스크롤도 같은 식으로 자연 복원.
+   정보 휘발 없음: 차트/본문은 건드리지 않는 배경 전용 레이어 (AP-V7-3). */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var backdrop=document.getElementById('arc-backdrop');
+  if(!backdrop) return;
+  var order=['기','승','전','결'];
+  var glyphs={};
+  backdrop.querySelectorAll('.arc-glyph').forEach(function(g){glyphs[g.getAttribute('data-phase')]=g});
+  var bounds=[];
+  function measure(){
+    bounds=[]; var seen={};
+    document.querySelectorAll('[data-arc-phase]').forEach(function(el){
+      var p=el.getAttribute('data-arc-phase');
+      if(!p||seen[p])return; seen[p]=true;
+      bounds.push({phase:p,top:el.getBoundingClientRect().top+window.scrollY});
+    });
+    bounds.sort(function(a,b){return a.top-b.top});
+  }
+  var ticking=false;
+  function update(){
+    ticking=false;
+    if(!bounds.length)return;
+    var vh=window.innerHeight;
+    var y=window.scrollY+vh*0.5;
+    var i=0;
+    for(var k=0;k<bounds.length;k++){if(y>=bounds[k].top)i=k}
+    var start=bounds[i].top;
+    var end=(i+1<bounds.length)?bounds[i+1].top:document.documentElement.scrollHeight;
+    var p=(end>start)?Math.min(1,Math.max(0,(y-start)/(end-start))):0;
+    var idx={};
+    bounds.forEach(function(b,k){idx[b.phase]=k});
+    order.forEach(function(ph){
+      var g=glyphs[ph]; if(!g)return;
+      var k=idx[ph], off;
+      if(k===undefined)off=1.2*vh;
+      else if(k<i)off=-1.2*vh;
+      else if(k===i)off=-p*vh;
+      else if(k===i+1)off=(1-p)*vh;
+      else off=1.2*vh;
+      g.style.transform='translate(-50%,-50%) translateY('+off+'px)';
+    });
+  }
+  function onScroll(){if(!ticking){ticking=true;requestAnimationFrame(update)}}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',function(){measure();onScroll()},{passive:true});
+  window.addEventListener('load',function(){measure();update()});
+  measure();update();
+})();
+</script>
+
+
+
+<script src="d3.v7.min.js"></script>
+
+
+<script src="charts.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script src="maps.js?v=v5_0_1"></script>
+
+
+</body>
+</html>
