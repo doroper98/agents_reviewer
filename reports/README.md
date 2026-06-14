@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 206건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 207건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-06-15 06:15 | 2026-06-15 일일 브리핑 — 스타게이트 한국행 + 이란 합의 서명일 겹침 | 복합 (산업·지정학·전쟁) | [md](analysis_20260615_061524_61d2976006.md) · [json](analysis_20260615_061524_61d2976006.json) · [bundle](analysis_20260615_061524_61d2976006.bundle.json) |
 | 2026-06-14 09:02 | 앤트로픽 Fable 5·Mythos 5 차단 이후 — AWS 글로벌 회수 / 동맹·EU 주권 논쟁 / IPO 우려 본격화 | AI 정책·수출통제 (후속) | [md](analysis_20260614_090209_d920256fbd.md) · [json](analysis_20260614_090209_d920256fbd.json) · [bundle](analysis_20260614_090209_d920256fbd.bundle.json) |
 | 2026-06-14 06:29 | 일일 브리핑 2026-06-14: 호르무즈 협상·G7 에비앙·코스피 8천 안착 | 일일 브리핑 (산업/지정학/정치/전쟁 종합) | [md](analysis_20260614_062900_afa4a094ca.md) · [json](analysis_20260614_062900_afa4a094ca.json) · [bundle](analysis_20260614_062900_afa4a094ca.bundle.json) |
 | 2026-06-13 13:08 | 미 상무부, 앤트로픽 Fable 5·Mythos 5 외국인 접속 전면 차단 지시 | AI 정책·수출통제 | [md](analysis_20260613_130814_24d6892d16.md) · [json](analysis_20260613_130814_24d6892d16.json) · [bundle](analysis_20260613_130814_24d6892d16.bundle.json) |
