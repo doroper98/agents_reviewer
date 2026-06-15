@@ -88,13 +88,20 @@ def _build_market_briefing_prompt(now_local: datetime, persona: str) -> str:
         f"분석 대상: 오늘 KOSPI / KOSDAQ 정규장 마감 결과.\n\n"
         f"요구사항:\n"
         f"1. 웹 검색 + 시장 데이터 (KRX/Yahoo/FRED/ECOS 자동 fetch) 로 최신 종가·"
-        f"거래대금·외인/기관/개인 수급·환율·금리·주요 섹터 지수를 확인.\n"
-        f"2. 본 페르소나의 10 렌즈를 적용해 *시장 구조 해석* 보고서 작성. "
+        f"거래대금·외인/기관/개인 수급·환율·금리·주요 섹터 지수를 확인. "
+        f"추가로 KOSPI200 지수 선물·옵션 데이터 (선물 종가·등락, 베이시스, 외국인 선물 "
+        f"순매수, 미결제약정 증감, 프로그램 매매 차익/비차익, VKOSPI, 풋/콜 비율, 주요 "
+        f"행사가 미결제 집중, 만기·롤오버 일정) 도 웹 검색으로 확인.\n"
+        f"2. 본 페르소나의 11 렌즈를 적용해 *시장 구조 해석* 보고서 작성. "
         f"종목 추천 보고서가 아님.\n"
         f"3. 가격·거래대금·수급·섹터 로테이션·거시 변수·뉴스 간의 *관계* 를 풀어내. "
         f"단순 종가 나열 금지.\n"
-        f"4. 최소 한 개의 핵심 가설 + 그 가설의 반증 조건 (제10 렌즈) 을 명시.\n"
-        f"5. 마지막에 '내일 검증할 후속 신호' 3~5건과 데드라인 제시 "
+        f"4. *지수 선물·옵션을 다루는 독립된 상세 섹션을 반드시 포함* (제11 렌즈). "
+        f"선물 가격·베이시스, 외국인 선물 포지션, 미결제약정·프로그램 매매, "
+        f"VKOSPI·풋콜비율·행사가 집중·만기 구조를 현물 수급과 연결해 입체적으로 해석. "
+        f"확인되지 않는 수치는 추정하지 말고 '확인되지 않음' 으로 둘 것.\n"
+        f"5. 최소 한 개의 핵심 가설 + 그 가설의 반증 조건 (제10 렌즈) 을 명시.\n"
+        f"6. 마지막에 '내일 검증할 후속 신호' 3~5건과 데드라인 제시 "
         f"(감시 신호 시스템 등록 대상).\n"
     )
 
@@ -297,6 +304,19 @@ async def _market_brief_for_chat(
 
     # 텍스트 보고서 청크 + glossary 송신 제거 (v5.1.1 의 daily_briefing 도 추후 같은 정리
     # 필요하지만 일단 본 신규 모듈은 처음부터 노이즈 최소화 — URL + bundle 만).
+
+    # v7.7.0 — X 구독자용 broadcast 요약 (라벨 없이 본문만, daily_briefing 과 동일 패턴).
+    # 장마감 브리핑도 다른 보고서처럼 텔레그램 요약을 송신한다.
+    try:
+        broadcast = (
+            result.composed_report.broadcast_summary.strip()
+            if result.composed_report and result.composed_report.broadcast_summary
+            else ""
+        )
+        if broadcast:
+            await send_text_fn(chat_id, broadcast)
+    except Exception as e:
+        logger.warning("[scheduler] market brief broadcast summary send failed: %s", e)
 
     # v6.1.0 — pages.dev 를 막는 샌드박스 AI 용 GitHub raw 미러 링크 (미러 성공 시만).
     _mirror_line = (
