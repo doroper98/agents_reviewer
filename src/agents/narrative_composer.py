@@ -40,6 +40,32 @@ from src.telemetry import RunTelemetry
 logger = logging.getLogger(__name__)
 
 
+# v7.6.4 — TTS 발음 표기('더블유티아이')가 *눈으로 읽는 글*(broadcast_summary 등)로
+# 새어 드는 회귀의 결정적 복원 맵. prompts/tts_narration_guide §3 의 *역방향*
+# (발음→원표기). *명확한* 약어만 — 'S-1=에스원'(보안회사 명)·'에이아이'(맥락 의존)
+# 같은 모호어는 제외(오역 위험). 긴 키 먼저 적용해 부분 치환 방지(에이치비엠 포→HBM4).
+# SSOT 정합: 새 약어가 가이드 §3 에 추가되면 여기 역매핑도 함께 (모호하지 않을 때만).
+_PHONETIC_TO_TEXT: dict[str, str] = {
+    "에이치비엠 포": "HBM4",
+    "에스앤피 오백": "S&P 500",
+    "에스케이하이닉스": "SK하이닉스",
+    "삼성에스디아이": "삼성SDI",
+    "더블유티아이": "WTI",
+    "에이치비엠": "HBM",
+    "케이비증권": "KB증권",
+    "엑스에이아이": "xAI",
+    "에스케이온": "SK온",
+    "지피유": "GPU",
+    "아이피오": "IPO",
+    "에프씨씨": "FCC",
+    "디램": "D램",
+    "티피유": "TPU",
+    "지씨피": "GCP",
+    "이티에프": "ETF",
+    "알앤디": "R&D",
+}
+
+
 class _ComposerTimeout(RuntimeError):
     """CLI 호출이 timeout 으로 죽었을 때 그때까지 생성된 *부분 출력* 을 함께 운반한다.
 
@@ -601,6 +627,10 @@ SYSTEM_PROMPT = (
     "  · 한 문단은 최대 2문장. 문단마다 빈 줄(\\n\\n)로 분리한다.\n"
     "  · 5~6개의 짧은 문단. 라벨/제목/이모지/불릿/머리말 금지 — 본문만.\n"
     "  · 무슨 일 → 왜 그런가 → 그래서 무엇(시사점) 흐름. 핵심 숫자는 문장에 자연스럽게 녹인다 (표 금지).\n"
+    "  · ★ 표기 레지스터 (v7.6.4 — 사용자 지적): 이건 *눈으로 읽는 글* 이다. 약어·고유명사·\n"
+    "    숫자·% 는 *원래 표기 그대로* 쓴다 — WTI / D램 / GPU / HBM / 7.86% / 8,000선 / 75%.\n"
+    "    영상 narration_tts 의 *발음 표기*(더블유티아이 · 디램 · 지피유 · 퍼센트 · 8천 ·\n"
+    "    삼십이 개월)를 *절대 쓰지 말 것* — 그건 음성 전용이고 글에 쓰면 어색하다.\n"
     "  · AI 티 절대 금지: '안녕하세요/이 보고서는/결론적으로/요약하자면' 류 메타·상투어, 과한 존댓말 반복 금지.\n"
     "  · 뉴스레터 잘 쓰는 사람이 아는 사람에게 설명하듯 — 친절하지만 군더더기 없이.\n"
     "  · 맨 마지막 문단은 전체 보고서로 부드럽게 안내하는 한 문장으로 닫는다 (예: '자세한 건\n"
@@ -703,6 +733,12 @@ SYSTEM_PROMPT = (
     "     label 은 입장을 한 단어로 ('묵인론'/'전술론'), line 은 그 입장을 '~입니다/~수도\n"
     "     있습니다' 한 문장으로. side_a/side_b 원문은 그대로 두고 video 만 더한다.\n"
     "★ TTS 발화 규칙 (narration_tts 만드는 법, v7.4.0/v7.6.0 — 전체 기준서: prompts/tts_narration_guide.md) ★\n"
+    "  ⚠️ 적용 범위 (v7.6.4 — 절대 혼동 금지): 아래 *발음 변환* 은 오직 ``narration_tts`` /\n"
+    "  ``*_narration_tts`` 필드에만 쓴다. ``broadcast_summary`` · ``prose`` · ``headline`` ·\n"
+    "  ``deck`` · ``narration``(자막) · ``highlights`` · timeline · contradictions 의 *눈으로\n"
+    "  읽는 글* 에는 절대 적용하지 않는다 — 거기선 원래 표기 그대로(WTI · D램 · GPU · HBM ·\n"
+    "  7.86% · 8,000). 'WTI'를 글에 '더블유티아이'로 쓰면 회귀(사용자 지적). 발음 표기는\n"
+    "  성우가 읽는 음성 채널 전용이다.\n"
     "  AI 음성 티는 기계음이 아니라 *사람이라면 절대 그렇게 안 읽는 표기 해석* 에서 난다.\n"
     "  narration_tts 는 TTS가 틀릴 표기를 *사람이 말하는 형태* 로 미리 바꿔 둔 발화 대본이다.\n"
     "  대원칙 (v7.6.0): narration_tts 는 *한글로 받아쓴 발음 그대로* 라고 생각하고 쓴다.\n"
@@ -1863,6 +1899,51 @@ class NarrativeComposer:
             # images: caption/credit/alt 만 — URL 키는 보존
             for img in (sec.images or []):
                 cls._clean_media(img)
+
+        # v7.6.4 — narration_tts 발음 표기가 눈으로 읽는 글로 새어 든 회귀 복원·경고.
+        cls._revert_phonetic_in_text(composed)
+
+    @classmethod
+    def _revert_phonetic_in_text(cls, composed: "ComposedReport") -> None:
+        """v7.6.4 — TTS 발음 표기('더블유티아이')가 *글* 필드로 번진 것 복원·경고.
+
+        근본 방어는 SYSTEM_PROMPT(=== broadcast_summary === 표기 레지스터 + ★ TTS
+        발화 규칙 적용범위 경계). 본 후처리는 2중 방어 — narration_tts 발음 규칙이
+        같은 LLM 호출 안에서 글 요약/본문으로 번지는 사고(사용자 지적)를 차단한다.
+        - ``broadcast_summary`` (텔레그램 노출): *명확한* 약어만 결정적 복원
+          (더블유티아이→WTI 등). 발화·복원 매핑은 prompts/tts_narration_guide §3 의
+          역방향. 'S-1=에스원'(보안회사 명) 같은 모호어는 복원 안 함(오역 위험).
+        - ``headline``/``deck``/섹션 ``prose``: 복원 안 하고 *warn only* (편집체 본문
+          보존). 누수 시 운영자가 bot.log 로 인지 → 프롬프트 경계 재점검.
+        narration_tts(음성 채널)는 *절대* 건드리지 않는다 (발음 표기가 정상).
+        """
+        bs = getattr(composed, "broadcast_summary", "") or ""
+        if isinstance(bs, str) and bs:
+            fixed, hits = bs, []
+            for ph in sorted(_PHONETIC_TO_TEXT, key=len, reverse=True):
+                if ph in fixed:
+                    fixed = fixed.replace(ph, _PHONETIC_TO_TEXT[ph])
+                    hits.append(ph)
+            if hits:
+                composed.broadcast_summary = fixed
+                logger.warning(
+                    "[composer] broadcast_summary 발음표기 누수 복원: %s "
+                    "(프롬프트 경계가 안 막음 — 재점검)", ", ".join(hits),
+                )
+        # warn-only (편집체 보존)
+        targets = [("headline", getattr(composed, "headline", "")),
+                   ("deck", getattr(composed, "deck", ""))]
+        for i, sec in enumerate(composed.sections):
+            targets.append((f"section[{i}].prose", getattr(sec, "prose", "")))
+        for where, t in targets:
+            if not isinstance(t, str) or not t:
+                continue
+            leaked = [ph for ph in _PHONETIC_TO_TEXT if ph in t]
+            if leaked:
+                logger.warning(
+                    "[composer] %s 에 발음표기 누수(글에 음성표기): %s — 원표기로 쓸 것",
+                    where, ", ".join(leaked),
+                )
 
     @classmethod
     def _clean_media(cls, media) -> None:

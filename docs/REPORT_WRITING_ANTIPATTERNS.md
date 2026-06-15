@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.0.0
+last_synced_with: v7.6.4
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -545,6 +545,26 @@ WRITE-AP-11/14 가 시점 *표기* (거리 환산·카운트다운)의 회귀라
 [src/factcheck/reference_frame.py](../src/factcheck/reference_frame.py)) 을 composer 작성·
 codex 검수·Opus 보완 3곳에 동일 주입. ③ codex error_class `wrong_timeframe` 신설 (사용자
 게이트 승인 2026-06-11) — 잔존 시 착지 drop. 옛 일자 값은 절대 날짜+사유 명시 시에만 허용.
+
+## WRITE-AP-23: TTS 발음 표기가 눈으로 읽는 글(broadcast_summary/prose)로 누수 (v7.6.4 신설, 사용자 catch)
+
+**증상**: 텔레그램 요약(`broadcast_summary`)에 "WTI"가 "더블유티아이", "D램"이 "디램",
+"7.86%"가 "7.86퍼센트", "8,000선"이 "8천 선" 으로 나옴 — 영상 음성(narration_tts) 전용
+발음 표기가 *눈으로 읽는 글* 에 박혔다.
+
+**원인**: v7.4.0~v7.6.3 에서 composer SYSTEM_PROMPT 에 추가된 강한 "★ TTS 발화 규칙"
+블록(WTI→더블유티아이, D램→디램, %→퍼센트, 숫자→한글)이 *같은 LLM 호출 안에서*
+`broadcast_summary` 작성까지 번져 적용됨. TTS 규칙이 `narration_tts` 한 필드 전용임을
+프롬프트가 명시하지 않아 LLM 이 over-generalize.
+
+**Fix (v7.6.4 — 2중 방어)**: ① **프롬프트 경계** — "★ TTS 발화 규칙" 블록 머리에 적용범위
+경계(오직 `narration_tts`/`*_narration_tts`, 글 텍스트엔 금지) + `broadcast_summary` 블록에
+표기 레지스터 규칙(WTI·D램·%·숫자 원래 표기). SSOT: [tts_narration_guide.md §0](tts_narration_guide.md).
+② **결정적 후처리** — [narrative_composer.py:_revert_phonetic_in_text](../src/agents/narrative_composer.py)
+가 `broadcast_summary` 의 *명확한* 약어 누수를 복원(더블유티아이→WTI 등, `_PHONETIC_TO_TEXT`
+역매핑 — 'S-1=에스원' 보안회사 명 같은 모호어 제외) + `headline`/`deck`/`prose` 누수는
+warn-only(편집체 보존). 숫자·% 는 결정적 변환이 오역 위험이라 프롬프트 전담. `_sanitize_symbols`
+끝에서 호출(orchestrator 최종 패스로 전 경로 보장).
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)

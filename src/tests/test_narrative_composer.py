@@ -294,3 +294,49 @@ def test_composer_payload_omits_empty_sections():
     assert "event" not in payload
     assert "players" not in payload
     assert "available_charts" not in payload
+
+
+def test_revert_phonetic_in_broadcast_summary():
+    """v7.6.4 — broadcast_summary 의 TTS 발음 표기 누수를 결정적 복원 (사용자 지적).
+
+    더블유티아이→WTI, 디램→D램 등 *명확한* 약어만 복원. 숫자·%는 손대지 않음
+    (프롬프트가 처리 — 결정적 변환은 오역 위험).
+    """
+    c = ComposedReport(
+        headline="H",
+        broadcast_summary=(
+            "발효가 더 늦어지면 더블유티아이가 95달러 선에서 위로 튈 여지가 남습니다. "
+            "한국 양사 디램 월 생산의 75퍼센트 수준이고, 에이치비엠 포 양산이 변수입니다."
+        ),
+        sections=[ComposedSection(heading="시세", prose="본문")],
+    )
+    NarrativeComposer._revert_phonetic_in_text(c)
+    bs = c.broadcast_summary
+    assert "더블유티아이" not in bs and "WTI" in bs
+    assert "디램" not in bs and "D램" in bs
+    assert "에이치비엠 포" not in bs and "HBM4" in bs
+    # 숫자·%는 결정적 복원 대상 아님 (프롬프트 처리)
+    assert "75퍼센트" in bs
+
+
+def test_revert_phonetic_skips_ambiguous_and_preserves_prose():
+    """v7.6.4 — 모호어(에스원=S-1 보안회사) 미복원 + prose 는 warn-only(편집체 보존)."""
+    c = ComposedReport(
+        headline="에스원 실적",  # 보안회사 명 — 복원 금지
+        broadcast_summary="에스원이 분기 실적을 냈습니다.",
+        sections=[ComposedSection(heading="x", prose="지피유 수요가 늘었습니다.")],
+    )
+    NarrativeComposer._revert_phonetic_in_text(c)
+    # 에스원은 매핑에 없으므로 그대로 (오역 방지)
+    assert "에스원" in c.broadcast_summary
+    # prose 는 복원 안 함 (warn only) — 편집체 보존
+    assert "지피유" in c.sections[0].prose
+
+
+def test_revert_phonetic_noop_when_clean():
+    """v7.6.4 — 발음 표기 없으면 무변경 (idempotent·부작용 없음)."""
+    bs = "WTI가 95달러 선에서 움직이고 D램 수요는 견조합니다."
+    c = ComposedReport(headline="H", broadcast_summary=bs,
+                       sections=[ComposedSection(heading="x", prose="정상 본문입니다.")])
+    NarrativeComposer._revert_phonetic_in_text(c)
+    assert c.broadcast_summary == bs
