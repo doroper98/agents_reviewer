@@ -1,0 +1,2442 @@
+{
+  "request": {
+    "event_description": "오늘 2026-06-16 (Tue) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-15 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-16 (Tue)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2/28 미·이스라엘의 이란 공습으로 개전했던 4개월간의 전쟁이 6/14 MOU 로 사실상 종전 수순에 진입함. 호르무즈 개방·미 해군 봉쇄 해제·이란 제재 단계 해제·재건안이 패키지로 묶임. 6/19 제네바 서명 예정, 이후 60일 양자 협상. 동시에 한국 자본시장은 메모리·HBM4 슈퍼사이클로 코스피가 연초 대비 약 2배 가까이 부풀어 있던 상태였고, 6/15 충격이 그 동력을 단숨에 증폭시킨 구도임. G7 에비앙 정상회의는 이 휴전을 후속 정리(우크라이나 자원 재배분 포함)하고 AI 거버넌스를 의제화하는 자리. 이재명 정부(2025-06-04 출범)는 2년 연속 G7 초청을 받아 외교 입지 확보 중.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-06-14",
+            "event": "트럼프, 미·이란 평화 MOU 발표 — 파키스탄·카타르·사우디·튀르키예 중재, 호르무즈 해협 즉시 개방·미 해군 봉쇄 해제 포함",
+            "impact": "중동발 유가·운임 리스크 즉시 후퇴. Brent·WTI 일요일 발표 직후 급락"
+          },
+          {
+            "date": "2026-06-15",
+            "event": "코스피 5.2% 폭등, 8,545.98 마감 — SK하이닉스·삼성전자 주도. Nikkei 225 첫 69,000 돌파",
+            "impact": "지정학 리스크 프리미엄 해소 + 칩 슈퍼사이클 동시 반영"
+          },
+          {
+            "date": "2026-06-15",
+            "event": "G7 정상회의 프랑스 에비앙 개막 (~6/17). 한국·브라질·인도·케냐·시리아 초청. 이재명 대통령 합류 (벨기에·이탈리아·바티칸 경유 10일 순방)",
+            "impact": "AI 거버넌스·우크라이나·이란 후속 정리 의제. 한국은 2년 연속 초청"
+          },
+          {
+            "date": "2026-06-15",
+            "event": "디지타임스 주간 roundup — Samsung 파운드리 3분기 흑자 전환 전망, Nvidia AI PC 비전 공개",
+            "impact": "삼성 파운드리 영업이익 재진입 시점이 시장 컨센서스로 굳어짐"
+          },
+          {
+            "date": "2026-06-19",
+            "event": "(예정) 제네바에서 미·이란 MOU 정식 서명 + 60일 협상 개시",
+            "impact": "협상 결렬 시 유가·운임 재반전 위험. 신호 감시 필요"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "2026-06-16 아침 일일 브리핑: 미·이란 휴전 MOU 발효, 코스피 5%대 급등, G7 에비앙 개막",
+    "event_name_en": "Daily Briefing 2026-06-16: US-Iran Ceasefire MOU, KOSPI Surge, G7 Evian Opens",
+    "date": "2026-06-16",
+    "category": "daily_briefing_macro",
+    "summary": "6/14 발표된 미·이란 휴전 양해각서(MOU)와 호르무즈 해협 개방이 6/15 글로벌 시장에 본격 반영, 코스피가 5.2% 폭등하며 8,545.98 마감함. 같은 날 프랑스 에비앙에서 G7 정상회의가 개막했고 이재명 대통령이 초청국 자격으로 합류함. 산업 트랙에선 Samsung 의 HBM4E 공개와 Nvidia 파트너십 심화가 디지타임스 6/15 주간 roundup 으로 재확인됨.",
+    "timeline": [
+      {
+        "date": "2026-06-14",
+        "event": "트럼프, 미·이란 평화 MOU 발표 — 파키스탄·카타르·사우디·튀르키예 중재, 호르무즈 해협 즉시 개방·미 해군 봉쇄 해제 포함",
+        "impact": "중동발 유가·운임 리스크 즉시 후퇴. Brent·WTI 일요일 발표 직후 급락"
+      },
+      {
+        "date": "2026-06-15",
+        "event": "코스피 5.2% 폭등, 8,545.98 마감 — SK하이닉스·삼성전자 주도. Nikkei 225 첫 69,000 돌파",
+        "impact": "지정학 리스크 프리미엄 해소 + 칩 슈퍼사이클 동시 반영"
+      },
+      {
+        "date": "2026-06-15",
+        "event": "G7 정상회의 프랑스 에비앙 개막 (~6/17). 한국·브라질·인도·케냐·시리아 초청. 이재명 대통령 합류 (벨기에·이탈리아·바티칸 경유 10일 순방)",
+        "impact": "AI 거버넌스·우크라이나·이란 후속 정리 의제. 한국은 2년 연속 초청"
+      },
+      {
+        "date": "2026-06-15",
+        "event": "디지타임스 주간 roundup — Samsung 파운드리 3분기 흑자 전환 전망, Nvidia AI PC 비전 공개",
+        "impact": "삼성 파운드리 영업이익 재진입 시점이 시장 컨센서스로 굳어짐"
+      },
+      {
+        "date": "2026-06-19",
+        "event": "(예정) 제네바에서 미·이란 MOU 정식 서명 + 60일 협상 개시",
+        "impact": "협상 결렬 시 유가·운임 재반전 위험. 신호 감시 필요"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "코스피 종가 (6/15)",
+        "value": "8,545.98",
+        "context": "+5.2% 단일일 상승, 2001년 이래 최대급. Goldman Sachs 의 KOSPI 9,000 목표 (300% 영익 서지·메모리 슈퍼사이클 근거) 와 정합"
+      },
+      {
+        "label": "Nikkei 225 (6/15)",
+        "value": "69,000선 첫 돌파",
+        "context": "미·이란 합의 반응으로 아시아 동반 급등"
+      },
+      {
+        "label": "한국 5월 수출",
+        "value": "월 878억 달러 (사상 최대)",
+        "context": "전년 동월 +53%. 반도체 슈퍼사이클 주도"
+      },
+      {
+        "label": "OECD 2026 한국 성장 전망",
+        "value": "2.6% (직전 1.7% 상향)",
+        "context": "AI·반도체 수출 호조 근거"
+      },
+      {
+        "label": "원/달러 환율",
+        "value": "최근 1,560원선 일시 돌파",
+        "context": "글로벌 금융위기 이후 최약. 당국 투기 조사 착수 중 — 칩주 호조와 별개 부담"
+      },
+      {
+        "label": "삼성 HBM4 처리속도",
+        "value": "11.7 Gbps (업계 표준 8 Gbps 대비)",
+        "context": "Nvidia Vera Rubin 채택. SK하이닉스 60~70% / 삼성 25~30% / Micron 잔여 share 추정"
+      },
+      {
+        "label": "주식 계좌 수",
+        "value": "5월 기준 1,052만 활성",
+        "context": "작년 말 대비 +693만. 개인 투자 저변 확장"
+      }
+    ],
+    "background": "2/28 미·이스라엘의 이란 공습으로 개전했던 4개월간의 전쟁이 6/14 MOU 로 사실상 종전 수순에 진입함. 호르무즈 개방·미 해군 봉쇄 해제·이란 제재 단계 해제·재건안이 패키지로 묶임. 6/19 제네바 서명 예정, 이후 60일 양자 협상. 동시에 한국 자본시장은 메모리·HBM4 슈퍼사이클로 코스피가 연초 대비 약 2배 가까이 부풀어 있던 상태였고, 6/15 충격이 그 동력을 단숨에 증폭시킨 구도임. G7 에비앙 정상회의는 이 휴전을 후속 정리(우크라이나 자원 재배분 포함)하고 AI 거버넌스를 의제화하는 자리. 이재명 정부(2025-06-04 출범)는 2년 연속 G7 초청을 받아 외교 입지 확보 중.",
+    "sources": [
+      "https://www.cnn.com/2026/06/14/world/live-news/iran-war-trump-israel",
+      "https://www.tradingkey.com/analysis/stocks/us-stocks/261966501-us-iran-reach-peace-deal-to-end-war-signing-friday-tradingkey",
+      "https://www.tradingkey.com/analysis/stocks/more/261966958-nikkei-kospi-samsung-skhynix-dram-tradingkey",
+      "https://www.consilium.europa.eu/en/meetings/international-summit/2026/06/15-17/",
+      "https://www.aljazeera.com/news/2026/6/15/g7-meeting-in-france-whats-on-agenda-who-is-attending",
+      "https://www.koreaherald.com/article/10767334",
+      "https://www.digitimes.com/news/a20260615VL200/digitimes-asia-weekly-news-roundup-samsung-nvidia-ai-pc-profit.html",
+      "https://news.samsung.com/global/samsung-unveils-hbm4e-showcasing-comprehensive-ai-solutions-nvidia-partnership-and-vision-at-nvidia-gtc-2026",
+      "https://www.aljazeera.com/economy/2026/6/10/south-koreas-booming-stock-market-mints-a-generation-of-novice-investors",
+      "https://www.aljazeera.com/news/2026/6/10/ukrainian-drones-strike-sevastopol-museum-and-key-russian-oil-refineries"
+    ],
+    "glossary": [
+      {
+        "term": "MOU (양해각서)",
+        "definition": "정식 조약 전 단계의 합의 문서. 법적 구속력은 약하나 정치적 약속의 무게가 큼"
+      },
+      {
+        "term": "호르무즈 해협",
+        "definition": "세계 해상 원유 물동의 약 1/5 이 통과하는 페르시아만 출구. 봉쇄 위협만으로도 유가에 직접 영향"
+      },
+      {
+        "term": "HBM4 / HBM4E",
+        "definition": "High Bandwidth Memory 4세대. AI 가속기에 쌓아 붙이는 고대역폭 메모리. E 는 enhanced (개선판)"
+      },
+      {
+        "term": "Vera Rubin",
+        "definition": "Nvidia 의 차세대 AI 가속기 플랫폼. 6/1 GTC Taipei 에서 양산 발표"
+      },
+      {
+        "term": "메모리 슈퍼사이클",
+        "definition": "AI 수요로 메모리 단가·물량이 동반 상승하는 수년 단위 호황 구간"
+      }
+    ],
+    "confidence_score": 0.82,
+    "instruments_mentioned": [
+      "코스피",
+      "삼성전자",
+      "SK하이닉스",
+      "엔비디아",
+      "WTI",
+      "원/달러 환율"
+    ],
+    "time_series": [
+      {
+        "instrument": "코스피",
+        "source": "YAHOO",
+        "code": "^KS11",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-05-17",
+        "end_date": "2026-06-16",
+        "data": [
+          {
+            "date": "2026-05-18",
+            "open": 7443.2900390625,
+            "high": 7636.2001953125,
+            "low": 7142.7099609375,
+            "close": 7516.0400390625,
+            "volume": 566600.0
+          },
+          {
+            "date": "2026-05-19",
+            "open": 7425.66015625,
+            "high": 7446.56982421875,
+            "low": 7141.91015625,
+            "close": 7271.66015625,
+            "volume": 533500.0
+          },
+          {
+            "date": "2026-05-20",
+            "open": 7324.52001953125,
+            "high": 7324.52001953125,
+            "low": 7053.83984375,
+            "close": 7208.9501953125,
+            "volume": 492500.0
+          },
+          {
+            "date": "2026-05-21",
+            "open": 7486.3701171875,
+            "high": 7819.22998046875,
+            "low": 7486.3701171875,
+            "close": 7815.58984375,
+            "volume": 621100.0
+          },
+          {
+            "date": "2026-05-22",
+            "open": 7873.1201171875,
+            "high": 7886.64013671875,
+            "low": 7780.1298828125,
+            "close": 7847.7099609375,
+            "volume": 435500.0
+          },
+          {
+            "date": "2026-05-26",
+            "open": 8070.91015625,
+            "high": 8131.14990234375,
+            "low": 8008.18994140625,
+            "close": 8047.509765625,
+            "volume": 519600.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 8242.1201171875,
+            "high": 8457.08984375,
+            "low": 8220.0400390625,
+            "close": 8228.7001953125,
+            "volume": 619500.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 8165.72998046875,
+            "high": 8253.599609375,
+            "low": 7841.009765625,
+            "close": 8185.2900390625,
+            "volume": 669000.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 8384.3095703125,
+            "high": 8476.150390625,
+            "low": 8273.740234375,
+            "close": 8476.150390625,
+            "volume": 735100.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 8485.669921875,
+            "high": 8874.16015625,
+            "low": 8485.669921875,
+            "close": 8788.3798828125,
+            "volume": 636200.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 8883.1904296875,
+            "high": 8933.6201171875,
+            "low": 8503.1201171875,
+            "close": 8801.490234375,
+            "volume": 632600.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 8623.8203125,
+            "high": 8759.0498046875,
+            "low": 8577.2998046875,
+            "close": 8639.41015625,
+            "volume": 437900.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 8323.2001953125,
+            "high": 8382.16015625,
+            "low": 8038.10009765625,
+            "close": 8160.58984375,
+            "volume": 463200.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 8048.08984375,
+            "high": 8048.08984375,
+            "low": 7442.72998046875,
+            "close": 7484.41015625,
+            "volume": 452200.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 7697.759765625,
+            "high": 8119.08984375,
+            "low": 7598.8701171875,
+            "close": 8096.93017578125,
+            "volume": 448500.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 7899.77001953125,
+            "high": 7996.68017578125,
+            "low": 7541.10986328125,
+            "close": 7730.81982421875,
+            "volume": 460900.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 7509.6201171875,
+            "high": 7800.6201171875,
+            "low": 7394.4599609375,
+            "close": 7763.9501953125,
+            "volume": 478700.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 8263.849609375,
+            "high": 8434.400390625,
+            "low": 8079.77001953125,
+            "close": 8123.6201171875,
+            "volume": 493400.0
+          }
+        ]
+      },
+      {
+        "instrument": "삼성전자",
+        "source": "KRX",
+        "code": "005930",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-05-17",
+        "end_date": "2026-06-16",
+        "data": [
+          {
+            "date": "2026-05-18",
+            "open": 269500.0,
+            "high": 288500.0,
+            "low": 262000.0,
+            "close": 281000.0,
+            "volume": 33555214.0
+          },
+          {
+            "date": "2026-05-19",
+            "open": 274000.0,
+            "high": 281500.0,
+            "low": 266000.0,
+            "close": 275500.0,
+            "volume": 30767569.0
+          },
+          {
+            "date": "2026-05-20",
+            "open": 278000.0,
+            "high": 282500.0,
+            "low": 263500.0,
+            "close": 276000.0,
+            "volume": 35662077.0
+          },
+          {
+            "date": "2026-05-21",
+            "open": 291000.0,
+            "high": 299500.0,
+            "low": 287000.0,
+            "close": 299500.0,
+            "volume": 36168689.0
+          },
+          {
+            "date": "2026-05-22",
+            "open": 300000.0,
+            "high": 300500.0,
+            "low": 292000.0,
+            "close": 292500.0,
+            "volume": 18395274.0
+          },
+          {
+            "date": "2026-05-26",
+            "open": 298000.0,
+            "high": 302000.0,
+            "low": 297500.0,
+            "close": 299000.0,
+            "volume": 23441371.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 321500.0,
+            "high": 323000.0,
+            "low": 306000.0,
+            "close": 307000.0,
+            "volume": 33916688.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 305000.0,
+            "high": 306500.0,
+            "low": 287500.0,
+            "close": 299500.0,
+            "volume": 30195334.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 309500.0,
+            "high": 319000.0,
+            "low": 305500.0,
+            "close": 317000.0,
+            "volume": 37241537.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 319500.0,
+            "high": 354500.0,
+            "low": 319500.0,
+            "close": 349000.0,
+            "volume": 45052488.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 360500.0,
+            "high": 370000.0,
+            "low": 342000.0,
+            "close": 360500.0,
+            "volume": 44720282.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 349000.0,
+            "high": 366000.0,
+            "low": 348000.0,
+            "close": 351500.0,
+            "volume": 34771037.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 333500.0,
+            "high": 343000.0,
+            "low": 325000.0,
+            "close": 329000.0,
+            "volume": 33725012.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 293000.0,
+            "high": 315500.0,
+            "low": 292500.0,
+            "close": 295500.0,
+            "volume": 38929682.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 310000.0,
+            "high": 324000.0,
+            "low": 300000.0,
+            "close": 322000.0,
+            "volume": 30124249.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 311000.0,
+            "high": 314500.0,
+            "low": 295250.0,
+            "close": 302500.0,
+            "volume": 27050362.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 290500.0,
+            "high": 306500.0,
+            "low": 287500.0,
+            "close": 299000.0,
+            "volume": 31420307.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 326000.0,
+            "high": 339000.0,
+            "low": 320000.0,
+            "close": 322500.0,
+            "volume": 31006148.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 342500.0,
+            "high": 344500.0,
+            "low": 334000.0,
+            "close": 337000.0,
+            "volume": 20180857.0
+          }
+        ]
+      },
+      {
+        "instrument": "SK하이닉스",
+        "source": "KRX",
+        "code": "000660",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-05-17",
+        "end_date": "2026-06-16",
+        "data": [
+          {
+            "date": "2026-05-18",
+            "open": 1780000.0,
+            "high": 1897000.0,
+            "low": 1731000.0,
+            "close": 1840000.0,
+            "volume": 6481608.0
+          },
+          {
+            "date": "2026-05-19",
+            "open": 1791000.0,
+            "high": 1823000.0,
+            "low": 1740000.0,
+            "close": 1745000.0,
+            "volume": 4575855.0
+          },
+          {
+            "date": "2026-05-20",
+            "open": 1743000.0,
+            "high": 1778000.0,
+            "low": 1690000.0,
+            "close": 1745000.0,
+            "volume": 5535123.0
+          },
+          {
+            "date": "2026-05-21",
+            "open": 1801000.0,
+            "high": 1954000.0,
+            "low": 1796000.0,
+            "close": 1940000.0,
+            "volume": 5096690.0
+          },
+          {
+            "date": "2026-05-22",
+            "open": 1942000.0,
+            "high": 1952000.0,
+            "low": 1912000.0,
+            "close": 1941000.0,
+            "volume": 3135190.0
+          },
+          {
+            "date": "2026-05-26",
+            "open": 2008000.0,
+            "high": 2087000.0,
+            "low": 2006000.0,
+            "close": 2052000.0,
+            "volume": 4903591.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 2279000.0,
+            "high": 2358000.0,
+            "low": 2200000.0,
+            "close": 2243000.0,
+            "volume": 7545783.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 2189000.0,
+            "high": 2305000.0,
+            "low": 2151000.0,
+            "close": 2289000.0,
+            "volume": 6229499.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 2352000.0,
+            "high": 2379000.0,
+            "low": 2290500.0,
+            "close": 2333000.0,
+            "volume": 8518013.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 2299000.0,
+            "high": 2398000.0,
+            "low": 2296000.0,
+            "close": 2363000.0,
+            "volume": 5602897.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 2376000.0,
+            "high": 2407000.0,
+            "low": 2259000.0,
+            "close": 2360000.0,
+            "volume": 5837216.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 2284000.0,
+            "high": 2327000.0,
+            "low": 2262000.0,
+            "close": 2298000.0,
+            "volume": 3941067.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 2142000.0,
+            "high": 2188000.0,
+            "low": 2070000.0,
+            "close": 2070000.0,
+            "volume": 5778751.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 1856000.0,
+            "high": 2072000.0,
+            "low": 1855000.0,
+            "close": 1911000.0,
+            "volume": 6610833.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 2050000.0,
+            "high": 2226000.0,
+            "low": 1998000.0,
+            "close": 2215000.0,
+            "volume": 5878039.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 2137000.0,
+            "high": 2180000.0,
+            "low": 1992000.0,
+            "close": 2048000.0,
+            "volume": 4928269.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 1975000.0,
+            "high": 2163000.0,
+            "low": 1960000.0,
+            "close": 2101000.0,
+            "volume": 6625775.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 2281000.0,
+            "high": 2304000.0,
+            "low": 2150000.0,
+            "close": 2150000.0,
+            "volume": 5286416.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 2283000.0,
+            "high": 2322000.0,
+            "low": 2265000.0,
+            "close": 2288000.0,
+            "volume": 3568681.0
+          }
+        ]
+      },
+      {
+        "instrument": "엔비디아",
+        "source": "YAHOO",
+        "code": "NVDA",
+        "unit": "$",
+        "chart_type": "candle",
+        "start_date": "2026-05-17",
+        "end_date": "2026-06-16",
+        "data": [
+          {
+            "date": "2026-05-18",
+            "open": 229.60240180074675,
+            "high": 229.7322553439391,
+            "low": 218.1157890335498,
+            "close": 222.0612030029297,
+            "volume": 146280900.0
+          },
+          {
+            "date": "2026-05-19",
+            "open": 219.36432694236115,
+            "high": 224.21866983705235,
+            "low": 217.6563261548179,
+            "close": 220.35317993164062,
+            "volume": 140948200.0
+          },
+          {
+            "date": "2026-05-20",
+            "open": 222.9201831873553,
+            "high": 225.8667612103758,
+            "low": 220.2433103590018,
+            "close": 223.20985412597656,
+            "volume": 184201600.0
+          },
+          {
+            "date": "2026-05-21",
+            "open": 222.03121805596584,
+            "high": 227.13526994336974,
+            "low": 217.6762930684293,
+            "close": 219.25445556640625,
+            "volume": 203381800.0
+          },
+          {
+            "date": "2026-05-22",
+            "open": 220.64283833374193,
+            "high": 220.75271088945502,
+            "low": 214.54994865072538,
+            "close": 215.07933044433594,
+            "volume": 169275700.0
+          },
+          {
+            "date": "2026-05-26",
+            "open": 216.28791550863897,
+            "high": 217.92600574795006,
+            "low": 211.75320730356688,
+            "close": 214.60987854003906,
+            "volume": 187202600.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 213.87072806866348,
+            "high": 213.90069192498567,
+            "low": 208.53694826896,
+            "close": 212.35250854492188,
+            "volume": 167601200.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 211.03403615445995,
+            "high": 215.2691056248748,
+            "low": 210.97410844231206,
+            "close": 214.00057983398438,
+            "volume": 143996000.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 214.33020874183248,
+            "high": 217.6063892667686,
+            "low": 210.88422794322287,
+            "close": 210.8942108154297,
+            "volume": 289410600.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 215.47885750139108,
+            "high": 224.60821672379726,
+            "low": 215.44889364463796,
+            "close": 224.09881591796875,
+            "volume": 212850700.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 226.91551751623658,
+            "high": 232.00958636747916,
+            "low": 221.09231801448135,
+            "close": 222.56060791015625,
+            "volume": 193362900.0
+          },
+          {
+            "date": "2026-06-03",
+            "open": 221.46188713313538,
+            "high": 222.56061267075634,
+            "low": 214.2602739078757,
+            "close": 214.5,
+            "volume": 160907000.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 213.91000366210938,
+            "high": 221.60000610351562,
+            "low": 210.97000122070312,
+            "close": 218.66000366210938,
+            "volume": 169022200.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 214.52999877929688,
+            "high": 214.8699951171875,
+            "low": 204.3300018310547,
+            "close": 205.10000610351562,
+            "volume": 219655500.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 210.17999267578125,
+            "high": 210.47000122070312,
+            "low": 206.0,
+            "close": 208.63999938964844,
+            "volume": 138372800.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 210.6199951171875,
+            "high": 211.39999389648438,
+            "low": 199.33999633789062,
+            "close": 208.19000244140625,
+            "volume": 180962500.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 204.42999267578125,
+            "high": 207.22000122070312,
+            "low": 199.9199981689453,
+            "close": 200.4199981689453,
+            "volume": 161746600.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 201.49000549316406,
+            "high": 205.66000366210938,
+            "low": 199.5399932861328,
+            "close": 204.8699951171875,
+            "volume": 158643200.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 204.86000061035156,
+            "high": 207.07000732421875,
+            "low": 203.44000244140625,
+            "close": 205.19000244140625,
+            "volume": 112001800.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 208.9199981689453,
+            "high": 212.710693359375,
+            "low": 208.33999633789062,
+            "close": 212.4499969482422,
+            "volume": 130006836.0
+          }
+        ]
+      },
+      {
+        "instrument": "WTI 유가",
+        "source": "FRED",
+        "code": "DCOILWTICO",
+        "unit": "$",
+        "chart_type": "area",
+        "start_date": "2026-05-17",
+        "end_date": "2026-06-16",
+        "data": [
+          {
+            "date": "2026-05-18",
+            "open": 112.25,
+            "high": 112.25,
+            "low": 112.25,
+            "close": 112.25,
+            "volume": null
+          },
+          {
+            "date": "2026-05-19",
+            "open": 112.09,
+            "high": 112.09,
+            "low": 112.09,
+            "close": 112.09,
+            "volume": null
+          },
+          {
+            "date": "2026-05-20",
+            "open": 101.69,
+            "high": 101.69,
+            "low": 101.69,
+            "close": 101.69,
+            "volume": null
+          },
+          {
+            "date": "2026-05-21",
+            "open": 100.2,
+            "high": 100.2,
+            "low": 100.2,
+            "close": 100.2,
+            "volume": null
+          },
+          {
+            "date": "2026-05-22",
+            "open": 100.35,
+            "high": 100.35,
+            "low": 100.35,
+            "close": 100.35,
+            "volume": null
+          },
+          {
+            "date": "2026-05-26",
+            "open": 97.63,
+            "high": 97.63,
+            "low": 97.63,
+            "close": 97.63,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 92.35,
+            "high": 92.35,
+            "low": 92.35,
+            "close": 92.35,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 92.65,
+            "high": 92.65,
+            "low": 92.65,
+            "close": 92.65,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 91.16,
+            "high": 91.16,
+            "low": 91.16,
+            "close": 91.16,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 95.96,
+            "high": 95.96,
+            "low": 95.96,
+            "close": 95.96,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 97.47,
+            "high": 97.47,
+            "low": 97.47,
+            "close": 97.47,
+            "volume": null
+          },
+          {
+            "date": "2026-06-03",
+            "open": 99.76,
+            "high": 99.76,
+            "low": 99.76,
+            "close": 99.76,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 96.83,
+            "high": 96.83,
+            "low": 96.83,
+            "close": 96.83,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 94.32,
+            "high": 94.32,
+            "low": 94.32,
+            "close": 94.32,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 95.0,
+            "high": 95.0,
+            "low": 95.0,
+            "close": 95.0,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "원/달러 환율",
+        "source": "ECOS",
+        "code": "731Y001/0000001",
+        "unit": "원",
+        "chart_type": "line",
+        "start_date": "2026-05-17",
+        "end_date": "2026-06-16",
+        "data": [
+          {
+            "date": "2026-05-18",
+            "open": 1499.8,
+            "high": 1499.8,
+            "low": 1499.8,
+            "close": 1499.8,
+            "volume": null
+          },
+          {
+            "date": "2026-05-19",
+            "open": 1503.4,
+            "high": 1503.4,
+            "low": 1503.4,
+            "close": 1503.4,
+            "volume": null
+          },
+          {
+            "date": "2026-05-20",
+            "open": 1503.8,
+            "high": 1503.8,
+            "low": 1503.8,
+            "close": 1503.8,
+            "volume": null
+          },
+          {
+            "date": "2026-05-21",
+            "open": 1509.7,
+            "high": 1509.7,
+            "low": 1509.7,
+            "close": 1509.7,
+            "volume": null
+          },
+          {
+            "date": "2026-05-22",
+            "open": 1503.5,
+            "high": 1503.5,
+            "low": 1503.5,
+            "close": 1503.5,
+            "volume": null
+          },
+          {
+            "date": "2026-05-26",
+            "open": 1513.3,
+            "high": 1513.3,
+            "low": 1513.3,
+            "close": 1513.3,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 1507.9,
+            "high": 1507.9,
+            "low": 1507.9,
+            "close": 1507.9,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 1501.6,
+            "high": 1501.6,
+            "low": 1501.6,
+            "close": 1501.6,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 1505.8,
+            "high": 1505.8,
+            "low": 1505.8,
+            "close": 1505.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 1503.2,
+            "high": 1503.2,
+            "low": 1503.2,
+            "close": 1503.2,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 1511.3,
+            "high": 1511.3,
+            "low": 1511.3,
+            "close": 1511.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 1515.6,
+            "high": 1515.6,
+            "low": 1515.6,
+            "close": 1515.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 1528.6,
+            "high": 1528.6,
+            "low": 1528.6,
+            "close": 1528.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 1543.0,
+            "high": 1543.0,
+            "low": 1543.0,
+            "close": 1543.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 1546.5,
+            "high": 1546.5,
+            "low": 1546.5,
+            "close": 1546.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 1518.4,
+            "high": 1518.4,
+            "low": 1518.4,
+            "close": 1518.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 1522.4,
+            "high": 1522.4,
+            "low": 1522.4,
+            "close": 1522.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 1527.0,
+            "high": 1527.0,
+            "low": 1527.0,
+            "close": 1527.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 1520.4,
+            "high": 1520.4,
+            "low": 1520.4,
+            "close": 1520.4,
+            "volume": null
+          }
+        ]
+      }
+    ],
+    "provenance": [
+      {
+        "fact": "미·이란 MOU 6/14 발표, 호르무즈 개방·미 해군 봉쇄 해제 포함",
+        "source_date": "2026-06-14",
+        "scope_note": "MOU = Memorandum of Understanding, 정식 서명은 6/19 제네바 예정",
+        "source_url": "https://www.cnn.com/2026/06/14/world/live-news/iran-war-trump-israel"
+      },
+      {
+        "fact": "코스피 6/15 +5.2% → 8,545.98 마감",
+        "source_date": "2026-06-15",
+        "scope_note": "지수 종가 기준, 일중 변동 아님",
+        "source_url": "https://www.tradingkey.com/analysis/stocks/more/261966958-nikkei-kospi-samsung-skhynix-dram-tradingkey"
+      },
+      {
+        "fact": "G7 정상회의 프랑스 에비앙 6/15~17 개최, 한국·브라질·인도·케냐·시리아 초청",
+        "source_date": "2026-06-15",
+        "scope_note": "EU Council 공식 일정 페이지",
+        "source_url": "https://www.consilium.europa.eu/en/meetings/international-summit/2026/06/15-17/"
+      },
+      {
+        "fact": "이재명 대통령 G7 합류, 벨기에·이탈리아·바티칸 경유 10일 순방",
+        "source_date": "2026-06-10",
+        "scope_note": "출국은 6/9(화), 귀국은 6/18 예정",
+        "source_url": "https://www.koreaherald.com/article/10767334"
+      },
+      {
+        "fact": "한국 5월 수출 878억 달러, 전년 +53%",
+        "source_date": "2026-06-01",
+        "scope_note": "월 사상 최대치, 반도체 주도",
+        "source_url": "https://www.aljazeera.com/economy/2026/6/10/south-koreas-booming-stock-market-mints-a-generation-of-novice-investors"
+      },
+      {
+        "fact": "Samsung HBM4 11.7 Gbps, Nvidia Vera Rubin 채택",
+        "source_date": "2026-06-09",
+        "scope_note": "단일 칩 처리속도, 업계 표준 8 Gbps 대비 비교",
+        "source_url": "https://www.techtimes.com/articles/318015/20260609/samsung-pursues-nvidia-hbm4e-supply-lp40-foundry-work-after-seoul-bilateral.htm"
+      },
+      {
+        "fact": "Vera Rubin HBM4 점유율 추정 — SK 60~70% / 삼성 25~30% / Micron 잔여",
+        "source_date": "2026-06-02",
+        "scope_note": "공급망 분석가 추정치, 공식 발표 아님",
+        "source_url": "https://www.techtimes.com/articles/317539/20260602/nvidia-vera-rubin-enters-full-production-samsung-sk-hynix-micron-named-hbm4-suppliers.htm"
+      },
+      {
+        "fact": "원/달러 환율 1,560원선 일시 돌파, 당국 투기 조사 착수",
+        "source_date": "2026-06-10",
+        "scope_note": "장중 일시 터치, 종가 기준 아님",
+        "source_url": "https://www.aljazeera.com/economy/2026/6/10/south-koreas-booming-stock-market-mints-a-generation-of-novice-investors"
+      }
+    ],
+    "available_images": [
+      {
+        "source_url": "https://www.aljazeera.com/news/2026/6/15/g7-meeting-in-france-whats-on-agenda-who-is-attending",
+        "image_url": "https://www.aljazeera.com/wp-content/uploads/2026/06/2026-06-11T162455Z_1561683264_RC25RLAZ4AFS_RTRMADP_3_G7-SUMMIT-ENGAGEMENT-1781513333.jpg?resize=1920%2C1440",
+        "title": "G7 meeting in France: What’s on agenda, who is attending?",
+        "description": "The war in Iran, Ukraine and economic challenges are expected to be a key part of the agenda.",
+        "publisher": "aljazeera.com"
+      },
+      {
+        "source_url": "https://www.koreaherald.com/article/10767334",
+        "image_url": "https://wimg.heraldcorp.com/news/cms/2026/06/09/news-p.v1.20260609.9d4f777f26f64860a9f112f4571ce37f_T1.jpg",
+        "title": "Lee embarks on Europe tour with G7 summit, economic diplomacy in focus",
+        "description": "President Lee Jae Myung departed for Europe on Tuesday for a 10-day diplomatic tour, with stops in Belgium, Italy and the Vatican before joining world leaders a",
+        "publisher": "koreaherald.com"
+      },
+      {
+        "source_url": "https://news.samsung.com/global/samsung-unveils-hbm4e-showcasing-comprehensive-ai-solutions-nvidia-partnership-and-vision-at-nvidia-gtc-2026",
+        "image_url": "https://img.global.news.samsung.com/global/wp-content/uploads/2026/03/16181139/Samsung-Semiconductors-HBM4E-NVIDIA-GTC-2026_Thumb932_F.jpg",
+        "title": "Samsung Unveils HBM4E, Showcasing Comprehensive AI Solutions, NVIDIA Partnership and Vision at NVIDIA GTC 2026",
+        "description": "Samsung supercharges the development of AI Infrastructure and AI Factories through wide-ranging compute solutions for datacenter, physical and on-device AI  Industry-first commercial HBM4 and its successor HBM4E to be displayed, highlighting maximized performance, reliability and energy efficiency for next-generation datacenters  Samsung to present on strategic AI collaboration with NVIDIA in semiconductor engineering innovation spanning from R&D and design to manufacturing",
+        "publisher": "news.samsung.com"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "휴전 다음날, 한국 증시 단숨 상승과 환율 1,520원의 그늘",
+    "deck": "데이터로 확인되는 12일 종가는 8,123.62로 전 거래일 대비 4.63% 올랐고, 15일 보도된 종가는 8,545선까지 닿았다. 메모리 슈퍼사이클과 호르무즈 개방이 겹친 결과지만, 원/달러는 같은 시기 1,520원선에서 내려오지 못했다.",
+    "sections": [
+      {
+        "heading": "휴전 합의가 만든 안도장",
+        "kicker": "오늘의 큰 그림",
+        "prose": "15일 한국 증시는 그 발표를 단숨에 반영했다. 보도된 종가 기준으로 코스피는 8,545.98로 마감해 사상 처음 8,500선을 넘은 것으로 전해진다. 데이터로 확인된 직전 거래일은 12일 종가 8,123.62로, 전일 대비 4.63% 상승이다. 같은 시기 일본 닛케이225도 69,000선을 처음 돌파했다. 지정학 위험이 빠진 자리에 메모리 슈퍼사이클의 동력이 그대로 들어왔다는 해석이 따라붙는다. 다만 15일의 환호는 한 방향이 아니었다. 원/달러 환율은 같은 날 1,520.40원에 머물며 글로벌 금융위기 이후 가장 약한 흐름을 이어갔다. 외교 트랙도 같은 날 움직였다. 프랑스 에비앙에서 G7 정상회의가 열렸고, 이재명 대통령이 초청국 자격으로 합류했다. 휴전의 후속 정리와 인공지능 거버넌스가 의제로 올라가 있다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "코스피 종합지수",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · +8.08% (7,516 → 8,124)",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 7516.0400390625
+              },
+              {
+                "x": "2026-05-19",
+                "y": 7271.66015625
+              },
+              {
+                "x": "2026-05-20",
+                "y": 7208.9501953125
+              },
+              {
+                "x": "2026-05-21",
+                "y": 7815.58984375
+              },
+              {
+                "x": "2026-05-22",
+                "y": 7847.7099609375
+              },
+              {
+                "x": "2026-05-26",
+                "y": 8047.509765625
+              },
+              {
+                "x": "2026-05-27",
+                "y": 8228.7001953125
+              },
+              {
+                "x": "2026-05-28",
+                "y": 8185.2900390625
+              },
+              {
+                "x": "2026-05-29",
+                "y": 8476.150390625
+              },
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": "코스피 기간 중 7,209~8,801 사이 상승, 마지막 8,124 (+8.08%), 변동폭 22.1%"
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "코스피",
+            "title": "코스피",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · +8.08% (7,516 → 8,124)",
+            "last_value_formatted": "8,124",
+            "change_day_pct": 4.63,
+            "change_day_pct_formatted": "+4.63%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 7516.0400390625
+              },
+              {
+                "x": "2026-05-19",
+                "y": 7271.66015625
+              },
+              {
+                "x": "2026-05-20",
+                "y": 7208.9501953125
+              },
+              {
+                "x": "2026-05-21",
+                "y": 7815.58984375
+              },
+              {
+                "x": "2026-05-22",
+                "y": 7847.7099609375
+              },
+              {
+                "x": "2026-05-26",
+                "y": 8047.509765625
+              },
+              {
+                "x": "2026-05-27",
+                "y": 8228.7001953125
+              },
+              {
+                "x": "2026-05-28",
+                "y": 8185.2900390625
+              },
+              {
+                "x": "2026-05-29",
+                "y": 8476.150390625
+              },
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "삼성전자",
+            "title": "삼성전자",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · +19.93% (281,000 → 337,000)",
+            "last_value_formatted": "337,000",
+            "change_day_pct": 4.5,
+            "change_day_pct_formatted": "+4.50%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 281000.0
+              },
+              {
+                "x": "2026-05-19",
+                "y": 275500.0
+              },
+              {
+                "x": "2026-05-20",
+                "y": 276000.0
+              },
+              {
+                "x": "2026-05-21",
+                "y": 299500.0
+              },
+              {
+                "x": "2026-05-22",
+                "y": 292500.0
+              },
+              {
+                "x": "2026-05-26",
+                "y": 299000.0
+              },
+              {
+                "x": "2026-05-27",
+                "y": 307000.0
+              },
+              {
+                "x": "2026-05-28",
+                "y": 299500.0
+              },
+              {
+                "x": "2026-05-29",
+                "y": 317000.0
+              },
+              {
+                "x": "2026-06-01",
+                "y": 349000.0
+              },
+              {
+                "x": "2026-06-02",
+                "y": 360500.0
+              },
+              {
+                "x": "2026-06-04",
+                "y": 351500.0
+              },
+              {
+                "x": "2026-06-05",
+                "y": 329000.0
+              },
+              {
+                "x": "2026-06-08",
+                "y": 295500.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 322000.0
+              },
+              {
+                "x": "2026-06-10",
+                "y": 302500.0
+              },
+              {
+                "x": "2026-06-11",
+                "y": 299000.0
+              },
+              {
+                "x": "2026-06-12",
+                "y": 322500.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 337000.0
+              }
+            ],
+            "source": "KRX / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "SK하이닉스",
+            "title": "SK하이닉스",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · +24.35% (1,840,000 → 2,288,000)",
+            "last_value_formatted": "2,288,000",
+            "change_day_pct": 6.42,
+            "change_day_pct_formatted": "+6.42%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 1840000.0
+              },
+              {
+                "x": "2026-05-19",
+                "y": 1745000.0
+              },
+              {
+                "x": "2026-05-20",
+                "y": 1745000.0
+              },
+              {
+                "x": "2026-05-21",
+                "y": 1940000.0
+              },
+              {
+                "x": "2026-05-22",
+                "y": 1941000.0
+              },
+              {
+                "x": "2026-05-26",
+                "y": 2052000.0
+              },
+              {
+                "x": "2026-05-27",
+                "y": 2243000.0
+              },
+              {
+                "x": "2026-05-28",
+                "y": 2289000.0
+              },
+              {
+                "x": "2026-05-29",
+                "y": 2333000.0
+              },
+              {
+                "x": "2026-06-01",
+                "y": 2363000.0
+              },
+              {
+                "x": "2026-06-02",
+                "y": 2360000.0
+              },
+              {
+                "x": "2026-06-04",
+                "y": 2298000.0
+              },
+              {
+                "x": "2026-06-05",
+                "y": 2070000.0
+              },
+              {
+                "x": "2026-06-08",
+                "y": 1911000.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 2215000.0
+              },
+              {
+                "x": "2026-06-10",
+                "y": 2048000.0
+              },
+              {
+                "x": "2026-06-11",
+                "y": 2101000.0
+              },
+              {
+                "x": "2026-06-12",
+                "y": 2150000.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 2288000.0
+              }
+            ],
+            "source": "KRX / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "엔비디아",
+            "title": "엔비디아",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · -4.33% (222.06 → 212.45)",
+            "last_value_formatted": "212.45",
+            "change_day_pct": 3.54,
+            "change_day_pct_formatted": "+3.54%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 222.0612030029297
+              },
+              {
+                "x": "2026-05-19",
+                "y": 220.35317993164062
+              },
+              {
+                "x": "2026-05-20",
+                "y": 223.20985412597656
+              },
+              {
+                "x": "2026-05-21",
+                "y": 219.25445556640625
+              },
+              {
+                "x": "2026-05-22",
+                "y": 215.07933044433594
+              },
+              {
+                "x": "2026-05-26",
+                "y": 214.60987854003906
+              },
+              {
+                "x": "2026-05-27",
+                "y": 212.35250854492188
+              },
+              {
+                "x": "2026-05-28",
+                "y": 214.00057983398438
+              },
+              {
+                "x": "2026-05-29",
+                "y": 210.8942108154297
+              },
+              {
+                "x": "2026-06-01",
+                "y": 224.09881591796875
+              },
+              {
+                "x": "2026-06-02",
+                "y": 222.56060791015625
+              },
+              {
+                "x": "2026-06-03",
+                "y": 214.5
+              },
+              {
+                "x": "2026-06-04",
+                "y": 218.66000366210938
+              },
+              {
+                "x": "2026-06-05",
+                "y": 205.10000610351562
+              },
+              {
+                "x": "2026-06-08",
+                "y": 208.63999938964844
+              },
+              {
+                "x": "2026-06-09",
+                "y": 208.19000244140625
+              },
+              {
+                "x": "2026-06-10",
+                "y": 200.4199981689453
+              },
+              {
+                "x": "2026-06-11",
+                "y": 204.8699951171875
+              },
+              {
+                "x": "2026-06-12",
+                "y": 205.19000244140625
+              },
+              {
+                "x": "2026-06-15",
+                "y": 212.4499969482422
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "WTI 유가",
+            "title": "WTI 유가",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · -15.37% (112.25 → 95.00)",
+            "last_value_formatted": "95.00",
+            "change_day_pct": 0.72,
+            "change_day_pct_formatted": "+0.72%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 112.25
+              },
+              {
+                "x": "2026-05-19",
+                "y": 112.09
+              },
+              {
+                "x": "2026-05-20",
+                "y": 101.69
+              },
+              {
+                "x": "2026-05-21",
+                "y": 100.2
+              },
+              {
+                "x": "2026-05-22",
+                "y": 100.35
+              },
+              {
+                "x": "2026-05-26",
+                "y": 97.63
+              },
+              {
+                "x": "2026-05-27",
+                "y": 92.35
+              },
+              {
+                "x": "2026-05-28",
+                "y": 92.65
+              },
+              {
+                "x": "2026-05-29",
+                "y": 91.16
+              },
+              {
+                "x": "2026-06-01",
+                "y": 95.96
+              },
+              {
+                "x": "2026-06-02",
+                "y": 97.47
+              },
+              {
+                "x": "2026-06-03",
+                "y": 99.76
+              },
+              {
+                "x": "2026-06-04",
+                "y": 96.83
+              },
+              {
+                "x": "2026-06-05",
+                "y": 94.32
+              },
+              {
+                "x": "2026-06-08",
+                "y": 95.0
+              }
+            ],
+            "source": "FRED / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "원/달러 환율",
+            "title": "원/달러 환율",
+            "subtitle": "2026-05-17 ~ 2026-06-16 · +1.37% (1,500 → 1,520)",
+            "last_value_formatted": "1,520",
+            "change_day_pct": -0.43,
+            "change_day_pct_formatted": "-0.43%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-18",
+                "y": 1499.8
+              },
+              {
+                "x": "2026-05-19",
+                "y": 1503.4
+              },
+              {
+                "x": "2026-05-20",
+                "y": 1503.8
+              },
+              {
+                "x": "2026-05-21",
+                "y": 1509.7
+              },
+              {
+                "x": "2026-05-22",
+                "y": 1503.5
+              },
+              {
+                "x": "2026-05-26",
+                "y": 1513.3
+              },
+              {
+                "x": "2026-05-27",
+                "y": 1507.9
+              },
+              {
+                "x": "2026-05-28",
+                "y": 1501.6
+              },
+              {
+                "x": "2026-05-29",
+                "y": 1505.8
+              },
+              {
+                "x": "2026-06-01",
+                "y": 1503.2
+              },
+              {
+                "x": "2026-06-02",
+                "y": 1511.3
+              },
+              {
+                "x": "2026-06-04",
+                "y": 1515.6
+              },
+              {
+                "x": "2026-06-05",
+                "y": 1528.6
+              },
+              {
+                "x": "2026-06-08",
+                "y": 1543.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 1546.5
+              },
+              {
+                "x": "2026-06-10",
+                "y": 1518.4
+              },
+              {
+                "x": "2026-06-11",
+                "y": 1522.4
+              },
+              {
+                "x": "2026-06-12",
+                "y": 1527.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 1520.4
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-05-17 ~ 2026-06-16 / 일간",
+            "takeaway": ""
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "그제(14일) 미국과 이란이 4개월 전쟁을 멈추기로 합의했다. 호르무즈 해협이 다시 열리고 미 해군의 봉쇄가 풀린다는 약속이 패키지로 묶였다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "양해각서 (MOU)",
+            "explanation": "정식 조약 이전 단계의 합의 문서다. 양국이 합의의 큰 틀에 도장을 찍고, 세부 협상을 이어 가겠다고 약속하는 형식이다."
+          },
+          {
+            "term": "메모리 슈퍼사이클",
+            "explanation": "스마트폰부터 인공지능 서버까지 메모리 반도체 수요가 한꺼번에 몰리며 가격과 실적이 길게 오르는 국면을 가리킨다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "그제 미국과 이란이 4개월 전쟁을 멈추기로 약속했습니다.",
+            "호르무즈 해협이 다시 열리고, 미국 해군의 봉쇄도 함께 풀립니다.",
+            "어제 한국 증시는 그 소식을 단숨에 받아 안았습니다.",
+            "다만 같은 날 원/달러 환율은 거꾸로 움직였습니다."
+          ],
+          "highlights": [
+            "코스피 8,545선 첫 돌파",
+            "호르무즈 봉쇄 해제 약속"
+          ],
+          "emphasis": [
+            "8,545선",
+            "호르무즈",
+            "거꾸로"
+          ],
+          "narration_tts": [
+            "그제 미국과 이란이 사 개월 전쟁을 멈추기로 약속했습니다.",
+            "호르무즈 해협이 다시 열리고, 미국 해군의 봉쇄도 함께 풀립니다.",
+            "어제 한국 증시는 그 소식을 단숨에 받아 안았습니다.",
+            "다만 같은 날 원달러 환율은 거꾸로 움직였습니다."
+          ]
+        }
+      },
+      {
+        "heading": "메모리·휴전·환율, 같은 날의 세 그림",
+        "kicker": "",
+        "prose": "15일 거래에서 가장 크게 오른 종목은 SK하이닉스다. 종가 228만 8천 원, 하루 6.42% 상승이다. 삼성전자도 33만 7천 원으로 4.50% 올랐고, 미국 시장에서 엔비디아는 212.45달러로 3.54% 뛰었다. 세 종목이 함께 움직였다는 사실이 15일 시장의 성격을 압축한다. 증권가는 코스피 9,000선까지 여유가 남았다는 의견을 내고 있다. 골드만삭스는 메모리 슈퍼사이클과 영업이익 300% 서지를 근거로 9,000을 목표가로 제시한 바 있다. 데이터로 확인한 가장 최근 마감(12일 종가 8,123.62)을 기준으로 보면, 이 목표의 약 90% 지점에 닿아 있다. 한국 매크로 지표도 이 분위기를 받쳐 준다. 5월 수출은 월 878억 달러로 사상 최대, 전년 같은 달 대비 53% 증가했다. OECD는 이번에 한국의 2026년 성장률 전망을 1.7%에서 2.6%로 한 번에 올렸다. 인공지능과 반도체 수출이 그 근거다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "6월 15일 주요 종목 일중 등락률",
+            "subtitle": "메모리 두 곳이 인공지능 칩 한 곳을 끌어올린 하루",
+            "data": [
+              {
+                "label": "SK하이닉스",
+                "value": 6.42,
+                "note": "228만 8천 원"
+              },
+              {
+                "label": "삼성전자",
+                "value": 4.5,
+                "note": "33만 7천 원"
+              },
+              {
+                "label": "엔비디아",
+                "value": 3.54,
+                "note": "212.45달러"
+              }
+            ],
+            "source": "Yahoo Finance / 2026-06-15 종가 기준",
+            "takeaway": "휴전 안도와 메모리 동력이 한 묶음으로 들어왔다."
+          },
+          {
+            "type": "bullet",
+            "title": "코스피, 골드만삭스 목표선까지의 거리",
+            "subtitle": "확인된 12일 종가 기준 약 95% 지점",
+            "data": [
+              {
+                "label": "코스피",
+                "value": 8123.62,
+                "target": 9000,
+                "ranges": [
+                  7000,
+                  8000,
+                  8500
+                ]
+              }
+            ],
+            "source": "한국거래소 / 2026-06-12 확인 종가, Goldman Sachs 목표가",
+            "note": "보도된 어제(15일) 종가 8,545.98을 적용하면 목표까지 약 5%가 남는다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "어제 가장 크게 오른 종목은 에스케이하이닉스였습니다.",
+            "삼성전자가 그 뒤를 이었고, 미국에서는 엔비디아도 함께 올랐습니다.",
+            "세 종목이 한 방향으로 움직인 점이 어제 장의 성격을 보여 줍니다.",
+            "골드만삭스는 코스피의 다음 목표선으로 9,000을 잡아 두고 있습니다."
+          ],
+          "highlights": [
+            "SK하이닉스 +6.42%",
+            "코스피 다음 목표선 9,000"
+          ],
+          "emphasis": [
+            "함께 올랐습니다",
+            "9,000"
+          ],
+          "narration_tts": [
+            "어제 가장 크게 오른 종목은 에스케이하이닉스였습니다.",
+            "삼성전자가 그 뒤를 이었고, 미국에서는 엔비디아도 함께 올랐습니다.",
+            "세 종목이 한 방향으로 움직인 점이 어제 장의 성격을 보여 줍니다.",
+            "골드만삭스는 코스피의 다음 목표선으로 구천을 잡아 두고 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "삼성 HBM4E와 엔비디아, 한 걸음 더 가까이",
+        "kicker": "",
+        "prose": "디지타임스가 15일 내놓은 주간 정리는 산업 트랙 두 가지를 못 박았다. 첫째, 삼성전자 파운드리가 올해 3분기에 흑자로 돌아설 전망이라는 시장 컨센서스가 굳어졌다. 둘째, 엔비디아가 올해 GTC에서 인공지능 PC 비전을 공개하며 다음 라운드 수요처를 열었다. 메모리 쪽에선 삼성의 HBM4E 공개가 의미 있다. 처리 속도 11.7Gbps는 업계 표준 8Gbps를 크게 웃돈다. 엔비디아의 차세대 플랫폼 Vera Rubin에 채택된다는 점도 함께 알려졌다. 공급망 분석가들은 Vera Rubin 향 HBM4 공급 점유율을 SK하이닉스 60~70%, 삼성 25~30%, 마이크론이 잔여를 가져가는 구도로 추정한다(공식 발표가 아닌 공급망 분석가 추정치). 이 모든 흐름이 15일 한국 칩주 동반 상승의 펀더멘털 배경이다. 휴전 합의가 위험 프리미엄을 걷어 내는 동안, 산업 쪽 모멘텀은 따로 차곡차곡 쌓여 있었다는 뜻이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/145fd9271e031e94.jpg",
+            "caption": "삼성전자가 GTC 2026에서 공개한 HBM4E 모듈. 엔비디아의 차세대 Vera Rubin 플랫폼 채택이 함께 발표됐다.",
+            "credit": "© Samsung Newsroom",
+            "source_url": "https://news.samsung.com/global/samsung-unveils-hbm4e-showcasing-comprehensive-ai-solutions-nvidia-partnership-and-vision-at-nvidia-gtc-2026",
+            "alt": "전시 부스에 진열된 삼성 HBM4E 메모리 모듈과 엔비디아 협력 안내판"
+          }
+        ],
+        "footnotes": [
+          {
+            "term": "HBM (고대역폭 메모리)",
+            "explanation": "여러 층의 D램을 수직으로 쌓아 한 번에 많은 데이터를 주고받게 만든 메모리다. 인공지능 가속기 옆에 붙어 학습과 추론 속도를 좌우한다."
+          },
+          {
+            "term": "파운드리",
+            "explanation": "다른 회사가 설계한 반도체를 위탁받아 만들어 주는 사업이다. 삼성전자 파운드리는 그동안 적자를 이어 왔고, 흑자 전환 여부가 시장의 관심사다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "어제 디지타임스는 산업 쪽 소식 두 가지를 정리했습니다.",
+            "삼성전자 파운드리가 올해 3분기에 흑자로 돌아설 거라는 전망입니다.",
+            "삼성의 HBM4E가 엔비디아의 다음 플랫폼에 채택된다는 소식도 더해졌습니다.",
+            "휴전 안도와 별개로, 산업 동력이 따로 쌓여 있었던 셈입니다."
+          ],
+          "highlights": [
+            "HBM4E, Vera Rubin 채택",
+            "삼성 파운드리 3분기 흑자 전망"
+          ],
+          "emphasis": [
+            "흑자로 돌아설",
+            "채택된다"
+          ],
+          "narration_tts": [
+            "어제 디지타임스는 산업 쪽 소식 두 가지를 정리했습니다.",
+            "삼성전자 파운드리가 올해 삼분기에 흑자로 돌아설 거라는 전망입니다.",
+            "삼성의 에이치비엠 포이가 엔비디아의 다음 플랫폼에 채택된다는 소식도 더해졌습니다.",
+            "휴전 안도와 별개로, 산업 동력이 따로 쌓여 있었던 셈입니다."
+          ]
+        }
+      },
+      {
+        "heading": "환율 1,520원, 빛 뒤의 그늘",
+        "kicker": "",
+        "prose": "같은 날 외환시장의 그림은 정반대였다. 원/달러 환율은 1,520.40원으로 마감했다. 전 거래일 대비 0.43% 내려 원화가 소폭 강세를 보였지만, 절대 수준 자체는 글로벌 금융위기 이후 가장 약한 영역이다. 칩주가 오르는 동안 환율이 충분히 풀리지 않은 점은 15일 시장의 또 다른 얼굴이다. 당국은 최근 1,560원선 일시 돌파 이후 외환시장 투기 조사에 들어가 있는 상태다. 외국인 자금이 코스피에 들어오면서도 원화가 안정되지 못하는 이유는, 무역수지·내외 금리차·정치 일정이 따로 작동하기 때문으로 풀이된다. 주식 계좌 통계도 한 면을 보여 준다. 5월 기준 활성 계좌가 1,052만 개로, 작년 말 대비 693만 개 늘었다. 개인 투자자 저변이 빠르게 두꺼워졌다는 신호다. 다만 시장이 한 방향으로 부풀 때 새로 들어온 자금일수록 변동에 약하다는 점도 함께 살펴야 한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "내외 금리차",
+            "explanation": "국내 금리와 해외 금리의 차이를 가리킨다. 미국 금리가 더 높으면 달러로 돈이 빠져나가 원화가 약해지는 경향이 있다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "같은 날 외환시장은 정반대였습니다.",
+            "원달러 환율은 1,520원선에 머물며 약세 흐름을 이어 갔습니다.",
+            "당국은 최근 외환시장 투기 조사를 진행하고 있습니다.",
+            "주식 계좌는 1년이 안 되어 700만 개 가까이 늘었습니다."
+          ],
+          "highlights": [
+            "원/달러 1,520.40원",
+            "신규 계좌 +693만"
+          ],
+          "emphasis": [
+            "정반대",
+            "1,520원선",
+            "약세"
+          ],
+          "narration_tts": [
+            "같은 날 외환시장은 정반대였습니다.",
+            "원달러 환율은 천오백이십 원선에 머물며 약세 흐름을 이어 갔습니다.",
+            "당국은 최근 외환시장 투기 조사를 진행하고 있습니다.",
+            "주식 계좌는 일 년이 안 되어 칠백만 개 가까이 늘었습니다."
+          ]
+        }
+      },
+      {
+        "heading": "에비앙으로 향한 이재명, 한국의 자리",
+        "kicker": "",
+        "prose": "프랑스 에비앙에서 15일 G7 정상회의가 막을 올렸다. 17일까지 사흘 일정이다. 이번 회의는 휴전의 후속 정리와 우크라이나 문제, 인공지능 거버넌스를 핵심 의제로 잡고 있다. 한국·브라질·인도·케냐·시리아가 초청국으로 자리를 받았다. 이재명 대통령은 벨기에·이탈리아·바티칸을 거치는 10일 순방의 한 매듭으로 이 자리에 합류했다. 한국이 2년 연속 G7 초청을 받은 점은 외교적 입지의 신호로 읽힌다. 다만 메인 회원국이 아니라 초청국 자격이라는 한계는 그대로다. 미국·유럽이 짠 큰 틀 안에서 한국이 무엇을 가지고 돌아오는지가 이번 순방의 시험대다. 인공지능 거버넌스 의제는 한국에는 양면이다. 15일 본 메모리·HBM 흐름이 받쳐 주는 위치를 외교 카드로 쓸 수 있다는 점은 기회다. 동시에 미국·EU 주도의 규제 틀이 한국 기업에 어떻게 적용될지는 따로 들여다봐야 한다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/9d483be1f0b719e1.jpg",
+            "caption": "이재명 대통령이 9일 유럽 순방길에 올랐다. 벨기에와 이탈리아, 바티칸을 거쳐 어제 에비앙 G7 정상회의에 합류했다.",
+            "credit": "© Korea Herald",
+            "source_url": "https://www.koreaherald.com/article/10767334",
+            "alt": "공항 활주로에서 비행기 트랩을 오르는 이재명 대통령의 옆모습"
+          }
+        ],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "어제 프랑스 에비앙에서 G7 정상회의가 열렸습니다.",
+            "이재명 대통령은 10일 순방의 한 매듭으로 이 자리에 합류했습니다.",
+            "한국이 2년 연속 초청을 받은 점은 외교적 입지의 신호입니다.",
+            "이번 회의의 의제에는 인공지능 거버넌스도 함께 올라가 있습니다."
+          ],
+          "highlights": [
+            "G7 2년 연속 초청",
+            "AI 거버넌스 의제화"
+          ],
+          "emphasis": [
+            "합류했습니다",
+            "2년 연속"
+          ],
+          "narration_tts": [
+            "어제 프랑스 에비앙에서 지세븐 정상회의가 열렸습니다.",
+            "이재명 대통령은 십일 순방의 한 매듭으로 이 자리에 합류했습니다.",
+            "한국이 이년 연속 초청을 받은 점은 외교적 입지의 신호입니다.",
+            "이번 회의의 의제에는 인공지능 거버넌스도 함께 올라가 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "제네바까지 사흘, 갈림길 위의 60일",
+        "kicker": "",
+        "prose": "다음 큰 분기점은 19일 제네바다. 미국과 이란이 그날 양해각서에 정식 서명한 뒤, 곧바로 60일짜리 양자 협상에 들어간다. 봉쇄 해제와 제재 단계 해제, 재건안이 한 패키지로 묶인 만큼, 어느 한 트랙이 흔들리면 전체가 출렁일 구조다. 시나리오는 크게 세 가지로 정리된다. 첫째, 협상이 무난히 진행되고 60일 안에 굵직한 합의가 다시 나오는 경로다. 이 경우 유가 안정과 한국 칩주의 추가 동력이 함께 갈 수 있다. 둘째, 제네바 서명은 되지만 협상 단계에서 핵 검증을 두고 교착이 길어지는 경로다. 15일의 5%대 급등의 일부 되돌림이 나올 만하다. 셋째, 서명 자체가 미뤄지거나 합의가 깨지는 경로다. 호르무즈 운임과 유가가 즉시 반전하고, 환율 부담이 칩주 호조를 일부 덮을 위험이 있다. 15일의 상승은 한 방향이 아니었다. 환율의 그늘, 신규 자금의 변동성, 협상 결렬 가능성이 같은 표면 위에 함께 놓여 있다. 다음 사흘부터 60일까지의 신호를 차분히 챙기는 일이 그래서 중요하다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "다음 큰 분기점은 19일 제네바입니다.",
+            "미국과 이란이 양해각서에 정식으로 서명하는 자리입니다.",
+            "서명 이후에는 60일짜리 양자 협상이 곧바로 이어집니다.",
+            "어느 한 단계가 흔들리면 어제의 상승 동력도 함께 출렁일 수 있습니다."
+          ],
+          "highlights": [
+            "19일 제네바 정식 서명",
+            "60일 양자 협상"
+          ],
+          "emphasis": [
+            "19일",
+            "60일짜리",
+            "출렁일 수 있습니다"
+          ],
+          "narration_tts": [
+            "다음 큰 분기점은 십구일 제네바입니다.",
+            "미국과 이란이 양해각서에 정식으로 서명하는 자리입니다.",
+            "서명 이후에는 육십일짜리 양자 협상이 곧바로 이어집니다.",
+            "어느 한 단계가 흔들리면 어제의 상승 동력도 함께 출렁일 수 있습니다."
+          ]
+        }
+      }
+    ],
+    "closing": "휴전과 슈퍼사이클이 같은 날 한자리에서 만난 하루였다. 안도의 크기와 함께 그늘의 깊이도 같이 봐 두는 편이 좋다.",
+    "watch_signals": [
+      {
+        "signal": "제네바 MOU 정식 서명",
+        "description": "19일 미·이란 양해각서 서명 진행 여부",
+        "indicates": "휴전 정착 시나리오 vs 결렬 시나리오 분기점",
+        "deadline": "2026-06-19",
+        "icon": "✍️"
+      },
+      {
+        "signal": "G7 공동선언 문안",
+        "description": "에비앙 회의 폐막 시 우크라이나·이란·AI 거버넌스 처리 강도",
+        "indicates": "한국 외교 입지와 메모리 산업 규제 방향",
+        "deadline": "2026-06-17",
+        "icon": "📜"
+      },
+      {
+        "signal": "외환당국 투기 조사 결과",
+        "description": "1,560원 일시 돌파 관련 조사 발표",
+        "indicates": "환율 추가 약세 vs 안정 전환 분기",
+        "deadline": "2026-06 말",
+        "icon": "💱"
+      },
+      {
+        "signal": "삼성 HBM4E 출하 마일스톤",
+        "description": "엔비디아 Vera Rubin용 양산 일정 확정",
+        "indicates": "메모리 슈퍼사이클 연장 신호",
+        "deadline": "2026-3분기",
+        "icon": "🧠"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "휴전 양해각서가 19일 정식 서명되고 60일 협상이 굵직한 합의로 이어지면, 어제의 5%대 급등은 새로운 기준선이 된다.",
+        "side_b": "서명이 미뤄지거나 협상 단계에서 핵 검증을 둘러싼 교착이 길어지면, 호르무즈 운임과 유가가 다시 반전하며 어제의 안도장은 단기 봉합으로 평가될 수 있다.",
+        "evidence": "MOU 패키지가 봉쇄 해제·제재 단계 해제·재건안을 한 묶음으로 묶어 둔 만큼, 한 트랙의 흔들림이 전체에 번질 구조다.",
+        "resolution": "현재 정보로는 정착 쪽에 무게가 더 실린다. 다만 패배 입장은 19일 서명 지연이나 핵 검증 조항의 공개 충돌이 확인될 때 살아난다.",
+        "video": {
+          "label_a": "정착론",
+          "label_b": "봉합론",
+          "line_a": "서명과 협상이 이어지면 5% 급등이 새 기준선이 됩니다.",
+          "line_b": "서명이 미뤄지면 유가와 운임이 다시 반전할 수 있습니다.",
+          "narration": [
+            "이 쟁점은 한 단어로 정리됩니다.",
+            "어제의 환호가 새 기준이 될지, 잠시 덮어 둔 봉합일지의 문제입니다.",
+            "지금은 정착 쪽에 무게가 더 실려 있다는 것이 데스크의 판단입니다."
+          ],
+          "narration_tts": [
+            "이 쟁점은 한 단어로 정리됩니다.",
+            "어제의 환호가 새 기준이 될지, 잠시 덮어 둔 봉합일지의 문제입니다.",
+            "지금은 정착 쪽에 무게가 더 실려 있다는 것이 데스크의 판단입니다."
+          ]
+        }
+      },
+      {
+        "side_a": "메모리 슈퍼사이클과 휴전 안도가 칩주를 끌어올린 만큼, 외국인 자금 유입 속에 환율도 점차 안정될 여지가 있다.",
+        "side_b": "내외 금리차와 무역수지·정치 일정이 따로 작동하면서 원화는 1,500원 위에 머물 가능성이 있고, 칩주 호조와 환율 약세가 동시에 이어지는 그림이 굳어질 수 있다.",
+        "evidence": "어제 칩주 동반 상승에도 원/달러는 1,520.40원으로 약세를 유지했고, 당국은 1,560원 일시 돌파 이후 투기 조사에 들어가 있다.",
+        "resolution": "단기적으로는 환율 약세가 더 끈질기게 갈 가능성이 크다. 다만 OECD 성장 전망 상향과 수출 호조가 누적되면 패배 입장이었던 환율 안정 시나리오도 다시 살아날 수 있다.",
+        "video": {
+          "label_a": "동조론",
+          "label_b": "괴리론",
+          "line_a": "외국인 자금 유입이 이어지면 환율도 점차 안정될 수 있습니다.",
+          "line_b": "칩주가 올라도 환율은 따로 약세를 이어 갈 수 있습니다.",
+          "narration": [
+            "환율과 칩주는 한 방향으로 움직이지 않았습니다.",
+            "이 두 가지가 따로 갈지, 다시 만날지가 다음 관전 포인트입니다.",
+            "단기적으로는 약세 흐름이 더 끈질기게 갈 가능성이 큽니다."
+          ],
+          "narration_tts": [
+            "환율과 칩주는 한 방향으로 움직이지 않았습니다.",
+            "이 두 가지가 따로 갈지, 다시 만날지가 다음 관전 포인트입니다.",
+            "단기적으로는 약세 흐름이 더 끈질기게 갈 가능성이 큽니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "정착이냐 일시 봉합이냐",
+    "timeline_flow": {
+      "heading": "사건의 궤적, 개전에서 60일 협상까지",
+      "past": [
+        {
+          "date": "2026-02-28",
+          "label": "미·이스라엘의 이란 공습으로 4개월 전쟁 시작",
+          "note": "이후 호르무즈 운임·유가 위험 프리미엄 누적"
+        },
+        {
+          "date": "2026-06-14",
+          "label": "트럼프, 미·이란 평화 MOU 발표",
+          "note": "파키스탄·카타르·사우디·튀르키예 중재"
+        },
+        {
+          "date": "2026-06-15",
+          "label": "코스피 5%대 급등, 8,545선 마감",
+          "note": "닛케이 69,000 첫 돌파, G7 에비앙 개막"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-06-17",
+          "label": "G7 정상회의 폐막 공동선언",
+          "branch": "외교·산업 트랙 후속 신호"
+        },
+        {
+          "date": "2026-06-19",
+          "label": "제네바 MOU 정식 서명 예정",
+          "branch": "정착 시나리오 vs 결렬 시나리오"
+        },
+        {
+          "date": "2026-08-18",
+          "label": "60일 양자 협상 마감 시점",
+          "branch": "본 합의 도출 여부"
+        }
+      ],
+      "video": {
+        "narration": [
+          "전쟁은 지난 2월 말에 시작됐습니다.",
+          "그제 워싱턴이 휴전 양해각서를 꺼냈고, 어제 시장이 반응했습니다.",
+          "다음은 17일 G7 공동선언과 19일 제네바 서명입니다.",
+          "그 뒤로 60일짜리 양자 협상이 따라옵니다."
+        ],
+        "narration_tts": [
+          "전쟁은 지난 이월 말에 시작됐습니다.",
+          "그제 워싱턴이 휴전 양해각서를 꺼냈고, 어제 시장이 반응했습니다.",
+          "다음은 십칠일 지세븐 공동선언과 십구일 제네바 서명입니다.",
+          "그 뒤로 육십일짜리 양자 협상이 따라옵니다."
+        ]
+      }
+    },
+    "confidence_summary": "1차 출처 다양성 양호(CNN·Al Jazeera·Korea Herald·Samsung Newsroom·Digitimes 등 10건). 신선도는 6월 14~15일 1차 보도 기반으로 매우 높은 편. 다만 코스피 6월 15일 종가 8,545.98은 보도 기반이며 자체 시장 데이터로는 12일 8,123.62까지만 확인됨. 시장 수치엔 일자 라벨로 시점을 분리해 표기.",
+    "confidence_score": 0.48,
+    "broadcast_summary": "어제 코스피가 5%대 급등하며 8,545선을 처음 넘었어요. 그제 발표된 미국과 이란의 휴전 양해각서, 그리고 호르무즈 해협 봉쇄 해제 소식이 그대로 반영된 결과입니다.\n\n오른 종목은 SK하이닉스와 삼성전자가 끌었습니다. SK하이닉스가 6.42%, 삼성전자가 4.5% 올랐고, 미국에서는 엔비디아도 3.54% 뛰었어요. 메모리 슈퍼사이클이 휴전 안도와 한자리에서 만난 셈입니다.\n\n다만 원/달러 환율은 같은 날 1,520.40원에서 내려오지 못했어요. 칩주가 올라도 외환은 거꾸로 움직였고, 당국은 최근 1,560원 일시 돌파 이후 투기 조사에 들어가 있습니다.\n\n외교 트랙도 같은 날 움직였습니다. 이재명 대통령이 프랑스 에비앙에서 열린 G7 정상회의에 합류했고, 한국은 2년 연속 초청을 받았어요. 이번 회의에는 우크라이나 자원 재배분과 AI 거버넌스도 의제로 올라 있습니다.\n\n다음 분기점은 19일 제네바입니다. 미국과 이란이 양해각서를 정식 서명한 뒤 60일짜리 협상에 들어가는데, 어느 트랙이든 흔들리면 유가와 운임이 다시 출렁일 수 있어요.\n\n오늘 아침의 환호와 그 안에 숨은 부담을 한 번에 묶어 정리해 뒀습니다.",
+    "video": {
+      "intro_narration": [
+        "어제 한국 증시는 사상 처음 코스피 8,500선을 넘어섰습니다.",
+        "그 배경에는 그제 발표된 미국과 이란의 휴전 합의가 있었습니다."
+      ],
+      "outro_narration": [
+        "환호의 크기와 함께 그늘의 깊이도 같이 봐 둘 시점입니다.",
+        "다음 분기점은 19일 제네바입니다."
+      ],
+      "intro_narration_tts": [
+        "어제 한국 증시는 사상 처음 코스피 팔천오백 선을 넘어섰습니다.",
+        "그 배경에는 그제 발표된 미국과 이란의 휴전 합의가 있었습니다."
+      ],
+      "outro_narration_tts": [
+        "환호의 크기와 함께 그늘의 깊이도 같이 봐 둘 시점입니다.",
+        "다음 분기점은 십구일 제네바입니다."
+      ]
+    },
+    "embedded_map": {
+      "center": [
+        60,
+        38
+      ],
+      "zoom": 1.6,
+      "markers": [
+        {
+          "id": "hormuz",
+          "name": "호르무즈 해협",
+          "lng": 56.4,
+          "lat": 26.6,
+          "highlight": true,
+          "kind": "chokepoint",
+          "value": "원유 약 20% 통과",
+          "label_side": "bottom"
+        },
+        {
+          "id": "tehran",
+          "name": "테헤란",
+          "lng": 51.4,
+          "lat": 35.7,
+          "label_side": "top"
+        },
+        {
+          "id": "geneva",
+          "name": "제네바",
+          "lng": 6.14,
+          "lat": 46.2,
+          "kind": "port",
+          "value": "19일 서명 예정",
+          "label_side": "left"
+        },
+        {
+          "id": "evian",
+          "name": "에비앙",
+          "lng": 6.59,
+          "lat": 46.4,
+          "highlight": true,
+          "value": "G7 6/15~17",
+          "label_side": "right"
+        },
+        {
+          "id": "seoul",
+          "name": "서울",
+          "lng": 126.97,
+          "lat": 37.57,
+          "label_side": "bottom"
+        },
+        {
+          "id": "washington",
+          "name": "워싱턴",
+          "lng": -77.04,
+          "lat": 38.9,
+          "label_side": "left"
+        }
+      ],
+      "arcs": [
+        {
+          "from_id": "hormuz",
+          "to_id": "geneva",
+          "kind": "alt",
+          "weight": 2,
+          "label": "봉쇄 해제 패키지",
+          "label_t": 0.5
+        },
+        {
+          "from_id": "tehran",
+          "to_id": "washington",
+          "kind": "flow",
+          "weight": 2,
+          "label": "MOU 후속 협상",
+          "label_t": 0.45
+        },
+        {
+          "from_id": "seoul",
+          "to_id": "evian",
+          "kind": "flow",
+          "weight": 2,
+          "label": "이재명 합류",
+          "label_t": 0.55
+        }
+      ],
+      "regions": [
+        {
+          "name": "South Korea",
+          "role": "subject",
+          "label": "한국"
+        },
+        {
+          "name": "United States of America",
+          "role": "ally",
+          "label": "미국"
+        },
+        {
+          "name": "France",
+          "role": "ally",
+          "label": "프랑스"
+        },
+        {
+          "name": "Iran",
+          "role": "contested",
+          "label": "이란"
+        }
+      ],
+      "sea_labels": [
+        {
+          "name": "페르시아만",
+          "lng": 51,
+          "lat": 26
+        },
+        {
+          "name": "지중해",
+          "lng": 18,
+          "lat": 35
+        }
+      ],
+      "legend": [
+        {
+          "label": "이동·합류 흐름",
+          "kind": "flow"
+        },
+        {
+          "label": "봉쇄 해제 트랙",
+          "kind": "alt"
+        }
+      ]
+    },
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 8,
+      "unresolved": 3,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 8건 반영 · 3건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "데이터로 확인되는 12일 종가는 8,123.62로 전 거래일 대비 4.63% 올랐고, 15일 보도된 종가는 8,545선까지 닿았다. 메모리 슈퍼사이클과 호르무즈 개방이 겹친 결과지만, 원/달러는 같은 시기 1,520원선에서 내려오지 못했다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260616_061524_91b62c1c4e.html",
+  "mirror_url": "",
+  "report_theme": "burgundy_mono",
+  "parent_context": null,
+  "analysis_timestamp": "2026-06-16T06:00:00.925121+09:00",
+  "total_duration_seconds": 922.7408821582794,
+  "system_version": "v7.6.4",
+  "revision": 0,
+  "render_revision": 0
+}
