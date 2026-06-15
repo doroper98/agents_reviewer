@@ -36,6 +36,16 @@
 | `narration` | **자막(표기용)** | 눈으로 읽는다. 숫자·영문 약어·`%` 를 *그대로 써도 된다* (예: "SK하이닉스가 7.68% 빠졌습니다"). 단 문장 자체는 구어체·짧은 연쇄여야 한다 (§1). |
 | `narration_tts` | **음성(발화용)** | 귀로 듣는다. TTS가 틀리거나 어색하게 읽을 표기를 *사람이 말하는 형태로* 미리 바꿔 둔다 (예: "에스케이하이닉스가 칠 점 육팔 퍼센트 빠졌습니다"). |
 
+> **★ 적용 범위 절대 경계 (v7.6.4 — 사용자 지적: 텔레그램 요약에 'WTI'가 '더블유티아이'로 나옴).**
+> 아래 §2~§6 의 *발음 변환*(WTI→더블유티아이, D램→디램, %→퍼센트, 숫자→한글)은
+> **오직 `narration_tts` / `*_narration_tts` 필드에만** 적용한다. **`broadcast_summary`
+> (텔레그램 요약) · `prose`(본문) · `headline` · `deck` · `narration`(자막) · `highlights` ·
+> timeline · contradictions** 같은 *눈으로 읽는 글* 에는 절대 적용하지 않는다 — 거기선
+> 원래 표기 그대로(WTI · D램 · GPU · HBM · 7.86% · 8,000). 발음 표기는 성우가 읽는 음성
+> 전용이고, 글에 쓰면 어색하다. producer 가 `narrative_composer._revert_phonetic_in_text`
+> 로 `broadcast_summary` 의 명확한 약어 누수를 결정적 복원(더블유티아이→WTI 등) + 본문
+> 누수를 warn 한다 (2중 방어, 1차는 본 경계 + composer SYSTEM_PROMPT).
+
 **규칙:**
 1. `narration` 의 한 문장이라도 TTS가 깨뜨릴 표기(아래 §2~§5)를 포함하면, 그 섹션은
    `narration_tts` 를 **반드시** 채운다. `narration_tts` 는 `narration` 과 *같은

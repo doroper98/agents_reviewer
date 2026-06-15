@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.6.3
+last_synced_with: v7.6.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,30 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.6.4 — TTS 발음 표기가 텔레그램 요약·본문으로 누수 차단 (WRITE-AP-23, 사용자 catch)
+
+텔레그램 요약(`broadcast_summary`)에 "WTI"가 "더블유티아이", "D램"이 "디램",
+"7.86%"가 "7.86퍼센트"로 나오던 회귀. v7.4.0~v7.6.3 에서 추가된 강한 영상 TTS
+발음 규칙(narration_tts 전용)이 같은 LLM 호출 안에서 글 작성까지 번진 게 원인.
+
+- **프롬프트 경계 (1차 방어)**: composer SYSTEM_PROMPT "★ TTS 발화 규칙" 블록 머리에
+  적용범위 명시 — 발음 변환은 *오직 `narration_tts`/`*_narration_tts`*, `broadcast_summary`·
+  `prose`·`headline`·`deck`·`narration`(자막)·`highlights`·timeline·contradictions 같은
+  *눈으로 읽는 글* 엔 금지(원래 표기 WTI·D램·7.86%·8,000). `broadcast_summary` 블록에
+  표기 레지스터 규칙 추가. SSOT `prompts/tts_narration_guide.md §0` 경계 박스.
+- **결정적 후처리 (2차 방어, 재발방지)**: `narrative_composer._revert_phonetic_in_text`
+  (`_sanitize_symbols` 끝에서 호출 → orchestrator 최종 패스로 전 경로 보장) 가
+  `broadcast_summary` 의 *명확한* 약어 누수를 결정적 복원(더블유티아이→WTI / 디램→D램 /
+  에이치비엠 포→HBM4 등, `_PHONETIC_TO_TEXT` 역매핑). 'S-1=에스원'(보안회사 명)·'에이아이'
+  같은 모호어는 오역 위험이라 복원 제외. `headline`/`deck`/`prose` 누수는 복원 안 하고
+  warn-only(편집체 보존). 숫자·%(8천→8,000, 퍼센트→%)는 결정적 변환이 오역 위험이라
+  프롬프트 전담.
+- **재발방지 문서화**: WRITE-AP-23 신설 (`docs/REPORT_WRITING_ANTIPATTERNS.md`),
+  `tts_narration_guide.md §0` 적용범위 경계, CLAUDE.md anti-pattern 목록 23개로.
+  회귀: `src/tests/test_narrative_composer.py` 에 복원/모호어 제외/idempotent 3종 추가.
+- **발행본 정정(소급)**: 이미 나간 보고서는 VM 에서 `scripts/patch_report.py <id>
+  --replace "더블유티아이=WTI" ... --broadcast` 로 개별 정정(URL 보존).
 
 ## v7.6.3 — narration 비문·누락 보정 (3차 음성 검수)
 
