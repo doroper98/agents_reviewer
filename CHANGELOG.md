@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.6
+last_synced_with: v7.9.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.7 — 발행본 한정 기승전결 스크롤 아크 워터마크 제거 옵션 (patch_report --strip-arc, 사용자 요청)
+
+특정 발행본 마지막 섹션의 기승전결(起承轉結) 배경 워터마크 "結" 이 어색하다는 지적
+(이 보고서 한정). `V7_SCROLL_ARC` 기능 자체는 유지한 채 *발행본 한 건만* 워터마크를
+빼도록 `FullAnalysisResult.disable_scroll_arc`(default False, byte-equal) 추가 +
+`report_synthesizer` 가 이 플래그를 존중해 scroll_arc 미빌드 + `patch_report.py --strip-arc`
+가 플래그 세팅 후 재렌더(표현 변경 → render_revision 소수부 +1, 동일 URL). 구 보고서
+JSON 은 기본 False(하위호환). DATA_MODELS §3.C 갱신.
 
 ## v7.9.6 — 보고서 고유명사 원어 표기 보존, 음성 내레이션과 분리 (WRITE-AP-24, 사용자 catch)
 

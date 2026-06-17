@@ -1118,8 +1118,14 @@ class ReportSynthesizer:
             from src.timeline_flow import build_timeline_flow
             # V7 Track B — 기승전결 스크롤 아크 (flag OFF = None → 템플릿 분기
             # 전부 미진입 = v6.2.0 byte-equal 출력). 매핑 실패가 발행을 막지 않음.
+            # v7.9.7 — result.disable_scroll_arc 면 기능이 켜져 있어도 이 보고서만 skip
+            # (patch_report --strip-arc, 발행본 한 건 워터마크 제거).
             scroll_arc = None
-            if getattr(self.config, "enable_scroll_arc", False) and result.composed_report:
+            if (
+                getattr(self.config, "enable_scroll_arc", False)
+                and not getattr(result, "disable_scroll_arc", False)
+                and result.composed_report
+            ):
                 try:
                     from src.visual.scroll_arc import build_scroll_arc
                     scroll_arc = build_scroll_arc(result.composed_report)

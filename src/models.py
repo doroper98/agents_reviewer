@@ -1016,6 +1016,11 @@ class FullAnalysisResult(BaseModel):
     차트 레이아웃·정적 자산(charts.js 등) 만 바뀐 재렌더 (--rerender-only) 마다 +1.
     예: 데이터 1회 + 재렌더 2회 → revision=1, render_revision=2 → 'Rev 1.2'.
     데이터(정수부) 변경 시 0 으로 리셋."""
+    disable_scroll_arc: bool = False
+    """이 보고서 한정 기승전결(起承轉結) 스크롤 아크 워터마크 비활성 (v7.9.7).
+    V7_SCROLL_ARC 기능 자체는 켜둔 채 *발행본 한 건만* 워터마크를 빼고 싶을 때
+    patch_report.py --strip-arc 가 True 로 세팅. report_synthesizer 가 이 플래그를
+    존중해 scroll_arc 를 빌드하지 않음. 디폴트 False = 기존 동작(byte-equal)."""
 
     @property
     def revision_label(self) -> str:

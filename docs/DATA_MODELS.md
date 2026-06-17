@@ -153,6 +153,7 @@ NarrativeComposer (Opus 4.7) 의 단일 호출 산출. v4.0.0 부터 `freeform_e
 - `revision` (v4.5.5): **내용/데이터 수정 횟수 (정수부)**. 0 = 최초 생성, 1+ = patch_report.py 의 데이터 변경 패치(--replace/--add-footnote/--edit/--recompose 등). v4.5.6 부터 0 도 항상 hero eyebrow 에 표기.
 - `render_revision` (v6.0.5): **표현/레이아웃 수정 횟수 (소수부)**. 내용은 그대로 두고 양식·차트 레이아웃·정적 자산(charts.js 등)만 바뀐 `--rerender-only` 마다 +1. 데이터(정수부) 변경 시 0 리셋. 구 보고서 JSON 엔 없음 → 기본 0 (하위호환).
 - `revision_label` (property, v6.0.5): 발행본 표기용 `'major.minor'` 문자열 (예: `'1.2'` = 내용 1회 + 재렌더 2회). 진짜 소수가 아닌 major.minor 라 `1.10 > 1.9`. hero eyebrow 가 `Rev {revision_label}` 로 렌더.
+- `disable_scroll_arc` (v7.9.7): **이 보고서 한정 기승전결(起承轉結) 스크롤 아크 워터마크 비활성**. `V7_SCROLL_ARC` 기능 자체는 켜둔 채 발행본 한 건만 워터마크를 뺄 때 `patch_report.py --strip-arc` 가 True 세팅 → `report_synthesizer` 가 존중해 scroll_arc 미빌드. 디폴트 False = 기존 동작(byte-equal), 구 보고서 JSON 엔 없음 → 기본 False (하위호환).
 - `analysis_timestamp`, `total_duration_seconds`: 메타데이터.
 - (legacy optional) `strategy`, `blocks`, `findings`, `judgment`, `players`, `dynamics`, `chain_reaction`, `scenarios`, `visuals`: v3 시대 흐름의 잔존 필드. v4.5.7 호출 경로에서는 None.
 

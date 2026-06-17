@@ -60,6 +60,10 @@
   python scripts/patch_report.py 20260502_154823 --rerender-only
       수정 없이 재렌더만 (정적 자산 + HTML 갱신용)
 
+  python scripts/patch_report.py 20260617_061707_cfcb75d0f8 --strip-arc
+      이 발행본 한정 기승전결(起承轉結) 스크롤 아크 배경 워터마크 제거
+      (V7_SCROLL_ARC 기능 자체는 유지, render_revision 소수부 +1)
+
   python scripts/patch_report.py 20260502_154823 --no-deploy
       로컬 파일만 갱신, Cloudflare 배포 X
 
@@ -235,6 +239,13 @@ def parse_args() -> argparse.Namespace:
         "--rerender-only",
         action="store_true",
         help="수정 없이 재렌더만 (정적 자산 / 새 charts.js 적용용).",
+    )
+    p.add_argument(
+        "--strip-arc",
+        action="store_true",
+        help="이 발행본 한정 기승전결(起承轉結) 스크롤 아크 배경 워터마크 제거 "
+             "(V7_SCROLL_ARC 기능 자체는 유지). result.disable_scroll_arc 를 True 로 "
+             "세팅 후 재렌더 — 표현 변경이라 render_revision(소수부) +1.",
     )
     p.add_argument(
         "--no-deploy",
@@ -840,18 +851,28 @@ async def main() -> int:
         else:
             print("[patch] --ensure-time-series: 변경 없음 (composer 가 이미 다 박았거나 time_series 비어있음)")
 
+    # v7.9.7 — 기승전결 스크롤 아크 워터마크 이 보고서 한정 제거 (표현 변경).
+    strip_arc_applied = False
+    if args.strip_arc:
+        if getattr(result, "disable_scroll_arc", False):
+            print("[patch] --strip-arc: 이미 비활성 — 변경 없음 (재렌더만 진행).")
+        else:
+            result.disable_scroll_arc = True
+            print("[patch] --strip-arc: 기승전결 스크롤 아크 워터마크 제거 (이 보고서 한정).")
+        strip_arc_applied = True
+
     # 리비전 관리 (v6.0.5 — major.minor 분리).
     #  - 내용/데이터 변경 (mutated 또는 --edit) → 정수부 +1, 소수부(render) 0 리셋.
     #    --edit 는 raw JSON 직접 편집 → 변경 여부 모르니 안전하게 데이터 변경으로 취급.
-    #  - 표현/레이아웃만 변경 (--rerender-only, 새 charts.js/CSS 적용 등) → 소수부 +1.
-    #    이전(v4.5.5~v6.0.4)엔 --rerender-only 가 revision 을 아예 안 올려 "바뀐 게
-    #    맞나" 추적 불가였다. 이제 소수부로 표현 변경 이력을 남긴다.
+    #  - 표현/레이아웃만 변경 (--rerender-only, --strip-arc, 새 charts.js/CSS 적용 등)
+    #    → 소수부 +1. 이전(v4.5.5~v6.0.4)엔 --rerender-only 가 revision 을 아예 안 올려
+    #    "바뀐 게 맞나" 추적 불가였다. 이제 소수부로 표현 변경 이력을 남긴다.
     if mutated or args.edit:
         result.revision = (getattr(result, "revision", 0) or 0) + 1
         result.render_revision = 0
         write_json(result, json_path)
         print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision_label} · 내용 변경)")
-    elif args.rerender_only:
+    elif args.rerender_only or strip_arc_applied:
         result.render_revision = (getattr(result, "render_revision", 0) or 0) + 1
         write_json(result, json_path)
         print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision_label} · 표현/레이아웃 변경)")
