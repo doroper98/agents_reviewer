@@ -231,6 +231,7 @@ def build_snapshot(
     vkospi: float | None = None,
     risk_free: float = DEFAULT_RISK_FREE,
     notable_n: int = 3,
+    notable_band: float = 0.15,
 ) -> DerivativesSnapshot:
     """raw KRX rows → DerivativesSnapshot (IV·그릭·PCR·max pain·관심 행사가·key_figures).
 
@@ -302,16 +303,25 @@ def build_snapshot(
         if ivs:
             snap.atm_iv = sum(ivs) / len(ivs)
 
-    # 관심 콜·풋: OI 우선, 동률이면 거래량. 그릭 있는 것만.
+    # 관심 콜·풋: 현물 ±notable_band 밴드 안(의사결정 관련 행사가)에서 OI 우선,
+    # 동률이면 거래량. 그릭 있는 것만. 딥OTM 꼬리(미결제만 큰 복권)는 제외해도
+    # 스큐·PCR·max pain 엔 계속 반영됨. 밴드 안 후보가 부족하면 전체로 완화.
     def _rank(o: OptionQuote) -> tuple[float, float]:
         return (o.oi or 0.0, o.volume or 0.0)
 
-    snap.notable_calls = sorted(
-        [o for o in calls if o.greeks is not None], key=_rank, reverse=True,
-    )[:notable_n]
-    snap.notable_puts = sorted(
-        [o for o in puts if o.greeks is not None], key=_rank, reverse=True,
-    )[:notable_n]
+    def _in_band(o: OptionQuote) -> bool:
+        if not spot:
+            return True
+        return spot * (1.0 - notable_band) <= o.strike <= spot * (1.0 + notable_band)
+
+    def _pick(side: list[OptionQuote]) -> list[OptionQuote]:
+        graded = [o for o in side if o.greeks is not None]
+        banded = [o for o in graded if _in_band(o)]
+        pool = banded if len(banded) >= notable_n else graded
+        return sorted(pool, key=_rank, reverse=True)[:notable_n]
+
+    snap.notable_calls = _pick(calls)
+    snap.notable_puts = _pick(puts)
 
     snap.key_figures = _build_key_figures(snap)
     return snap

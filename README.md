@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v7.9.3
+last_synced_with: v7.9.4
 ssot_for:
   - "저장소 진입점 (50초 안에 무엇이고 어디로 가야 할지 알 수 있게 함)"
 depends_on:

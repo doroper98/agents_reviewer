@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.3
+last_synced_with: v7.9.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.4 — 관심 행사가를 현물 ±15% 밴드로 (딥OTM 꼬리 제외)
+
+VM 실측에서 그릭은 정상 산출됐으나 '관심 풋옵션'이 현물 1406 대비 545/800/1000 같은
+딥OTM 꼬리(미결제만 큰 복권, 델타 ≈0)로 잡혀 의사결정 가치가 낮았다. `build_snapshot`
+의 관심 콜/풋 선정을 **현물 ±15%(`notable_band`) 밴드 안**에서 OI·거래량 상위로 제한 —
+지지·저항·매물벽으로 실제 의미 있는 행사가를 노출. 딥꼬리는 스큐·풋콜비율·max pain 엔
+계속 반영(제외 아님). 밴드 안 후보 부족 시 전체로 완화. 회귀 30종 통과.
 
 ## v7.9.3 — 옵션 그릭 산출 fix + CLI 로그인 (VM 실측 후속)
 
