@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.6.4
+last_synced_with: v7.9.6
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -565,6 +565,33 @@ codex 검수·Opus 보완 3곳에 동일 주입. ③ codex error_class `wrong_ti
 역매핑 — 'S-1=에스원' 보안회사 명 같은 모호어 제외) + `headline`/`deck`/`prose` 누수는
 warn-only(편집체 보존). 숫자·% 는 결정적 변환이 오역 위험이라 프롬프트 전담. `_sanitize_symbols`
 끝에서 호출(orchestrator 최종 패스로 전 경로 보장).
+
+## WRITE-AP-24: 고유명사 한글 음차가 보고서 본문으로 누수 (v7.9.6 신설, 사용자 catch)
+
+**증상**: 영상 음성 대본(`narration_tts`)에서나 쓰는 *한글 음차* 가 보고서 본문(prose/
+headline/deck/heading/각주/`broadcast_summary`)에 박혔다. 예: `DeepSeek`이 "딥시크",
+`Copilot Cowork`가 "코파일럿 코워크", `OpenAI`가 "오픈AI", `Anthropic`이 "앤트로픽",
+`Azure`가 "애저", `Fable 5`가 "페이블 5", 일반 용어 `opt-in`이 "옵트인" 으로. 통용
+표기가 로마자(영문)인 고유명사가 전부 한글로 바뀌어 나옴.
+
+**원인**: ① `=== 영상 내레이션 ===` 의 TTS §3(영문·약어·고유명사 → 한글 음 통일,
+'SK하이닉스→에스케이하이닉스')이 *같은 LLM 호출 안에서* 본문 작성까지 번져 적용됨.
+② §0.1 평이화 원칙("영어 표현을 그대로 쓰지 말고 일상어로")에 *고유명사 예외* 가
+명시돼 있지 않아 LLM 이 고유명사까지 "평이화 대상"으로 오해해 음차. WRITE-AP-23(TTS
+*발음* 표기 누수)의 자매 회귀 — 둘 다 음성 전용 표기가 *눈으로 읽는 글* 로 번진 것.
+WRITE-AP-23 이 약어·숫자·% 의 발음 표기라면, 본 건은 고유명사의 음차다.
+
+**Fix (v7.9.6 — 프롬프트 경계)**: composer SYSTEM_PROMPT 의 §0.1 최우선 원칙에
+`(1-예외)` 블록 신설 — 고유명사(회사·제품·서비스·모델·브랜드·기관명)는 평이화·음차
+대상이 아니며 원어 표기(로마자 통용명은 영문: DeepSeek/Copilot Cowork/OpenAI/Anthropic/
+Azure/Fable 5/GitHub Copilot/Meta/Mistral)를 보존한다. 한국 언론에서 한글로 굳어진
+이름(마이크로소프트·나스닥·로이터·트럼프)만 한글. 한글 음차는 `narration_tts` 전용이며
+prose·headline·deck·heading·각주·`broadcast_summary`·자막(`narration`)에는 원어 표기.
++ `broadcast_summary` 표기 레지스터·TTS 발화 규칙 ⚠️ 경계에 고유명사 음차 예시 추가.
+SSOT: [REPORT_STYLE_GUIDE.md §0.1](REPORT_STYLE_GUIDE.md) (1-예외) + [tts_narration_guide.md §0/§3](tts_narration_guide.md).
+발행본은 `scripts/patch_report.py --replace "딥시크=DeepSeek"…` + `--add-footnote`(opt-in
+용어 풀이)로 핫픽스(LLM 0, narration_tts 미변경 — `patch_replace_terms` 가 video 필드는
+건드리지 않아 음성 발음 그대로 보존).
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)

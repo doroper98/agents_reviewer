@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.5
+last_synced_with: v7.9.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,22 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.6 — 보고서 고유명사 원어 표기 보존, 음성 내레이션과 분리 (WRITE-AP-24, 사용자 catch)
+
+영상용 음성 대본(`narration_tts`)에서나 쓰는 *한글 음차* 가 보고서 본문으로 번져,
+`DeepSeek`이 "딥시크", `Copilot Cowork`가 "코파일럿 코워크", `OpenAI`가 "오픈AI",
+`Anthropic`이 "앤트로픽", `Azure`가 "애저", 일반 용어 `opt-in`이 "옵트인" 으로 나오던
+회귀. WRITE-AP-23(TTS 발음 표기 누수)의 자매 케이스다 — 음성 전용 표기가 *눈으로 읽는
+글* 로 새어 든 것. composer SYSTEM_PROMPT §0.1 에 **`(1-예외)` 고유명사 보존 블록**
+신설: 회사·제품·서비스·모델·브랜드·기관명은 평이화·음차 대상이 아니며 통용 로마자명은
+영문(DeepSeek/Copilot Cowork/OpenAI/Anthropic/Azure/Fable 5/GitHub Copilot/Meta/Mistral),
+한국 언론에서 굳어진 이름(마이크로소프트·나스닥·로이터·트럼프)만 한글. 한글 음차는
+`narration_tts` 전용이고 prose·headline·deck·heading·각주·`broadcast_summary`·자막
+(`narration`)에는 원어 표기 — 보고서와 영상 음성 내레이션을 명확히 분리. `broadcast_summary`
+표기 레지스터·TTS 발화 규칙 ⚠️ 경계에도 고유명사 음차 예시 추가. SSOT: REPORT_STYLE_GUIDE
+§0.1 (1-예외) + tts_narration_guide §0/§3. 발행본은 `scripts/patch_report.py --replace`
+(LLM 0, narration_tts 미변경 — 음성 발음 그대로) + `--add-footnote` 로 opt-in 용어 풀이.
 
 ## v7.9.5 — 장마감 브리핑 트리거 17:00 → 18:30 (데이터 정합성, 사용자 결정)
 
