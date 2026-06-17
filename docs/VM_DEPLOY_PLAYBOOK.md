@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v7.2.0
+last_synced_with: v7.9.8
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -46,14 +46,18 @@ idempotent — 봇이 떠있든 안 떠있든 같은 결과.
 (
   cd ~/agents_reviewer || exit 1
 
-  # ─── Stage 1: pull 전 working tree 정리 (VM-AP-3 가드) ───
+  # ─── Stage 1: pull 전 working tree 정리 (VM-AP-3 / VM-AP-9 / VM-AP-10 가드) ───
   # untracked(-uno) 제외 — bot.log 백업 등은 pull 을 막지 않는다 (VM-AP-7).
-  # tracked 수정(삭제된 파일의 VM 잔재 등)만 pull 차단 위험.
-  # VM-AP-9 — 봇이 자동 재생성하는 미러 산출물(reports/README.md)은 pull 을 막는
-  # 단골 잔재 (2026-06-11 하루 3회 재발). 자동 폐기 후 진행 — 다음 미러 때 재생성됨.
-  if git status --porcelain --untracked-files=no | grep -q '^ M reports/README.md$'; then
-    echo "ⓘ reports/README.md 미러 잔재 자동 폐기 (VM-AP-9 — 봇이 재생성)"
-    git checkout -- reports/README.md
+  # reports/ 하위는 전부 봇·mirror·patch_report 가 재생성하는 산출물 — origin/main
+  # (mirror API push) + Cloudflare(live) 가 정본이라 로컬 수정본은 pull 을 막는
+  # 단골 잔재다. VM-AP-9(README.md, 2026-06-11) → VM-AP-10(analysis_* 패치 산출물,
+  # 2026-06-17 — patch_report 가 reports/*.json/html/md/bundle 를 로컬 write 하나
+  # 커밋은 mirror API 가 origin 에 직접 푸시해 로컬 working tree 만 diverge)으로
+  # 일반화: reports/ 의 tracked 수정은 자동 폐기 후 진행 (pull 이 origin 의 정본 회복).
+  if git status --porcelain --untracked-files=no | grep -q '^ M reports/'; then
+    echo "ⓘ reports/ 미러 산출물 로컬 수정 자동 폐기 (VM-AP-9/10 — origin+Cloudflare 가 정본):"
+    git status --porcelain --untracked-files=no | grep '^ M reports/' | sed 's/^ M //'
+    git checkout -- reports/
   fi
   DIRTY=$(git status --porcelain --untracked-files=no)
   if [ -n "$DIRTY" ]; then
@@ -285,7 +289,27 @@ overwritten" 로 중단 → 사용자에겐 "pull 했는데 버전이 안 올라
 
 **Fix**: §1 Stage 1 에 자동 가드 — 잔재가 정확히 `reports/README.md` 면 자동
 `git checkout --` 후 진행 (자동 재생성 파일이라 폐기 안전). 그 외 파일이 함께 dirty
-면 기존대로 멈추고 사람이 판단.
+면 기존대로 멈추고 사람이 판단. **(v7.9.8 — VM-AP-10 으로 일반화: reports/ 전체로 확대.)**
+
+---
+
+### VM-AP-10 — patch_report 가 남긴 reports/analysis_* 산출물이 pull 을 차단 (2026-06-17 발생)
+
+**증상**: `patch_report.py`(--replace / --strip-arc / --rerender-only) 를 VM 에서 돌린 뒤
+재배포하면 Stage 1 가드가 ` M reports/analysis_20260617_*.{json,html,md,bundle.json}`
+8개를 잡고 멈춤 → 사용자에겐 "pull 이 또 막힌다" 로 보임. VM-AP-9 의 형제 회귀
+(README.md → 패치된 보고서 산출물로 확대).
+
+**원인**: `patch_report` 가 `reports/<id>.{json,html,md,bundle.json}` 를 **로컬 working
+tree 에 write** 하지만, 그 변경의 git 커밋은 `github_mirror`(GitHub Contents API)가
+**origin/main 에 직접 푸시**한다 (로컬 `git commit` 경유 X). 결과로 로컬 HEAD 는 그대로인데
+working tree 만 patched 버전으로 diverge → 다음 pull 이 "local changes would be overwritten"
+로 차단. origin/main(mirror push) + Cloudflare(live) 가 이미 정본이라 로컬본은 잉여.
+
+**Fix (v7.9.8)**: §1 Stage 1 가드를 `reports/README.md` 단독 → **`^ M reports/` 전체**로
+일반화. reports/ 하위 tracked 수정은 전부 자동 `git checkout -- reports/` 후 진행 (pull 이
+origin 의 정본 회복, Cloudflare live 는 git 과 무관하게 보존). 폐기 전 목록을 echo 로 표시.
+reports/ 밖 파일이 dirty 면 기존대로 멈추고 사람 판단.
 
 ---
 
