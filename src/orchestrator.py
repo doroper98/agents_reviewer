@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v7.9.8"
+VERSION = "v7.9.9"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1567,6 +1567,9 @@ class Orchestrator:
         # 이미 소비하는 key_figures 로 병합(실수치를 본문에 노출). breadth 의 decline-ratio
         # line 차트는 compose 후 결정적으로 주입(아래). 모든 fetch 는 graceful degrade.
         breadth_charts: list[dict] = []
+        derivatives_charts: list[dict] = []
+        index_ohlc: dict[str, list[dict]] = {}
+        kospi_candle_card: dict | None = None
         if fetch_kr_market_internals:
             from datetime import date as _date
             _anchor = None
@@ -1589,9 +1592,11 @@ class Orchestrator:
                         result.context.key_figures = (
                             list(result.context.key_figures or []) + dsnap.key_figures
                         )
+                    # v7.9.9 — 옵션 데스크 직관 차트(IV 스큐·풋콜·OI) 결정적 주입용.
+                    derivatives_charts = list(dsnap.charts)
                     logger.info(
-                        "[orchestrator] derivatives: +%d key_figures (warn=%d)",
-                        len(dsnap.key_figures), len(dsnap.warnings),
+                        "[orchestrator] derivatives: +%d key_figures, %d charts (warn=%d)",
+                        len(dsnap.key_figures), len(derivatives_charts), len(dsnap.warnings),
                     )
                 except Exception as _e:  # pragma: no cover — fetch 실패가 보고서 흐름 영향 X
                     logger.warning("[orchestrator] derivatives_fetch skipped: %s", _e)
@@ -1628,6 +1633,37 @@ class Orchestrator:
                     )
                 except Exception as _e:  # pragma: no cover — fetch 실패가 보고서 흐름 영향 X
                     logger.warning("[orchestrator] breadth_fetch skipped: %s", _e)
+
+            # (3) v7.9.9 — combo_candle(하락비율+지수, item2) + 코스피 캔들 카드(item1)용 지수 OHLC.
+            for s in (getattr(result.context, "time_series", None) or []):
+                nm = str(s.get("instrument", ""))
+                mkt = (
+                    "KOSPI" if ("코스피" in nm or "KOSPI" in nm.upper())
+                    else ("KOSDAQ" if ("코스닥" in nm or "KOSDAQ" in nm.upper()) else None)
+                )
+                if mkt and s.get("data"):
+                    index_ohlc[mkt] = [d for d in s["data"] if d.get("high") is not None]
+            # item1 — 코스피 종합지수 *3개월* 캔들 + 20일 이동평균선 (대표 이평선). 브리핑
+            # 기본 fetch 는 1M 이라 20일선이 안 그려져, 이 카드만 3M 을 따로 받는다.
+            try:
+                from src.tools.market_fetcher import fetch_many as _fm_k
+                _k3 = await _fm_k(["코스피"], period="3M", config=self.config, anchor_date=_anchor)
+                _rows = ((_k3[0].model_dump().get("data") if _k3 else None) or [])
+                _rows = [r for r in _rows if r.get("high") is not None and r.get("close") is not None]
+                if len(_rows) >= 20:
+                    kospi_candle_card = {
+                        "type": "candle",
+                        "title": "코스피 종합지수",
+                        "data": _rows,
+                        "moving_average": {"period": 20, "label": "20일 이동평균"},
+                        "source": "Yahoo Finance / 최근 3개월 / 일간",
+                        "note": (
+                            "최근 3개월 일봉 캔들 + 20일 이동평균선. 종가가 이동평균선 위에 "
+                            "있으면 단기 상승 추세, 아래면 하락 추세로 본다."
+                        ),
+                    }
+            except Exception as _e:  # pragma: no cover
+                logger.warning("[orchestrator] kospi 3M candle skipped: %s", _e)
 
         # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
         # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로
@@ -1767,26 +1803,73 @@ class Orchestrator:
             _densify_ts_charts(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _densify_ts_charts skipped: %s", _e)
-        # v7.9.0 — 시장 폭(breadth) decline-ratio line 차트 결정적 주입 (장마감 브리핑).
-        # composer 는 payload 에 breadth 시계열을 못 받으므로 orchestrator 가 직접 박는다.
-        # '등락/시장 폭' 다루는 섹션이 있으면 거기, 없으면 첫 섹션에 추가.
-        if breadth_charts and result.composed_report and result.composed_report.sections:
+        # v7.9.0/v7.9.9 — 장마감 브리핑 결정적 차트 주입 (composer 비의존 → 모든 브리핑 반영).
+        #  (a) breadth line → combo_candle (좌 하락비율 + 우 지수 캔들, item2)
+        #  (b) 코스피 종합지수 → 3M candle + 20일선 (item1)
+        #  (c) 옵션 데스크 직관 차트 (IV 스큐·풋콜·OI, item4/5)
+        if (
+            (breadth_charts or derivatives_charts or kospi_candle_card)
+            and result.composed_report and result.composed_report.sections
+        ):
             try:
                 secs = result.composed_report.sections
-                target = next(
-                    (s for s in secs
-                     if any(kw in (s.heading or "") for kw in ("등락", "시장 폭", "폭", "breadth"))),
-                    secs[0],
-                )
-                if target.charts is None:
-                    target.charts = []
-                target.charts = list(target.charts) + breadth_charts
+                # (a) breadth — 지수 OHLC 있으면 combo_candle, 없으면 기존 line 유지.
+                bcharts: list[dict] = []
+                for ch in breadth_charts:
+                    title = ch.get("title", "")
+                    mkt = (
+                        "KOSPI" if ("KOSPI" in title.upper() or "코스피" in title)
+                        else ("KOSDAQ" if ("KOSDAQ" in title.upper() or "코스닥" in title) else None)
+                    )
+                    ohlc = index_ohlc.get(mkt) if mkt else None
+                    if ohlc and len(ohlc) >= 3:
+                        bcharts.append({
+                            "type": "combo_candle",
+                            "title": title,
+                            "data": {
+                                "line": {"series": ch.get("data") or [], "label": "하락 종목 비율"},
+                                "candle": {"series": ohlc, "label": (mkt or "지수")},
+                            },
+                            "note": ch.get("note"),
+                            "source": ch.get("source") or "KRX 정보데이터시스템 · Yahoo Finance",
+                        })
+                    else:
+                        bcharts.append(ch)
+                if bcharts:
+                    btarget = next(
+                        (s for s in secs
+                         if any(kw in (s.heading or "") for kw in ("등락", "시장 폭", "폭", "breadth"))),
+                        secs[0],
+                    )
+                    btarget.charts = list(btarget.charts or []) + bcharts
+                # (b) 코스피 종합지수 candle 카드 — 기존 line 종합지수 카드 교체(없으면 선두 삽입).
+                if kospi_candle_card:
+                    placed = False
+                    for s in secs:
+                        for i, c in enumerate(list(s.charts or [])):
+                            ct = (c.get("title") or "") if isinstance(c, dict) else ""
+                            if "종합지수" in ct and "코스피" in ct:
+                                s.charts[i] = kospi_candle_card
+                                placed = True
+                                break
+                        if placed:
+                            break
+                    if not placed:
+                        secs[0].charts = [kospi_candle_card] + list(secs[0].charts or [])
+                # (c) 옵션 데스크 차트 — '옵션/파생/선물/데스크' 섹션, 없으면 마지막 섹션.
+                if derivatives_charts:
+                    dtarget = next(
+                        (s for s in secs
+                         if any(kw in (s.heading or "") for kw in ("옵션", "파생", "선물", "데스크"))),
+                        secs[-1],
+                    )
+                    dtarget.charts = list(dtarget.charts or []) + derivatives_charts
                 logger.info(
-                    "[orchestrator] breadth: +%d line 차트 → '%s'",
-                    len(breadth_charts), (target.heading or "")[:20],
+                    "[orchestrator] 브리핑 차트 주입: breadth=%d deriv=%d kospi_candle=%s",
+                    len(bcharts), len(derivatives_charts), bool(kospi_candle_card),
                 )
             except Exception as _e:  # pragma: no cover
-                logger.warning("[orchestrator] breadth chart inject skipped: %s", _e)
+                logger.warning("[orchestrator] 브리핑 차트 주입 skipped: %s", _e)
         # v5.6.6 — SNS broadcast 문구 결정적 폴백 (composer 누락/부분 살림본 대비).
         try:
             _ensure_broadcast_summary(result.composed_report, result.context)

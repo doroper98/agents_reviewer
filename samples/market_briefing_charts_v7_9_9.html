@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>장마감 브리핑 차트 개선 미리보기 (v7.9.9)</title>
+<style>
+  body { background:#14161c; color:#e8e6e0; font-family:'Noto Sans KR',sans-serif; margin:0; padding:28px; }
+  h1 { font-size:20px; font-weight:700; }
+  .desc { color:#9aa0aa; font-size:13px; margin:4px 0 24px; max-width:760px; line-height:1.6; }
+  .gal-type { font-family:monospace; font-size:11px; color:#c9a84c; margin:22px 0 4px; }
+  .chart-card { background:#1b1e26; border:1px solid #2a2e39; border-radius:8px; padding:16px 18px; max-width:820px; }
+  .chart-card-title { font-size:13px; font-weight:700; letter-spacing:.02em; }
+  .chart-card-subtitle { font-size:12px; color:#9aa0aa; font-style:italic; margin-top:2px; }
+  .chart-card-stage { margin-top:10px; }
+  .chart-card-stage svg { width:100%; height:auto; }
+  .chart-card-source { font-size:11px; color:#7e8490; margin-top:8px; }
+  .chart-card-source-label { color:#9aa0aa; }
+  .chart-card-note { font-size:12px; color:#aeb4be; margin-top:10px; line-height:1.6; border-top:1px solid #2a2e39; padding-top:8px; }
+</style>
+</head>
+<body>
+<h1>장마감 브리핑 차트 개선 미리보기 — v7.9.9</h1>
+<p class="desc">production charts.js 가 실제로 렌더하는 결과. 확인 포인트:
+① 코스피 캔들 + 20일 이동평균선(회색 선) ② 하락비율(좌, 흰 선) + 지수 캔들(우축) 겹침
+③ IV 스큐 scatter — 라벨 안 겹침 + ATM 가로 기준선 + 하단 설명 ④ 풋콜비율 불릿(중립 1.0 표식)
+⑤ 행사가별 미결제 발산막대 ⑥ dot_matrix 가운데 정렬.</p>
+<div id="grid"></div>
+
+<script>
+// ── 합성 데이터 (실제 브리핑은 KRX/Yahoo 실측치) ──
+function genOHLC(n, start, drift, vol) {
+  var rows = [], px = start, d = new Date(2026,2,17);
+  for (var i=0;i<n;i++){
+    var o = px;
+    var c = o * (1 + (Math.sin(i/4)*0.4 + (Math.random()-0.5))*vol + drift);
+    var hi = Math.max(o,c) * (1 + Math.random()*vol*0.5);
+    var lo = Math.min(o,c) * (1 - Math.random()*vol*0.5);
+    var ds = new Date(d.getTime() + i*86400000);
+    rows.push({ date: ds.toISOString().slice(0,10),
+      open:+o.toFixed(2), high:+hi.toFixed(2), low:+lo.toFixed(2), close:+c.toFixed(2) });
+    px = c;
+  }
+  return rows;
+}
+var kospi3m = genOHLC(64, 7200, 0.0028, 0.012);   // 3개월 ≈ 64 거래일
+var kospi1m = kospi3m.slice(-21);
+var declineKospi = kospi1m.map(function(r,i){ return { x:r.date, y:+(30+35*Math.abs(Math.sin(i/3))+ (Math.random()*8)).toFixed(1) }; });
+
+var PAYLOADS = [
+  { type:'candle', title:'코스피 종합지수', source:'Yahoo Finance / 최근 3개월 / 일간',
+    moving_average:{period:20, label:'20일 이동평균'},
+    note:'최근 3개월 일봉 캔들 + 20일 이동평균선. 종가가 이평선 위면 단기 상승 추세.',
+    data: kospi3m },
+
+  { type:'combo_candle', title:'KOSPI 하락 종목 비율 (최근 21영업일)',
+    note:'전종목 중 하락 종목 비율(%, 좌축, 흰 선). 우축은 지수 캔들. 지수는 올라도 비율이 높으면 체감 시장은 약하다.',
+    source:'KRX · Yahoo Finance',
+    data: { line:{ series: declineKospi, label:'하락 종목 비율' },
+            candle:{ series: kospi1m, label:'KOSPI' } } },
+
+  { type:'scatter', title:'행사가별 내재변동성 (KOSPI200 7월물)',
+    subtitle:'점이 기준선 위면 그 행사가 옵션이 등가격보다 비싸게 거래된다는 뜻',
+    x_label:'행사가', y_label:'내재변동성 (%)',
+    annotations:[{ kind:'hline', y:69.3, label:'ATM IV (등가격 기준선)' }],
+    note:'내재변동성(IV)은 옵션 가격에 녹아든 시장의 변동 예상치다. 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 같은 변동성으로 거래된다고 가정한 수평선이다. 외가격 풋의 점이 기준선 위로 솟으면(스큐) 시장이 하락 꼬리를 더 비싸게 사고 있다는 신호다.',
+    source:'KRX 종가에서 산출 / 2026-06-17',
+    data:[ {x:1250,y:78.0,label:'풋 1,250',accent:true},{x:1300,y:75.1,label:'풋 1,300'},
+           {x:1400,y:68.2,label:'풋 1,400'},{x:1462.5,y:67.4,label:'콜 1,462.5'},
+           {x:1525,y:67.9,label:'풋 1,525'},{x:1527.5,y:68.0,label:'콜 1,527.5'} ] },
+
+  { type:'bullet', title:'풋/콜 비율 — 중립(1.0) 대비',
+    note:'풋 거래량을 콜 거래량으로 나눈 값. 세로 표식(1.0)이 중립선. 1보다 크면 하방 헤지·약세 우세, 극단적으로 높으면 단기 바닥 역지표로도 읽힌다.',
+    source:'KRX / 2026-06-17 (활성 만기 202607)',
+    data:[{ label:'풋콜비율(거래량)', value:10.43, target:1.0, ranges:[1.0,6.0,11.0] }] },
+
+  { type:'diverging_bar', title:'행사가별 미결제약정 — 콜(우) vs 풋(좌)',
+    note:'행사가마다 남은 계약 수(미결제약정). 두꺼운 행사가는 매물벽 — 만기 부근 지수를 끌어당기는 max pain 자석이 되기 쉽다. 풋이 쌓인 아래는 지지, 콜이 쌓인 위는 저항.',
+    source:'KRX / 2026-06-17',
+    data:[{label:'1300',neg:42000,pos:8000},{label:'1350',neg:51000,pos:15000},
+          {label:'1400',neg:38000,pos:31000},{label:'1450',neg:21000,pos:44000},
+          {label:'1500',neg:9000,pos:58000},{label:'1550',neg:4000,pos:33000}] },
+
+  { type:'dot_matrix', title:'오늘 코스피 100종목 중 등락 분포', subtitle:'지수 +1.58% 이면에서 절반 이상이 하락',
+    data:[{label:'하락',value:55,accent:true},{label:'상승',value:39},{label:'보합',value:6}] }
+];
+
+(function () {
+  var grid = document.getElementById('grid');
+  PAYLOADS.forEach(function (p, i) {
+    var wrap = document.createElement('div');
+    wrap.innerHTML = '<div class="gal-type">' + p.type + '</div>' +
+      '<div class="chart-card">' +
+        '<div class="chart-card-title">' + p.title + '</div>' +
+        (p.subtitle ? '<div class="chart-card-subtitle">' + p.subtitle + '</div>' : '') +
+        '<div class="chart-card-stage chart-stage-' + p.type + '" data-chart-type="' + p.type + '" data-chart-id="mb-' + i + '"><svg></svg></div>' +
+        (p.source ? '<div class="chart-card-source"><span class="chart-card-source-label">출처:</span> ' + p.source + '</div>' : '') +
+        (p.note ? '<div class="chart-card-note">' + p.note + '</div>' : '') +
+      '</div>';
+    var script = document.createElement('script');
+    script.type = 'application/json';
+    script.className = 'chart-payload-inline';
+    script.textContent = JSON.stringify(p);
+    wrap.querySelector('.chart-card').appendChild(script);
+    grid.appendChild(wrap);
+  });
+})();
+</script>
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="../src/templates/static/charts.js"></script>
+</body>
+</html>

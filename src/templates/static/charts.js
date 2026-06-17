@@ -1426,6 +1426,33 @@
         .attr('stroke', col).attr('stroke-width', 1);
     });
 
+    // v7.9.9 — 대표 이동평균선 오버레이 (item 1, 사용자 요청). payload.moving_average
+    // = {period:N, label} 또는 숫자 N. close 의 단순이동평균(SMA)을 캔들 위에 선으로.
+    const maCfg = payload.moving_average;
+    if (maCfg) {
+      const period = Math.max(2, +(maCfg.period || maCfg) || 20);
+      const maLabel = maCfg.label || `${period}일 이동평균`;
+      const maPts = [];
+      raw.forEach((d, i) => {
+        if (i < period - 1) return;
+        let s = 0;
+        for (let j = i - period + 1; j <= i; j += 1) s += +raw[j].close;
+        maPts.push({ cx: x(String(d.date)) + x.bandwidth() / 2, cy: y(s / period) });
+      });
+      if (maPts.length >= 2) {
+        const ln = d3.line().x(p => p.cx).y(p => p.cy).curve(d3.curveLinear);
+        svg.append('path').attr('d', ln(maPts)).attr('fill', 'none')
+          .attr('stroke', t.muted).attr('stroke-width', 1.5).attr('stroke-opacity', 0.92);
+        // 범례 — 좌상단, 선 견본 + 라벨
+        svg.append('line').attr('x1', zones.data.x + 2).attr('x2', zones.data.x + 20)
+          .attr('y1', zones.data.y + 8).attr('y2', zones.data.y + 8)
+          .attr('stroke', t.muted).attr('stroke-width', 1.5);
+        svg.append('text').attr('x', zones.data.x + 25).attr('y', zones.data.y + 11)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.muted)
+          .text(maLabel);
+      }
+    }
+
     // X labels — sparse, MM-DD
     const step = Math.max(1, Math.ceil(raw.length / 7));
     raw.forEach((d, i) => {
@@ -3042,6 +3069,94 @@
   }
 
   // ============================================================
+  // ----- COMBO_CANDLE (좌축 비율 line + 우축 지수 candle) -----
+  // v7.9.9 — 장마감 브리핑: 하락 종목 비율(좌, %) 위에 지수(우)를 캔들로 겹쳐,
+  // '지수는 올랐는데 체감(폭)은 약하다' 같은 괴리를 한 차트에서 읽게 한다.
+  // data: { line: {series:[{x,y}], label}, candle: {series:[{date,open,high,low,close}], label} }
+  function drawComboCandle(stage, payload, t) {
+    const lineS = payload.data && payload.data.line;
+    const candleS = payload.data && payload.data.candle;
+    if (!lineS || !candleS || !(lineS.series || []).length || !(candleS.series || []).length) return;
+    const W = 760, H = 340;
+    const zones = computeZones(W, H, { left: 52, right: 66, top: 54, bottom: 40 });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const xVals = Array.from(new Set([
+      ...lineS.series.map(d => String(d.x)),
+      ...candleS.series.map(d => String(d.date)),
+    ])).sort();
+    const xScale = d3.scalePoint().domain(xVals)
+      .range([zones.data.x, zones.data.x + zones.data.w]).padding(0.5);
+    // 좌축 — 비율(line). 0~max(100) 고정 하한 0.
+    const yLmax = Math.max(100, d3.max(lineS.series, d => +d.y) || 100);
+    const yL = d3.scaleLinear().domain([0, yLmax]).range([zones.data.y + zones.data.h, zones.data.y]);
+    // 우축 — 지수(candle).
+    const cMin = d3.min(candleS.series, d => +d.low);
+    const cMax = d3.max(candleS.series, d => +d.high);
+    const cPad = (cMax - cMin) * 0.08 || 1;
+    const yR = d3.scaleLinear().domain([cMin - cPad, cMax + cPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    // grid + 좌축 라벨
+    yL.ticks(5).forEach(v => {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yL(v)).attr('y2', yL(v))
+        .attr('stroke', t.muted).attr('stroke-opacity', 0.14).attr('stroke-width', 0.5);
+      svg.append('text').attr('x', zones.data.x - 6).attr('y', yL(v) + 3).attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+        .text(v);
+    });
+    // 50% 기준선 (하락 우위 경계) — 점선 강조
+    svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+      .attr('y1', yL(50)).attr('y2', yL(50)).attr('stroke', t.muted)
+      .attr('stroke-width', 0.8).attr('stroke-dasharray', '3 3').attr('stroke-opacity', 0.5);
+    // 우축 라벨 (accent)
+    yR.ticks(5).forEach(v => {
+      svg.append('text').attr('x', zones.data.x + zones.data.w + 6).attr('y', yR(v) + 3)
+        .attr('text-anchor', 'start').attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 9).attr('fill', t.accent).attr('fill-opacity', 0.85)
+        .text(v >= 1000 ? d3.format(',.0f')(v) : d3.format('.1f')(v));
+    });
+    // 캔들 (우축) — 배경
+    const step = zones.data.w / Math.max(1, xVals.length);
+    const bw = Math.max(2.5, step * 0.5);
+    candleS.series.forEach(d => {
+      const cx = xScale(String(d.date));
+      if (cx == null || !isFinite(+d.close)) return;
+      const up = +d.close >= +d.open;
+      const col = up ? t.accent : (t.down || '#C45C4C');
+      svg.append('line').attr('x1', cx).attr('x2', cx)
+        .attr('y1', yR(+d.high)).attr('y2', yR(+d.low))
+        .attr('stroke', col).attr('stroke-width', 0.9).attr('stroke-opacity', 0.8);
+      const yTop = Math.min(yR(+d.open), yR(+d.close));
+      const bh = Math.max(1, Math.abs(yR(+d.close) - yR(+d.open)));
+      svg.append('rect').attr('x', cx - bw / 2).attr('y', yTop)
+        .attr('width', bw).attr('height', bh)
+        .attr('fill', up ? 'none' : col).attr('stroke', col)
+        .attr('stroke-width', 1).attr('opacity', 0.8);
+    });
+    // 비율 line (좌축) — 전경
+    const ln = d3.line().x(d => xScale(String(d.x))).y(d => yL(+d.y))
+      .defined(d => xScale(String(d.x)) != null && isFinite(+d.y)).curve(d3.curveLinear);
+    svg.append('path').attr('d', ln(lineS.series)).attr('fill', 'none')
+      .attr('stroke', t.text).attr('stroke-width', 1.9);
+    // x 라벨 (sparse)
+    const xstep = Math.max(1, Math.ceil(xVals.length / 7));
+    xVals.forEach((xv, i) => {
+      if (i % xstep !== 0 && i !== xVals.length - 1) return;
+      const cx = xScale(xv);
+      svg.append('text').attr('x', cx).attr('y', zones.data.y + zones.data.h + 16)
+        .attr('text-anchor', 'middle').attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 9).attr('fill', t.muted).text(String(xv).slice(5));
+    });
+    // 범례 (상단 2줄)
+    svg.append('text').attr('x', zones.data.x).attr('y', zones.data.y - 30)
+      .attr('font-family', 'Noto Sans KR').attr('font-size', 10.5).attr('fill', t.text)
+      .text(`${lineS.label || '하락 종목 비율'} (좌, %)`);
+    svg.append('text').attr('x', zones.data.x).attr('y', zones.data.y - 14)
+      .attr('font-family', 'Noto Sans KR').attr('font-size', 10.5).attr('fill', t.accent)
+      .text(`${candleS.label || '지수'} (우, 캔들)`);
+  }
+
   // Dispatcher
   // ============================================================
   const RENDERERS = {
@@ -3061,6 +3176,8 @@
     // v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종
     combo: drawCombo, diverging_bar: drawDivergingBar,
     pyramid: drawPyramid, dot_matrix: drawDotMatrix,
+    // v7.9.9 — 좌축 line(비율) + 우축 candle(지수) 결합 (장마감 브리핑 breadth)
+    combo_candle: drawComboCandle,
   };
 
   async function renderStage(stage, idx) {

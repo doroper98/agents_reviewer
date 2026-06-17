@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.8
+last_synced_with: v7.9.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.9 — 장마감 브리핑 차트 직관화: 코스피 캔들+이평선·하락비율 이중축·옵션 데스크 비주얼 (사용자 요청)
+
+장마감 브리핑(analysis_20260617_184440) 차트 개선 4종을 *소스에 결정적으로* 박아
+모든 향후 브리핑에 자동 반영(composer 비의존). ① **코스피 종합지수 candle + 20일
+이동평균선** — 카드만 3개월 따로 fetch(20일선이 의미 있도록), `drawCandle` 에 SMA
+오버레이 추가(`moving_average` 필드). ② **하락 종목 비율 + 지수 캔들 이중축** — 신규
+`combo_candle` 렌더러(좌축 비율 line + 우축 지수 candle, 50% 기준선), orchestrator 가
+breadth line 을 지수 OHLC 와 결합해 주입. ③ **옵션 데스크 직관 비주얼 3종** —
+`derivatives_fetcher.build_derivatives_charts` 가 IV 스큐 scatter(+ATM 기준선 hline +
+하단 설명)·풋콜비율 bullet(중립 1.0 대비)·행사가별 미결제 diverging_bar 를 결정적 생성,
+orchestrator 가 옵션 섹션에 주입(서술 위주이던 섹션에 시인성). ④ **'최대고통' → 'max
+pain'** — 아무도 안 쓰는 직역어 제거(WRITE-AP-24, derivatives_fetcher/prompt/persona).
+미리보기 목업 `samples/market_briefing_charts_v7_9_9.html`. 발행본 184440 은 max pain
+텍스트(--replace)+렌더러 fix(charts.js)만 소급 적용 가능 — 캔들·combo·옵션 차트는
+데이터 구조 변경이라 *다음 브리핑부터* 반영. (v7.9.8 의 scatter 라벨 dodge·dot_matrix
+중앙정렬은 이미 적용.)
 
 ## v7.9.8 — scatter 라벨 충돌 + dot_matrix 좌측 쏠림 fix (CHART-AP-33/34, 사용자 catch)
 

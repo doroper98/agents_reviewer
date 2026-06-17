@@ -53,6 +53,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "bump", "bullet", "connected_scatter",
     # v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종
     "combo", "diverging_bar", "pyramid", "dot_matrix",
+    # v7.9.9 — 좌축 비율 line + 우축 지수 candle (장마감 브리핑 breadth 전용, 결정적 주입)
+    "combo_candle",
     # embedded_map (별도 채널)
     "map",
 )

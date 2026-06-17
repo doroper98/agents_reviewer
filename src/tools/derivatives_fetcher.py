@@ -97,6 +97,7 @@ class DerivativesSnapshot:
     notable_puts: list[OptionQuote] = field(default_factory=list)
     atm_iv: float | None = None
     key_figures: list[dict] = field(default_factory=list)
+    charts: list[dict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     @property
@@ -324,7 +325,113 @@ def build_snapshot(
     snap.notable_puts = _pick(puts)
 
     snap.key_figures = _build_key_figures(snap)
+    snap.charts = build_derivatives_charts(snap)
     return snap
+
+
+def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
+    """snapshot → 옵션 데스크 직관 차트 (deterministic, 장마감 브리핑 전용, v7.9.9).
+
+    서술 위주이던 '옵션 시장이 보낸 신호' 섹션에 시인성 있는 비주얼을 결정적으로
+    주입(사용자 요청). composer 에 의존하지 않아 *모든* 향후 브리핑에 반영된다.
+      ① IV 스큐 scatter — 행사가별 내재변동성 + ATM 기준선(hline) + 하단 설명.
+      ② 풋/콜 비율 bullet — 중립(1.0) 대비 어느 쪽으로 기울었는지.
+      ③ 행사가별 미결제(OI) 발산 막대 — 콜(우)/풋(좌), 매물벽·max pain 위치 직관.
+    데이터 부족 항목은 해당 차트만 생략(graceful).
+    """
+    charts: list[dict] = []
+
+    # ① IV 스큐 scatter (관심 콜·풋 행사가 기준 — 보고서 점도 ~6개와 동일 소스)
+    pts: list[dict] = []
+    ivs: list[float] = []
+    for tag, items in (("콜", snap.notable_calls), ("풋", snap.notable_puts)):
+        for o in items:
+            if o.greeks is None or o.greeks.iv is None or not o.strike:
+                continue
+            iv_pct = round(o.greeks.iv * 100.0, 1)
+            pts.append({"x": float(o.strike), "y": iv_pct, "label": f"{tag} {o.strike:g}"})
+            ivs.append(iv_pct)
+    if len(pts) >= 3:
+        # 스큐 정점(IV 최고) 강조 — '풋이 콜보다 비싸다' 시각화.
+        peak = max(range(len(pts)), key=lambda i: pts[i]["y"])
+        pts[peak]["accent"] = True
+        annotations = []
+        if snap.atm_iv is not None:
+            annotations.append({
+                "kind": "hline", "y": round(snap.atm_iv * 100.0, 1),
+                "label": "ATM IV (등가격 기준선)",
+            })
+        charts.append({
+            "type": "scatter",
+            "title": f"행사가별 내재변동성 (KOSPI200 {snap.front_expiry or ''}물)".strip(),
+            "subtitle": "점이 기준선 위면 그 행사가 옵션이 등가격보다 비싸게 거래된다는 뜻",
+            "x_label": "행사가", "y_label": "내재변동성 (%)",
+            "data": pts,
+            "annotations": annotations,
+            "note": (
+                "내재변동성(IV)은 옵션 가격에 녹아든 '앞으로 이만큼 출렁일 것'이라는 "
+                "시장의 예상치다. 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 "
+                "같은 변동성으로 거래된다고 가정했을 때의 수평선이다. 실제로는 하락을 "
+                "방어하는 외가격 풋의 점이 기준선 위로 솟는다(스큐). 풋이 콜보다 비싸다는 "
+                "건 시장이 상승보다 하락 꼬리를 더 비싸게 사고 있다는 신호다."
+            ),
+            "source": f"KRX 종가에서 산출 / {snap.as_of}",
+        })
+
+    # ② 풋/콜 비율 bullet — 중립 1.0 대비
+    pcr = snap.pcr_volume if snap.pcr_volume is not None else snap.pcr_oi
+    if pcr is not None and pcr > 0:
+        charts.append({
+            "type": "bullet",
+            "title": "풋/콜 비율 — 중립(1.0) 대비",
+            "data": [{
+                "label": "풋콜비율(거래량)",
+                "value": round(float(pcr), 2),
+                "target": 1.0,
+                "ranges": [1.0, max(2.0, round(float(pcr) * 0.6, 1)), round(float(pcr) * 1.05, 1)],
+            }],
+            "note": (
+                "풋 거래량을 콜 거래량으로 나눈 값. 세로 표식(1.0)이 중립선이다. "
+                "1보다 크면 하방 헤지·약세 베팅이 우세하다는 뜻이지만, 극단적으로 높으면 "
+                "오히려 단기 바닥을 가리키는 역지표로도 읽힌다."
+            ),
+            "source": f"KRX 정보데이터시스템 / {snap.as_of} (활성 만기 {snap.front_expiry or '확인되지 않음'})",
+        })
+
+    # ③ 행사가별 미결제약정(OI) 발산 막대 — 콜(우) / 풋(좌)
+    strike_oi: dict[float, list[float]] = {}
+    for o in (snap.options or []):
+        if not o.strike or o.oi is None or o.oi <= 0:
+            continue
+        cell = strike_oi.setdefault(float(o.strike), [0.0, 0.0])
+        if o.option_type == "call":
+            cell[0] += float(o.oi)
+        else:
+            cell[1] += float(o.oi)
+    rows = [
+        {"label": f"{k:g}", "pos": v[0], "neg": v[1], "_k": k}
+        for k, v in strike_oi.items() if (v[0] > 0 or v[1] > 0)
+    ]
+    if len(rows) >= 2:
+        # OI 합 상위 ~8개 → 행사가 오름차순(위→아래) 정렬.
+        rows.sort(key=lambda r: r["pos"] + r["neg"], reverse=True)
+        rows = rows[:8]
+        rows.sort(key=lambda r: r["_k"], reverse=True)
+        for r in rows:
+            r.pop("_k", None)
+        charts.append({
+            "type": "diverging_bar",
+            "title": "행사가별 미결제약정 — 콜(우) vs 풋(좌)",
+            "data": rows,
+            "note": (
+                "행사가마다 청산되지 않고 남은 계약 수(미결제약정). 막대가 두꺼운 "
+                "행사가는 매물벽으로 작용해 만기 부근 지수를 끌어당기는 자석(max pain)이 "
+                "되기 쉽다. 풋이 쌓인 아래쪽은 지지, 콜이 쌓인 위쪽은 저항으로 읽는다."
+            ),
+            "source": f"KRX 정보데이터시스템 / {snap.as_of} (활성 만기 {snap.front_expiry or ''})".strip(),
+        })
+
+    return charts
 
 
 def _greeks_ctx(g: Greeks) -> str:
@@ -383,7 +490,7 @@ def _build_key_figures(snap: DerivativesSnapshot) -> list[dict]:
 
     if snap.max_pain is not None:
         kfs.append({
-            "label": "옵션 최대고통(max pain) 행사가",
+            "label": "옵션 max pain 행사가",
             "value": _fmt(snap.max_pain),
             "context": (
                 f"만기 부근 지수를 끌어당기는 자석 레벨 추정(행사가별 미결제 기반) {src_calc}"
