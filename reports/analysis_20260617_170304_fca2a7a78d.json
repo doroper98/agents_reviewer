@@ -3225,7 +3225,7 @@
         "images": [],
         "footnotes": [
           {
-            "term": "Copilot Cowork (Copilot Cowork)",
+            "term": "Copilot Cowork",
             "explanation": "마이크로소프트 오피스 안에서 사용자가 시킨 일을 인공지능이 스스로 여러 단계로 끊어 처리하는 업무 도구를 가리킨다."
           },
           {
@@ -3322,7 +3322,7 @@
         "images": [],
         "footnotes": [
           {
-            "term": "전문가 혼합 (MoE)",
+            "term": "전문가 혼합 (Mixture of Experts, MoE)",
             "explanation": "모델 안에 작은 전문가 여러 명을 두고, 입력마다 관련 있는 전문가만 깨워 답을 만드는 구조다. 전체를 다 굴리지 않으니 같은 일에 드는 비용이 줄어든다."
           },
           {
@@ -3640,7 +3640,7 @@
   "analysis_timestamp": "2026-06-17T16:49:41.033943+09:00",
   "total_duration_seconds": 802.7565975189209,
   "system_version": "v7.9.7",
-  "revision": 1,
+  "revision": 2,
   "render_revision": 0,
   "disable_scroll_arc": false
 }
