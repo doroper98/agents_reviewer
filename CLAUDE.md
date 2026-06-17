@@ -351,7 +351,7 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.
 
 ## 장마감 브리핑 시장 내부 데이터 — 선물·옵션 그릭 + 시장 폭 (v7.9.0)
-> **장마감 브리핑(`scheduler/market_briefing.py`) *전용*.** orchestrator `run_analysis(fetch_kr_market_internals=True)` 일 때만 작동 — 일반 `/analyze`·일일 브리핑은 default False 라 byte-equal. 모두 무로그인 `data.krx.co.kr` 공개 엔드포인트(market_fetcher 의 KRX getJsonData 와 동일 메커니즘) → 키·pykrx 로그인 불요. graceful degrade.
+> **장마감 브리핑(`scheduler/market_briefing.py`) *전용*.** orchestrator `run_analysis(fetch_kr_market_internals=True)` 일 때만 작동 — 일반 `/analyze`·일일 브리핑은 default False 라 byte-equal. data.krx.co.kr getJsonData 는 2026-06 부터 **로그인 필수**(무로그인 시 HTTP 400 'LOGOUT') → `src/tools/krx_client.py:ensure_session` 이 `Config.krx_id/krx_pw`(.env: KRX_ID/KRX_PW)로 pykrx 로그인 핸드셰이크 재사용, 인증 쿠키로 직접 POST(`asyncio.to_thread`). 자격증명 없으면 graceful skip(보고서 정상). 무료 data.krx 계정 필요.
 - **`src/tools/greeks.py`** — Black-Scholes IV 역산 + 그릭(델타/감마/세타/베가/로) + max pain/풋콜비율. 순수 stdlib(scipy 불요). 옵션 그릭 산출 SSOT. 단위 테스트 `tests/test_greeks.py`.
 - **`src/tools/derivatives_fetcher.py`** — KOSPI200 선물(MDCSTAT12501 `KRDRVFUK2I`: 종가·베이시스·미결제)·옵션 체인(`KRDRVOPK2I`: 행사가별 프리미엄·OI·거래량)→ **종가에서 IV·그릭 자체 계산** + 풋콜비율·max pain·관심 콜/풋 행사가. 결과는 `key_figures` 로 출력. `build_snapshot` 은 순수 함수(회귀 `tests/test_derivatives_fetcher.py`). 옵션 IV 무위험금리 `DERIVATIVES_RISK_FREE`(기본 0.03).
 - **`src/tools/breadth_fetcher.py`** — 전종목 시세(MDCSTAT01501 STK/KSQ)로 코스피·코스닥 등락 종목 수·하락비율(당일·5/20일)·지수 상관. 멱등 **SQLite 캐시**(`BREADTH_CACHE_PATH`, 신규 영업일만 append). decline-ratio line 차트 + `key_figures`. 회귀 `tests/test_breadth_fetcher.py`. CLI: `python -m src.tools.breadth_fetcher backfill --days 120`(이력 1회 적재).

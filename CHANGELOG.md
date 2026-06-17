@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.1
+last_synced_with: v7.9.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.2 — KRX 로그인 필수화 대응 (data.krx 'LOGOUT', VM 실측)
+
+v7.9.1(웜업+풀 UA)에도 VM 에서 여전히 HTTP 400. 응답 본문이 **`LOGOUT`** — 즉
+data.krx.co.kr 의 getJsonData 가 2026-06 부터 **로그인 필수**로 바뀌었다(무로그인 스크레이핑
+종료). pykrx 1.2.8 이 `KRX_ID`/`KRX_PW` 를 요구하게 된 것도 같은 이유였다(VM 에서 pykrx
+get_market_ohlcv 도 동일 실패 확인). krx_client 를 **pykrx 인증 세션 재사용**으로 전환 —
+`ensure_session(config)` 가 `Config.krx_id/krx_pw`(.env: KRX_ID/KRX_PW)로 pykrx 의 로그인
+핸드셰이크(`build_krx_session`)를 수행하고, 그 인증 세션 쿠키로 우리 bld/params 를 직접 POST
+(`asyncio.to_thread` 로 오프로드). aiohttp/웜업 경로 제거. 자격증명 미설정·로그인 실패는 빈
+snapshot + 안내 warning(보고서 정상 진행). **사용자 액션 필요**: 무료 data.krx.co.kr 계정
+가입 후 `.env` 에 KRX_ID/KRX_PW 설정. 순수 계산·집계(테스트 29종) 불변.
 
 ## v7.9.1 — KRX getJsonData 400 회귀 fix (세션 웜업 + 풀 UA, VM 실측)
 

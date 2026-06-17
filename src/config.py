@@ -69,6 +69,17 @@ class Config(BaseSettings):
         default="",
         validation_alias=AliasChoices("KRX_API_KEY", "krx_api_key"),
     )
+    # v7.9.2 — data.krx.co.kr getJsonData 가 로그인 필수로 바뀜(응답 'LOGOUT', HTTP 400).
+    # 무료 data.krx.co.kr 계정. pykrx 의 로그인 핸드셰이크 재사용(krx_client.ensure_session).
+    # 미설정 시 선물·옵션·breadth fetch 만 graceful skip — 보고서는 정상 진행.
+    krx_id: str = Field(
+        default="",
+        validation_alias=AliasChoices("KRX_ID", "krx_id"),
+    )
+    krx_pw: str = Field(
+        default="",
+        validation_alias=AliasChoices("KRX_PW", "krx_pw"),
+    )
 
     # v7.9.0 — 한국 장마감 브리핑 시장 내부 데이터(선물·옵션 그릭 + 시장 폭).
     # market_briefing 스케줄러가 fetch_kr_market_internals=True 로 호출할 때만 작동.

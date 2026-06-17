@@ -37,7 +37,7 @@ from src.tools.greeks import (
     max_pain,
     put_call_ratio,
 )
-from src.tools.krx_client import post_json_rows, warmup
+from src.tools.krx_client import post_json_rows
 
 if TYPE_CHECKING:
     from src.config import Config
@@ -404,14 +404,10 @@ def _build_key_figures(snap: DerivativesSnapshot) -> list[dict]:
 # ──────────────────────────────────────────────────────────────────────────
 # 네트워크 (best-effort — VM 검증)
 # ──────────────────────────────────────────────────────────────────────────
-async def _post_rows(session, bld: str, params: dict) -> list[dict]:
-    return await post_json_rows(session, bld, params)
-
-
-async def _fetch_vkospi(session, trd_dd: str) -> float | None:
+async def _fetch_vkospi(config, trd_dd: str) -> float | None:
     """전체지수 시세에서 VKOSPI 종가 스캔(best-effort)."""
     try:
-        rows = await _post_rows(session, BLD_INDEX_PRICES, {
+        rows = await post_json_rows(config, BLD_INDEX_PRICES, {
             "locale": "ko_KR", "idxIndMidclssCd": "02", "trdDd": trd_dd,
             "share": "1", "money": "1",
         })
@@ -435,8 +431,6 @@ async def fetch_kr_derivatives_snapshot(
 
     실패(네트워크/파싱/엔드포인트)는 빈 snapshot + warning — 보고서 흐름 무영향.
     """
-    import aiohttp
-
     anchor = anchor_date or date.today()
     trd_dd = anchor.strftime("%Y%m%d")
     as_of = anchor.isoformat()
@@ -452,34 +446,32 @@ async def fetch_kr_derivatives_snapshot(
     warnings: list[str] = []
 
     try:
-        timeout = aiohttp.ClientTimeout(total=timeout_s)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            await warmup(session)  # KRX 세션 쿠키 확보 (없으면 getJsonData 400)
-            results = await asyncio.gather(
-                _post_rows(session, BLD_DERIV_PRICES, {
-                    "locale": "ko_KR", "prodId": PROD_KOSPI200_FUT,
-                    "trdDd": trd_dd, "mktTpCd": "T", "rghtTpCd": "T",
-                    "share": "1", "money": "1",
-                }),
-                _post_rows(session, BLD_DERIV_PRICES, {
-                    "locale": "ko_KR", "prodId": PROD_KOSPI200_OPT,
-                    "trdDd": trd_dd, "mktTpCd": "T", "rghtTpCd": "T",
-                    "share": "1", "money": "1",
-                }),
-                _fetch_vkospi(session, trd_dd),
-                return_exceptions=True,
-            )
-            fut_res, opt_res, vk_res = results
-            if isinstance(fut_res, list):
-                fut_rows = fut_res
-            else:
-                warnings.append(f"futures fetch 실패: {fut_res}")
-            if isinstance(opt_res, list):
-                opt_rows = opt_res
-            else:
-                warnings.append(f"options fetch 실패: {opt_res}")
-            if isinstance(vk_res, (int, float)):
-                vkospi = float(vk_res)
+        # KRX 인증 세션으로 직접 POST (krx_client 가 로그인·세션 관리, 요청은 to_thread).
+        results = await asyncio.gather(
+            post_json_rows(config, BLD_DERIV_PRICES, {
+                "locale": "ko_KR", "prodId": PROD_KOSPI200_FUT,
+                "trdDd": trd_dd, "mktTpCd": "T", "rghtTpCd": "T",
+                "share": "1", "money": "1",
+            }),
+            post_json_rows(config, BLD_DERIV_PRICES, {
+                "locale": "ko_KR", "prodId": PROD_KOSPI200_OPT,
+                "trdDd": trd_dd, "mktTpCd": "T", "rghtTpCd": "T",
+                "share": "1", "money": "1",
+            }),
+            _fetch_vkospi(config, trd_dd),
+            return_exceptions=True,
+        )
+        fut_res, opt_res, vk_res = results
+        if isinstance(fut_res, list):
+            fut_rows = fut_res
+        else:
+            warnings.append(f"futures fetch 실패: {fut_res}")
+        if isinstance(opt_res, list):
+            opt_rows = opt_res
+        else:
+            warnings.append(f"options fetch 실패: {opt_res}")
+        if isinstance(vk_res, (int, float)):
+            vkospi = float(vk_res)
     except Exception as e:  # pragma: no cover — 네트워크 차단 환경
         logger.warning("[derivatives] KRX fetch 실패 (graceful skip): %s", e)
         snap = DerivativesSnapshot(as_of=as_of)

@@ -1,69 +1,96 @@
-"""KRX 정보데이터시스템(data.krx.co.kr) 공개 JSON 접근 SSOT — v7.9.1.
+"""KRX 정보데이터시스템(data.krx.co.kr) 인증 JSON 접근 SSOT — v7.9.2.
 
-derivatives_fetcher / breadth_fetcher 가 공유하는 무로그인 getJsonData 클라이언트.
+derivatives_fetcher / breadth_fetcher 가 공유하는 KRX getJsonData 클라이언트.
 
-왜 별도 모듈인가: KRX WAF 는 *콜드* POST(쿠키 없이 바로 getJsonData)를 **HTTP 400**
-으로 막는다. pykrx 가 동작하는 이유는 ① 풀 Chrome User-Agent ② 데이터 요청 전 페이지
-GET 으로 ``JSESSIONID``/``WMONID`` 쿠키를 받는 *웜업* 때문이다(VM 실측 400 회귀,
-2026-06-17). 두 fetcher 가 같은 메커니즘을 쓰도록 여기에 SSOT 로 둔다.
+⚠️ 2026-06 변경: data.krx.co.kr 의 getJsonData 가 **로그인 필수**로 바뀌었다(무로그인
+POST 는 HTTP 400 + 본문 'LOGOUT', VM 실측 2026-06-17). 따라서 KRX 계정으로 로그인한
+세션이 필요하다. pykrx 1.2.8 이 로그인 핸드셰이크(`build_krx_session` →
+warmup → MDCCOMS001D1.cmd POST → 중복로그인 skipDup 처리)를 이미 구현하므로 그
+세션을 재사용한다. 자격증명은 `Config.krx_id`/`krx_pw`(.env: KRX_ID/KRX_PW) 또는
+환경변수에서 읽는다.
 
-사용 패턴:
-    async with aiohttp.ClientSession(...) as s:   # cookie_jar 기본 ON
-        await warmup(s)                            # 쿠키 확보 (실패해도 진행)
-        rows = await post_json_rows(s, bld, params)
+설계:
+- pykrx 의 인증 세션(`auth.get_auth_session()`)을 쓰되, 요청은 우리 bld/params 로 직접
+  POST(파라미터 제어 유지). 세션이 없거나 만료면 자격증명으로 로그인.
+- 모든 호출은 sync(requests) → caller 가 ``asyncio.to_thread`` 로 감싸는 ``post_json_rows``
+  async 래퍼 제공.
+- 자격증명 없음·로그인 실패·pykrx 미설치는 *조용히* graceful — RuntimeError 를 던져
+  fetcher 의 try/except 가 빈 snapshot + warning 으로 흡수(보고서 흐름 무영향).
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.config import Config
 
 logger = logging.getLogger(__name__)
 
 KRX_JSON_URL = "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-# 웜업: 쿠키(JSESSIONID/WMONID) 확보용 GET 대상. 데이터 메뉴 로더 + 루트.
-KRX_WARMUP_URLS = (
-    "https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd",
-    "https://data.krx.co.kr/",
-)
-
-# pykrx 검증 — 풀 Chrome UA(바로 'Mozilla/5.0' 만 쓰면 400).
-_UA = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-)
-HEADERS = {
-    "User-Agent": _UA,
-    "Referer": "https://data.krx.co.kr/contents/MDC/MDI/outerLoader/index.cmd",
-    "X-Requested-With": "XMLHttpRequest",
-    "Accept": "application/json, text/javascript, */*; q=0.01",
-    "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
-}
 
 
-async def warmup(session) -> bool:
-    """데이터 요청 전 1회 — KRX 페이지 GET 으로 세션 쿠키 확보.
+def _creds(config: "Config | None") -> tuple[str, str]:
+    kid = (getattr(config, "krx_id", "") or os.getenv("KRX_ID") or "").strip()
+    kpw = (getattr(config, "krx_pw", "") or os.getenv("KRX_PW") or "").strip()
+    return kid, kpw
 
-    aiohttp ClientSession 의 cookie_jar 에 Set-Cookie 가 적재돼 이후 POST 에 자동 첨부.
-    실패해도 예외 없이 False (POST 단계에서 graceful degrade).
+
+def ensure_session(config: "Config | None"):
+    """pykrx 인증 KRXSession 보장. 없거나 만료면 자격증명으로 로그인.
+
+    반환: 유효 세션 객체 | None(자격증명 없음/로그인 실패/pykrx 미설치).
     """
-    for url in KRX_WARMUP_URLS:
-        try:
-            async with session.get(url, headers={"User-Agent": _UA}) as resp:
-                await resp.read()
-                if resp.status == 200:
-                    return True
-        except Exception as e:  # pragma: no cover — 네트워크 차단 환경
-            logger.debug("[krx] warmup GET 실패 (%s): %s", url, e)
-    return False
+    try:
+        from pykrx.website.comm import auth
+    except Exception as e:  # pragma: no cover — pykrx 미설치
+        logger.warning("[krx] pykrx import 실패: %s", e)
+        return None
+
+    sess = auth.get_auth_session()
+    try:
+        if sess is not None and sess.is_valid():
+            return sess
+    except Exception:
+        pass
+
+    kid, kpw = _creds(config)
+    if not (kid and kpw):
+        logger.warning(
+            "[krx] KRX_ID/KRX_PW 미설정 — data.krx 로그인 불가 (선물·옵션·breadth skip). "
+            "무료 data.krx.co.kr 계정 후 .env 에 KRX_ID/KRX_PW 설정."
+        )
+        return None
+
+    try:
+        new = auth.build_krx_session(kid, kpw)  # warmup + 로그인 핸드셰이크
+    except Exception as e:  # pragma: no cover
+        logger.warning("[krx] 로그인 예외: %s", e)
+        return None
+    if new is None:
+        logger.warning("[krx] 로그인 실패 — 자격증명 확인(KRX_ID/KRX_PW).")
+        return None
+    auth.set_auth_session(new)
+    return new
 
 
-async def post_json_rows(session, bld: str, params: dict) -> list[dict]:
-    """getJsonData POST → output rows. KRX 는 output / OutBlock_1 / block1 중 하나로 반환."""
+def _post_rows_sync(config: "Config | None", bld: str, params: dict) -> list[dict]:
+    """인증 세션으로 getJsonData POST → output rows (sync). 실패 시 RuntimeError."""
+    sess = ensure_session(config)
+    if sess is None:
+        raise RuntimeError("KRX 인증 세션 없음 (KRX_ID/KRX_PW 미설정 또는 로그인 실패)")
+    headers = sess.get_headers()  # User-Agent/Referer/Cookie(로그인 쿠키) 포함
     body = {"bld": bld, **params}
-    async with session.post(KRX_JSON_URL, data=body, headers=HEADERS) as resp:
-        if resp.status != 200:
-            raise RuntimeError(f"KRX {bld} HTTP {resp.status}")
-        data = await resp.json(content_type=None)
+    resp = sess.session.post(KRX_JSON_URL, data=body, headers=headers, timeout=20)
+    if resp.status_code != 200:
+        raise RuntimeError(f"KRX {bld} HTTP {resp.status_code}")
+    try:
+        data = resp.json()
+    except Exception as e:
+        raise RuntimeError(f"KRX {bld} JSON 파싱 실패: {e} (body head={resp.text[:80]!r})")
     if not isinstance(data, dict):
         return []
     for key in ("OutBlock_1", "output", "block1"):
@@ -71,3 +98,8 @@ async def post_json_rows(session, bld: str, params: dict) -> list[dict]:
         if isinstance(rows, list):
             return rows
     return []
+
+
+async def post_json_rows(config: "Config | None", bld: str, params: dict) -> list[dict]:
+    """``_post_rows_sync`` 의 async 래퍼 (requests 호출을 스레드로 오프로드)."""
+    return await asyncio.to_thread(_post_rows_sync, config, bld, params)

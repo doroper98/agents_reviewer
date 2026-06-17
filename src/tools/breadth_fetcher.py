@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
-from src.tools.krx_client import post_json_rows, warmup
+from src.tools.krx_client import post_json_rows
 
 if TYPE_CHECKING:
     from src.config import Config
@@ -301,13 +301,9 @@ def _business_days(end: date, n_back: int) -> list[date]:
 # ──────────────────────────────────────────────────────────────────────────
 # 네트워크 (best-effort — VM 검증)
 # ──────────────────────────────────────────────────────────────────────────
-async def _post_rows(session, params: dict) -> list[dict]:
-    return await post_json_rows(session, BLD_STOCK_PRICES, params)
-
-
-async def _fetch_day(session, market: str, day: date) -> DailyBreadth | None:
+async def _fetch_day(config, market: str, day: date) -> DailyBreadth | None:
     try:
-        rows = await _post_rows(session, {
+        rows = await post_json_rows(config, BLD_STOCK_PRICES, {
             "mktId": MKT_ID[market], "trdDd": day.strftime("%Y%m%d"),
             "share": "1", "money": "1",
         })
@@ -330,8 +326,6 @@ async def fetch_market_breadth_snapshot(
     index_closes: {market: {ISO date: close}} (상관 분석용, 보통 context.time_series 에서).
     실패는 빈 snapshot + warning — 보고서 흐름 무영향.
     """
-    import aiohttp
-
     anchor = anchor_date or date.today()
     as_of = anchor.isoformat()
     cache_path = str(getattr(config, "breadth_cache_path", DEFAULT_CACHE_PATH) or DEFAULT_CACHE_PATH)
@@ -343,34 +337,32 @@ async def fetch_market_breadth_snapshot(
 
     views: list[MarketBreadthView] = []
     try:
-        timeout = aiohttp.ClientTimeout(total=90.0)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            await warmup(session)  # KRX 세션 쿠키 확보 (없으면 getJsonData 400)
-            for market in ("KOSPI", "KOSDAQ"):
-                cached = _cache_load(conn, market, start_iso, end_iso) if conn else []
-                have = {d.date for d in cached}
-                missing = [d for d in wanted if d.isoformat() not in have]
-                # 최신일 우선 + bounded — 오늘은 항상 포함.
-                missing = sorted(missing, reverse=True)[:max_fetch]
-                fetched: list[DailyBreadth] = []
-                for d in sorted(missing):
-                    db = await _fetch_day(session, market, d)
-                    if db is not None:
-                        fetched.append(db)
-                        if conn:
-                            _cache_upsert(conn, db)
-                    await asyncio.sleep(0.2)
-                if conn and fetched:
-                    conn.commit()
-                series = cached + fetched
-                if not series:
-                    warnings.append(f"{market}: breadth 데이터 없음")
-                    continue
-                view = summarize_market(
-                    series, (index_closes or {}).get(market),
-                )
-                if view:
-                    views.append(view)
+        # KRX 인증 세션으로 직접 POST (krx_client 가 로그인·세션 관리, 요청은 to_thread).
+        for market in ("KOSPI", "KOSDAQ"):
+            cached = _cache_load(conn, market, start_iso, end_iso) if conn else []
+            have = {d.date for d in cached}
+            missing = [d for d in wanted if d.isoformat() not in have]
+            # 최신일 우선 + bounded — 오늘은 항상 포함.
+            missing = sorted(missing, reverse=True)[:max_fetch]
+            fetched: list[DailyBreadth] = []
+            for d in sorted(missing):
+                db = await _fetch_day(config, market, d)
+                if db is not None:
+                    fetched.append(db)
+                    if conn:
+                        _cache_upsert(conn, db)
+                await asyncio.sleep(0.2)
+            if conn and fetched:
+                conn.commit()
+            series = cached + fetched
+            if not series:
+                warnings.append(f"{market}: breadth 데이터 없음")
+                continue
+            view = summarize_market(
+                series, (index_closes or {}).get(market),
+            )
+            if view:
+                views.append(view)
     except Exception as e:  # pragma: no cover
         logger.warning("[breadth] fetch 실패 (graceful skip): %s", e)
         warnings.append(f"fetch 예외: {e}")
