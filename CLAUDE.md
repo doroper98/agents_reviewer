@@ -107,6 +107,17 @@ V5 Phase 1A 부터 추가 가능한 에이전트:
 > "간단히 pkill + nohup 4단계" 식 단축 금지 — 이번 세션에서 2회 재발한 VM-AP-1
 > (graceful shutdown 부족), VM-AP-3 (잔재 충돌), VM-AP-4 (옛 버전 가동) 의 원인.
 > 새 회귀 발견 시 playbook §2 에 VM-AP-N 으로 등록 후 §1 에 가드 추가.
+>
+> **🔴🔴 절대 규칙 — "명령어 없는 지시 금지" (사용자 강력 요청, 2026-06-17, 2회 catch).**
+> VM 에서 *무엇이든 실행해야 하면* — `git pull` / 재배포 / 봇 재시작 / `patch_report`
+> 패치 / `pip install` / backfill 등 — **반드시 그 자리에서 복사·붙여넣기로 바로
+> 실행되는 완전한 명령어를 함께 준다.** "VM 을 먼저 v7.x.x 로 재배포한 뒤" / "git pull
+> 하세요" / "재배포 필요" 같이 *행동만 지시하고 명령은 안 주는 문장 절대 금지*. 새
+> 코드(신규 flag·옵션)를 패치 명령에 쓰라고 안내할 땐, **그 코드를 VM 에 올리는
+> `git pull`(=재배포 §1 블록)을 같은 답변에 먼저 넣고**, 이어서 패치 명령을 준다
+> (순서대로 번호 매겨). 안 그러면 사용자가 옛 버전 VM 에서 `unrecognized arguments`
+> 로 막힌다 (실제 재발). 전제조건(특정 버전 필요 등)을 말로만 적고 그 전제를 충족하는
+> 명령을 빼면 본 규칙 위반.
 
 **필수 안내 사항 (playbook §1 외 운영 컨텍스트):**
 - 처음 clone 후 1회: `git config core.hooksPath .githooks` (commit-msg hook 활성화 — Execution Rule #12). 미설정 시 hook 작동 안 함.
