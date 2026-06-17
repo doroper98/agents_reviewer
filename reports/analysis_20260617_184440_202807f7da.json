@@ -2964,7 +2964,8 @@
   "parent_context": null,
   "analysis_timestamp": "2026-06-17T18:30:03.004398+09:00",
   "total_duration_seconds": 877.1938264369965,
-  "system_version": "v7.9.5",
+  "system_version": "v7.9.8",
   "revision": 0,
-  "render_revision": 0
+  "render_revision": 1,
+  "disable_scroll_arc": false
 }
