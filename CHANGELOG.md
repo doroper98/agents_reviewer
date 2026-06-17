@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.4
+last_synced_with: v7.9.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.5 — 장마감 브리핑 트리거 17:00 → 18:30 (데이터 정합성, 사용자 결정)
+
+선물·옵션 그릭·시장 폭 실데이터를 붙이면서 *언제 받느냐*가 정합성에 직결. 17:00 은
+외국인/기관 수급이 잠정치로 출렁이고 KRX 일별 통계가 막 게시되는 구간이라(장중 14:57
+테스트에서 breadth 가 장중 스냅샷으로 잡힌 게 그 증거), 종가 확정치가 아닌 값이 섞일
+위험이 있었다. KRX 일별 통계·확정 수급·파생 미결제약정이 18:00~18:30 에 안정화되므로
+(breadth 통합 지시서도 18:30 권고) 기본 트리거를 **18:30 KST** 로 변경. `Config.
+market_briefing_time` 기본값 + 스케줄러 docstring/loop 기본 + telegram 안내 + .env.example
+동기화. env `MARKET_BRIEFING_TIME` 으로 언제든 override 가능(코드 변경 불요). 발행 ~18:55.
 
 ## v7.9.4 — 관심 행사가를 현물 ±15% 밴드로 (딥OTM 꼬리 제외)
 

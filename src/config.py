@@ -194,10 +194,13 @@ class Config(BaseSettings):
     )
 
     # v5.5.9 — Market Close Briefing Scheduler (한국 장마감 자동 브리핑).
-    # 매일 ``market_briefing_time`` (MARKET_BRIEFING_TZ 기준, 디폴트 17:00 KST) 에
+    # 매일 ``market_briefing_time`` (MARKET_BRIEFING_TZ 기준, 디폴트 18:30 KST) 에
     # pykrx 거래일 가드를 거쳐 ``/market_brief_on`` 구독자에게 한국 주식시장
     # 구조 해석 보고서 자동 송신. 페르소나는 ``market_briefing_persona_path`` 의
     # 파일에서 startup 시 1회 로드 + event_description 앞에 prime.
+    # v7.9.5 — 17:00 → 18:30 (데이터 정합성): KRX 일별 통계·외국인/기관 확정 수급·
+    # 파생 미결제약정이 18:00~18:30 에 안정화되므로(잠정치 출렁임 회피), 선물·옵션
+    # 그릭·시장 폭 실데이터가 종가 확정치로 들어오도록 트리거를 늦춤.
     market_briefing_enabled: bool = Field(
         default=False,
         validation_alias=AliasChoices(
@@ -205,7 +208,7 @@ class Config(BaseSettings):
         ),
     )
     market_briefing_time: str = Field(
-        default="17:00",
+        default="18:30",
         validation_alias=AliasChoices(
             "MARKET_BRIEFING_TIME", "market_briefing_time",
         ),

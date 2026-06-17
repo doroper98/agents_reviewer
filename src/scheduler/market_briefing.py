@@ -1,6 +1,6 @@
 """Market Close Briefing Scheduler — v5.5.9.
 
-장마감 후 (디폴트 17:00 KST) 한국 주식시장의 *구조 해석* 보고서를 자동 생성·송신.
+장마감 후 (디폴트 18:30 KST) 한국 주식시장의 *구조 해석* 보고서를 자동 생성·송신.
 ``daily_briefing`` (06:00 매크로/지정학 브리핑) 과 별개 토픽 + 별개 시각 + 별개 구독자.
 
 설계 원칙:
@@ -139,7 +139,7 @@ async def run_market_briefing_loop(
     subscribers: "MarketBriefSubscriberRegistry",
     send_text_fn: SendTextFn,
     send_document_fn: SendDocumentFn | None,
-    time_str: str = "17:00",
+    time_str: str = "18:30",
     tz_name: str = "Asia/Seoul",
     persona_path: str | None = None,
     enabled: bool = True,

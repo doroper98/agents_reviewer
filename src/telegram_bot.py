@@ -123,7 +123,7 @@ class TelegramBot:
             "/briefing_on — 일일 브리핑 구독 (06:00 KST, v5.1.0)\n"
             "/briefing_off — 일일 브리핑 구독 해제\n"
             "/briefing_status — 일일 브리핑 설정 확인\n"
-            "/market_brief_on — 한국 장마감 브리핑 구독 (17:00 KST, v5.5.9)\n"
+            "/market_brief_on — 한국 장마감 브리핑 구독 (18:30 KST)\n"
             "/market_brief_off — 장마감 브리핑 구독 해제\n"
             "/market_brief_status — 장마감 브리핑 설정 확인\n"
             "? <질문> — 간단 질답\n"
@@ -700,7 +700,7 @@ class TelegramBot:
         )
 
     # ------------------------------------------------------------------
-    # v5.5.9 — Market Close Briefing commands (한국 장마감 17:00 KST 자동 브리핑)
+    # v5.5.9 — Market Close Briefing commands (한국 장마감 18:30 KST 자동 브리핑)
     # ------------------------------------------------------------------
 
     async def _market_brief_on_command(
@@ -1195,7 +1195,7 @@ class TelegramBot:
         app.add_handler(CommandHandler("briefing_on", self._briefing_on_command))
         app.add_handler(CommandHandler("briefing_off", self._briefing_off_command))
         app.add_handler(CommandHandler("briefing_status", self._briefing_status_command))
-        # v5.5.9 — Market Close Briefing (한국 장마감 17:00 KST)
+        # v5.5.9 — Market Close Briefing (한국 장마감 18:30 KST)
         app.add_handler(CommandHandler("market_brief_on", self._market_brief_on_command))
         app.add_handler(CommandHandler("market_brief_off", self._market_brief_off_command))
         app.add_handler(CommandHandler("market_brief_status", self._market_brief_status_command))
