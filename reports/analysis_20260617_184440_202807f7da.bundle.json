@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "bundle_kind": "report_bundle",
-  "generated_at": "2026-06-17T18:44:40.458216+09:00",
+  "generated_at": "2026-06-17T19:38:42.244924+09:00",
   "producer": {
     "system": "agents_reviewer",
-    "version": "v7.9.5",
+    "version": "v7.9.8",
     "mode": "deep"
   },
   "report": {
