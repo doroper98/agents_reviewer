@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.8.0
+last_synced_with: v7.9.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,53 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.0 — 장마감 브리핑 실데이터 파이프라인: 선물·옵션 그릭 + 시장 폭 (사용자 요청)
+
+v7.7/v7.8 로 프롬프트·페르소나를 아무리 강화해도 실제 장마감 보고서엔 선물·옵션 수치가
+**'확인되지 않음'** 으로만 떴다. 진단 결과 근본 원인은 *데이터 접근* — 웹 검색이 외국인
+선물 순매수·미결제약정·행사가별 IV 같은 granular 수치를 신뢰성 있게 못 가져오고, 그릭은
+애초에 어디에도 공표되지 않아 *계산* 해야 했다. 그래서 KRX 정보데이터시스템
+(data.krx.co.kr)의 무로그인 공개 엔드포인트에서 직접 받아 결정적으로 산출하는 파이프라인을
+신설했다. (사용자가 추가로 요청한 **미결제약정**·**시장 폭(등락 종목 수)** 도 함께 흡수.)
+
+**신규 모듈 3종 (모두 graceful degrade — 실패해도 보고서 흐름 무영향):**
+
+- **`src/tools/greeks.py`** — Black-Scholes 옵션 가격·내재변동성(IV) 역산·그릭(델타/감마/
+  세타/베가/로). 순수 stdlib(`math.erf`, scipy 불요), 데스크 관용 단위 환산(베가=1%p, 세타=
+  1일, 로=1%p). max pain·풋콜비율 계산도 포함. 단위 테스트 11종(교과서 값·풋콜 패리티·IV
+  왕복).
+- **`src/tools/derivatives_fetcher.py`** — KOSPI200 선물(전종목 시세 MDCSTAT12501,
+  `KRDRVFUK2I`)에서 최근월물 종가·등락·**미결제약정**·현물 대비 **베이시스**, 옵션 체인
+  (`KRDRVOPK2I`)에서 행사가별 프리미엄·OI·거래량을 받아 **종가에서 IV 역산 → 그릭 계산**.
+  활성 만기 풋/콜 비율(거래량·OI)·**최대고통(max pain)**·ATM IV·**관심 콜·풋 행사가**(OI 상위)
+  선정. 결과를 composer 가 소비하는 key_figures({label,value,context})로 출력. 조립 로직은
+  순수 함수라 합성 rows 로 회귀 7종.
+- **`src/tools/breadth_fetcher.py`** — 전종목 시세(MDCSTAT01501, mktId=STK/KSQ)에서
+  코스피·코스닥 **상승/하락/보합 종목 수**를 등락률 부호로 집계 → **하락비율(당일·5일·20일
+  평균)·추세·하락비율↔향후 지수 상관**. 멱등 **SQLite 캐시**(과거 영업일 재수집 안 함, 신규일만
+  append — 첨부 지시서의 '수집/표현 분리·멱등' 원칙), 1회 실행 inline 백필 상한으로 레이턴시
+  보호. 순수 집계·요약 함수 회귀 11종.
+
+**통합:** `orchestrator.run_analysis(fetch_kr_market_internals=True)` (market_briefing 스케줄러만
+전달)일 때 ContextAnalyst 직후 두 fetch 를 돌려 실측 수치를 `key_figures` 로 병합(본문에 실수치
+노출) + breadth decline-ratio **line 차트**를 compose 후 결정적 주입(d3 네이티브). breadth↔지수
+상관은 이미 fetch 된 `context.time_series`(코스피/코스닥 종가) 재사용 — 추가 호출 0. 페르소나
+제11 렌즈(파생 데스크 5축)·제4 렌즈(시장 폭)와 프롬프트가 이 데이터를 *반드시 인용·분석*
+하도록 강제. config 플래그 `ENABLE_KR_DERIVATIVES`/`DERIVATIVES_RISK_FREE`/
+`ENABLE_MARKET_BREADTH`/`BREADTH_CACHE_PATH` 추가(기본 ON, 장마감 브리핑 한정).
+
+**아키텍처 적합화:** 첨부된 breadth 통합 지시서는 matplotlib PNG + 별도 venv + cron +
+markdown 병합을 제안했으나, agents_reviewer 는 d3 인터랙티브 HTML 보고서라 *분석 내용*
+(등락 종목 수·하락비율·5/20일 추세·지수 상관·선행성 한계 caveat·음슴체 요약)만 네이티브
+(무로그인 KRX fetch + d3 차트 + key_figures)로 흡수했다. pykrx 의 KRX_ID/PW 로그인도 불요
+(derivatives 와 동일 무로그인 POST).
+
+**범위·검증:** 전부 장마감 브리핑 전용 — 일반 `/analyze`·일일 브리핑은 default False 게이트라
+byte-equal. 신규 의존성 0(stdlib + 기존 aiohttp). data.krx.co.kr 은 개발 샌드박스에서 egress
+403 이라 실연동 정확성은 **VM 검증** 필요: `python -m src.tools.derivatives_fetcher` /
+`python -m src.tools.breadth_fetcher` / `... breadth_fetcher backfill --days 120`(이력 적재).
+그릭·집계 *계산 로직* 은 단위 테스트 29종으로 검증 완료.
 
 ## v7.8.0 — 장마감 브리핑 선물·옵션 섹션을 파생 데스크 전문가 수준으로 (사용자 요청)
 

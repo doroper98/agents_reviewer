@@ -350,6 +350,15 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - 기본 기간 3M (사건 보고서 event-anchored). 사건 일자 = `context.date` 기준. 향후 mode-aware period (daily=1M / historical=3Y) 확장 예정.
 - 환경변수 `FRED_API_KEY` / `ECOS_API_KEY` / `KRX_API_KEY`. `.env.example` 참조.
 
+## 장마감 브리핑 시장 내부 데이터 — 선물·옵션 그릭 + 시장 폭 (v7.9.0)
+> **장마감 브리핑(`scheduler/market_briefing.py`) *전용*.** orchestrator `run_analysis(fetch_kr_market_internals=True)` 일 때만 작동 — 일반 `/analyze`·일일 브리핑은 default False 라 byte-equal. 모두 무로그인 `data.krx.co.kr` 공개 엔드포인트(market_fetcher 의 KRX getJsonData 와 동일 메커니즘) → 키·pykrx 로그인 불요. graceful degrade.
+- **`src/tools/greeks.py`** — Black-Scholes IV 역산 + 그릭(델타/감마/세타/베가/로) + max pain/풋콜비율. 순수 stdlib(scipy 불요). 옵션 그릭 산출 SSOT. 단위 테스트 `tests/test_greeks.py`.
+- **`src/tools/derivatives_fetcher.py`** — KOSPI200 선물(MDCSTAT12501 `KRDRVFUK2I`: 종가·베이시스·미결제)·옵션 체인(`KRDRVOPK2I`: 행사가별 프리미엄·OI·거래량)→ **종가에서 IV·그릭 자체 계산** + 풋콜비율·max pain·관심 콜/풋 행사가. 결과는 `key_figures` 로 출력. `build_snapshot` 은 순수 함수(회귀 `tests/test_derivatives_fetcher.py`). 옵션 IV 무위험금리 `DERIVATIVES_RISK_FREE`(기본 0.03).
+- **`src/tools/breadth_fetcher.py`** — 전종목 시세(MDCSTAT01501 STK/KSQ)로 코스피·코스닥 등락 종목 수·하락비율(당일·5/20일)·지수 상관. 멱등 **SQLite 캐시**(`BREADTH_CACHE_PATH`, 신규 영업일만 append). decline-ratio line 차트 + `key_figures`. 회귀 `tests/test_breadth_fetcher.py`. CLI: `python -m src.tools.breadth_fetcher backfill --days 120`(이력 1회 적재).
+- orchestrator 가 두 snapshot 의 `key_figures` 를 `context.key_figures` 에 병합(본문 실수치 노출) + breadth line 차트 결정적 주입. 페르소나 제11 렌즈(파생 데스크 5축)·제4 렌즈(시장 폭)·`market_briefing` 프롬프트가 인용·분석 강제.
+- flag: `ENABLE_KR_DERIVATIVES` / `ENABLE_MARKET_BREADTH`(기본 ON). **샌드박스 egress 403 → 실연동은 VM 검증** (`python -m src.tools.derivatives_fetcher` / `... breadth_fetcher`). 계산 로직은 단위 테스트로 검증.
+- 신규 chart/agent 아님 — `key_figures` + line 차트 주입이라 차트 매트릭스·DATA_MODELS 무변경(Pydantic 모델 추가 없음, tool 내부 dataclass + dict 채널).
+
 ## Report Images (v5.4.0)
 - ContextAnalyst 가 수집한 `sources` URL 들에서 og:image / og:title / og:description / publisher 자동 추출 → `ContextAnalysis.available_images` → composer 가 본문 흐름에 맞는 사진만 골라 `ComposedReport.hero_image` (보고서당 0~1장) + `ComposedSection.images` (섹션당 0~1장, 보고서 전체 0~3장) emit.
 - SSOT: [src/tools/image_fetcher.py](src/tools/image_fetcher.py) (og 메타 parser + publisher 매핑 16개 매체) + [src/agents/narrative_composer.py](src/agents/narrative_composer.py) `SYSTEM_PROMPT` 의 `=== 사진 (v5.4.0) ===` 섹션 (선택 원칙 / 캡션 작성 가이드 / Anti-pattern).

@@ -70,6 +70,26 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("KRX_API_KEY", "krx_api_key"),
     )
 
+    # v7.9.0 — 한국 장마감 브리핑 시장 내부 데이터(선물·옵션 그릭 + 시장 폭).
+    # market_briefing 스케줄러가 fetch_kr_market_internals=True 로 호출할 때만 작동.
+    # 일반 보고서엔 무영향. 무로그인 data.krx.co.kr 공개 엔드포인트 사용 → 키 불요.
+    enable_kr_derivatives: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("ENABLE_KR_DERIVATIVES", "enable_kr_derivatives"),
+    )
+    derivatives_risk_free: float = Field(
+        default=0.03,
+        validation_alias=AliasChoices("DERIVATIVES_RISK_FREE", "derivatives_risk_free"),
+    )
+    enable_market_breadth: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("ENABLE_MARKET_BREADTH", "enable_market_breadth"),
+    )
+    breadth_cache_path: str = Field(
+        default="data/market_internals.sqlite",
+        validation_alias=AliasChoices("BREADTH_CACHE_PATH", "breadth_cache_path"),
+    )
+
     # V5 Phase 1A — ResearchDirector opt-in.
     # 켜져 있으면 orchestrator 가 Phase 1 (ContextAnalyst) 직후에 ResearchDirector
     # 를 호출해 AnalysisBrief 를 emit. 꺼져 있으면 design_via_heuristics 의

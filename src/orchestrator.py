@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v7.8.0"
+VERSION = "v7.9.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1430,6 +1430,7 @@ class Orchestrator:
         status_callback: StatusCallback = None,
         mode: AnalysisMode | None = None,
         parent_context: ParentContext | None = None,
+        fetch_kr_market_internals: bool = False,
     ) -> FullAnalysisResult:
         """v4.0.0 Tier 4: 2-call unified pipeline.
 
@@ -1559,6 +1560,74 @@ class Orchestrator:
                 )
         except Exception as _e:  # pragma: no cover — fetch 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] image_fetch skipped: %s", _e)
+
+        # v7.9.0 — 한국 장마감 브리핑 전용 *시장 내부* 데이터 hook (선물·옵션 + 시장 폭).
+        # market_briefing 스케줄러가 fetch_kr_market_internals=True 로 호출할 때만 작동
+        # (일반 /analyze·일일브리핑은 default False → byte-equal). 결과는 composer 가
+        # 이미 소비하는 key_figures 로 병합(실수치를 본문에 노출). breadth 의 decline-ratio
+        # line 차트는 compose 후 결정적으로 주입(아래). 모든 fetch 는 graceful degrade.
+        breadth_charts: list[dict] = []
+        if fetch_kr_market_internals:
+            from datetime import date as _date
+            _anchor = None
+            _edate = (getattr(result.context, "date", "") or "").strip()
+            if _edate:
+                try:
+                    _anchor = _date.fromisoformat(_edate[:10])
+                except ValueError:
+                    _anchor = None
+            # (1) 지수 선물·옵션 — 그릭 포함 key_figures.
+            if getattr(self.config, "enable_kr_derivatives", True):
+                try:
+                    from src.tools.derivatives_fetcher import fetch_kr_derivatives_snapshot
+                    stage_dv = self.telemetry.stage_start("derivatives_fetch")
+                    dsnap = await fetch_kr_derivatives_snapshot(
+                        anchor_date=_anchor, config=self.config,
+                    )
+                    self.telemetry.stage_end(stage_dv)
+                    if dsnap.key_figures:
+                        result.context.key_figures = (
+                            list(result.context.key_figures or []) + dsnap.key_figures
+                        )
+                    logger.info(
+                        "[orchestrator] derivatives: +%d key_figures (warn=%d)",
+                        len(dsnap.key_figures), len(dsnap.warnings),
+                    )
+                except Exception as _e:  # pragma: no cover — fetch 실패가 보고서 흐름 영향 X
+                    logger.warning("[orchestrator] derivatives_fetch skipped: %s", _e)
+            # (2) 시장 폭(등락 종목 수) — key_figures + decline-ratio line 차트.
+            if getattr(self.config, "enable_market_breadth", True):
+                try:
+                    from src.tools.breadth_fetcher import fetch_market_breadth_snapshot
+                    # 상관 분석용 지수 종가 — 이미 fetch 한 context.time_series 재사용.
+                    idx_closes: dict[str, dict[str, float]] = {}
+                    for s in (getattr(result.context, "time_series", None) or []):
+                        nm = str(s.get("instrument", ""))
+                        mkt = "KOSPI" if "코스피" in nm or "KOSPI" in nm.upper() else (
+                            "KOSDAQ" if "코스닥" in nm or "KOSDAQ" in nm.upper() else None
+                        )
+                        if mkt:
+                            idx_closes[mkt] = {
+                                d.get("date"): d.get("close")
+                                for d in (s.get("data") or [])
+                                if d.get("date") and d.get("close") is not None
+                            }
+                    stage_bd = self.telemetry.stage_start("breadth_fetch")
+                    bsnap = await fetch_market_breadth_snapshot(
+                        anchor_date=_anchor, config=self.config, index_closes=idx_closes,
+                    )
+                    self.telemetry.stage_end(stage_bd)
+                    if bsnap.key_figures:
+                        result.context.key_figures = (
+                            list(result.context.key_figures or []) + bsnap.key_figures
+                        )
+                    breadth_charts = list(bsnap.charts)
+                    logger.info(
+                        "[orchestrator] breadth: +%d key_figures, %d charts (warn=%d)",
+                        len(bsnap.key_figures), len(breadth_charts), len(bsnap.warnings),
+                    )
+                except Exception as _e:  # pragma: no cover — fetch 실패가 보고서 흐름 영향 X
+                    logger.warning("[orchestrator] breadth_fetch skipped: %s", _e)
 
         # V5 Phase 0C — ContextAnalysis → EvidencePack adapter (telemetry only).
         # v4.5.7 호출 경로는 ComposedReport 를 받는 NarrativeComposer 가 그대로
@@ -1698,6 +1767,26 @@ class Orchestrator:
             _densify_ts_charts(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _densify_ts_charts skipped: %s", _e)
+        # v7.9.0 — 시장 폭(breadth) decline-ratio line 차트 결정적 주입 (장마감 브리핑).
+        # composer 는 payload 에 breadth 시계열을 못 받으므로 orchestrator 가 직접 박는다.
+        # '등락/시장 폭' 다루는 섹션이 있으면 거기, 없으면 첫 섹션에 추가.
+        if breadth_charts and result.composed_report and result.composed_report.sections:
+            try:
+                secs = result.composed_report.sections
+                target = next(
+                    (s for s in secs
+                     if any(kw in (s.heading or "") for kw in ("등락", "시장 폭", "폭", "breadth"))),
+                    secs[0],
+                )
+                if target.charts is None:
+                    target.charts = []
+                target.charts = list(target.charts) + breadth_charts
+                logger.info(
+                    "[orchestrator] breadth: +%d line 차트 → '%s'",
+                    len(breadth_charts), (target.heading or "")[:20],
+                )
+            except Exception as _e:  # pragma: no cover
+                logger.warning("[orchestrator] breadth chart inject skipped: %s", _e)
         # v5.6.6 — SNS broadcast 문구 결정적 폴백 (composer 누락/부분 살림본 대비).
         try:
             _ensure_broadcast_summary(result.composed_report, result.context)

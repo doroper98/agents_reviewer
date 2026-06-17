@@ -11,3 +11,7 @@ logs/
 bot.log
 bot.log.*
 baseline_log.txt
+
+# v7.9.0 — breadth/시장내부 멱등 캐시 (런타임 생성)
+data/market_internals.sqlite
+data/*.sqlite
