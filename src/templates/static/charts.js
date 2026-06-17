@@ -1689,15 +1689,43 @@
       { annotations: (payload.annotations || []).filter(a => a.kind !== 'vline') },
       zones, t, xScale, yScale);
 
-    // points + labels
-    data.forEach(d => {
-      const cx = xScale(+d.x), cy = yScale(+d.y);
-      const isAccent = !!d.accent;
-      svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 5)
-        .attr('fill', isAccent ? t.accent : t.text).attr('fill-opacity', 0.85);
-      svg.append('text').attr('x', cx + 8).attr('y', cy + 4).attr('font-size', 10)
-        .attr('font-family', 'Noto Sans KR').attr('fill', isAccent ? t.accent : t.text)
-        .text(String(d.label || ''));
+    // points
+    const pts = data.map(d => ({
+      d, cx: xScale(+d.x), cy: yScale(+d.y), isAccent: !!d.accent,
+      label: String(d.label || ''),
+    }));
+    pts.forEach(p => {
+      svg.append('circle').attr('cx', p.cx).attr('cy', p.cy).attr('r', 5)
+        .attr('fill', p.isAccent ? t.accent : t.text).attr('fill-opacity', 0.85);
+    });
+
+    // v7.9.8 — 라벨 충돌 회피 (CHART-AP-33, 사용자 catch: IV 스큐 우측 군집
+    // '풋 1,525'/'콜 1,527.5' 라벨 중첩). ① 우측 끝 점은 라벨을 왼쪽에 둠(plot
+    // 밖 잘림 방지) ② 같은 쪽 라벨끼리 세로 dodge(minGap 13) ③ 점에서 멀어진
+    // 라벨엔 가는 connector. 점·축 위치는 실제 값 그대로(불변).
+    const rightEdge = zones.data.x + zones.data.w * 0.66;
+    const loY = zones.data.y + 6, hiY = zones.data.y + zones.data.h - 4;
+    const sides = { L: [], R: [] };
+    pts.forEach(p => { (p.cx > rightEdge ? sides.L : sides.R).push(p); });
+    Object.keys(sides).forEach(sideKey => {
+      const grp = sides[sideKey];
+      if (!grp.length) return;
+      const dodged = dodgeYs(grp.map(p => p.cy + 4), 13, loY, hiY);
+      grp.forEach((p, i) => {
+        const ly = dodged[i];
+        const left = sideKey === 'L';
+        const lx = left ? p.cx - 9 : p.cx + 9;
+        const col = p.isAccent ? t.accent : t.text;
+        if (Math.abs(ly - (p.cy + 4)) > 6 || left) {
+          svg.append('line').attr('x1', p.cx).attr('y1', p.cy)
+            .attr('x2', lx).attr('y2', ly - 3)
+            .attr('stroke', col).attr('stroke-width', 0.6).attr('stroke-opacity', 0.4);
+        }
+        svg.append('text').attr('x', lx).attr('y', ly)
+          .attr('text-anchor', left ? 'end' : 'start')
+          .attr('font-size', 10).attr('font-family', 'Noto Sans KR')
+          .attr('fill', col).text(p.label);
+      });
     });
   }
 
@@ -2868,11 +2896,15 @@
     const W = 720, H = grid + padT + 26;
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // v7.9.8 — 그리드+범례를 그룹에 담아 getBBox 로 가로 중앙정렬 (sankey 와 동일
+    // content-fit). 이전엔 grid 좌측 고정 + 범례 우측 고정이라 우측에 빈 여백이
+    // 남아 차트가 왼쪽으로 쏠려 보였다 (사용자 catch).
+    const g = svg.append('g');
     let k = 0;
     quota.forEach((q, si) => {
       for (let j = 0; j < q.n; j += 1, k += 1) {
         const row = Math.floor(k / 10), col = k % 10;
-        svg.append('circle')
+        g.append('circle')
           .attr('cx', padL + col * cell + cell / 2)
           .attr('cy', padT + row * cell + cell / 2)
           .attr('r', 7.4)
@@ -2883,17 +2915,23 @@
     const lx = padL + grid + 46;
     quota.forEach((q, i) => {
       const y = padT + 16 + i * 40;
-      svg.append('circle').attr('cx', lx).attr('cy', y - 4).attr('r', 6.5)
+      g.append('circle').attr('cx', lx).attr('cy', y - 4).attr('r', 6.5)
         .attr('fill', fills[i].color).attr('fill-opacity', fills[i].op);
-      svg.append('text').attr('x', lx + 15).attr('y', y)
+      g.append('text').attr('x', lx + 15).attr('y', y)
         .attr('font-family', 'Noto Sans KR').attr('font-size', 11.5).attr('fill', t.text)
         .text(String(q.d.label).slice(0, 18));
-      svg.append('text').attr('x', lx + 15).attr('y', y + 17)
+      g.append('text').attr('x', lx + 15).attr('y', y + 17)
         .attr('font-family', 'Noto Serif KR').attr('font-size', 13.5)
         .attr('font-weight', 700).attr('fill', fills[i].color)
         .attr('fill-opacity', Math.max(0.65, fills[i].op))
         .text(`${q.n} / 100`);
     });
+    // 가로 중앙정렬 — 렌더 후 실제 content extent 측정해 W 중앙으로 시프트.
+    try {
+      const bb = g.node().getBBox();
+      const dx = (W - bb.width) / 2 - bb.x;
+      if (isFinite(dx)) g.attr('transform', `translate(${dx},0)`);
+    } catch (e) { /* getBBox 미지원 환경 — 좌측정렬 폴백 */ }
   }
 
   // ============================================================

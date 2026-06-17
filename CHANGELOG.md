@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.7
+last_synced_with: v7.9.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.8 — scatter 라벨 충돌 + dot_matrix 좌측 쏠림 fix (CHART-AP-33/34, 사용자 catch)
+
+장마감 브리핑(analysis_20260617_184440) 차트 결함 2종. ① IV 스큐 scatter 의 우측
+군집 라벨('풋 1,525'/'콜 1,527.5')이 겹쳐 판독 불가 → `drawScatter` 에 라벨 충돌
+회피(우측 끝 점은 라벨 좌측 배치 + 같은 쪽 `dodgeYs` 세로 분산 + connector, 점·축
+위치 불변). ② dot_matrix('코스피 100종목 등락 분포')가 좌측 쏠림 → grid+범례를 그룹에
+담아 `getBBox` 가로 중앙정렬(sankey content-fit 패턴). 둘 다 charts.js 렌더러만 변경 —
+발행본은 `patch_report <id> --rerender-only` 로 동일 URL 재렌더 시 적용. CHART-AP-33/34
+등재. (같은 보고서의 코스피 캔들+이평선·하락비율 이중축 캔들·옵션 섹션 비주얼·IV 기준선
+은 데이터·구조 변경이라 후속 작업으로 분리.)
 
 ## v7.9.7 — 발행본 한정 기승전결 스크롤 아크 워터마크 제거 옵션 (patch_report --strip-arc, 사용자 요청)
 

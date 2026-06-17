@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.5.1
+last_synced_with: v7.9.8
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1100,6 +1100,36 @@ composer SYSTEM_PROMPT 의 sankey 구체 예가 'nodes=[총매출 133.9조 / ...
 **가드**: 위 1 의 렌더러 dedup 이 프롬프트 미준수(구 패턴 emit)도 흡수. 갤러리·실데이터
 목업 fixture 를 클린 문법으로 교정 (`samples/chart_gallery_v7.html`,
 `samples/v7_5_realdata_mockup.html`).
+
+---
+
+## CHART-AP-33: scatter 라벨 충돌 (근접 점들의 라벨 중첩) (v7.9.8 신설, 사용자 catch)
+
+**증상**: IV 스큐 scatter('행사가별 내재변동성')의 우측 군집 — '풋 1,525'·'콜 1,527.5'·
+'콜 1,462.5' 라벨이 같은 자리에 겹쳐 읽을 수 없음. 모든 라벨이 점 오른쪽 고정 오프셋
+`(cx+8, cy+4)` 으로만 찍혀 근접 점들의 라벨이 포개졌다.
+
+**원인**: `drawScatter` 가 라벨 충돌 회피(dodge) 없이 고정 오프셋만 사용. slope 차트는
+`dodgeYs` 로 세로 분산을 했지만 scatter 엔 미적용.
+
+**Fix (v7.9.8)**: ① plot 우측 66% 안쪽 점은 라벨을 *왼쪽*(anchor end)에 둬 plot 밖
+잘림 방지 ② 같은 쪽 라벨끼리 `dodgeYs(minGap 13, [top,bottom] 클램프)` 세로 분산 ③ 점에서
+멀어진 라벨엔 가는 connector. 점·축 위치는 실제 값 그대로(불변). 발행본은 charts.js
+변경이라 `patch_report <id> --rerender-only` 로 동일 URL 재렌더 시 적용.
+
+## CHART-AP-34: dot_matrix(와플) 좌측 쏠림 — 가운데 정렬 누락 (v7.9.8 신설, 사용자 catch)
+
+**증상**: '코스피 100종목 중 등락 분포' dot_matrix 가 차트 카드 왼쪽으로 쏠리고
+오른쪽에 큰 빈 여백. 100칸 그리드(좌측 고정 padL=26) + 범례(우측 고정)가 W=720 의
+왼쪽 ~440px 만 차지.
+
+**원인**: `drawDotMatrix` 가 grid 를 좌측 고정·범례를 우측 고정 좌표로 그려, 콘텐츠
+실폭이 viewBox 보다 좁을 때 우측 여백이 그대로 남음 (sankey CHART-AP-20/21 과 동류 —
+content-fit 부재).
+
+**Fix (v7.9.8)**: 그리드+범례를 한 `<g>` 에 담고 렌더 후 `getBBox()` 로 실제 content
+extent 측정 → `translate((W-bb.width)/2 - bb.x, 0)` 로 가로 중앙정렬 (sankey 의 content-fit
+패턴 동일). getBBox 미지원 환경은 좌측정렬 폴백. 발행본은 `--rerender-only` 로 적용.
 
 ---
 
