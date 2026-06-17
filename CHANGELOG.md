@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.0
+last_synced_with: v7.9.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.1 — KRX getJsonData 400 회귀 fix (세션 웜업 + 풀 UA, VM 실측)
+
+v7.9.0 의 KRX fetch 가 VM 에서 **HTTP 400** 으로 전부 실패(선물·옵션·breadth 모두
+'확인되지 않음'). 원인은 KRX WAF 가 *콜드* POST(쿠키 없이 바로 getJsonData)를 400 으로
+막는 것 — pykrx 가 되는 이유는 ① 풀 Chrome User-Agent ② 데이터 요청 전 페이지 GET 으로
+`JSESSIONID`/`WMONID` 쿠키를 받는 *웜업* 때문이었다(내 코드는 `Mozilla/5.0` 단독 + 웜업
+없음). 공유 SSOT `src/tools/krx_client.py` 신설 — 풀 UA + `Accept`/`Accept-Language` 헤더 +
+`warmup()`(데이터 메뉴 로더·루트 GET 으로 쿠키 적재, aiohttp cookie_jar 자동 첨부) +
+`post_json_rows()`. derivatives_fetcher·breadth_fetcher 가 이 클라이언트를 통해 요청하고
+세션 시작 시 `await warmup(session)` 1회. 순수 계산·집계 로직(테스트 29종) 불변 — 네트워크
+계층만 교체. 실연동 재검증: `python -m src.tools.derivatives_fetcher` / `... breadth_fetcher`.
 
 ## v7.9.0 — 장마감 브리핑 실데이터 파이프라인: 선물·옵션 그릭 + 시장 폭 (사용자 요청)
 

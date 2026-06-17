@@ -37,18 +37,12 @@ from src.tools.greeks import (
     max_pain,
     put_call_ratio,
 )
+from src.tools.krx_client import post_json_rows, warmup
 
 if TYPE_CHECKING:
     from src.config import Config
 
 logger = logging.getLogger(__name__)
-
-KRX_JSON_URL = "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-_HEADERS = {
-    "User-Agent": "Mozilla/5.0",
-    "Referer": "https://data.krx.co.kr/contents/MDC/MDI/outerLoader/index.cmd",
-    "X-Requested-With": "XMLHttpRequest",
-}
 
 # pykrx 1.2.8 검증 — 파생 전종목 시세 + 파생상품 prodId.
 BLD_DERIV_PRICES = "dbms/MDC/STAT/standard/MDCSTAT12501"
@@ -411,16 +405,7 @@ def _build_key_figures(snap: DerivativesSnapshot) -> list[dict]:
 # 네트워크 (best-effort — VM 검증)
 # ──────────────────────────────────────────────────────────────────────────
 async def _post_rows(session, bld: str, params: dict) -> list[dict]:
-    body = {"bld": bld, **params}
-    async with session.post(KRX_JSON_URL, data=body, headers=_HEADERS) as resp:
-        if resp.status != 200:
-            raise RuntimeError(f"KRX {bld} HTTP {resp.status}")
-        data = await resp.json(content_type=None)
-    # KRX 는 output / OutBlock_1 둘 중 하나로 내려줌.
-    for key in ("output", "OutBlock_1", "block1"):
-        if isinstance(data.get(key), list):
-            return data[key]
-    return []
+    return await post_json_rows(session, bld, params)
 
 
 async def _fetch_vkospi(session, trd_dd: str) -> float | None:
@@ -469,6 +454,7 @@ async def fetch_kr_derivatives_snapshot(
     try:
         timeout = aiohttp.ClientTimeout(total=timeout_s)
         async with aiohttp.ClientSession(timeout=timeout) as session:
+            await warmup(session)  # KRX 세션 쿠키 확보 (없으면 getJsonData 400)
             results = await asyncio.gather(
                 _post_rows(session, BLD_DERIV_PRICES, {
                     "locale": "ko_KR", "prodId": PROD_KOSPI200_FUT,

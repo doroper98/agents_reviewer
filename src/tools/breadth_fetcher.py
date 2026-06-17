@@ -29,17 +29,13 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
+from src.tools.krx_client import post_json_rows, warmup
+
 if TYPE_CHECKING:
     from src.config import Config
 
 logger = logging.getLogger(__name__)
 
-KRX_JSON_URL = "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-_HEADERS = {
-    "User-Agent": "Mozilla/5.0",
-    "Referer": "https://data.krx.co.kr/contents/MDC/MDI/outerLoader/index.cmd",
-    "X-Requested-With": "XMLHttpRequest",
-}
 BLD_STOCK_PRICES = "dbms/MDC/STAT/standard/MDCSTAT01501"  # pykrx 검증 — 전종목 시세
 MKT_ID = {"KOSPI": "STK", "KOSDAQ": "KSQ"}
 
@@ -306,15 +302,7 @@ def _business_days(end: date, n_back: int) -> list[date]:
 # 네트워크 (best-effort — VM 검증)
 # ──────────────────────────────────────────────────────────────────────────
 async def _post_rows(session, params: dict) -> list[dict]:
-    body = {"bld": BLD_STOCK_PRICES, **params}
-    async with session.post(KRX_JSON_URL, data=body, headers=_HEADERS) as resp:
-        if resp.status != 200:
-            raise RuntimeError(f"KRX MDCSTAT01501 HTTP {resp.status}")
-        data = await resp.json(content_type=None)
-    for key in ("OutBlock_1", "output", "block1"):
-        if isinstance(data.get(key), list):
-            return data[key]
-    return []
+    return await post_json_rows(session, BLD_STOCK_PRICES, params)
 
 
 async def _fetch_day(session, market: str, day: date) -> DailyBreadth | None:
@@ -357,6 +345,7 @@ async def fetch_market_breadth_snapshot(
     try:
         timeout = aiohttp.ClientTimeout(total=90.0)
         async with aiohttp.ClientSession(timeout=timeout) as session:
+            await warmup(session)  # KRX 세션 쿠키 확보 (없으면 getJsonData 400)
             for market in ("KOSPI", "KOSDAQ"):
                 cached = _cache_load(conn, market, start_iso, end_iso) if conn else []
                 have = {d.date for d in cached}
