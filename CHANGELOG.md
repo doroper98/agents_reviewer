@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.2
+last_synced_with: v7.9.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.3 — 옵션 그릭 산출 fix + CLI 로그인 (VM 실측 후속)
+
+VM 로그인 성공 후 실데이터로 확인된 두 결함 수정. ① **옵션 그릭 전무** — KRX 옵션 시세
+행에 현물가(SPOT_PRC)가 없어(선물 행에만 존재) IV 역산이 전 행 스킵 → ATM IV·델타·감마
+등이 안 나옴. `build_snapshot` 이 선물 현물가(또는 체인 내 첫 유효 현물가)를 **기초자산
+폴백**으로 사용하도록 수정 → 관심 콜/풋 행사가의 IV·그릭이 채워짐. 회귀 테스트 추가
+(옵션 행 SPOT_PRC 제거 시나리오). ② **CLI 로그인** — `python -m src.tools.{derivatives,
+breadth}_fetcher` 가 config 없이 호출돼 KRX 미로그인이던 것을, CLI 가 `Config()` 를 구성해
+KRX_ID/KRX_PW 를 전달하도록 수정(backfill 포함). VKOSPI 는 여전히 best-effort(지수 엔드포인트
+미확정 — 웹검색 보완). 순수 계산 로직 회귀 30종.
 
 ## v7.9.2 — KRX 로그인 필수화 대응 (data.krx 'LOGOUT', VM 실측)
 

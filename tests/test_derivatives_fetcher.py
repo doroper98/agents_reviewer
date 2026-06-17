@@ -137,6 +137,22 @@ def test_build_snapshot_key_figures_shape():
     assert "델타" in joined and "감마" in joined and "베가" in joined
 
 
+def test_option_underlying_fallback_to_futures_spot():
+    # 옵션 행에 SPOT_PRC 가 없을 때(KRX 실데이터 회귀) 선물 현물가로 폴백해 그릭 산출.
+    anchor = date(2026, 6, 17)
+    opt_rows = _opt_rows(anchor)
+    for r in opt_rows:
+        r.pop("SPOT_PRC", None)        # 옵션 행에서 현물가 제거 (VM 실측 상황 재현)
+    snap = build_snapshot(
+        as_of=anchor.isoformat(), anchor=anchor,
+        futures_rows=_fut_rows(), option_rows=opt_rows,  # 선물엔 SPOT_PRC 존재
+    )
+    # 폴백 덕분에 IV/그릭이 계산됨
+    assert snap.atm_iv is not None
+    assert snap.notable_calls and all(o.greeks is not None for o in snap.notable_calls)
+    assert any("델타" in kf["context"] for kf in snap.key_figures)
+
+
 def test_build_snapshot_empty_graceful():
     anchor = date(2026, 6, 17)
     snap = build_snapshot(

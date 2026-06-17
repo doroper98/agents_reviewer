@@ -244,12 +244,16 @@ def build_snapshot(
     snap.front_expiry = front
 
     t = _expiry_T(front, anchor) if front else None
+    # 기초자산(KOSPI200 현물). 옵션 행에 SPOT_PRC 가 없으면(KRX 옵션 시세 미제공)
+    # 선물 행의 현물가로 폴백 — 안 그러면 전 행 IV/그릭이 계산 안 됨(VM 실측 회귀).
+    fut_spot = snap.futures.spot if snap.futures else None
+    chain_spot = next((o["underlying"] for o in parsed if o.get("underlying")), None) or fut_spot
     options: list[OptionQuote] = []
     if front and t:
         for o in parsed:
             if o["expiry"] != front:
                 continue
-            s = o["underlying"]
+            s = o["underlying"] or chain_spot
             k = o["strike"]
             prem = o["premium"]
             greeks = None
@@ -286,7 +290,7 @@ def build_snapshot(
     snap.max_pain = max_pain([(k, v[0], v[1]) for k, v in strike_oi.items()])
 
     # ATM IV — 현물에 가장 가까운 행사가의 콜/풋 IV 평균.
-    spot = snap.futures.spot if snap.futures else None
+    spot = chain_spot
     if spot is None and options:
         spot = next((o.underlying for o in options if o.underlying), None)
     if spot and options:
@@ -499,6 +503,12 @@ async def fetch_kr_derivatives_snapshot(
 def _main() -> None:  # pragma: no cover
     import sys
     logging.basicConfig(level=logging.INFO)
+    try:
+        from src.config import Config
+        cfg = Config()
+    except Exception as e:
+        print(f"[warn] Config 로드 실패({e}) — KRX 로그인 없이 진행")
+        cfg = None
     anchor = date.today()
     if len(sys.argv) > 1:
         try:
@@ -506,7 +516,7 @@ def _main() -> None:  # pragma: no cover
         except ValueError:
             print("usage: python -m src.tools.derivatives_fetcher [YYYYMMDD]")
             return
-    snap = asyncio.run(fetch_kr_derivatives_snapshot(anchor_date=anchor))
+    snap = asyncio.run(fetch_kr_derivatives_snapshot(anchor_date=anchor, config=cfg))
     print(f"\n=== KOSPI200 파생 snapshot ({snap.as_of}) ===")
     print(f"has_data={snap.has_data}  warnings={snap.warnings}")
     if snap.futures:

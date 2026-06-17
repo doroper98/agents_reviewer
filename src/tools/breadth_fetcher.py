@@ -383,9 +383,20 @@ async def fetch_market_breadth_snapshot(
 # ──────────────────────────────────────────────────────────────────────────
 # CLI — python -m src.tools.breadth_fetcher [YYYYMMDD] | backfill --days N
 # ──────────────────────────────────────────────────────────────────────────
+def _load_config():  # pragma: no cover
+    """CLI 용 — .env 의 KRX_ID/KRX_PW 를 읽기 위해 Config 구성(실패 시 None)."""
+    try:
+        from src.config import Config
+        return Config()
+    except Exception as e:
+        print(f"[warn] Config 로드 실패({e}) — KRX 로그인 없이 진행(데이터 안 나올 수 있음)")
+        return None
+
+
 def _main() -> None:  # pragma: no cover
     import sys
     logging.basicConfig(level=logging.INFO)
+    cfg = _load_config()
     if len(sys.argv) > 1 and sys.argv[1] == "backfill":
         days = 120
         if "--days" in sys.argv:
@@ -393,7 +404,7 @@ def _main() -> None:  # pragma: no cover
                 days = int(sys.argv[sys.argv.index("--days") + 1])
             except (ValueError, IndexError):
                 pass
-        snap = asyncio.run(fetch_market_breadth_snapshot(lookback=days, max_fetch=days))
+        snap = asyncio.run(fetch_market_breadth_snapshot(config=cfg, lookback=days, max_fetch=days))
         print(f"backfill done — markets={len(snap.views)} warnings={snap.warnings}")
         for v in snap.views:
             print(f"  {v.market}: {len(v.series)}일 적재, 최신 {v.last.date} "
@@ -406,7 +417,7 @@ def _main() -> None:  # pragma: no cover
         except ValueError:
             print("usage: python -m src.tools.breadth_fetcher [YYYYMMDD] | backfill --days N")
             return
-    snap = asyncio.run(fetch_market_breadth_snapshot(anchor_date=anchor))
+    snap = asyncio.run(fetch_market_breadth_snapshot(anchor_date=anchor, config=cfg))
     print(f"\n=== 시장 등락 종목 수 ({snap.as_of}) ===  warnings={snap.warnings}")
     for v in snap.views:
         print(f"\n[{v.market}] 기준 {v.last.date}")
