@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.13
+last_synced_with: v7.9.14
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.14 — 지수 등락률 vs 하락비율 diverging_bar 의 KOSPI 등락률 0 누락 방어 (CHART-AP-35, 사용자 catch)
+
+장마감 브리핑(analysis_20260618_184833)의 composer 생성 '지수 등락률 vs 종목 하락비율'
+diverging_bar 에서 KOSPI 의 `neg`(지수 등락률)이 **0** 으로 emit 돼 막대·값이 누락(KOSDAQ
+3.01 은 정상, 부제엔 '지수는 +2.25%' 라 적고 데이터엔 0 — composer 자체 모순). orchestrator
+가 장마감 브리핑 한정 결정적 가드 추가 — diverging_bar 행 라벨이 KOSPI/KOSDAQ 인데 neg 가
+0/누락이면 `time_series` 실측 등락률(절댓값)로 채운다(행사가 라벨 OI diverging_bar 는 비대상).
+CHART-AP-35 등재. 발행본 184833 은 KOSPI neg 0→2.25 직접 보정 후 재렌더.
 
 ## v7.9.13 — 차월물 스큐 선(先)캐시(롤오버 무단절) + 차트에 월물 명시 (사용자 제안)
 

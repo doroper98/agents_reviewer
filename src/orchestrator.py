@@ -29,7 +29,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v7.9.13"
+VERSION = "v7.9.14"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1870,6 +1870,37 @@ class Orchestrator:
                 )
             except Exception as _e:  # pragma: no cover
                 logger.warning("[orchestrator] 브리핑 차트 주입 skipped: %s", _e)
+        # v7.9.14 — composer 가 '지수 등락률 vs 종목 하락비율' diverging_bar 에서
+        # KOSPI/KOSDAQ 등락률(neg)을 0/누락으로 emit 하는 회귀 방어 (CHART-AP-35,
+        # 사용자 catch). time_series 실측 등락률(절댓값)로 채운다. 행사가 라벨 OI
+        # diverging_bar(neg=put_oi) 등은 KOSPI/KOSDAQ 라벨이 아니라 안 건드림.
+        if fetch_kr_market_internals and index_ohlc and result.composed_report:
+            try:
+                def _idx_abs_pct(mkt: str):
+                    rows = index_ohlc.get(mkt) or []
+                    if len(rows) >= 2:
+                        a, b = rows[-2].get("close"), rows[-1].get("close")
+                        if a and b:
+                            return round(abs((b / a - 1) * 100), 2)
+                    return None
+                for s in result.composed_report.sections:
+                    for c in (s.charts or []):
+                        if not (isinstance(c, dict) and c.get("type") == "diverging_bar"):
+                            continue
+                        for row in (c.get("data") or []):
+                            lab = str(row.get("label", ""))
+                            mkt = ("KOSPI" if ("KOSPI" in lab.upper() or "코스피" in lab)
+                                   else ("KOSDAQ" if ("KOSDAQ" in lab.upper() or "코스닥" in lab) else None))
+                            if mkt and not row.get("neg"):
+                                pct = _idx_abs_pct(mkt)
+                                if pct is not None:
+                                    row["neg"] = pct
+                                    logger.info(
+                                        "[orchestrator] diverging_bar %s 등락률 0→%.2f 보정 (CHART-AP-35)",
+                                        mkt, pct,
+                                    )
+            except Exception as _e:  # pragma: no cover
+                logger.warning("[orchestrator] index 등락률 guard skipped: %s", _e)
         # v5.6.6 — SNS broadcast 문구 결정적 폴백 (composer 누락/부분 살림본 대비).
         try:
             _ensure_broadcast_summary(result.composed_report, result.context)

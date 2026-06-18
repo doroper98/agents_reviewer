@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.9.8
+last_synced_with: v7.9.14
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1130,6 +1130,22 @@ content-fit 부재).
 **Fix (v7.9.8)**: 그리드+범례를 한 `<g>` 에 담고 렌더 후 `getBBox()` 로 실제 content
 extent 측정 → `translate((W-bb.width)/2 - bb.x, 0)` 로 가로 중앙정렬 (sankey 의 content-fit
 패턴 동일). getBBox 미지원 환경은 좌측정렬 폴백. 발행본은 `--rerender-only` 로 적용.
+
+## CHART-AP-35: composer diverging_bar 에서 지수 등락률(neg)을 0/누락으로 emit (v7.9.14 신설, 사용자 catch)
+
+**증상**: 장마감 브리핑(analysis_20260618_184833) '지수 등락률 vs 종목 하락비율' diverging_bar
+에서 KOSPI 의 `neg`(지수 등락률) 막대·값이 통째로 안 보임. 데이터를 보면 KOSPI `neg=0`,
+KOSDAQ `neg=3.01` — composer 가 KOSPI 등락률을 0 으로 넣음(부제엔 '지수는 +2.25%' 라
+써놓고 데이터엔 0, 자체 모순). 렌더러는 `neg>0` 일 때만 좌측 막대를 그려 누락처럼 보임.
+
+**원인**: composer 가 *직접 선택해 만든* diverging_bar(내 결정적 차트 아님)의 데이터 오류.
+LLM 이 한 행(KOSPI)의 등락률을 0 으로 떨어뜨림 — 산문/부제와 차트 데이터의 정합성 미보장.
+(부수적으로 등락률 2~3% 와 하락비율 80% 를 한 발산 축에 두는 스케일 불일치도 약점.)
+
+**Fix (v7.9.14 — 결정적 가드)**: orchestrator 가 장마감 브리핑(`fetch_kr_market_internals`)
+한정으로, diverging_bar 행 라벨이 `KOSPI`/`KOSDAQ`(코스피/코스닥)인데 `neg` 가 0/누락이면
+`context.time_series` 의 실측 지수 등락률(절댓값)로 채운다. 행사가 라벨 OI diverging_bar
+(`neg=put_oi`)는 라벨이 KOSPI/KOSDAQ 가 아니라 비대상. 발행본은 데이터 직접 보정 후 재렌더.
 
 ---
 
