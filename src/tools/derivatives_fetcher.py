@@ -341,42 +341,46 @@ def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
     """
     charts: list[dict] = []
 
-    # ① IV 스큐 scatter (관심 콜·풋 행사가 기준 — 보고서 점도 ~6개와 동일 소스)
-    pts: list[dict] = []
-    ivs: list[float] = []
-    for tag, items in (("콜", snap.notable_calls), ("풋", snap.notable_puts)):
-        for o in items:
-            if o.greeks is None or o.greeks.iv is None or not o.strike:
-                continue
-            iv_pct = round(o.greeks.iv * 100.0, 1)
-            pts.append({"x": float(o.strike), "y": iv_pct, "label": f"{tag} {o.strike:g}"})
-            ivs.append(iv_pct)
-    if len(pts) >= 3:
-        # 스큐 정점(IV 최고) 강조 — '풋이 콜보다 비싸다' 시각화.
-        peak = max(range(len(pts)), key=lambda i: pts[i]["y"])
-        pts[peak]["accent"] = True
-        annotations = []
-        if snap.atm_iv is not None:
-            annotations.append({
-                "kind": "hline", "y": round(snap.atm_iv * 100.0, 1),
-                "label": "ATM IV (등가격 기준선)",
-            })
-        charts.append({
-            "type": "scatter",
+    # ① IV 스큐 곡선 — 전체 옵션 체인의 행사가별 IV 를 풋(파랑)/콜(빨강) 두 곡선으로
+    #    연결(스큐 트렌드 시각화). 현물 ±18% 밴드로 노이즈 꼬리 제외, 행사가는 최대한
+    #    많이(notable 6개 → 전 체인). ATM IV 가로 기준선은 렌더러가 그린다.
+    spot = snap.futures.spot if snap.futures else None
+    sk: list[dict] = []
+    seen: set[tuple[str, float]] = set()
+    for o in (snap.options or []):
+        if o.greeks is None or o.greeks.iv is None or not o.strike:
+            continue
+        if spot and not (spot * 0.82 <= o.strike <= spot * 1.18):
+            continue
+        key = (o.option_type, float(o.strike))
+        if key in seen:
+            continue
+        seen.add(key)
+        sk.append({
+            "strike": float(o.strike),
+            "iv": round(o.greeks.iv * 100.0, 1),
+            "type": o.option_type,  # 'put' | 'call'
+        })
+    distinct_strikes = len({d["strike"] for d in sk})
+    if len(sk) >= 4 and distinct_strikes >= 3:
+        chart: dict = {
+            "type": "iv_skew",
             "title": f"행사가별 내재변동성 (KOSPI200 {snap.front_expiry or ''}물)".strip(),
-            "subtitle": "점이 기준선 위면 그 행사가 옵션이 등가격보다 비싸게 거래된다는 뜻",
-            "x_label": "행사가", "y_label": "내재변동성 (%)",
-            "data": pts,
-            "annotations": annotations,
+            "subtitle": "풋(파랑)·콜(빨강)을 행사가 순으로 이은 변동성 스큐 곡선",
+            "x_label": "행사가",
+            "data": sorted(sk, key=lambda d: d["strike"]),
             "note": (
                 "내재변동성(IV)은 옵션 가격에 녹아든 '앞으로 이만큼 출렁일 것'이라는 "
-                "시장의 예상치다. 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 "
+                "시장의 예상치다. 점선 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 "
                 "같은 변동성으로 거래된다고 가정했을 때의 수평선이다. 실제로는 하락을 "
-                "방어하는 외가격 풋의 점이 기준선 위로 솟는다(스큐). 풋이 콜보다 비싸다는 "
-                "건 시장이 상승보다 하락 꼬리를 더 비싸게 사고 있다는 신호다."
+                "방어하는 외가격 풋(왼쪽 파란 곡선)이 기준선 위로 솟는다(스큐). 풋 곡선이 "
+                "콜보다 높다는 건 시장이 상승보다 하락 꼬리를 더 비싸게 사고 있다는 신호다."
             ),
             "source": f"KRX 종가에서 산출 / {snap.as_of}",
-        })
+        }
+        if snap.atm_iv is not None:
+            chart["atm_iv"] = round(snap.atm_iv * 100.0, 1)
+        charts.append(chart)
 
     # ② 풋/콜 비율 bullet — 중립 1.0 대비
     pcr = snap.pcr_volume if snap.pcr_volume is not None else snap.pcr_oi
@@ -429,6 +433,27 @@ def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
                 "되기 쉽다. 풋이 쌓인 아래쪽은 지지, 콜이 쌓인 위쪽은 저항으로 읽는다."
             ),
             "source": f"KRX 정보데이터시스템 / {snap.as_of} (활성 만기 {snap.front_expiry or ''})".strip(),
+        })
+
+    # ④ 선물 베이시스 한 줄 지표 — 0 중심, 부호별 색(콘탱고=양/백워데이션=음).
+    fut = snap.futures
+    if fut and fut.basis is not None:
+        charts.append({
+            "type": "indicator",
+            "title": "선물 베이시스 — 콘탱고/백워데이션",
+            "data": [{
+                "label": "선물 - 현물",
+                "value": round(float(fut.basis), 2),
+                "unit": "p",
+                "pos_label": "콘탱고",
+                "neg_label": "백워데이션",
+            }],
+            "note": (
+                "선물 가격에서 현물(KOSPI200)을 뺀 값. 0보다 크면 콘탱고(정상 — 시장이 "
+                "위험을 무난히 가격에 반영), 0보다 작으면 백워데이션(수급 왜곡·하락 베팅 "
+                "신호). 괴리가 크면 차익거래 프로그램 매물이 현물 수급을 흔들 수 있다."
+            ),
+            "source": f"KRX / {snap.as_of} (현물 {_fmt(fut.spot)})",
         })
 
     return charts

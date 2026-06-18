@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.9
+last_synced_with: v7.9.10
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,19 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.10 — IV 스큐 곡선 재설계 + 베이시스 한 줄 지표 + 회귀 테스트 (v7.9.9 사용자 피드백)
+
+v7.9.9 옵션 차트에 대한 사용자 피드백 반영. ① **IV 스큐를 scatter → 곡선으로 재설계**
+(신규 `iv_skew` 렌더러) — 풋(파랑)·콜(빨강)을 행사가 순으로 *선 연결*해 스큐 트렌드가
+보이게, 행사가 수를 관심 6개 → *전체 체인*(현물 ±18% 밴드)으로 확대, ATM IV 가로
+기준선 라벨을 plot 안 좌상단에 둬 **우측 잘림 제거**. ② **선물 베이시스 한 줄 지표**
+(신규 `indicator` 렌더러, 0 중심 ± 막대 — 콘탱고=accent/백워데이션=down) 추가 —
+v7.9.9 에서 빠졌던 item4 세 번째 비주얼 완성. ③ `derivatives_fetcher.build_derivatives_charts`
+가 iv_skew(전 체인)+indicator(베이시스) 생성, `tests/test_derivatives_fetcher.py` 에
+**회귀 테스트 2종 추가**(차트 4종 shape·graceful). `iv_skew`/`indicator` KNOWN_CHART_TYPES
+등록. 목업 갱신 `samples/market_briefing_charts_v7_9_9.html`. (전부 결정적 주입 →
+다음 브리핑부터 자동.)
 
 ## v7.9.9 — 장마감 브리핑 차트 직관화: 코스피 캔들+이평선·하락비율 이중축·옵션 데스크 비주얼 (사용자 요청)
 

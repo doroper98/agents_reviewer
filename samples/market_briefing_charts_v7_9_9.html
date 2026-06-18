@@ -21,10 +21,11 @@
 </head>
 <body>
 <h1>장마감 브리핑 차트 개선 미리보기 — v7.9.9</h1>
-<p class="desc">production charts.js 가 실제로 렌더하는 결과. 확인 포인트:
+<p class="desc">production charts.js 가 실제로 렌더하는 결과 (v7.9.10). 확인 포인트:
 ① 코스피 캔들 + 20일 이동평균선(회색 선) ② 하락비율(좌, 흰 선) + 지수 캔들(우축) 겹침
-③ IV 스큐 scatter — 라벨 안 겹침 + ATM 가로 기준선 + 하단 설명 ④ 풋콜비율 불릿(중립 1.0 표식)
-⑤ 행사가별 미결제 발산막대 ⑥ dot_matrix 가운데 정렬.</p>
+③ <b>IV 스큐 곡선 — 풋(파랑)·콜(빨강) 두 곡선 연결 + ATM 가로 기준선(라벨 안 잘림) + 하단 설명</b>
+④ <b>선물 베이시스 한 줄 지표(0 중심, 콘탱고=양)</b> ⑤ 풋콜비율 불릿(중립 1.0 표식)
+⑥ 행사가별 미결제 발산막대 ⑦ dot_matrix 가운데 정렬.</p>
 <div id="grid"></div>
 
 <script>
@@ -59,15 +60,22 @@ var PAYLOADS = [
     data: { line:{ series: declineKospi, label:'하락 종목 비율' },
             candle:{ series: kospi1m, label:'KOSPI' } } },
 
-  { type:'scatter', title:'행사가별 내재변동성 (KOSPI200 7월물)',
-    subtitle:'점이 기준선 위면 그 행사가 옵션이 등가격보다 비싸게 거래된다는 뜻',
-    x_label:'행사가', y_label:'내재변동성 (%)',
-    annotations:[{ kind:'hline', y:69.3, label:'ATM IV (등가격 기준선)' }],
-    note:'내재변동성(IV)은 옵션 가격에 녹아든 시장의 변동 예상치다. 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 같은 변동성으로 거래된다고 가정한 수평선이다. 외가격 풋의 점이 기준선 위로 솟으면(스큐) 시장이 하락 꼬리를 더 비싸게 사고 있다는 신호다.',
+  { type:'iv_skew', title:'행사가별 내재변동성 (KOSPI200 7월물)',
+    subtitle:'풋(파랑)·콜(빨강)을 행사가 순으로 이은 변동성 스큐 곡선',
+    x_label:'행사가', atm_iv:69.3,
+    note:'내재변동성(IV)은 옵션 가격에 녹아든 시장의 변동 예상치다. 점선 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 같은 변동성으로 거래된다 가정한 수평선이다. 외가격 풋(왼쪽 파란 곡선)이 기준선 위로 솟으면(스큐) 시장이 하락 꼬리를 더 비싸게 사고 있다는 신호다.',
     source:'KRX 종가에서 산출 / 2026-06-17',
-    data:[ {x:1250,y:78.0,label:'풋 1,250',accent:true},{x:1300,y:75.1,label:'풋 1,300'},
-           {x:1400,y:68.2,label:'풋 1,400'},{x:1462.5,y:67.4,label:'콜 1,462.5'},
-           {x:1525,y:67.9,label:'풋 1,525'},{x:1527.5,y:68.0,label:'콜 1,527.5'} ] },
+    data:[ {strike:1250,iv:78.0,type:'put'},{strike:1275,iv:76.4,type:'put'},{strike:1300,iv:75.1,type:'put'},
+           {strike:1325,iv:73.2,type:'put'},{strike:1350,iv:71.8,type:'put'},{strike:1375,iv:70.5,type:'put'},
+           {strike:1400,iv:69.6,type:'put'},{strike:1425,iv:69.1,type:'put'},{strike:1450,iv:69.0,type:'put'},
+           {strike:1425,iv:67.0,type:'call'},{strike:1450,iv:67.2,type:'call'},{strike:1462.5,iv:67.4,type:'call'},
+           {strike:1500,iv:67.9,type:'call'},{strike:1527.5,iv:68.6,type:'call'},{strike:1550,iv:69.4,type:'call'},
+           {strike:1575,iv:70.3,type:'call'},{strike:1600,iv:71.5,type:'call'} ] },
+
+  { type:'indicator', title:'선물 베이시스 — 콘탱고/백워데이션',
+    note:'선물 가격에서 현물(KOSPI200)을 뺀 값. 0보다 크면 콘탱고(정상), 작으면 백워데이션(수급 왜곡·하락 신호). 괴리가 크면 차익거래 프로그램이 현물 수급을 흔들 수 있다.',
+    source:'KRX / 2026-06-17 (현물 1,417.0)',
+    data:[{ label:'선물 - 현물', value:11.88, unit:'p', pos_label:'콘탱고', neg_label:'백워데이션' }] },
 
   { type:'bullet', title:'풋/콜 비율 — 중립(1.0) 대비',
     note:'풋 거래량을 콜 거래량으로 나눈 값. 세로 표식(1.0)이 중립선. 1보다 크면 하방 헤지·약세 우세, 극단적으로 높으면 단기 바닥 역지표로도 읽힌다.',

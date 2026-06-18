@@ -55,6 +55,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "combo", "diverging_bar", "pyramid", "dot_matrix",
     # v7.9.9 — 좌축 비율 line + 우축 지수 candle (장마감 브리핑 breadth 전용, 결정적 주입)
     "combo_candle",
+    # v7.9.10 — 옵션 데스크 전용 (결정적 주입): 변동성 스큐 곡선 + 부호 한 줄 지표
+    "iv_skew", "indicator",
     # embedded_map (별도 채널)
     "map",
 )

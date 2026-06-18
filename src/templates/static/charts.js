@@ -3157,6 +3157,135 @@
       .text(`${candleS.label || '지수'} (우, 캔들)`);
   }
 
+  // ----- IV_SKEW (변동성 스큐 곡선) -----
+  // v7.9.10 — 옵션 데스크: 행사가별 내재변동성을 풋(파랑)/콜(빨강) 두 곡선으로
+  // 연결해 스큐 트렌드를 보인다. ATM IV 가로 기준선(라벨 비잘림) + 범례.
+  // data: [{strike, iv, type:'put'|'call'}], payload.atm_iv (선택).
+  function drawIvSkew(stage, payload, t) {
+    var raw = (payload.data || []).filter(function (d) {
+      return isFinite(+d.strike) && isFinite(+d.iv);
+    });
+    if (raw.length < 3) return;
+    var PUT = '#4F8BF0', CALL = '#E0604A';
+    var W = 720, H = 380;
+    var zones = computeZones(W, H, { left: 56, right: 58, top: 42, bottom: 44 });
+    var svg = d3.select(stage).select('svg')
+      .attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMidYMid meet');
+    var xExt = d3.extent(raw, function (d) { return +d.strike; });
+    var yvals = raw.map(function (d) { return +d.iv; });
+    var atm = (payload.atm_iv != null && isFinite(+payload.atm_iv)) ? +payload.atm_iv : null;
+    if (atm != null) yvals.push(atm);
+    var yMin = d3.min(yvals), yMax = d3.max(yvals);
+    var xPad = (xExt[1] - xExt[0]) * 0.05 || 1, yPad = (yMax - yMin) * 0.12 || 1;
+    var xS = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad])
+      .range([zones.data.x, zones.data.x + zones.data.w]);
+    var yS = d3.scaleLinear().domain([yMin - yPad, yMax + yPad])
+      .range([zones.data.y + zones.data.h, zones.data.y]);
+    // y grid + labels
+    yS.ticks(5).forEach(function (v) {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yS(v)).attr('y2', yS(v))
+        .attr('stroke', t.muted).attr('stroke-opacity', 0.14).attr('stroke-width', 0.5);
+      svg.append('text').attr('x', zones.data.x - 6).attr('y', yS(v) + 3).attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+        .text(v + '%');
+    });
+    // x axis (행사가)
+    svg.append('g').attr('transform', 'translate(0,' + (zones.data.y + zones.data.h) + ')')
+      .call(d3.axisBottom(xS).ticks(7).tickFormat(d3.format(',.0f')))
+      .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
+    if (payload.x_label) {
+      svg.append('text').attr('x', W / 2).attr('y', H - 6).attr('text-anchor', 'middle')
+        .attr('font-size', 11).attr('fill', t.muted).text(payload.x_label);
+    }
+    // ATM IV 가로 기준선 — 라벨을 plot 안 좌상단에 (우측 잘림 방지)
+    if (atm != null) {
+      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+        .attr('y1', yS(atm)).attr('y2', yS(atm))
+        .attr('stroke', t.text).attr('stroke-width', 1).attr('stroke-dasharray', '5 4')
+        .attr('stroke-opacity', 0.55);
+      svg.append('text').attr('x', zones.data.x + 5).attr('y', yS(atm) - 5)
+        .attr('text-anchor', 'start').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 10).attr('fill', t.text).attr('fill-opacity', 0.8)
+        .text('ATM IV ' + atm.toFixed(1) + '% (등가격 기준선)');
+    }
+    // 두 계열 (풋 파랑 / 콜 빨강) — 행사가 순 정렬 후 선 연결 + 점.
+    function drawSeries(rows, color) {
+      if (rows.length < 1) return;
+      rows.sort(function (a, b) { return (+a.strike) - (+b.strike); });
+      if (rows.length >= 2) {
+        var ln = d3.line().x(function (d) { return xS(+d.strike); })
+          .y(function (d) { return yS(+d.iv); }).curve(d3.curveLinear);
+        svg.append('path').attr('d', ln(rows)).attr('fill', 'none')
+          .attr('stroke', color).attr('stroke-width', 1.7).attr('stroke-opacity', 0.9);
+      }
+      rows.forEach(function (d) {
+        svg.append('circle').attr('cx', xS(+d.strike)).attr('cy', yS(+d.iv)).attr('r', 3.4)
+          .attr('fill', color).attr('fill-opacity', 0.95);
+      });
+    }
+    var puts = raw.filter(function (d) { return (d.type || '') === 'put'; });
+    var calls = raw.filter(function (d) { return (d.type || '') === 'call'; });
+    if (puts.length || calls.length) {
+      drawSeries(puts, PUT);
+      drawSeries(calls, CALL);
+    } else {
+      drawSeries(raw.slice(), t.accent);  // type 없으면 단일 곡선
+    }
+    // 범례 (우상단)
+    function legend(x, color, label) {
+      svg.append('circle').attr('cx', x).attr('cy', zones.data.y - 14).attr('r', 4).attr('fill', color);
+      svg.append('text').attr('x', x + 9).attr('y', zones.data.y - 10)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text).text(label);
+    }
+    if (puts.length || calls.length) {
+      legend(zones.data.x + zones.data.w - 120, PUT, '풋 (Put)');
+      legend(zones.data.x + zones.data.w - 56, CALL, '콜 (Call)');
+    }
+  }
+
+  // ----- INDICATOR (부호 있는 한 줄 지표 — 0 중심) -----
+  // v7.9.10 — 선물 베이시스/콘탱고 같은 ± 스칼라 한 줄 시각화. 0 중심 축 위에
+  // 현재값 막대 + 부호별 색(양수=accent, 음수=down) + 값 라벨.
+  // data: [{label, value, unit?, pos_label?, neg_label?}]
+  function drawIndicator(stage, payload, t) {
+    var rows = (payload.data || []).filter(function (d) { return isFinite(+d.value); });
+    if (!rows.length || rows.length > 4) return;
+    var W = 720, rowH = 52, top = 20, bottom = 18;
+    var H = top + rows.length * rowH + bottom;
+    var svg = d3.select(stage).select('svg')
+      .attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMidYMid meet');
+    var labelW = 150, x0 = labelW + 16, x1 = W - 30;
+    var cx = (x0 + x1) / 2;
+    var maxAbs = d3.max(rows, function (d) { return Math.abs(+d.value); }) || 1;
+    var half = (x1 - x0) / 2 - 70;
+    var sc = function (v) { return (Math.abs(+v) / maxAbs) * half; };
+    rows.forEach(function (d, i) {
+      var cy = top + i * rowH + rowH / 2;
+      // 라벨
+      svg.append('text').attr('x', labelW).attr('y', cy + 4).attr('text-anchor', 'end')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 12).attr('fill', t.text)
+        .text(String(d.label || ''));
+      // 0 중심선 (세로)
+      svg.append('line').attr('x1', cx).attr('x2', cx).attr('y1', cy - 18).attr('y2', cy + 18)
+        .attr('stroke', t.muted).attr('stroke-width', 1).attr('stroke-opacity', 0.6);
+      svg.append('text').attr('x', cx).attr('y', cy - 22).attr('text-anchor', 'middle')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 8).attr('fill', t.muted).text('0');
+      var v = +d.value, pos = v >= 0;
+      var col = pos ? t.accent : (t.down || '#C45C4C');
+      var w = sc(v);
+      svg.append('rect').attr('x', pos ? cx : cx - w).attr('y', cy - 9)
+        .attr('width', Math.max(1, w)).attr('height', 18).attr('fill', col).attr('fill-opacity', 0.85);
+      // 값 라벨
+      var vtxt = (v >= 0 ? '+' : '') + (Math.abs(v) >= 100 ? d3.format(',.0f')(v) : d3.format(',.2f')(v)) + (d.unit || '');
+      var sub = pos ? (d.pos_label || '') : (d.neg_label || '');
+      svg.append('text').attr('x', pos ? (cx + w + 8) : (cx - w - 8)).attr('y', cy + 4)
+        .attr('text-anchor', pos ? 'start' : 'end').attr('font-family', 'Noto Serif KR')
+        .attr('font-size', 14).attr('font-weight', 700).attr('fill', col)
+        .text(vtxt + (sub ? '  ' + sub : ''));
+    });
+  }
+
   // Dispatcher
   // ============================================================
   const RENDERERS = {
@@ -3178,6 +3307,8 @@
     pyramid: drawPyramid, dot_matrix: drawDotMatrix,
     // v7.9.9 — 좌축 line(비율) + 우축 candle(지수) 결합 (장마감 브리핑 breadth)
     combo_candle: drawComboCandle,
+    // v7.9.10 — 옵션 데스크: 변동성 스큐 곡선 + 부호 한 줄 지표
+    iv_skew: drawIvSkew, indicator: drawIndicator,
   };
 
   async function renderStage(stage, idx) {

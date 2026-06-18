@@ -162,3 +162,39 @@ def test_build_snapshot_empty_graceful():
     assert not snap.has_data
     assert snap.key_figures == []
     assert snap.notable_calls == []
+
+
+def test_build_derivatives_charts_shape():
+    # v7.9.10 — 옵션 데스크 직관 차트(결정적 생성). 6 행사가 × 풋/콜 = 12 옵션.
+    anchor = date(2026, 6, 17)
+    snap = build_snapshot(
+        as_of=anchor.isoformat(), anchor=anchor,
+        futures_rows=_fut_rows(), option_rows=_opt_rows(anchor),
+    )
+    types = {c["type"] for c in snap.charts}
+    # IV 스큐 곡선 + 베이시스 한 줄 지표는 데이터 있으면 항상.
+    assert "iv_skew" in types
+    assert "indicator" in types
+    # iv_skew: 풋/콜 type 만 + ATM 기준선 + 설명, 행사가 ≥4점.
+    skew = next(c for c in snap.charts if c["type"] == "iv_skew")
+    assert len(skew["data"]) >= 4
+    assert {d["type"] for d in skew["data"]} <= {"put", "call"}
+    assert all("strike" in d and "iv" in d for d in skew["data"])
+    assert "atm_iv" in skew and skew.get("note")
+    # 베이시스 indicator: 부호 보존(콘탱고/백워데이션 라벨).
+    ind = next(c for c in snap.charts if c["type"] == "indicator")
+    assert ind["data"][0]["value"] == round(snap.futures.basis, 2)
+    assert ind["data"][0]["pos_label"] == "콘탱고"
+    # 풋콜 bullet / OI diverging_bar 는 데이터 있을 때.
+    if snap.pcr_volume is not None or snap.pcr_oi is not None:
+        assert "bullet" in types
+    assert "diverging_bar" in types
+
+
+def test_build_derivatives_charts_empty_graceful():
+    anchor = date(2026, 6, 17)
+    snap = build_snapshot(
+        as_of=anchor.isoformat(), anchor=anchor,
+        futures_rows=[], option_rows=[],
+    )
+    assert snap.charts == []
