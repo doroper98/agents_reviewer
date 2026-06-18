@@ -30,11 +30,62 @@ from src.tools.market_fetcher import (
 
 
 def test_resolve_exact_registry_key() -> None:
-    """v5.2.1 — KOSPI 지수는 Yahoo 로 라우팅 (pykrx index 우회)."""
+    """v7.9.15 — KOSPI 지수는 KRX(pykrx) primary + Yahoo fallback 으로 라우팅."""
     spec = resolve_instrument("KOSPI")
     assert spec is not None
-    assert spec.source == "YAHOO"
-    assert spec.code == "^KS11"
+    assert spec.source == "KRX"
+    assert spec.code == "1001"
+    assert spec.fallback_source == "YAHOO"
+    assert spec.fallback_code == "^KS11"
+
+
+def test_kospi_falls_back_to_yahoo_when_krx_empty() -> None:
+    """v7.9.15 — KRX primary 가 빈 데이터면 Yahoo fallback 으로 채움.
+
+    kospi-date-mismatch 회귀의 핵심 가드: KRX 가 빈 결과(미설치/로그인 실패)면
+    Yahoo 로 폴백해 최소한 v7.9.14 동작을 보존, KRX 가 데이터를 주면 그쪽을 우선.
+    """
+    from src.tools.market_fetcher import KRXFetcher, YahooFetcher
+
+    yahoo_bars = [OHLCBar(date="2026-06-17", open=8800, high=8900, low=8700, close=8864.24)]
+
+    async def _empty(self, code, start, end):  # KRX primary → 빈 데이터
+        return []
+
+    async def _yahoo(self, code, start, end):
+        assert code == "^KS11"  # fallback 코드로 호출돼야
+        return yahoo_bars
+
+    with patch.object(KRXFetcher, "fetch", _empty), \
+            patch.object(YahooFetcher, "fetch", _yahoo):
+        series = asyncio.run(fetch_market_series("코스피", period="1M"))
+
+    assert series.source == "YAHOO"
+    assert series.code == "^KS11"
+    assert len(series.data) == 1
+    assert series.data[0].close == 8864.24
+
+
+def test_kospi_prefers_krx_when_available() -> None:
+    """v7.9.15 — KRX primary 가 데이터를 주면 Yahoo fallback 은 호출 안 됨."""
+    from src.tools.market_fetcher import KRXFetcher, YahooFetcher
+
+    krx_bars = [OHLCBar(date="2026-06-18", open=7490, high=7530, low=7480, close=7516.04)]
+
+    async def _krx(self, code, start, end):
+        assert code == "1001"  # KRX index 코드
+        return krx_bars
+
+    async def _boom(self, code, start, end):  # 호출되면 실패
+        raise AssertionError("fallback 이 호출되면 안 됨 — KRX 가 데이터를 줬음")
+
+    with patch.object(KRXFetcher, "fetch", _krx), \
+            patch.object(YahooFetcher, "fetch", _boom):
+        series = asyncio.run(fetch_market_series("코스피", period="1M"))
+
+    assert series.source == "KRX"
+    assert series.code == "1001"
+    assert series.data[0].close == 7516.04
 
 
 def test_resolve_korean_alias() -> None:
@@ -327,12 +378,18 @@ def test_registry_chart_type_convention() -> None:
     assert resolve_instrument("국고 10년").chart_type == "line"
 
 
-def test_kospi_routed_to_yahoo() -> None:
-    """v5.2.1 — 지수는 Yahoo Finance 로 (pykrx index 우회)."""
+def test_kospi_routed_to_krx_with_yahoo_fallback() -> None:
+    """v7.9.15 — 한국 지수는 KRX(pykrx) primary + Yahoo fallback.
+
+    Yahoo ^KS11 EOD 지연(kospi-date-mismatch) 차단 — KRX 권위 소스 우선,
+    pykrx index 실패 시에만 Yahoo 폴백.
+    """
     spec = resolve_instrument("코스피")
     assert spec is not None
-    assert spec.source == "YAHOO"
-    assert spec.code == "^KS11"
+    assert spec.source == "KRX"
+    assert spec.code == "1001"
+    assert spec.fallback_source == "YAHOO"
+    assert spec.fallback_code == "^KS11"
 
 
 def test_dxy_routed_to_yahoo_ice_ticker() -> None:
@@ -350,11 +407,14 @@ def test_dxy_routed_to_yahoo_ice_ticker() -> None:
     assert spec.code != "DTWEXBGS"
 
 
-def test_kosdaq_routed_to_yahoo() -> None:
+def test_kosdaq_routed_to_krx_with_yahoo_fallback() -> None:
+    """v7.9.15 — 코스닥도 KRX(pykrx, 2001) primary + Yahoo(^KQ11) fallback."""
     spec = resolve_instrument("코스닥")
     assert spec is not None
-    assert spec.source == "YAHOO"
-    assert spec.code == "^KQ11"
+    assert spec.source == "KRX"
+    assert spec.code == "2001"
+    assert spec.fallback_source == "YAHOO"
+    assert spec.fallback_code == "^KQ11"
 
 
 def test_samsung_still_krx() -> None:

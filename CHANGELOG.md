@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.14
+last_synced_with: v7.9.15
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.15 — 코스피·코스닥 지수 KRX(pykrx) 우선 + Yahoo 폴백 (kospi-date-mismatch, 사용자 catch)
+
+6/19 아침 일일 브리핑(analysis_20260619_061515)에서 코스피 표 카드가 `(6/17 종가) 8864.24
+(+1.58%)` 로 박혀, 같은 보고서의 KRX 개별주(삼성·하이닉스)·ECOS 환율이 모두 6/18 종가인데
+코스피만 하루 뒤처지는 불일치. 근본 원인은 한국 지수만 Yahoo(`^KS11`)에서 받는데, 장 마감
+다음 날 아침 fetch 시점(06:15 KST)에 Yahoo 의 `^KS11` 6/18 일봉이 아직 게시되지 않아
+직전일(6/17) 봉이 마지막이었던 것 — 게다가 Yahoo `^KS11` 값(8864)이 실제 코스피(7516)와도
+괴리. 본문 prose 는 웹검색으로 6/18 7516.04 를 맞게 적어 보고서 내부 모순까지 발생.
+- **Fix (A)**: `INSTRUMENT_REGISTRY` 의 코스피/코스닥을 KRX(pykrx) `get_index_ohlcv`
+  (코드 1001/2001) primary 로 전환, Yahoo(^KS11/^KQ11)는 `fallback_source`/`fallback_code`
+  로 강등. `fetch_market_series` 가 primary 빈 데이터일 때만 폴백 — pykrx index 가 환경에서
+  실패해도 최악의 경우 v7.9.14 동작(=Yahoo)과 동일, 회귀 무.
+- `InstrumentSpec` 에 `fallback_source`/`fallback_code` 필드 + `_build_fetcher` 헬퍼 추가.
+  회귀 테스트 3종(KRX 우선 / 빈 데이터 폴백 / 라우팅 메타) 추가.
+- 발행본 061515 는 표 카드·본문 3문장·차트의 8864.24(6/17) → 실측 6/18 종가(7516.04, +0.31%)로
+  patch_report 핫픽스.
 
 ## v7.9.14 — 지수 등락률 vs 하락비율 diverging_bar 의 KOSPI 등락률 0 누락 방어 (CHART-AP-35, 사용자 catch)
 

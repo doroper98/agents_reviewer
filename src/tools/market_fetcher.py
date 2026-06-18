@@ -8,8 +8,8 @@ v5.2.0 — 시계열 데이터 수집. ContextAnalyst 가 LLM 출력에 ``instru
 
 | 종목                  | Source | Code                  | 차트 기본 |
 |----------------------|--------|-----------------------|----------|
-| KOSPI                | YAHOO  | ^KS11                 | line     |
-| KOSDAQ               | YAHOO  | ^KQ11                 | line     |
+| KOSPI                | KRX→YAHOO | 1001 (fb ^KS11)    | line     |
+| KOSDAQ               | KRX→YAHOO | 2001 (fb ^KQ11)    | line     |
 | 삼성전자              | KRX    | 005930                | candle   |
 | SK하이닉스            | KRX    | 000660                | candle   |
 | 엔비디아 (NVDA)       | YAHOO  | NVDA                  | candle   |
@@ -68,7 +68,14 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class InstrumentSpec:
-    """instrument 별 fetch 라우팅 + 표시 메타."""
+    """instrument 별 fetch 라우팅 + 표시 메타.
+
+    v7.9.15 — ``fallback_source`` / ``fallback_code`` 추가. primary fetch 가 빈
+    데이터를 돌려줄 때만 fallback 으로 재시도 (graceful 2단 라우팅). 한국 지수
+    (코스피·코스닥) 는 KRX(pykrx) 우선 → 실패 시 Yahoo 폴백 — Yahoo ``^KS11``
+    EOD 게시 지연으로 장 마감 다음 날 아침 브리핑에 직전일 봉이 누락되는 회귀
+    (kospi-date-mismatch) 차단. KRX 가 권위 소스라 값·일자 모두 더 정확.
+    """
 
     name: str                       # 표시명 (보고서/차트에 노출)
     source: Literal["KRX", "FRED", "ECOS", "YAHOO"]
@@ -76,20 +83,32 @@ class InstrumentSpec:
     chart_type: Literal["line", "candle", "area"] = "line"
     unit: str = ""                  # "%", "원", "$" 등
     aliases: tuple[str, ...] = ()   # LLM 출력의 한글 표현 매칭용
+    # primary 가 빈 데이터일 때만 시도하는 폴백 라우팅 (없으면 None).
+    fallback_source: Literal["KRX", "FRED", "ECOS", "YAHOO"] | None = None
+    fallback_code: str = ""
 
 
 INSTRUMENT_REGISTRY: dict[str, InstrumentSpec] = {
-    # ── 지수 (Yahoo Finance — pykrx index endpoint 가 OTP 인증 우회 실패 사례
-    #         보고 후 v5.2.1 부터 yfinance 로 전환. ^KS11 / ^KQ11 ticker 안정) ──
+    # ── 한국 지수 (v7.9.15 — KRX/pykrx 우선 → Yahoo 폴백) ──
+    # v5.2.1~v7.9.14 는 Yahoo (^KS11/^KQ11) 단독이었으나, Yahoo 의 한국 지수 EOD
+    # 일봉 게시가 장 마감 후 하루 지연되는 회귀 (kospi-date-mismatch — 6/19 아침
+    # 브리핑에 코스피가 6/17 봉으로 박힘. 같은 보고서의 KRX 개별주·ECOS 환율은
+    # 6/18 정상) 로 v7.9.15 부터 KRX(pykrx) `get_index_ohlcv` 를 primary 로 전환.
+    # pykrx index 코드: 코스피 "1001" / 코스닥 "2001" (4자리 → KRXFetcher 의
+    # is_index 경로). pykrx index 가 환경에 따라 실패할 수 있어 (과거 OTP/로그인
+    # 이슈가 v5.2.1 Yahoo 전환의 사유였음) Yahoo 를 fallback 으로 유지 — primary
+    # 가 빈 데이터면 자동 폴백, 최악의 경우 = v7.9.14 와 동일 (회귀 무).
     "KOSPI": InstrumentSpec(
-        name="코스피", source="YAHOO", code="^KS11",
+        name="코스피", source="KRX", code="1001",
         chart_type="line",
         aliases=("코스피", "KOSPI", "한국 증시 종합", "한국증시", "한국 증시"),
+        fallback_source="YAHOO", fallback_code="^KS11",
     ),
     "KOSDAQ": InstrumentSpec(
-        name="코스닥", source="YAHOO", code="^KQ11",
+        name="코스닥", source="KRX", code="2001",
         chart_type="line",
         aliases=("코스닥", "KOSDAQ"),
+        fallback_source="YAHOO", fallback_code="^KQ11",
     ),
     # ── KRX 개별주 (pykrx — get_market_ohlcv 작동 확인) ──
     "005930": InstrumentSpec(
@@ -684,6 +703,24 @@ def period_to_dates(period: str, anchor: date | None = None) -> tuple[date, date
     return start, end
 
 
+def _build_fetcher(
+    source: str, config: Any | None,
+) -> FREDFetcher | ECOSFetcher | KRXFetcher | YahooFetcher | None:
+    """source 문자열 → fetcher 인스턴스. 미지원 source 면 None (v7.9.15)."""
+    fred_key = getattr(config, "fred_api_key", "") if config else ""
+    ecos_key = getattr(config, "ecos_api_key", "") if config else ""
+    krx_key = getattr(config, "krx_api_key", "") if config else ""
+    if source == "FRED":
+        return FREDFetcher(fred_key)
+    if source == "ECOS":
+        return ECOSFetcher(ecos_key)
+    if source == "KRX":
+        return KRXFetcher(krx_key)
+    if source == "YAHOO":
+        return YahooFetcher()
+    return None
+
+
 async def fetch_market_series(
     instrument: str,
     period: str = "3M",
@@ -709,30 +746,38 @@ async def fetch_market_series(
         return MarketSeries(instrument=instrument)
 
     start, end = period_to_dates(period, anchor_date)
-    fred_key = getattr(config, "fred_api_key", "") if config else ""
-    ecos_key = getattr(config, "ecos_api_key", "") if config else ""
-    krx_key = getattr(config, "krx_api_key", "") if config else ""
 
-    fetcher: FREDFetcher | ECOSFetcher | KRXFetcher | YahooFetcher
-    if spec.source == "FRED":
-        fetcher = FREDFetcher(fred_key)
-    elif spec.source == "ECOS":
-        fetcher = ECOSFetcher(ecos_key)
-    elif spec.source == "KRX":
-        fetcher = KRXFetcher(krx_key)
-    elif spec.source == "YAHOO":
-        fetcher = YahooFetcher()
-    else:
+    fetcher = _build_fetcher(spec.source, config)
+    if fetcher is None:
         return MarketSeries(
             instrument=spec.name, source=spec.source, code=spec.code,
             unit=spec.unit, chart_type=spec.chart_type,
         )
 
     data = await fetcher.fetch(spec.code, start, end)
+    used_source = spec.source
+    used_code = spec.code
+
+    # v7.9.15 — primary 가 빈 데이터면 fallback 라우팅 시도 (graceful 2단).
+    # 코스피·코스닥의 KRX(primary) → Yahoo(fallback) 가 대표 케이스.
+    if not data and spec.fallback_source:
+        fb_fetcher = _build_fetcher(spec.fallback_source, config)
+        if fb_fetcher is not None:
+            logger.info(
+                "[market_fetcher] %s primary(%s/%s) 빈 데이터 → fallback(%s/%s) 시도",
+                spec.name, spec.source, spec.code,
+                spec.fallback_source, spec.fallback_code,
+            )
+            fb_data = await fb_fetcher.fetch(spec.fallback_code, start, end)
+            if fb_data:
+                data = fb_data
+                used_source = spec.fallback_source
+                used_code = spec.fallback_code
+
     return MarketSeries(
         instrument=spec.name,
-        source=spec.source,
-        code=spec.code,
+        source=used_source,
+        code=used_code,
         unit=spec.unit,
         chart_type=spec.chart_type,
         start_date=start.isoformat(),
