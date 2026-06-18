@@ -571,7 +571,7 @@ async def _fetch_vkospi(config, trd_dd: str) -> float | None:
 
 
 def augment_skew_history(
-    snap: "DerivativesSnapshot", *, config=None, n_days: int = 10
+    snap: "DerivativesSnapshot", *, config=None, n_days: int = 20
 ) -> None:
     """오늘 IV 스큐를 캐시에 저장하고, 지난 n_days 영업일 스큐를 iv_skew 차트에 병합.
 
@@ -682,17 +682,26 @@ async def fetch_kr_derivatives_snapshot(
     return snap
 
 
-async def backfill_skew(*, days: int = 14, config=None) -> int:
-    """지난 ``days`` 일을 거슬러 IV 스큐 캐시를 채운다 (영업일 ~10일 확보용, v7.9.11).
+async def backfill_skew(*, days: int = 20, config=None, max_calendar: int | None = None) -> int:
+    """지난 ``days`` *영업일* 의 IV 스큐 캐시를 채운다 (기본 20영업일 ≈ 한 달, v7.9.12).
 
-    날마다 fetch_kr_derivatives_snapshot 가 build → augment_skew_history 로 store 까지
-    수행하므로, 여기선 날짜를 거슬러 호출만 한다. 주말/휴일·데이터 없는 날은 skip.
+    캘린더 날짜를 거슬러 가며 토/일은 건너뛰고, **데이터가 있는 영업일** 을 ``days``
+    개 채울 때까지 반복(휴일은 데이터 없어 카운트 안 됨). 날마다 fetch_kr_derivatives_
+    snapshot 가 build → augment_skew_history 로 store 까지 수행하므로 여기선 호출만.
+
+    주의(월물 롤오버): 각 과거일은 *그날의 front 월물* 로 저장된다. 차트 오버레이는
+    오늘 front 월물과 같은 expiry 만 겹치므로, backfill 이 롤 구간을 가로지르면 받은
+    날 수보다 적게 표시될 수 있다(다른 월물 IV 는 비교 불가 — 의도된 동작).
     """
     from datetime import timedelta
+    target = max(1, days)
+    cap = max_calendar if max_calendar is not None else (target * 2 + 14)  # 주말·휴일 여유
     stored = 0
     today = date.today()
-    for i in range(days):
+    i = 0
+    while stored < target and i < cap:
         d = today - timedelta(days=i)
+        i += 1
         if d.weekday() >= 5:  # 토/일 skip
             continue
         snap = await fetch_kr_derivatives_snapshot(anchor_date=d, config=config)
@@ -700,7 +709,7 @@ async def backfill_skew(*, days: int = 14, config=None) -> int:
         if skew and snap.front_expiry:
             stored += 1
             print(f"  {d.isoformat()} — front={snap.front_expiry} pts={len(skew.get('data') or [])}")
-    print(f"backfill_skew done — {stored} 영업일 적재")
+    print(f"backfill_skew done — {stored}/{target} 영업일 적재 (캘린더 {i}일 탐색)")
     return stored
 
 
@@ -718,7 +727,7 @@ def _main() -> None:  # pragma: no cover
         print(f"[warn] Config 로드 실패({e}) — KRX 로그인 없이 진행")
         cfg = None
     if len(sys.argv) > 1 and sys.argv[1] == "skew-backfill":
-        days = 14
+        days = 20
         if "--days" in sys.argv:
             try:
                 days = int(sys.argv[sys.argv.index("--days") + 1])

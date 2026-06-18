@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.11
+last_synced_with: v7.9.12
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.12 — 스큐 오버레이 기본 20영업일(≈한 달) + 월물 롤오버 동작 명시 (사용자 요청)
+
+스큐 오버레이/백필 기본을 **10→20영업일(≈한 달)** 로 확대. `backfill_skew` 는 캘린더가
+아닌 *영업일* 기준으로 데이터 있는 날을 20개 채울 때까지 반복(휴일 자동 skip, 안전 캡
+내). `augment_skew_history` 기본 n_days 20. **월물 롤오버 동작 명문화**: 캐시는 `expiry`
+별 저장이고 오버레이는 *오늘 front 월물과 같은 expiry* 만 겹친다 — 다른 월물 IV 는 잔존
+만기가 달라 비교 불가하므로, front 가 롤오버되면 새 월물 스큐로 자동 전환되고 그 시점부터
+누적(롤 직후엔 며칠만 표시, 의도된 동작). backfill 이 롤 구간을 가로지르면 받은 날 수보다
+적게 표시될 수 있음. CLI 기본 `--days 20`.
 
 ## v7.9.11 — IV 스큐 곡선 보강: 행사가 라벨 + 범위 확대 + 지난 N영업일 페이드 오버레이 (사용자 피드백)
 
