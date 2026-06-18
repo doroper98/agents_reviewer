@@ -96,6 +96,8 @@ class DerivativesSnapshot:
     notable_calls: list[OptionQuote] = field(default_factory=list)
     notable_puts: list[OptionQuote] = field(default_factory=list)
     atm_iv: float | None = None
+    next_expiry: str | None = None          # 다음 월물(차월물) — 롤오버 대비 미리 캐시
+    next_skew: list[dict] = field(default_factory=list)  # 차월물 [{strike, iv, type}]
     key_figures: list[dict] = field(default_factory=list)
     charts: list[dict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -214,6 +216,63 @@ def _select_front_expiry(parsed: list[dict]) -> str | None:
     return max(by_exp.items(), key=lambda kv: kv[1])[0]
 
 
+def _select_next_expiry(parsed: list[dict], front: str | None) -> str | None:
+    """front 바로 다음(차월물) 만기 — 롤오버 대비 미리 스큐를 캐시하기 위함."""
+    exps = sorted({o["expiry"] for o in parsed if o.get("expiry")})
+    if front and front in exps:
+        i = exps.index(front)
+        if i + 1 < len(exps):
+            return exps[i + 1]
+    later = [e for e in exps if e > (front or "")]
+    return later[0] if later else None
+
+
+def _fmt_expiry(yyyymm: str | None) -> str:
+    """'202607' → '2026년 7월물'. 못 알아보면 원문."""
+    if not yyyymm or len(yyyymm) < 6 or not yyyymm[:6].isdigit():
+        return yyyymm or ""
+    return f"{yyyymm[:4]}년 {int(yyyymm[4:6])}월물"
+
+
+def _skew_points_for_expiry(
+    parsed: list[dict], expiry: str | None, anchor: date,
+    spot: float | None, risk_free: float,
+) -> list[dict]:
+    """주어진 만기의 (strike, iv%, type) 스큐 점. 현물 ±28% + IV 3~200% 필터.
+
+    build_snapshot 의 front 스큐(snap.options 기반)와 동일 기준 — 차월물에도 적용해
+    롤오버 전에 미리 캐시할 수 있게 한다. T·IV 역산은 만기별로 따로 계산.
+    """
+    if not expiry:
+        return []
+    t = _expiry_T(expiry, anchor)
+    if not t:
+        return []
+    pts: list[dict] = []
+    seen: set[tuple[str, float]] = set()
+    for o in parsed:
+        if o["expiry"] != expiry:
+            continue
+        s = o["underlying"] or spot
+        k, prem = o["strike"], o["premium"]
+        if not (s and prem and prem > 0 and k):
+            continue
+        iv = implied_vol(prem, s, k, t, risk_free, o["option_type"])  # type: ignore[arg-type]
+        if iv is None:
+            continue
+        iv_pct = iv * 100.0
+        if not (3.0 <= iv_pct <= 200.0):
+            continue
+        if spot and not (spot * 0.72 <= k <= spot * 1.28):
+            continue
+        key = (o["option_type"], float(k))
+        if key in seen:
+            continue
+        seen.add(key)
+        pts.append({"strike": float(k), "iv": round(iv_pct, 1), "type": o["option_type"]})
+    return pts
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Snapshot 조립 (순수 — 테스트 대상)
 # ──────────────────────────────────────────────────────────────────────────
@@ -304,6 +363,12 @@ def build_snapshot(
         if ivs:
             snap.atm_iv = sum(ivs) / len(ivs)
 
+    # 차월물(next) 스큐 — 롤오버 대비 미리 캐시 (차트엔 안 그림, cache 만). v7.9.13.
+    snap.next_expiry = _select_next_expiry(parsed, front)
+    snap.next_skew = _skew_points_for_expiry(
+        parsed, snap.next_expiry, anchor, chain_spot, risk_free,
+    )
+
     # 관심 콜·풋: 현물 ±notable_band 밴드 안(의사결정 관련 행사가)에서 OI 우선,
     # 동률이면 거래량. 그릭 있는 것만. 딥OTM 꼬리(미결제만 큰 복권)는 제외해도
     # 스큐·PCR·max pain 엔 계속 반영됨. 밴드 안 후보가 부족하면 전체로 완화.
@@ -367,10 +432,11 @@ def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
         })
     distinct_strikes = len({d["strike"] for d in sk})
     if len(sk) >= 4 and distinct_strikes >= 3:
+        exp_label = _fmt_expiry(snap.front_expiry)
         chart: dict = {
             "type": "iv_skew",
-            "title": f"행사가별 내재변동성 (KOSPI200 {snap.front_expiry or ''}물)".strip(),
-            "subtitle": "풋(파랑)·콜(빨강)을 행사가 순으로 이은 변동성 스큐 곡선",
+            "title": f"행사가별 내재변동성 — KOSPI200 {exp_label}".rstrip(" —"),
+            "subtitle": f"{exp_label} 옵션의 풋(파랑)·콜(빨강)을 행사가 순으로 이은 변동성 스큐 곡선",
             "x_label": "행사가",
             "data": sorted(sk, key=lambda d: d["strike"]),
             "note": (
@@ -594,13 +660,18 @@ def augment_skew_history(
     from src.tools.skew_cache import store_skew, recent_skew
     path = getattr(config, "skew_cache_path", "data/iv_skew.sqlite")
     store_skew(path, snap.as_of, snap.front_expiry, today_pts)
+    # 차월물도 미리 저장 — 롤오버 다음날 새 front 가 즉시 N일치 오버레이를 갖게 함.
+    if snap.next_expiry and snap.next_skew:
+        store_skew(path, snap.as_of, snap.next_expiry, snap.next_skew)
+    exp_label = _fmt_expiry(snap.front_expiry)
     hist = recent_skew(path, snap.front_expiry, n_days, snap.as_of)
     if len(hist) >= len(today_pts):  # 캐시 읽기 성공 (최소 오늘치 포함)
         skew_chart["data"] = hist
         n_dates = len({h["date"] for h in hist})
         if n_dates > 1:
             skew_chart["subtitle"] = (
-                f"풋(파랑)·콜(빨강) 스큐 곡선 — 진한 곡선이 오늘, 옅을수록 과거 (최근 {n_dates}영업일)"
+                f"KOSPI200 {exp_label} · 풋(파랑)·콜(빨강) 스큐 — 진한 곡선이 오늘, "
+                f"옅을수록 과거 (최근 {n_dates}영업일, 같은 월물끼리만)"
             )
 
 

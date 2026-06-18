@@ -201,3 +201,39 @@ def test_build_derivatives_charts_empty_graceful():
         futures_rows=[], option_rows=[],
     )
     assert snap.charts == []
+
+
+def _opt_rows_two_expiries(anchor: date):
+    """7월물(거래량 큼=front) + 8월물(차월물) — 롤오버 대비 차월물 캐시 검증용."""
+    from src.tools.greeks import bs_price
+    from src.tools.derivatives_fetcher import _second_thursday
+    s, r, iv = 351.20, 0.03, 0.18
+    rows = []
+    for ym, mth, vol in (("202607", 7, "5000"), ("202608", 8, "200")):
+        exp = _second_thursday(2026, mth)
+        t = (exp - anchor).days / 365.0
+        for strike in [340.0, 345.0, 350.0, 355.0, 360.0]:
+            for cp, ot in (("C", "call"), ("P", "put")):
+                prem = bs_price(s, strike, t, r, iv, ot)  # type: ignore[arg-type]
+                rows.append({
+                    "ISU_NM": f"코스피200 {cp} {ym} {strike}",
+                    "TDD_CLSPRC": f"{prem:.2f}", "ACC_TRDVOL": vol,
+                    "ACC_OPNINT_QTY": "8000", "SPOT_PRC": f"{s}",
+                })
+    return rows
+
+
+def test_next_expiry_skew_precached():
+    # v7.9.13 — 롤오버 대비: 차월물(202608) 스큐를 미리 계산해 둔다.
+    anchor = date(2026, 6, 17)
+    snap = build_snapshot(
+        as_of=anchor.isoformat(), anchor=anchor,
+        futures_rows=_fut_rows(), option_rows=_opt_rows_two_expiries(anchor),
+    )
+    assert snap.front_expiry == "202607"
+    assert snap.next_expiry == "202608"           # 차월물 식별
+    assert len(snap.next_skew) >= 4               # 차월물 IV 미리 계산됨
+    assert {p["type"] for p in snap.next_skew} <= {"put", "call"}
+    # 차트 제목에 '몇월물'이 평이하게 노출.
+    skew = next(c for c in snap.charts if c["type"] == "iv_skew")
+    assert "2026년 7월물" in skew["title"]

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.12
+last_synced_with: v7.9.13
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.13 — 차월물 스큐 선(先)캐시(롤오버 무단절) + 차트에 월물 명시 (사용자 제안)
+
+롤 직후 며칠만 보이던 한계를 해소. ① **차월물 선캐시** — KRX 옵션 체인 응답엔 front 외
+다음 월물도 들어오므로, `build_snapshot` 이 `_skew_points_for_expiry` 로 **차월물 IV 까지
+미리 계산**(`snap.next_expiry`/`next_skew`) → `augment_skew_history` 가 매일 front+차월물을
+둘 다 캐시 저장. 만기가 지나 새 front 가 되면 **이미 N일치 오버레이가 준비**돼 즉시 한 달
+곡선이 보인다(롤오버 무단절). ② **월물 명시** — 차트 제목/부제에 `_fmt_expiry` 로
+'2026년 7월물' 표기(다른 월물 IV 는 비교 불가하므로 어떤 월물인지 분명히). 회귀 테스트
+`test_next_expiry_skew_precached`(차월물 식별·선계산·제목 월물) + 목업 제목 갱신.
 
 ## v7.9.12 — 스큐 오버레이 기본 20영업일(≈한 달) + 월물 롤오버 동작 명시 (사용자 요청)
 
