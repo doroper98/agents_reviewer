@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "bundle_kind": "report_bundle",
-  "generated_at": "2026-06-18T18:48:33.236752+09:00",
+  "generated_at": "2026-06-18T19:43:33.359222+09:00",
   "producer": {
     "system": "agents_reviewer",
     "version": "v7.9.13",
@@ -2433,7 +2433,7 @@
       "data": [
         {
           "label": "KOSPI",
-          "neg": 0,
+          "neg": 2.25,
           "pos": 83.6
         },
         {
