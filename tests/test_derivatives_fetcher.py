@@ -180,6 +180,9 @@ def test_build_derivatives_charts_shape():
     assert len(skew["data"]) >= 4
     assert {d["type"] for d in skew["data"]} <= {"put", "call"}
     assert all("strike" in d and "iv" in d for d in skew["data"])
+    # v7.9.11 — 각 점에 date(오버레이용) + 비현실 IV 제외(3~200%).
+    assert all(d.get("date") == snap.as_of for d in skew["data"])
+    assert all(3.0 <= d["iv"] <= 200.0 for d in skew["data"])
     assert "atm_iv" in skew and skew.get("note")
     # 베이시스 indicator: 부호 보존(콘탱고/백워데이션 라벨).
     ind = next(c for c in snap.charts if c["type"] == "indicator")

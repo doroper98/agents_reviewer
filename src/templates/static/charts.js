@@ -3158,25 +3158,29 @@
   }
 
   // ----- IV_SKEW (변동성 스큐 곡선) -----
-  // v7.9.10 — 옵션 데스크: 행사가별 내재변동성을 풋(파랑)/콜(빨강) 두 곡선으로
-  // 연결해 스큐 트렌드를 보인다. ATM IV 가로 기준선(라벨 비잘림) + 범례.
-  // data: [{strike, iv, type:'put'|'call'}], payload.atm_iv (선택).
+  // v7.9.11 — 풋(파랑)/콜(빨강) 곡선 + 행사가 라벨 + 지난 N영업일 오버레이(나이순
+  // 페이드). 각 점에 date 가 있으면 일자별로 그려 오늘=진하게, 과거=옅게.
+  // data: [{strike, iv, type:'put'|'call', date?}], payload.atm_iv (선택).
   function drawIvSkew(stage, payload, t) {
     var raw = (payload.data || []).filter(function (d) {
       return isFinite(+d.strike) && isFinite(+d.iv);
     });
     if (raw.length < 3) return;
     var PUT = '#4F8BF0', CALL = '#E0604A';
-    var W = 720, H = 380;
-    var zones = computeZones(W, H, { left: 56, right: 58, top: 42, bottom: 44 });
+    var W = 720, H = 404;
+    var zones = computeZones(W, H, { left: 56, right: 58, top: 46, bottom: 58 });
     var svg = d3.select(stage).select('svg')
       .attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMidYMid meet');
+    var dates = Array.from(new Set(raw.map(function (d) { return d.date || ''; })))
+      .filter(Boolean).sort();
+    var hasDates = dates.length > 1;
+    var today = dates.length ? dates[dates.length - 1] : null;
     var xExt = d3.extent(raw, function (d) { return +d.strike; });
     var yvals = raw.map(function (d) { return +d.iv; });
     var atm = (payload.atm_iv != null && isFinite(+payload.atm_iv)) ? +payload.atm_iv : null;
     if (atm != null) yvals.push(atm);
     var yMin = d3.min(yvals), yMax = d3.max(yvals);
-    var xPad = (xExt[1] - xExt[0]) * 0.05 || 1, yPad = (yMax - yMin) * 0.12 || 1;
+    var xPad = (xExt[1] - xExt[0]) * 0.04 || 1, yPad = (yMax - yMin) * 0.12 || 1;
     var xS = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad])
       .range([zones.data.x, zones.data.x + zones.data.w]);
     var yS = d3.scaleLinear().domain([yMin - yPad, yMax + yPad])
@@ -3190,15 +3194,7 @@
         .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
         .text(v + '%');
     });
-    // x axis (행사가)
-    svg.append('g').attr('transform', 'translate(0,' + (zones.data.y + zones.data.h) + ')')
-      .call(d3.axisBottom(xS).ticks(7).tickFormat(d3.format(',.0f')))
-      .selectAll('text').attr('fill', t.muted).attr('font-size', 9);
-    if (payload.x_label) {
-      svg.append('text').attr('x', W / 2).attr('y', H - 6).attr('text-anchor', 'middle')
-        .attr('font-size', 11).attr('fill', t.muted).text(payload.x_label);
-    }
-    // ATM IV 가로 기준선 — 라벨을 plot 안 좌상단에 (우측 잘림 방지)
+    // ATM IV 가로 기준선 — 라벨 plot 안 좌상단 (우측 잘림 방지)
     if (atm != null) {
       svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
         .attr('y1', yS(atm)).attr('y2', yS(atm))
@@ -3209,38 +3205,76 @@
         .attr('font-size', 10).attr('fill', t.text).attr('fill-opacity', 0.8)
         .text('ATM IV ' + atm.toFixed(1) + '% (등가격 기준선)');
     }
-    // 두 계열 (풋 파랑 / 콜 빨강) — 행사가 순 정렬 후 선 연결 + 점.
-    function drawSeries(rows, color) {
-      if (rows.length < 1) return;
-      rows.sort(function (a, b) { return (+a.strike) - (+b.strike); });
-      if (rows.length >= 2) {
-        var ln = d3.line().x(function (d) { return xS(+d.strike); })
-          .y(function (d) { return yS(+d.iv); }).curve(d3.curveLinear);
-        svg.append('path').attr('d', ln(rows)).attr('fill', 'none')
-          .attr('stroke', color).attr('stroke-width', 1.7).attr('stroke-opacity', 0.9);
-      }
-      rows.forEach(function (d) {
-        svg.append('circle').attr('cx', xS(+d.strike)).attr('cy', yS(+d.iv)).attr('r', 3.4)
-          .attr('fill', color).attr('fill-opacity', 0.95);
+    function drawDay(rows, opacity, withDots) {
+      var puts = rows.filter(function (d) { return (d.type || '') === 'put'; });
+      var calls = rows.filter(function (d) { return (d.type || '') === 'call'; });
+      [[puts, PUT], [calls, CALL]].forEach(function (pair) {
+        var s = pair[0], col = pair[1];
+        s.sort(function (a, b) { return (+a.strike) - (+b.strike); });
+        if (s.length >= 2) {
+          var ln = d3.line().x(function (d) { return xS(+d.strike); })
+            .y(function (d) { return yS(+d.iv); }).curve(d3.curveLinear);
+          svg.append('path').attr('d', ln(s)).attr('fill', 'none').attr('stroke', col)
+            .attr('stroke-width', withDots ? 1.9 : 1.1).attr('stroke-opacity', opacity);
+        }
+        if (withDots) {
+          s.forEach(function (d) {
+            svg.append('circle').attr('cx', xS(+d.strike)).attr('cy', yS(+d.iv)).attr('r', 3.2)
+              .attr('fill', col).attr('fill-opacity', 0.95);
+          });
+        }
       });
+      if (!puts.length && !calls.length) {
+        rows.sort(function (a, b) { return (+a.strike) - (+b.strike); });
+        var ln2 = d3.line().x(function (d) { return xS(+d.strike); })
+          .y(function (d) { return yS(+d.iv); });
+        svg.append('path').attr('d', ln2(rows)).attr('fill', 'none')
+          .attr('stroke', t.accent).attr('stroke-width', withDots ? 1.9 : 1.1)
+          .attr('stroke-opacity', opacity);
+      }
     }
-    var puts = raw.filter(function (d) { return (d.type || '') === 'put'; });
-    var calls = raw.filter(function (d) { return (d.type || '') === 'call'; });
-    if (puts.length || calls.length) {
-      drawSeries(puts, PUT);
-      drawSeries(calls, CALL);
+    if (hasDates) {
+      dates.forEach(function (dt, i) {
+        var age = dates.length - 1 - i;  // 0 = 오늘
+        var op = age === 0 ? 0.95 : Math.max(0.10, 0.5 * Math.pow(0.8, age));
+        drawDay(raw.filter(function (d) { return d.date === dt; }), op, age === 0);
+      });
     } else {
-      drawSeries(raw.slice(), t.accent);  // type 없으면 단일 곡선
+      drawDay(raw.slice(), 0.95, true);
     }
-    // 범례 (우상단)
+    // x축 — 각 행사가 라벨 (#1). 오늘(또는 전체) distinct 행사가에 눈금+회전 라벨.
+    var base = (hasDates ? raw.filter(function (d) { return d.date === today; }) : raw);
+    var strikes = Array.from(new Set(base.map(function (d) { return +d.strike; })))
+      .sort(function (a, b) { return a - b; });
+    var st = strikes.length > 16 ? Math.ceil(strikes.length / 16) : 1;
+    var yb = zones.data.y + zones.data.h;
+    svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
+      .attr('y1', yb).attr('y2', yb).attr('stroke', t.muted).attr('stroke-opacity', 0.4);
+    strikes.forEach(function (s, i) {
+      if (i % st !== 0 && i !== strikes.length - 1) return;
+      svg.append('line').attr('x1', xS(s)).attr('x2', xS(s)).attr('y1', yb).attr('y2', yb + 4)
+        .attr('stroke', t.muted).attr('stroke-opacity', 0.5);
+      svg.append('text').attr('x', xS(s)).attr('y', yb + 7)
+        .attr('transform', 'rotate(-42,' + xS(s) + ',' + (yb + 7) + ')')
+        .attr('text-anchor', 'end').attr('font-family', 'JetBrains Mono, monospace')
+        .attr('font-size', 8.5).attr('fill', t.muted).text(d3.format(',.0f')(s));
+    });
+    if (payload.x_label) {
+      svg.append('text').attr('x', zones.data.x + zones.data.w).attr('y', yb + 30)
+        .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', t.muted).text(payload.x_label);
+    }
+    // 범례 (우상단) + 다일자 안내
     function legend(x, color, label) {
-      svg.append('circle').attr('cx', x).attr('cy', zones.data.y - 14).attr('r', 4).attr('fill', color);
-      svg.append('text').attr('x', x + 9).attr('y', zones.data.y - 10)
+      svg.append('circle').attr('cx', x).attr('cy', zones.data.y - 16).attr('r', 4).attr('fill', color);
+      svg.append('text').attr('x', x + 9).attr('y', zones.data.y - 12)
         .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text).text(label);
     }
-    if (puts.length || calls.length) {
-      legend(zones.data.x + zones.data.w - 120, PUT, '풋 (Put)');
-      legend(zones.data.x + zones.data.w - 56, CALL, '콜 (Call)');
+    legend(zones.data.x + zones.data.w - 120, PUT, '풋 (Put)');
+    legend(zones.data.x + zones.data.w - 56, CALL, '콜 (Call)');
+    if (hasDates) {
+      svg.append('text').attr('x', zones.data.x).attr('y', zones.data.y - 12)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.muted)
+        .text('진한 곡선 = 오늘 · 옅을수록 과거 (' + dates.length + '영업일)');
     }
   }
 

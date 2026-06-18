@@ -342,15 +342,18 @@ def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
     charts: list[dict] = []
 
     # ① IV 스큐 곡선 — 전체 옵션 체인의 행사가별 IV 를 풋(파랑)/콜(빨강) 두 곡선으로
-    #    연결(스큐 트렌드 시각화). 현물 ±18% 밴드로 노이즈 꼬리 제외, 행사가는 최대한
-    #    많이(notable 6개 → 전 체인). ATM IV 가로 기준선은 렌더러가 그린다.
+    #    연결(스큐 트렌드 시각화). 현물 ±28% 밴드(스큐 꼬리 포함 — v7.9.11 사용자
+    #    피드백으로 ±18%→±28% 확대) + 비현실 IV(역산 실패 꼬리) 제외. 각 점에 date.
     spot = snap.futures.spot if snap.futures else None
     sk: list[dict] = []
     seen: set[tuple[str, float]] = set()
     for o in (snap.options or []):
         if o.greeks is None or o.greeks.iv is None or not o.strike:
             continue
-        if spot and not (spot * 0.82 <= o.strike <= spot * 1.18):
+        iv_pct = o.greeks.iv * 100.0
+        if not (3.0 <= iv_pct <= 200.0):
+            continue
+        if spot and not (spot * 0.72 <= o.strike <= spot * 1.28):
             continue
         key = (o.option_type, float(o.strike))
         if key in seen:
@@ -358,8 +361,9 @@ def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
         seen.add(key)
         sk.append({
             "strike": float(o.strike),
-            "iv": round(o.greeks.iv * 100.0, 1),
+            "iv": round(iv_pct, 1),
             "type": o.option_type,  # 'put' | 'call'
+            "date": snap.as_of,
         })
     distinct_strikes = len({d["strike"] for d in sk})
     if len(sk) >= 4 and distinct_strikes >= 3:
@@ -566,6 +570,40 @@ async def _fetch_vkospi(config, trd_dd: str) -> float | None:
     return None
 
 
+def augment_skew_history(
+    snap: "DerivativesSnapshot", *, config=None, n_days: int = 10
+) -> None:
+    """오늘 IV 스큐를 캐시에 저장하고, 지난 n_days 영업일 스큐를 iv_skew 차트에 병합.
+
+    차트의 ``data`` 를 다일자 점(각 점에 ``date``)으로 교체 → 렌더러가 나이순 페이드
+    오버레이로 그린다. 캐시 없거나 단일일이면 오늘 점만 남아 기존 단일 곡선과 동일
+    (graceful). front_expiry 없으면 no-op.
+    """
+    if not snap.front_expiry or not snap.charts:
+        return
+    skew_chart = next((c for c in snap.charts if c.get("type") == "iv_skew"), None)
+    if skew_chart is None:
+        return
+    today_pts = [
+        {"strike": d["strike"], "iv": d["iv"], "type": d["type"]}
+        for d in (skew_chart.get("data") or [])
+        if "strike" in d and "iv" in d and "type" in d
+    ]
+    if not today_pts:
+        return
+    from src.tools.skew_cache import store_skew, recent_skew
+    path = getattr(config, "skew_cache_path", "data/iv_skew.sqlite")
+    store_skew(path, snap.as_of, snap.front_expiry, today_pts)
+    hist = recent_skew(path, snap.front_expiry, n_days, snap.as_of)
+    if len(hist) >= len(today_pts):  # 캐시 읽기 성공 (최소 오늘치 포함)
+        skew_chart["data"] = hist
+        n_dates = len({h["date"] for h in hist})
+        if n_dates > 1:
+            skew_chart["subtitle"] = (
+                f"풋(파랑)·콜(빨강) 스큐 곡선 — 진한 곡선이 오늘, 옅을수록 과거 (최근 {n_dates}영업일)"
+            )
+
+
 async def fetch_kr_derivatives_snapshot(
     *,
     anchor_date: date | None = None,
@@ -630,6 +668,11 @@ async def fetch_kr_derivatives_snapshot(
         vkospi=vkospi, risk_free=r,
     )
     snap.warnings = warnings
+    # v7.9.11 — 오늘 스큐 캐시 저장 + 지난 N영업일 오버레이 (graceful).
+    try:
+        augment_skew_history(snap, config=config)
+    except Exception as e:  # pragma: no cover
+        logger.warning("[derivatives] skew history augment skipped: %s", e)
     logger.info(
         "[derivatives] %s — futures=%s options=%d(front=%s) vkospi=%s pcr_vol=%s maxpain=%s kf=%d warn=%d",
         as_of, "ok" if snap.futures else "none", len(snap.options),
@@ -639,8 +682,31 @@ async def fetch_kr_derivatives_snapshot(
     return snap
 
 
+async def backfill_skew(*, days: int = 14, config=None) -> int:
+    """지난 ``days`` 일을 거슬러 IV 스큐 캐시를 채운다 (영업일 ~10일 확보용, v7.9.11).
+
+    날마다 fetch_kr_derivatives_snapshot 가 build → augment_skew_history 로 store 까지
+    수행하므로, 여기선 날짜를 거슬러 호출만 한다. 주말/휴일·데이터 없는 날은 skip.
+    """
+    from datetime import timedelta
+    stored = 0
+    today = date.today()
+    for i in range(days):
+        d = today - timedelta(days=i)
+        if d.weekday() >= 5:  # 토/일 skip
+            continue
+        snap = await fetch_kr_derivatives_snapshot(anchor_date=d, config=config)
+        skew = next((c for c in snap.charts if c.get("type") == "iv_skew"), None)
+        if skew and snap.front_expiry:
+            stored += 1
+            print(f"  {d.isoformat()} — front={snap.front_expiry} pts={len(skew.get('data') or [])}")
+    print(f"backfill_skew done — {stored} 영업일 적재")
+    return stored
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # VM 검증용 CLI — python -m src.tools.derivatives_fetcher [YYYYMMDD]
+#                 python -m src.tools.derivatives_fetcher skew-backfill --days 14
 # ──────────────────────────────────────────────────────────────────────────
 def _main() -> None:  # pragma: no cover
     import sys
@@ -651,6 +717,15 @@ def _main() -> None:  # pragma: no cover
     except Exception as e:
         print(f"[warn] Config 로드 실패({e}) — KRX 로그인 없이 진행")
         cfg = None
+    if len(sys.argv) > 1 and sys.argv[1] == "skew-backfill":
+        days = 14
+        if "--days" in sys.argv:
+            try:
+                days = int(sys.argv[sys.argv.index("--days") + 1])
+            except (ValueError, IndexError):
+                pass
+        asyncio.run(backfill_skew(days=days, config=cfg))
+        return
     anchor = date.today()
     if len(sys.argv) > 1:
         try:

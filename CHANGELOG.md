@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.10
+last_synced_with: v7.9.11
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.11 — IV 스큐 곡선 보강: 행사가 라벨 + 범위 확대 + 지난 N영업일 페이드 오버레이 (사용자 피드백)
+
+v7.9.10 IV 스큐에 대한 사용자 피드백 3종. ① **각 행사가 라벨** — x축에 distinct 행사가
+눈금+회전 라벨(>16개면 솎음). ② **범위 확대** — 스큐 꼬리가 안 보이던 ±18% 밴드를
+**±28%** 로 + 비현실 IV(3~200% 밖, 역산 실패 꼬리) 제외. ③ **지난 N영업일 스큐 오버레이**
+— 일별 IV 를 멱등 SQLite 캐시(`src/tools/skew_cache.py`, `SKEW_CACHE_PATH`)에 누적 →
+`augment_skew_history` 가 차트 데이터를 다일자 점(각 점 `date`)으로 교체 → `drawIvSkew`
+가 오늘=진하게·과거=옅게 페이드 그림. 즉시 10일 확보용 backfill CLI
+(`python -m src.tools.derivatives_fetcher skew-backfill --days 14`). 캐시 없으면 오늘 단일
+곡선(graceful). 회귀 테스트 — `tests/test_skew_cache.py` 5종 + 스큐 점 date/IV 범위 검증.
+목업 갱신(4영업일 페이드 시연). `Config.skew_cache_path` + `.env.example` 추가.
 
 ## v7.9.10 — IV 스큐 곡선 재설계 + 베이시스 한 줄 지표 + 회귀 테스트 (v7.9.9 사용자 피드백)
 

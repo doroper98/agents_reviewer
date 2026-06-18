@@ -100,6 +100,10 @@ class Config(BaseSettings):
         default="data/market_internals.sqlite",
         validation_alias=AliasChoices("BREADTH_CACHE_PATH", "breadth_cache_path"),
     )
+    skew_cache_path: str = Field(
+        default="data/iv_skew.sqlite",
+        validation_alias=AliasChoices("SKEW_CACHE_PATH", "skew_cache_path"),
+    )
 
     # V5 Phase 1A — ResearchDirector opt-in.
     # 켜져 있으면 orchestrator 가 Phase 1 (ContextAnalyst) 직후에 ResearchDirector
