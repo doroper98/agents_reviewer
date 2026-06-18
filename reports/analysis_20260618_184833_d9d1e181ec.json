@@ -3981,7 +3981,7 @@
             "data": [
               {
                 "label": "KOSPI",
-                "neg": 0,
+                "neg": 2.25,
                 "pos": 83.6
               },
               {
@@ -16878,6 +16878,6 @@
   "total_duration_seconds": 1108.4523751735687,
   "system_version": "v7.9.13",
   "revision": 0,
-  "render_revision": 0,
+  "render_revision": 1,
   "disable_scroll_arc": false
 }
