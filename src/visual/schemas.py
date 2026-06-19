@@ -256,6 +256,63 @@ class NetworkGuard(BaseModel):
         return self
 
 
+# ─── Stakeholder Map (v8.0.0 — 르포 행위자 관계도, CHART-AP-36) ────────
+
+
+class StakeholderNode(BaseModel):
+    id: str
+    label: str = ""
+    role: str = ""
+    group: str | None = None
+    col: object | None = None          # 0/1/2 또는 left/center/right (렌더 칼럼)
+    flag: str | None = None            # 국가코드 (US/CN/...) → 둥근 국기
+    badge: str | None = None           # 기업·인물 국적 배지
+    kind: str | None = None            # "person" 이면 사진 슬롯
+    accent: bool = False
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StakeholderEdge(BaseModel):
+    source: str
+    target: str
+    type: str = ""                     # 대립/동맹/영향/연관 (스타일·글리프 결정)
+    label: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StakeholderMapGuard(BaseModel):
+    """르포 stakeholder_map 가드 — 노드 2~12, id 유일, 엣지 참조 유효.
+
+    force/hairball 금지(CHART-AP-36)는 *렌더러* 속성(좌표를 데이터로 안 받음).
+    가드는 데이터 무결성만 검증 — nodes + edges(또는 links) 둘 다 허용.
+    """
+
+    nodes: list[StakeholderNode] = Field(min_length=2, max_length=12)
+    edges: list[StakeholderEdge] = Field(default_factory=list)
+    links: list[StakeholderEdge] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_refs(self) -> "StakeholderMapGuard":
+        ids = [n.id for n in self.nodes]
+        node_ids = set(ids)
+        if len(node_ids) != len(ids):
+            raise ValueError("CHART-AP-7 가드: stakeholder_map node id 중복")
+        for e in list(self.edges) + list(self.links):
+            if e.source not in node_ids:
+                raise ValueError(
+                    f"stakeholder_map 가드: edge source {e.source!r} 가 nodes 에 없음"
+                )
+            if e.target not in node_ids:
+                raise ValueError(
+                    f"stakeholder_map 가드: edge target {e.target!r} 가 nodes 에 없음"
+                )
+        return self
+
+
 # ─── Bar / Line / Stacked / Heatmap / Donut — 공통 finite 가드 ────────
 
 
@@ -1110,6 +1167,8 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "diverging_bar": DivergingBarGuard,
     "pyramid":      PyramidGuard,
     "dot_matrix":   DotMatrixGuard,
+    # v8.0.0 — 르포 행위자 관계도
+    "stakeholder_map": StakeholderMapGuard,
 }
 
 

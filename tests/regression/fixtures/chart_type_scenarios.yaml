@@ -345,13 +345,62 @@ scenarios:
       - "segment ≥7 → bar"
       - "시점 다중 구성비 → stacked"
 
+  # ─────────────────────────────────────────────────────────────
+  # 결정적 주입 전용 3종 (composer 직접 선택 아님 — 장마감/옵션 데스크)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: combo_candle
+    status: active
+    data_shape: "{left:{series}, right:{ohlc}} — 좌축 line(비율) + 우축 candle(지수)"
+    scenario: "장마감 브리핑 시장 폭 — 하락 종목 비율 line + 코스피 지수 candle 이중축 (결정적 주입)"
+    sample_prompt: "(scheduler/market_briefing 결정적 주입 — composer 직접 선택 아님)"
+    expected_chart_type: combo_candle
+    negative_examples:
+      - "일반 이중축 막대+선 → combo"
+      - "단일 지수 → candle"
+
+  - id: iv_skew
+    status: active
+    data_shape: "{strikes:[{strike, call_iv?, put_iv?}], atm?} — 행사가별 IV 곡선"
+    scenario: "옵션 데스크 변동성 스큐 — 행사가별 내재변동성 곡선 (결정적 주입)"
+    sample_prompt: "(derivatives_fetcher 결정적 주입 — composer 직접 선택 아님)"
+    expected_chart_type: iv_skew
+    negative_examples:
+      - "2변수 산점 → scatter"
+      - "일반 곡선 → line"
+
+  - id: indicator
+    status: active
+    data_shape: "{value:number, label, ref?:number} — 0 중심 부호 한 줄 지표"
+    scenario: "선물 베이시스 등 단일 부호 수치 한 줄 표시 (결정적 주입)"
+    sample_prompt: "(derivatives_fetcher 결정적 주입 — composer 직접 선택 아님)"
+    expected_chart_type: indicator
+    negative_examples:
+      - "다수 수치 비교 → bar"
+      - "추세 → line"
+
+  # ─────────────────────────────────────────────────────────────
+  # v8.0.0 — 르포 전용 행위자 관계도
+  # ─────────────────────────────────────────────────────────────
+
+  - id: stakeholder_map
+    status: active
+    data_shape: "{nodes:[{id,label,role?,col,flag?,badge?,kind?,group?}], edges:[{source,target,type,label?}]} 노드 2~12"
+    scenario: "르포(report_format=reportage) 이해당사자 관계도 — 인물·국가·조직·기관·기업을 진영 칼럼(left/center/right)에 결정적 배치, 관계(대립/동맹/영향/연관)를 직각 엣지로. force/hairball 금지(CHART-AP-36)"
+    sample_prompt: "르포로 우크라이나 드론전력이 왜 강해졌는지 이해당사자 중심으로 파줘"
+    expected_chart_type: stakeholder_map
+    negative_examples:
+      - "이미지 없는 추상 관계망 → network (인접행렬)"
+      - "일반 보고서(르포 아님)에서는 사용 금지 → network"
+      - "흐름 분해(자금/지분) → sankey"
+
 # ─────────────────────────────────────────────────────────────
 # 메타데이터 — test_chart_type_diversity.py 가 검증
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 29
-  active_count: 29     # production 활성 (v7.5.0) — 28 chart types + map (combo/diverging_bar/pyramid/dot_matrix 포함)
+  total_scenarios: 33
+  active_count: 33     # v8.0.0 — 32 chart types + map. stakeholder_map 신규 + 결정적주입 3종(combo_candle/iv_skew/indicator) 정합 보강
   pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"

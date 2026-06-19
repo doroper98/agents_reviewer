@@ -258,7 +258,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **35개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit / v7.5.1 — 32 sankey 라벨 수치 중복 표기 / v7.9.8 — 33 scatter 라벨 충돌 / 34 dot_matrix 좌측 쏠림 / v7.9.14 — 35 composer diverging_bar 지수 등락률 0 누락, 전부 사용자 catch):
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **36개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit / v7.5.1 — 32 sankey 라벨 수치 중복 표기 / v7.9.8 — 33 scatter 라벨 충돌 / 34 dot_matrix 좌측 쏠림 / v7.9.14 — 35 composer diverging_bar 지수 등락률 0 누락, 전부 사용자 catch / v8.0.0 — 36 stakeholder_map force/physics 레이아웃 금지[선제, network 교훈 상속]):
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)

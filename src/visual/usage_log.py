@@ -57,6 +57,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "combo_candle",
     # v7.9.10 — 옵션 데스크 전용 (결정적 주입): 변동성 스큐 곡선 + 부호 한 줄 지표
     "iv_skew", "indicator",
+    # v8.0.0 — 르포 전용 행위자 관계도 (진영 칼럼 결정적 배치, force 금지)
+    "stakeholder_map",
     # embedded_map (별도 채널)
     "map",
 )

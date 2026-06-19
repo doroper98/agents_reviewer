@@ -232,7 +232,7 @@ SYSTEM_PROMPT = (
     "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식 (v4.4.0):\n"
     "  ```json\n"
     "  {\n"
-    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey|bump|bullet|connected_scatter|combo|diverging_bar|pyramid|dot_matrix\",\n'
+    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey|bump|bullet|connected_scatter|combo|diverging_bar|pyramid|dot_matrix|stakeholder_map\",\n'
     '    \"title\": \"차트 제목\",\n'
     '    \"subtitle\": \"한 줄 thesis — 제목과 다른 결론. 예: 동진 7.9는 OP 기준, 회계는 23.08\",\n'
     '    \"data\": [...],            // type 별 스키마 (아래 참조)\n'
@@ -279,6 +279,11 @@ SYSTEM_PROMPT = (
     "             point-in-time 이벤트 모음 (모든 row 가 start==end) 은 emit 금지 (CHART-AP-15).\n"
     "             그 경우 본문 list 또는 line + event marker (point 에 event 라벨) 로.\n"
     "  · network: {nodes:[{id,label,group?}], links:[{source,target,type?}]}  관계도\n"
+    "  · stakeholder_map: {nodes:[{id,label,role?,col,flag?,badge?,kind?,group?,accent?}], edges:[{source,target,type,label?}]}\n"
+    "             르포 *전용* 행위자 관계도 (인물·국가·조직·기관·기업). col=left|center|right\n"
+    "             로 진영 칼럼 배치(중앙=접점/허브). flag=국가코드(US/CN/JP/TW/UA/RU)→둥근 국기,\n"
+    "             kind:'person'=인물 사진 슬롯, badge=국적, 그 외=이니셜. type=대립/동맹/영향/연관.\n"
+    "             노드 2~12. report_format=reportage 일 때만 사용.\n"
     "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자\n"
     "             (value 는 *양수 magnitude 만*. 부호 있는 점수면 bar 로)\n"
     "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향\n"
@@ -384,6 +389,7 @@ SYSTEM_PROMPT = (
     "- *데이터가 비어있으면 차트 자체를 emit 하지 말 것* (charts 배열에 추가 금지).\n"
     "  · bar/donut/line/gantt/heatmap/candle/area: data 가 빈 배열이면 emit X\n"
     "  · network: data.nodes 가 2개 미만이면 emit X\n"
+    "  · stakeholder_map: nodes <2 또는 >12, edge source/target 가 nodes.id 에 없으면 emit X\n"
     "  · stacked: data.scenarios 가 빈 배열이면 emit X\n"
     "  · dual_line: left.series 또는 right.series 가 비면 emit X\n"
     "  · forecast: data.actual 이 2개 미만이면 emit X\n"
@@ -452,7 +458,8 @@ SYSTEM_PROMPT = (
     "  5. 다차원 관계?\n"
     "     ├─ 3 변수 (x, y, size 모두 의미) → bubble\n"
     "     ├─ 2 변수 + 라벨 (size 균일) → scatter (FT 좌측 스타일)\n"
-    "     └─ 관계망 (노드-엣지) → network\n"
+    "     ├─ 관계망 (노드-엣지) → network\n"
+    "     └─ (르포 한정) 인물·국기·로고가 들어가는 이해당사자 관계도 → stakeholder_map\n"
     "  6. 2D 격자 + 강도? → heatmap (≥4×4 권장)\n"
     "  7. 이벤트 일정 (start≠end 가 ≥30%)? → gantt\n\n"
     "[반-편향 (anti-bias) 가드 — line/bar/donut 으로 collapse 금지]\n"
@@ -977,8 +984,10 @@ _REPORTAGE_BLOCK = (
     "  5막 전망 — 어디로 가나. *서사형* 전망. 가능한 궤적을 산문으로 짚되 단정하지 않는다.\n"
     "\n"
     "[행위자·관계 시각화] 르포는 인물·국기·기관 로고·지도가 풍부하게 들어가야 한다.\n"
-    "- 이해당사자 관계는 ``network`` 차트(인접행렬 — 대립/동맹/영향/연관)로 드러낸다.\n"
-    "  nodes 의 group 으로 진영을 구분해 같은 편이 모이게 한다.\n"
+    "- 2막 이해당사자는 ``stakeholder_map`` 차트로 드러낸다 (르포 전용). 각 노드에 col\n"
+    "  (left|center|right — 진영 칼럼, 중앙=접점/허브), flag(국가코드), kind:'person'(인물),\n"
+    "  role(한 줄 이해관계)을 채우고, edges 의 type(대립/동맹/영향/연관)으로 관계를 잇는다.\n"
+    "  (인물·국기·로고가 안 어울리는 추상 관계면 ``network`` 인접행렬도 가능)\n"
     "- 지정학·국가 간 사건이면 ``embedded_map`` 의 regions(subject/ally/rival/contested\n"
     "  역할 색조) + markers + arcs(흐름)로 당사국 구도를 지도에 표시한다.\n"
     "- 돈·이해·영향력의 흐름은 ``sankey`` 로 분해한다 (자금/지분/공급 흐름).\n"

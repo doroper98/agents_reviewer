@@ -44,9 +44,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 - **byte-equal 보장**: `report_format=standard` + directive 없을 때 `_compose_system_prompt`
   와 `_build_unified_payload` 모두 기존 출력과 byte-equal (AP-V6-3 상속). 회귀
   `tests/regression/test_reportage_format.py` 11종.
-- **다음**: Phase 1 — 신규 `stakeholder_map` 차트(국기·기관 로고·인물 사진이 들어가는
-  *결정적 배치* 관계도, force/hairball 금지로 CHART-AP-25 재발 차단) + 번들 flag SVG 자산
-  파이프라인. Phase 2 — ReportBundle 정합(osint 영상 관계망 피드).
+- **Phase 1 (랜딩)**: 신규 차트 타입 `stakeholder_map` — 르포 전용 행위자 관계도.
+  charts.js `drawStakeholderMap`(진영 칼럼 결정적 배치 + 직각·라운딩 엣지 + 다중 연결
+  분산 + content-fit) + `StakeholderMapGuard`(노드 2~12·엣지 참조 검증) + KNOWN_CHART_TYPES /
+  VISUAL_CAPABILITY_REGISTRY(guarded 18) / chart_type_scenarios 등록 + composer SYSTEM_PROMPT
+  스키마·결정트리·`_REPORTAGE_BLOCK` 반영. 자산(국기/인물)은 `#sm-*` sprite 로 분리 —
+  osint_generator 자산으로 교체 가능(로고/사진 미제공 시 이니셜 모노그램). **force/physics
+  금지**(CHART-AP-36, network hairball 교훈 상속). 모크업 SSOT
+  `samples/stakeholder_map_gallery.html`(6 경우의 수) + `..._themes.html`(5 테마). 회귀
+  `tests/regression/test_stakeholder_map.py` + chart_type_diversity 1:1 정합 복원
+  (combo_candle/iv_skew/indicator 누락분 동시 보강).
+- **다음**: Phase 2 — ReportBundle 정합(osint 영상 관계망 피드). 자산 교체는 osint_generator
+  세션 스코프 접근 확보 시.
 
 ## v7.9.14 — 지수 등락률 vs 하락비율 diverging_bar 의 KOSPI 등락률 0 누락 방어 (CHART-AP-35, 사용자 catch)
 

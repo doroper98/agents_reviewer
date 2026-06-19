@@ -3320,6 +3320,192 @@
     });
   }
 
+  // ----- STAKEHOLDER_MAP (v8.0.0 — 르포 행위자 관계도) -----
+  // force/hairball 금지 (CHART-AP-36): 노드는 진영(col) 칼럼에 결정적 배치, 칼럼 내
+  // 세로 중앙 정렬(같은 행 = 직선), 엣지는 직각+라운딩으로 노드 위 후행 레이어 +
+  // 노드별 다중 연결을 가장자리에 분산. 자산(국기/인물)은 sprite(#sm-*)로 분리 —
+  // osint_generator 자산으로 교체 가능. 로고/사진 미제공 시 이니셜 모노그램.
+  const SM_FLAGS = { US:1, TW:1, CN:1, JP:1, UA:1, RU:1 };
+  const SM_SPRITE =
+    '<defs>' +
+    '<marker id="sm-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker>' +
+    '<symbol id="sm-person" viewBox="0 0 32 32"><clipPath id="sm-cph"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cph)"><rect width="32" height="32" fill="#c9b79a"/><circle cx="16" cy="12.5" r="6" fill="#f1e6d4"/><path d="M4 30c0-7 6-10 12-10s12 3 12 10z" fill="#f1e6d4"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-US" viewBox="0 0 32 32"><clipPath id="sm-cUS"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cUS)"><rect width="32" height="32" fill="#fff"/><g fill="#b22234"><rect y="0" width="32" height="2.46"/><rect y="4.92" width="32" height="2.46"/><rect y="9.84" width="32" height="2.46"/><rect y="14.76" width="32" height="2.46"/><rect y="19.69" width="32" height="2.46"/><rect y="24.61" width="32" height="2.46"/><rect y="29.54" width="32" height="2.46"/></g><rect width="14.2" height="13.2" fill="#3c3b6e"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-TW" viewBox="0 0 32 32"><clipPath id="sm-cTW"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cTW)"><rect width="32" height="32" fill="#fe0000"/><rect width="16" height="16" fill="#000095"/><g transform="translate(8,8)" fill="#fff"><circle r="3.4"/><circle r="2.8" fill="#000095"/><circle r="2.2" fill="#fff"/></g></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-CN" viewBox="0 0 32 32"><clipPath id="sm-cCN"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cCN)"><rect width="32" height="32" fill="#de2910"/><circle cx="8" cy="9" r="3.2" fill="#ffde00"/><circle cx="14" cy="4" r="1.1" fill="#ffde00"/><circle cx="16" cy="7.5" r="1.1" fill="#ffde00"/><circle cx="16" cy="11.5" r="1.1" fill="#ffde00"/><circle cx="14" cy="14.5" r="1.1" fill="#ffde00"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-JP" viewBox="0 0 32 32"><clipPath id="sm-cJP"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cJP)"><rect width="32" height="32" fill="#fff"/><circle cx="16" cy="16" r="7.5" fill="#bc002d"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-UA" viewBox="0 0 32 32"><clipPath id="sm-cUA"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cUA)"><rect width="32" height="16" fill="#0057b7"/><rect y="16" width="32" height="16" fill="#ffd700"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-RU" viewBox="0 0 32 32"><clipPath id="sm-cRU"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cRU)"><rect width="32" height="10.67" fill="#fff"/><rect y="10.67" width="32" height="10.67" fill="#0039a6"/><rect y="21.33" width="32" height="10.67" fill="#d52b1e"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '</defs>';
+
+  function smSprite() {
+    if (document.getElementById('sm-sprite')) return;
+    const w = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    w.setAttribute('id', 'sm-sprite');
+    w.setAttribute('width', '0'); w.setAttribute('height', '0');
+    w.setAttribute('aria-hidden', 'true');
+    w.style.position = 'absolute';
+    w.innerHTML = SM_SPRITE;
+    document.body.appendChild(w);
+  }
+
+  function smColor(group, t) {
+    const g = String(group || '').toLowerCase();
+    if (/반대|대립|적|oppose|against|hostile|rival/.test(g)) return t.down;
+    if (/주도|동맹|찬성|승인|핵심|ally|support|lead|core/.test(g)) return t.accent;
+    return t.muted;
+  }
+
+  function smRoute(x0, y0, x1, y1, r) {
+    r = r || 12;
+    if (Math.abs(y0 - y1) < 0.5) return `M${x0},${y0} H${x1}`;
+    if (Math.abs(x0 - x1) < 0.5) return `M${x0},${y0} V${y1}`;
+    const sx = x1 >= x0 ? 1 : -1, sy = y1 >= y0 ? 1 : -1, mx = (x0 + x1) / 2;
+    const rr = Math.min(r, Math.abs(mx - x0), Math.abs(y1 - y0) / 2);
+    return `M${x0},${y0} H${mx - sx * rr} Q${mx},${y0} ${mx},${y0 + sy * rr} V${y1 - sy * rr} Q${mx},${y1} ${mx + sx * rr},${y1} H${x1}`;
+  }
+
+  function smLinkStyle(type, t) {
+    const s = String(type || '').toLowerCase();
+    if (/대립|충돌|갈등|적|conflict|oppose|against|hostile|rival/.test(s))
+      return { stroke: t.down, w: 1.9, dash: '5 4', gl: '✕', gc: t.down, arrow: false };
+    if (/동맹|협력|지지|연합|제휴|지원|자금|출자|ally|alliance|support|coop|partner|fund/.test(s))
+      return { stroke: t.accent, w: 2.1, dash: null, gl: '●', gc: t.accent, arrow: false };
+    if (/영향|압박|의존|주도|환류|통제|leverage|influence|pressure|depend|drive|control/.test(s))
+      return { stroke: t.text, w: 2, dash: null, gl: null, gc: null, arrow: true };
+    return { stroke: t.muted, w: 1.5, dash: null, gl: '○', gc: t.muted, arrow: false };
+  }
+
+  function drawStakeholderMap(stage, payload, t) {
+    const D = payload.data || {};
+    const rawNodes = D.nodes || [];
+    const edges = D.edges || D.links || [];
+    if (rawNodes.length < 2) return;
+    smSprite();
+
+    const svg = d3.select(stage).select('svg').attr('preserveAspectRatio', 'xMidYMid meet');
+    const root = svg.append('g');
+
+    function colOf(nd) {
+      let c = nd.col;
+      if (c === undefined || c === null) c = 0;
+      if (c === 'left' || c === 'l') c = 0;
+      else if (c === 'center' || c === 'c' || c === 'mid' || c === 'hub') c = 1;
+      else if (c === 'right' || c === 'r') c = 2;
+      else c = (+c) || 0;
+      return Math.max(0, Math.min(2, c));
+    }
+    const cols = [[], [], []];
+    rawNodes.forEach(nd => cols[colOf(nd)].push(nd));
+
+    const LW = 210, CW = 176, RW = 210, GAP = 128, H = 54, CH = 62, VSP = 120;
+    const colX = [0, LW + GAP, LW + GAP + CW + GAP];
+    const colW = [LW, CW, RW];
+    const pos = {};
+    cols.forEach((list, ci) => {
+      const k = list.length; if (!k) return;
+      const top = -(k - 1) * VSP / 2;
+      list.forEach((nd, i) => {
+        const h = (ci === 1) ? CH : H, w = colW[ci], cy = top + i * VSP;
+        pos[nd.id] = { x: colX[ci], y: cy - h / 2, w, h, cx: colX[ci] + w / 2,
+                       cy, lx: colX[ci], rx: colX[ci] + w, col: ci, node: nd };
+      });
+    });
+
+    const valid = edges.filter(e => pos[e.source] && pos[e.target] && e.source !== e.target);
+
+    // 노드+side 별 엣지 → other-cy 정렬 후 가장자리에 분산 (한 점 겹침 방지)
+    function sides(a, b) {
+      const A = pos[a], B = pos[b];
+      if (A.col < B.col) return ['R', 'L'];
+      if (A.col > B.col) return ['L', 'R'];
+      return (A.cy <= B.cy) ? ['B', 'T'] : ['T', 'B'];
+    }
+    const slots = {};
+    valid.forEach((e, ei) => {
+      const [sa, sb] = sides(e.source, e.target);
+      (slots[e.source + '|' + sa] = slots[e.source + '|' + sa] || []).push({ ei, other: pos[e.target].cy, ox: pos[e.target].cx });
+      (slots[e.target + '|' + sb] = slots[e.target + '|' + sb] || []).push({ ei, other: pos[e.source].cy, ox: pos[e.source].cx });
+    });
+    const attach = {};
+    Object.keys(slots).forEach(key => {
+      const idx = key.lastIndexOf('|'); const id = key.slice(0, idx), sd = key.slice(idx + 1);
+      const P = pos[id], arr = slots[key], n = arr.length;
+      if (sd === 'L' || sd === 'R') {
+        arr.sort((p, q) => p.other - q.other);
+        const span = Math.min(P.h - 14, (n - 1) * 16), top = P.cy - span / 2, X = (sd === 'R') ? P.rx : P.lx;
+        arr.forEach((it, i) => { attach[it.ei + '|' + id] = { x: X, y: n === 1 ? P.cy : top + i * (span / (n - 1)) }; });
+      } else {
+        arr.sort((p, q) => p.ox - q.ox);
+        const span = Math.min(P.w - 24, (n - 1) * 18), left = P.cx - span / 2, Y = (sd === 'B') ? (P.y + P.h) : P.y;
+        arr.forEach((it, i) => { attach[it.ei + '|' + id] = { x: n === 1 ? P.cx : left + i * (span / (n - 1)), y: Y }; });
+      }
+    });
+
+    // 엣지 (노드 아래 레이어)
+    valid.forEach((e, ei) => {
+      const A = attach[ei + '|' + e.source] || { x: pos[e.source].rx, y: pos[e.source].cy };
+      const B = attach[ei + '|' + e.target] || { x: pos[e.target].lx, y: pos[e.target].cy };
+      const st = smLinkStyle(e.type, t);
+      const p = root.append('path').attr('d', smRoute(A.x, A.y, B.x, B.y))
+        .attr('fill', 'none').attr('stroke', st.stroke).attr('stroke-width', st.w)
+        .attr('data-anim', 'static');
+      if (st.dash) p.attr('stroke-dasharray', st.dash);
+      if (st.arrow) p.attr('marker-end', 'url(#sm-arr)');
+    });
+
+    // 노드 카드
+    function drawCard(P) {
+      const nd = P.node, isHub = P.col === 1;
+      const accent = !!nd.accent || /주도|핵심|당사자|hub|lead|core/.test(String(nd.group || ''));
+      const g = root.append('g').attr('transform', `translate(${P.x},${P.y})`);
+      g.append('rect').attr('width', P.w).attr('height', P.h).attr('rx', 10)
+        .attr('fill', t.card)
+        .attr('stroke', isHub ? t.text : (accent ? t.accent : t.border))
+        .attr('stroke-width', isHub ? 2.2 : (accent ? 1.6 : 1)).attr('data-anim', 'static');
+      const ay = (P.h - 30) / 2;
+      const fc = String(nd.flag || '').toUpperCase();
+      if (fc && SM_FLAGS[fc]) {
+        g.append('use').attr('href', '#sm-flag-' + fc).attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30);
+      } else if (nd.kind === 'person' || nd.type === 'person') {
+        g.append('use').attr('href', '#sm-person').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30);
+      } else {
+        const ini = String(nd.label || nd.id || '?').trim().slice(0, 2);
+        g.append('rect').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30).attr('rx', 7).attr('fill', smColor(nd.group, t));
+        g.append('text').attr('x', 27).attr('y', ay + 20).attr('text-anchor', 'middle')
+          .attr('font-family', 'Noto Sans KR').attr('font-weight', 700).attr('font-size', 12).attr('fill', t.bg).text(ini);
+      }
+      const bc = String(nd.badge || '').toUpperCase();
+      if (bc && SM_FLAGS[bc]) g.append('use').attr('href', '#sm-flag-' + bc).attr('x', 30).attr('y', ay + 18).attr('width', 14).attr('height', 14);
+      g.append('text').attr('x', 52).attr('y', P.h / 2 - 3).attr('font-family', 'Noto Sans KR')
+        .attr('font-weight', 600).attr('font-size', 13).attr('fill', t.text).text(String(nd.label || nd.id || '').slice(0, 16));
+      if (nd.role) g.append('text').attr('x', 52).attr('y', P.h / 2 + 13).attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 10.5).attr('fill', t.muted).text(String(nd.role).slice(0, 22));
+    }
+    Object.values(pos).forEach(drawCard);
+
+    // 라벨 (선 위 중앙) — 카드 위 레이어
+    valid.forEach((e, ei) => {
+      const A = attach[ei + '|' + e.source], B = attach[ei + '|' + e.target];
+      if (!A || !B) return;
+      const st = smLinkStyle(e.type, t), lab = String(e.label || '');
+      if (!lab && !st.gl) return;
+      const cx = (A.x + B.x) / 2, cy = (A.y + B.y) / 2;
+      const wch = 16 + lab.length * 9 + (st.gl ? 14 : 0);
+      const gg = root.append('g').attr('transform', `translate(${cx},${cy})`);
+      gg.append('rect').attr('x', -wch / 2).attr('y', -9).attr('width', wch).attr('height', 18).attr('rx', 5)
+        .attr('fill', t.bg).attr('fill-opacity', 0.9).attr('data-anim', 'static');
+      const te = gg.append('text').attr('y', 3.5).attr('text-anchor', 'middle')
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 10.5);
+      if (st.gl) te.append('tspan').attr('fill', st.gc).attr('font-weight', 700).text(st.gl + ' ');
+      te.append('tspan').attr('fill', t.muted).text(lab);
+    });
+
+    const bb = root.node().getBBox(); const pad = 14;
+    svg.attr('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);
+  }
+
+
   // Dispatcher
   // ============================================================
   const RENDERERS = {
@@ -3343,6 +3529,8 @@
     combo_candle: drawComboCandle,
     // v7.9.10 — 옵션 데스크: 변동성 스큐 곡선 + 부호 한 줄 지표
     iv_skew: drawIvSkew, indicator: drawIndicator,
+    // v8.0.0 — 르포 전용 행위자 관계도 (진영 칼럼 결정적 배치, force 금지)
+    stakeholder_map: drawStakeholderMap,
   };
 
   async function renderStage(stage, idx) {

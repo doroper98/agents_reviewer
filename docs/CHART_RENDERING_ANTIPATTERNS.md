@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.9.14
+last_synced_with: v8.0.0
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1146,6 +1146,23 @@ LLM 이 한 행(KOSPI)의 등락률을 0 으로 떨어뜨림 — 산문/부제�
 한정으로, diverging_bar 행 라벨이 `KOSPI`/`KOSDAQ`(코스피/코스닥)인데 `neg` 가 0/누락이면
 `context.time_series` 의 실측 지수 등락률(절댓값)로 채운다. 행사가 라벨 OI diverging_bar
 (`neg=put_oi`)는 라벨이 KOSPI/KOSDAQ 가 아니라 비대상. 발행본은 데이터 직접 보정 후 재렌더.
+
+---
+
+## CHART-AP-36: 행위자 관계도를 force/physics 레이아웃으로 렌더 (v8.0.0 선제 — network 교훈 상속)
+
+**맥락**: v8.0.0 르포 트랙의 신규 `stakeholder_map`(인물·국기·로고가 들어가는 이해당사자
+관계도)은 노드가 큰 카드라, force-directed 배치를 쓰면 노드가 겹치고 중심 관통 실타래가
+생겨 CHART-AP-25(network hairball)를 그대로 재현한다. 이미지(국기/사진/로고)로 노드가
+더 커지므로 위험이 오히려 크다.
+
+**규칙 (선제 차단)**: `drawStakeholderMap` 은 **force/physics/simulation 절대 금지**.
+노드 좌표는 데이터로 받지 않고 **결정적으로 계산**한다 — ① x = 진영(col: left/center/right)
+칼럼 ② y = 칼럼 내 stack(세로 중앙 정렬 → 같은 행은 직선 연결) ③ 엣지는 결정된 노드
+위에 직각+라운딩(엘보) 후행 레이어로 얹고, 노드를 이동시키지 않는다 ④ 한 노드의 다중
+연결은 가장자리에서 서로 다른 지점에 분산(한 점 겹침 금지) ⑤ getBBox content-fit viewBox
+로 자동 중앙정렬. 스키마(`StakeholderMapGuard`)는 좌표 필드를 입력으로 받지 않는다.
+모크업 SSOT: `samples/stakeholder_map_gallery.html` / `samples/stakeholder_map_themes.html`.
 
 ---
 
