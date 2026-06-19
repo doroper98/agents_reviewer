@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<!--
+  stakeholder_map GALLERY (v8.0.0 Phase 1) — 운영 전 경우의 수 모크업.
+  골격(확정): force 금지 · x=group 칼럼 · y=칼럼 내 stack · 엣지는 후행 레이어(라벨칩+marker).
+  노드 자산: 국기=둥근 SVG / 기업=로고 / 기관=모노그램 칩 / 인물=원형 사진 슬롯(og:image)
+            없으면 이니셜 아바타. 모든 카드 동일 내부 레이아웃(아이콘12/30 · 텍스트 x52).
+  변형 4종: ①기업·국가 ②인물 중심(외교) ③혼합(인물+기업+기관) ④다수 행위자(7노드).
+  defs(마커·국기·로고·인물)는 첫 SVG 에 정의 → 문서 전역 id 로 전 변형이 <use> 공유.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stakeholder_map 갤러리 — 경우의 수 모크업</title>
+<style>
+  :root{--bg:#f4efe6;--card:#fbf8f1;--card-2:#f0e8d8;--hub:#f7eede;--text:#23201b;--fg-2:#6f675a;--fg-3:#a89e8d;--accent:#a8492e;--down:#7c4a8a;--ally:#3f7d54;--border:#d9cfbd;--border-soft:#e7ddcb}
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);margin:0;font-family:"Newsreader","Noto Serif KR",Georgia,serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 28px 90px}
+  .eyebrow{font:600 12px "IBM Plex Sans KR",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  h1{font:600 28px/1.2 "Newsreader",serif;margin:6px 0 4px}
+  .intro{font:400 15px/1.55 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);max-width:66ch;margin:0 0 6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-top:24px;padding:20px 20px 12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card-title{font:600 15px "IBM Plex Sans KR",sans-serif;margin:0 0 2px}
+  .card-sub{font:400 12.5px "IBM Plex Sans KR",sans-serif;color:var(--fg-3);margin:0 0 4px}
+  svg{width:100%;height:auto;display:block}
+  .col-band{font:600 11px "IBM Plex Sans KR",sans-serif;letter-spacing:.05em;fill:var(--fg-3)}
+  .n-name{font:600 13px "IBM Plex Sans KR",sans-serif;fill:var(--text)}
+  .n-role{font:400 10.5px "IBM Plex Sans KR",sans-serif;fill:var(--fg-2)}
+  .ini{font:700 12px "IBM Plex Sans KR",sans-serif;fill:#fff}
+  .e-label{font:500 10.5px "IBM Plex Sans KR",sans-serif;fill:var(--fg-2)}
+  .legend{font:400 12px/1.7 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);display:flex;gap:22px;flex-wrap:wrap;margin:10px 2px 2px}
+  .legend b{font-weight:600;color:var(--text)}
+  .note{font:400 13px/1.6 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);max-width:74ch;margin:22px 0 0}
+  .note b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">르포 · stakeholder_map 갤러리 · v8.0.0 Phase 1</div>
+  <h1>경우의 수 모크업 — 운영 전 검증판</h1>
+  <p class="intro">하나의 골격(진영 좌우/구획 분단, force 금지)을 네 가지 사건 유형에 적용. 인물은 원형 사진 슬롯(없으면 이니셜)로, 기업은 로고, 기관은 모노그램, 국가는 둥근 국기로 표현.</p>
+
+  <!-- =================== 공유 defs =================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text)"/></marker>
+    <symbol id="star5" viewBox="-5 -5 10 10"><polygon points="0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62" fill="#ffde00"/></symbol>
+    <!-- 인물 사진 슬롯(og:image 자리) -->
+    <symbol id="ph" viewBox="0 0 32 32"><clipPath id="cph"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cph)"><rect width="32" height="32" fill="#c9b79a"/><circle cx="16" cy="12.5" r="6" fill="#f1e6d4"/><path d="M4 30c0-7 6-10 12-10s12 3 12 10z" fill="#f1e6d4"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.3"/></symbol>
+    <!-- 국기 -->
+    <symbol id="flag-US" viewBox="0 0 32 32"><clipPath id="cUS"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cUS)"><rect width="32" height="32" fill="#fff"/><g fill="#b22234"><rect y="0" width="32" height="2.46"/><rect y="4.92" width="32" height="2.46"/><rect y="9.84" width="32" height="2.46"/><rect y="14.76" width="32" height="2.46"/><rect y="19.69" width="32" height="2.46"/><rect y="24.61" width="32" height="2.46"/><rect y="29.54" width="32" height="2.46"/></g><rect width="14.2" height="13.2" fill="#3c3b6e"/><g fill="#fff"><circle cx="2.6" cy="2.3" r=".9"/><circle cx="6.3" cy="2.3" r=".9"/><circle cx="10" cy="2.3" r=".9"/><circle cx="4.4" cy="4.7" r=".9"/><circle cx="8.1" cy="4.7" r=".9"/><circle cx="11.8" cy="4.7" r=".9"/><circle cx="2.6" cy="7.1" r=".9"/><circle cx="6.3" cy="7.1" r=".9"/><circle cx="10" cy="7.1" r=".9"/><circle cx="4.4" cy="9.5" r=".9"/><circle cx="8.1" cy="9.5" r=".9"/><circle cx="11.8" cy="9.5" r=".9"/></g></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>
+    <symbol id="flag-TW" viewBox="0 0 32 32"><clipPath id="cTW"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cTW)"><rect width="32" height="32" fill="#fe0000"/><rect width="16" height="16" fill="#000095"/><g transform="translate(8,8)" fill="#fff"><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(0)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(30)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(60)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(90)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(120)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(150)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(180)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(210)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(240)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(270)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(300)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(330)"/><circle r="3.4"/><circle r="2.8" fill="#000095"/><circle r="2.2" fill="#fff"/></g></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>
+    <symbol id="flag-CN" viewBox="0 0 32 32"><clipPath id="cCN"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cCN)"><rect width="32" height="32" fill="#de2910"/><use href="#star5" x="2" y="5" width="11" height="11"/><use href="#star5" x="12" y="2.5" width="4" height="4"/><use href="#star5" x="15" y="5.5" width="4" height="4"/><use href="#star5" x="15" y="9.5" width="4" height="4"/><use href="#star5" x="12" y="12.5" width="4" height="4"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>
+    <symbol id="flag-JP" viewBox="0 0 32 32"><clipPath id="cJP"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cJP)"><rect width="32" height="32" fill="#fff"/><circle cx="16" cy="16" r="7.5" fill="#bc002d"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>
+    <!-- 로고 -->
+    <symbol id="logo-NV" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#76b900"/><path d="M8 23c0-9 8-12 15-10-5 0-10 2-10 10z" fill="#fff"/><path d="M15 22c0-5 3-7 8-6-3 0-6 2-6 6z" fill="#fff" opacity=".82"/></symbol>
+    <symbol id="logo-MS" viewBox="0 0 32 32"><rect x="2" y="2" width="13" height="13" fill="#f25022"/><rect x="17" y="2" width="13" height="13" fill="#7fba00"/><rect x="2" y="17" width="13" height="13" fill="#00a4ef"/><rect x="17" y="17" width="13" height="13" fill="#ffb900"/></symbol>
+    <symbol id="logo-TSMC" viewBox="0 0 70 32"><rect width="70" height="32" rx="6" fill="#fff" stroke="#e2dccc"/><text x="35" y="22" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="17" fill="#c8102e" letter-spacing="-.5">tsmc</text></symbol>
+    <!-- 추가 국기 (시나리오용) -->
+    <symbol id="flag-UA" viewBox="0 0 32 32"><clipPath id="cUA"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cUA)"><rect width="32" height="16" fill="#0057b7"/><rect y="16" width="32" height="16" fill="#ffd700"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>
+    <symbol id="flag-RU" viewBox="0 0 32 32"><clipPath id="cRU"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#cRU)"><rect width="32" height="10.67" fill="#fff"/><rect y="10.67" width="32" height="10.67" fill="#0039a6"/><rect y="21.33" width="32" height="10.67" fill="#d52b1e"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>
+    <!-- 추가 로고 (머스크 제국) -->
+    <symbol id="logo-SPX" viewBox="0 0 80 32"><rect width="80" height="32" rx="6" fill="#0b0f1a"/><text x="40" y="21" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="14" fill="#fff" letter-spacing=".5">SpaceX</text></symbol>
+    <symbol id="logo-TSLA" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#fff" stroke="#e2dccc"/><text x="16" y="24" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="20" fill="#e31937">T</text></symbol>
+    <symbol id="logo-XAI" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#111"/><text x="16" y="21" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="13" fill="#fff">xAI</text></symbol>
+    <symbol id="logo-X" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#111"/><text x="16" y="23" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="17" fill="#fff">X</text></symbol>
+  </defs></svg>
+
+  <!-- =================== 변형 1: 기업·국가 =================== -->
+  <div class="card">
+    <p class="card-title">① 기업·국가 중심 — 반도체 공급망</p>
+    <p class="card-sub">좌: 미국(정책/수요) · 중앙: 접점 · 우: 대만(자본)</p>
+    <svg viewBox="0 0 960 440" role="img">
+      <text class="col-band" x="160" y="26" text-anchor="middle">미국 진영</text>
+      <text class="col-band" x="480" y="26" text-anchor="middle">접점·병목</text>
+      <text class="col-band" x="800" y="26" text-anchor="middle">대만 진영</text>
+      <path d="M270,118 C336,118 336,250 388,250" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+      <path d="M270,250 C330,250 338,276 388,276" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <path d="M160,330 L160,278" fill="none" stroke="var(--down)" stroke-width="1.8" stroke-dasharray="4 4"/>
+      <path d="M560,263 C620,263 624,160 690,160" fill="none" stroke="var(--text)" stroke-width="2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <path d="M800,278 L800,200" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <g transform="translate(322,184)"><rect x="-60" y="-9" width="120" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 보조금 66억$</text></g>
+      <g transform="translate(322,278)"><rect x="-50" y="-9" width="100" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 블랙웰 위탁</text></g>
+      <g transform="translate(160,304)"><rect x="-48" y="-9" width="96" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--down)" font-weight="700">✕</tspan> 캐파 경쟁</text></g>
+      <g transform="translate(625,212)"><rect x="-64" y="-9" width="128" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle">200억$ 보충 ⇄ 이익 환류</text></g>
+      <g transform="translate(800,239)"><rect x="-44" y="-9" width="88" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 설비 조달</text></g>
+      <g transform="translate(50,89)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-US" x="12" y="14" width="30" height="30"/><text class="n-name" x="52" y="26">미 상무부</text><text class="n-role" x="52" y="43">보조금 집행처</text></g>
+      <g transform="translate(50,221)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><use href="#logo-NV" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">엔비디아</text><text class="n-role" x="52" y="43">최대 수요자</text></g>
+      <g transform="translate(50,331)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#logo-MS" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">마이크로소프트</text><text class="n-role" x="52" y="43">캐파 경쟁자</text></g>
+      <g transform="translate(388,231)"><rect width="172" height="64" rx="12" fill="var(--hub)" stroke="var(--text)" stroke-width="2.2"/><use href="#logo-TSMC" x="12" y="23" width="36" height="18"/><use href="#flag-US" x="40" y="38" width="14" height="14"/><text class="n-name" x="58" y="29">애리조나 팹</text><text class="n-role" x="58" y="47">병목·분쟁의 무대</text></g>
+      <g transform="translate(690,131)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><use href="#logo-TSMC" x="12" y="20" width="36" height="18"/><use href="#flag-TW" x="40" y="33" width="14" height="14"/><text class="n-name" x="58" y="26">TSMC 본사</text><text class="n-role" x="58" y="43">자본·이익 귀속</text></g>
+      <g transform="translate(690,261)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-TW" x="12" y="14" width="30" height="30"/><text class="n-name" x="52" y="26">대만 금융권</text><text class="n-role" x="52" y="43">설비 투자 조달</text></g>
+    </svg>
+  </div>
+
+  <!-- =================== 변형 2: 인물 중심 (외교) =================== -->
+  <div class="card">
+    <p class="card-title">② 인물 중심 — 미·중 무역 담판</p>
+    <p class="card-sub">정상·각료가 노드. 원형 사진 슬롯(og:image) + 국적 배지. 좌 워싱턴 / 우 베이징</p>
+    <svg viewBox="0 0 960 380" role="img">
+      <text class="col-band" x="160" y="26" text-anchor="middle">워싱턴</text>
+      <text class="col-band" x="480" y="26" text-anchor="middle">담판 테이블</text>
+      <text class="col-band" x="800" y="26" text-anchor="middle">베이징</text>
+      <!-- 정상 ↔ 정상 대립 -->
+      <path d="M270,120 C400,120 560,120 690,120" fill="none" stroke="var(--down)" stroke-width="1.9" stroke-dasharray="5 4"/>
+      <g transform="translate(480,110)"><rect x="-64" y="-9" width="128" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--down)" font-weight="700">✕</tspan> 관세 보복 응수</text></g>
+      <!-- 대통령 → 무역대표 훈령(영향) -->
+      <path d="M160,150 L160,230" fill="none" stroke="var(--text)" stroke-width="1.8" marker-end="url(#arr)"/>
+      <g transform="translate(160,190)"><rect x="-34" y="-9" width="68" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">훈령</text></g>
+      <path d="M800,150 L800,230" fill="none" stroke="var(--text)" stroke-width="1.8" marker-end="url(#arr)"/>
+      <g transform="translate(800,190)"><rect x="-34" y="-9" width="68" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">지시</text></g>
+      <!-- 무역대표 ↔ 상무부장 실무 협상(연관) -->
+      <path d="M270,260 C420,260 540,260 690,260" fill="none" stroke="var(--fg-3)" stroke-width="1.6"/>
+      <g transform="translate(480,260)"><rect x="-58" y="-9" width="116" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 실무 협상 채널</text></g>
+      <!-- 좌 인물 (사진 슬롯) -->
+      <g transform="translate(50,91)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><use href="#ph" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">미국 대통령</text><text class="n-role" x="52" y="43">강경 관세 노선</text></g>
+      <g transform="translate(50,231)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#ph" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">미 무역대표(USTR)</text><text class="n-role" x="52" y="43">협상 실무 총괄</text></g>
+      <!-- 우 인물 -->
+      <g transform="translate(690,91)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><use href="#ph" x="12" y="14" width="30" height="30"/><use href="#flag-CN" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">중국 국가주석</text><text class="n-role" x="52" y="43">희토류 카드 보유</text></g>
+      <g transform="translate(690,231)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#ph" x="12" y="14" width="30" height="30"/><use href="#flag-CN" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">중국 상무부장</text><text class="n-role" x="52" y="43">협상 실무 총괄</text></g>
+    </svg>
+  </div>
+
+  <!-- =================== 변형 3: 혼합 (인물+기업+기관) =================== -->
+  <div class="card">
+    <p class="card-title">③ 혼합 — 회계 부정 의혹 (인물 + 기업 + 기관)</p>
+    <p class="card-sub">인물=사진/이니셜 · 기업=로고 · 기관=모노그램 칩. 좌 기업측 / 우 감시측</p>
+    <svg viewBox="0 0 960 400" role="img">
+      <text class="col-band" x="160" y="26" text-anchor="middle">기업 측</text>
+      <text class="col-band" x="480" y="26" text-anchor="middle">규제·심판</text>
+      <text class="col-band" x="800" y="26" text-anchor="middle">감시·폭로</text>
+      <!-- CEO → 기업 영향 -->
+      <path d="M270,110 C300,110 300,250 270,250" fill="none" stroke="var(--text)" stroke-width="1.8" marker-end="url(#arr)"/>
+      <g transform="translate(312,180)"><rect x="-30" y="-9" width="60" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">지배</text></g>
+      <!-- 규제기관 → 기업 조사(대립) -->
+      <path d="M396,250 C340,250 320,250 270,250" fill="none" stroke="var(--down)" stroke-width="1.9" stroke-dasharray="5 4"/>
+      <g transform="translate(330,232)"><rect x="-40" y="-9" width="80" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--down)" font-weight="700">✕</tspan> 회계 감리</text></g>
+      <!-- 내부고발자 → 언론 연관 -->
+      <path d="M690,120 C640,120 640,330 690,330" fill="none" stroke="var(--fg-3)" stroke-width="1.6"/>
+      <g transform="translate(636,225)"><rect x="-30" y="-9" width="60" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">제보</text></g>
+      <!-- 언론 → 규제기관 영향 -->
+      <path d="M690,330 C600,330 564,260 564,256" fill="none" stroke="var(--text)" stroke-width="1.8" marker-end="url(#arr)"/>
+      <g transform="translate(600,300)"><rect x="-40" y="-9" width="80" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">공론화 압박</text></g>
+      <!-- 좌 -->
+      <g transform="translate(50,81)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><use href="#ph" x="12" y="14" width="30" height="30"/><text class="n-name" x="52" y="26">그룹 회장</text><text class="n-role" x="52" y="43">실질 지배주주</text></g>
+      <g transform="translate(50,221)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,14)"><circle cx="15" cy="15" r="15" fill="#5a5247"/><text class="ini" x="15" y="20" text-anchor="middle">㈜</text></g><text class="n-name" x="52" y="26">상장 지주사</text><text class="n-role" x="52" y="43">분식 의혹 당사자</text></g>
+      <!-- 중앙 기관 -->
+      <g transform="translate(394,221)"><rect width="172" height="64" rx="12" fill="var(--hub)" stroke="var(--text)" stroke-width="2.2"/><g transform="translate(12,17)"><rect width="30" height="30" rx="7" fill="#2f4858"/><text class="ini" x="15" y="20" text-anchor="middle">監</text></g><text class="n-name" x="50" y="29">금융감독 당국</text><text class="n-role" x="50" y="47">감리·제재 권한</text></g>
+      <!-- 우 -->
+      <g transform="translate(690,91)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,14)"><circle cx="15" cy="15" r="15" fill="#8a6d3b"/><text class="ini" x="15" y="20" text-anchor="middle">W</text></g><text class="n-name" x="52" y="26">내부고발자</text><text class="n-role" x="52" y="43">전직 재무팀장</text></g>
+      <g transform="translate(690,301)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,14)"><rect width="30" height="30" rx="7" fill="#444"/><text class="ini" x="15" y="20" text-anchor="middle">報</text></g><text class="n-name" x="52" y="26">탐사보도 언론</text><text class="n-role" x="52" y="43">최초 보도·확산</text></g>
+    </svg>
+  </div>
+
+  <!-- =================== 변형 4: 다수 행위자 (7노드) =================== -->
+  <div class="card">
+    <p class="card-title">④ 다수 행위자 — 다자 지정학 (7노드 stack 밀도)</p>
+    <p class="card-sub">진영당 3노드까지. 칼럼 내 weight stack 으로 혼전도 정렬 유지</p>
+    <svg viewBox="0 0 960 470" role="img">
+      <text class="col-band" x="160" y="24" text-anchor="middle">동맹 A 블록</text>
+      <text class="col-band" x="480" y="24" text-anchor="middle">분쟁 지대</text>
+      <text class="col-band" x="800" y="24" text-anchor="middle">동맹 B 블록</text>
+      <!-- 좌 3 → 중앙 -->
+      <path d="M270,95 C330,95 350,210 388,228" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <path d="M270,225 C330,225 350,235 388,242" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <path d="M270,355 C330,355 350,270 388,256" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <!-- 우 3 → 중앙 -->
+      <path d="M690,95 C630,95 610,210 560,228" fill="none" stroke="var(--down)" stroke-width="1.9" stroke-dasharray="5 4"/>
+      <path d="M690,225 C630,225 610,238 560,242" fill="none" stroke="var(--down)" stroke-width="1.9" stroke-dasharray="5 4"/>
+      <path d="M690,355 C630,355 610,272 560,256" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <g transform="translate(330,150)"><rect x="-34" y="-9" width="68" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 지원</text></g>
+      <g transform="translate(630,150)"><rect x="-40" y="-9" width="80" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--down)" font-weight="700">✕</tspan> 무력 시위</text></g>
+      <!-- 좌 노드 3 -->
+      <g transform="translate(50,66)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.5"/><use href="#flag-US" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">미국</text><text class="n-role" x="52" y="42">동맹 주도국</text></g>
+      <g transform="translate(50,197)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-JP" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">일본</text><text class="n-role" x="52" y="42">전진 배치 거점</text></g>
+      <g transform="translate(50,327)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-TW" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">대만</text><text class="n-role" x="52" y="42">분쟁의 핵심 이해</text></g>
+      <!-- 중앙 -->
+      <g transform="translate(388,212)"><rect width="172" height="62" rx="12" fill="var(--hub)" stroke="var(--text)" stroke-width="2.2"/><g transform="translate(12,16)"><rect width="30" height="30" rx="7" fill="#2f4858"/><text class="ini" x="15" y="20" text-anchor="middle">海</text></g><text class="n-name" x="50" y="28">분쟁 해역</text><text class="n-role" x="50" y="45">항행·영유권 충돌</text></g>
+      <!-- 우 노드 3 -->
+      <g transform="translate(690,66)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--down)" stroke-width="1.5"/><use href="#flag-CN" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">중국</text><text class="n-role" x="52" y="42">블록 주도국</text></g>
+      <g transform="translate(690,197)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,13)"><rect width="30" height="30" rx="7" fill="#7a3b3b"/><text class="ini" x="15" y="20" text-anchor="middle">軍</text></g><text class="n-name" x="52" y="25">인민해방군 해군</text><text class="n-role" x="52" y="42">전력 투사</text></g>
+      <g transform="translate(690,327)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,13)"><circle cx="15" cy="15" r="15" fill="#3a6b8a"/><text class="ini" x="15" y="20" text-anchor="middle">UN</text></g><text class="n-name" x="52" y="25">국제 중재기구</text><text class="n-role" x="52" y="42">중재 시도</text></g>
+    </svg>
+  </div>
+
+  <!-- =================== 시나리오 ⑤: 우크라이나 드론전력 강화 =================== -->
+  <div class="card">
+    <p class="card-title">⑤ 실제 시나리오 — 우크라이나 드론전력은 왜 강해졌나</p>
+    <p class="card-sub">좌: 국내 생태계(조달·양산·전선 피드백) · 중앙: 드론 전력 · 우: 외부 변수(후원·부품·적)</p>
+    <svg viewBox="0 0 960 470" role="img">
+      <text class="col-band" x="160" y="24" text-anchor="middle">우크라이나 국내 생태계</text>
+      <text class="col-band" x="480" y="24" text-anchor="middle">결과 · 역량</text>
+      <text class="col-band" x="800" y="24" text-anchor="middle">외부 변수</text>
+      <!-- 국방부 →● 드론전력 -->
+      <path d="M270,94 C336,94 350,215 388,228" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <g transform="translate(330,150)"><rect x="-44" y="-9" width="88" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 예산·조달</text></g>
+      <!-- 스타트업 →▸ 드론전력 (핵심 동인) -->
+      <path d="M270,225 C330,225 350,238 388,243" fill="none" stroke="var(--text)" stroke-width="2" marker-end="url(#arr)"/>
+      <g transform="translate(330,233)"><rect x="-52" y="-9" width="104" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">급속 양산·개량</text></g>
+      <!-- 군 →▸ 스타트업 (전선 피드백 루프) -->
+      <path d="M110,327 L110,253" fill="none" stroke="var(--text)" stroke-width="1.8" marker-end="url(#arr)"/>
+      <g transform="translate(110,290)"><rect x="-50" y="-9" width="100" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">전선 피드백 루프</text></g>
+      <!-- 서방후원 →● 드론전력 -->
+      <path d="M690,94 C624,94 610,215 560,228" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <g transform="translate(636,150)"><rect x="-50" y="-9" width="100" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 자금·정보 지원</text></g>
+      <!-- 부품공급 →○ 드론전력 -->
+      <path d="M690,225 C630,225 610,238 560,243" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <g transform="translate(636,233)"><rect x="-52" y="-9" width="104" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 상용 부품 조달</text></g>
+      <!-- 러시아 →✕ 드론전력 -->
+      <path d="M690,355 C630,355 610,270 560,256" fill="none" stroke="var(--down)" stroke-width="1.9" stroke-dasharray="5 4"/>
+      <g transform="translate(636,318)"><rect x="-48" y="-9" width="96" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--down)" font-weight="700">✕</tspan> 전자전·재밍</text></g>
+      <!-- 좌 노드 -->
+      <g transform="translate(50,66)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-UA" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">우크라이나 국방부</text><text class="n-role" x="52" y="42">예산·조달·우선순위</text></g>
+      <g transform="translate(50,197)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><g transform="translate(12,13)"><rect width="30" height="30" rx="7" fill="#2f6e4f"/><text class="ini" x="15" y="20" text-anchor="middle">産</text></g><use href="#flag-UA" x="30" y="31" width="14" height="14"/><text class="n-name" x="52" y="25">민간 드론 스타트업군</text><text class="n-role" x="52" y="42">급속 양산·전선 개량</text></g>
+      <g transform="translate(50,327)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,13)"><rect width="30" height="30" rx="7" fill="#3a5a40"/><text class="ini" x="15" y="20" text-anchor="middle">軍</text></g><text class="n-name" x="52" y="25">우크라이나군 운용부대</text><text class="n-role" x="52" y="42">실전 운용·요구 도출</text></g>
+      <!-- 중앙 -->
+      <g transform="translate(388,212)"><rect width="172" height="62" rx="12" fill="var(--hub)" stroke="var(--text)" stroke-width="2.2"/><g transform="translate(12,16)"><rect width="30" height="30" rx="7" fill="#1f3a4d"/><text class="ini" x="15" y="20" text-anchor="middle">UAV</text></g><text class="n-name" x="50" y="28">우크라 드론 전력</text><text class="n-role" x="50" y="45">FPV·장거리 타격</text></g>
+      <!-- 우 노드 -->
+      <g transform="translate(690,66)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><use href="#flag-US" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">서방 후원(미·EU)</text><text class="n-role" x="52" y="42">자금·정보·기술</text></g>
+      <g transform="translate(690,197)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,13)"><rect width="30" height="30" rx="7" fill="#5a5247"/><text class="ini" x="15" y="20" text-anchor="middle">部</text></g><text class="n-name" x="52" y="25">상용 부품 공급망</text><text class="n-role" x="52" y="42">모터·배터리·칩</text></g>
+      <g transform="translate(690,327)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--down)" stroke-width="1.5"/><use href="#flag-RU" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">러시아 전자전</text><text class="n-role" x="52" y="42">재밍·요격 대응</text></g>
+    </svg>
+  </div>
+
+  <!-- =================== 시나리오 ⑥: 머스크 제국 통합 =================== -->
+  <div class="card">
+    <p class="card-title">⑥ 실제 시나리오 — SpaceX 상장 축의 머스크 제국 통합</p>
+    <p class="card-sub">인물 중심. 좌: 지배·자본 · 중앙: 통합 축(SpaceX) · 우: 편입 계열사</p>
+    <svg viewBox="0 0 960 420" role="img">
+      <text class="col-band" x="160" y="26" text-anchor="middle">지배 · 자본</text>
+      <text class="col-band" x="480" y="26" text-anchor="middle">통합 축</text>
+      <text class="col-band" x="800" y="26" text-anchor="middle">편입 계열사</text>
+      <!-- 머스크 →▸ SpaceX (통합 주도) -->
+      <path d="M270,124 C336,124 350,200 388,210" fill="none" stroke="var(--text)" stroke-width="2" marker-end="url(#arr)"/>
+      <g transform="translate(330,160)"><rect x="-46" y="-9" width="92" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">지배·통합 주도</text></g>
+      <!-- 투자자 →● SpaceX (상장 자본) -->
+      <path d="M270,264 C336,264 350,246 388,240" fill="none" stroke="var(--accent)" stroke-width="2.1"/>
+      <g transform="translate(330,262)"><rect x="-46" y="-9" width="92" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 상장 자본</text></g>
+      <!-- SpaceX →● xAI (합병 완료) -->
+      <path d="M572,212 C636,212 624,105 690,105" fill="none" stroke="var(--accent)" stroke-width="2.1"/>
+      <g transform="translate(628,150)"><rect x="-46" y="-9" width="92" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 합병 완료</text></g>
+      <!-- SpaceX ⇢ Tesla (합병 추진·미정 — 점선) -->
+      <path d="M572,225 L690,225" fill="none" stroke="var(--text)" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+      <g transform="translate(631,225)"><rect x="-48" y="-9" width="96" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle">합병 추진(미정)</text></g>
+      <!-- SpaceX →○ X (편입) -->
+      <path d="M572,240 C636,240 624,345 690,345" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <g transform="translate(628,300)"><rect x="-46" y="-9" width="92" height="18" rx="5" fill="var(--bg)" opacity=".95"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 데이터 편입</text></g>
+      <!-- 좌 -->
+      <g transform="translate(50,96)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><use href="#ph" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">일론 머스크</text><text class="n-role" x="52" y="43">지배주주·통합 설계자</text></g>
+      <g transform="translate(50,236)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><g transform="translate(12,14)"><circle cx="15" cy="15" r="15" fill="#8a6d3b"/><text class="ini" x="15" y="20" text-anchor="middle">$</text></g><text class="n-name" x="52" y="26">상장 인수 투자자</text><text class="n-role" x="52" y="43">IPO·국부펀드 자본</text></g>
+      <!-- 중앙 -->
+      <g transform="translate(388,193)"><rect width="184" height="64" rx="12" fill="var(--hub)" stroke="var(--text)" stroke-width="2.2"/><use href="#logo-SPX" x="12" y="22" width="50" height="20"/><text class="n-name" x="70" y="29">SpaceX</text><text class="n-role" x="70" y="47">상장·통합 플랫폼</text></g>
+      <!-- 우 -->
+      <g transform="translate(690,77)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><use href="#logo-XAI" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">xAI</text><text class="n-role" x="52" y="42">합병 완료 (AI)</text></g>
+      <g transform="translate(690,197)"><rect width="220" height="56" rx="10" fill="var(--card)" stroke="var(--border)" stroke-width="1.4"/><use href="#logo-TSLA" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">Tesla</text><text class="n-role" x="52" y="42">합병 추진 대상(미정)</text></g>
+      <g transform="translate(690,317)"><rect width="220" height="56" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#logo-X" x="12" y="13" width="30" height="30"/><text class="n-name" x="52" y="25">X (SNS)</text><text class="n-role" x="52" y="42">데이터·유통 편입</text></g>
+    </svg>
+  </div>
+
+  <p class="note"><b>이 갤러리로 검증할 것:</b> ① 인물(사진 슬롯·이니셜) / 기업(로고) / 기관(모노그램) / 국가(둥근 국기)가 한 골격 안에서 일관되게 섞이는가 ② 진영당 2~3노드, 총 4~7노드에서 정렬·간격·엣지 가독이 유지되는가 ③ 엣지 4종(동맹·대립·영향·연관) + 라벨칩 + marker 화살표가 모든 케이스에서 안 떠다니는가. <br><b>주의(미해결):</b> 국기·로고·인물 그래픽은 osint_generator 의 잘 만든 자산으로 교체 예정(접근 확보 시). 현재는 임시 SVG. 인물 사진은 og:image 만 사용(임의 검색 금지).</p>
+</div>
+</body>
+</html>
