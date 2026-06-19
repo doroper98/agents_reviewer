@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--
+  stakeholder_map MOCKUP (v8.0.0 Phase 1) — 르포 전용 행위자 관계도.
+  목적: 결정적 배치 골격을 "못박는" 설계 사양. 이 HTML 이 합의되면 charts.js
+  drawStakeholderMap 렌더러가 이 레이아웃·어휘를 1:1로 구현한다.
+
+  ★ 핵심 원칙 (CHART-AP-25 재발 차단):
+    - force / physics / hairball 절대 금지. 노드 좌표는 group(진영) + 순서로 결정적 산출.
+    - x = 진영 칼럼 인덱스 (좌 미국 / 중앙 접점 / 우 대만), y = 칼럼 내 stack 순서(weight desc).
+    - 엣지는 결정된 노드 위에 얹기만 — 노드를 밀지 않는다.
+    - getBBox content-fit viewBox 로 자동 중앙정렬 (실제 렌더러에서).
+
+  자산 전략:
+    - 국기: 번들 SVG (여기선 emoji 로 대체 표기). 무국적 행위자(기업·기관)는 생략.
+    - 로고/인물: og:image 있으면 <image>, 없으면 모노그램 칩(이니셜). 여기선 모노그램.
+
+  엣지 어휘 (network 인접행렬과 공유 — 대립/동맹/영향/연관):
+    동맹 ● accent 실선 / 대립 ✕ down 점선 / 영향 ▸ 방향 실선 / 연관 ○ muted 가는선
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stakeholder_map 목업 — 애리조나 팹 보조금 자금 흐름</title>
+<style>
+  :root{
+    --bg:#f4efe6; --card:#fbf8f1; --card-2:#efe7d6; --text:#23201b; --fg-2:#6f675a;
+    --fg-3:#9b9384; --accent:#a8492e; --down:#7c4a8a; --border:#d9cfbd; --border-soft:#e7ddcb;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);margin:0;
+    font-family:"Newsreader","Noto Serif KR",Georgia,serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 28px 80px}
+  .eyebrow{font:600 12px/1.4 "IBM Plex Sans KR",sans-serif;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--accent)}
+  h1{font:600 30px/1.2 "Newsreader",serif;margin:6px 0 6px}
+  .deck{font:400 16px/1.5 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);max-width:62ch;margin:0 0 4px}
+  .note{font:400 13px/1.55 "IBM Plex Sans KR",sans-serif;color:var(--fg-3);max-width:70ch;margin:18px 0}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    margin-top:26px;padding:20px 18px 10px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  .card-title{font:600 15px/1.3 "IBM Plex Sans KR",sans-serif;margin:0 0 2px}
+  .card-sub{font:400 12.5px/1.4 "IBM Plex Sans KR",sans-serif;color:var(--fg-3);margin:0 0 6px}
+  svg{width:100%;height:auto;display:block;font-family:"IBM Plex Sans KR",sans-serif}
+  .col-band{font:600 11px/1 "IBM Plex Sans KR",sans-serif;letter-spacing:.06em;
+    text-transform:uppercase;fill:var(--fg-3)}
+  .n-name{font:600 13px/1 "IBM Plex Sans KR",sans-serif;fill:var(--text)}
+  .n-role{font:400 11px/1 "IBM Plex Sans KR",sans-serif;fill:var(--fg-2)}
+  .n-stake{font:400 10.5px/1.3 "IBM Plex Sans KR",sans-serif;fill:var(--fg-3)}
+  .e-label{font:400 10.5px "IBM Plex Sans KR",sans-serif;fill:var(--fg-2)}
+  .glyph{font:600 13px "IBM Plex Sans KR",sans-serif}
+  .legend{font:400 12px/1.7 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);
+    display:flex;gap:22px;flex-wrap:wrap;margin:8px 2px 4px}
+  .legend b{font-weight:600;color:var(--text)}
+  .mono{font-family:"IBM Plex Mono",monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">르포 · stakeholder_map 목업 · v8.0.0 Phase 1</div>
+  <h1>애리조나 팹 보조금, 누구의 호주머니로 흐르나</h1>
+  <p class="deck">행위자를 <b>진영별 칼럼</b>에 결정적으로 고정하고, 자금·위탁·환류의 흐름을 그 위에 얹는다. 노드 위치는 group + 순서로만 결정 — force 없음(CHART-AP-25 무관).</p>
+
+  <div class="card">
+    <p class="card-title">이해당사자 관계도 — 애리조나 팹을 둘러싼 다섯 손</p>
+    <p class="card-sub">좌: 미국 진영(정책·수요) · 중앙: 접점(애리조나 팹) · 우: 대만 진영(자본·환류)</p>
+    <svg viewBox="0 0 920 470" role="img" aria-label="stakeholder map">
+      <!-- 칼럼 밴드 라벨 -->
+      <text class="col-band" x="150" y="30" text-anchor="middle">미국 진영 · 정책/수요</text>
+      <text class="col-band" x="460" y="30" text-anchor="middle">접점 · 병목</text>
+      <text class="col-band" x="770" y="30" text-anchor="middle">대만 진영 · 자본</text>
+      <!-- 칼럼 구분 가이드(옅게) -->
+      <line x1="305" y1="44" x2="305" y2="450" stroke="var(--border-soft)" stroke-dasharray="2 5"/>
+      <line x1="615" y1="44" x2="615" y2="450" stroke="var(--border-soft)" stroke-dasharray="2 5"/>
+
+      <!-- ===== 엣지 (노드 뒤에 먼저 그림) ===== -->
+      <!-- 미 상무부 → 애리조나 팹 : 동맹/지원(보조금) ● accent 실선 -->
+      <path d="M250,120 C360,120 360,210 390,222" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <circle cx="320" cy="160" r="3" fill="var(--accent)"/>
+      <text class="e-label" x="320" y="150" text-anchor="middle">보조금 66억$ · 조건부 분할</text>
+      <!-- 엔비디아 → 애리조나 팹 : 연관(위탁) ○ muted -->
+      <path d="M250,235 C330,235 350,235 390,235" fill="none" stroke="var(--fg-3)" stroke-width="1.4"/>
+      <text class="e-label" x="318" y="227" text-anchor="middle">블랙웰 위탁생산</text>
+      <!-- MS → 엔비디아 : 대립(캐파 선점경쟁) ✕ down 점선 -->
+      <path d="M150,330 C150,300 150,280 150,262" fill="none" stroke="var(--down)" stroke-width="1.6" stroke-dasharray="4 4"/>
+      <text class="glyph" x="158" y="300" fill="var(--down)">✕</text>
+      <text class="e-label" x="168" y="312" text-anchor="start">캐파 선점 경쟁</text>
+      <!-- TSMC 본사 → 애리조나 팹 : 동맹(200억 보충) ● accent 실선 -->
+      <path d="M670,160 C560,160 560,210 530,222" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <circle cx="600" cy="180" r="3" fill="var(--accent)"/>
+      <text class="e-label" x="600" y="170" text-anchor="middle">200억$ 자체 보충</text>
+      <!-- 애리조나 팹 → TSMC 본사 : 영향(이익 환류) ▸ 방향 실선 -->
+      <path d="M530,250 C560,275 600,275 668,250" fill="none" stroke="var(--text)" stroke-width="1.8"/>
+      <text class="glyph" x="600" y="284" text-anchor="middle" fill="var(--text)">▸</text>
+      <text class="e-label" x="600" y="298" text-anchor="middle">이익 ~30% 대만 환류</text>
+
+      <!-- ===== 노드 (진영 칼럼에 결정적 배치) ===== -->
+      <!-- 좌: 미국 진영 -->
+      <!-- 미 상무부 (정책) -->
+      <g transform="translate(60,96)">
+        <rect width="190" height="48" rx="8" fill="var(--card-2)" stroke="var(--border)"/>
+        <text x="16" y="30" font-size="20">🇺🇸</text>
+        <text class="n-name" x="44" y="22">미 상무부</text>
+        <text class="n-role" x="44" y="38">보조금 집행처</text>
+      </g>
+      <!-- 엔비디아 (수요·핵심) -->
+      <g transform="translate(60,211)">
+        <rect width="190" height="48" rx="8" fill="var(--card)" stroke="var(--accent)" stroke-width="1.5"/>
+        <circle cx="24" cy="24" r="13" fill="#76b900"/><text x="24" y="29" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">N</text>
+        <text class="n-name" x="44" y="22">엔비디아 🇺🇸</text>
+        <text class="n-role" x="44" y="38">최대 수요자</text>
+      </g>
+      <!-- MS (수요 보조) -->
+      <g transform="translate(60,306)">
+        <rect width="180" height="48" rx="8" fill="var(--card-2)" stroke="var(--border)"/>
+        <circle cx="24" cy="24" r="13" fill="#0067b8"/><text x="24" y="29" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">MS</text>
+        <text class="n-name" x="44" y="22">마이크로소프트 🇺🇸</text>
+        <text class="n-role" x="44" y="38">캐파 경쟁자</text>
+      </g>
+
+      <!-- 중앙: 접점(병목) — 가장 큰 노드 -->
+      <g transform="translate(388,206)">
+        <rect width="150" height="62" rx="10" fill="var(--card)" stroke="var(--text)" stroke-width="2"/>
+        <text x="16" y="30" font-size="20">🏭</text>
+        <text class="n-name" x="44" y="24" font-size="14">TSMC 애리조나</text>
+        <text class="n-role" x="44" y="40">병목 · 분쟁의 무대</text>
+        <text class="n-stake" x="16" y="55">미·대만 자본이 함께 댄 공장</text>
+      </g>
+
+      <!-- 우: 대만 진영 -->
+      <g transform="translate(668,136)">
+        <rect width="192" height="48" rx="8" fill="var(--card-2)" stroke="var(--border)"/>
+        <text x="16" y="30" font-size="20">🇹🇼</text>
+        <text class="n-name" x="44" y="22">TSMC 본사</text>
+        <text class="n-role" x="44" y="38">자본 공급 · 이익 귀속</text>
+      </g>
+      <g transform="translate(668,226)">
+        <rect width="192" height="48" rx="8" fill="var(--card-2)" stroke="var(--border)"/>
+        <circle cx="24" cy="24" r="13" fill="#5a5247"/><text x="24" y="29" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">銀</text>
+        <text class="n-name" x="44" y="22">대만 금융권</text>
+        <text class="n-role" x="44" y="38">설비 투자 조달</text>
+      </g>
+    </svg>
+    <div class="legend">
+      <span><b style="color:var(--accent)">● 동맹/지원</b> 보조금·공동출자</span>
+      <span><b style="color:var(--down)">✕ 대립</b> 경쟁·이해충돌</span>
+      <span><b>▸ 영향</b> 방향 있는 흐름</span>
+      <span><b style="color:var(--fg-3)">○ 연관</b> 거래·계약</span>
+    </div>
+  </div>
+
+  <p class="note"><b>결정적 배치 사양 (렌더러가 구현할 규칙):</b><br>
+  ① <b>x = 진영 칼럼</b>. group 값을 좌→우 순서로 매핑(미국/접점/대만 처럼 데이터가 주는 zone 순). 칼럼 폭은 균등 분할.<br>
+  ② <b>y = 칼럼 내 stack</b>. weight(역할 비중) 내림차순으로 위→아래 등간격. 노드 높이는 라벨 2줄 + 자산 기준 고정.<br>
+  ③ <b>엣지는 후행 레이어</b>. 결정된 노드 anchor(좌/우 가장자리 중점) 사이를 베지어로 연결. 노드를 절대 이동시키지 않음.<br>
+  ④ <b>엣지 type 4종</b>(동맹/대립/영향/연관)은 색·점선·글리프로 인코딩 — network 인접행렬과 동일 어휘.<br>
+  ⑤ <b>자산</b>: 국기는 번들 SVG(국가 행위자만), 로고·인물은 og:image 있으면 image, 없으면 이니셜 모노그램 칩. 임의 인물 검색 금지.<br>
+  ⑥ <b>content-fit</b>: 렌더 후 getBBox 로 viewBox 재계산 → 자동 중앙정렬(빈 여백 제거).</p>
+</div>
+</body>
+</html>
