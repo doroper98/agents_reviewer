@@ -38,6 +38,10 @@ GUARD_DUP_HEADING = "DuplicateHeadingGuard"
 # V7 Track C — 기준시점 가드 2종 (REFACTOR_V7_PLAN.md §3.2, V7_REF_FRAME 게이트).
 GUARD_DATE_ANCHOR = "DateAnchoredMarketGuard"
 GUARD_STALE_ANCHOR = "StaleAnchorGuard"
+# v7.9.16 — 같은 거래 캘린더(한국거래소)를 공유하는 시장 지표끼리 최신 종가 기준일이
+# 어긋나면 flag (kospi-date-mismatch 회귀: 코스피만 6/17, 삼성전자는 6/18 같은 cross-source
+# 기준일 불일치). 데이터 계층 결정적 검출 — prose 파싱·LLM 판단 0, time_series 만 본다.
+GUARD_ANCHOR_COHERENCE = "MarketAnchorCoherenceGuard"
 
 
 class ProseBlock(BaseModel):
@@ -600,6 +604,89 @@ def duplicate_heading_guard(report: ComposedReport) -> list[GuardFlag]:
 # --------------------------------------------------------------------------
 
 
+# 같은 한국거래소(KRX) 정규장 마감에 함께 게시되는 지표들 — 동일 거래 캘린더라
+# 정상 상황에서 최신 종가 기준일이 *반드시 동일* 하다. 미국 지수(다른 캘린더·시차)
+# 와 ECOS 매크로(BOK 게시 지연 가능)는 FP 위험으로 제외 — 거래소 동시 게시 지표만.
+_KR_EXCHANGE_NAMES = ("코스피", "코스닥", "삼성전자", "SK하이닉스", "하이닉스")
+
+
+def market_anchor_coherence_guard(
+    context: ContextAnalysis, *, publication_date: str = "",
+) -> list[GuardFlag]:
+    """한국거래소 지표 기준일 정합 검출 — 두 가지 회귀를 데이터 계층에서 결정적으로 잡는다.
+
+    ① **cross-instrument 기준일 불일치 (kospi-date-mismatch).** 코스피 지수가 6/17 봉인데
+       삼성전자는 6/18 봉처럼, *같은 거래일에 함께 마감·게시* 되는 지표들의 최신 봉 날짜가
+       어긋나면 high. Yahoo 한국 지수 EOD 지연·소스 혼합으로 직전일 값이 박히는 회귀를
+       composer 가 본문에 쓰기 전에 잡는다 (표 카드처럼 prose 가드 시야 밖 필드와 무관).
+
+    ② **wrong-year 봉 (년도 미확인).** 시장 시계열의 *최신* 봉 연도가 발행연도와 다르면
+       high — "다른 해의 같은 날짜(2025-06-18)를 올해 데이터로 표기" 회귀 직격. 현재 브리핑의
+       최신 종가는 항상 발행연도여야 한다(3Y 역사 차트도 최신 봉은 오늘). prose 의 'M월 D일'
+       은 year 가 없어 default_year 로 자동 보강돼 다른 해 출처를 숨기므로, *봉의 실제 연도*
+       를 본다.
+
+    instrument 이름으로 그룹을 정함 — 폴백으로 source 가 YAHOO 로 바뀌어도(코스피 KRX
+    실패→Yahoo) 이름이 '코스피' 면 그룹에 포함돼 stale 을 잡는다.
+    """
+    series = getattr(context, "time_series", None) or []
+    freshest: dict[str, str] = {}
+    for s in series:
+        if not isinstance(s, dict):
+            continue
+        name = str(s.get("instrument", "") or "")
+        if not any(k in name for k in _KR_EXCHANGE_NAMES):
+            continue
+        dates = [
+            str(b.get("date"))
+            for b in (s.get("data") or [])
+            if isinstance(b, dict) and b.get("date") and b.get("close") is not None
+        ]
+        if dates:
+            freshest[name] = max(dates)
+    if not freshest:
+        return []
+    latest = max(freshest.values())
+    flags: list[GuardFlag] = []
+
+    # ② wrong-year — 그룹 최신 봉 연도 vs 발행연도.
+    pub_year = (publication_date or getattr(context, "date", "") or "")[:4]
+    if pub_year and latest[:4] != pub_year:
+        flags.append(
+            GuardFlag(
+                guard=GUARD_ANCHOR_COHERENCE,
+                flag="wrong_year_market_anchor",
+                location="time_series",
+                quote=f"최신 한국거래소 봉 {latest} (발행연도 {pub_year})",
+                detail=(
+                    f"시장 시계열 최신 봉 연도({latest[:4]})가 발행연도({pub_year})와 불일치 "
+                    "— 다른 해의 같은 날짜 데이터를 올해로 표기한 회귀 의심. anchor_date/연도 확인."
+                ),
+                severity="high",
+            )
+        )
+
+    # ① cross-instrument 기준일 불일치.
+    if len(freshest) >= 2:
+        for name, d in sorted(freshest.items()):
+            if d < latest:
+                flags.append(
+                    GuardFlag(
+                        guard=GUARD_ANCHOR_COHERENCE,
+                        flag="stale_market_anchor",
+                        location=name,
+                        quote=f"{name} 최신 종가 기준일 {d}",
+                        detail=(
+                            f"같은 한국거래소 지표 최신일 {latest} 보다 뒤처짐 — "
+                            "피드 지연/소스 혼합 의심 (kospi-date-mismatch). 발행 전 "
+                            "최신 종가로 재취득 또는 본문·표·차트의 해당 지표 기준일 정정 필요."
+                        ),
+                        severity="high",
+                    )
+                )
+    return flags
+
+
 def run_fact_guards(
     report: ComposedReport,
     context: ContextAnalysis,
@@ -640,6 +727,11 @@ def run_fact_guards(
         flags += market_data_source_guard(blocks, market_series)
         flags += nan_exposure_guard(blocks, report)
         flags += duplicate_heading_guard(report)
+        # v7.9.16 — 한국거래소 지표 기준일 불일치(kospi-date-mismatch) + wrong-year 봉
+        # (다른 해 같은 날짜) 데이터 계층 검출.
+        flags += market_anchor_coherence_guard(
+            context, publication_date=publication_date or context.date,
+        )
     if ref_frame:
         if market_bars is None:
             market_bars = market_bars_from_context(context)

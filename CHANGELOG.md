@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.15
+last_synced_with: v7.9.16
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,22 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v7.9.16 — 시장 기준일·연도 정합 결정적 가드 + codex 검수 강화 (kospi-date-mismatch 재발방지)
+
+v7.9.15 가 데이터 소스를 고쳤다면, 본 버전은 *검수가 왜 못 잡았나* 를 메운다. 사고 보고서는
+codex 가 켜진 채(web_verified=True, 6건 수정) 돌았는데도 코스피 날짜 불일치(6/17 vs 6/18)·
+본문↔표 값 모순(7,516 vs 8,864)·실제값(9,063.84) 괴리를 전부 통과 — codex 가 *틀린
+time_series 와의 일치만* 봤고, 표 카드는 prose 가드/검수 시야 밖이었기 때문.
+- **결정적 가드 신설** — `deterministic_guards.py:market_anchor_coherence_guard`: ① 같은
+  한국거래소 지표(코스피·코스닥·삼성·하이닉스) 최신 기준일 불일치 → `stale_market_anchor`(high)
+  ② 최신 봉 연도 ≠ 발행연도(다른 해 같은 날짜) → `wrong_year_market_anchor`(high). `run_fact_guards`
+  base 합류(log-only, `V6_FACT_GUARDS`). prose 파싱·LLM 0 — time_series 만 본다. 단위 테스트 4종.
+- **codex 페르소나 강화**(2 SSOT + 코드 `_CRITIC_INSTRUCTIONS` 정합) — 시장 수치는 time_series
+  만 믿지 말고 *웹 직접 대조*, 표 카드·차트 등 구조화 필드와 prose 의 intra-report 모순, *연도까지*
+  확인, 한국 지표 기준일·수급 방향 정합을 high 로 검수.
+- **CLAUDE.md** — 시장 수치 핫픽스 외부 1차 출처 검증 불변규칙(⑥) + 시장 데이터 무결성 다층
+  방어 SSOT 섹션. 가드 작동에 VM `.env` `V6_FACT_GUARDS=1` 필요 명시.
 
 ## v7.9.15 — 코스피·코스닥 지수 KRX(pykrx) 우선 + Yahoo 폴백 (kospi-date-mismatch, 사용자 catch)
 

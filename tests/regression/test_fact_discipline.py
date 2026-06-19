@@ -20,6 +20,7 @@ import yaml
 
 from src.factcheck.deterministic_guards import (
     GuardFlag,
+    market_anchor_coherence_guard,
     nan_exposure_guard,
     run_fact_guards,
 )
@@ -286,6 +287,73 @@ def test_stale_anchor_guard_passes_latest_citation() -> None:
         base=False, ref_frame=True,
     )
     assert not any(f.flag in ("stale_anchor", "date_anchor_mismatch") for f in flags)
+
+
+# ==========================================================================
+# v7.9.16 — MarketAnchorCoherenceGuard (kospi-date-mismatch + wrong-year)
+# 데이터 계층 결정적 검출. base 가드라 fact_guards 켜지면 자동 합류 (log-only).
+# ==========================================================================
+
+
+def _ctx_with_series(series: list[dict], date: str = "2026-06-19") -> ContextAnalysis:
+    return ContextAnalysis(date=date, time_series=series)
+
+
+def test_anchor_coherence_detects_kospi_date_lag() -> None:
+    """코스피만 6/17, 삼성전자 6/18 → stale_market_anchor (실제 회귀 재현)."""
+    ctx = _ctx_with_series([
+        {"instrument": "코스피", "source": "YAHOO", "data": [
+            {"date": "2026-06-16", "close": 8726.6},
+            {"date": "2026-06-17", "close": 8864.24},
+        ]},
+        {"instrument": "삼성전자", "source": "KRX", "data": [
+            {"date": "2026-06-17", "close": 346500},
+            {"date": "2026-06-18", "close": 362500},
+        ]},
+    ])
+    flags = market_anchor_coherence_guard(ctx, publication_date="2026-06-19")
+    stale = [f for f in flags if f.flag == "stale_market_anchor"]
+    assert len(stale) == 1 and stale[0].location == "코스피"
+    assert stale[0].severity == "high"
+
+
+def test_anchor_coherence_clean_when_dates_match() -> None:
+    """모든 한국거래소 지표가 같은 6/18 → 0-FP."""
+    ctx = _ctx_with_series([
+        {"instrument": "코스피", "source": "KRX", "data": [
+            {"date": "2026-06-17", "close": 8864.24},
+            {"date": "2026-06-18", "close": 9063.84},
+        ]},
+        {"instrument": "삼성전자", "source": "KRX", "data": [
+            {"date": "2026-06-18", "close": 362500},
+        ]},
+    ])
+    assert market_anchor_coherence_guard(ctx, publication_date="2026-06-19") == []
+
+
+def test_anchor_coherence_detects_wrong_year() -> None:
+    """최신 봉이 작년(2025-06-18)인데 발행은 2026 → wrong_year_market_anchor."""
+    ctx = _ctx_with_series([
+        {"instrument": "코스피", "source": "YAHOO", "data": [
+            {"date": "2025-06-17", "close": 2880.0},
+            {"date": "2025-06-18", "close": 2901.0},
+        ]},
+    ])
+    flags = market_anchor_coherence_guard(ctx, publication_date="2026-06-19")
+    assert any(f.flag == "wrong_year_market_anchor" for f in flags), {f.flag for f in flags}
+
+
+def test_anchor_coherence_runs_under_base_guards() -> None:
+    """run_fact_guards(base=True) 경로에 자동 합류하는지 (production wiring)."""
+    ctx = _ctx_with_series([
+        {"instrument": "코스피", "source": "YAHOO", "data": [
+            {"date": "2026-06-17", "close": 8864.24}]},
+        {"instrument": "SK하이닉스", "source": "KRX", "data": [
+            {"date": "2026-06-18", "close": 2685000}]},
+    ])
+    report = ComposedReport(headline="브리핑", sections=[ComposedSection(heading="시장", prose="")])
+    flags = run_fact_guards(report, ctx, publication_date="2026-06-19", base=True)
+    assert any(f.flag == "stale_market_anchor" for f in flags), {f.flag for f in flags}
 
 
 def test_stale_anchor_allows_one_bar_lag() -> None:

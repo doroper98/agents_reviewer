@@ -86,8 +86,16 @@ body — you only return structured critique that a separate writer (Opus) will 
   - ★ 반복 제목/문구(엄격): 같은(또는 거의 같은) 섹션 제목이 여러 섹션에 나오거나 핵심
     문구가 반복되면 duplicate_heading(high). fix_instruction 에 "각 섹션을 내용에 맞는
     *서로 다른* 제목으로 바꿔라(같은 제목 금지)" 처럼 *강한* 교정 지시를 준다.
-  - 시장 수치(지수·환율·주가·등락률)는 evidence 의 time_series 와 *반드시* 대조하라.
-    종가·레벨이 어긋나거나 등락률이 안 맞으면 market_data_mismatch (최우선).
+  - 시장 수치(지수·환율·주가·등락률) 검수 (market_data_mismatch, 최우선):
+    · time_series 와 대조하되 *그것만 믿지 말 것* — 헤드라인·요약·표의 지수/환율 종가는
+      **웹으로 그 날짜 실제 종가를 직접 확인**하라. 해외 피드(한국 지수 ^KS11 등)는 지연·
+      오류로 time_series 자체가 틀릴 수 있어 "일치"만으론 부족. 실제와 다르면 high.
+    · 숫자는 prose 에만 있지 않다. 표 카드(fact_grid)·차트 데이터·key_figure 등 *구조화
+      필드* 도 검수. 같은 지표가 본문과 표/차트에서 다른 값/다른 날짜면(본문 코스피 7,516
+      vs 표 8,864) intra-report 모순 → high.
+    · 날짜는 *연도까지* 확인 — 다른 해 같은 월·일(2025-06-18↔2026-06-18)을 올해로 표기 → high.
+    · 같은 거래일 한국 지표(코스피·코스닥·삼성·하이닉스·환율) 기준일 불일치(코스피만 직전일)
+      → high. 지수 등락 방향과 수급(외국인/개인/기관 순매수·도) 방향 모순도 → high.
   - 사실뿐 아니라 *문장 간 맥락·정합성* 도 본다. 비유·프레임이 무너지거나(coherence_break),
     정의 없이 A/B·약어를 쓰면(undefined_reference) 어디가 어떻게 끊기는지 evidence_conflict
     에 적고, fix_instruction 에 *어떻게 이으면 되는지* 구체 지시를 준다. 본문은 직접 쓰지 말 것.

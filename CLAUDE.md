@@ -51,6 +51,33 @@ last_review: 2026-05-05
 >
 > **⑤ 평이화 어휘는 SSOT 1곳.** `--replace` 매핑은 [REPORT_STYLE_GUIDE.md §2.1](docs/REPORT_STYLE_GUIDE.md)
 > 어휘표 + composer `SYSTEM_PROMPT` 평이화 예시와 *항상 정합*. 새 매핑 쓰면 그 두 곳에도 추가.
+>
+> **⑥ 🔴 시장 수치 핫픽스 — 외부 1차 출처 검증 불변규칙 (2026-06-19, 실제 사고).**
+> 발행본의 시장 수치(지수/환율/종가/등락률)를 정정할 때 **보고서 본문·표가 적어둔 값을
+> "정답"으로 신뢰하고 그 값으로 치환하지 말 것.** 보고서가 틀렸으니 고치는 것인데, 그
+> 보고서의 다른 필드 값도 똑같이 오염됐을 수 있다 (실제: 본문 7,516 ↔ 표 8,864 둘 다
+> 오답, 실제는 9,063.84). **반드시 `WebSearch`/`WebFetch` 또는 KRX 로 그 날짜 실제 종가를
+> *먼저* 검증**한 뒤, 단일 출처 요약을 그대로 믿지 말고 **2곳 이상 교차확인 + 산술 정합
+> (직전봉×(1+등락률)=종가) 검산** 후에야 `--replace` 값을 확정한다. 추측 숫자 박기 절대 금지.
+
+## 🔴 시장 데이터 무결성 — 날짜·연도·소스 정합 (재발방지 SSOT, v7.9.16)
+
+> 2026-06-19 브리핑 사고: ① 코스피만 6/17 봉(해외 Yahoo `^KS11` EOD 지연)인데 삼성전자·환율은
+> 6/18 (cross-source 기준일 불일치), ② 본문은 환각값 7,516(+0.31%), 표 카드는 8,864(6/17),
+> 실제는 9,063.84(+2.25%) — codex 가 켜진 채(web_verified=True) 돌았는데도 *틀린 time_series
+> 와의 일치만* 봐서 전부 통과. 다층 방어:
+> 1. **데이터 소스** — 코스피·코스닥 지수는 KRX(pykrx 1001/2001) primary + Yahoo fallback
+>    (`market_fetcher`, v7.9.15). 해외 피드 지연이 근원.
+> 2. **결정적 가드** — [deterministic_guards.py:`market_anchor_coherence_guard`](src/factcheck/deterministic_guards.py)
+>    (v7.9.16): 같은 한국거래소 지표 기준일 불일치(`stale_market_anchor`) + 최신 봉 연도≠발행연도
+>    (`wrong_year_market_anchor`) 를 *데이터 계층* 에서 high 검출. `run_fact_guards` base 합류
+>    (log-only, `V6_FACT_GUARDS`). prose 가드 시야 밖인 표 카드·차트와 무관하게 동작.
+> 3. **codex 페르소나** — 시장 수치는 time_series 만 믿지 말고 *웹 직접 대조*, 구조화 필드
+>    (표/차트) 와 prose 의 intra-report 모순, *연도까지* 확인, 한국 지표 기준일·수급 방향
+>    정합을 high 로 검수. SSOT 2파일 + 코드 `_CRITIC_INSTRUCTIONS` 정합
+>    ([codex_critic_persona.md](prompts/codex_critic_persona.md) §1 / [market_factcheck_desk_v6.md](prompts/market_factcheck_desk_v6.md) §1-a~d / [codex_critic.py](src/agents/codex_critic.py)).
+> 4. **운영** — 이 가드들이 실제로 돌려면 VM `.env` 에 **`V6_FACT_GUARDS=1`** (+ 기준시점
+>    가드 원하면 `V7_REF_FRAME=1`) 필요. 꺼져 있으면 검출 0 (가드는 있는데 작동 안 함).
 
 ## Project Overview
 텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 + NarrativeComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
