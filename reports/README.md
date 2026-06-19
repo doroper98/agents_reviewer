@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 218건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 219건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-06-19 20:00 | 엔비디아-TSMC 공급망 갈등과 애리조나 팹 보조금 자금 흐름의 내막 | 산업·통상·반도체 공급망 | [md](analysis_20260619_200057_f06d43e45e.md) · [json](analysis_20260619_200057_f06d43e45e.json) · [bundle](analysis_20260619_200057_f06d43e45e.bundle.json) |
 | 2026-06-19 19:35 | 엔비디아-TSMC 공급망 긴장과 듀얼소싱 재편 (2026년 2분기) | 산업/반도체 공급망 | [md](analysis_20260619_193529_2aa830c0a1.md) · [json](analysis_20260619_193529_2aa830c0a1.json) · [bundle](analysis_20260619_193529_2aa830c0a1.bundle.json) |
 | 2026-06-19 18:47 | 코스피 9385 사상 최고치 찍고 9052 반락 마감 — 코스닥 3% 급락 | 한국 증시 장마감 시장구조 브리핑 | [md](analysis_20260619_184713_e12126ef39.md) · [json](analysis_20260619_184713_e12126ef39.json) · [bundle](analysis_20260619_184713_e12126ef39.bundle.json) |
 | 2026-06-18 18:48 | 코스피 사상 첫 9,000 돌파 — SK하이닉스 HBM4E 샘플 공급, 매파 FOMC 충격 딛고 외국인 1.28조 순매수 | 장마감 브리핑 / 한국 주식시장 구조 해석 | [md](analysis_20260618_184833_d9d1e181ec.md) · [json](analysis_20260618_184833_d9d1e181ec.json) · [bundle](analysis_20260618_184833_d9d1e181ec.bundle.json) |
