@@ -19,7 +19,13 @@ from src.models import (
     Evidence, FullAnalysisResult, JudgmentVerdict, ParentContext,
 )
 from src.telemetry import RunTelemetry
-from src.token_budget import AnalysisMode, TokenBudget, resolve_mode
+from src.token_budget import (
+    AnalysisMode,
+    TokenBudget,
+    resolve_mode,
+    resolve_report_format,
+    strip_reportage_trigger,
+)
 from src.visual_builder import needs_advanced_visuals
 from src.watchlist import WatchlistRegistry, convert_watch_signals
 from src.agents.context_analyst import ContextAnalyst
@@ -29,7 +35,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v7.9.14"
+VERSION = "v8.0.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1465,6 +1471,16 @@ class Orchestrator:
         if mode is None:
             mode = resolve_mode(event_description)
 
+        # v8.0.0 — 보고서 포맷(장르) 판정. "르포" 트리거면 reportage.
+        # 트리거 토큰을 떼어낸 나머지가 user_directive (이번 르포의 앵글). 트리거가
+        # 없으면 format=standard / directive="" → 기존 경로와 완전 byte-equal.
+        report_format = resolve_report_format(event_description)
+        user_directive = ""
+        if report_format == "reportage":
+            # 트리거 토큰 제거 — 사실 수집·앵글에 "르포" 단어가 노이즈로 섞이지 않게.
+            event_description = strip_reportage_trigger(event_description)
+            user_directive = event_description
+
         # Telemetry per-run.
         self.telemetry = RunTelemetry(mode=mode)
         self._wire_telemetry()
@@ -1475,6 +1491,8 @@ class Orchestrator:
             mode=mode,
             parent_context=parent_context,
             emit_bundle=emit_bundle,
+            report_format=report_format,
+            user_directive=user_directive,
         )
         result = FullAnalysisResult(request=request, parent_context=parent_context)
 
@@ -1758,6 +1776,7 @@ class Orchestrator:
         try:
             result.composed_report = await self.narrative_composer.compose_unified(
                 result.context, mode=mode, parent_context=parent_context,
+                report_format=report_format, user_directive=user_directive,
             )
         except Exception as e:
             logger.warning("[orchestrator] unified_composer error: %s", e)
@@ -2094,9 +2113,13 @@ class Orchestrator:
         # 메타 자체를 잃는 사이드이펙트가 v5.5.6 회귀의 root cause. 부모/자식/손자/
         # N대손 모두 정상 등록.
         child_chain_depth = (parent_context.chain_depth + 1) if parent_context is not None else 0
+        # v8.0.0 — 르포 포맷은 말미 감시신호(watchlist) 단계를 건너뛴다. 프롬프트가
+        # watch_signals 를 비우도록 지시하므로 보통 빈 list 지만, composer 가 그래도
+        # emit 하더라도 reportage 는 등록하지 않는다 (장르 정체성 — 신호 epilogue 없음).
         if (
             self.watchlist_registry is not None
             and result.composed_report.watch_signals
+            and request.report_format != "reportage"
         ):
             try:
                 report_id = ""

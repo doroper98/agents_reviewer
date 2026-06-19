@@ -948,6 +948,53 @@ _REF_FRAME_BLOCK = (
 )
 
 
+# v8.0.0 — 르포(탐사보도) 장르 블록 (report_format == "reportage" 일 때만 주입).
+# 기사형(정보 전달)과 달리 *하나의 사건을 행위자 중심으로 낱낱이 해부* 하는 5막 구조.
+# 말미 감시신호(watch_signals) 제거 — 신호 epilogue 는 르포의 정체성이 아니다.
+# format=standard 면 미주입 → compose 프롬프트 byte-equal.
+_REPORTAGE_BLOCK = (
+    "\n\n=== 르포 / 탐사보도 모드 (report_format=reportage — 이 보고서의 골격) ===\n"
+    "이 보고서는 기사형 정보 전달이 아니라 *르포(탐사보도)* 다. 하나의 사건을 발단부터\n"
+    "낱낱이 쪼개, 일반 기사에서는 접할 수 없는 깊은 내막을 들춰낸다. 누가(인물·국가·조직·\n"
+    "기관·기업) 왜 그렇게 움직였고, 어떻게 전개됐으며, 앞으로 어디로 가는지를 행위자와\n"
+    "그들 사이의 관계를 중심으로 서술한다.\n"
+    "\n"
+    "[앵글 — 가장 중요] 입력에 ``user_directive`` 가 있으면, 그것이 *이번 르포가 당길\n"
+    "실타래* 다. 같은 사건이라도 directive 가 가리키는 각도(예: '특정 기관의 역할', '이\n"
+    "자금 흐름의 내막', '한 인물의 동기')로 파고든다. directive 를 무시하고 일반 객관\n"
+    "서술로 회귀하지 말 것 — 그러면 르포가 아니라 5막을 입은 똑같은 보고서가 된다.\n"
+    "- directive 의 *주관적 앵글*(무엇에 집중할지)은 그대로 따른다 — 검증 대상이 아니다.\n"
+    "- 단, directive 안에 끼어든 *검증 가능한 사실 주장*은 입력 사실·출처로 뒷받침될 때만\n"
+    "  단정한다. 근거 없으면 헤지하거나 생략 — 앵글을 핑계로 미확인 사실을 단정하지 말 것.\n"
+    "\n"
+    "[5막 구조] sections 를 아래 흐름으로 구성한다 (제목은 사건에 맞게 직접 작성, 메타\n"
+    "라벨 금지). 사건 성격에 따라 막을 합치거나 한 막을 2섹션으로 늘려도 되지만 순서는 유지:\n"
+    "  1막 발단 — 사건의 씨앗. 언제·어디서·무엇이 불씨였나. 잘 알려지지 않은 출발점.\n"
+    "  2막 이해당사자 — 등장인물. 인물·국가·조직·기관·기업이 누구이고 무엇을 원하나.\n"
+    "     각 당사자의 입장·이해관계·연결고리를 명시. (관계망/지도/흐름 시각화로 보강)\n"
+    "  3막 내막과 동기 — 왜 그렇게 움직이나. 표면 아래의 돈·권력·이해의 흐름.\n"
+    "  4막 전개 — 어떻게 굴러왔나. 물밑 기동의 시간선, 전환점, 숨은 인과.\n"
+    "  5막 전망 — 어디로 가나. *서사형* 전망. 가능한 궤적을 산문으로 짚되 단정하지 않는다.\n"
+    "\n"
+    "[행위자·관계 시각화] 르포는 인물·국기·기관 로고·지도가 풍부하게 들어가야 한다.\n"
+    "- 이해당사자 관계는 ``network`` 차트(인접행렬 — 대립/동맹/영향/연관)로 드러낸다.\n"
+    "  nodes 의 group 으로 진영을 구분해 같은 편이 모이게 한다.\n"
+    "- 지정학·국가 간 사건이면 ``embedded_map`` 의 regions(subject/ally/rival/contested\n"
+    "  역할 색조) + markers + arcs(흐름)로 당사국 구도를 지도에 표시한다.\n"
+    "- 돈·이해·영향력의 흐름은 ``sankey`` 로 분해한다 (자금/지분/공급 흐름).\n"
+    "- 전개의 시간선은 timeline_flow 또는 gantt 로 보강한다.\n"
+    "- 사진은 available_images 의 기사 실린 사진(og:image)만 쓴다 — 인물 사진도 기사에\n"
+    "  실제 실린 것만. 임의로 인물 사진을 지어내거나 가정하지 말 것.\n"
+    "\n"
+    "[감시신호 제거] watch_signals 는 *빈 배열* 로 둔다 ([]). 르포는 말미의 감시신호\n"
+    "epilogue 를 두지 않는다 — 전망은 5막의 서사로 대신한다. contradictions(쟁점/반대\n"
+    "관점)는 그대로 유지·권장한다 (내막에는 대립하는 해석이 따르기 마련이다).\n"
+    "\n"
+    "[그 외] 다른 모든 사실 규율·문체·시점 앵커링·기호 금지 규칙은 그대로 적용된다.\n"
+    "출력 JSON 형식(headline/deck/sections/...)도 동일하다 — 구조만 르포 5막을 따른다.\n"
+)
+
+
 class NarrativeComposer:
     """Opus 4.7 단일 콜로 보고서를 자유 형식으로 작성.
 
@@ -998,11 +1045,15 @@ class NarrativeComposer:
     # Public entry point
     # ------------------------------------------------------------------
 
-    def _compose_system_prompt(self) -> str:
+    def _compose_system_prompt(self, report_format: str = "standard") -> str:
         """compose 용 system prompt — V6_FACT_PROMPT 켜지면 사실 규율 블록을 직교 추가.
 
-        flag OFF 면 모듈 SYSTEM_PROMPT 그대로 → ``_call_cli(system_prompt=SYSTEM_PROMPT)``
-        는 미지정(None) 경로와 byte-equal (full_prompt 동일).
+        flag OFF + format=standard 면 모듈 SYSTEM_PROMPT 그대로 →
+        ``_call_cli(system_prompt=SYSTEM_PROMPT)`` 는 미지정(None) 경로와 byte-equal.
+
+        v8.0.0 — ``report_format == "reportage"`` 면 르포 장르 블록을 직교 추가
+        (5막 구조 + 행위자 관계망 중심 + 감시신호 제거 + user_directive 앵글).
+        standard 는 미주입 → 기존 경로 byte-equal.
         """
         prompt = SYSTEM_PROMPT
         if getattr(self.config, "enable_fact_prompt", False):
@@ -1011,6 +1062,8 @@ class NarrativeComposer:
             prompt += _REF_FRAME_BLOCK
         if getattr(self.config, "enable_scroll_arc", False):
             prompt += _SCROLL_ARC_BLOCK
+        if report_format == "reportage":
+            prompt += _REPORTAGE_BLOCK
         return prompt
 
     async def compose_unified(
@@ -1018,6 +1071,8 @@ class NarrativeComposer:
         context: ContextAnalysis,
         mode: str = "standard",
         parent_context: ParentContext | None = None,
+        report_format: str = "standard",
+        user_directive: str = "",
     ) -> ComposedReport | None:
         """v4.0.0 Tier 4 — ContextAnalysis 만 받아 *단독 분석 + 작성*.
 
@@ -1030,7 +1085,9 @@ class NarrativeComposer:
         다시 분기를 생성. 부모와 새 시나리오 간 모순은 봉합하지 말고 contradictions
         에 명시 (Anti-pattern #5).
         """
-        user_payload = self._build_unified_payload(context, mode, parent_context)
+        user_payload = self._build_unified_payload(
+            context, mode, parent_context, report_format, user_directive,
+        )
         # V7 Track C — 기준시점 계약 데이터 주입 (flag OFF = payload byte-equal).
         if getattr(self.config, "enable_ref_frame", False):
             from src.factcheck.reference_frame import build_reference_frame
@@ -1043,7 +1100,7 @@ class NarrativeComposer:
         # 경우(returncode 0 이지만 파싱 불가) + 호출 자체 실패/timeout 시 *재시도*.
         # rate-limit 비정상 종료가 아니라 "성공했는데 쓸 수 없는 응답" 회귀라 재시도 안전.
         timeout_s = self.CLI_TIMEOUT_BY_MODE.get(mode, 360.0)
-        sys_prompt = self._compose_system_prompt()
+        sys_prompt = self._compose_system_prompt(report_format)
         composed = None
         for attempt in range(1, self.COMPOSE_MAX_ATTEMPTS + 1):
             try:
@@ -1114,6 +1171,8 @@ class NarrativeComposer:
         context: ContextAnalysis,
         mode: str,
         parent_context: ParentContext | None = None,
+        report_format: str = "standard",
+        user_directive: str = "",
     ) -> dict:
         """v4.0.0 Tier 4 — ContextAnalysis + mode → composer 입력.
 
@@ -1182,6 +1241,15 @@ class NarrativeComposer:
                     "새 watch_signals 는 부모와 다른 분기점/시간축을 가리킬 것."
                 ),
             }
+        # v8.0.0 — 르포 포맷: 포맷 라벨 + 사용자 앵글(directive) 주입. standard 는
+        # 두 필드 모두 미주입 → payload byte-equal. directive 는 ContextAnalyst 증류로
+        # 거세되던 사용자 강조("특히 OOO 의 역할에 집중")를 composer 에 직접 복원하는
+        # 채널 — 르포의 정체성(어느 실타래를 당길지)을 결정한다.
+        if report_format == "reportage":
+            payload["report_format"] = "reportage"
+            directive = (user_directive or "").strip()
+            if directive:
+                payload["user_directive"] = directive
         return payload
 
     # ------------------------------------------------------------------

@@ -391,3 +391,10 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약/빠르게` → fast, `심층/자세히/면밀` → deep, **그 외(키워드 없음) → deep** (v5.8.2 기본 변경, 기존 standard). standard 는 이제 호출부가 `mode="standard"` 로 명시할 때만 진입. daily_briefing / 후속 보고서는 `mode="deep"` 명시이므로 resolve_mode 무관.
 - Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
 - v4.0.0 부터 모든 모드 LLM 호출 **2회** 동일 (context + composer). mode 는 composer prompt 의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) + max_tokens 한도 (v4.5.4: composer fast 12K / standard 20K / deep 32K, v4.5.7: context fast/standard 4K / deep 10K) 결정.
+
+## Report Format Routing — 르포(탐사보도) (v8.0.0)
+- **mode(분석 깊이)와 직교한 *포맷(장르)* 축.** SSOT 는 [src/token_budget.py](src/token_budget.py) `resolve_report_format` / `strip_reportage_trigger`. 메시지에 **"르포"** 토큰이 있으면 `report_format="reportage"`, 아니면 `"standard"` (기존 기사형). 트리거는 "르포" 1개만 (오탐 최소화 — "탐사/내막" 류 동의어는 일반 보고서를 르포로 오인할 위험이 있어 제외).
+- **directive 채널**: 트리거 토큰("르포 형식으로" 등 조사 변형 포함)을 떼어낸 나머지 원문이 `AnalysisRequest.user_directive`. ContextAnalyst 사실 증류로 거세되던 사용자 *앵글*("특히 OOO 의 역할에 집중")을 composer payload(`user_directive`)에 직접 복원하는 채널. 르포의 정체성 = 어느 실타래를 당기나. 주관적 앵글은 fact-critic 검증 면제, 내장된 검증 가능한 사실 주장만 grounding.
+- **장르 골격**: composer SYSTEM_PROMPT 에 `_REPORTAGE_BLOCK` 직교 주입(reportage 일 때만, [narrative_composer.py](src/agents/narrative_composer.py)). 발단→이해당사자→내막·동기→전개→전망(서사형) 5막 + 행위자(인물·국가·조직·기관·기업) 중심 관계망/지도/sankey/timeline + **감시신호(watch_signals) epilogue 제거**(프롬프트가 `[]` 지시 + orchestrator 가 reportage 면 Watchlist 등록 스킵). 인물 사진은 기사 og:image 만.
+- **byte-equal**: `report_format=standard`(트리거 없음) + directive 없을 때 `_compose_system_prompt` / `_build_unified_payload` 모두 기존과 byte-equal. 회귀 [tests/regression/test_reportage_format.py](tests/regression/test_reportage_format.py).
+- **로드맵**: Phase 0(트리거+directive+5막, *완료*). Phase 1 — 신규 `stakeholder_map` 차트(국기·로고·인물 사진, **force layout 금지** = CHART-AP-25 재발 차단, 결정적 배치) + 번들 flag SVG 자산. Phase 2 — ReportBundle 정합(osint 영상 관계망 피드). Phase 3 — VM e2e.

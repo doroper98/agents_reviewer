@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.14
+last_synced_with: v8.0.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,34 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.0.0 — 르포(탐사보도) 포맷 트랙 Phase 0 — 트리거 + directive 채널 + 5막 골격
+
+기사형 정보 전달 보고서와 별개로, **하나의 사건을 행위자 중심으로 낱낱이 해부하는 르포
+(탐사보도) 포맷**을 신설하는 v8 트랙의 첫 단계(Phase 0).
+
+- **트리거**: 텔레그램 메시지에 "르포" 가 있으면 `report_format="reportage"` 로 전환
+  (`token_budget.resolve_report_format`). 트리거 토큰("르포 형식으로" 등 조사 변형 포함)을
+  떼어낸 나머지 문장이 *이번 르포의 앵글*. mode(fast/standard/deep)와 **직교** — "르포"가
+  없는 모든 메시지는 standard 라 기존 경로와 동일.
+- **directive 채널 복원 (핵심)**: 사용자의 구체적 강조("특히 OOO 기관의 역할에 집중",
+  "이 자금 흐름의 내막을 파줘")는 그동안 ContextAnalyst 의 사실 증류 과정에서 거세돼
+  composer 에 닿지 못했다. v8.0.0 은 트리거를 떼어낸 원문을 `AnalysisRequest.user_directive`
+  로 보존해 composer payload 에 직접 주입한다. 르포는 *어느 실타래를 당기느냐* 가 정체성이라
+  이 앵글이 필수. 주관적 앵글(무엇에 집중할지)은 fact-critic 검증 면제, 그 안에 끼어든
+  *검증 가능한 사실 주장*만 V6 사실 규율의 grounding 대상.
+- **5막 골격**: composer SYSTEM_PROMPT 에 `_REPORTAGE_BLOCK` 직교 주입 (reportage 일 때만).
+  발단 → 이해당사자 → 내막·동기 → 전개 → 전망(서사형) 5막. 행위자 관계는 network(인접행렬)·
+  지도(국가 역할)·sankey(이해/자금 흐름)·timeline 으로 시각화. 인물 사진은 기사 og:image 만.
+- **감시신호 제거**: 르포는 말미 watch_signals epilogue 를 두지 않는다 — 프롬프트가
+  `watch_signals=[]` 를 지시 + orchestrator 가 reportage 일 때 Watchlist 등록을 스킵.
+  contradictions(쟁점/반대 관점)는 유지.
+- **byte-equal 보장**: `report_format=standard` + directive 없을 때 `_compose_system_prompt`
+  와 `_build_unified_payload` 모두 기존 출력과 byte-equal (AP-V6-3 상속). 회귀
+  `tests/regression/test_reportage_format.py` 11종.
+- **다음**: Phase 1 — 신규 `stakeholder_map` 차트(국기·기관 로고·인물 사진이 들어가는
+  *결정적 배치* 관계도, force/hairball 금지로 CHART-AP-25 재발 차단) + 번들 flag SVG 자산
+  파이프라인. Phase 2 — ReportBundle 정합(osint 영상 관계망 피드).
 
 ## v7.9.14 — 지수 등락률 vs 하락비율 diverging_bar 의 KOSPI 등락률 0 누락 방어 (CHART-AP-35, 사용자 catch)
 
