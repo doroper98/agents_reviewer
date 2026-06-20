@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IV 스큐 타임라인 — 날짜별 변동성 스큐 변화</title>
+<style>
+  :root {
+    --bg:#14161c; --card:#1b1e26; --card-2:#20242e; --border:#2a2e39;
+    --text:#e8e6e0; --muted:#9aa0aa; --faint:#7e8490; --accent:#c9a84c;
+    --put:#4F8BF0; --call:#E0604A;
+  }
+  * { box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text); margin:0; padding:28px 24px 48px;
+    font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+  }
+  .wrap { max-width:900px; margin:0 auto; }
+  h1 { font-size:21px; font-weight:700; margin:0 0 4px; letter-spacing:.01em; }
+  .desc { color:var(--muted); font-size:13px; line-height:1.65; margin:0 0 20px; max-width:780px; }
+  .desc b { color:var(--text); font-weight:600; }
+  .banner {
+    font-size:12px; border-radius:6px; padding:9px 13px; margin:0 0 18px; line-height:1.55;
+  }
+  .banner.demo { background:#2a2113; color:#e8c873; border:1px solid #4a3a15; }
+  .banner.live { background:#13261b; color:#7fcf9a; border:1px solid #1f4a30; }
+  .banner code { background:rgba(255,255,255,.06); padding:1px 5px; border-radius:3px; font-size:11px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:14px 18px; align-items:center; margin-bottom:14px; }
+  .toolbar label { font-size:12px; color:var(--muted); margin-right:6px; }
+  select {
+    background:var(--card-2); color:var(--text); border:1px solid var(--border);
+    border-radius:6px; padding:5px 9px; font-size:13px; font-family:inherit;
+  }
+  .btn {
+    background:var(--card-2); color:var(--text); border:1px solid var(--border);
+    border-radius:6px; padding:6px 12px; font-size:13px; cursor:pointer; font-family:inherit;
+    transition:background .15s, border-color .15s;
+  }
+  .btn:hover { background:#272c38; border-color:#3a4150; }
+  .btn.primary { background:var(--accent); color:#1a1a1a; border-color:var(--accent); font-weight:600; min-width:74px; }
+  .btn.primary:hover { background:#d8b95c; }
+  .btn:disabled { opacity:.4; cursor:default; }
+  .slider-row { display:flex; align-items:center; gap:12px; margin:6px 0 4px; }
+  input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:pointer; }
+  .toggle { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); cursor:pointer; }
+  .toggle input { accent-color:var(--accent); }
+  .datestamp {
+    font-family:'JetBrains Mono','SF Mono',monospace; font-size:15px; color:var(--text);
+    font-weight:600; min-width:120px; text-align:center;
+  }
+  .stage { margin-top:8px; }
+  .stage svg { width:100%; height:auto; display:block; }
+  .readout { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  .stat {
+    background:var(--card-2); border:1px solid var(--border); border-radius:8px;
+    padding:10px 14px; flex:1; min-width:130px;
+  }
+  .stat .k { font-size:11px; color:var(--faint); margin-bottom:3px; }
+  .stat .v { font-size:18px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+  .stat .v.up { color:var(--call); } .stat .v.down { color:var(--put); }
+  .note {
+    font-size:12px; color:#aeb4be; line-height:1.65; border-top:1px solid var(--border);
+    margin-top:16px; padding-top:12px;
+  }
+  .note b { color:var(--text); }
+  .src { font-size:11px; color:var(--faint); margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>IV 스큐 타임라인</h1>
+  <p class="desc">장마감 브리핑이 매일 적재하는 <b>KOSPI200 옵션 내재변동성(IV) 스큐</b>를
+  날짜별로 이어 본 페이지. 슬라이더를 옮기거나 <b>재생</b>을 누르면 날짜가 바뀔 때마다
+  스큐 곡선이 어떻게 솟고 가라앉는지 — 시장이 하락 꼬리(왼쪽 풋)를 얼마나 비싸게 사는지 —
+  애니메이션으로 보인다. 곡선은 KRX 종가에서 역산한 IV다.</p>
+
+  <div id="banner"></div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div><label for="expiry">만기</label><select id="expiry"></select></div>
+      <button class="btn" id="prev">◀ 이전</button>
+      <span class="datestamp" id="datestamp">—</span>
+      <button class="btn" id="next">다음 ▶</button>
+      <button class="btn primary" id="play">▶ 재생</button>
+      <label class="toggle"><input type="checkbox" id="ghost"> 과거 곡선 겹쳐 보기</label>
+    </div>
+    <div class="slider-row">
+      <input type="range" id="slider" min="0" max="0" value="0" step="1">
+    </div>
+
+    <div class="stage"><svg id="chart"></svg></div>
+
+    <div class="readout">
+      <div class="stat"><div class="k">등가격(ATM) IV</div><div class="v" id="s-atm">—</div></div>
+      <div class="stat"><div class="k">스큐 기울기 (풋 − 콜)</div><div class="v" id="s-skew">—</div></div>
+      <div class="stat"><div class="k">첫날 대비 ATM 변화</div><div class="v" id="s-delta">—</div></div>
+    </div>
+
+    <p class="note"><b>읽는 법.</b> 가로축은 행사가, 세로축은 그 행사가 옵션에 녹아든
+    변동성(IV)이다. 점선 가로선은 등가격 기준선. 하락을 방어하는 <b style="color:var(--put)">외가격 풋(왼쪽 파랑)</b>이
+    기준선 위로 솟는 게 <b>스큐</b>다. 풋 곡선이 <b style="color:var(--call)">콜(오른쪽 빨강)</b>보다
+    높고 가팔라질수록 시장이 급락 위험을 더 비싸게 헤지하고 있다는 신호다. 곡선 전체가
+    위로 올라가면 변동성 자체가 확대(공포 상승)된 것.</p>
+    <p class="src" id="src">데이터 출처: —</p>
+  </div>
+</div>
+
+<!-- 실데이터: scripts/export_skew_timeline.py 가 생성. 없으면 404 무시 → 데모 데이터. -->
+<script src="iv_skew_data.js"></script>
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script>
+(function () {
+  // d3 로컬 로드 실패 시 CDN 폴백 후 부팅.
+  if (window.d3) { boot(); }
+  else {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/d3@7';
+    s.onload = boot;
+    document.head.appendChild(s);
+  }
+
+  // ---- 데모 데이터 생성기 (실데이터 없을 때) -------------------------------
+  // KOSPI200 고정 행사가 격자(2.5p 간격) 위에 날짜별 스마일/스큐를 결정적으로 합성.
+  // 중간에 변동성 급등(스트레스) 구간을 넣어 스큐가 가팔라지는 모습을 보이게 함.
+  function buildDemo() {
+    var strikes = [];
+    for (var k = 400; k <= 470; k += 2.5) strikes.push(k);
+    var dates = [], d = new Date(Date.UTC(2026, 4, 25)); // 2026-05-25부터
+    while (dates.length < 20) {
+      d.setUTCDate(d.getUTCDate() + 1);
+      var wd = d.getUTCDay();
+      if (wd === 0 || wd === 6) continue;            // 주말 skip
+      dates.push(d.toISOString().slice(0, 10));
+    }
+    var byDate = {};
+    dates.forEach(function (dt, i) {
+      // 현물 경로 + ATM 기저 변동성 — 9~12일차에 급락+IV 스파이크.
+      var stress = Math.exp(-Math.pow((i - 10) / 3.2, 2));   // 종 모양 0~1
+      var spot = 438 - 14 * stress + 3 * Math.sin(i / 2.0);
+      var atm = 14.5 + 11 * stress + 0.8 * Math.sin(i / 1.7);
+      var skewSlope = 30 + 26 * stress;   // 스트레스 때 풋 스큐 가팔라짐
+      var curv = 55 + 20 * stress;
+      var pts = [];
+      strikes.forEach(function (K) {
+        var m = Math.log(K / spot);                  // 로그 머니니스
+        var iv = atm + (-skewSlope) * m + curv * m * m;
+        iv = Math.max(7, Math.min(70, iv));
+        if (K <= spot * 1.02) pts.push({ strike: K, iv: round1(iv + 0.6), type: 'put' });
+        if (K >= spot * 0.98) pts.push({ strike: K, iv: round1(iv), type: 'call' });
+      });
+      byDate[dt] = { points: pts, atm: round1(atm) };
+    });
+    return {
+      generated_at: 'demo', source: '데모 데이터 (합성) — 실데이터 아님',
+      default_expiry: '202606',
+      expiries: { '202606': { label: '2026년 6월물 (데모)', dates: dates, byDate: byDate } }
+    };
+  }
+  function round1(x) { return Math.round(x * 10) / 10; }
+
+  // ---- 부팅 ----------------------------------------------------------------
+  function boot() {
+    var LIVE = !!(window.SKEW_DATA && window.SKEW_DATA.expiries
+      && Object.keys(window.SKEW_DATA.expiries).length);
+    var DATA = LIVE ? window.SKEW_DATA : buildDemo();
+
+    var banner = document.getElementById('banner');
+    if (LIVE) {
+      banner.className = 'banner live';
+      banner.innerHTML = '✅ <b>실데이터</b> — KRX 종가에서 역산한 IV 스큐 캐시. '
+        + (DATA.generated_at ? '생성 ' + DATA.generated_at : '');
+    } else {
+      banner.className = 'banner demo';
+      banner.innerHTML = '⚠ <b>데모 데이터(합성)</b>로 표시 중입니다. 실데이터를 보려면 VM에서 '
+        + '<code>python scripts/export_skew_timeline.py</code> 로 '
+        + '<code>samples/iv_skew_data.js</code> 를 생성한 뒤 이 페이지를 새로고침하세요.';
+    }
+    document.getElementById('src').textContent = '데이터 출처: ' + (DATA.source || '—');
+
+    var PUT = '#4F8BF0', CALL = '#E0604A';
+    var T = { text: '#e8e6e0', muted: '#9aa0aa', accent: '#c9a84c' };
+    var W = 760, Hgt = 430;
+    var M = { left: 58, right: 60, top: 50, bottom: 64 };
+    var dataW = W - M.left - M.right, dataH = Hgt - M.top - M.bottom;
+
+    var svg = d3.select('#chart')
+      .attr('viewBox', '0 0 ' + W + ' ' + Hgt)
+      .attr('preserveAspectRatio', 'xMidYMid meet');
+    var gStatic = svg.append('g');
+    var gGhost = svg.append('g');
+    var gDyn = svg.append('g');
+
+    var exSel = document.getElementById('expiry');
+    var slider = document.getElementById('slider');
+    var stamp = document.getElementById('datestamp');
+    var ghostChk = document.getElementById('ghost');
+    var playBtn = document.getElementById('play');
+
+    Object.keys(DATA.expiries).sort().forEach(function (ex) {
+      var o = document.createElement('option');
+      o.value = ex; o.textContent = DATA.expiries[ex].label || ex;
+      exSel.appendChild(o);
+    });
+    exSel.value = DATA.default_expiry || Object.keys(DATA.expiries).sort()[0];
+
+    var xS, yS, expiry, dates, idx = 0, timer = null;
+
+    function setupExpiry(ex) {
+      expiry = DATA.expiries[ex];
+      dates = expiry.dates.slice();
+      idx = dates.length - 1;
+      slider.max = String(dates.length - 1);
+      slider.value = String(idx);
+
+      // 고정 도메인 — 모든 날짜의 점 + atm 을 포괄해 애니메이션이 튀지 않게.
+      var allK = [], allIV = [];
+      dates.forEach(function (dt) {
+        var rec = expiry.byDate[dt];
+        rec.points.forEach(function (p) { allK.push(p.strike); allIV.push(p.iv); });
+        if (rec.atm != null) allIV.push(rec.atm);
+      });
+      var xExt = d3.extent(allK), yExt = d3.extent(allIV);
+      var xPad = (xExt[1] - xExt[0]) * 0.04 || 1, yPad = (yExt[1] - yExt[0]) * 0.10 || 1;
+      xS = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad]).range([M.left, M.left + dataW]);
+      yS = d3.scaleLinear().domain([yExt[0] - yPad, yExt[1] + yPad]).range([M.top + dataH, M.top]);
+
+      drawStatic();
+      render(false);
+    }
+
+    function drawStatic() {
+      gStatic.selectAll('*').remove();
+      // y 그리드 + % 라벨
+      yS.ticks(5).forEach(function (v) {
+        gStatic.append('line').attr('x1', M.left).attr('x2', M.left + dataW)
+          .attr('y1', yS(v)).attr('y2', yS(v))
+          .attr('stroke', T.muted).attr('stroke-opacity', 0.14).attr('stroke-width', 0.5);
+        gStatic.append('text').attr('x', M.left - 6).attr('y', yS(v) + 3).attr('text-anchor', 'end')
+          .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', T.muted)
+          .text(v + '%');
+      });
+      // x축 + 행사가 라벨(회전)
+      var yb = M.top + dataH;
+      gStatic.append('line').attr('x1', M.left).attr('x2', M.left + dataW)
+        .attr('y1', yb).attr('y2', yb).attr('stroke', T.muted).attr('stroke-opacity', 0.4);
+      var strikes = [];
+      dates.forEach(function (dt) {
+        expiry.byDate[dt].points.forEach(function (p) { strikes.push(p.strike); });
+      });
+      strikes = Array.from(new Set(strikes)).sort(function (a, b) { return a - b; });
+      var st = strikes.length > 16 ? Math.ceil(strikes.length / 16) : 1;
+      strikes.forEach(function (s, i) {
+        if (i % st !== 0 && i !== strikes.length - 1) return;
+        gStatic.append('line').attr('x1', xS(s)).attr('x2', xS(s)).attr('y1', yb).attr('y2', yb + 4)
+          .attr('stroke', T.muted).attr('stroke-opacity', 0.5);
+        gStatic.append('text').attr('x', xS(s)).attr('y', yb + 7)
+          .attr('transform', 'rotate(-42,' + xS(s) + ',' + (yb + 7) + ')')
+          .attr('text-anchor', 'end').attr('font-family', 'JetBrains Mono, monospace')
+          .attr('font-size', 8.5).attr('fill', T.muted).text(d3.format(',.0f')(s));
+      });
+      gStatic.append('text').attr('x', M.left + dataW).attr('y', yb + 36)
+        .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', T.muted).text('행사가');
+      // 범례
+      legend(M.left + dataW - 124, PUT, '풋 (Put)');
+      legend(M.left + dataW - 58, CALL, '콜 (Call)');
+      function legend(x, color, label) {
+        gStatic.append('circle').attr('cx', x).attr('cy', M.top - 18).attr('r', 4).attr('fill', color);
+        gStatic.append('text').attr('x', x + 9).attr('y', M.top - 14)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', T.text).text(label);
+      }
+    }
+
+    var line = d3.line().x(function (p) { return xS(p.strike); })
+      .y(function (p) { return yS(p.iv); }).curve(d3.curveLinear);
+
+    function curve(points, type) {
+      return points.filter(function (p) { return p.type === type; })
+        .sort(function (a, b) { return a.strike - b.strike; });
+    }
+
+    function render(animate) {
+      var dt = dates[idx];
+      var rec = expiry.byDate[dt];
+      var dur = animate ? 520 : 0;
+
+      // 과거 곡선 겹쳐 보기 (production augment_skew_history 페이드 오버레이 미러)
+      gGhost.selectAll('*').remove();
+      if (ghostChk.checked) {
+        for (var j = 0; j < idx; j++) {
+          var age = idx - j, op = Math.max(0.06, 0.42 * Math.pow(0.78, age));
+          var grec = expiry.byDate[dates[j]];
+          [['put', PUT], ['call', CALL]].forEach(function (pair) {
+            var pts = curve(grec.points, pair[0]);
+            if (pts.length >= 2) gGhost.append('path').attr('d', line(pts))
+              .attr('fill', 'none').attr('stroke', pair[1]).attr('stroke-width', 1)
+              .attr('stroke-opacity', op);
+          });
+        }
+      }
+
+      // ATM 기준선
+      var atmLine = gDyn.selectAll('line.atm').data(rec.atm != null ? [rec.atm] : []);
+      atmLine.exit().remove();
+      atmLine.enter().append('line').attr('class', 'atm')
+        .attr('x1', M.left).attr('x2', M.left + dataW)
+        .attr('stroke', T.text).attr('stroke-width', 1).attr('stroke-dasharray', '5 4')
+        .attr('stroke-opacity', 0.55)
+        .attr('y1', function (v) { return yS(v); }).attr('y2', function (v) { return yS(v); })
+        .merge(atmLine).transition().duration(dur)
+        .attr('y1', function (v) { return yS(v); }).attr('y2', function (v) { return yS(v); });
+
+      var atmLbl = gDyn.selectAll('text.atm').data(rec.atm != null ? [rec.atm] : []);
+      atmLbl.exit().remove();
+      atmLbl.enter().append('text').attr('class', 'atm')
+        .attr('x', M.left + 5).attr('text-anchor', 'start').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 10).attr('fill', T.text).attr('fill-opacity', 0.8)
+        .attr('y', function (v) { return yS(v) - 5; })
+        .merge(atmLbl).text(function (v) { return 'ATM IV ' + v.toFixed(1) + '% (등가격 기준선)'; })
+        .transition().duration(dur).attr('y', function (v) { return yS(v) - 5; });
+
+      // 풋·콜 곡선 (path morph)
+      [['put', PUT], ['call', CALL]].forEach(function (pair) {
+        var pts = curve(rec.points, pair[0]);
+        var path = gDyn.selectAll('path.c-' + pair[0]).data(pts.length >= 2 ? [pts] : []);
+        path.exit().remove();
+        path.enter().append('path').attr('class', 'c-' + pair[0])
+          .attr('fill', 'none').attr('stroke', pair[1]).attr('stroke-width', 2)
+          .attr('d', line)
+          .merge(path).transition().duration(dur).attr('d', line);
+
+        // 점
+        var dots = gDyn.selectAll('circle.d-' + pair[0]).data(pts, function (p) { return p.strike; });
+        dots.exit().transition().duration(dur).attr('r', 0).remove();
+        dots.enter().append('circle').attr('class', 'd-' + pair[0])
+          .attr('fill', pair[1]).attr('fill-opacity', 0.95).attr('r', 3)
+          .attr('cx', function (p) { return xS(p.strike); }).attr('cy', function (p) { return yS(p.iv); })
+          .merge(dots).transition().duration(dur)
+          .attr('cx', function (p) { return xS(p.strike); }).attr('cy', function (p) { return yS(p.iv); }).attr('r', 3);
+      });
+
+      // 날짜 워터마크
+      var ds = gDyn.selectAll('text.stamp').data([dt]);
+      ds.enter().append('text').attr('class', 'stamp')
+        .attr('x', M.left + dataW - 6).attr('y', M.top + 22).attr('text-anchor', 'end')
+        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 20)
+        .attr('font-weight', 700).attr('fill', T.text).attr('fill-opacity', 0.10)
+        .merge(ds).text(dt);
+
+      stamp.textContent = dt;
+      slider.value = String(idx);
+      updateStats(rec);
+    }
+
+    function updateStats(rec) {
+      var atm0 = expiry.byDate[dates[0]].atm;
+      var el = function (id) { return document.getElementById(id); };
+      el('s-atm').textContent = rec.atm != null ? rec.atm.toFixed(1) + '%' : '—';
+      el('s-atm').className = 'v';
+
+      // 스큐 기울기: 저행사 풋 IV − 고행사 콜 IV (저행사~고행사 5% 밖 근사).
+      var puts = curve(rec.points, 'put'), calls = curve(rec.points, 'call');
+      var skewEl = el('s-skew');
+      if (puts.length && calls.length) {
+        var pIV = puts[Math.max(0, Math.floor(puts.length * 0.15))].iv;       // 깊은 풋
+        var cIV = calls[Math.min(calls.length - 1, Math.floor(calls.length * 0.85))].iv; // 깊은 콜
+        var sp = round1(pIV - cIV);
+        skewEl.textContent = (sp >= 0 ? '+' : '') + sp.toFixed(1) + '%p';
+        skewEl.className = 'v ' + (sp >= 0 ? 'up' : 'down');
+      } else { skewEl.textContent = '—'; skewEl.className = 'v'; }
+
+      var dEl = el('s-delta');
+      if (rec.atm != null && atm0 != null) {
+        var dd = round1(rec.atm - atm0);
+        dEl.textContent = (dd >= 0 ? '+' : '') + dd.toFixed(1) + '%p';
+        dEl.className = 'v ' + (dd > 0 ? 'up' : (dd < 0 ? 'down' : ''));
+      } else { dEl.textContent = '—'; dEl.className = 'v'; }
+    }
+
+    function go(i, animate) {
+      idx = Math.max(0, Math.min(dates.length - 1, i));
+      render(animate);
+    }
+    function stopPlay() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = '▶ 재생'; } }
+    function startPlay() {
+      if (idx >= dates.length - 1) go(0, false);
+      playBtn.textContent = '⏸ 멈춤';
+      timer = setInterval(function () {
+        if (idx >= dates.length - 1) { stopPlay(); return; }
+        go(idx + 1, true);
+      }, 850);
+    }
+
+    // 이벤트
+    exSel.addEventListener('change', function () { stopPlay(); setupExpiry(exSel.value); });
+    slider.addEventListener('input', function () { stopPlay(); go(+slider.value, true); });
+    document.getElementById('prev').addEventListener('click', function () { stopPlay(); go(idx - 1, true); });
+    document.getElementById('next').addEventListener('click', function () { stopPlay(); go(idx + 1, true); });
+    ghostChk.addEventListener('change', function () { render(false); });
+    playBtn.addEventListener('click', function () { if (timer) stopPlay(); else startPlay(); });
+
+    setupExpiry(exSel.value);
+  }
+})();
+</script>
+</body>
+</html>
