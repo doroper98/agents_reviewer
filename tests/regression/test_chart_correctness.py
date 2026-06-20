@@ -115,31 +115,14 @@ def test_parse_time_supports_iso_and_year() -> None:
     assert parse_time(None) is None
 
 
-# AP-7 / AP-1 — Network
-def test_network_guard_rejects_link_with_unknown_node() -> None:
-    with pytest.raises(Exception):
-        NetworkGuard(
-            nodes=[{"id": "a"}, {"id": "b"}],
-            links=[{"source": "a", "target": "phantom"}],
-        )
-
-
-def test_network_guard_rejects_duplicate_node_ids() -> None:
-    with pytest.raises(Exception):
-        NetworkGuard(nodes=[{"id": "a"}, {"id": "a"}])
-
-
-def test_network_guard_rejects_lt_2_nodes() -> None:
-    with pytest.raises(Exception):
-        NetworkGuard(nodes=[{"id": "a"}])
-
-
-def test_network_guard_passes_clean() -> None:
-    g = NetworkGuard(
-        nodes=[{"id": "a"}, {"id": "b"}, {"id": "c"}],
-        links=[{"source": "a", "target": "b"}, {"source": "b", "target": "c"}],
+# CHART-AP-36 — network(행위자 관계도) 포맷 폐기. validate_chart_data 가 무조건 drop.
+def test_network_chart_type_is_rejected() -> None:
+    ok, reason = validate_chart_data(
+        "network",
+        {"nodes": [{"id": "a"}, {"id": "b"}], "links": [{"source": "a", "target": "b"}]},
     )
-    assert len(g.nodes) == 3
+    assert not ok
+    assert "CHART-AP-36" in reason
 
 
 # AP-3 — Donut

@@ -232,7 +232,7 @@ SYSTEM_PROMPT = (
     "- 섹션의 ``charts`` 배열에 차트 1개당 dict 1개. 형식 (v4.4.0):\n"
     "  ```json\n"
     "  {\n"
-    '    \"type\": \"bar|donut|line|gantt|network|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey|bump|bullet|connected_scatter|combo|diverging_bar|pyramid|dot_matrix\",\n'
+    '    \"type\": \"bar|donut|line|gantt|stacked|bubble|heatmap|dual_line|forecast|choropleth|candle|area|scatter|stacked_area|lollipop|slope|small_multiples|waterfall|range_bar|sankey|bump|bullet|connected_scatter|combo|diverging_bar|pyramid|dot_matrix\",\n'
     '    \"title\": \"차트 제목\",\n'
     '    \"subtitle\": \"한 줄 thesis — 제목과 다른 결론. 예: 동진 7.9는 OP 기준, 회계는 23.08\",\n'
     '    \"data\": [...],            // type 별 스키마 (아래 참조)\n'
@@ -278,7 +278,6 @@ SYSTEM_PROMPT = (
     "  · gantt:   [{label, start, end, note?}]                     *사건 구간* (start ≠ end 가 ≥30%)\n"
     "             point-in-time 이벤트 모음 (모든 row 가 start==end) 은 emit 금지 (CHART-AP-15).\n"
     "             그 경우 본문 list 또는 line + event marker (point 에 event 라벨) 로.\n"
-    "  · network: {nodes:[{id,label,group?}], links:[{source,target,type?}]}  관계도\n"
     "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자\n"
     "             (value 는 *양수 magnitude 만*. 부호 있는 점수면 bar 로)\n"
     "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향\n"
@@ -383,7 +382,6 @@ SYSTEM_PROMPT = (
     "- 모든 차트는 mono guide 의 45° 패턴 + 단일 액센트. 색은 자동 적용.\n"
     "- *데이터가 비어있으면 차트 자체를 emit 하지 말 것* (charts 배열에 추가 금지).\n"
     "  · bar/donut/line/gantt/heatmap/candle/area: data 가 빈 배열이면 emit X\n"
-    "  · network: data.nodes 가 2개 미만이면 emit X\n"
     "  · stacked: data.scenarios 가 빈 배열이면 emit X\n"
     "  · dual_line: left.series 또는 right.series 가 비면 emit X\n"
     "  · forecast: data.actual 이 2개 미만이면 emit X\n"
@@ -451,8 +449,8 @@ SYSTEM_PROMPT = (
     "     └─ 이산 시점 다중 (4분기 등) → stacked\n"
     "  5. 다차원 관계?\n"
     "     ├─ 3 변수 (x, y, size 모두 의미) → bubble\n"
-    "     ├─ 2 변수 + 라벨 (size 균일) → scatter (FT 좌측 스타일)\n"
-    "     └─ 관계망 (노드-엣지) → network\n"
+    "     └─ 2 변수 + 라벨 (size 균일) → scatter (FT 좌측 스타일)\n"
+    "     · 행위자 관계망(노드-엣지)은 차트로 만들지 말 것 — 본문 서술 또는 표로.\n"
     "  6. 2D 격자 + 강도? → heatmap (≥4×4 권장)\n"
     "  7. 이벤트 일정 (start≠end 가 ≥30%)? → gantt\n\n"
     "[반-편향 (anti-bias) 가드 — line/bar/donut 으로 collapse 금지]\n"

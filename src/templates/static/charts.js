@@ -1,5 +1,6 @@
 /* charts.js — v4.4.0 zone-based layout + annotations + 11 chart types.
- * v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/network/waterfall) 비주얼
+ * v7.9.17 — network(행위자 관계도) 포맷 폐기 (CHART-AP-36) — RENDERERS·drawNetwork 제거.
+ * v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/waterfall) 비주얼
  *          리디자인 (사용자 승인, samples/chart_redesign_v7_compare.html 목업 기준).
  *          해치 = 카테고리 전용으로 환원, 서수/강도 = 단일 잉크 농도 사다리,
  *          값 = 세리프 직접 라벨, 그리드 최소·0-기준선 crisp. 과거 발행본 소급 적용.
@@ -20,7 +21,7 @@
  *   └─────────────────────────────────────────┘
  *
  * Mono Theme: docs/MONO_THEME_GUIDE.md §4 패턴 시스템 적용.
- * 11 type: bar / donut / line / gantt / network / stacked / bubble / heatmap
+ * type: bar / donut / line / gantt / stacked / bubble / heatmap
  *          + dual_line / forecast / choropleth (Tier 2 신규).
  */
 (function () {
@@ -655,162 +656,10 @@
     renderAnnotations(svg, payload, zones, t, annXScale, null);
   }
 
-  // ----- NETWORK → adjacency matrix (v5.5.5) -----
-  // 행위자 관계도. radial hairball (CHART-AP-25) 폐기 → 인접행렬.
-  //   · 데이터 계약 (nodes/links) 동일 — composer/스키마/레지스트리 무변경.
-  //   · 셀이 관계 type 인코딩 (대립/동맹/영향/연관), 대각선 차단.
-  //   · 진영(group) 으로 정렬해 같은 진영이 대각선 근처에 블록으로 모임.
-  //   · viewBox 는 getBBox content-fit → 자동 중앙 정렬 + 라벨/범례 클리핑 0.
-  function drawNetwork(stage, payload, t) {
-    const rawNodes = (payload.data && payload.data.nodes) || [];
-    const links = (payload.data && payload.data.links) || [];
-    if (rawNodes.length < 2) return;
-
-    const svg = d3.select(stage).select('svg')
-      .attr('preserveAspectRatio', 'xMidYMid meet');
-    const prefix = stage.getAttribute('data-chart-id') || 'pat';
-    const idp = definePatterns(svg, t, prefix);
-
-    // group → 진영 rank (정렬용). 같은 진영을 대각선 근처에 모은다.
-    function nodeRank(group) {
-      const g = String(group || '').toLowerCase();
-      if (/승인|찬성|주도|동맹|approve|support|ally|core|lead/.test(g)) return 0;
-      if (/검토|중립|관망|review|neutral|considering/.test(g)) return 1;
-      if (/반대|대립|적|oppose|against|hostile/.test(g)) return 2;
-      if (/비공식|간접|informal|covert|indirect/.test(g)) return 3;
-      return 4;
-    }
-    const nodes = rawNodes
-      .map((nd, i) => ({ nd, i, rank: nodeRank(nd.group) }))
-      .sort((a, b) => a.rank - b.rank || a.i - b.i)
-      .map(o => o.nd);
-    const n = nodes.length;
-
-    // 관계 type → 시각 클래스
-    function linkClass(type) {
-      const s = String(type || '').toLowerCase();
-      if (/대립|충돌|갈등|적대|conflict|oppose|against|hostile|rival/.test(s)) return 'conflict';
-      if (/동맹|협력|지지|연합|제휴|ally|alliance|support|coop|partner/.test(s)) return 'ally';
-      if (/영향|압박|의존|leverage|influence|pressure|depend/.test(s)) return 'influence';
-      return 'assoc';
-    }
-    const idIndex = Object.fromEntries(nodes.map((nd, i) => [nd.id, i]));
-    // v7.1.0 — 방향 보존: row(행위자)→col(대상) 셀은 dir=+1, 역방향 셀은 dir=-1.
-    // influence 글리프가 방향(▸/◂)을 운반한다 (이전 대칭 인코딩은 방향 정보 소실).
-    const rel = {}; // "r|c" → {cls, dir}
-    links.forEach(l => {
-      const a = idIndex[l.source], b = idIndex[l.target];
-      if (a == null || b == null || a === b) return;
-      const cls = linkClass(l.type);
-      rel[a + '|' + b] = { cls: cls, dir: 1 };
-      rel[b + '|' + a] = { cls: cls, dir: -1 };
-    });
-
-    // v7.1.0 리디자인 (사용자 승인): 칸 테두리 격자 → 1px 갭 그리드, 패턴 사각형 →
-    // 관계 글리프 4종 (대립 ✕ 하락색 / 동맹 ● 액센트 / 영향 ▸ 방향 / 연관 ○ 윤곽),
-    // 진영(group) 색띠 + 헤더 점. heatmap 과 같은 셀-그리드 어휘.
-    function groupColor(group) {
-      const g = String(group || '').toLowerCase();
-      if (/반대|대립|적|oppose|against|hostile/.test(g)) return t.down;
-      if (/승인|찬성|주도|동맹|approve|support|ally|core|lead/.test(g)) return t.accent;
-      return t.muted;
-    }
-
-    // 셀 크기 적응 (그리드 폭 ~360 목표), 라벨 폰트 n 에 따라 축소
-    const cell = Math.max(26, Math.min(54, Math.round(360 / n)));
-    const gap = Math.max(2, Math.round(cell * 0.07));
-    const step = cell + gap;
-    const fs = n > 9 ? 9.5 : 11;
-    const labelOf = (nd) => String(nd.label || nd.id || '').slice(0, 14);
-
-    // content 를 g 에 그린 뒤 getBBox 로 viewBox 산출 → 자동 중앙 정렬
-    const root = svg.append('g');
-
-    function glyph(parent, cls, dir, cxv, cyv) {
-      const u = cell * 0.13;
-      if (cls === 'conflict') {
-        [[-1, -1, 1, 1], [-1, 1, 1, -1]].forEach(seg => {
-          parent.append('line')
-            .attr('x1', cxv + seg[0] * u).attr('y1', cyv + seg[1] * u)
-            .attr('x2', cxv + seg[2] * u).attr('y2', cyv + seg[3] * u)
-            .attr('stroke', t.down).attr('stroke-width', Math.max(2, cell * 0.05))
-            .attr('stroke-linecap', 'round');
-        });
-      } else if (cls === 'ally') {
-        parent.append('circle').attr('cx', cxv).attr('cy', cyv).attr('r', u * 1.05)
-          .attr('fill', t.accent).attr('fill-opacity', 0.95);
-      } else if (cls === 'influence') {
-        const dx = dir >= 0 ? 1 : -1;
-        parent.append('path')
-          .attr('d', `M ${cxv - u * dx} ${cyv - u * 1.05} L ${cxv + u * 1.15 * dx} ${cyv} L ${cxv - u * dx} ${cyv + u * 1.05} Z`)
-          .attr('fill', t.text).attr('fill-opacity', 0.72);
-      } else {
-        parent.append('circle').attr('cx', cxv).attr('cy', cyv).attr('r', u)
-          .attr('fill', 'none').attr('stroke', t.muted).attr('stroke-width', 1.6);
-      }
-    }
-
-    // 그리드 셀 (갭 그리드 — 테두리 없음)
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
-      const X = step * c, Y = step * r;
-      root.append('rect').attr('x', X).attr('y', Y).attr('width', cell).attr('height', cell)
-        .attr('rx', 3).attr('fill', t.text).attr('fill-opacity', r === c ? 0.025 : 0.055);
-      if (r === c) {
-        root.append('line')
-          .attr('x1', X + cell * 0.26).attr('y1', Y + cell * 0.74)
-          .attr('x2', X + cell * 0.74).attr('y2', Y + cell * 0.26)
-          .attr('stroke', t.muted).attr('stroke-opacity', 0.4).attr('stroke-width', 1);
-        continue;
-      }
-      const rl = rel[r + '|' + c];
-      if (rl) glyph(root, rl.cls, rl.dir, X + cell / 2, Y + cell / 2);
-    }
-
-    // 라벨 — 행: 진영 색띠 + 좌측 거터 / 열: 진영 점 + -45° 회전
-    nodes.forEach((nd, i) => {
-      const lbl = labelOf(nd);
-      root.append('rect').attr('x', -10).attr('y', step * i).attr('width', 3)
-        .attr('height', cell).attr('rx', 1.5)
-        .attr('fill', groupColor(nd.group)).attr('fill-opacity', 0.85);
-      root.append('text').attr('x', -18).attr('y', step * i + cell / 2 + fs * 0.35)
-        .attr('text-anchor', 'end').attr('font-family', 'Noto Sans KR')
-        .attr('font-size', fs).attr('fill', t.text).text(lbl);
-      const cxl = step * i + cell / 2;
-      root.append('circle').attr('cx', cxl).attr('cy', -12).attr('r', 3)
-        .attr('fill', groupColor(nd.group));
-      root.append('text').attr('x', cxl + 5).attr('y', -22)
-        .attr('text-anchor', 'start').attr('font-family', 'Noto Sans KR')
-        .attr('font-size', fs).attr('fill', t.text)
-        .attr('transform', `rotate(-45 ${cxl + 5} ${-22})`).text(lbl);
-    });
-
-    // 범례 — 실제 등장한 관계 type 만, 그리드 하단
-    const seen = new Set(Object.values(rel).map(r => r.cls));
-    const present = [['conflict', '대립'], ['ally', '동맹'], ['influence', '영향 (행→열)'], ['assoc', '연관']]
-      .filter(([k]) => seen.has(k));
-    if (present.length) {
-      const lgFs = 10, ITEMGAP = 26;
-      const lgY = step * n + 26;
-      let lx = 0;
-      present.forEach(([k, label]) => {
-        const g = root.append('g');
-        glyph(g, k, 1, lx + 7, lgY - 4);
-        root.append('text').attr('x', lx + 20).attr('y', lgY)
-          .attr('font-family', 'Noto Sans KR').attr('font-size', lgFs).attr('fill', t.muted)
-          .text(label);
-        lx += 20 + label.length * lgFs * 0.95 + ITEMGAP;
-      });
-    }
-
-    // 정적 렌더 — 셀 fade 캐스케이드/opacity 덮어쓰기 방지 (CHART-AP-18 무관 안전)
-    root.selectAll('rect').attr('data-anim', 'static');
-
-    // content-fit viewBox: 모든 라벨/범례/회전 텍스트 포함 bbox + 패딩 → 중앙 정렬
-    const bb = root.node().getBBox();
-    const pad = 12;
-    svg.attr('viewBox',
-      `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);
-  }
+  // ----- NETWORK 관계도 폐기 (CHART-AP-36, 2026-06-20) -----
+  // 행위자 관계도(인접행렬) 포맷은 정보 밀도 대비 공간 점유가 커 보고서 가독성을
+  // 떨어뜨려 시스템에서 제거됐다. composer 는 더는 emit 하지 않고, schemas.py 의
+  // validate_chart_data 가 network 차트를 drop 한다. RENDERERS 에도 미등록.
 
 
   // ----- STACKED (positive magnitude only — composer prompt enforces) -----
@@ -3324,7 +3173,7 @@
   // ============================================================
   const RENDERERS = {
     bar: drawBar, donut: drawDonut, line: drawLine, gantt: drawGantt,
-    network: drawNetwork, stacked: drawStacked, bubble: drawBubble, heatmap: drawHeatmap,
+    stacked: drawStacked, bubble: drawBubble, heatmap: drawHeatmap,
     dual_line: drawDualLine, forecast: drawForecast, choropleth: drawChoropleth,
     // v5.2.0 — 시계열 OHLC 차트 (market_fetcher 데이터)
     candle: drawCandle, area: drawArea,

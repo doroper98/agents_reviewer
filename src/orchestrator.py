@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 import re
 import shutil
 import time
@@ -29,7 +30,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v7.9.16"
+VERSION = "v7.9.17"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -312,6 +313,42 @@ def _format_ts_takeaway(
     )
 
 
+def _is_finite_num(v) -> bool:
+    """NaN/inf/None/비숫자 차단. 시장 데이터 무결성 가드의 공용 술어."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def _sanitize_market_nan(time_series: list) -> int:
+    """context.time_series 의 각 series.data 에서 비유한값(NaN/inf) 행을 제거 (in-place).
+
+    CHART-AP-29 — Yahoo/pykrx 의 미완성 마지막 봉이나 결측이 NaN 으로 흘러들면
+    line/candle 차트가 빈 프레임이 되고 등락률·감시 스트립이 "nan%" 로 노출된다
+    (2026-06 코스피 회귀: 본문 takeaway 는 9,064 인데 차트 마지막은 nan). 모든
+    소스가 합류하는 단일 길목(fetch 직후)에서 결정적으로 비유한 행을 버린다.
+    candle 은 close 가 유한해야 유지, 그 외(line/area)는 close 유한이면 유지.
+    반환값 = 제거한 행 수.
+    """
+    removed = 0
+    for s in time_series or []:
+        if not isinstance(s, dict):
+            continue
+        data = s.get("data")
+        if not isinstance(data, list):
+            continue
+        kept: list = []
+        for d in data:
+            if not isinstance(d, dict):
+                continue
+            c = d.get("close")
+            if not _is_finite_num(c) or c <= 0:
+                removed += 1
+                continue
+            kept.append(d)
+        if len(kept) != len(data):
+            s["data"] = kept
+    return removed
+
+
 def _build_ts_chart(series: dict, context) -> dict:
     """단일 series → mockup 수준 chart dict.
 
@@ -431,8 +468,9 @@ def _build_compact_strip_row(series: dict) -> dict | None:
 
     ``data`` 가 2 점 미만이면 ``None`` 반환 — strip row 자체를 emit 하지 않음.
     """
-    raw = list(series.get("data") or [])
-    closes = [d.get("close") for d in raw if isinstance(d.get("close"), (int, float))]
+    # CHART-AP-29 — 비유한값(NaN/inf) 봉은 sparkline·등락률 양쪽에서 배제.
+    raw = [d for d in (series.get("data") or []) if _is_finite_num(d.get("close"))]
+    closes = [d.get("close") for d in raw]
     if len(closes) < 2:
         return None
     last_close = closes[-1]
@@ -1527,6 +1565,13 @@ class Orchestrator:
                 # MarketSeries → dict (Pydantic dump) 로 context.time_series 에 저장.
                 # composer 는 dict 그대로 읽음 (ComposedSection.charts 와 동일 패턴).
                 result.context.time_series = [s.model_dump() for s in series_list]
+                # CHART-AP-29 — 비유한값(NaN/inf) 봉을 차트·스트립 합류 전에 결정적 제거.
+                _nan_dropped = _sanitize_market_nan(result.context.time_series)
+                if _nan_dropped:
+                    logger.warning(
+                        "[orchestrator] market_fetch: NaN/inf 봉 %d개 제거 (CHART-AP-29 가드)",
+                        _nan_dropped,
+                    )
                 non_empty = sum(1 for s in series_list if s.data)
                 logger.info(
                     "[orchestrator] market_fetch period=%s: %d instruments requested, %d returned data",

@@ -110,12 +110,8 @@ visual_capabilities:
     added_in: phase_2
     notes: "TopoJSON 베이스맵 의존. Phase 6 Visual Sanity 강제."
 
-  network:
-    renderer: d3_custom
-    status: guarded
-    required_fields: [nodes, links]
-    added_in: phase_2
-    notes: "d3-force 의존. force layout 안정성 회귀 테스트 필수."
+  # network (행위자 관계도) 는 v7.9.17 에서 폐기 (CHART-AP-36) — 정보 밀도 대비
+  # 공간 점유 과다. validate_chart_data 가 drop, RENDERERS 미등록.
 
   sankey:
     renderer: d3_custom
@@ -269,6 +265,6 @@ visual_capabilities:
 # ─── 분포 (test_capability_registry 가 자동 검증) ─────────────────────────
 distribution:
   safe:         11
-  guarded:      17   # v5.2.14: 3 (choropleth/network/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix)
+  guarded:      16   # v7.9.17: network 폐기(CHART-AP-36). 2 (choropleth/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix)
   experimental: 2
-total: 30
+total: 29
