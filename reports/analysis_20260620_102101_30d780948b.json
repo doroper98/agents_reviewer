@@ -1,0 +1,2077 @@
+{
+  "request": {
+    "event_description": "[후속 분석] 부모 보고서: analysis_20260614_062900_afa4a094ca\n발화된 감시 신호: 북한 추가 핵 활동 신호 (방향: ambiguous)\n원 이벤트: 오늘 2026-06-14 (Sun) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-13 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-14 (Sun)) 시장 개장/외",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": {
+      "parent_report_id": "analysis_20260614_062900_afa4a094ca",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260614_062900_afa4a094ca.html",
+      "parent_report_title": "코스피 8천 안착, 유가는 내려앉다",
+      "parent_event_description": "오늘 2026-06-14 (Sun) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-13 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-14 (Sun)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+      "parent_scenarios": [],
+      "triggering_signal": {
+        "signal_id": "WS-20260613-b8e78cb1",
+        "description": "북한 추가 핵 활동 신호",
+        "measurement": "신규 핵연료 시설 가동률, 추가 시험 발사 여부",
+        "direction": "ambiguous",
+        "deadline": "2026-06-20",
+        "follow_up_action": "단계적 동결 우선 접근 가능성의 잔여 공간 시 후속 분석 재요청 권장",
+        "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260614_062900_afa4a094ca.html",
+        "parent_report_id": "analysis_20260614_062900_afa4a094ca",
+        "parent_chat_id": 50717095,
+        "fired": true,
+        "fired_at": "2026-06-20T00:13:28.087050",
+        "chain_depth": 0
+      },
+      "chain_depth": 0
+    },
+    "emit_bundle": false,
+    "report_format": "standard",
+    "user_directive": ""
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "북한은 2023년 김정은의 '핵전력 기하급수 증대' 공식 선언 이후 영변·강선 두 농축시설을 동시 가동해 왔음. 2024년 말 영변에 세 번째 농축 건물 신축이 시작되어 2025년 6월 외부공사 완료, 2026년 4~6월 시운전 단계에 진입. IAEA 는 2009년 추방된 이후 직접 사찰 권한이 없고 위성 이미지에 의존. 풍계리 7번 갱도는 2020년부터 즉시 실험 가능 태세를 유지 중이나 실제 실험은 2017년 6차 이후 동결 — 물질 생산은 가속, 실험은 자제하는 비대칭 escalation 패턴. 한국 입장에서는 6/14 일일 브리핑의 ambiguous 감시 신호가 일주일 새 SIPRI·IAEA 의 공식 수치 상향으로 escalation 방향이 굳어진 셈.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-04-02",
+            "event": "위성사진(IAEA·민간) — 영변 신축 농축공장 외부 공사 완료 후 차량·인력 빈번한 출입, 내부 설비 세팅 단계 추정",
+            "impact": "신축 건물의 전력·냉각 사양이 강선 시설과 유사 — IAEA 가 동일 등급 농축시설로 평가"
+          },
+          {
+            "date": "2026-06-03",
+            "event": "김정은이 무기급 핵물질 생산공장 현지 시찰(조선중앙통신 6/4 보도). 영변 신축 시설로 추정",
+            "impact": "북한이 자체 보도로 핵물질 공장을 공개한 세 번째 사례. '5년 전 대비 생산능력 2배 이상' 주장"
+          },
+          {
+            "date": "2026-06-04",
+            "event": "김정은 '핵전력 기하급수 증대(exponential)' 공식 선언",
+            "impact": "협상 테이블에 핵 프로그램을 올릴 의사 없음을 재확인"
+          },
+          {
+            "date": "2026-06-08",
+            "event": "스톡홀름국제평화연구소(SIPRI) 2026 연감 — 북한 핵탄두 보유 추정 60기로 상향(전년 50기 대비 +10기)",
+            "impact": "60기 전량을 '단기 실전 배치 가능 군사 비축분'으로 분류"
+          },
+          {
+            "date": "2026-06-08~10",
+            "event": "IAEA 분기 이사회(빈) — 미·EU 가 북한 핵 확장 공식 규탄, IAEA 사무총장이 영변·강선 동시가동을 '심각한 우려'로 명시. 풍계리는 '중대 변화 없으나 즉시 실험 가능 태세 유지'",
+            "impact": "국제기구 차원의 공식 경고 격상"
+          },
+          {
+            "date": "2026-06-14",
+            "event": "[부모 보고서] 자동 일일 브리핑에서 '북한 추가 핵 활동 신호'를 ambiguous 방향으로 감시 등록",
+            "impact": "후속 모니터링 트리거"
+          },
+          {
+            "date": "2026-06-14~20",
+            "event": "추가 핵실험·미사일 발사 *신규* 보도는 확인되지 않음. 다만 6/3~6/10 신호군이 누적·분석 보도로 재확산",
+            "impact": "단기 실험 임박 신호는 미확인 — 그러나 base rate(생산능력 확대) 는 escalation 방향으로 굳어짐"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "북한 핵 활동 추가 신호 — 영변 신축 농축공장 가동 단계 진입 및 IAEA·SIPRI 동시 경고",
+    "event_name_en": "North Korea Nuclear Escalation Signals: New Yongbyon Enrichment Plant Operationalizes Amid IAEA and SIPRI Warnings",
+    "date": "2026-06-20",
+    "category": "지정학/안보",
+    "summary": "6월 3~4일 김정은이 영변 신축 우라늄 농축공장(원심분리기 수백 기)을 공개 시찰하며 '핵전력 기하급수 증대'를 선언한 후, 6월 8일 SIPRI 가 북한 핵탄두를 60기(전년 +10)로 상향, 6월 8~10일 IAEA 분기 이사회에서 미·EU 가 공식 규탄. 6월 14일 부모 일일 브리핑의 'ambiguous' 감시 신호는 이번 주(6/14~6/20) 들어 영변·강선 동시가동 + 풍계리 7번 갱도 즉시 실험 가능 태세 유지가 확인되며 escalation 쪽으로 기울었음.",
+    "timeline": [
+      {
+        "date": "2026-04-02",
+        "event": "위성사진(IAEA·민간) — 영변 신축 농축공장 외부 공사 완료 후 차량·인력 빈번한 출입, 내부 설비 세팅 단계 추정",
+        "impact": "신축 건물의 전력·냉각 사양이 강선 시설과 유사 — IAEA 가 동일 등급 농축시설로 평가"
+      },
+      {
+        "date": "2026-06-03",
+        "event": "김정은이 무기급 핵물질 생산공장 현지 시찰(조선중앙통신 6/4 보도). 영변 신축 시설로 추정",
+        "impact": "북한이 자체 보도로 핵물질 공장을 공개한 세 번째 사례. '5년 전 대비 생산능력 2배 이상' 주장"
+      },
+      {
+        "date": "2026-06-04",
+        "event": "김정은 '핵전력 기하급수 증대(exponential)' 공식 선언",
+        "impact": "협상 테이블에 핵 프로그램을 올릴 의사 없음을 재확인"
+      },
+      {
+        "date": "2026-06-08",
+        "event": "스톡홀름국제평화연구소(SIPRI) 2026 연감 — 북한 핵탄두 보유 추정 60기로 상향(전년 50기 대비 +10기)",
+        "impact": "60기 전량을 '단기 실전 배치 가능 군사 비축분'으로 분류"
+      },
+      {
+        "date": "2026-06-08~10",
+        "event": "IAEA 분기 이사회(빈) — 미·EU 가 북한 핵 확장 공식 규탄, IAEA 사무총장이 영변·강선 동시가동을 '심각한 우려'로 명시. 풍계리는 '중대 변화 없으나 즉시 실험 가능 태세 유지'",
+        "impact": "국제기구 차원의 공식 경고 격상"
+      },
+      {
+        "date": "2026-06-14",
+        "event": "[부모 보고서] 자동 일일 브리핑에서 '북한 추가 핵 활동 신호'를 ambiguous 방향으로 감시 등록",
+        "impact": "후속 모니터링 트리거"
+      },
+      {
+        "date": "2026-06-14~20",
+        "event": "추가 핵실험·미사일 발사 *신규* 보도는 확인되지 않음. 다만 6/3~6/10 신호군이 누적·분석 보도로 재확산",
+        "impact": "단기 실험 임박 신호는 미확인 — 그러나 base rate(생산능력 확대) 는 escalation 방향으로 굳어짐"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "북한 핵탄두 추정 보유량",
+        "value": "60기",
+        "context": "SIPRI 2026 연감(6/8 발표) 기준. 전년(2025년 1월) 50기 대비 +10기. 전량이 실전 배치 가능 군사 비축분"
+      },
+      {
+        "label": "북한 자체 주장 핵물질 생산능력 증가",
+        "value": "5년 전 대비 2배 이상",
+        "context": "김정은 6/3 시찰 발언. 외부 검증 불가, 본인 주장. 단 IAEA 의 영변·강선 동시가동 평가와 방향 일치"
+      },
+      {
+        "label": "공개된 우라늄 농축시설 수",
+        "value": "3곳",
+        "context": "영변 본단지, 강선(평양 외곽), 6/4 공개 신축 공장. 3번째는 영변 신축 건물일 가능성 가장 큼"
+      },
+      {
+        "label": "신축 건물 공기",
+        "value": "약 6개월 (2024-12 중순 터파기 → 2025-06 초 외부 완공)",
+        "context": "이후 내부 설비 세팅·시운전이 약 10개월. 일반 산업시설 대비 매우 빠른 진척"
+      },
+      {
+        "label": "풍계리 7번 갱도 핵실험 준비",
+        "value": "2020년부터 완료 상태 유지",
+        "context": "미·한 정보당국 평가. 김정은 정치적 결정만 남은 상태로 6년째 유지 중"
+      },
+      {
+        "label": "마지막 실제 핵실험",
+        "value": "2017-09-03 (6차)",
+        "context": "이후 약 8년 9개월간 핵실험은 없음. 실험 자체는 동결, 물질·탄두 생산은 지속이라는 비대칭 패턴"
+      }
+    ],
+    "background": "북한은 2023년 김정은의 '핵전력 기하급수 증대' 공식 선언 이후 영변·강선 두 농축시설을 동시 가동해 왔음. 2024년 말 영변에 세 번째 농축 건물 신축이 시작되어 2025년 6월 외부공사 완료, 2026년 4~6월 시운전 단계에 진입. IAEA 는 2009년 추방된 이후 직접 사찰 권한이 없고 위성 이미지에 의존. 풍계리 7번 갱도는 2020년부터 즉시 실험 가능 태세를 유지 중이나 실제 실험은 2017년 6차 이후 동결 — 물질 생산은 가속, 실험은 자제하는 비대칭 escalation 패턴. 한국 입장에서는 6/14 일일 브리핑의 ambiguous 감시 신호가 일주일 새 SIPRI·IAEA 의 공식 수치 상향으로 escalation 방향이 굳어진 셈.",
+    "sources": [
+      "https://www.cnn.com/2026/06/04/asia/north-korea-nuclear-plant-kim-intl-hnk-ml",
+      "https://www.npr.org/2026/06/04/g-s1-126041/north-korea-unveils-a-new-plant-to-produce-fuel-for-nuclear-weapons",
+      "https://www.aljazeera.com/news/2026/6/4/n-koreas-kim-jong-un-calls-for-exponential-expansion-of-nuclear-arsenal",
+      "https://thedefensepost.com/2026/06/03/north-korea-nuclear-expansion/",
+      "https://www.voakorea.com/a/u-s-eu-condemn-north-korea-s-nuclear-expansion-at-iaea-board-meeting-061026/8159378.html",
+      "https://beyondparallel.csis.org/suspected-uranium-enrichment-building-at-yongbyon-complete/",
+      "https://isis-online.org/isis-reports/imagery-update-of-activities-at-north-koreas-yongbyon-site",
+      "https://www.asiatoday.co.kr/kn/view.php?key=20260604010001402",
+      "https://www.kmib.co.kr/article/view.asp?arcid=1780559841&code=11121400&sid1=pol",
+      "https://www.reportera.co.kr/military/north-korea-yongbyon-uranium-enrichment-facility-completed/",
+      "https://www.aei.org/articles/korean-peninsula-update-june-9-2026/",
+      "https://news.usni.org/2026/06/03/report-to-congress-on-north-koreas-nuclear-weapons-and-missile-programs-4",
+      "https://www.nti.org/education-center/facilities/punggye-ri-nuclear-test-facility/"
+    ],
+    "glossary": [
+      {
+        "term": "영변(Yongbyon)",
+        "definition": "평양 북쪽 약 100km 의 북한 최대 핵 단지. 5MW 원자로·재처리시설·우라늄 농축공장이 모여 있음"
+      },
+      {
+        "term": "강선(Kangson)",
+        "definition": "평양 외곽의 비밀 우라늄 농축시설. 영변보다 먼저 가동된 것으로 알려짐"
+      },
+      {
+        "term": "풍계리(Punggye-ri)",
+        "definition": "함경북도 길주의 북한 유일 핵실험장. 6차례 핵실험(2006~2017) 모두 여기서 수행. 7번 갱도가 차기 실험용으로 준비된 상태"
+      },
+      {
+        "term": "우라늄 농축(Uranium enrichment)",
+        "definition": "천연 우라늄에서 무기에 쓰이는 U-235 비율을 높이는 공정. 원심분리기 수천 기를 직렬·병렬 연결해 수행"
+      },
+      {
+        "term": "IAEA (국제원자력기구)",
+        "definition": "유엔 산하 핵사찰 기구. 2009년 북한에서 추방된 이후 위성 이미지로만 감시"
+      },
+      {
+        "term": "SIPRI (스톡홀름국제평화연구소)",
+        "definition": "스웨덴 소재 국제안보·군축 연구기관. 매년 6월 세계 핵탄두 보유 추정치를 담은 연감 발표"
+      },
+      {
+        "term": "원심분리기(Centrifuge)",
+        "definition": "회전력 차이로 무거운 U-238 과 가벼운 U-235 를 분리하는 장치. 수백~수천 기를 캐스케이드로 연결해 농축도를 올림"
+      },
+      {
+        "term": "기하급수(Exponential)",
+        "definition": "단순 증가가 아니라 곱셈으로 늘어남. 김정은 발언의 '기하급수' 는 양적 폭증 의지 표명"
+      }
+    ],
+    "confidence_score": 0.72,
+    "instruments_mentioned": [
+      "코스피",
+      "원/달러 환율",
+      "국고채 10Y",
+      "삼성전자"
+    ],
+    "time_series": [
+      {
+        "instrument": "코스피",
+        "source": "YAHOO",
+        "code": "^KS11",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-05-21",
+        "end_date": "2026-06-20",
+        "data": [
+          {
+            "date": "2026-05-21",
+            "open": 7486.3701171875,
+            "high": 7819.22998046875,
+            "low": 7486.3701171875,
+            "close": 7815.58984375,
+            "volume": 621100.0
+          },
+          {
+            "date": "2026-05-22",
+            "open": 7873.1201171875,
+            "high": 7886.64013671875,
+            "low": 7780.1298828125,
+            "close": 7847.7099609375,
+            "volume": 435500.0
+          },
+          {
+            "date": "2026-05-26",
+            "open": 8070.91015625,
+            "high": 8131.14990234375,
+            "low": 8008.18994140625,
+            "close": 8047.509765625,
+            "volume": 519600.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 8242.1201171875,
+            "high": 8457.08984375,
+            "low": 8220.0400390625,
+            "close": 8228.7001953125,
+            "volume": 619500.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 8165.72998046875,
+            "high": 8253.599609375,
+            "low": 7841.009765625,
+            "close": 8185.2900390625,
+            "volume": 669000.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 8384.3095703125,
+            "high": 8476.150390625,
+            "low": 8273.740234375,
+            "close": 8476.150390625,
+            "volume": 735100.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 8485.669921875,
+            "high": 8874.16015625,
+            "low": 8485.669921875,
+            "close": 8788.3798828125,
+            "volume": 636200.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 8883.1904296875,
+            "high": 8933.6201171875,
+            "low": 8503.1201171875,
+            "close": 8801.490234375,
+            "volume": 632600.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 8623.8203125,
+            "high": 8759.0498046875,
+            "low": 8577.2998046875,
+            "close": 8639.41015625,
+            "volume": 437900.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 8323.2001953125,
+            "high": 8382.16015625,
+            "low": 8038.10009765625,
+            "close": 8160.58984375,
+            "volume": 463200.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 8048.08984375,
+            "high": 8048.08984375,
+            "low": 7442.72998046875,
+            "close": 7484.41015625,
+            "volume": 452200.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 7697.759765625,
+            "high": 8119.08984375,
+            "low": 7598.8701171875,
+            "close": 8096.93017578125,
+            "volume": 448500.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 7899.77001953125,
+            "high": 7996.68017578125,
+            "low": 7541.10986328125,
+            "close": 7730.81982421875,
+            "volume": 460900.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 7509.6201171875,
+            "high": 7800.6201171875,
+            "low": 7394.4599609375,
+            "close": 7763.9501953125,
+            "volume": 478700.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 8263.849609375,
+            "high": 8434.400390625,
+            "low": 8079.77001953125,
+            "close": 8123.6201171875,
+            "volume": 493400.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 8526.1201171875,
+            "high": 8603.48046875,
+            "low": 8450.240234375,
+            "close": 8545.98046875,
+            "volume": 516600.0
+          },
+          {
+            "date": "2026-06-16",
+            "open": 8696.5498046875,
+            "high": 8753.8203125,
+            "low": 8540.41015625,
+            "close": 8726.599609375,
+            "volume": 586300.0
+          },
+          {
+            "date": "2026-06-17",
+            "open": 8622.1298828125,
+            "high": 8872.1796875,
+            "low": 8605.66015625,
+            "close": 8864.240234375,
+            "volume": 571200.0
+          },
+          {
+            "date": "2026-06-18",
+            "open": 8884.919921875,
+            "high": 9106.0703125,
+            "low": 8867.33984375,
+            "close": 9063.83984375,
+            "volume": 510900.0
+          },
+          {
+            "date": "2026-06-19",
+            "open": null,
+            "high": null,
+            "low": null,
+            "close": null,
+            "volume": 517248.0
+          }
+        ]
+      },
+      {
+        "instrument": "원/달러 환율",
+        "source": "ECOS",
+        "code": "731Y001/0000001",
+        "unit": "원",
+        "chart_type": "line",
+        "start_date": "2026-05-21",
+        "end_date": "2026-06-20",
+        "data": [
+          {
+            "date": "2026-05-21",
+            "open": 1509.7,
+            "high": 1509.7,
+            "low": 1509.7,
+            "close": 1509.7,
+            "volume": null
+          },
+          {
+            "date": "2026-05-22",
+            "open": 1503.5,
+            "high": 1503.5,
+            "low": 1503.5,
+            "close": 1503.5,
+            "volume": null
+          },
+          {
+            "date": "2026-05-26",
+            "open": 1513.3,
+            "high": 1513.3,
+            "low": 1513.3,
+            "close": 1513.3,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 1507.9,
+            "high": 1507.9,
+            "low": 1507.9,
+            "close": 1507.9,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 1501.6,
+            "high": 1501.6,
+            "low": 1501.6,
+            "close": 1501.6,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 1505.8,
+            "high": 1505.8,
+            "low": 1505.8,
+            "close": 1505.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 1503.2,
+            "high": 1503.2,
+            "low": 1503.2,
+            "close": 1503.2,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 1511.3,
+            "high": 1511.3,
+            "low": 1511.3,
+            "close": 1511.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 1515.6,
+            "high": 1515.6,
+            "low": 1515.6,
+            "close": 1515.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 1528.6,
+            "high": 1528.6,
+            "low": 1528.6,
+            "close": 1528.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 1543.0,
+            "high": 1543.0,
+            "low": 1543.0,
+            "close": 1543.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 1546.5,
+            "high": 1546.5,
+            "low": 1546.5,
+            "close": 1546.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 1518.4,
+            "high": 1518.4,
+            "low": 1518.4,
+            "close": 1518.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 1522.4,
+            "high": 1522.4,
+            "low": 1522.4,
+            "close": 1522.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 1527.0,
+            "high": 1527.0,
+            "low": 1527.0,
+            "close": 1527.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 1520.4,
+            "high": 1520.4,
+            "low": 1520.4,
+            "close": 1520.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 1510.0,
+            "high": 1510.0,
+            "low": 1510.0,
+            "close": 1510.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 1513.5,
+            "high": 1513.5,
+            "low": 1513.5,
+            "close": 1513.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 1512.8,
+            "high": 1512.8,
+            "low": 1512.8,
+            "close": 1512.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-19",
+            "open": 1523.4,
+            "high": 1523.4,
+            "low": 1523.4,
+            "close": 1523.4,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "국고채 10Y",
+        "source": "ECOS",
+        "code": "817Y002/010210000",
+        "unit": "%",
+        "chart_type": "line",
+        "start_date": "2026-05-21",
+        "end_date": "2026-06-20",
+        "data": [
+          {
+            "date": "2026-05-21",
+            "open": 4.174,
+            "high": 4.174,
+            "low": 4.174,
+            "close": 4.174,
+            "volume": null
+          },
+          {
+            "date": "2026-05-22",
+            "open": 4.128,
+            "high": 4.128,
+            "low": 4.128,
+            "close": 4.128,
+            "volume": null
+          },
+          {
+            "date": "2026-05-26",
+            "open": 4.073,
+            "high": 4.073,
+            "low": 4.073,
+            "close": 4.073,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 4.102,
+            "high": 4.102,
+            "low": 4.102,
+            "close": 4.102,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 4.147,
+            "high": 4.147,
+            "low": 4.147,
+            "close": 4.147,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 4.068,
+            "high": 4.068,
+            "low": 4.068,
+            "close": 4.068,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 4.174,
+            "high": 4.174,
+            "low": 4.174,
+            "close": 4.174,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 4.135,
+            "high": 4.135,
+            "low": 4.135,
+            "close": 4.135,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 4.229,
+            "high": 4.229,
+            "low": 4.229,
+            "close": 4.229,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 4.254,
+            "high": 4.254,
+            "low": 4.254,
+            "close": 4.254,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 4.348,
+            "high": 4.348,
+            "low": 4.348,
+            "close": 4.348,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 4.273,
+            "high": 4.273,
+            "low": 4.273,
+            "close": 4.273,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 4.273,
+            "high": 4.273,
+            "low": 4.273,
+            "close": 4.273,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 4.3,
+            "high": 4.3,
+            "low": 4.3,
+            "close": 4.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 4.195,
+            "high": 4.195,
+            "low": 4.195,
+            "close": 4.195,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 4.118,
+            "high": 4.118,
+            "low": 4.118,
+            "close": 4.118,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 4.11,
+            "high": 4.11,
+            "low": 4.11,
+            "close": 4.11,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 4.071,
+            "high": 4.071,
+            "low": 4.071,
+            "close": 4.071,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 4.118,
+            "high": 4.118,
+            "low": 4.118,
+            "close": 4.118,
+            "volume": null
+          },
+          {
+            "date": "2026-06-19",
+            "open": 4.171,
+            "high": 4.171,
+            "low": 4.171,
+            "close": 4.171,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "삼성전자",
+        "source": "KRX",
+        "code": "005930",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-05-21",
+        "end_date": "2026-06-20",
+        "data": [
+          {
+            "date": "2026-05-21",
+            "open": 291000.0,
+            "high": 299500.0,
+            "low": 287000.0,
+            "close": 299500.0,
+            "volume": 36168689.0
+          },
+          {
+            "date": "2026-05-22",
+            "open": 300000.0,
+            "high": 300500.0,
+            "low": 292000.0,
+            "close": 292500.0,
+            "volume": 18395274.0
+          },
+          {
+            "date": "2026-05-26",
+            "open": 298000.0,
+            "high": 302000.0,
+            "low": 297500.0,
+            "close": 299000.0,
+            "volume": 23441371.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 321500.0,
+            "high": 323000.0,
+            "low": 306000.0,
+            "close": 307000.0,
+            "volume": 33916688.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 305000.0,
+            "high": 306500.0,
+            "low": 287500.0,
+            "close": 299500.0,
+            "volume": 30195334.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 309500.0,
+            "high": 319000.0,
+            "low": 305500.0,
+            "close": 317000.0,
+            "volume": 37241537.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 319500.0,
+            "high": 354500.0,
+            "low": 319500.0,
+            "close": 349000.0,
+            "volume": 45052488.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 360500.0,
+            "high": 370000.0,
+            "low": 342000.0,
+            "close": 360500.0,
+            "volume": 44720282.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 349000.0,
+            "high": 366000.0,
+            "low": 348000.0,
+            "close": 351500.0,
+            "volume": 34771037.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 333500.0,
+            "high": 343000.0,
+            "low": 325000.0,
+            "close": 329000.0,
+            "volume": 33725012.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 293000.0,
+            "high": 315500.0,
+            "low": 292500.0,
+            "close": 295500.0,
+            "volume": 38929682.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 310000.0,
+            "high": 324000.0,
+            "low": 300000.0,
+            "close": 322000.0,
+            "volume": 30124249.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 311000.0,
+            "high": 314500.0,
+            "low": 295250.0,
+            "close": 302500.0,
+            "volume": 27050362.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 290500.0,
+            "high": 306500.0,
+            "low": 287500.0,
+            "close": 299000.0,
+            "volume": 31420307.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 326000.0,
+            "high": 339000.0,
+            "low": 320000.0,
+            "close": 322500.0,
+            "volume": 31006148.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 342500.0,
+            "high": 344500.0,
+            "low": 334000.0,
+            "close": 337000.0,
+            "volume": 21500067.0
+          },
+          {
+            "date": "2026-06-16",
+            "open": 343000.0,
+            "high": 345500.0,
+            "low": 332500.0,
+            "close": 343000.0,
+            "volume": 17548685.0
+          },
+          {
+            "date": "2026-06-17",
+            "open": 332000.0,
+            "high": 348000.0,
+            "low": 331500.0,
+            "close": 346500.0,
+            "volume": 18134051.0
+          },
+          {
+            "date": "2026-06-18",
+            "open": 345000.0,
+            "high": 363000.0,
+            "low": 344500.0,
+            "close": 362500.0,
+            "volume": 32764450.0
+          },
+          {
+            "date": "2026-06-19",
+            "open": 372500.0,
+            "high": 374500.0,
+            "low": 346250.0,
+            "close": 354000.0,
+            "volume": 42713286.0
+          }
+        ]
+      }
+    ],
+    "provenance": [
+      {
+        "fact": "김정은이 무기급 핵물질 생산공장을 시찰하고 '핵전력 기하급수 증대' 선언",
+        "source_date": "2026-06-04",
+        "scope_note": "조선중앙통신 6/4 자 공개. 시찰 자체는 6/3 추정",
+        "source_url": "https://www.cnn.com/2026/06/04/asia/north-korea-nuclear-plant-kim-intl-hnk-ml"
+      },
+      {
+        "fact": "북한 핵탄두 추정 보유량 60기로 상향(전년 +10기)",
+        "source_date": "2026-06-08",
+        "scope_note": "SIPRI 2026 연감 기준일은 2026-01-01. 60기 전량 군사 비축분으로 분류",
+        "source_url": "https://www.sejong.org/web/boad/1/egoread.php?bd=1&seq=12806"
+      },
+      {
+        "fact": "IAEA 분기 이사회 — 미·EU 가 북한 핵 확장 규탄, 영변·강선 농축시설 동시가동을 '심각한 우려'로 명시",
+        "source_date": "2026-06-10",
+        "scope_note": "오스트리아 빈, IAEA 본부. 풍계리는 '중대 변화 없음, 실험 태세 유지'로 별도 평가",
+        "source_url": "https://www.voakorea.com/a/u-s-eu-condemn-north-korea-s-nuclear-expansion-at-iaea-board-meeting-061026/8159378.html"
+      },
+      {
+        "fact": "북한이 공개한 우라늄 농축시설 3곳(영변·강선·6/4 공개 신축 공장)",
+        "source_date": "2026-06-04",
+        "scope_note": "공식 공개 기준. IAEA 는 6/4 공개 신축 공장을 영변 신축 건물과 동일시",
+        "source_url": "https://www.npr.org/2026/06/04/g-s1-126041/north-korea-unveils-a-new-plant-to-produce-fuel-for-nuclear-weapons"
+      },
+      {
+        "fact": "영변 신축 농축 건물 외부공사 완료(2025-06 초), 2026-04-02 위성에 차량·인력 빈번 관측 — 내부 설비 세팅 단계",
+        "source_date": "2026-04-28",
+        "scope_note": "Beyond Parallel(CSIS)·ISIS 보고서 종합. 전력·냉각 사양은 강선 시설과 유사",
+        "source_url": "https://beyondparallel.csis.org/suspected-uranium-enrichment-building-at-yongbyon-complete/"
+      },
+      {
+        "fact": "북한 마지막 실제 핵실험은 2017-09-03 6차",
+        "source_date": "",
+        "scope_note": "이후 약 8년 9개월간 실험 동결. 풍계리 7번 갱도는 2020년부터 즉시 실험 가능 태세 유지",
+        "source_url": "https://www.nti.org/education-center/facilities/punggye-ri-nuclear-test-facility/"
+      },
+      {
+        "fact": "6/14 부모 일일 브리핑 이후 6/20 까지 *신규* 핵실험·미사일 발사 보도는 확인되지 않음",
+        "source_date": "2026-06-20",
+        "scope_note": "6/14~6/20 윈도 내 명시적 도발 사건 미보도. 누적 base-rate 신호(생산능력 확대) 만 escalation 방향",
+        "source_url": ""
+      }
+    ],
+    "available_images": [
+      {
+        "source_url": "https://www.npr.org/2026/06/04/g-s1-126041/north-korea-unveils-a-new-plant-to-produce-fuel-for-nuclear-weapons",
+        "image_url": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/4439x2497+0+231/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F5d%2F56%2F9e4e6cbf43ff925ff913b78e7fb4%2Fap26154836958089.jpg",
+        "title": "North Korea unveils a new plant to produce fuel for nuclear weapons",
+        "description": "State media photos on the place showed it is likely a plant to produce weapons-grade uranium.",
+        "publisher": "npr.org"
+      },
+      {
+        "source_url": "https://www.aljazeera.com/news/2026/6/4/n-koreas-kim-jong-un-calls-for-exponential-expansion-of-nuclear-arsenal",
+        "image_url": "https://www.aljazeera.com/wp-content/uploads/2026/06/afp_6a212778cb1c-1780557688.jpg?resize=1920%2C1440",
+        "title": "N Korea’s Kim Jong Un calls for ‘exponential’ expansion of nuclear arsenal",
+        "description": "Kim says expansion necessary due to worsening security threats, long-term confrontations with 'most ferocious enemies'.",
+        "publisher": "aljazeera.com"
+      },
+      {
+        "source_url": "https://beyondparallel.csis.org/suspected-uranium-enrichment-building-at-yongbyon-complete/",
+        "image_url": "https://beyondparallel.csis.org/wp-content/uploads/2026/04/2026-04-08-Yongbyon_1-750x452.png",
+        "title": "Suspected Uranium Enrichment Building at Yongbyon Complete - Beyond Parallel",
+        "description": "Recent imagery shows the completion of a building at Yongbyon, widely believed to be a new uranium enrichment plant.",
+        "publisher": "beyondparallel.csis.org"
+      },
+      {
+        "source_url": "https://www.asiatoday.co.kr/kn/view.php?key=20260604010001402",
+        "image_url": "https://img.asiatoday.co.kr/file/2026y/06m/04d/2026060401000280200014071.jpg",
+        "title": "김정은, ‘새 핵물질 생산공장’ 공개...영변 신축 공장 추정",
+        "description": "김정은 북한 국무위원장이 새로운 핵물질 생산공장을 현지 시찰하며 북한의 ‘무기급’ 핵물질 생산능력을 과시했다. 북한이 그동안 보도를 통해 핵물질 생산공장을 사진으로 공개한 것은 이번이 세 번째로, 최근 영변 핵시설에 들어선 신축 공장일 것으로 추정된다. 4일 조선중앙..",
+        "publisher": "asiatoday.co.kr"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "영변 신축 농축공장이 가동 단계로, 강선과 동시운용 정황 굳어져",
+    "deck": "영변 신축 공장이 가동 단계에 진입한 것으로 평가되고, SIPRI는 핵탄두를 60기로 올렸다. 부모 보고서가 ‘모호’로 두었던 일주일 전 신호는 확장 쪽으로 기울었다.",
+    "sections": [
+      {
+        "heading": "엿새 만에 ‘모호’가 ‘확장’으로 기운 까닭",
+        "kicker": "이번 주의 결산",
+        "prose": "보름 전인 6월 3일 김정은이 우라늄 농축공장을 직접 시찰했다. 영변 단지에 새로 지은 건물로 추정되는 곳이다. 이튿날 조선중앙통신은 사진과 함께 보도하며 ‘5년 전 대비 핵물질 생산능력이 두 배 이상’이라고 주장했다. 닷새 뒤인 6월 8일에는 외부의 평가가 따라붙었다. 스톡홀름국제평화연구소(SIPRI, 군사·평화 통계의 권위 있는 국제 연구기관)가 연감을 내며 북한의 핵탄두 추정 보유량을 지난해 50기에서 60기로 올렸다. 같은 주 빈에서 열린 IAEA(국제원자력기구, 유엔 산하 핵 감시기구) 분기 이사회에서는 미국과 EU가 북한의 핵 확장을 공식 규탄했고, IAEA 사무총장은 영변과 강선 두 시설의 동시 가동을 ‘심각한 우려’라고 명시했다. 부모 보고서의 감시 등록일은 2026년 6월 14일이었다. 이후 일주일(2026년 6월 14일~6월 20일) 동안 추가 발사·실험의 새로운 보도는 확인되지 않았다. 그러나 ‘만들 수 있는 양’이 늘었다는 정황은 위성과 국제기구·자국 보도 양쪽에서 모였다. 이번 주에 굳어진 결론은 단순하다. 실험은 묶어 둔 채 물질만 늘리는 비대칭 확장이 한 단계 진행됐다는 것이다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "코스피 종합지수",
+            "subtitle": "2026-05-21 ~ 2026-06-20 · nan% (7815.59 → nan)",
+            "data": [
+              {
+                "x": "2026-05-21",
+                "y": 7815.58984375
+              },
+              {
+                "x": "2026-05-22",
+                "y": 7847.7099609375
+              },
+              {
+                "x": "2026-05-26",
+                "y": 8047.509765625
+              },
+              {
+                "x": "2026-05-27",
+                "y": 8228.7001953125
+              },
+              {
+                "x": "2026-05-28",
+                "y": 8185.2900390625
+              },
+              {
+                "x": "2026-05-29",
+                "y": 8476.150390625
+              },
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625,
+                "event": "김정은 '핵전력 기하급수 증대(exponential)' 공식 선언"
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625,
+                "event": "IAEA 분기 이사회(빈), 미·EU 가 북한 핵 확장 공식 규탄, IAEA 사무총장이 영변·강선 동시가동"
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              },
+              {
+                "x": "2026-06-15",
+                "y": 8545.98046875
+              },
+              {
+                "x": "2026-06-16",
+                "y": 8726.599609375
+              },
+              {
+                "x": "2026-06-17",
+                "y": 8864.240234375
+              },
+              {
+                "x": "2026-06-18",
+                "y": 9063.83984375
+              },
+              {
+                "x": "2026-06-19",
+                "y": null
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-21 ~ 2026-06-20 / 일간",
+            "takeaway": "코스피 기간 중 7,484~9,064 사이 상승, 마지막 9,064 (+15.97%), 변동폭 21.1%"
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "코스피",
+            "title": "코스피",
+            "subtitle": "2026-05-21 ~ 2026-06-20 · nan% (7815.59 → nan)",
+            "last_value_formatted": "",
+            "change_day_pct": null,
+            "change_day_pct_formatted": "nan%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-21",
+                "y": 7815.58984375
+              },
+              {
+                "x": "2026-05-22",
+                "y": 7847.7099609375
+              },
+              {
+                "x": "2026-05-26",
+                "y": 8047.509765625
+              },
+              {
+                "x": "2026-05-27",
+                "y": 8228.7001953125
+              },
+              {
+                "x": "2026-05-28",
+                "y": 8185.2900390625
+              },
+              {
+                "x": "2026-05-29",
+                "y": 8476.150390625
+              },
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              },
+              {
+                "x": "2026-06-15",
+                "y": 8545.98046875
+              },
+              {
+                "x": "2026-06-16",
+                "y": 8726.599609375
+              },
+              {
+                "x": "2026-06-17",
+                "y": 8864.240234375
+              },
+              {
+                "x": "2026-06-18",
+                "y": 9063.83984375
+              },
+              {
+                "x": "2026-06-19",
+                "y": null
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-21 ~ 2026-06-20 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "원/달러 환율",
+            "title": "원/달러 환율",
+            "subtitle": "2026-05-21 ~ 2026-06-20 · +0.91% (1,510 → 1,523)",
+            "last_value_formatted": "1,523",
+            "change_day_pct": 0.7,
+            "change_day_pct_formatted": "+0.70%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-21",
+                "y": 1509.7
+              },
+              {
+                "x": "2026-05-22",
+                "y": 1503.5
+              },
+              {
+                "x": "2026-05-26",
+                "y": 1513.3
+              },
+              {
+                "x": "2026-05-27",
+                "y": 1507.9
+              },
+              {
+                "x": "2026-05-28",
+                "y": 1501.6
+              },
+              {
+                "x": "2026-05-29",
+                "y": 1505.8
+              },
+              {
+                "x": "2026-06-01",
+                "y": 1503.2
+              },
+              {
+                "x": "2026-06-02",
+                "y": 1511.3
+              },
+              {
+                "x": "2026-06-04",
+                "y": 1515.6
+              },
+              {
+                "x": "2026-06-05",
+                "y": 1528.6
+              },
+              {
+                "x": "2026-06-08",
+                "y": 1543.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 1546.5
+              },
+              {
+                "x": "2026-06-10",
+                "y": 1518.4
+              },
+              {
+                "x": "2026-06-11",
+                "y": 1522.4
+              },
+              {
+                "x": "2026-06-12",
+                "y": 1527.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 1520.4
+              },
+              {
+                "x": "2026-06-16",
+                "y": 1510.0
+              },
+              {
+                "x": "2026-06-17",
+                "y": 1513.5
+              },
+              {
+                "x": "2026-06-18",
+                "y": 1512.8
+              },
+              {
+                "x": "2026-06-19",
+                "y": 1523.4
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-05-21 ~ 2026-06-20 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "국고채 10Y",
+            "title": "국고채 10Y",
+            "subtitle": "2026-05-21 ~ 2026-06-20 · -0.07% (4.17 → 4.17)",
+            "last_value_formatted": "4.17%",
+            "change_day_pct": 1.29,
+            "change_day_pct_formatted": "+1.29%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-21",
+                "y": 4.174
+              },
+              {
+                "x": "2026-05-22",
+                "y": 4.128
+              },
+              {
+                "x": "2026-05-26",
+                "y": 4.073
+              },
+              {
+                "x": "2026-05-27",
+                "y": 4.102
+              },
+              {
+                "x": "2026-05-28",
+                "y": 4.147
+              },
+              {
+                "x": "2026-05-29",
+                "y": 4.068
+              },
+              {
+                "x": "2026-06-01",
+                "y": 4.174
+              },
+              {
+                "x": "2026-06-02",
+                "y": 4.135
+              },
+              {
+                "x": "2026-06-04",
+                "y": 4.229
+              },
+              {
+                "x": "2026-06-05",
+                "y": 4.254
+              },
+              {
+                "x": "2026-06-08",
+                "y": 4.348
+              },
+              {
+                "x": "2026-06-09",
+                "y": 4.273
+              },
+              {
+                "x": "2026-06-10",
+                "y": 4.273
+              },
+              {
+                "x": "2026-06-11",
+                "y": 4.3
+              },
+              {
+                "x": "2026-06-12",
+                "y": 4.195
+              },
+              {
+                "x": "2026-06-15",
+                "y": 4.118
+              },
+              {
+                "x": "2026-06-16",
+                "y": 4.11
+              },
+              {
+                "x": "2026-06-17",
+                "y": 4.071
+              },
+              {
+                "x": "2026-06-18",
+                "y": 4.118
+              },
+              {
+                "x": "2026-06-19",
+                "y": 4.171
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-05-21 ~ 2026-06-20 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "삼성전자",
+            "title": "삼성전자",
+            "subtitle": "2026-05-21 ~ 2026-06-20 · +18.20% (299,500 → 354,000)",
+            "last_value_formatted": "354,000",
+            "change_day_pct": -2.34,
+            "change_day_pct_formatted": "-2.34%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-21",
+                "y": 299500.0
+              },
+              {
+                "x": "2026-05-22",
+                "y": 292500.0
+              },
+              {
+                "x": "2026-05-26",
+                "y": 299000.0
+              },
+              {
+                "x": "2026-05-27",
+                "y": 307000.0
+              },
+              {
+                "x": "2026-05-28",
+                "y": 299500.0
+              },
+              {
+                "x": "2026-05-29",
+                "y": 317000.0
+              },
+              {
+                "x": "2026-06-01",
+                "y": 349000.0
+              },
+              {
+                "x": "2026-06-02",
+                "y": 360500.0
+              },
+              {
+                "x": "2026-06-04",
+                "y": 351500.0
+              },
+              {
+                "x": "2026-06-05",
+                "y": 329000.0
+              },
+              {
+                "x": "2026-06-08",
+                "y": 295500.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 322000.0
+              },
+              {
+                "x": "2026-06-10",
+                "y": 302500.0
+              },
+              {
+                "x": "2026-06-11",
+                "y": 299000.0
+              },
+              {
+                "x": "2026-06-12",
+                "y": 322500.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 337000.0
+              },
+              {
+                "x": "2026-06-16",
+                "y": 343000.0
+              },
+              {
+                "x": "2026-06-17",
+                "y": 346500.0
+              },
+              {
+                "x": "2026-06-18",
+                "y": 362500.0
+              },
+              {
+                "x": "2026-06-19",
+                "y": 354000.0
+              }
+            ],
+            "source": "KRX / 2026-05-21 ~ 2026-06-20 / 일간",
+            "takeaway": ""
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "실험은 묶어 둔 채 물질만 늘린다.",
+        "cited_claim_ids": [],
+        "lede": "엿새 전 일일 브리핑은 북한의 핵 활동을 ‘모호한 신호’로 분류해 두었다. 오늘(6/20)까지 일주일을 다시 살펴보면 그 모호함은 한쪽으로 기울었다. 새 무기를 쏘아 올린 것은 없지만, 무기를 만들 재료를 더 많이 더 빨리 찍어내는 쪽으로 신호가 모인다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": true,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "IAEA",
+            "explanation": "국제원자력기구. 유엔 산하 핵 감시 기구로, 회원국의 핵 시설을 사찰하고 위반 여부를 이사회에 보고한다. 북한은 2009년 사찰단을 추방한 뒤로 직접 사찰을 받지 않아 IAEA는 위성 이미지에 의존하고 있다."
+          },
+          {
+            "term": "SIPRI",
+            "explanation": "스톡홀름국제평화연구소. 1966년 스웨덴 의회가 설립한 비영리 연구기관으로, 매년 6월에 내는 ‘SIPRI 연감’이 세계 군비와 핵탄두 추정치의 사실상 표준 자료로 쓰인다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "엿새 전 일일 브리핑은 북한의 핵 활동을 모호한 신호로만 분류해 두었습니다.",
+            "오늘 다시 일주일을 살펴보면 그 모호함은 한쪽으로 분명히 기울었습니다.",
+            "새로 쏘아 올린 무기는 없습니다. 그러나 무기를 만들 재료를 더 많이, 더 빨리 찍어내는 쪽으로 신호가 모였습니다."
+          ],
+          "highlights": [
+            "6월 14일 ‘모호’ → 6월 20일 ‘확장’",
+            "실험은 묶고 물질만 늘렸다"
+          ],
+          "emphasis": [
+            "모호한 신호",
+            "한쪽으로 분명히 기울었습니다",
+            "재료를 더 많이"
+          ],
+          "narration_tts": [
+            "엿새 전 일일 브리핑은 북한의 핵 활동을 모호한 신호로만 분류해 두었습니다.",
+            "오늘 다시 일주일을 살펴보면 그 모호함은 한쪽으로 분명히 기울었습니다.",
+            "새로 쏘아 올린 무기는 없습니다. 그러나 무기를 만들 재료를 더 많이, 더 빨리 찍어내는 쪽으로 신호가 모였습니다."
+          ]
+        }
+      },
+      {
+        "heading": "영변 신축 공장이라는 의미",
+        "kicker": "지리적 좌표",
+        "prose": "영변은 평안북도의 핵 단지, 강선은 평양 외곽의 비공개 농축시설로 알려져 왔다. 두 곳은 우라늄을 가스로 만들어 원심분리기로 돌리는 시설이다(아래 지도). 그동안 외부에 알려진 농축시설은 영변 본단지와 강선 두 곳이었다. 6월 4일 북한이 공개한 사진의 시설은 세 번째다. 미국 CSIS 산하 ‘Beyond Parallel’과 ISIS는 위성 이미지를 근거로 영변 본단지 안에 2024년 12월 중순 터파기가 시작돼 2025년 6월 초에 외부 공사가 끝난 신축 건물을 지목해 왔다. 약 반년 만의 외부 완공은 산업시설로서는 매우 빠른 속도다. 이후 약 10개월 동안 내부 설비를 들이고 시운전을 거쳤다는 평가다. 전력·냉각 사양이 강선 시설과 유사하다는 점이 IAEA의 판단 근거 중 하나다. 같은 등급의 농축시설이 한 곳 더 가동에 들어갔다는 뜻이다. 농축시설은 핵폭탄의 원료를 만드는 길목이다. 무기급(폭탄 제조에 쓰일 만큼 고농축한 우라늄)을 더 많이 비축할 수 있는 산업 능력이 외부 시선 없이 확장된 것이다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "영변 신축 농축공장, 위성으로 본 공정 단계",
+            "subtitle": "외부 공사 6개월, 내부 세팅 10개월. 산업시설로는 빠른 진척",
+            "data": [
+              {
+                "label": "터파기·기초",
+                "start": "2024-12-15",
+                "end": "2025-02-28",
+                "note": "Beyond Parallel·ISIS 위성 판독"
+              },
+              {
+                "label": "구조·외피",
+                "start": "2025-03-01",
+                "end": "2025-06-05",
+                "note": "외부 공사 완료"
+              },
+              {
+                "label": "내부 설비·시운전",
+                "start": "2025-06-06",
+                "end": "2026-04-01",
+                "note": "차량·인력 출입 빈번"
+              },
+              {
+                "label": "가동 단계 진입",
+                "start": "2026-04-02",
+                "end": "2026-06-20",
+                "note": "김정은 6/3 시찰 후 공개"
+              }
+            ],
+            "source": "Beyond Parallel(CSIS), ISIS 위성 판독 / 2026-04~06",
+            "takeaway": "외부 골조 6개월, 그 뒤 10개월의 내부 작업이 이번 달 가동 단계로 넘어갔다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/df535c3e50fb2c9f.png",
+            "caption": "4월 8일 촬영된 영변 단지의 신축 건물. 외부 공사는 2025년 6월에 이미 끝났고, 위성 영상에는 차량과 인력의 잦은 출입이 잡혔다.",
+            "credit": "© Beyond Parallel (CSIS)",
+            "source_url": "https://beyondparallel.csis.org/suspected-uranium-enrichment-building-at-yongbyon-complete/",
+            "alt": "위에서 내려다본 영변 핵단지 신축 건물의 위성 사진"
+          }
+        ],
+        "footnotes": [
+          {
+            "term": "원심분리기 (centrifuge)",
+            "explanation": "우라늄을 기체 상태로 만든 뒤 빠르게 회전시켜 무거운 동위원소와 가벼운 동위원소를 분리하는 장치다. 수백 기를 직렬·병렬로 연결해야 의미 있는 농축이 가능하다."
+          },
+          {
+            "term": "무기급 우라늄",
+            "explanation": "자연 우라늄은 핵분열을 일으키는 U-235가 0.7%에 불과하다. 농축률을 20% 이상으로 올리면 ‘고농축’, 90% 이상이면 ‘무기급’으로 분류한다. 핵폭탄 한 발에는 보통 25kg 안팎이 든다고 알려져 있다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "이 시설은 평안북도 영변 단지 안에 새로 들어선 세 번째 농축공장입니다.",
+            "위성 사진을 보면, 2024년 12월에 터파기가 시작돼 반년 만에 외부 공사가 끝났습니다.",
+            "그 뒤 열 달 동안 내부에 장비가 들어갔고, 이번 달에는 직접 돌아가는 단계로 넘어왔습니다.",
+            "전력과 냉각 설비가 기존 강선 시설과 비슷하다는 점이, 같은 등급의 농축시설이 하나 더 늘었다는 평가의 근거입니다."
+          ],
+          "highlights": [
+            "영변·강선·신축, 농축시설 셋",
+            "외부 6개월, 내부 10개월"
+          ],
+          "emphasis": [
+            "세 번째 농축공장",
+            "외부 공사가 끝났습니다",
+            "같은 등급의 농축시설"
+          ],
+          "narration_tts": [
+            "이 시설은 평안북도 영변 단지 안에 새로 들어선 세 번째 농축공장입니다.",
+            "위성 사진을 보면, 이천이십사년 십이월에 터파기가 시작돼 반년 만에 외부 공사가 끝났습니다.",
+            "그 뒤 열 달 동안 내부에 장비가 들어갔고, 이번 달에는 직접 돌아가는 단계로 넘어왔습니다.",
+            "전력과 냉각 설비가 기존 강선 시설과 비슷하다는 점이, 같은 등급의 농축시설이 하나 더 늘었다는 평가의 근거입니다."
+          ]
+        }
+      },
+      {
+        "heading": "60기, 그리고 비대칭의 패턴",
+        "kicker": "숫자의 의미",
+        "prose": "SIPRI의 60기는 단순한 카운트가 아니다. 연구소는 60기 전량을 ‘단기 실전 배치 가능한 군사 비축분’으로 분류했다. 작년 50기에서 한 해 만에 10기가 늘었고, 같은 기간 공개된 농축시설은 두 곳에서 세 곳으로 늘었다(아래 차트). 그러나 7차 핵실험은 아직 없다. 마지막 실제 실험은 2017년 9월 3일, 6차다. 이후 8년 9개월 동안 풍계리 7번 갱도는 ‘즉시 실험 가능’ 태세를 유지해 왔지만 실제 폭발음은 들리지 않았다. 미국과 한국 정보당국은 ‘김정은의 정치적 결정만 남았다’고 6년째 같은 평가를 반복하고 있다. 패턴이 보인다. 실험은 묶어 두고 물질·탄두 생산은 가속한다. 실험은 외교적 비용이 크지만 농축은 위성으로만 잡힌다. 비용이 비싼 카드는 아껴 두고, 보이지 않게 능력을 누적하는 비대칭 전략이다. 김정은이 6월 4일 ‘기하급수 증대’를 공언한 것은 이 누적을 멈추지 않겠다는 자기 확약에 가깝다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "실험은 아끼고 물질만 누적한다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "단기 실전 배치 가능 비축분 (operational stockpile)",
+            "explanation": "탄두가 미사일·항공기 등 운반 수단과 결합돼 즉시 운용할 수 있는 상태를 뜻한다. ‘예비’나 ‘해체 대기’와 구분되며, SIPRI는 작년부터 북한 탄두 전량을 이 범주로 분류해 왔다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "SIPRI는 북한의 핵탄두 추정치를 50기에서 60기로 올렸습니다.",
+            "60기 전량을 즉시 운용할 수 있는 군사 비축분으로 분류했다는 점이 특히 무겁습니다.",
+            "그런데 핵실험은 2017년 6차 이후 8년 9개월째 없습니다. 풍계리 갱도는 준비된 채 멈춰 있습니다.",
+            "정리하면, 외교 비용이 큰 실험은 아껴 두고 위성에만 잡히는 농축만 늘리는 비대칭 전략입니다."
+          ],
+          "highlights": [
+            "50 → 60기, 모두 ‘즉시 운용’",
+            "실험 동결 8년 9개월"
+          ],
+          "emphasis": [
+            "50기에서 60기",
+            "즉시 운용할 수 있는 군사 비축분",
+            "8년 9개월째 없습니다",
+            "비대칭 전략"
+          ],
+          "narration_tts": [
+            "에스아이피아르아이는 북한의 핵탄두 추정치를 오십 기에서 육십 기로 올렸습니다.",
+            "육십 기 전량을 즉시 운용할 수 있는 군사 비축분으로 분류했다는 점이 특히 무겁습니다.",
+            "그런데 핵실험은 이천십칠년 육 차 이후 팔년 구 개월째 없습니다. 풍계리 갱도는 준비된 채 멈춰 있습니다.",
+            "정리하면, 외교 비용이 큰 실험은 아껴 두고 위성에만 잡히는 농축만 늘리는 비대칭 전략입니다."
+          ]
+        }
+      },
+      {
+        "heading": "한국이 마주한 변화, 위협의 결이 달라졌다",
+        "kicker": "체감의 전환",
+        "prose": "한국 입장에서 이번 변화의 결은 ‘새 무기 한 발’이 아니라 ‘위협의 누적 속도’다. 지난해 한국 군 당국과 정보 평가는 북한 탄두를 50기 안팎으로 잡고 대응 시나리오를 짜 왔다. SIPRI가 추정치를 60기로 올린 것은 한미 확장억제와 NCG(핵협의그룹) 논의의 출발 가정을 한 칸 옮길 수 있는 변수다. 같은 주 6월 8일 IAEA 분기 이사회에서 미·EU는 북한의 핵 확장을 별도로 공식 규탄했다. 시장의 즉시 반응은 제한적이다. 2026년 6월 19일 종가 기준 원/달러 환율은 1,523.4원, 국고채 10년물 금리는 4.171%, 삼성전자는 354,000원으로 전일과 큰 차이가 없는 수준이었다. 코스피는 6월 19일 종가 데이터가 아직 확정되지 않아 6월 18일의 9,063.84가 최신 가용 종가다. 다만 이 움직임에는 미국 금리, 반도체 수급, 환율 그 자체의 추세 등 여러 변수가 겹쳐 있어, 핵 신호 하나의 영향으로 좁히기는 어렵다. 한국 시장의 북한 리스크 가격 반영은 통상 ‘실험·발사 같은 임계 사건’에서 단속적으로 나타났고, ‘물질 누적’ 신호에는 둔감했던 게 관행이다. 외교 무대에서는 결이 빠르게 바뀔 여지가 있다. IAEA 분기 이사회에서 미·EU가 함께 규탄에 나선 만큼, 한미일을 비롯한 양자·소다자 채널에서 제재·압박 논의의 강도가 한 단 올라갈 가능성이 커진다. 중국·러시아의 결의안 거부 패턴이 이어지는 한 유엔 안보리 경로는 막혀 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "NCG (Nuclear Consultative Group)",
+            "explanation": "한미가 2023년 워싱턴 선언으로 설립한 ‘핵협의그룹’이다. 미국이 보유한 핵우산을 한반도에 어떻게 적용할지를 평시에 함께 협의하는 상설 채널로, 정보 공유와 전략자산 운용 협의가 핵심이다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "한국이 느낄 변화는 ‘새 무기 한 발’이 아니라 ‘위협이 쌓이는 속도’의 문제입니다.",
+            "지난해 우리 정보 평가는 북한 탄두를 50기 안팎으로 가정했습니다. 60기로 늘면 한미 핵협의그룹의 출발점부터 한 칸 뒤로 밀립니다.",
+            "시장 반응은 제한적입니다. 6월 19일 환율은 1,523원, 삼성전자는 2.34% 하락했지만, 여기에는 다른 변수가 더 크게 섞여 있습니다.",
+            "오히려 빠르게 변하는 곳은 외교 무대입니다. 의제가 억제에서 공급망 차단과 해상 검문 같은 운영 단계로 내려가고 있습니다."
+          ],
+          "highlights": [
+            "가정의 출발점이 50기 → 60기",
+            "외교 의제, ‘억제’에서 ‘운영’으로"
+          ],
+          "emphasis": [
+            "위협이 쌓이는 속도",
+            "한 칸 뒤로 밀립니다",
+            "운영 단계로 내려가고"
+          ],
+          "narration_tts": [
+            "한국이 느낄 변화는 새 무기 한 발이 아니라 위협이 쌓이는 속도의 문제입니다.",
+            "지난해 우리 정보 평가는 북한 탄두를 오십 기 안팎으로 가정했습니다. 육십 기로 늘면 한미 핵협의그룹의 출발점부터 한 칸 뒤로 밀립니다.",
+            "시장 반응은 제한적입니다. 유월 십구일 환율은 천오백이십삼 원, 삼성전자는 이 점 삼사 퍼센트 하락했지만, 여기에는 다른 변수가 더 크게 섞여 있습니다.",
+            "오히려 빠르게 변하는 곳은 외교 무대입니다. 의제가 억제에서 공급망 차단과 해상 검문 같은 운영 단계로 내려가고 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "‘모호’가 어디로 기울었나, 부모 보고서와 다시 마주서기",
+        "kicker": "분기의 판정",
+        "prose": "엿새 전 부모 보고서는 이 사안을 ‘모호’로 표시했다. 그때의 모호함은 두 가지 가능성을 같은 비중으로 열어 두었다. 하나는 ‘영변 신축은 시운전일 뿐, 진짜 변화는 다음 정상회담까지 카드로 남겨 둔다’는 협상용 신호 해석이다. 다른 하나는 ‘실제로 가동에 들어갔고, 실험은 미루되 물질은 늘린다’는 누적 확장 해석이었다. 이번 주의 데이터는 후자 쪽으로 무게를 옮겼다. 김정은의 직접 시찰, 자국 보도의 공개, IAEA의 ‘동시 가동’ 명시, SIPRI의 +10기 상향이 한 주 안에 모였다. 협상용 해석을 완전히 닫기는 이르지만, 적어도 ‘카드만 흔드는 단계’를 지났다는 정황이 더 두텁다. 다만 한 가지는 분명히 갈라진다. ‘물질 확장’과 ‘실험 임박’은 같은 신호가 아니다. 부모 보고서의 시나리오 가운데 ‘7차 핵실험 임박’ 가지는 이번 주 데이터로 강해지지 않았다. 풍계리 신호엔 큰 변화가 없었다. 이번 주의 escalation은 ‘만들 능력의 확장’이지 ‘쏘는 의사의 확장’이 아니다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "엿새 전 부모 보고서는 이 사안을 모호한 신호로 표시했습니다.",
+            "그때는 두 가능성이 같은 비중이었습니다. 협상용 카드로 흔드는 것인지, 정말 가동에 들어간 것인지였습니다.",
+            "이번 주 데이터는 후자 쪽으로 기울었습니다. 김정은의 시찰, 자국 보도의 공개, IAEA의 명시, SIPRI의 상향이 한 주 안에 모였습니다.",
+            "다만 한 가지는 분명히 갈라집니다. 만들 능력의 확장과 쏘는 의사의 확장은 같은 신호가 아닙니다."
+          ],
+          "highlights": [
+            "‘카드 흔들기’를 지났다",
+            "확장은 능력의 확장, 쏠 의사는 아니다"
+          ],
+          "emphasis": [
+            "모호한 신호",
+            "기울었습니다",
+            "만들 능력의 확장",
+            "쏘는 의사의 확장"
+          ],
+          "narration_tts": [
+            "엿새 전 부모 보고서는 이 사안을 모호한 신호로 표시했습니다.",
+            "그때는 두 가능성이 같은 비중이었습니다. 협상용 카드로 흔드는 것인지, 정말 가동에 들어간 것인지였습니다.",
+            "이번 주 데이터는 후자 쪽으로 기울었습니다. 김정은의 시찰, 자국 보도의 공개, 아이에이이에이의 명시, 에스아이피아르아이의 상향이 한 주 안에 모였습니다.",
+            "다만 한 가지는 분명히 갈라집니다. 만들 능력의 확장과 쏘는 의사의 확장은 같은 신호가 아닙니다."
+          ]
+        }
+      },
+      {
+        "heading": "분기점과 감시, 다음에 무엇을 볼 것인가",
+        "kicker": "감시의 좌표",
+        "prose": "다음 분기의 갈림길은 두 축이다. 첫째는 ‘농축의 산업 속도’가 더 빨라지느냐다. 영변 신축 시설이 완전 가동으로 들어가고 강선·본단지와 동시 운용이 정착되면, 한 해 +10기였던 SIPRI의 곡선이 더 가팔라질 수 있다. 둘째는 ‘실험 자제 동결선’이 깨지느냐다. 풍계리 7번 갱도의 인력·전력·환기 변화는 위성으로 비교적 빠르게 잡힌다. 시간축으로 보면, 8월 한미 연합훈련 시즌과 9월 9일 정권 수립일이 정치적 가시거리 안의 두 점이다. 과거 북한은 이 시점에 맞춰 메시지 강도를 조절해 왔다. 다만 ‘맞대응 발사’와 ‘실험 결단’은 다른 무게다. 이번 주의 결론은 단정과 헤지의 사이에서 한쪽으로 한 걸음 옮겼다. 다음 보고는 두 축의 어느 쪽이 먼저 움직였는지를 기록하는 일이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "다음 분기의 갈림길은 두 축입니다.",
+            "첫째, 농축의 산업 속도가 더 빨라지느냐입니다. 강선과 본단지, 신축까지 셋이 동시 운용으로 정착되면 한 해 10기였던 증가 곡선이 더 가팔라질 수 있습니다.",
+            "둘째, 실험 자제의 동결선이 깨지느냐입니다. 풍계리 갱도의 인력과 전력 변화는 위성으로 비교적 빠르게 잡힙니다.",
+            "8월 한미 연합훈련과 9월 9일 정권 수립일이 가시거리 안에 들어와 있습니다."
+          ],
+          "highlights": [
+            "축①: 농축 속도",
+            "축②: 실험 동결선",
+            "8월 훈련, 9월 9일"
+          ],
+          "emphasis": [
+            "두 축입니다",
+            "농축의 산업 속도",
+            "실험 자제의 동결선"
+          ],
+          "narration_tts": [
+            "다음 분기의 갈림길은 두 축입니다.",
+            "첫째, 농축의 산업 속도가 더 빨라지느냐입니다. 강선과 본단지, 신축까지 셋이 동시 운용으로 정착되면 한 해 열 기였던 증가 곡선이 더 가팔라질 수 있습니다.",
+            "둘째, 실험 자제의 동결선이 깨지느냐입니다. 풍계리 갱도의 인력과 전력 변화는 위성으로 비교적 빠르게 잡힙니다.",
+            "팔월 한미 연합훈련과 구월 구일 정권 수립일이 가시거리 안에 들어와 있습니다."
+          ]
+        }
+      }
+    ],
+    "closing": "엿새 만에 ‘모호’가 ‘확장’ 쪽으로 한 걸음 옮겼다. 그 한 걸음의 방향은 분명하지만, 다음 걸음이 ‘만들기’에 머물지 ‘쏘기’로 넘어갈지는 아직 열려 있다.",
+    "watch_signals": [
+      {
+        "signal": "영변 신축 공장 완전 가동 확인",
+        "description": "위성으로 본 24시간 가동·열 시그니처·차량 진출입의 지속성. 시운전 단계와 완전 가동을 가르는 임계.",
+        "indicates": "확장 가속 시나리오의 1차 확인, 한 해 +10기 곡선이 가팔라지는 진입점",
+        "deadline": "2026-08-15",
+        "icon": "🛰"
+      },
+      {
+        "signal": "풍계리 7번 갱도 인력·전력 변화",
+        "description": "도로 정비, 환기설비 점검, 인접 관측 캠프 활동 등 실험 준비 재가동의 위성 지표",
+        "indicates": "‘실험 동결선 유지 vs 균열’ 분기, 균열 시 7차 핵실험 임박 시나리오로 이동",
+        "deadline": "2026-09-09",
+        "icon": "⚠"
+      },
+      {
+        "signal": "한미 연합훈련(을지프리덤실드) 기간 북한 메시지 강도",
+        "description": "8월 훈련 시즌의 담화·발사·매체 톤, 맞대응 발사와 실험 결단 사이의 거리 판단",
+        "indicates": "정치 일정에 따른 escalation 단계 판별",
+        "deadline": "2026-08-31",
+        "icon": "🪖"
+      },
+      {
+        "signal": "정권 수립 77주년(9·9절) 전후 무력시위 패턴",
+        "description": "신무기 공개·열병식 여부, 김정은의 핵 관련 직접 발언 여부",
+        "indicates": "‘만들기 확장’이 ‘쏘기·과시’ 단계로 넘어가는지의 신호",
+        "deadline": "2026-09-12",
+        "icon": "📣"
+      },
+      {
+        "signal": "IAEA 9월 정기 이사회 보고서",
+        "description": "영변·강선 동시가동 평가가 한층 격상되는지, 안보리 회부 권고 강도 변화",
+        "indicates": "국제 외교 의제가 ‘억제’에서 ‘제재 운영 단계’로 본격 전환되는 좌표",
+        "deadline": "2026-09-15",
+        "icon": "🌐"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "이번 주의 신호는 누적된 확장의 단계 진입이다. 농축시설 세 곳 동시 가동과 SIPRI의 +10기는 ‘카드 흔들기’가 아니라 산업적 확장이 실제로 진행됐다는 일관된 정황이다.",
+        "side_b": "그래도 7차 실험이라는 임계 사건은 일어나지 않았고, 풍계리 신호엔 큰 변화가 없다. 김정은의 시찰과 매체 공개는 다음 협상국면을 겨냥한 정치적 의지 표시일 수도 있다.",
+        "evidence": "능력 측면(농축시설·탄두 추정치)에서는 상향이 일관되지만, 의사 측면(실험·신형 발사) 지표는 정체 상태가 유지되고 있다.",
+        "resolution": "이번 주 데이터는 ‘능력의 확장’ 쪽으로 무게를 둔다. 만들 수 있는 양과 시설은 분명히 늘었다. 다만 그 능력이 ‘쏘는 의사’로 곧장 이어진다고 단정하기는 이르다. side_b는 풍계리의 위성 변화가 잡힐 때, 또는 정치 일정(8월 훈련, 9·9절)에서 매체 톤이 한 단계 격해질 때 다시 강해질 수 있다.",
+        "video": {
+          "label_a": "확장 진입론",
+          "label_b": "카드 흔들기론",
+          "line_a": "농축 셋 동시가동과 +10기는 카드가 아니라 단계 진입입니다.",
+          "line_b": "임계 사건인 7차 실험은 아직 없고, 풍계리 신호도 잠잠합니다.",
+          "narration": [
+            "이번 주의 결론은 두 해석이 갈라지는 지점에서 한쪽으로 기울었습니다.",
+            "능력은 분명히 확장됐습니다. 다만 그 능력이 곧 쏘는 의사로 이어진다고 보기엔 풍계리가 너무 조용합니다.",
+            "그래서 무게는 능력의 확장 쪽에 두되, 의사의 확장 쪽 가능성은 다음 두 달의 위성 사진에 다시 묻기로 합니다."
+          ],
+          "narration_tts": [
+            "이번 주의 결론은 두 해석이 갈라지는 지점에서 한쪽으로 기울었습니다.",
+            "능력은 분명히 확장됐습니다. 다만 그 능력이 곧 쏘는 의사로 이어진다고 보기엔 풍계리가 너무 조용합니다.",
+            "그래서 무게는 능력의 확장 쪽에 두되, 의사의 확장 쪽 가능성은 다음 두 달의 위성 사진에 다시 묻기로 합니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "능력의 확장이냐, 의사의 확장이냐",
+    "timeline_flow": {
+      "heading": "한 주의 궤적과 다음 두 달",
+      "past": [
+        {
+          "date": "2017-09-03",
+          "label": "마지막 6차 핵실험",
+          "note": "이후 실험 동결"
+        },
+        {
+          "date": "2024-12-15",
+          "label": "영변 신축 터파기 시작",
+          "note": "위성 판독"
+        },
+        {
+          "date": "2025-06-05",
+          "label": "신축 외부 공사 완료",
+          "note": ""
+        },
+        {
+          "date": "2026-04-02",
+          "label": "내부 설비·시운전 단계",
+          "note": ""
+        },
+        {
+          "date": "2026-06-03",
+          "label": "김정은 신축 공장 시찰",
+          "note": ""
+        },
+        {
+          "date": "2026-06-08",
+          "label": "SIPRI 60기 상향",
+          "note": ""
+        },
+        {
+          "date": "2026-06-10",
+          "label": "IAEA 분기 이사회, 미·EU 공식 규탄",
+          "note": ""
+        },
+        {
+          "date": "2026-06-14",
+          "label": "부모 보고서: ‘모호’로 감시 등록",
+          "note": ""
+        },
+        {
+          "date": "2026-06-20",
+          "label": "오늘, ‘확장’ 쪽으로 무게",
+          "note": "이 보고서"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-08-15",
+          "label": "영변 신축 완전 가동 여부 확인 시한",
+          "branch": "확장 가속 시나리오"
+        },
+        {
+          "date": "2026-08-31",
+          "label": "한미 을지프리덤실드 종료",
+          "branch": "정치 일정 escalation"
+        },
+        {
+          "date": "2026-09-09",
+          "label": "북한 정권 수립 77주년",
+          "branch": "‘만들기→쏘기’ 전환 분기점"
+        },
+        {
+          "date": "2026-09-15",
+          "label": "IAEA 9월 정기 이사회",
+          "branch": "외교 의제 격상 분기점"
+        }
+      ],
+      "video": {
+        "narration": [
+          "처음에는 2017년의 6차 실험 이후 시간이 멈춰 있는 듯 보였습니다.",
+          "그러나 작년 말 영변 한쪽에서 터파기가 시작됐고, 반년 만에 건물 외형이 올라갔습니다.",
+          "그 흐름이 지난주 시찰과 IAEA의 동시가동 평가로 이어졌고, 오늘 우리는 그 방향을 확장 쪽으로 정리합니다.",
+          "다음 두 달의 위성 사진과 정치 일정이 능력의 확장이 의사의 확장으로 넘어갈지를 가립니다."
+        ],
+        "narration_tts": [
+          "처음에는 이천십칠년의 육 차 실험 이후 시간이 멈춰 있는 듯 보였습니다.",
+          "그러나 작년 말 영변 한쪽에서 터파기가 시작됐고, 반년 만에 건물 외형이 올라갔습니다.",
+          "그 흐름이 지난주 시찰과 아이에이이에이의 동시가동 평가로 이어졌고, 오늘 우리는 그 방향을 확장 쪽으로 정리합니다.",
+          "다음 두 달의 위성 사진과 정치 일정이 능력의 확장이 의사의 확장으로 넘어갈지를 가립니다."
+        ]
+      }
+    },
+    "confidence_summary": "1차 출처(자국 보도·SIPRI·IAEA·CSIS/ISIS 위성 판독)가 한 방향으로 모인 견고한 사실 기반. 실험 임박 단정은 풍계리 신호가 받쳐주지 않아 보수적 헤지.",
+    "confidence_score": 0.38,
+    "broadcast_summary": "엿새 전 일일 브리핑이 ‘모호’로 표시했던 북한 핵 활동 신호가, 오늘까지 일주일을 보니 확장 쪽으로 기울었어요.\n\n6월 3일 김정은이 영변 단지에 새로 지은 우라늄 농축공장을 직접 시찰했고, 이튿날 매체가 공개했습니다. 이걸로 외부에 알려진 농축시설은 영변 본단지, 강선에 이어 세 곳이 됐어요.\n\n6월 8일 SIPRI는 북한 핵탄두 추정을 50기에서 60기로 올렸습니다. 60기 전량을 즉시 운용 가능한 군사 비축분으로 분류한 게 핵심이에요. 같은 주 IAEA에서는 미국과 EU가 함께 규탄했고, 사무총장이 영변·강선 동시가동을 ‘심각한 우려’로 적었어요.\n\n다만 7차 핵실험은 여전히 없습니다. 풍계리 7번 갱도는 8년 9개월째 ‘준비 완료’ 상태 그대로예요. 패턴이 보입니다. 비싼 카드인 실험은 아껴 두고, 위성에만 잡히는 농축만 늘리는 비대칭 전략입니다.\n\n한국 시장의 즉시 반응은 제한적이었습니다. 6월 19일 환율 1,523.4원에 삼성전자 -2.34%였지만 다른 변수가 더 크게 섞여 있고요. 오히려 빠르게 변하는 곳은 외교 무대입니다. 의제가 ‘억제’에서 공급망 차단 같은 운영 단계로 내려가고 있어요.\n\n다음 갈림길은 영변 신축의 완전 가동 여부와 풍계리의 동결선이 깨지느냐예요. 8월 한미 훈련과 9·9절이 가시거리 안에 들어와 있는데, 더 자세한 흐름과 감시 좌표는 본문에서 정리해 두었습니다.",
+    "video": {
+      "intro_narration": [
+        "엿새 전 일일 브리핑이 모호하다고만 표시했던 북한 핵 활동의 방향이, 일주일 만에 분명해졌습니다.",
+        "이번 주에 영변·강선·신축, 세 농축시설이 동시에 돌고 있다는 정황이 한 군데로 모였습니다."
+      ],
+      "outro_narration": [
+        "오늘 우리가 정리한 결론은 능력의 확장입니다. 그러나 그것이 쏘는 의사의 확장인지는 아직 열려 있습니다.",
+        "다음 두 달, 위성과 일정 두 자리를 함께 지켜보겠습니다."
+      ],
+      "intro_narration_tts": [
+        "엿새 전 일일 브리핑이 모호하다고만 표시했던 북한 핵 활동의 방향이, 일주일 만에 분명해졌습니다.",
+        "이번 주에 영변과 강선, 신축까지 세 농축시설이 동시에 돌고 있다는 정황이 한 군데로 모였습니다."
+      ],
+      "outro_narration_tts": [
+        "오늘 우리가 정리한 결론은 능력의 확장입니다. 그러나 그것이 쏘는 의사의 확장인지는 아직 열려 있습니다.",
+        "다음 두 달, 위성과 일정 두 자리를 함께 지켜보겠습니다."
+      ]
+    },
+    "embedded_map": {
+      "center": [
+        127.5,
+        39.5
+      ],
+      "zoom": 5.2,
+      "markers": [
+        {
+          "id": "yongbyon",
+          "name": "영변 (본단지·신축)",
+          "lng": 125.755,
+          "lat": 39.797,
+          "highlight": true,
+          "kind": "military",
+          "value": "원자로·재처리·농축 3개 동",
+          "label_side": "right"
+        },
+        {
+          "id": "kangson",
+          "name": "강선 (비공개 농축)",
+          "lng": 125.65,
+          "lat": 38.95,
+          "kind": "military",
+          "value": "두 번째 농축시설",
+          "label_side": "left"
+        },
+        {
+          "id": "punggye",
+          "name": "풍계리 (7번 갱도)",
+          "lng": 129.078,
+          "lat": 41.279,
+          "kind": "military",
+          "value": "즉시 실험 가능 태세",
+          "label_side": "right"
+        },
+        {
+          "id": "pyongyang",
+          "name": "평양",
+          "lng": 125.75,
+          "lat": 39.02,
+          "label_side": "bottom"
+        },
+        {
+          "id": "seoul",
+          "name": "서울",
+          "lng": 126.98,
+          "lat": 37.57,
+          "label_side": "bottom"
+        }
+      ],
+      "arcs": [],
+      "regions": [
+        {
+          "name": "North Korea",
+          "role": "subject",
+          "label": "북한"
+        },
+        {
+          "name": "South Korea",
+          "role": "contested",
+          "label": "한국"
+        }
+      ],
+      "legend": [
+        {
+          "label": "농축·핵물질 생산 시설",
+          "kind": "military"
+        },
+        {
+          "label": "핵실험 부지",
+          "kind": "military"
+        }
+      ]
+    },
+    "hero_image": {
+      "image_url": "img/92b8503ac131aabb.jpg",
+      "caption": "6월 4일 조선중앙통신 보도에 실린 김정은의 새 농축공장 시찰 장면. 시설을 외부에 공개한 것은 이번이 세 번째다.",
+      "credit": "© NPR / AP",
+      "source_url": "https://www.npr.org/2026/06/04/g-s1-126041/north-korea-unveils-a-new-plant-to-produce-fuel-for-nuclear-weapons",
+      "alt": "원심분리기 설비 앞에서 관계자들의 보고를 받는 김정은의 측면 사진"
+    },
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 9,
+      "unresolved": 4,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 9건 반영 · 4건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "영변 신축 공장이 가동 단계에 진입한 것으로 평가되고, SIPRI는 핵탄두를 60기로 올렸다. 부모 보고서가 ‘모호’로 두었던 일주일 전 신호는 확장 쪽으로 기울었다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260620_102101_30d780948b.html",
+  "mirror_url": "",
+  "report_theme": "burgundy_mono",
+  "parent_context": {
+    "parent_report_id": "analysis_20260614_062900_afa4a094ca",
+    "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260614_062900_afa4a094ca.html",
+    "parent_report_title": "코스피 8천 안착, 유가는 내려앉다",
+    "parent_event_description": "오늘 2026-06-14 (Sun) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-13 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-14 (Sun)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+    "parent_scenarios": [],
+    "triggering_signal": {
+      "signal_id": "WS-20260613-b8e78cb1",
+      "description": "북한 추가 핵 활동 신호",
+      "measurement": "신규 핵연료 시설 가동률, 추가 시험 발사 여부",
+      "direction": "ambiguous",
+      "deadline": "2026-06-20",
+      "follow_up_action": "단계적 동결 우선 접근 가능성의 잔여 공간 시 후속 분석 재요청 권장",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260614_062900_afa4a094ca.html",
+      "parent_report_id": "analysis_20260614_062900_afa4a094ca",
+      "parent_chat_id": 50717095,
+      "fired": true,
+      "fired_at": "2026-06-20T00:13:28.087050",
+      "chain_depth": 0
+    },
+    "chain_depth": 0
+  },
+  "analysis_timestamp": "2026-06-20T10:07:25.377094+09:00",
+  "total_duration_seconds": 814.3698427677155,
+  "system_version": "v8.0.0",
+  "revision": 0,
+  "render_revision": 0,
+  "disable_scroll_arc": false
+}
