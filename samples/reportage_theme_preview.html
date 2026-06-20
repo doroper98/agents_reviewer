@@ -1,152 +1,125 @@
 <!DOCTYPE html>
-<!--
-  르포 전용 테마/폰트/어투 프리뷰 v2 (v8.0.0 Phase 1.5 제안).
-  8팔레트(2색 조합은 어울리는 3색으로 보강) + 전용 폰트(G마켓 Sans 디스플레이 + Noto Sans 본문)
-  + 현재형 박진감 어투. 확정 시 report.css [data-theme="reportage_*"] + _REPORTAGE_BLOCK 구현.
-  일반 보고서(5테마/Newsreader/과거 평어)와 완전 분기.
--->
+<!-- 르포 테마 프리뷰 v3 — 전부 짙은 색 배경(다크) + 3색 보강 + G마켓 Sans/Noto + 현재형. -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>르포 테마·폰트·어투 프리뷰 v2</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>르포 테마 프리뷰 v3 (다크)</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  /* 르포 디스플레이 폰트 — G마켓 Sans (projectnoonnu CDN, 한글 헤비 디스플레이) */
-  @font-face{font-family:'GmarketSans';font-weight:700;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff')}
-  @font-face{font-family:'GmarketSans';font-weight:500;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff')}
-  @font-face{font-family:'GmarketSans';font-weight:300;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff')}
+  @font-face{font-family:'GmarketSans';font-weight:700;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff')}
+  @font-face{font-family:'GmarketSans';font-weight:500;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff')}
   *{box-sizing:border-box}
-  body{margin:0;background:#111;color:#eee;font-family:"Noto Sans KR",sans-serif}
+  body{margin:0;background:#0b0b0d;color:#eee;font-family:"Noto Sans KR",sans-serif}
   .page{max-width:1000px;margin:0 auto;padding:32px 22px 80px}
-  h1.top{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:28px;margin:6px 0 4px}
-  .lead{font:400 14px/1.6 "Noto Sans KR",sans-serif;color:#bbb;margin:0 0 18px;max-width:72ch}
+  h1.top{font-family:'GmarketSans';font-weight:700;font-size:28px;margin:6px 0 4px;color:#fff}
+  .lead{font:400 14px/1.6 "Noto Sans KR";color:#bbb;margin:0 0 18px;max-width:72ch}
   .lead b{color:#fff}
-  .rep{border-radius:14px;padding:28px 30px 20px;margin:20px 0;border:1px solid rgba(255,255,255,.06);
-       background:var(--bg);color:var(--text)}
-  .eyebrow{font:700 12px/1 'GmarketSans',sans-serif;letter-spacing:.1em;color:var(--accent)}
-  .headline{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:34px;line-height:1.12;
-            letter-spacing:-.01em;margin:9px 0 8px;color:var(--text)}
-  .deck{font:500 16px/1.5 "Noto Sans KR",sans-serif;color:var(--text);opacity:.84;margin:0 0 16px;max-width:60ch}
-  .kicker{font:700 11px/1 'GmarketSans',sans-serif;letter-spacing:.08em;color:var(--accent);margin:16px 0 6px}
-  .h2{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;color:var(--text)}
-  .body{font:400 14.5px/1.75 "Noto Sans KR",sans-serif;color:var(--text);opacity:.92;max-width:64ch}
+  .rep{padding:28px 30px 20px;margin:18px 0;background:var(--bg);color:var(--text)} /* 플랫: 모서리/그림자 0 */
+  .eyebrow{font:700 12px/1 'GmarketSans';letter-spacing:.1em;color:var(--accent)}
+  .headline{font-family:'GmarketSans';font-weight:700;font-size:34px;line-height:1.12;letter-spacing:-.01em;margin:9px 0 8px;color:var(--text)}
+  .deck{font:500 16px/1.5 "Noto Sans KR";color:var(--text);opacity:.85;margin:0 0 16px;max-width:60ch}
+  .kicker{font:700 11px/1 'GmarketSans';letter-spacing:.08em;color:var(--accent);margin:16px 0 6px}
+  .h2{font-family:'GmarketSans';font-weight:700;font-size:19px;margin:0 0 8px;color:var(--text)}
+  .body{font:400 14.5px/1.75 "Noto Sans KR";color:var(--text);opacity:.92;max-width:64ch}
   .body .acc{color:var(--accent);font-weight:700}
   .body .neg{color:var(--down);font-weight:700}
   .chips{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 14px}
-  .chip{font:500 12px "Noto Sans KR",sans-serif;padding:6px 12px;border-radius:20px;border:1px solid var(--border)}
+  .chip{font:500 12px "Noto Sans KR";padding:6px 12px;border:1px solid var(--border);color:var(--text)}
   .chip.a{color:var(--accent);border-color:var(--accent)}
   .chip.d{color:var(--down);border-color:var(--down)}
-  .chip.c{background:var(--card);color:var(--text)}
-  .sw{display:flex;border-radius:8px;overflow:hidden;margin-top:8px;border:1px solid rgba(0,0,0,.15)}
-  .sw>div{flex:1;height:44px;display:flex;align-items:flex-end;padding:5px 7px;font:600 9px "Noto Sans",monospace}
-  .name{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--accent);margin-bottom:6px}
+  .sw{display:flex;margin-top:8px}
+  .sw>div{flex:1;height:42px;display:flex;align-items:flex-end;padding:5px 7px;font:600 9px "Noto Sans",monospace}
+  .name{font-family:'GmarketSans';font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--accent);margin-bottom:6px}
 </style>
 </head>
 <body>
 <div class="page">
-  <h1 class="top">르포 — 전용 테마 · 폰트 · 어투 프리뷰 (8종)</h1>
-  <p class="lead">일반 보고서(5테마 / Newsreader 세리프 / 과거 평어)와 <b>완전 분기</b>. 르포 전용: ① 8팔레트(2색 조합은 어울리는 3색으로 보강) ② <b>G마켓 Sans</b>(헤드라인·키커·소제목) + <b>Noto Sans</b>(본문) ③ <b>현재형·박진감·몰입</b> 어투(흐른다/부딪친다/끼어든다). 다크 5(②④⑦⑧+) / 라이트 3(①③⑤⑥) 혼합.</p>
+  <h1 class="top">르포 테마 프리뷰 (다크 배경 통일, 8종)</h1>
+  <p class="lead">요청대로 <b>짙은 색을 배경</b>으로 통일. 2색 조합은 어울리는 3번째 색 보강(밝은 글자/액센트). 폰트 <b>G마켓 Sans</b>+<b>Noto Sans</b>, 어투 <b>현재형</b>, 레이아웃 <b>플랫</b>(모서리 0).</p>
 
-  <div class="rep" style="--bg:#F0EDE4;--card:#FAF7F0;--text:#003A33;--accent:#C2922E;--down:#9A3B2A;--border:#DAD2C2">
-    <div class="name">① REPORTAGE · CYPRUS</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#004741;--card:#0B5349;--text:#F0EDE4;--accent:#E3A93C;--down:#E89070;--border:#1E5C52">
+    <div class="name">① CYPRUS</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">보조금은 지금 누구의 호주머니로 흐르는가</div>
     <div class="deck">66억 달러가 애리조나로 흘러든다. 협력의 얼굴 뒤에서, 양쪽은 이미 보험을 든다.</div>
-    <div class="kicker">3막 · 내막</div>
-    <div class="h2">돈이 빠져나가는 길</div>
-    <p class="body">상무부가 보조금을 풀자, 본사는 그 공백을 <span class="acc">200억 달러</span>로 메운다. 공장은 미국 땅에 서지만, 이익은 다시 대만으로 돌아간다. 엔비디아는 여기서 블랙웰을 찍고, 마이크로소프트는 캐파를 두고 <span class="neg">정면으로 부딪친다</span>.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#004741;color:#fff">#004741 CYPRUS</div><div style="background:#F0EDE4;color:#444">#F0EDE4 SAND</div><div style="background:#C2922E;color:#fff">#C2922E OCHRE +</div></div>
+    <div class="kicker">3막 · 내막</div><div class="h2">돈이 빠져나가는 길</div>
+    <p class="body">상무부가 보조금을 풀자, 본사는 그 공백을 <span class="acc">200억 달러</span>로 메운다. 이익은 다시 대만으로 돌아가고, 마이크로소프트는 캐파를 두고 <span class="neg">정면으로 부딪친다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#004741;color:#fff">#004741 CYPRUS · BG</div><div style="background:#F0EDE4;color:#444">#F0EDE4 SAND · 글자</div><div style="background:#E3A93C;color:#3a2a00">#E3A93C OCHRE +</div></div>
   </div>
 
   <div class="rep" style="--bg:#001621;--card:#06222E;--text:#EFE3D4;--accent:#FF4103;--down:#FF8A5C;--border:#1C3A45">
-    <div class="name">② REPORTAGE · NOTURNO</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+    <div class="name">② NOTURNO</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">불씨는 이미 전선을 건넌다</div>
     <div class="deck">한 대의 드론이 전장을 바꾼다. 그 뒤로 스타트업과 자본과 적의 재밍이 맞물려 돈다.</div>
-    <div class="kicker">1막 · 발단</div>
-    <div class="h2">씨앗이 자라는 자리</div>
-    <p class="body">국방부가 예산을 풀고, 민간 스타트업이 <span class="acc">전선의 피드백</span>을 받아 매일 드론을 고쳐 만든다. 서방의 자금이 들어오고, 상용 부품이 흘러든다. 그리고 러시아의 전자전이 <span class="neg">그 신호를 끊으려 든다</span>.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#001621;color:#fff">#001621 NOTURNO</div><div style="background:#FF4103;color:#fff">#FF4103 VULCANICO</div><div style="background:#EFE3D4;color:#444">#EFE3D4 CREAM +</div></div>
+    <div class="kicker">1막 · 발단</div><div class="h2">씨앗이 자라는 자리</div>
+    <p class="body">국방부가 예산을 풀고, 스타트업이 <span class="acc">전선의 피드백</span>을 받아 매일 드론을 고쳐 만든다. 그리고 러시아의 전자전이 <span class="neg">그 신호를 끊으려 든다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#001621;color:#fff">#001621 NOTURNO · BG</div><div style="background:#FF4103;color:#fff">#FF4103 VULCANICO</div><div style="background:#EFE3D4;color:#444">#EFE3D4 CREAM +</div></div>
   </div>
 
-  <div class="rep" style="--bg:#F7E9E0;--card:#FFD9C2;--text:#5E1525;--accent:#B23A3A;--down:#741A2F;--border:#E8CDBE">
-    <div class="name">③ REPORTAGE · BRIDAL</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#741A2F;--card:#86283C;--text:#FFE2D4;--accent:#FFB38F;--down:#F2998F;--border:#8E3548">
+    <div class="name">③ BRIDAL</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">제국은 지금 하나로 합쳐진다</div>
     <div class="deck">상장이라는 축을 두고, 한 사람이 여러 회사를 끌어당긴다. 자본은 그 설계를 따라 흐른다.</div>
-    <div class="kicker">2막 · 이해당사자</div>
-    <div class="h2">다섯 손이 한 축을 잡는다</div>
-    <p class="body">머스크가 SpaceX 상장을 지렛대로 삼아 <span class="acc">xAI를 흡수</span>한다. 투자자의 자본이 그 축으로 모이고, 테슬라 합병은 <span class="neg">아직 미정의 점선</span>으로 걸려 있다. X의 데이터는 조용히 편입된다.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#741A2F;color:#fff">#741A2F BRIDAL</div><div style="background:#FFC6A8;color:#444">#FFC6A8 SKIN</div><div style="background:#F7E9E0;color:#444">#F7E9E0 CREAM +</div></div>
+    <div class="kicker">2막 · 이해당사자</div><div class="h2">다섯 손이 한 축을 잡는다</div>
+    <p class="body">머스크가 상장을 지렛대로 삼아 <span class="acc">xAI를 흡수</span>한다. 테슬라 합병은 <span class="neg">아직 미정의 점선</span>으로 걸려 있다.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#741A2F;color:#fff">#741A2F BRIDAL · BG</div><div style="background:#FFC6A8;color:#444">#FFC6A8 SKIN · 글자</div><div style="background:#FFB38F;color:#5a1a0a">#FFB38F PEACH +</div></div>
   </div>
 
-  <div class="rep" style="--bg:#002F49;--card:#063A55;--text:#FEF0D5;--accent:#C1121F;--down:#E0726A;--border:#134A63">
-    <div class="name">④ REPORTAGE · COSMOS</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#002F49;--card:#073A56;--text:#FEF0D5;--accent:#E8503F;--down:#C9837A;--border:#134A63">
+    <div class="name">④ COSMOS</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">팹 하나를 두고 다섯 손이 엉킨다</div>
     <div class="deck">정책과 수요와 자본이 한 공장 위에서 부딪친다. 표면 아래로 돈이 흐른다.</div>
-    <div class="kicker">4막 · 전개</div>
-    <div class="h2">캐파의 정치</div>
-    <p class="body">보조금이 조건부로 풀리는 사이, <span class="acc">마이크로소프트가 끼어든다</span>. 엔비디아는 물량을 당기고, 본사는 자본을 더 붓는다. 누가 먼저 라인을 차지하느냐를 두고 <span class="neg">신경전이 팽팽하다</span>.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#002F49;color:#fff">#002F49 COSMOS</div><div style="background:#C1121F;color:#fff">#C1121F CRIMSON</div><div style="background:#780001;color:#fff">#780001 GOCHUJANG</div><div style="background:#FEF0D5;color:#444">#FEF0D5 VARDEN</div></div>
+    <div class="kicker">4막 · 전개</div><div class="h2">캐파의 정치</div>
+    <p class="body">보조금이 조건부로 풀리는 사이, <span class="acc">마이크로소프트가 끼어든다</span>. 누가 먼저 라인을 차지하느냐를 두고 <span class="neg">신경전이 팽팽하다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#002F49;color:#fff">#002F49 COSMOS · BG</div><div style="background:#C1121F;color:#fff">#C1121F CRIMSON</div><div style="background:#780001;color:#fff">#780001 GOCHUJANG</div><div style="background:#FEF0D5;color:#444">#FEF0D5 VARDEN</div></div>
   </div>
 
-  <div class="rep" style="--bg:#FBF6F0;--card:#F0EDE3;--text:#0D3A35;--accent:#276152;--down:#9A4034;--border:#E3DDD0">
-    <div class="name">⑤ REPORTAGE · LAUREL</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#0D3A35;--card:#164640;--text:#FBF6F0;--accent:#86C0A4;--down:#E2937A;--border:#27534A">
+    <div class="name">⑤ LAUREL</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">전선은 지금도 매일 다시 그려진다</div>
     <div class="deck">한 사건이 굴러온 자리를 되짚는다. 누가 왜 움직였는지, 낱낱이 쪼갠다.</div>
-    <div class="kicker">5막 · 전망</div>
-    <div class="h2">어디로 가는가</div>
-    <p class="body">생태계는 스스로 굴러가기 시작한다. 자금과 부품이 들어오는 한 <span class="acc">속도는 떨어지지 않는다</span>. 다만 적의 대응이 한 발 앞서는 순간, <span class="neg">균형은 다시 흔들린다</span>. 끝은 아직 열려 있다.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#0D3A35;color:#fff">#0D3A35 DEEP</div><div style="background:#276152;color:#fff">#276152 MODERATE</div><div style="background:#B1B7AB;color:#333">#B1B7AB LAUREL</div><div style="background:#FBF6F0;color:#444">#FBF6F0 CREAM</div></div>
+    <div class="kicker">5막 · 전망</div><div class="h2">어디로 가는가</div>
+    <p class="body">생태계는 스스로 굴러가기 시작한다. 자금이 들어오는 한 <span class="acc">속도는 떨어지지 않는다</span>. 다만 적의 대응이 앞서는 순간, <span class="neg">균형은 다시 흔들린다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#0D3A35;color:#fff">#0D3A35 DEEP · BG</div><div style="background:#276152;color:#fff">#276152 MODERATE</div><div style="background:#B1B7AB;color:#333">#B1B7AB LAUREL</div><div style="background:#FBF6F0;color:#444">#FBF6F0 CREAM · 글자</div></div>
   </div>
 
-  <div class="rep" style="--bg:#ECECFF;--card:#F6F6FF;--text:#013E72;--accent:#E8623A;--down:#B5392B;--border:#D5D5EE">
-    <div class="name">⑥ REPORTAGE · PRINCESS</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#015AA0;--card:#0A66AC;--text:#ECECFF;--accent:#FF9457;--down:#FF8378;--border:#2A74B6">
+    <div class="name">⑥ PRINCESS</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">돈은 국경을 모른 채 흐른다</div>
     <div class="deck">한 계좌에서 다른 계좌로, 자본은 조용히 국경을 넘는다. 그 길을 되짚어 올라간다.</div>
-    <div class="kicker">3막 · 내막</div>
-    <div class="h2">흐름을 거슬러 오른다</div>
-    <p class="body">표면에는 협력만 보인다. 그러나 장부를 한 칸씩 거슬러 오르면, <span class="acc">자금은 세 나라를 거쳐</span> 한 곳으로 모인다. 규제는 한 발 늦고, 그 틈에서 <span class="neg">이해는 충돌한다</span>.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#015AA0;color:#fff">#015AA0 PRINCESS</div><div style="background:#ECECFF;color:#444">#ECECFF SILVER</div><div style="background:#E8623A;color:#fff">#E8623A CORAL +</div></div>
+    <div class="kicker">3막 · 내막</div><div class="h2">흐름을 거슬러 오른다</div>
+    <p class="body">표면에는 협력만 보인다. 그러나 장부를 거슬러 오르면, <span class="acc">자금은 세 나라를 거쳐</span> 한 곳으로 모인다. 그 틈에서 <span class="neg">이해는 충돌한다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#015AA0;color:#fff">#015AA0 PRINCESS · BG</div><div style="background:#ECECFF;color:#444">#ECECFF SILVER · 글자</div><div style="background:#FF9457;color:#5a2400">#FF9457 CORAL +</div></div>
   </div>
 
-  <div class="rep" style="--bg:#282433;--card:#322D40;--text:#F3E0D9;--accent:#D9A14B;--down:#D98A82;--border:#443E55">
-    <div class="name">⑦ REPORTAGE · STEEL</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#282433;--card:#332E41;--text:#F3E0D9;--accent:#E2B25C;--down:#E89C94;--border:#453F56">
+    <div class="name">⑦ STEEL</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">협상장의 공기는 지금 팽팽하다</div>
     <div class="deck">두 진영이 한 테이블을 사이에 두고 마주 앉는다. 카드는 아직 보이지 않는다.</div>
-    <div class="kicker">2막 · 이해당사자</div>
-    <div class="h2">테이블 위와 아래</div>
-    <p class="body">대통령은 강경 노선을 고수하고, 실무진은 뒤에서 <span class="acc">조용히 채널을 연다</span>. 한쪽은 희토류를 쥐고, 다른 쪽은 관세를 든다. 같은 말을 주고받지만, <span class="neg">서로를 믿지 않는다</span>.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#282433;color:#fff">#282433 STEEL</div><div style="background:#F3E0D9;color:#444">#F3E0D9 W.CHOCO</div><div style="background:#D9A14B;color:#333">#D9A14B AMBER +</div></div>
+    <div class="kicker">2막 · 이해당사자</div><div class="h2">테이블 위와 아래</div>
+    <p class="body">대통령은 강경 노선을 고수하고, 실무진은 뒤에서 <span class="acc">조용히 채널을 연다</span>. 같은 말을 주고받지만, <span class="neg">서로를 믿지 않는다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#282433;color:#fff">#282433 STEEL · BG</div><div style="background:#F3E0D9;color:#444">#F3E0D9 W.CHOCO · 글자</div><div style="background:#E2B25C;color:#3a2a00">#E2B25C AMBER +</div></div>
   </div>
 
-  <div class="rep" style="--bg:#0F0E49;--card:#1A1860;--text:#ECE6F5;--accent:#D5A5E3;--down:#F08AB0;--border:#2C2A78">
-    <div class="name">⑧ REPORTAGE · NAVY</div>
-    <div class="eyebrow">르포 · 탐사보도</div>
+  <div class="rep" style="--bg:#0F0E49;--card:#1A1860;--text:#ECE6F5;--accent:#D9ABE8;--down:#F08AB0;--border:#2D2B79">
+    <div class="name">⑧ NAVY</div><div class="eyebrow">르포 · 탐사보도</div>
     <div class="headline">권력은 조용히 자리를 바꾼다</div>
     <div class="deck">누구도 큰 소리를 내지 않는다. 그러나 무게중심은 이미 한쪽으로 기운다.</div>
-    <div class="kicker">4막 · 전개</div>
-    <div class="h2">기운 저울</div>
-    <p class="body">표결은 끝났지만, 진짜 협상은 그 전에 끝나 있다. <span class="acc">한 사람의 결단</span>이 판을 흔들고, 나머지는 줄을 다시 선다. 밀려난 쪽은 <span class="neg">다음을 기약한다</span>. 균형은 잠시뿐이다.</p>
-    <div class="chips"><span class="chip a">● 동맹/지원</span><span class="chip d">✕ 대립</span><span class="chip c">○ 연관</span></div>
-    <div class="sw"><div style="background:#0F0E49;color:#fff">#0F0E49 NAVY</div><div style="background:#D5A5E3;color:#333">#D5A5E3 SWEET</div><div style="background:#ECE6F5;color:#444">#ECE6F5 MIST +</div></div>
+    <div class="kicker">4막 · 전개</div><div class="h2">기운 저울</div>
+    <p class="body">표결은 끝났지만, 진짜 협상은 그 전에 끝나 있다. <span class="acc">한 사람의 결단</span>이 판을 흔들고, 밀려난 쪽은 <span class="neg">다음을 기약한다</span>.</p>
+    <div class="chips"><span class="chip a">● 동맹</span><span class="chip d">✕ 대립</span><span class="chip">○ 연관</span></div>
+    <div class="sw"><div style="background:#0F0E49;color:#fff">#0F0E49 NAVY · BG</div><div style="background:#D5A5E3;color:#333">#D5A5E3 SWEET</div><div style="background:#ECE6F5;color:#444">#ECE6F5 MIST · 글자 +</div></div>
   </div>
 
-  <p class="lead" style="margin-top:24px"><b>확인 요청:</b> ⓐ 8팔레트 + 2색 조합의 3번째 보강색(OCHRE/CREAM/CORAL/AMBER/MIST 등) OK? ⓑ 폰트(G마켓 Sans 디스플레이 + Noto Sans 본문) OK? ⓒ 현재형·박진감 어투 OK? — 확정 주시면 report.css 의 <code>[data-theme="reportage_*"]</code> 8블록 + 폰트 로딩 + <code>_REPORTAGE_BLOCK</code> 어투 지시로 구현하고, 르포일 때만 이 풀에서 random 선택(비-르포 byte-equal)합니다. 빼거나 더할 조합 있으면 알려주세요.</p>
+  <p class="lead" style="margin-top:24px"><b>전부 짙은 색 배경 통일.</b> 이대로 OK면 report.css <code>[data-theme="reportage_*"]</code> 8블록으로 구현합니다. 빼거나 더할 조합 있으면 알려주세요.</p>
 </div>
 </body>
 </html>
