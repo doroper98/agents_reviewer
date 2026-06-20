@@ -59,6 +59,38 @@ def test_prompt_appends_reportage_block() -> None:
         assert marker in sp, f"르포 블록에 '{marker}' 누락"
 
 
+def test_reportage_block_has_tone_and_epilogue_rules() -> None:
+    """v8.0.0 — 현재형 어투 + 에필로그 제거(timeline/closing) + '르포' 단어 금지 + 제목 차별."""
+    for marker in ("현재형", "timeline_flow", "closing", "confidence_summary",
+                   "'르포' 단어 금지", "서사형"):
+        assert marker in _REPORTAGE_BLOCK, f"르포 블록에 '{marker}' 누락"
+
+
+# --------------------------------------------------------------------------
+# 르포 전용 테마 풀
+# --------------------------------------------------------------------------
+
+
+def test_reportage_theme_pool() -> None:
+    from src.lens_policy import REPORTAGE_THEMES, ALL_THEMES, select_reportage_theme
+    assert len(REPORTAGE_THEMES) == 8
+    assert all(t.startswith("reportage_") for t in REPORTAGE_THEMES)
+    # 일반 풀과 완전 분리 (교집합 0)
+    assert not (set(REPORTAGE_THEMES) & set(ALL_THEMES))
+    assert select_reportage_theme() in REPORTAGE_THEMES
+
+
+def test_reportage_themes_defined_in_css() -> None:
+    from pathlib import Path
+    css = (Path(__file__).resolve().parents[2]
+           / "src" / "templates" / "report.css").read_text(encoding="utf-8")
+    from src.lens_policy import REPORTAGE_THEMES
+    for t in REPORTAGE_THEMES:
+        assert f'[data-theme="{t}"]' in css, f"report.css 에 {t} 블록 누락"
+    # 르포 폰트/플랫/배지
+    assert "GmarketSans" in css and 'reportage-badge' in css
+
+
 def test_reportage_block_is_orthogonal_suffix() -> None:
     nc = NarrativeComposer(Config(_env_file=None))
     assert nc._compose_system_prompt("reportage").startswith(COMPOSER_PROMPT)

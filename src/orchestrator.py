@@ -2072,8 +2072,13 @@ class Orchestrator:
             result.composed_report.deck or result.composed_report.headline or ""
         )
 
-        # Theme: code-rule via lens_policy.select_theme — mono 2종만 emit
-        result.report_theme = select_theme(result.context.category or "general")
+        # Theme: code-rule via lens_policy.select_theme. v8.0.0 — 르포는 전용
+        # 테마 풀(REPORTAGE_THEMES 8 다크)에서 선택, 일반은 ALL_THEMES.
+        if request.report_format == "reportage":
+            from src.lens_policy import select_reportage_theme
+            result.report_theme = select_reportage_theme()
+        else:
+            result.report_theme = select_theme(result.context.category or "general")
         archetype = get_archetype("freeform_essay")
         logger.info(
             "[orchestrator] Tier 4 routing — theme=%s, archetype=%s, mode=%s",
