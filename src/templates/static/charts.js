@@ -3234,6 +3234,12 @@
 
     const svg = d3.select(stage).select('svg').attr('preserveAspectRatio', 'xMidYMid meet');
     const root = svg.append('g');
+    // v8.0.0 — 르포(reportage)면 플랫(rx 0) + ambient 애니메이션(엣지 흐름 + hub 펄스).
+    // prefers-reduced-motion 시 애니 OFF. 일반 보고서는 기존 정적 렌더 그대로.
+    const SM_REP = ((document.documentElement.getAttribute('data-theme') || '').indexOf('reportage_') === 0);
+    const SM_RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const SM_ANIM = SM_REP && !SM_RM;
+    const SM_RX = SM_REP ? 0 : 10;
 
     function colOf(nd) {
       let c = nd.col;
@@ -3301,6 +3307,7 @@
         .attr('data-anim', 'static');
       if (st.dash) p.attr('stroke-dasharray', st.dash);
       if (st.arrow) p.attr('marker-end', 'url(#sm-arr)');
+      if (SM_ANIM) p.attr('stroke-dasharray', st.dash || '5 9').classed('sm-flow', true);
     });
 
     // 노드 카드
@@ -3308,7 +3315,7 @@
       const nd = P.node, isHub = P.col === 1;
       const accent = !!nd.accent || /주도|핵심|당사자|hub|lead|core/.test(String(nd.group || ''));
       const g = root.append('g').attr('transform', `translate(${P.x},${P.y})`);
-      g.append('rect').attr('width', P.w).attr('height', P.h).attr('rx', 10)
+      g.append('rect').attr('width', P.w).attr('height', P.h).attr('rx', SM_RX)
         .attr('fill', t.card)
         .attr('stroke', isHub ? t.text : (accent ? t.accent : t.border))
         .attr('stroke-width', isHub ? 2.2 : (accent ? 1.6 : 1)).attr('data-anim', 'static');
@@ -3320,7 +3327,7 @@
         g.append('use').attr('href', '#sm-person').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30);
       } else {
         const ini = String(nd.label || nd.id || '?').trim().slice(0, 2);
-        g.append('rect').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30).attr('rx', 7).attr('fill', smColor(nd.group, t));
+        g.append('rect').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30).attr('rx', SM_REP ? 0 : 7).attr('fill', smColor(nd.group, t));
         g.append('text').attr('x', 27).attr('y', ay + 20).attr('text-anchor', 'middle')
           .attr('font-family', 'Noto Sans KR').attr('font-weight', 700).attr('font-size', 12).attr('fill', t.bg).text(ini);
       }
@@ -3332,6 +3339,15 @@
         .attr('font-size', 10.5).attr('fill', t.muted).text(String(nd.role).slice(0, 22));
     }
     Object.values(pos).forEach(drawCard);
+
+    // v8.0.0 — 르포 ambient: hub 펄스 링 (살아있는 느낌)
+    if (SM_ANIM) {
+      const hub = Object.values(pos).find(p => p.col === 1);
+      if (hub) root.append('rect').attr('x', hub.x - 6).attr('y', hub.y - 6)
+        .attr('width', hub.w + 12).attr('height', hub.h + 12).attr('rx', 0)
+        .attr('fill', 'none').attr('stroke', t.accent).attr('stroke-width', 1.4)
+        .attr('class', 'sm-pulse');
+    }
 
     // 라벨 (선 위 중앙) — 카드 위 레이어
     valid.forEach((e, ei) => {

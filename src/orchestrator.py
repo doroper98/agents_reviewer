@@ -1853,14 +1853,17 @@ class Orchestrator:
         # summary 로 takeaway 자동 생성 — mockup 수준 quality).
         # v5.2.5 — instrument 3개↑ 면 compact strip 으로 먼저 한 줄 요약. 그 다음
         # _ensure_time_series_chart 가 *나머지* 풀 차트 보충 (instrument 중복 회피).
-        try:
-            _ensure_market_strip(result.composed_report, result.context)
-        except Exception as _e:  # pragma: no cover
-            logger.warning("[orchestrator] _ensure_market_strip skipped: %s", _e)
-        try:
-            _ensure_time_series_chart(result.composed_report, result.context)
-        except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
-            logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
+        # v8.0.0 — 르포는 상시 시장차트 *자동 주입* 을 건너뛴다 (행위자·흐름 중심,
+        # 차트 최소화). composer 가 직접 emit 한 차트는 그대로(_densify 는 적용).
+        if request.report_format != "reportage":
+            try:
+                _ensure_market_strip(result.composed_report, result.context)
+            except Exception as _e:  # pragma: no cover
+                logger.warning("[orchestrator] _ensure_market_strip skipped: %s", _e)
+            try:
+                _ensure_time_series_chart(result.composed_report, result.context)
+            except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
+                logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
         # v7.0.2 (CHART-AP-31) — composer 가 직접 emit 한 시계열 차트의 일별 밀도
         # 보장. LLM 이 토큰 절약으로 듬성하게 추린 데이터를 실측 행으로 교체.
         try:
