@@ -66,7 +66,7 @@ last_review: 2026-05-05
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
 - Report: Jinja2 HTML, freeform_essay.html 단일 템플릿
-- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **28종 type** — v5.3.0 FT/Economist 7종 + sankey + v7.0.0 bump/bullet/connected_scatter 3종 + v7.5.0 combo/diverging_bar/pyramid/dot_matrix 4종)
+- Visualization: d3 v7 SVG 차트 (composer-emitted inline data, **27종 type** — v5.3.0 FT/Economist 7종 + sankey + v7.0.0 bump/bullet/connected_scatter 3종 + v7.5.0 combo/diverging_bar/pyramid/dot_matrix 4종. v7.9.17 network 폐기 CHART-AP-37)
 - Map: d3 + d3-geo + world-atlas TopoJSON 110m (maplibre-gl 폐기, mono guide §2)
 - Theme: **5종 풀 (라이트 1 + 다크 4, v6.2.0)** — editorial_cream(라이트) / burgundy_mono / midnight_indigo / pine_forest(짙은 녹색) / graphite_slate(짙은 회색). v5.0.2 부터 보고서마다 `random.choice` 로 선택 (event_type 무관, 시각 다양성 목적). 모든 테마는 *동일 레이아웃* — bg/card/text/accent 만 다름. SSOT 는 [src/lens_policy.py:ALL_THEMES](src/lens_policy.py) + [src/templates/report.css](src/templates/report.css) 의 `[data-theme="..."]` 블록. v6.2.0 에서 slate_steel / forest_sage / dusk_rose / paper_classic 4종 풀+CSS 삭제 (짙은 계열 중심 재편, 사용자 요청). legacy `light_mono` CSS 는 보존되었으나 풀에서 빠짐 — 직접 지정 시만 사용 가능.
 - Font: Newsreader (display serif, 영문/숫자) + IBM Plex Sans KR (본문) + IBM Plex Mono. Noto Serif KR 한국어 폴백.
@@ -172,7 +172,7 @@ playbook §3 에 텍스트로 박는다. 부득이하면 `git add <file>` 직후
 
 ## 차트·지도 제작 기준 (v4.5.7)
 SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
-- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **28종** (v7.5.0 부터). v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/network/waterfall) 비주얼 격상: 해치=명목 카테고리 전용, 위계=잉크 농도 사다리, 세리프 직접 라벨 (어휘 SSOT: [MONO_THEME_GUIDE §10](docs/MONO_THEME_GUIDE.md)). 기존 13종 (bar/donut/line/gantt/network/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar, v5.3.0) + sankey (v5.3.0) + **v7.0.0 신규 3종 (bump 순위경쟁 / bullet 목표대비 / connected_scatter 2변수 궤적)** + **v7.5.0 신규 4종 (combo 이중축 막대+선 / diverging_bar 대립쌍 발산 / pyramid 인구 피라미드 / dot_matrix 100칸 와플 — 이중 축 결합 + 사회 이슈 어휘)**. 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). v5.3.0 7종 + v7.0.0 3종 + v7.5.0 4종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수. v7.0.0 부터 annotation 레이어(vline/hline/band/point, 차트당 ≤3 — AP-V7-6)가 cartesian 전 type 개방 (combo 포함). 전 타입 갤러리 베이스라인: [samples/chart_gallery_v7.html](samples/chart_gallery_v7.html).
+- **차트**: composer 가 `ComposedSection.charts` 에 직접 emit. type **27종** (v7.9.17 부터 — network 폐기 CHART-AP-37). v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/waterfall) 비주얼 격상: 해치=명목 카테고리 전용, 위계=잉크 농도 사다리, 세리프 직접 라벨 (어휘 SSOT: [MONO_THEME_GUIDE §10](docs/MONO_THEME_GUIDE.md)). 기존 12종 (bar/donut/line/gantt/stacked/bubble/heatmap/dual_line/forecast/choropleth/candle/area) + FT/Economist 스타일 7종 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar, v5.3.0) + sankey (v5.3.0) + **v7.0.0 신규 3종 (bump 순위경쟁 / bullet 목표대비 / connected_scatter 2변수 궤적)** + **v7.5.0 신규 4종 (combo 이중축 막대+선 / diverging_bar 대립쌍 발산 / pyramid 인구 피라미드 / dot_matrix 100칸 와플 — 이중 축 결합 + 사회 이슈 어휘)**. 카테고리 구분은 hue 가 아닌 45° 패턴 (hatch-tight/hatch-wide/dots/accent-hatch + accent solid). v5.3.0 7종 + v7.0.0 3종 + v7.5.0 4종은 `guarded` tier — chart_critic + Visual Sanity Gate C 통과 필수. v7.0.0 부터 annotation 레이어(vline/hline/band/point, 차트당 ≤3 — AP-V7-6)가 cartesian 전 type 개방 (combo 포함). 전 타입 갤러리 베이스라인: [samples/chart_gallery_v7.html](samples/chart_gallery_v7.html).
 - **지도**: composer 가 `ComposedReport.embedded_map` 에 emit. d3 + d3-geo + world-atlas/110m TopoJSON. maplibre-gl / 외부 타일 서비스 사용 금지 (mono guide Anti-pattern §6.6). v7.5.0 부터 `projection: "globe"` (정사영 지구본 — 대권 호, 탄도·위성·극지 토픽) + `rings` (사거리권·작전반경 동심원) additive 지원.
 - **폰트**: Noto Serif KR (숫자/타이틀), Noto Sans KR (라벨/본문/지도 라벨)
 - **색**: 큰 숫자에 액센트 색 금지 → `--text` 만 (mono guide §3.3)
@@ -258,7 +258,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **36개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit / v7.5.1 — 32 sankey 라벨 수치 중복 표기 / v7.9.8 — 33 scatter 라벨 충돌 / 34 dot_matrix 좌측 쏠림 / v7.9.14 — 35 composer diverging_bar 지수 등락률 0 누락, 전부 사용자 catch / v8.0.0 — 36 stakeholder_map force/physics 레이아웃 금지[선제, network 교훈 상속]):
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **37개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit / v7.5.1 — 32 sankey 라벨 수치 중복 표기 / v7.9.8 — 33 scatter 라벨 충돌 / 34 dot_matrix 좌측 쏠림 / v7.9.14 — 35 composer diverging_bar 지수 등락률 0 누락 / v8.0.0 — 36 stakeholder_map force/physics 레이아웃 금지[선제, network 교훈 상속] / v7.9.17→v8 포팅 — 37 구 network 관계도 포맷 폐기, 전부 사용자 catch. CHART-AP-29 는 v7.9.17 에서 소스(market_fetcher)·합류(orchestrator) 2단 NaN 봉 차단 추가):
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -336,8 +336,8 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 
 ## Chart System (v7.5.0)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
-- **28종 type**:
-  - 기존 13종 (v5.2.13 까지): bar / donut / line / gantt / network / stacked / bubble / heatmap / dual_line / forecast / choropleth / candle / area
+- **27종 type** (v7.9.17 — network 폐기 CHART-AP-37):
+  - 기존 12종 (v5.2.13 까지): bar / donut / line / gantt / stacked / bubble / heatmap / dual_line / forecast / choropleth / candle / area
   - v5.3.0 신규 7종 (FT/Economist 스타일, **guarded** tier): scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar
   - v5.3.0 sankey (**guarded** tier — 재무 분해 / 자본 배분)
   - v7.0.0 신규 3종 (**guarded** tier, REFACTOR_V7_PLAN.md §1.3): bump (시기별 순위 경쟁) / bullet (목표 대비 실적) / connected_scatter (2변수 시간 경로)

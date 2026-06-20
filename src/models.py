@@ -596,7 +596,7 @@ class ComposedSection(BaseModel):
         return "" if v is None else v
 
     # v4.2.0 — composer 가 데이터까지 직접 emit (chart-id 참조 폐기)
-    # 각 dict: {"type": "donut|bar|line|gantt|network|stacked|bubble|heatmap",
+    # 각 dict: {"type": "donut|bar|line|gantt|stacked|bubble|heatmap",
     #           "title": str, "data": list|dict, "note"?: str}
     charts: list[dict] = Field(default_factory=list)
 

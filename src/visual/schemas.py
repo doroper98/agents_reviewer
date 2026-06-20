@@ -1140,7 +1140,6 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "bubble":       BubbleChartGuard,
     "heatmap":      HeatmapGuard,
     "gantt":        GanttGuard,
-    "network":      NetworkGuard,
     # v5.2.0 — 시계열 OHLC 차트
     "candle":       CandleChartGuard,
     "area":         AreaChartGuard,
@@ -1187,6 +1186,12 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
     Returns:
         (True, "") if pass, (False, error_message) if fail.
     """
+    # CHART-AP-37 — 행위자 관계도(network/인접행렬) 포맷 폐기 (2026-06-20, 사용자 요청).
+    # 정보 밀도 대비 공간 점유가 커 보고서 가독성을 떨어뜨린다. composer 가 실수로
+    # emit 해도 여기서 drop 되어 어떤 보고서에도 렌더되지 않는다.
+    if (chart_type or "").lower() == "network":
+        return False, "network 포맷 폐기 (CHART-AP-37)"
+
     guard = guard_for_type(chart_type)
     if guard is None:
         # 가드 없는 type 은 통과 (validate_vega_spec 가 처리).
@@ -1201,11 +1206,6 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 guard(rows=[data] if isinstance(data, dict) else [])  # type: ignore[arg-type]
-        elif chart_type == "network":
-            if isinstance(data, dict):
-                guard(**data)
-            else:
-                return False, "network 는 {nodes, links} dict 형식 필요"
         elif chart_type in ("stacked", "stacked_bar"):
             if isinstance(data, dict):
                 guard(**data)
