@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+  르포 지구본(globe) 애니메이션 모크업. maps.js 의 projection:"globe"(orthographic, v7.5.0)를
+  르포 테마 + ambient 애니메이션으로 미리보기:
+   ① 지구본 자전(연속) ② 대권 호 흐름(stroke-dashoffset) ③ 마커 펄스 ④ 당사국 역할 색조.
+  실제 d3 + topojson + world-atlas. prefers-reduced-motion 시 정지(정적 1프레임).
+  테마는 CSS 변수로만 바뀜 — 8 르포 테마 전부 동일 코드로 적용. 여기선 NOTURNO/COSMOS 2종.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>르포 지구본 애니메이션 모크업</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<style>
+  @font-face{font-family:'GmarketSans';font-weight:700;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff')}
+  *{box-sizing:border-box}
+  body{margin:0;background:#0b0b0d;color:#eee;font-family:"Noto Sans KR",sans-serif}
+  .page{max-width:1000px;margin:0 auto;padding:32px 22px 80px}
+  h1.top{font-family:'GmarketSans';font-weight:700;font-size:26px;margin:6px 0 6px;color:#fff}
+  .lead{font:400 14px/1.6 "Noto Sans KR";color:#bbb;margin:0 0 18px;max-width:72ch}
+  .lead b{color:#fff}
+  .grid{display:flex;gap:20px;flex-wrap:wrap}
+  .card{flex:1 1 360px;background:var(--bg);padding:20px 20px 14px} /* 플랫: 모서리 0 */
+  .eyebrow{font:700 11px/1 'GmarketSans';letter-spacing:.1em;color:var(--accent)}
+  .h2{font-family:'GmarketSans';font-weight:700;font-size:19px;margin:6px 0 4px;color:var(--text)}
+  .sub{font:500 12px "Noto Sans KR";color:var(--muted);margin:0 0 10px}
+  svg.globe{width:100%;height:auto;display:block;cursor:grab}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 2px 0;font:500 11.5px "Noto Sans KR";color:var(--muted)}
+  .legend b{color:var(--text)}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px}
+  .note{font:400 13px/1.7 "Noto Sans KR";color:var(--bbb,#aaa);max-width:72ch;margin:22px 0 0;border-top:1px solid #222;padding-top:16px}
+  .note b{color:#fff}
+  .err{font:500 13px "Noto Sans KR";color:var(--down);padding:40px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="top">르포 지구본(globe) — 자전 + 호 흐름 + 마커 펄스</h1>
+  <p class="lead">maps.js 의 <code>projection:"globe"</code>(정사영)를 르포 테마 + <b>살아있는 애니메이션</b>으로 미리보기. 지구본이 천천히 자전하고, 대권 호가 흐르고, 마커가 펄스한다. 드래그로 굴려볼 수도 있다. 테마는 CSS 변수로만 바뀜 — 8 르포 테마 전부 동일.</p>
+
+  <div class="grid">
+    <div class="card" style="--bg:#001621;--card:#0A2A38;--text:#EFE3D4;--muted:#8AA0A6;--accent:#FF4103;--down:#7CC6FF;--line:#1C3A45">
+      <div class="eyebrow">르포 · NOTURNO</div>
+      <div class="h2">전장의 지도</div>
+      <div class="sub">우크라이나를 향한 자금·정보의 대권 경로 / 적의 압박</div>
+      <svg class="globe" viewBox="0 0 360 360" aria-label="rotating globe"></svg>
+      <div class="legend"><span><span class="dot" style="background:#FF4103"></span>당사국·지원</span><span><span class="dot" style="background:#7CC6FF"></span>적대</span><span>↝ 흐르는 호 · ◦ 펄스 마커</span></div>
+    </div>
+    <div class="card" style="--bg:#002F49;--card:#0A3E5A;--text:#FEF0D5;--muted:#8BA3B2;--accent:#E8503F;--down:#FFC6A8;--line:#134A63">
+      <div class="eyebrow">르포 · COSMOS</div>
+      <div class="h2">자본이 건너는 바다</div>
+      <div class="sub">대륙을 가로지르는 공급·자본 흐름</div>
+      <svg class="globe" viewBox="0 0 360 360" aria-label="rotating globe"></svg>
+      <div class="legend"><span><span class="dot" style="background:#E8503F"></span>핵심</span><span><span class="dot" style="background:#FFC6A8"></span>연관</span><span>↝ 흐르는 호 · ◦ 펄스 마커</span></div>
+    </div>
+  </div>
+
+  <p class="note"><b>지구본 애니메이션 — 답:</b> 가능합니다. 위에서 ① <b>자전</b>(연속) ② <b>대권 호 흐름</b>(점선 이동 = 자금/정보/공급 방향) ③ <b>마커 펄스</b>(주요 지점, 뒷면은 자동 컬링) ④ 당사국 <b>역할 색조</b>가 동시에 움직입니다. <code>prefers-reduced-motion</code> 시 자전·흐름 정지(정적). production 은 maps.js <code>projection:"globe"</code> + arcs/markers/rings(이미 개발됨)에 르포일 때 ambient 레이어(자전 timer + 호 dashoffset + 마커 펄스)만 얹습니다. 평면 지도(지역 사건)도 동일하게 arc 흐름·마커 펄스 적용 가능.</p>
+</div>
+
+<script>
+(function(){
+  var WORLD='https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  fetch(WORLD).then(function(r){return r.json();}).then(function(world){
+    var land = topojson.feature(world, world.objects.countries);
+    var borders = topojson.mesh(world, world.objects.countries, function(a,b){return a!==b;});
+    document.querySelectorAll('svg.globe').forEach(function(el){ initGlobe(el, land, borders); });
+  }).catch(function(e){
+    document.querySelectorAll('svg.globe').forEach(function(el){
+      el.outerHTML = '<div class="err">지도 데이터 로드 실패(오프라인) — production 은 maps.js 가 캐시</div>';
+    });
+  });
+
+  function initGlobe(el, land, borders){
+    var W=360,H=360;
+    var cs=getComputedStyle(el);
+    var T={bg:cs.getPropertyValue('--bg').trim(),card:cs.getPropertyValue('--card').trim(),
+           text:cs.getPropertyValue('--text').trim(),accent:cs.getPropertyValue('--accent').trim(),
+           down:cs.getPropertyValue('--down').trim(),line:cs.getPropertyValue('--line').trim(),
+           muted:cs.getPropertyValue('--muted').trim()};
+    var svg=d3.select(el);
+    var proj=d3.geoOrthographic().scale(W/2-6).translate([W/2,H/2]).clipAngle(90).rotate([0,-12]);
+    var path=d3.geoPath(proj);
+    var roles={'Ukraine':T.accent,'Russia':T.down,'United States of America':T.accent,'China':T.down};
+    var arcs=[ [[-98,39],[31,49]], [[37,55],[31,49]] ];      // US→UA, RU→UA (lon,lat)
+    var markers=[[31,49],[-98,39],[37,55]];
+
+    var sphere=svg.append('path').datum({type:'Sphere'}).attr('fill',T.card).attr('stroke',T.line).attr('stroke-width',1);
+    var grat=svg.append('path').datum(d3.geoGraticule10()).attr('fill','none').attr('stroke',T.line).attr('stroke-opacity',.55).attr('stroke-width',.5);
+    var landP=svg.append('path').datum(land).attr('fill',T.bg).attr('stroke',T.line).attr('stroke-width',.4);
+    var hi=svg.append('g');
+    var bord=svg.append('path').datum(borders).attr('fill','none').attr('stroke',T.line).attr('stroke-width',.5);
+    var arcG=svg.append('g');
+    var markG=svg.append('g');
+
+    function draw(spin){
+      sphere.attr('d',path); grat.attr('d',path); landP.attr('d',path); bord.attr('d',path);
+      hi.selectAll('path').data(land.features).join('path').attr('d',path)
+        .attr('fill',function(d){return roles[d.properties.name]||'none';})
+        .attr('fill-opacity',function(d){return roles[d.properties.name]?0.55:0;})
+        .attr('stroke','none');
+      arcG.selectAll('path').data(arcs).join('path')
+        .attr('d',function(d){return path({type:'LineString',coordinates:d});})
+        .attr('fill','none').attr('stroke',T.accent).attr('stroke-width',1.7)
+        .attr('stroke-linecap','round').attr('stroke-dasharray','4 7')
+        .attr('stroke-dashoffset', reduce?0 : (-(spin*0.06)%22)).attr('opacity',.95);
+      var rot=proj.rotate(); var center=[-rot[0],-rot[1]];
+      var pr = reduce ? 3.5 : (3 + 2.4*Math.abs(Math.sin(spin*0.0045)));
+      markG.selectAll('circle').data(markers).join('circle')
+        .each(function(d){
+          var vis = d3.geoDistance(d, center) < Math.PI/2;
+          var p = proj(d);
+          d3.select(this).attr('cx',p[0]).attr('cy',p[1]).attr('r',vis?pr:0)
+            .attr('fill','none').attr('stroke',T.accent).attr('stroke-width',1.5);
+        });
+    }
+
+    draw(0);
+    if(!reduce){
+      d3.timer(function(elapsed){
+        proj.rotate([elapsed*0.012, -12]);
+        draw(elapsed);
+      });
+    }
+    // 드래그로 굴리기
+    var v0;
+    svg.call(d3.drag()
+      .on('start',function(ev){ v0=[ev.x,ev.y]; })
+      .on('drag',function(ev){
+        var r=proj.rotate();
+        proj.rotate([r[0]+(ev.x-v0[0])*0.4, Math.max(-80,Math.min(80,r[1]-(ev.y-v0[1])*0.4))]);
+        v0=[ev.x,ev.y]; draw(0);
+      }));
+  }
+})();
+</script>
+</body>
+</html>
