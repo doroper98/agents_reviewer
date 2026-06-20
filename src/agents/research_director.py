@@ -380,9 +380,10 @@ _DEFAULT_REQUIRED_EXHIBITS: dict[str, list[dict[str, str]]] = {
         "fallback_form": "table",
     }],
     "stakeholder_matrix": [{
-        "description": "행위자 관계도",
-        "visual_type_hint": "network",
-        "why_required": "이해관계자 동맹·대립 구도 시각화가 method 의 산출.",
+        # v7.9.17 — network(관계도) 포맷 폐기(CHART-AP-36) → 이해관계자 구도는 표로.
+        "description": "이해관계자 입장·영향력 표",
+        "visual_type_hint": "table",
+        "why_required": "이해관계자 동맹·대립 구도를 표로 정리하는 것이 method 의 산출.",
         "fallback_form": "table",
     }],
     "decision_matrix": [{

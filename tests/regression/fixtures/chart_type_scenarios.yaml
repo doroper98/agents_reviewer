@@ -73,15 +73,7 @@ scenarios:
       - "size 인코딩 불필요 (점 크기 균일) → scatter (신규)"
       - "2-variable 만 → scatter 또는 line"
 
-  - id: network
-    status: active
-    data_shape: "노드-엣지 그래프 (관계 데이터)"
-    scenario: "행위자 간 협력/경쟁/공급망 관계도"
-    sample_prompt: "이번 외교 분쟁의 행위자 관계 분석"
-    expected_chart_type: network
-    negative_examples:
-      - "노드 >20개 (혼잡) → 카테고리 bar 로 분해"
-      - "시간축 있음 → 시계열 차트로"
+  # network (행위자 관계도) 시나리오는 v7.9.17 에서 삭제 (CHART-AP-36, 포맷 폐기).
 
   - id: map
     status: active
@@ -246,7 +238,6 @@ scenarios:
     expected_chart_type: sankey
     negative_examples:
       - "1차원 시퀀스 (시작→증감→끝) → waterfall"
-      - "관계도 (양방향, 흐름량 무의미) → network"
       - "노드 >12 → 본문 또는 nested bar"
 
   - id: range_bar
@@ -350,8 +341,8 @@ scenarios:
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 29
-  active_count: 29     # production 활성 (v7.5.0) — 28 chart types + map (combo/diverging_bar/pyramid/dot_matrix 포함)
+  total_scenarios: 28
+  active_count: 28     # v7.9.17 — network 시나리오 삭제(CHART-AP-36). 27 chart types + map
   pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"

@@ -245,6 +245,45 @@ def test_build_compact_strip_row_emits_required_fields() -> None:
     assert row["data"][0] == {"x": "2026-02-23", "y": 104.39}
 
 
+def test_build_compact_strip_row_excludes_nan_tail() -> None:
+    """CHART-AP-29 — 마지막 봉이 NaN 이면 등락률·마지막값이 'nan%' 로 새지 않는다.
+
+    2026-06 코스피 회귀: Yahoo 미완성 마지막 봉이 close=NaN 으로 흘러들어 감시
+    스트립이 '코스피 nan%', 카드가 'X → nan' 으로 노출. 비유한 봉은 sparkline·등락률
+    양쪽에서 배제돼야 한다.
+    """
+    from src.orchestrator import _build_compact_strip_row
+    row = _build_compact_strip_row({
+        "instrument": "코스피", "source": "KRX",
+        "start_date": "2026-05-21", "end_date": "2026-06-20",
+        "data": [
+            {"date": "2026-05-21", "close": 7815.59},
+            {"date": "2026-06-19", "close": 9063.84},
+            {"date": "2026-06-20", "close": float("nan")},
+        ],
+    })
+    assert row is not None
+    for field in ("change_day_pct_formatted", "last_value_formatted", "subtitle"):
+        assert "nan" not in row[field].lower(), f"{field} 에 nan 누수: {row[field]!r}"
+    assert row["last_value_formatted"] == "9,064"
+    assert all(isinstance(p["y"], (int, float)) and p["y"] == p["y"] for p in row["data"])
+
+
+def test_sanitize_market_nan_drops_nonfinite_bars() -> None:
+    """CHART-AP-29 — fetch 직후 합류 길목에서 NaN/inf 봉을 결정적 제거."""
+    from src.orchestrator import _sanitize_market_nan
+    ts = [{"instrument": "코스피", "data": [
+        {"date": "2026-06-17", "close": 8900.0},
+        {"date": "2026-06-18", "close": float("nan")},
+        {"date": "2026-06-19", "close": 9063.84},
+        {"date": "2026-06-20", "close": float("inf")},
+    ]}]
+    removed = _sanitize_market_nan(ts)
+    assert removed == 2
+    closes = [d["close"] for d in ts[0]["data"]]
+    assert closes == [8900.0, 9063.84]
+
+
 def test_build_compact_strip_row_skips_insufficient_data() -> None:
     """data 가 2 점 미만이면 row 자체 emit 안 함 (빈 sparkline 회귀 차단)."""
     from src.orchestrator import _build_compact_strip_row

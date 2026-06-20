@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.16
+last_synced_with: v7.9.17
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -20,7 +20,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## v7.9.16 — 시장 기준일·연도 정합 결정적 가드 + codex 검수 강화 (kospi-date-mismatch 재발방지)
+## v7.9.17 — 시장 시계열 NaN 봉 결정적 차단(CHART-AP-29 소스 가드) + 행위자 관계도(network) 포맷 폐기(CHART-AP-36)
+
+코스피 보고서 사용자 catch 3종 핫픽스.
+- **NaN 차트 회귀 차단 (CHART-AP-29).** Yahoo `^KS11` 미완성 마지막 봉이 `close=NaN` 으로
+  흘러들어 코스피 line/candle 차트가 빈 프레임, 감시 스트립이 `코스피 nan%`, 종합지수 카드가
+  `7815.59 → nan` 으로 노출됐다(본문 takeaway 는 9,064 인데 차트만 nan). 다층 차단 — ①
+  `market_fetcher._df_to_ohlc`/`_to_float` 가 `math.isfinite()` 로 비유한 봉을 생성 단계에서
+  skip(`nan<=0` 이 False 라 기존 `c<=0` 가드를 빠져나가던 허점), ② `orchestrator._sanitize_market_nan`
+  가 fetch 직후 모든 소스 합류 지점에서 비유한 봉 결정적 제거 + compact strip 빌더 방어.
+- **발행본 복구 도구.** `scripts/patch_report.py --sanitize-ts-nan` — 이미 나간 보고서의 NaN 봉
+  제거 + 영향 차트(line/area/candle)·감시 스트립의 subtitle·등락률·takeaway 재계산. LLM 0, URL 보존.
+- **network(행위자 관계도) 포맷 폐기 (CHART-AP-36).** "큰 의미 없고 공간만 차지" 사용자 판단으로
+  `network` 차트 type 영구 제거 — composer 미emit + `validate_chart_data` drop 가드 + 레지스트리/
+  렌더러/시나리오 정리(guarded 17→16, total 30→29). 발행본은 `--remove-chart` 로 제거.
 
 v7.9.15 가 데이터 소스를 고쳤다면, 본 버전은 *검수가 왜 못 잡았나* 를 메운다. 사고 보고서는
 codex 가 켜진 채(web_verified=True, 6건 수정) 돌았는데도 코스피 날짜 불일치(6/17 vs 6/18)·
