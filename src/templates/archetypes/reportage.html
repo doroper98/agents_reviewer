@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+{# ════════════════════════════════════════════════════════════════════════
+   reportage.html (v8.0.0) — 르포 전용 *깨끗한* 템플릿. freeform_essay 와 완전 분리.
+   목업(테마/폰트/플랫/지구본) + 아티클 담백 구조 기준. 군더더기 일절 없음:
+   목차·kicker·fact_grid·pull_quote·analogy·lede·dropcap·쟁점·감시신호·시간궤적·
+   요약·신뢰도·바이라인 전부 미렌더. 헤더 = 버전만 / 제목 / 작성일시(분까지) /
+   번호 섹션(소제목+본문) / 용어풀이 / 차트·지도(애니) / 담백한 결론 / 최소 푸터.
+   ════════════════════════════════════════════════════════════════════════ #}
+<html lang="ko" data-theme="{{ report_theme or 'reportage_noturno' }}">
+{% set composed = result.composed_report %}
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ composed.headline if composed else (result.context.event_name or 'Reportage') }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+{% if composed and composed.embedded_map %}<link rel="stylesheet" href="maps.css">{% endif %}
+<style>{{ css_content }}</style>
+<style>
+  /* ── 르포 담백 레이아웃 (theme color 변수는 report.css [data-theme=reportage_*] 에서) ── */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+       -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+  .rep-wrap{max-width:820px;margin:0 auto;padding:0 26px 90px}
+  /* 상단 바 — 버전만 */
+  .rep-top{display:flex;justify-content:flex-end;align-items:center;border-bottom:1px solid var(--border);
+           padding:16px 0 12px;font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  /* 제목 / 작성일시 */
+  .rep-headline{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:44px;
+                line-height:1.12;letter-spacing:-.015em;color:var(--text);margin:34px 0 12px}
+  .rep-meta{font:500 12px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted);margin:0 0 8px}
+  .rep-rule{height:1px;background:var(--border);margin:30px 0}
+  /* 사진 */
+  .rep-fig{margin:26px 0}
+  .rep-fig img{width:100%;height:auto;display:block;border-radius:0}
+  .rep-fig figcaption{font:400 12.5px/1.5 'Noto Sans KR',sans-serif;color:var(--muted);margin-top:8px}
+  .rep-fig .credit{margin-left:6px;opacity:.85}
+  .rep-fig .credit a{color:inherit}
+  /* 섹션 — 번호 + 소제목 + 본문 */
+  .rep-section{padding:6px 0 2px}
+  .rep-num{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:13px;color:var(--accent);
+           letter-spacing:.08em;display:block;margin:0 0 6px}
+  .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
+          line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;max-width:66ch}
+  .rep-prose p{margin:0 0 1.15em}
+  /* 용어풀이 (유일하게 남기는 부가요소) */
+  .rep-fn{margin:18px 0 4px;padding:14px 16px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03)}
+  .rep-fn-label{font:700 11px 'Noto Sans KR',sans-serif;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
+  .rep-fn-item{font:400 13px/1.6 'Noto Sans KR',sans-serif;color:var(--text);opacity:.9;margin-bottom:6px}
+  .rep-fn-term{font-weight:700;margin-right:6px}
+  /* 차트/지도 카드 — 플랫(report.css reportage override) */
+  .rep-figwrap{margin:24px 0}
+  /* 결론 */
+  .rep-conc{margin-top:30px;padding-top:22px;border-top:1px solid var(--border)}
+  /* 푸터 — 최소 */
+  .rep-foot{max-width:820px;margin:0 auto;padding:26px;border-top:1px solid var(--border);
+            font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-foot a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="rep-wrap">
+
+  <div class="rep-top">{% if result.system_version %}{{ result.system_version }} · Rev {{ result.revision_label }}{% endif %}</div>
+
+  <h1 class="rep-headline">{{ (composed.headline if composed else (result.context.event_name or 'Reportage')) | strip_md }}</h1>
+  <div class="rep-meta">{{ generated_at[:16] }}</div>
+
+  {# 사진 (있을 때만) #}
+  {% if composed and composed.hero_image and composed.hero_image.image_url %}
+  <figure class="rep-fig">
+    <img src="{{ composed.hero_image.image_url }}" alt="{{ (composed.hero_image.alt or composed.hero_image.caption or '') | strip_md }}" referrerpolicy="no-referrer" crossorigin="anonymous" loading="eager">
+    {% if composed.hero_image.caption or composed.hero_image.credit %}
+    <figcaption>{% if composed.hero_image.caption %}{{ composed.hero_image.caption | strip_md }}{% endif %}{% if composed.hero_image.credit %}<span class="credit">{% if composed.hero_image.source_url %}<a href="{{ composed.hero_image.source_url }}" target="_blank" rel="noopener">{{ composed.hero_image.credit | strip_md }}</a>{% else %}{{ composed.hero_image.credit | strip_md }}{% endif %}</span>{% endif %}</figcaption>
+    {% endif %}
+  </figure>
+  {% endif %}
+
+  <div class="rep-rule"></div>
+
+  {# 지도 (지구본) — 깨끗한 figure, kicker 없음 #}
+  {% if composed and composed.embedded_map %}
+  <div class="rep-figwrap">
+    <div class="map-card">
+      <div class="map-controls">
+        <button type="button" data-map-zoom="in" aria-label="확대">＋</button>
+        <button type="button" data-map-zoom="out" aria-label="축소">−</button>
+        <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
+      </div>
+      <div id="freeform-map" class="map-stage" data-theme="{{ report_theme or 'reportage_noturno' }}"></div>
+      <script type="application/json" id="map-payload">{{ composed.embedded_map | tojson }}</script>
+      <div class="map-hint">드래그·휠로 지구본 회전·확대</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# 번호 섹션 — 소제목 + 본문 + 용어풀이 + 차트 + 사진. kicker/fact_grid/analogy/pull_quote/lede 없음 #}
+  {% if composed and composed.sections %}
+  {% for sec in composed.sections %}
+  <section class="rep-section">
+    <span class="rep-num">{{ '%02d'|format(loop.index) }}</span>
+    <h2 class="rep-h2">{{ sec.heading | strip_md }}</h2>
+    {% if sec.prose %}<div class="rep-prose">{{ sec.prose | structured }}</div>{% endif %}
+
+    {% if sec.footnotes %}
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      {% for fn in sec.footnotes %}{% if fn.term or fn.explanation %}
+      <div class="rep-fn-item">{% if fn.term %}<span class="rep-fn-term">{{ fn.term | strip_md }}</span>{% endif %}{% if fn.explanation %}{{ fn.explanation | strip_md }}{% endif %}</div>
+      {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    {# 차트 (빈 데이터/유효성 검증) #}
+    {% for ch in (sec.charts or []) %}
+      {% set has_data = false %}
+      {% if ch.data %}
+        {% if ch.type == 'dual_line' %}{% if ch.data.left and ch.data.left.series and ch.data.right and ch.data.right.series %}{% set has_data = true %}{% endif %}
+        {% elif ch.type == 'forecast' %}{% if ch.data.actual %}{% set has_data = true %}{% endif %}
+        {% elif ch.type == 'stakeholder_map' %}{% if ch.data.nodes and (ch.data.nodes | length) >= 2 %}{% set has_data = true %}{% endif %}
+        {% elif ch.type == 'stacked' %}{% if ch.data.scenarios %}{% set has_data = true %}{% endif %}
+        {% elif ch.data is iterable and (ch.data | length) > 0 %}{% set has_data = true %}{% endif %}
+      {% endif %}
+      {% if has_data %}
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">{{ (ch.title or '차트') | strip_md }}</div>
+          {% if ch.subtitle %}<div class="chart-card-subtitle">{{ ch.subtitle | strip_md }}</div>{% endif %}
+          <div class="chart-card-stage chart-stage-{{ ch.type or 'bar' }}" data-chart-type="{{ ch.type or 'bar' }}" data-chart-id="rep-s{{ loop.index0 }}-{{ loop.index }}"><svg></svg></div>
+          {% if ch.source %}<div class="chart-card-source"><span class="chart-card-source-label">출처:</span> {{ ch.source | strip_md }}</div>{% endif %}
+          {% if ch.note %}<div class="chart-card-note">{{ ch.note | strip_md }}</div>{% endif %}
+          <script type="application/json" class="chart-payload-inline">{{ ch | tojson }}</script>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    {# 섹션 사진 #}
+    {% for img in (sec.images or []) %}{% if img.image_url %}
+    <figure class="rep-fig">
+      <img src="{{ img.image_url }}" alt="{{ (img.alt or img.caption or '') | strip_md }}" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy">
+      {% if img.caption or img.credit %}<figcaption>{% if img.caption %}{{ img.caption | strip_md }}{% endif %}{% if img.credit %}<span class="credit">{% if img.source_url %}<a href="{{ img.source_url }}" target="_blank" rel="noopener">{{ img.credit | strip_md }}</a>{% else %}{{ img.credit | strip_md }}{% endif %}</span>{% endif %}</figcaption>{% endif %}
+    </figure>
+    {% endif %}{% endfor %}
+  </section>
+  {% endfor %}
+  {% endif %}
+
+  {# 후속 르포 링크 (있을 때만, 심플) #}
+  {% if result.parent_context and result.parent_context.parent_report_url %}
+  <div class="rep-conc">
+    <div class="rep-meta" style="margin-bottom:6px">이어 읽기</div>
+    <a href="{{ result.parent_context.parent_report_url }}" style="color:var(--accent);text-decoration:none;font-weight:700">{{ (result.parent_context.parent_report_title or result.parent_context.parent_report_id or '이전 르포') | strip_md }}</a>
+  </div>
+  {% endif %}
+
+</div>
+
+<footer class="rep-foot">
+  archetype: reportage · Generated {{ generated_at }} · Duration: {{ '%.1f'|format(result.total_duration_seconds) }}s
+  {% if result.report_url and result.report_url.startswith('http') %}<br>공유 링크: <a href="{{ result.report_url }}">{{ result.report_url }}</a>{% endif %}
+</footer>
+
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+{% if composed and composed.embedded_map %}
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script src="maps.js?v=v8_0_0"></script>
+{% endif %}
+</body>
+</html>
