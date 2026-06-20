@@ -3,402 +3,340 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IV 스큐 타임라인 — 날짜별 변동성 스큐 변화</title>
+<title>IV 스큐 × 선물 타임라인 — 가격·변동성·스큐 동기화</title>
 <style>
   :root {
     --bg:#14161c; --card:#1b1e26; --card-2:#20242e; --border:#2a2e39;
     --text:#e8e6e0; --muted:#9aa0aa; --faint:#7e8490; --accent:#c9a84c;
-    --put:#4F8BF0; --call:#E0604A;
+    --put:#4F8BF0; --call:#E0604A; --up:#4CA87A; --down:#E0604A; --vk:#C9A84C; --atm:#9b8cf0;
   }
   * { box-sizing:border-box; }
   body {
-    background:var(--bg); color:var(--text); margin:0; padding:28px 24px 48px;
+    background:var(--bg); color:var(--text); margin:0; padding:26px 22px 48px;
     font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
   }
-  .wrap { max-width:900px; margin:0 auto; }
+  .wrap { max-width:920px; margin:0 auto; }
   h1 { font-size:21px; font-weight:700; margin:0 0 4px; letter-spacing:.01em; }
-  .desc { color:var(--muted); font-size:13px; line-height:1.65; margin:0 0 20px; max-width:780px; }
+  .desc { color:var(--muted); font-size:13px; line-height:1.65; margin:0 0 18px; max-width:800px; }
   .desc b { color:var(--text); font-weight:600; }
-  .banner {
-    font-size:12px; border-radius:6px; padding:9px 13px; margin:0 0 18px; line-height:1.55;
-  }
+  .banner { font-size:12px; border-radius:6px; padding:9px 13px; margin:0 0 16px; line-height:1.55; }
   .banner.demo { background:#2a2113; color:#e8c873; border:1px solid #4a3a15; }
   .banner.live { background:#13261b; color:#7fcf9a; border:1px solid #1f4a30; }
   .banner code { background:rgba(255,255,255,.06); padding:1px 5px; border-radius:3px; font-size:11px; }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; }
-  .toolbar { display:flex; flex-wrap:wrap; gap:14px 18px; align-items:center; margin-bottom:14px; }
-  .toolbar label { font-size:12px; color:var(--muted); margin-right:6px; }
-  select {
-    background:var(--card-2); color:var(--text); border:1px solid var(--border);
-    border-radius:6px; padding:5px 9px; font-size:13px; font-family:inherit;
-  }
-  .btn {
-    background:var(--card-2); color:var(--text); border:1px solid var(--border);
-    border-radius:6px; padding:6px 12px; font-size:13px; cursor:pointer; font-family:inherit;
-    transition:background .15s, border-color .15s;
-  }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 18px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:12px 16px; align-items:center; margin-bottom:12px; }
+  .toolbar label { font-size:12px; color:var(--muted); margin-right:5px; }
+  select { background:var(--card-2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:5px 9px; font-size:13px; font-family:inherit; }
+  .btn { background:var(--card-2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 12px; font-size:13px; cursor:pointer; font-family:inherit; transition:background .15s,border-color .15s; }
   .btn:hover { background:#272c38; border-color:#3a4150; }
   .btn.primary { background:var(--accent); color:#1a1a1a; border-color:var(--accent); font-weight:600; min-width:74px; }
   .btn.primary:hover { background:#d8b95c; }
-  .btn:disabled { opacity:.4; cursor:default; }
-  .slider-row { display:flex; align-items:center; gap:12px; margin:6px 0 4px; }
+  .slider-row { display:flex; align-items:center; gap:12px; margin:4px 0; }
   input[type=range] { flex:1; accent-color:var(--accent); height:4px; cursor:pointer; }
-  .toggle { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); cursor:pointer; }
+  .toggles { display:flex; flex-wrap:wrap; gap:6px 14px; margin-left:auto; }
+  .toggle { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); cursor:pointer; user-select:none; }
   .toggle input { accent-color:var(--accent); }
-  .datestamp {
-    font-family:'JetBrains Mono','SF Mono',monospace; font-size:15px; color:var(--text);
-    font-weight:600; min-width:120px; text-align:center;
-  }
-  .stage { margin-top:8px; }
+  .dot { width:9px; height:9px; border-radius:2px; display:inline-block; }
+  .datestamp { font-family:'JetBrains Mono','SF Mono',monospace; font-size:15px; color:var(--text); font-weight:600; min-width:118px; text-align:center; }
+  .panel-label { font-size:11px; color:var(--faint); margin:10px 2px 2px; letter-spacing:.03em; }
   .stage svg { width:100%; height:auto; display:block; }
-  .readout { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
-  .stat {
-    background:var(--card-2); border:1px solid var(--border); border-radius:8px;
-    padding:10px 14px; flex:1; min-width:130px;
-  }
+  .readout { display:flex; flex-wrap:wrap; gap:9px; margin-top:14px; }
+  .stat { background:var(--card-2); border:1px solid var(--border); border-radius:8px; padding:9px 13px; flex:1; min-width:108px; }
   .stat .k { font-size:11px; color:var(--faint); margin-bottom:3px; }
-  .stat .v { font-size:18px; font-weight:700; font-family:'JetBrains Mono',monospace; }
-  .stat .v.up { color:var(--call); } .stat .v.down { color:var(--put); }
-  .note {
-    font-size:12px; color:#aeb4be; line-height:1.65; border-top:1px solid var(--border);
-    margin-top:16px; padding-top:12px;
-  }
+  .stat .v { font-size:17px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+  .stat .v.up { color:var(--up); } .stat .v.down { color:var(--down); }
+  .note { font-size:12px; color:#aeb4be; line-height:1.65; border-top:1px solid var(--border); margin-top:15px; padding-top:11px; }
   .note b { color:var(--text); }
-  .src { font-size:11px; color:var(--faint); margin-top:10px; }
+  .src { font-size:11px; color:var(--faint); margin-top:9px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>IV 스큐 타임라인</h1>
-  <p class="desc">장마감 브리핑이 매일 적재하는 <b>KOSPI200 옵션 내재변동성(IV) 스큐</b>를
-  날짜별로 이어 본 페이지. 슬라이더를 옮기거나 <b>재생</b>을 누르면 날짜가 바뀔 때마다
-  스큐 곡선이 어떻게 솟고 가라앉는지 — 시장이 하락 꼬리(왼쪽 풋)를 얼마나 비싸게 사는지 —
-  애니메이션으로 보인다. 곡선은 KRX 종가에서 역산한 IV다.</p>
+  <h1>IV 스큐 × 선물 타임라인</h1>
+  <p class="desc">위는 <b>KOSPI200 선물 일봉(캔들)</b>에 <b style="color:var(--vk)">VKOSPI</b>·<b style="color:var(--atm)">ATM 내재변동성</b>을 우축으로 겹친 가격·변동성 패널,
+  아래는 그날의 <b>옵션 IV 스큐 곡선</b>이다. 슬라이더를 끌거나 <b>재생</b>을 누르면 두 패널이 같이 움직인다 —
+  지수가 <b>빠진 날</b> 변동성이 치솟고 풋 스큐가 가팔라지는 흐름이 한 화면에서 보인다. 아래 곡선의 세로 점선은 그날 <b>종가</b> 위치다.</p>
 
   <div id="banner"></div>
 
   <div class="card">
     <div class="toolbar">
       <div><label for="expiry">만기</label><select id="expiry"></select></div>
-      <button class="btn" id="prev">◀ 이전</button>
+      <button class="btn" id="prev">◀</button>
       <span class="datestamp" id="datestamp">—</span>
-      <button class="btn" id="next">다음 ▶</button>
+      <button class="btn" id="next">▶</button>
       <button class="btn primary" id="play">▶ 재생</button>
-      <label class="toggle"><input type="checkbox" id="ghost"> 과거 곡선 겹쳐 보기</label>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="t-vk" checked><span class="dot" style="background:var(--vk)"></span>VKOSPI</label>
+        <label class="toggle"><input type="checkbox" id="t-atm" checked><span class="dot" style="background:var(--atm)"></span>ATM IV</label>
+        <label class="toggle"><input type="checkbox" id="t-ghost">과거 곡선 겹쳐</label>
+      </div>
     </div>
-    <div class="slider-row">
-      <input type="range" id="slider" min="0" max="0" value="0" step="1">
-    </div>
+    <div class="slider-row"><input type="range" id="slider" min="0" max="0" value="0" step="1"></div>
 
+    <div class="panel-label" id="top-label">가격 · 변동성</div>
+    <div class="stage"><svg id="top"></svg></div>
+
+    <div class="panel-label">IV 스큐 (행사가별 내재변동성)</div>
     <div class="stage"><svg id="chart"></svg></div>
 
     <div class="readout">
-      <div class="stat"><div class="k">등가격(ATM) IV</div><div class="v" id="s-atm">—</div></div>
-      <div class="stat"><div class="k">스큐 기울기 (풋 − 콜)</div><div class="v" id="s-skew">—</div></div>
-      <div class="stat"><div class="k">첫날 대비 ATM 변화</div><div class="v" id="s-delta">—</div></div>
+      <div class="stat"><div class="k">종가</div><div class="v" id="s-close">—</div></div>
+      <div class="stat"><div class="k">전일 대비</div><div class="v" id="s-chg">—</div></div>
+      <div class="stat"><div class="k">VKOSPI</div><div class="v" id="s-vk">—</div></div>
+      <div class="stat"><div class="k">ATM IV</div><div class="v" id="s-atm">—</div></div>
+      <div class="stat"><div class="k">스큐 기울기 (풋−콜)</div><div class="v" id="s-skew">—</div></div>
     </div>
 
-    <p class="note"><b>읽는 법.</b> 가로축은 행사가, 세로축은 그 행사가 옵션에 녹아든
-    변동성(IV)이다. 점선 가로선은 등가격 기준선. 하락을 방어하는 <b style="color:var(--put)">외가격 풋(왼쪽 파랑)</b>이
-    기준선 위로 솟는 게 <b>스큐</b>다. 풋 곡선이 <b style="color:var(--call)">콜(오른쪽 빨강)</b>보다
-    높고 가팔라질수록 시장이 급락 위험을 더 비싸게 헤지하고 있다는 신호다. 곡선 전체가
-    위로 올라가면 변동성 자체가 확대(공포 상승)된 것.</p>
+    <p class="note"><b>읽는 법.</b> 위 패널 캔들은 그날 선물 시·고·저·종가(<span style="color:var(--up)">상승</span>/<span style="color:var(--down)">하락</span>),
+    우축 두 선은 시장이 매긴 변동성(<b style="color:var(--vk)">VKOSPI</b>=한국판 공포지수, <b style="color:var(--atm)">ATM IV</b>=등가격 옵션 내재변동성)이다.
+    아래 스큐에서 <b style="color:var(--put)">왼쪽 풋(파랑)</b>이 기준선 위로 솟을수록 시장이 하락 꼬리를 비싸게 헤지한다는 뜻 —
+    가격이 급락한 날 캔들·변동성·스큐가 동시에 반응하는지 재생으로 확인해 보라.</p>
     <p class="src" id="src">데이터 출처: —</p>
   </div>
 </div>
 
-<!-- 실데이터: scripts/export_skew_timeline.py 가 생성. 없으면 404 무시 → 데모 데이터. -->
 <script src="iv_skew_data.js"></script>
+<script src="iv_skew_futures.js"></script>
 <script src="../src/templates/static/d3.v7.min.js"></script>
 <script>
 (function () {
-  // d3 로컬 로드 실패 시 CDN 폴백 후 부팅.
   if (window.d3) { boot(); }
-  else {
-    var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/d3@7';
-    s.onload = boot;
-    document.head.appendChild(s);
-  }
+  else { var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/d3@7'; s.onload = boot; document.head.appendChild(s); }
 
-  // ---- 데모 데이터 생성기 (실데이터 없을 때) -------------------------------
-  // KOSPI200 고정 행사가 격자(2.5p 간격) 위에 날짜별 스마일/스큐를 결정적으로 합성.
-  // 중간에 변동성 급등(스트레스) 구간을 넣어 스큐가 가팔라지는 모습을 보이게 함.
+  // 데모 스큐(실데이터 없을 때) — 고정 행사가 격자 위 합성 스마일.
+  function r1(x){ return Math.round(x*10)/10; }
   function buildDemo() {
-    var strikes = [];
-    for (var k = 400; k <= 470; k += 2.5) strikes.push(k);
-    var dates = [], d = new Date(Date.UTC(2026, 4, 25)); // 2026-05-25부터
-    while (dates.length < 20) {
-      d.setUTCDate(d.getUTCDate() + 1);
-      var wd = d.getUTCDay();
-      if (wd === 0 || wd === 6) continue;            // 주말 skip
-      dates.push(d.toISOString().slice(0, 10));
-    }
-    var byDate = {};
-    dates.forEach(function (dt, i) {
-      // 현물 경로 + ATM 기저 변동성 — 9~12일차에 급락+IV 스파이크.
-      var stress = Math.exp(-Math.pow((i - 10) / 3.2, 2));   // 종 모양 0~1
-      var spot = 438 - 14 * stress + 3 * Math.sin(i / 2.0);
-      var atm = 14.5 + 11 * stress + 0.8 * Math.sin(i / 1.7);
-      var skewSlope = 30 + 26 * stress;   // 스트레스 때 풋 스큐 가팔라짐
-      var curv = 55 + 20 * stress;
-      var pts = [];
-      strikes.forEach(function (K) {
-        var m = Math.log(K / spot);                  // 로그 머니니스
-        var iv = atm + (-skewSlope) * m + curv * m * m;
-        iv = Math.max(7, Math.min(70, iv));
-        if (K <= spot * 1.02) pts.push({ strike: K, iv: round1(iv + 0.6), type: 'put' });
-        if (K >= spot * 0.98) pts.push({ strike: K, iv: round1(iv), type: 'call' });
-      });
-      byDate[dt] = { points: pts, atm: round1(atm) };
+    var strikes=[]; for (var k=400;k<=470;k+=2.5) strikes.push(k);
+    var dates=[], d=new Date(Date.UTC(2026,4,25));
+    while (dates.length<20){ d.setUTCDate(d.getUTCDate()+1); var w=d.getUTCDay(); if(w===0||w===6)continue; dates.push(d.toISOString().slice(0,10)); }
+    var byDate={};
+    dates.forEach(function(dt,i){
+      var stress=Math.exp(-Math.pow((i-10)/3.2,2)), spot=438-14*stress+3*Math.sin(i/2), atm=14.5+11*stress+0.8*Math.sin(i/1.7);
+      var slope=30+26*stress, curv=55+20*stress, pts=[];
+      strikes.forEach(function(K){ var m=Math.log(K/spot), iv=Math.max(7,Math.min(70,atm-slope*m+curv*m*m));
+        if(K<=spot*1.02)pts.push({strike:K,iv:r1(iv+0.6),type:'put'}); if(K>=spot*0.98)pts.push({strike:K,iv:r1(iv),type:'call'}); });
+      byDate[dt]={points:pts,atm:r1(atm)};
     });
-    return {
-      generated_at: 'demo', source: '데모 데이터 (합성) — 실데이터 아님',
-      default_expiry: '202606',
-      expiries: { '202606': { label: '2026년 6월물 (데모)', dates: dates, byDate: byDate } }
-    };
+    return { generated_at:'demo', source:'데모 데이터(합성) — 실데이터 아님', default_expiry:'202606',
+      expiries:{'202606':{label:'2026년 6월물 (데모)',dates:dates,byDate:byDate}} };
   }
-  function round1(x) { return Math.round(x * 10) / 10; }
 
-  // ---- 부팅 ----------------------------------------------------------------
   function boot() {
-    var LIVE = !!(window.SKEW_DATA && window.SKEW_DATA.expiries
-      && Object.keys(window.SKEW_DATA.expiries).length);
+    var LIVE = !!(window.SKEW_DATA && window.SKEW_DATA.expiries && Object.keys(window.SKEW_DATA.expiries).length);
     var DATA = LIVE ? window.SKEW_DATA : buildDemo();
+    var FUT = window.FUTURES_DATA || null;
 
     var banner = document.getElementById('banner');
-    if (LIVE) {
-      banner.className = 'banner live';
-      banner.innerHTML = '✅ <b>실데이터</b> — KRX 종가에서 역산한 IV 스큐 캐시. '
-        + (DATA.generated_at ? '생성 ' + DATA.generated_at : '');
-    } else {
-      banner.className = 'banner demo';
-      banner.innerHTML = '⚠ <b>데모 데이터(합성)</b>로 표시 중입니다. 실데이터를 보려면 VM에서 '
-        + '<code>python scripts/export_skew_timeline.py</code> 로 '
-        + '<code>samples/iv_skew_data.js</code> 를 생성한 뒤 이 페이지를 새로고침하세요.';
-    }
-    document.getElementById('src').textContent = '데이터 출처: ' + (DATA.source || '—');
+    if (LIVE) { banner.className='banner live';
+      banner.innerHTML = '✅ <b>실데이터</b> — KRX 종가에서 역산한 IV 스큐'
+        + (FUT ? ' + 선물 일봉·VKOSPI' : '') + '. ' + (DATA.generated_at?'생성 '+DATA.generated_at:''); }
+    else { banner.className='banner demo';
+      banner.innerHTML = '⚠ <b>데모 데이터(합성)</b>. 실데이터는 VM에서 <code>export_skew_timeline.py</code> 로 생성.'; }
+    document.getElementById('src').textContent = '데이터 출처: ' + (DATA.source||'—') + (FUT ? '  ·  '+(FUT.source||'선물')+'' : '');
 
-    var PUT = '#4F8BF0', CALL = '#E0604A';
-    var T = { text: '#e8e6e0', muted: '#9aa0aa', accent: '#c9a84c' };
-    var W = 760, Hgt = 430;
-    var M = { left: 58, right: 60, top: 50, bottom: 64 };
-    var dataW = W - M.left - M.right, dataH = Hgt - M.top - M.bottom;
+    var PUT='#4F8BF0', CALL='#E0604A';
+    var T={ text:'#e8e6e0', muted:'#9aa0aa', accent:'#c9a84c', up:'#4CA87A', down:'#E0604A', vk:'#C9A84C', atm:'#9b8cf0' };
 
-    var svg = d3.select('#chart')
-      .attr('viewBox', '0 0 ' + W + ' ' + Hgt)
-      .attr('preserveAspectRatio', 'xMidYMid meet');
-    var gStatic = svg.append('g');
-    var gGhost = svg.append('g');
-    var gDyn = svg.append('g');
+    // ---- 전체 달력 날짜(union) — 상단 가격축 컨텍스트 안정화 ----
+    var allDates = (function(){ var s=new Set(); Object.keys(DATA.expiries).forEach(function(e){ DATA.expiries[e].dates.forEach(function(d){s.add(d);}); }); return Array.from(s).sort(); })();
 
-    var exSel = document.getElementById('expiry');
-    var slider = document.getElementById('slider');
-    var stamp = document.getElementById('datestamp');
-    var ghostChk = document.getElementById('ghost');
-    var playBtn = document.getElementById('play');
+    // ===== 상단 패널 (가격 캔들 + VKOSPI/ATM IV) =====
+    var TW=820, TH=232, TM={left:54,right:54,top:18,bottom:24};
+    var tdW=TW-TM.left-TM.right, tdH=TH-TM.top-TM.bottom;
+    var topSvg=d3.select('#top').attr('viewBox','0 0 '+TW+' '+TH).attr('preserveAspectRatio','xMidYMid meet');
+    var gTopStatic=topSvg.append('g'), gTopDyn=topSvg.append('g');
+    var xT, yP, yV;
 
-    Object.keys(DATA.expiries).sort().forEach(function (ex) {
-      var o = document.createElement('option');
-      o.value = ex; o.textContent = DATA.expiries[ex].label || ex;
-      exSel.appendChild(o);
-    });
+    // ===== 하단 패널 (스큐) =====
+    var W=820, H=384, M={left:56,right:58,top:48,bottom:60};
+    var dW=W-M.left-M.right, dH=H-M.top-M.bottom;
+    var svg=d3.select('#chart').attr('viewBox','0 0 '+W+' '+H).attr('preserveAspectRatio','xMidYMid meet');
+    var gStatic=svg.append('g'), gGhost=svg.append('g'), gDyn=svg.append('g');
+    var xS, yS;
+
+    var exSel=document.getElementById('expiry'), slider=document.getElementById('slider'), stamp=document.getElementById('datestamp');
+    var tVk=document.getElementById('t-vk'), tAtm=document.getElementById('t-atm'), tGhost=document.getElementById('t-ghost'), playBtn=document.getElementById('play');
+    if (!FUT) { document.getElementById('top-label').style.display='none'; document.getElementById('top').style.display='none'; tVk.parentElement.style.display='none'; tAtm.parentElement.style.display='none'; }
+
+    Object.keys(DATA.expiries).sort().forEach(function(ex){ var o=document.createElement('option'); o.value=ex; o.textContent=DATA.expiries[ex].label||ex; exSel.appendChild(o); });
     exSel.value = DATA.default_expiry || Object.keys(DATA.expiries).sort()[0];
 
-    var xS, yS, expiry, dates, idx = 0, timer = null;
+    var expiry, dates, idx=0, timer=null;
+    var line=d3.line().x(function(p){return xS(p.strike);}).y(function(p){return yS(p.iv);}).curve(d3.curveLinear);
+    function curve(points,type){ return points.filter(function(p){return p.type===type;}).sort(function(a,b){return a.strike-b.strike;}); }
+    function futAtm(dt){ var e=DATA.expiries[exSel.value]; return e&&e.byDate[dt]?e.byDate[dt].atm:null; }
 
-    function setupExpiry(ex) {
-      expiry = DATA.expiries[ex];
-      dates = expiry.dates.slice();
-      idx = dates.length - 1;
-      slider.max = String(dates.length - 1);
-      slider.value = String(idx);
+    function setupExpiry(ex){
+      expiry=DATA.expiries[ex]; dates=expiry.dates.slice(); idx=dates.length-1;
+      slider.max=String(dates.length-1); slider.value=String(idx);
 
-      // 고정 도메인 — 모든 날짜의 점 + atm 을 포괄해 애니메이션이 튀지 않게.
-      var allK = [], allIV = [];
-      dates.forEach(function (dt) {
-        var rec = expiry.byDate[dt];
-        rec.points.forEach(function (p) { allK.push(p.strike); allIV.push(p.iv); });
-        if (rec.atm != null) allIV.push(rec.atm);
-      });
-      var xExt = d3.extent(allK), yExt = d3.extent(allIV);
-      var xPad = (xExt[1] - xExt[0]) * 0.04 || 1, yPad = (yExt[1] - yExt[0]) * 0.10 || 1;
-      xS = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad]).range([M.left, M.left + dataW]);
-      yS = d3.scaleLinear().domain([yExt[0] - yPad, yExt[1] + yPad]).range([M.top + dataH, M.top]);
+      // 스큐 고정 도메인
+      var aK=[], aIV=[];
+      dates.forEach(function(dt){ var rec=expiry.byDate[dt]; rec.points.forEach(function(p){aK.push(p.strike);aIV.push(p.iv);}); if(rec.atm!=null)aIV.push(rec.atm); });
+      var xe=d3.extent(aK), ye=d3.extent(aIV), xp=(xe[1]-xe[0])*0.04||1, yp=(ye[1]-ye[0])*0.10||1;
+      xS=d3.scaleLinear().domain([xe[0]-xp,xe[1]+xp]).range([M.left,M.left+dW]);
+      yS=d3.scaleLinear().domain([ye[0]-yp,ye[1]+yp]).range([M.top+dH,M.top]);
+      drawSkewStatic();
 
-      drawStatic();
+      // 상단 스케일 (가격: 전체 선물 / 변동성: vk + 현재 만기 atm)
+      if (FUT){
+        xT=d3.scalePoint().domain(allDates).range([TM.left,TM.left+tdW]).padding(0.5);
+        var lows=[], highs=[], vols=[];
+        allDates.forEach(function(dt){ var f=FUT.byDate[dt]; if(f){lows.push(f.l);highs.push(f.h);if(f.vk!=null)vols.push(f.vk);} var a=futAtm(dt); if(a!=null)vols.push(a); });
+        var pe=[d3.min(lows),d3.max(highs)], pp=(pe[1]-pe[0])*0.06||1;
+        yP=d3.scaleLinear().domain([pe[0]-pp,pe[1]+pp]).range([TM.top+tdH,TM.top]);
+        var ve=d3.extent(vols), vp=(ve[1]-ve[0])*0.12||1;
+        yV=d3.scaleLinear().domain([ve[0]-vp,ve[1]+vp]).range([TM.top+tdH,TM.top]);
+        drawTopStatic();
+      }
       render(false);
     }
 
-    function drawStatic() {
+    function drawSkewStatic(){
       gStatic.selectAll('*').remove();
-      // y 그리드 + % 라벨
-      yS.ticks(5).forEach(function (v) {
-        gStatic.append('line').attr('x1', M.left).attr('x2', M.left + dataW)
-          .attr('y1', yS(v)).attr('y2', yS(v))
-          .attr('stroke', T.muted).attr('stroke-opacity', 0.14).attr('stroke-width', 0.5);
-        gStatic.append('text').attr('x', M.left - 6).attr('y', yS(v) + 3).attr('text-anchor', 'end')
-          .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', T.muted)
-          .text(v + '%');
+      yS.ticks(5).forEach(function(v){
+        gStatic.append('line').attr('x1',M.left).attr('x2',M.left+dW).attr('y1',yS(v)).attr('y2',yS(v)).attr('stroke',T.muted).attr('stroke-opacity',0.14).attr('stroke-width',0.5);
+        gStatic.append('text').attr('x',M.left-6).attr('y',yS(v)+3).attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',9).attr('fill',T.muted).text(v+'%');
       });
-      // x축 + 행사가 라벨(회전)
-      var yb = M.top + dataH;
-      gStatic.append('line').attr('x1', M.left).attr('x2', M.left + dataW)
-        .attr('y1', yb).attr('y2', yb).attr('stroke', T.muted).attr('stroke-opacity', 0.4);
-      var strikes = [];
-      dates.forEach(function (dt) {
-        expiry.byDate[dt].points.forEach(function (p) { strikes.push(p.strike); });
+      var yb=M.top+dH;
+      gStatic.append('line').attr('x1',M.left).attr('x2',M.left+dW).attr('y1',yb).attr('y2',yb).attr('stroke',T.muted).attr('stroke-opacity',0.4);
+      var strikes=[]; dates.forEach(function(dt){ expiry.byDate[dt].points.forEach(function(p){strikes.push(p.strike);}); });
+      strikes=Array.from(new Set(strikes)).sort(function(a,b){return a-b;});
+      var st=strikes.length>16?Math.ceil(strikes.length/16):1;
+      strikes.forEach(function(s,i){ if(i%st!==0&&i!==strikes.length-1)return;
+        gStatic.append('line').attr('x1',xS(s)).attr('x2',xS(s)).attr('y1',yb).attr('y2',yb+4).attr('stroke',T.muted).attr('stroke-opacity',0.5);
+        gStatic.append('text').attr('x',xS(s)).attr('y',yb+7).attr('transform','rotate(-42,'+xS(s)+','+(yb+7)+')').attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',8.5).attr('fill',T.muted).text(d3.format(',.0f')(s));
       });
-      strikes = Array.from(new Set(strikes)).sort(function (a, b) { return a - b; });
-      var st = strikes.length > 16 ? Math.ceil(strikes.length / 16) : 1;
-      strikes.forEach(function (s, i) {
-        if (i % st !== 0 && i !== strikes.length - 1) return;
-        gStatic.append('line').attr('x1', xS(s)).attr('x2', xS(s)).attr('y1', yb).attr('y2', yb + 4)
-          .attr('stroke', T.muted).attr('stroke-opacity', 0.5);
-        gStatic.append('text').attr('x', xS(s)).attr('y', yb + 7)
-          .attr('transform', 'rotate(-42,' + xS(s) + ',' + (yb + 7) + ')')
-          .attr('text-anchor', 'end').attr('font-family', 'JetBrains Mono, monospace')
-          .attr('font-size', 8.5).attr('fill', T.muted).text(d3.format(',.0f')(s));
+      gStatic.append('text').attr('x',M.left+dW).attr('y',yb+34).attr('text-anchor','end').attr('font-size',10).attr('fill',T.muted).text('행사가');
+      lgd(gStatic,M.left+dW-122,M.top-16,PUT,'풋 (Put)'); lgd(gStatic,M.left+dW-58,M.top-16,CALL,'콜 (Call)');
+    }
+    function lgd(g,x,y,c,t){ g.append('circle').attr('cx',x).attr('cy',y).attr('r',4).attr('fill',c); g.append('text').attr('x',x+9).attr('y',y+4).attr('font-family','Noto Sans KR').attr('font-size',11).attr('fill',T.text).text(t); }
+
+    function drawTopStatic(){
+      gTopStatic.selectAll('*').remove();
+      // 좌축 가격
+      yP.ticks(4).forEach(function(v){
+        gTopStatic.append('line').attr('x1',TM.left).attr('x2',TM.left+tdW).attr('y1',yP(v)).attr('y2',yP(v)).attr('stroke',T.muted).attr('stroke-opacity',0.10).attr('stroke-width',0.5);
+        gTopStatic.append('text').attr('x',TM.left-5).attr('y',yP(v)+3).attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',8.5).attr('fill',T.muted).text(d3.format(',.0f')(v));
       });
-      gStatic.append('text').attr('x', M.left + dataW).attr('y', yb + 36)
-        .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', T.muted).text('행사가');
-      // 범례
-      legend(M.left + dataW - 124, PUT, '풋 (Put)');
-      legend(M.left + dataW - 58, CALL, '콜 (Call)');
-      function legend(x, color, label) {
-        gStatic.append('circle').attr('cx', x).attr('cy', M.top - 18).attr('r', 4).attr('fill', color);
-        gStatic.append('text').attr('x', x + 9).attr('y', M.top - 14)
-          .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', T.text).text(label);
-      }
+      // 우축 변동성 %
+      yV.ticks(4).forEach(function(v){
+        gTopStatic.append('text').attr('x',TM.left+tdW+5).attr('y',yV(v)+3).attr('text-anchor','start').attr('font-family','JetBrains Mono,monospace').attr('font-size',8.5).attr('fill',T.vk).attr('fill-opacity',0.8).text(v+'%');
+      });
+      // 캔들
+      var bw=Math.max(3,Math.min(13,(xT.step()||14)*0.62));
+      allDates.forEach(function(dt){ var f=FUT.byDate[dt]; if(!f)return; var x=xT(dt), up=f.c>=f.o, col=up?T.up:T.down;
+        gTopStatic.append('line').attr('x1',x).attr('x2',x).attr('y1',yP(f.h)).attr('y2',yP(f.l)).attr('stroke',col).attr('stroke-width',1).attr('stroke-opacity',0.9);
+        var y0=yP(Math.max(f.o,f.c)), y1=yP(Math.min(f.o,f.c));
+        gTopStatic.append('rect').attr('x',x-bw/2).attr('y',y0).attr('width',bw).attr('height',Math.max(1,y1-y0)).attr('fill',col).attr('fill-opacity',up?0.55:0.9).attr('stroke',col).attr('stroke-width',0.8);
+      });
+      // 변동성 선
+      drawVolLine('vk', function(f){return f?f.vk:null;}, T.vk, tVk.checked);
+      drawVolLine('atm', function(f,dt){return futAtm(dt);}, T.atm, tAtm.checked);
+      // x 날짜 라벨 (드문드문)
+      var step=allDates.length>10?Math.ceil(allDates.length/9):1;
+      allDates.forEach(function(dt,i){ if(i%step!==0&&i!==allDates.length-1)return;
+        gTopStatic.append('text').attr('x',xT(dt)).attr('y',TM.top+tdH+15).attr('text-anchor','middle').attr('font-family','JetBrains Mono,monospace').attr('font-size',8).attr('fill',T.muted).text(dt.slice(5));
+      });
+    }
+    function drawVolLine(cls,acc,col,show){
+      gTopStatic.selectAll('path.vl-'+cls).remove();
+      if(!show)return;
+      var pts=allDates.map(function(dt){ var v=acc(FUT.byDate[dt],dt); return v!=null?{x:xT(dt),y:yV(v)}:null; }).filter(Boolean);
+      if(pts.length<2)return;
+      var ln=d3.line().x(function(p){return p.x;}).y(function(p){return p.y;}).curve(d3.curveLinear);
+      gTopStatic.append('path').attr('class','vl-'+cls).attr('d',ln(pts)).attr('fill','none').attr('stroke',col).attr('stroke-width',1.6).attr('stroke-opacity',0.85);
     }
 
-    var line = d3.line().x(function (p) { return xS(p.strike); })
-      .y(function (p) { return yS(p.iv); }).curve(d3.curveLinear);
+    function render(animate){
+      var dt=dates[idx], rec=expiry.byDate[dt], dur=animate?500:0;
 
-    function curve(points, type) {
-      return points.filter(function (p) { return p.type === type; })
-        .sort(function (a, b) { return a.strike - b.strike; });
-    }
-
-    function render(animate) {
-      var dt = dates[idx];
-      var rec = expiry.byDate[dt];
-      var dur = animate ? 520 : 0;
-
-      // 과거 곡선 겹쳐 보기 (production augment_skew_history 페이드 오버레이 미러)
+      // ----- 하단 스큐 -----
       gGhost.selectAll('*').remove();
-      if (ghostChk.checked) {
-        for (var j = 0; j < idx; j++) {
-          var age = idx - j, op = Math.max(0.06, 0.42 * Math.pow(0.78, age));
-          var grec = expiry.byDate[dates[j]];
-          [['put', PUT], ['call', CALL]].forEach(function (pair) {
-            var pts = curve(grec.points, pair[0]);
-            if (pts.length >= 2) gGhost.append('path').attr('d', line(pts))
-              .attr('fill', 'none').attr('stroke', pair[1]).attr('stroke-width', 1)
-              .attr('stroke-opacity', op);
-          });
-        }
-      }
+      if(tGhost.checked){ for(var j=0;j<idx;j++){ var age=idx-j, op=Math.max(0.06,0.42*Math.pow(0.78,age)), gr=expiry.byDate[dates[j]];
+        [['put',PUT],['call',CALL]].forEach(function(pr){ var pts=curve(gr.points,pr[0]); if(pts.length>=2) gGhost.append('path').attr('d',line(pts)).attr('fill','none').attr('stroke',pr[1]).attr('stroke-width',1).attr('stroke-opacity',op); }); } }
 
-      // ATM 기준선
-      var atmLine = gDyn.selectAll('line.atm').data(rec.atm != null ? [rec.atm] : []);
-      atmLine.exit().remove();
-      atmLine.enter().append('line').attr('class', 'atm')
-        .attr('x1', M.left).attr('x2', M.left + dataW)
-        .attr('stroke', T.text).attr('stroke-width', 1).attr('stroke-dasharray', '5 4')
-        .attr('stroke-opacity', 0.55)
-        .attr('y1', function (v) { return yS(v); }).attr('y2', function (v) { return yS(v); })
-        .merge(atmLine).transition().duration(dur)
-        .attr('y1', function (v) { return yS(v); }).attr('y2', function (v) { return yS(v); });
+      var al=gDyn.selectAll('line.atm').data(rec.atm!=null?[rec.atm]:[]);
+      al.exit().remove();
+      al.enter().append('line').attr('class','atm').attr('x1',M.left).attr('x2',M.left+dW).attr('stroke',T.text).attr('stroke-width',1).attr('stroke-dasharray','5 4').attr('stroke-opacity',0.5).attr('y1',function(v){return yS(v);}).attr('y2',function(v){return yS(v);})
+        .merge(al).transition().duration(dur).attr('y1',function(v){return yS(v);}).attr('y2',function(v){return yS(v);});
+      var alt=gDyn.selectAll('text.atm').data(rec.atm!=null?[rec.atm]:[]);
+      alt.exit().remove();
+      alt.enter().append('text').attr('class','atm').attr('x',M.left+5).attr('text-anchor','start').attr('font-family','Noto Sans KR').attr('font-size',10).attr('fill',T.text).attr('fill-opacity',0.8).attr('y',function(v){return yS(v)-5;})
+        .merge(alt).text(function(v){return 'ATM IV '+v.toFixed(1)+'%';}).transition().duration(dur).attr('y',function(v){return yS(v)-5;});
 
-      var atmLbl = gDyn.selectAll('text.atm').data(rec.atm != null ? [rec.atm] : []);
-      atmLbl.exit().remove();
-      atmLbl.enter().append('text').attr('class', 'atm')
-        .attr('x', M.left + 5).attr('text-anchor', 'start').attr('font-family', 'Noto Sans KR')
-        .attr('font-size', 10).attr('fill', T.text).attr('fill-opacity', 0.8)
-        .attr('y', function (v) { return yS(v) - 5; })
-        .merge(atmLbl).text(function (v) { return 'ATM IV ' + v.toFixed(1) + '% (등가격 기준선)'; })
-        .transition().duration(dur).attr('y', function (v) { return yS(v) - 5; });
-
-      // 풋·콜 곡선 (path morph)
-      [['put', PUT], ['call', CALL]].forEach(function (pair) {
-        var pts = curve(rec.points, pair[0]);
-        var path = gDyn.selectAll('path.c-' + pair[0]).data(pts.length >= 2 ? [pts] : []);
-        path.exit().remove();
-        path.enter().append('path').attr('class', 'c-' + pair[0])
-          .attr('fill', 'none').attr('stroke', pair[1]).attr('stroke-width', 2)
-          .attr('d', line)
-          .merge(path).transition().duration(dur).attr('d', line);
-
-        // 점
-        var dots = gDyn.selectAll('circle.d-' + pair[0]).data(pts, function (p) { return p.strike; });
-        dots.exit().transition().duration(dur).attr('r', 0).remove();
-        dots.enter().append('circle').attr('class', 'd-' + pair[0])
-          .attr('fill', pair[1]).attr('fill-opacity', 0.95).attr('r', 3)
-          .attr('cx', function (p) { return xS(p.strike); }).attr('cy', function (p) { return yS(p.iv); })
-          .merge(dots).transition().duration(dur)
-          .attr('cx', function (p) { return xS(p.strike); }).attr('cy', function (p) { return yS(p.iv); }).attr('r', 3);
+      [['put',PUT],['call',CALL]].forEach(function(pr){
+        var pts=curve(rec.points,pr[0]);
+        var p=gDyn.selectAll('path.c-'+pr[0]).data(pts.length>=2?[pts]:[]);
+        p.exit().remove();
+        p.enter().append('path').attr('class','c-'+pr[0]).attr('fill','none').attr('stroke',pr[1]).attr('stroke-width',2).attr('d',line).merge(p).transition().duration(dur).attr('d',line);
+        var dots=gDyn.selectAll('circle.d-'+pr[0]).data(pts,function(d){return d.strike;});
+        dots.exit().transition().duration(dur).attr('r',0).remove();
+        dots.enter().append('circle').attr('class','d-'+pr[0]).attr('fill',pr[1]).attr('fill-opacity',0.95).attr('r',2.6).attr('cx',function(d){return xS(d.strike);}).attr('cy',function(d){return yS(d.iv);})
+          .merge(dots).transition().duration(dur).attr('cx',function(d){return xS(d.strike);}).attr('cy',function(d){return yS(d.iv);}).attr('r',2.6);
       });
 
-      // 날짜 워터마크
-      var ds = gDyn.selectAll('text.stamp').data([dt]);
-      ds.enter().append('text').attr('class', 'stamp')
-        .attr('x', M.left + dataW - 6).attr('y', M.top + 22).attr('text-anchor', 'end')
-        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 20)
-        .attr('font-weight', 700).attr('fill', T.text).attr('fill-opacity', 0.10)
-        .merge(ds).text(dt);
+      // 종가 위치 세로선 (스큐 행사가축 위)
+      var f=FUT?FUT.byDate[dt]:null;
+      var hasClose=f&&isFinite(f.c)&&f.c>=xS.domain()[0]&&f.c<=xS.domain()[1];
+      var cl=gDyn.selectAll('line.close').data(hasClose?[f.c]:[]);
+      cl.exit().remove();
+      cl.enter().append('line').attr('class','close').attr('y1',M.top).attr('y2',M.top+dH).attr('stroke',T.accent).attr('stroke-width',1).attr('stroke-dasharray','3 3').attr('stroke-opacity',0.7).attr('x1',function(v){return xS(v);}).attr('x2',function(v){return xS(v);})
+        .merge(cl).transition().duration(dur).attr('x1',function(v){return xS(v);}).attr('x2',function(v){return xS(v);});
+      var clt=gDyn.selectAll('text.close').data(hasClose?[f.c]:[]);
+      clt.exit().remove();
+      clt.enter().append('text').attr('class','close').attr('y',M.top+11).attr('text-anchor','middle').attr('font-family','JetBrains Mono,monospace').attr('font-size',9).attr('fill',T.accent).attr('x',function(v){return xS(v);})
+        .merge(clt).text(function(v){return '종가 '+d3.format(',.0f')(v);}).transition().duration(dur).attr('x',function(v){return xS(v);});
 
-      stamp.textContent = dt;
-      slider.value = String(idx);
-      updateStats(rec);
+      // 워터마크
+      var ws=gDyn.selectAll('text.stamp').data([dt]);
+      ws.enter().append('text').attr('class','stamp').attr('x',M.left+dW-6).attr('y',M.top+22).attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',19).attr('font-weight',700).attr('fill',T.text).attr('fill-opacity',0.09).merge(ws).text(dt);
+
+      // ----- 상단 플레이헤드 -----
+      if(FUT){
+        var px=xT(dt)!=null?xT(dt):TM.left;
+        var ph=gTopDyn.selectAll('line.ph').data([dt]);
+        ph.enter().append('line').attr('class','ph').attr('y1',TM.top).attr('y2',TM.top+tdH).attr('stroke',T.text).attr('stroke-width',1).attr('stroke-opacity',0.5).attr('x1',px).attr('x2',px)
+          .merge(ph).transition().duration(dur).attr('x1',px).attr('x2',px);
+        var marker=gTopDyn.selectAll('circle.ph').data(f?[f]:[]);
+        marker.exit().remove();
+        marker.enter().append('circle').attr('class','ph').attr('r',3.4).attr('fill',T.text).attr('stroke',T.bg).attr('cx',px).attr('cy',yP(f?f.c:0))
+          .merge(marker).transition().duration(dur).attr('cx',px).attr('cy',function(d){return yP(d.c);});
+      }
+
+      stamp.textContent=dt; slider.value=String(idx);
+      updateStats(rec,dt);
     }
 
-    function updateStats(rec) {
-      var atm0 = expiry.byDate[dates[0]].atm;
-      var el = function (id) { return document.getElementById(id); };
-      el('s-atm').textContent = rec.atm != null ? rec.atm.toFixed(1) + '%' : '—';
-      el('s-atm').className = 'v';
-
-      // 스큐 기울기: 저행사 풋 IV − 고행사 콜 IV (저행사~고행사 5% 밖 근사).
-      var puts = curve(rec.points, 'put'), calls = curve(rec.points, 'call');
-      var skewEl = el('s-skew');
-      if (puts.length && calls.length) {
-        var pIV = puts[Math.max(0, Math.floor(puts.length * 0.15))].iv;       // 깊은 풋
-        var cIV = calls[Math.min(calls.length - 1, Math.floor(calls.length * 0.85))].iv; // 깊은 콜
-        var sp = round1(pIV - cIV);
-        skewEl.textContent = (sp >= 0 ? '+' : '') + sp.toFixed(1) + '%p';
-        skewEl.className = 'v ' + (sp >= 0 ? 'up' : 'down');
-      } else { skewEl.textContent = '—'; skewEl.className = 'v'; }
-
-      var dEl = el('s-delta');
-      if (rec.atm != null && atm0 != null) {
-        var dd = round1(rec.atm - atm0);
-        dEl.textContent = (dd >= 0 ? '+' : '') + dd.toFixed(1) + '%p';
-        dEl.className = 'v ' + (dd > 0 ? 'up' : (dd < 0 ? 'down' : ''));
-      } else { dEl.textContent = '—'; dEl.className = 'v'; }
+    function updateStats(rec,dt){
+      var el=function(id){return document.getElementById(id);};
+      var f=FUT?FUT.byDate[dt]:null;
+      el('s-close').textContent = f?d3.format(',.2f')(f.c):'—'; el('s-close').className='v';
+      // 전일 대비
+      var ce=el('s-chg');
+      if(f){ var pi=idx-1, prev=null; while(pi>=0){ var pf=FUT.byDate[dates[pi]]; if(pf){prev=pf.c;break;} pi--; }
+        if(prev){ var pct=(f.c/prev-1)*100; ce.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%'; ce.className='v '+(pct>=0?'up':'down'); }
+        else { ce.textContent='—'; ce.className='v'; } } else { ce.textContent='—'; ce.className='v'; }
+      el('s-vk').textContent = f&&f.vk!=null?f.vk.toFixed(1):'—'; el('s-vk').className='v';
+      el('s-atm').textContent = rec.atm!=null?rec.atm.toFixed(1)+'%':'—'; el('s-atm').className='v';
+      var puts=curve(rec.points,'put'), calls=curve(rec.points,'call'), sk=el('s-skew');
+      if(puts.length&&calls.length){ var pIV=puts[Math.max(0,Math.floor(puts.length*0.15))].iv, cIV=calls[Math.min(calls.length-1,Math.floor(calls.length*0.85))].iv, sp=r1(pIV-cIV);
+        sk.textContent=(sp>=0?'+':'')+sp.toFixed(1)+'%p'; sk.className='v '+(sp>=0?'up':'down'); } else { sk.textContent='—'; sk.className='v'; }
     }
 
-    function go(i, animate) {
-      idx = Math.max(0, Math.min(dates.length - 1, i));
-      render(animate);
-    }
-    function stopPlay() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = '▶ 재생'; } }
-    function startPlay() {
-      if (idx >= dates.length - 1) go(0, false);
-      playBtn.textContent = '⏸ 멈춤';
-      timer = setInterval(function () {
-        if (idx >= dates.length - 1) { stopPlay(); return; }
-        go(idx + 1, true);
-      }, 850);
-    }
+    function go(i,a){ idx=Math.max(0,Math.min(dates.length-1,i)); render(a); }
+    function stopPlay(){ if(timer){clearInterval(timer);timer=null;playBtn.textContent='▶ 재생';} }
+    function startPlay(){ if(idx>=dates.length-1)go(0,false); playBtn.textContent='⏸ 멈춤'; timer=setInterval(function(){ if(idx>=dates.length-1){stopPlay();return;} go(idx+1,true); },820); }
 
-    // 이벤트
-    exSel.addEventListener('change', function () { stopPlay(); setupExpiry(exSel.value); });
-    slider.addEventListener('input', function () { stopPlay(); go(+slider.value, true); });
-    document.getElementById('prev').addEventListener('click', function () { stopPlay(); go(idx - 1, true); });
-    document.getElementById('next').addEventListener('click', function () { stopPlay(); go(idx + 1, true); });
-    ghostChk.addEventListener('change', function () { render(false); });
-    playBtn.addEventListener('click', function () { if (timer) stopPlay(); else startPlay(); });
+    exSel.addEventListener('change',function(){ stopPlay(); setupExpiry(exSel.value); });
+    slider.addEventListener('input',function(){ stopPlay(); go(+slider.value,true); });
+    document.getElementById('prev').addEventListener('click',function(){ stopPlay(); go(idx-1,true); });
+    document.getElementById('next').addEventListener('click',function(){ stopPlay(); go(idx+1,true); });
+    tGhost.addEventListener('change',function(){ render(false); });
+    tVk.addEventListener('change',function(){ if(FUT){drawVolLine('vk',function(ff){return ff?ff.vk:null;},T.vk,tVk.checked);} });
+    tAtm.addEventListener('change',function(){ if(FUT){drawVolLine('atm',function(ff,dd){return futAtm(dd);},T.atm,tAtm.checked);} });
+    playBtn.addEventListener('click',function(){ if(timer)stopPlay(); else startPlay(); });
 
     setupExpiry(exSel.value);
   }
