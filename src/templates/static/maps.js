@@ -846,6 +846,21 @@
       });
     svg.call(drag);
 
+    // v8.0.0 — 르포: 살아있는 지구본(연속 자전). 드래그 중 정지, reduced-motion 정지.
+    // draw() 가 매 프레임 현재 회전에서 소량 전진 — 드래그가 남긴 위치에서 자연 이어짐.
+    var _repTheme = (container.getAttribute('data-theme') || '').indexOf('reportage_') === 0;
+    var _repRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (_repTheme && !_repRM) {
+      var _spinLast = 0;
+      d3.timer(function (elapsed) {
+        var dt = Math.min(40, elapsed - _spinLast); _spinLast = elapsed;
+        if (container.classList.contains('dragging')) return;
+        var r = projection.rotate();
+        projection.rotate([r[0] + dt * 0.006, r[1], r[2] || 0]);
+        draw();
+      });
+    }
+
     // 컨트롤 버튼 — in/out = 스케일, reset = 초기 회전 + 스케일
     const card = container.closest('.map-card');
     if (card) {

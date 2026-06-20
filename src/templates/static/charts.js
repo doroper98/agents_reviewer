@@ -1901,6 +1901,9 @@
     const nodes = (data.nodes || []).map(n => ({ ...n }));
     const links = (data.links || []).map(l => ({ ...l }));
     if (nodes.length < 2 || links.length < 1) return;
+    // v8.0.0 — 르포면 흐름 입자 애니메이션(중심선 dash flow) 오버레이. reduced-motion OFF.
+    const SANK_ANIM = ((document.documentElement.getAttribute('data-theme') || '').indexOf('reportage_') === 0)
+      && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const W = 760;
     const H = Math.max(320, Math.min(560, 60 + nodes.length * 28));
     // v5.4.7 — 첫 컬럼 라벨 (text-anchor: end at x0-6) 과 마지막 컬럼 라벨
@@ -2101,6 +2104,16 @@
       linkG.append('path').attr('d', path).attr('fill', fill)
         .attr('fill-opacity', isNeg ? NEG_OPACITY : FLOW_OPACITY)
         .attr('stroke', 'none');
+      // v8.0.0 — 르포: 흐름 입자(중심선 dash flow). 리본은 그대로, 위에 얹기만.
+      if (SANK_ANIM) {
+        const _sy = (l._sy0 + l._sy1) / 2, _ty = (l._ty0 + l._ty1) / 2;
+        const _h = Math.min(l._sy1 - l._sy0, l._ty1 - l._ty0);
+        linkG.append('path')
+          .attr('d', `M ${x1},${_sy} C ${midX},${_sy} ${midX},${_ty} ${x2},${_ty}`)
+          .attr('fill', 'none').attr('stroke', t.text).attr('stroke-opacity', 0.45)
+          .attr('stroke-width', Math.max(1.5, _h * 0.14)).attr('stroke-linecap', 'round')
+          .attr('data-anim', 'static').classed('sm-flow', true);
+      }
       // v5.3.0 — 큰 흐름에 in-flow 라벨 (cut-out 효과, t.bg 색으로 대비).
       // 흐름 두께 ≥22px 이고 너비 ≥80px 일 때만 — 좁은 흐름엔 안 박음.
       const sHeight = Math.min(l._sy1 - l._sy0, l._ty1 - l._ty0);
