@@ -66,7 +66,7 @@
       <span class="datestamp" id="datestamp">—</span>
       <button class="btn" id="next">▶</button>
       <button class="btn primary" id="play">▶ 재생</button>
-      <div><label for="yaxis">세로축</label><select id="yaxis"><option value="iv">내재변동성(IV%)</option><option value="prem">프리미엄(이론가)</option></select></div>
+      <div><label for="yaxis">세로축</label><select id="yaxis"><option value="iv">내재변동성(IV%)</option><option value="prem">프리미엄(가격)</option></select></div>
       <div class="toggles">
         <label class="toggle"><input type="checkbox" id="t-vk" checked><span class="dot" style="background:var(--vk)"></span>VKOSPI</label>
         <label class="toggle"><input type="checkbox" id="t-atm" checked><span class="dot" style="background:var(--atm)"></span>ATM IV</label>
@@ -99,6 +99,7 @@
 
 <script src="iv_skew_data.js"></script>
 <script src="iv_skew_futures.js"></script>
+<script src="iv_skew_prices.js"></script>
 <script src="../src/templates/static/d3.v7.min.js"></script>
 <script>
 (function () {
@@ -186,10 +187,16 @@
       var common=Object.keys(puts).filter(function(k){return k in calls;});
       if(common.length){ var best=common.reduce(function(a,b){ return Math.abs(puts[a]-calls[a])<=Math.abs(puts[b]-calls[b])?a:b; }); return +best; }
       return null; }
-    // 세로축 값: IV(%) 또는 BS 이론 프리미엄.
+    // 실제 종가(있으면) 조회 — scripts/export_option_prices.py 가 채운 KRX 종가.
+    var PRICES=window.OPTION_PRICES||null;
+    function realPrice(p,dt){ if(!PRICES||!PRICES.byExpiry)return null; var e=PRICES.byExpiry[exSel.value]; var rec=e&&e[dt]; if(!rec)return null;
+      var v=rec[p.type+'|'+p.strike]; return (v!=null&&isFinite(v))?v:null; }
+    // 세로축 값: IV(%) 또는 프리미엄(실제 종가 우선, 없으면 BS 이론가).
     function computeY(p,dt){ if(yMode==='iv')return p.iv;
+      var rp=realPrice(p,dt); if(rp!=null)return rp;
       var spot=spotForDate(dt), t=tYears(dt,exSel.value); if(spot==null||t==null)return null;
       return bsPrice(spot,p.strike,t,R_FREE,(p.iv||0)/100,p.type); }
+    var HAS_REAL=!!(PRICES&&PRICES.byExpiry&&Object.keys(PRICES.byExpiry).length);
     function lineFor(dt){ return d3.line().x(function(p){return xS(p.strike);}).y(function(p){return yS(computeY(p,dt));}).defined(function(p){return computeY(p,dt)!=null;}).curve(d3.curveLinear); }
 
     function setupExpiry(ex){
@@ -233,7 +240,7 @@
         gStatic.append('line').attr('x1',M.left).attr('x2',M.left+dW).attr('y1',yS(v)).attr('y2',yS(v)).attr('stroke',T.muted).attr('stroke-opacity',0.14).attr('stroke-width',0.5);
         gStatic.append('text').attr('x',M.left-6).attr('y',yS(v)+3).attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',9).attr('fill',T.muted).text(yfmt(v));
       });
-      gStatic.append('text').attr('x',M.left-44).attr('y',M.top-14).attr('text-anchor','start').attr('font-size',10).attr('fill',T.muted).text(yMode==='iv'?'IV (%)':'프리미엄 (이론가, p)');
+      gStatic.append('text').attr('x',M.left-44).attr('y',M.top-14).attr('text-anchor','start').attr('font-size',10).attr('fill',T.muted).text(yMode==='iv'?'IV (%)':('프리미엄 ('+(HAS_REAL?'실제 종가':'이론가')+', p)'));
       var yb=M.top+dH;
       gStatic.append('line').attr('x1',M.left).attr('x2',M.left+dW).attr('y1',yb).attr('y2',yb).attr('stroke',T.muted).attr('stroke-opacity',0.4);
       var strikes=[]; dates.forEach(function(dt){ expiry.byDate[dt].points.forEach(function(p){strikes.push(p.strike);}); });
