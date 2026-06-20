@@ -66,6 +66,7 @@
       <span class="datestamp" id="datestamp">—</span>
       <button class="btn" id="next">▶</button>
       <button class="btn primary" id="play">▶ 재생</button>
+      <div><label for="yaxis">세로축</label><select id="yaxis"><option value="iv">내재변동성(IV%)</option><option value="prem">프리미엄(이론가)</option></select></div>
       <div class="toggles">
         <label class="toggle"><input type="checkbox" id="t-vk" checked><span class="dot" style="background:var(--vk)"></span>VKOSPI</label>
         <label class="toggle"><input type="checkbox" id="t-atm" checked><span class="dot" style="background:var(--atm)"></span>ATM IV</label>
@@ -103,6 +104,19 @@
 (function () {
   if (window.d3) { boot(); }
   else { var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/d3@7'; s.onload = boot; document.head.appendChild(s); }
+
+  // ---- Black-Scholes (프리미엄 재구성용, greeks.py 와 동일 식) ----
+  function erf(x){ var s=x<0?-1:1; x=Math.abs(x); var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    var t=1/(1+p*x); var y=1-(((((a5*t+a4)*t+a3)*t+a2)*t+a1)*t)*Math.exp(-x*x); return s*y; }
+  function ncdf(x){ return 0.5*(1+erf(x/Math.SQRT2)); }
+  function bsPrice(s,k,t,r,sig,type){ if(s<=0||k<=0||t<=0||sig<=0)return null;
+    var vt=sig*Math.sqrt(t), d1=(Math.log(s/k)+(r+0.5*sig*sig)*t)/vt, d2=d1-vt;
+    var v=type==='call' ? s*ncdf(d1)-k*Math.exp(-r*t)*ncdf(d2) : k*Math.exp(-r*t)*ncdf(-d2)-s*ncdf(-d1);
+    return Math.max(0,v); }
+  function secondThu(yyyymm){ var y=+yyyymm.slice(0,4), m=+yyyymm.slice(4,6)-1, d=new Date(Date.UTC(y,m,1)), wd=d.getUTCDay();
+    var firstThu=1+((4-wd+7)%7); return new Date(Date.UTC(y,m,firstThu+7)); }
+  function tYears(dt,yyyymm){ try{ var exp=secondThu(yyyymm), d0=new Date(dt+'T00:00:00Z'), days=(exp-d0)/86400000; return Math.max(days,0.5)/365; }catch(e){ return null; } }
+  var R_FREE=0.03;
 
   // 데모 스큐(실데이터 없을 때) — 고정 행사가 격자 위 합성 스마일.
   function r1(x){ return Math.round(x*10)/10; }
@@ -156,28 +170,38 @@
     var xS, yS;
 
     var exSel=document.getElementById('expiry'), slider=document.getElementById('slider'), stamp=document.getElementById('datestamp');
+    var yaxisSel=document.getElementById('yaxis');
     var tVk=document.getElementById('t-vk'), tAtm=document.getElementById('t-atm'), tGhost=document.getElementById('t-ghost'), playBtn=document.getElementById('play');
-    if (!FUT) { document.getElementById('top-label').style.display='none'; document.getElementById('top').style.display='none'; tVk.parentElement.style.display='none'; tAtm.parentElement.style.display='none'; }
+    if (!FUT) { document.getElementById('top-label').style.display='none'; document.getElementById('top').style.display='none'; tVk.parentElement.style.display='none'; tAtm.parentElement.style.display='none'; yaxisSel.parentElement.style.display='none'; }
 
     Object.keys(DATA.expiries).sort().forEach(function(ex){ var o=document.createElement('option'); o.value=ex; o.textContent=DATA.expiries[ex].label||ex; exSel.appendChild(o); });
     exSel.value = DATA.default_expiry || Object.keys(DATA.expiries).sort()[0];
 
-    var expiry, dates, idx=0, timer=null;
-    var line=d3.line().x(function(p){return xS(p.strike);}).y(function(p){return yS(p.iv);}).curve(d3.curveLinear);
+    var expiry, dates, idx=0, timer=null, yMode='iv';   // 'iv' | 'prem'
     function curve(points,type){ return points.filter(function(p){return p.type===type;}).sort(function(a,b){return a.strike-b.strike;}); }
     function futAtm(dt){ var e=DATA.expiries[exSel.value]; return e&&e.byDate[dt]?e.byDate[dt].atm:null; }
+    // 그날의 기초자산(종가) — 선물 종가 우선, 없으면 풋·콜 IV 교차 행사가(ATM 근사).
+    function spotForDate(dt){ var f=FUT&&FUT.byDate[dt]; if(f&&isFinite(f.c))return f.c;
+      var rec=expiry.byDate[dt], puts={}, calls={}; rec.points.forEach(function(p){ (p.type==='put'?puts:calls)[p.strike]=p.iv; });
+      var common=Object.keys(puts).filter(function(k){return k in calls;});
+      if(common.length){ var best=common.reduce(function(a,b){ return Math.abs(puts[a]-calls[a])<=Math.abs(puts[b]-calls[b])?a:b; }); return +best; }
+      return null; }
+    // 세로축 값: IV(%) 또는 BS 이론 프리미엄.
+    function computeY(p,dt){ if(yMode==='iv')return p.iv;
+      var spot=spotForDate(dt), t=tYears(dt,exSel.value); if(spot==null||t==null)return null;
+      return bsPrice(spot,p.strike,t,R_FREE,(p.iv||0)/100,p.type); }
+    function lineFor(dt){ return d3.line().x(function(p){return xS(p.strike);}).y(function(p){return yS(computeY(p,dt));}).defined(function(p){return computeY(p,dt)!=null;}).curve(d3.curveLinear); }
 
     function setupExpiry(ex){
       expiry=DATA.expiries[ex]; dates=expiry.dates.slice(); idx=dates.length-1;
       slider.max=String(dates.length-1); slider.value=String(idx);
 
-      // 스큐 고정 도메인
-      var aK=[], aIV=[];
-      dates.forEach(function(dt){ var rec=expiry.byDate[dt]; rec.points.forEach(function(p){aK.push(p.strike);aIV.push(p.iv);}); if(rec.atm!=null)aIV.push(rec.atm); });
-      var xe=d3.extent(aK), ye=d3.extent(aIV), xp=(xe[1]-xe[0])*0.04||1, yp=(ye[1]-ye[0])*0.10||1;
+      // 스큐 x 도메인(행사가) — 고정. y 는 모드별로 buildYScale 에서.
+      var aK=[];
+      dates.forEach(function(dt){ expiry.byDate[dt].points.forEach(function(p){aK.push(p.strike);}); });
+      var xe=d3.extent(aK), xp=(xe[1]-xe[0])*0.04||1;
       xS=d3.scaleLinear().domain([xe[0]-xp,xe[1]+xp]).range([M.left,M.left+dW]);
-      yS=d3.scaleLinear().domain([ye[0]-yp,ye[1]+yp]).range([M.top+dH,M.top]);
-      drawSkewStatic();
+      buildYScale();
 
       // 상단 스케일 (가격: 전체 선물 / 변동성: vk + 현재 만기 atm)
       if (FUT){
@@ -193,12 +217,23 @@
       render(false);
     }
 
+    function buildYScale(){
+      var ys=[];
+      dates.forEach(function(dt){ var rec=expiry.byDate[dt]; rec.points.forEach(function(p){ var y=computeY(p,dt); if(y!=null&&isFinite(y))ys.push(y); }); if(yMode==='iv'&&rec.atm!=null)ys.push(rec.atm); });
+      var ye=d3.extent(ys), yp=(ye[1]-ye[0])*0.10||1;
+      var lo=yMode==='prem'?Math.max(0,ye[0]-yp):ye[0]-yp;
+      yS=d3.scaleLinear().domain([lo,ye[1]+yp]).range([M.top+dH,M.top]);
+      drawSkewStatic();
+    }
+
     function drawSkewStatic(){
       gStatic.selectAll('*').remove();
+      var suf=yMode==='iv'?'%':'', yfmt=yMode==='iv'?function(v){return v+suf;}:function(v){return d3.format(',.0f')(v);};
       yS.ticks(5).forEach(function(v){
         gStatic.append('line').attr('x1',M.left).attr('x2',M.left+dW).attr('y1',yS(v)).attr('y2',yS(v)).attr('stroke',T.muted).attr('stroke-opacity',0.14).attr('stroke-width',0.5);
-        gStatic.append('text').attr('x',M.left-6).attr('y',yS(v)+3).attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',9).attr('fill',T.muted).text(v+'%');
+        gStatic.append('text').attr('x',M.left-6).attr('y',yS(v)+3).attr('text-anchor','end').attr('font-family','JetBrains Mono,monospace').attr('font-size',9).attr('fill',T.muted).text(yfmt(v));
       });
+      gStatic.append('text').attr('x',M.left-44).attr('y',M.top-14).attr('text-anchor','start').attr('font-size',10).attr('fill',T.muted).text(yMode==='iv'?'IV (%)':'프리미엄 (이론가, p)');
       var yb=M.top+dH;
       gStatic.append('line').attr('x1',M.left).attr('x2',M.left+dW).attr('y1',yb).attr('y2',yb).attr('stroke',T.muted).attr('stroke-opacity',0.4);
       var strikes=[]; dates.forEach(function(dt){ expiry.byDate[dt].points.forEach(function(p){strikes.push(p.strike);}); });
@@ -255,26 +290,28 @@
       // ----- 하단 스큐 -----
       gGhost.selectAll('*').remove();
       if(tGhost.checked){ for(var j=0;j<idx;j++){ var age=idx-j, op=Math.max(0.06,0.42*Math.pow(0.78,age)), gr=expiry.byDate[dates[j]];
-        [['put',PUT],['call',CALL]].forEach(function(pr){ var pts=curve(gr.points,pr[0]); if(pts.length>=2) gGhost.append('path').attr('d',line(pts)).attr('fill','none').attr('stroke',pr[1]).attr('stroke-width',1).attr('stroke-opacity',op); }); } }
+        [['put',PUT],['call',CALL]].forEach(function(pr){ var pts=curve(gr.points,pr[0]); if(pts.length>=2) gGhost.append('path').attr('d',lineFor(dates[j])(pts)).attr('fill','none').attr('stroke',pr[1]).attr('stroke-width',1).attr('stroke-opacity',op); }); } }
 
-      var al=gDyn.selectAll('line.atm').data(rec.atm!=null?[rec.atm]:[]);
+      var showAtm=(yMode==='iv'&&rec.atm!=null);
+      var al=gDyn.selectAll('line.atm').data(showAtm?[rec.atm]:[]);
       al.exit().remove();
       al.enter().append('line').attr('class','atm').attr('x1',M.left).attr('x2',M.left+dW).attr('stroke',T.text).attr('stroke-width',1).attr('stroke-dasharray','5 4').attr('stroke-opacity',0.5).attr('y1',function(v){return yS(v);}).attr('y2',function(v){return yS(v);})
         .merge(al).transition().duration(dur).attr('y1',function(v){return yS(v);}).attr('y2',function(v){return yS(v);});
-      var alt=gDyn.selectAll('text.atm').data(rec.atm!=null?[rec.atm]:[]);
+      var alt=gDyn.selectAll('text.atm').data(showAtm?[rec.atm]:[]);
       alt.exit().remove();
       alt.enter().append('text').attr('class','atm').attr('x',M.left+5).attr('text-anchor','start').attr('font-family','Noto Sans KR').attr('font-size',10).attr('fill',T.text).attr('fill-opacity',0.8).attr('y',function(v){return yS(v)-5;})
         .merge(alt).text(function(v){return 'ATM IV '+v.toFixed(1)+'%';}).transition().duration(dur).attr('y',function(v){return yS(v)-5;});
 
+      var ln=lineFor(dt), cy=function(d){return yS(computeY(d,dt));};
       [['put',PUT],['call',CALL]].forEach(function(pr){
         var pts=curve(rec.points,pr[0]);
         var p=gDyn.selectAll('path.c-'+pr[0]).data(pts.length>=2?[pts]:[]);
         p.exit().remove();
-        p.enter().append('path').attr('class','c-'+pr[0]).attr('fill','none').attr('stroke',pr[1]).attr('stroke-width',2).attr('d',line).merge(p).transition().duration(dur).attr('d',line);
+        p.enter().append('path').attr('class','c-'+pr[0]).attr('fill','none').attr('stroke',pr[1]).attr('stroke-width',2).attr('d',ln).merge(p).transition().duration(dur).attr('d',ln);
         var dots=gDyn.selectAll('circle.d-'+pr[0]).data(pts,function(d){return d.strike;});
         dots.exit().transition().duration(dur).attr('r',0).remove();
-        dots.enter().append('circle').attr('class','d-'+pr[0]).attr('fill',pr[1]).attr('fill-opacity',0.95).attr('r',2.6).attr('cx',function(d){return xS(d.strike);}).attr('cy',function(d){return yS(d.iv);})
-          .merge(dots).transition().duration(dur).attr('cx',function(d){return xS(d.strike);}).attr('cy',function(d){return yS(d.iv);}).attr('r',2.6);
+        dots.enter().append('circle').attr('class','d-'+pr[0]).attr('fill',pr[1]).attr('fill-opacity',0.95).attr('r',2.6).attr('cx',function(d){return xS(d.strike);}).attr('cy',cy)
+          .merge(dots).transition().duration(dur).attr('cx',function(d){return xS(d.strike);}).attr('cy',cy).attr('r',2.6);
       });
 
       // 종가 위치 세로선 (스큐 행사가축 위)
@@ -334,6 +371,7 @@
     document.getElementById('prev').addEventListener('click',function(){ stopPlay(); go(idx-1,true); });
     document.getElementById('next').addEventListener('click',function(){ stopPlay(); go(idx+1,true); });
     tGhost.addEventListener('change',function(){ render(false); });
+    yaxisSel.addEventListener('change',function(){ stopPlay(); yMode=yaxisSel.value; buildYScale(); render(false); });
     tVk.addEventListener('change',function(){ if(FUT){drawVolLine('vk',function(ff){return ff?ff.vk:null;},T.vk,tVk.checked);} });
     tAtm.addEventListener('change',function(){ if(FUT){drawVolLine('atm',function(ff,dd){return futAtm(dd);},T.atm,tAtm.checked);} });
     playBtn.addEventListener('click',function(){ if(timer)stopPlay(); else startPlay(); });
