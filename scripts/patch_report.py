@@ -236,6 +236,14 @@ def parse_args() -> argparse.Namespace:
         help="--recompose 시 분석 깊이. 미지정 시 원본 보고서의 mode 유지.",
     )
     p.add_argument(
+        "--sanitize-ts-nan",
+        action="store_true",
+        help="(v7.9.17) 시장 시계열의 비유한값(NaN/inf) 봉을 결정적으로 제거하고 "
+             "영향받은 차트(line/area/candle)·감시 스트립의 subtitle·등락률·takeaway 를 "
+             "재계산. 'nan%' / 'X → nan' / 빈 코스피 차트 회귀(CHART-AP-29) 복구용. "
+             "LLM 0, URL 동일.",
+    )
+    p.add_argument(
         "--rerender-only",
         action="store_true",
         help="수정 없이 재렌더만 (정적 자산 / 새 charts.js 적용용).",
@@ -544,6 +552,100 @@ def patch_add_footnote(
     return True
 
 
+def patch_sanitize_ts_nan(result: FullAnalysisResult) -> bool:
+    """시장 시계열의 비유한값(NaN/inf) 봉 제거 + 영향 차트 표시 필드 재계산.
+
+    CHART-AP-29 — Yahoo/pykrx 의 미완성 마지막 봉이 NaN 으로 흘러들면 line/candle
+    차트가 빈 프레임이 되고 'nan%' / 'X → nan' 가 노출된다. 발행본 한정 결정적 복구:
+    ① context.time_series 의 NaN 봉 drop ② 각 섹션의 시계열·감시 스트립 차트에서
+    NaN 점 drop 후 subtitle/등락률/takeaway 를 현재 로직으로 재산출. LLM 0.
+    """
+    from src.orchestrator import (
+        _format_compact_value,
+        _format_ts_subtitle,
+        _format_ts_takeaway,
+        _is_finite_num,
+        _sanitize_market_nan,
+    )
+
+    cr = result.composed_report
+    if not cr:
+        print("[patch] composed_report 없음", file=sys.stderr)
+        return False
+
+    removed = 0
+    # ① 저장된 사실 데이터의 NaN 봉 제거 (recompose / 재fetch 시 정합).
+    ts = getattr(result.context, "time_series", None) if result.context else None
+    if ts:
+        removed += _sanitize_market_nan(ts)
+
+    # ② 발행본 차트·스트립의 NaN 점 제거 + 표시 필드 재계산.
+    n_charts = 0
+    for sec in (cr.sections or []):
+        for ch in (sec.charts or []):
+            if not isinstance(ch, dict):
+                continue
+            ctype = (ch.get("type") or "").lower()
+            role = ch.get("role")
+            data = ch.get("data")
+            if not isinstance(data, list) or not data:
+                continue
+            is_compact = role == "compact"
+            if ctype == "candle":
+                clean = [
+                    d for d in data
+                    if isinstance(d, dict) and _is_finite_num(d.get("close")) and d.get("close") > 0
+                ]
+            elif ctype in ("line", "area") or is_compact:
+                clean = [
+                    d for d in data
+                    if isinstance(d, dict) and _is_finite_num(d.get("y", d.get("close")))
+                ]
+            else:
+                continue
+            if len(clean) == len(data):
+                continue  # NaN 없음 — 그대로 둠
+            removed += len(data) - len(clean)
+            n_charts += 1
+            ch["data"] = clean
+            if len(clean) < 2:
+                # 정상 점이 2개 미만이면 재계산 불가 — 데이터만 비워 차트 빈 프레임 회피.
+                continue
+
+            if is_compact:
+                closes = [d.get("y") for d in clean]
+                last_close, first_close = closes[-1], closes[0]
+                change_day = (closes[-1] / closes[-2] - 1) * 100 if closes[-2] else 0.0
+                period_pct = (last_close / first_close - 1) * 100 if first_close else 0.0
+                sign = "+" if change_day >= 0 else ""
+                p_sign = "+" if period_pct >= 0 else ""
+                name = ch.get("instrument") or ch.get("title") or "시계열"
+                fmt_n = (lambda v: f"{v:,.0f}") if abs(last_close) >= 1000 else (lambda v: f"{v:.2f}")
+                start, end = str(clean[0].get("x") or ""), str(clean[-1].get("x") or "")
+                period = f"{start} ~ {end}".strip(" ~")
+                tail = f"{p_sign}{period_pct:.2f}% ({fmt_n(first_close)} → {fmt_n(last_close)})"
+                ch["subtitle"] = " · ".join(p for p in (period, tail) if p)
+                ch["last_value_formatted"] = _format_compact_value(last_close, name)
+                ch["change_day_pct"] = round(change_day, 2)
+                ch["change_day_pct_formatted"] = f"{sign}{change_day:.2f}%"
+            else:
+                if ctype == "candle":
+                    start, end = str(clean[0].get("date") or ""), str(clean[-1].get("date") or "")
+                else:
+                    start, end = str(clean[0].get("x") or ""), str(clean[-1].get("x") or "")
+                instrument = (ch.get("title") or "").split(" (")[0].strip()
+                ch["subtitle"] = _format_ts_subtitle(clean, start, end, ctype)
+                ch["takeaway"] = _format_ts_takeaway(clean, ctype, result.context, instrument=instrument)
+
+    if removed == 0:
+        print("[patch] --sanitize-ts-nan: NaN/inf 봉 없음 — 변경 없음.")
+        return False
+    print(
+        f"[patch] --sanitize-ts-nan: NaN/inf {removed}개 제거, 차트 {n_charts}개 재계산."
+    )
+    return True
+
+
 def show_report(result: FullAnalysisResult) -> None:
     cr = result.composed_report
     if not cr:
@@ -773,6 +875,11 @@ async def main() -> int:
     if args.dry_run:
         print("[patch] --dry-run: 변경 적용 안 함 (JSON·배포 그대로).")
         return 0
+
+    # v7.9.17 — 시장 시계열 NaN/inf 봉 제거 + 영향 차트 표시 필드 재계산 (CHART-AP-29).
+    if args.sanitize_ts_nan:
+        if patch_sanitize_ts_nan(result):
+            mutated = True
 
     # v5.5.5 — 통째 재작성. 패치된 composer 프롬프트로 모든 용어 평이화 + 각주.
     # 단어 단위 치환이 놓치는 용어·대소문자까지 LLM 이 일괄 처리. URL 동일.

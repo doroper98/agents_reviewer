@@ -453,7 +453,7 @@ class TestStaticAssets:
         for name in (
             "drawScenarioBar", "drawKeyFiguresDonut", "drawSeverityHeatmap",
             "drawConfidenceTriple", "drawTimeseriesLine", "drawStackedBar",
-            "drawBubble", "drawGantt", "drawNetwork",
+            "drawBubble", "drawGantt",
         ):
             assert name in content, f"charts.js missing function: {name}"
 

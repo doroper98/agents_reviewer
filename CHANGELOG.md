@@ -22,6 +22,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ## v8.0.0 — 르포(탐사보도) 포맷 트랙 Phase 0 — 트리거 + directive 채널 + 5막 골격
 
+> **포팅됨 (main v7.9.17 핫픽스 → v8 반영, CHART-AP-29/37):**
+> - **NaN 차트 회귀 차단 (CHART-AP-29).** Yahoo `^KS11` 미완성 마지막 봉이 `close=NaN` 으로
+>   흘러들어 코스피 line/candle 차트가 빈 프레임, 감시 스트립 `코스피 nan%`, 종합지수 카드
+>   `7815.59 → nan` 노출(본문 takeaway 는 9,064 인데 차트만 nan). 다층 차단 — ①
+>   `market_fetcher._df_to_ohlc`/`_to_float` 가 `math.isfinite()` 로 비유한 봉을 생성 단계 skip
+>   (`nan<=0` 이 False 라 기존 `c<=0` 가드를 빠져나가던 허점), ② `orchestrator._sanitize_market_nan`
+>   가 fetch 직후 전 소스 합류 지점에서 비유한 봉 결정적 제거 + compact strip 빌더 방어.
+> - **발행본 복구 도구** `scripts/patch_report.py --sanitize-ts-nan` (LLM 0, URL 보존).
+> - **구 network(행위자 관계도) 포맷 폐기 (CHART-AP-37).** composer 미emit + `validate_chart_data`
+>   drop 가드 + 레지스트리/렌더러/시나리오 정리(guarded 18→17, total 31→30). 르포 행위자
+>   관계 시각화는 v8 신규 `stakeholder_map` 사용.
+
 기사형 정보 전달 보고서와 별개로, **하나의 사건을 행위자 중심으로 낱낱이 해부하는 르포
 (탐사보도) 포맷**을 신설하는 v8 트랙의 첫 단계(Phase 0).
 

@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 # ``docs/VISUAL_CAPABILITY_REGISTRY.yaml``,
 # ``tests/regression/fixtures/chart_type_scenarios.yaml`` 함께 갱신.
 KNOWN_CHART_TYPES: tuple[str, ...] = (
-    # 기존 13종 (v5.2.13 까지)
-    "bar", "donut", "line", "gantt", "network", "stacked",
+    # 기존 12종 (v5.2.13 까지; network 는 v7.9.17 CHART-AP-37 으로 폐기)
+    "bar", "donut", "line", "gantt", "stacked",
     "bubble", "heatmap", "dual_line", "forecast", "choropleth",
     "candle", "area",
     # v5.3.0 — FT/Economist 스타일 신규 7종
@@ -137,7 +137,7 @@ def analyze(
             "reports_analyzed": 28,
             "distribution": {"bar": 18, "line": 14, ...},
             "starved_types": ["candle", "heatmap"],  # 0회 emit
-            "rare_types": ["network"],                 # 1회 emit (window>=10일 때만)
+            "rare_types": ["sankey"],                  # 1회 emit (window>=10일 때만)
         }
 
     Orchestrator 가 보고서마다 호출하지 않음 — 별도 CLI 또는 cron 으로 점검.

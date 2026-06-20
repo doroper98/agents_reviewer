@@ -1029,6 +1029,19 @@ fixture 에 type 별 empty-data 케이스 추가.
 카드/차트를 drop. 더 근본적으로 시장 수치 결측 시 *그 수치를 아예 emit 하지 않음*
 (WRITE-AP-15 와 연동 — composer 가 결측 시점에 자유서술로 메우지 않게).
 
+**v7.9.17 — 소스 차단 가드 (실제 재발, 사용자 catch).** 2026-06 코스피 회귀: Yahoo
+`^KS11` 의 미완성 *마지막 봉*이 `close=NaN` 으로 흘러들어 ① 코스피 line/candle 차트가
+빈 프레임(takeaway 는 9,064 인데 차트 마지막은 nan), ② 감시 스트립 `코스피 nan%`,
+③ 종합지수 카드 `7815.59 → nan` 으로 노출. `NaNExposureGuard` 는 *문자열* 검출이라
+계산 *이전* 의 데이터 결측은 못 막았다. 다층 차단:
+1. **소스** — `market_fetcher._df_to_ohlc` / `_to_float` 가 `math.isfinite()` 로 비유한
+   봉을 *생성 단계에서* skip (`nan <= 0` 이 False 라 기존 `c<=0` 가드를 빠져나가던 허점).
+2. **합류 길목** — `orchestrator._sanitize_market_nan` 가 fetch 직후 `context.time_series`
+   의 비유한 봉을 결정적 제거(모든 소스 공통 chokepoint). compact strip 빌더도 `_is_finite_num`
+   로 방어.
+3. **발행본 복구** — `scripts/patch_report.py --sanitize-ts-nan` 로 이미 나간 보고서의
+   NaN 봉 제거 + subtitle/등락률/takeaway 재계산 (LLM 0, URL 보존).
+
 ---
 
 ## 회귀 발견 시 — 표준 프로토콜
@@ -1163,6 +1176,32 @@ LLM 이 한 행(KOSPI)의 등락률을 0 으로 떨어뜨림 — 산문/부제�
 연결은 가장자리에서 서로 다른 지점에 분산(한 점 겹침 금지) ⑤ getBBox content-fit viewBox
 로 자동 중앙정렬. 스키마(`StakeholderMapGuard`)는 좌표 필드를 입력으로 받지 않는다.
 모크업 SSOT: `samples/stakeholder_map_gallery.html` / `samples/stakeholder_map_themes.html`.
+
+---
+
+## CHART-AP-37: 구 행위자 관계도(network/인접행렬) 포맷 폐기 (v7.9.17 → v8 포팅, 사용자 요청)
+
+**경위**: 이재명 G7 릴레이 보고서의 '만난 9개국' 행위자 관계 인접행렬(`network` 차트)을
+두고 사용자가 "큰 의미도 없고 공간도 너무 차지한다 — 아예 저 포맷을 없애버리자"고 지적.
+CHART-AP-25 에서 radial hairball → 인접행렬로 리디자인했으나, 정보 밀도 대비 세로 공간
+점유가 과해 보고서 가독성을 떨어뜨린다는 판단. (v8.0.0 의 르포 전용 `stakeholder_map`
+이 행위자 관계 시각화의 후속 — 구 `network` 포맷은 폐기하고 르포는 stakeholder_map 사용.)
+
+**결정 (포맷 영구 제거)**: `network` 차트 type 을 시스템에서 폐기.
+1. **emit 차단** — composer `SYSTEM_PROMPT` 의 type 목록·데이터 스키마·결정 트리·emit
+   가드에서 network 제거. 결정 트리의 일반 '관계망(노드-엣지)' 분기는 "본문 서술 또는 표로"로
+   대체 (르포는 stakeholder_map 분기 유지).
+2. **drop 가드** — `schemas.py:validate_chart_data` 가 `network` 를 무조건 `(False,
+   "network 포맷 폐기 (CHART-AP-37)")` 로 반환 → `ComposedSection._drop_invalid_charts`
+   가 silent drop. composer 가 실수로 emit 해도 어떤 보고서에도 렌더 안 됨.
+3. **레지스트리 정리** — `usage_log.KNOWN_CHART_TYPES`, `VISUAL_CAPABILITY_REGISTRY.yaml`
+   (guarded 18→17, total 31→30), `chart_type_scenarios.yaml`(시나리오 삭제), `charts.js`
+   (RENDERERS·`drawNetwork` 제거), `research_director` stakeholder_matrix exhibit
+   (network→table) 에서 제거. 회귀 테스트 동시 갱신.
+4. **발행본** — 이미 나간 보고서는 새 코드가 로드할 때 자동 drop (또는
+   `scripts/patch_report.py <id>` 의 임의 패치/재렌더로 제거).
+
+`NetworkGuard`/`NetworkLink` Pydantic 클래스 정의는 보존(타 import 안전)하되 매핑에서 분리.
 
 ---
 

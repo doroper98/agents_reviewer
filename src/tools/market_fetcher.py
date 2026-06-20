@@ -53,6 +53,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Any, Literal
@@ -498,7 +499,11 @@ def _df_to_ohlc(df) -> list[OHLCBar]:
             h = float(row[col_high])
             l = float(row[col_low])
             c = float(row[col_close])
-            if c <= 0:
+            # CHART-AP-29 — NaN/inf 바 차단. pandas/pykrx 가 미완성 마지막 봉이나
+            # 결측을 NaN 으로 줄 때 float(nan) 은 예외 없이 통과하고 `nan <= 0` 은
+            # False 라 기존 가드를 빠져나가 차트·등락률에 "nan%" 로 노출됐다 (실제
+            # 2026-06 코스피 회귀). 비유한값이 하나라도 있으면 그 봉 자체를 버린다.
+            if not all(math.isfinite(x) for x in (o, h, l, c)) or c <= 0:
                 continue
             v = float(row[col_volume]) if col_volume else None
             bars.append(OHLCBar(date=d_iso, open=o, high=h, low=l, close=c, volume=v))
@@ -652,14 +657,15 @@ def _to_float(v: Any, *, default: float | None = 0.0) -> float | None:
     if v is None:
         return default
     if isinstance(v, (int, float)):
-        return float(v)
+        return float(v) if math.isfinite(v) else default
     s = str(v).replace(",", "").strip()
     if not s or s == "-":
         return default
     try:
-        return float(s)
+        f = float(s)
     except (ValueError, TypeError):
         return default
+    return f if math.isfinite(f) else default
 
 
 # ─── 통합 entry point ────────────────────────────────────────

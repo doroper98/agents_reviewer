@@ -11,7 +11,7 @@ downstream 객체·heuristic 이 실제로 따르는지* 를 결정적으로 검
 | ACH                     | required_exhibits = heatmap (가설 × 증거 매트릭스)                  |
 | scenario_tree           | required_exhibits = bubble + scenario branch ≥ 2 가능              |
 | transmission_channel    | required_exhibits = bar + fallback=table                            |
-| stakeholder_matrix      | required_exhibits = network + fallback=table                        |
+| stakeholder_matrix      | required_exhibits = table + fallback=table (network 폐기 CHART-AP-37) |
 | fault_tree              | required_exhibits 비어있음 (causal 구조는 heuristic 외 처리)        |
 | decision_matrix         | StrategicReport 8개 필수 필드 + required_exhibits = decision_matrix |
 | pre_mortem              | StrategicOption.pre_mortem 필드 존재                                |
@@ -140,11 +140,11 @@ def test_transmission_channel_method_required_exhibit_is_bar():
 
 
 @pytest.mark.skipif(not _IMPORTS_OK, reason="src.state import failed")
-def test_stakeholder_matrix_method_required_exhibit_is_network():
-    """stakeholder_matrix → 행위자 관계도 → network."""
+def test_stakeholder_matrix_method_required_exhibit_is_table():
+    """stakeholder_matrix → 이해관계자 표 (network 폐기, CHART-AP-37)."""
     exhibits = _DEFAULT_REQUIRED_EXHIBITS["stakeholder_matrix"]
     assert len(exhibits) >= 1
-    assert exhibits[0]["visual_type_hint"] == "network"
+    assert exhibits[0]["visual_type_hint"] == "table"
 
 
 @pytest.mark.skipif(not _IMPORTS_OK, reason="src.state import failed")
