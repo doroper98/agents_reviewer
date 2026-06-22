@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 219건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 220건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-06-23 06:26 | 2026-06-23 화요일 아침 자동 일일 브리핑 — SK하이닉스 25년만의 KOSPI 대장주 교체·이란 휴전 협상·우크라 대공습 | 산업·지정학·정치·전쟁 종합 | [md](analysis_20260623_062611_bb0a71dcf9.md) · [json](analysis_20260623_062611_bb0a71dcf9.json) · [bundle](analysis_20260623_062611_bb0a71dcf9.bundle.json) |
 | 2026-06-20 22:46 | [르포] 제4차 카와나카지마 전투(1561)와 현대 투자자의 자세 | 역사 분석 / 투자 철학 | [md](analysis_20260620_224648_5e789ff642.md) · [json](analysis_20260620_224648_5e789ff642.json) · [bundle](analysis_20260620_224648_5e789ff642.bundle.json) |
 | 2026-06-20 16:30 | [르포] 엔비디아-TSMC 공급망 갈등과 애리조나 보조금 자금 흐름 내막 | 산업·지정학 | [md](analysis_20260620_163050_7a9a92a238.md) · [json](analysis_20260620_163050_7a9a92a238.json) · [bundle](analysis_20260620_163050_7a9a92a238.bundle.json) |
 | 2026-06-20 14:56 | [르포] 엔비디아-TSMC 공급망 갈등: 애리조나 팹 보조금 자금 흐름의 내막 | 기술·산업·통상 | [md](analysis_20260620_145602_5a080baffd.md) · [json](analysis_20260620_145602_5a080baffd.json) · [bundle](analysis_20260620_145602_5a080baffd.bundle.json) |
