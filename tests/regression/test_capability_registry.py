@@ -52,8 +52,8 @@ def test_registry_distribution_matches_plan_9_3() -> None:
     v7.5.0 변경 (사용자 요청 — 시각화 유형 확장): combo / diverging_bar /
     pyramid / dot_matrix 4종 (이중 축 결합 + 사회 이슈 어휘) 을 guarded 로
     추가 → guarded 17 / 총 30.
-    v7.9.17 변경 (사용자 요청): network(행위자 관계도) 폐기 (CHART-AP-36) →
-    guarded 16 / 총 29.
+    v8.0.0 변경 (르포 트랙): stakeholder_map 1종 (행위자 관계도) 을 guarded 로 추가.
+    v7.9.17 변경 (사용자 요청): network(구 관계도) 폐기 (CHART-AP-36) → guarded 17 / 총 30.
     신규 type 의 chart_critic 통과율이 충분히 측정되면 safe 승격 검토.
     """
     safe = list_safe_types()
@@ -62,9 +62,9 @@ def test_registry_distribution_matches_plan_9_3() -> None:
     total = list_all_types()
 
     assert len(safe) == 11, f"safe types: 11 expected, got {len(safe)}: {safe}"
-    assert len(guarded) == 16, f"guarded types: 16 expected, got {len(guarded)}: {guarded}"
+    assert len(guarded) == 17, f"guarded types: 17 expected, got {len(guarded)}: {guarded}"
     assert len(experimental) == 2, f"experimental types: 2 expected, got {len(experimental)}"
-    assert len(total) == 29, f"total: 29 expected, got {len(total)}"
+    assert len(total) == 30, f"total: 30 expected, got {len(total)}"
 
 
 def test_registry_safe_types_match_plan_9_3() -> None:
@@ -81,7 +81,7 @@ def test_registry_safe_types_match_plan_9_3() -> None:
 
 
 def test_registry_guarded_types_match_plan_9_3() -> None:
-    """v7.9.17 정본 — guarded 16종 (network 폐기, CHART-AP-36)."""
+    """v7.9.17 정본 — guarded 17종 (network 폐기, CHART-AP-36)."""
     expected_guarded = {
         "choropleth", "sankey",
         # v5.2.14 — FT/Economist 스타일 신규 7종
@@ -91,6 +91,8 @@ def test_registry_guarded_types_match_plan_9_3() -> None:
         "bump", "bullet", "connected_scatter",
         # v7.5.0 — 이중 축 결합 + 사회 이슈 어휘 4종
         "combo", "diverging_bar", "pyramid", "dot_matrix",
+        # v8.0.0 — 르포 행위자 관계도
+        "stakeholder_map",
     }
     assert set(list_guarded_types()) == expected_guarded
 
@@ -106,9 +108,9 @@ def test_registry_distribution_section_consistent() -> None:
     reg = load_registry()
     declared = reg.get("distribution", {})
     assert declared.get("safe") == 11
-    assert declared.get("guarded") == 16
+    assert declared.get("guarded") == 17
     assert declared.get("experimental") == 2
-    assert reg.get("total") == 29
+    assert reg.get("total") == 30
 
 
 def test_each_capability_has_required_fields() -> None:

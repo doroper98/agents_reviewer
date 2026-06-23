@@ -1087,7 +1087,11 @@ class ReportSynthesizer:
         # Branch by archetype. six_act_theater = unchanged legacy path (byte-equal output guarantee).
         # New archetypes (financial_transmission, tech_decomposition) render placeholder templates;
         # full block rendering arrives in Step 3.
-        template = env.get_template(archetype.template_path())
+        # v8.0.0 — 르포(reportage)는 전용 깨끗한 템플릿(archetypes/reportage.html)으로 완전 분리.
+        _tpl_path = archetype.template_path()
+        if getattr(getattr(result, "request", None), "report_format", "") == "reportage":
+            _tpl_path = "archetypes/reportage.html"
+        template = env.get_template(_tpl_path)
         if is_legacy_six_act:
             html = template.render(
                 result=result,

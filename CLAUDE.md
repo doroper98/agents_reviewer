@@ -285,7 +285,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (차트 렌더링 — v4.4.3 신설, v5.1.2 확장)
 **charts.js / maps.js / composer 의 차트 prompt 변경 시 반드시 점검.** SSOT:
-[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **36개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit / v7.5.1 — 32 sankey 라벨 수치 중복 표기 / v7.9.8 — 33 scatter 라벨 충돌 / 34 dot_matrix 좌측 쏠림 / v7.9.14 — 35 composer diverging_bar 지수 등락률 0 누락 / v7.9.17 — 36 network 관계도 포맷 폐기, 전부 사용자 catch. CHART-AP-29 는 v7.9.17 에서 소스(market_fetcher)·합류(orchestrator) 2단 NaN 봉 차단 추가):
+[docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md). **37개 패턴 누적** (v5.8.8 — CHART-AP-27 폭포수 부호 / 28 빈 차트 프레임 / 29 NaN 노출, 모두 결정적 가드로 차단. v7.0.1~2 — CHART-AP-30 곡선 보간 왜곡 / 31 시계열 데이터 듬성 emit / v7.5.1 — 32 sankey 라벨 수치 중복 표기 / v7.9.8 — 33 scatter 라벨 충돌 / 34 dot_matrix 좌측 쏠림 / v7.9.14 — 35 composer diverging_bar 지수 등락률 0 누락 / v7.9.17 — 36 network 관계도 포맷 폐기 / v8.0.0 — 37 stakeholder_map force/physics 레이아웃 금지[선제, network 교훈 상속], 전부 사용자 catch. CHART-AP-29 는 v7.9.17 에서 소스(market_fetcher)·합류(orchestrator) 2단 NaN 봉 차단 추가):
 - CHART-AP-1~10: 기존 (drawNetwork / drawStacked / drawBar / 지도 / annotation 등)
 - CHART-AP-11: 차트 카드 배경 하드코딩 fallback (v4.5.3 — `--card-deep` 미정의)
 - CHART-AP-12: 버블 차트 스케일 고정 (v4.5.3 — `domain([0,1])` 고정)
@@ -418,3 +418,12 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - 사용자 메시지 키워드로 자동 매핑: `짧게/간략히/요약/빠르게` → fast, `심층/자세히/면밀` → deep, **그 외(키워드 없음) → deep** (v5.8.2 기본 변경, 기존 standard). standard 는 이제 호출부가 `mode="standard"` 로 명시할 때만 진입. daily_briefing / 후속 보고서는 `mode="deep"` 명시이므로 resolve_mode 무관.
 - Mode 별 정책 SSOT 는 [src/token_budget.py](src/token_budget.py).
 - v4.0.0 부터 모든 모드 LLM 호출 **2회** 동일 (context + composer). mode 는 composer prompt 의 분석 깊이 지시 (섹션 수, 모순 명시 강도, 시나리오 개수) + max_tokens 한도 (v4.5.4: composer fast 12K / standard 20K / deep 32K, v4.5.7: context fast/standard 4K / deep 10K) 결정.
+
+## Report Format Routing — 르포(탐사보도) (v8.0.0)
+- **mode(분석 깊이)와 직교한 *포맷(장르)* 축.** SSOT 는 [src/token_budget.py](src/token_budget.py) `resolve_report_format` / `strip_reportage_trigger`. 메시지에 **"르포"** 토큰이 있으면 `report_format="reportage"`, 아니면 `"standard"` (기존 기사형). 트리거는 "르포" 1개만 (오탐 최소화 — "탐사/내막" 류 동의어는 일반 보고서를 르포로 오인할 위험이 있어 제외).
+- **directive 채널**: 트리거 토큰("르포 형식으로" 등 조사 변형 포함)을 떼어낸 나머지 원문이 `AnalysisRequest.user_directive`. ContextAnalyst 사실 증류로 거세되던 사용자 *앵글*("특히 OOO 의 역할에 집중")을 composer payload(`user_directive`)에 직접 복원하는 채널. 르포의 정체성 = 어느 실타래를 당기나. 주관적 앵글은 fact-critic 검증 면제, 내장된 검증 가능한 사실 주장만 grounding.
+- **장르 골격**: composer SYSTEM_PROMPT 에 `_REPORTAGE_BLOCK` 직교 주입(reportage 일 때만, [narrative_composer.py](src/agents/narrative_composer.py)). 발단→이해당사자→내막·동기→전개→전망(서사형) 5막 + 행위자(인물·국가·조직·기관·기업) 중심 관계망/지도/sankey/timeline + **감시신호(watch_signals) epilogue 제거**(프롬프트가 `[]` 지시 + orchestrator 가 reportage 면 Watchlist 등록 스킵). 인물 사진은 기사 og:image 만.
+- **byte-equal**: `report_format=standard`(트리거 없음) + directive 없을 때 `_compose_system_prompt` / `_build_unified_payload` 모두 기존과 byte-equal. 회귀 [tests/regression/test_reportage_format.py](tests/regression/test_reportage_format.py).
+- **전용 디자인(v8.0.0)**: 일반 보고서와 *완전 분기*. ① 전용 테마 풀 [lens_policy.REPORTAGE_THEMES](src/lens_policy.py) 8종 다크(`reportage_*`, report.css `[data-theme="reportage_*"]`, `select_reportage_theme()` 가 르포일 때만 선택) ② 폰트 G마켓 Sans(디스플레이)+Noto Sans(본문) ③ 플랫 미니멀(둥근모서리/그림자 제거) ④ 현재형·박진감 어투 ⑤ **에필로그 전부 제거**(watch_signals/timeline_flow/closing/confidence — 가벼운 소설처럼 끝) ⑥ 본문·제목에 '르포' 단어 금지(UI 헤더 배지로만) — 보고서 전문 헤더 + 리스트(`build_reports_index`)에 `[르포]` 배지. 텔레그램 작동은 일반 보고서와 동일.
+- **전용 템플릿(v8.0.0)**: 르포는 **`src/templates/archetypes/reportage.html`** (freeform_essay 와 완전 분리, report_synthesizer 가 report_format=reportage 시 라우팅). 가드 덧대기 아님 — 전용 깨끗한 렌더 경로. 헤더=버전만 / 제목 / 작성일시(분) / 번호 섹션(소제목+본문) / 용어풀이 / 차트·지도 / 최소 푸터. 목차·kicker·fact_grid·pull_quote·analogy·lede·dropcap·쟁점·감시신호·시간궤적·요약·신뢰도·바이라인 전부 미렌더. 한 문단 ≤5문장. ambient 애니: stakeholder_map(엣지 흐름+hub 펄스, charts.css `.sm-flow/.sm-pulse`)·sankey(중심선 입자)·globe(연속 자전, maps.js, reportage 테마 `--map-*` 색). 모두 reduced-motion 정지.
+- **로드맵**: Phase 0~1.5 + 전용 템플릿/애니 **완료**. 남은 것 — **텔레그램 전용 후속 르포 신호**(signals 없이 후속 버튼). Phase 2 — ReportBundle 정합(osint 영상). Phase 3 — VM e2e.

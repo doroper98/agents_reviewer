@@ -6,10 +6,12 @@
 <title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="charts.css">
 {# v4.2.0 — composer-emitted chart/map. maplibre 폐기, d3 + d3-geo + TopoJSON 사용. #}
 {% set composed = result.composed_report %}
+{# v8.0.0 — 르포(reportage) 분기: [르포] 배지 + 에필로그(감시신호/시간궤적/요약) 미렌더. #}
+{% set is_reportage = (result.request and result.request.report_format == 'reportage') %}
 {% set has_inline_charts = composed and composed.sections and (composed.sections | selectattr("charts") | list | length > 0) %}
 {% set has_inline_map = composed and composed.embedded_map %}
 {% if has_inline_map %}
@@ -229,7 +231,7 @@
 
 <header class="freeform-hero">
   <div class="container">
-    <div class="freeform-eyebrow">Event Analysis · Composed{% if result.system_version %} · <span class="freeform-version">Analysis Team {{ result.system_version }} · Rev {{ result.revision_label }}</span>{% endif %}</div>
+    <div class="freeform-eyebrow">{% if is_reportage %}<span class="reportage-badge">르포</span> 탐사보도{% else %}Event Analysis · Composed{% endif %}{% if result.system_version %} · <span class="freeform-version">Analysis Team {{ result.system_version }} · Rev {{ result.revision_label }}</span>{% endif %}</div>
     <h1 class="freeform-headline">{{ (composed.headline if composed else (result.context.event_name or 'Analysis')) | strip_md }}</h1>
     {% if composed and composed.deck %}<p class="freeform-deck">{{ composed.deck | strip_md }}</p>{% endif %}
     <div class="freeform-meta">
@@ -239,7 +241,7 @@
     </div>
     {# v5.8.0 — 후속 보고서: '이 분석의 출발점' (원 보고서). 서두 — 독자가 본문을
        읽기 전 맥락을 먼저 잡게. parent_context 있을 때만. 제목 없으면 report_id 폴백. #}
-    {% if result.parent_context %}
+    {% if result.parent_context and not is_reportage %}
     {% set pc = result.parent_context %}
     {% set origin_label = (pc.parent_report_title or pc.parent_report_id or '') | strip_md %}
     <div class="freeform-origin">
@@ -507,7 +509,7 @@
    "감시 신호") 폐기 — essay 마지막 호흡과 단절감 해소. chart-card / takeaway 박스 제거,
    contradiction-prose 의 ct-resolve 와 같은 italic + accent border-left 어휘로 통일.
    composed.watch_signals 데이터 계약 무변경 — convert_watch_signals() / SQLite 등록 경로 동일. #}
-{% if composed and composed.watch_signals %}
+{% if composed and composed.watch_signals and not is_reportage %}
 <section class="freeform-section fade-in"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     <p class="epilogue-watch-lede">
@@ -533,7 +535,7 @@
 {# v5.5.2 — 시간 흐름도 capstone. 감시 신호 직후, closing 직전. report_timeline 은
    src/timeline_flow.py:build_timeline_flow (결정론 backbone + composer 윤색, 하이브리드).
    과거=실선/채운 점, 현재=accent 앵커, 미래=점선/빈 점/예상 태그. #}
-{% if report_timeline and report_timeline.points %}
+{% if report_timeline and report_timeline.points and not is_reportage %}
 <section class="freeform-section fade-in"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     <div class="freeform-kicker">시간의 흐름</div>
@@ -551,7 +553,7 @@
 </section>
 {% endif %}
 
-{% if composed and (composed.closing or composed.confidence_summary) %}
+{% if composed and (composed.closing or composed.confidence_summary) and not is_reportage %}
 <section class="freeform-closing"{% if scroll_arc %} data-arc-phase="{{ scroll_arc.epilogue_phase }}"{% endif %}>
   <div class="container">
     {% if composed.confidence_summary %}

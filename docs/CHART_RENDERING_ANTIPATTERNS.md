@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.9.14
+last_synced_with: v8.0.0
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1184,6 +1184,23 @@ CHART-AP-25 에서 radial hairball → 인접행렬로 리디자인했으나, �
    `--remove-chart SEC:CHART` 로 제거.
 
 `NetworkGuard`/`NetworkLink` Pydantic 클래스 정의는 보존(타 import 안전)하되 매핑에서 분리.
+
+---
+
+## CHART-AP-37: 행위자 관계도를 force/physics 레이아웃으로 렌더 (v8.0.0 선제 — network 교훈 상속)
+
+**맥락**: v8.0.0 르포 트랙의 신규 `stakeholder_map`(인물·국기·로고가 들어가는 이해당사자
+관계도)은 노드가 큰 카드라, force-directed 배치를 쓰면 노드가 겹치고 중심 관통 실타래가
+생겨 CHART-AP-25(network hairball)를 그대로 재현한다. 이미지(국기/사진/로고)로 노드가
+더 커지므로 위험이 오히려 크다.
+
+**규칙 (선제 차단)**: `drawStakeholderMap` 은 **force/physics/simulation 절대 금지**.
+노드 좌표는 데이터로 받지 않고 **결정적으로 계산**한다 — ① x = 진영(col: left/center/right)
+칼럼 ② y = 칼럼 내 stack(세로 중앙 정렬 → 같은 행은 직선 연결) ③ 엣지는 결정된 노드
+위에 직각+라운딩(엘보) 후행 레이어로 얹고, 노드를 이동시키지 않는다 ④ 한 노드의 다중
+연결은 가장자리에서 서로 다른 지점에 분산(한 점 겹침 금지) ⑤ getBBox content-fit viewBox
+로 자동 중앙정렬. 스키마(`StakeholderMapGuard`)는 좌표 필드를 입력으로 받지 않는다.
+모크업 SSOT: `samples/stakeholder_map_gallery.html` / `samples/stakeholder_map_themes.html`.
 
 ---
 

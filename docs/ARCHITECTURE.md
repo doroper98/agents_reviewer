@@ -153,6 +153,12 @@ flowchart TD
 - 둘 다 있으면 deep 우선
 - 그 외 (키워드 없음) → **deep** (v5.8.2 기본 변경, 기존 standard). standard 는 호출부가 `mode="standard"` 로 명시할 때만 진입.
 
+### 4.1.1 Report Format (장르) 축 — 르포 (v8.0.0)
+- mode(깊이)와 **직교**. 메시지에 **"르포"** 토큰이 있으면 `report_format="reportage"` (`token_budget.resolve_report_format`), 아니면 `standard` (기사형).
+- reportage 는 (a) 5막 구조(발단→이해당사자→내막→전개→전망) + (b) 행위자 관계망 중심 + (c) 감시신호 epilogue 제거 를 composer `_REPORTAGE_BLOCK` 직교 주입으로 실현.
+- 트리거 토큰을 떼어낸 원문 = `user_directive` → composer payload 에 직접 주입(ContextAnalyst 증류로 거세되던 앵글 채널 복원). 주관 앵글은 fact-critic 면제, 내장 사실 주장만 grounding.
+- standard 면 system_prompt·payload 모두 기존과 byte-equal.
+
 ### 4.2 Mode 별 max_tokens (현재 baseline)
 
 | Mode | ContextAnalyst (v4.5.7) | NarrativeComposer (v4.5.4) |

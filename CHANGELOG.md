@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v7.9.17
+last_synced_with: v8.1.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -20,6 +20,65 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v8.1.0 — 르포(탐사보도) 포맷 — 전용 디자인 + stakeholder_map + 살아있는 애니메이션 완성
+
+르포를 기존 보고서와 *완전 분리*하고 디자인·차트·애니메이션을 마감한 릴리스.
+
+- **전용 깨끗한 템플릿** `src/templates/archetypes/reportage.html` — freeform_essay 가드 덧대기 폐기, 완전 분리. 헤더=버전만 / 제목 / 작성일시(분) / 번호 섹션(소제목+본문) / 용어풀이만. 목차·kicker·fact_grid·pull_quote·analogy·lede·쟁점·감시신호·시간궤적·요약·신뢰도·바이라인 전부 미렌더. report_synthesizer 가 `report_format=reportage` 시 라우팅.
+- **전용 디자인** — 8종 다크 테마(`reportage_*`, report.css `[data-theme]` 블록 + `select_reportage_theme()`), G마켓 Sans(디스플레이)+Noto Sans(본문), 플랫 미니멀(둥근모서리/그림자 제거). 본문·제목에 '르포' 단어 금지 — UI 헤더·리스트(`build_reports_index`) `[르포]` 배지로만.
+- **신규 차트 `stakeholder_map`** — 행위자 관계도. 국기·기업/단체 로고 둥근 SVG, 결정적 컬럼 레이아웃(force/hairball 금지 = CHART-AP-36). 7단계 정식 등록(RENDERERS / schemas `_TYPE_TO_GUARD` / usage_log KNOWN_CHART_TYPES / VISUAL_CAPABILITY_REGISTRY / fixture / 회귀).
+- **살아있는 애니메이션 (르포 한정, prefers-reduced-motion 정지)** — stakeholder_map 엣지 흐름(`.sm-flow`)+허브 펄스(`.sm-pulse`), globe 지구본 테마색+연속 자전. sankey 는 **원본 렌더 유지(애니 제외)** — 흐름 입자 오버레이가 어색하다는 피드백 반영.
+- **차트 최소화** — 르포는 시장 strip / 시계열 차트 자동 주입을 스킵(`report_format != reportage` 가드). 본문 흐름에 필요한 시각물만.
+- **byte-equal 보존** — 트리거 "르포" 없는 모든 경로(템플릿·payload·system_prompt·테마·차트)는 v8.0.0 과 byte-equal. 회귀 `test_reportage_format.py`(12) + `test_stakeholder_map.py`(10).
+
+## v8.0.0 — 르포(탐사보도) 포맷 트랙 Phase 0 — 트리거 + directive 채널 + 5막 골격
+
+> **포팅됨 (main v7.9.17 핫픽스 → v8 반영, CHART-AP-29/37):**
+> - **NaN 차트 회귀 차단 (CHART-AP-29).** Yahoo `^KS11` 미완성 마지막 봉이 `close=NaN` 으로
+>   흘러들어 코스피 line/candle 차트가 빈 프레임, 감시 스트립 `코스피 nan%`, 종합지수 카드
+>   `7815.59 → nan` 노출(본문 takeaway 는 9,064 인데 차트만 nan). 다층 차단 — ①
+>   `market_fetcher._df_to_ohlc`/`_to_float` 가 `math.isfinite()` 로 비유한 봉을 생성 단계 skip
+>   (`nan<=0` 이 False 라 기존 `c<=0` 가드를 빠져나가던 허점), ② `orchestrator._sanitize_market_nan`
+>   가 fetch 직후 전 소스 합류 지점에서 비유한 봉 결정적 제거 + compact strip 빌더 방어.
+> - **발행본 복구 도구** `scripts/patch_report.py --sanitize-ts-nan` (LLM 0, URL 보존).
+> - **구 network(행위자 관계도) 포맷 폐기 (CHART-AP-37).** composer 미emit + `validate_chart_data`
+>   drop 가드 + 레지스트리/렌더러/시나리오 정리(guarded 18→17, total 31→30). 르포 행위자
+>   관계 시각화는 v8 신규 `stakeholder_map` 사용.
+
+기사형 정보 전달 보고서와 별개로, **하나의 사건을 행위자 중심으로 낱낱이 해부하는 르포
+(탐사보도) 포맷**을 신설하는 v8 트랙의 첫 단계(Phase 0).
+
+- **트리거**: 텔레그램 메시지에 "르포" 가 있으면 `report_format="reportage"` 로 전환
+  (`token_budget.resolve_report_format`). 트리거 토큰("르포 형식으로" 등 조사 변형 포함)을
+  떼어낸 나머지 문장이 *이번 르포의 앵글*. mode(fast/standard/deep)와 **직교** — "르포"가
+  없는 모든 메시지는 standard 라 기존 경로와 동일.
+- **directive 채널 복원 (핵심)**: 사용자의 구체적 강조("특히 OOO 기관의 역할에 집중",
+  "이 자금 흐름의 내막을 파줘")는 그동안 ContextAnalyst 의 사실 증류 과정에서 거세돼
+  composer 에 닿지 못했다. v8.0.0 은 트리거를 떼어낸 원문을 `AnalysisRequest.user_directive`
+  로 보존해 composer payload 에 직접 주입한다. 르포는 *어느 실타래를 당기느냐* 가 정체성이라
+  이 앵글이 필수. 주관적 앵글(무엇에 집중할지)은 fact-critic 검증 면제, 그 안에 끼어든
+  *검증 가능한 사실 주장*만 V6 사실 규율의 grounding 대상.
+- **5막 골격**: composer SYSTEM_PROMPT 에 `_REPORTAGE_BLOCK` 직교 주입 (reportage 일 때만).
+  발단 → 이해당사자 → 내막·동기 → 전개 → 전망(서사형) 5막. 행위자 관계는 network(인접행렬)·
+  지도(국가 역할)·sankey(이해/자금 흐름)·timeline 으로 시각화. 인물 사진은 기사 og:image 만.
+- **감시신호 제거**: 르포는 말미 watch_signals epilogue 를 두지 않는다 — 프롬프트가
+  `watch_signals=[]` 를 지시 + orchestrator 가 reportage 일 때 Watchlist 등록을 스킵.
+  contradictions(쟁점/반대 관점)는 유지.
+- **byte-equal 보장**: `report_format=standard` + directive 없을 때 `_compose_system_prompt`
+  와 `_build_unified_payload` 모두 기존 출력과 byte-equal (AP-V6-3 상속). 회귀
+  `tests/regression/test_reportage_format.py` 11종.
+- **Phase 1 (랜딩)**: 신규 차트 타입 `stakeholder_map` — 르포 전용 행위자 관계도.
+  charts.js `drawStakeholderMap`(진영 칼럼 결정적 배치 + 직각·라운딩 엣지 + 다중 연결
+  분산 + content-fit) + `StakeholderMapGuard`(노드 2~12·엣지 참조 검증) + KNOWN_CHART_TYPES /
+  VISUAL_CAPABILITY_REGISTRY(guarded 18) / chart_type_scenarios 등록 + composer SYSTEM_PROMPT
+  스키마·결정트리·`_REPORTAGE_BLOCK` 반영. 자산(국기/인물)은 `#sm-*` sprite 로 분리 —
+  osint_generator 자산으로 교체 가능(로고/사진 미제공 시 이니셜 모노그램). **force/physics
+  금지**(CHART-AP-36, network hairball 교훈 상속). 모크업 SSOT
+  `samples/stakeholder_map_gallery.html`(6 경우의 수) + `..._themes.html`(5 테마). 회귀
+  `tests/regression/test_stakeholder_map.py` + chart_type_diversity 1:1 정합 복원
+  (combo_candle/iv_skew/indicator 누락분 동시 보강).
+- **다음**: Phase 2 — ReportBundle 정합(osint 영상 관계망 피드). 자산 교체는 osint_generator
+  세션 스코프 접근 확보 시.
 ## v7.9.17 — 시장 시계열 NaN 봉 결정적 차단(CHART-AP-29 소스 가드) + 행위자 관계도(network) 포맷 폐기(CHART-AP-36)
 
 코스피 보고서 사용자 catch 3종 핫픽스.

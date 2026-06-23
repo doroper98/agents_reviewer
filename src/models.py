@@ -23,6 +23,12 @@ class AnalysisRequest(BaseModel):
     parent_context: "ParentContext | None" = None
     # v5.5.0: /analyze --bundle 시 True. ReportBundle (.bundle.json) 산출 트리거.
     emit_bundle: bool = False
+    # v8.0.0: 보고서 포맷(장르). mode 와 직교. "르포" 트리거 시 reportage.
+    report_format: Literal["standard", "reportage"] = "standard"
+    # v8.0.0: 르포의 *앵글* — 트리거 토큰을 떼어낸 사용자 원문. composer 에 직접
+    # 주입돼 "어느 실타래를 당길지" 를 지시 (ContextAnalyst 증류로 거세되던 채널 복원).
+    # 주관적 앵글은 fact-critic 검증 면제, 그 안의 검증가능 사실 주장만 grounding 대상.
+    user_directive: str = ""
 
 
 class ContextAnalysis(BaseModel):

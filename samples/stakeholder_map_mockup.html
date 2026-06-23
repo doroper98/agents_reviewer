@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--
+  stakeholder_map MOCKUP v3 (v8.0.0 Phase 1) — 르포 전용 행위자 관계도.
+  v3 수정(레이아웃 규율): ① 전 카드 동일 내부 레이아웃(아이콘 슬롯 30px + 텍스트 x=52 통일)
+  ② 떠다니는 점/삼각형 제거 → 관계는 선 스타일 + 중앙 라벨칩(글리프 포함), 화살표는 marker
+  로 선 끝에 부착 ③ 박스 밖 텍스트 넘침 제거(가운데 카드 부가설명 삭제, 폭 안에 fit).
+  배치: force 금지 — x=group 칼럼 / y=칼럼 내 stack / 엣지는 노드 위 후행 레이어.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stakeholder_map 목업 v3</title>
+<style>
+  :root{
+    --bg:#f4efe6; --card:#fbf8f1; --card-2:#f0e8d8; --hub:#f7eede; --text:#23201b; --fg-2:#6f675a;
+    --fg-3:#a89e8d; --accent:#a8492e; --down:#7c4a8a; --border:#d9cfbd; --border-soft:#e7ddcb;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);margin:0;font-family:"Newsreader","Noto Serif KR",Georgia,serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 28px 80px}
+  .eyebrow{font:600 12px "IBM Plex Sans KR",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  h1{font:600 30px/1.2 "Newsreader",serif;margin:6px 0 6px}
+  .deck{font:400 16px/1.55 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);max-width:64ch;margin:0}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-top:26px;padding:22px 20px 12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card-title{font:600 15px "IBM Plex Sans KR",sans-serif;margin:0 0 2px}
+  .card-sub{font:400 12.5px "IBM Plex Sans KR",sans-serif;color:var(--fg-3);margin:0 0 4px}
+  svg{width:100%;height:auto;display:block}
+  .col-band{font:600 11px "IBM Plex Sans KR",sans-serif;letter-spacing:.06em;fill:var(--fg-3)}
+  .n-name{font:600 13.5px "IBM Plex Sans KR",sans-serif;fill:var(--text)}
+  .n-role{font:400 11px "IBM Plex Sans KR",sans-serif;fill:var(--fg-2)}
+  .e-label{font:500 10.5px "IBM Plex Sans KR",sans-serif;fill:var(--fg-2)}
+  .legend{font:400 12px/1.7 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);display:flex;gap:24px;flex-wrap:wrap;margin:10px 2px 2px}
+  .legend b{font-weight:600;color:var(--text)}
+  .note{font:400 13px/1.6 "IBM Plex Sans KR",sans-serif;color:var(--fg-2);max-width:74ch;margin:20px 0 0}
+  .note b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">르포 · stakeholder_map 목업 v3 · v8.0.0 Phase 1</div>
+  <h1>애리조나 팹 보조금, 누구의 호주머니로 흐르나</h1>
+  <p class="deck">행위자를 진영별 칼럼에 결정적으로 고정하고, 자금·위탁·환류의 흐름을 그 위에 얹는다.</p>
+
+  <div class="card">
+    <p class="card-title">이해당사자 관계도 — 애리조나 팹을 둘러싼 다섯 손</p>
+    <p class="card-sub">좌: 미국 진영(정책·수요) · 중앙: 접점·병목(애리조나 팹) · 우: 대만 진영(자본·환류)</p>
+    <svg viewBox="0 0 960 470" role="img" aria-label="stakeholder map">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--text)"/>
+        </marker>
+        <!-- 둥근 국기 -->
+        <symbol id="flag-US" viewBox="0 0 32 32">
+          <clipPath id="cUS"><circle cx="16" cy="16" r="16"/></clipPath>
+          <g clip-path="url(#cUS)">
+            <rect width="32" height="32" fill="#fff"/>
+            <g fill="#b22234"><rect y="0" width="32" height="2.46"/><rect y="4.92" width="32" height="2.46"/><rect y="9.84" width="32" height="2.46"/><rect y="14.76" width="32" height="2.46"/><rect y="19.69" width="32" height="2.46"/><rect y="24.61" width="32" height="2.46"/><rect y="29.54" width="32" height="2.46"/></g>
+            <rect width="14.2" height="13.2" fill="#3c3b6e"/>
+            <g fill="#fff"><circle cx="2.6" cy="2.3" r=".9"/><circle cx="6.3" cy="2.3" r=".9"/><circle cx="10" cy="2.3" r=".9"/><circle cx="4.4" cy="4.7" r=".9"/><circle cx="8.1" cy="4.7" r=".9"/><circle cx="11.8" cy="4.7" r=".9"/><circle cx="2.6" cy="7.1" r=".9"/><circle cx="6.3" cy="7.1" r=".9"/><circle cx="10" cy="7.1" r=".9"/><circle cx="4.4" cy="9.5" r=".9"/><circle cx="8.1" cy="9.5" r=".9"/><circle cx="11.8" cy="9.5" r=".9"/><circle cx="2.6" cy="11.9" r=".9"/><circle cx="6.3" cy="11.9" r=".9"/><circle cx="10" cy="11.9" r=".9"/></g>
+          </g>
+          <circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/>
+        </symbol>
+        <symbol id="flag-TW" viewBox="0 0 32 32">
+          <clipPath id="cTW"><circle cx="16" cy="16" r="16"/></clipPath>
+          <g clip-path="url(#cTW)">
+            <rect width="32" height="32" fill="#fe0000"/>
+            <rect width="16" height="16" fill="#000095"/>
+            <g transform="translate(8,8)" fill="#fff">
+              <polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(0)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(30)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(60)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(90)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(120)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(150)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(180)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(210)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(240)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(270)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(300)"/><polygon points="0,-5.6 -1.15,-1.6 1.15,-1.6" transform="rotate(330)"/>
+              <circle r="3.4"/><circle r="2.8" fill="#000095"/><circle r="2.2" fill="#fff"/>
+            </g>
+          </g>
+          <circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/>
+        </symbol>
+        <!-- 로고 -->
+        <symbol id="logo-NV" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#76b900"/><path d="M8 23c0-9 8-12 15-10-5 0-10 2-10 10z" fill="#fff"/><path d="M15 22c0-5 3-7 8-6-3 0-6 2-6 6z" fill="#fff" opacity=".82"/></symbol>
+        <symbol id="logo-MS" viewBox="0 0 32 32"><rect x="2" y="2" width="13" height="13" fill="#f25022"/><rect x="17" y="2" width="13" height="13" fill="#7fba00"/><rect x="2" y="17" width="13" height="13" fill="#00a4ef"/><rect x="17" y="17" width="13" height="13" fill="#ffb900"/></symbol>
+        <symbol id="logo-TSMC" viewBox="0 0 70 32"><rect width="70" height="32" rx="6" fill="#fff" stroke="#e2dccc"/><text x="35" y="22" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="17" fill="#c8102e" letter-spacing="-.5">tsmc</text></symbol>
+      </defs>
+
+      <!-- 칼럼 밴드 + 가이드 -->
+      <text class="col-band" x="160" y="28" text-anchor="middle">미국 진영 · 정책 / 수요</text>
+      <text class="col-band" x="480" y="28" text-anchor="middle">접점 · 병목</text>
+      <text class="col-band" x="800" y="28" text-anchor="middle">대만 진영 · 자본</text>
+      <line x1="320" y1="42" x2="320" y2="448" stroke="var(--border-soft)" stroke-dasharray="2 6"/>
+      <line x1="640" y1="42" x2="640" y2="448" stroke="var(--border-soft)" stroke-dasharray="2 6"/>
+
+      <!-- ===== 엣지 (후행 레이어, 노드 가장자리 연결) ===== -->
+      <!-- A 미상무부(270,130) → 팹(388,272) : 동맹/지원 accent 실선 -->
+      <path d="M270,130 C336,130 336,272 388,272" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+      <!-- B 엔비디아(270,270) → 팹(388,298) : 연관 muted -->
+      <path d="M270,270 C330,270 338,298 388,298" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+      <!-- C MS(160,361) → 엔비디아(160,299) : 대립 down 점선 -->
+      <path d="M160,361 L160,299" fill="none" stroke="var(--down)" stroke-width="1.8" stroke-dasharray="4 4"/>
+      <!-- D TSMC본사(690,170) ⇄ 팹(572,285) : 영향 양방향 화살표 -->
+      <path d="M572,285 C636,285 636,170 690,170" fill="none" stroke="var(--text)" stroke-width="2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <!-- F 대만금융권(800,281) → TSMC본사(800,199) : 연관 muted -->
+      <path d="M800,281 L800,199" fill="none" stroke="var(--fg-3)" stroke-width="1.5"/>
+
+      <!-- ===== 라벨 칩 (선 중앙, 글리프 포함 — 떠다니는 점/세모 없음) ===== -->
+      <g transform="translate(322,196)"><rect x="-62" y="-9" width="124" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--accent)" font-weight="700">●</tspan> 보조금 66억$ 분할</text></g>
+      <g transform="translate(320,300)"><rect x="-52" y="-9" width="104" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 블랙웰 위탁</text></g>
+      <g transform="translate(160,330)"><rect x="-50" y="-9" width="100" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--down)" font-weight="700">✕</tspan> 캐파 경쟁</text></g>
+      <g transform="translate(631,222)"><rect x="-66" y="-9" width="132" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle">200억$ 보충 ⇄ 이익 30%</text></g>
+      <g transform="translate(800,240)"><rect x="-46" y="-9" width="92" height="18" rx="5" fill="var(--bg)" opacity=".92"/><text class="e-label" y="3.5" text-anchor="middle"><tspan fill="var(--fg-3)" font-weight="700">○</tspan> 설비 조달</text></g>
+
+      <!-- ===== 노드 (전 카드 동일 내부 레이아웃: 아이콘 12/30 · 텍스트 x52) ===== -->
+      <!-- 좌 -->
+      <g transform="translate(50,101)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-US" x="12" y="14" width="30" height="30"/><text class="n-name" x="52" y="26">미 상무부</text><text class="n-role" x="52" y="43">보조금 집행처 · 조건 부과</text></g>
+      <g transform="translate(50,241)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.6"/><use href="#logo-NV" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">엔비디아</text><text class="n-role" x="52" y="43">최대 수요자 · 블랙웰 발주</text></g>
+      <g transform="translate(50,361)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#logo-MS" x="12" y="14" width="30" height="30"/><use href="#flag-US" x="30" y="32" width="14" height="14"/><text class="n-name" x="52" y="26">마이크로소프트</text><text class="n-role" x="52" y="43">캐파 경쟁 수요자</text></g>
+      <!-- 중앙 (강조: hub 배경 + 굵은 테두리, 폭 안에 fit) -->
+      <g transform="translate(388,253)"><rect width="184" height="64" rx="12" fill="var(--hub)" stroke="var(--text)" stroke-width="2.2"/><use href="#logo-TSMC" x="12" y="23" width="36" height="18"/><use href="#flag-US" x="40" y="38" width="14" height="14"/><text class="n-name" x="58" y="29">애리조나 팹</text><text class="n-role" x="58" y="47">병목 · 분쟁의 무대</text></g>
+      <!-- 우 -->
+      <g transform="translate(690,141)"><rect width="220" height="58" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><use href="#logo-TSMC" x="12" y="20" width="36" height="18"/><use href="#flag-TW" x="40" y="33" width="14" height="14"/><text class="n-name" x="58" y="26">TSMC 본사</text><text class="n-role" x="58" y="43">자본 공급 · 이익 귀속처</text></g>
+      <g transform="translate(690,281)"><rect width="220" height="58" rx="10" fill="var(--card-2)" stroke="var(--border)"/><use href="#flag-TW" x="12" y="14" width="30" height="30"/><text class="n-name" x="52" y="26">대만 금융권</text><text class="n-role" x="52" y="43">설비 투자 조달</text></g>
+    </svg>
+    <div class="legend">
+      <span><b style="color:var(--accent)">● 동맹/지원</b> 보조금·공동출자</span>
+      <span><b style="color:var(--down)">✕ 대립</b> 경쟁·이해충돌</span>
+      <span><b>▸ 영향</b> 방향 있는 흐름</span>
+      <span><b style="color:var(--fg-3)">○ 연관</b> 거래·계약</span>
+    </div>
+  </div>
+
+  <p class="note"><b>v3 수정점:</b> ① 전 카드 동일 내부 레이아웃(아이콘 30px 슬롯 + 텍스트 x=52 통일) → 정렬 일관 ② 떠다니던 점·삼각형 제거 — 관계는 선 색/점선 + <b>중앙 라벨칩</b>(글리프 내장), 방향은 SVG <b>marker</b>로 선 끝에 부착 ③ 가운데 카드 부가설명 삭제로 박스 밖 넘침 제거. 배치는 여전히 결정적(force 금지) — group 칼럼 + stack.</p>
+</div>
+</body>
+</html>

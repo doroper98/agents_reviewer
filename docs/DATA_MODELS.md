@@ -65,7 +65,7 @@ v4.5.7 의 *실제* 데이터 흐름은 `AnalysisRequest → ContextAnalysis →
 
 | 모델 | 책무 | 정의 위치 |
 |------|------|-----------|
-| `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델). event_description / chat_id / mode. | `src/models.py` |
+| `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델). event_description / chat_id / mode / **`report_format: "standard"\|"reportage"` + `user_directive: str` (v8.0.0 — 르포 포맷 축 + 트리거를 떼어낸 사용자 앵글. mode 와 직교, standard 면 기존과 동일)**. | `src/models.py` |
 | `ContextAnalysis` | ContextAnalyst (Opus 4.7) 출력. event_name / category / summary / timeline / key_figures / sources / instruments_mentioned / time_series / **`provenance: list[dict]` (v6.0.0 Phase V6-8 — 각 사실의 source_date/scope_note/source_url, additive·Optional, `V6_PROVENANCE` 시 채움)** | `src/models.py` |
 | `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)** / **`footnotes: list[{term, explanation}]` (v5.5.5 전문 용어 문단 하단 주석)** / **`narrative_phase: "기"|"승"|"전"|"결"|""` (v7.0.0 Track B — 스크롤 아크 단계 라벨, additive·Optional. 유효값 외엔 validator 가 "" 회복 → `src/visual/scroll_arc.py` 위치 폴백, AP-V7-4)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. | `src/models.py` |
 | `ComposedReport` | NarrativeComposer (Opus 4.7) 단일 호출 산출. headline / deck / sections / closing / **(v4.0.0) watch_signals + contradictions + confidence_summary + confidence_score + (v4.2.0) embedded_map**. v4.0.0 부터 보고서 SSOT. | `src/models.py` |

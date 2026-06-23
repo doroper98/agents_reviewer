@@ -173,3 +173,25 @@ def select_theme(event_type: str) -> str:
     """
     import random
     return random.choice(ALL_THEMES)
+
+
+# v8.0.0 — 르포(reportage) 전용 테마 풀. 일반 보고서 5테마와 *완전 분기*.
+# 전부 짙은 색 배경(사용자 지정 8 팔레트). report.css 의 [data-theme="reportage_*"]
+# 블록 + G마켓 Sans/Noto 폰트 + 플랫 오버라이드와 1:1. select_reportage_theme() 가
+# report_format=reportage 일 때만 호출 (orchestrator). 비-르포는 ALL_THEMES 그대로.
+REPORTAGE_THEMES: tuple[str, ...] = (
+    "reportage_cyprus",     # deep green + sand + ochre
+    "reportage_noturno",    # near-black teal + vulcanico orange
+    "reportage_bridal",     # maroon + skin + peach
+    "reportage_cosmos",     # cosmos navy + crimson + varden
+    "reportage_laurel",     # deep pine + moderate green + cream
+    "reportage_princess",   # princess blue + silver + coral
+    "reportage_steel",      # steel gray + white chocolate + amber
+    "reportage_navy",       # beyond navy + sweet lavender + mist
+)
+
+
+def select_reportage_theme() -> str:
+    """르포 전용 테마 — REPORTAGE_THEMES 8종에서 random. (르포일 때만 호출)"""
+    import random
+    return random.choice(REPORTAGE_THEMES)

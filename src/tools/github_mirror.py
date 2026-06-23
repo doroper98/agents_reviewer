@@ -125,13 +125,25 @@ def build_reports_index(reports_dir: str, *, limit: int | None = None) -> str:
         stem = f"analysis_{rid}"
         title, category = _title_category_from_md(md)
         date = _date_from_report_id(rid)
+        # v8.0.0 — 르포는 리스트 제목에 [르포] 배지. report_format 은 json 의 request 에.
+        badge = ""
+        jp = os.path.join(reports_dir, f"{stem}.json")
+        if os.path.exists(jp):
+            try:
+                import json as _json
+                with open(jp, encoding="utf-8") as _jf:
+                    _d = _json.load(_jf)
+                if (_d.get("request") or {}).get("report_format") == "reportage":
+                    badge = "[르포] "
+            except Exception:
+                pass
         links = [f"[md]({stem}.md)"]
-        if os.path.exists(os.path.join(reports_dir, f"{stem}.json")):
+        if os.path.exists(jp):
             links.append(f"[json]({stem}.json)")
         if os.path.exists(os.path.join(reports_dir, f"{stem}.bundle.json")):
             links.append(f"[bundle]({stem}.bundle.json)")
         lines.append(
-            f"| {date} | {_md_cell(title) or rid} | {_md_cell(category)} | {' · '.join(links)} |"
+            f"| {date} | {badge}{_md_cell(title) or rid} | {_md_cell(category)} | {' · '.join(links)} |"
         )
     lines.append("")
     return "\n".join(lines)

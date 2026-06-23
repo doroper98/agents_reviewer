@@ -23,6 +23,11 @@ from typing import Literal
 
 AnalysisMode = Literal["fast", "standard", "deep"]
 
+# v8.0.0 — 보고서 포맷(장르). mode(분석 깊이) 와 *직교*. 기본 standard(기사형).
+# reportage(르포·탐사보도) 는 5막 구조 + 행위자 관계망 중심 + 감시신호 제거.
+# SSOT: 본 정의. 트리거는 ``resolve_report_format`` (사용자 메시지의 "르포" 토큰).
+ReportFormat = Literal["standard", "reportage"]
+
 
 # 키워드 → mode 매핑. 우선순위: deep 우선 (사용자가 둘 다 언급하면 깊게).
 _DEEP_KEYWORDS: tuple[str, ...] = (
@@ -31,6 +36,10 @@ _DEEP_KEYWORDS: tuple[str, ...] = (
 _FAST_KEYWORDS: tuple[str, ...] = (
     "짧게", "간략히", "간략하게", "빠르게", "요약", "간단히", "간단하게", "fast",
 )
+
+# v8.0.0 — 르포 포맷 트리거. 사용자 요청: "르포" 단어 1개만. (오탐 최소화 —
+# "탐사"/"내막" 류 동의어는 일반 보고서를 르포로 오인할 수 있어 제외, 확정 트리거만.)
+_REPORTAGE_TRIGGER: str = "르포"
 
 
 @dataclass(frozen=True)
@@ -97,3 +106,29 @@ def resolve_mode(event_description: str) -> AnalysisMode:
         if kw.lower() in text:
             return "fast"
     return "deep"
+
+
+def resolve_report_format(event_description: str) -> ReportFormat:
+    """사용자 입력 → 보고서 포맷(장르). "르포" 토큰이 있으면 ``reportage``.
+
+    v8.0.0 — mode(깊이)와 직교. 기본은 ``standard`` (기존 기사형 보고서).
+    "르포" 가 메시지에 있으면 탐사보도 포맷 — 5막 구조 + 행위자 관계망 중심 +
+    감시신호 제거. 트리거가 아닌 모든 경로는 standard 라 byte-equal 보존.
+    """
+    return "reportage" if _REPORTAGE_TRIGGER in (event_description or "") else "standard"
+
+
+def strip_reportage_trigger(event_description: str) -> str:
+    """``event_description`` 에서 "르포" 트리거 토큰을 제거한 나머지 (= user_directive).
+
+    ``--bundle`` 플래그 제거와 동일한 패턴 — 트리거 단어가 사실 수집·앵글에
+    노이즈로 섞이지 않게 떼어낸다. 남은 문장이 이번 르포의 *앵글*(어느 실타래를
+    당길지) 이 된다. 트리거가 없으면 원문 그대로 반환.
+    """
+    import re
+
+    if _REPORTAGE_TRIGGER not in (event_description or ""):
+        return event_description
+    # "르포 형식으로", "르포로", "르포" 등 조사 변형 포함 — 토큰 + 인접 조사 제거.
+    stripped = re.sub(r"\s*" + _REPORTAGE_TRIGGER + r"(\s*형식(으로|의)?|\s*로|\s*)", " ", event_description)
+    return re.sub(r"\s{2,}", " ", stripped).strip()
