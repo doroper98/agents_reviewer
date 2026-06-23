@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 221건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 222건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-06-23 13:27 | [르포] SK하이닉스 주가 하락 우려 — 시장에서 거론되는 약세 논거 | 기업/반도체/주식 | [md](analysis_20260623_132713_3179fd449f.md) · [json](analysis_20260623_132713_3179fd449f.json) · [bundle](analysis_20260623_132713_3179fd449f.bundle.json) |
 | 2026-06-23 11:27 | 이란 IRGC 해군 호르무즈 해협 재폐쇄 선언, 선박은 정상 통과 — 미·이란 실무회담 6/22 개시 | 지정학·에너지 | [md](analysis_20260623_112718_bc8f8b580a.md) · [json](analysis_20260623_112718_bc8f8b580a.json) · [bundle](analysis_20260623_112718_bc8f8b580a.bundle.json) |
 | 2026-06-23 06:26 | 2026-06-23 화요일 아침 자동 일일 브리핑 — SK하이닉스 25년만의 KOSPI 대장주 교체·이란 휴전 협상·우크라 대공습 | 산업·지정학·정치·전쟁 종합 | [md](analysis_20260623_062611_bb0a71dcf9.md) · [json](analysis_20260623_062611_bb0a71dcf9.json) · [bundle](analysis_20260623_062611_bb0a71dcf9.bundle.json) |
 | 2026-06-20 22:46 | [르포] 제4차 카와나카지마 전투(1561)와 현대 투자자의 자세 | 역사 분석 / 투자 철학 | [md](analysis_20260620_224648_5e789ff642.md) · [json](analysis_20260620_224648_5e789ff642.json) · [bundle](analysis_20260620_224648_5e789ff642.bundle.json) |
