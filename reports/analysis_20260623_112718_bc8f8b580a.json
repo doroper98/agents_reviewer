@@ -1,0 +1,2022 @@
+{
+  "request": {
+    "event_description": "[후속 분석] 부모 보고서: analysis_20260607_061801_5916016773\n발화된 감시 신호: 이란 해군 추가 도발 여부 (방향: ambiguous)\n원 이벤트: 오늘 2026-06-07 (Sun) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-06 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-07 (Sun)) 시장 개장/외",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": {
+      "parent_report_id": "analysis_20260607_061801_5916016773",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260607_061801_5916016773.html",
+      "parent_report_title": "코스피 8천대 추락, 관세와 미사일이 겹친 한 주",
+      "parent_event_description": "오늘 2026-06-07 (Sun) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-06 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-07 (Sun)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+      "parent_scenarios": [],
+      "triggering_signal": {
+        "signal_id": "WS-20260606-05b92f5f",
+        "description": "이란 해군 추가 도발 여부",
+        "measurement": "오만해와 호르무즈 해협에서 미 함정 또는 상선 대상 추가 행동",
+        "direction": "ambiguous",
+        "deadline": "2026-06-21",
+        "follow_up_action": "유가와 안전자산 변동성의 임계 도달 시 후속 분석 재요청 권장",
+        "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260607_061801_5916016773.html",
+        "parent_report_id": "analysis_20260607_061801_5916016773",
+        "parent_chat_id": 50717095,
+        "fired": true,
+        "fired_at": "2026-06-21T00:10:06.670690",
+        "chain_depth": 0
+      },
+      "chain_depth": 0
+    },
+    "emit_bundle": false,
+    "report_format": "standard",
+    "user_directive": ""
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2026-02-28 미·이스라엘의 이란 전역 공습으로 시작된 전쟁이 넉 달째 장기화. 이란은 호르무즈 봉쇄·기뢰 부설·드론·소형보트 공격을 분쟁 내내 군사 레버리지로 사용해 옴. 6/17 MOU 로 외교 트랙이 열렸으나, 이스라엘의 레바논 작전(병행 전선) 이 휴전을 흔드는 변수로 작동. 6/20 IRGC 의 재폐쇄 선언은 이란 외교부의 '통상 운항' 발표와 동시에 나온 의도된 이중 신호 — 협상 테이블에서의 지렛대 확보용으로 해석. 한국은 원유의 60%+ 를 중동에서 수입하며, 호르무즈 의존도가 가장 높은 G20 국가 중 하나라 사건 트래커 가치가 큼.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-06-07",
+            "event": "부모 보고서 발행(일일 브리핑) — 감시 신호 '이란 해군 추가 도발 여부' 등록",
+            "impact": "후속 관측 트리거"
+          },
+          {
+            "date": "2026-06-17",
+            "event": "미·이란 양해각서(MOU) 서명 — 60일 내 최종합의 로드맵",
+            "impact": "Brent 80달러 하향, 위험자산 반등"
+          },
+          {
+            "date": "2026-06-18",
+            "event": "휴전 프레임 공식 발표, 美재무부 60일 한정 이란산 원유 거래 허가",
+            "impact": "이란 원유 호르무즈 통과량 분쟁 이후 최대치 회복"
+          },
+          {
+            "date": "2026-06-19",
+            "event": "제네바 후속회담 돌연 연기, 레바논 남부 교전 재발",
+            "impact": "유가 단기 반등, 보험·운임 재상승"
+          },
+          {
+            "date": "2026-06-20",
+            "event": "IRGC 해군, 이스라엘의 레바논 공습을 이유로 호르무즈 '전 선박 통항 금지' 선언·기뢰·해군 직접 위협 메시지 송출",
+            "impact": "美 CENTCOM '이란이 통제 못한다' 반박, 선박 실제 통항 유지"
+          },
+          {
+            "date": "2026-06-21",
+            "event": "美 CENTCOM: 6/21 55척 통과, 약 1,700만 배럴+ 운송 확인",
+            "impact": "선언과 현실의 괴리 → 시장 가격은 폐쇄 프리미엄 일부만 반영"
+          },
+          {
+            "date": "2026-06-22",
+            "event": "스위스에서 미·이란 기술실무 회담 개시 — 농축우라늄 재고·IAEA 검증·미사일 의제",
+            "impact": "외교 트랙 가동, 군사 트랙 위협 병행(이중 레버리지)"
+          },
+          {
+            "date": "2026-06-23",
+            "event": "오늘 — Brent 약 77.5달러/WTI 약 74.3달러(아시아 오전 기준 보도), 분쟁 이후 최저 인근",
+            "impact": "한국 정유·항공·해운에 단기 호재, 사고 시 재급등 리스크 잠복"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "이란 IRGC 해군 호르무즈 해협 재폐쇄 선언, 선박은 정상 통과 — 미·이란 실무회담 6/22 개시",
+    "event_name_en": "Iran IRGC Navy Re-Declares Strait of Hormuz Closure as US-Iran Technical Talks Resume",
+    "date": "2026-06-22",
+    "category": "지정학·에너지",
+    "summary": "부모 보고서(6/7) 의 감시 신호 '이란 해군 추가 도발 여부' 후속: 6/17 미·이란 양해각서(MOU) 서명 직후 잠시 안정되던 호르무즈가 6/20 이스라엘의 레바논 공습을 빌미로 IRGC 해군이 *재폐쇄* 를 일방 선언하며 재차 흔들렸음. 다만 6/21~22 실제 통항은 유지(美 CENTCOM: 6/21 55척·1,700만 배럴 통과)됐고, 물리적 추가 공격은 미보고. 같은 6/22 스위스에서 미·이란 기술실무 회담이 우라늄 재고·검증·미사일 의제로 개시 — 'IRGC 위협+외교부 통상운항 발표' 의 이중 시그널 패턴 지속됨.",
+    "timeline": [
+      {
+        "date": "2026-06-07",
+        "event": "부모 보고서 발행(일일 브리핑) — 감시 신호 '이란 해군 추가 도발 여부' 등록",
+        "impact": "후속 관측 트리거"
+      },
+      {
+        "date": "2026-06-17",
+        "event": "미·이란 양해각서(MOU) 서명 — 60일 내 최종합의 로드맵",
+        "impact": "Brent 80달러 하향, 위험자산 반등"
+      },
+      {
+        "date": "2026-06-18",
+        "event": "휴전 프레임 공식 발표, 美재무부 60일 한정 이란산 원유 거래 허가",
+        "impact": "이란 원유 호르무즈 통과량 분쟁 이후 최대치 회복"
+      },
+      {
+        "date": "2026-06-19",
+        "event": "제네바 후속회담 돌연 연기, 레바논 남부 교전 재발",
+        "impact": "유가 단기 반등, 보험·운임 재상승"
+      },
+      {
+        "date": "2026-06-20",
+        "event": "IRGC 해군, 이스라엘의 레바논 공습을 이유로 호르무즈 '전 선박 통항 금지' 선언·기뢰·해군 직접 위협 메시지 송출",
+        "impact": "美 CENTCOM '이란이 통제 못한다' 반박, 선박 실제 통항 유지"
+      },
+      {
+        "date": "2026-06-21",
+        "event": "美 CENTCOM: 6/21 55척 통과, 약 1,700만 배럴+ 운송 확인",
+        "impact": "선언과 현실의 괴리 → 시장 가격은 폐쇄 프리미엄 일부만 반영"
+      },
+      {
+        "date": "2026-06-22",
+        "event": "스위스에서 미·이란 기술실무 회담 개시 — 농축우라늄 재고·IAEA 검증·미사일 의제",
+        "impact": "외교 트랙 가동, 군사 트랙 위협 병행(이중 레버리지)"
+      },
+      {
+        "date": "2026-06-23",
+        "event": "오늘 — Brent 약 77.5달러/WTI 약 74.3달러(아시아 오전 기준 보도), 분쟁 이후 최저 인근",
+        "impact": "한국 정유·항공·해운에 단기 호재, 사고 시 재급등 리스크 잠복"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "WTI 종가",
+        "value": "약 74.3달러/배럴",
+        "context": "분쟁 이후 최저 인근, MOU 서명 직후 3% 내외 추가 하락(투자자 휴전 기대 반영)"
+      },
+      {
+        "label": "Brent 종가",
+        "value": "약 77.5달러/배럴",
+        "context": "3월 초 이후 최저권, 80달러 심리선 하회 유지"
+      },
+      {
+        "label": "호르무즈 통항(6/21)",
+        "value": "상선 55척, 1,700만 배럴+",
+        "context": "美 CENTCOM 집계 — IRGC '폐쇄' 선언과 무관하게 통항 유지"
+      },
+      {
+        "label": "이란 통과료 부과 보도",
+        "value": "선박 1척당 약 200만 달러",
+        "context": "일부 선박이 이미 지불한 것으로 보도, 법제화 검토 중"
+      },
+      {
+        "label": "MOU 후속 기한",
+        "value": "60일",
+        "context": "6/17 MOU 기준 최종 합의 목표일 — 8월 중순까지 핵·미사일 의제 매듭 시도"
+      },
+      {
+        "label": "글로벌 원유의 호르무즈 의존도",
+        "value": "약 20~21%",
+        "context": "EIA·CRS 등 추정, 봉쇄 충격의 구조적 상한선"
+      }
+    ],
+    "background": "2026-02-28 미·이스라엘의 이란 전역 공습으로 시작된 전쟁이 넉 달째 장기화. 이란은 호르무즈 봉쇄·기뢰 부설·드론·소형보트 공격을 분쟁 내내 군사 레버리지로 사용해 옴. 6/17 MOU 로 외교 트랙이 열렸으나, 이스라엘의 레바논 작전(병행 전선) 이 휴전을 흔드는 변수로 작동. 6/20 IRGC 의 재폐쇄 선언은 이란 외교부의 '통상 운항' 발표와 동시에 나온 의도된 이중 신호 — 협상 테이블에서의 지렛대 확보용으로 해석. 한국은 원유의 60%+ 를 중동에서 수입하며, 호르무즈 의존도가 가장 높은 G20 국가 중 하나라 사건 트래커 가치가 큼.",
+    "sources": [
+      "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
+      "https://www.cnn.com/2026/06/20/world/live-news/iran-war-trump-israel-lebanon",
+      "https://www.euronews.com/2026/06/20/iran-recloses-strait-of-hormuz-citing-israeli-strikes-on-lebanon",
+      "https://hormuzstraitmonitor.com/crisis-timeline/",
+      "https://www.aljazeera.com/economy/2026/6/18/oil-prices-fall-stocks-rally-as-us-iran-sign-framework-to-end-war",
+      "https://www.cnbc.com/2026/06/19/oil-prices-wti-brent-crude-us-iran-deal-strait-hormuz-shipping-recovery.html",
+      "https://discoveryalert.com.au/us-iran-ceasefire-oil-prices-hormuz-supply-outlook/",
+      "https://www.aljazeera.com/economy/2026/6/19/oil-prices-rise-as-lebanon-fighting-erupts-and-hormuz-traffic-still-slow"
+    ],
+    "glossary": [
+      {
+        "term": "IRGC (이란 혁명수비대)",
+        "definition": "이란 정규군과 별개의 군사 조직. 해군 부문이 호르무즈 해협에서 직접적인 무력 시위·임검·기뢰 부설을 담당함."
+      },
+      {
+        "term": "MOU (양해각서)",
+        "definition": "법적 구속력은 약하나 양측이 협상의 큰 틀에 합의했음을 확인하는 문서. 본 건은 60일 내 최종 합의를 목표로 우라늄 재고·검증·미사일 의제를 다룸."
+      },
+      {
+        "term": "CENTCOM (미군 중부사령부)",
+        "definition": "중동·중앙아시아 작전을 담당하는 미군 통합사령부. 호르무즈 통항 일일 집계·해상 호위를 수행."
+      },
+      {
+        "term": "Brent / WTI",
+        "definition": "각각 북해산·서부텍사스산 원유 선물 가격. 글로벌 유가 기준 지표."
+      },
+      {
+        "term": "통과료(Tolls)",
+        "definition": "이란이 검토 중인 호르무즈 통과 선박 대상 부과금. 사실상 봉쇄의 부분 해제 대가로 받아내려는 비대칭 레버리지."
+      }
+    ],
+    "confidence_score": 0.78,
+    "instruments_mentioned": [
+      "WTI",
+      "코스피",
+      "원/달러 환율",
+      "국고채 10Y"
+    ],
+    "time_series": [
+      {
+        "instrument": "WTI 유가",
+        "source": "FRED",
+        "code": "DCOILWTICO",
+        "unit": "$",
+        "chart_type": "area",
+        "start_date": "2026-05-23",
+        "end_date": "2026-06-22",
+        "data": [
+          {
+            "date": "2026-05-26",
+            "open": 97.63,
+            "high": 97.63,
+            "low": 97.63,
+            "close": 97.63,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 92.35,
+            "high": 92.35,
+            "low": 92.35,
+            "close": 92.35,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 92.65,
+            "high": 92.65,
+            "low": 92.65,
+            "close": 92.65,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 91.16,
+            "high": 91.16,
+            "low": 91.16,
+            "close": 91.16,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 95.96,
+            "high": 95.96,
+            "low": 95.96,
+            "close": 95.96,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 97.47,
+            "high": 97.47,
+            "low": 97.47,
+            "close": 97.47,
+            "volume": null
+          },
+          {
+            "date": "2026-06-03",
+            "open": 99.76,
+            "high": 99.76,
+            "low": 99.76,
+            "close": 99.76,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 96.83,
+            "high": 96.83,
+            "low": 96.83,
+            "close": 96.83,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 94.32,
+            "high": 94.32,
+            "low": 94.32,
+            "close": 94.32,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 95.0,
+            "high": 95.0,
+            "low": 95.0,
+            "close": 95.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 91.9,
+            "high": 91.9,
+            "low": 91.9,
+            "close": 91.9,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 93.68,
+            "high": 93.68,
+            "low": 93.68,
+            "close": 93.68,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 91.58,
+            "high": 91.58,
+            "low": 91.58,
+            "close": 91.58,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 88.62,
+            "high": 88.62,
+            "low": 88.62,
+            "close": 88.62,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 84.65,
+            "high": 84.65,
+            "low": 84.65,
+            "close": 84.65,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "코스피",
+        "source": "YAHOO",
+        "code": "^KS11",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-05-23",
+        "end_date": "2026-06-22",
+        "data": [
+          {
+            "date": "2026-05-26",
+            "open": 8070.91015625,
+            "high": 8131.14990234375,
+            "low": 8008.18994140625,
+            "close": 8047.509765625,
+            "volume": 519600.0
+          },
+          {
+            "date": "2026-05-27",
+            "open": 8242.1201171875,
+            "high": 8457.08984375,
+            "low": 8220.0400390625,
+            "close": 8228.7001953125,
+            "volume": 619500.0
+          },
+          {
+            "date": "2026-05-28",
+            "open": 8165.72998046875,
+            "high": 8253.599609375,
+            "low": 7841.009765625,
+            "close": 8185.2900390625,
+            "volume": 669000.0
+          },
+          {
+            "date": "2026-05-29",
+            "open": 8384.3095703125,
+            "high": 8476.150390625,
+            "low": 8273.740234375,
+            "close": 8476.150390625,
+            "volume": 735100.0
+          },
+          {
+            "date": "2026-06-01",
+            "open": 8485.669921875,
+            "high": 8874.16015625,
+            "low": 8485.669921875,
+            "close": 8788.3798828125,
+            "volume": 636200.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 8883.1904296875,
+            "high": 8933.6201171875,
+            "low": 8503.1201171875,
+            "close": 8801.490234375,
+            "volume": 632600.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 8623.8203125,
+            "high": 8759.0498046875,
+            "low": 8577.2998046875,
+            "close": 8639.41015625,
+            "volume": 437900.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 8323.2001953125,
+            "high": 8382.16015625,
+            "low": 8038.10009765625,
+            "close": 8160.58984375,
+            "volume": 463200.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 8048.08984375,
+            "high": 8048.08984375,
+            "low": 7442.72998046875,
+            "close": 7484.41015625,
+            "volume": 452200.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 7697.759765625,
+            "high": 8119.08984375,
+            "low": 7598.8701171875,
+            "close": 8096.93017578125,
+            "volume": 448500.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 7899.77001953125,
+            "high": 7996.68017578125,
+            "low": 7541.10986328125,
+            "close": 7730.81982421875,
+            "volume": 460900.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 7509.6201171875,
+            "high": 7800.6201171875,
+            "low": 7394.4599609375,
+            "close": 7763.9501953125,
+            "volume": 478700.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 8263.849609375,
+            "high": 8434.400390625,
+            "low": 8079.77001953125,
+            "close": 8123.6201171875,
+            "volume": 493400.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 8526.1201171875,
+            "high": 8603.48046875,
+            "low": 8450.240234375,
+            "close": 8545.98046875,
+            "volume": 516600.0
+          },
+          {
+            "date": "2026-06-16",
+            "open": 8696.5498046875,
+            "high": 8753.8203125,
+            "low": 8540.41015625,
+            "close": 8726.599609375,
+            "volume": 586300.0
+          },
+          {
+            "date": "2026-06-17",
+            "open": 8622.1298828125,
+            "high": 8872.1796875,
+            "low": 8605.66015625,
+            "close": 8864.240234375,
+            "volume": 571200.0
+          },
+          {
+            "date": "2026-06-18",
+            "open": 8884.919921875,
+            "high": 9106.0703125,
+            "low": 8867.33984375,
+            "close": 9063.83984375,
+            "volume": 510900.0
+          },
+          {
+            "date": "2026-06-19",
+            "open": 9288.8896484375,
+            "high": 9385.58984375,
+            "low": 8831.7197265625,
+            "close": 9052.419921875,
+            "volume": 517200.0
+          },
+          {
+            "date": "2026-06-22",
+            "open": 8954.4296875,
+            "high": 9253.0,
+            "low": 8900.6796875,
+            "close": 9114.5498046875,
+            "volume": 381100.0
+          }
+        ]
+      },
+      {
+        "instrument": "원/달러 환율",
+        "source": "ECOS",
+        "code": "731Y001/0000001",
+        "unit": "원",
+        "chart_type": "line",
+        "start_date": "2026-05-23",
+        "end_date": "2026-06-22",
+        "data": [
+          {
+            "date": "2026-05-26",
+            "open": 1513.3,
+            "high": 1513.3,
+            "low": 1513.3,
+            "close": 1513.3,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 1507.9,
+            "high": 1507.9,
+            "low": 1507.9,
+            "close": 1507.9,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 1501.6,
+            "high": 1501.6,
+            "low": 1501.6,
+            "close": 1501.6,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 1505.8,
+            "high": 1505.8,
+            "low": 1505.8,
+            "close": 1505.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 1503.2,
+            "high": 1503.2,
+            "low": 1503.2,
+            "close": 1503.2,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 1511.3,
+            "high": 1511.3,
+            "low": 1511.3,
+            "close": 1511.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 1515.6,
+            "high": 1515.6,
+            "low": 1515.6,
+            "close": 1515.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 1528.6,
+            "high": 1528.6,
+            "low": 1528.6,
+            "close": 1528.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 1543.0,
+            "high": 1543.0,
+            "low": 1543.0,
+            "close": 1543.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 1546.5,
+            "high": 1546.5,
+            "low": 1546.5,
+            "close": 1546.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 1518.4,
+            "high": 1518.4,
+            "low": 1518.4,
+            "close": 1518.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 1522.4,
+            "high": 1522.4,
+            "low": 1522.4,
+            "close": 1522.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 1527.0,
+            "high": 1527.0,
+            "low": 1527.0,
+            "close": 1527.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 1520.4,
+            "high": 1520.4,
+            "low": 1520.4,
+            "close": 1520.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 1510.0,
+            "high": 1510.0,
+            "low": 1510.0,
+            "close": 1510.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 1513.5,
+            "high": 1513.5,
+            "low": 1513.5,
+            "close": 1513.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 1512.8,
+            "high": 1512.8,
+            "low": 1512.8,
+            "close": 1512.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-19",
+            "open": 1523.4,
+            "high": 1523.4,
+            "low": 1523.4,
+            "close": 1523.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-22",
+            "open": 1535.0,
+            "high": 1535.0,
+            "low": 1535.0,
+            "close": 1535.0,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "국고채 10Y",
+        "source": "ECOS",
+        "code": "817Y002/010210000",
+        "unit": "%",
+        "chart_type": "line",
+        "start_date": "2026-05-23",
+        "end_date": "2026-06-22",
+        "data": [
+          {
+            "date": "2026-05-26",
+            "open": 4.073,
+            "high": 4.073,
+            "low": 4.073,
+            "close": 4.073,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 4.102,
+            "high": 4.102,
+            "low": 4.102,
+            "close": 4.102,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 4.147,
+            "high": 4.147,
+            "low": 4.147,
+            "close": 4.147,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 4.068,
+            "high": 4.068,
+            "low": 4.068,
+            "close": 4.068,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 4.174,
+            "high": 4.174,
+            "low": 4.174,
+            "close": 4.174,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 4.135,
+            "high": 4.135,
+            "low": 4.135,
+            "close": 4.135,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 4.229,
+            "high": 4.229,
+            "low": 4.229,
+            "close": 4.229,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 4.254,
+            "high": 4.254,
+            "low": 4.254,
+            "close": 4.254,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 4.348,
+            "high": 4.348,
+            "low": 4.348,
+            "close": 4.348,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 4.273,
+            "high": 4.273,
+            "low": 4.273,
+            "close": 4.273,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 4.273,
+            "high": 4.273,
+            "low": 4.273,
+            "close": 4.273,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 4.3,
+            "high": 4.3,
+            "low": 4.3,
+            "close": 4.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 4.195,
+            "high": 4.195,
+            "low": 4.195,
+            "close": 4.195,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 4.118,
+            "high": 4.118,
+            "low": 4.118,
+            "close": 4.118,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 4.11,
+            "high": 4.11,
+            "low": 4.11,
+            "close": 4.11,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 4.071,
+            "high": 4.071,
+            "low": 4.071,
+            "close": 4.071,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 4.118,
+            "high": 4.118,
+            "low": 4.118,
+            "close": 4.118,
+            "volume": null
+          },
+          {
+            "date": "2026-06-19",
+            "open": 4.171,
+            "high": 4.171,
+            "low": 4.171,
+            "close": 4.171,
+            "volume": null
+          },
+          {
+            "date": "2026-06-22",
+            "open": 4.195,
+            "high": 4.195,
+            "low": 4.195,
+            "close": 4.195,
+            "volume": null
+          }
+        ]
+      }
+    ],
+    "provenance": [
+      {
+        "fact": "IRGC 해군이 6/20 호르무즈 전 선박 통항 금지를 일방 선언",
+        "source_date": "2026-06-20",
+        "scope_note": "선언 주체는 IRGC 해군 사령부 — 이란 정부 전체 입장 아님(외교부는 통상 운항 발표). 물리적 봉쇄 아닌 위협 메시지 송출 단계",
+        "source_url": "https://www.euronews.com/2026/06/20/iran-recloses-strait-of-hormuz-citing-israeli-strikes-on-lebanon"
+      },
+      {
+        "fact": "6/21 호르무즈 통과 상선 55척·약 1,700만 배럴+",
+        "source_date": "2026-06-21",
+        "scope_note": "美 CENTCOM 집계, 24시간 윈도우 — 분쟁 이전 평균(70~80척) 회복 단계",
+        "source_url": "https://www.cnn.com/2026/06/20/world/live-news/iran-war-trump-israel-lebanon"
+      },
+      {
+        "fact": "미·이란 기술실무 회담 6/22 스위스에서 개시",
+        "source_date": "2026-06-22",
+        "scope_note": "6/17 MOU 이행 협상, 의제는 농축우라늄 재고·IAEA 검증·미사일 — 정상회담 아님",
+        "source_url": "https://hormuzstraitmonitor.com/crisis-timeline/"
+      },
+      {
+        "fact": "WTI 약 74.3달러·Brent 약 77.5달러(휴전 기대 반영)",
+        "source_date": "2026-06-22",
+        "scope_note": "월요일 종가권, 3월 초 이후 최저권. 일시점 가격 — 사건 발생 시 재급등 리스크 상존",
+        "source_url": "https://discoveryalert.com.au/us-iran-ceasefire-oil-prices-hormuz-supply-outlook/"
+      },
+      {
+        "fact": "이란이 통과 선박 1척당 약 200만 달러 통과료 부과 보도",
+        "source_date": "2026-06",
+        "scope_note": "법제화 검토 단계, 일부 선박이 이미 지불한 것으로 보도 — 공식 요율 아님",
+        "source_url": "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis"
+      },
+      {
+        "fact": "MOU 후속 합의 목표 기한 60일(8월 중순)",
+        "source_date": "2026-06-17",
+        "scope_note": "양측이 합의한 협상 기한 — 강제력 없음, 연장 가능",
+        "source_url": "https://www.aljazeera.com/economy/2026/6/18/oil-prices-fall-stocks-rally-as-us-iran-sign-framework-to-end-war"
+      },
+      {
+        "fact": "글로벌 원유의 약 20~21% 가 호르무즈 통과",
+        "source_date": "2026-05",
+        "scope_note": "EIA·CRS 보고서 추정치 — 연간 기준, 액화천연가스(LNG) 포함 시 비중 더 높음",
+        "source_url": "https://www.congress.gov/crs-product/R45281"
+      }
+    ],
+    "available_images": [
+      {
+        "source_url": "https://www.aljazeera.com/economy/2026/6/18/oil-prices-fall-stocks-rally-as-us-iran-sign-framework-to-end-war",
+        "image_url": "https://www.aljazeera.com/wp-content/uploads/2026/06/2026-06-16T095243Z_702246180_RC2QULA71E5H_RTRMADP_3_IRAN-CRISIS-OIL-PRICES-1781745592.jpg?resize=1920%2C1440",
+        "title": "Oil prices fall, stocks rally as US, Iran sign framework to end war",
+        "description": "Brent crude drops 2.3 percent, while key stock indices in Japan, South Korea and Taiwan climb.",
+        "publisher": "aljazeera.com"
+      },
+      {
+        "source_url": "https://www.cnbc.com/2026/06/19/oil-prices-wti-brent-crude-us-iran-deal-strait-hormuz-shipping-recovery.html",
+        "image_url": "https://image.cnbcfm.com/api/v1/image/108324328-1781828751562-gettyimages-2281441566-AA_17062026_2833474.jpeg?v=1781828785&w=1920&h=1080",
+        "title": "Brent rises after U.S.-Iran peace talks in Geneva are abruptly postponed",
+        "description": "Oil prices briefly turned lower Friday after Israel and Iran-backed Hezbollah agreed to a ceasefire, according to a U.S. official.",
+        "publisher": "CNBC"
+      },
+      {
+        "source_url": "https://www.aljazeera.com/economy/2026/6/19/oil-prices-rise-as-lebanon-fighting-erupts-and-hormuz-traffic-still-slow",
+        "image_url": "https://www.aljazeera.com/wp-content/uploads/2026/06/AP26167495359337-1781838392.jpg?resize=1920%2C1440",
+        "title": "Oil prices rise as Lebanon fighting erupts and Hormuz traffic still slow",
+        "description": "Brent crude reverses slide after oil, LNG tankers cross critical waterway.",
+        "publisher": "aljazeera.com"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "호르무즈 폐쇄 선언, 배는 지나갔다",
+    "deck": "이란 혁명수비대가 6월 20일 해협을 닫겠다고 했지만, 6월 21일 상선 55척이 평소처럼 지나갔다. 같은 주 미국과 이란은 스위스에서 핵 협상 테이블에 다시 앉았다.",
+    "sections": [
+      {
+        "heading": "선언과 실제, 같은 날 어긋나다",
+        "kicker": "이중 신호",
+        "prose": "지난 6월 20일, 이란 혁명수비대 해군이 호르무즈 해협의 '전 선박 통항 금지'를 일방 선언했다. 이스라엘이 같은 날 레바논 남부를 공습한 데 대한 보복 조치라는 명분을 달았다. 이란 외교부는 정확히 같은 시각, 해협의 상선 통항이 평소대로 유지되고 있다고 밝혔다. 두 발언은 모순이라기보다 의도된 한 묶음으로 읽힌다.\n\n현실은 외교부 쪽에 더 가까웠다. 미군 중부사령부는 6월 21일 하루 동안 호르무즈를 통과한 상선이 55척, 운송된 원유가 1,700만 배럴을 넘었다고 집계했다. 분쟁 발발 이후 일간 통과량으로는 가장 많은 축에 속한다. 무력 공격, 기뢰 부설, 소형보트 위협 같은 물리적 행동은 보고되지 않았다.\n\n협상 테이블의 지렛대로 위협을 쓰되 실제 군사 옵션은 아끼는 패턴이다. 사건 발발 넉 달째에 익숙해진 이 이중 신호는, 호르무즈가 이란에게 여전히 '쓸 수 있는 가장 비싼 카드' 라는 사실을 다시 확인한다. 카드는 손에 쥐고 있을 때 가치가 가장 크다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "코스피 종합지수",
+            "subtitle": "2026-05-23 ~ 2026-06-22 · +13.26% (8,048 → 9,115)",
+            "data": [
+              {
+                "x": "2026-05-26",
+                "y": 8047.509765625
+              },
+              {
+                "x": "2026-05-27",
+                "y": 8228.7001953125
+              },
+              {
+                "x": "2026-05-28",
+                "y": 8185.2900390625
+              },
+              {
+                "x": "2026-05-29",
+                "y": 8476.150390625
+              },
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              },
+              {
+                "x": "2026-06-15",
+                "y": 8545.98046875
+              },
+              {
+                "x": "2026-06-16",
+                "y": 8726.599609375
+              },
+              {
+                "x": "2026-06-17",
+                "y": 8864.240234375,
+                "event": "미·이란 양해각서(MOU) 서명, 60일 내 최종합의 로드맵"
+              },
+              {
+                "x": "2026-06-18",
+                "y": 9063.83984375,
+                "event": "휴전 프레임 공식 발표, 美재무부 60일 한정 이란산 원유 거래 허가"
+              },
+              {
+                "x": "2026-06-19",
+                "y": 9052.419921875,
+                "event": "제네바 후속회담 돌연 연기, 레바논 남부 교전 재발"
+              },
+              {
+                "x": "2026-06-22",
+                "y": 9114.5498046875,
+                "event": "스위스에서 미·이란 기술실무 회담 개시, 농축우라늄 재고·IAEA 검증·미사일 의제"
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-23 ~ 2026-06-22 / 일간",
+            "takeaway": "코스피 기간 중 7,484~9,115 사이 상승, 마지막 9,115 (+13.26%), 변동폭 21.8%"
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "WTI 유가",
+            "title": "WTI 유가",
+            "subtitle": "2026-05-23 ~ 2026-06-22 · -13.30% (97.63 → 84.65)",
+            "last_value_formatted": "84.65",
+            "change_day_pct": -4.48,
+            "change_day_pct_formatted": "-4.48%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-26",
+                "y": 97.63
+              },
+              {
+                "x": "2026-05-27",
+                "y": 92.35
+              },
+              {
+                "x": "2026-05-28",
+                "y": 92.65
+              },
+              {
+                "x": "2026-05-29",
+                "y": 91.16
+              },
+              {
+                "x": "2026-06-01",
+                "y": 95.96
+              },
+              {
+                "x": "2026-06-02",
+                "y": 97.47
+              },
+              {
+                "x": "2026-06-03",
+                "y": 99.76
+              },
+              {
+                "x": "2026-06-04",
+                "y": 96.83
+              },
+              {
+                "x": "2026-06-05",
+                "y": 94.32
+              },
+              {
+                "x": "2026-06-08",
+                "y": 95.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 91.9
+              },
+              {
+                "x": "2026-06-10",
+                "y": 93.68
+              },
+              {
+                "x": "2026-06-11",
+                "y": 91.58
+              },
+              {
+                "x": "2026-06-12",
+                "y": 88.62
+              },
+              {
+                "x": "2026-06-15",
+                "y": 84.65
+              }
+            ],
+            "source": "FRED / 2026-05-23 ~ 2026-06-22 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "코스피",
+            "title": "코스피",
+            "subtitle": "2026-05-23 ~ 2026-06-22 · +13.26% (8,048 → 9,115)",
+            "last_value_formatted": "9,115",
+            "change_day_pct": 0.69,
+            "change_day_pct_formatted": "+0.69%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-26",
+                "y": 8047.509765625
+              },
+              {
+                "x": "2026-05-27",
+                "y": 8228.7001953125
+              },
+              {
+                "x": "2026-05-28",
+                "y": 8185.2900390625
+              },
+              {
+                "x": "2026-05-29",
+                "y": 8476.150390625
+              },
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              },
+              {
+                "x": "2026-06-15",
+                "y": 8545.98046875
+              },
+              {
+                "x": "2026-06-16",
+                "y": 8726.599609375
+              },
+              {
+                "x": "2026-06-17",
+                "y": 8864.240234375
+              },
+              {
+                "x": "2026-06-18",
+                "y": 9063.83984375
+              },
+              {
+                "x": "2026-06-19",
+                "y": 9052.419921875
+              },
+              {
+                "x": "2026-06-22",
+                "y": 9114.5498046875
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-23 ~ 2026-06-22 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "원/달러 환율",
+            "title": "원/달러 환율",
+            "subtitle": "2026-05-23 ~ 2026-06-22 · +1.43% (1,513 → 1,535)",
+            "last_value_formatted": "1,535",
+            "change_day_pct": 0.76,
+            "change_day_pct_formatted": "+0.76%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-26",
+                "y": 1513.3
+              },
+              {
+                "x": "2026-05-27",
+                "y": 1507.9
+              },
+              {
+                "x": "2026-05-28",
+                "y": 1501.6
+              },
+              {
+                "x": "2026-05-29",
+                "y": 1505.8
+              },
+              {
+                "x": "2026-06-01",
+                "y": 1503.2
+              },
+              {
+                "x": "2026-06-02",
+                "y": 1511.3
+              },
+              {
+                "x": "2026-06-04",
+                "y": 1515.6
+              },
+              {
+                "x": "2026-06-05",
+                "y": 1528.6
+              },
+              {
+                "x": "2026-06-08",
+                "y": 1543.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 1546.5
+              },
+              {
+                "x": "2026-06-10",
+                "y": 1518.4
+              },
+              {
+                "x": "2026-06-11",
+                "y": 1522.4
+              },
+              {
+                "x": "2026-06-12",
+                "y": 1527.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 1520.4
+              },
+              {
+                "x": "2026-06-16",
+                "y": 1510.0
+              },
+              {
+                "x": "2026-06-17",
+                "y": 1513.5
+              },
+              {
+                "x": "2026-06-18",
+                "y": 1512.8
+              },
+              {
+                "x": "2026-06-19",
+                "y": 1523.4
+              },
+              {
+                "x": "2026-06-22",
+                "y": 1535.0
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-05-23 ~ 2026-06-22 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "국고채 10Y",
+            "title": "국고채 10Y",
+            "subtitle": "2026-05-23 ~ 2026-06-22 · +3.00% (4.07 → 4.20)",
+            "last_value_formatted": "4.20%",
+            "change_day_pct": 0.58,
+            "change_day_pct_formatted": "+0.58%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-05-26",
+                "y": 4.073
+              },
+              {
+                "x": "2026-05-27",
+                "y": 4.102
+              },
+              {
+                "x": "2026-05-28",
+                "y": 4.147
+              },
+              {
+                "x": "2026-05-29",
+                "y": 4.068
+              },
+              {
+                "x": "2026-06-01",
+                "y": 4.174
+              },
+              {
+                "x": "2026-06-02",
+                "y": 4.135
+              },
+              {
+                "x": "2026-06-04",
+                "y": 4.229
+              },
+              {
+                "x": "2026-06-05",
+                "y": 4.254
+              },
+              {
+                "x": "2026-06-08",
+                "y": 4.348
+              },
+              {
+                "x": "2026-06-09",
+                "y": 4.273
+              },
+              {
+                "x": "2026-06-10",
+                "y": 4.273
+              },
+              {
+                "x": "2026-06-11",
+                "y": 4.3
+              },
+              {
+                "x": "2026-06-12",
+                "y": 4.195
+              },
+              {
+                "x": "2026-06-15",
+                "y": 4.118
+              },
+              {
+                "x": "2026-06-16",
+                "y": 4.11
+              },
+              {
+                "x": "2026-06-17",
+                "y": 4.071
+              },
+              {
+                "x": "2026-06-18",
+                "y": 4.118
+              },
+              {
+                "x": "2026-06-19",
+                "y": 4.171
+              },
+              {
+                "x": "2026-06-22",
+                "y": 4.195
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-05-23 ~ 2026-06-22 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "dot_matrix",
+            "title": "100배럴의 원유, 어디를 지나는가",
+            "subtitle": "5배럴 중 1배럴이 호르무즈를 거친다, 구조적 의존의 크기",
+            "data": [
+              {
+                "label": "호르무즈 통과",
+                "value": 20,
+                "accent": true
+              },
+              {
+                "label": "그 밖의 경로",
+                "value": 80
+              }
+            ],
+            "source": "EIA·CRS 추정 / 2025~2026 평균치",
+            "takeaway": "세계 원유 다섯 통 중 한 통이 이 해협 위에 떠 있다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "협상 테이블의 지렛대로 위협을 쓰되, 실제 군사 옵션은 아끼는 패턴이다.",
+        "cited_claim_ids": [],
+        "lede": "지난 토요일, 두 개의 이란이 동시에 말했다. 하나는 해협을 닫겠다고 했고, 다른 하나는 배가 정상으로 다닌다고 했다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "6/21 통과 상선",
+            "value": "55척",
+            "sublabel": "美 CENTCOM 집계"
+          },
+          {
+            "label": "같은 날 운송량",
+            "value": "1,700만 배럴+",
+            "sublabel": "분쟁 이후 일간 최대급"
+          },
+          {
+            "label": "글로벌 원유의 호르무즈 의존도",
+            "value": "약 20~21%",
+            "sublabel": "EIA·CRS 추정"
+          },
+          {
+            "label": "이란 통과료 부과 보도",
+            "value": "선박당 약 200만 달러",
+            "sublabel": "일부 선박 지불, 법제화 검토 중"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "IRGC (이란 혁명수비대)",
+            "explanation": "정규군과는 별도로 이슬람 체제를 지키기 위해 1979년에 만들어진 이란의 무장 조직이다. 해군 부대를 따로 두고 페르시아만 일대 작전을 맡는다."
+          },
+          {
+            "term": "美 중부사령부 (CENTCOM)",
+            "explanation": "중동과 중앙아시아 지역의 미군 작전을 총괄하는 통합 사령부다. 호르무즈 통과 선박의 일일 집계를 공식 발표하는 기관 중 하나다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "사흘 전, 같은 날 같은 시각에 이란에서 정반대의 두 발표가 나왔습니다.",
+            "혁명수비대 해군은 호르무즈 해협을 모두 닫겠다고 했고, 외교부는 배가 평소대로 다닌다고 했습니다.",
+            "현실은 외교부 쪽에 더 가까웠습니다. 다음 날 상선 55척이 그대로 통과했고, 운송된 원유는 천칠백만 배럴을 넘었습니다.",
+            "위협은 손에 쥔 카드일 때 가장 비쌉니다. 이란은 그 카드를 쓰지 않으면서 흔드는 쪽을 택했습니다."
+          ],
+          "highlights": [
+            "선언과 통과량 정반대",
+            "세계 원유 5분의 1이 통과하는 길"
+          ],
+          "emphasis": [
+            "같은 날 같은 시각",
+            "상선 55척",
+            "천칠백만 배럴"
+          ],
+          "narration_tts": [
+            "사흘 전, 같은 날 같은 시각에 이란에서 정반대의 두 발표가 나왔습니다.",
+            "혁명수비대 해군은 호르무즈 해협을 모두 닫겠다고 했고, 외교부는 배가 평소대로 다닌다고 했습니다.",
+            "현실은 외교부 쪽에 더 가까웠습니다. 다음 날 상선 오십오 척이 그대로 통과했고, 운송된 원유는 천칠백만 배럴을 넘었습니다.",
+            "위협은 손에 쥔 카드일 때 가장 비쌉니다. 이란은 그 카드를 쓰지 않으면서 흔드는 쪽을 택했습니다."
+          ]
+        }
+      },
+      {
+        "heading": "60일 시계가 돌기 시작했다",
+        "kicker": "스위스 트랙",
+        "prose": "위협의 뒷자리에서 외교가 움직였다. 6월 22일, 미국과 이란의 기술실무 협상이 스위스에서 시작됐다. 의제는 셋이다. 농축우라늄의 재고를 어디까지 줄일 것인지, 국제원자력기구의 사찰을 어느 수준까지 허용할 것인지, 그리고 사거리가 긴 미사일 프로그램을 어떻게 묶어둘 것인지.\n\n출발선은 6월 17일에 그어졌다. 양측이 양해각서에 서명했고, '60일 안에 최종 합의를 본다'는 일정표를 함께 적었다. 다음 시한은 8월 중순이다. 미국 재무부는 같은 날 60일에 한정해 이란산 원유 거래를 허가하는 임시 면제를 발표했다. 시장은 그 신호를 빠르게 받아 들었다.\n\n다만 변수는 협상장 밖에 있다. 6월 19일에 제네바 후속 회담이 갑작스레 연기됐고, 같은 날 레바논 남부에서 교전이 재발했다. 이스라엘의 레바논 작전은 호르무즈와 별개의 전선이지만, 이란에게 협상장을 박차고 나올 명분을 계속 공급한다. 6월 20일의 폐쇄 선언이 바로 그 명분 위에 올라탔다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "양해각서 (MOU)",
+            "explanation": "정식 조약이나 합의문보다 한 단계 앞선, 큰 틀의 약속을 적어 두는 외교 문서다. 법적 구속력은 약하지만 협상의 출발점이 된다."
+          },
+          {
+            "term": "국제원자력기구 (IAEA)",
+            "explanation": "유엔 산하 기구로, 각국의 핵 활동이 평화적 목적에 맞게 이뤄지는지 사찰하고 검증한다. 이란 핵 협상에서 사찰 허용 범위가 늘 핵심 쟁점이 된다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "위협의 뒷자리에서 외교가 움직였습니다.",
+            "어제, 미국과 이란이 스위스에서 기술 실무 회담을 시작했습니다.",
+            "테이블 위에는 세 가지가 올라와 있습니다. 농축 우라늄 재고, 국제 사찰의 범위, 그리고 미사일 프로그램입니다.",
+            "닷새 전 양해각서가 그어 놓은 60일 시계는, 이제 본격적으로 돌기 시작했습니다."
+          ],
+          "highlights": [
+            "8월 중순까지 60일",
+            "우라늄·사찰·미사일 3대 의제"
+          ],
+          "emphasis": [
+            "60일 시계",
+            "우라늄 재고",
+            "국제 사찰의 범위"
+          ],
+          "narration_tts": [
+            "위협의 뒷자리에서 외교가 움직였습니다.",
+            "어제, 미국과 이란이 스위스에서 기술 실무 회담을 시작했습니다.",
+            "테이블 위에는 세 가지가 올라와 있습니다. 농축 우라늄 재고, 국제 사찰의 범위, 그리고 미사일 프로그램입니다.",
+            "닷새 전 양해각서가 그어 놓은 육십 일 시계는, 이제 본격적으로 돌기 시작했습니다."
+          ]
+        }
+      },
+      {
+        "heading": "유가는 가라앉고, 한국 자산은 갈래가 갈렸다",
+        "kicker": "시장의 답",
+        "prose": "시장은 폐쇄 선언이 아니라 통과 실적에 가격을 매겼다. 시계열 기준 시점인 6월 15일 종가 기준으로 서부텍사스산 원유는 배럴당 84.65달러였고, 그날 하루 4.48% 떨어진 자리였다. 이후 외신 보도는 추가 하락 흐름을 전한다. 알자지라와 CNBC는 양해각서 서명 직후 휴전 기대가 반영되며 브렌트유가 추가로 더 내렸다고 보도했고, 아시아 시장 보도 기준으로는 서부텍사스산이 약 74달러대, 브렌트가 약 77달러대 부근까지 내려간 흐름이 이어졌다는 전언이 나온다. 분쟁 발발 이후 가장 낮은 구간이다.\n\n한국 자산은 한 방향으로만 움직이지 않았다. 6월 22일 코스피는 9,114.55로 전일 대비 0.69% 올라 위험자산 강세 쪽으로 반응했다. 다만 원/달러 환율은 1,535.0원으로 0.76% 올라 원화 약세 방향을 이어갔고, 국고채 10년물 금리도 4.195%로 0.58% 상승했다. 유가 안정 신호와 한국 자산별 반응의 결이 한 묶음으로 정렬되지는 않았다.\n\n다만 가격은 빠르게 되돌릴 수 있다. 6월 19일 제네바 회담 연기 소식만으로도 유가는 단기 반등했고, 보험·운임도 다시 올랐다는 보도가 있다. 시장은 휴전 기대를 상당 부분 이미 가격에 반영해 둔 모습이다. 작은 사건 하나로도 그 가격은 다시 뒤집힐 여지가 남아 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "WTI (6/15 종가)",
+            "value": "84.65달러",
+            "sublabel": "-4.48%, time_series 기준"
+          },
+          {
+            "label": "WTI (오늘 아시아 오전 보도)",
+            "value": "약 74.3달러",
+            "sublabel": "분쟁 이후 최저권"
+          },
+          {
+            "label": "코스피 (6/22)",
+            "value": "9,114.55",
+            "sublabel": "+0.69%"
+          },
+          {
+            "label": "원/달러 (6/22)",
+            "value": "1,535.0원",
+            "sublabel": "+0.76%"
+          },
+          {
+            "label": "국고채 10Y (6/22)",
+            "value": "4.195%",
+            "sublabel": "+0.58%"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "시장은 폐쇄 선언이 아니라 통과 실적에 가격을 매겼습니다.",
+            "서부텍사스산 원유는 6월 15일 종가 기준 배럴당 팔십사 점 육오 달러, 그날 하루 사 점 오 퍼센트 가까이 떨어졌습니다.",
+            "오늘 아시아 오전 보도로는 칠십사 달러 부근까지 더 내려왔습니다. 분쟁 발발 이후 가장 낮은 구간입니다.",
+            "어제 코스피는 구천백선을 회복했고, 환율과 채권 금리도 위험회피가 풀리는 방향으로 함께 움직였습니다."
+          ],
+          "highlights": [
+            "WTI 6/15 84.65달러",
+            "코스피 9,114선 회복"
+          ],
+          "emphasis": [
+            "폐쇄 선언이 아니라 통과 실적",
+            "분쟁 발발 이후 가장 낮은 구간"
+          ],
+          "narration_tts": [
+            "시장은 폐쇄 선언이 아니라 통과 실적에 가격을 매겼습니다.",
+            "서부텍사스산 원유는 유월 십오일 종가 기준 배럴당 팔십사 점 육오 달러, 그날 하루 사 점 사팔 퍼센트 떨어졌습니다.",
+            "오늘 아시아 오전 보도로는 칠십사 달러 부근까지 더 내려왔습니다. 분쟁 발발 이후 가장 낮은 구간입니다.",
+            "어제 코스피는 구천백십사 점 오오로 영 점 육구 퍼센트 올랐고, 환율과 채권 금리도 위험회피가 풀리는 방향으로 함께 움직였습니다."
+          ]
+        }
+      },
+      {
+        "heading": "도발은 있었다, 다만 말로만 있었다",
+        "kicker": "부모 신호 판정",
+        "prose": "이 글의 출발점은 보름 전 6월 7일에 등록된 감시 신호 하나다. '이란 해군 추가 도발 여부'. 데드라인은 6월 21일이었고, 방향은 정해두지 않았다. 무엇으로 채워질지가 그 자체로 시나리오 분기였다.\n\n실적을 두고 판단하면, 신호는 '도발이 있었다' 쪽으로 절반은 실현됐다. 6월 20일의 폐쇄 선언은 분명한 위협이고, 미군 중부사령부의 직접 반박을 끌어낼 만큼 무게가 있었다. 그러나 나머지 절반, 그러니까 미 함정이나 상선을 겨냥한 실제 공격은 없었다. 기뢰도 없었고, 소형 보트의 접근도 보고되지 않았다. 협상 의제 위에 위협을 얹은 것이지, 위협으로 협상을 깨려고 한 것은 아니었다.\n\n그렇다면 부모 보고서의 시나리오 가지 중에서 어느 쪽으로 갔는가. 무력 격화도 아니고, 완전한 외교 안정도 아니다. 그 사이에 자리한 '이중 신호 답보' 구간이다. 외교 트랙이 살아 있는 한 이란은 위협의 강도를 조절해 가며 협상장에 머무를 것이고, 무력 옵션은 시한이 가까워지는 끝물에 한 번 더 등장할 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "이 글의 출발점은 보름 전에 등록된 감시 신호 하나입니다.",
+            "이란 해군이 추가 도발을 할 것인가. 데드라인은 그제였습니다.",
+            "결과는 절반의 실현입니다. 폐쇄 선언이라는 도발은 있었고, 실제 공격은 없었습니다.",
+            "그래서 무력 격화도 외교 안정도 아닌, 이중 신호 답보 구간으로 진입했습니다."
+          ],
+          "highlights": [
+            "도발은 있었다, 공격은 없었다",
+            "이중 신호 답보 구간"
+          ],
+          "emphasis": [
+            "절반의 실현",
+            "이중 신호 답보 구간"
+          ],
+          "narration_tts": [
+            "이 글의 출발점은 보름 전에 등록된 감시 신호 하나입니다.",
+            "이란 해군이 추가 도발을 할 것인가. 데드라인은 그제였습니다.",
+            "결과는 절반의 실현입니다. 폐쇄 선언이라는 도발은 있었고, 실제 공격은 없었습니다.",
+            "그래서 무력 격화도 외교 안정도 아닌, 이중 신호 답보 구간으로 진입했습니다."
+          ]
+        }
+      },
+      {
+        "heading": "한국 원유 수입의 60%가 중동에서 온다",
+        "kicker": "한국이 보는 해협",
+        "prose": "한국은 호르무즈에 가장 많이 기댄 G20 국가의 하나다. 원유 수입량 가운데 60%가 넘는 분량이 중동산이고, 그 대부분이 이 해협을 거쳐 들어온다. 사우디아라비아·이라크·쿠웨이트·아랍에미리트로 가는 유조선의 항로가 모두 이 좁은 물길 위에서 겹친다. 일본·중국도 사정이 비슷하지만, 미국과 유럽이 자국 생산과 다른 항로로 분산되어 있는 것과 대조된다.\n\n그래서 정유사·항공사·해운사의 시계는 호르무즈에 맞춰져 있다. 단기적으로는 호재다. 정유 마진은 유가 하향과 함께 안정 구간으로 들어왔고, 항공의 유류비 부담도 잠시 숨을 돌렸다. 해운은 양면이다. 운임은 보험료와 함께 다시 내려왔지만, 사고가 한 번 나면 우회 항로(아프리카 희망봉 우회 또는 UAE 동해안 송유관 경유)의 비용 구조가 즉시 다시 켜진다.\n\n구조적 위험은 줄어들지 않았다. 우회로의 처리 용량은 호르무즈의 평시 통과량을 충분히 대체하기 어렵다는 평가가 업계에서는 일반적이다. 통과료 200만 달러 보도가 사실이라면, 평시에도 비용이 추가로 얹히는 새 균형이 자리잡는다는 뜻이다. 가격이 안 보이는 자리에서 천천히 오르고 있는 셈이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "정유 마진",
+            "explanation": "원유를 사들여 휘발유·경유 등으로 정제해 팔 때 남는 차익을 말한다. 원유 값이 내리면 보통 마진이 좋아진다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "한국은 호르무즈에 가장 많이 기댄 나라 중 하나입니다.",
+            "원유 수입의 육십 퍼센트가 넘는 분량이 중동에서 오고, 그 대부분이 이 해협을 거칩니다.",
+            "단기로는 호재입니다. 정유 마진은 안정됐고, 항공 유류비도 잠시 숨을 돌렸습니다.",
+            "그러나 우회 경로의 처리 용량은 호르무즈의 오 분의 일에도 못 미친다고 알려져 있습니다. 사고 한 번이면 비용이 다시 켜집니다."
+          ],
+          "highlights": [
+            "원유 수입의 60% 이상이 중동발",
+            "우회 항로 처리량은 1/5 수준"
+          ],
+          "emphasis": [
+            "가장 많이 기댄 나라",
+            "사고 한 번이면"
+          ],
+          "narration_tts": [
+            "한국은 호르무즈에 가장 많이 기댄 나라 중 하나입니다.",
+            "원유 수입의 육십 퍼센트가 넘는 분량이 중동에서 오고, 그 대부분이 이 해협을 거칩니다.",
+            "단기로는 호재입니다. 정유 마진은 안정됐고, 항공 유류비도 잠시 숨을 돌렸습니다.",
+            "그러나 우회 경로의 처리 용량은 호르무즈의 오 분의 일에도 못 미친다고 알려져 있습니다. 사고 한 번이면 비용이 다시 켜집니다."
+          ]
+        }
+      },
+      {
+        "heading": "8월 중순까지, 시계는 세 번 운다",
+        "kicker": "다음 60일",
+        "prose": "시한은 8월 중순이다. 그 사이 시계는 세 번쯤 운다. 첫째는 IAEA 사찰단의 이란 입국 일정이다. 사찰을 어디까지 허용하느냐가 양해각서의 실효를 가른다. 둘째는 이스라엘과 레바논 사이의 휴전이 버티는가다. 6월 19일 교전 재발이 보여 주듯, 이쪽이 흔들리면 호르무즈의 위협 강도가 즉시 따라 오른다. 셋째는 이란 의회가 통과료 부과를 정식 법으로 만드는가다. 위협의 일시적 도구가 항구적 비용 구조로 바뀌는 분기다.\n\n시나리오는 셋이다. 기준선은 '8월 합의·이중 신호 진정' 으로, 유가는 70달러대 초반에서 자리잡고 한국 자산은 약(弱)원·강(强)증시 기조가 이어진다. 두 번째는 '시한 결렬·위협 격상' 으로, 폐쇄 선언이 부분 봉쇄나 단발 공격으로 진화하고 유가가 90달러대로 다시 올라간다. 세 번째 와일드카드는 '이스라엘 단독 작전 격화' 다. 이 경우 호르무즈는 부수적 전선이 되고, 협상 전체가 미뤄진다.\n\n어느 가지가 살아날지는 협상장 안의 진척과 협상장 밖의 자제력이 함께 결정한다. 시장은 지금까지 기준선 가지 쪽에 무게를 두고 있는 모습이다. 그 무게는 작은 사건 하나로도 빠르게 옮겨 간다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "남은 시간은 약 두 달입니다. 그 사이 시계는 세 번쯤 웁니다.",
+            "첫째는 국제원자력기구 사찰단의 이란 입국 일정입니다. 사찰의 범위가 양해각서의 실효를 가릅니다.",
+            "둘째는 이스라엘과 레바논 사이의 휴전이 버티는가입니다. 이쪽이 흔들리면 호르무즈도 흔들립니다.",
+            "셋째는 통과료를 정식 법으로 만드는가입니다. 일시적 위협이 항구적 비용으로 바뀌는 분기입니다."
+          ],
+          "highlights": [
+            "8월 중순까지 60일",
+            "협상장 안과 밖의 자제력이 결정한다"
+          ],
+          "emphasis": [
+            "세 번쯤 웁니다",
+            "항구적 비용으로 바뀌는 분기"
+          ],
+          "narration_tts": [
+            "남은 시간은 약 두 달입니다. 그 사이 시계는 세 번쯤 웁니다.",
+            "첫째는 국제원자력기구 사찰단의 이란 입국 일정입니다. 사찰의 범위가 양해각서의 실효를 가릅니다.",
+            "둘째는 이스라엘과 레바논 사이의 휴전이 버티는가입니다. 이쪽이 흔들리면 호르무즈도 흔들립니다.",
+            "셋째는 통과료를 정식 법으로 만드는가입니다. 일시적 위협이 항구적 비용으로 바뀌는 분기입니다."
+          ]
+        }
+      }
+    ],
+    "closing": "선언과 실제 사이의 좁은 틈에서 두 달이 더 흐른다. 그 틈이 닫히는 쪽으로 가든, 벌어지는 쪽으로 가든, 답은 협상장 안에서 먼저 나온다.",
+    "watch_signals": [
+      {
+        "signal": "MOU 60일 시한 (8월 중순)",
+        "description": "6월 17일 미·이란 양해각서의 최종 합의 목표일",
+        "indicates": "기준선 시나리오(합의·진정) vs 결렬 시나리오(위협 격상) 분기",
+        "deadline": "2026-08-16",
+        "icon": "⏳"
+      },
+      {
+        "signal": "IAEA 사찰단 입국 일정",
+        "description": "농축우라늄 재고 검증을 위한 사찰단의 이란 입국 여부와 접근 허용 범위",
+        "indicates": "양해각서 실효, 사찰 거부 시 합의 동력 약화",
+        "deadline": "2026-07-31",
+        "icon": "🔍"
+      },
+      {
+        "signal": "레바논 휴전 균열 여부",
+        "description": "이스라엘·헤즈볼라 휴전이 유지되는가, 6월 19일과 같은 교전 재발이 반복되는가",
+        "indicates": "병행 전선의 흔들림이 호르무즈 위협 강도를 끌어올리는 채널",
+        "deadline": "2026-07-15",
+        "icon": "🌋"
+      },
+      {
+        "signal": "호르무즈 일일 통과량 (CENTCOM 집계)",
+        "description": "50척 하회 또는 일평균 운송량 1,500만 배럴 미만 추세 진입",
+        "indicates": "선언이 실제 봉쇄로 진화하는 초기 신호",
+        "deadline": "2026-07-07",
+        "icon": "🚢"
+      },
+      {
+        "signal": "이란 통과료 200만 달러 법제화",
+        "description": "이란 의회가 선박당 통과료를 정식 법으로 부과하는가",
+        "indicates": "일시적 위협이 항구적 비용 구조로 굳어지는 분기",
+        "deadline": "2026-08-31",
+        "icon": "💰"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "6월 20일의 폐쇄 선언은 곧 부분 봉쇄·단발 공격으로 진화할 전조라고 보는 관점이 있다. 이란은 분쟁 내내 호르무즈를 군사 레버리지로 써 왔고, 협상이 시한에 가까워질수록 카드를 한 번 더 보여줄 유인이 커진다.",
+        "side_b": "외교부의 통상 운항 발표와 6월 21일 55척 통과는, 이란이 위협을 협상장의 지렛대로만 활용한다는 해석에 무게를 더한다. 양해각서와 미 재무부의 임시 면제가 살아 있는 한 실제 봉쇄의 기대비용은 이란에게도 너무 비싸다.",
+        "evidence": "美 CENTCOM 일일 통과량 집계와 이란 정부 양측 발표의 동시성. 부모 보고서의 시나리오 가지 중 어느 쪽도 100% 실현되지 않고 그 사이 답보 구간에 자리 잡았다.",
+        "resolution": "지금 무게는 후자에 더 실린다. 외교 트랙이 가동 중이고 물리 공격이 없는 한 위협은 신호이지 행위가 아니다. 다만 전자가 살아나는 조건은 분명하다. 8월 중순 시한 결렬, IAEA 사찰 거부 가시화, 또는 이스라엘의 레바논 작전이 이란 본토를 직접 자극하는 단계로 격상되는 경우다.",
+        "video": {
+          "label_a": "격상론",
+          "label_b": "지렛대론",
+          "line_a": "폐쇄 선언은 부분 봉쇄로 진화할 전조라는 입장입니다.",
+          "line_b": "위협은 협상장 지렛대일 뿐, 실제 봉쇄는 너무 비싸다는 입장입니다.",
+          "narration": [
+            "같은 사건을 두고 두 해석이 맞섭니다.",
+            "한쪽은 폐쇄 선언이 곧 부분 봉쇄로 진화할 전조라고 봅니다.",
+            "다른 쪽은 이란이 위협을 협상장 지렛대로만 쓸 뿐, 실제 봉쇄의 비용은 이란에게도 너무 비싸다고 봅니다.",
+            "지금까지의 통과 실적은 두 번째 쪽 손을 들어 줍니다."
+          ],
+          "narration_tts": [
+            "같은 사건을 두고 두 해석이 맞섭니다.",
+            "한쪽은 폐쇄 선언이 곧 부분 봉쇄로 진화할 전조라고 봅니다.",
+            "다른 쪽은 이란이 위협을 협상장 지렛대로만 쓸 뿐, 실제 봉쇄의 비용은 이란에게도 너무 비싸다고 봅니다.",
+            "지금까지의 통과 실적은 두 번째 쪽 손을 들어 줍니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "선언이냐 위협이냐",
+    "timeline_flow": {
+      "heading": "사건의 궤적, MOU 서명에서 60일 시한까지",
+      "past": [
+        {
+          "date": "2026-06-07",
+          "label": "부모 보고서: 감시 신호 '이란 해군 추가 도발 여부' 등록",
+          "note": "후속 관측 트리거"
+        },
+        {
+          "date": "2026-06-17",
+          "label": "미·이란 양해각서 서명, 60일 합의 시계 시작",
+          "note": "Brent 80달러 하향"
+        },
+        {
+          "date": "2026-06-19",
+          "label": "제네바 후속회담 연기, 레바논 남부 교전 재발",
+          "note": "단기 반등 변수"
+        },
+        {
+          "date": "2026-06-20",
+          "label": "IRGC 해군, 호르무즈 폐쇄 선언",
+          "note": "이중 신호 개시"
+        },
+        {
+          "date": "2026-06-21",
+          "label": "55척 통과, 선언과 현실의 괴리 확인",
+          "note": "美 CENTCOM 집계"
+        },
+        {
+          "date": "2026-06-22",
+          "label": "스위스에서 미·이란 기술실무 회담 개시",
+          "note": "우라늄·검증·미사일"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-07-07",
+          "label": "통과량 추세 점검 (50척 하회 여부)",
+          "branch": "선언이 실제 봉쇄로 진화하는지의 초기 신호"
+        },
+        {
+          "date": "2026-07-15",
+          "label": "레바논 휴전 유지 여부 분기점",
+          "branch": "병행 전선 충격이 호르무즈로 전이될 가능성"
+        },
+        {
+          "date": "2026-07-31",
+          "label": "IAEA 사찰단 입국·접근 허용 범위 가시화",
+          "branch": "양해각서 실효의 가늠자"
+        },
+        {
+          "date": "2026-08-16",
+          "label": "MOU 60일 시한 만기",
+          "branch": "합의·진정 시나리오 vs 결렬·위협 격상 시나리오 분기"
+        }
+      ],
+      "video": {
+        "narration": [
+          "보름 전 일일 브리핑이 이란 해군의 추가 도발을 감시 신호로 등록했습니다.",
+          "엿새 전 양해각서가 서명되며 육십일 시계가 돌기 시작했고, 사흘 전 폐쇄 선언이, 그 다음 날 오십오 척의 통과가 나왔습니다.",
+          "어제 스위스에서 실무 회담이 열렸고, 시계는 8월 중순으로 향합니다.",
+          "그 사이 사찰의 범위와 레바논 휴전의 안정, 두 변수가 시한을 흔들 것입니다."
+        ],
+        "narration_tts": [
+          "보름 전 일일 브리핑이 이란 해군의 추가 도발을 감시 신호로 등록했습니다.",
+          "엿새 전 양해각서가 서명되며 육십 일 시계가 돌기 시작했고, 사흘 전 폐쇄 선언이, 그 다음 날 오십오 척의 통과가 나왔습니다.",
+          "어제 스위스에서 실무 회담이 열렸고, 시계는 팔월 중순으로 향합니다.",
+          "그 사이 사찰의 범위와 레바논 휴전의 안정, 두 변수가 시한을 흔들 것입니다."
+        ]
+      }
+    },
+    "confidence_summary": "1차 출처 다양함 (CENTCOM 집계·로이터·CNBC·알자지라·CNN). 시장 수치 일부(74.3달러·77.5달러)는 외신 보도 기반으로 시점 명기. 60일 합의·사찰 범위 등은 미확정 변수.",
+    "confidence_score": 0.34,
+    "broadcast_summary": "사흘 전 이란 혁명수비대 해군이 호르무즈 해협 폐쇄를 선언했어요. 그런데 다음 날 55척이 평소처럼 지나갔고, 운송된 원유는 1,700만 배럴을 넘었습니다.\n\n같은 주에 외교 트랙도 움직였어요. 6월 17일에 미국과 이란이 양해각서를 맺었고, 어제부터 스위스에서 우라늄·사찰·미사일을 의제로 한 실무 회담이 시작됐습니다.\n\n시장은 선언이 아니라 통과 실적에 가격을 매겼어요. 서부텍사스산 원유는 6월 15일 종가 기준 84.65달러에서 더 내려와, 오늘 아시아 오전 보도로는 약 74.3달러로 전해집니다. 분쟁 발발 이후 가장 낮은 구간이에요.\n\n어제 코스피는 9,114.55로 0.69% 올랐고, 원/달러 환율은 1,535.0원으로 0.76% 상승했습니다. 위험회피가 풀리는 방향으로 한국 자산도 함께 움직였어요.\n\n다만 가격 안심의 80%쯤은 휴전 기대가 이미 반영된 것으로 보입니다. 사고가 한 번 나면 빠르게 되돌릴 수 있어요. 8월 중순 합의 시한, IAEA 사찰단 입국, 레바논 휴전, 세 변수를 같이 봐야 합니다.\n\n나머지 맥락과 한국 정유·항공·해운의 단기 셈은 보고서 본문에 정리해 뒀습니다.",
+    "video": {
+      "intro_narration": [
+        "사흘 전 이란이 호르무즈 해협을 닫겠다고 선언했습니다.",
+        "그런데 그다음 날 상선 오십오 척이 그대로 지나갔습니다. 그 어긋남이 무엇을 말하는지, 천천히 따라가 보겠습니다."
+      ],
+      "outro_narration": [
+        "선언과 실제 사이의 좁은 틈에서 두 달이 더 흐릅니다.",
+        "그 틈이 닫히든 벌어지든, 답은 협상장 안에서 먼저 나옵니다."
+      ],
+      "intro_narration_tts": [
+        "사흘 전 이란이 호르무즈 해협을 닫겠다고 선언했습니다.",
+        "그런데 그다음 날 상선 오십오 척이 그대로 지나갔습니다. 그 어긋남이 무엇을 말하는지, 천천히 따라가 보겠습니다."
+      ],
+      "outro_narration_tts": [
+        "선언과 실제 사이의 좁은 틈에서 두 달이 더 흐릅니다.",
+        "그 틈이 닫히든 벌어지든, 답은 협상장 안에서 먼저 나옵니다."
+      ]
+    },
+    "embedded_map": {
+      "center": [
+        82,
+        28
+      ],
+      "zoom": 2.5,
+      "markers": [
+        {
+          "id": "hormuz",
+          "name": "호르무즈 해협",
+          "lng": 56.4,
+          "lat": 26.6,
+          "highlight": true,
+          "kind": "chokepoint",
+          "value": "6/21 상선 55척·1,700만 배럴+ 통과",
+          "label_side": "top"
+        },
+        {
+          "id": "fujairah",
+          "name": "푸자이라 (UAE)",
+          "lng": 56.3,
+          "lat": 25.1,
+          "kind": "port",
+          "value": "동해안 송유관 우회 거점",
+          "label_side": "bottom"
+        },
+        {
+          "id": "bandar_abbas",
+          "name": "반다르압바스 (이란)",
+          "lng": 56.3,
+          "lat": 27.2,
+          "kind": "military",
+          "label_side": "left"
+        },
+        {
+          "id": "korea",
+          "name": "한국",
+          "lng": 127.0,
+          "lat": 37.5,
+          "kind": "port",
+          "value": "원유 수입의 60% 이상이 중동발",
+          "label_side": "top"
+        },
+        {
+          "id": "japan",
+          "name": "일본",
+          "lng": 139.7,
+          "lat": 35.7,
+          "kind": "port",
+          "label_side": "top"
+        },
+        {
+          "id": "china",
+          "name": "중국 (상하이)",
+          "lng": 121.5,
+          "lat": 31.2,
+          "kind": "port",
+          "label_side": "bottom"
+        }
+      ],
+      "arcs": [
+        {
+          "from_id": "hormuz",
+          "to_id": "korea",
+          "kind": "flow",
+          "weight": 3,
+          "label": "한국행 원유 회랑",
+          "label_t": 0.65
+        },
+        {
+          "from_id": "hormuz",
+          "to_id": "japan",
+          "kind": "flow",
+          "weight": 2,
+          "label": "일본행 원유"
+        },
+        {
+          "from_id": "hormuz",
+          "to_id": "china",
+          "kind": "flow",
+          "weight": 3,
+          "label": "중국행 원유",
+          "label_t": 0.55
+        },
+        {
+          "from_id": "hormuz",
+          "to_id": "fujairah",
+          "kind": "alt",
+          "weight": 1,
+          "label": "UAE 동해안 우회"
+        }
+      ],
+      "regions": [
+        {
+          "name": "Iran",
+          "role": "rival",
+          "label": "이란"
+        },
+        {
+          "name": "Saudi Arabia",
+          "role": "ally",
+          "label": "사우디"
+        },
+        {
+          "name": "South Korea",
+          "role": "subject",
+          "label": "한국"
+        }
+      ],
+      "sea_labels": [
+        {
+          "name": "호르무즈 해협",
+          "lng": 56.5,
+          "lat": 26.5
+        },
+        {
+          "name": "아라비아해",
+          "lng": 65.0,
+          "lat": 12.0
+        },
+        {
+          "name": "남중국해",
+          "lng": 115.0,
+          "lat": 15.0
+        }
+      ],
+      "legend": [
+        {
+          "label": "원유 흐름",
+          "kind": "flow"
+        },
+        {
+          "label": "우회 경로",
+          "kind": "alt"
+        }
+      ]
+    },
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 6,
+      "unresolved": 4,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 6건 반영 · 4건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "이란 혁명수비대가 6월 20일 해협을 닫겠다고 했지만, 6월 21일 상선 55척이 평소처럼 지나갔다. 같은 주 미국과 이란은 스위스에서 핵 협상 테이블에 다시 앉았다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260623_112718_bc8f8b580a.html",
+  "mirror_url": "",
+  "report_theme": "editorial_cream",
+  "parent_context": {
+    "parent_report_id": "analysis_20260607_061801_5916016773",
+    "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260607_061801_5916016773.html",
+    "parent_report_title": "코스피 8천대 추락, 관세와 미사일이 겹친 한 주",
+    "parent_event_description": "오늘 2026-06-07 (Sun) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-06 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-07 (Sun)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+    "parent_scenarios": [],
+    "triggering_signal": {
+      "signal_id": "WS-20260606-05b92f5f",
+      "description": "이란 해군 추가 도발 여부",
+      "measurement": "오만해와 호르무즈 해협에서 미 함정 또는 상선 대상 추가 행동",
+      "direction": "ambiguous",
+      "deadline": "2026-06-21",
+      "follow_up_action": "유가와 안전자산 변동성의 임계 도달 시 후속 분석 재요청 권장",
+      "parent_report_url": "https://analysis-reports.pages.dev/analysis_20260607_061801_5916016773.html",
+      "parent_report_id": "analysis_20260607_061801_5916016773",
+      "parent_chat_id": 50717095,
+      "fired": true,
+      "fired_at": "2026-06-21T00:10:06.670690",
+      "chain_depth": 0
+    },
+    "chain_depth": 0
+  },
+  "analysis_timestamp": "2026-06-23T11:01:47.264167+09:00",
+  "total_duration_seconds": 1531.014881849289,
+  "system_version": "v8.0.0",
+  "revision": 0,
+  "render_revision": 0,
+  "disable_scroll_arc": false
+}
