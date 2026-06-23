@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.0.0
+last_synced_with: v8.1.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.1.0 — 르포(탐사보도) 포맷 — 전용 디자인 + stakeholder_map + 살아있는 애니메이션 완성
+
+르포를 기존 보고서와 *완전 분리*하고 디자인·차트·애니메이션을 마감한 릴리스.
+
+- **전용 깨끗한 템플릿** `src/templates/archetypes/reportage.html` — freeform_essay 가드 덧대기 폐기, 완전 분리. 헤더=버전만 / 제목 / 작성일시(분) / 번호 섹션(소제목+본문) / 용어풀이만. 목차·kicker·fact_grid·pull_quote·analogy·lede·쟁점·감시신호·시간궤적·요약·신뢰도·바이라인 전부 미렌더. report_synthesizer 가 `report_format=reportage` 시 라우팅.
+- **전용 디자인** — 8종 다크 테마(`reportage_*`, report.css `[data-theme]` 블록 + `select_reportage_theme()`), G마켓 Sans(디스플레이)+Noto Sans(본문), 플랫 미니멀(둥근모서리/그림자 제거). 본문·제목에 '르포' 단어 금지 — UI 헤더·리스트(`build_reports_index`) `[르포]` 배지로만.
+- **신규 차트 `stakeholder_map`** — 행위자 관계도. 국기·기업/단체 로고 둥근 SVG, 결정적 컬럼 레이아웃(force/hairball 금지 = CHART-AP-36). 7단계 정식 등록(RENDERERS / schemas `_TYPE_TO_GUARD` / usage_log KNOWN_CHART_TYPES / VISUAL_CAPABILITY_REGISTRY / fixture / 회귀).
+- **살아있는 애니메이션 (르포 한정, prefers-reduced-motion 정지)** — stakeholder_map 엣지 흐름(`.sm-flow`)+허브 펄스(`.sm-pulse`), globe 지구본 테마색+연속 자전. sankey 는 **원본 렌더 유지(애니 제외)** — 흐름 입자 오버레이가 어색하다는 피드백 반영.
+- **차트 최소화** — 르포는 시장 strip / 시계열 차트 자동 주입을 스킵(`report_format != reportage` 가드). 본문 흐름에 필요한 시각물만.
+- **byte-equal 보존** — 트리거 "르포" 없는 모든 경로(템플릿·payload·system_prompt·테마·차트)는 v8.0.0 과 byte-equal. 회귀 `test_reportage_format.py`(12) + `test_stakeholder_map.py`(10).
 
 ## v8.0.0 — 르포(탐사보도) 포맷 트랙 Phase 0 — 트리거 + directive 채널 + 5막 골격
 
