@@ -200,11 +200,16 @@ class CodexCritic:
         *,
         publication_date: str = "",
         pre_flags: list[str] | None = None,
+        report_format: str = "",
     ) -> FactVerdict:
         """보고서를 codex 로 사실 검수해 FactVerdict 반환.
 
         flag OFF / codex 부재 / 외부 실패 시 항상 ``skip`` verdict — 호출측은 이를
         받아 루프를 스킵하고 단일패스로 발행한다 (AP-V6-12).
+
+        v8.2.0 — ``report_format == "reportage"`` 면 프롬프트에 모드 마커를 주입해
+        codex 가 르포 전용 표현 등급 검수(사실/추론/가설 라벨 정합)로 전환한다.
+        기본값 ``""`` 또는 ``"standard"`` 면 미주입 → 기존 프롬프트 byte-equal.
         """
         if not self.config.enable_codex_critic:
             return FactVerdict.skip("flag_off")
@@ -222,7 +227,7 @@ class CodexCritic:
         webverify = self.config.enable_codex_webverify
         prompt = self._build_prompt(
             report, context, publication_date=publication_date, pre_flags=pre_flags,
-            webverify=webverify,
+            webverify=webverify, report_format=report_format,
         )
 
         start = time.time()
@@ -476,6 +481,7 @@ class CodexCritic:
         publication_date: str,
         pre_flags: list[str] | None,
         webverify: bool = False,
+        report_format: str = "",
     ) -> str:
         report_json = json.dumps(
             self._report_digest(report), ensure_ascii=False, separators=(",", ":"),
@@ -522,6 +528,23 @@ class CodexCritic:
                 "- URL 을 댈 수 없으면 그 지적은 내지 마라(근거 없는 지적 금지, AP-V6-8).\n"
                 "- 웹으로도 확인 불가면 '허위' 가 아니라 evidence_conflict 에 '근거 부족(웹 미확인)' 으로.\n"
                 f"- 검색은 {self.config.codex_websearch_cap}회를 넘기지 마라.\n"
+            )
+        # v8.2.0 — 르포 모드 마커. 페르소나의 "포맷 적응" 섹션이 표현 등급 검수로
+        # 전환하도록 활성화 신호를 준다. report_format != "reportage" 면 미주입 →
+        # 기존 프롬프트 byte-equal (AP-V6-3 상속). speculation_as_fact / unsupported_
+        # inference 는 페르소나가 정의하는 르포 전용 error_class.
+        if report_format == "reportage":
+            prompt += (
+                "\n\n=== 보고서 포맷 마커 (V8) ===\n"
+                "report_format: reportage\n"
+                "이 보고서는 르포(탐사보도)다. 페르소나 §\"포맷 적응 — 르포 인지\" 의\n"
+                "표현 등급(사실 단정형 / 추론 헤지형 / 가설 명시 라벨) 정합 검수로 전환하라.\n"
+                "- 명시 헤지·가설 라벨 안의 추측은 *통과* (false-positive 회피).\n"
+                "- 라벨 없는 단정 추측·짜임의 재료 부재·입력 사실 충돌·시점/수치를 추론\n"
+                "  톤으로 흐림은 여전히 high. 신규 error_class: speculation_as_fact /\n"
+                "  unsupported_inference (둘 다 페르소나 §\"포맷 적응\" 정의).\n"
+                "- fix_instruction 은 본문 재작성이 아니라 *표기 교정* (헤지·라벨·짜임\n"
+                "  재료 추가·단정 부사 제거) 으로 준다 (AP-V6-11 그대로).\n"
             )
         # 검수자 페르소나가 있으면 *맨 앞* 에 주입 (검수 관점만 — 본문 작성 금지).
         if self.critic_persona:

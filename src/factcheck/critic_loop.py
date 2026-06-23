@@ -356,6 +356,7 @@ class CriticLoop:
         *,
         publication_date: str = "",
         on_progress: "Callable[[str], Awaitable[None]] | None" = None,
+        report_format: str = "",
     ) -> CriticLoopResult:
         # flag OFF → 즉시 passthrough (byte-equal, AP-V6-3). status 도 emit 안 함.
         if not self.config.enable_codex_critic:
@@ -384,6 +385,7 @@ class CriticLoop:
         )
         v1 = await self.critic.critique(
             report, context, publication_date=publication_date, pre_flags=pre_flags,
+            report_format=report_format,
         )
         if v1.skipped:
             # 외부 degrade → 단일패스 (AP-V6-12). 검수 안 했으니 "통과" 라 거짓말 안 함.
@@ -466,7 +468,10 @@ class CriticLoop:
             logger.warning("[critic_loop] reviser failed, keeping original: %s", exc)
 
         # 4. 확인패스 (≤1, 재작성 없음 — 검증만).
-        v2 = await self.critic.critique(final, context, publication_date=publication_date)
+        v2 = await self.critic.critique(
+            final, context, publication_date=publication_date,
+            report_format=report_format,
+        )
         residual = [] if v2.skipped else list(v2.claims)
 
         # 5. 착지 — unsourced 잔존만 결정적 drop.

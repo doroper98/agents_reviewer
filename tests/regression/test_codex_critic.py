@@ -289,3 +289,54 @@ def test_build_cmd_respects_config() -> None:
     )
     cmd = critic._build_cmd("/usr/bin/codex")
     assert cmd == ["/usr/bin/codex", "exec", "--json", "--cd", "/tmp", "-m", "gpt-5"]
+
+
+# --------------------------------------------------------------------------
+# v8.2.0 — 르포(reportage) 모드 마커 wire-up
+# --------------------------------------------------------------------------
+
+
+def test_reportage_marker_injected_when_format_is_reportage() -> None:
+    """report_format=reportage 면 프롬프트에 *활성화 마커* 박힘.
+
+    페르소나 본문은 르포 적응 섹션을 *항상* 포함하지만(런타임 단축본 SSOT), 그
+    적응 규칙은 ``report_format == "reportage"`` 일 때만 활성화된다. 본 마커가
+    활성화 신호.
+    """
+    critic = CodexCritic(_make_config())
+    prompt = critic._build_prompt(
+        _make_report(), _make_context(),
+        publication_date="2026-06-23", pre_flags=None,
+        report_format="reportage",
+    )
+    # 활성화 마커는 _build_prompt 가 직접 추가하는 섹션
+    assert "=== 보고서 포맷 마커 (V8) ===" in prompt
+    assert "report_format: reportage" in prompt
+    # 마커 섹션이 페르소나의 "포맷 적응" 규칙으로 전환을 *명시 지시* 해야 한다
+    assert "표현 등급" in prompt
+    assert "speculation_as_fact" in prompt
+    assert "표기 교정" in prompt  # AP-V6-11 보존 — 본문 재작성 아님
+
+
+def test_reportage_marker_omitted_when_format_is_standard() -> None:
+    """standard / 빈 값 / 미지정 → 활성화 마커 섹션 미주입 (byte-equal).
+
+    페르소나 본문에는 'speculation_as_fact' 가 *항상* 들어 있지만, 그건 페르소나의
+    조건부 규칙일 뿐 활성화 신호가 아니다. 이 테스트는 *활성화 섹션* 의 부재만
+    검증한다 + 기본값 호출과의 byte-equal.
+    """
+    critic = CodexCritic(_make_config())
+    baseline = critic._build_prompt(
+        _make_report(), _make_context(),
+        publication_date="2026-06-23", pre_flags=None,
+    )
+    # 기본값 호출엔 활성화 마커 섹션이 없어야 함 (v8.1.0 byte-equal)
+    assert "=== 보고서 포맷 마커 (V8) ===" not in baseline
+    assert "report_format: reportage" not in baseline
+    for fmt in ("", "standard"):
+        prompt = critic._build_prompt(
+            _make_report(), _make_context(),
+            publication_date="2026-06-23", pre_flags=None,
+            report_format=fmt,
+        )
+        assert prompt == baseline, f"format={fmt!r} 면 default 호출과 byte-equal 해야 함"

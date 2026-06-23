@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.1.0
+last_synced_with: v8.2.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.0 — 르포 탐사 기자 페르소나 — 단순 사실 나열 금지, connecting dots + 시나리오 추론 허용
+
+르포(`report_format=reportage`)의 본문 페르소나를 *탐사 기자(investigative reporter)* 로 강화한 릴리스. 사용자 요청 — \"기사 나열이라면 일반 보고서와 다를 게 없다. 좀 더 깊은 정보를 탐구하고, 거짓말은 아니되 약간 무리한 추측 기반의 시나리오까지 언급할 수 있는 페르소나.\"
+
+- **세 가지 도구 (composer `_REPORTAGE_BLOCK` 강화)** — ① **묻힌 디테일 들춰내기**: 출처들 안에 있지만 메인 헤드라인엔 안 잡힌 작은 사실(각주·인터뷰 곁가지·수치 단위·시점 일치)을 끌어올린다. ② **Connecting dots(점 잇기)**: 여러 출처에 흩어진 사실 2~5개를 *묶어* 전체 그림을 그린다 (\"A 와 B 와 C 를 이으면 D 가 보인다\" 식). 각 점은 입력 사실, 묶음은 일반 보도엔 없는 통찰. ③ **시나리오 추론**: 표면 사실에서 한 발 더 들어간 *그럴법한 가설*. \"한 가지 가설은 — …\" 식 명시 라벨 안에서, 약간 무리한 추측도 허용.
+- **표현 3등급 강제** — 사실/추론/가설을 *반드시* 어조로 구분한다. **사실(단정형)** \"X 다 / 9,063 이다\"는 출처·시점·수치가 입력으로 명시된 경우만. **추론(헤지형)** \"…로 읽힐 여지가 크다 / …와 부합한다\"는 정황 기반 통찰 등급. **가설(명시 라벨)** \"한 가지 가설은 — / 무리한 추측을 보태자면\"은 약간 무리한 시나리오 추측 전용. 라벨 없이 가설을 단정 부사(\"분명히/명백히\")로 흘리면 사실 규율 위반.
+- **근거의 짜임 가시화** — 추론/가설을 던질 때 *짜임의 재료* 를 한두 마디로 보여라(\"A 의 침묵 + B 의 사임 + C 의 자금 이동 시점을 겹쳐 보면\"). 재료 없는 가설은 공허한 음모론 — 금지.
+- **안전선 (탐사 페르소나가 무너지는 곳)** — 무근거 fabrication(허구 인용·존재하지 않는 문서·없었던 발언) 금지. 가설 라벨로도 면책 안 됨. 인물·기관에 입력에 없는 동기·발언을 *단정* 으로 귀속 금지(헤지·가설 라벨 안에서만). 시점·날짜·시장 수치는 *언제나* 단정형 등급(추론·가설 톤으로 흐리지 말 것).
+- **codex 검수자 reportage 인지** — payload `report_format` 을 보고 표현 등급 정합 검수로 전환. 명시 헤지·가설 라벨 안의 추측은 *허용·통과*(false-positive 회피, 르포 페르소나의 의도된 기능). 라벨 없는 단정 추측·짜임의 재료 부재·입력 사실 충돌은 여전히 high (`speculation_as_fact` / `unsupported_inference`). SSOT 정합 갱신 — 단축본 [prompts/codex_critic_persona.md](prompts/codex_critic_persona.md) §\"포맷 적응\" + 전체 기준서 [prompts/market_factcheck_desk_v6.md](prompts/market_factcheck_desk_v6.md) §14 (CLAUDE.md `Codex 검수자 페르소나 갱신 SOP` 준수).
+- **byte-equal 보존** — `report_format=standard`(트리거 \"르포\" 없는 모든 보고서)는 v8.1.0 과 byte-equal. 일반 보고서 톤은 [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) 그대로 — 탐사 페르소나는 르포 모드에서만 *덧대진다*. 회귀 `test_reportage_format.py` 에 marker 가드 3개 추가(탐사 페르소나 marker · 3등급 표기 어휘 · codex 르포 적응).
 
 ## v8.1.0 — 르포(탐사보도) 포맷 — 전용 디자인 + stakeholder_map + 살아있는 애니메이션 완성
 
