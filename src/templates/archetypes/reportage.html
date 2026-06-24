@@ -70,6 +70,12 @@
 
   <h1 class="rep-headline">{{ (composed.headline if composed else (result.context.event_name or 'Reportage')) | strip_md }}</h1>
   <div class="rep-meta">{{ generated_at[:16] }}</div>
+  {# v8.2.4 — 생성 중단/열화 배너 (WRITE-AP-25). 정상 르포엔 안 뜸. #}
+  {% if composed and composed.degraded %}
+  <div class="rep-degraded-banner" role="alert" style="margin-top:12px;padding:11px 15px;border:1px solid #c0392b;background:rgba(192,57,43,0.10);color:var(--rep-text,#e8e8e8);font-size:0.92rem;line-height:1.5">
+    ⚠️ 이 보고서는 생성이 끝까지 완료되지 못해 일부 내용만 담고 있습니다{% if composed.degradation_reason %} — {{ composed.degradation_reason | strip_md }}{% endif %}. 같은 주제로 다시 생성하시길 권합니다.
+  </div>
+  {% endif %}
 
   {# 사진 (있을 때만) #}
   {% if composed and composed.hero_image and composed.hero_image.image_url %}

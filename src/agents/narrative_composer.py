@@ -1106,10 +1106,16 @@ class NarrativeComposer:
     # 끝나 두 번 다 timeout → 부분 폐기 → 0% fallback 회귀 (Duration 1306s = 540+540+ctx
     # 더블 timeout 의 산술 증거). timeout 시 부분 출력을 살리므로(아래) 한도 초과해도
     # 완성 섹션은 건진다. 정상 composer 는 1~3분 — 900s 는 degraded 안전망.
+    # v8.2.4 — deep 한도 900→1500 상향. 2026-06-25 마이크론 "재무제표·현금흐름·
+    # 손익계산서까지 deep" 보고서 2건이 total 1666s/1517s 에서 *둘 다* 편집장
+    # 타임아웃(900s) → 부분 살림 없음 → None → 1-섹션 minimal fallback 으로 발행된
+    # 회귀(WRITE-AP-25)의 직접 원인. deep 가 v5.8.2 부터 기본 모드라 무겁고 긴 주제가
+    # 900s 안에 못 끝나면 매번 폴백으로 떨어졌다. 정상 deep composer 는 보통 5~12분 —
+    # 1500s 는 재무제표급 장문 보고서용 안전 한도. timeout 시 부분 살림(아래)은 유지.
     CLI_TIMEOUT_BY_MODE: dict[str, float] = {
         "fast": 300.0,
         "standard": 480.0,
-        "deep": 900.0,
+        "deep": 1500.0,
     }
     COMPOSE_MAX_ATTEMPTS: int = 2          # 최초 1 + 재시도 1 (timeout 은 부분 살린 뒤 재시도 X)
     COMPOSE_RETRY_BACKOFF_S: float = 4.0   # attempt N 전 대기 = backoff * (N-1)
@@ -1118,6 +1124,11 @@ class NarrativeComposer:
         self.config = config
         self._api_client: object | None = None
         self.telemetry: Optional[RunTelemetry] = None
+        # v8.2.4 — 마지막 compose 실패 사유. compose_unified 가 None 을 반환할 때
+        # *왜* 실패했는지(타임아웃/파싱불가/예외)를 사람-읽기 한 줄로 적어둔다.
+        # orchestrator 가 minimal fallback 의 degradation_reason 으로 읽어 텔레그램·
+        # 배너에 노출 → 그동안 WARNING 로그로만 삼켜지던 실패 원인을 표면화 (WRITE-AP-25).
+        self._last_failure_reason: str = ""
         if not config.use_cli_mode:
             import anthropic
             self._api_client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
@@ -1185,6 +1196,7 @@ class NarrativeComposer:
         # v8.2.2 — 르포는 Opus 4.8, 일반 보고서는 4.7. format != reportage 면 byte-equal.
         use_model = self._model_for_format(report_format)
         composed = None
+        self._last_failure_reason = ""  # v8.2.4 — 이번 호출 실패 사유 누적용 리셋
         for attempt in range(1, self.COMPOSE_MAX_ATTEMPTS + 1):
             try:
                 if self.config.use_cli_mode:
@@ -1203,6 +1215,11 @@ class NarrativeComposer:
                 salvaged = self._parse_response(e.partial) if e.partial else None
                 if salvaged is not None and salvaged.sections:
                     composed = salvaged
+                    # v8.2.4 — 시간 초과 부분 살림본은 구조적으로 '열화' 표시.
+                    composed.degraded = True
+                    composed.degradation_reason = (
+                        f"생성 제한 시간({timeout_s:.0f}초) 초과 — 마지막 일부가 생략됨"
+                    )
                     if not composed.confidence_summary:
                         composed.confidence_summary = (
                             "생성이 제한 시간 내 완료되지 않아 마지막 일부가 생략됐을 수 있음."
@@ -1212,12 +1229,17 @@ class NarrativeComposer:
                         "partial (%d sections)", attempt, len(composed.sections),
                     )
                     break
+                # v8.2.4 — 부분조차 못 살린 타임아웃 = None 반환 직행. 사유 기록.
+                self._last_failure_reason = (
+                    f"편집장 생성 시간 초과({timeout_s:.0f}초) — 살릴 부분 출력 없음"
+                )
                 logger.warning(
                     "[unified_composer] attempt %d/%d timed out; nothing salvageable",
                     attempt, self.COMPOSE_MAX_ATTEMPTS,
                 )
                 break  # 재시도해도 또 timeout
             except Exception as e:
+                self._last_failure_reason = f"편집장 호출 오류: {str(e)[:120]}"
                 logger.warning(
                     "[unified_composer] LLM call failed (attempt %d/%d): %s",
                     attempt, self.COMPOSE_MAX_ATTEMPTS, e,
@@ -1228,11 +1250,18 @@ class NarrativeComposer:
                     composed = self._parse_response(raw)
                     if composed is not None:
                         break
+                    self._last_failure_reason = (
+                        f"편집장 응답을 보고서로 해석 불가 (raw {len(raw)}자)"
+                    )
                     logger.warning(
                         "[unified_composer] parse returned None (attempt %d/%d): "
                         "raw=%d chars, head=%r",
                         attempt, self.COMPOSE_MAX_ATTEMPTS, len(raw), raw[:300],
                     )
+                else:
+                    # raw is None — _call_cli/_call_api 가 빈 출력 반환 (드묾).
+                    if not self._last_failure_reason:
+                        self._last_failure_reason = "편집장이 빈 응답을 반환함"
             if attempt < self.COMPOSE_MAX_ATTEMPTS:
                 await asyncio.sleep(self.COMPOSE_RETRY_BACKOFF_S * attempt)
         if composed is None:
@@ -1820,6 +1849,10 @@ class NarrativeComposer:
             for candidate_obj in (obj, NarrativeComposer._drop_invalid_sections(obj)):
                 try:
                     composed = ComposedReport.model_validate(candidate_obj)
+                    # v8.2.4 — 절단 JSON 에서 복구한 보고서는 '열화' 표시 (WRITE-AP-25).
+                    composed.degraded = True
+                    if not composed.degradation_reason:
+                        composed.degradation_reason = "응답이 중간에 끊겨 일부 섹션만 복구됨"
                     logger.warning(
                         "[narrative_composer] recovered truncated JSON "
                         "(%d sections)", len(composed.sections),
@@ -1899,6 +1932,8 @@ class NarrativeComposer:
                     confidence_summary=(
                         "응답 시작 부분이 누락돼 본문 일부만 복구함 (head-loss recovery)."
                     ),
+                    degraded=True,  # v8.2.4 — head-loss 복구본도 '열화' 표시 (WRITE-AP-25)
+                    degradation_reason="응답 시작이 누락돼 본문 일부만 복구됨",
                 )
             except Exception:  # noqa: BLE001
                 continue

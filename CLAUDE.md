@@ -310,7 +310,7 @@ SSOT 는 [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md). 핵심:
 
 ## Anti-Patterns (보고서 본문 작성 — v4.4.4 신설, v4.5.4 확장)
 **composer SYSTEM_PROMPT / docs/REPORT_STYLE_GUIDE.md / 본문 출력 변경 시 반드시 점검.**
-SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 24개 패턴 누적 (v5.8.8 — WRITE-AP-15 시장수치 자유서술[최우선] / 16 주장→사실 / 17 인과 과장 / 18 행사 혼동 / 19 일방서사 / 20 제목·본문 무게 / 21 신뢰도% 노출, 2026-06-03 일일 브리핑 회귀. v7.0.0 — WRITE-AP-22 기준시점 오선택. v7.6.4 — WRITE-AP-23 TTS 발음 표기 글 누수[사용자 catch]. v7.9.6 — WRITE-AP-24 고유명사 한글 음차 본문 누수[사용자 catch — 보고서와 영상 음성 내레이션 분리]):
+SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md). 25개 패턴 누적 (v5.8.8 — WRITE-AP-15 시장수치 자유서술[최우선] / 16 주장→사실 / 17 인과 과장 / 18 행사 혼동 / 19 일방서사 / 20 제목·본문 무게 / 21 신뢰도% 노출, 2026-06-03 일일 브리핑 회귀. v7.0.0 — WRITE-AP-22 기준시점 오선택. v7.6.4 — WRITE-AP-23 TTS 발음 표기 글 누수[사용자 catch]. v7.9.6 — WRITE-AP-24 고유명사 한글 음차 본문 누수[사용자 catch — 보고서와 영상 음성 내레이션 분리]. v8.2.4 — WRITE-AP-25 편집장 실패 1-섹션 폴백/절단본을 정상 완료로 무경고 발행[사용자 catch — deep 타임아웃→minimal fallback→degraded 플래그+텔레그램 경고+헤더 배너로 차단]):
 
 > **★ 최우선 가치 — 일반 독자 우선 (v5.5.5).** 보고서는 *비전문가* 가 읽는다. ①
 > 전문 용어·영어 표현·은어는 평이한 우리말로 바꾼다. ② 못 바꾸는 핵심 용어만 본문에
