@@ -44,6 +44,7 @@ class Reviser(Protocol):
         *,
         fix_instructions: list[str],
         publication_date: str,
+        report_format: str = "standard",
     ) -> ComposedReport: ...
 
 
@@ -60,11 +61,13 @@ class NarrativeComposerReviser:
         *,
         fix_instructions: list[str],
         publication_date: str,
+        report_format: str = "standard",
     ) -> ComposedReport:
         return await self._composer.revise_for_facts(  # type: ignore[attr-defined]
             report, context,
             fix_instructions=fix_instructions,
             publication_date=publication_date,
+            report_format=report_format,
         )
 
 
@@ -460,6 +463,7 @@ class CriticLoop:
                 report, context,
                 fix_instructions=fix_instructions,
                 publication_date=publication_date,
+                report_format=report_format,
             )
             if isinstance(candidate, ComposedReport) and candidate.headline and candidate.sections:
                 final = candidate

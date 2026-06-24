@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.1
+last_synced_with: v8.2.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.2 — 르포 작성 모델 Opus 4.8 격상 (일반 보고서는 4.7 유지)
+
+르포(`report_format=reportage`)는 탐사 기자 페르소나·점잇기·시나리오 추론 등 *더 높은 추론*을 요구하므로 작성 모델을 한 단계 위(Opus 4.8)로 올림. 사용자 요청.
+
+- **format 별 composer 모델** (`src/agents/narrative_composer.py`) — `COMPOSER_MODEL_REPORTAGE = "claude-opus-4-8"` 신설 + `_model_for_format(report_format)` 헬퍼. 르포 → 4.8, 그 외 → 기존 `COMPOSER_MODEL`(4.7). `compose_unified` (주 작성) + `revise_for_facts` (팩트 보완 패스) 둘 다 르포면 4.8 사용 — 페르소나·품질 일관.
+- **모델 채널** — `_call_cli`/`_call_api` 에 `model: str | None = None` 파라미터 추가(미지정 시 4.7 → 기존 경로 byte-equal). `critic_loop` 의 Reviser Protocol + `NarrativeComposerReviser` + `CriticLoop.run` 이 `report_format` 을 reviser 까지 전달(르포 보완도 4.8).
+- **byte-equal 보존** — `report_format != "reportage"` 인 모든 보고서는 모델·payload·프롬프트 전부 v8.2.1 과 동일(4.7). 르포 트리거 없는 경로에 영향 0.
+- 회귀 `test_reportage_format.py` +3 (르포→4.8 / 일반→4.7 / reviser report_format 전달), `test_codex_loop.py` StubReviser 시그니처 갱신.
+
+> ⚠️ 운영 — 4.8 모델 가용성은 구독 플랜·CLI 버전에 따름. 배포 후 르포 한 건 e2e 로 `--model claude-opus-4-8` 정상 응답 확인 권장(미지원 시 graceful 하지 않을 수 있음 — 그 경우 `COMPOSER_MODEL_REPORTAGE` 를 가용 ID 로 조정).
 
 ## v8.2.1 — CLI 호출 복원력 — 일시적 과부하(529)에 보고서가 죽지 않게
 
