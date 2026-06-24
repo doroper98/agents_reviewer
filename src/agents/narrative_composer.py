@@ -1075,6 +1075,16 @@ class NarrativeComposer:
 
     # Opus 4.7 모델 ID. config.model_name 이 4.6 이라도 composer 만 4.7 사용.
     COMPOSER_MODEL: str = "claude-opus-4-7"
+    # v8.2.2 — 르포(reportage) 전용 모델. 르포는 탐사 페르소나·점잇기·시나리오 추론
+    # 등 *더 높은 추론*을 요구하므로 한 단계 위 모델(Opus 4.8)로 작성한다. 일반
+    # 보고서는 COMPOSER_MODEL(4.7) 그대로 — report_format != "reportage" 면 무변경.
+    COMPOSER_MODEL_REPORTAGE: str = "claude-opus-4-8"
+
+    def _model_for_format(self, report_format: str) -> str:
+        """report_format → composer 모델 ID. 르포만 4.8, 그 외 4.7 (byte-equal)."""
+        if report_format == "reportage":
+            return self.COMPOSER_MODEL_REPORTAGE
+        return self.COMPOSER_MODEL
     # v4.5.4: mode 별 분기. 이전엔 8192 단일 → deep 보고서 본문 중간 절단 회귀.
     # Opus 4.7 출력 한도가 충분히 크므로 deep 은 32K. fast 는 짧은 응답 권장.
     # v5.5.11: 한도 1.5배 확장. 사용자 요청 — "그 길이까지 가야 할 내용에 더 충실"
@@ -1172,16 +1182,20 @@ class NarrativeComposer:
         # rate-limit 비정상 종료가 아니라 "성공했는데 쓸 수 없는 응답" 회귀라 재시도 안전.
         timeout_s = self.CLI_TIMEOUT_BY_MODE.get(mode, 360.0)
         sys_prompt = self._compose_system_prompt(report_format)
+        # v8.2.2 — 르포는 Opus 4.8, 일반 보고서는 4.7. format != reportage 면 byte-equal.
+        use_model = self._model_for_format(report_format)
         composed = None
         for attempt in range(1, self.COMPOSE_MAX_ATTEMPTS + 1):
             try:
                 if self.config.use_cli_mode:
                     raw = await self._call_cli(
                         user_message, timeout_s=timeout_s, system_prompt=sys_prompt,
+                        model=use_model,
                     )
                 else:
                     raw = await self._call_api(
                         user_message, mode=mode, system_prompt=sys_prompt,
+                        model=use_model,
                     )
             except _ComposerTimeout as e:
                 # v5.6.6 — timeout 으로 잘린 부분 출력을 살린다. 완성 섹션이 1개 이상이면
@@ -1371,12 +1385,16 @@ class NarrativeComposer:
         *,
         fix_instructions: list[str],
         publication_date: str,
+        report_format: str = "standard",
     ) -> "ComposedReport":
         """Codex 지적(fix_instructions)을 받아 *지적된 부분만* Opus 가 재작성.
 
         본문은 Opus 고정 (AP-V6-1/11). 차트·이미지·신호 등 비텍스트 필드는 코드가
         원본에서 보존(merge)하므로 LLM 은 텍스트만 emit. 파싱·호출 실패 시 원본을
         그대로 반환 (graceful — 보완이 원본보다 나빠지지 않게).
+
+        v8.2.2 — ``report_format == "reportage"`` 면 보완 패스도 작성과 동일한
+        Opus 4.8 로 (페르소나·품질 일관). 그 외 4.7 — 기본값이라 byte-equal.
         """
         if not fix_instructions:
             return report
@@ -1418,16 +1436,17 @@ class NarrativeComposer:
                 "수치를 무표기로 남기지 마라."
             )
         user_message = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        use_model = self._model_for_format(report_format)
         try:
             if self.config.use_cli_mode:
                 raw = await self._call_cli(
                     user_message, timeout_s=300.0,
-                    system_prompt=revise_prompt,
+                    system_prompt=revise_prompt, model=use_model,
                 )
             else:
                 raw = await self._call_api(
                     user_message, mode="standard",
-                    system_prompt=revise_prompt,
+                    system_prompt=revise_prompt, model=use_model,
                 )
         except Exception as exc:  # noqa: BLE001 — 보완 실패 → 원본 유지
             logger.warning("[revise_for_facts] LLM call failed: %s", exc)
@@ -1625,6 +1644,7 @@ class NarrativeComposer:
     async def _call_cli(
         self, user_message: str, timeout_s: float = 480.0,
         system_prompt: str | None = None,
+        model: str | None = None,
     ) -> str:
         claude_bin = shutil.which("claude")
         if claude_bin is None:
@@ -1634,16 +1654,18 @@ class NarrativeComposer:
             )
         # system_prompt 미지정 시 compose 용 SYSTEM_PROMPT (기본 경로 byte-equal).
         full_prompt = f"{system_prompt or SYSTEM_PROMPT}\n\n---\n\n{user_message}"
+        # model 미지정 시 COMPOSER_MODEL(4.7) — 기본 경로 byte-equal. 르포는 4.8 주입.
+        use_model = model or self.COMPOSER_MODEL
         cmd = [
             claude_bin,
             "-p", full_prompt,
             "--output-format", "text",
-            "--model", self.COMPOSER_MODEL,
+            "--model", use_model,
             "--dangerously-skip-permissions",
         ]
         logger.info(
             "[narrative_composer] Starting CLI call (%s, prompt=%d chars, timeout=%.0fs)",
-            self.COMPOSER_MODEL, len(full_prompt), timeout_s,
+            use_model, len(full_prompt), timeout_s,
         )
         start = time.time()
         # v5.6.6 — stdout 을 임시 파일로 받는다. timeout 으로 proc 를 kill 해도 그때까지
@@ -1708,13 +1730,14 @@ class NarrativeComposer:
     async def _call_api(
         self, user_message: str, mode: str = "standard",
         system_prompt: str | None = None,
+        model: str | None = None,
     ) -> str:
         assert self._api_client is not None, "API client not initialised"
         start = time.time()
         sys_p = system_prompt or SYSTEM_PROMPT
         max_tokens = self.MAX_TOKENS_BY_MODE.get(mode, self.MAX_TOKENS)
         response = await self._api_client.messages.create(  # type: ignore[union-attr]
-            model=self.COMPOSER_MODEL,
+            model=model or self.COMPOSER_MODEL,
             max_tokens=max_tokens,
             system=sys_p,
             messages=[{"role": "user", "content": user_message}],

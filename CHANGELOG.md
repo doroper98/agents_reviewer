@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.0
+last_synced_with: v8.2.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,27 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.2 — 르포 작성 모델 Opus 4.8 격상 (일반 보고서는 4.7 유지)
+
+르포(`report_format=reportage`)는 탐사 기자 페르소나·점잇기·시나리오 추론 등 *더 높은 추론*을 요구하므로 작성 모델을 한 단계 위(Opus 4.8)로 올림. 사용자 요청.
+
+- **format 별 composer 모델** (`src/agents/narrative_composer.py`) — `COMPOSER_MODEL_REPORTAGE = "claude-opus-4-8"` 신설 + `_model_for_format(report_format)` 헬퍼. 르포 → 4.8, 그 외 → 기존 `COMPOSER_MODEL`(4.7). `compose_unified` (주 작성) + `revise_for_facts` (팩트 보완 패스) 둘 다 르포면 4.8 사용 — 페르소나·품질 일관.
+- **모델 채널** — `_call_cli`/`_call_api` 에 `model: str | None = None` 파라미터 추가(미지정 시 4.7 → 기존 경로 byte-equal). `critic_loop` 의 Reviser Protocol + `NarrativeComposerReviser` + `CriticLoop.run` 이 `report_format` 을 reviser 까지 전달(르포 보완도 4.8).
+- **byte-equal 보존** — `report_format != "reportage"` 인 모든 보고서는 모델·payload·프롬프트 전부 v8.2.1 과 동일(4.7). 르포 트리거 없는 경로에 영향 0.
+- 회귀 `test_reportage_format.py` +3 (르포→4.8 / 일반→4.7 / reviser report_format 전달), `test_codex_loop.py` StubReviser 시그니처 갱신.
+
+> ⚠️ 운영 — 4.8 모델 가용성은 구독 플랜·CLI 버전에 따름. 배포 후 르포 한 건 e2e 로 `--model claude-opus-4-8` 정상 응답 확인 권장(미지원 시 graceful 하지 않을 수 있음 — 그 경우 `COMPOSER_MODEL_REPORTAGE` 를 가용 ID 로 조정).
+
+## v8.2.1 — CLI 호출 복원력 — 일시적 과부하(529)에 보고서가 죽지 않게
+
+2026-06-24 실연동 사고 수정. context_analyst 가 Anthropic 서버 과부하(HTTP 529 Overloaded) 한 번에 보고서 전체가 `❌ 분석 실패: unknown error` 로 떨어짐. 코드·인증·설정·v8.2.0 무관한 *일시적 서버측* 장애였는데 봇이 복구 없이 전체 실패로 처리한 게 결함.
+
+- **일시 에러 재시도** (`src/agents/base.py`) — `_analyze_cli` 를 재시도 루프로. 529/429/5xx/timeout/connection-reset 등 일시 마커는 최대 3회(backoff 0/4/8s) 재시도, 비일시(인증·인자 오류)는 즉시 fast-fail. NarrativeComposer 는 이미 자체 재시도가 있었고(별도 경로), 이번에 context_analyst(및 BaseAgent CLI 전 경로)에 동급 복원력 부여.
+- **stdout 에러 감지** — CLI v2(2.1.85)는 API 에러를 *stdout* 에 (`API Error: 529 …`) 내보내고 종종 exit 0 으로 끝낸다. 봇은 stderr 만 읽어 `unknown error` 로 새 버렸음 — 이제 stdout 의 에러 마커도 함께 판정해 *진짜* 메시지를 로그·예외에 남긴다.
+- **중립 cwd 로 CLAUDE.md 자동로드 차단** — CLI v2 는 `-p` 모드에서도 cwd 의 `CLAUDE.md` 를 컨텍스트에 자동 적재한다. 봇 repo 의 54KB 운영문서(`claude doctor` 가 "Large CLAUDE.md > 40,000" 경고)는 뉴스 분석과 무관한데 매 호출 ~45K 토큰을 먹고 과부하 노출만 키웠다. subprocess 를 빈 임시 디렉터리에서 실행해 자동로드를 끊음(WebFetch/WebSearch 만 쓰므로 cwd 무관·안전).
+- **타임아웃 가드** — 단일 CLI 호출 300s 상한(`asyncio.wait_for`). 초과 시 hang 대신 transient 로 분류해 재시도.
+- 회귀 `tests/regression/test_cli_resilience.py` (8): 재시도/fast-fail/한도소진-진짜에러/stdout-529-감지/clean-경로/중립-cwd. context_analyst 본문·프롬프트·출력 무변경 — *호출 복원력만* 추가.
 
 ## v8.2.0 — 르포 탐사 기자 페르소나 — 단순 사실 나열 금지, connecting dots + 시나리오 추론 허용
 

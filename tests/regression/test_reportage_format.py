@@ -159,3 +159,43 @@ def test_payload_reportage_without_directive_omits_field() -> None:
     payload = NarrativeComposer._build_unified_payload(ctx, "deep", None, "reportage", "  ")
     assert payload["report_format"] == "reportage"
     assert "user_directive" not in payload  # 빈/공백 directive 는 미주입
+
+
+# --------------------------------------------------------------------------
+# v8.2.2 — 르포 전용 모델 (Opus 4.8), 일반은 4.7
+# --------------------------------------------------------------------------
+
+
+def test_reportage_uses_opus_4_8() -> None:
+    nc = NarrativeComposer(Config(_env_file=None))
+    assert nc._model_for_format("reportage") == "claude-opus-4-8"
+    assert nc.COMPOSER_MODEL_REPORTAGE == "claude-opus-4-8"
+
+
+def test_standard_keeps_opus_4_7() -> None:
+    nc = NarrativeComposer(Config(_env_file=None))
+    # 일반 보고서·빈 값·미지정은 모두 기존 4.7 (byte-equal 모델 경로)
+    assert nc._model_for_format("standard") == "claude-opus-4-7"
+    assert nc._model_for_format("") == "claude-opus-4-7"
+    assert nc.COMPOSER_MODEL == "claude-opus-4-7"
+
+
+def test_reviser_threads_report_format() -> None:
+    """critic_loop 어댑터가 report_format 을 composer.revise_for_facts 로 전달하는지."""
+    import asyncio
+    from src.factcheck.critic_loop import NarrativeComposerReviser
+
+    seen = {}
+
+    class _StubComposer:
+        async def revise_for_facts(self, report, context, *, fix_instructions,
+                                   publication_date, report_format="standard"):
+            seen["report_format"] = report_format
+            return report
+
+    reviser = NarrativeComposerReviser(_StubComposer())
+    asyncio.run(reviser.revise_for_facts(
+        object(), object(), fix_instructions=["x"],
+        publication_date="2026-06-24", report_format="reportage",
+    ))
+    assert seen["report_format"] == "reportage"

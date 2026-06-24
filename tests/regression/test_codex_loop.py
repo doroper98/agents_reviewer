@@ -71,10 +71,13 @@ class StubReviser:
         self._fail = fail
         self.calls = 0
         self.fix_instructions_seen: list[list[str]] = []
+        self.report_format_seen: list[str] = []
 
-    async def revise_for_facts(self, report, context, *, fix_instructions, publication_date):
+    async def revise_for_facts(self, report, context, *, fix_instructions, publication_date,
+                               report_format="standard"):
         self.calls += 1
         self.fix_instructions_seen.append(list(fix_instructions))
+        self.report_format_seen.append(report_format or "")
         if self._fail:
             raise RuntimeError("opus revise failed")
         return self._revised if self._revised is not None else report

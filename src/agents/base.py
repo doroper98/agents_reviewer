@@ -80,6 +80,20 @@ class BaseAgent:
     # CLI mode (Claude Max plan via ``claude`` subprocess)
     # ------------------------------------------------------------------
 
+    # v8.2.1 — 일시적(서버측) 실패 마커. Anthropic 과부하(529 Overloaded)·rate
+    # limit(429)·5xx 는 우리 버그가 아니라 재시도하면 풀리는 상태다. 2026-06-24
+    # 실연동 사고: context_analyst 가 529 한 번에 보고서 전체가 "unknown error" 로
+    # 실패. CLI v2 는 이 에러를 *stdout* 에 ("API Error: 529 …") 내보내는데 봇은
+    # stderr 만 읽어 "unknown error" 로 폴백했다 (둘 다 본 패치에서 교정).
+    _TRANSIENT_MARKERS: tuple[str, ...] = (
+        "529", "overloaded", "rate limit", "rate_limit", "429",
+        "500", "502", "503", "504", "internal server error",
+        "api error: 5", "timeout", "timed out", "econnreset", "connection reset",
+    )
+    _CLI_MAX_ATTEMPTS: int = 3
+    _CLI_RETRY_BACKOFF_S: float = 4.0   # attempt N 전 대기 = backoff*(N-1): 0/4/8s
+    _CLI_TIMEOUT_S: float = 300.0       # 단일 호출 상한 (hang 방지). 초과 시 transient 취급.
+
     async def _analyze_cli(self, context: dict) -> str:
         directive, user_message = self._serialize_context(context)
 
@@ -101,6 +115,51 @@ class BaseAgent:
         else:
             full_prompt = f"{self.system_prompt}\n\n---\n\n{user_message}"
 
+        # v8.2.1 — 일시적 실패(529/429/5xx/timeout) 재시도 루프. 비일시적(인증·인자
+        # 오류 등) 은 fast-fail. 마지막 시도까지 실패하면 *진짜* 에러 메시지로 raise.
+        last_err = ""
+        for attempt in range(1, self._CLI_MAX_ATTEMPTS + 1):
+            if attempt > 1:
+                wait = self._CLI_RETRY_BACKOFF_S * (attempt - 1)
+                logger.warning(
+                    "[%s] transient CLI failure — retry %d/%d in %.0fs: %s",
+                    self.name, attempt, self._CLI_MAX_ATTEMPTS, wait, last_err[:200],
+                )
+                await asyncio.sleep(wait)
+            raw_text, err, transient = await self._run_cli_once(claude_bin, full_prompt)
+            if err is None:
+                return raw_text
+            last_err = err
+            if not transient:
+                break  # 비일시적 — 재시도 무의미, 즉시 중단
+
+        raise RuntimeError(
+            f"[{self.name}] claude CLI failed after {attempt} attempt(s): {last_err}"
+        )
+
+    async def _run_cli_once(
+        self, claude_bin: str, full_prompt: str
+    ) -> tuple[str, Optional[str], bool]:
+        """CLI 1회 호출. ``(raw_text, error_or_None, is_transient)`` 반환.
+
+        v8.2.1 변경 2가지:
+        - **중립 cwd 에서 실행.** CLI v2 는 ``-p`` 모드에서도 cwd 의 ``CLAUDE.md`` 를
+          자동으로 컨텍스트에 싣는다. 봇 repo 의 CLAUDE.md(54KB, 봇 *개발* 운영문서)는
+          뉴스 분석과 무관한데 매 호출 ~45K 토큰을 먹고 과부하 노출만 키운다. 빈 임시
+          디렉터리에서 돌려 자동로드를 끊는다 (WebFetch/WebSearch 만 쓰므로 cwd 무관).
+        - **stdout 까지 에러 판정.** CLI v2 는 API 에러를 stdout 에 ("API Error: 529 …")
+          내보내고 종종 exit 0 으로 끝난다. returncode·stderr 만 보면 "unknown error"
+          로 새 버린다 — stdout 의 에러 마커도 함께 본다.
+        """
+        import os
+        import tempfile
+
+        cli_cwd = os.path.join(tempfile.gettempdir(), "agents_reviewer_cli_cwd")
+        try:
+            os.makedirs(cli_cwd, exist_ok=True)
+        except OSError:
+            cli_cwd = tempfile.gettempdir()
+
         cmd = [
             claude_bin,
             "-p", full_prompt,
@@ -112,22 +171,41 @@ class BaseAgent:
 
         logger.info(f"[{self.name}] Starting CLI analysis ({self.model_name})...")
         start_ts = time.time()
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdin=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await proc.communicate()
-
-        if proc.returncode != 0:
-            err_msg = stderr.decode().strip() if stderr else "unknown error"
-            raise RuntimeError(
-                f"[{self.name}] claude CLI exited with code {proc.returncode}: {err_msg}"
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdin=asyncio.subprocess.DEVNULL,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=cli_cwd,
             )
+            stdout_b, stderr_b = await asyncio.wait_for(
+                proc.communicate(), timeout=self._CLI_TIMEOUT_S
+            )
+        except asyncio.TimeoutError:
+            try:
+                proc.kill()
+            except ProcessLookupError:
+                pass
+            return "", f"timeout after {self._CLI_TIMEOUT_S:.0f}s", True
 
-        raw_text = stdout.decode().strip()
-        raw_text = raw_text.replace("**", "")
+        stdout = stdout_b.decode().strip() if stdout_b else ""
+        stderr = stderr_b.decode().strip() if stderr_b else ""
+
+        # API 에러는 exit≠0 이거나 stdout 텍스트로 온다. 둘 다 검사.
+        combined = f"{stdout}\n{stderr}".lower()
+        is_error = (
+            proc.returncode != 0
+            or stdout.startswith("API Error")
+            or "api error:" in combined
+            or "execution error" in combined
+        )
+        if is_error:
+            detail = (stderr or stdout or "unknown error").replace("\n", " ")[:500]
+            transient = any(m in combined for m in self._TRANSIENT_MARKERS)
+            return "", f"exit={proc.returncode}: {detail}", transient
+
+        raw_text = stdout.replace("**", "")
         elapsed_ms = int((time.time() - start_ts) * 1000)
         logger.info(f"[{self.name}] Received CLI response ({len(raw_text)} chars)")
         if self.telemetry is not None:
@@ -137,7 +215,8 @@ class BaseAgent:
                 output_chars=len(raw_text),
                 elapsed_ms=elapsed_ms,
             )
-        return raw_text
+        return raw_text, None, False
+
 
     # ------------------------------------------------------------------
     # API mode (Anthropic SDK – pay-per-use)
