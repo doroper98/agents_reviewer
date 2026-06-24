@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.2.2"
+VERSION = "v8.2.3"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1812,9 +1812,12 @@ class Orchestrator:
             status_callback,
         )
 
-        # -- Phase 2: UnifiedComposer (Opus 4.7) — 분석 + 작성 단일 호출 --
+        # -- Phase 2: UnifiedComposer — 분석 + 작성 단일 호출 --
+        # v8.2.3 — 르포는 Opus 4.8, 일반은 4.7. 알림 라벨도 실제 호출 모델과 정합.
+        _composer_model_used = self.narrative_composer._model_for_format(report_format)
+        _model_label = "Opus 4.8" if report_format == "reportage" else "Opus 4.7"
         await self._notify(
-            "✍️ 편집장 (Opus 4.7): 행위자/구조/시나리오/모순 분석 + 보고서 작성 (단일 호출)",
+            f"✍️ 편집장 ({_model_label}): 행위자/구조/시나리오/모순 분석 + 보고서 작성 (단일 호출)",
             status_callback,
         )
         stage = self.telemetry.stage_start("unified_composer")
@@ -2004,11 +2007,12 @@ class Orchestrator:
                 if loop_result.report is not None:
                     result.composed_report = loop_result.report
                 # Phase V6-7 — 검수 바이라인. *실제 검수 수행 시에만* (AP-V6-10).
+                # v8.2.3 — 르포는 4.8 로 작성됐으므로 byline writer 모델도 4.8.
                 if self.config.enable_byline and not loop_result.skipped:
                     from src.factcheck.critic_loop import build_verification_byline
                     result.composed_report.verification = build_verification_byline(
                         loop_result,
-                        self.narrative_composer.COMPOSER_MODEL,
+                        self.narrative_composer._model_for_format(request.report_format),
                         web_verified=self.config.enable_codex_webverify,
                     )
                 logger.info(

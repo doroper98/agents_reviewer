@@ -180,6 +180,33 @@ def test_standard_keeps_opus_4_7() -> None:
     assert nc.COMPOSER_MODEL == "claude-opus-4-7"
 
 
+def test_pretty_writer_maps_4_8() -> None:
+    """v8.2.3 — 바이라인 모델 ID → 사람-읽기 매핑이 4.8 도 지원해야 한다."""
+    from src.factcheck.critic_loop import _pretty_writer
+    assert _pretty_writer("claude-opus-4-7") == "Claude Opus 4.7"
+    assert _pretty_writer("claude-opus-4-8") == "Claude Opus 4.8"
+
+
+def test_orchestrator_notify_label_uses_reportage_model() -> None:
+    """v8.2.3 — 진행 알림 라벨이 르포면 'Opus 4.8' / 일반이면 'Opus 4.7' 로 분기.
+
+    회귀: 사용자 보고(2026-06-24) — 텔레그램에 '편집장 (Opus 4.7)' 이 르포에서도
+    하드코딩으로 박혀, 실제로는 4.8 로 호출됐는데 라벨만 4.7. 본 테스트가 source
+    에서 라벨 분기 보장.
+    """
+    from pathlib import Path
+    src = (Path(__file__).resolve().parents[2] / "src" / "orchestrator.py").read_text(encoding="utf-8")
+    # 옛 하드코딩 ('편집장 (Opus 4.7):') 은 사라져야
+    assert "편집장 (Opus 4.7):" not in src, (
+        "orchestrator 에 하드코딩된 '편집장 (Opus 4.7):' 잔재 — 르포 4.8 분기와 충돌"
+    )
+    # 새 동적 라벨 분기 marker 가 있어야
+    assert '"Opus 4.8" if report_format == "reportage" else "Opus 4.7"' in src, \
+        "format-별 라벨 분기 누락"
+    assert "_model_for_format(request.report_format)" in src, \
+        "byline writer 모델이 _model_for_format 으로 분기되지 않음"
+
+
 def test_reviser_threads_report_format() -> None:
     """critic_loop 어댑터가 report_format 을 composer.revise_for_facts 로 전달하는지."""
     import asyncio
