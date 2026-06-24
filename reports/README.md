@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 236건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 237건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-06-25 08:33 | [르포] 마이크론 FY2026 3분기 실적 발표 — 분기 매출 414억달러, 영업현금흐름 254억달러로 메모리 슈퍼사이클 확인 | 기업실적/반도체 | [md](analysis_20260625_083329_321fdfdbff.md) · [json](analysis_20260625_083329_321fdfdbff.json) · [bundle](analysis_20260625_083329_321fdfdbff.bundle.json) |
 | 2026-06-25 08:12 | 마이크론 FY26 3분기 실적 발표 — 매출·이익 사상 최대 | 기업 실적 / 반도체 메모리 / AI 인프라 | [md](analysis_20260625_081213_ca0695cb82.md) · [json](analysis_20260625_081213_ca0695cb82.json) · [bundle](analysis_20260625_081213_ca0695cb82.bundle.json) |
 | 2026-06-25 06:19 | 마이크론 FY2026 3분기 실적 발표 — 매출·이익·가이던스 모두 사상 최대 | 기업 실적 / 반도체 (메모리·HBM) | [md](analysis_20260625_061939_785032bd35.md) · [json](analysis_20260625_061939_785032bd35.json) · [bundle](analysis_20260625_061939_785032bd35.bundle.json) |
 | 2026-06-25 06:17 | 2026-06-25 아침 일일 브리핑 (산업·지정학·정치·전쟁 종합) | 일일 종합 브리핑 | [md](analysis_20260625_061718_ad4b066be3.md) · [json](analysis_20260625_061718_ad4b066be3.json) · [bundle](analysis_20260625_061718_ad4b066be3.bundle.json) |
