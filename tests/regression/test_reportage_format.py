@@ -66,6 +66,41 @@ def test_reportage_block_has_tone_and_epilogue_rules() -> None:
         assert marker in _REPORTAGE_BLOCK, f"르포 블록에 '{marker}' 누락"
 
 
+def test_reportage_block_has_investigative_persona() -> None:
+    """v8.2.0 — 탐사 기자 페르소나(connecting dots + 시나리오 추론 + 3등급 표기) 가드.
+
+    단순 기사 나열을 명시적으로 금지하고, 묻힌 디테일·점 잇기·가설 라벨이라는 세 도구가
+    프롬프트에 명시돼야 한다. 그리고 사실/추론/가설 3등급 표기를 강제하는 어휘 marker.
+    """
+    # 세 가지 도구
+    for marker in ("탐사 기자", "묻힌 디테일", "Connecting dots", "점 잇기", "시나리오 추론"):
+        assert marker in _REPORTAGE_BLOCK, f"탐사 페르소나 블록에 '{marker}' 누락"
+    # 3등급 표현 구분 + 헤지/가설 어휘
+    for marker in ("표현 등급", "단정형", "헤지형", "가설", "한 가지 가설은",
+                   "근거의 짜임"):
+        assert marker in _REPORTAGE_BLOCK, f"3등급 표기 가드에 '{marker}' 누락"
+    # 안전선
+    for marker in ("fabrication", "음모론", "공허"):
+        assert marker in _REPORTAGE_BLOCK, f"탐사 페르소나 안전선에 '{marker}' 누락"
+
+
+def test_codex_persona_has_reportage_adaptation() -> None:
+    """v8.2.0 — codex 검수자 단축본 + 전체 기준서가 르포(reportage) 인지를 갖는다.
+
+    런타임 단축본은 표현 등급 검수와 speculation_as_fact 분류를 명시해야 하고,
+    전체 기준서는 §14 르포 적응 섹션을 가져야 한다. 두 파일 정합 (CLAUDE.md SOP).
+    """
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2]
+    short = (root / "prompts" / "codex_critic_persona.md").read_text(encoding="utf-8")
+    full = (root / "prompts" / "market_factcheck_desk_v6.md").read_text(encoding="utf-8")
+    for marker in ("reportage", "표현 등급", "speculation_as_fact", "가설 라벨"):
+        assert marker in short, f"codex 단축본에 르포 적응 marker '{marker}' 누락"
+        assert marker in full, f"codex 전체 기준서에 르포 적응 marker '{marker}' 누락"
+    # 전체 기준서는 §14 섹션 헤더를 가져야 한다 (SOP — drift 시 정본)
+    assert "### 14." in full and "르포" in full, "전체 기준서에 §14 르포 섹션 누락"
+
+
 # --------------------------------------------------------------------------
 # 르포 전용 테마 풀
 # --------------------------------------------------------------------------

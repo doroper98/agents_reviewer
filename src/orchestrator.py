@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.1.0"
+VERSION = "v8.2.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1998,6 +1998,7 @@ class Orchestrator:
                     result.composed_report, result.context,
                     publication_date=today_kst(),
                     on_progress=_loop_progress,
+                    report_format=getattr(request, "report_format", "") or "",
                 )
                 v6_loop_result = loop_result
                 if loop_result.report is not None:

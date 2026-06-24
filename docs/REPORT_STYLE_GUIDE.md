@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.9.6
+last_synced_with: v8.2.0
 ssot_for:
   - "보고서 본문 문체·어휘·어조 가이드 (composer + context 공통)"
 depends_on:
@@ -282,6 +282,14 @@ anti-pattern #1):
 
 ## 9. 변경 이력
 
+- **v8.2.0** — 르포(report_format=reportage) 전용 *탐사 기자 페르소나* 추가
+  (composer `_REPORTAGE_BLOCK`). 묻힌 디테일 들춰내기 + connecting dots(점 잇기)
+  + 시나리오 추론(명시적 가설 라벨 안에서만) 3종 도구. 사실(단정형) / 추론(헤지형) /
+  가설(명시 라벨) 3등급 표현 구분 *필수*. 일반 보고서(standard) 문체는 무변경 — 본
+  문서의 §0~§7 은 standard 톤 SSOT 로 그대로. 르포 페르소나는 일반 톤을 *대체* 하지
+  않고 르포 모드에서만 *덧대진다*. codex 검수자도 reportage 인지로 표현 등급 정합을
+  검수하도록 정합 갱신 ([codex_critic_persona.md](../prompts/codex_critic_persona.md) §
+  포맷 적응 + [market_factcheck_desk_v6.md](../prompts/market_factcheck_desk_v6.md) §14).
 - **v5.5.5** — §0.1 신설 (일반 독자 우선을 *최우선 가치* 로 명문화) + §2.1 어휘표에
   영어·은어 항목 (rate card / rate limit premium / 익스포저 / 가이던스 / 헤지 등)
   추가 + §2.2 를 3단 사다리 (평이화 → 괄호 풀이 → 문단 하단 주석) 로 재구성.

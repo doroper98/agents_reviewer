@@ -53,10 +53,13 @@ class StubCritic:
         self._verdicts = list(verdicts)
         self.calls = 0
         self.pre_flags_seen: list[list[str]] = []
+        self.report_format_seen: list[str] = []
 
-    async def critique(self, report, context, *, publication_date="", pre_flags=None):
+    async def critique(self, report, context, *, publication_date="", pre_flags=None,
+                       report_format=""):
         self.calls += 1
         self.pre_flags_seen.append(list(pre_flags or []))
+        self.report_format_seen.append(report_format or "")
         return self._verdicts.pop(0) if self._verdicts else _clean()
 
 
