@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.2
+last_synced_with: v8.2.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.3 — 르포 표시 라벨 일치 (Opus 4.8 정상 호출 + 텔레그램·바이라인도 4.8)
+
+v8.2.2 직후 사용자 보고 — 르포 보고서 실제 호출은 `claude-opus-4-8` 로 정상 동작 (`bot.log` 의 `Starting CLI call (claude-opus-4-8, …)` 확인) 인데, 텔레그램 진행 메시지엔 **`편집장 (Opus 4.7): …`** 이 박혀 사용자가 4.7 으로 돌아간 줄 오인. 표시 회귀 — 두 곳에 모델 라벨이 하드코딩.
+
+- `src/orchestrator.py:1817` — 진행 알림 문자열이 `"편집장 (Opus 4.7): …"` 하드코딩. 르포여도 4.7 라벨. 동적 분기로 교체: `report_format == "reportage" → "Opus 4.8"`, 그 외 `"Opus 4.7"`.
+- `src/orchestrator.py:2011` — `build_verification_byline` 호출에 `self.narrative_composer.COMPOSER_MODEL` (4.7 고정) 을 넘기던 것을 `_model_for_format(request.report_format)` 로 교체. 르포 발행 푸터 바이라인이 `Claude Opus 4.8 작성` 으로 정확히 표기됨. `_pretty_writer` 정규식은 `opus-4-8` → `Claude Opus 4.8` 매핑 OK (변경 불요).
+- 회귀 `test_reportage_format.py` +2: `_pretty_writer` 4.8 매핑 + source 가드(`'편집장 (Opus 4.7):'` 하드코딩 잔재 없음 + 동적 분기 + byline `_model_for_format` 사용).
+- byte-equal: `report_format != "reportage"` 인 모든 보고서는 라벨/바이라인 모두 v8.2.2 와 동일(4.7). 르포 트리거 없는 경로에 영향 0.
 
 ## v8.2.2 — 르포 작성 모델 Opus 4.8 격상 (일반 보고서는 4.7 유지)
 
