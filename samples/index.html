@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Samples — Event Analysis Team v4.5.0</title>
+<title>Samples — Event Analysis Team v8.2.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
@@ -33,15 +33,25 @@ body {
 .hero { padding: 56px 0 36px; border-bottom: 1px solid var(--border-soft); }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
 h1 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 42px; font-weight: 800; line-height: 1.15; color: var(--text); margin: 0 0 14px; letter-spacing: -0.5px; }
-.deck { font-size: 17px; line-height: 1.6; color: var(--muted); max-width: 660px; }
-.meta { margin-top: 14px; font-size: 12px; color: var(--muted); display: flex; gap: 14px; }
+.deck { font-size: 17px; line-height: 1.6; color: var(--muted); max-width: 680px; }
+.deck strong { color: var(--text); font-weight: 600; }
+.meta { margin-top: 16px; font-size: 12px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
 .meta a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
 .meta a:hover { border-bottom-color: var(--accent); }
 
 .group { padding: 36px 0; border-bottom: 1px solid var(--border-soft); }
 .group:last-of-type { border-bottom: none; padding-bottom: 56px; }
 .group-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
-h2 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 18px; }
+h2 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.group-note { font-size: 13.5px; color: var(--muted); margin-bottom: 18px; max-width: 720px; }
+
+/* 테마 스와치 — 각 테마의 실제 배경·본문·액센트 색을 미니 칩으로 보여줌 */
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 22px; }
+.sw { width: 120px; border: 1px solid var(--border-soft); border-radius: 9px; overflow: hidden; background: var(--card); }
+.sw-chip { height: 58px; padding: 9px 11px; display: flex; align-items: center; justify-content: space-between; }
+.sw-aa { font-family: 'Newsreader', serif; font-size: 21px; font-weight: 800; line-height: 1; }
+.sw-dot { width: 16px; height: 16px; border-radius: 50%; flex: none; }
+.sw-name { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); padding: 6px 9px 8px; letter-spacing: 0.1px; word-break: break-all; }
 
 .cards { display: grid; grid-template-columns: 1fr; gap: 14px; }
 @media (min-width: 720px) { .cards { grid-template-columns: 1fr 1fr; } }
@@ -61,155 +71,213 @@ h2 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 24px; font-we
 
 <header class="hero">
   <div class="container">
-    <div class="eyebrow">samples · live preview</div>
+    <div class="eyebrow">samples · live preview · v8.2.4</div>
     <h1>Event Analysis Team — Samples</h1>
-    <p class="deck">테마·차트·지도·보고서 구조의 살아있는 레퍼런스. v4.5.0 부터 디폴트 테마는 <strong>editorial_cream</strong>, 위기·분쟁만 <strong>burgundy_mono</strong> 로 라우팅.</p>
+    <p class="deck">테마·차트·지도·보고서 구조의 살아있는 레퍼런스. 현재 일반 보고서는 <strong>5종 테마</strong>(라이트 1 + 다크 4)에서 보고서마다 랜덤, <strong>르포(탐사보도)</strong> 포맷은 전용 <strong>8종 다크 테마</strong>로 완전 분기. 차트는 <strong>27종</strong> + 르포 전용 <strong>stakeholder_map</strong>, 지도는 평면 + <strong>정사영 지구본</strong>.</p>
     <div class="meta">
       <a href="https://github.com/doroper98/agents_reviewer">GitHub</a>
       <span>·</span>
       <a href="https://github.com/doroper98/agents_reviewer/blob/main/CHANGELOG.md">CHANGELOG</a>
       <span>·</span>
       <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/MONO_THEME_GUIDE.md">Theme Guide</a>
+      <span>·</span>
+      <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/ARCHITECTURE.md">Architecture</a>
     </div>
   </div>
 </header>
 
+<!-- ════════ 르포 (탐사보도) — v8.x ★ NEW ════════ -->
 <section class="group">
   <div class="container">
-    <div class="group-label">v4.5.0 · 최신</div>
-    <h2>Editorial 인터랙션 패턴 + 신규 테마</h2>
+    <div class="group-label">v8.0.0~v8.2.4 · 최신 ★</div>
+    <h2>르포(탐사보도) 포맷 — 전용 디자인</h2>
+    <p class="group-note">메시지에 "르포" 가 있으면 일반 보고서와 <strong>완전 분기</strong>. 행위자 중심 5막 구조(발단→이해당사자→내막·동기→전개→전망) + 탐사 기자 페르소나(묻힌 디테일·점잇기·시나리오 추론, 사실/추론/가설 3등급 라벨) + 에필로그 제거. 전용 깨끗한 템플릿 · G마켓 Sans 폰트 · 플랫 미니멀 · 살아있는 애니메이션.</p>
+    <div class="swatches">
+      <div class="sw"><div class="sw-chip" style="background:#004741;color:#F0EDE4"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#E3A93C"></span></div><div class="sw-name">reportage_cyprus</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#001621;color:#EFE3D4"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#FF4103"></span></div><div class="sw-name">reportage_noturno</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#741A2F;color:#FFE2D4"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#FFB38F"></span></div><div class="sw-name">reportage_bridal</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#002F49;color:#FEF0D5"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#E8503F"></span></div><div class="sw-name">reportage_cosmos</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#0D3A35;color:#FBF6F0"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#86C0A4"></span></div><div class="sw-name">reportage_laurel</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#015AA0;color:#ECECFF"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#FF9457"></span></div><div class="sw-name">reportage_princess</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#282433;color:#F3E0D9"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#E2B25C"></span></div><div class="sw-name">reportage_steel</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#0F0E49;color:#ECE6F5"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#D9ABE8"></span></div><div class="sw-name">reportage_navy</div></div>
+    </div>
     <div class="cards">
-      <a class="card" href="editorial_cream_v4_5_0.html">
-        <div class="card-version">v4.5.0 · default</div>
-        <div class="card-title">Editorial Cream — 컴포넌트 데모</div>
-        <div class="card-desc">cream + terracotta. 신규 4 필드 (lede / analogy / fact_grid / dropcap) + 자동 TOC + Newsreader/IBM Plex 폰트 시각 데모.</div>
+      <a class="card" href="reportage_page_mockup.html">
+        <div class="card-version">v8.0.0 · page ★</div>
+        <div class="card-title">르포 페이지 — 전용 템플릿 데모</div>
+        <div class="card-desc">reportage.html 렌더 미리보기. 번호 섹션 + 용어풀이 + 차트·지도만 남긴 담백한 구조. 헤더 버전 배지 / 현재형 박진감 어투 / 에필로그(감시신호·시간궤적·요약·신뢰도·바이라인) 전부 제거.</div>
       </a>
-      <a class="card" href="burgundy_mono_v4_5_0.html">
-        <div class="card-version">v4.5.0 · crisis</div>
-        <div class="card-title">Burgundy Mono — 위기 보고서 톤</div>
-        <div class="card-desc">dried-blood (어둡게 보정) + amber. 위기·분쟁 한정. editorial 컴포넌트는 cream 과 동일.</div>
+      <a class="card" href="reportage_theme_preview.html">
+        <div class="card-version">v8.0.0 · 8 dark</div>
+        <div class="card-title">르포 테마 8종 — 다크 팔레트</div>
+        <div class="card-desc">cyprus / noturno / bridal / cosmos / laurel / princess / steel / navy. 전부 짙은 배경 + 단일 액센트. 르포일 때만 random 선택.</div>
+      </a>
+      <a class="card" href="reportage_globe_mockup.html">
+        <div class="card-version">v7.5/v8 · globe</div>
+        <div class="card-title">르포 지구본 애니메이션</div>
+        <div class="card-desc">정사영(orthographic) 지구본 연속 자전 + 테마색 적용. 탄도·위성·대양 공급망 등 대륙 간 스케일 토픽용. reduced-motion 시 정지.</div>
+      </a>
+      <a class="card" href="stakeholder_map_gallery.html">
+        <div class="card-version">v8.0.0 · chart ★</div>
+        <div class="card-title">stakeholder_map — 행위자 관계도</div>
+        <div class="card-desc">르포 전용 신규 차트. 국기·로고 둥근 SVG + 결정적 컬럼 레이아웃(force/hairball 금지=CHART-AP-36/37). 엣지 흐름 + 허브 펄스 ambient 애니.</div>
       </a>
     </div>
   </div>
 </section>
 
+<!-- ════════ 표준 테마 (5종) ════════ -->
 <section class="group">
   <div class="container">
-    <div class="group-label">차트 · 지도 시스템</div>
-    <h2>Mono 패턴 · 차트 카탈로그</h2>
+    <div class="group-label">v6.2.0 · 일반 보고서 테마</div>
+    <h2>표준 테마 5종 — 라이트 1 + 다크 4</h2>
+    <p class="group-note">모든 테마는 <strong>동일 레이아웃</strong>, 배경·본문·액센트 색만 다름. 보고서마다 <code>random.choice</code> 로 선택(event_type 무관 · 시각 다양성). SSOT: <code>lens_policy.ALL_THEMES</code> + <code>report.css [data-theme]</code>.</p>
+    <div class="swatches">
+      <div class="sw"><div class="sw-chip" style="background:#F2EBDB;color:#1F1814"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#B05A38"></span></div><div class="sw-name">editorial_cream</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#2A0F18;color:#EFE5D1"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#D4A858"></span></div><div class="sw-name">burgundy_mono</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#161A2E;color:#E8ECEF"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#6FB3FF"></span></div><div class="sw-name">midnight_indigo</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#132019;color:#E7EEE8"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#7CC6A4"></span></div><div class="sw-name">pine_forest</div></div>
+      <div class="sw"><div class="sw-chip" style="background:#191B1E;color:#E9EBED"><span class="sw-aa">Aa</span><span class="sw-dot" style="background:#D69A5E"></span></div><div class="sw-name">graphite_slate</div></div>
+    </div>
     <div class="cards">
-      <a class="card" href="chart_catalog_v5_4.html">
-        <div class="card-version">v5.4.4 · 최신 ★</div>
-        <div class="card-title">Live Catalog — 20종 차트 + entry 애니메이션</div>
-        <div class="card-desc">production charts.js 그대로 동작. bar grow / donut sweep / line draw / fill fade 등 entry 애니메이션 (CHART-AP-18 가드) 스크롤 시 자동 재생. ★ 7 신규 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar) + sankey 포함.</div>
+      <a class="card" href="v6_themes_showcase.html">
+        <div class="card-version">v6.2.0 · 5 themes ★</div>
+        <div class="card-title">5 테마 쇼케이스 — 랜덤 선택</div>
+        <div class="card-desc">현행 5종 풀을 한 화면에 비교. 단일 액센트 · 동일 레이아웃 · 보고서마다 랜덤. (구 7종 풀에서 slate_steel/forest_sage/dusk_rose/paper_classic 4종 삭제, 짙은 계열 중심 재편.)</div>
       </a>
-      <a class="card" href="chart_animation_mockup.html">
-        <div class="card-version">v5.3.0 mockup</div>
-        <div class="card-title">애니메이션 모크업 — entry reveal</div>
-        <div class="card-desc">production 이식 전 검토용. scroll-triggered reveal · prefers-reduced-motion 정적 폴백 · stagger 패턴 비교.</div>
+      <a class="card" href="report_images_theme_compare.html">
+        <div class="card-version">v5.4.0 · images</div>
+        <div class="card-title">보고서 사진 — 테마별 figure 톤</div>
+        <div class="card-desc">og:image hero/inline 사진이 각 테마 토큰(border-soft / fg-3)과 어떻게 어울리는지. 컬러 사진 그대로, caption Newsreader italic + © Publisher.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 차트 시스템 (27종) ════════ -->
+<section class="group">
+  <div class="container">
+    <div class="group-label">차트 시스템 · composer-emitted</div>
+    <h2>차트 카탈로그 — 27종 + 애니메이션</h2>
+    <p class="group-note">차트 데이터는 composer 가 단일 LLM 호출 안에서 직접 emit. 카테고리 구분은 색이 아닌 <strong>45° 패턴</strong>(hatch / dots / accent). 5-Layer Usage Guarantee 로 타입 starvation 차단.</p>
+    <div class="cards">
+      <a class="card" href="chart_gallery_v7.html">
+        <div class="card-version">v7.x · 27종 ★</div>
+        <div class="card-title">Chart Gallery V7 — 전 타입 × 5테마</div>
+        <div class="card-desc">production charts.js 그대로. 27종 전 타입 베이스라인 — bump/bullet/connected_scatter(v7.0) + combo/diverging_bar/pyramid/dot_matrix(v7.5) 포함. annotation 레이어(vline/hline/band/point) cartesian 개방.</div>
+      </a>
+      <a class="card" href="chart_redesign_v7_compare.html">
+        <div class="card-version">v7.0~7.2 · 비교</div>
+        <div class="card-title">초기 7종 비주얼 격상 — 현행 vs 리디자인</div>
+        <div class="card-desc">bar/donut/stacked/bubble/heatmap/waterfall 격상. 해치=명목 카테고리 전용, 위계=잉크 농도 사다리, 세리프 직접 라벨.</div>
+      </a>
+      <a class="card" href="stakeholder_map_themes.html">
+        <div class="card-version">v8.0.0 · 르포</div>
+        <div class="card-title">stakeholder_map — 테마별</div>
+        <div class="card-desc">행위자 관계도를 르포 다크 테마들에 얹어 렌더. 결정적 컬럼 레이아웃 + 관계 type 인코딩(대립/동맹/영향/연관).</div>
+      </a>
+      <a class="card" href="market_briefing_charts_v7_9_9.html">
+        <div class="card-version">v7.9.9 · 브리핑</div>
+        <div class="card-title">장마감 브리핑 차트 — 파생·시장폭</div>
+        <div class="card-desc">옵션 IV 스큐·풋콜·OI + combo_candle(하락비율 × 지수) + 코스피 3M 캔들+20일선. 선물·옵션 그릭 / 시장 폭 결정적 주입.</div>
+      </a>
+      <a class="card" href="v7_5_realdata_mockup.html">
+        <div class="card-version">v7.5 · 실데이터</div>
+        <div class="card-title">V7.5 신규 시각화 — 실데이터 목업</div>
+        <div class="card-desc">combo / diverging_bar / pyramid / dot_matrix 를 실제 수집 데이터로. 이중 축 결합 + 사회 이슈 어휘.</div>
+      </a>
+      <a class="card" href="chart_catalog_v5_4.html">
+        <div class="card-version">v5.4 · legacy</div>
+        <div class="card-title">Live Catalog — 20종 (구판)</div>
+        <div class="card-desc">v5.4 기준 20종 + entry 애니메이션. 현행 27종은 위 Gallery V7 참조.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 지도 시스템 ════════ -->
+<section class="group">
+  <div class="container">
+    <div class="group-label">지도 시스템 · d3-geo + TopoJSON</div>
+    <h2>지도 — 평면 + 정사영 지구본</h2>
+    <p class="group-note">composer 가 보고서당 1개 emit(지리적 사건일 때만). world-atlas/110m TopoJSON 베이스맵, 외부 타일 서비스 금지. v7.5 부터 <strong>지구본 투영</strong> + 사거리권(rings) + 화살촉/관문 어휘.</p>
+    <div class="cards">
+      <a class="card" href="map_globe_v7_5.html">
+        <div class="card-version">v7.5 · globe ★</div>
+        <div class="card-title">Map Globe — 지구본 + 사거리권</div>
+        <div class="card-desc">정사영 지구본 — 대권(great-circle) 경로가 휘지 않음. 드래그 회전 · 휠 줌 · 측지선 호 · 동심원 사거리권(range/coverage).</div>
+      </a>
+      <a class="card" href="map_redesign_v7_compare.html">
+        <div class="card-version">v7.2 · 비교</div>
+        <div class="card-title">지도 어휘 격상 — 현행 vs 리디자인</div>
+        <div class="card-desc">방향 화살촉 arcs + chokepoint/port/military 마커 + 국가 역할 색조(subject/ally/rival/contested) + 바다 라벨 워터마크.</div>
       </a>
       <a class="card" href="chart_map_mono_compare.html">
-        <div class="card-version">v4.2.0+</div>
+        <div class="card-version">v4.2.0+ · SSOT</div>
         <div class="card-title">Mono Compare — 차트 + 지도 두 톤</div>
-        <div class="card-desc">동일 시나리오를 두 mono 톤으로 동시 렌더. d3 + d3-geo + TopoJSON 베이스맵, 45° 패턴 시스템 SSOT.</div>
-      </a>
-      <a class="card" href="chart_gallery.html">
-        <div class="card-version">v3.2.0 · legacy</div>
-        <div class="card-title">Chart Gallery — 11종 (구판)</div>
-        <div class="card-desc">초기 11종 d3 갤러리. production 은 20종으로 확장 — 위 Live Catalog 참조.</div>
-      </a>
-      <a class="card" href="chart_comparison.html">
-        <div class="card-version">spec</div>
-        <div class="card-title">Chart Comparison — multi-color vs mono</div>
-        <div class="card-desc">멀티컬러 폐기 결정 배경. 색 대신 패턴 (45° hatch / dots) 으로 카테고리 구분.</div>
-      </a>
-      <a class="card" href="tier1_chart_preview.html">
-        <div class="card-version">v4.4.0</div>
-        <div class="card-title">Tier 1 — 메타데이터 5필드</div>
-        <div class="card-desc">subtitle / annotations / source / takeaway / reference_line. JPM/GS 스타일 차트 메타데이터.</div>
+        <div class="card-desc">동일 시나리오를 두 톤으로 동시 렌더. 45° 패턴 시스템 + d3-geo 베이스맵 레퍼런스 구현.</div>
       </a>
     </div>
   </div>
 </section>
 
+<!-- ════════ 아키텍처 ════════ -->
 <section class="group">
   <div class="container">
     <div class="group-label">아키텍처 · 시스템 다이어그램</div>
     <h2>버전별 시스템 흐름</h2>
     <div class="cards">
       <a class="card" href="v5_4_3_architecture.html">
-        <div class="card-version">v5.4.3 · 최신</div>
-        <div class="card-title">현행 파이프라인 — Market · Image · 20 Charts ★</div>
-        <div class="card-desc">v4.5.7 Tier 4 baseline + market_fetcher (KRX/Yahoo/FRED/ECOS) + image_fetcher (og:image) + 20종 차트 + 5-Layer Usage Guarantee + 17-Phase V5 검수 (opt-in).</div>
-      </a>
-      <a class="card" href="v5_themes_showcase.html">
-        <div class="card-version">v5.0.2</div>
-        <div class="card-title">7 테마 쇼케이스 — 랜덤 선택 ★</div>
-        <div class="card-desc">editorial_cream / burgundy_mono / slate_steel / forest_sage / midnight_indigo / dusk_rose / paper_classic. 단일 액센트, 동일 레이아웃, 보고서마다 랜덤.</div>
+        <div class="card-version">v5.4.3</div>
+        <div class="card-title">현행 파이프라인 — Market · Image · Charts</div>
+        <div class="card-desc">Tier 4 2-call(ContextAnalyst + NarrativeComposer) + market_fetcher(KRX/Yahoo/FRED/ECOS) + image_fetcher(og:image) + 5-Layer Usage Guarantee. 이후 V6 Codex 팩트체크 루프 + V7/V8 르포 트랙 추가.</div>
       </a>
       <a class="card" href="v5_0_0_architecture.html">
         <div class="card-version">v5.0.0</div>
-        <div class="card-title">17-Phase Newsroom Pipeline ★</div>
-        <div class="card-desc">4-Tier 17-Phase 마스터 플랜 완료. ResearchDirector + Editor + DeskEditor + 4중 Chart Gate + 11 Hard fail. Pass rate 70.1% → 88.9%.</div>
+        <div class="card-title">17-Phase Newsroom Pipeline</div>
+        <div class="card-desc">4-Tier 17-Phase 마스터 플랜. ResearchDirector + Editor + DeskEditor + 4중 Chart Gate + Hard fail 규칙(opt-in).</div>
       </a>
       <a class="card" href="v4_2_0_architecture.html">
         <div class="card-version">v4.2.0</div>
         <div class="card-title">Tier 4 + composer-emitted 차트/지도</div>
-        <div class="card-desc">2-call 파이프라인 (ContextAnalyst + UnifiedComposer). build_chart_payload / maplibre 폐기.</div>
+        <div class="card-desc">2-call 파이프라인. build_chart_payload / maplibre 폐기, composer 직접 emit 전환.</div>
       </a>
       <a class="card" href="v4_0_0_architecture.html">
         <div class="card-version">v4.0.0</div>
         <div class="card-title">Tier 4 도입 — 단일 호출</div>
-        <div class="card-desc">7 agent + 11 lens + 11 archetype 모두 호출 중단. LLM deep 13 → 2 (~85% ↓).</div>
-      </a>
-      <a class="card" href="v3_5_0_architecture.html">
-        <div class="card-version">v3.5.0</div>
-        <div class="card-title">Mono 표준 채택 + DATA DASHBOARD 폐기</div>
-        <div class="card-desc">9개 차트 슬롯 무지성 박힘 회귀 fix. lens_policy.select_theme mono 만 emit.</div>
+        <div class="card-desc">7 agent + 11 lens + 11 archetype 호출 중단. LLM deep 13 → 2 (~85% ↓).</div>
       </a>
     </div>
   </div>
 </section>
 
+<!-- ════════ 레거시 ════════ -->
 <section class="group">
   <div class="container">
     <div class="group-label">레거시 (보존)</div>
-    <h2>v3.x 멀티컬러 테마 · 폐기됨</h2>
+    <h2>초기 멀티컬러 테마 · 프로토타입</h2>
+    <p class="group-note">v3.5.0 mono 표준 채택 전 자료. 현재는 호출되지 않으며 히스토리 보존용.</p>
     <div class="cards">
+      <a class="card" href="editorial_cream_v4_5_0.html">
+        <div class="card-version">v4.5.0</div>
+        <div class="card-title">Editorial Cream — 컴포넌트 데모</div>
+        <div class="card-desc">lede / analogy / fact_grid / dropcap 4 필드 + 자동 TOC 초기 데모.</div>
+      </a>
+      <a class="card" href="chart_gallery.html">
+        <div class="card-version">v3.2.0</div>
+        <div class="card-title">Chart Gallery — 11종 (구판)</div>
+        <div class="card-desc">초기 11종 d3 갤러리. 현행 27종은 Gallery V7 참조.</div>
+      </a>
       <a class="card" href="theme_geopolitical.html">
         <div class="card-version">legacy</div>
-        <div class="card-title">Geopolitical (red)</div>
-        <div class="card-desc">v3.5.0 부터 burgundy_mono 로 통합.</div>
-      </a>
-      <a class="card" href="theme_financial_dashboard.html">
-        <div class="card-version">legacy</div>
-        <div class="card-title">Financial Dashboard (gold)</div>
-        <div class="card-desc">v3.5.0 부터 burgundy_mono.</div>
-      </a>
-      <a class="card" href="theme_ai_tech.html">
-        <div class="card-version">legacy</div>
-        <div class="card-title">AI Tech (blue)</div>
-        <div class="card-desc">v3.5.0 부터 burgundy_mono.</div>
-      </a>
-      <a class="card" href="theme_cybersecurity.html">
-        <div class="card-version">legacy</div>
-        <div class="card-title">Cybersecurity (orange)</div>
-        <div class="card-desc">v3.5.0 부터 burgundy_mono.</div>
-      </a>
-      <a class="card" href="theme_mono_map_chart.html">
-        <div class="card-version">legacy</div>
-        <div class="card-title">Mono Map Chart (early prototype)</div>
-        <div class="card-desc">mono 채택 초기 prototype. chart_map_mono_compare 가 후속 SSOT.</div>
+        <div class="card-title">멀티컬러 테마 (red/gold/blue/orange)</div>
+        <div class="card-desc">v3.5.0 부터 burgundy_mono 로 통합 폐기.</div>
       </a>
       <a class="card" href="release_v3.4.html">
         <div class="card-version">v3.4.0</div>
         <div class="card-title">Release v3.4 — six_act_theater</div>
-        <div class="card-desc">v4.0.0 에서 freeform_essay 단일화로 통합 폐기.</div>
-      </a>
-      <a class="card" href="sns_system_overview.html">
-        <div class="card-version">spec</div>
-        <div class="card-title">SNS System Overview</div>
-        <div class="card-desc">초기 시스템 소개. 현재는 ARCHITECTURE.md 가 SSOT.</div>
+        <div class="card-desc">v4.0.0 freeform_essay 단일화로 통합 폐기.</div>
       </a>
     </div>
   </div>
@@ -217,7 +285,7 @@ h2 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 24px; font-we
 
 <footer class="footer">
   <div class="container">
-    samples/<code>index.html</code> · v4.5.0 · 살아있는 레퍼런스 · SSOT: <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/MONO_THEME_GUIDE.md">MONO_THEME_GUIDE.md</a>
+    samples/<code>index.html</code> · v8.2.4 · 살아있는 레퍼런스 · SSOT: <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/MONO_THEME_GUIDE.md">MONO_THEME_GUIDE.md</a>
   </div>
 </footer>
 
