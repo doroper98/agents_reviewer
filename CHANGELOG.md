@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.3
+last_synced_with: v8.2.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,20 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.4 — 보고서 "생성되다 만" 채로 무경고 발행 차단 (WRITE-AP-25)
+
+사용자 보고 — 보고서들이 "자꾸 생성되다 만다". 2026-06-25 마이크론 deep 보고서 2건(`analysis_20260625_081213` / `…_061939`)이 같은 주제로 2시간 간격 두 번 모두, 본문 `요약` 섹션 1개뿐인 **minimal fallback** 으로 발행됐는데 텔레그램엔 "✅ 분석 완료" + 정상 URL 이 가서 열어봐야만 미완성을 알았다.
+
+- **근본 원인**: 두 보고서 total 1666s/1517s — 편집장(NarrativeComposer)이 deep CLI 타임아웃(900s)에 걸려 죽었고, `claude -p --output-format text` 는 완료 전까지 stdout 에 스트리밍하지 않아 kill 시점 임시파일이 비어 **살릴 부분 출력이 없음** → `compose_unified` 가 `None` 반환 → orchestrator 가 `context.summary` 기반 1-섹션 폴백을 *그대로* 렌더·배포. 실패임을 알리는 신호가 본문 깊숙한 `confidence_summary` 한 줄뿐이라 텔레그램·헤더 어디에도 표시 없음. deep 가 v5.8.2 부터 기본 모드라 무겁고 긴 주제는 매번 이 경로로 떨어짐.
+- **구조적 열화 플래그** (`src/models.py`) — `ComposedReport.degraded: bool` + `degradation_reason: str`. minimal fallback / 타임아웃 부분 살림 / 절단 JSON 복구 / head-loss 복구 *모든* 경로가 `degraded=True` + 사람-읽기 사유 세팅. default False 라 정상 보고서엔 영향 0.
+- **실패 원인 표면화** (`src/agents/narrative_composer.py`) — `_last_failure_reason` 가 타임아웃/파싱불가/예외 사유를 한 줄로 적립 → orchestrator 가 폴백의 `degradation_reason` 으로 노출. critic 루프가 보고서를 교체해도 플래그 보존(`src/orchestrator.py`).
+- **텔레그램 무경고 금지** (`src/telegram_bot.py`) — 열화면 "✅ 분석 완료" 대신 **"⚠️ 보고서가 끝까지 생성되지 못했습니다 — <사유>. 다시 요청하거나 '짧게' 로 재시도"** + 링크 머리표 `⚠️ 미완성`.
+- **보고서 헤더 배너** — `freeform_essay.html` / `reportage.html` 가 `composed.degraded` 면 붉은 경고 배너 렌더. URL 을 여는 누구나 미완성 인지.
+- **원인 완화** — deep CLI 타임아웃 900→1500s 상향. 무겁고 긴 deep 보고서가 한도 안에 완결되도록. (스트리밍 살림 `--output-format stream-json` 전환은 후속 검토.)
+- 회귀 `tests/regression/test_degraded_report.py` (절단 복구·head-loss·정상 응답의 degraded 플래그 고정). 정상 보고서·르포 byte-equal 보존(`test_reportage_format.py` 19/19).
+
+> ⚠️ 운영 — VM `git pull` + 재배포 후 적용. ⚠️ 가 또 뜨면 주제가 너무 무거운 것 — '짧게' 를 붙이거나 분할 요청. 1500s 로도 부족하면 timeout 상향 또는 stream-json 살림 도입 검토.
 
 ## v8.2.3 — 르포 표시 라벨 일치 (Opus 4.8 정상 호출 + 텔레그램·바이라인도 4.8)
 

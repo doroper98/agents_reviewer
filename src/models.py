@@ -814,6 +814,15 @@ class ComposedReport(BaseModel):
     confidence_score: float = Field(default=0.5, ge=0.0, le=1.0)
     """0~1 종합 신뢰도. composer 가 자체 평가."""
 
+    # v8.2.4 — 생성 중단/열화 구조 플래그 (WRITE-AP-25 재발방지 SSOT).
+    # 편집장 호출이 실패해 minimal fallback 으로 떨어졌거나(orchestrator), CLI 타임아웃
+    # 부분 살림 / 절단 JSON 복구 / head-loss 복구 처럼 "끝까지 못 짜고 발행되는" 모든
+    # 경로에서 True. 이 플래그를 텔레그램 완료 메시지·보고서 헤더 배너가 읽어
+    # 사용자에게 *명시* — 1-섹션 폴백을 정상 완료(✅)로 오인시키던 회귀 차단.
+    # default False 라 정상 보고서엔 영향 0.
+    degraded: bool = False
+    degradation_reason: str = ""
+
     # v5.6.1 — X(트위터) 구독자용 broadcast 요약. 보고서를 안 읽어도 맥락·핵심·시사점을
     # 얻는 친절한 평문 (해요/습니다 혼합, 문단당 2문장, 라벨 없음). 텔레그램 완료 메시지에
     # 라벨 없이 첨부. 비면 첨부 안 함 (graceful). SSOT: narrative_composer SYSTEM_PROMPT.

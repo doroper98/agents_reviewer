@@ -1044,6 +1044,15 @@ class TelegramBot:
             report_path = result.report_path
             followup_tag = " (후속)" if parent_context is not None else ""
 
+            # v8.2.4 — 편집장 실패로 1-섹션 minimal fallback 이 나갔거나(타임아웃/파싱
+            # 불가), 시간 초과 부분 살림본이면 '열화' 상태. 이걸 정상 완료(✅)로 보내면
+            # 사용자가 절단·폴백본을 열어봐야만 알게 된다 (WRITE-AP-25). 완료 메시지·
+            # 링크 머리표에 명시하고 재시도를 권한다.
+            _cr = result.composed_report
+            _degraded = bool(getattr(_cr, "degraded", False)) if _cr else False
+            _degraded_reason = (getattr(_cr, "degradation_reason", "") if _cr else "") or "생성 중단"
+            warn_tag = "  ⚠️ 미완성" if _degraded else ""
+
             # v5.6.1 — X 구독자용 broadcast 요약 (라벨 없이 본문만, 링크 메시지 앞에).
             broadcast = (
                 result.composed_report.broadcast_summary.strip()
@@ -1069,7 +1078,7 @@ class TelegramBot:
             if result.report_url and result.report_url.startswith("http"):
                 md_url = result.report_url.replace(".html", ".md")
                 await send(
-                    f"📊 Full Analysis Report{followup_tag}\n\n"
+                    f"📊 Full Analysis Report{followup_tag}{warn_tag}\n\n"
                     f"🔗 보고서 링크: {result.report_url}\n"
                     f"🤖 AI 전달용 (Markdown): {md_url}"
                     f"{mirror_line}"
@@ -1128,7 +1137,16 @@ class TelegramBot:
             duration = f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
 
             queue_info = f"\n📋 대기열: {len(self._queue)}건 남음" if self._queue else ""
-            await send(f"✅ 분석 완료 (소요시간: {duration}초){queue_info}")
+            if _degraded:
+                # v8.2.4 — 절단·폴백본은 정상 완료로 알리지 않는다 (WRITE-AP-25).
+                await send(
+                    f"⚠️ 보고서가 끝까지 생성되지 못했습니다 — {_degraded_reason}.\n"
+                    f"위 링크는 일부만 완성된 보고서입니다. 같은 주제로 다시 요청하시거나, "
+                    f"분량이 큰 주제면 '짧게' 를 붙여 재시도해 주세요.\n"
+                    f"(소요시간: {duration}초){queue_info}"
+                )
+            else:
+                await send(f"✅ 분석 완료 (소요시간: {duration}초){queue_info}")
 
             # Send report list link as separate message.
             # v5.8.7 — 공개 인덱스(/)는 v5.6.2 부터 목록 비공개(빈 랜딩)라, 이를

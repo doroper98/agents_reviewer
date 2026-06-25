@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.2.3"
+VERSION = "v8.2.4"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1833,7 +1833,17 @@ class Orchestrator:
 
         # composer 실패 시 graceful fallback — minimal report from context only
         if result.composed_report is None:
-            logger.warning("[orchestrator] composer failed; emitting minimal fallback")
+            # v8.2.4 — 편집장이 *왜* 실패했는지(타임아웃/파싱불가/예외)를 사람-읽기
+            # 한 줄로 가져와 degradation_reason 으로 노출. 그동안 WARNING 로그로만
+            # 삼켜지던 실패 원인을 텔레그램·배너로 표면화 (WRITE-AP-25).
+            _fail_reason = (
+                getattr(self.narrative_composer, "_last_failure_reason", "")
+                or "편집장 호출 실패"
+            )
+            logger.warning(
+                "[orchestrator] composer failed (%s); emitting minimal fallback",
+                _fail_reason,
+            )
             result.composed_report = ComposedReport(
                 headline=event_name,
                 deck=(result.context.summary or "")[:200],
@@ -1843,9 +1853,11 @@ class Orchestrator:
                 )],
                 confidence_score=0.0,
                 confidence_summary="composer 호출 실패. 사실 자료만 표시.",
+                degraded=True,
+                degradation_reason=_fail_reason,
             )
             self.telemetry.record_llm_skip(
-                "unified_composer", "failed → minimal fallback",
+                "unified_composer", f"failed → minimal fallback ({_fail_reason})",
             )
 
         # v5.2.0+ — 시계열 차트 안전망 (composer LLM 이 available_time_series 무시
@@ -1977,6 +1989,11 @@ class Orchestrator:
         except Exception as _e:  # pragma: no cover  — 폴백 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _ensure_broadcast_summary skipped: %s", _e)
 
+        # v8.2.4 — critic 루프가 composed_report 를 교체(loop_result.report)할 수 있어
+        # degraded 플래그가 유실될 수 있다. 루프 전 상태를 잡아 뒤에서 복원 (WRITE-AP-25).
+        _was_degraded = bool(getattr(result.composed_report, "degraded", False))
+        _degraded_reason = getattr(result.composed_report, "degradation_reason", "")
+
         v6_loop_result = None  # Phase V6-7/c — 렌더 후 report_id 태깅 요약 로그용
         # -- Phase 2.5 (V6): Codex fact-critic 루프 (opt-in, flag OFF = byte-equal) --
         # Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1). 외부 degrade /
@@ -2060,6 +2077,13 @@ class Orchestrator:
             self.narrative_composer._sanitize_symbols(result.composed_report)
         except Exception as _e:  # pragma: no cover  — 정화 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _sanitize_symbols skipped: %s", _e)
+
+        # v8.2.4 — critic 루프가 보고서를 교체했어도 degraded 상태는 유지 (WRITE-AP-25).
+        if _was_degraded and result.composed_report is not None and not result.composed_report.degraded:
+            result.composed_report.degraded = True
+            result.composed_report.degradation_reason = (
+                result.composed_report.degradation_reason or _degraded_reason
+            )
 
         n_sections = len(result.composed_report.sections)
         n_signals = len(result.composed_report.watch_signals)

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.9.6
+last_synced_with: v8.2.4
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -592,6 +592,43 @@ SSOT: [REPORT_STYLE_GUIDE.md §0.1](REPORT_STYLE_GUIDE.md) (1-예외) + [tts_nar
 발행본은 `scripts/patch_report.py --replace "딥시크=DeepSeek"…` + `--add-footnote`(opt-in
 용어 풀이)로 핫픽스(LLM 0, narration_tts 미변경 — `patch_replace_terms` 가 video 필드는
 건드리지 않아 음성 발음 그대로 보존).
+
+## WRITE-AP-25: 편집장 실패로 떨어진 1-섹션 폴백/절단본을 정상 완료로 무경고 발행 (v8.2.4 신설, 사용자 catch)
+
+**증상**: 보고서가 "자꾸 생성되다 만다". 발행 URL 은 멀쩡히 살아있고 제목·부제·요약·
+SNS 요약까지 채워져 정상처럼 보이는데, 본문은 `요약` 섹션 1개뿐이고 분석·차트·모순·
+감시신호가 통째로 비어 있다. 텔레그램엔 "✅ 분석 완료 (소요시간: N초)" + 정상 링크가
+가서, **사용자가 보고서를 열어봐야만** 미완성을 알게 된다. 2026-06-25 마이크론 deep
+보고서 2건(`analysis_20260625_081213` / `…_061939`)이 동일 증상 — 같은 주제로 2시간
+간격 두 번 모두.
+
+**원인**: ① **편집장(NarrativeComposer) 호출이 deep 타임아웃(900s)에 걸려 죽음.** 두
+보고서 total 1666s/1517s. `claude -p --output-format text` 는 완료 전까지 stdout 에
+스트리밍하지 않아, 타임아웃 kill 시점 임시파일이 비어 **살릴 부분 출력이 없음** →
+`compose_unified` 가 `None` 반환. ② orchestrator 가 None 을 받으면 `context.summary`
+기반 **1-섹션 minimal fallback** 을 만들어 *그대로 렌더·배포*. ③ 이 폴백이 구조적으로
+"실패"임을 알리는 신호가 **confidence_summary 한 줄(본문 깊숙이 묻힘)** 뿐 — 텔레그램
+완료 메시지·보고서 헤더 어디에도 미완성 표시가 없었다. deep 가 v5.8.2 부터 *기본 모드*
+라, 무겁고 긴 주제(재무제표·현금흐름 등)는 매번 이 경로로 떨어졌다. ④ 실패 *원인* 도
+`logger.warning` 으로만 삼켜져 운영자조차 왜 실패했는지 알기 어려웠다.
+
+**Fix (v8.2.4 — 다층 재발방지)**:
+1. **구조적 열화 플래그** — `ComposedReport.degraded: bool` + `degradation_reason: str`
+   ([models.py](../src/models.py)). minimal fallback(orchestrator) / 타임아웃 부분 살림 /
+   절단 JSON 복구 / head-loss 복구 *모든* 경로가 `degraded=True` + 사람-읽기 사유 세팅.
+2. **실패 원인 표면화** — `NarrativeComposer._last_failure_reason` 가 타임아웃/파싱불가/
+   예외 사유를 한 줄로 적립 → orchestrator 가 minimal fallback 의 `degradation_reason`
+   으로 노출. critic 루프가 보고서를 교체해도 플래그 보존.
+3. **텔레그램 무경고 금지** — 열화면 "✅ 분석 완료" 대신 **"⚠️ 보고서가 끝까지 생성되지
+   못했습니다 — <사유>. … 다시 요청하거나 '짧게' 로 재시도"** 송신 + 링크 머리표 `⚠️ 미완성`.
+4. **보고서 헤더 배너** — `freeform_essay.html` / `reportage.html` 가 `composed.degraded`
+   면 붉은 경고 배너 렌더. URL 을 여는 누구나 미완성을 인지.
+5. **원인 완화** — deep CLI 타임아웃 900→1500s 상향. 무겁고 긴 deep 보고서가 한도 안에
+   완결되도록. (스트리밍 살림은 후속 — `--output-format stream-json` 전환 검토.)
+
+회귀: [tests/regression/test_degraded_report.py](../tests/regression/test_degraded_report.py)
+(절단 복구·head-loss·정상 응답의 degraded 플래그 고정). 운영 주의: 텔레그램에서 ⚠️ 가
+뜨면 재시도, 또 뜨면 '짧게' 를 붙이거나 주제를 나눠 요청한다.
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)

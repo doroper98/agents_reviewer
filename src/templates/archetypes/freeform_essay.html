@@ -239,6 +239,13 @@
       {% if result.context and result.context.date %}<span>{{ result.context.date }}</span>{% endif %}
       <span>{{ generated_at }}</span>
     </div>
+    {# v8.2.4 — 생성 중단/열화 배너 (WRITE-AP-25). 편집장 실패로 minimal fallback 이
+       나갔거나 타임아웃 부분 살림본일 때만. 정상 보고서엔 안 뜸. #}
+    {% if composed and composed.degraded %}
+    <div class="freeform-degraded-banner" role="alert" style="margin-top:14px;padding:12px 16px;border:1px solid #c0392b;border-radius:6px;background:rgba(192,57,43,0.08);color:var(--text,#1a1a1a);font-size:0.95rem;line-height:1.5">
+      ⚠️ 이 보고서는 생성이 끝까지 완료되지 못해 <strong>일부 내용만</strong> 담고 있습니다{% if composed.degradation_reason %} — {{ composed.degradation_reason | strip_md }}{% endif %}. 같은 주제로 다시 생성하시길 권합니다.
+    </div>
+    {% endif %}
     {# v5.8.0 — 후속 보고서: '이 분석의 출발점' (원 보고서). 서두 — 독자가 본문을
        읽기 전 맥락을 먼저 잡게. parent_context 있을 때만. 제목 없으면 report_id 폴백. #}
     {% if result.parent_context and not is_reportage %}
