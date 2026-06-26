@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>옵션 스큐 2단 차트 모크업 (v8.2.5)</title>
+<style>
+  :root{ --bg:#14161c; --card:#1b1e26; --text:#e8e6e0; --muted:#9aa0aa; --accent:#c9a84c; --border:#2a2e39; --down:#C45C4C; }
+  body{ background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; margin:0; padding:28px; }
+  h1{ font-size:19px; font-weight:700; margin:0 0 4px; }
+  .desc{ color:var(--muted); font-size:13px; margin:0 0 22px; max-width:780px; line-height:1.6; }
+  .hint{ color:var(--accent); font-size:12px; margin:0 0 22px; }
+  .chart-card{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px 18px; max-width:840px; }
+  .chart-card-title{ font-size:13px; font-weight:700; letter-spacing:.02em; }
+  .chart-card-subtitle{ font-size:12px; color:var(--muted); font-style:italic; margin-top:3px; line-height:1.5; }
+  .chart-card-stage{ margin-top:12px; }
+  .chart-card-stage svg{ width:100%; height:auto; }
+  .chart-card-source{ font-size:11px; color:#7e8490; margin-top:10px; }
+  .chart-card-source-label{ color:var(--muted); }
+  .chart-card-note{ font-size:12px; color:#aeb4be; margin-top:12px; line-height:1.65; border-top:1px solid var(--border); padding-top:9px; }
+</style>
+</head>
+<body>
+<h1>옵션 스큐 차트 — 2단 개편 모크업 (v8.2.5)</h1>
+<p class="desc">production <code>charts.js</code> 의 <code>drawIvSkew</code> 가 실제로 렌더하는 결과입니다.
+상단 = 행사가별 <b>옵션 가격(프리미엄)</b>, 하단 = 같은 행사가의 <b>IV 스큐</b>. 두 패널이 행사가 x축을 공유합니다.</p>
+<p class="hint">▶ 우상단 날짜 <b>◀ ▶</b> 화살표를 눌러 4영업일(06-12 ~ 06-17)을 하루씩 넘겨보세요. 선 위 동그란 점 표식은 제거됐습니다.</p>
+<div class="chart-card">
+  <div class="chart-card-title">행사가별 옵션 가격·내재변동성(IV) — KOSPI200 2026년 7월물</div>
+  <div class="chart-card-subtitle">2026년 7월물 — 상단 옵션 가격(프리미엄) · 하단 IV 스큐. 날짜 화살표(◀ ▶)로 최근 4영업일을 하루씩 (같은 월물끼리만)</div>
+  <div class="chart-card-stage chart-stage-iv_skew" data-chart-type="iv_skew" data-chart-id="mock-0"><svg></svg></div>
+  <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 합성 데이터(모크업) — 실제 브리핑은 KRX 종가에서 산출</div>
+  <div class="chart-card-note">위 패널은 행사가별 옵션 가격(프리미엄), 아래 패널은 내재변동성(IV) 스큐다. 두 패널은 같은 행사가 축을 공유하고, 우상단 날짜 화살표(◀ ▶)로 하루씩 옮겨 본다. 점선 가로 기준선은 등가격(ATM) 옵션의 IV다. 외가격 풋(왼쪽 파란 곡선)이 기준선 위로 솟는 스큐가 보인다.</div>
+  <script type="application/json" class="chart-payload-inline">{"type":"iv_skew","title":"행사가별 옵션 가격·내재변동성(IV) — KOSPI200 2026년 7월물","subtitle":"2026년 7월물 — 상단 옵션 가격(프리미엄) · 하단 IV 스큐. 날짜 화살표(◀ ▶)로 최근 4영업일을 하루씩 (같은 월물끼리만)","x_label":"행사가","atm_iv":69.3,"note":"위 패널은 행사가별 옵션 가격(프리미엄), 아래 패널은 내재변동성(IV) 스큐다. 두 패널은 같은 행사가 축을 공유하고, 우상단 날짜 화살표(◀ ▶)로 하루씩 옮겨 본다. 점선 가로 기준선은 등가격(ATM) 옵션의 IV다. 외가격 풋(왼쪽 파란 곡선)이 기준선 위로 솟는 스큐가 보인다.","source":"합성 데이터(모크업) — 실제 브리핑은 KRX 종가에서 산출","data":[{"strike":1150,"iv":85.3,"type":"put","date":"2026-06-12","premium":12.2},{"strike":1200,"iv":82.3,"type":"put","date":"2026-06-12","premium":14.37},{"strike":1250,"iv":79.3,"type":"put","date":"2026-06-12","premium":16.41},{"strike":1300,"iv":76.3,"type":"put","date":"2026-06-12","premium":18.14},{"strike":1350,"iv":73.3,"type":"put","date":"2026-06-12","premium":19.37},{"strike":1400,"iv":70.3,"type":"put","date":"2026-06-12","premium":19.96},{"strike":1400,"iv":69.7,"type":"call","date":"2026-06-12","premium":28.46},{"strike":1450,"iv":70.4,"type":"call","date":"2026-06-12","premium":19.84},{"strike":1500,"iv":72,"type":"call","date":"2026-06-12","premium":19.04},{"strike":1550,"iv":73.7,"type":"call","date":"2026-06-12","premium":17.63},{"strike":1600,"iv":75.3,"type":"call","date":"2026-06-12","premium":15.78},{"strike":1650,"iv":77,"type":"call","date":"2026-06-12","premium":13.68},{"strike":1150,"iv":86.6,"type":"put","date":"2026-06-15","premium":12.6},{"strike":1200,"iv":83.4,"type":"put","date":"2026-06-15","premium":14.77},{"strike":1250,"iv":80.2,"type":"put","date":"2026-06-15","premium":16.81},{"strike":1300,"iv":77,"type":"put","date":"2026-06-15","premium":18.54},{"strike":1350,"iv":73.9,"type":"put","date":"2026-06-15","premium":19.77},{"strike":1400,"iv":70.7,"type":"put","date":"2026-06-15","premium":20.36},{"strike":1400,"iv":70,"type":"call","date":"2026-06-15","premium":28.86},{"strike":1450,"iv":70.8,"type":"call","date":"2026-06-15","premium":20.24},{"strike":1500,"iv":72.5,"type":"call","date":"2026-06-15","premium":19.44},{"strike":1550,"iv":74.2,"type":"call","date":"2026-06-15","premium":18.03},{"strike":1600,"iv":76,"type":"call","date":"2026-06-15","premium":16.18},{"strike":1650,"iv":77.7,"type":"call","date":"2026-06-15","premium":14.08},{"strike":1150,"iv":87.8,"type":"put","date":"2026-06-16","premium":13},{"strike":1200,"iv":84.4,"type":"put","date":"2026-06-16","premium":15.17},{"strike":1250,"iv":81.1,"type":"put","date":"2026-06-16","premium":17.21},{"strike":1300,"iv":77.7,"type":"put","date":"2026-06-16","premium":18.94},{"strike":1350,"iv":74.4,"type":"put","date":"2026-06-16","premium":20.17},{"strike":1400,"iv":71,"type":"put","date":"2026-06-16","premium":20.76},{"strike":1400,"iv":70.3,"type":"call","date":"2026-06-16","premium":29.26},{"strike":1450,"iv":71.1,"type":"call","date":"2026-06-16","premium":20.64},{"strike":1500,"iv":73,"type":"call","date":"2026-06-16","premium":19.84},{"strike":1550,"iv":74.8,"type":"call","date":"2026-06-16","premium":18.43},{"strike":1600,"iv":76.6,"type":"call","date":"2026-06-16","premium":16.58},{"strike":1650,"iv":78.5,"type":"call","date":"2026-06-16","premium":14.48},{"strike":1150,"iv":89,"type":"put","date":"2026-06-17","premium":13.4},{"strike":1200,"iv":85.5,"type":"put","date":"2026-06-17","premium":15.57},{"strike":1250,"iv":82,"type":"put","date":"2026-06-17","premium":17.61},{"strike":1300,"iv":78.5,"type":"put","date":"2026-06-17","premium":19.34},{"strike":1350,"iv":74.9,"type":"put","date":"2026-06-17","premium":20.57},{"strike":1400,"iv":71.4,"type":"put","date":"2026-06-17","premium":21.16},{"strike":1400,"iv":70.6,"type":"call","date":"2026-06-17","premium":29.66},{"strike":1450,"iv":71.5,"type":"call","date":"2026-06-17","premium":21.04},{"strike":1500,"iv":73.4,"type":"call","date":"2026-06-17","premium":20.24},{"strike":1550,"iv":75.4,"type":"call","date":"2026-06-17","premium":18.83},{"strike":1600,"iv":77.3,"type":"call","date":"2026-06-17","premium":16.98},{"strike":1650,"iv":79.2,"type":"call","date":"2026-06-17","premium":14.88}]}</script>
+</div>
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script src="../src/templates/static/charts.js"></script>
+</body>
+</html>
