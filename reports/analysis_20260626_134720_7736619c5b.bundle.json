@@ -1,0 +1,509 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-06-26T13:47:20.081583+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v8.2.4",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260626_134720_7736619c5b",
+    "headline": "칩값은 멈추지 않는다, 떠받친 증시가 흔들린다",
+    "deck": "AI가 삼킨 메모리, 값이 부르는 연쇄 충격.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260626_134720_7736619c5b.html",
+    "theme": {
+      "id": "reportage_laurel",
+      "tokens": {
+        "bg": "#0D3A35",
+        "card": "#164640",
+        "border": "#27534A",
+        "text": "#FBF6F0",
+        "muted": "#9CB5AC",
+        "accent": "#86C0A4",
+        "up": "#86C0A4",
+        "down": "#E2937A"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": {
+      "intro_narration": [
+        "멈출 줄 모르는 칩값이 거대한 사이클을 깨웠습니다.",
+        "그 끝에서 무슨 일이 벌어지는지, 지금부터 따라가 봅니다."
+      ],
+      "outro_narration": [
+        "값은 여전히 오르고, 증시는 출렁입니다.",
+        "이 사이클이 어디서 멈출지, 시장은 아직 답을 모릅니다."
+      ],
+      "intro_narration_tts": [],
+      "outro_narration_tts": []
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "AI가 삼킨 메모리, 가격의 불씨",
+      "kicker": "",
+      "prose": "지난해 12월 24일, 시장조사업체 트렌드포스가 한 줄을 전한다. 삼성전자와 SK하이닉스가 2026년 HBM 공급가를 20% 올린다는 소식이다. 평범한 가격 인상처럼 보이던 이 한 줄은, 반년 뒤 코스피를 9,000까지 밀어올렸다 흔든 거대한 사이클을 알린 초기 신호 가운데 하나로 읽힌다. 불씨는 AI 가속기다. 엔비디아 베라 루빈, AMD MI400, 구글 TPU, AWS Trainium까지, 올해 쏟아지는 AI 칩은 하나같이 HBM을 끌어안는다. 가속기 한 장이 HBM을 8개에서 12개씩 삼키니, 수요는 칩의 숫자가 아니라 곱셈으로 불어난다. 가격은 곧장 반응한다. 올해 1분기 D램 계약가는 직전 분기보다 90~95% 뛰었다. 트렌드포스 집계로 사상 최대 단일 분기 상승폭이다. 2분기에는 낸드가 70~75%로 D램을 앞질렀다. 메모리 사이클에서 낸드가 D램의 상승률을 추월한 건 이번이 처음이다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "지난해 12월, 칩값을 20% 올린다는 짧은 소식이 전해집니다.",
+          "평범해 보이던 이 한 줄이 거대한 가격 사이클의 첫 단추였습니다.",
+          "AI 가속기 한 장이 HBM을 열 개 넘게 삼키면서, 수요가 곱셈으로 불어납니다.",
+          "그 결과 1분기 D램 값은 석 달 만에 90%가 넘게 뛰었습니다."
+        ],
+        "highlights": [
+          "1분기 D램 계약가 +90~95%",
+          "낸드가 처음 D램을 추월"
+        ],
+        "emphasis": [
+          "20%",
+          "90%",
+          "HBM"
+        ],
+        "narration_tts": [
+          "지난해 십이월, 칩값을 이십 퍼센트 올린다는 짧은 소식이 전해집니다.",
+          "평범해 보이던 이 한 줄이 거대한 가격 사이클의 첫 단추였습니다.",
+          "에이아이 가속기 한 장이 에이치비엠을 열 개 넘게 삼키면서, 수요가 곱셈으로 불어납니다.",
+          "그 결과 일분기 디램 값은 석 달 만에 구십 퍼센트가 넘게 뛰었습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s2",
+      "heading": "줄 선 자와 떠받치는 자",
+      "kicker": "",
+      "prose": "이 사이클을 움직이는 사람들은 크게 세 무리로 갈린다. 칩을 사려고 줄을 선 쪽, 그 칩을 손에 쥔 쪽, 그리고 오른 값을 고스란히 떠안는 쪽이다. 줄을 선 쪽은 AI 가속기를 만드는 기업들이다. 엔비디아 베라 루빈, AMD MI400, 구글 TPU, AWS Trainium은 모두 HBM 없이는 굴러가지 않는다. 이들은 값을 깎는 협상가가 아니라, 물량을 먼저 확보하려는 구애자에 가깝다. 가운데에는 SK하이닉스와 삼성전자, 그리고 마이크론이 있다. 특히 SK하이닉스는 올해 1분기 영업이익률 71.8%라는 극단적 숫자를 찍었다. 수주잔고가 3년치를 넘어서며, 값을 부르는 힘이 사는 쪽이 아니라 파는 쪽으로 완전히 넘어갔다. 반대편 끝에는 PC와 스마트폰 제조사, 그리고 그 너머의 소비자가 있다. 메모리는 중급 스마트폰 부품 원가의 15~20%를 차지한다. 위에서 오른 값은 결국 이 끝단의 호주머니로 흘러내린다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "이 사이클에는 세 무리의 사람들이 얽혀 있습니다.",
+          "한쪽에는 칩을 사겠다고 줄을 선 엔비디아와 AMD, 구글이 있습니다.",
+          "가운데에는 그 칩을 쥔 SK하이닉스와 삼성전자가 섰습니다.",
+          "반대편에는 값을 떠안는 PC와 스마트폰 제조사, 그리고 소비자가 있습니다."
+        ],
+        "highlights": [
+          "SK하이닉스 영업이익률 71.8%",
+          "공급을 쥔 한국 양강"
+        ],
+        "emphasis": [
+          "엔비디아",
+          "SK하이닉스",
+          "71.8%"
+        ],
+        "narration_tts": [
+          "이 사이클에는 세 무리의 사람들이 얽혀 있습니다.",
+          "한쪽에는 칩을 사겠다고 줄을 선 엔비디아와 에이엠디, 구글이 있습니다.",
+          "가운데에는 그 칩을 쥔 에스케이하이닉스와 삼성전자가 섰습니다.",
+          "반대편에는 값을 떠안는 피씨와 스마트폰 제조사, 그리고 소비자가 있습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s3",
+      "heading": "끝이 안 보이는 이유, 빚어진 희소성",
+      "kicker": "",
+      "prose": "값이 왜 끝을 모르고 오르는가. 표면의 수요만으로는 설명이 부족하다. 세 가지 사실을 겹쳐 놓으면 다른 그림이 보인다. 첫째, 2026년 HBM 생산능력은 장기 공급계약으로 100% 사전 매진됐다. 그때그때 사고파는 현물 시장이 사실상 사라졌다는 뜻이다. 둘째, 삼성과 SK하이닉스, 마이크론 세 회사는 2017년 호황 때와 달리 설비 투자를 절제한다. 삼성의 올해 capex 증가율은 약 11%로, 2017년의 50%에 한참 못 미친다. 셋째, HBM을 만들려고 웨이퍼를 돌리니 일반 D램 공급까지 함께 줄었다. DDR4가 모자라자 한 세대 낡은 DDR3까지 품귀가 번진다. 올해 만들어지는 메모리의 약 70%가 데이터센터로 빨려 들어가고, 컨슈머를 비롯한 나머지 비데이터센터 수요는 남은 물량을 두고 다툰다. 세 점을 이으면 한 가지 가설이 떠오른다. 공급을 일부러 죄어 호황을 길게 늘이는, 의도된 희소성이다. 이는 확인된 담합이 아니라 정황을 잇는 추론이다. 다만 세 회사가 같은 시기에 같은 절제를 택했다는 사실은, 우연이라기엔 결이 너무 맞아떨어진다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-2"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "값이 왜 끝없이 오르는지, 그 안을 들여다봅니다.",
+          "올해 HBM 생산량은 장기 계약으로 이미 100% 팔렸습니다.",
+          "세 회사가 설비 투자를 아끼면서, 모자란 공급이 더 오래갑니다.",
+          "올해 만들어지는 메모리의 70%가 데이터센터로 빨려 들어갑니다."
+        ],
+        "highlights": [
+          "2026 HBM 캐파 100% 선매진",
+          "메모리 70%가 데이터센터로"
+        ],
+        "emphasis": [
+          "100%",
+          "70%",
+          "데이터센터"
+        ],
+        "narration_tts": [
+          "값이 왜 끝없이 오르는지, 그 안을 들여다봅니다.",
+          "올해 에이치비엠 생산량은 장기 계약으로 이미 백 퍼센트 팔렸습니다.",
+          "세 회사가 설비 투자를 아끼면서, 모자란 공급이 더 오래갑니다.",
+          "올해 만들어지는 메모리의 칠십 퍼센트가 데이터센터로 빨려 들어갑니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s4",
+      "heading": "9,000의 환호, 그리고 흔들린 한 주",
+      "kicker": "",
+      "prose": "열기는 곧 증시로 옮겨붙었다. 코스피는 지난 5월 8,000을 처음 넘더니, 이달 18일 장중 9,021을 찍고 종가로도 9,000을 돌파한다. 반도체 양강이 지수를 끌어올렸고, SK하이닉스 시가총액은 한때 삼성전자를 앞질렀다. 환호는 오래가지 못했다. 사흘 전인 23일 화요일, 코스피는 하루에 9.99% 무너지는 검은 화요일을 맞는다. 8,203으로 주저앉은 지수는 이튿날인 24일 3.26% 반등해 8,471을 되찾았고, 25일에도 올라 사이클이 살아 있다는 신호를 보냈다. 그러나 반등은 길지 않았다. 오늘 26일, 코스피는 다시 7.54% 급락해 8,257로 내려앉았다. SK하이닉스는 263만 원, 삼성전자는 327,500원으로 밀렸다. 원/달러 환율은 1,545원 부근에서 높은 수위를 유지한다. 떠받치던 두 거인이 흔들리자 지수 전체가 출렁인다. 값의 충격은 증시에만 머물지 않는다. PC 제조사들은 하반기 계약가를 15~20% 올리겠다고 통보했고, 스마트폰 평균가는 올해 14% 오를 전망이다. 부품값이 원가를 밀어 올리고, 그 원가가 다시 물가를 자극하는 통로가 열린 셈이다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-3"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "환호는 오래가지 못합니다.",
+          "이달 18일 코스피는 9,000을 처음 넘어섰습니다.",
+          "하지만 그제 검은 화요일에 10% 가까이 무너졌습니다.",
+          "어제 반등하던 지수는 오늘 다시 7%대로 밀려 8,257에 멈춰 섭니다."
+        ],
+        "highlights": [
+          "6/18 코스피 9,000 첫 돌파",
+          "사흘 만에 환호가 공포로"
+        ],
+        "emphasis": [
+          "9,000",
+          "8,257"
+        ],
+        "narration_tts": [
+          "환호는 오래가지 못합니다.",
+          "이달 십팔일 코스피는 구천을 처음 넘어섰습니다.",
+          "하지만 그제 검은 화요일에 십 퍼센트 가까이 무너졌습니다.",
+          "어제 반등하던 지수는 오늘 다시 칠 퍼센트대로 밀려 팔천이백오십칠에 멈춰 섭니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s5",
+      "heading": "정점은 어디인가",
+      "kicker": "",
+      "prose": "그렇다면 이 사이클의 정점은 어디인가. 다수의 전망은 2027년 4분기 이전에는 꼭짓점에 닿지 않는다고 본다. 2025년부터 2027년까지 D램 누적 상승률이 275~300%에 이를 것이라는 추정도 나온다. 2017년 슈퍼사이클의 상승폭이 90% 안팎이었던 것과 견주면, 폭도 기간도 차원이 다르다. 근거는 다시 공급 규율로 돌아온다. 세 회사가 설비를 늘리지 않는 한, 모자란 공급은 값을 떠받친다. 호황을 끝내는 가장 확실한 방아쇠는 과잉 투자인데, 이번 사이클의 주인공들은 그 방아쇠에 좀처럼 손을 대지 않는다. 그러나 오늘의 급락은 다른 가능성을 일러준다. 값이 오를수록 컨슈머 수요가 무너지고, 비싼 칩을 감당 못 한 수요가 먼저 꺾일 수 있다. 1년 새 10배 넘게 오른 SK하이닉스 주가에는 이미 많은 기대가 실려 있다. 기대가 과하면, 작은 실망에도 무게는 한쪽으로 쏠린다. 끝을 모르고 오르던 값이 멈추는 순간, 가장 크게 흔들리는 건 가장 높이 떠받쳐졌던 쪽이다. 칩값의 사다리를 타고 오른 한국 증시는, 그 사다리가 흔들릴 때 어디에 서 있을지 아직 알지 못한다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "그렇다면 이 사이클의 정점은 어디일까요.",
+          "다수의 전망은 2027년 4분기 전에는 꺾이지 않는다고 봅니다.",
+          "공급을 죄는 규율이 호황을 길게 늘이고 있기 때문입니다.",
+          "다만 오늘의 급락은 환호가 한순간에 뒤집힐 수 있음을 보여줍니다."
+        ],
+        "highlights": [
+          "정점은 2027년 4분기 이후로",
+          "규율이 만든 긴 호황"
+        ],
+        "emphasis": [
+          "2027년 4분기",
+          "규율"
+        ],
+        "narration_tts": [
+          "그렇다면 이 사이클의 정점은 어디일까요.",
+          "다수의 전망은 이천이십칠년 사분기 전에는 꺾이지 않는다고 봅니다.",
+          "공급을 죄는 규율이 호황을 길게 늘이고 있기 때문입니다.",
+          "다만 오늘의 급락은 환호가 한순간에 뒤집힐 수 있음을 보여줍니다."
+        ]
+      }
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "bar",
+      "title": "분기별 메모리 계약가 상승률",
+      "data": [
+        {
+          "label": "D램 1분기",
+          "value": 92.5,
+          "note": "+90~95%"
+        },
+        {
+          "label": "D램 2분기",
+          "value": 60.5,
+          "note": "+58~63%"
+        },
+        {
+          "label": "낸드 2분기",
+          "value": 72.5,
+          "note": "+70~75%"
+        }
+      ],
+      "note": "",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "dot_matrix",
+      "title": "2026년 메모리, 누구에게 가나",
+      "data": [
+        {
+          "label": "AI 데이터센터",
+          "value": 70,
+          "accent": true
+        },
+        {
+          "label": "PC·스마트폰 등 컨슈머",
+          "value": 30
+        }
+      ],
+      "note": "",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-3",
+      "type": "line",
+      "title": "코스피, 환호와 공포의 사흘",
+      "data": [
+        {
+          "x": "2026-06-18",
+          "y": 9063.83984375,
+          "event": "9,000 첫 돌파"
+        },
+        {
+          "x": "2026-06-19",
+          "y": 9052.419921875
+        },
+        {
+          "x": "2026-06-22",
+          "y": 9114.5498046875
+        },
+        {
+          "x": "2026-06-23",
+          "y": 8203.83984375
+        },
+        {
+          "x": "2026-06-24",
+          "y": 8471.01953125,
+          "event": "검은 화요일 -9.99%"
+        },
+        {
+          "x": "2026-06-25",
+          "y": 8930.2998046875,
+          "event": "하루 만에 반등"
+        },
+        {
+          "x": "2026-06-26",
+          "y": 8257.1396484375,
+          "event": "다시 7%대 급락"
+        }
+      ],
+      "note": "",
+      "display": "full",
+      "provenance": {
+        "origin": "measured",
+        "verification": "confirmed",
+        "confidence": "high",
+        "sources": [
+          {
+            "source_id": "mkt-3",
+            "provider": "YAHOO",
+            "code": "^KS11",
+            "unit": "",
+            "fetched_at": "2026-06-26",
+            "url": ""
+          }
+        ]
+      },
+      "prerendered_svg": null
+    }
+  ],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [
+    {
+      "side_a": "장기 공급계약으로 물량이 매진되고 세 회사가 투자를 절제하는 한, 이 호황은 2027년까지 이어진다.",
+      "side_b": "값이 오를수록 소비자 수요가 무너지고, 1년 새 10배 오른 주가에 실린 기대가 작은 실망에도 무너질 수 있다.",
+      "evidence": "공급 측 규율은 가격을 떠받치지만, 오늘 코스피 7%대 급락과 24일 검은 화요일은 수요와 심리의 취약함을 동시에 드러낸다.",
+      "resolution": "공급 구조만 보면 사이클 지속론에 무게가 실린다. 정점이 2027년 이전에 오기 어렵다는 다수설도 이를 뒷받침한다. 다만 경계론은 수요가 가격을 못 따라가거나 과열 심리가 풀리는 순간 되살아난다. 오늘의 급락은 그 균열이 이미 시작됐을 수 있음을 시사한다.",
+      "video": {
+        "label_a": "지속론",
+        "label_b": "경계론",
+        "line_a": "공급 규율이 호황을 2027년까지 끌고 갑니다.",
+        "line_b": "오늘의 급락은 거품의 신호일 수 있습니다.",
+        "narration": [
+          "한쪽은 모자란 공급이 호황을 더 끌고 간다고 봅니다.",
+          "다른 쪽은 오늘의 급락이 거품의 경고라고 읽습니다.",
+          "두 시선은 같은 숫자를 정반대로 해석합니다."
+        ],
+        "narration_tts": [
+          "한쪽은 모자란 공급이 호황을 더 끌고 간다고 봅니다.",
+          "다른 쪽은 오늘의 급락이 거품의 경고라고 읽습니다.",
+          "두 시선은 같은 숫자를 정반대로 해석합니다."
+        ]
+      }
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "TrendForce — Q2 2026 Contract Price Forecast (2026-03-31) https://www.trendforce.com/presscenter/news/20260331-12995.html",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-2",
+      "url": "TrendForce — Memory Spot Price Update (2026-06-10) https://www.trendforce.com/news/2026/06/10/insights-memory-spot-price-update-ddr5-spot-momentum-continues-as-ddr4-tightness-spills-over-to-ddr3/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-3",
+      "url": "TrendForce — Samsung/SK Hynix HBM3E 20% Price Hike (2025-12-24) https://www.trendforce.com/news/2025/12/24/news-samsung-sk-hynix-reportedly-plan-20-hbm3e-price-hike-for-2026-as-nvidia-h200-asic-demand-rises/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-4",
+      "url": "TrendForce — Samsung HBM4 Shipments to NVIDIA/AMD (2026-01-26) https://www.trendforce.com/news/2026/01/26/news-samsung-reportedly-set-to-begin-official-hbm4-shipments-to-nvidia-and-amd-in-february/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-5",
+      "url": "Bloomberg — Samsung Nears NVIDIA HBM4 Approval (2026-01-26) https://www.bloomberg.com/news/articles/2026-01-26/samsung-nears-nvidia-s-approval-for-key-hbm4-ai-memory-chips",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-6",
+      "url": "KED Global — KOSPI Surpasses 9,000 (2026-06-18) https://www.kedglobal.com/korean-stock-market/newsView/ked202606180003",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-7",
+      "url": "KED Global — Chip Rally Lifts KOSPI (2026-06-25) https://www.kedglobal.com/korean-stock-market/newsView/ked202606250008",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-8",
+      "url": "TechTimes — Memory Shortage $3T Market Impact (2026-05-27) https://www.techtimes.com/articles/317269/20260527/memory-chip-shortage-hits-3-trillion-market-value-smartphones-cost-14-more-2026.htm",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-9",
+      "url": "Tom's Hardware — Data Centers 70% of Memory in 2026 https://www.tomshardware.com/pc-components/ram/data-centers-will-consume-70-percent-of-memory-chips-made-in-2026-supply-shortfall-will-cause-the-chip-shortage-to-spread-to-other-segments",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-10",
+      "url": "Counterpoint — Memory Price Tracker (Jan 2026) https://counterpointresearch.com/en/insights/memory-price-tracker-january-2026",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-11",
+      "url": "IDC — Global Memory Shortage Crisis https://www.idc.com/resource-center/blog/global-memory-shortage-crisis-market-analysis-and-the-potential-impact-on-the-smartphone-and-pc-markets-in-2026/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    },
+    {
+      "source_id": "src-12",
+      "url": "Blocks & Files — Memory Supercycle Through 2028 https://www.blocksandfiles.com/ai-ml/2026/01/21/memory-semiconductor-supercycle-set-to-run-through-2028/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-26"
+    }
+  ],
+  "confidence": {
+    "score": 0.3,
+    "summary": ""
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2025-12-24",
+        "label": "TrendForce, 삼성·SK하이닉스 2026년 HBM3E 공급가 20% 인상 보도",
+        "phase": "past",
+        "note": "엔비디아 H200·ASIC 수요 폭증을 가격에 전가 시작"
+      },
+      {
+        "date": "2026-03-31",
+        "label": "TrendForce, Q2 2026 DRAM +58~63% QoQ / NAND +70~75% QoQ 전망",
+        "phase": "past",
+        "note": "NAND가 DRAM 상승률 추월 — 사이클 첫 사례"
+      },
+      {
+        "date": "2026-05-27",
+        "label": "TechTimes, 메모리 부족이 글로벌 시총 3조 달러 변동 야기 보도",
+        "phase": "past",
+        "note": "가격 충격이 IT산업 전체 가치사슬 재평가로 확산"
+      },
+      {
+        "date": "2026-06-02",
+        "label": "엔비디아 베라 루빈 본격 양산, 한국·미국 3사 HBM4 인증 완료 공식화",
+        "phase": "past",
+        "note": "Q3부터 출하 — 하반기 가격 추가 인상 압력"
+      },
+      {
+        "date": "2026-06-18",
+        "label": "코스피 장중 9,021.34 / 종가 9,000대 첫 돌파",
+        "phase": "past",
+        "note": "반도체 양강 주도, SK하이닉스 시총 한때 삼성 추월"
+      },
+      {
+        "date": "2026-06-24",
+        "label": "코스피 '검은 화요일' -9.99%, 8,204 마감",
+        "phase": "past",
+        "note": "급등 후 차익실현·과열 우려 일시 분출"
+      },
+      {
+        "date": "2026-06-25",
+        "label": "코스피 +3.26% 반등, 8,471 마감. SK하이닉스 +13.06% (₩2,917,000), 삼성전자 ₩340,500",
+        "phase": "past",
+        "note": "가격 사이클 지속 신뢰 회복"
+      },
+      {
+        "date": "2026-06-26",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      }
+    ],
+    "video": null
+  }
+}
