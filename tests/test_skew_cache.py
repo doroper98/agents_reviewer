@@ -49,3 +49,19 @@ def test_recent_unknown_expiry_graceful():
 def test_store_empty_graceful():
     path = os.path.join(tempfile.mkdtemp(), "iv.sqlite")
     assert store_skew(path, "2026-06-17", "202607", []) is False
+
+
+def test_premium_roundtrip_and_legacy_null():
+    """v8.2.5 — premium 컬럼 저장/조회 + 미적재(구 캐시)분은 None."""
+    path = os.path.join(tempfile.mkdtemp(), "iv.sqlite")
+    # premium 있는 점 + 없는 점
+    store_skew(path, "2026-06-17", "202607", [
+        {"strike": 350.0, "iv": 70.0, "type": "put", "premium": 12.5},
+        {"strike": 355.0, "iv": 68.0, "type": "call"},  # premium 누락
+    ])
+    hist = recent_skew(path, "202607", 10, "2026-06-17")
+    assert all("premium" in h for h in hist)
+    put = next(h for h in hist if h["type"] == "put")
+    call = next(h for h in hist if h["type"] == "call")
+    assert put["premium"] == 12.5
+    assert call["premium"] is None

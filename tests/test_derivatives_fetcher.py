@@ -184,6 +184,10 @@ def test_build_derivatives_charts_shape():
     assert all(d.get("date") == snap.as_of for d in skew["data"])
     assert all(3.0 <= d["iv"] <= 200.0 for d in skew["data"])
     assert "atm_iv" in skew and skew.get("note")
+    # v8.2.5 — 옵션 가격(프리미엄) 패널용 premium 동봉.
+    assert all("premium" in d for d in skew["data"])
+    assert any(isinstance(d["premium"], (int, float)) and d["premium"] > 0
+               for d in skew["data"])
     # 베이시스 indicator: 부호 보존(콘탱고/백워데이션 라벨).
     ind = next(c for c in snap.charts if c["type"] == "indicator")
     assert ind["data"][0]["value"] == round(snap.futures.basis, 2)
