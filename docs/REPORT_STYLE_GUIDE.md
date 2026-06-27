@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.0
+last_synced_with: v8.2.6
 ssot_for:
   - "보고서 본문 문체·어휘·어조 가이드 (composer + context 공통)"
 depends_on:
@@ -282,6 +282,13 @@ anti-pattern #1):
 
 ## 9. 변경 이력
 
+- **v8.2.6** — 르포(reportage) *분량/깊이 강령* 추가 (composer `_REPORTAGE_BLOCK`,
+  사용자 요청 — 르포가 너무 짧아 ~2배로). 페르소나가 '담백 = 짧음' 으로 오독돼 한
+  막 1섹션·단문단으로 끝나던 회귀 대응. ① 5막을 각 2섹션 이상으로 펼쳐 *8~12 섹션*
+  목표 ② 섹션당 *3~6 문단* ③ '담백함 = 무장식이지 짧음이 아님' 명문화 ④ 분량은
+  새 정보·연결·통찰에서만(물타기 금지, "길되 밀도 있게"). 탐사 3도구를 각 섹션마다
+  가동하면 깊이에서 분량이 따라온다. 일반 보고서(standard) 문체·분량은 무변경.
+  회귀 `tests/regression/test_reportage_format.py::test_reportage_block_has_length_depth_mandate`.
 - **v8.2.0** — 르포(report_format=reportage) 전용 *탐사 기자 페르소나* 추가
   (composer `_REPORTAGE_BLOCK`). 묻힌 디테일 들춰내기 + connecting dots(점 잇기)
   + 시나리오 추론(명시적 가설 라벨 안에서만) 3종 도구. 사실(단정형) / 추론(헤지형) /
