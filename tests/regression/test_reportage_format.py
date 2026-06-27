@@ -84,6 +84,17 @@ def test_reportage_block_has_investigative_persona() -> None:
         assert marker in _REPORTAGE_BLOCK, f"탐사 페르소나 안전선에 '{marker}' 누락"
 
 
+def test_reportage_block_has_length_depth_mandate() -> None:
+    """v8.2.6 — 르포 분량/깊이 강령 가드 (사용자 요청 — 르포를 ~2배 길게).
+
+    페르소나가 '담백 = 짧음' 으로 오독돼 보고서가 너무 짧던 회귀 대응. 8~12 섹션 +
+    섹션당 3~6 문단 + '담백 ≠ 짧음' 명문화 marker 가 프롬프트에 있어야 한다.
+    """
+    for marker in ("분량과 깊이", "8~12", "3~6개 문단", "두 배 깊이",
+                   "물타기", "길되 밀도 있게", "무장식"):
+        assert marker in _REPORTAGE_BLOCK, f"분량/깊이 강령에 '{marker}' 누락"
+
+
 def test_codex_persona_has_reportage_adaptation() -> None:
     """v8.2.0 — codex 검수자 단축본 + 전체 기준서가 르포(reportage) 인지를 갖는다.
 

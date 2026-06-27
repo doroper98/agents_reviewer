@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.5
+last_synced_with: v8.2.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.6 — 르포 분량 ~2배 확장 (탐사 페르소나 분량/깊이 강령)
+
+사용자 요청 — 르포(reportage) 형식 보고서가 너무 짧다, 지금보다 두 배 정도로 늘려 달라. 원인은 코드가 아니라 *프롬프트 페르소나* 였다. composer `_REPORTAGE_BLOCK` 의 '담백하게' 지시가 *짧게* 로 오독돼, 5막을 각 1섹션·단문단으로 압축한 채 끝나던 것. deep 모드 출력 한도(48K)는 이미 충분해 모델에 *더 깊이 파라* 고 지시하는 것만으로 분량이 따라온다.
+
+- composer `_REPORTAGE_BLOCK` 에 **[분량과 깊이 강령]** 신설: ① 5막을 각 2섹션 이상으로 펼쳐 *8~12 섹션* 목표 ② 섹션당 *3~6 문단* 으로 전개 ③ 탐사 3도구(묻힌 디테일·점 잇기·시나리오 추론)를 *각 섹션마다* 가동.
+- '담백함 = *무장식*(거창한 수사·장식 컴포넌트 없음)이지 *짧음*이 아님' 을 명문화. 짧은 문단 규칙(≤5문장)은 유지하되 문단 *수* 는 넉넉히.
+- 분량은 *새 정보·새 연결·새 통찰* 에서만 — 동어반복·공허한 수사로 채우는 *물타기* 금지("길되 밀도 있게").
+- standard(일반 보고서)는 byte-equal 무변경. 르포 트리거 없는 보고서엔 영향 0.
+- 회귀 `tests/regression/test_reportage_format.py::test_reportage_block_has_length_depth_mandate`.
 
 ## v8.2.5 — 옵션 스큐 차트 2단 개편 (가격 패널 + 날짜 화살표, 점 표식 제거)
 
