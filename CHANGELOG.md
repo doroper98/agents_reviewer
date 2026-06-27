@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.11
+last_synced_with: v8.2.12
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.12 — 관계도 완성도 개선 (텍스트 잘림 말줄임 + role 길이 가이드)
+
+사용자 catch — 주입된 관계도의 완성도가 떨어짐: ① node role 텍스트가 카드 폭(22자)에서 *말줄임 없이 뚝 잘림*("100만→7", "스파이더웹·4"), ② 긴 role + 좌우 cross 엣지가 가운데 노드를 관통해 겹침.
+
+- **렌더러(`drawStakeholderMap`)**: label/role 클립에 말줄임표(`smClip`) — 단어가 끊긴 듯 보이는 저하 방지(텍스트만, 레이아웃 무변).
+- **composer 프롬프트(`_REPORTAGE_BLOCK`)**: node `role` ≤16자·edge `label` ≤6자, 긴 설명·수치는 본문에, 좌우 cross 엣지는 핵심 1~2개만(가운데 관통 겹침 방지) 명문화.
+- 발행본은 `--remove-chart` + `--add-stakeholder-map` 로 짧은 role·최소 cross 엣지 데이터로 재주입해 즉시 개선(렌더러 무관).
 
 ## v8.2.11 — patch_report `--add-stakeholder-map` (발행본 관계도 수술적 보완)
 

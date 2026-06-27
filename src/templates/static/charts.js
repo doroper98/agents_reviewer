@@ -3310,6 +3310,9 @@
     const SM_RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const SM_ANIM = SM_REP && !SM_RM;
     const SM_RX = SM_REP ? 0 : 10;
+    // v8.2.12 — 카드 폭 한계로 라벨/역할 텍스트를 자를 때 말줄임표를 붙여
+    // 단어가 뚝 끊긴 듯 보이는 완성도 저하를 막는다(긴 role 은 본문에).
+    const smClip = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
 
     function colOf(nd) {
       let c = nd.col;
@@ -3404,9 +3407,9 @@
       const bc = String(nd.badge || '').toUpperCase();
       if (bc && SM_FLAGS[bc]) g.append('use').attr('href', '#sm-flag-' + bc).attr('x', 30).attr('y', ay + 18).attr('width', 14).attr('height', 14);
       g.append('text').attr('x', 52).attr('y', P.h / 2 - 3).attr('font-family', 'Noto Sans KR')
-        .attr('font-weight', 600).attr('font-size', 13).attr('fill', t.text).text(String(nd.label || nd.id || '').slice(0, 16));
+        .attr('font-weight', 600).attr('font-size', 13).attr('fill', t.text).text(smClip(nd.label || nd.id, 16));
       if (nd.role) g.append('text').attr('x', 52).attr('y', P.h / 2 + 13).attr('font-family', 'Noto Sans KR')
-        .attr('font-size', 10.5).attr('fill', t.muted).text(String(nd.role).slice(0, 22));
+        .attr('font-size', 10.5).attr('fill', t.muted).text(smClip(nd.role, 22));
     }
     Object.values(pos).forEach(drawCard);
 
