@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-06-27T12:35:16.537558+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v8.2.6",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260627_123516_ae1b549320",
+    "headline": "AI 반도체 가격 폭등 시나리오 분석, 한국 메모리 양강의 칩값이 끝없이 오를 때",
+    "deck": "메모리 가격 상승이 멈추지 않는다면 한국 경제는 단기 호황과 함께 자산·물가·수출 구조의 왜곡, 그리고 2018년식 사이클 붕괴 위험을 동시에 떠안는다. 코스피가 사실상 두 종목에 베팅한 상황의 득과 실을 함께 짚는다.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260627_123516_ae1b549320.html",
+    "theme": {
+      "id": "reportage_navy",
+      "tokens": {
+        "bg": "#0F0E49",
+        "card": "#1A1860",
+        "border": "#2D2B79",
+        "text": "#ECE6F5",
+        "muted": "#B0AED4",
+        "accent": "#D9ABE8",
+        "up": "#A0C0B0",
+        "down": "#F08AB0"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": null
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "2026년 들어 메모리 가격은 종류마다 다른 속도와 범위로 오르고 있다. HBM3E는 2026년 공급가가 약 20% 인상됐고, 범용 D램은 2026년 1분기 계약가격이 분기 기준 최대 98% 뛰었으며, DDR5 32GB 모듈 소매가는 약 3개월 만에 17만원대에서 70만원대로 약 4배가 됐다. 이 사이 삼성전자와 SK하이닉스의 합산 시가총액은 코스피 전체의 30%를 넘어섰다. 상승세가 더 이어진다면 한국 경제는 단기 호황과 동시에 자산·물가·수출 구조의 왜곡, 그리고 2018년식 사이클 붕괴 위험을 함께 안게 된다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": null
+    }
+  ],
+  "charts": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "TrendForce (2025-12-24) — Samsung·SK hynix HBM3E 20% Price Hike for 2026",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-2",
+      "url": "DigiTimes (2025-12-24) — HBM3E 2026 가격 인상 보도",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-3",
+      "url": "The Register (2026-06-02) — DRAM 가격 인상 지속 전망",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-4",
+      "url": "CNBC (2026-01-10) — AI memory sold out, unprecedented price surge",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-5",
+      "url": "IDC Blog — Global Memory Shortage Crisis 2026",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-6",
+      "url": "Wccftech — RAM Shortage 2026 / DDR5 Crisis Roundup",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-7",
+      "url": "한국경제 (2026-04-13) — AI 빅테크 D램 5년 계약 줄서기 보도",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-8",
+      "url": "파이낸셜뉴스 (2026-06-26) — SK하이닉스 HBM 360만원 전망, 株토피아",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-9",
+      "url": "파이낸셜뉴스 (2026-06-22) — 반도체지수 1년반 +561% / 슈퍼사이클 상편",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-10",
+      "url": "매일신문 (2026-05-15) — 삼성 vs SK하이닉스 시총 30년만 격전",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-11",
+      "url": "한경비즈니스 (2026-03-18) — 반도체 슈퍼사이클 진단과 과제",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-12",
+      "url": "PwC Korea — Semicon Trends Outlook 2026",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    },
+    {
+      "source_id": "src-13",
+      "url": "Silicon Analysts — HBM Pricing & Market Share 2026",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-06-27"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2026-05-27",
+        "label": "코스피 종가 8,228.70 (장중 사이드카 발동). 반도체 양강이 견인",
+        "phase": "past",
+        "note": "지수 기여 편중 심화. '삼전닉스' 의존도가 시장 변동성의 핵심 변수가 됨"
+      },
+      {
+        "date": "2026-06-27",
+        "label": "현재",
+        "phase": "present",
+        "note": ""
+      }
+    ],
+    "video": null
+  }
+}
