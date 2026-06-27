@@ -997,6 +997,10 @@ _REPORTAGE_BLOCK = (
     "  · 단, 분량을 *물타기*(같은 말 반복·공허한 수사·동어반복)로 채우지 마라. 길이는\n"
     "    언제나 *새 정보·새 연결·새 통찰*에서 나온다. 빈 문장을 늘리는 건 사실 규율\n"
     "    위반은 아니어도 르포의 격을 떨군다 — *길되 밀도 있게*.\n"
+    "  · ★ 이 모든 분량은 *JSON ``sections`` 배열 안* 에서 늘린다. 산문을 JSON 밖으로\n"
+    "    꺼내거나 응답을 설명·서론·메타 코멘트로 시작하지 마라. 길어진다고 출력 계약을\n"
+    "    잊지 말 것 — 응답은 *여전히* 맨 위 규칙대로 ``{`` 로 여는 단일 JSON 객체\n"
+    "    하나이며, 그 안에서만 섹션·문단을 불린다 (계약 위반 시 전체가 폐기된다).\n"
     "\n"
     "[★ 탐사 기자 페르소나 — 모든 막에 흐르는 기조 (가장 중요)] 너는 신문 기사를 보기\n"
     "좋게 옮기는 사람이 아니다. *탐사 기자(investigative reporter)* 다. 입력된 출처에\n"
@@ -1285,6 +1289,42 @@ class NarrativeComposer:
                         self._last_failure_reason = "편집장이 빈 응답을 반환함"
             if attempt < self.COMPOSE_MAX_ATTEMPTS:
                 await asyncio.sleep(self.COMPOSE_RETRY_BACKOFF_S * attempt)
+        # v8.2.7 — 모델 안전망 (WRITE-AP-25 계열, 2026-06-27 르포 회귀). 르포 전용
+        # 모델(4.8)로 작성·재시도가 *모두* 미파싱/실패면, 발행 가능 보고서 0건으로
+        # 떨어져 minimal fallback(588자 미파싱 → 1-섹션 열화 발행)을 내보내기 전에,
+        # 검증된 안정 모델(COMPOSER_MODEL=4.7)로 *마지막 한 번* 더 시도한다. 4.8 이
+        # 긴 르포 JSON 계약을 불안정하게 따를 때 4.7 이 받아낸다. 일반 보고서는
+        # use_model == COMPOSER_MODEL 이라 이 분기 자체를 타지 않아 byte-equal.
+        if composed is None and use_model != self.COMPOSER_MODEL:
+            logger.warning(
+                "[unified_composer] %s 작성 전부 실패(%s) — 안정 모델 %s 로 폴백 재시도",
+                use_model, self._last_failure_reason or "원인 미상", self.COMPOSER_MODEL,
+            )
+            fb_raw: str | None
+            try:
+                if self.config.use_cli_mode:
+                    fb_raw = await self._call_cli(
+                        user_message, timeout_s=timeout_s, system_prompt=sys_prompt,
+                        model=self.COMPOSER_MODEL,
+                    )
+                else:
+                    fb_raw = await self._call_api(
+                        user_message, mode=mode, system_prompt=sys_prompt,
+                        model=self.COMPOSER_MODEL,
+                    )
+            except _ComposerTimeout as e:
+                fb_raw = e.partial or None  # 부분 출력이라도 살려본다
+            except Exception as e:  # noqa: BLE001 — 폴백도 실패하면 minimal fallback 유지
+                logger.warning("[unified_composer] 안정 모델 폴백 호출 실패: %s", e)
+                fb_raw = None
+            if fb_raw:
+                salvaged = self._parse_response(fb_raw)
+                if salvaged is not None:
+                    composed = salvaged
+                    logger.info(
+                        "[unified_composer] 안정 모델(%s) 폴백 성공 (%d sections)",
+                        self.COMPOSER_MODEL, len(composed.sections),
+                    )
         if composed is None:
             return None
         # v4.0.0: chart_catalog 가 비었으니 embedded_charts 도 빈 list 로 강제 (검증 layer).
