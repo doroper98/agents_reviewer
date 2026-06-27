@@ -1259,6 +1259,15 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "combo 는 {bars, line} dict 형식 필요"
+        elif chart_type == "stakeholder_map":
+            # {nodes: [{id, label, col, flag, role, ...}], edges|links: [{source, target, type, ...}]}
+            # v8.2.10 — dict 형식인데 분기 누락으로 *항상* 아래 list[dict] else 에 떨어져
+            # 100% silent drop 되던 회귀(CHART-AP-38). 르포 관계도가 v8.0.0 이래 한 번도
+            # 안 떴던 근본 원인. sankey 와 동형으로 dict 를 guard 에 kwargs 전달.
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "stakeholder_map 는 {nodes, edges} dict 형식 필요"
         else:
             # bar / line / donut / bubble / heatmap / choropleth / scatter /
             # lollipop / waterfall / range_bar / diverging_bar / pyramid /

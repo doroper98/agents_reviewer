@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.0.0
+last_synced_with: v8.2.10
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1201,6 +1201,30 @@ CHART-AP-25 에서 radial hairball → 인접행렬로 리디자인했으나, �
 연결은 가장자리에서 서로 다른 지점에 분산(한 점 겹침 금지) ⑤ getBBox content-fit viewBox
 로 자동 중앙정렬. 스키마(`StakeholderMapGuard`)는 좌표 필드를 입력으로 받지 않는다.
 모크업 SSOT: `samples/stakeholder_map_gallery.html` / `samples/stakeholder_map_themes.html`.
+
+---
+
+## CHART-AP-38: 등록된 dict-데이터 차트 type 의 validate_chart_data 분기 누락 → 100% silent drop (v8.2.10 신설, 사용자 catch)
+
+**증상**: 르포 2막 이해당사자 본문이 "(아래 관계도)"로 stakeholder_map 을 가리키는데
+*어떤 르포에서도* 관계도가 안 보인다(섹션 charts=[]). composer 는 정상 emit 하는데도
+v8.0.0 이래 한 번도 렌더된 적이 없다. 2026-06-27 사용자 catch.
+
+**원인**: `stakeholder_map` 데이터는 dict `{nodes, edges}` 형식인데,
+[schemas.py:validate_chart_data](../src/visual/schemas.py) 의 분기 사슬에 *stakeholder_map
+전용 분기가 빠져* 있었다. dict 형식 type(stacked/dual_line/forecast/sankey/bump/combo
+등)은 각자 `elif chart_type == "...": guard(**data)` 분기를 갖는데 stakeholder_map 만
+누락 → 맨 끝 `else`(list[dict] 가정) 분기로 떨어져 `isinstance(data, list)` False →
+`(False, "stakeholder_map 는 list[dict] 형식 필요")` 반환 → `ComposedSection._drop_invalid_charts`
+가 **유효 데이터를 100% silent drop**. 가드(`StakeholderMapGuard`)·렌더러(`drawStakeholderMap`)·
+레지스트리(`_TYPE_TO_GUARD`)는 다 있었으나 *디스패치 한 줄*이 빠져 도달 불가였다.
+
+**Fix (v8.2.10)**: validate_chart_data 에 `elif chart_type == "stakeholder_map":`
+분기 추가(sankey 와 동형 — dict 면 `guard(**data)`, 아니면 명확한 사유 반환). 일반화
+회귀로 `_TYPE_TO_GUARD` 의 dict-데이터 type 들이 유효 최소 데이터로 validate_chart_data
+를 통과하는지 강제([tests/regression/test_chart_correctness.py](../tests/regression/test_chart_correctness.py)
+의 `test_every_dict_guard_type_has_dispatch_branch`). **신규 dict-형식 chart type 추가
+시 반드시 validate_chart_data 분기 + 본 회귀의 samples 에 추가** (분기 누락 = 조용한 100% drop).
 
 ---
 
