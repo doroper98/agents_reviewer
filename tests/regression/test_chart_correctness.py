@@ -125,6 +125,54 @@ def test_network_chart_type_is_rejected() -> None:
     assert "CHART-AP-36" in reason
 
 
+# CHART-AP-38 — stakeholder_map(르포 관계도)이 dict 데이터인데 validate_chart_data 에
+# 분기가 없어 *항상* list[dict] else 로 떨어져 100% silent drop 되던 회귀 (v8.0.0~v8.2.9).
+# 르포 관계도가 한 번도 안 떴던 근본 원인. 유효 데이터는 반드시 통과해야 한다.
+def test_stakeholder_map_valid_dict_passes() -> None:
+    ok, reason = validate_chart_data(
+        "stakeholder_map",
+        {
+            "nodes": [
+                {"id": "samsung", "label": "삼성전자", "col": "left", "flag": "KR"},
+                {"id": "nvidia", "label": "엔비디아", "col": "right", "flag": "US"},
+            ],
+            "edges": [{"source": "samsung", "target": "nvidia", "type": "공급"}],
+        },
+    )
+    assert ok, f"유효 stakeholder_map 이 drop 됨 (CHART-AP-38 회귀): {reason}"
+
+
+def test_stakeholder_map_rejects_dangling_edge() -> None:
+    ok, reason = validate_chart_data(
+        "stakeholder_map",
+        {"nodes": [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}],
+         "edges": [{"source": "a", "target": "ZZZ"}]},
+    )
+    assert not ok and "nodes 에 없음" in reason
+
+
+def test_stakeholder_map_rejects_non_dict() -> None:
+    ok, reason = validate_chart_data("stakeholder_map", [{"id": "a"}])
+    assert not ok and "dict 형식 필요" in reason
+
+
+def test_every_dict_guard_type_has_dispatch_branch() -> None:
+    """CHART-AP-38 일반화 — _TYPE_TO_GUARD 에 등록됐는데 dict 데이터를 받는 가드가
+    validate_chart_data 에서 list else 로 떨어지지 않는지(= 100% drop 회귀 차단)."""
+    from src.visual.schemas import _TYPE_TO_GUARD
+    # 대표 dict 형식 type 들 — 유효 최소 데이터로 통과해야 한다.
+    samples = {
+        "stakeholder_map": {"nodes": [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}],
+                            "edges": [{"source": "a", "target": "b"}]},
+        "sankey": {"nodes": [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}],
+                   "links": [{"source": "a", "target": "b", "value": 1}]},
+    }
+    for ctype, data in samples.items():
+        assert ctype in _TYPE_TO_GUARD, f"{ctype} 가드 미등록"
+        ok, reason = validate_chart_data(ctype, data)
+        assert ok, f"{ctype} 유효 dict 데이터가 drop 됨: {reason}"
+
+
 # AP-3 — Donut
 def test_donut_guard_rejects_negative_value() -> None:
     with pytest.raises(Exception):

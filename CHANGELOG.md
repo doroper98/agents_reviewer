@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.9
+last_synced_with: v8.2.10
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.10 — 르포 관계도 100% silent drop 근본 수정 (validate_chart_data 분기 누락, CHART-AP-38)
+
+사용자 "왜 관계도가 제대로 안 나오지" 점검 요청 → **진짜 근본 원인 발견.** v8.2.9 의 프롬프트 강제·dangling 제거는 *증상* 대응이었고, 관계도(stakeholder_map)가 v8.0.0 이래 *한 번도 안 떴던* 진짜 이유는 따로 있었다: `validate_chart_data` 의 디스패치 사슬에 **stakeholder_map 분기가 누락**돼, dict `{nodes, edges}` 데이터가 맨 끝 list[dict] `else` 로 떨어져 `(False, "stakeholder_map 는 list[dict] 형식 필요")` → composer 가 정상 emit 해도 `_drop_invalid_charts` 가 **100% silent drop**. 가드·렌더러·레지스트리는 다 있었는데 *디스패치 한 줄*이 빠져 도달 불가였다.
+
+- **Fix** — `validate_chart_data` 에 `elif chart_type == "stakeholder_map":` 분기 추가(sankey 동형, dict→`guard(**data)`). 이제 유효 관계도가 검증 통과 → `drawStakeholderMap` 으로 렌더된다.
+- **일반화 회귀** — `_TYPE_TO_GUARD` 의 dict-데이터 type 들이 유효 최소 데이터로 validate_chart_data 를 통과하는지 강제(`test_every_dict_guard_type_has_dispatch_branch`). 같은 부류(분기 누락→조용한 100% drop)의 재발 차단. CHART-AP-38 신설.
+- 효과: v8.2.9 의 dangling 안전망은 *그물*로 남되, 정상 경로에서 관계도가 실제로 떠 안전망이 발동할 일이 거의 없어진다.
 
 ## v8.2.9 — 깨진 시각물 약속 차단 (본문이 가리킨 관계도/지도 미표시, WRITE-AP-26)
 
