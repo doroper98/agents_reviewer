@@ -26,6 +26,11 @@ def _connect(path: str) -> sqlite3.Connection | None:
             "strike REAL NOT NULL, iv REAL NOT NULL, "
             "PRIMARY KEY (date, expiry, opt_type, strike))"
         )
+        # v8.2.5 — 옵션 가격(프리미엄) 컬럼. 구 캐시(없는 경우)엔 추가만 (nullable —
+        # 마이그레이션 전 적재분은 premium NULL, 가격 패널은 graceful skip).
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(skew)").fetchall()]
+        if "premium" not in cols:
+            conn.execute("ALTER TABLE skew ADD COLUMN premium REAL")
         conn.commit()
         return conn
     except Exception as e:  # pragma: no cover — 디스크/권한 문제는 graceful
@@ -36,7 +41,8 @@ def _connect(path: str) -> sqlite3.Connection | None:
 def store_skew(path: str, date: str, expiry: str, points: list[dict]) -> bool:
     """그날 스큐 점들을 저장 (idempotent — 같은 (date,expiry,type,strike) 는 덮어씀).
 
-    points: [{strike, iv, type}] (iv 는 % 단위, type 은 'put'|'call').
+    points: [{strike, iv, type, premium?}] (iv 는 % 단위, type 은 'put'|'call',
+    premium 은 옵션 가격 — 없으면 NULL 로 저장, v8.2.5).
     """
     if not date or not expiry or not points:
         return False
@@ -47,13 +53,19 @@ def store_skew(path: str, date: str, expiry: str, points: list[dict]) -> bool:
         rows = []
         for p in points:
             try:
-                rows.append((date, expiry, str(p["type"]), float(p["strike"]), float(p["iv"])))
+                prem = p.get("premium")
+                prem_val = None if prem is None else float(prem)
+                rows.append((
+                    date, expiry, str(p["type"]), float(p["strike"]),
+                    float(p["iv"]), prem_val,
+                ))
             except (KeyError, TypeError, ValueError):
                 continue
         if not rows:
             return False
         conn.executemany(
-            "INSERT OR REPLACE INTO skew(date,expiry,opt_type,strike,iv) VALUES(?,?,?,?,?)",
+            "INSERT OR REPLACE INTO skew(date,expiry,opt_type,strike,iv,premium) "
+            "VALUES(?,?,?,?,?,?)",
             rows,
         )
         conn.commit()
@@ -66,7 +78,8 @@ def store_skew(path: str, date: str, expiry: str, points: list[dict]) -> bool:
 
 
 def recent_skew(path: str, expiry: str, n_dates: int, as_of: str) -> list[dict]:
-    """as_of 이하 최근 n_dates 영업일의 스큐 점들. [{date, type, strike, iv}] 오름차순.
+    """as_of 이하 최근 n_dates 영업일의 스큐 점들.
+    [{date, type, strike, iv, premium}] 오름차순 (premium 은 미적재분이면 None).
 
     데이터 없으면 빈 리스트 (graceful — 차트는 오늘만 그린다).
     """
@@ -86,12 +99,12 @@ def recent_skew(path: str, expiry: str, n_dates: int, as_of: str) -> list[dict]:
             return []
         placeholders = ",".join("?" * len(dates))
         cur = conn.execute(
-            "SELECT date,opt_type,strike,iv FROM skew "
+            "SELECT date,opt_type,strike,iv,premium FROM skew "
             f"WHERE expiry=? AND date IN ({placeholders}) ORDER BY date ASC, strike ASC",
             (expiry, *dates),
         )
         return [
-            {"date": r[0], "type": r[1], "strike": r[2], "iv": r[3]}
+            {"date": r[0], "type": r[1], "strike": r[2], "iv": r[3], "premium": r[4]}
             for r in cur.fetchall()
         ]
     except Exception as e:  # pragma: no cover

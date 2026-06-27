@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.4
+last_synced_with: v8.2.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.2.5 — 옵션 스큐 차트 2단 개편 (가격 패널 + 날짜 화살표, 점 표식 제거)
+
+사용자 요청 — 장마감 브리핑의 옵션 스큐 차트 위에 *같은 유형의 옵션 가격 차트* 를 얹고, 차트에 날짜 화살표를 두어 날짜별 스큐·가격을 쉽게 보게 하고, 선 위의 동그란 점 표식을 없애 달라. 기존 다일자 페이드 오버레이가 곡선 수십 개로 겹쳐 보이던 문제도 함께 해소.
+
+- **2단 패널** (`src/templates/static/charts.js` `drawIvSkew`) — 하나의 `iv_skew` 카드가 **상단 = 행사가별 옵션 가격(프리미엄)**, **하단 = 같은 행사가의 IV 스큐** 두 패널로 분리. 두 패널은 행사가 x축을 공유한다(가격↔변동성 정렬 비교).
+- **날짜 화살표(◀ ▶)** — 우상단 컨트롤로 최근 N영업일을 *하루씩* 전환(`날짜 (i/N)` 표기). 기존의 "오늘 진하게·과거 옅게" 다일자 동시 오버레이(스파게티)를 폐기 — 한 번에 한 날짜만 또렷하게. 날짜가 1개면 화살표 없이 정적.
+- **점 표식 제거** — 선 위 per-point 동그라미 삭제, 선만. 범례 점(풋/콜) 2개만 유지.
+- **옵션 가격 데이터 배선** — 스큐 점에 `premium` 동봉(`src/tools/derivatives_fetcher.py` `build_derivatives_charts` / `_skew_points_for_expiry` / `augment_skew_history`) + 일별 캐시 `premium` 컬럼 추가(`src/tools/skew_cache.py`, 구 캐시는 `ALTER TABLE` 으로 nullable 추가 — 마이그레이션 전 적재분은 가격 패널 graceful skip).
+- **하위 호환** — `premium` 없는 구 `iv_skew` payload 는 스큐 단일 패널로 그대로 렌더(byte-equal 의도). 회귀 `tests/test_skew_cache.py`(premium roundtrip + legacy NULL) / `tests/test_derivatives_fetcher.py`(skew 점 premium 동봉). 샘플 `samples/market_briefing_charts_v7_9_9.html` 갱신.
 
 ---
 

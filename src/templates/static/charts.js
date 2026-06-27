@@ -1,4 +1,7 @@
 /* charts.js — v4.4.0 zone-based layout + annotations + 11 chart types.
+ * v8.2.5 — iv_skew 2단 개편: 상단 옵션 가격(프리미엄) 패널 + 하단 IV 스큐 패널
+ *          (행사가 x축 공유) + 날짜 화살표(◀ ▶) 네비게이션, 다일자 페이드 오버레이·
+ *          선 위 점 표식 폐기 (사용자 요청). premium 없는 구 payload 는 단일 패널 호환.
  * v7.9.17 — network(행위자 관계도) 포맷 폐기 (CHART-AP-36) — RENDERERS·drawNetwork 제거.
  * v7.1.0 — 초기 7종 (bar/donut/stacked/bubble/heatmap/waterfall) 비주얼
  *          리디자인 (사용자 승인, samples/chart_redesign_v7_compare.html 목업 기준).
@@ -3006,125 +3009,192 @@
       .text(`${candleS.label || '지수'} (우, 캔들)`);
   }
 
-  // ----- IV_SKEW (변동성 스큐 곡선) -----
-  // v7.9.11 — 풋(파랑)/콜(빨강) 곡선 + 행사가 라벨 + 지난 N영업일 오버레이(나이순
-  // 페이드). 각 점에 date 가 있으면 일자별로 그려 오늘=진하게, 과거=옅게.
-  // data: [{strike, iv, type:'put'|'call', date?}], payload.atm_iv (선택).
+  // ----- IV_SKEW (옵션 가격 + 변동성 스큐, 날짜 네비게이션) -----
+  // v8.2.5 — 상단 '옵션 가격(프리미엄)' 패널 + 하단 'IV 스큐' 패널 2단(같은 행사가
+  //   x축 공유) + 날짜 화살표(◀ ▶)로 한 날짜씩 보기. 기존 다일자 페이드 오버레이
+  //   (스파게티)·선 위 동그란 점 표식 폐기(사용자 요청). 가격 데이터(premium)가 없는
+  //   구 payload 는 스큐 단일 패널로 graceful 렌더. 날짜가 1개면 화살표 없이 정적.
+  // data: [{strike, iv, premium?, type:'put'|'call', date?}], payload.atm_iv (선택).
   function drawIvSkew(stage, payload, t) {
     var raw = (payload.data || []).filter(function (d) {
       return isFinite(+d.strike) && isFinite(+d.iv);
     });
     if (raw.length < 3) return;
     var PUT = '#4F8BF0', CALL = '#E0604A';
-    var W = 720, H = 404;
-    var zones = computeZones(W, H, { left: 56, right: 58, top: 46, bottom: 58 });
-    var svg = d3.select(stage).select('svg')
-      .attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMidYMid meet');
+    var W = 720, L = 60, Rm = 60;
+    var atm = (payload.atm_iv != null && isFinite(+payload.atm_iv)) ? +payload.atm_iv : null;
+
+    function isNum(v) { return v != null && isFinite(+v); }
+
+    // 날짜 목록 (오름차순). 없으면 단일 버킷.
     var dates = Array.from(new Set(raw.map(function (d) { return d.date || ''; })))
       .filter(Boolean).sort();
-    var hasDates = dates.length > 1;
-    var today = dates.length ? dates[dates.length - 1] : null;
+    var multiDate = dates.length > 1;
+    var todayDate = dates.length ? dates[dates.length - 1] : null;
+
+    // 가격(프리미엄) 데이터 유무 — 없으면 스큐 단일 패널(구 payload 호환).
+    var premVals = raw.filter(function (d) { return isNum(d.premium); })
+      .map(function (d) { return +d.premium; });
+    var hasPrice = premVals.length > 0;
+
+    // x(행사가) 도메인: 전체 날짜 합집합 → 날짜 전환 시 축 고정.
     var xExt = d3.extent(raw, function (d) { return +d.strike; });
-    var yvals = raw.map(function (d) { return +d.iv; });
-    var atm = (payload.atm_iv != null && isFinite(+payload.atm_iv)) ? +payload.atm_iv : null;
-    if (atm != null) yvals.push(atm);
-    var yMin = d3.min(yvals), yMax = d3.max(yvals);
-    var xPad = (xExt[1] - xExt[0]) * 0.04 || 1, yPad = (yMax - yMin) * 0.12 || 1;
-    var xS = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad])
-      .range([zones.data.x, zones.data.x + zones.data.w]);
-    var yS = d3.scaleLinear().domain([yMin - yPad, yMax + yPad])
-      .range([zones.data.y + zones.data.h, zones.data.y]);
-    // y grid + labels
-    yS.ticks(5).forEach(function (v) {
-      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
-        .attr('y1', yS(v)).attr('y2', yS(v))
-        .attr('stroke', t.muted).attr('stroke-opacity', 0.14).attr('stroke-width', 0.5);
-      svg.append('text').attr('x', zones.data.x - 6).attr('y', yS(v) + 3).attr('text-anchor', 'end')
-        .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
-        .text(v + '%');
-    });
-    // ATM IV 가로 기준선 — 라벨 plot 안 좌상단 (우측 잘림 방지)
-    if (atm != null) {
-      svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
-        .attr('y1', yS(atm)).attr('y2', yS(atm))
-        .attr('stroke', t.text).attr('stroke-width', 1).attr('stroke-dasharray', '5 4')
-        .attr('stroke-opacity', 0.55);
-      svg.append('text').attr('x', zones.data.x + 5).attr('y', yS(atm) - 5)
-        .attr('text-anchor', 'start').attr('font-family', 'Noto Sans KR')
-        .attr('font-size', 10).attr('fill', t.text).attr('fill-opacity', 0.8)
-        .text('ATM IV ' + atm.toFixed(1) + '% (등가격 기준선)');
+    var xPad = (xExt[1] - xExt[0]) * 0.04 || 1;
+    var xS = d3.scaleLinear().domain([xExt[0] - xPad, xExt[1] + xPad]).range([L, W - Rm]);
+
+    // y 도메인도 전체 날짜 기준 → 날짜 전환 시 스케일 점프 없음.
+    function domainOf(vals, pad) {
+      var mn = d3.min(vals), mx = d3.max(vals);
+      var p = (mx - mn) * pad || Math.abs(mx) * 0.1 || 1;
+      return [mn - p, mx + p];
     }
-    function drawDay(rows, opacity, withDots) {
+    var ivVals = raw.map(function (d) { return +d.iv; });
+    if (atm != null) ivVals.push(atm);
+    var ivDom = domainOf(ivVals, 0.12);
+    var premDom = hasPrice ? domainOf(premVals, 0.10) : null;
+
+    var allStrikes = Array.from(new Set(raw.map(function (d) { return +d.strike; })))
+      .sort(function (a, b) { return a - b; });
+
+    // 지오메트리 (2단 또는 단일)
+    var CTRL_H = 34, PANEL_GAP = 30, X_AXIS_H = 54;
+    var PRICE_H = hasPrice ? 176 : 0;
+    var SKEW_H = hasPrice ? 192 : 300;
+    var priceTop = CTRL_H + 22;
+    var skewTop = priceTop + PRICE_H + (hasPrice ? PANEL_GAP : 0);
+    var H = skewTop + SKEW_H + X_AXIS_H;
+
+    var svg = d3.select(stage).select('svg')
+      .attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMidYMid meet');
+
+    var selIdx = dates.length ? dates.length - 1 : 0;
+
+    function lineFor(rows, metric, yS, col) {
+      var s = rows.filter(function (d) { return isNum(d[metric]); })
+        .sort(function (a, b) { return (+a.strike) - (+b.strike); });
+      if (s.length < 2) return;
+      var ln = d3.line().x(function (d) { return xS(+d.strike); })
+        .y(function (d) { return yS(+d[metric]); }).curve(d3.curveLinear);
+      svg.append('path').attr('d', ln(s)).attr('fill', 'none').attr('stroke', col)
+        .attr('stroke-width', 2).attr('stroke-opacity', 0.95);
+    }
+
+    function drawSeries(rows, metric, yS) {
       var puts = rows.filter(function (d) { return (d.type || '') === 'put'; });
       var calls = rows.filter(function (d) { return (d.type || '') === 'call'; });
-      [[puts, PUT], [calls, CALL]].forEach(function (pair) {
-        var s = pair[0], col = pair[1];
-        s.sort(function (a, b) { return (+a.strike) - (+b.strike); });
-        if (s.length >= 2) {
-          var ln = d3.line().x(function (d) { return xS(+d.strike); })
-            .y(function (d) { return yS(+d.iv); }).curve(d3.curveLinear);
-          svg.append('path').attr('d', ln(s)).attr('fill', 'none').attr('stroke', col)
-            .attr('stroke-width', withDots ? 1.9 : 1.1).attr('stroke-opacity', opacity);
-        }
-        if (withDots) {
-          s.forEach(function (d) {
-            svg.append('circle').attr('cx', xS(+d.strike)).attr('cy', yS(+d.iv)).attr('r', 3.2)
-              .attr('fill', col).attr('fill-opacity', 0.95);
+      if (!puts.length && !calls.length) { lineFor(rows, metric, yS, t.accent); return; }
+      lineFor(puts, metric, yS, PUT);
+      lineFor(calls, metric, yS, CALL);
+    }
+
+    function panel(top, hgt, dom, titleText, fmtY) {
+      var yS = d3.scaleLinear().domain(dom).range([top + hgt, top]);
+      svg.append('text').attr('x', L).attr('y', top - 7)
+        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('font-weight', 600)
+        .attr('fill', t.text).text(titleText);
+      yS.ticks(4).forEach(function (v) {
+        svg.append('line').attr('x1', L).attr('x2', W - Rm).attr('y1', yS(v)).attr('y2', yS(v))
+          .attr('stroke', t.muted).attr('stroke-opacity', 0.13).attr('stroke-width', 0.5);
+        svg.append('text').attr('x', L - 6).attr('y', yS(v) + 3).attr('text-anchor', 'end')
+          .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 9).attr('fill', t.muted)
+          .text(fmtY(v));
+      });
+      return yS;
+    }
+
+    function renderXAxis(yBottom) {
+      svg.append('line').attr('x1', L).attr('x2', W - Rm).attr('y1', yBottom).attr('y2', yBottom)
+        .attr('stroke', t.muted).attr('stroke-opacity', 0.4);
+      var st = allStrikes.length > 16 ? Math.ceil(allStrikes.length / 16) : 1;
+      allStrikes.forEach(function (s, i) {
+        if (i % st !== 0 && i !== allStrikes.length - 1) return;
+        svg.append('line').attr('x1', xS(s)).attr('x2', xS(s)).attr('y1', yBottom).attr('y2', yBottom + 4)
+          .attr('stroke', t.muted).attr('stroke-opacity', 0.5);
+        svg.append('text').attr('x', xS(s)).attr('y', yBottom + 7)
+          .attr('transform', 'rotate(-42,' + xS(s) + ',' + (yBottom + 7) + ')')
+          .attr('text-anchor', 'end').attr('font-family', 'JetBrains Mono, monospace')
+          .attr('font-size', 8.5).attr('fill', t.muted).text(d3.format(',.0f')(s));
+      });
+      svg.append('text').attr('x', W - Rm).attr('y', yBottom + 34).attr('text-anchor', 'end')
+        .attr('font-size', 10).attr('fill', t.muted).text(payload.x_label || '행사가');
+    }
+
+    // 날짜 ◀ ▶ 화살표 (클릭 시 selIdx 이동 후 재렌더). data-anim=static 으로 진입
+    // 애니메이션 제외 (컨트롤은 즉시 보여야 함).
+    function arrow(cx, cy, dir, enabled, onClick) {
+      var s = 7;
+      var d = dir < 0
+        ? 'M' + (cx + s) + ',' + (cy - s) + ' L' + (cx - s) + ',' + cy + ' L' + (cx + s) + ',' + (cy + s) + ' Z'
+        : 'M' + (cx - s) + ',' + (cy - s) + ' L' + (cx + s) + ',' + cy + ' L' + (cx - s) + ',' + (cy + s) + ' Z';
+      var hit = svg.append('rect').attr('x', cx - 12).attr('y', cy - 12).attr('width', 24).attr('height', 24)
+        .attr('fill', 'transparent').attr('data-anim', 'static');
+      svg.append('path').attr('d', d).attr('fill', enabled ? t.text : t.muted)
+        .attr('fill-opacity', enabled ? 0.9 : 0.3).attr('data-anim', 'static');
+      if (enabled) hit.style('cursor', 'pointer').on('click', onClick);
+    }
+
+    function render() {
+      svg.selectAll('*').remove();
+      var dayRows = dates.length
+        ? raw.filter(function (d) { return d.date === dates[selIdx]; })
+        : raw.slice();
+
+      // ── 컨트롤 행: 날짜 네비게이션(좌) + 범례(우) ──
+      var ctrlY = 16;
+      function legend(x, color, label) {
+        svg.append('circle').attr('cx', x).attr('cy', ctrlY).attr('r', 4).attr('fill', color)
+          .attr('data-anim', 'static');
+        svg.append('text').attr('x', x + 8).attr('y', ctrlY + 4)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text).text(label);
+      }
+      legend(W - Rm - 118, PUT, '풋 (Put)');
+      legend(W - Rm - 58, CALL, '콜 (Call)');
+
+      if (dates.length) {
+        var lblX = L + 88;
+        svg.append('text').attr('x', lblX).attr('y', ctrlY + 4).attr('text-anchor', 'middle')
+          .attr('font-family', 'JetBrains Mono, monospace').attr('font-size', 12).attr('font-weight', 600)
+          .attr('fill', t.text)
+          .text(dates[selIdx] + (multiDate ? '  (' + (selIdx + 1) + '/' + dates.length + ')' : ''));
+        if (multiDate) {
+          arrow(L + 12, ctrlY, -1, selIdx > 0, function () { if (selIdx > 0) { selIdx--; render(); } });
+          arrow(lblX + 92, ctrlY, 1, selIdx < dates.length - 1, function () {
+            if (selIdx < dates.length - 1) { selIdx++; render(); }
           });
         }
-      });
-      if (!puts.length && !calls.length) {
-        rows.sort(function (a, b) { return (+a.strike) - (+b.strike); });
-        var ln2 = d3.line().x(function (d) { return xS(+d.strike); })
-          .y(function (d) { return yS(+d.iv); });
-        svg.append('path').attr('d', ln2(rows)).attr('fill', 'none')
-          .attr('stroke', t.accent).attr('stroke-width', withDots ? 1.9 : 1.1)
-          .attr('stroke-opacity', opacity);
       }
+
+      // ── 가격 패널 (있을 때) ──
+      if (hasPrice) {
+        var yP = panel(priceTop, PRICE_H, premDom, '옵션 가격(프리미엄)',
+          function (v) { return d3.format(Math.abs(v) >= 100 ? ',.0f' : ',.1f')(v); });
+        if (dayRows.some(function (d) { return isNum(d.premium); })) {
+          drawSeries(dayRows, 'premium', yP);
+        } else {
+          svg.append('text').attr('x', (L + W - Rm) / 2).attr('y', priceTop + PRICE_H / 2)
+            .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR').attr('font-size', 11)
+            .attr('fill', t.muted).text('이 날짜의 가격 데이터가 없습니다');
+        }
+      }
+
+      // ── 스큐 패널 ──
+      var yI = panel(skewTop, SKEW_H, ivDom, '내재변동성(IV) 스큐', function (v) { return v + '%'; });
+      // ATM 기준선 — 최신일(오늘) 선택 시만 (atm_iv 는 오늘 기준값).
+      if (atm != null && (!dates.length || dates[selIdx] === todayDate)) {
+        svg.append('line').attr('x1', L).attr('x2', W - Rm).attr('y1', yI(atm)).attr('y2', yI(atm))
+          .attr('stroke', t.text).attr('stroke-width', 1).attr('stroke-dasharray', '5 4')
+          .attr('stroke-opacity', 0.55);
+        svg.append('text').attr('x', L + 5).attr('y', yI(atm) - 5).attr('text-anchor', 'start')
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.text)
+          .attr('fill-opacity', 0.8).text('ATM IV ' + atm.toFixed(1) + '% (등가격 기준선)');
+      }
+      drawSeries(dayRows, 'iv', yI);
+
+      // ── x축 (스큐 패널 하단, 행사가) ──
+      renderXAxis(skewTop + SKEW_H);
     }
-    if (hasDates) {
-      dates.forEach(function (dt, i) {
-        var age = dates.length - 1 - i;  // 0 = 오늘
-        var op = age === 0 ? 0.95 : Math.max(0.10, 0.5 * Math.pow(0.8, age));
-        drawDay(raw.filter(function (d) { return d.date === dt; }), op, age === 0);
-      });
-    } else {
-      drawDay(raw.slice(), 0.95, true);
-    }
-    // x축 — 각 행사가 라벨 (#1). 오늘(또는 전체) distinct 행사가에 눈금+회전 라벨.
-    var base = (hasDates ? raw.filter(function (d) { return d.date === today; }) : raw);
-    var strikes = Array.from(new Set(base.map(function (d) { return +d.strike; })))
-      .sort(function (a, b) { return a - b; });
-    var st = strikes.length > 16 ? Math.ceil(strikes.length / 16) : 1;
-    var yb = zones.data.y + zones.data.h;
-    svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
-      .attr('y1', yb).attr('y2', yb).attr('stroke', t.muted).attr('stroke-opacity', 0.4);
-    strikes.forEach(function (s, i) {
-      if (i % st !== 0 && i !== strikes.length - 1) return;
-      svg.append('line').attr('x1', xS(s)).attr('x2', xS(s)).attr('y1', yb).attr('y2', yb + 4)
-        .attr('stroke', t.muted).attr('stroke-opacity', 0.5);
-      svg.append('text').attr('x', xS(s)).attr('y', yb + 7)
-        .attr('transform', 'rotate(-42,' + xS(s) + ',' + (yb + 7) + ')')
-        .attr('text-anchor', 'end').attr('font-family', 'JetBrains Mono, monospace')
-        .attr('font-size', 8.5).attr('fill', t.muted).text(d3.format(',.0f')(s));
-    });
-    if (payload.x_label) {
-      svg.append('text').attr('x', zones.data.x + zones.data.w).attr('y', yb + 30)
-        .attr('text-anchor', 'end').attr('font-size', 10).attr('fill', t.muted).text(payload.x_label);
-    }
-    // 범례 (우상단) + 다일자 안내
-    function legend(x, color, label) {
-      svg.append('circle').attr('cx', x).attr('cy', zones.data.y - 16).attr('r', 4).attr('fill', color);
-      svg.append('text').attr('x', x + 9).attr('y', zones.data.y - 12)
-        .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('fill', t.text).text(label);
-    }
-    legend(zones.data.x + zones.data.w - 120, PUT, '풋 (Put)');
-    legend(zones.data.x + zones.data.w - 56, CALL, '콜 (Call)');
-    if (hasDates) {
-      svg.append('text').attr('x', zones.data.x).attr('y', zones.data.y - 12)
-        .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.muted)
-        .text('진한 곡선 = 오늘 · 옅을수록 과거 (' + dates.length + '영업일)');
-    }
+
+    render();
   }
 
   // ----- INDICATOR (부호 있는 한 줄 지표 — 0 중심) -----

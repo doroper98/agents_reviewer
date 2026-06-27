@@ -269,7 +269,10 @@ def _skew_points_for_expiry(
         if key in seen:
             continue
         seen.add(key)
-        pts.append({"strike": float(k), "iv": round(iv_pct, 1), "type": o["option_type"]})
+        pts.append({
+            "strike": float(k), "iv": round(iv_pct, 1), "type": o["option_type"],
+            "premium": round(float(prem), 2),  # 옵션 가격 패널용 (v8.2.5)
+        })
     return pts
 
 
@@ -429,18 +432,25 @@ def build_derivatives_charts(snap: "DerivativesSnapshot") -> list[dict]:
             "iv": round(iv_pct, 1),
             "type": o.option_type,  # 'put' | 'call'
             "date": snap.as_of,
+            # 옵션 가격(프리미엄) — 상단 가격 패널용 (v8.2.5)
+            "premium": round(float(o.premium), 2) if o.premium is not None else None,
         })
     distinct_strikes = len({d["strike"] for d in sk})
     if len(sk) >= 4 and distinct_strikes >= 3:
         exp_label = _fmt_expiry(snap.front_expiry)
         chart: dict = {
             "type": "iv_skew",
-            "title": f"행사가별 내재변동성 — KOSPI200 {exp_label}".rstrip(" —"),
-            "subtitle": f"{exp_label} 옵션의 풋(파랑)·콜(빨강)을 행사가 순으로 이은 변동성 스큐 곡선",
+            "title": f"행사가별 옵션 가격·내재변동성(IV) — KOSPI200 {exp_label}".rstrip(" —"),
+            "subtitle": (
+                f"{exp_label} 옵션 — 상단은 행사가별 풋(파랑)·콜(빨강) 가격(프리미엄), "
+                f"하단은 같은 행사가의 내재변동성(IV) 스큐 곡선. 날짜 화살표(◀ ▶)로 날짜별 전환"
+            ),
             "x_label": "행사가",
             "data": sorted(sk, key=lambda d: d["strike"]),
             "note": (
-                "내재변동성(IV)은 옵션 가격에 녹아든 '앞으로 이만큼 출렁일 것'이라는 "
+                "위 패널은 행사가별 옵션 가격(프리미엄), 아래 패널은 내재변동성(IV) 스큐다. "
+                "두 패널은 같은 행사가 축을 공유하고, 우상단 날짜 화살표로 하루씩 옮겨 볼 수 "
+                "있다. 내재변동성(IV)은 옵션 가격에 녹아든 '앞으로 이만큼 출렁일 것'이라는 "
                 "시장의 예상치다. 점선 가로 기준선은 등가격(ATM) 옵션의 IV — 모든 행사가가 "
                 "같은 변동성으로 거래된다고 가정했을 때의 수평선이다. 실제로는 하락을 "
                 "방어하는 외가격 풋(왼쪽 파란 곡선)이 기준선 위로 솟는다(스큐). 풋 곡선이 "
@@ -651,7 +661,8 @@ def augment_skew_history(
     if skew_chart is None:
         return
     today_pts = [
-        {"strike": d["strike"], "iv": d["iv"], "type": d["type"]}
+        {"strike": d["strike"], "iv": d["iv"], "type": d["type"],
+         "premium": d.get("premium")}
         for d in (skew_chart.get("data") or [])
         if "strike" in d and "iv" in d and "type" in d
     ]
@@ -670,8 +681,8 @@ def augment_skew_history(
         n_dates = len({h["date"] for h in hist})
         if n_dates > 1:
             skew_chart["subtitle"] = (
-                f"KOSPI200 {exp_label} · 풋(파랑)·콜(빨강) 스큐 — 진한 곡선이 오늘, "
-                f"옅을수록 과거 (최근 {n_dates}영업일, 같은 월물끼리만)"
+                f"KOSPI200 {exp_label} · 상단 옵션 가격 · 하단 풋(파랑)·콜(빨강) IV 스큐 — "
+                f"날짜 화살표(◀ ▶)로 최근 {n_dates}영업일을 하루씩 (같은 월물끼리만)"
             )
 
 
