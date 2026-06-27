@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.2.8"
+VERSION = "v8.2.9"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -766,6 +766,70 @@ def _densify_ts_charts(composed, context) -> None:
                 "[orchestrator] _densify_ts_charts: '%s' %d → %d points (일별 밀도 교체)",
                 title, len(old), len(new_data),
             )
+
+
+def _reconcile_visual_references(composed) -> int:
+    """v8.2.9 — 본문이 '(아래 관계도/지도/그래프)' 로 *약속한* 시각물이 실제로 없으면
+    그 깨진 약속(dangling reference)을 본문에서 지운다 (사용자 catch 2026-06-27).
+
+    사용자 요구: 문장에 '아래 관계도/지도' 를 박아놨으면 그 시각물이 *반드시 보여야*
+    한다. 1차 방어는 composer 프롬프트(지시어를 쓰면 시각물 emit 강제)지만, LLM 이
+    지시어만 쓰고 시각물을 빠뜨릴 때를 위한 *결정적 안전망*. 없는 시각물을 지어낼 수는
+    없으므로(관계도 데이터 부재), 최소한 *깨진 약속 문구를 제거* 해 본문이 존재하지
+    않는 그림을 가리키지 않게 한다.
+
+    판정:
+    - 관계도/관계망 → 그 섹션에 stakeholder_map 또는 network 차트가 있어야 충족.
+    - 그래프/도표 → 그 섹션에 차트가 하나라도 있어야 충족.
+    - 지도 → 보고서에 embedded_map 이 있어야 충족(보고서 단위).
+    충족 안 된 토큰의 괄호 지시어 '(…아래 관계도…)' 만 제거하고, 충족되면 보존한다.
+
+    반환: 제거한 dangling reference 개수.
+    """
+    import re as _re
+    if composed is None or not getattr(composed, "sections", None):
+        return 0
+    has_map = getattr(composed, "embedded_map", None) is not None
+    removed = 0
+    # (토큰들, 충족 차트 타입 집합 | None=아무 차트나)
+    groups = [
+        (("관계도", "관계망"), {"stakeholder_map", "network"}),
+        (("그래프", "도표"), None),
+    ]
+
+    def _paren_re(token: str) -> "_re.Pattern":
+        # 선행 공백 + 여는 괄호(반각/전각) … token … 닫는 괄호. 괄호 안만 매칭.
+        return _re.compile(r"\s*[\(（][^)）]*" + _re.escape(token) + r"[^)）]*[\)）]")
+
+    for sec in composed.sections:
+        prose = getattr(sec, "prose", None)
+        if not isinstance(prose, str) or not prose:
+            continue
+        chart_types = {
+            (c.get("type") or "").lower()
+            for c in (getattr(sec, "charts", None) or [])
+            if isinstance(c, dict)
+        }
+        new_prose = prose
+        for tokens, needed in groups:
+            satisfied = bool(chart_types) if needed is None else bool(chart_types & needed)
+            if satisfied:
+                continue
+            for tok in tokens:
+                new_prose, n = _paren_re(tok).subn("", new_prose)
+                removed += n
+        if not has_map:
+            new_prose, n = _paren_re("지도").subn("", new_prose)
+            removed += n
+        if new_prose != prose:
+            new_prose = _re.sub(r"\s+([.?!,])", r"\1", new_prose)   # ' .' → '.'
+            new_prose = _re.sub(r"[ \t]{2,}", " ", new_prose).strip()
+            sec.prose = new_prose
+    if removed:
+        logging.getLogger(__name__).info(
+            "[orchestrator] _reconcile_visual_references: dangling 시각물 참조 %d 개 제거", removed,
+        )
+    return removed
 
 
 def _ensure_broadcast_summary(composed, context) -> None:
@@ -1885,6 +1949,15 @@ class Orchestrator:
             _densify_ts_charts(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _densify_ts_charts skipped: %s", _e)
+        # v8.2.9 — 깨진 시각물 약속 제거 (사용자 catch). 본문이 '(아래 관계도/지도/
+        # 그래프)' 로 약속한 시각물이 실제로 없으면 그 문구를 지워 없는 그림을 가리키지
+        # 않게 한다. 르포에서 stakeholder_map 누락이 빈발 — 르포에 우선 적용(일반
+        # 보고서는 byte-equal 보존). 프롬프트가 emit 을 강제하는 게 1차, 이건 안전망.
+        if request.report_format == "reportage":
+            try:
+                _reconcile_visual_references(result.composed_report)
+            except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
+                logger.warning("[orchestrator] _reconcile_visual_references skipped: %s", _e)
         # v7.9.0/v7.9.9 — 장마감 브리핑 결정적 차트 주입 (composer 비의존 → 모든 브리핑 반영).
         #  (a) breadth line → combo_candle (좌 하락비율 + 우 지수 캔들, item2)
         #  (b) 코스피 종합지수 → 3M candle + 20일선 (item1)

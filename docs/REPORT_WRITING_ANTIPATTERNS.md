@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.8
+last_synced_with: v8.2.9
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -663,6 +663,34 @@ envelope 아니면 raw graceful. 킬 스위치 `Config.cli_json_output`(env
 `V8_CLI_JSON_OUTPUT`, 기본 ON; `=0` 이면 text 복귀 byte-equal). 회귀
 [tests/regression/test_cli_json_capture.py](../tests/regression/test_cli_json_capture.py).
 운영: VM 재배포 전 `claude -p "ping" --output-format json` 로 envelope 형식 1회 확인.
+
+---
+
+## WRITE-AP-26: 본문이 가리킨 시각물이 실제로 없음 — 깨진 시각물 약속 (v8.2.9 신설, 사용자 catch)
+
+**증상**: 본문에 "…네 회사가 있다(아래 관계도)" / "…한국이다(아래 지도)" 처럼 시각물을
+*가리키는 지시어*가 있는데, 정작 그 자리에 관계도(stakeholder_map)·지도·그래프가 안
+보인다. 독자는 약속된 그림을 찾아 빈 자리를 응시하게 된다. 2026-06-27 르포
+(`analysis_20260627_151401`): 2막 "테이블 위의 일곱 행위자" 본문이 "(아래 관계도)"로
+stakeholder_map 을 약속했지만 composer 가 그 차트를 emit 하지 않음(charts=[]). 지도는
+embedded_map 으로 존재하나 보고서 *상단*에 한 번 렌더돼, 본문의 "(아래 지도)" 위치
+지시와 어긋났다.
+
+**원인**: ① composer 가 본문엔 '아래 관계도'를 쓰면서 해당 섹션 charts 에 stakeholder_map
+을 빠뜨림(지시-emit 불일치). ② 지도는 보고서 단위(embedded_map)라 항상 상단 1회 렌더인데
+본문이 '아래'라는 위치어로 가리켜 위치 불일치.
+
+**Fix (v8.2.9 — 2층)**:
+1. **프롬프트 강제** — composer `_REPORTAGE_BLOCK` 의 [행위자·관계 시각화]에 *시각물-본문
+   일치 규칙* 추가: '아래 관계도/그래프/도표' 지시어를 쓰면 그 시각물을 *같은 섹션* charts
+   (지도는 embedded_map)에 반드시 emit. emit 안 할 시각물은 본문에서 가리키지 말 것(깨진
+   약속 금지). 2막은 stakeholder_map *필수*. 지도는 상단 1회 렌더이므로 위치어('아래 지도')
+   대신 위치-비의존 표현('지도에서 보듯')을 쓴다.
+2. **결정적 안전망** — orchestrator `_reconcile_visual_references`(르포): 충족 안 된 괄호
+   지시어를 본문에서 제거(없는 그림 가리키기 차단). 관계도/관계망→그 섹션 stakeholder_map
+   /network 있어야 충족, 그래프/도표→그 섹션 차트 있어야, 지도→보고서 embedded_map 있어야.
+   시각물을 *지어내진 않는다*(데이터 부재). 회귀
+   [tests/regression/test_visual_reference_reconcile.py](../tests/regression/test_visual_reference_reconcile.py).
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)
