@@ -442,28 +442,28 @@
                   "label": "젤렌스키",
                   "col": "left",
                   "flag": "UA",
-                  "role": "드론을 전쟁의 척추로, 생산 100만→700만 대 공언"
+                  "role": "드론을 전쟁의 척추로"
                 },
                 {
                   "id": "syrskyi",
                   "label": "시르스키",
                   "col": "left",
                   "flag": "UA",
-                  "role": "총사령관, 전선 작전 지휘·전과 집계"
+                  "role": "총사령관·전선 지휘"
                 },
                 {
                   "id": "sbu",
                   "label": "SBU 보안국",
                   "col": "left",
                   "flag": "UA",
-                  "role": "러 심장부 타격 작전 설계(스파이더웹·40일)"
+                  "role": "러 심장부 타격 설계"
                 },
                 {
                   "id": "ukr_drone",
                   "label": "우크라 드론 산업",
                   "col": "left",
                   "flag": "UA",
-                  "role": "SBU 작전의 배후 동력"
+                  "role": "SBU 작전의 동력"
                 },
                 {
                   "id": "putin",
@@ -477,13 +477,13 @@
                   "label": "러시아군",
                   "col": "right",
                   "flag": "RU",
-                  "role": "포크로우스크 점령, 진격 70m/일로 둔화"
+                  "role": "포크로우스크 점령"
                 },
                 {
                   "id": "west",
                   "label": "서방 지원국",
                   "col": "center",
-                  "role": "무기·정보 지원과 종전 압박 변수"
+                  "role": "무기 지원·종전 압박"
                 }
               ],
               "edges": [
@@ -491,25 +491,19 @@
                   "source": "zelensky",
                   "target": "syrskyi",
                   "type": "동맹",
-                  "label": "지휘 체계"
+                  "label": "지휘"
                 },
                 {
                   "source": "zelensky",
-                  "target": "ukr_drone",
+                  "target": "sbu",
                   "type": "영향",
-                  "label": "증산 공언"
+                  "label": "작전 승인"
                 },
                 {
                   "source": "ukr_drone",
                   "target": "sbu",
                   "type": "연관",
-                  "label": "드론 공급"
-                },
-                {
-                  "source": "sbu",
-                  "target": "ru_army",
-                  "type": "대립",
-                  "label": "심장부 타격"
+                  "label": "드론"
                 },
                 {
                   "source": "syrskyi",
@@ -1108,8 +1102,8 @@
   "parent_context": null,
   "analysis_timestamp": "2026-06-27T21:13:54.798363+09:00",
   "total_duration_seconds": 1515.435878753662,
-  "system_version": "v8.2.11",
-  "revision": 1,
+  "system_version": "v8.2.12",
+  "revision": 2,
   "render_revision": 0,
   "disable_scroll_arc": false
 }
