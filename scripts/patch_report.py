@@ -179,6 +179,13 @@ def parse_args() -> argparse.Namespace:
              "예: --section-heading \"5=궤도로 가는 다리, 그 가능성\".",
     )
     p.add_argument(
+        "--add-stakeholder-map",
+        metavar="IDX:JSON",
+        help="섹션(0-based)에 관계도(stakeholder_map) 1개 주입. CHART-AP-38 으로 누락된 "
+             "관계도를 발행본에 수술적으로 보완(전체 재작성 없이). data 가 가드 통과해야 주입. "
+             "예: --add-stakeholder-map '2:{\"type\":\"stakeholder_map\",\"title\":\"이해당사자\",\"data\":{\"nodes\":[...],\"edges\":[...]}}'.",
+    )
+    p.add_argument(
         "--replace",
         metavar="OLD=NEW",
         action="append",
@@ -308,6 +315,60 @@ def patch_remove_chart(result: FullAnalysisResult, sec_chart: str) -> bool:
     print(
         f"[patch] section '{sec.heading[:30]}' 에서 차트 제거: "
         f"type={removed.get('type', '?')} title={removed.get('title', '?')[:40]}"
+    )
+    return True
+
+
+def patch_add_stakeholder_map(result: FullAnalysisResult, spec: str) -> bool:
+    """--add-stakeholder-map 'IDX:{chart json}' — 섹션에 관계도 1개 주입(검증 후).
+
+    v8.2.11 — CHART-AP-38(관계도 100% silent drop) 으로 누락된 관계도를 발행본에
+    *수술적으로 보완* (전체 재작성 없이). spec = "섹션인덱스:차트JSON". 차트 JSON 은
+    ``{"type":"stakeholder_map","title":"...","data":{"nodes":[...],"edges":[...]}}``.
+    data 는 validate_chart_data 가드를 *반드시* 통과해야 주입 — 안 그러면 렌더 단계
+    `_drop_invalid_charts` 가 또 버린다. JSON 안에 ':' 가 있으므로 첫 ':' 로만 split.
+    """
+    try:
+        idx_str, chart_json = spec.split(":", 1)
+        sec_i = int(idx_str)
+        chart = json.loads(chart_json)
+    except (ValueError, json.JSONDecodeError) as e:
+        print(
+            f"[patch] --add-stakeholder-map 형식 오류: {e} "
+            "(예: '2:{\"type\":\"stakeholder_map\",\"title\":\"...\",\"data\":{...}}')",
+            file=sys.stderr,
+        )
+        return False
+    if not isinstance(chart, dict) or chart.get("type") != "stakeholder_map":
+        print("[patch] type=stakeholder_map 인 차트 dict 여야 함", file=sys.stderr)
+        return False
+    if not result.composed_report or not result.composed_report.sections:
+        print("[patch] composed_report.sections 가 비어있음", file=sys.stderr)
+        return False
+    sections = result.composed_report.sections
+    if sec_i < 0 or sec_i >= len(sections):
+        print(
+            f"[patch] section_idx {sec_i} 범위 초과 (0~{len(sections) - 1})",
+            file=sys.stderr,
+        )
+        return False
+    # CHART-AP-38 가드 통과 강제 — 통과 못하면 주입해도 렌더 단계서 또 drop 된다.
+    try:
+        from src.visual.schemas import validate_chart_data
+        ok, reason = validate_chart_data("stakeholder_map", chart.get("data"))
+    except Exception as e:  # noqa: BLE001
+        ok, reason = False, str(e)
+    if not ok:
+        print(f"[patch] stakeholder_map 검증 실패 — 주입 거부: {reason}", file=sys.stderr)
+        return False
+    sec = sections[sec_i]
+    if sec.charts is None:
+        sec.charts = []
+    sec.charts.append(chart)
+    nodes = (chart.get("data") or {}).get("nodes") or []
+    print(
+        f"[patch] section '{sec.heading[:30]}' 에 관계도 주입: "
+        f"{len(nodes)} 노드, title={chart.get('title', '?')[:40]}"
     )
     return True
 
@@ -822,6 +883,10 @@ async def main() -> int:
         mutated = True
     if args.remove_section is not None:
         if not patch_remove_section(result, args.remove_section):
+            return 1
+        mutated = True
+    if args.add_stakeholder_map:
+        if not patch_add_stakeholder_map(result, args.add_stakeholder_map):
             return 1
         mutated = True
     if args.map_zoom is not None:
