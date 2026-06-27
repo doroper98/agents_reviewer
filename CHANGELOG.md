@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.8
+last_synced_with: v8.2.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.9 — 깨진 시각물 약속 차단 (본문이 가리킨 관계도/지도 미표시, WRITE-AP-26)
+
+사용자 catch — v8.2.8 르포(`analysis_20260627_151401`)에서 본문이 "(아래 관계도)" / "(아래 지도)"로 시각물을 가리키는데 그 자리에 아무것도 안 보임. 원인: ① composer 가 '아래 관계도'를 쓰면서 그 섹션에 stakeholder_map 을 emit 안 함(2막 일곱 행위자), ② 지도(embedded_map)는 보고서 상단 1회 렌더인데 본문이 '아래'로 가리켜 위치 불일치. (마지막 "첫째/둘째" 종결은 정상 결론 — 에필로그 제거 설계, 미완성 아님.)
+
+- **프롬프트 강제** — `_REPORTAGE_BLOCK` 에 *시각물-본문 일치 규칙*: '아래 관계도/그래프/도표' 를 쓰면 그 시각물을 같은 섹션 charts(지도는 embedded_map)에 반드시 emit, 안 할 거면 가리키지 말 것(깨진 약속 금지). 2막 stakeholder_map 필수. 지도는 상단 1회 렌더이므로 위치-비의존 표현('지도에서 보듯') 사용.
+- **결정적 안전망** — orchestrator `_reconcile_visual_references`(르포 전용): 충족 안 된 괄호 지시어를 본문에서 제거(관계도→stakeholder_map/network, 그래프/도표→차트, 지도→embedded_map 존재 여부로 판정). 시각물을 지어내진 않음. 일반 보고서는 미적용 byte-equal.
+- 회귀 `tests/regression/test_visual_reference_reconcile.py` 6종. WRITE-AP-26 신설.
 
 ## v8.2.8 — 편집장 CLI 출력 head-loss 근본 수정 (json envelope 캡처, WRITE-AP-25)
 
