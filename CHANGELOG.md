@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.10
+last_synced_with: v8.2.11
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,13 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.11 — patch_report `--add-stakeholder-map` (발행본 관계도 수술적 보완)
+
+CHART-AP-38(v8.2.10)로 누락됐던 관계도를 *전체 재작성 없이* 발행본에 주입하는 patch_report 옵션. 사용자 요청 — 본문엔 '(아래 관계도)' 가 있는데 관계도가 빠진 발행본을 보완.
+
+- `scripts/patch_report.py --add-stakeholder-map 'IDX:{차트 JSON}'` — 지정 섹션(0-based) charts 에 stakeholder_map 1개 주입. data 가 `validate_chart_data` 가드를 통과해야만 주입(통과 못하면 렌더 단계서 또 drop 되므로 거부). JSON 안의 ':' 때문에 첫 ':' 로만 split. LLM 0, URL 보존, revision +1.
+- `--recompose`(전체 LLM 재작성) 대비 기존 본문·차트를 보존하는 surgical 경로.
 
 ## v8.2.10 — 르포 관계도 100% silent drop 근본 수정 (validate_chart_data 분기 누락, CHART-AP-38)
 
