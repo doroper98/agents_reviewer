@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.6
+last_synced_with: v8.2.7
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.7 — 르포 생성 안정화 (모델 안전망 + JSON 계약 스코핑, WRITE-AP-25 계열)
+
+사용자 catch — v8.2.6 르포 1건(`analysis_20260627_123516`)이 "생성되다 멈춤" 증상으로 1-섹션 열화본 발행. 원인은 타임아웃이 아니라, 편집장(Opus 4.8)이 **클린 종료인데 raw 588자짜리 미파싱 응답**만 내놓아 절단·head-loss 복구가 모두 실패 → `compose_unified` None → minimal fallback. v8.2.6 이 르포 분량을 강하게 밀어붙인 직후라, '길어야 한다' 압박이 모델을 JSON 계약 밖으로 흘렸을 개연성이 1차 용의.
+
+- **모델 안전망** — 르포 전용 모델(4.8)로 작성·재시도가 *모두* 파싱 불가/실패면, minimal fallback 으로 떨어지기 전에 검증된 안정 모델(`COMPOSER_MODEL`=4.7)로 *마지막 한 번* 더 작성한다 (`narrative_composer.compose_unified`). 일반 보고서(`use_model==COMPOSER_MODEL`)는 분기 미진입 = byte-equal.
+- **프롬프트 계약 스코핑** — `_REPORTAGE_BLOCK` 분량 강령에 "모든 분량은 *JSON `sections` 배열 안* 에서 늘린다 · 산문을 JSON 밖으로 꺼내거나 응답을 설명·서론·메타 코멘트로 시작 금지 · 응답은 여전히 `{` 로 여는 단일 JSON 객체" 명문화. 강한 길이 압박이 출력 계약을 잊게 하는 drift 차단.
+- 회귀 `tests/regression/test_reportage_model_fallback.py` (3종 — 4.7 폴백 성공 / 일반 보고서 폴백 미진입 byte-equal / JSON 계약 스코핑 marker). WRITE-AP-25 문서에 추가 회귀로 등재.
+- 운영 진단: 4.8 미파싱 반복 시 bot.log `parse returned None ... head=` 로 실제 응답 머리 확인 (모델 산문 이탈 vs CLI 단문 에러 구분).
 
 ## v8.2.6 — 르포 분량 ~2배 확장 (탐사 페르소나 분량/깊이 강령)
 

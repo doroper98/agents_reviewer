@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.4
+last_synced_with: v8.2.7
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -629,6 +629,23 @@ SNS 요약까지 채워져 정상처럼 보이는데, 본문은 `요약` 섹션 
 회귀: [tests/regression/test_degraded_report.py](../tests/regression/test_degraded_report.py)
 (절단 복구·head-loss·정상 응답의 degraded 플래그 고정). 운영 주의: 텔레그램에서 ⚠️ 가
 뜨면 재시도, 또 뜨면 '짧게' 를 붙이거나 주제를 나눠 요청한다.
+
+**추가 회귀 (v8.2.7 — 르포 588자 미파싱, 사용자 catch)**: 2026-06-27 v8.2.6
+르포(`analysis_20260627_123516`) 1건이 동일 증상으로 발행 — 단 이번엔 *타임아웃이
+아니라* 편집장(Opus 4.8) 이 **클린 종료(returncode 0)인데 raw 588자짜리 미파싱
+응답**만 내놓아 절단 복구·head-loss 복구가 모두 실패 → None → minimal fallback.
+직전 v8.2.6 이 르포 분량을 ~2배로 강하게 밀어붙인 직후라, 강한 '길어야 한다' 압박이
+모델을 JSON 계약 밖(산문·메타 코멘트)으로 흘렸을 개연성이 1차 용의. **Fix (v8.2.7,
+2층)**: ① **모델 안전망** — 르포 전용 모델(4.8)로 작성·재시도가 *모두* 파싱
+불가/실패면, minimal fallback 으로 떨어지기 전에 검증된 안정 모델(`COMPOSER_MODEL`
+=4.7)로 *마지막 한 번* 더 작성([narrative_composer.py:compose_unified](../src/agents/narrative_composer.py)).
+일반 보고서(use_model==COMPOSER_MODEL)는 분기 미진입 = byte-equal. ② **프롬프트
+계약 스코핑** — `_REPORTAGE_BLOCK` 분량 강령에 "모든 분량은 *JSON `sections` 배열
+안* 에서 늘린다 · 산문을 JSON 밖으로 꺼내거나 응답을 설명·서론으로 시작 금지 · 응답은
+여전히 `{` 로 여는 단일 JSON 객체" 명문화. 회귀:
+[tests/regression/test_reportage_model_fallback.py](../tests/regression/test_reportage_model_fallback.py).
+운영 주의: 4.8 미파싱이 반복되면 bot.log 에서 `parse returned None ... head=` 로
+실제 응답 머리를 확인 (근본 원인 식별 — 모델 산문 이탈 vs CLI 단문 에러 구분).
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)
