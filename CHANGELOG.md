@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.7
+last_synced_with: v8.2.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.8 — 편집장 CLI 출력 head-loss 근본 수정 (json envelope 캡처, WRITE-AP-25)
+
+v8.2.7 직후 VM bot.log 정밀 분석으로 **진짜 근본 원인** 확인 — v8.2.6 르포 588자 미파싱은 모델 산문 이탈이 아니라, 편집장 CLI `--output-format text` 캡처가 *긴 응답에서 stdout 머리(앞부분 — 여는 `{`·headline·앞 섹션)를 잃는* systemic 결함이었다. 캡처된 raw 가 본문 *중간*부터 시작(`니다.\n\n호황의 끝엔…` + 꼬리의 `"video"` 객체)해 파싱·절단복구·head-loss 복구가 전부 실패 → minimal fallback. bot.log 상 2026-06-02부터 수개월 누적(3,860 / 6,022 / 15,459자 등 다양한 길이의 꼬리만 생존), 보고서 종류 무관. v8.2.6 가 르포 출력을 최장으로 늘리며 *꼬리마저 588자로 짧아져* 복구 불능이 되어 표면화.
+
+- **근본 수정** — 편집장 CLI 캡처를 `--output-format json` 단일 envelope(`{...,"result":"<본문>"}`)로 전환. 텍스트 렌더링 경로를 우회해 전체 본문을 머리 손실 없이 추출(`narrative_composer._extract_cli_result`). 완결 envelope→`result` 추출 / 절단 envelope(타임아웃)→정규식+best-effort 언이스케이프로 부분 살리기 보존 / envelope 아니면 raw 그대로(graceful).
+- **킬 스위치** — `Config.cli_json_output` (env `V8_CLI_JSON_OUTPUT`) 기본 ON. 구버전 CLI 등 문제 시 `V8_CLI_JSON_OUTPUT=0` 로 즉시 text 캡처 복귀(byte-equal).
+- 적용 범위는 편집장(가장 긴 출력 → 유일하게 head-loss 관측)으로 한정. context_analyst/report_synthesizer 는 추후 필요 시 확장.
+- 회귀 `tests/regression/test_cli_json_capture.py` (envelope 추출 / escape·unicode / 절단 부분복구 / 비-envelope passthrough / 플래그 기본 ON).
+- 운영: VM 재배포 전 `claude -p "ping" --output-format json` 으로 envelope 형식 1회 확인 권장. WRITE-AP-25 추가 회귀로 등재.
 
 ## v8.2.7 — 르포 생성 안정화 (모델 안전망 + JSON 계약 스코핑, WRITE-AP-25 계열)
 

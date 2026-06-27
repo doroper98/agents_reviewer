@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.7
+last_synced_with: v8.2.8
 ssot_for:
   - "보고서 본문 작성 anti-patterns (composer prompt 회귀 방지)"
 depends_on:
@@ -646,6 +646,23 @@ SNS 요약까지 채워져 정상처럼 보이는데, 본문은 `요약` 섹션 
 [tests/regression/test_reportage_model_fallback.py](../tests/regression/test_reportage_model_fallback.py).
 운영 주의: 4.8 미파싱이 반복되면 bot.log 에서 `parse returned None ... head=` 로
 실제 응답 머리를 확인 (근본 원인 식별 — 모델 산문 이탈 vs CLI 단문 에러 구분).
+
+**근본 원인 확정 + 수정 (v8.2.8, bot.log 정밀 분석)**: 위 588자의 `head=` 가
+`니다.\n\n호황의 끝엔…` + 꼬리의 `"video"` 객체 — 즉 **응답 *머리*(여는 `{`·headline·
+앞 섹션)가 통째로 없고 *꼬리*만 캡처**된 head-loss 였다. bot.log 전수조사 결과
+2026-06-02부터 수개월, 보고서 종류 무관하게 재발(생존 꼬리 3,860~15,459자로 제각각).
+원인은 편집장 CLI **`--output-format text` 캡처가 긴 응답에서 stdout 머리를 잃는
+systemic 결함**(stdout 을 파일로 직접 받으므로 우리 코드의 truncation 아님 — CLI 텍스트
+렌더 경로의 손실). v8.2.6 가 르포 출력을 최장으로 늘리며 *꼬리마저 588자로 짧아져*
+절단복구·head-loss 복구 불능이 되어 표면화한 것(WRITE-AP-13 의 진짜 뿌리). **Fix**:
+편집장 CLI 캡처를 **`--output-format json` 단일 envelope**(`{...,"result":"<본문>"}`)로
+전환 — 텍스트 렌더를 우회해 전체 본문을 머리 손실 없이 추출
+([narrative_composer._extract_cli_result](../src/agents/narrative_composer.py)). 완결→
+`result` 추출 / 절단(타임아웃)→정규식+best-effort 언이스케이프로 부분 살리기 보존 /
+envelope 아니면 raw graceful. 킬 스위치 `Config.cli_json_output`(env
+`V8_CLI_JSON_OUTPUT`, 기본 ON; `=0` 이면 text 복귀 byte-equal). 회귀
+[tests/regression/test_cli_json_capture.py](../tests/regression/test_cli_json_capture.py).
+운영: VM 재배포 전 `claude -p "ping" --output-format json` 로 envelope 형식 1회 확인.
 
 ### prose 형식
 - [ ] 마크다운 강조 금지 명시 (WRITE-AP-1)

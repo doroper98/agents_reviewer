@@ -105,6 +105,18 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("SKEW_CACHE_PATH", "skew_cache_path"),
     )
 
+    # v8.2.8 — 편집장(NarrativeComposer) CLI 출력 캡처를 구조화 JSON envelope 로.
+    # `--output-format text` 가 긴 응답에서 stdout 머리(앞부분)를 잃어 보고서가
+    # head-loss → 파싱 불가 → minimal fallback 으로 떨어지던 회귀(2026-06-27 르포
+    # 588자 미파싱; bot.log 상 수개월 누적된 systemic 결함) 대응. json 모드는 단일
+    # envelope `{...,"result":"<본문>"}` 로 와 전체 텍스트를 안전 추출(머리 손실 없음).
+    # 기본 ON. 구버전 CLI 등으로 문제가 생기면 `V8_CLI_JSON_OUTPUT=0` 로 즉시 끈다
+    # (그러면 기존 text 캡처 경로로 byte-equal 복귀).
+    cli_json_output: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("V8_CLI_JSON_OUTPUT", "cli_json_output"),
+    )
+
     # V5 Phase 1A — ResearchDirector opt-in.
     # 켜져 있으면 orchestrator 가 Phase 1 (ContextAnalyst) 직후에 ResearchDirector
     # 를 호출해 AnalysisBrief 를 emit. 꺼져 있으면 design_via_heuristics 의

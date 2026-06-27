@@ -21,6 +21,7 @@ import datetime as _dt
 import json
 import logging
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -1746,16 +1747,20 @@ class NarrativeComposer:
         full_prompt = f"{system_prompt or SYSTEM_PROMPT}\n\n---\n\n{user_message}"
         # model 미지정 시 COMPOSER_MODEL(4.7) — 기본 경로 byte-equal. 르포는 4.8 주입.
         use_model = model or self.COMPOSER_MODEL
+        # v8.2.8 — 긴 응답 stdout 머리 손실(head-loss) 차단. text 모드는 긴 출력에서
+        # 캡처가 머리를 잃어 파싱 불가 → minimal fallback 회귀(2026-06-27). json 모드는
+        # 단일 envelope 로 와 전체 본문을 안전 추출. V8_CLI_JSON_OUTPUT=0 면 text 복귀.
+        out_fmt = "json" if getattr(self.config, "cli_json_output", True) else "text"
         cmd = [
             claude_bin,
             "-p", full_prompt,
-            "--output-format", "text",
+            "--output-format", out_fmt,
             "--model", use_model,
             "--dangerously-skip-permissions",
         ]
         logger.info(
-            "[narrative_composer] Starting CLI call (%s, prompt=%d chars, timeout=%.0fs)",
-            use_model, len(full_prompt), timeout_s,
+            "[narrative_composer] Starting CLI call (%s, fmt=%s, prompt=%d chars, timeout=%.0fs)",
+            use_model, out_fmt, len(full_prompt), timeout_s,
         )
         start = time.time()
         # v5.6.6 — stdout 을 임시 파일로 받는다. timeout 으로 proc 를 kill 해도 그때까지
@@ -1779,6 +1784,10 @@ class NarrativeComposer:
                     with contextlib.suppress(Exception):
                         await proc.wait()
                     partial = self._read_text(tmp_path)
+                    # v8.2.8 — json 모드면 절단 envelope 에서 result 본문을 best-effort
+                    # 로 살려 부분 출력 살리기(WRITE-AP-25)를 보존한다.
+                    if out_fmt == "json":
+                        partial = self._extract_cli_result(partial)
                     logger.warning(
                         "[narrative_composer] CLI timeout after %.0fs; "
                         "salvaged %d chars partial output",
@@ -1792,6 +1801,15 @@ class NarrativeComposer:
                     f"narrative_composer CLI exit={proc.returncode}: {err}"
                 )
             raw = self._read_text(tmp_path)
+            # v8.2.8 — json 모드면 envelope 에서 본문(result)만 추출. text 모드(또는
+            # envelope 가 아니면)면 raw 그대로(graceful) — 기존 경로 byte-equal.
+            if out_fmt == "json":
+                extracted = self._extract_cli_result(raw)
+                logger.info(
+                    "[narrative_composer] json envelope → result %d chars (raw %d)",
+                    len(extracted), len(raw),
+                )
+                raw = extracted
             if self.telemetry is not None:
                 self.telemetry.record_llm_call(
                     agent_name="narrative_composer",
@@ -1816,6 +1834,75 @@ class NarrativeComposer:
                 return f.read().decode("utf-8", "replace").strip()
         except OSError:
             return ""
+
+    @staticmethod
+    def _extract_cli_result(raw: str) -> str:
+        """``claude --output-format json`` envelope 에서 본문 텍스트(result) 추출.
+
+        v8.2.8 — text 모드는 긴 응답에서 stdout 머리를 잃었다(head-loss). json 모드는
+        단일 envelope ``{...,"result":"<assistant text>"}`` 로 와 전체 본문을 안전
+        추출한다. 방어적:
+        - 완결 envelope → ``json.loads`` 후 ``result``(없으면 text/content) 문자열 반환.
+        - 절단 envelope(타임아웃) → 정규식으로 ``"result":"`` 시작을 찾아 닫는 따옴표/
+          끝까지 best-effort 디코딩(부분 살리기 보존).
+        - envelope 가 아니면(예상외 형식/text 잔재) raw 그대로(graceful).
+        """
+        s = (raw or "").strip()
+        if not s:
+            return raw
+        # 1) 완결 envelope
+        try:
+            obj = json.loads(s)
+        except json.JSONDecodeError:
+            obj = None
+        if isinstance(obj, dict):
+            for key in ("result", "text", "content"):
+                val = obj.get(key)
+                if isinstance(val, str):
+                    return val
+            # dict 인데 본문 키가 없으면(예상외) — 원본 유지(파서가 판단).
+            return raw
+        # 2) 절단 envelope — result 값 시작을 찾아 부분 디코딩
+        m = re.search(r'"result"\s*:\s*"', s)
+        if m:
+            return NarrativeComposer._decode_json_string_prefix(s[m.end():])
+        # 3) envelope 아님 → 원본 유지 (text 모드 호환)
+        return raw
+
+    @staticmethod
+    def _decode_json_string_prefix(s: str) -> str:
+        """JSON 문자열 내용(여는 따옴표 *뒤* 부터)을 닫는 따옴표 또는 끝까지 언이스케이프.
+
+        절단된 envelope 의 result 값을 살리기 위한 best-effort 디코더(표준 escape +
+        ``\\uXXXX``). 닫는 따옴표를 만나면 종료, 절단이면 거기까지 반환.
+        """
+        out: list[str] = []
+        i, n = 0, len(s)
+        simple = {'"': '"', "\\": "\\", "/": "/", "b": "\b",
+                  "f": "\f", "n": "\n", "r": "\r", "t": "\t"}
+        while i < n:
+            c = s[i]
+            if c == "\\":
+                if i + 1 >= n:
+                    break  # 절단된 escape
+                nx = s[i + 1]
+                if nx == "u":
+                    if i + 6 <= n:
+                        try:
+                            out.append(chr(int(s[i + 2:i + 6], 16)))
+                            i += 6
+                            continue
+                        except ValueError:
+                            break
+                    break  # 절단된 \uXXXX
+                out.append(simple.get(nx, nx))
+                i += 2
+                continue
+            if c == '"':
+                break  # result 문자열 끝
+            out.append(c)
+            i += 1
+        return "".join(out)
 
     async def _call_api(
         self, user_message: str, mode: str = "standard",
