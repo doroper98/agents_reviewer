@@ -615,7 +615,11 @@
     const center = payload.center || [0, 0];
     const baseScale = H / 2 - 16;
     // 평면의 zoom(3.0 안팎) 의미가 다름 — 지구본은 완화 매핑 (1=반구 전체).
-    const k0 = Math.max(1, Math.min(3, (payload.zoom || 2) / 2));
+    // v8.2.14 — 초기 확대를 기본 1.5스텝 더 당겨서 시작 (사용자 요청, 전역).
+    //   확대 버튼 1스텝 = ×1.4 (아래 'in' 핸들러) → 1.5스텝 = ×1.4^1.5 ≈ ×1.66.
+    //   반구 전체(k=1)로 시작하면 너무 멀어 보여, 대륙 간 무대가 화면을 더 채우게 한다.
+    const GLOBE_INITIAL_ZOOM_BOOST = Math.pow(1.4, 1.5);  // ≈1.657
+    const k0 = Math.max(1, Math.min(3, (payload.zoom || 2) / 2)) * GLOBE_INITIAL_ZOOM_BOOST;
     let k = k0;
     const projection = d3.geoOrthographic()
       .translate([W / 2, H / 2]).clipAngle(90)

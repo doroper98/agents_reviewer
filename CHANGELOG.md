@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.13
+last_synced_with: v8.2.14
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.14 — 지구본 초기 확대 기본 +1.5스텝 (전역)
+
+사용자 요청 — 자동 격상된 지구본이 반구 전체(k=1)로 시작해 너무 멀어 보임. `maps.js:renderGlobe` 의 초기 스케일 `k0` 에 기본 부스트를 적용: 확대 버튼 1스텝=×1.4 이므로 1.5스텝=×1.4^1.5≈×1.66 만큼 더 당겨서 시작(`GLOBE_INITIAL_ZOOM_BOOST`). 대륙 간 무대가 화면을 더 채운다. 드래그 회전·휠 확대·reset 동작 불변(reset 은 부스트된 초기 뷰로 복귀). maps.js 는 보고서 HTML 에 인라인되므로 재렌더(`--rerender-only`)·신규 보고서부터 반영.
 
 ## v8.2.13 — 대륙 간 지도 지구본 자동 격상 (CHART-AP-39) + patch `--map-projection`
 
