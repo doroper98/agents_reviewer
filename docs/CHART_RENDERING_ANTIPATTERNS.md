@@ -1228,6 +1228,32 @@ v8.0.0 이래 한 번도 렌더된 적이 없다. 2026-06-27 사용자 catch.
 
 ---
 
+## CHART-AP-39: 대륙 간 스케일 지도를 평면 메르카토르로 렌더 → 빈 바다·구석 왜곡 (v8.2.13 신설, 사용자 catch)
+
+**증상**: 환태평양 메모리 공급망(한국·미국·중국·대만) 보고서의 *첫 장면* 지도가
+이상하게 나온다. 태평양 한가운데(center [-170, 28])를 중심으로 펼친 평면 지도가
+대부분 빈 검은 바다 + 우측 구석에 북미만 걸리고, 한국·중국·대만 마커는 화면 밖으로
+밀려난다. 2026-06-28 사용자 catch.
+
+**원인**: composer 가 *대륙 간 스케일* 토픽(경도 span 154°)에 `projection: "globe"`
+대신 평면 메르카토르(projection 무지정)를 emit. 평면 메르카토르는 경도 span 이 크면
+거리·방향을 심하게 왜곡한다 — 환태평양처럼 자오선을 가로지르는 무대는 평면에서
+가장자리로 흩어진다. 프롬프트는 '대양 횡단 공급망 → globe' 를 안내하나(LLM 지시
+준수 의존) 누락됐다. globe 렌더 경로(`maps.js:renderGlobe`)는 이미 있었으나 payload
+가 그것을 가리키지 않았다.
+
+**Fix (v8.2.13)**: 결정적 안전망 2단.
+① [orchestrator.py:`_promote_intercontinental_globe`](../src/orchestrator.py) — composer 가
+projection 을 지정 안 한 평면 지도에서 마커 경도 span(자오선 wrap 보정)을 계산해
+대륙 간 임계(>=100°)면 `projection="globe"` 로 자동 격상. 좁은 권역(지역 사건)·
+composer 가 projection 명시한 경우는 no-op(평면 유지, byte-equal). 풀 파이프라인
+post-process 블록(`_reconcile_visual_references` 다음)에 배선, 디폴트 ON.
+② 발행본 한정 교정은 [patch_report.py](../scripts/patch_report.py) `--map-projection
+globe` 로 수술적 전환(LLM 0, URL 동일). globe 는 드래그 회전·휠 확대되는 '움직이는'
+지도이고 arcs 가 대권 최단경로로 그려져 대륙 간 흐름이 직관적이다.
+
+---
+
 ## 본 문서 갱신 규칙 (DOCS_GOVERNANCE 정합)
 
 - **append-only**: 발견된 회귀는 새 항목으로 추가. 기존 항목 수정 금지. 정정은 새 항목으로.

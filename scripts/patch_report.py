@@ -146,6 +146,15 @@ def parse_args() -> argparse.Namespace:
         help="지도 마커 1개 제거 (id 기준). --show 로 id 확인.",
     )
     p.add_argument(
+        "--map-projection",
+        choices=["globe", "flat"],
+        metavar="{globe,flat}",
+        help="지도 투영 전환 (v8.2.13). globe=정사영 지구본(드래그 회전·휠 확대되는 "
+             "'움직이는' 지도, arcs 대권 최단경로) / flat=평면 메르카토르. 대륙 간 "
+             "스케일(환태평양·대양 횡단) 토픽이 평면으로 이상하게 나온 발행본을 "
+             "지구본으로 교정. flat 은 embedded_map 의 projection 키를 제거.",
+    )
+    p.add_argument(
         "--deck",
         metavar="TEXT",
         help="composed_report.deck (헤드라인 부제) 교체.",
@@ -421,6 +430,31 @@ def patch_map_center(result: FullAnalysisResult, center_str: str) -> bool:
     old = result.composed_report.embedded_map.get("center")
     result.composed_report.embedded_map["center"] = [lng, lat]
     print(f"[patch] map center: {old} → [{lng}, {lat}]")
+    return True
+
+
+def patch_map_projection(result: FullAnalysisResult, projection: str) -> bool:
+    """지도 투영 전환 (v8.2.13). globe=정사영 지구본(움직이는 지도) / flat=평면.
+
+    대륙 간 스케일 토픽이 평면 메르카토르로 왜곡돼 '이상하게' 나온 발행본을 지구본
+    으로 교정. globe → embedded_map["projection"]="globe". flat → projection 키 제거
+    (평면 렌더가 기본). center/zoom/markers/arcs 등 나머지 어휘는 그대로 유지 —
+    maps.js 의 renderGlobe 가 평면과 동일 계약을 소비한다. CHART-AP-39.
+    """
+    if not result.composed_report or not result.composed_report.embedded_map:
+        print("[patch] embedded_map 이 없음 (지리적 사건 아님)", file=sys.stderr)
+        return False
+    emap = result.composed_report.embedded_map
+    old = emap.get("projection") or "flat"
+    if projection == "globe":
+        emap["projection"] = "globe"
+    else:  # flat — projection 키 제거 (평면이 기본 렌더)
+        emap.pop("projection", None)
+    new = emap.get("projection") or "flat"
+    if old == new:
+        print(f"[patch] map projection 이미 '{new}' — 변경 없음.")
+        return False
+    print(f"[patch] map projection: {old} → {new}")
     return True
 
 
@@ -895,6 +929,10 @@ async def main() -> int:
         mutated = True
     if args.map_center:
         if not patch_map_center(result, args.map_center):
+            return 1
+        mutated = True
+    if args.map_projection:
+        if not patch_map_projection(result, args.map_projection):
             return 1
         mutated = True
     if args.remove_marker:

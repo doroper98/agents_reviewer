@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.2.12"
+VERSION = "v8.2.13"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -830,6 +830,56 @@ def _reconcile_visual_references(composed) -> int:
             "[orchestrator] _reconcile_visual_references: dangling 시각물 참조 %d 개 제거", removed,
         )
     return removed
+
+
+def _promote_intercontinental_globe(composed) -> bool:
+    """v8.2.13 — 평면(메르카토르) 지도가 *대륙 간 스케일* 일 때 자동으로 지구본
+    (projection="globe")으로 격상하는 결정적 안전망 (사용자 catch 2026-06-28).
+
+    배경: composer 프롬프트는 '대양 횡단 공급망' 같은 대륙 간 토픽에 globe 를 쓰라고
+    안내하지만(LLM 지시 준수에 의존), 환태평양 메모리 공급망(한국 127°E ↔ 미국 -98°
+    ↔ 중국 ↔ 대만) 보고서에서 LLM 이 평면 메르카토르 + center [-170,28] 을 emit →
+    태평양 한가운데를 중심으로 펼친 평면 지도가 대부분 빈 바다 + 한쪽 구석에 북미만
+    걸리는 '이상한' 렌더가 되었다. 평면 메르카토르는 경도 span 이 크면 거리·방향을
+    심하게 왜곡한다. 결정적 판정: 마커들의 경도 span(자오선 wrap 보정)이 대륙 간
+    임계(>=100°)면 projection 을 globe 로 바꾼다 (정사영 지구본 = 드래그 회전·휠
+    확대되는 '움직이는' 지도, arcs 가 대권 최단경로로 그려짐). composer 가 이미
+    projection 을 지정했거나(globe 포함) 마커가 2개 미만이거나 좁은 권역(지역 사건)
+    이면 no-op → 평면 유지 (byte-equal). center 는 composer 값을 신뢰(보통 무대
+    중심을 잡음). CHART-AP-39.
+
+    반환: globe 로 격상했으면 True.
+    """
+    emap = getattr(composed, "embedded_map", None) if composed is not None else None
+    if not isinstance(emap, dict):
+        return False
+    if str(emap.get("projection") or "").strip():
+        return False  # composer 가 명시 지정 — 존중
+    markers = [m for m in (emap.get("markers") or []) if isinstance(m, dict)]
+    lngs = []
+    for m in markers:
+        try:
+            lng = float(m.get("lng"))
+        except (TypeError, ValueError):
+            continue
+        if -180.0 <= lng <= 180.0:
+            lngs.append(lng)
+    if len(lngs) < 2:
+        return False
+    # 자오선(antimeridian) wrap 을 고려한 *최소* 경도 span — 마커들을 감싸는
+    # 가장 좁은 원호. 정렬 후 인접 gap 중 최대를 360 에서 빼면 실제 묶음 폭이 된다.
+    s = sorted(lngs)
+    gaps = [s[i + 1] - s[i] for i in range(len(s) - 1)]
+    gaps.append(360.0 - (s[-1] - s[0]))  # wrap gap
+    span = 360.0 - max(gaps)
+    if span < 100.0:
+        return False  # 지역 사건 — 평면 유지
+    emap["projection"] = "globe"
+    logging.getLogger(__name__).info(
+        "[orchestrator] _promote_intercontinental_globe: 경도 span %.0f° → 지구본 격상 "
+        "(평면 메르카토르 왜곡 회피, CHART-AP-39)", span,
+    )
+    return True
 
 
 def _ensure_broadcast_summary(composed, context) -> None:
@@ -1958,6 +2008,13 @@ class Orchestrator:
                 _reconcile_visual_references(result.composed_report)
             except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
                 logger.warning("[orchestrator] _reconcile_visual_references skipped: %s", _e)
+        # v8.2.13 (CHART-AP-39) — 평면 지도가 대륙 간 스케일이면 지구본 자동 격상.
+        # 환태평양/대양 횡단 토픽의 평면 메르카토르 왜곡('이상한 지도') 결정적 차단.
+        # 좁은 권역(지역 사건)·composer 가 projection 명시한 경우는 no-op(평면 유지).
+        try:
+            _promote_intercontinental_globe(result.composed_report)
+        except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
+            logger.warning("[orchestrator] _promote_intercontinental_globe skipped: %s", _e)
         # v7.9.0/v7.9.9 — 장마감 브리핑 결정적 차트 주입 (composer 비의존 → 모든 브리핑 반영).
         #  (a) breadth line → combo_candle (좌 하락비율 + 우 지수 캔들, item2)
         #  (b) 코스피 종합지수 → 3M candle + 20일선 (item1)

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.12
+last_synced_with: v8.2.13
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.13 — 대륙 간 지도 지구본 자동 격상 (CHART-AP-39) + patch `--map-projection`
+
+사용자 catch — 환태평양 메모리 공급망(한국·미국·중국·대만) 보고서의 첫 장면 지도가 이상하게 나옴: composer 가 대륙 간 스케일(경도 span 154°) 토픽에 평면 메르카토르를 emit → 태평양 한가운데 중심으로 빈 검은 바다 + 우측 구석에 북미만 걸리고 아시아 마커가 화면 밖으로 밀림.
+
+- **결정적 안전망 — `_promote_intercontinental_globe` (orchestrator, 디폴트 ON)**: composer 가 projection 을 지정 안 한 평면 지도에서 마커 경도 span(자오선 wrap 보정)을 계산해 대륙 간 임계(≥100°)면 `projection="globe"` 로 자동 격상. 정사영 지구본은 드래그 회전·휠 확대되는 '움직이는' 지도이고 arcs 가 대권 최단경로로 그려져 대륙 간 흐름이 직관적. 좁은 권역(지역 사건)·composer 가 projection 명시한 경우는 no-op(평면 유지, byte-equal).
+- **발행본 핫픽스 — `patch_report.py --map-projection {globe,flat}`**: 평면으로 이상하게 나온 발행본을 LLM 0·URL 동일로 지구본 전환(또는 평면 복귀). center/zoom/markers/arcs 등 나머지 어휘는 그대로 유지(renderGlobe 가 평면과 동일 계약 소비).
+- 회귀 SSOT: [docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md) CHART-AP-39.
 
 ## v8.2.12 — 관계도 완성도 개선 (텍스트 잘림 말줄임 + role 길이 가이드)
 
