@@ -3558,7 +3558,7 @@
         -170,
         28
       ],
-      "zoom": 1.6,
+      "zoom": 3.3,
       "markers": [
         {
           "id": "korea",
@@ -3685,7 +3685,7 @@
   "analysis_timestamp": "2026-06-28T23:53:57.076407+09:00",
   "total_duration_seconds": 1669.9307491779327,
   "system_version": "v8.2.13",
-  "revision": 1,
+  "revision": 2,
   "render_revision": 0,
   "disable_scroll_arc": false
 }
