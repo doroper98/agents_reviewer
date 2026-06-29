@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.14
+last_synced_with: v8.2.15
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.15 — 르포 데스크탑 우측 끝단 정렬 (본문 ↔ 차트·지도·용어풀이)
+
+사용자 catch — 르포를 데스크탑으로 보면 차트·지도·용어풀이는 콘텐츠 열(`.rep-wrap`, ~768px)을 꽉 채우는데 본문(`.rep-prose`)만 `max-width:66ch`(~580px)로 좁아, 우측 끝단이 시각물보다 안쪽에서 줄바뀜 → 오른쪽 가장자리 어긋남. 모바일은 뷰포트가 더 좁아 둘 다 가용폭을 채우므로 무증상. 본문의 66ch 캡을 제거해 모든 블록을 동일한 한 열 폭으로 통일(좌·우 끝단 일치, 시각물은 full-size 유지). 일반 보고서(`freeform_essay.html`)·기존 테마 무영향.
 
 ## v8.2.14 — 지구본 초기 확대 기본 +1.5스텝 (전역)
 
