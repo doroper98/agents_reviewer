@@ -1102,8 +1102,8 @@
   "parent_context": null,
   "analysis_timestamp": "2026-06-27T21:13:54.798363+09:00",
   "total_duration_seconds": 1515.435878753662,
-  "system_version": "v8.2.12",
+  "system_version": "v8.2.15",
   "revision": 2,
-  "render_revision": 0,
+  "render_revision": 1,
   "disable_scroll_arc": false
 }
