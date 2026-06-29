@@ -1426,7 +1426,10 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
            letter-spacing:.08em;display:block;margin:0 0 6px}
   .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
           line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
-  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;max-width:66ch;
+  /* v8.2.15 — 본문도 차트/지도/용어풀이와 동일하게 .rep-wrap 콘텐츠 폭을 꽉 채운다.
+     이전엔 본문만 max-width:66ch 로 좁아 데스크탑에서 우측 끝단이 시각물보다 안쪽에서
+     줄바뀜 → 우측 끝 정렬 어긋남(모바일은 뷰포트가 더 좁아 무증상). 한 열로 통일. */
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;
              text-align:justify;text-justify:auto;text-align-last:left;
              word-break:keep-all;overflow-wrap:break-word}
   /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
@@ -1449,10 +1452,10 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 <body>
 <div class="rep-wrap">
 
-  <div class="rep-top">v8.2.13 · Rev 2.0</div>
+  <div class="rep-top">v8.2.15 · Rev 3.0</div>
 
   <h1 class="rep-headline">값은 치솟는데, 누가 팔목을 비트나</h1>
-  <div class="rep-meta">2026-06-29 01:17</div>
+  <div class="rep-meta">2026-06-29 13:16</div>
   
   
 
@@ -1471,7 +1474,7 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
         <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
       </div>
       <div id="freeform-map" class="map-stage" data-theme="reportage_noturno"></div>
-      <script type="application/json" id="map-payload">{"arcs": [{"from_id": "korea", "kind": "flow", "label": "HBM\u00b7\uba54\ubaa8\ub9ac", "label_t": 0.55, "to_id": "us", "weight": 3}, {"from_id": "cxmt", "kind": "alt", "label": "\uc6b0\ud68c \uc2dc\ub3c4", "label_t": 0.6, "to_id": "us", "weight": 1}, {"from_id": "us", "kind": "tension", "label": "\uad00\uc138\u00b7\ud1b5\uc81c", "label_t": 0.35, "to_id": "korea", "weight": 2}], "center": [-170, 28], "legend": [{"kind": "flow", "label": "\uba54\ubaa8\ub9ac \ud750\ub984"}, {"kind": "alt", "label": "\uc6b0\ud68c \uc2dc\ub3c4"}, {"kind": "tension", "label": "\uad00\uc138\u00b7\ud1b5\uc81c"}], "markers": [{"highlight": true, "id": "korea", "kind": "port", "label_side": "top", "lat": 37.0, "lng": 127.0, "name": "\uc0bc\uc131\u00b7SK", "value": "\uc138\uacc4 \uba54\ubaa8\ub9ac \uacf5\uae09 \ud575\uc2ec"}, {"id": "us", "label_side": "top", "lat": 39.0, "lng": -98.0, "name": "AI \ub370\uc774\ud130\uc13c\ud130\u00b7\uc815\ucc45"}, {"id": "taiwan", "kind": "port", "label_side": "bottom", "lat": 24.0, "lng": 121.0, "name": "\ub9c8\uc774\ud06c\ub860\u00b7\uc0dd\uc0b0\uad8c"}, {"id": "cxmt", "kind": "port", "label_side": "bottom", "lat": 30.0, "lng": 108.0, "name": "\uc911\uad6d CXMT", "value": "\uc81c\uc7ac \ubc16 \uc6b0\ud68c \uacf5\uae09\uc6d0"}], "projection": "globe", "regions": [{"label": "\ubbf8\uad6d", "name": "United States of America", "role": "subject"}, {"label": "\ud55c\uad6d", "name": "South Korea", "role": "ally"}, {"label": "\uc911\uad6d", "name": "China", "role": "rival"}, {"label": "\uc77c\ubcf8", "name": "Japan", "role": "contested"}], "sea_labels": [{"lat": 12, "lng": -165, "name": "\ud0dc\ud3c9\uc591"}], "zoom": 3.3}</script>
+      <script type="application/json" id="map-payload">{"arcs": [{"from_id": "korea", "kind": "flow", "label": "HBM\u00b7\uba54\ubaa8\ub9ac", "label_t": 0.55, "to_id": "us", "weight": 3}, {"from_id": "cxmt", "kind": "alt", "label": "\uc6b0\ud68c \uc2dc\ub3c4", "label_t": 0.6, "to_id": "us", "weight": 1}, {"from_id": "us", "kind": "tension", "label": "\uad00\uc138\u00b7\ud1b5\uc81c", "label_t": 0.35, "to_id": "korea", "weight": 2}], "center": [-170, 28], "legend": [{"kind": "flow", "label": "\uba54\ubaa8\ub9ac \ud750\ub984"}, {"kind": "alt", "label": "\uc6b0\ud68c \uc2dc\ub3c4"}, {"kind": "tension", "label": "\uad00\uc138\u00b7\ud1b5\uc81c"}], "markers": [{"highlight": true, "id": "korea", "kind": "port", "label_side": "top", "lat": 37.0, "lng": 127.0, "name": "\uc0bc\uc131\u00b7SK", "value": "\uc138\uacc4 \uba54\ubaa8\ub9ac \uacf5\uae09 \ud575\uc2ec"}, {"id": "us", "label_side": "top", "lat": 39.0, "lng": -98.0, "name": "AI \ub370\uc774\ud130\uc13c\ud130\u00b7\uc815\ucc45"}, {"id": "taiwan", "kind": "port", "label_side": "bottom", "lat": 24.0, "lng": 121.0, "name": "\ub9c8\uc774\ud06c\ub860\u00b7\uc0dd\uc0b0\uad8c"}, {"id": "cxmt", "kind": "port", "label_side": "bottom", "lat": 30.0, "lng": 108.0, "name": "\uc911\uad6d CXMT", "value": "\uc81c\uc7ac \ubc16 \uc6b0\ud68c \uacf5\uae09\uc6d0"}], "projection": "globe", "regions": [{"label": "\ubbf8\uad6d", "name": "United States of America", "role": "subject"}, {"label": "\ud55c\uad6d", "name": "South Korea", "role": "ally"}, {"label": "\uc911\uad6d", "name": "China", "role": "rival"}, {"label": "\uc77c\ubcf8", "name": "Japan", "role": "contested"}], "sea_labels": [{"lat": 12, "lng": -165, "name": "\ud0dc\ud3c9\uc591"}], "zoom": 1.6}</script>
       <div class="map-hint">드래그·휠로 지구본 회전·확대</div>
     </div>
   </div>
@@ -1748,7 +1751,7 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 </div>
 
 <footer class="rep-foot">
-  archetype: reportage · Generated 2026-06-29 01:17:18 · Duration: 1669.9s
+  archetype: reportage · Generated 2026-06-29 13:16:44 · Duration: 1669.9s
   
 </footer>
 
