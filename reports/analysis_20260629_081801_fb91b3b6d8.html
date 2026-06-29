@@ -1426,7 +1426,10 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
            letter-spacing:.08em;display:block;margin:0 0 6px}
   .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
           line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
-  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;max-width:66ch;
+  /* v8.2.15 — 본문도 차트/지도/용어풀이와 동일하게 .rep-wrap 콘텐츠 폭을 꽉 채운다.
+     이전엔 본문만 max-width:66ch 로 좁아 데스크탑에서 우측 끝단이 시각물보다 안쪽에서
+     줄바뀜 → 우측 끝 정렬 어긋남(모바일은 뷰포트가 더 좁아 무증상). 한 열로 통일. */
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;
              text-align:justify;text-justify:auto;text-align-last:left;
              word-break:keep-all;overflow-wrap:break-word}
   /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
@@ -1449,10 +1452,10 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 <body>
 <div class="rep-wrap">
 
-  <div class="rep-top">v8.2.13 · Rev 0.0</div>
+  <div class="rep-top">v8.2.15 · Rev 0.1</div>
 
   <h1 class="rep-headline">이제는 줄을 서야 칩을 만든다</h1>
-  <div class="rep-meta">2026-06-29 08:18</div>
+  <div class="rep-meta">2026-06-29 13:16</div>
   
   
 
@@ -1728,7 +1731,7 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 </div>
 
 <footer class="rep-foot">
-  archetype: reportage · Generated 2026-06-29 08:18:01 · Duration: 1334.7s
+  archetype: reportage · Generated 2026-06-29 13:16:06 · Duration: 1334.7s
   
 </footer>
 
