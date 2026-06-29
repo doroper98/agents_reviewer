@@ -1,0 +1,2329 @@
+{
+  "request": {
+    "event_description": "오늘 2026-06-30 (Tue) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-06-29 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-06-30 (Tue)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false,
+    "report_format": "standard",
+    "user_directive": ""
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "이재명 정부는 2025년 6월 출범 후 1년간 60%대 지지율을 유지했으나 2026년 6/3 지방선거 투표용지 부족 사태로 처음 50% 아래로 내려옴. 6/29 메가플랜은 정치적 반전+서남권 지역 격차 해소+AI 패권 경쟁이라는 3중 포석. 한편 2026년 2월 시작된 미·이란 전쟁은 6월 들어 휴전→재충돌→재휴전을 반복하며 호르무즈 해협과 글로벌 유가의 변동성을 키우는 중. 우크라이나는 모스크바 인근까지 사거리를 늘린 장거리 드론으로 러시아 정유 인프라를 체계적으로 무력화, 푸틴이 처음으로 연료 부족을 공개 인정.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-06-03",
+            "event": "지방선거 — 이재명 여당 승리하나 투표용지 부족 사태 발생",
+            "impact": "지지율 60%대 → 50% 미만으로 첫 하락. 6/29 메가플랜이 정치 반전 카드 성격"
+          },
+          {
+            "date": "2026-06-15~17",
+            "event": "프랑스 에비앙 G7 정상회의 (이재명 대통령 2년 연속 초청)",
+            "impact": "AI·개발협력 의제 주도, 한국의 글로벌 파트너 지위 강화"
+          },
+          {
+            "date": "2026-06-23",
+            "event": "글로벌 테크 매도세, 코스피 4.6% 급락",
+            "impact": "삼성·SK하이닉스 동반 9%대 급락. AI 자본지출 피로감 표면화"
+          },
+          {
+            "date": "2026-06-27",
+            "event": "이란, 컨테이너선 타격 → 미국 6/28 이란 연안 5곳 보복 공습",
+            "impact": "6월초 미·이란 휴전 와해 우려"
+          },
+          {
+            "date": "2026-06-28",
+            "event": "이란, 쿠웨이트 알리살렘 미군기지·바레인 5함대 사령부 탄도미사일·드론 공격",
+            "impact": "WTI 4개월 저점 후 반등, 호르무즈 해협 봉쇄 리스크 재점화"
+          },
+          {
+            "date": "2026-06-28",
+            "event": "우크라이나 장거리 드론, 러시아 슬라뱐스크(300km)·야로슬라블(700km) 정유시설 타격",
+            "impact": "러시아 전역 주유소 배급제·연료부족 확산. 푸틴이 사회 분열 시도라며 공개 언급"
+          },
+          {
+            "date": "2026-06-29",
+            "event": "이재명, 800조원(518억 달러) 반도체·AI 메가플랜 발표 — 삼성·SK하이닉스 광주 등 서남권에 각 2개 팹 신설",
+            "impact": "10년 총 1,350조원 청사진. 그러나 시장은 자본지출 부담 해석 → 양사 동반 하락"
+          },
+          {
+            "date": "2026-06-29",
+            "event": "미·이란 공격 중단 재합의, 이란 자산 60억 달러 카타르에서 테헤란 송환 합의",
+            "impact": "WTI +1.9% → 70.56달러. 그러나 협상 다음 단계는 이견"
+          },
+          {
+            "date": "2026-06-30",
+            "event": "(오늘) 한국 증시 개장 — 메가플랜 후속 반응 + 유가·환율 동시 주시",
+            "impact": "광주 부지 관련주, HBM 후공정 장비주 주목. 환율 1,530원대 등락 가능"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "2026-06-30 아침 종합 브리핑: 한국 800조 반도체 메가플랜 + 미·이란 휴전 시험대 + 우크라이나 러시아 정유시설 타격",
+    "event_name_en": "Daily Briefing 2026-06-30: Korea $518B Chip Megaplan, Fragile US-Iran Ceasefire, Ukraine Refinery Strikes",
+    "date": "2026-06-30",
+    "category": "종합 브리핑 (산업+지정학+전쟁+정치)",
+    "summary": "전일(6/29) 이재명 정부가 800조원(약 5180억 달러) 규모의 반도체·AI 메가플랜을 공식 발표함. 그러나 자본지출 부담 우려로 삼성전자 -4.8%, SK하이닉스 -1.6% 동반 하락, 코스피는 8,238.70 마감. 동시에 미·이란이 쿠웨이트·바레인 미군기지 공격을 주고받은 뒤 휴전에 재합의, WTI 70.56달러로 1.9% 반등. 우크라이나는 러시아 슬라뱐스크·야로슬라블 정유시설을 동시 타격해 러시아 연료 배급제 확대됨.",
+    "timeline": [
+      {
+        "date": "2026-06-03",
+        "event": "지방선거 — 이재명 여당 승리하나 투표용지 부족 사태 발생",
+        "impact": "지지율 60%대 → 50% 미만으로 첫 하락. 6/29 메가플랜이 정치 반전 카드 성격"
+      },
+      {
+        "date": "2026-06-15~17",
+        "event": "프랑스 에비앙 G7 정상회의 (이재명 대통령 2년 연속 초청)",
+        "impact": "AI·개발협력 의제 주도, 한국의 글로벌 파트너 지위 강화"
+      },
+      {
+        "date": "2026-06-23",
+        "event": "글로벌 테크 매도세, 코스피 4.6% 급락",
+        "impact": "삼성·SK하이닉스 동반 9%대 급락. AI 자본지출 피로감 표면화"
+      },
+      {
+        "date": "2026-06-27",
+        "event": "이란, 컨테이너선 타격 → 미국 6/28 이란 연안 5곳 보복 공습",
+        "impact": "6월초 미·이란 휴전 와해 우려"
+      },
+      {
+        "date": "2026-06-28",
+        "event": "이란, 쿠웨이트 알리살렘 미군기지·바레인 5함대 사령부 탄도미사일·드론 공격",
+        "impact": "WTI 4개월 저점 후 반등, 호르무즈 해협 봉쇄 리스크 재점화"
+      },
+      {
+        "date": "2026-06-28",
+        "event": "우크라이나 장거리 드론, 러시아 슬라뱐스크(300km)·야로슬라블(700km) 정유시설 타격",
+        "impact": "러시아 전역 주유소 배급제·연료부족 확산. 푸틴이 사회 분열 시도라며 공개 언급"
+      },
+      {
+        "date": "2026-06-29",
+        "event": "이재명, 800조원(518억 달러) 반도체·AI 메가플랜 발표 — 삼성·SK하이닉스 광주 등 서남권에 각 2개 팹 신설",
+        "impact": "10년 총 1,350조원 청사진. 그러나 시장은 자본지출 부담 해석 → 양사 동반 하락"
+      },
+      {
+        "date": "2026-06-29",
+        "event": "미·이란 공격 중단 재합의, 이란 자산 60억 달러 카타르에서 테헤란 송환 합의",
+        "impact": "WTI +1.9% → 70.56달러. 그러나 협상 다음 단계는 이견"
+      },
+      {
+        "date": "2026-06-30",
+        "event": "(오늘) 한국 증시 개장 — 메가플랜 후속 반응 + 유가·환율 동시 주시",
+        "impact": "광주 부지 관련주, HBM 후공정 장비주 주목. 환율 1,530원대 등락 가능"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "한국 반도체·AI 메가플랜 규모",
+        "value": "800조원 (약 5,180억 달러)",
+        "context": "정부 주도 단일 산업 정책으로는 역대 최대 수준. 추가 민간 투자 포함 시 10년간 1,350조원(8,800억 달러)"
+      },
+      {
+        "label": "AI 데이터센터 투자 목표",
+        "value": "550조원 (2029년까지)",
+        "context": "2035년까지 1,000조원 추가 확대 계획"
+      },
+      {
+        "label": "코스피 종가 (6/29)",
+        "value": "8,238.70",
+        "context": "월말 예상치 8,293 대비 하회. 6월 한때 8,476 출발 → 변동성 확대 국면"
+      },
+      {
+        "label": "삼성전자 (6/29)",
+        "value": "약 -4.8% (323,000원대)",
+        "context": "메가플랜 호재에도 자본지출 부담 우려가 우세. CNBC 기준 수치"
+      },
+      {
+        "label": "SK하이닉스 (6/29)",
+        "value": "약 -1.6% (2,595,000원대)",
+        "context": "장중 -6%까지 밀렸다가 낙폭 축소. HBM4 16단 NVIDIA 공급 경쟁 진행 중"
+      },
+      {
+        "label": "WTI 유가 (6/29)",
+        "value": "70.56달러 (+1.9%)",
+        "context": "미·이란 공격 중단 합의 직후 반등. 6월 중순 4개월 저점에서 회복 중"
+      },
+      {
+        "label": "원/달러 환율",
+        "value": "약 1,534원 (6/26 종가 기준)",
+        "context": "전일比 -0.67%. 그러나 외국인 매도세로 1,530~1,550원대 박스권 압력"
+      },
+      {
+        "label": "이재명 지지율",
+        "value": "50% 미만 (6월 중순)",
+        "context": "취임 후 첫 50% 하회. 첫해 평균은 60%대 중반. 지방선거 투표용지 사태 후폭풍"
+      },
+      {
+        "label": "러시아 슬라뱐스크 정유시설",
+        "value": "연 400만톤 원유 처리",
+        "context": "남부 흑해 수출 거점. 중유·납사·선박연료 생산. 우크라 타격으로 가동 차질"
+      },
+      {
+        "label": "러시아 야간 공격 규모",
+        "value": "드론 142기 + 미사일 8발",
+        "context": "우크라 방공이 드론 125기, 미사일 7발 요격 (요격률 약 88%)"
+      },
+      {
+        "label": "이란 동결자산 송환",
+        "value": "60억 달러 (카타르 보관분 → 테헤란)",
+        "context": "6/29 페제시키안 이란 대통령 발표. 휴전 유지 인센티브 성격"
+      }
+    ],
+    "background": "이재명 정부는 2025년 6월 출범 후 1년간 60%대 지지율을 유지했으나 2026년 6/3 지방선거 투표용지 부족 사태로 처음 50% 아래로 내려옴. 6/29 메가플랜은 정치적 반전+서남권 지역 격차 해소+AI 패권 경쟁이라는 3중 포석. 한편 2026년 2월 시작된 미·이란 전쟁은 6월 들어 휴전→재충돌→재휴전을 반복하며 호르무즈 해협과 글로벌 유가의 변동성을 키우는 중. 우크라이나는 모스크바 인근까지 사거리를 늘린 장거리 드론으로 러시아 정유 인프라를 체계적으로 무력화, 푸틴이 처음으로 연료 부족을 공개 인정.",
+    "sources": [
+      "https://www.cnbc.com/2026/06/29/samsung-sk-hynix-reported-1point3-reported-trillion-spending-plans.html",
+      "https://www.bloomberg.com/news/articles/2026-06-28/samsung-sk-reportedly-to-invest-1-3-trillion-over-10-years",
+      "https://invezz.com/news/2026/06/29/why-samsung-and-sk-hynix-stock-are-falling-today/",
+      "https://www.cnn.com/2026/06/28/world/live-news/iran-war-strikes-trump",
+      "https://www.cnbc.com/2026/06/29/oil-prices-wti-brent-crude-us-iran-strikes-strait-hormuz-talks.html",
+      "https://www.aljazeera.com/news/2026/6/28/ukraine-says-it-attacked-two-russian-oil-refineries",
+      "https://carnegieendowment.org/posts/2026/06/president-lee-jae-myung-a-year-in-power",
+      "https://en.wikipedia.org/wiki/52nd_G7_summit",
+      "https://kr.investing.com/indices/kospi-historical-data"
+    ],
+    "glossary": [
+      {
+        "term": "HBM (High Bandwidth Memory)",
+        "definition": "고대역폭 메모리. AI 가속기에 D램을 수직 적층해 데이터 전송 속도를 높인 칩. 16단(16-Hi) HBM4는 차세대 제품"
+      },
+      {
+        "term": "Capex (자본지출)",
+        "definition": "공장·장비 등 장기 자산에 쓰는 투자비. 늘어나면 단기 이익은 줄어 주가에 부담"
+      },
+      {
+        "term": "호르무즈 해협",
+        "definition": "이란-오만 사이 좁은 해협. 전 세계 원유 수송의 약 20%가 통과하는 길목"
+      },
+      {
+        "term": "Section 301",
+        "definition": "미국 무역대표부(USTR)가 외국의 불공정 무역 관행을 조사·제재할 수 있는 법적 근거"
+      },
+      {
+        "term": "Outreach Session",
+        "definition": "G7 정상회의에 비회원국 정상을 초청해 의견을 듣는 확대 회의. 한국은 2년 연속 초청됨"
+      }
+    ],
+    "confidence_score": 0.78,
+    "instruments_mentioned": [
+      "삼성전자",
+      "SK하이닉스",
+      "코스피",
+      "WTI",
+      "원/달러 환율"
+    ],
+    "time_series": [
+      {
+        "instrument": "삼성전자",
+        "source": "KRX",
+        "code": "005930",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-05-31",
+        "end_date": "2026-06-30",
+        "data": [
+          {
+            "date": "2026-06-01",
+            "open": 319500.0,
+            "high": 354500.0,
+            "low": 319500.0,
+            "close": 349000.0,
+            "volume": 45052488.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 360500.0,
+            "high": 370000.0,
+            "low": 342000.0,
+            "close": 360500.0,
+            "volume": 44720282.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 349000.0,
+            "high": 366000.0,
+            "low": 348000.0,
+            "close": 351500.0,
+            "volume": 34771037.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 333500.0,
+            "high": 343000.0,
+            "low": 325000.0,
+            "close": 329000.0,
+            "volume": 33725012.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 293000.0,
+            "high": 315500.0,
+            "low": 292500.0,
+            "close": 295500.0,
+            "volume": 38929682.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 310000.0,
+            "high": 324000.0,
+            "low": 300000.0,
+            "close": 322000.0,
+            "volume": 30124249.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 311000.0,
+            "high": 314500.0,
+            "low": 295250.0,
+            "close": 302500.0,
+            "volume": 27050362.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 290500.0,
+            "high": 306500.0,
+            "low": 287500.0,
+            "close": 299000.0,
+            "volume": 31420307.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 326000.0,
+            "high": 339000.0,
+            "low": 320000.0,
+            "close": 322500.0,
+            "volume": 31006148.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 342500.0,
+            "high": 344500.0,
+            "low": 334000.0,
+            "close": 337000.0,
+            "volume": 21500067.0
+          },
+          {
+            "date": "2026-06-16",
+            "open": 343000.0,
+            "high": 345500.0,
+            "low": 332500.0,
+            "close": 343000.0,
+            "volume": 17548685.0
+          },
+          {
+            "date": "2026-06-17",
+            "open": 332000.0,
+            "high": 348000.0,
+            "low": 331500.0,
+            "close": 346500.0,
+            "volume": 18134051.0
+          },
+          {
+            "date": "2026-06-18",
+            "open": 345000.0,
+            "high": 363000.0,
+            "low": 344500.0,
+            "close": 362500.0,
+            "volume": 32764450.0
+          },
+          {
+            "date": "2026-06-19",
+            "open": 372500.0,
+            "high": 374500.0,
+            "low": 346250.0,
+            "close": 354000.0,
+            "volume": 43284898.0
+          },
+          {
+            "date": "2026-06-22",
+            "open": 343000.0,
+            "high": 363000.0,
+            "low": 342000.0,
+            "close": 353500.0,
+            "volume": 24330451.0
+          },
+          {
+            "date": "2026-06-23",
+            "open": 347500.0,
+            "high": 353000.0,
+            "low": 310000.0,
+            "close": 310000.0,
+            "volume": 41266630.0
+          },
+          {
+            "date": "2026-06-24",
+            "open": 314000.0,
+            "high": 341000.0,
+            "low": 314000.0,
+            "close": 340500.0,
+            "volume": 47809959.0
+          },
+          {
+            "date": "2026-06-25",
+            "open": 359500.0,
+            "high": 362500.0,
+            "low": 352000.0,
+            "close": 358500.0,
+            "volume": 36157158.0
+          },
+          {
+            "date": "2026-06-26",
+            "open": 354000.0,
+            "high": 356500.0,
+            "low": 321500.0,
+            "close": 339500.0,
+            "volume": 39735951.0
+          },
+          {
+            "date": "2026-06-29",
+            "open": 331000.0,
+            "high": 335500.0,
+            "low": 316000.0,
+            "close": 323000.0,
+            "volume": 35094735.0
+          }
+        ]
+      },
+      {
+        "instrument": "SK하이닉스",
+        "source": "KRX",
+        "code": "000660",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-05-31",
+        "end_date": "2026-06-30",
+        "data": [
+          {
+            "date": "2026-06-01",
+            "open": 2299000.0,
+            "high": 2398000.0,
+            "low": 2296000.0,
+            "close": 2363000.0,
+            "volume": 5602897.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 2376000.0,
+            "high": 2407000.0,
+            "low": 2259000.0,
+            "close": 2360000.0,
+            "volume": 5837216.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 2284000.0,
+            "high": 2327000.0,
+            "low": 2262000.0,
+            "close": 2298000.0,
+            "volume": 3941067.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 2142000.0,
+            "high": 2188000.0,
+            "low": 2070000.0,
+            "close": 2070000.0,
+            "volume": 5778751.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 1856000.0,
+            "high": 2072000.0,
+            "low": 1855000.0,
+            "close": 1911000.0,
+            "volume": 6610833.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 2050000.0,
+            "high": 2226000.0,
+            "low": 1998000.0,
+            "close": 2215000.0,
+            "volume": 5878039.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 2137000.0,
+            "high": 2180000.0,
+            "low": 1992000.0,
+            "close": 2048000.0,
+            "volume": 4928269.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 1975000.0,
+            "high": 2163000.0,
+            "low": 1960000.0,
+            "close": 2101000.0,
+            "volume": 6625775.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 2281000.0,
+            "high": 2304000.0,
+            "low": 2150000.0,
+            "close": 2150000.0,
+            "volume": 5286416.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 2283000.0,
+            "high": 2322000.0,
+            "low": 2265000.0,
+            "close": 2288000.0,
+            "volume": 3872910.0
+          },
+          {
+            "date": "2026-06-16",
+            "open": 2381000.0,
+            "high": 2400000.0,
+            "low": 2286000.0,
+            "close": 2382000.0,
+            "volume": 3644469.0
+          },
+          {
+            "date": "2026-06-17",
+            "open": 2335000.0,
+            "high": 2523000.0,
+            "low": 2334000.0,
+            "close": 2521000.0,
+            "volume": 3980010.0
+          },
+          {
+            "date": "2026-06-18",
+            "open": 2556000.0,
+            "high": 2738000.0,
+            "low": 2556000.0,
+            "close": 2685000.0,
+            "volume": 5808765.0
+          },
+          {
+            "date": "2026-06-19",
+            "open": 2824000.0,
+            "high": 2891000.0,
+            "low": 2688000.0,
+            "close": 2764000.0,
+            "volume": 7478195.0
+          },
+          {
+            "date": "2026-06-22",
+            "open": 2728000.0,
+            "high": 2945000.0,
+            "low": 2728000.0,
+            "close": 2919000.0,
+            "volume": 5179795.0
+          },
+          {
+            "date": "2026-06-23",
+            "open": 2898000.0,
+            "high": 2943000.0,
+            "low": 2536000.0,
+            "close": 2555000.0,
+            "volume": 8050335.0
+          },
+          {
+            "date": "2026-06-24",
+            "open": 2598000.0,
+            "high": 2703000.0,
+            "low": 2453000.0,
+            "close": 2580000.0,
+            "volume": 7487916.0
+          },
+          {
+            "date": "2026-06-25",
+            "open": 2865000.0,
+            "high": 2987000.0,
+            "low": 2749000.0,
+            "close": 2917000.0,
+            "volume": 6790853.0
+          },
+          {
+            "date": "2026-06-26",
+            "open": 2850000.0,
+            "high": 2880000.0,
+            "low": 2600000.0,
+            "close": 2673000.0,
+            "volume": 7467492.0
+          },
+          {
+            "date": "2026-06-29",
+            "open": 2636000.0,
+            "high": 2688000.0,
+            "low": 2517000.0,
+            "close": 2628000.0,
+            "volume": 5216768.0
+          }
+        ]
+      },
+      {
+        "instrument": "코스피",
+        "source": "YAHOO",
+        "code": "^KS11",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-05-31",
+        "end_date": "2026-06-30",
+        "data": [
+          {
+            "date": "2026-06-01",
+            "open": 8485.669921875,
+            "high": 8874.16015625,
+            "low": 8485.669921875,
+            "close": 8788.3798828125,
+            "volume": 636200.0
+          },
+          {
+            "date": "2026-06-02",
+            "open": 8883.1904296875,
+            "high": 8933.6201171875,
+            "low": 8503.1201171875,
+            "close": 8801.490234375,
+            "volume": 632600.0
+          },
+          {
+            "date": "2026-06-04",
+            "open": 8623.8203125,
+            "high": 8759.0498046875,
+            "low": 8577.2998046875,
+            "close": 8639.41015625,
+            "volume": 437900.0
+          },
+          {
+            "date": "2026-06-05",
+            "open": 8323.2001953125,
+            "high": 8382.16015625,
+            "low": 8038.10009765625,
+            "close": 8160.58984375,
+            "volume": 463200.0
+          },
+          {
+            "date": "2026-06-08",
+            "open": 8048.08984375,
+            "high": 8048.08984375,
+            "low": 7442.72998046875,
+            "close": 7484.41015625,
+            "volume": 452200.0
+          },
+          {
+            "date": "2026-06-09",
+            "open": 7697.759765625,
+            "high": 8119.08984375,
+            "low": 7598.8701171875,
+            "close": 8096.93017578125,
+            "volume": 448500.0
+          },
+          {
+            "date": "2026-06-10",
+            "open": 7899.77001953125,
+            "high": 7996.68017578125,
+            "low": 7541.10986328125,
+            "close": 7730.81982421875,
+            "volume": 460900.0
+          },
+          {
+            "date": "2026-06-11",
+            "open": 7509.6201171875,
+            "high": 7800.6201171875,
+            "low": 7394.4599609375,
+            "close": 7763.9501953125,
+            "volume": 478700.0
+          },
+          {
+            "date": "2026-06-12",
+            "open": 8263.849609375,
+            "high": 8434.400390625,
+            "low": 8079.77001953125,
+            "close": 8123.6201171875,
+            "volume": 493400.0
+          },
+          {
+            "date": "2026-06-15",
+            "open": 8526.1201171875,
+            "high": 8603.48046875,
+            "low": 8450.240234375,
+            "close": 8545.98046875,
+            "volume": 516600.0
+          },
+          {
+            "date": "2026-06-16",
+            "open": 8696.5498046875,
+            "high": 8753.8203125,
+            "low": 8540.41015625,
+            "close": 8726.599609375,
+            "volume": 586300.0
+          },
+          {
+            "date": "2026-06-17",
+            "open": 8622.1298828125,
+            "high": 8872.1796875,
+            "low": 8605.66015625,
+            "close": 8864.240234375,
+            "volume": 571200.0
+          },
+          {
+            "date": "2026-06-18",
+            "open": 8884.919921875,
+            "high": 9106.0703125,
+            "low": 8867.33984375,
+            "close": 9063.83984375,
+            "volume": 510900.0
+          },
+          {
+            "date": "2026-06-19",
+            "open": 9288.8896484375,
+            "high": 9385.58984375,
+            "low": 8831.7197265625,
+            "close": 9052.419921875,
+            "volume": 517200.0
+          },
+          {
+            "date": "2026-06-22",
+            "open": 8954.4296875,
+            "high": 9253.0,
+            "low": 8900.6796875,
+            "close": 9114.5498046875,
+            "volume": 381100.0
+          },
+          {
+            "date": "2026-06-23",
+            "open": 9083.5400390625,
+            "high": 9175.4501953125,
+            "low": 8203.83984375,
+            "close": 8203.83984375,
+            "volume": 488700.0
+          },
+          {
+            "date": "2026-06-24",
+            "open": 8356.7900390625,
+            "high": 8577.51953125,
+            "low": 8080.990234375,
+            "close": 8471.01953125,
+            "volume": 418200.0
+          },
+          {
+            "date": "2026-06-25",
+            "open": 8703.419921875,
+            "high": 9044.0400390625,
+            "low": 8693.6201171875,
+            "close": 8930.2998046875,
+            "volume": 456900.0
+          },
+          {
+            "date": "2026-06-26",
+            "open": 8813.1796875,
+            "high": 8861.7001953125,
+            "low": 8126.83984375,
+            "close": 8411.2099609375,
+            "volume": 518500.0
+          }
+        ]
+      },
+      {
+        "instrument": "WTI 유가",
+        "source": "FRED",
+        "code": "DCOILWTICO",
+        "unit": "$",
+        "chart_type": "area",
+        "start_date": "2026-05-31",
+        "end_date": "2026-06-30",
+        "data": [
+          {
+            "date": "2026-06-01",
+            "open": 95.96,
+            "high": 95.96,
+            "low": 95.96,
+            "close": 95.96,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 97.47,
+            "high": 97.47,
+            "low": 97.47,
+            "close": 97.47,
+            "volume": null
+          },
+          {
+            "date": "2026-06-03",
+            "open": 99.76,
+            "high": 99.76,
+            "low": 99.76,
+            "close": 99.76,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 96.83,
+            "high": 96.83,
+            "low": 96.83,
+            "close": 96.83,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 94.32,
+            "high": 94.32,
+            "low": 94.32,
+            "close": 94.32,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 95.0,
+            "high": 95.0,
+            "low": 95.0,
+            "close": 95.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 91.9,
+            "high": 91.9,
+            "low": 91.9,
+            "close": 91.9,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 93.68,
+            "high": 93.68,
+            "low": 93.68,
+            "close": 93.68,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 91.58,
+            "high": 91.58,
+            "low": 91.58,
+            "close": 91.58,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 88.62,
+            "high": 88.62,
+            "low": 88.62,
+            "close": 88.62,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 84.65,
+            "high": 84.65,
+            "low": 84.65,
+            "close": 84.65,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 79.8,
+            "high": 79.8,
+            "low": 79.8,
+            "close": 79.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 80.65,
+            "high": 80.65,
+            "low": 80.65,
+            "close": 80.65,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 80.35,
+            "high": 80.35,
+            "low": 80.35,
+            "close": 80.35,
+            "volume": null
+          },
+          {
+            "date": "2026-06-22",
+            "open": 78.94,
+            "high": 78.94,
+            "low": 78.94,
+            "close": 78.94,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "원/달러 환율",
+        "source": "ECOS",
+        "code": "731Y001/0000001",
+        "unit": "원",
+        "chart_type": "line",
+        "start_date": "2026-05-31",
+        "end_date": "2026-06-30",
+        "data": [
+          {
+            "date": "2026-06-01",
+            "open": 1503.2,
+            "high": 1503.2,
+            "low": 1503.2,
+            "close": 1503.2,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 1511.3,
+            "high": 1511.3,
+            "low": 1511.3,
+            "close": 1511.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 1515.6,
+            "high": 1515.6,
+            "low": 1515.6,
+            "close": 1515.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 1528.6,
+            "high": 1528.6,
+            "low": 1528.6,
+            "close": 1528.6,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 1543.0,
+            "high": 1543.0,
+            "low": 1543.0,
+            "close": 1543.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 1546.5,
+            "high": 1546.5,
+            "low": 1546.5,
+            "close": 1546.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 1518.4,
+            "high": 1518.4,
+            "low": 1518.4,
+            "close": 1518.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 1522.4,
+            "high": 1522.4,
+            "low": 1522.4,
+            "close": 1522.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 1527.0,
+            "high": 1527.0,
+            "low": 1527.0,
+            "close": 1527.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 1520.4,
+            "high": 1520.4,
+            "low": 1520.4,
+            "close": 1520.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 1510.0,
+            "high": 1510.0,
+            "low": 1510.0,
+            "close": 1510.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 1513.5,
+            "high": 1513.5,
+            "low": 1513.5,
+            "close": 1513.5,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 1512.8,
+            "high": 1512.8,
+            "low": 1512.8,
+            "close": 1512.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-19",
+            "open": 1523.4,
+            "high": 1523.4,
+            "low": 1523.4,
+            "close": 1523.4,
+            "volume": null
+          },
+          {
+            "date": "2026-06-22",
+            "open": 1535.0,
+            "high": 1535.0,
+            "low": 1535.0,
+            "close": 1535.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-23",
+            "open": 1535.7,
+            "high": 1535.7,
+            "low": 1535.7,
+            "close": 1535.7,
+            "volume": null
+          },
+          {
+            "date": "2026-06-24",
+            "open": 1537.2,
+            "high": 1537.2,
+            "low": 1537.2,
+            "close": 1537.2,
+            "volume": null
+          },
+          {
+            "date": "2026-06-25",
+            "open": 1538.3,
+            "high": 1538.3,
+            "low": 1538.3,
+            "close": 1538.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-26",
+            "open": 1545.3,
+            "high": 1545.3,
+            "low": 1545.3,
+            "close": 1545.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-29",
+            "open": 1544.2,
+            "high": 1544.2,
+            "low": 1544.2,
+            "close": 1544.2,
+            "volume": null
+          }
+        ]
+      }
+    ],
+    "provenance": [
+      {
+        "fact": "한국 정부 800조원(5,180억 달러) 반도체·AI 메가플랜 공식 발표",
+        "source_date": "2026-06-29",
+        "scope_note": "정부 발표 기준 단일 패키지 규모. 민간 자체 투자 포함 시 1,350조원으로 확대됨",
+        "source_url": "https://www.cnbc.com/2026/06/29/samsung-sk-hynix-reported-1point3-reported-trillion-spending-plans.html"
+      },
+      {
+        "fact": "삼성·SK하이닉스 각 2개 팹을 서남권(광주 등)에 신설",
+        "source_date": "2026-06-29",
+        "scope_note": "삼성은 광주 부지 확정, SK하이닉스는 부지 미확정",
+        "source_url": "https://www.cnbc.com/2026/06/29/samsung-sk-hynix-reported-1point3-reported-trillion-spending-plans.html"
+      },
+      {
+        "fact": "삼성전자 약 -4.8%, SK하이닉스 약 -1.6% (장중 -6%에서 회복)",
+        "source_date": "2026-06-29",
+        "scope_note": "메가플랜 발표일 종가 기준 하락률. 다른 출처에서는 삼성 -5%, 하이닉스 -3% 보도",
+        "source_url": "https://invezz.com/news/2026/06/29/why-samsung-and-sk-hynix-stock-are-falling-today/"
+      },
+      {
+        "fact": "코스피 종가 8,238.70 (6/29)",
+        "source_date": "2026-06-29",
+        "scope_note": "Investing.com KS11 인덱스 종가",
+        "source_url": "https://kr.investing.com/indices/kospi-historical-data"
+      },
+      {
+        "fact": "이란, 쿠웨이트 알리살렘·바레인 5함대 사령부에 탄도미사일·드론 보복",
+        "source_date": "2026-06-28",
+        "scope_note": "미국의 이란 연안 5곳 공습에 대한 직접 보복",
+        "source_url": "https://www.cnn.com/2026/06/28/world/live-news/iran-war-strikes-trump"
+      },
+      {
+        "fact": "WTI 70.56달러, +1.9% (6/29)",
+        "source_date": "2026-06-29",
+        "scope_note": "미·이란 공격 중단 합의 직후 종가 기준",
+        "source_url": "https://www.cnbc.com/2026/06/29/oil-prices-wti-brent-crude-us-iran-strikes-strait-hormuz-talks.html"
+      },
+      {
+        "fact": "카타르 보관 이란 자산 60억 달러 테헤란 송환 합의",
+        "source_date": "2026-06-29",
+        "scope_note": "페제시키안 이란 대통령 직접 발표. 휴전 유지의 인센티브",
+        "source_url": "https://www.cnn.com/2026/06/28/world/live-news/iran-war-strikes-trump"
+      },
+      {
+        "fact": "우크라이나, 슬라뱐스크(300km)·야로슬라블(700km) 정유시설 동시 타격",
+        "source_date": "2026-06-28",
+        "scope_note": "슬라뱐스크는 연 400만톤 처리 규모, 흑해 수출 거점",
+        "source_url": "https://www.aljazeera.com/news/2026/6/28/ukraine-says-it-attacked-two-russian-oil-refineries"
+      },
+      {
+        "fact": "이재명 지지율 50% 미만으로 하락 (취임 후 첫 사례)",
+        "source_date": "2026-06-18",
+        "scope_note": "6월 중순 시점. 첫해 평균 60%대 중반에서 하락. 지방선거 투표용지 사태 후폭풍",
+        "source_url": "https://carnegieendowment.org/posts/2026/06/president-lee-jae-myung-a-year-in-power"
+      },
+      {
+        "fact": "원/달러 1,534.55원 (6/26 기준)",
+        "source_date": "2026-06-26",
+        "scope_note": "전일比 -0.67%. 6/29 직접 종가는 미확인, 1,530~1,550원대 박스",
+        "source_url": "https://ko.tradingeconomics.com/south-korea/currency"
+      }
+    ],
+    "available_images": [
+      {
+        "source_url": "https://www.cnbc.com/2026/06/29/samsung-sk-hynix-reported-1point3-reported-trillion-spending-plans.html",
+        "image_url": "https://image.cnbcfm.com/api/v1/image/108299680-1777518266117-gettyimages-1178845030-250305final.jpeg?v=1777518327&w=1920&h=1080",
+        "title": "South Korea says Samsung and SK Hynix investing in AI, semiconductor mega-projects",
+        "description": "Shares of Samsung Electronics and SK Hynix declined after South Korea unveiled sweeping artificial intelligence and semiconductor mega-projects.",
+        "publisher": "CNBC"
+      },
+      {
+        "source_url": "https://www.cnbc.com/2026/06/29/oil-prices-wti-brent-crude-us-iran-strikes-strait-hormuz-talks.html",
+        "image_url": "https://image.cnbcfm.com/api/v1/image/108327994-1782733655415-gettyimages-2283303398-koutsokostas-notitle260628_npRMl.jpeg?v=1782733683&w=1920&h=1080",
+        "title": "Oil prices rise as U.S. and Iran reach deal to halt attacks, U.S. oil above $70 per barrel again",
+        "description": "Oil prices were higher after an agreement between the U.S. and Iran to halt recent hostilities in the Middle East.",
+        "publisher": "CNBC"
+      },
+      {
+        "source_url": "https://www.aljazeera.com/news/2026/6/28/ukraine-says-it-attacked-two-russian-oil-refineries",
+        "image_url": "https://www.aljazeera.com/wp-content/uploads/2026/06/getty_6a4104cb41-1782645963.jpg?resize=1920%2C1440",
+        "title": "Ukraine says it attacked two Russian oil refineries",
+        "description": "Russian strikes kill at least four in Ukraine's southeast and northeast as Kyiv presses its drone campaign.",
+        "publisher": "aljazeera.com"
+      },
+      {
+        "source_url": "https://carnegieendowment.org/posts/2026/06/president-lee-jae-myung-a-year-in-power",
+        "image_url": "https://assets.carnegieendowment.org/_/eyJrZXkiOiJpbWFnZXMvc29wdXRoLWtvcmVhLUdldHR5SW1hZ2VzLTIyNzk4NDQwNjMuanBnIn0=",
+        "title": "President Lee Jae Myung: A Year in Power",
+        "description": "President Lee marked his first year in office after one of the most tumultuous periods in South Korean politics. Though Lee has enjoyed a high approval rating, a large majority in the National Assembly, and foreign policy victories, Lee and his party’s political fortunes depend on generating economic growth, learning the right lessons from the recent local elections, and managing contentious factional strife within his political base.",
+        "publisher": "carnegieendowment.org"
+      }
+    ]
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "800조 반도체 계획에도, 두 회사 주가는 떨어졌다",
+    "deck": "정부가 향후 10년 1,350조원 투자 계획을 내놨지만 설비 투자 부담 우려가 호재를 눌렀다. 6월 29일 중동은 다시 휴전했고, 우크라이나는 러시아 정유시설을 동시 타격했다.",
+    "sections": [
+      {
+        "heading": "800조 계획 발표한 날, 시장은 망설였다",
+        "kicker": "산업 정책 1",
+        "prose": "정부가 내놓은 그림은 두 겹이다. 정부 주도 800조원에 민간 추가분을 더하면 10년 누적 1,350조원, 2035년까지 다시 1,000조원을 얹는 청구서다. 핵심은 인공지능 데이터센터로, 2029년까지만 550조원이 잡혀 있다 (출처: cnbc.com). 그런데 정작 발표 당일 시장이 본 것은 호재가 아니라 청구서였다. 삼성전자는 약 4.8%, SK하이닉스는 약 1.6% 떨어졌고, SK하이닉스는 장중 한때 6% 가까이 밀렸다가 낙폭을 줄였다 (출처: cnbc.com, invezz.com). 해석은 두 갈래다. 한쪽은 정부가 깔아 준 판 위에서 두 회사가 결국 거대한 설비 투자를 떠안게 된다고 본다. 삼성전자가 광주에 새 팹(반도체 공장) 신설을 확정했고 SK하이닉스도 서남권에 새 부지를 검토 중인 만큼, 단기 현금 흐름은 어차피 쪼그라들 수밖에 없다는 셈법이다. 다른 한쪽은 호재 자체는 인정하되 시점이 문제라고 본다. 직전 정규장(6월 26일)에 코스피는 이미 5.81% 급락해 8,411.21로 마감, 8,411선이 위태로워진 상태였다. 글로벌 테크 매도세가 끝나지 않은 자리에 거대 계획이 더해진 것이 오히려 위험 회피 심리를 자극했다는 진단이다. 분명한 사실 하나는, 정부 발표가 시장의 첫 표를 사지는 못했다는 점이다. 두 회사의 다음 거래일 반응과 외국인 자금 흐름이 이 계획의 진짜 가격표를 매길 것이다.",
+        "charts": [
+          {
+            "type": "candle",
+            "title": "삼성전자 (005930)",
+            "subtitle": "2026-05-31 ~ 2026-06-30 · -7.45% (349,000 → 323,000)",
+            "data": [
+              {
+                "date": "2026-06-01",
+                "open": 319500.0,
+                "high": 354500.0,
+                "low": 319500.0,
+                "close": 349000.0,
+                "volume": 45052488.0
+              },
+              {
+                "date": "2026-06-02",
+                "open": 360500.0,
+                "high": 370000.0,
+                "low": 342000.0,
+                "close": 360500.0,
+                "volume": 44720282.0
+              },
+              {
+                "date": "2026-06-04",
+                "open": 349000.0,
+                "high": 366000.0,
+                "low": 348000.0,
+                "close": 351500.0,
+                "volume": 34771037.0
+              },
+              {
+                "date": "2026-06-05",
+                "open": 333500.0,
+                "high": 343000.0,
+                "low": 325000.0,
+                "close": 329000.0,
+                "volume": 33725012.0
+              },
+              {
+                "date": "2026-06-08",
+                "open": 293000.0,
+                "high": 315500.0,
+                "low": 292500.0,
+                "close": 295500.0,
+                "volume": 38929682.0
+              },
+              {
+                "date": "2026-06-09",
+                "open": 310000.0,
+                "high": 324000.0,
+                "low": 300000.0,
+                "close": 322000.0,
+                "volume": 30124249.0
+              },
+              {
+                "date": "2026-06-10",
+                "open": 311000.0,
+                "high": 314500.0,
+                "low": 295250.0,
+                "close": 302500.0,
+                "volume": 27050362.0
+              },
+              {
+                "date": "2026-06-11",
+                "open": 290500.0,
+                "high": 306500.0,
+                "low": 287500.0,
+                "close": 299000.0,
+                "volume": 31420307.0
+              },
+              {
+                "date": "2026-06-12",
+                "open": 326000.0,
+                "high": 339000.0,
+                "low": 320000.0,
+                "close": 322500.0,
+                "volume": 31006148.0
+              },
+              {
+                "date": "2026-06-15",
+                "open": 342500.0,
+                "high": 344500.0,
+                "low": 334000.0,
+                "close": 337000.0,
+                "volume": 21500067.0,
+                "event": "프랑스 에비앙 G7 정상회의 (이재명 대통령 2년 연속 초청)"
+              },
+              {
+                "date": "2026-06-16",
+                "open": 343000.0,
+                "high": 345500.0,
+                "low": 332500.0,
+                "close": 343000.0,
+                "volume": 17548685.0
+              },
+              {
+                "date": "2026-06-17",
+                "open": 332000.0,
+                "high": 348000.0,
+                "low": 331500.0,
+                "close": 346500.0,
+                "volume": 18134051.0
+              },
+              {
+                "date": "2026-06-18",
+                "open": 345000.0,
+                "high": 363000.0,
+                "low": 344500.0,
+                "close": 362500.0,
+                "volume": 32764450.0
+              },
+              {
+                "date": "2026-06-19",
+                "open": 372500.0,
+                "high": 374500.0,
+                "low": 346250.0,
+                "close": 354000.0,
+                "volume": 43284898.0
+              },
+              {
+                "date": "2026-06-22",
+                "open": 343000.0,
+                "high": 363000.0,
+                "low": 342000.0,
+                "close": 353500.0,
+                "volume": 24330451.0
+              },
+              {
+                "date": "2026-06-23",
+                "open": 347500.0,
+                "high": 353000.0,
+                "low": 310000.0,
+                "close": 310000.0,
+                "volume": 41266630.0
+              },
+              {
+                "date": "2026-06-24",
+                "open": 314000.0,
+                "high": 341000.0,
+                "low": 314000.0,
+                "close": 340500.0,
+                "volume": 47809959.0
+              },
+              {
+                "date": "2026-06-25",
+                "open": 359500.0,
+                "high": 362500.0,
+                "low": 352000.0,
+                "close": 358500.0,
+                "volume": 36157158.0
+              },
+              {
+                "date": "2026-06-26",
+                "open": 354000.0,
+                "high": 356500.0,
+                "low": 321500.0,
+                "close": 339500.0,
+                "volume": 39735951.0
+              },
+              {
+                "date": "2026-06-29",
+                "open": 331000.0,
+                "high": 335500.0,
+                "low": 316000.0,
+                "close": 323000.0,
+                "volume": 35094735.0,
+                "event": "미·이란 공격 중단 재합의, 이란 자산 60억 달러 카타르에서 테헤란 송환 합의"
+              }
+            ],
+            "source": "KRX / 2026-05-31 ~ 2026-06-30 / 일간",
+            "takeaway": "삼성전자 기간 중 295,500~362,500 사이 하락, 마지막 323,000 (-7.45%), 변동폭 22.7%"
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "삼성전자",
+            "title": "삼성전자",
+            "subtitle": "2026-05-31 ~ 2026-06-30 · -7.45% (349,000 → 323,000)",
+            "last_value_formatted": "323,000",
+            "change_day_pct": -4.86,
+            "change_day_pct_formatted": "-4.86%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-06-01",
+                "y": 349000.0
+              },
+              {
+                "x": "2026-06-02",
+                "y": 360500.0
+              },
+              {
+                "x": "2026-06-04",
+                "y": 351500.0
+              },
+              {
+                "x": "2026-06-05",
+                "y": 329000.0
+              },
+              {
+                "x": "2026-06-08",
+                "y": 295500.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 322000.0
+              },
+              {
+                "x": "2026-06-10",
+                "y": 302500.0
+              },
+              {
+                "x": "2026-06-11",
+                "y": 299000.0
+              },
+              {
+                "x": "2026-06-12",
+                "y": 322500.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 337000.0
+              },
+              {
+                "x": "2026-06-16",
+                "y": 343000.0
+              },
+              {
+                "x": "2026-06-17",
+                "y": 346500.0
+              },
+              {
+                "x": "2026-06-18",
+                "y": 362500.0
+              },
+              {
+                "x": "2026-06-19",
+                "y": 354000.0
+              },
+              {
+                "x": "2026-06-22",
+                "y": 353500.0
+              },
+              {
+                "x": "2026-06-23",
+                "y": 310000.0
+              },
+              {
+                "x": "2026-06-24",
+                "y": 340500.0
+              },
+              {
+                "x": "2026-06-25",
+                "y": 358500.0
+              },
+              {
+                "x": "2026-06-26",
+                "y": 339500.0
+              },
+              {
+                "x": "2026-06-29",
+                "y": 323000.0
+              }
+            ],
+            "source": "KRX / 2026-05-31 ~ 2026-06-30 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "SK하이닉스",
+            "title": "SK하이닉스",
+            "subtitle": "2026-05-31 ~ 2026-06-30 · +11.21% (2,363,000 → 2,628,000)",
+            "last_value_formatted": "2,628,000",
+            "change_day_pct": -1.68,
+            "change_day_pct_formatted": "-1.68%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-06-01",
+                "y": 2363000.0
+              },
+              {
+                "x": "2026-06-02",
+                "y": 2360000.0
+              },
+              {
+                "x": "2026-06-04",
+                "y": 2298000.0
+              },
+              {
+                "x": "2026-06-05",
+                "y": 2070000.0
+              },
+              {
+                "x": "2026-06-08",
+                "y": 1911000.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 2215000.0
+              },
+              {
+                "x": "2026-06-10",
+                "y": 2048000.0
+              },
+              {
+                "x": "2026-06-11",
+                "y": 2101000.0
+              },
+              {
+                "x": "2026-06-12",
+                "y": 2150000.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 2288000.0
+              },
+              {
+                "x": "2026-06-16",
+                "y": 2382000.0
+              },
+              {
+                "x": "2026-06-17",
+                "y": 2521000.0
+              },
+              {
+                "x": "2026-06-18",
+                "y": 2685000.0
+              },
+              {
+                "x": "2026-06-19",
+                "y": 2764000.0
+              },
+              {
+                "x": "2026-06-22",
+                "y": 2919000.0
+              },
+              {
+                "x": "2026-06-23",
+                "y": 2555000.0
+              },
+              {
+                "x": "2026-06-24",
+                "y": 2580000.0
+              },
+              {
+                "x": "2026-06-25",
+                "y": 2917000.0
+              },
+              {
+                "x": "2026-06-26",
+                "y": 2673000.0
+              },
+              {
+                "x": "2026-06-29",
+                "y": 2628000.0
+              }
+            ],
+            "source": "KRX / 2026-05-31 ~ 2026-06-30 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "코스피",
+            "title": "코스피",
+            "subtitle": "2026-05-31 ~ 2026-06-30 · -4.29% (8,788 → 8,411)",
+            "last_value_formatted": "8,411",
+            "change_day_pct": -5.81,
+            "change_day_pct_formatted": "-5.81%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-06-01",
+                "y": 8788.3798828125
+              },
+              {
+                "x": "2026-06-02",
+                "y": 8801.490234375
+              },
+              {
+                "x": "2026-06-04",
+                "y": 8639.41015625
+              },
+              {
+                "x": "2026-06-05",
+                "y": 8160.58984375
+              },
+              {
+                "x": "2026-06-08",
+                "y": 7484.41015625
+              },
+              {
+                "x": "2026-06-09",
+                "y": 8096.93017578125
+              },
+              {
+                "x": "2026-06-10",
+                "y": 7730.81982421875
+              },
+              {
+                "x": "2026-06-11",
+                "y": 7763.9501953125
+              },
+              {
+                "x": "2026-06-12",
+                "y": 8123.6201171875
+              },
+              {
+                "x": "2026-06-15",
+                "y": 8545.98046875
+              },
+              {
+                "x": "2026-06-16",
+                "y": 8726.599609375
+              },
+              {
+                "x": "2026-06-17",
+                "y": 8864.240234375
+              },
+              {
+                "x": "2026-06-18",
+                "y": 9063.83984375
+              },
+              {
+                "x": "2026-06-19",
+                "y": 9052.419921875
+              },
+              {
+                "x": "2026-06-22",
+                "y": 9114.5498046875
+              },
+              {
+                "x": "2026-06-23",
+                "y": 8203.83984375
+              },
+              {
+                "x": "2026-06-24",
+                "y": 8471.01953125
+              },
+              {
+                "x": "2026-06-25",
+                "y": 8930.2998046875
+              },
+              {
+                "x": "2026-06-26",
+                "y": 8411.2099609375
+              }
+            ],
+            "source": "Yahoo Finance / 2026-05-31 ~ 2026-06-30 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "WTI 유가",
+            "title": "WTI 유가",
+            "subtitle": "2026-05-31 ~ 2026-06-30 · -17.74% (95.96 → 78.94)",
+            "last_value_formatted": "78.94",
+            "change_day_pct": -1.75,
+            "change_day_pct_formatted": "-1.75%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-06-01",
+                "y": 95.96
+              },
+              {
+                "x": "2026-06-02",
+                "y": 97.47
+              },
+              {
+                "x": "2026-06-03",
+                "y": 99.76
+              },
+              {
+                "x": "2026-06-04",
+                "y": 96.83
+              },
+              {
+                "x": "2026-06-05",
+                "y": 94.32
+              },
+              {
+                "x": "2026-06-08",
+                "y": 95.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 91.9
+              },
+              {
+                "x": "2026-06-10",
+                "y": 93.68
+              },
+              {
+                "x": "2026-06-11",
+                "y": 91.58
+              },
+              {
+                "x": "2026-06-12",
+                "y": 88.62
+              },
+              {
+                "x": "2026-06-15",
+                "y": 84.65
+              },
+              {
+                "x": "2026-06-16",
+                "y": 79.8
+              },
+              {
+                "x": "2026-06-17",
+                "y": 80.65
+              },
+              {
+                "x": "2026-06-18",
+                "y": 80.35
+              },
+              {
+                "x": "2026-06-22",
+                "y": 78.94
+              }
+            ],
+            "source": "FRED / 2026-05-31 ~ 2026-06-30 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "원/달러 환율",
+            "title": "원/달러 환율",
+            "subtitle": "2026-05-31 ~ 2026-06-30 · +2.73% (1,503 → 1,544)",
+            "last_value_formatted": "1,544",
+            "change_day_pct": -0.07,
+            "change_day_pct_formatted": "-0.07%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-06-01",
+                "y": 1503.2
+              },
+              {
+                "x": "2026-06-02",
+                "y": 1511.3
+              },
+              {
+                "x": "2026-06-04",
+                "y": 1515.6
+              },
+              {
+                "x": "2026-06-05",
+                "y": 1528.6
+              },
+              {
+                "x": "2026-06-08",
+                "y": 1543.0
+              },
+              {
+                "x": "2026-06-09",
+                "y": 1546.5
+              },
+              {
+                "x": "2026-06-10",
+                "y": 1518.4
+              },
+              {
+                "x": "2026-06-11",
+                "y": 1522.4
+              },
+              {
+                "x": "2026-06-12",
+                "y": 1527.0
+              },
+              {
+                "x": "2026-06-15",
+                "y": 1520.4
+              },
+              {
+                "x": "2026-06-16",
+                "y": 1510.0
+              },
+              {
+                "x": "2026-06-17",
+                "y": 1513.5
+              },
+              {
+                "x": "2026-06-18",
+                "y": 1512.8
+              },
+              {
+                "x": "2026-06-19",
+                "y": 1523.4
+              },
+              {
+                "x": "2026-06-22",
+                "y": 1535.0
+              },
+              {
+                "x": "2026-06-23",
+                "y": 1535.7
+              },
+              {
+                "x": "2026-06-24",
+                "y": 1537.2
+              },
+              {
+                "x": "2026-06-25",
+                "y": 1538.3
+              },
+              {
+                "x": "2026-06-26",
+                "y": 1545.3
+              },
+              {
+                "x": "2026-06-29",
+                "y": 1544.2
+              }
+            ],
+            "source": "한국은행 ECOS / 2026-05-31 ~ 2026-06-30 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "bar",
+            "title": "발표일 두 회사 주가 변동",
+            "subtitle": "어제(6/29) 종가 기준 일간 등락률",
+            "data": [
+              {
+                "label": "삼성전자",
+                "value": -4.86,
+                "note": "323,000원대"
+              },
+              {
+                "label": "SK하이닉스",
+                "value": -1.68,
+                "note": "2,628,000원대"
+              }
+            ],
+            "unit_line": "단위: % · 2026-06-29 종가",
+            "source": "reference_frame (KRX 종가)",
+            "takeaway": "호재 직후 매도, 자본지출 부담 우위"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "정부 발표는 청구서로 읽혔고, 시장의 첫 표는 매도였다.",
+        "cited_claim_ids": [],
+        "lede": "어제(6월 29일), 이재명 정부가 향후 10년 동안 800조원(약 5,180억 달러) 규모의 반도체와 인공지능 거대 투자 계획을 공식 발표했다. 같은 날 첫 거래에서 삼성전자와 SK하이닉스는 나란히 떨어졌다.",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "정부 메가 계획",
+            "value": "800조원",
+            "sublabel": "향후 10년"
+          },
+          {
+            "label": "AI 데이터센터",
+            "value": "550조원",
+            "sublabel": "2029년까지"
+          },
+          {
+            "label": "정부+민간 누적",
+            "value": "1,350조원",
+            "sublabel": "10년 청구서"
+          },
+          {
+            "label": "2035 추가 목표",
+            "value": "1,000조원",
+            "sublabel": "확장 단계"
+          }
+        ],
+        "dropcap": true,
+        "images": [
+          {
+            "image_url": "img/0dc91f5a20628c91.jpg",
+            "caption": "이재명 정부의 800조원 반도체와 인공지능 거대 투자 계획 발표 직후, 두 한국 대표 종목은 동반 하락으로 화답했다.",
+            "credit": "© CNBC",
+            "source_url": "https://www.cnbc.com/2026/06/29/samsung-sk-hynix-reported-1point3-reported-trillion-spending-plans.html",
+            "alt": "삼성전자와 SK하이닉스 로고가 함께 보이는 한국 반도체 산업 이미지"
+          }
+        ],
+        "footnotes": [
+          {
+            "term": "팹(fab)",
+            "explanation": "반도체 회로를 새겨 넣어 칩을 만들어 내는 대형 생산 시설을 가리킨다. 한 곳을 짓는 데만 수십조원이 든다."
+          },
+          {
+            "term": "HBM",
+            "explanation": "고대역폭 메모리(High Bandwidth Memory)의 줄임말로, 인공지능 가속기에 붙여 쓰는 고성능 메모리다. SK하이닉스가 NVIDIA 공급의 선두에 있다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "어제 한국 정부가 향후 10년 800조원, 우리 돈으로 1,350조원에 이르는 반도체 인공지능 투자 계획을 공식 발표했습니다.",
+            "그런데 발표 당일 삼성전자는 약 4.8%, SK하이닉스는 약 1.6% 동반 하락했습니다. 시장은 호재보다 거대한 설비 투자 청구서를 먼저 본 것입니다.",
+            "코스피는 8,238.70으로 마감했고, 외국인 자금 흐름과 다음 거래일 반응이 이 계획의 진짜 가격표를 매기게 될 것입니다."
+          ],
+          "highlights": [
+            "10년 1,350조원 청구서",
+            "삼성 -4.8%, SK하이닉스 -1.6%",
+            "광주에 팹 두 개 신설"
+          ],
+          "emphasis": [
+            "1,350조원",
+            "삼성전자는 약 4.8%",
+            "SK하이닉스는 약 1.6%"
+          ],
+          "narration_tts": [
+            "어제 한국 정부가 향후 십 년 팔백조 원, 우리 돈으로 천삼백오십조 원에 이르는 반도체 인공지능 투자 계획을 공식 발표했습니다.",
+            "그런데 발표 당일 삼성전자는 약 사 점 팔 퍼센트, 에스케이하이닉스는 약 일 점 육 퍼센트 동반 하락했습니다. 시장은 호재보다 거대한 설비 투자 청구서를 먼저 본 것입니다.",
+            "코스피는 팔천이백삼십팔 점 칠로 마감했고, 외국인 자금 흐름과 다음 거래일 반응이 이 계획의 진짜 가격표를 매기게 될 것입니다."
+          ]
+        }
+      },
+      {
+        "heading": "광주 팹과 아직 정해지지 않은 부지, 반전 카드의 두 얼굴",
+        "kicker": "정치 경제 2",
+        "prose": "이재명 대통령의 첫해는 두 곡선이 엇갈렸다. 외교는 풍년이었다. 지난 6월 15일부터 17일까지 프랑스 에비앙에서 열린 52차 G7 정상회의에 2년 연속 초청을 받았고, 인공지능과 개발 협력 의제에서 주도권을 잡았다 (출처: en.wikipedia.org). 반면 안방은 흔들렸다. 6월 3일 지방선거에서 여당이 승리하긴 했으나 투표용지 부족 사태가 빌미가 됐다. 60%대 중반을 지키던 지지율이 6월 중순 처음으로 50% 아래로 내려갔다 (출처: carnegieendowment.org). 6월 29일 발표한 800조원 계획은 이 두 곡선이 만나는 자리에 놓여 있다. 거대한 산업 청사진은 그 자체로 정치 반전 카드다. 동시에 삼성전자의 광주 신설 확정과 SK하이닉스의 서남권 신규 부지(아직 미정) 검토는 호남 지역 경제 격차 해소라는 정치 메시지를 함께 싣는다. 그러나 같은 그림이 시장에는 다르게 읽혔다. 정부가 지역 균형을 강하게 밀면, 두 회사는 입지 선정의 자유가 줄어들고 추가 부담을 떠안게 된다. 정치적으로 이상적인 위치가 경제적으로도 최적이라는 보장은 없다. 6월 29일의 매도세는 이 의심을 일부 반영한 것일 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/afa966c65cef9e08.webp",
+            "caption": "취임 1주년을 맞은 이재명 대통령은 외교 성과를 쌓는 동안 국내 지지율은 50% 아래로 떨어진 채 어제의 거대 산업 계획을 꺼냈다.",
+            "credit": "© carnegieendowment.org",
+            "source_url": "https://carnegieendowment.org/posts/2026/06/president-lee-jae-myung-a-year-in-power",
+            "alt": "이재명 대통령의 정치 행보를 다룬 분석 기사 이미지"
+          }
+        ],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "이재명 대통령의 첫해는 외교에서는 풍년, 국내에서는 가뭄이었습니다. G7에 2년 연속 초청을 받았지만, 지방선거 후폭풍으로 지지율이 처음으로 50% 아래로 떨어졌습니다.",
+            "광주 등 서남권에 팹을 더 짓는 안은 지역 격차 해소라는 정치 메시지를 함께 싣고 있습니다. 그러나 정치적으로 이상적인 위치가 경제적으로도 최적이라는 보장은 없습니다."
+          ],
+          "highlights": [
+            "외교 풍년, 국내 가뭄",
+            "지지율 첫 50% 하회",
+            "광주 팹은 정치 메시지"
+          ],
+          "emphasis": [
+            "G7에 2년 연속",
+            "지지율이 처음으로 50% 아래",
+            "광주 등 서남권"
+          ],
+          "narration_tts": [
+            "이재명 대통령의 첫해는 외교에서는 풍년, 국내에서는 가뭄이었습니다. 지세븐에 이천 년 연속 초청을 받았지만, 지방선거 후폭풍으로 지지율이 처음으로 오십 퍼센트 아래로 떨어졌습니다.",
+            "광주 등 서남권에 팹을 더 짓는 안은 지역 격차 해소라는 정치 메시지를 함께 싣고 있습니다. 그러나 정치적으로 이상적인 위치가 경제적으로도 최적이라는 보장은 없습니다."
+          ]
+        }
+      },
+      {
+        "heading": "호르무즈는 다시 출렁였다",
+        "kicker": "지정학 3",
+        "prose": "지난 6월 27일 이란이 컨테이너선을 타격하자, 미국은 다음 날 이란 연안 다섯 곳을 보복 공습했다. 6월 초의 휴전이 흔들리는 듯했다 (출처: cnn.com). 6월 28일 밤 이란은 더 무거운 카드를 꺼냈다. 쿠웨이트 알리살렘 미군기지와 바레인의 미 5함대 사령부에 탄도미사일과 드론을 동시에 날렸다. 호르무즈 해협(페르시아만 입구의 좁은 바닷길로, 세계 원유 수송의 핵심 길목)이 봉쇄될 수 있다는 두려움이 다시 시장에 들어왔다. 그러나 6월 29일 양측은 다시 공격 중단에 재합의했다. 카타르가 보관 중이던 이란 동결자산 60억 달러를 테헤란으로 송환하기로 한 합의가 함께 발표됐다. 페제시키안 이란 대통령이 직접 이를 발표했다 (출처: cnbc.com). 6월 들어 휴전과 재충돌과 재합의가 반복된 셈이다. 원유 시장이 이번 재합의를 얼마나 신뢰하는지는 다음 며칠의 가격이 말해 줄 것이다. 자산 송환은 인센티브일 뿐, 협상의 다음 단계는 여전히 이견 위에 놓여 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/1037c40432995bce.jpg",
+            "caption": "미국과 이란이 공격 중단에 재합의하자 WTI 유가는 곧바로 70달러 선을 회복했다.",
+            "credit": "© CNBC",
+            "source_url": "https://www.cnbc.com/2026/06/29/oil-prices-wti-brent-crude-us-iran-strikes-strait-hormuz-talks.html",
+            "alt": "유가 상승 흐름을 보여 주는 시장 분석 이미지"
+          }
+        ],
+        "footnotes": [
+          {
+            "term": "동결자산",
+            "explanation": "국제 제재로 외국 은행에 묶여 있던 한 나라의 돈을 가리킨다. 풀어 주는 것은 협상에서 상대를 움직이기 위한 인센티브로 쓰인다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "어제 미국과 이란은 공격 중단에 다시 합의했습니다. 카타르에 묶여 있던 이란 자산 60억 달러를 테헤란으로 풀어 주는 합의가 함께 발표됐습니다.",
+            "WTI 유가는 합의 직후 1.9% 반등해 70.56달러로 마감했습니다. 그러나 협상의 다음 단계는 여전히 이견 위에 놓여 있습니다."
+          ],
+          "highlights": [
+            "공격 중단 재합의",
+            "이란 자산 60억 달러 송환",
+            "WTI 70달러선 회복"
+          ],
+          "emphasis": [
+            "60억 달러",
+            "70.56달러",
+            "1.9% 반등"
+          ],
+          "narration_tts": [
+            "어제 미국과 이란은 공격 중단에 다시 합의했습니다. 카타르에 묶여 있던 이란 자산 육십억 달러를 테헤란으로 풀어 주는 합의가 함께 발표됐습니다.",
+            "더블유티아이 유가는 합의 직후 일 점 구 퍼센트 반등해 칠십 점 오육 달러로 마감했습니다. 그러나 협상의 다음 단계는 여전히 이견 위에 놓여 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "모스크바의 휘발유 줄과 정유시설 타격",
+        "kicker": "전쟁 4",
+        "prose": "같은 6월 28일 밤 또 다른 전선에서는 다른 방향의 진동이 있었다. 우크라이나는 장거리 드론으로 러시아 슬라뱐스크와 야로슬라블의 정유시설을 동시에 때렸다. 슬라뱐스크는 흑해 수출의 한 거점으로 연 400만톤의 원유를 처리하던 곳이고, 야로슬라블은 모스크바에서 700km 떨어진 내륙 시설이다 (출처: aljazeera.com). 같은 날 밤 러시아도 우크라이나 남동부와 북동부에 드론 142기와 미사일 8발을 날렸다. 우크라이나 방공은 드론 125기와 미사일 7발을 떨어뜨려 약 88%를 막아냈다. 공격 자체보다 무거운 신호는 그 뒤에 왔다. 러시아 전역에서 주유소 배급제가 확산되고, 푸틴 대통령이 처음으로 연료 부족을 공개 인정했다. 일부 도시에서는 휘발유를 사기 위해 줄을 서는 풍경이 다시 나타났다. 우크라이나가 노린 것은 전선의 전차가 아니라 후방의 펌프다. 정유시설 한 곳을 멈추면 인근 군 보급은 물론 민간 운송과 발전까지 동시에 흔들린다. 러시아가 어느 시점에 어떤 형태로 보복할지가 다음 주의 핵심 변수다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "어젯밤 러시아 공격과 우크라이나 요격",
+            "subtitle": "발사 대비 격추, 요격률 약 88%",
+            "data": [
+              {
+                "label": "발사 드론",
+                "value": 142
+              },
+              {
+                "label": "요격 드론",
+                "value": 125
+              },
+              {
+                "label": "발사 미사일",
+                "value": 8
+              },
+              {
+                "label": "요격 미사일",
+                "value": 7
+              }
+            ],
+            "unit_line": "단위: 기·발 · 2026-06-28 야간",
+            "source": "Al Jazeera 보도 / 우크라이나 공군 발표"
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [
+          {
+            "image_url": "img/4fc9e27781081183.webp",
+            "caption": "우크라이나는 6월 28일 밤 러시아의 슬라뱐스크와 야로슬라블 정유시설을 동시에 타격해 러시아 내 연료 부족 압박을 키웠다.",
+            "credit": "© aljazeera.com",
+            "source_url": "https://www.aljazeera.com/news/2026/6/28/ukraine-says-it-attacked-two-russian-oil-refineries",
+            "alt": "러시아 정유시설 타격을 보도한 이미지"
+          }
+        ],
+        "footnotes": [
+          {
+            "term": "배급제",
+            "explanation": "휘발유나 식료품처럼 모자란 물자를 1인당 정해진 양만큼만 나누어 파는 비상 운영 방식이다. 시장 가격이 작동을 멈춘다는 신호다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "우크라이나는 어젯밤 장거리 드론으로 러시아 슬라뱐스크와 야로슬라블 정유시설을 동시에 때렸습니다. 야로슬라블은 모스크바에서 700km 떨어진 내륙 시설입니다.",
+            "러시아 전역에서 주유소 배급제가 번지고 있고, 푸틴 대통령이 처음으로 연료 부족을 공개 인정했습니다. 우크라이나는 전선의 전차가 아니라 후방의 펌프를 노리고 있습니다."
+          ],
+          "highlights": [
+            "두 정유시설 동시 타격",
+            "러시아 배급제 확산",
+            "푸틴, 연료 부족 첫 인정"
+          ],
+          "emphasis": [
+            "슬라뱐스크와 야로슬라블",
+            "700km",
+            "처음으로 연료 부족을 공개 인정"
+          ],
+          "narration_tts": [
+            "우크라이나는 어젯밤 장거리 드론으로 러시아 슬라뱐스크와 야로슬라블 정유시설을 동시에 때렸습니다. 야로슬라블은 모스크바에서 칠백 킬로미터 떨어진 내륙 시설입니다.",
+            "러시아 전역에서 주유소 배급제가 번지고 있고, 푸틴 대통령이 처음으로 연료 부족을 공개 인정했습니다. 우크라이나는 전선의 전차가 아니라 후방의 펌프를 노리고 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "호재와 매도, 휴전과 협상의 거리",
+        "kicker": "쟁점 5",
+        "prose": "6월 30일 아침의 세 갈래 이야기에는 각각 한 자리씩 풀리지 않은 모순이 있다. 첫째, 한국 반도체. 정부 발표는 분명한 호재인데, 시장 첫 반응은 매도였다. 두 회사 입장에서는 광주(삼성 확정)와 미정의 서남권 부지(SK) 같은 입지 압력, 그리고 거대 설비 투자 청구서가 단기 부담이다. 정부 입장에서는 그 부담을 감수하고서라도 인공지능 패권 경쟁에 한국이 좌석을 확보해야 한다는 셈법이다. 양쪽 다 일리가 있다. 둘째, 호르무즈. 6월 29일 재합의된 휴전은 같은 달 27일~29일에 걸쳐 재충돌과 재합의를 반복한 자리다. 이란 자산 60억 달러 송환은 단기 안정의 인센티브로는 충분하지만, 핵 프로그램과 제재 해제라는 협상의 진짜 의제는 한 발짝도 움직이지 않았다. 셋째, 우크라이나와 러시아. 한쪽이 정유 인프라를 체계적으로 무력화하는 동안, 다른 한쪽은 도시 야간 폭격으로 응수하는 비대칭이 굳어지고 있다. 어느 한쪽이 먼저 지쳐 협상 테이블로 끌려 나올지는 아직 보이지 않는다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "오늘 세 갈래 이야기에는 각각 풀리지 않은 모순이 한 자리씩 있습니다. 한국 반도체는 호재인데 매도, 호르무즈는 휴전인데 협상은 멈춰 있습니다.",
+            "우크라이나는 후방의 펌프를 노리고, 러시아는 도시를 야간 폭격합니다. 어느 한쪽이 먼저 지쳐 협상 테이블로 나올지는 아직 보이지 않습니다."
+          ],
+          "highlights": [
+            "호재인데 매도",
+            "휴전인데 협상은 정지",
+            "비대칭 소모전"
+          ],
+          "emphasis": [
+            "호재인데 매도",
+            "휴전인데 협상",
+            "후방의 펌프"
+          ],
+          "narration_tts": [
+            "오늘 세 갈래 이야기에는 각각 풀리지 않은 모순이 한 자리씩 있습니다. 한국 반도체는 호재인데 매도, 호르무즈는 휴전인데 협상은 멈춰 있습니다.",
+            "우크라이나는 후방의 펌프를 노리고, 러시아는 도시를 야간 폭격합니다. 어느 한쪽이 먼저 지쳐 협상 테이블로 나올지는 아직 보이지 않습니다."
+          ]
+        }
+      },
+      {
+        "heading": "6월 30일, 무엇을 볼 것인가",
+        "kicker": "관전 6",
+        "prose": "6월 30일 한국 증시 개장에서 첫 시험대는 메가 계획에 대한 둘째 날 반응이다. 6월 29일의 매도가 일회성 자본지출 충격이었는지, 외국인 이탈의 시작이었는지가 갈린다. 광주 부지(삼성)는 이미 확정됐으나 SK하이닉스의 서남권 부지 후보 발표 시점은 변수다. 발표가 빠르면 부지 관련주가 움직이고, 늦어지면 정치 메시지의 무게가 빠진다. HBM 후공정(반도체 칩을 패키지로 마무리하는 마지막 단계) 장비 회사들도 함께 주목된다. 환율은 6월 29일 1,544.2원으로 마감했고, 외국인 매도세가 이어지면 1,530~1,550원대 박스권 위쪽이 시험대에 오른다., 협상 다음 단계에서의 이견이 다시 가격을 흔들지가 관건이다. 그리고 우크라이나의 다음 한 발과 러시아의 답방이 무엇일지가, 6월 30일부터 다음 한 주 동안 가장 무거운 변수다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "오늘 한국 증시의 첫 시험대는 메가 계획에 대한 둘째 날 반응입니다. 광주 부지 발표 시점, HBM 후공정 장비주, 환율 박스권 위쪽까지가 함께 시험에 오릅니다.",
+            "유가는 70달러 선을 발판 삼아 갈 수 있을지, 그리고 우크라이나의 다음 한 발이 무엇일지가 다음 한 주의 가장 무거운 변수입니다."
+          ],
+          "highlights": [
+            "둘째 날 반응이 시험대",
+            "광주 부지 발표 시점",
+            "환율 박스권 위쪽"
+          ],
+          "emphasis": [
+            "둘째 날 반응",
+            "광주 부지",
+            "환율 박스권"
+          ],
+          "narration_tts": [
+            "오늘 한국 증시의 첫 시험대는 메가 계획에 대한 둘째 날 반응입니다. 광주 부지 발표 시점, 에이치비엠 후공정 장비주, 환율 박스권 위쪽까지가 함께 시험에 오릅니다.",
+            "유가는 칠십 달러 선을 발판 삼아 갈 수 있을지, 그리고 우크라이나의 다음 한 발이 무엇일지가 다음 한 주의 가장 무거운 변수입니다."
+          ]
+        }
+      }
+    ],
+    "closing": "6월 30일 아침의 세 무대는 다른 시간대를 살고 있으나, 같은 질문을 던진다. 어디까지가 지속 가능한 합의이고, 어디부터가 다음 충돌의 잠깐의 휴식인가.",
+    "watch_signals": [
+      {
+        "signal": "삼성·SK하이닉스 둘째 날 반응",
+        "description": "발표일 매도가 일회성이었는지 외국인 이탈의 시작인지 갈리는 지점",
+        "indicates": "메가 계획 호재 vs 자본지출 부담 시나리오 분기",
+        "deadline": "2026-06-30",
+        "icon": "📈"
+      },
+      {
+        "signal": "광주 팹 부지 후보 발표",
+        "description": "정부와 두 회사 간 입지 협상의 첫 가시화 시점",
+        "indicates": "정치 메시지의 실제 무게 + 부지 관련주 반응",
+        "deadline": "2026-07-15",
+        "icon": "🏭"
+      },
+      {
+        "signal": "이란 동결자산 60억 달러 송환 실행",
+        "description": "카타르 → 테헤란 자금 이동이 실제로 이루어지는지 여부",
+        "indicates": "휴전 지속 vs 협상 결렬 시나리오 분기",
+        "deadline": "2026-07-10",
+        "icon": "💰"
+      },
+      {
+        "signal": "러시아 보복 형태와 시점",
+        "description": "정유시설 타격 이후 모스크바의 답방, 그리고 형태 (도시 폭격 강화 vs 우크라 에너지 인프라 재타격)",
+        "indicates": "비대칭 소모전 굳어짐 vs 협상 압박 가속",
+        "deadline": "2026-07-07",
+        "icon": "⚠️"
+      },
+      {
+        "signal": "원/달러 환율 1,550원선",
+        "description": "외국인 매도세 누적 시 박스권 위쪽이 시험대",
+        "indicates": "코스피 추가 약세 vs 안정 시나리오 분기",
+        "deadline": "2026-07-04",
+        "icon": "💱"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "정부의 800조원 계획은 한국이 인공지능과 반도체 패권 경쟁에서 좌석을 잃지 않기 위한 불가피한 산업 정책이고, 광주 등 서남권 입지는 균형 발전의 정의에 부합한다.",
+        "side_b": "두 회사 주주 입장에서 거대 설비 투자는 단기 현금 흐름을 압박하고, 정치적으로 결정된 입지는 경제적 최적과 어긋날 수 있어 결국 주가에 청구서가 청구된다.",
+        "evidence": "발표 당일 삼성전자 약 4.8%, SK하이닉스 약 1.6% 동반 하락. 코스피 8,238.70 마감.",
+        "resolution": "단기적으로는 시장 논리가 우세하다. 그러나 12~24개월 뒤 광주 팹의 가동률과 HBM 수주 흐름이 정부 셈법대로 흘러간다면, 패배한 입장으로 보였던 호재 해석이 다시 살아날 수 있다.",
+        "video": {
+          "label_a": "산업 정책론",
+          "label_b": "주주 청구서론",
+          "line_a": "패권 경쟁에서 한국 좌석을 사려면 정부가 청구서를 함께 들어야 합니다.",
+          "line_b": "정치적 입지가 경제적 최적은 아니라서 주가에 청구서가 청구됩니다.",
+          "narration": [
+            "정부 800조원 계획은 한국이 인공지능 반도체 좌석을 잃지 않으려는 불가피한 카드라는 입장과, 결국 설비 투자 청구서가 주가에 옮겨 붙는다는 입장이 부딪힙니다.",
+            "단기적으로는 시장 논리가 우세하지만, 광주 팹의 가동률이 정부 셈법대로 흘러가면 호재 해석이 다시 살아날 수 있습니다."
+          ],
+          "narration_tts": [
+            "정부 팔백조 원 계획은 한국이 인공지능 반도체 좌석을 잃지 않으려는 불가피한 카드라는 입장과, 결국 설비 투자 청구서가 주가에 옮겨 붙는다는 입장이 부딪힙니다.",
+            "단기적으로는 시장 논리가 우세하지만, 광주 팹의 가동률이 정부 셈법대로 흘러가면 호재 해석이 다시 살아날 수 있습니다."
+          ]
+        }
+      },
+      {
+        "side_a": "어제의 미·이란 공격 중단 재합의와 60억 달러 자산 송환은 휴전의 실질을 담은 거래이고, 양측 모두 추가 비용을 감당할 의지가 없다는 신호다.",
+        "side_b": "휴전은 이미 두 번 깨지고 다시 묶였고, 핵 프로그램과 제재 해제라는 협상의 진짜 의제는 한 발짝도 움직이지 않아 다음 충돌까지의 잠깐의 휴식일 가능성이 크다.",
+        "evidence": "WTI 70.56달러 1.9% 반등은 안도 매수이나, 6월 한 달 동안 휴전과 재충돌을 반복한 패턴 자체가 합의의 취약성을 보여 준다.",
+        "resolution": "다음 2~3주가 갈림길이다. 자산 송환이 실제 집행되고 협상 다음 단계 합의가 발표되면 첫 번째 입장이 굳어지지만, 어느 한쪽이 다시 카드를 꺼내면 두 번째 입장이 그대로 맞다.",
+        "video": {
+          "label_a": "실질 휴전론",
+          "label_b": "잠깐의 휴식론",
+          "line_a": "60억 달러 송환은 양측 다 추가 비용을 피하려는 실질 거래입니다.",
+          "line_b": "협상의 진짜 의제는 한 발짝도 움직이지 않은 잠깐의 휴식입니다.",
+          "narration": [
+            "어제 휴전 재합의와 자산 60억 달러 송환은 실질 거래라는 입장과, 다음 충돌까지의 잠깐의 휴식이라는 입장이 부딪힙니다.",
+            "다음 2~3주 안에 자산 송환이 실제 집행되고 협상 다음 단계가 나오면 첫 입장이 굳어지지만, 어느 한쪽이 다시 카드를 꺼내면 두 번째 입장이 그대로 맞습니다."
+          ],
+          "narration_tts": [
+            "어제 휴전 재합의와 자산 육십억 달러 송환은 실질 거래라는 입장과, 다음 충돌까지의 잠깐의 휴식이라는 입장이 부딪힙니다.",
+            "다음 이 주에서 삼 주 안에 자산 송환이 실제 집행되고 협상 다음 단계가 나오면 첫 입장이 굳어지지만, 어느 한쪽이 다시 카드를 꺼내면 두 번째 입장이 그대로 맞습니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "호재가 매도가 된 자리, 휴전이 협상이 되지 못한 자리",
+    "timeline_flow": {
+      "heading": "사건의 궤적",
+      "past": [
+        {
+          "date": "2026-06-03",
+          "label": "지방선거 투표용지 부족, 지지율 첫 하락 신호",
+          "note": "60% 중반에서 50% 아래로"
+        },
+        {
+          "date": "2026-06-15",
+          "label": "G7 에비앙 정상회의 2년 연속 초청",
+          "note": "외교 자산 축적"
+        },
+        {
+          "date": "2026-06-23",
+          "label": "글로벌 테크 매도세, 코스피 4.6% 급락",
+          "note": "삼성·SK하이닉스 9%대 동반 하락"
+        },
+        {
+          "date": "2026-06-26",
+          "label": "코스피 5.81% 급락, 8,411선 붕괴",
+          "note": "직전 정규장 종가"
+        },
+        {
+          "date": "2026-06-27",
+          "label": "이란, 컨테이너선 타격",
+          "note": "휴전 와해 신호"
+        },
+        {
+          "date": "2026-06-28",
+          "label": "이란, 쿠웨이트·바레인 미군기지 동시 공격",
+          "note": "호르무즈 봉쇄 우려 재점화"
+        },
+        {
+          "date": "2026-06-28",
+          "label": "우크라이나, 러시아 정유시설 두 곳 동시 타격",
+          "note": "슬라뱐스크와 야로슬라블"
+        },
+        {
+          "date": "2026-06-29",
+          "label": "한국 800조 반도체 메가 계획 발표",
+          "note": "삼성·SK하이닉스 동반 하락"
+        },
+        {
+          "date": "2026-06-29",
+          "label": "미·이란 공격 중단 재합의, 자산 60억 달러 송환 합의",
+          "note": "WTI 70.56달러로 반등"
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-06-30",
+          "label": "한국 증시 둘째 날 반응",
+          "branch": "메가 계획 호재 정착 vs 외국인 이탈 가속"
+        },
+        {
+          "date": "2026-07-07",
+          "label": "러시아 정유시설 보복 시점",
+          "branch": "비대칭 소모전 굳어짐 vs 협상 압박 가속"
+        },
+        {
+          "date": "2026-07-10",
+          "label": "이란 자산 60억 달러 송환 실행 기한",
+          "branch": "휴전 지속 vs 협상 결렬"
+        },
+        {
+          "date": "2026-07-15",
+          "label": "광주 팹 부지 후보 발표 예상",
+          "branch": "정치 메시지의 실제 무게 시험"
+        }
+      ],
+      "video": {
+        "narration": [
+          "지난 한 달은 다른 무대에서 같은 박자로 흘렀습니다. 외교 풍년이던 한국 정부는 6월 중순 처음으로 지지율이 50% 아래로 내려갔고, 어제 800조 계획으로 반전 카드를 꺼냈습니다.",
+          "중동에서는 6월 27일 컨테이너선 타격에서 6월 29일 재휴전까지가 단 사흘이었습니다. 우크라이나는 같은 밤 러시아 정유시설 두 곳을 동시에 때렸습니다.",
+          "오늘부터 다음 주까지가 갈림길입니다. 한국 증시 둘째 날 반응, 자산 송환 실행, 러시아의 답방이 차례로 무대에 오릅니다."
+        ],
+        "narration_tts": [
+          "지난 한 달은 다른 무대에서 같은 박자로 흘렀습니다. 외교 풍년이던 한국 정부는 유월 중순 처음으로 지지율이 오십 퍼센트 아래로 내려갔고, 어제 팔백조 계획으로 반전 카드를 꺼냈습니다.",
+          "중동에서는 유월 이십칠일 컨테이너선 타격에서 유월 이십구일 재휴전까지가 단 사흘이었습니다. 우크라이나는 같은 밤 러시아 정유시설 두 곳을 동시에 때렸습니다.",
+          "오늘부터 다음 주까지가 갈림길입니다. 한국 증시 둘째 날 반응, 자산 송환 실행, 러시아의 답방이 차례로 무대에 오릅니다."
+        ]
+      }
+    },
+    "confidence_summary": "다중 1차 출처 (CNBC, Bloomberg, CNN, Al Jazeera, Carnegie) 교차 확인. 한국 시장 수치는 reference_frame과 key_figures가 부분 불일치하여 각각 명시적 날짜로 인용. 자본지출 부담 해석은 보도 인용, 추가 보복·협상 다음 단계는 헤지 표현 사용.",
+    "confidence_score": 0.42,
+    "degraded": false,
+    "degradation_reason": "",
+    "broadcast_summary": "어제 한국 정부가 향후 10년 800조원, 민간 포함 1,350조원 규모의 반도체와 인공지능 거대 투자 계획을 공식 발표했어요. 그런데 시장의 첫 반응은 호재가 아니라 매도였어요.\n\n삼성전자가 약 4.8%, SK하이닉스가 약 1.6% 동반 하락하면서 코스피는 8,238.70으로 마감했습니다. 광주에 팹 두 개를 새로 짓는 안에 자본지출 부담이 더해진 것이 매도세의 한 이유로 읽힙니다.\n\n중동에서는 어제 미국과 이란이 공격 중단에 다시 합의했어요. 카타르에 묶여 있던 이란 자산 60억 달러를 테헤란으로 풀어 주는 조건이 함께 발표됐고, WTI 유가는 1.9% 반등해 70.56달러로 마감했습니다.\n\n우크라이나는 같은 밤 러시아 슬라뱐스크와 야로슬라블 정유시설을 동시에 때렸어요. 푸틴 대통령이 처음으로 연료 부족을 공개 인정했고, 러시아 전역에서 주유소 배급제가 번지고 있습니다.\n\n오늘 아침의 세 무대는 다른 시간대를 살고 있지만 같은 질문을 던져요. 어디까지가 지속 가능한 합의이고, 어디부터가 다음 충돌의 잠깐의 휴식인가.\n\n자세한 맥락과 오늘 주시할 신호들은 보고서에 정리해 뒀습니다.",
+    "video": {
+      "intro_narration": [
+        "2026년 6월 30일 아침 종합 브리핑입니다. 800조 반도체 계획에도 두 회사 주가는 떨어졌고, 호르무즈는 다시 출렁였습니다."
+      ],
+      "outro_narration": [
+        "오늘 아침의 세 무대는 다른 시간대를 살고 있으나, 같은 질문을 던집니다. 어디까지가 지속 가능한 합의이고, 어디부터가 잠깐의 휴식인가."
+      ],
+      "intro_narration_tts": [
+        "이천이십육년 유월 삼십일 아침 종합 브리핑입니다. 팔백조 반도체 계획에도 두 회사 주가는 떨어졌고, 호르무즈는 다시 출렁였습니다."
+      ],
+      "outro_narration_tts": [
+        "오늘 아침의 세 무대는 다른 시간대를 살고 있으나, 같은 질문을 던집니다. 어디까지가 지속 가능한 합의이고, 어디부터가 잠깐의 휴식인가."
+      ]
+    },
+    "embedded_map": null,
+    "hero_image": {
+      "image_url": "img/0dc91f5a20628c91.jpg",
+      "caption": "어제 발표된 한국 정부의 800조원 반도체와 인공지능 거대 투자 계획은 이재명 정부 첫해의 가장 큰 산업 정책 카드다.",
+      "credit": "© CNBC",
+      "source_url": "https://www.cnbc.com/2026/06/29/samsung-sk-hynix-reported-1point3-reported-trillion-spending-plans.html",
+      "alt": "한국 반도체 두 대표 종목을 다룬 보도 이미지"
+    },
+    "verification": {
+      "writer": "Claude Opus 4.7",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 6,
+      "unresolved": 3,
+      "web_verified": true,
+      "text": "Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 6건 반영 · 3건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "정부가 향후 10년 1,350조원 투자 계획을 내놨지만 설비 투자 부담 우려가 호재를 눌렀다. 6월 29일 중동은 다시 휴전했고, 우크라이나는 러시아 정유시설을 동시 타격했다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260630_062806_3714872cd6.html",
+  "mirror_url": "",
+  "report_theme": "midnight_indigo",
+  "parent_context": null,
+  "analysis_timestamp": "2026-06-30T06:00:00.901825+09:00",
+  "total_duration_seconds": 1684.319819688797,
+  "system_version": "v8.2.15",
+  "revision": 0,
+  "render_revision": 0,
+  "disable_scroll_arc": false
+}
