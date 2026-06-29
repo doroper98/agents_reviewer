@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+
+<html lang="ko" data-theme="reportage_steel">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>값싼 메모리의 빈자리로, 중국이 걸어 들어온다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+
+<style>/* ===== Report Theme System — Mono + Editorial (v4.5.0) =====
+   SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
+   세 톤 (Editorial Cream · Burgundy Mono · Light Mono).
+   - editorial_cream: 디폴트. cream + terracotta. 편집·분석·일반 보고서.
+   - burgundy_mono: 위기·분쟁·사고. dark wine + amber. (v4.5.0 어둡게 보정)
+   - light_mono: 폐기 예정 (legacy). 아래 블록은 호환 위해 보존.
+   카테고리 구분은 hue 가 아닌 border-style + 패턴.
+   ============================================================ */
+
+/* --- Default: Editorial Cream (warm cream + terracotta + warm dark) ---
+   v4.5.0 신규. LG AI Seminar 보고서 톤 차용. 인쇄·캡처·장문 가독성 우위. */
+:root, [data-theme="editorial_cream"] {
+  /* Surfaces */
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-hover: #E5DBC4;
+  --accent-surface: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --divider: #D4C8B0;
+
+  /* Text */
+  --text: #1F1814;       /* warm dark — pure black 보다 따뜻 */
+  --muted: #6B5C4A;      /* warm grey */
+
+  /* Semantic accents — guide §3.2 */
+  --accent: #B05A38;     /* terracotta — editorial 강조, hatch stroke, callout border */
+  --up: #4A6B3E;         /* forest green — 상승·기회 (작은 변동만) */
+  --down: #8B2A2A;       /* deep crimson — 하락·위험 (작은 변동, 이벤트 vline) */
+
+  /* Map tokens */
+  --map-land: #F2EBDB;
+  --map-water: #DFD3B8;  /* sand — water as "aged paper" */
+  --map-boundary: #1F1814;
+  --map-graticule: #D4C8B0;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases (멀티컬러 → mono 매핑 보존) */
+  --text-primary: var(--text);
+  --text-secondary: #2D241B;
+  --text-muted: var(--muted);
+  --text-faded: #8A7A66;
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 톤 변형 토큰 */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --card-deep: #E5DBC4;       /* v4.5.3 — chart-card-stage 배경 (본문보다 한 단계 깊게) */
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+}
+
+/* --- Burgundy Mono (deep wine + amber gold + parchment) — v4.5.0 어둡게 보정 ---
+   이전 #3D1820 은 "맑은 와인" 톤이었고 사용자 피드백으로 더 짙은 dried-blood 톤으로.
+   위기·분쟁·사고 보고서 전용 (lens_policy._THEME_BY_CATEGORY 참조). */
+[data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #2A0F18;             /* v4.5.0: 3D1820 → 2A0F18 (R-22, G-9, B-8) */
+  --card: #371721;           /* 카드는 bg 보다 한 단계 위 */
+  --card-hover: #371721;
+  --accent-surface: #371721;
+  --border: #5A2832;         /* 6E3340 → 5A2832 (어둡게) */
+  --border-light: #371721;
+  --divider: #5A2832;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents */
+  --accent: #D4A858;
+  --up: #A8B582;
+  --down: #C9837A;
+
+  /* Map tokens — water 도 한 단계 더 깊게 */
+  --map-land: #2A0F18;
+  --map-water: #1A0810;      /* 2A0E16 → 1A0810 (near-black wine) */
+  --map-boundary: #EFE5D1;
+  --map-graticule: #5A2832;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases */
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
+  --card-deep: #1A0810;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #D8CCB8;
+  --fg-3: var(--muted);
+  --border-soft: rgba(90,40,50,0.4);
+}
+
+/* --- Light Mono (cream + deep burgundy + forest green) --- */
+[data-theme="light_mono"] {
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-hover: #f8f2e4;
+  --accent-surface: #f8f2e4;
+  --border: #b3a586;
+  --border-light: #d4c8a8;
+  --divider: #b3a586;
+
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+
+  --map-land: #efe8d9;
+  --map-water: #dccea8;
+  --map-boundary: #1a1a1a;
+  --map-graticule: #b3a586;
+
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0, light mono) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --card-deep: #dccea8;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #3a3a3a;
+  --fg-3: var(--muted);
+  --border-soft: rgba(179,165,134,0.4);
+}
+
+/* ================================================================
+   v5.0.2 — 5개 신규 테마 (총 7종 중 5종 추가, 사용자 요청)
+   원칙: mono guide §3.3 단일 액센트. 가독성 우선. 카테고리 무관 랜덤.
+   ================================================================ */
+
+/* --- Midnight Indigo (deep indigo + sky blue) — 다크 모드, 기술·심층 톤 */
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E;
+  --card: #1F2440;
+  --card-hover: #262C4A;
+  --accent-surface: #1F2440;
+  --border: #3A4060;
+  --border-light: #262C4A;
+  --divider: #3A4060;
+
+  --text: #E8ECEF;
+  --muted: #8A92A8;
+
+  --accent: #6FB3FF;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #161A2E;
+  --map-water: #0D1020;
+  --map-boundary: #E8ECEF;
+  --map-graticule: #3A4060;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0D1020;
+  --card-deep: #0D1020;
+  --fg-1: var(--text); --fg-2: #D0D8E0; --fg-3: var(--muted);
+  --border-soft: rgba(58,64,96,0.45);
+}
+
+/* --- Pine Forest (deep pine green + jade) — 다크 모드, 짙은 녹색 (v6.2.0) */
+[data-theme="pine_forest"] {
+  --bg: #132019;
+  --card: #1B2C22;
+  --card-hover: #233529;
+  --accent-surface: #1B2C22;
+  --border: #32503E;
+  --border-light: #233529;
+  --divider: #32503E;
+
+  --text: #E7EEE8;
+  --muted: #8AA294;
+
+  --accent: #7CC6A4;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #132019;
+  --map-water: #0C140F;
+  --map-boundary: #E7EEE8;
+  --map-graticule: #32503E;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0C140F;
+  --card-deep: #0C140F;
+  --fg-1: var(--text); --fg-2: #CFE0D4; --fg-3: var(--muted);
+  --border-soft: rgba(50,80,62,0.45);
+}
+
+/* --- Graphite Slate (deep graphite gray + copper) — 다크 모드, 짙은 회색 (v6.2.0) */
+[data-theme="graphite_slate"] {
+  --bg: #191B1E;
+  --card: #23262B;
+  --card-hover: #2B2F35;
+  --accent-surface: #23262B;
+  --border: #3D424A;
+  --border-light: #2B2F35;
+  --divider: #3D424A;
+
+  --text: #E9EBED;
+  --muted: #969BA3;
+
+  --accent: #D69A5E;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #191B1E;
+  --map-water: #0E0F12;
+  --map-boundary: #E9EBED;
+  --map-graticule: #3D424A;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0E0F12;
+  --card-deep: #0E0F12;
+  --fg-1: var(--text); --fg-2: #D2D6DA; --fg-3: var(--muted);
+  --border-soft: rgba(61,66,74,0.45);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* --- Layout --- */
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
+
+/* --- Hero --- */
+.hero { background: var(--bg); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; }
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(24px, 6vw, 42px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 14px;
+  line-height: 1.7;
+}
+
+/* --- Key Summary (핵심 요약) --- */
+.key-summary {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.key-summary-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.key-summary ol {
+  list-style: none;
+  counter-reset: ks;
+  padding: 0;
+  margin: 0;
+}
+.key-summary li {
+  counter-increment: ks;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding: 3px 0;
+}
+.key-summary li::before {
+  content: counter(ks) ")";
+  color: var(--gold);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* --- Key Metrics Grid --- */
+.key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .key-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 400px) {
+  .key-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.key-metric-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px 8px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.key-metric-icon { font-size: 16px; margin-bottom: 6px; }
+.key-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.key-metric-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+/* --- Canvas Chart Grid --- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span {
+  background: var(--card);
+  padding: 3px 12px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* --- Navigation --- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(43, 26, 26, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-inner { display: flex; white-space: nowrap; padding: 0 4px; }
+.nav a {
+  display: block;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faded);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color .2s;
+}
+.nav a:hover { color: var(--text-muted); }
+.nav a.on { color: var(--text-primary); border-bottom-color: var(--gold); }
+
+/* --- Section Headings --- */
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: var(--text-faded);
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+/* --- Card --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+/* --- Callout --- */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--text-primary); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+/* --- Balance Analysis (균형 분석) ---
+   Long-form structured analysis with paragraph spacing for readability. */
+.balance-analysis {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 18px 20px;
+  margin: 18px 0;
+}
+.balance-analysis-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: 0.3px;
+}
+.balance-analysis-body {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.balance-analysis-body strong {
+  display: inline-block;
+  color: var(--gold);
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+.balance-analysis-body br + br {
+  line-height: 0.5;
+}
+
+/* --- Grid --- */
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* --- Act Cue (막 전환 문구) --- */
+.act-cue {
+  text-align: center;
+  padding: 24px 0 0;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  color: var(--text-faded);
+  font-style: italic;
+}
+
+/* --- Player Cards --- */
+.player-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.player-card.extreme::before { background: var(--red); }
+.player-card.high::before { background: var(--orange); }
+.player-card.medium::before { background: var(--gold); }
+.player-card.low::before { background: var(--green); }
+
+.player-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.player-emoji { font-size: 20px; }
+.player-name { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+
+.badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.badge.extreme { background: var(--red-light); color: var(--red); border: 1px solid var(--red); }
+.badge.high { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange); }
+.badge.medium { background: rgba(201,168,76,.12); color: var(--gold); border: 1px solid var(--gold); }
+.badge.low { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
+
+.player-summary { font-size: 10px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+.player-detail {
+  font-size: 10px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* --- Flow (Chain Reaction) --- */
+.flow-list { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.flow-node {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-align: center;
+  width: 100%;
+  max-width: 440px;
+}
+.flow-node strong { font-size: 12px; color: var(--text-primary); }
+.flow-node span { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+.flow-arrow {
+  width: 1px;
+  height: 16px;
+  background: var(--divider);
+  position: relative;
+}
+.flow-arrow::after {
+  content: '\25BC';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  color: var(--text-faded);
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.data-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 10px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.data-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--card-hover); }
+
+/* --- Signal Grid --- */
+.signal-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .signal-grid { grid-template-columns: 1fr 1fr; } }
+
+.signal-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.signal-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--card-hover);
+}
+.signal-item h4 { font-size: 11px; font-weight: 700; margin-bottom: 1px; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+/* --- Timeline --- */
+.timeline-content { font-size: 10px; line-height: 1.85; color: var(--text-secondary); }
+
+/* --- Gauge Bar --- */
+.gauge-bar { margin-bottom: 8px; }
+.gauge-label {
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+.gauge-label span:last-child { color: var(--text-primary); font-weight: 600; }
+.gauge-track { height: 20px; background: var(--card); border-radius: 3px; overflow: hidden; }
+.gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- Terms --- */
+.terms {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.terms b { color: var(--text-secondary); font-size: 10px; }
+
+/* --- Radar --- */
+.radar-wrap { display: flex; justify-content: center; margin: 20px 0; }
+#radarCanvas { max-width: 100%; }
+
+/* --- Footer --- */
+.footer {
+  background: var(--bg);
+  border-top: 1px solid var(--divider);
+  color: var(--text-faded);
+  padding: 24px 14px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.footer a { color: var(--text-muted); text-decoration: underline; }
+
+/* ============================================================ */
+/* === v5.1.1 — 후속 보고서 헤더 + 출처 footnote 시스템         === */
+/* ============================================================ */
+
+/* --- Followup parent reference (h1 [1] footnote target) --- */
+.followup-parent {
+  padding: 18px 0 6px;
+}
+.followup-parent .container,
+.followup-parent {
+  /* container 안에서 한 단계 들여쓰기. .container 자체는 max-width 적용 됨 */
+}
+.followup-parent-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.followup-parent-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.followup-parent-body { flex: 1; }
+.followup-parent-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faded);
+  margin-bottom: 4px;
+}
+.followup-parent-id { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.followup-parent-id a { color: var(--text); text-decoration: underline; }
+.followup-parent-signal { color: var(--text-secondary); margin-bottom: 4px; }
+.followup-parent-dir {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.followup-parent-dir-confirms_base { background: rgba(74,107,62,0.18); color: var(--up); }
+.followup-parent-dir-rejects_base { background: rgba(139,42,42,0.18); color: var(--down); }
+.followup-parent-dir-ambiguous { background: rgba(176,90,56,0.18); color: var(--accent); }
+.followup-parent-event { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.followup-parent-depth { color: var(--text-faded); font-size: 9px; letter-spacing: 1px; }
+
+/* --- Title footnote mark on h1 (link [1] → #followup-parent) --- */
+.title-footnote-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.45em;
+  vertical-align: super;
+  margin-left: 6px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.title-footnote-mark sup { line-height: 1; }
+
+/* --- Footnote refs (inline ⁽n⁾ markers throughout body) --- */
+.fn-ref {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+.fn-ref:hover { text-decoration: underline; }
+
+/* --- Bottom footnotes section (통합 출처 리스트) --- */
+.footnotes {
+  padding: 28px 0 36px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+}
+.footnotes-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+.footnotes-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.footnotes-item {
+  padding: 4px 0;
+  word-break: break-all;
+}
+.footnotes-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.footnotes-link:hover { color: var(--text); }
+.footnotes-text { color: var(--muted); }
+.footnotes-item:target {
+  background: rgba(176,90,56,0.12);
+  border-radius: 3px;
+  padding-left: 4px;
+}
+
+/* --- Fade-in Animation --- */
+.fade-in { opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+.fade-in.visible { opacity: 1; transform: none; }
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 24px; }
+  .data-table { font-size: 10px; }
+}
+@media (max-width: 540px) {
+  .hero { padding: 36px 12px 28px; }
+  section { padding: 32px 0 24px; }
+  .player-card, .card { padding: 12px; }
+}
+
+/* ============================================================ */
+/* === V3 Step 3 — Block Rendering System (append-only)        === */
+/* === 디자인 토큰(--text-primary, --gold, --red 등) 재사용     === */
+/* ============================================================ */
+
+.report-block-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-section-empty { color: var(--text-muted); font-size: 11px; padding: 8px 0; font-style: italic; }
+.report-block-key-summary-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-fallback { padding: 32px 0; }
+.hero-eyebrow { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faded); margin-bottom: 8px; font-family: 'Noto Serif KR', serif; font-style: italic; }
+.footer-confidence { max-width: 600px; margin: 0 auto 10px; color: var(--text-faded); font-size: 10px; }
+.footer-share { margin-top: 10px; font-size: 11px; }
+.footer-share span { color: rgba(255,255,255,.5); }
+
+/* --- narrative --- */
+.block-narrative { margin-bottom: 14px; }
+.block-narrative-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary); }
+.block-narrative-body { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+.block-narrative-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- claim_card --- */
+.block-claim-card { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-claim-card-header { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-claim-card-id { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+.block-claim-card-type { font-size: 9px; color: var(--text-muted); padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; }
+.block-claim-card-confidence { font-size: 10px; color: var(--blue); font-weight: 600; margin-left: auto; }
+.block-claim-card-statement { font-size: 12px; color: var(--text-primary); line-height: 1.6; margin-bottom: 6px; }
+.block-claim-card-evidence { font-size: 10px; color: var(--text-secondary); }
+.block-claim-card-evidence-label { color: var(--text-muted); margin-right: 4px; }
+.block-claim-card-evidence-id { display: inline-block; padding: 1px 5px; margin: 1px 2px; background: var(--accent); border-radius: 3px; font-size: 9px; color: var(--bg); }
+.block-claim-card-evidence-missing { font-size: 10px; color: var(--orange); font-style: italic; }
+
+/* --- evidence_table --- */
+.block-evidence-table { margin: 12px 0; overflow-x: auto; }
+.block-evidence-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-evidence-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-evidence-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-evidence-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-evidence-table-id { color: var(--gold); font-weight: 600; }
+.block-evidence-table-quote { line-height: 1.6; }
+.block-evidence-table-link { color: var(--blue); text-decoration: none; }
+.block-evidence-table-reliability { font-size: 9px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+.block-evidence-table-rel-primary { background: var(--green-light); color: var(--green); }
+.block-evidence-table-rel-secondary { background: var(--blue-light); color: var(--blue); }
+.block-evidence-table-rel-expert { background: var(--gold); color: var(--bg); }
+.block-evidence-table-rel-model_inference { background: var(--orange-light); color: var(--orange); }
+.block-evidence-table-empty { font-size: 10px; color: var(--text-muted); padding: 12px 0; font-style: italic; }
+
+/* --- timeline --- */
+.block-timeline { margin: 12px 0; }
+.block-timeline-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-timeline-list { list-style: none; padding: 0; margin: 0; }
+.block-timeline-item { display: flex; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 11px; line-height: 1.6; }
+.block-timeline-item:last-child { border-bottom: 0; }
+.block-timeline-date { color: var(--blue); font-weight: 600; min-width: 110px; flex-shrink: 0; white-space: nowrap; }
+.block-timeline-event { color: var(--text-secondary); flex: 1; }
+.block-timeline-impact { color: var(--red); font-weight: 600; margin-left: 6px; }
+.block-timeline-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- matrix --- */
+.block-matrix { margin: 12px 0; overflow-x: auto; }
+.block-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-matrix-corner { background: var(--card); border: 1px solid var(--border); padding: 8px; }
+.block-matrix-col { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; }
+.block-matrix-row-label { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+.block-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- actor_cards --- */
+.block-actor-cards { margin: 12px 0; }
+.block-actor-cards-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-actor-cards-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-actor-cards-grid { grid-template-columns: 1fr 1fr; } }
+.block-actor-cards-card { background: var(--card); border-radius: var(--radius); padding: 12px; border-left: 3px solid var(--gold); }
+.block-actor-cards-risk-극심 { border-left-color: var(--red); }
+.block-actor-cards-risk-높음 { border-left-color: var(--orange); }
+.block-actor-cards-risk-보통 { border-left-color: var(--gold); }
+.block-actor-cards-risk-낮음 { border-left-color: var(--green); }
+.block-actor-cards-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-actor-cards-emoji { font-size: 16px; }
+.block-actor-cards-name { font-weight: 700; font-size: 12px; color: var(--text-primary); }
+.block-actor-cards-role { font-size: 9px; padding: 2px 6px; background: var(--accent); border-radius: 3px; color: var(--bg); font-weight: 600; }
+.block-actor-cards-position { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.6; }
+.block-actor-cards-detail { font-size: 10px; color: var(--text-muted); margin: 3px 0; line-height: 1.6; }
+.block-actor-cards-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- flow_chain --- */
+.block-flow-chain { margin: 12px 0; }
+.block-flow-chain-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-flow-chain-list { list-style: none; padding: 0; margin: 0; }
+.block-flow-chain-step { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); position: relative; }
+.block-flow-chain-step:not(:last-child)::after { content: '↓'; position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); color: var(--text-muted); font-size: 12px; }
+.block-flow-chain-sev-high { border-left-color: var(--red); }
+.block-flow-chain-sev-medium { border-left-color: var(--orange); }
+.block-flow-chain-sev-low { border-left-color: var(--gold); }
+.block-flow-chain-header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.block-flow-chain-num { font-weight: 700; color: var(--gold); font-size: 11px; }
+.block-flow-chain-title-text { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-flow-chain-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0; }
+.block-flow-chain-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-muted); flex-wrap: wrap; }
+.block-flow-chain-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- scenario_table --- */
+.block-scenario-table { margin: 12px 0; overflow-x: auto; }
+.block-scenario-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-scenario-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-scenario-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-scenario-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); vertical-align: top; }
+.block-scenario-table-name strong { color: var(--text-primary); font-size: 11px; }
+.block-scenario-table-tag { font-size: 9px; color: var(--gold); }
+.block-scenario-table-tag-최선 { border-left: 2px solid var(--green); }
+.block-scenario-table-tag-악화 { border-left: 2px solid var(--orange); }
+.block-scenario-table-tag-최악 { border-left: 2px solid var(--red); }
+.block-scenario-table-prob { font-weight: 700; color: var(--text-primary); }
+.block-scenario-table-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- decomposition --- */
+.block-decomposition { margin: 12px 0; }
+.block-decomposition-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decomposition-root { font-weight: 700; font-size: 13px; color: var(--gold); padding: 10px 12px; background: var(--card); border-radius: var(--radius); margin-bottom: 8px; }
+.block-decomposition-tree, .block-decomposition-children { list-style: none; padding-left: 16px; margin: 0; border-left: 1px dashed var(--border); }
+.block-decomposition-node { padding: 6px 0 6px 12px; position: relative; }
+.block-decomposition-node::before { content: '─'; position: absolute; left: -1px; top: 12px; color: var(--border); }
+.block-decomposition-label { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+.block-decomposition-detail { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-decomposition-depth-1 .block-decomposition-label { color: var(--gold); }
+.block-decomposition-depth-2 .block-decomposition-label { color: var(--blue); }
+.block-decomposition-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- argument_pair --- */
+.block-argument-pair { margin: 12px 0; }
+.block-argument-pair-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-argument-pair-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 700px) { .block-argument-pair-grid { grid-template-columns: 1fr 1fr; } }
+.block-argument-pair-side { background: var(--card); padding: 12px; border-radius: var(--radius); border-top: 3px solid var(--gold); }
+.block-argument-pair-side-a { border-top-color: var(--blue); }
+.block-argument-pair-side-b { border-top-color: var(--orange); }
+.block-argument-pair-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.block-argument-pair-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-argument-pair-alignment { margin-top: 10px; padding: 10px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; }
+.block-argument-pair-alignment-title { font-weight: 700; color: var(--gold); margin-bottom: 4px; font-size: 10px; }
+.block-argument-pair-alignment-list { padding-left: 16px; margin: 0; color: var(--text-secondary); }
+
+/* --- data_series --- */
+.block-data-series { margin: 12px 0; }
+.block-data-series-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-data-series-unit { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.block-data-series-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-data-series-grid { grid-template-columns: 1fr 1fr; } }
+.block-data-series-card { background: var(--card); padding: 10px 12px; border-radius: var(--radius); }
+.block-data-series-label { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 6px; }
+.block-data-series-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-data-series-table th { color: var(--text-muted); text-align: left; padding: 4px 6px; font-weight: 600; border-bottom: 1px solid var(--border-light); }
+.block-data-series-table td { padding: 4px 6px; color: var(--text-secondary); }
+.block-data-series-x { color: var(--text-muted); }
+.block-data-series-y { font-weight: 600; color: var(--text-primary); }
+.block-data-series-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- watchlist --- */
+.block-watchlist { margin: 12px 0; }
+.block-watchlist-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-watchlist-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .block-watchlist-grid { grid-template-columns: 1fr 1fr; } }
+.block-watchlist-item { display: flex; gap: 10px; padding: 10px 12px; background: var(--card); border-radius: var(--radius); border-left: 3px solid var(--gold); }
+.block-watchlist-dir-confirms_base { border-left-color: var(--green); }
+.block-watchlist-dir-rejects_base { border-left-color: var(--red); }
+.block-watchlist-dir-ambiguous { border-left-color: var(--gold); }
+.block-watchlist-icon { font-size: 18px; flex-shrink: 0; }
+.block-watchlist-body { flex: 1; }
+.block-watchlist-signal { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-watchlist-desc { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-watchlist-indicates { font-size: 10px; color: var(--blue); margin-top: 2px; }
+.block-watchlist-deadline { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+.block-watchlist-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- qna --- */
+.block-qna { margin: 12px 0; }
+.block-qna-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-qna-list { padding: 0; margin: 0; }
+.block-qna-pair { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px; }
+.block-qna-q { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 4px; }
+.block-qna-a { font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-left: 16px; }
+.block-qna-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- callout --- */
+.block-callout { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-callout-style-warning { border-left-color: var(--orange); }
+.block-callout-style-info { border-left-color: var(--blue); }
+.block-callout-style-insight { border-left-color: var(--gold); }
+.block-callout-title { font-size: 12px; margin-bottom: 4px; color: var(--text-primary); }
+.block-callout-body { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+/* --- counter_hypothesis --- */
+.block-counter-hypothesis { background: var(--card); padding: 12px 14px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin: 12px 0; }
+.block-counter-hypothesis-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--blue); }
+.block-counter-hypothesis-base, .block-counter-hypothesis-counter, .block-counter-hypothesis-required { margin: 8px 0; }
+.block-counter-hypothesis-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.block-counter-hypothesis-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-counter-hypothesis-list { padding-left: 18px; margin: 0; font-size: 10px; color: var(--text-secondary); line-height: 1.6; }
+.block-counter-hypothesis-conflict { margin-top: 8px; font-size: 10px; color: var(--orange); padding-top: 8px; border-top: 1px solid var(--border-light); }
+
+/* --- decision_matrix --- */
+.block-decision-matrix { margin: 12px 0; overflow-x: auto; }
+.block-decision-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decision-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-decision-matrix-corner, .block-decision-matrix-criterion { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); font-weight: 600; }
+.block-decision-matrix-option { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); text-align: left; font-weight: 600; }
+.block-decision-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); text-align: center; }
+.block-decision-matrix-rec { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; color: var(--bg); font-weight: 600; }
+.block-decision-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- risk_matrix --- */
+.block-risk-matrix { margin: 12px 0; overflow-x: auto; }
+.block-risk-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-risk-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-risk-matrix-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-risk-matrix-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-risk-matrix-impact-high { border-left: 3px solid var(--red); }
+.block-risk-matrix-impact-medium { border-left: 3px solid var(--orange); }
+.block-risk-matrix-impact-low { border-left: 3px solid var(--gold); }
+.block-risk-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* ============================================================ */
+/* === Mobile readability (PR1', 2026-05-01)                   === */
+/* === scenario_grid 등은 charts.css 가 처리. 여기는 timeline 과 === */
+/* === evidence/risk_matrix 의 좁은 폭 cram 을 해소.           === */
+/* ============================================================ */
+
+@media (max-width: 540px) {
+  /* timeline: flex 좌우 → 세로 스택. min-width:110px 의 날짜 칸 해제. */
+  .block-timeline-item { flex-direction: column; gap: 2px; padding: 10px 0; align-items: stretch; }
+  .block-timeline-date { min-width: 0; white-space: normal; font-size: 10px; }
+  .block-timeline-event { font-size: 11px; }
+  .block-timeline-impact { margin-left: 0; font-size: 11px; }
+
+  /* table 폰트 10px → 11px (모바일 가독성) */
+  .block-evidence-table-grid,
+  .block-matrix-grid,
+  .block-risk-matrix-grid,
+  .block-decision-matrix-grid { font-size: 11px; }
+
+  /* evidence_table / risk_matrix: thead 숨기고 row → 카드, td → 라벨된 행 */
+  .block-evidence-table-grid thead,
+  .block-risk-matrix-grid thead { display: none; }
+
+  .block-evidence-table-grid,
+  .block-evidence-table-grid tbody,
+  .block-risk-matrix-grid,
+  .block-risk-matrix-grid tbody { display: block; }
+
+  .block-evidence-table-grid tr,
+  .block-risk-matrix-grid tr {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .block-evidence-table-grid td,
+  .block-risk-matrix-grid td {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  /* td[data-label] 가 있으면 라벨 표시 (template 갱신 필요) */
+  .block-evidence-table-grid td[data-label]::before,
+  .block-risk-matrix-grid td[data-label]::before {
+    content: attr(data-label) ":  ";
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  /* matrix 류는 가로 스크롤 유지 (이게 더 읽힘) */
+  .block-matrix, .block-decision-matrix { -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================ */
+/* === PR3 (v3.4.6) — Narrative stage badges + AMC warning      === */
+/* === 5단 DSL 시각 차별화로 단조로움 직접 해소                   === */
+/* ============================================================ */
+
+.section-header { margin-bottom: 16px; }
+.section-stage-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid currentColor;
+  background: var(--accent);
+}
+.section-stage-badge.stage-fact       { color: var(--blue); }
+.section-stage-badge.stage-mechanism  { color: var(--gold); }
+.section-stage-badge.stage-divergence { color: var(--orange); }
+.section-stage-badge.stage-decision   { color: var(--green); }
+.section-stage-badge.stage-trigger    { color: var(--red); }
+
+/* 섹션 자체에도 좌측 컬러 액센트 — 스크롤하면서 단계 흐름이 한눈에 보이게 */
+.report-block-section.stage-fact       { border-left: 2px solid var(--blue);   padding-left: 12px; }
+.report-block-section.stage-mechanism  { border-left: 2px solid var(--gold);   padding-left: 12px; }
+.report-block-section.stage-divergence { border-left: 2px solid var(--orange); padding-left: 12px; }
+.report-block-section.stage-decision   { border-left: 2px solid var(--green);  padding-left: 12px; }
+.report-block-section.stage-trigger    { border-left: 2px solid var(--red);    padding-left: 12px; }
+
+/* AMC 미달 경고 배너 */
+.report-block-amc-warning {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius);
+  background: var(--orange-light);
+}
+.amc-warning-badge {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.amc-warning-badge code {
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.amc-warning-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.amc-stage-missing {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  color: var(--orange);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   v8.0.0 — 르포(reportage) 전용 테마 8종 (다크 통일). lens_policy.REPORTAGE_THEMES
+   와 1:1. 르포일 때만 data-theme 으로 적용 — 일반 보고서 5테마와 완전 분기.
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="reportage_cyprus"] {
+  --bg: #004741; --card: #0B5349; --card-hover: #156055; --accent-surface: #0B5349;
+  --border: #1E5C52; --border-light: #156055; --divider: #1E5C52;
+  --text: #F0EDE4; --muted: #9DB5AC;
+  --accent: #E3A93C; --up: #86C0A4; --down: #E89070;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #003A33; --card-deep: #003A33;
+  --fg-1: var(--text); --fg-2: #D8E0D8; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_noturno"] {
+  --bg: #001621; --card: #06222E; --card-hover: #0A2A38; --accent-surface: #06222E;
+  --border: #1C3A45; --border-light: #0A2A38; --divider: #1C3A45;
+  --text: #EFE3D4; --muted: #8AA0A6;
+  --accent: #FF4103; --up: #8AC0A0; --down: #FF8A5C;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #000E16; --card-deep: #000E16;
+  --fg-1: var(--text); --fg-2: #D8E0DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_bridal"] {
+  --bg: #741A2F; --card: #86283C; --card-hover: #94324A; --accent-surface: #86283C;
+  --border: #8E3548; --border-light: #94324A; --divider: #8E3548;
+  --text: #FFE2D4; --muted: #C99A92;
+  --accent: #FFB38F; --up: #D0A88A; --down: #F2998F;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #5E1326; --card-deep: #5E1326;
+  --fg-1: var(--text); --fg-2: #F2D0C4; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_cosmos"] {
+  --bg: #002F49; --card: #073A56; --card-hover: #0A4564; --accent-surface: #073A56;
+  --border: #134A63; --border-light: #0A4564; --divider: #134A63;
+  --text: #FEF0D5; --muted: #8BA3B2;
+  --accent: #E8503F; --up: #88B888; --down: #C9837A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #00263B; --card-deep: #00263B;
+  --fg-1: var(--text); --fg-2: #E6D8C0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_laurel"] {
+  --bg: #0D3A35; --card: #164640; --card-hover: #1E5249; --accent-surface: #164640;
+  --border: #27534A; --border-light: #1E5249; --divider: #27534A;
+  --text: #FBF6F0; --muted: #9CB5AC;
+  --accent: #86C0A4; --up: #86C0A4; --down: #E2937A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #082E2A; --card-deep: #082E2A;
+  --fg-1: var(--text); --fg-2: #DCE6E0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_princess"] {
+  --bg: #015AA0; --card: #0A66AC; --card-hover: #1572B8; --accent-surface: #0A66AC;
+  --border: #2A74B6; --border-light: #1572B8; --divider: #2A74B6;
+  --text: #ECECFF; --muted: #AEC4E0;
+  --accent: #FF9457; --up: #88C0B0; --down: #FF8378;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #014A85; --card-deep: #014A85;
+  --fg-1: var(--text); --fg-2: #D8E0F5; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_steel"] {
+  --bg: #282433; --card: #332E41; --card-hover: #3D374D; --accent-surface: #332E41;
+  --border: #453F56; --border-light: #3D374D; --divider: #453F56;
+  --text: #F3E0D9; --muted: #B0A8BE;
+  --accent: #E2B25C; --up: #A0C090; --down: #E89C94;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #1E1B27; --card-deep: #1E1B27;
+  --fg-1: var(--text); --fg-2: #E0D4DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_navy"] {
+  --bg: #0F0E49; --card: #1A1860; --card-hover: #24226E; --accent-surface: #1A1860;
+  --border: #2D2B79; --border-light: #24226E; --divider: #2D2B79;
+  --text: #ECE6F5; --muted: #B0AED4;
+  --accent: #D9ABE8; --up: #A0C0B0; --down: #F08AB0;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0A0934; --card-deep: #0A0934;
+  --fg-1: var(--text); --fg-2: #DCD6EC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+
+/* 르포 전용 폰트 — G마켓 Sans(디스플레이) + Noto Sans(본문). 일반 보고서는 영향 없음. */
+@font-face{font-family:'GmarketSans';font-weight:700;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');font-display:swap}
+@font-face{font-family:'GmarketSans';font-weight:500;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-display:swap}
+
+/* 르포: 본문 Noto Sans, 헤드라인/키커/소제목 G마켓 Sans */
+[data-theme^="reportage_"],
+[data-theme^="reportage_"] .freeform-prose,
+[data-theme^="reportage_"] .freeform-deck,
+[data-theme^="reportage_"] .freeform-lede,
+[data-theme^="reportage_"] body{font-family:'Noto Sans KR','IBM Plex Sans KR',sans-serif !important}
+[data-theme^="reportage_"] .freeform-headline,
+[data-theme^="reportage_"] .freeform-heading,
+[data-theme^="reportage_"] .freeform-kicker,
+[data-theme^="reportage_"] .freeform-eyebrow,
+[data-theme^="reportage_"] h1,
+[data-theme^="reportage_"] h2,
+[data-theme^="reportage_"] h3{font-family:'GmarketSans','Noto Sans KR',sans-serif !important;letter-spacing:-0.01em}
+
+/* 르포: 플랫 미니멀 — 둥근 모서리/그림자 제거 */
+[data-theme^="reportage_"] .freeform-figure,
+[data-theme^="reportage_"] .chart-card,
+[data-theme^="reportage_"] .freeform-fact-grid > *,
+[data-theme^="reportage_"] .freeform-pullquote,
+[data-theme^="reportage_"] .freeform-analogy,
+[data-theme^="reportage_"] .freeform-origin,
+[data-theme^="reportage_"] figure,
+[data-theme^="reportage_"] img,
+[data-theme^="reportage_"] [class*="card"]{border-radius:0 !important;box-shadow:none !important}
+
+/* 르포 [르포] 배지 (헤더 eyebrow). 본문 텍스트 아님 — UI 라벨. */
+.reportage-badge{display:inline-block;font-family:'GmarketSans',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.12em;padding:3px 9px;border:1px solid var(--accent);color:var(--accent);margin-right:10px;vertical-align:middle}
+
+
+/* v8.0.0 — 르포 테마 지도(globe) 색 변수. 없으면 :root(라이트)를 상속해 크림색으로 나옴. */
+[data-theme="reportage_cyprus"]{--map-water:#003A33;--map-land:#156055;--map-boundary:#1E5C52}
+[data-theme="reportage_noturno"]{--map-water:#000E16;--map-land:#0A2A38;--map-boundary:#1C3A45}
+[data-theme="reportage_bridal"]{--map-water:#5E1326;--map-land:#94324A;--map-boundary:#8E3548}
+[data-theme="reportage_cosmos"]{--map-water:#00263B;--map-land:#0A4564;--map-boundary:#134A63}
+[data-theme="reportage_laurel"]{--map-water:#082E2A;--map-land:#1E5249;--map-boundary:#27534A}
+[data-theme="reportage_princess"]{--map-water:#014A85;--map-land:#1572B8;--map-boundary:#2A74B6}
+[data-theme="reportage_steel"]{--map-water:#1E1B27;--map-land:#3D374D;--map-boundary:#453F56}
+[data-theme="reportage_navy"]{--map-water:#0A0934;--map-land:#24226E;--map-boundary:#2D2B79}
+</style>
+<style>
+  /* ── 르포 담백 레이아웃 (theme color 변수는 report.css [data-theme=reportage_*] 에서) ── */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+       -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+  .rep-wrap{max-width:820px;margin:0 auto;padding:0 26px 90px}
+  /* 상단 바 — 버전만 */
+  .rep-top{display:flex;justify-content:flex-end;align-items:center;border-bottom:1px solid var(--border);
+           padding:16px 0 12px;font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  /* 제목 / 작성일시 */
+  .rep-headline{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:44px;
+                line-height:1.12;letter-spacing:-.015em;color:var(--text);margin:34px 0 12px}
+  .rep-meta{font:500 12px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted);margin:0 0 8px}
+  .rep-rule{height:1px;background:var(--border);margin:30px 0}
+  /* 사진 */
+  .rep-fig{margin:26px 0}
+  .rep-fig img{width:100%;height:auto;display:block;border-radius:0}
+  .rep-fig figcaption{font:400 12.5px/1.5 'Noto Sans KR',sans-serif;color:var(--muted);margin-top:8px}
+  .rep-fig .credit{margin-left:6px;opacity:.85}
+  .rep-fig .credit a{color:inherit}
+  /* 섹션 — 번호 + 소제목 + 본문 */
+  .rep-section{padding:6px 0 2px}
+  .rep-num{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:13px;color:var(--accent);
+           letter-spacing:.08em;display:block;margin:0 0 6px}
+  .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
+          line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
+  /* v8.2.15 — 본문도 차트/지도/용어풀이와 동일하게 .rep-wrap 콘텐츠 폭을 꽉 채운다.
+     이전엔 본문만 max-width:66ch 로 좁아 데스크탑에서 우측 끝단이 시각물보다 안쪽에서
+     줄바뀜 → 우측 끝 정렬 어긋남(모바일은 뷰포트가 더 좁아 무증상). 한 열로 통일. */
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;
+             text-align:justify;text-justify:auto;text-align-last:left;
+             word-break:keep-all;overflow-wrap:break-word}
+  /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
+  .rep-prose p{margin:0 0 1.15em;text-align:justify;text-align-last:left}
+  /* 용어풀이 (유일하게 남기는 부가요소) */
+  .rep-fn{margin:18px 0 4px;padding:14px 16px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03)}
+  .rep-fn-label{font:700 11px 'Noto Sans KR',sans-serif;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
+  .rep-fn-item{font:400 13px/1.6 'Noto Sans KR',sans-serif;color:var(--text);opacity:.9;margin-bottom:6px}
+  .rep-fn-term{font-weight:700;margin-right:6px}
+  /* 차트/지도 카드 — 플랫(report.css reportage override) */
+  .rep-figwrap{margin:24px 0}
+  /* 결론 */
+  .rep-conc{margin-top:30px;padding-top:22px;border-top:1px solid var(--border)}
+  /* 푸터 — 최소 */
+  .rep-foot{max-width:820px;margin:0 auto;padding:26px;border-top:1px solid var(--border);
+            font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-foot a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="rep-wrap">
+
+  <div class="rep-top">v8.2.15 · Rev 0.0</div>
+
+  <h1 class="rep-headline">값싼 메모리의 빈자리로, 중국이 걸어 들어온다</h1>
+  <div class="rep-meta">2026-06-29 16:10</div>
+  
+  
+
+  
+  
+
+  <div class="rep-rule"></div>
+
+  
+  
+
+  
+  
+  
+  <section class="rep-section">
+    <span class="rep-num">01</span>
+    <h2 class="rep-h2">석 달 만에 네 배</h2>
+    <div class="rep-prose">D램 시장에서 가장 평범한 물건을 하나 고른다면 DDR5 32GB 모듈일 것이다. 데스크톱과 서버에 꽂히는 표준 메모리다. 그 한 개의 값이 2026년 2월 약 17만 원에서 6월 약 70만 원으로, 석 달 만에 네 배 가까이 솟구친다.<br><br>공급이 끊긴 것은 아니다. 오히려 메모리 3사는 같은 기간 사상 최대 이익을 쓸어 담는다. 값이 뛴 진짜 이유는 다른 곳에 있다. 인공지능 가속기에 들어가는 고대역폭 메모리, 즉 HBM이 돈이 되자 삼성전자와 SK하이닉스가 공장 라인을 그쪽으로 몰아준 것이다. 비싼 제품을 만들려고 흔한 제품의 생산을 줄였고, 그 줄어든 자리에서 가격이 폭발한다.<br><br>바로 이 빈자리가 이 글의 출발점이다. 한국 양강이 비워 둔 범용 D램의 공간으로, 그동안 변두리에 머물던 중국 회사 둘이 걸어 들어온다. 창신메모리(CXMT)와 양쯔메모리(YMTC)다. 표면의 헤드라인은 한국의 슈퍼사이클이지만, 그 그늘에서 조용히 진행되는 다른 이야기가 있다.<br><br>가격표 하나를 더 들춰 보면 그림이 선명해진다. 같은 분기, CXMT의 범용 D램은 삼성전자·SK하이닉스·마이크론보다 약 5~10% 싸게 팔린다(아래 그래프). 공급이 부족한 시장에서 더 싼 물건이 나오면, 사는 쪽은 출신을 따지지 않는다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">HBM</span>고대역폭 메모리. 여러 개의 D램을 위로 쌓아 데이터를 한꺼번에 빠르게 주고받게 만든 고급 메모리로, 인공지능 계산용 칩에 붙여 쓴다. 같은 면적에서 일반 D램보다 훨씬 비싸게 팔린다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">범용 D램 (DDR5)</span>PC와 서버에 두루 꽂히는 표준 메모리. DDR5는 그 최신 세대 규격이다. 특별한 가공 없이 대량으로 찍어내는 흔한 제품이라 'HBM 같은 고부가'의 반대편에 있다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">DDR5 32GB 모듈 가격</div>
+          <div class="chart-card-subtitle">공급이 끊겨서가 아니라, 라인이 HBM으로 옮겨가서 생긴 폭등</div>
+          <div class="chart-card-stage chart-stage-line" data-chart-type="line" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> TrendForce / 2026-06 · 32GB 기준</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"x": "2026-02", "y": 17}, {"event": "HBM \ub77c\uc778 \uc804\ud658\u767c \ubc94\uc6a9 \uacf5\uae09\ubd80\uc871, 3\uac1c\uc6d4 \uc57d 4\ubc30", "x": "2026-06", "y": 70}], "source": "TrendForce / 2026-06 \u00b7 32GB \uae30\uc900", "subtitle": "\uacf5\uae09\uc774 \ub04a\uaca8\uc11c\uac00 \uc544\ub2c8\ub77c, \ub77c\uc778\uc774 HBM\uc73c\ub85c \uc62e\uaca8\uac00\uc11c \uc0dd\uae34 \ud3ed\ub4f1", "takeaway": "\uac00\uaca9 \uc815\uc0c1\ud654 \uc2dc\uc810\uc740 2028\ub144 \uc774\ud6c4\ub85c \uc804\ub9dd\ub41c\ub2e4", "title": "DDR5 32GB \ubaa8\ub4c8 \uac00\uaca9", "type": "line", "unit_line": "\ub2e8\uc704: \ub9cc \uc6d0 \u00b7 2026.2~2026.6 (\uc591 \ub05d \uc2dc\uc810 \uae30\uc900)"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">02</span>
+    <h2 class="rep-h2">420억 달러짜리 신호탄</h2>
+    <div class="rep-prose">빈자리만으로는 추격이 되지 않는다. 거기에 돈이 붙어야 한다. 2026년 5월 말, 그 돈의 규모가 공개된다. CXMT가 상하이 증시의 기술주 시장인 STAR 마켓 상장 심사를 통과한다. 조달 예정 규모는 약 295억 위안, 미화로 약 42억 달러 수준이다. 이와는 별개로 회사 가치는 약 420억 달러로 매겨진다.<br><br>조달 예정 규모로 보면, STAR 마켓 역사상 두 번째로 큰 상장이 될 전망이다. 1위가 중국 최대 파운드리 SMIC라는 점을 떠올리면, 베이징이 CXMT를 어느 자리에 놓고 있는지가 드러난다. 반도체 자립의 다음 주자라는 자리다.<br><br>여기서 한 가지 추론이 가능하다. 일반 기업에게 상장은 자본을 구하는 절차지만, CXMT에게는 그 이상으로 읽힐 여지가 크다. 정부와 국부펀드가 이미 자본을 대고 있는 회사가 굳이 공개 시장에 나오는 것은, 적자를 견디며 생산능력을 키워도 자본이 마르지 않는다는 신호를 시장에 보내는 의미에 가깝다. 후발주자의 가장 큰 약점인 자금 고갈 위험을, 상장이 한 겹 더 덮어 준다.<br><br>같은 시기 양쯔메모리, 즉 YMTC도 움직인다. 다만 방향이 다르다. YMTC의 본업은 D램이 아니라 낸드플래시다. 이쪽은 미국 제재의 한복판에 있어 더 은밀하게, 자국산 장비로 생산라인을 짜는 길을 택한다. 두 회사가 같은 깃발 아래 서 있지만, 들고 있는 무기는 서로 다르다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">STAR 마켓</span>상하이 증권거래소가 운영하는 기술·혁신 기업 전용 주식시장이다. 미국의 나스닥에 견주어 만든 곳으로, 중국이 키우려는 첨단 기업들이 주로 여기에 상장한다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">국부펀드</span>국가가 보유한 외환이나 자원 수입 등을 모아 운용하는 대규모 투자 기금이다. 중국은 이 자금을 반도체 같은 전략 산업에 집중 투입해 왔다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">낸드플래시 (NAND)</span>전원을 꺼도 데이터가 지워지지 않는 저장용 메모리다. SSD나 USB 메모리에 쓰인다. 연산을 돕는 D램과는 쓰임새가 다른, 메모리의 또 다른 큰 축이다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">03</span>
+    <h2 class="rep-h2">판 위의 네 진영</h2>
+    <div class="rep-prose">이 싸움의 등장인물을 한자리에 세워 보면 네 무리로 나뉜다(아래 관계도). 먼저 한국 양강, 삼성전자와 SK하이닉스다. D램에서 합쳐 70% 가까운 점유율을 쥐고, HBM에서는 사실상 시장을 지배한다. 미국의 마이크론이 그 옆에 서서 3강 과점의 마지막 축을 맡는다.<br><br>무대 한가운데에는 두 개의 힘이 있다. 하나는 엔비디아다. 인공지능 가속기를 만드는 이 회사의 HBM 수요가 한국 양강의 이익을 끌어올리는 엔진이다. 다른 하나는 범용 D램 시장 그 자체다. 공급이 부족해진 이 격전지가, 한국이 비운 자리이자 중국이 노리는 표적이다.<br><br>오른편에 추격자 진영이 있다. CXMT와 YMTC, 그리고 그 뒤를 받치는 중국 정부와 국부펀드다. 이 셋은 떼어 놓고 볼 수 없다. 자본이 정책에서 나오고, 기업의 목표가 국가의 목표와 겹친다. 일반적인 경쟁사라면 적자를 두려워하겠지만, 이 진영은 점유율을 위해 적자를 감수할 수 있는 구조다.<br><br>네 진영의 관계를 한 줄로 요약하면 이렇다. 한국과 미국은 엔비디아를 향한 동맹 관계로 묶이고, 중국 두 회사는 국가 자본의 동맹으로 묶인다. 그리고 이 두 묶음이 범용 D램 시장이라는 한 점에서 정면으로 부딪친다.</div>
+
+    
+
+    
+    
+      
+      
+        
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">D램을 둘러싼 네 진영</div>
+          <div class="chart-card-subtitle">동맹은 자본과 수요로, 대립은 범용 시장에서</div>
+          <div class="chart-card-stage chart-stage-stakeholder_map" data-chart-type="stakeholder_map" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 보고서 종합 / 2026-06</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"edges": [{"label": "HBM", "source": "skhynix", "target": "nvidia", "type": "\ub3d9\ub9f9"}, {"label": "HBM4", "source": "samsung", "target": "nvidia", "type": "\ub3d9\ub9f9"}, {"source": "micron", "target": "market", "type": "\uc5f0\uad00"}, {"label": "\uc790\ubcf8", "source": "gov", "target": "cxmt", "type": "\ub3d9\ub9f9"}, {"label": "\uc790\ubcf8", "source": "gov", "target": "ymtc", "type": "\ub3d9\ub9f9"}, {"label": "\uc7a0\uc2dd", "source": "cxmt", "target": "market", "type": "\uc601\ud5a5"}, {"label": "\uc804\ud658", "source": "ymtc", "target": "market", "type": "\uc601\ud5a5"}, {"label": "\ucd94\uaca9", "source": "cxmt", "target": "samsung", "type": "\ub300\ub9bd"}], "nodes": [{"col": "left", "flag": "KR", "id": "samsung", "label": "\uc0bc\uc131\uc804\uc790", "role": "D\ub7a8 1\uc704\u00b7HBM \ucd94\uaca9"}, {"col": "left", "flag": "KR", "id": "skhynix", "label": "SK\ud558\uc774\ub2c9\uc2a4", "role": "HBM \uc120\ub450"}, {"col": "left", "flag": "US", "id": "micron", "label": "\ub9c8\uc774\ud06c\ub860", "role": "\ubbf8\uad6d 3\uc704"}, {"col": "center", "flag": "US", "id": "nvidia", "label": "\uc5d4\ube44\ub514\uc544", "role": "HBM \ucd5c\ub300 \uc218\uc694"}, {"col": "center", "id": "market", "label": "\ubc94\uc6a9 D\ub7a8", "role": "\uacf5\uae09\ubd80\uc871 \uaca9\uc804\uc9c0"}, {"col": "right", "flag": "CN", "id": "cxmt", "label": "CXMT", "role": "D\ub7a8 4\uc704 \uc9c4\uc785"}, {"col": "right", "flag": "CN", "id": "ymtc", "label": "YMTC", "role": "\ub0b8\ub4dc \ubcf8\uc5c5\u00b7D\ub7a8 \uc804\ud658"}, {"col": "right", "flag": "CN", "id": "gov", "label": "\uc911\uad6d \uc815\ubd80\u00b7\uad6d\ubd80\ud380\ub4dc", "role": "\uc790\ubcf8\u00b7\uc815\ucc45 \ud6c4\uc6d0"}]}, "source": "\ubcf4\uace0\uc11c \uc885\ud569 / 2026-06", "subtitle": "\ub3d9\ub9f9\uc740 \uc790\ubcf8\uacfc \uc218\uc694\ub85c, \ub300\ub9bd\uc740 \ubc94\uc6a9 \uc2dc\uc7a5\uc5d0\uc11c", "title": "D\ub7a8\uc744 \ub458\ub7ec\uc2fc \ub124 \uc9c4\uc601", "type": "stakeholder_map"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">04</span>
+    <h2 class="rep-h2">8%라는 숫자의 무게</h2>
+    <div class="rep-prose">추격자 둘의 정체를 좀 더 들여다본다. CXMT는 2016년에 세워진 회사다. 10년 만에 글로벌 D램 시장점유율 약 8%로 4위에 올라선다(아래 그래프). 1년 전만 해도 5%에 못 미쳤으니, 한 해 사이의 상승폭이 가파르다.<br><br>8%라는 숫자만 보면 작아 보인다. 하지만 D램은 삼성, SK하이닉스, 마이크론 세 회사가 30년 가까이 90% 이상을 나눠 가진 시장이다. 그 단단한 과점에 네 번째 이름이 두 자릿수 문턱까지 올라온 것 자체가 사건이다. 매출 기준으로 삼성 38.6%, SK하이닉스 28.8%, 마이크론 22.4%, 그리고 CXMT 8%다.<br><br>YMTC는 결이 다르다. 본업인 낸드플래시에서 2026년 말까지 글로벌 점유율 15%를 목표로 잡는다. 동시에 우한 3공장 생산능력의 절반을 D램으로 돌리며 새 영역에 발을 들인다. 다만 이쪽의 본격 양산은 2027년 이후라, 당장 올해 시장에 미치는 충격은 제한적이다.<br><br>여기서 흩어진 점 두 개를 이어 본다. CXMT는 D램의 빈자리를, YMTC는 낸드의 자립을 노린다. 품목은 다르지만 전략은 똑같다. 한국과 미국이 고부가 영역으로 올라가며 비운 중저가 시장을, 국가 자본을 등에 업고 빠르게 메우는 것이다. 두 회사를 겹쳐 보면 중국 메모리 굴기의 설계도가 드러난다.</div>
+
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">글로벌 D램 시장점유율</div>
+          <div class="chart-card-subtitle">30년 과점에 등장한 네 번째 이름</div>
+          <div class="chart-card-stage chart-stage-bar" data-chart-type="bar" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> Counterpoint·TrendForce / 2026 Q1</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\uc0bc\uc131\uc804\uc790", "value": 38.6}, {"label": "SK\ud558\uc774\ub2c9\uc2a4", "value": 28.8}, {"label": "\ub9c8\uc774\ud06c\ub860", "value": 22.4}, {"label": "CXMT", "note": "1\ub144 \uc804 5% \ubbf8\ub9cc", "value": 8.0}], "source": "Counterpoint\u00b7TrendForce / 2026 Q1", "subtitle": "30\ub144 \uacfc\uc810\uc5d0 \ub4f1\uc7a5\ud55c \ub124 \ubc88\uc9f8 \uc774\ub984", "title": "\uae00\ub85c\ubc8c D\ub7a8 \uc2dc\uc7a5\uc810\uc720\uc728", "type": "bar", "unit_line": "\ub2e8\uc704: % \u00b7 \ub9e4\ucd9c \uae30\uc900 \u00b7 2026\ub144 1\ubd84\uae30"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">05</span>
+    <h2 class="rep-h2">왜 한쪽만 좁혀지는가</h2>
+    <div class="rep-prose">이 사건의 핵심 역설은 여기 있다. 한국과 중국의 격차가 한쪽에서는 빠르게 좁혀지는데, 다른 쪽에서는 오히려 벌어진다. 같은 D램인데 방향이 정반대다. 이유는 시장이 두 층으로 갈라졌기 때문이다.<br><br>아래층은 범용 D램이다. 인공지능 열풍으로 한국 양강이 HBM 생산에 라인을 쏟아부으면서, 흔한 메모리의 공급이 줄고 값이 폭등한다. 진입 장벽이 가격으로 낮아진 셈이다. 두 세대쯤 뒤처진 기술로도, 5~10% 싸게만 팔면 부족한 시장에서 자리를 얻는다. CXMT가 파고드는 곳이 정확히 이 아래층이다.<br><br>위층은 HBM이다. 인공지능 가속기에 붙는 이 고부가 메모리는 단순히 미세하게 만드는 기술을 넘어, 칩을 위로 쌓고 열을 다스리는 까다로운 공정을 요구한다. 이 시장은 SK하이닉스가 약 50% 안팎, 삼성이 35~40%로 한국이 사실상 독점한다(아래 그래프). 중국의 점유율은 0%에 가깝다.<br><br>점을 이으면 양극화의 메커니즘이 보인다. 한국이 위층으로 올라가며 사상 최대 이익을 거두는 동안, 그 자리에 생긴 아래층의 빈 공간을 중국이 채운다. 한국의 호황과 중국의 추격은 별개의 사건이 아니라, 같은 슈퍼사이클의 앞면과 뒷면이다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">슈퍼사이클</span>수요가 한꺼번에 몰려 가격과 이익이 평소보다 훨씬 길고 크게 솟구치는 호황 국면을 가리킨다. 메모리 산업은 호황과 불황을 주기적으로 오가는데, 그중에서도 유난히 강한 호황을 이렇게 부른다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">글로벌 HBM 시장점유율 (2026)</div>
+          <div class="chart-card-subtitle">범용과 달리, 여기서는 중국이 0%에 가깝다</div>
+          <div class="chart-card-stage chart-stage-donut" data-chart-type="donut" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 보고서 종합 / 2026</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "SK\ud558\uc774\ub2c9\uc2a4", "note": "\uc5d4\ube44\ub514\uc544 \uc8fc\ub825 \uacf5\uae09", "value": 52}, {"label": "\uc0bc\uc131\uc804\uc790", "value": 38}, {"label": "\ub9c8\uc774\ud06c\ub860", "value": 10}], "source": "\ubcf4\uace0\uc11c \uc885\ud569 / 2026", "subtitle": "\ubc94\uc6a9\uacfc \ub2ec\ub9ac, \uc5ec\uae30\uc11c\ub294 \uc911\uad6d\uc774 0%\uc5d0 \uac00\uae5d\ub2e4", "title": "\uae00\ub85c\ubc8c HBM \uc2dc\uc7a5\uc810\uc720\uc728 (2026)", "type": "donut", "unit_line": "\ub2e8\uc704: % \u00b7 2026\ub144 \u00b7 \ud55c\u00b7\ubbf8 3\uc0ac\uac00 \uc57d 90%"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">06</span>
+    <h2 class="rep-h2">적자를 두려워하지 않는 손</h2>
+    <div class="rep-prose">추격의 진짜 무기는 기술이 아니라 자본의 성격이다. 슈퍼사이클 덕에 후발주자도 높은 수익을 누리는 중이다. CXMT의 영업이익률은 약 70%로, SK하이닉스 73%, 삼성 81%, 마이크론 84%와 비교해도 크게 뒤지지 않는다(아래 그래프). 시장이 좋을 때는 늦게 올라탄 자도 배가 부르다.<br><br>문제는 시장이 식을 때다. 보통의 회사라면 불황기에 적자를 줄이려 투자를 멈춘다. 하지만 CXMT 뒤에는 정부와 국부펀드, 그리고 STAR 마켓에서 끌어온 자본이 있다. 정황을 가장 단순하게 이으면, 이 회사는 손실을 견디며 생산능력을 계속 키울 수 있는 드문 위치에 있다. 가격 경쟁이 격해질수록 오히려 유리해지는 구조다.<br><br>여기에 제재라는 변수가 겹친다. 미국은 극자외선 노광장비를 비롯한 고난도 장비의 대중국 수출을 막아 왔다. 상식대로라면 이 봉쇄가 중국의 발목을 잡아야 한다. 그런데 CXMT는 구형 장비를 여러 번 돌리는 우회 공정으로 17nm D램 양산에 도달했고, YMTC는 아예 자국산 장비로 라인을 짜겠다고 나선다.<br><br>무리한 추측을 보태자면, 제재가 의도와 다른 결과를 낳고 있다는 가설도 가능하다. 외부 장비를 못 쓰게 된 중국이 장비 국산화에 사활을 걸면서, 단기적으로는 비효율적이어도 장기적으로는 공급망 전체를 자립시키는 쪽으로 떠밀리고 있다는 해석이다. 증거는 아직 정황뿐이지만, YMTC의 자국산 장비 라인 시도는 그 방향과 부합한다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">극자외선 노광장비 (EUV)</span>반도체 회로를 아주 가늘게 새겨 넣는 최첨단 장비다. 회로를 미세하게 그릴수록 칩 성능이 좋아지는데, 미국은 이 장비가 중국으로 가지 못하도록 수출을 막아 왔다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">공정 노드 (nm)</span>반도체 회로 선폭을 나노미터 단위로 나타낸 값이다. 숫자가 작을수록 더 미세하고 앞선 기술이다. D램에서는 같은 17nm급 안에서도 세대를 잘게 나눈다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">메모리 영업이익률 (2026 Q1)</div>
+          <div class="chart-card-subtitle">슈퍼사이클에선 후발주자도 고수익</div>
+          <div class="chart-card-stage chart-stage-bar" data-chart-type="bar" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 보고서 종합 / 2026 Q1</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\ub9c8\uc774\ud06c\ub860", "value": 84}, {"label": "\uc0bc\uc131\uc804\uc790", "value": 81}, {"label": "SK\ud558\uc774\ub2c9\uc2a4", "value": 73}, {"label": "CXMT", "note": "\ud6c4\ubc1c\uc8fc\uc790", "value": 70}], "source": "\ubcf4\uace0\uc11c \uc885\ud569 / 2026 Q1", "subtitle": "\uc288\ud37c\uc0ac\uc774\ud074\uc5d0\uc120 \ud6c4\ubc1c\uc8fc\uc790\ub3c4 \uace0\uc218\uc775", "title": "\uba54\ubaa8\ub9ac \uc601\uc5c5\uc774\uc775\ub960 (2026 Q1)", "type": "bar", "unit_line": "\ub2e8\uc704: % \u00b7 2026\ub144 1\ubd84\uae30"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">07</span>
+    <h2 class="rep-h2">두 세대라는 벽, 발열이라는 벽</h2>
+    <div class="rep-prose">그렇다고 격차가 사라진 것은 아니다. 자본으로 메울 수 없는 두 개의 벽이 남는다. 첫째는 미세공정의 벽이다. CXMT의 주력은 17nm G3 노드이며, 수율은 약 80%에 이른다. 16nm 양산으로 넘어가는 중이고, 15nm는 2026년 말이 목표다.<br><br>반면 삼성과 SK하이닉스는 1c, 즉 10나노대 초반 공정에 들어서 있다. 단순 수치로만 따져도 약 두 세대 앞선다. 같은 D램이라도 더 미세하게 만들수록 한 장의 웨이퍼에서 더 많은 칩이 나와 원가가 낮아진다. CXMT가 가격을 깎을 수 있는 것은 효율이 좋아서가 아니라, 국가 자본이 그 비효율을 견뎌 주기 때문이라는 해석이 설득력 있다.<br><br>둘째 벽은 더 높다. HBM이다. 이 메모리는 칩을 수직으로 쌓는 만큼 열이 한곳에 몰린다. 그 열을 다스리지 못하면 양산이 불가능하다. CXMT는 2024년 8월 HBM2 샘플을 고객사에 보내며 발을 들였지만, 한 단계 위인 HBM3 양산은 발열 문제로 일정이 뒤로 밀린 것으로 전해진다. 허베이 팹의 양산 목표는 2026년 말이었으나, 지연 가능성이 거론된다.<br><br>같은 시기 한국은 이미 다음 칸으로 넘어간다. 2026년 6월, 삼성의 HBM4가 엔비디아의 차세대 가속기 인증을 통과하고 양산 공급을 시작한다. 11.7Gbps라는 속도는 중국이 아직 견본조차 내놓지 못한 영역이다. 아래층에서 거리가 좁혀지는 동안, 위층의 결승선은 계속 멀어지고 있다.</div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">08</span>
+    <h2 class="rep-h2">10년을 압축한 시간선</h2>
+    <div class="rep-prose">추격이 어떻게 굴러왔는지, 처음부터 따라가 본다. CXMT는 2024년 8월 HBM2 샘플을 보내며 고급 메모리 시장의 문을 두드린다. 같은 해 11월에는 스마트폰과 PC에 쓰이는 중급 메모리 LPDDR5 양산에 들어간다. 변두리에서 중심으로 한 걸음씩 옮겨 오는 행보다.<br><br>2025년 하반기, 17nm DDR5의 수율이 약 80%에 도달한다. 이 숫자가 분기점이다. 수율이 받쳐 주자 원가가 잡히고, 비로소 5~10% 싼 가격표를 붙일 여력이 생긴다. 빈자리로 들어갈 가격 경쟁력이 이때 완성된다.<br><br>2026년 들어 속도가 붙는다. 1분기 점유율 8% 4위 진입, 2~6월 범용 D램 가격 폭등, 그리고 5월 상장 심사 통과가 거의 동시에 일어난다. 흩어진 사건처럼 보이지만 하나의 흐름이다. 한국이 비운 자리, 폭등한 가격, 마침 준비된 중국의 저가 공급이 같은 시점에 맞물린다.<br><br>생산능력의 확장이 이 흐름을 떠받친다. CXMT의 웨이퍼 생산능력은 현재 월 16만 장 수준에서 2026년 목표 월 35만~40만 장으로 두 배가 넘는다(아래 그래프). 삼성의 D램 전체 생산능력이 월 60만 장 안팎인 점을 떠올리면, 단일 회사로는 세계 최대급의 캐파 확장이다. 기술은 뒤처져도, 물량으로 시장을 흔들 무대를 깔고 있다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">수율</span>생산한 웨이퍼에서 정상 작동하는 칩이 나오는 비율이다. 수율이 높을수록 버리는 칩이 줄어 원가가 낮아진다. 약 80%는 후발주자로서는 의미 있는 수준이다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">CXMT 웨이퍼 생산능력 확장</div>
+          <div class="chart-card-subtitle">기술은 두 세대 뒤, 물량은 세계 최대급</div>
+          <div class="chart-card-stage chart-stage-bullet" data-chart-type="bullet" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 보고서 종합 / 2026</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\uc6d4 \uc0dd\uc0b0\ub2a5\ub825 (\ub9cc \uc7a5)", "target": 37.5, "value": 16}], "source": "\ubcf4\uace0\uc11c \uc885\ud569 / 2026", "subtitle": "\uae30\uc220\uc740 \ub450 \uc138\ub300 \ub4a4, \ubb3c\ub7c9\uc740 \uc138\uacc4 \ucd5c\ub300\uae09", "title": "CXMT \uc6e8\uc774\ud37c \uc0dd\uc0b0\ub2a5\ub825 \ud655\uc7a5", "type": "bullet", "unit_line": "\ud604\uc7ac \uc6d4 16\ub9cc \uc7a5 \u2192 2026 \ubaa9\ud45c \uc6d4 35~40\ub9cc \uc7a5 (\ub9c9\ub300=\ud604\uc7ac, \ud45c\uc2dd=\ubaa9\ud45c)"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">09</span>
+    <h2 class="rep-h2">사상 최대 실적, 그런데 떨어지는 주가</h2>
+    <div class="rep-prose">이제 어디로 가는지를 짚는다. 표면의 숫자는 한국의 압승이다. 2026년 1분기, 삼성전자는 약 57조 원, SK하이닉스는 매출 52.6조 원에 영업이익 37.6조 원을 거둔다. SK하이닉스의 영업이익은 1년 전보다 405% 늘었다. 분기 기준 사상 최대다.<br><br>그런데 시장의 속내는 결을 달리한다. 발행일인 6월 29일, 삼성전자 주가는 32만 3,000원으로 4.86% 내리고, SK하이닉스도 262만 8,000원으로 1.68% 빠진다. 같은 날 코스피는 0.2% 약보합이다. 사상 최대 실적을 발표한 회사들의 주가가 나란히 미끄러진 것이다.<br><br>주가는 오늘이 아니라 내일을 본다. 한 가지 가설은, 시장이 두 개의 그림자를 동시에 보고 있다는 것이다. 하나는 HBM 슈퍼사이클이 언젠가 정점을 지날 것이라는 주기적 불안이고, 다른 하나는 범용 영역에서 중국의 잠식이 가격을 끌어내릴 것이라는 구조적 불안이다. 기록적 실적은 과거의 성적표이고, 주가는 그 너머의 위험을 먼저 반영한다는 해석이다.<br><br>물론 이 추론은 정황에 기댄 것이다. 하루 등락에는 환율이나 외국인 수급 같은 다른 요인도 섞인다. 다만 사상 최대 이익과 하락한 주가가 같은 날 나란히 놓인 장면은, 이 산업의 호황이 마냥 안심할 수 있는 종류가 아님을 조용히 일러 준다.</div>
+
+    
+
+    
+    
+
+    
+    
+    <figure class="rep-fig">
+      <img src="img/b60aaedde846522b.jpg" alt="SK하이닉스 2026년 1분기 경영실적 발표 자료 이미지" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy">
+      <figcaption>SK하이닉스는 2026년 1분기 매출 52조 5,763억 원, 영업이익 37조 6,103억 원으로 사상 최대 분기 실적을 발표했다.<span class="credit"><a href="https://news.skhynix.co.kr/q1-2026-business-results/" target="_blank" rel="noopener">© news.skhynix.co.kr</a></span></figcaption>
+    </figure>
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">10</span>
+    <h2 class="rep-h2">좁혀지는 거리, 멀어지는 결승선</h2>
+    <div class="rep-prose">결국 이 이야기는 하나의 추격담이 아니라 두 개의 서로 다른 경주다. 아래 트랙, 범용 D램에서 중국과 한국의 거리는 분명히 좁혀진다. 가격이 무기가 되고 국가 자본이 연료가 되는 이 트랙에서, CXMT는 앞으로도 점유율을 더 끌어올릴 가능성이 작지 않다. 한국 양강은 이 영역에서 수익성을 지키려 점점 더 위층으로 비켜설 것이다.<br><br>위 트랙, HBM과 고부가 메모리에서 결승선은 오히려 멀어진다. 미세공정 두 세대의 격차와 발열을 다스리는 노하우는 자본만으로 단숨에 넘기 어렵다. 삼성이 HBM4로 이미 다음 칸에 들어선 지금, 중국이 HBM3 양산조차 미루고 있는 거리는 쉽게 좁혀지지 않는다.<br><br>그래서 진짜 질문은 누가 이기느냐가 아니라, 한국 양강이 위층으로 얼마나 빨리 그리고 멀리 달아날 수 있느냐가 된다. 범용의 마진이 중국의 물량에 깎여 나가는 속도와, 고부가의 해자를 넓히는 속도, 그 둘의 경주다. 앞당겨 단정할 수는 없다. 다만 방향만큼은 이미 정해져 있다. 메모리 시장은 더 이상 하나의 시장이 아니라, 성격이 다른 두 개의 시장으로 갈라지는 중이다.<br><br>10년 전 변두리에서 출발한 두 중국 회사는, 그 갈라진 시장의 아래층을 차지하며 자기 자리를 만들어 가고 있다. 위층의 문은 아직 굳게 닫혀 있다. 이 문이 언제, 어떤 틈으로 열릴지가 다음 10년의 이야기가 될 것이다.</div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  
+
+  
+  
+
+</div>
+
+<footer class="rep-foot">
+  archetype: reportage · Generated 2026-06-29 16:10:43 · Duration: 978.1s
+  
+</footer>
+
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+
+</body>
+</html>
