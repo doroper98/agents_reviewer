@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.16
+last_synced_with: v8.2.17
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.17 — 르포 관계도 교차 엣지 세로 레인 분리 (CHART-AP-41)
+
+사용자 catch(CHART-AP-40 라벨 픽스 후 후속) — 라벨 겹침은 사라졌으나 **선 자체가 뭉쳐**, 특히 가운데 칼럼(`이재명 정부`/`김용범`/`국민성장펀드`) → 오른쪽 칼럼(`삼성전자`/`SK하이닉스`) 교차 엣지의 **세로 구간이 같은 x 에 포개져** 어느 선이 어디로 가는지 구분 불가. 근원은 `smRoute` 가 모든 교차 엣지를 수평 중점(`mx`) 한 곳에서 꺾던 것. Fix — `drawStakeholderMap` 에 결정적 레인 라우터 추가: 칼럼 사이 gap 을 통로로 보고 교차 엣지를 대상 칼럼 왼쪽 gap 에 배정(col0→col2 는 오른쪽 gap 에서 하강해 카드 통로 회피), 같은 gap 의 엣지를 y 순 정렬 후 gap 폭 안에서 균등 분배한 레인 x(`bendX`)로 꺾어 세로 구간을 서로 벌린다. 같은 칼럼 수직 체인은 직선 유지. 칼럼 간격 `GAP 128→152`·세로 간격 `VSP 120→140` 확대 + 교차 엣지 라벨을 레인 위에 올려 선과 정렬. 데이터 계약·가드·registry 불변, 순수 렌더. 발행본은 재배포 후 `--rerender-only` 로 URL 동일 적용. SSOT: CHART-AP-41.
 
 ## v8.2.16 — 르포 관계도 엣지 라벨 겹침 차단 + 선 스타일 범례 (CHART-AP-40)
 

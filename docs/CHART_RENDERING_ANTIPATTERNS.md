@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.16
+last_synced_with: v8.2.17
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1279,6 +1279,31 @@ slope 차트는 이미 baseline dodge(CHART-AP-26)로 해결했으나 관계도�
 발행본은 `git pull` + 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용
 (stakeholder_map 노드 텍스트 자체는 `--replace` 미도달 — `title/subtitle/note` 만 훑음,
 교정 필요 시 `--add-stakeholder-map` 으로 차트 재주입).
+
+---
+
+## CHART-AP-41: stakeholder_map 교차 칼럼 엣지의 세로 구간이 한 통로에 포개짐 (v8.2.17 신설, 사용자 catch)
+
+**증상**: CHART-AP-40(라벨 겹침)을 고친 뒤에도, 관계도에서 **선 자체가 뭉쳐** 어느
+선이 어디로 가는지 알 수 없다. 특히 가운데 칼럼(`이재명 정부`/`김용범`/`국민성장펀드`)
+→ 오른쪽 칼럼(`삼성전자`/`SK하이닉스`)으로 가는 여러 엣지의 **세로 구간이 같은 x 에
+포개져** 한 줄처럼 보인다. 2026-06-30 사용자 catch(라벨 픽스 후 후속).
+
+**원인**: `smRoute` 가 모든 교차 엣지를 **양 끝 부착점의 수평 중점(`mx=(x0+x1)/2`)
+한 곳에서 직각으로 꺾는다.** 가운데→오른쪽 엣지들은 부착 x 범위가 같으니 mx 도 거의
+같은 값 → 세로 구간이 전부 같은 통로에 겹친다. 부착점 분산(slot)·라벨 de-confliction
+(CHART-AP-40)은 있었으나 **선의 세로 통로(레인) 분리가 없었다.**
+
+**Fix (v8.2.17)**: [charts.js:`drawStakeholderMap`](../src/templates/static/charts.js)
+에 결정적 **레인 라우터** 추가 — ① 칼럼 사이 gap(col0↔col1=A, col1↔col2=B)을 통로로
+보고 ② 각 교차 엣지를 *대상 칼럼 왼쪽 gap* 에 배정(col0→col2 는 가운데 칼럼을 가로질러
+오른쪽 gap B 에서 하강 — 세로 구간이 카드 통로를 피함) ③ 같은 gap 의 엣지들을 source/
+target y 평균으로 정렬해 gap 폭 안에서 **균등 분배한 레인 x(`bendX`)** 로 꺾는다.
+세로 구간이 `(gr-gl)/(n+1)` 간격으로 서로 벌어져 분리된다. 같은 칼럼 수직 체인(왼쪽
+올트먼→OpenAI→…)은 기존 직선 유지. 더불어 칼럼 간격 `GAP 128→152`·세로 간격
+`VSP 120→140` 으로 레인·진입선에 숨 쉴 공간 확보. 교차 엣지 라벨은 레인(세로 구간)
+위에 올려 실제 선과 붙였다. 데이터 계약·가드·registry 불변, 순수 렌더 변경.
+발행본은 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용.
 
 ---
 

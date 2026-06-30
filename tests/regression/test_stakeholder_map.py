@@ -94,3 +94,15 @@ def test_charts_js_label_deconfliction_and_legend() -> None:
     assert "CHART-AP-40" in js
     # 선 스타일 범례
     assert "drawSmLegend" in js
+
+
+def test_charts_js_edge_lane_router() -> None:
+    """CHART-AP-41 — 교차 칼럼 엣지의 세로 구간을 칼럼 사이 gap 레인으로
+    분배하는 라우터가 drawStakeholderMap 에 배선돼 있어야."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[2]
+          / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
+    assert "CHART-AP-41" in js
+    assert "bendX" in js
+    assert "smRouteLane" in js
+    assert "GAP_BOUNDS" in js

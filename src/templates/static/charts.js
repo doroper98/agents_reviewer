@@ -3326,7 +3326,7 @@
     const cols = [[], [], []];
     rawNodes.forEach(nd => cols[colOf(nd)].push(nd));
 
-    const LW = 210, CW = 176, RW = 210, GAP = 128, H = 54, CH = 62, VSP = 120;
+    const LW = 210, CW = 176, RW = 210, GAP = 152, H = 54, CH = 62, VSP = 140;
     const colX = [0, LW + GAP, LW + GAP + CW + GAP];
     const colW = [LW, CW, RW];
     const pos = {};
@@ -3370,12 +3370,43 @@
       }
     });
 
-    // 엣지 (노드 아래 레이어)
+    // 엣지 (노드 아래 레이어) — v8.2.17: 교차 칼럼 엣지의 세로 구간이 한 통로에
+    // 포개져 어느 선이 어디로 가는지 구분 불가하던 회귀(CHART-AP-41) 차단. 모든
+    // 교차 엣지를 중점(mx) 한 곳에서 꺾던 smRoute 대신, 칼럼 사이 '레인'(세로
+    // 통로) x 를 엣지마다 분배해 세로 구간을 서로 벌린다. 같은 칼럼 수직 체인은
+    // 기존 직선 유지. 레인은 대상 칼럼 왼쪽 gap 에 배치(col0→col2 는 가운데 칼럼을
+    // 가로질러 오른쪽 gap 에서 하강 — 세로 구간이 카드 통로를 피한다).
+    const GAP_BOUNDS = [
+      [colX[0] + colW[0], colX[1]],   // gap A: col0 ↔ col1
+      [colX[1] + colW[1], colX[2]],   // gap B: col1 ↔ col2
+    ];
+    const gapEdges = [[], []];
+    valid.forEach((e, ei) => {
+      const cs = pos[e.source].col, ct = pos[e.target].col;
+      if (cs === ct) return;
+      gapEdges[Math.min(1, Math.max(0, Math.max(cs, ct) - 1))].push(ei);
+    });
+    const bendX = {};
+    gapEdges.forEach((arr, gi) => {
+      const gl = GAP_BOUNDS[gi][0], gr = GAP_BOUNDS[gi][1], n = arr.length;
+      arr.sort((a, b) =>
+        (pos[valid[a].source].cy + pos[valid[a].target].cy) -
+        (pos[valid[b].source].cy + pos[valid[b].target].cy));
+      arr.forEach((ei, i) => { bendX[ei] = gl + (gr - gl) * (i + 1) / (n + 1); });
+    });
+    function smRouteLane(x0, y0, x1, y1, bx) {
+      if (Math.abs(y0 - y1) < 0.5) return `M${x0},${y0} H${x1}`;
+      if (bx === undefined) return smRoute(x0, y0, x1, y1);
+      const r = 12, sx0 = bx >= x0 ? 1 : -1, sx1 = x1 >= bx ? 1 : -1, sy = y1 >= y0 ? 1 : -1;
+      const rr = Math.min(r, Math.abs(bx - x0), Math.abs(bx - x1), Math.abs(y1 - y0) / 2);
+      return `M${x0},${y0} H${bx - sx0 * rr} Q${bx},${y0} ${bx},${y0 + sy * rr}` +
+             ` V${y1 - sy * rr} Q${bx},${y1} ${bx + sx1 * rr},${y1} H${x1}`;
+    }
     valid.forEach((e, ei) => {
       const A = attach[ei + '|' + e.source] || { x: pos[e.source].rx, y: pos[e.source].cy };
       const B = attach[ei + '|' + e.target] || { x: pos[e.target].lx, y: pos[e.target].cy };
       const st = smLinkStyle(e.type, t);
-      const p = root.append('path').attr('d', smRoute(A.x, A.y, B.x, B.y))
+      const p = root.append('path').attr('d', smRouteLane(A.x, A.y, B.x, B.y, bendX[ei]))
         .attr('fill', 'none').attr('stroke', st.stroke).attr('stroke-width', st.w)
         .attr('data-anim', 'static');
       if (st.dash) p.attr('stroke-dasharray', st.dash);
@@ -3438,7 +3469,9 @@
       const st = smLinkStyle(e.type, t), lab = String(e.label || '');
       if (!lab && !st.gl) return;
       const w = 16 + lab.length * 9 + (st.gl ? 14 : 0), hh = 18;
-      const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+      // 교차 엣지는 라벨을 세로 레인 위에 둬 실제 선과 붙인다(v8.2.17).
+      const mx = (bendX[ei] !== undefined) ? bendX[ei] : (A.x + B.x) / 2;
+      const my = (A.y + B.y) / 2;
       // 중점에서 시작 → 카드/기존 라벨과 겹치면 수직(우선)·수평으로 밀어낸다.
       const cand = [[0, 0]];
       for (let d = 12; d <= 72; d += 12) cand.push([0, -d], [0, d]);
