@@ -3422,22 +3422,75 @@
         .attr('class', 'sm-pulse');
     }
 
-    // 라벨 (선 위 중앙) — 카드 위 레이어
+    // 라벨 (선 위) — 카드 위 레이어. v8.2.16 — 엣지 라벨이 가운데 칼럼 카드(또는
+    // 다른 라벨) 위에 찍혀 글자가 가려지던 회귀(CHART-AP-40) 차단. col0→col2 를
+    // 가로지르는 엣지의 기하학적 중점이 정확히 가운데 칼럼 카드에 떨어지는 게 근원.
+    // 카드 + 기존 라벨을 장애물로 보고 빈 곳으로 밀어내며, 멀리 밀리면 가는
+    // 연결선을 남겨 어느 선의 라벨인지 보존(slope CHART-AP-26 의 dodge 패턴).
+    const labelObstacles = Object.values(pos).map(P => ({ x: P.x, y: P.y, w: P.w, h: P.h }));
+    const placedLabels = [];
+    const rectsHit = (r, list, gap) => list.some(o =>
+      r.x < o.x + o.w + gap && r.x + r.w + gap > o.x &&
+      r.y < o.y + o.h + gap && r.y + r.h + gap > o.y);
     valid.forEach((e, ei) => {
       const A = attach[ei + '|' + e.source], B = attach[ei + '|' + e.target];
       if (!A || !B) return;
       const st = smLinkStyle(e.type, t), lab = String(e.label || '');
       if (!lab && !st.gl) return;
-      const cx = (A.x + B.x) / 2, cy = (A.y + B.y) / 2;
-      const wch = 16 + lab.length * 9 + (st.gl ? 14 : 0);
-      const gg = root.append('g').attr('transform', `translate(${cx},${cy})`);
-      gg.append('rect').attr('x', -wch / 2).attr('y', -9).attr('width', wch).attr('height', 18).attr('rx', 5)
-        .attr('fill', t.bg).attr('fill-opacity', 0.9).attr('data-anim', 'static');
+      const w = 16 + lab.length * 9 + (st.gl ? 14 : 0), hh = 18;
+      const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+      // 중점에서 시작 → 카드/기존 라벨과 겹치면 수직(우선)·수평으로 밀어낸다.
+      const cand = [[0, 0]];
+      for (let d = 12; d <= 72; d += 12) cand.push([0, -d], [0, d]);
+      for (let d = 22; d <= 66; d += 22) cand.push([-d, 0], [d, 0], [-d, -d], [d, -d], [-d, d], [d, d]);
+      let best = { x: mx, y: my };
+      for (let ci = 0; ci < cand.length; ci++) {
+        const dx = cand[ci][0], dy = cand[ci][1];
+        const r = { x: mx + dx - w / 2, y: my + dy - hh / 2, w, h: hh };
+        if (!rectsHit(r, labelObstacles, 3) && !rectsHit(r, placedLabels, 2)) {
+          best = { x: mx + dx, y: my + dy }; break;
+        }
+      }
+      placedLabels.push({ x: best.x - w / 2, y: best.y - hh / 2, w, h: hh });
+      if (Math.abs(best.x - mx) + Math.abs(best.y - my) > 8) {
+        root.append('line').attr('x1', mx).attr('y1', my).attr('x2', best.x).attr('y2', best.y)
+          .attr('stroke', t.border).attr('stroke-width', 1).attr('stroke-opacity', 0.6)
+          .attr('data-anim', 'static');
+      }
+      const gg = root.append('g').attr('transform', `translate(${best.x},${best.y})`);
+      gg.append('rect').attr('x', -w / 2).attr('y', -9).attr('width', w).attr('height', 18).attr('rx', 5)
+        .attr('fill', t.bg).attr('fill-opacity', 0.92).attr('data-anim', 'static');
       const te = gg.append('text').attr('y', 3.5).attr('text-anchor', 'middle')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 10.5);
       if (st.gl) te.append('tspan').attr('fill', st.gc).attr('font-weight', 700).text(st.gl + ' ');
       te.append('tspan').attr('fill', t.muted).text(lab);
     });
+
+    // v8.2.16 — 선 스타일 범례(#7: 관계 유형 해독 단서). 실제 등장한 유형만, 2종 이상일 때만.
+    (function drawSmLegend() {
+      const seen = {}, items = [];
+      valid.forEach(e => {
+        const st = smLinkStyle(e.type, t);
+        let key, glyph, color, text;
+        if (st.arrow) { key = 'arrow'; glyph = '→'; color = st.stroke; text = '영향·주도'; }
+        else if (st.gl === '✕') { key = 'x'; glyph = '✕'; color = st.gc; text = '대립'; }
+        else if (st.gl === '●') { key = 'fund'; glyph = '●'; color = st.gc; text = '협력·자금'; }
+        else if (st.gl === '○') { key = 'rel'; glyph = '○'; color = st.gc; text = '연관'; }
+        else return;
+        if (seen[key]) return; seen[key] = 1; items.push({ glyph, color, text });
+      });
+      if (items.length < 2) return;
+      const b = root.node().getBBox();
+      let lx = b.x; const ly = b.y + b.height + 24;
+      items.forEach(it => {
+        const g = root.append('g').attr('transform', `translate(${lx},${ly})`);
+        g.append('text').attr('x', 0).attr('y', 0).attr('font-family', 'Noto Sans KR')
+          .attr('font-weight', 700).attr('font-size', 11).attr('fill', it.color).text(it.glyph);
+        g.append('text').attr('x', 15).attr('y', 0).attr('font-family', 'Noto Sans KR')
+          .attr('font-size', 11).attr('fill', t.muted).text(it.text);
+        lx += 15 + it.text.length * 12 + 18;
+      });
+    })();
 
     const bb = root.node().getBBox(); const pad = 14;
     svg.attr('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);

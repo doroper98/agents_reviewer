@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.10
+last_synced_with: v8.2.16
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1251,6 +1251,34 @@ post-process 블록(`_reconcile_visual_references` 다음)에 배선, 디폴트 
 ② 발행본 한정 교정은 [patch_report.py](../scripts/patch_report.py) `--map-projection
 globe` 로 수술적 전환(LLM 0, URL 동일). globe 는 드래그 회전·휠 확대되는 '움직이는'
 지도이고 arcs 가 대권 최단경로로 그려져 대륙 간 흐름이 직관적이다.
+
+---
+
+## CHART-AP-40: stakeholder_map 엣지 라벨이 카드·다른 라벨 위에 찍혀 가림 (v8.2.16 신설, 사용자 catch)
+
+**증상**: 르포 행위자 관계도(`stakeholder_map`)에서 관계 라벨 배지(`○ 설계` / `90만장`
+/ `● 인프라` 등)가 가운데 칼럼 카드(`이재명 정부` / `김O씨`) 위에 겹쳐 찍혀, 그 카드의
+역할 텍스트(`자금·입법 설계` / `금○○○ 현직`)를 가리고 라벨끼리도 같은 지점에 스택돼
+글자가 뭉개진다. 2026-06-30 사용자 catch (르포 관계도).
+
+**원인**: `drawStakeholderMap` 이 엣지 라벨을 **양 끝 부착점의 기하학적 중점**
+(`cx=(A.x+B.x)/2`, `cy=(A.y+B.y)/2`)에 그대로 찍는다. `OpenAI`(왼쪽 col0) →
+`삼성전자`(오른쪽 col2)처럼 col0↔col2 를 가로지르는 엣지는 중점이 정확히 **가운데
+칼럼(col1)** 영역에 떨어지고, 라벨은 카드보다 위 레이어에 그려지면서 **카드 충돌 회피
+로직이 전무**했다. 다중 cross 엣지의 라벨이 같은 중앙 지점에 몰리면 라벨끼리도 겹친다.
+slope 차트는 이미 baseline dodge(CHART-AP-26)로 해결했으나 관계도엔 미적용.
+
+**Fix (v8.2.16)**: [charts.js:`drawStakeholderMap`](../src/templates/static/charts.js)
+라벨 배치에 결정적 de-confliction 패스 추가 — ① 노드 카드 + 이미 배치한 라벨을
+장애물(AABB)로 보고 ② 중점에서 시작해 수직(±12~72) 우선·이어 수평(±22~66)으로 빈
+자리를 탐색해 밀어내고 ③ 8px 이상 밀리면 중점→라벨로 가는 가는 연결선(border, opacity
+0.6)을 남겨 어느 선의 라벨인지 보존한다(slope dodge 패턴 상속). + **선 스타일 범례**
+(실제 등장한 유형만, 2종 이상일 때만 — `→ 영향·주도` / `● 협력·자금` / `✕ 대립` /
+`○ 연관`)를 차트 하단에 자동 추가해 두 가지 시각 언어(자본 흐름 vs 영향·공급 관계)를
+해독할 단서를 준다. 데이터 계약(nodes/edges)·가드·registry 불변, 순수 렌더 변경.
+발행본은 `git pull` + 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용
+(stakeholder_map 노드 텍스트 자체는 `--replace` 미도달 — `title/subtitle/note` 만 훑음,
+교정 필요 시 `--add-stakeholder-map` 으로 차트 재주입).
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.15
+last_synced_with: v8.2.16
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.16 — 르포 관계도 엣지 라벨 겹침 차단 + 선 스타일 범례 (CHART-AP-40)
+
+사용자 catch — 르포 행위자 관계도(`stakeholder_map`)에서 관계 라벨 배지(`○ 설계` / `90만장` / `● 인프라` 등)가 가운데 칼럼 카드(`이재명 정부` / `김O씨`) 위에 찍혀 그 카드의 역할 텍스트(`자금·입법 설계` / `금○○○ 현직`)를 가리고, cross 엣지 라벨끼리도 같은 중앙 지점에 몰려 글자가 뭉개졌다. 근원은 `drawStakeholderMap` 이 엣지 라벨을 양 끝 부착점의 기하학적 중점에 그대로 찍는데, col0↔col2 를 가로지르는 엣지의 중점이 정확히 가운데 칼럼 카드에 떨어지고 카드 충돌 회피가 전무했던 것. Fix — 라벨 배치에 결정적 de-confliction 패스 추가(카드 + 이미 배치한 라벨을 AABB 장애물로 보고 중점에서 수직 우선·이어 수평으로 빈 자리로 밀어내고, 8px 이상 밀리면 중점→라벨 연결선을 남겨 association 보존 — slope CHART-AP-26 dodge 패턴 상속) + 선 스타일 범례(실제 등장한 유형만, 2종 이상일 때 — `→ 영향·주도` / `● 협력·자금` / `✕ 대립` / `○ 연관`) 자동 표기로 두 시각 언어(자본 흐름 vs 영향·공급 관계) 해독 단서 제공. 데이터 계약(nodes/edges)·가드·registry 불변, 순수 렌더 변경(일반 보고서 무영향). 발행본은 `git pull`+재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용. SSOT: [docs/CHART_RENDERING_ANTIPATTERNS.md](docs/CHART_RENDERING_ANTIPATTERNS.md) CHART-AP-40.
 
 ## v8.2.15 — 르포 데스크탑 우측 끝단 정렬 (본문 ↔ 차트·지도·용어풀이)
 

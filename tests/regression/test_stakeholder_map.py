@@ -78,3 +78,19 @@ def test_charts_js_registers_renderer() -> None:
           / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
     assert "stakeholder_map: drawStakeholderMap" in js
     assert "function drawStakeholderMap" in js
+
+
+def test_charts_js_label_deconfliction_and_legend() -> None:
+    """CHART-AP-40 — 엣지 라벨이 카드/다른 라벨과 겹치지 않게 밀어내는
+    de-confliction 패스 + 선 스타일 범례가 drawStakeholderMap 에 배선돼 있어야."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[2]
+          / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
+    # 카드+기존 라벨 장애물 회피 (de-confliction)
+    assert "labelObstacles" in js
+    assert "placedLabels" in js
+    assert "rectsHit" in js
+    # 멀리 밀린 라벨의 연결선 + CHART-AP-40 마커
+    assert "CHART-AP-40" in js
+    # 선 스타일 범례
+    assert "drawSmLegend" in js
