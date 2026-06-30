@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+
+<html lang="ko" data-theme="reportage_laurel">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>올트먼이 던진 90만장, 한국의 은행 빗장을 건드리다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+
+<style>/* ===== Report Theme System — Mono + Editorial (v4.5.0) =====
+   SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
+   세 톤 (Editorial Cream · Burgundy Mono · Light Mono).
+   - editorial_cream: 디폴트. cream + terracotta. 편집·분석·일반 보고서.
+   - burgundy_mono: 위기·분쟁·사고. dark wine + amber. (v4.5.0 어둡게 보정)
+   - light_mono: 폐기 예정 (legacy). 아래 블록은 호환 위해 보존.
+   카테고리 구분은 hue 가 아닌 border-style + 패턴.
+   ============================================================ */
+
+/* --- Default: Editorial Cream (warm cream + terracotta + warm dark) ---
+   v4.5.0 신규. LG AI Seminar 보고서 톤 차용. 인쇄·캡처·장문 가독성 우위. */
+:root, [data-theme="editorial_cream"] {
+  /* Surfaces */
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-hover: #E5DBC4;
+  --accent-surface: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --divider: #D4C8B0;
+
+  /* Text */
+  --text: #1F1814;       /* warm dark — pure black 보다 따뜻 */
+  --muted: #6B5C4A;      /* warm grey */
+
+  /* Semantic accents — guide §3.2 */
+  --accent: #B05A38;     /* terracotta — editorial 강조, hatch stroke, callout border */
+  --up: #4A6B3E;         /* forest green — 상승·기회 (작은 변동만) */
+  --down: #8B2A2A;       /* deep crimson — 하락·위험 (작은 변동, 이벤트 vline) */
+
+  /* Map tokens */
+  --map-land: #F2EBDB;
+  --map-water: #DFD3B8;  /* sand — water as "aged paper" */
+  --map-boundary: #1F1814;
+  --map-graticule: #D4C8B0;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases (멀티컬러 → mono 매핑 보존) */
+  --text-primary: var(--text);
+  --text-secondary: #2D241B;
+  --text-muted: var(--muted);
+  --text-faded: #8A7A66;
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 톤 변형 토큰 */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --card-deep: #E5DBC4;       /* v4.5.3 — chart-card-stage 배경 (본문보다 한 단계 깊게) */
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+}
+
+/* --- Burgundy Mono (deep wine + amber gold + parchment) — v4.5.0 어둡게 보정 ---
+   이전 #3D1820 은 "맑은 와인" 톤이었고 사용자 피드백으로 더 짙은 dried-blood 톤으로.
+   위기·분쟁·사고 보고서 전용 (lens_policy._THEME_BY_CATEGORY 참조). */
+[data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #2A0F18;             /* v4.5.0: 3D1820 → 2A0F18 (R-22, G-9, B-8) */
+  --card: #371721;           /* 카드는 bg 보다 한 단계 위 */
+  --card-hover: #371721;
+  --accent-surface: #371721;
+  --border: #5A2832;         /* 6E3340 → 5A2832 (어둡게) */
+  --border-light: #371721;
+  --divider: #5A2832;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents */
+  --accent: #D4A858;
+  --up: #A8B582;
+  --down: #C9837A;
+
+  /* Map tokens — water 도 한 단계 더 깊게 */
+  --map-land: #2A0F18;
+  --map-water: #1A0810;      /* 2A0E16 → 1A0810 (near-black wine) */
+  --map-boundary: #EFE5D1;
+  --map-graticule: #5A2832;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases */
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
+  --card-deep: #1A0810;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #D8CCB8;
+  --fg-3: var(--muted);
+  --border-soft: rgba(90,40,50,0.4);
+}
+
+/* --- Light Mono (cream + deep burgundy + forest green) --- */
+[data-theme="light_mono"] {
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-hover: #f8f2e4;
+  --accent-surface: #f8f2e4;
+  --border: #b3a586;
+  --border-light: #d4c8a8;
+  --divider: #b3a586;
+
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+
+  --map-land: #efe8d9;
+  --map-water: #dccea8;
+  --map-boundary: #1a1a1a;
+  --map-graticule: #b3a586;
+
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0, light mono) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --card-deep: #dccea8;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #3a3a3a;
+  --fg-3: var(--muted);
+  --border-soft: rgba(179,165,134,0.4);
+}
+
+/* ================================================================
+   v5.0.2 — 5개 신규 테마 (총 7종 중 5종 추가, 사용자 요청)
+   원칙: mono guide §3.3 단일 액센트. 가독성 우선. 카테고리 무관 랜덤.
+   ================================================================ */
+
+/* --- Midnight Indigo (deep indigo + sky blue) — 다크 모드, 기술·심층 톤 */
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E;
+  --card: #1F2440;
+  --card-hover: #262C4A;
+  --accent-surface: #1F2440;
+  --border: #3A4060;
+  --border-light: #262C4A;
+  --divider: #3A4060;
+
+  --text: #E8ECEF;
+  --muted: #8A92A8;
+
+  --accent: #6FB3FF;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #161A2E;
+  --map-water: #0D1020;
+  --map-boundary: #E8ECEF;
+  --map-graticule: #3A4060;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0D1020;
+  --card-deep: #0D1020;
+  --fg-1: var(--text); --fg-2: #D0D8E0; --fg-3: var(--muted);
+  --border-soft: rgba(58,64,96,0.45);
+}
+
+/* --- Pine Forest (deep pine green + jade) — 다크 모드, 짙은 녹색 (v6.2.0) */
+[data-theme="pine_forest"] {
+  --bg: #132019;
+  --card: #1B2C22;
+  --card-hover: #233529;
+  --accent-surface: #1B2C22;
+  --border: #32503E;
+  --border-light: #233529;
+  --divider: #32503E;
+
+  --text: #E7EEE8;
+  --muted: #8AA294;
+
+  --accent: #7CC6A4;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #132019;
+  --map-water: #0C140F;
+  --map-boundary: #E7EEE8;
+  --map-graticule: #32503E;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0C140F;
+  --card-deep: #0C140F;
+  --fg-1: var(--text); --fg-2: #CFE0D4; --fg-3: var(--muted);
+  --border-soft: rgba(50,80,62,0.45);
+}
+
+/* --- Graphite Slate (deep graphite gray + copper) — 다크 모드, 짙은 회색 (v6.2.0) */
+[data-theme="graphite_slate"] {
+  --bg: #191B1E;
+  --card: #23262B;
+  --card-hover: #2B2F35;
+  --accent-surface: #23262B;
+  --border: #3D424A;
+  --border-light: #2B2F35;
+  --divider: #3D424A;
+
+  --text: #E9EBED;
+  --muted: #969BA3;
+
+  --accent: #D69A5E;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #191B1E;
+  --map-water: #0E0F12;
+  --map-boundary: #E9EBED;
+  --map-graticule: #3D424A;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0E0F12;
+  --card-deep: #0E0F12;
+  --fg-1: var(--text); --fg-2: #D2D6DA; --fg-3: var(--muted);
+  --border-soft: rgba(61,66,74,0.45);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* --- Layout --- */
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
+
+/* --- Hero --- */
+.hero { background: var(--bg); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; }
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(24px, 6vw, 42px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 14px;
+  line-height: 1.7;
+}
+
+/* --- Key Summary (핵심 요약) --- */
+.key-summary {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.key-summary-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.key-summary ol {
+  list-style: none;
+  counter-reset: ks;
+  padding: 0;
+  margin: 0;
+}
+.key-summary li {
+  counter-increment: ks;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding: 3px 0;
+}
+.key-summary li::before {
+  content: counter(ks) ")";
+  color: var(--gold);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* --- Key Metrics Grid --- */
+.key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .key-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 400px) {
+  .key-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.key-metric-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px 8px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.key-metric-icon { font-size: 16px; margin-bottom: 6px; }
+.key-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.key-metric-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+/* --- Canvas Chart Grid --- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span {
+  background: var(--card);
+  padding: 3px 12px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* --- Navigation --- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(43, 26, 26, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-inner { display: flex; white-space: nowrap; padding: 0 4px; }
+.nav a {
+  display: block;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faded);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color .2s;
+}
+.nav a:hover { color: var(--text-muted); }
+.nav a.on { color: var(--text-primary); border-bottom-color: var(--gold); }
+
+/* --- Section Headings --- */
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: var(--text-faded);
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+/* --- Card --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+/* --- Callout --- */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--text-primary); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+/* --- Balance Analysis (균형 분석) ---
+   Long-form structured analysis with paragraph spacing for readability. */
+.balance-analysis {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 18px 20px;
+  margin: 18px 0;
+}
+.balance-analysis-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: 0.3px;
+}
+.balance-analysis-body {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.balance-analysis-body strong {
+  display: inline-block;
+  color: var(--gold);
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+.balance-analysis-body br + br {
+  line-height: 0.5;
+}
+
+/* --- Grid --- */
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* --- Act Cue (막 전환 문구) --- */
+.act-cue {
+  text-align: center;
+  padding: 24px 0 0;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  color: var(--text-faded);
+  font-style: italic;
+}
+
+/* --- Player Cards --- */
+.player-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.player-card.extreme::before { background: var(--red); }
+.player-card.high::before { background: var(--orange); }
+.player-card.medium::before { background: var(--gold); }
+.player-card.low::before { background: var(--green); }
+
+.player-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.player-emoji { font-size: 20px; }
+.player-name { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+
+.badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.badge.extreme { background: var(--red-light); color: var(--red); border: 1px solid var(--red); }
+.badge.high { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange); }
+.badge.medium { background: rgba(201,168,76,.12); color: var(--gold); border: 1px solid var(--gold); }
+.badge.low { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
+
+.player-summary { font-size: 10px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+.player-detail {
+  font-size: 10px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* --- Flow (Chain Reaction) --- */
+.flow-list { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.flow-node {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-align: center;
+  width: 100%;
+  max-width: 440px;
+}
+.flow-node strong { font-size: 12px; color: var(--text-primary); }
+.flow-node span { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+.flow-arrow {
+  width: 1px;
+  height: 16px;
+  background: var(--divider);
+  position: relative;
+}
+.flow-arrow::after {
+  content: '\25BC';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  color: var(--text-faded);
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.data-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 10px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.data-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--card-hover); }
+
+/* --- Signal Grid --- */
+.signal-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .signal-grid { grid-template-columns: 1fr 1fr; } }
+
+.signal-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.signal-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--card-hover);
+}
+.signal-item h4 { font-size: 11px; font-weight: 700; margin-bottom: 1px; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+/* --- Timeline --- */
+.timeline-content { font-size: 10px; line-height: 1.85; color: var(--text-secondary); }
+
+/* --- Gauge Bar --- */
+.gauge-bar { margin-bottom: 8px; }
+.gauge-label {
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+.gauge-label span:last-child { color: var(--text-primary); font-weight: 600; }
+.gauge-track { height: 20px; background: var(--card); border-radius: 3px; overflow: hidden; }
+.gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- Terms --- */
+.terms {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.terms b { color: var(--text-secondary); font-size: 10px; }
+
+/* --- Radar --- */
+.radar-wrap { display: flex; justify-content: center; margin: 20px 0; }
+#radarCanvas { max-width: 100%; }
+
+/* --- Footer --- */
+.footer {
+  background: var(--bg);
+  border-top: 1px solid var(--divider);
+  color: var(--text-faded);
+  padding: 24px 14px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.footer a { color: var(--text-muted); text-decoration: underline; }
+
+/* ============================================================ */
+/* === v5.1.1 — 후속 보고서 헤더 + 출처 footnote 시스템         === */
+/* ============================================================ */
+
+/* --- Followup parent reference (h1 [1] footnote target) --- */
+.followup-parent {
+  padding: 18px 0 6px;
+}
+.followup-parent .container,
+.followup-parent {
+  /* container 안에서 한 단계 들여쓰기. .container 자체는 max-width 적용 됨 */
+}
+.followup-parent-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.followup-parent-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.followup-parent-body { flex: 1; }
+.followup-parent-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faded);
+  margin-bottom: 4px;
+}
+.followup-parent-id { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.followup-parent-id a { color: var(--text); text-decoration: underline; }
+.followup-parent-signal { color: var(--text-secondary); margin-bottom: 4px; }
+.followup-parent-dir {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.followup-parent-dir-confirms_base { background: rgba(74,107,62,0.18); color: var(--up); }
+.followup-parent-dir-rejects_base { background: rgba(139,42,42,0.18); color: var(--down); }
+.followup-parent-dir-ambiguous { background: rgba(176,90,56,0.18); color: var(--accent); }
+.followup-parent-event { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.followup-parent-depth { color: var(--text-faded); font-size: 9px; letter-spacing: 1px; }
+
+/* --- Title footnote mark on h1 (link [1] → #followup-parent) --- */
+.title-footnote-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.45em;
+  vertical-align: super;
+  margin-left: 6px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.title-footnote-mark sup { line-height: 1; }
+
+/* --- Footnote refs (inline ⁽n⁾ markers throughout body) --- */
+.fn-ref {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+.fn-ref:hover { text-decoration: underline; }
+
+/* --- Bottom footnotes section (통합 출처 리스트) --- */
+.footnotes {
+  padding: 28px 0 36px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+}
+.footnotes-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+.footnotes-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.footnotes-item {
+  padding: 4px 0;
+  word-break: break-all;
+}
+.footnotes-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.footnotes-link:hover { color: var(--text); }
+.footnotes-text { color: var(--muted); }
+.footnotes-item:target {
+  background: rgba(176,90,56,0.12);
+  border-radius: 3px;
+  padding-left: 4px;
+}
+
+/* --- Fade-in Animation --- */
+.fade-in { opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+.fade-in.visible { opacity: 1; transform: none; }
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 24px; }
+  .data-table { font-size: 10px; }
+}
+@media (max-width: 540px) {
+  .hero { padding: 36px 12px 28px; }
+  section { padding: 32px 0 24px; }
+  .player-card, .card { padding: 12px; }
+}
+
+/* ============================================================ */
+/* === V3 Step 3 — Block Rendering System (append-only)        === */
+/* === 디자인 토큰(--text-primary, --gold, --red 등) 재사용     === */
+/* ============================================================ */
+
+.report-block-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-section-empty { color: var(--text-muted); font-size: 11px; padding: 8px 0; font-style: italic; }
+.report-block-key-summary-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-fallback { padding: 32px 0; }
+.hero-eyebrow { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faded); margin-bottom: 8px; font-family: 'Noto Serif KR', serif; font-style: italic; }
+.footer-confidence { max-width: 600px; margin: 0 auto 10px; color: var(--text-faded); font-size: 10px; }
+.footer-share { margin-top: 10px; font-size: 11px; }
+.footer-share span { color: rgba(255,255,255,.5); }
+
+/* --- narrative --- */
+.block-narrative { margin-bottom: 14px; }
+.block-narrative-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary); }
+.block-narrative-body { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+.block-narrative-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- claim_card --- */
+.block-claim-card { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-claim-card-header { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-claim-card-id { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+.block-claim-card-type { font-size: 9px; color: var(--text-muted); padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; }
+.block-claim-card-confidence { font-size: 10px; color: var(--blue); font-weight: 600; margin-left: auto; }
+.block-claim-card-statement { font-size: 12px; color: var(--text-primary); line-height: 1.6; margin-bottom: 6px; }
+.block-claim-card-evidence { font-size: 10px; color: var(--text-secondary); }
+.block-claim-card-evidence-label { color: var(--text-muted); margin-right: 4px; }
+.block-claim-card-evidence-id { display: inline-block; padding: 1px 5px; margin: 1px 2px; background: var(--accent); border-radius: 3px; font-size: 9px; color: var(--bg); }
+.block-claim-card-evidence-missing { font-size: 10px; color: var(--orange); font-style: italic; }
+
+/* --- evidence_table --- */
+.block-evidence-table { margin: 12px 0; overflow-x: auto; }
+.block-evidence-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-evidence-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-evidence-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-evidence-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-evidence-table-id { color: var(--gold); font-weight: 600; }
+.block-evidence-table-quote { line-height: 1.6; }
+.block-evidence-table-link { color: var(--blue); text-decoration: none; }
+.block-evidence-table-reliability { font-size: 9px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+.block-evidence-table-rel-primary { background: var(--green-light); color: var(--green); }
+.block-evidence-table-rel-secondary { background: var(--blue-light); color: var(--blue); }
+.block-evidence-table-rel-expert { background: var(--gold); color: var(--bg); }
+.block-evidence-table-rel-model_inference { background: var(--orange-light); color: var(--orange); }
+.block-evidence-table-empty { font-size: 10px; color: var(--text-muted); padding: 12px 0; font-style: italic; }
+
+/* --- timeline --- */
+.block-timeline { margin: 12px 0; }
+.block-timeline-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-timeline-list { list-style: none; padding: 0; margin: 0; }
+.block-timeline-item { display: flex; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 11px; line-height: 1.6; }
+.block-timeline-item:last-child { border-bottom: 0; }
+.block-timeline-date { color: var(--blue); font-weight: 600; min-width: 110px; flex-shrink: 0; white-space: nowrap; }
+.block-timeline-event { color: var(--text-secondary); flex: 1; }
+.block-timeline-impact { color: var(--red); font-weight: 600; margin-left: 6px; }
+.block-timeline-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- matrix --- */
+.block-matrix { margin: 12px 0; overflow-x: auto; }
+.block-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-matrix-corner { background: var(--card); border: 1px solid var(--border); padding: 8px; }
+.block-matrix-col { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; }
+.block-matrix-row-label { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+.block-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- actor_cards --- */
+.block-actor-cards { margin: 12px 0; }
+.block-actor-cards-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-actor-cards-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-actor-cards-grid { grid-template-columns: 1fr 1fr; } }
+.block-actor-cards-card { background: var(--card); border-radius: var(--radius); padding: 12px; border-left: 3px solid var(--gold); }
+.block-actor-cards-risk-극심 { border-left-color: var(--red); }
+.block-actor-cards-risk-높음 { border-left-color: var(--orange); }
+.block-actor-cards-risk-보통 { border-left-color: var(--gold); }
+.block-actor-cards-risk-낮음 { border-left-color: var(--green); }
+.block-actor-cards-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-actor-cards-emoji { font-size: 16px; }
+.block-actor-cards-name { font-weight: 700; font-size: 12px; color: var(--text-primary); }
+.block-actor-cards-role { font-size: 9px; padding: 2px 6px; background: var(--accent); border-radius: 3px; color: var(--bg); font-weight: 600; }
+.block-actor-cards-position { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.6; }
+.block-actor-cards-detail { font-size: 10px; color: var(--text-muted); margin: 3px 0; line-height: 1.6; }
+.block-actor-cards-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- flow_chain --- */
+.block-flow-chain { margin: 12px 0; }
+.block-flow-chain-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-flow-chain-list { list-style: none; padding: 0; margin: 0; }
+.block-flow-chain-step { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); position: relative; }
+.block-flow-chain-step:not(:last-child)::after { content: '↓'; position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); color: var(--text-muted); font-size: 12px; }
+.block-flow-chain-sev-high { border-left-color: var(--red); }
+.block-flow-chain-sev-medium { border-left-color: var(--orange); }
+.block-flow-chain-sev-low { border-left-color: var(--gold); }
+.block-flow-chain-header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.block-flow-chain-num { font-weight: 700; color: var(--gold); font-size: 11px; }
+.block-flow-chain-title-text { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-flow-chain-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0; }
+.block-flow-chain-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-muted); flex-wrap: wrap; }
+.block-flow-chain-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- scenario_table --- */
+.block-scenario-table { margin: 12px 0; overflow-x: auto; }
+.block-scenario-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-scenario-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-scenario-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-scenario-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); vertical-align: top; }
+.block-scenario-table-name strong { color: var(--text-primary); font-size: 11px; }
+.block-scenario-table-tag { font-size: 9px; color: var(--gold); }
+.block-scenario-table-tag-최선 { border-left: 2px solid var(--green); }
+.block-scenario-table-tag-악화 { border-left: 2px solid var(--orange); }
+.block-scenario-table-tag-최악 { border-left: 2px solid var(--red); }
+.block-scenario-table-prob { font-weight: 700; color: var(--text-primary); }
+.block-scenario-table-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- decomposition --- */
+.block-decomposition { margin: 12px 0; }
+.block-decomposition-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decomposition-root { font-weight: 700; font-size: 13px; color: var(--gold); padding: 10px 12px; background: var(--card); border-radius: var(--radius); margin-bottom: 8px; }
+.block-decomposition-tree, .block-decomposition-children { list-style: none; padding-left: 16px; margin: 0; border-left: 1px dashed var(--border); }
+.block-decomposition-node { padding: 6px 0 6px 12px; position: relative; }
+.block-decomposition-node::before { content: '─'; position: absolute; left: -1px; top: 12px; color: var(--border); }
+.block-decomposition-label { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+.block-decomposition-detail { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-decomposition-depth-1 .block-decomposition-label { color: var(--gold); }
+.block-decomposition-depth-2 .block-decomposition-label { color: var(--blue); }
+.block-decomposition-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- argument_pair --- */
+.block-argument-pair { margin: 12px 0; }
+.block-argument-pair-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-argument-pair-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 700px) { .block-argument-pair-grid { grid-template-columns: 1fr 1fr; } }
+.block-argument-pair-side { background: var(--card); padding: 12px; border-radius: var(--radius); border-top: 3px solid var(--gold); }
+.block-argument-pair-side-a { border-top-color: var(--blue); }
+.block-argument-pair-side-b { border-top-color: var(--orange); }
+.block-argument-pair-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.block-argument-pair-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-argument-pair-alignment { margin-top: 10px; padding: 10px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; }
+.block-argument-pair-alignment-title { font-weight: 700; color: var(--gold); margin-bottom: 4px; font-size: 10px; }
+.block-argument-pair-alignment-list { padding-left: 16px; margin: 0; color: var(--text-secondary); }
+
+/* --- data_series --- */
+.block-data-series { margin: 12px 0; }
+.block-data-series-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-data-series-unit { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.block-data-series-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-data-series-grid { grid-template-columns: 1fr 1fr; } }
+.block-data-series-card { background: var(--card); padding: 10px 12px; border-radius: var(--radius); }
+.block-data-series-label { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 6px; }
+.block-data-series-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-data-series-table th { color: var(--text-muted); text-align: left; padding: 4px 6px; font-weight: 600; border-bottom: 1px solid var(--border-light); }
+.block-data-series-table td { padding: 4px 6px; color: var(--text-secondary); }
+.block-data-series-x { color: var(--text-muted); }
+.block-data-series-y { font-weight: 600; color: var(--text-primary); }
+.block-data-series-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- watchlist --- */
+.block-watchlist { margin: 12px 0; }
+.block-watchlist-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-watchlist-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .block-watchlist-grid { grid-template-columns: 1fr 1fr; } }
+.block-watchlist-item { display: flex; gap: 10px; padding: 10px 12px; background: var(--card); border-radius: var(--radius); border-left: 3px solid var(--gold); }
+.block-watchlist-dir-confirms_base { border-left-color: var(--green); }
+.block-watchlist-dir-rejects_base { border-left-color: var(--red); }
+.block-watchlist-dir-ambiguous { border-left-color: var(--gold); }
+.block-watchlist-icon { font-size: 18px; flex-shrink: 0; }
+.block-watchlist-body { flex: 1; }
+.block-watchlist-signal { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-watchlist-desc { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-watchlist-indicates { font-size: 10px; color: var(--blue); margin-top: 2px; }
+.block-watchlist-deadline { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+.block-watchlist-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- qna --- */
+.block-qna { margin: 12px 0; }
+.block-qna-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-qna-list { padding: 0; margin: 0; }
+.block-qna-pair { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px; }
+.block-qna-q { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 4px; }
+.block-qna-a { font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-left: 16px; }
+.block-qna-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- callout --- */
+.block-callout { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-callout-style-warning { border-left-color: var(--orange); }
+.block-callout-style-info { border-left-color: var(--blue); }
+.block-callout-style-insight { border-left-color: var(--gold); }
+.block-callout-title { font-size: 12px; margin-bottom: 4px; color: var(--text-primary); }
+.block-callout-body { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+/* --- counter_hypothesis --- */
+.block-counter-hypothesis { background: var(--card); padding: 12px 14px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin: 12px 0; }
+.block-counter-hypothesis-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--blue); }
+.block-counter-hypothesis-base, .block-counter-hypothesis-counter, .block-counter-hypothesis-required { margin: 8px 0; }
+.block-counter-hypothesis-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.block-counter-hypothesis-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-counter-hypothesis-list { padding-left: 18px; margin: 0; font-size: 10px; color: var(--text-secondary); line-height: 1.6; }
+.block-counter-hypothesis-conflict { margin-top: 8px; font-size: 10px; color: var(--orange); padding-top: 8px; border-top: 1px solid var(--border-light); }
+
+/* --- decision_matrix --- */
+.block-decision-matrix { margin: 12px 0; overflow-x: auto; }
+.block-decision-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decision-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-decision-matrix-corner, .block-decision-matrix-criterion { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); font-weight: 600; }
+.block-decision-matrix-option { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); text-align: left; font-weight: 600; }
+.block-decision-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); text-align: center; }
+.block-decision-matrix-rec { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; color: var(--bg); font-weight: 600; }
+.block-decision-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- risk_matrix --- */
+.block-risk-matrix { margin: 12px 0; overflow-x: auto; }
+.block-risk-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-risk-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-risk-matrix-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-risk-matrix-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-risk-matrix-impact-high { border-left: 3px solid var(--red); }
+.block-risk-matrix-impact-medium { border-left: 3px solid var(--orange); }
+.block-risk-matrix-impact-low { border-left: 3px solid var(--gold); }
+.block-risk-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* ============================================================ */
+/* === Mobile readability (PR1', 2026-05-01)                   === */
+/* === scenario_grid 등은 charts.css 가 처리. 여기는 timeline 과 === */
+/* === evidence/risk_matrix 의 좁은 폭 cram 을 해소.           === */
+/* ============================================================ */
+
+@media (max-width: 540px) {
+  /* timeline: flex 좌우 → 세로 스택. min-width:110px 의 날짜 칸 해제. */
+  .block-timeline-item { flex-direction: column; gap: 2px; padding: 10px 0; align-items: stretch; }
+  .block-timeline-date { min-width: 0; white-space: normal; font-size: 10px; }
+  .block-timeline-event { font-size: 11px; }
+  .block-timeline-impact { margin-left: 0; font-size: 11px; }
+
+  /* table 폰트 10px → 11px (모바일 가독성) */
+  .block-evidence-table-grid,
+  .block-matrix-grid,
+  .block-risk-matrix-grid,
+  .block-decision-matrix-grid { font-size: 11px; }
+
+  /* evidence_table / risk_matrix: thead 숨기고 row → 카드, td → 라벨된 행 */
+  .block-evidence-table-grid thead,
+  .block-risk-matrix-grid thead { display: none; }
+
+  .block-evidence-table-grid,
+  .block-evidence-table-grid tbody,
+  .block-risk-matrix-grid,
+  .block-risk-matrix-grid tbody { display: block; }
+
+  .block-evidence-table-grid tr,
+  .block-risk-matrix-grid tr {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .block-evidence-table-grid td,
+  .block-risk-matrix-grid td {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  /* td[data-label] 가 있으면 라벨 표시 (template 갱신 필요) */
+  .block-evidence-table-grid td[data-label]::before,
+  .block-risk-matrix-grid td[data-label]::before {
+    content: attr(data-label) ":  ";
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  /* matrix 류는 가로 스크롤 유지 (이게 더 읽힘) */
+  .block-matrix, .block-decision-matrix { -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================ */
+/* === PR3 (v3.4.6) — Narrative stage badges + AMC warning      === */
+/* === 5단 DSL 시각 차별화로 단조로움 직접 해소                   === */
+/* ============================================================ */
+
+.section-header { margin-bottom: 16px; }
+.section-stage-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid currentColor;
+  background: var(--accent);
+}
+.section-stage-badge.stage-fact       { color: var(--blue); }
+.section-stage-badge.stage-mechanism  { color: var(--gold); }
+.section-stage-badge.stage-divergence { color: var(--orange); }
+.section-stage-badge.stage-decision   { color: var(--green); }
+.section-stage-badge.stage-trigger    { color: var(--red); }
+
+/* 섹션 자체에도 좌측 컬러 액센트 — 스크롤하면서 단계 흐름이 한눈에 보이게 */
+.report-block-section.stage-fact       { border-left: 2px solid var(--blue);   padding-left: 12px; }
+.report-block-section.stage-mechanism  { border-left: 2px solid var(--gold);   padding-left: 12px; }
+.report-block-section.stage-divergence { border-left: 2px solid var(--orange); padding-left: 12px; }
+.report-block-section.stage-decision   { border-left: 2px solid var(--green);  padding-left: 12px; }
+.report-block-section.stage-trigger    { border-left: 2px solid var(--red);    padding-left: 12px; }
+
+/* AMC 미달 경고 배너 */
+.report-block-amc-warning {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius);
+  background: var(--orange-light);
+}
+.amc-warning-badge {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.amc-warning-badge code {
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.amc-warning-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.amc-stage-missing {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  color: var(--orange);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   v8.0.0 — 르포(reportage) 전용 테마 8종 (다크 통일). lens_policy.REPORTAGE_THEMES
+   와 1:1. 르포일 때만 data-theme 으로 적용 — 일반 보고서 5테마와 완전 분기.
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="reportage_cyprus"] {
+  --bg: #004741; --card: #0B5349; --card-hover: #156055; --accent-surface: #0B5349;
+  --border: #1E5C52; --border-light: #156055; --divider: #1E5C52;
+  --text: #F0EDE4; --muted: #9DB5AC;
+  --accent: #E3A93C; --up: #86C0A4; --down: #E89070;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #003A33; --card-deep: #003A33;
+  --fg-1: var(--text); --fg-2: #D8E0D8; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_noturno"] {
+  --bg: #001621; --card: #06222E; --card-hover: #0A2A38; --accent-surface: #06222E;
+  --border: #1C3A45; --border-light: #0A2A38; --divider: #1C3A45;
+  --text: #EFE3D4; --muted: #8AA0A6;
+  --accent: #FF4103; --up: #8AC0A0; --down: #FF8A5C;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #000E16; --card-deep: #000E16;
+  --fg-1: var(--text); --fg-2: #D8E0DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_bridal"] {
+  --bg: #741A2F; --card: #86283C; --card-hover: #94324A; --accent-surface: #86283C;
+  --border: #8E3548; --border-light: #94324A; --divider: #8E3548;
+  --text: #FFE2D4; --muted: #C99A92;
+  --accent: #FFB38F; --up: #D0A88A; --down: #F2998F;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #5E1326; --card-deep: #5E1326;
+  --fg-1: var(--text); --fg-2: #F2D0C4; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_cosmos"] {
+  --bg: #002F49; --card: #073A56; --card-hover: #0A4564; --accent-surface: #073A56;
+  --border: #134A63; --border-light: #0A4564; --divider: #134A63;
+  --text: #FEF0D5; --muted: #8BA3B2;
+  --accent: #E8503F; --up: #88B888; --down: #C9837A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #00263B; --card-deep: #00263B;
+  --fg-1: var(--text); --fg-2: #E6D8C0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_laurel"] {
+  --bg: #0D3A35; --card: #164640; --card-hover: #1E5249; --accent-surface: #164640;
+  --border: #27534A; --border-light: #1E5249; --divider: #27534A;
+  --text: #FBF6F0; --muted: #9CB5AC;
+  --accent: #86C0A4; --up: #86C0A4; --down: #E2937A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #082E2A; --card-deep: #082E2A;
+  --fg-1: var(--text); --fg-2: #DCE6E0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_princess"] {
+  --bg: #015AA0; --card: #0A66AC; --card-hover: #1572B8; --accent-surface: #0A66AC;
+  --border: #2A74B6; --border-light: #1572B8; --divider: #2A74B6;
+  --text: #ECECFF; --muted: #AEC4E0;
+  --accent: #FF9457; --up: #88C0B0; --down: #FF8378;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #014A85; --card-deep: #014A85;
+  --fg-1: var(--text); --fg-2: #D8E0F5; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_steel"] {
+  --bg: #282433; --card: #332E41; --card-hover: #3D374D; --accent-surface: #332E41;
+  --border: #453F56; --border-light: #3D374D; --divider: #453F56;
+  --text: #F3E0D9; --muted: #B0A8BE;
+  --accent: #E2B25C; --up: #A0C090; --down: #E89C94;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #1E1B27; --card-deep: #1E1B27;
+  --fg-1: var(--text); --fg-2: #E0D4DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_navy"] {
+  --bg: #0F0E49; --card: #1A1860; --card-hover: #24226E; --accent-surface: #1A1860;
+  --border: #2D2B79; --border-light: #24226E; --divider: #2D2B79;
+  --text: #ECE6F5; --muted: #B0AED4;
+  --accent: #D9ABE8; --up: #A0C0B0; --down: #F08AB0;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0A0934; --card-deep: #0A0934;
+  --fg-1: var(--text); --fg-2: #DCD6EC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+
+/* 르포 전용 폰트 — G마켓 Sans(디스플레이) + Noto Sans(본문). 일반 보고서는 영향 없음. */
+@font-face{font-family:'GmarketSans';font-weight:700;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');font-display:swap}
+@font-face{font-family:'GmarketSans';font-weight:500;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-display:swap}
+
+/* 르포: 본문 Noto Sans, 헤드라인/키커/소제목 G마켓 Sans */
+[data-theme^="reportage_"],
+[data-theme^="reportage_"] .freeform-prose,
+[data-theme^="reportage_"] .freeform-deck,
+[data-theme^="reportage_"] .freeform-lede,
+[data-theme^="reportage_"] body{font-family:'Noto Sans KR','IBM Plex Sans KR',sans-serif !important}
+[data-theme^="reportage_"] .freeform-headline,
+[data-theme^="reportage_"] .freeform-heading,
+[data-theme^="reportage_"] .freeform-kicker,
+[data-theme^="reportage_"] .freeform-eyebrow,
+[data-theme^="reportage_"] h1,
+[data-theme^="reportage_"] h2,
+[data-theme^="reportage_"] h3{font-family:'GmarketSans','Noto Sans KR',sans-serif !important;letter-spacing:-0.01em}
+
+/* 르포: 플랫 미니멀 — 둥근 모서리/그림자 제거 */
+[data-theme^="reportage_"] .freeform-figure,
+[data-theme^="reportage_"] .chart-card,
+[data-theme^="reportage_"] .freeform-fact-grid > *,
+[data-theme^="reportage_"] .freeform-pullquote,
+[data-theme^="reportage_"] .freeform-analogy,
+[data-theme^="reportage_"] .freeform-origin,
+[data-theme^="reportage_"] figure,
+[data-theme^="reportage_"] img,
+[data-theme^="reportage_"] [class*="card"]{border-radius:0 !important;box-shadow:none !important}
+
+/* 르포 [르포] 배지 (헤더 eyebrow). 본문 텍스트 아님 — UI 라벨. */
+.reportage-badge{display:inline-block;font-family:'GmarketSans',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.12em;padding:3px 9px;border:1px solid var(--accent);color:var(--accent);margin-right:10px;vertical-align:middle}
+
+
+/* v8.0.0 — 르포 테마 지도(globe) 색 변수. 없으면 :root(라이트)를 상속해 크림색으로 나옴. */
+[data-theme="reportage_cyprus"]{--map-water:#003A33;--map-land:#156055;--map-boundary:#1E5C52}
+[data-theme="reportage_noturno"]{--map-water:#000E16;--map-land:#0A2A38;--map-boundary:#1C3A45}
+[data-theme="reportage_bridal"]{--map-water:#5E1326;--map-land:#94324A;--map-boundary:#8E3548}
+[data-theme="reportage_cosmos"]{--map-water:#00263B;--map-land:#0A4564;--map-boundary:#134A63}
+[data-theme="reportage_laurel"]{--map-water:#082E2A;--map-land:#1E5249;--map-boundary:#27534A}
+[data-theme="reportage_princess"]{--map-water:#014A85;--map-land:#1572B8;--map-boundary:#2A74B6}
+[data-theme="reportage_steel"]{--map-water:#1E1B27;--map-land:#3D374D;--map-boundary:#453F56}
+[data-theme="reportage_navy"]{--map-water:#0A0934;--map-land:#24226E;--map-boundary:#2D2B79}
+</style>
+<style>
+  /* ── 르포 담백 레이아웃 (theme color 변수는 report.css [data-theme=reportage_*] 에서) ── */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+       -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+  .rep-wrap{max-width:820px;margin:0 auto;padding:0 26px 90px}
+  /* 상단 바 — 버전만 */
+  .rep-top{display:flex;justify-content:flex-end;align-items:center;border-bottom:1px solid var(--border);
+           padding:16px 0 12px;font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  /* 제목 / 작성일시 */
+  .rep-headline{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:44px;
+                line-height:1.12;letter-spacing:-.015em;color:var(--text);margin:34px 0 12px}
+  .rep-meta{font:500 12px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted);margin:0 0 8px}
+  .rep-rule{height:1px;background:var(--border);margin:30px 0}
+  /* 사진 */
+  .rep-fig{margin:26px 0}
+  .rep-fig img{width:100%;height:auto;display:block;border-radius:0}
+  .rep-fig figcaption{font:400 12.5px/1.5 'Noto Sans KR',sans-serif;color:var(--muted);margin-top:8px}
+  .rep-fig .credit{margin-left:6px;opacity:.85}
+  .rep-fig .credit a{color:inherit}
+  /* 섹션 — 번호 + 소제목 + 본문 */
+  .rep-section{padding:6px 0 2px}
+  .rep-num{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:13px;color:var(--accent);
+           letter-spacing:.08em;display:block;margin:0 0 6px}
+  .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
+          line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
+  /* v8.2.15 — 본문도 차트/지도/용어풀이와 동일하게 .rep-wrap 콘텐츠 폭을 꽉 채운다.
+     이전엔 본문만 max-width:66ch 로 좁아 데스크탑에서 우측 끝단이 시각물보다 안쪽에서
+     줄바뀜 → 우측 끝 정렬 어긋남(모바일은 뷰포트가 더 좁아 무증상). 한 열로 통일. */
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;
+             text-align:justify;text-justify:auto;text-align-last:left;
+             word-break:keep-all;overflow-wrap:break-word}
+  /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
+  .rep-prose p{margin:0 0 1.15em;text-align:justify;text-align-last:left}
+  /* 용어풀이 (유일하게 남기는 부가요소) */
+  .rep-fn{margin:18px 0 4px;padding:14px 16px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03)}
+  .rep-fn-label{font:700 11px 'Noto Sans KR',sans-serif;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
+  .rep-fn-item{font:400 13px/1.6 'Noto Sans KR',sans-serif;color:var(--text);opacity:.9;margin-bottom:6px}
+  .rep-fn-term{font-weight:700;margin-right:6px}
+  /* 차트/지도 카드 — 플랫(report.css reportage override) */
+  .rep-figwrap{margin:24px 0}
+  /* 결론 */
+  .rep-conc{margin-top:30px;padding-top:22px;border-top:1px solid var(--border)}
+  /* 푸터 — 최소 */
+  .rep-foot{max-width:820px;margin:0 auto;padding:26px;border-top:1px solid var(--border);
+            font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-foot a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="rep-wrap">
+
+  <div class="rep-top">v8.2.15 · Rev 0.0</div>
+
+  <h1 class="rep-headline">올트먼이 던진 90만장, 한국의 은행 빗장을 건드리다</h1>
+  <div class="rep-meta">2026-06-30 20:52</div>
+  
+  
+
+  
+  
+
+  <div class="rep-rule"></div>
+
+  
+  
+
+  
+  
+  
+  <section class="rep-section">
+    <span class="rep-num">01</span>
+    <h2 class="rep-h2">테이블 위에 올라온 숫자, 월 90만 장</h2>
+    <div class="rep-prose">지난해 10월 1일, 서울. 오픈AI를 이끄는 샘 올트먼이 이재명 대통령, 이재용 삼성전자 회장, 최태원 SK 회장과 한자리에 앉는다. 그리고 테이블 위에 숫자 하나를 올린다. 월 90만 장. 삼성과 SK가 만들 D램 웨이퍼를 그만큼 달라는 요청이다. 그날 두 회사는 각각 오픈AI의 데이터센터 구상인 스타게이트에 메모리를 대겠다는 의향서에 서명한다. 의향서는 계약이 아니다. 사겠다, 팔겠다는 뜻을 종이에 적은 단계다. 그런데도 시장은 즉각 반응한다. 90만 장이 왜 충격인가. 글로벌 D램 월 생산능력의 약 40퍼센트에 해당하는 양이기 때문이다. 삼성과 SK를 합쳐도 한 달에 약 120만 장을 만든다. 90만 장은 그 75퍼센트다. 두 회사가 만드는 D램을 거의 다 한 곳에 몰아주지 않는 한, 지금 설비로는 댈 수 없는 숫자다. 그래서 이 숫자는 단순한 주문이 아니다. 한국 반도체가 공장을 얼마나 더 지어야 하는가, 그 돈을 어디서 끌어오는가라는 질문을 한꺼번에 깨운다. 이야기는 여기서 시작한다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">D램 웨이퍼</span>메모리 반도체를 찍어내는 둥근 원판이다. 웨이퍼 한 장에서 D램 칩 수백 개가 나오므로, 장 수가 곧 생산능력의 단위가 된다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">90만 장이라는 숫자의 크기</div>
+          <div class="chart-card-subtitle">삼성과 SK가 만드는 D램의 4분의 3에 해당한다</div>
+          <div class="chart-card-stage chart-stage-bar" data-chart-type="bar" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> ZDNet, 메트로서울 / 2025-10</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\uc624\ud508AI \uc6d4 \uc694\uccad", "note": "\uc6e8\uc774\ud37c", "value": 90}, {"label": "\uc0bc\uc131+SK \ud569\uc0b0 capa", "value": 120}, {"label": "\uae00\ub85c\ubc8c \uc6d4 \uc0dd\uc0b0", "value": 225}], "source": "ZDNet, \uba54\ud2b8\ub85c\uc11c\uc6b8 / 2025-10", "subtitle": "\uc0bc\uc131\uacfc SK\uac00 \ub9cc\ub4dc\ub294 D\ub7a8\uc758 4\ubd84\uc758 3\uc5d0 \ud574\ub2f9\ud55c\ub2e4", "takeaway": "90\ub9cc \uc7a5\uc740 \ub450 \ud68c\uc0ac \ud569\uc0b0 \uc0dd\uc0b0\uc758 75\ud37c\uc13c\ud2b8, \uae00\ub85c\ubc8c\uc758 \uc57d 40\ud37c\uc13c\ud2b8\ub2e4.", "title": "90\ub9cc \uc7a5\uc774\ub77c\ub294 \uc22b\uc790\uc758 \ud06c\uae30", "type": "bar", "unit_line": "\ub2e8\uc704: \uc6d4 \uc6e8\uc774\ud37c \ub9cc \uc7a5 \u00b7 2025\ub144 \uae30\uc900"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">02</span>
+    <h2 class="rep-h2">정말 주문이 들어올까</h2>
+    <div class="rep-prose">여기서 먼저 짚어야 할 의심이 있다. 90만 장은 정말 주문이 될까, 아니면 큰 그림을 그리는 자리에서 던진 호기로운 숫자에 그칠까. 근거를 모아 보면 양쪽이 다 보인다. 한편으로 오픈AI는 빈말을 하기엔 너무 멀리 와 있다. 스타게이트는 2029년까지 5천억 달러, 약 700조 원을 쏟겠다는 구상이고, 오픈AI와 소프트뱅크, 오라클이 함께 들어간다. 한국에는 엔비디아 GPU 26만 장이 들어와 포항과 전남에 데이터센터를 짓는다는 계획도 붙어 있다. 칩을 돌릴 시설을 실제로 짓고 있다면, 그 안에 꽂을 메모리 수요도 허풍만은 아니다. 다른 한편, 90만 장을 글자 그대로 받아들이긴 어렵다. 의향서는 구속력이 없고, 90만 장은 두 회사의 현재 생산으로는 물리적으로 불가능한 양이다. 업계에서도 요청량과 실제 공급량은 다를 것이라는 시각이 많다. 즉 90만 장은 확정 주문이라기보다, 증설을 전제로 한 상한선에 가깝다. 한 가지 가설을 보태자면, 이 숫자는 협상의 닻일 수 있다. 큰 숫자를 먼저 던져 두면 한국 기업과 정부가 증설과 자금이라는 판을 함께 깔도록 압박이 걸린다. 실제로 그 뒤에 벌어진 일이 정확히 그 방향이다. 워낙 큰 숫자라 그냥 해 보는 소리 아니냐는 의심은 절반은 맞다. 다만 그 큰 소리가 정부의 정책을 움직였다는 점에서, 그냥 하는 소리로 끝나지는 않았다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">의향서(LOI)</span>거래를 하겠다는 뜻을 미리 적은 문서다. 가격과 물량을 못 박는 본계약과 달리 법적 구속력이 약해, 협력 의사를 공식화하는 단계로 쓰인다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">03</span>
+    <h2 class="rep-h2">테이블에 앉은 사람들</h2>
+    <div class="rep-prose">이 사건의 무대에는 세 갈래의 사람들이 선다. 지도에서 보듯, 아래 관계도가 그 구도를 그린다. 왼쪽은 수요다. 오픈AI와 그 뒤의 자본이 있다. 샘 올트먼이 스타게이트를 설계하고, 소프트뱅크가 돈을, 오라클이 인프라를 댄다. 이들은 한국 메모리를 사는 쪽이다. 오른쪽은 공급이다. 삼성전자와 SK하이닉스다. 둘은 세계 D램 시장에서 가장 큰 비중을 차지하는 경쟁자이면서, 이번에는 같은 요청을 받은 동료가 된다. 둘 다 90만 장 앞에서 같은 고민을 안는다. 받으려면 공장을 더 지어야 하고, 공장을 지으려면 수십조 원이 든다. 가운데가 이번 이야기의 진짜 분기점이다. 이재명 정부가 끼어든다. 김용범 정책실장이 자금의 통로를 다시 짜겠다고 나서고, 150조 원 규모의 국민성장펀드가 그 손에 들린다. 보통의 반도체 뉴스라면 기업과 고객 둘이면 끝난다. 그런데 이 사건에는 정부가 자금 설계자로 들어온다. 왜 정부가 메모리 주문 한 건에 금융 규제까지 손대려 하는가. 그 답을 따라가면 금산분리라는 오래된 빗장이 나온다.</div>
+
+    
+
+    
+    
+      
+      
+        
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">90만 장을 둘러싼 세 갈래</div>
+          <div class="chart-card-subtitle">수요, 공급, 그리고 자금을 짜는 정부</div>
+          <div class="chart-card-stage chart-stage-stakeholder_map" data-chart-type="stakeholder_map" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 방한 4자 회동 보도 종합 / 2025-10</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"edges": [{"label": "\uc8fc\ub3c4", "source": "altman", "target": "openai", "type": "\uc5f0\uad00"}, {"label": "\uc790\ubcf8", "source": "softbank", "target": "openai", "type": "\ub3d9\ub9f9"}, {"label": "\uc778\ud504\ub77c", "source": "oracle", "target": "openai", "type": "\ub3d9\ub9f9"}, {"label": "90\ub9cc\uc7a5", "source": "openai", "target": "sk", "type": "\uc601\ud5a5"}, {"label": "90\ub9cc\uc7a5", "source": "openai", "target": "samsung", "type": "\uc601\ud5a5"}, {"label": "\uc124\uacc4", "source": "kim", "target": "gov", "type": "\uc5f0\uad00"}, {"label": "\uc870\uc131", "source": "gov", "target": "fund", "type": "\uc5f0\uad00"}, {"label": "\uc790\uae08", "source": "fund", "target": "sk", "type": "\uc601\ud5a5"}, {"label": "\uc790\uae08", "source": "fund", "target": "samsung", "type": "\uc601\ud5a5"}], "nodes": [{"col": "left", "flag": "US", "id": "altman", "kind": "person", "label": "\uc0d8 \uc62c\ud2b8\uba3c", "role": "\uc2a4\ud0c0\uac8c\uc774\ud2b8 \uc124\uacc4"}, {"col": "left", "flag": "US", "id": "openai", "label": "OpenAI", "role": "90\ub9cc\uc7a5 \uc218\uc694\ucc98"}, {"col": "left", "flag": "JP", "id": "softbank", "label": "\uc18c\ud504\ud2b8\ubc45\ud06c", "role": "\uc2a4\ud0c0\uac8c\uc774\ud2b8 \uc790\ubcf8"}, {"col": "left", "flag": "US", "id": "oracle", "label": "\uc624\ub77c\ud074", "role": "\uc778\ud504\ub77c \ud30c\ud2b8\ub108"}, {"col": "center", "flag": "KR", "id": "gov", "label": "\uc774\uc7ac\uba85 \uc815\ubd80", "role": "\uc790\uae08\u00b7\uc785\ubc95 \uc124\uacc4"}, {"col": "center", "flag": "KR", "id": "kim", "kind": "person", "label": "\uae40\uc6a9\ubc94", "role": "\uae08\uc0b0\ubd84\ub9ac \uc644\ud654"}, {"col": "center", "flag": "KR", "id": "fund", "label": "\uad6d\ubbfc\uc131\uc7a5\ud380\ub4dc", "role": "150\uc870 \uc815\ucc45\uc790\uae08"}, {"col": "right", "flag": "KR", "id": "samsung", "label": "\uc0bc\uc131\uc804\uc790", "role": "D\ub7a8 \uacf5\uae09\u00b7\uc99d\uc124"}, {"col": "right", "flag": "KR", "id": "sk", "label": "SK\ud558\uc774\ub2c9\uc2a4", "role": "D\ub7a8 \uacf5\uae09\u00b7\uc99d\uc124"}]}, "source": "\ubc29\ud55c 4\uc790 \ud68c\ub3d9 \ubcf4\ub3c4 \uc885\ud569 / 2025-10", "subtitle": "\uc218\uc694, \uacf5\uae09, \uadf8\ub9ac\uace0 \uc790\uae08\uc744 \uc9dc\ub294 \uc815\ubd80", "title": "90\ub9cc \uc7a5\uc744 \ub458\ub7ec\uc2fc \uc138 \uac08\ub798", "type": "stakeholder_map"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">04</span>
+    <h2 class="rep-h2">왜 정부가 끼어드는가</h2>
+    <div class="rep-prose">정부가 메모리 주문에 끼어드는 이유는 의외로 단순하다. 한국 기업 혼자서는 그 돈을 댈 수 없다고 보기 때문이다. 샘 올트먼이 다녀간 지 보름 뒤인 지난해 10월 15일, 김용범 정책실장이 입을 연다. 사모펀드를 금융업으로만 묶어 산업자본이 운용사를 맡지 못하게 하는 건 시대착오라는 발언이다. 말은 추상적이지만 겨눈 곳은 분명하다. 반도체 공장을 두 배로 늘릴 돈을, 기존 규제를 풀어서라도 만들어 내겠다는 뜻이다. 그가 그린 그림은 두 축이다. 하나는 150조 원짜리 국민성장펀드다. 5년간 150조 원을 모아 전략산업에 붓고, 2026년에만 30조 원 넘게 집행한다. 반도체에는 4조 2천억 원이 배정된다. AI에 배정된 6조 원에 이어 두 번째로 큰 몫이다. 다른 한 축이 바로 금산분리 완화다. 여기서 한 가지 질문이 정확히 핵심을 찌른다. 금산분리를 푸는 일과 돈을 끌어오는 일이 대체 무슨 상관인가. 그 연결고리를 풀려면, 먼저 금산분리가 무엇을 막아 왔는지를 봐야 한다.</div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">05</span>
+    <h2 class="rep-h2">1982년에 채운 빗장</h2>
+    <div class="rep-prose">금산분리는 금융자본과 산업자본을 갈라놓는 규제다. 쉽게 말해, 공장을 가진 재벌이 은행을 자기 돈주머니처럼 쓰지 못하게 막는 칸막이다. 역사는 1982년으로 거슬러 올라간다. 그해 은행법 개정으로 산업자본이 은행을 마음대로 좌우하지 못하도록 빗장이 채워진다. 처음엔 의결권 한도가 8퍼센트였다가, 1994년 4퍼센트로 더 조여진다. 1997년 외환위기를 겪으며 칸막이는 더 단단해진다. 재벌이 은행을 끼고 무리하게 돈을 굴리다 함께 무너지는 일을 다시는 겪지 않겠다는 학습의 결과다. 그래서 지금도 산업자본은 은행 지분을 사도 의결권은 4퍼센트까지만 행사할 수 있다. 칸막이는 은행에만 그치지 않는다. 산업자본은 사모펀드의 운용사가 될 수 없고, 금융 계열사가 비금융 계열사에 자금을 대는 통로도 좁다. 이 모든 제약이 같은 뿌리에서 나온다. 산업과 금융이 섞이면 위험하다는 40년 묵은 경계심이다. 문제는 이 경계심이 만들어진 시대와 지금이 다르다는 데 있다. 1982년의 한국에 필요한 건 재벌의 은행 사금고화를 막는 일이었다. 2026년의 한국이 마주한 건, 한 기업이 자기 현금만으로는 감당 못 할 규모의 설비투자다. 빗장은 그대로인데, 빗장 너머의 풍경이 바뀌었다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">의결권 한도 4%</span>산업자본이 은행 주식을 더 많이 보유해도, 주주총회에서 실제로 행사할 수 있는 표는 지분 4퍼센트어치까지로 제한한다는 뜻이다. 돈을 넣어도 경영권은 못 잡게 한 장치다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">06</span>
+    <h2 class="rep-h2">빗장과 돈, 그 보이지 않는 연결</h2>
+    <div class="rep-prose">이제 그 질문에 정면으로 답할 차례다. 금산분리를 푸는 일이 왜 자금 조달과 이어지는가. 공장을 두 배로 늘리는 데 드는 돈은 수십조 원이다. 기업이 이 돈을 만드는 길은 셋이다. 벌어들인 현금, 은행 대출, 그리고 외부 투자자를 끌어들이는 펀드다. 앞의 둘은 한계가 뚜렷하다. 현금흐름만으로는 부족하고, 대출은 빚이라 늘릴수록 위험하다. 결국 남는 건 세 번째, 외부 자금을 모으는 펀드다. 그런데 바로 여기서 금산분리가 길을 막는다. 미국은 이 길이 열려 있다. 산업과 금융이 손잡고 거대한 인프라 펀드를 짠다. GE의 금융 자회사 모델이나, 블랙록과 마이크로소프트가 함께 만든 인프라 펀드가 그렇다. 산업자본이 펀드의 운용사로 들어가 외부 투자자의 돈까지 끌어모은다. 반면 한국에서는 삼성이나 SK가 펀드의 운용사가 될 수 없다. 자기 공장에 쓸 돈을 모으는 펀드조차 자기 손으로 굴릴 수 없는 것이다. 김용범의 구상은 이 막힌 길을 첨단산업에 한해 트는 것이다. 산업자본이 인프라 펀드의 운용사를 맡게 하고, 금융 계열사에서 비금융 계열사로 자금이 흐르는 통로를 넓힌다. 여기에 국민성장펀드가 마중물을 댄다. 정부가 먼저 돈을 넣어 신뢰를 만들면, 그 위에 민간과 금융자본이 얹힌다. 정리하면 이렇다. 금산분리 완화는 돈을 직접 주는 정책이 아니다. 산업이 금융의 돈을 끌어올 통로를 여는, 자금의 물길을 트는 일이다. 빗장과 돈은 그렇게 이어져 있다.</div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">운용사(GP)</span>펀드에 모인 돈을 실제로 굴리고 투자처를 정하는 주체다. 외부 투자자의 자금을 끌어모으려면 신뢰받는 운용사가 키를 잡아야 하는데, 금산분리는 산업자본이 이 자리에 앉는 것을 막아 왔다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">정부가 먼저 댄 마중물, 2026년 펀드</div>
+          <div class="chart-card-subtitle">반도체 배정은 AI에 이어 두 번째 몫</div>
+          <div class="chart-card-stage chart-stage-sankey" data-chart-type="sankey" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 삼프로TV, 이투데이 / 2026년 집행 30조원 기준 · 단위 조원</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"links": [{"source": "fund", "target": "ai", "value": 6}, {"source": "fund", "target": "semi", "value": 4.2}, {"source": "fund", "target": "etc", "value": 19.8}], "nodes": [{"id": "fund", "label": "2026\ub144 \ud380\ub4dc"}, {"id": "ai", "label": "AI"}, {"accent": true, "id": "semi", "label": "\ubc18\ub3c4\uccb4", "value_label": "\uc804\ub7b5 2\uc21c\uc704"}, {"id": "etc", "label": "\uae30\ud0c0 \uc804\ub7b5\uc0b0\uc5c5"}]}, "source": "\uc0bc\ud504\ub85cTV, \uc774\ud22c\ub370\uc774 / 2026\ub144 \uc9d1\ud589 30\uc870\uc6d0 \uae30\uc900 \u00b7 \ub2e8\uc704 \uc870\uc6d0", "subtitle": "\ubc18\ub3c4\uccb4 \ubc30\uc815\uc740 AI\uc5d0 \uc774\uc5b4 \ub450 \ubc88\uc9f8 \ubaab", "title": "\uc815\ubd80\uac00 \uba3c\uc800 \ub304 \ub9c8\uc911\ubb3c, 2026\ub144 \ud380\ub4dc", "type": "sankey"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">07</span>
+    <h2 class="rep-h2">하이닉스는 정말 공장을 두 배로 늘릴까</h2>
+    <div class="rep-prose">자금의 물길 이야기를 잠시 내려놓고, 또 다른 질문으로 돌아가자. SK하이닉스는 정말 공장을 두 배로 늘릴까. 숫자만 보면 방향은 이미 그쪽이다. SK하이닉스는 D램 월 생산능력을 2025년 기준 약 62만 장에서 2026년 하반기 100만 장 시대로 끌어올리겠다는 계획을 내놓는다. 이천의 M14와 M16, 청주의 M15X가 연말 7만 장, 용인 Y1이 2027년 초 3만 장씩 단계적으로 가동에 들어간다. 아래 그래프가 그 격차를 보여준다. 다만 두 배라는 표현은 조금 손봐야 한다. 62만 장에서 100만 장은 약 1.6배다. 두 배에는 못 미친다. 90만 장이면 공장을 두 배로 늘려야 한다는 직관은 규모의 방향으로는 옳지만, 회사가 공식화한 증설은 아직 60퍼센트가량의 확장이다. 90만 장을 온전히 받으려면 발표된 계획만으로는 부족하고, 그 너머의 추가 증설이 전제되어야 한다. 그래서 묻힌 디테일 하나가 중요해진다. 지난 6월 24일, 그러니까 엿새 전, 김용범은 수도권에 더 지을 땅이 없다며 지방에 2차 반도체 클러스터를 논의하는 일이 마무리 단계라고 밝힌다. 용인 클러스터와는 별개다. 자금의 통로를 트는 일과 나란히, 공장을 더 세울 땅까지 정부가 챙기고 있다는 신호다. 증설은 구호가 아니라 입지와 돈이라는 두 다리로 움직이기 시작했다.</div>
+
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">SK하이닉스 D램, 어디까지 늘리나</div>
+          <div class="chart-card-subtitle">62만에서 100만, 두 배가 아니라 약 1.6배</div>
+          <div class="chart-card-stage chart-stage-bar" data-chart-type="bar" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 더벨, 디일렉 / 2025-10</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"annotations": [{"kind": "hline", "label": "\uc624\ud508AI \uc694\uccad \uc218\uc900", "y": 90}], "data": [{"label": "\ud604\uc7ac(2025)", "value": 62}, {"label": "2026 \ud558\ubc18\uae30 \ubaa9\ud45c", "value": 100}], "source": "\ub354\ubca8, \ub514\uc77c\ub809 / 2025-10", "subtitle": "62\ub9cc\uc5d0\uc11c 100\ub9cc, \ub450 \ubc30\uac00 \uc544\ub2c8\ub77c \uc57d 1.6\ubc30", "takeaway": "\ubc1c\ud45c\ub41c \uc99d\uc124\uc740 \uc57d 60\ud37c\uc13c\ud2b8 \ud655\uc7a5, 90\ub9cc \uc7a5 \uc218\uc6a9\uc5d4 \ucd94\uac00 \uc99d\uc124\uc774 \uc804\uc81c\ub41c\ub2e4.", "title": "SK\ud558\uc774\ub2c9\uc2a4 D\ub7a8, \uc5b4\ub514\uae4c\uc9c0 \ub298\ub9ac\ub098", "type": "bar", "unit_line": "\ub2e8\uc704: \uc6d4 \uc6e8\uc774\ud37c \ub9cc \uc7a5"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">08</span>
+    <h2 class="rep-h2">전면 폐지가 아니라 옆문</h2>
+    <div class="rep-prose">김용범이 택한 길은 금산분리를 통째로 허무는 정공법이 아니다. 첨단산업에 한정한 특별법이라는 옆문이다. 지난해 11월 4일, 그는 금산분리 완화를 특별법 방식으로 풀겠다고 못 박는다. 반도체와 바이오 같은 특정 산업에만 적용하는 우회 입법이다. 칸막이의 본체는 그대로 두고, 첨단산업이라는 통로 하나만 따로 뚫는 셈이다. 왜 옆문인가. 금산분리는 40년간 한국 금융의 근간으로 여겨져 온 원칙이라, 전면 폐지를 들고 나오면 재벌 특혜라는 거센 반발에 부딪힌다. 특별법은 그 정치적 충돌을 우회하는 설계다. 산업의 필요는 풀어 주되, 칸막이를 무너뜨렸다는 비판은 비껴가려는 절충이다. 점을 이어 보면 그림이 또렷하다. 90만 장이라는 외부 충격, 수십조 원의 자금 수요, 그리고 정치적으로 민감한 규제. 이 셋을 한 번에 풀려다 보니 전면이 아닌 한정, 정공법이 아닌 특별법이라는 좁은 길이 나온 것이다. 물론 옆문에도 그늘은 있다. 첨단산업이라는 경계를 누가 어떻게 긋느냐에 따라, 통로는 얼마든지 넓어질 수 있다. 지금 반도체에 열린 문이 장차 다른 산업으로 번지지 않으리라는 보장은 없다. 규제를 푸는 일의 위험은 늘 그 다음 칸에 있다.</div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">09</span>
+    <h2 class="rep-h2">현실과 기억이 맞서다</h2>
+    <div class="rep-prose">이 사건의 한복판에는 쉽게 봉합되지 않는 충돌이 있다. 금산분리를 풀어야 하는가, 지켜야 하는가. 푸는 쪽의 논리는 현실이다. AI와 반도체 설비투자는 한 나라의 단일 기업이 자기 힘으로 감당할 수 없는 규모로 커졌다. 자금의 물길을 트지 않으면 한국은 90만 장이라는 기회 앞에서도 손이 묶인다. 미국이 산업과 금융을 결합해 거대 투자를 굴리는 동안, 한국만 40년 전 빗장에 발이 걸려 있을 수는 없다는 것이다. 지키는 쪽의 논리는 기억이다. 금산분리는 재벌이 금융을 사금고로 쓰다 함께 무너지는 위기를 겪고 세운 방파제다. 첨단산업이라는 이름으로 한 칸을 열면, 그 틈은 결국 넓어진다. 자금이 급하다는 이유로 방파제를 허물면, 다음 위기 때 치를 대가가 그 편익보다 클 수 있다는 우려다. 어느 쪽도 틀리지 않았다는 점이 이 충돌의 본질이다. 다만 무게를 둔다면, 지금의 흐름은 푸는 쪽으로 기울어 있다. 특별법이라는 한정된 형식이 그 무게를 떠받친다. 통로를 첨단산업으로 좁히고 정부 자금이 먼저 위험을 떠안는 한, 규제 완화의 편익이 위험을 앞선다고 본 셈이다. 그러나 지키는 쪽의 경고는 사라지지 않는다. 첨단산업의 경계가 흐려지고 통로가 다른 산업으로 번지는 순간, 방파제를 허문 대가는 되살아난다.</div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">10</span>
+    <h2 class="rep-h2">숫자가 연 문, 그 너머</h2>
+    <div class="rep-prose">다시 처음의 테이블로 돌아가자. 샘 올트먼이 올려놓은 90만 장은 어쩌면 글자 그대로 채워지지 않을 수도 있다. 의향서는 계약이 아니고, 그 숫자는 지금의 공장으로는 닿을 수 없는 곳에 있다. 그러나 이 사건의 무게는 90만 장이 정확히 몇 장의 주문으로 굳어지느냐에 있지 않다. 하나의 숫자가 한국 반도체에 던진 질문, 공장을 얼마나 더 지을 것이며 그 돈을 어떻게 끌어올 것인가, 그 질문이 정부를 움직여 40년 묵은 규제의 빗장에까지 손을 대게 했다는 사실에 있다. 앞으로의 궤적은 몇 갈래로 갈린다. 특별법이 국회를 통과하고 자금의 물길이 실제로 트이면, 한국 반도체는 외부 자본을 끌어들여 증설에 속도를 낼 수 있다. 반대로 재벌 특혜 논란에 입법이 멈추면, 90만 장은 끝내 가능성으로만 남고 증설은 기업의 곳간 사정에 갇힌다. 그 사이 어딘가에서, 첨단산업의 경계를 어디까지 그을지를 두고 또 한 번의 싸움이 벌어질 것이다. 분명한 것은 하나다. 미국에서 온 숫자 하나가, 한국이 오래 미뤄 둔 질문 하나를 기어이 끄집어냈다. 산업과 금융을 가른 빗장을, 이 시대에도 그대로 둘 것인가. 그 답은 아직 쓰이지 않았다.</div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  
+
+  
+  
+
+</div>
+
+<footer class="rep-foot">
+  archetype: reportage · Generated 2026-06-30 20:52:51 · Duration: 2799.8s
+  
+</footer>
+
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+
+</body>
+</html>
