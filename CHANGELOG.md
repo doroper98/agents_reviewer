@@ -31,6 +31,8 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 회귀 `tests/regression/test_chart_diversity.py` 12종 (하한 문구/힌트 산출·주입·byte-equal/게이트 public/다운샘플·densify 상한).
 
+ops — VM-AP-11 등록: VM 이 feature 브랜치에 checkout 된 채 §1 재배포 시 pull 이 no-op 되어 옛 버전 재기동 (2026-07-02 실제 발생). §1 Stage 2 에 main 브랜치 가드 추가. SSOT [docs/VM_DEPLOY_PLAYBOOK.md §2](docs/VM_DEPLOY_PLAYBOOK.md).
+
 ## v8.2.19 — 르포 관계도 기업 로고 상시화 (CHART-AP-42 후속)
 
 사용자 지적 — "기업 로고도 다 보이게 해야 하는 거 아니야?". v8.2.18 은 logo 를 "확실할 때만" 선택 사항으로 뒀고, 단일 소스(Google favicon)는 미등록 도메인에도 200 + 16px 기본 지구본을 반환해 가짜 아이콘이 박힐 위험이 있었다. Fix ① composer 프롬프트(스키마 라인 + `_REPORTAGE_BLOCK`) — 기업·정부기관·국제기구·언론사 노드는 공식 도메인이 잘 알려져 있으면 logo 를 *반드시* 채우도록 격상 (도메인 창작은 여전히 금지 — fallback 안전망 전제). ② 렌더러 로고 소스 2단 체인 — Clearbit 브랜드 로고(고품질, 미등록 404→onerror 체인 진행) → Google favicon (커버리지 최광, `naturalWidth < minPx(24)` 로 기본 지구본 판별·거부). 프리로드 성공분만 오버레이하는 v8.2.18 fallback 구조 불변. Playwright 라우트 인터셉션으로 4경로(클리어빗 성공/favicon 수락/기본 지구본 거부/전부 실패) 검증.
