@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.1
+last_synced_with: v8.3.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.2 — 르포 관계도 정부 노드 로고 규칙 (CHART-AP-42 후속, 사용자 결정)
+
+사용자 catch 2건 — ① 이재명 정부 노드에 korea.kr 로고(빨간 태극 정부상징)를 달았더니 "이게 뭐지?"(일반 독자 인지 불가), 청와대 상징이 맞다는 사용자 결정. ② 삼성전자·SK하이닉스 로고가 파비콘(탭 아이콘) 품질로 렌더돼 애매 — Clearbit 1차 소스 무응답 시 구글 파비콘 폴백의 한계. 대응: composer 프롬프트에 정부 노드 로고 규칙 신설 — 정부·행정부 노드는 최고 행정기관 도메인 (한국 정부·대통령실→president.go.kr 청와대 상징, 미국 행정부→whitehouse.gov), korea.kr 류 포털 도메인 금지, 국가 그 자체 노드는 logo 생략·flag 메인. 발행본은 payload 소급 패치(gov→president.go.kr, 파비콘 품질이 확인 안 되는 samsung/sk 는 logo 제거→태극기 메인 복귀) 후 재발행.
 
 ## v8.3.1 — 르포 관계도 결합 노드 금지 (CHART-AP-42 후속)
 
