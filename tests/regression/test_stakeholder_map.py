@@ -125,6 +125,8 @@ def test_charts_js_node_assets() -> None:
     assert "sm-gray" in js               # 인물 사진 흑백 필터
     assert "smImgOverlay" in js          # 프리로드 성공 시에만 오버레이 (fallback 보존)
     assert "data-sm-base" in js          # base(국기/실루엣/이니셜) 태깅
+    assert "logoUrl" in js               # v8.3.3 — logo 직접 이미지 URL 지원
+    assert "xMidYMid meet" in js         # v8.3.3 — 와이드 워드마크 contain-fit
 
 
 def test_charts_js_obstacle_aware_routing() -> None:

@@ -3583,9 +3583,12 @@
           .append('circle').attr('cx', ccx).attr('cy', ccy).attr('r', s / 2);
         if (c.back) ga.append('circle').attr('cx', ccx).attr('cy', ccy).attr('r', s / 2).attr('fill', c.back);
         const ip = c.pad ? s * 0.16 : 0;
+        // v8.3.3 — 로고는 contain(meet): 와이드 워드마크(삼성 등)가 원형 crop 으로
+        // 글자 중간만 잘려 보이는 것 방지. 사진·국기는 cover(slice) 유지.
         const img = ga.append('image').attr('href', c.url)
           .attr('x', x + ip).attr('y', y + ip).attr('width', s - ip * 2).attr('height', s - ip * 2)
-          .attr('preserveAspectRatio', 'xMidYMid slice').attr('clip-path', `url(#${uid})`);
+          .attr('preserveAspectRatio', c.cover ? 'xMidYMid slice' : 'xMidYMid meet')
+          .attr('clip-path', `url(#${uid})`);
         if (c.gray) img.attr('filter', 'url(#sm-gray)');   // 인물 사진은 흑백 원형
         ga.append('circle').attr('cx', ccx).attr('cy', ccy).attr('r', s / 2 - 0.7)
           .attr('fill', 'none').attr('stroke', 'rgba(0,0,0,.18)').attr('stroke-width', 1.3);
@@ -3598,8 +3601,10 @@
       const fc = String(nd.flag || '').toUpperCase();
       const isPerson = (nd.kind === 'person' || nd.type === 'person');
       const photo = String(nd.photo || '');
-      const dom = String(nd.logo || '').replace(/^https?:\/\//, '').split(/[/?#]/)[0].trim();
-      const wantOverlay = /^https?:\/\//.test(photo) || (dom.indexOf('.') > 0);
+      const logoRaw = String(nd.logo || '').trim();
+      const logoUrl = /^https?:\/\//.test(logoRaw) ? logoRaw : '';   // 직접 이미지 URL (v8.3.3)
+      const dom = logoUrl ? '' : logoRaw.split(/[/?#]/)[0].trim();   // 아니면 도메인 체인
+      const wantOverlay = /^https?:\/\//.test(photo) || !!logoUrl || (dom.indexOf('.') > 0);
       if (fc && SM_FLAGS[fc] && !wantOverlay) {
         ga.append('use').attr('href', '#sm-flag-' + fc).attr('x', x).attr('y', y)
           .attr('width', s).attr('height', s).attr('data-sm-base', 1);
@@ -3615,8 +3620,13 @@
           .attr('fill', t.bg).attr('data-sm-base', 1).text(ini);
       }
       const cands = [];
-      if (/^https?:\/\//.test(photo)) cands.push({ url: photo, gray: true, back: t.card });
-      if (dom.indexOf('.') > 0) {
+      if (/^https?:\/\//.test(photo)) cands.push({ url: photo, gray: true, back: t.card, cover: true });
+      if (logoUrl) {
+        // v8.3.3 — logo 가 직접 이미지 URL(https://...)이면 그대로 사용 (위키미디어
+        // 공식 로고 파일 등). 파비콘은 탭 아이콘이라 브랜드 로고가 아닌 경우가 많다
+        // (삼성 'S'·SK 문양, 사용자 catch 2026-07-02) — 확실한 로고 파일이 항상 우선.
+        cands.push({ url: logoUrl, back: '#fff', pad: true });
+      } else if (dom.indexOf('.') > 0) {
         // 로고 소스 2단 체인 (v8.2.19) — ① Clearbit 브랜드 로고 (고품질, 미등록
         // 도메인은 404 → onerror 로 체인 진행) ② Google favicon (커버리지 최광,
         // 미등록에도 200 + 16px 기본 지구본이 와서 minPx 로 판별해 걸러냄).
@@ -3626,7 +3636,7 @@
                      back: '#fff', pad: true, minPx: 24 });
       }
       if (/^[A-Z]{2}$/.test(fc) && (wantOverlay || !SM_FLAGS[fc]))
-        cands.push({ url: 'https://flagcdn.com/w80/' + fc.toLowerCase() + '.png' });
+        cands.push({ url: 'https://flagcdn.com/w80/' + fc.toLowerCase() + '.png', cover: true });
       smImgOverlay(ga, x, y, s, cands, 0);
     }
     function smBadge(g, x, y, s, bc) {
