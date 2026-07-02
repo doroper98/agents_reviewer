@@ -2059,14 +2059,16 @@
                   "label": "삼성전자",
                   "col": "right",
                   "flag": "KR",
-                  "role": "D램 공급·증설"
+                  "role": "D램 공급·증설",
+                  "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Samsung_old_logo_before_year_2015.svg/330px-Samsung_old_logo_before_year_2015.svg.png"
                 },
                 {
                   "id": "sk",
                   "label": "SK하이닉스",
                   "col": "right",
                   "flag": "KR",
-                  "role": "D램 공급·증설"
+                  "role": "D램 공급·증설",
+                  "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/SK_Hynix.svg/330px-SK_Hynix.svg.png"
                 }
               ],
               "edges": [
@@ -2578,6 +2580,6 @@
   "total_duration_seconds": 2799.8207099437714,
   "system_version": "v8.3.3",
   "revision": 0,
-  "render_revision": 6,
+  "render_revision": 7,
   "disable_scroll_arc": false
 }
