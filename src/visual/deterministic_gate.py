@@ -447,6 +447,30 @@ def _check_chart_type_monotony(
     return False, chart_count, distinct
 
 
+def check_chart_type_monotony(
+    composed: dict[str, Any], mode: str
+) -> tuple[bool, int, int]:
+    """v8.3.0 — Layer ④ 다양성 쿼터의 public 진입점.
+
+    V5 ``run_deterministic_gate`` 는 flag OFF 라 production 에서 안 돌았고, 그 사이
+    다양성 붕괴가 진행됐다 (2026-06 event 보고서 line 비중 53%, 8종 0회 — 사용자
+    catch). orchestrator 가 V5 게이트와 *독립적으로* 매 보고서 log-only 호출한다.
+    발행을 막지 않음 — 강제(soft-fail hold) 승격은 관찰 후 사용자 게이트.
+
+    Returns:
+        (monotony_flag, chart_count, distinct_types)
+    """
+    # _check 는 top-level exhibits/charts 가 *빈 리스트*여도 list 라서 sections
+    # 폴백에 도달하지 못한다 — sections-shape 입력은 여기서 평탄화해 전달.
+    if not (composed.get("exhibits") or composed.get("charts")):
+        charts: list = []
+        for s in composed.get("sections") or []:
+            if isinstance(s, dict):
+                charts.extend(s.get("charts") or [])
+        composed = {"charts": charts}
+    return _check_chart_type_monotony(composed, mode)
+
+
 def _check_watch_signal_all_ambiguous(composed: dict[str, Any]) -> tuple[bool, int]:
     signals = composed.get("watch_signals") or []
     if not signals:

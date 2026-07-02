@@ -3241,13 +3241,24 @@
 
   // ----- STAKEHOLDER_MAP (v8.0.0 — 르포 행위자 관계도) -----
   // force/hairball 금지 (CHART-AP-36): 노드는 진영(col) 칼럼에 결정적 배치, 칼럼 내
-  // 세로 중앙 정렬(같은 행 = 직선), 엣지는 직각+라운딩으로 노드 위 후행 레이어 +
-  // 노드별 다중 연결을 가장자리에 분산. 자산(국기/인물)은 sprite(#sm-*)로 분리 —
-  // osint_generator 자산으로 교체 가능. 로고/사진 미제공 시 이니셜 모노그램.
-  const SM_FLAGS = { US:1, TW:1, CN:1, JP:1, UA:1, RU:1 };
+  // 세로 중앙 정렬(같은 행 = 직선), 엣지는 직각+라운딩으로 노드 아래 레이어 +
+  // 노드별 다중 연결을 가장자리에 분산.
+  // v8.2.18 완성도 격상 (사용자 catch, CHART-AP-42/43):
+  //  · 자산 — flag 는 ISO alpha-2 *전 국가* 지원(flagcdn CDN + 인라인 7종 fallback).
+  //    조직·기관은 logo(공식 도메인 → favicon 원형 코인), 인물은 photo(흑백 원형)
+  //    슬롯. 원격 자산은 Image() 프리로드 *성공 시에만* 오버레이 — 실패·오프라인이면
+  //    인라인 국기/실루엣/이니셜 base 가 그대로 남는다 (빈 슬롯 없음).
+  //  · 엣지 — 카드 뒤 관통 금지: 교차(좌↔우) 엣지는 가운데 칼럼 행 사이 '수평
+  //    코리더'로 우회, 같은 칼럼 skip 엣지는 바깥 세로 레인으로 우회. 세로 구간은
+  //    채널(gap/outer)별 레인 분배로 평행 겹침 0 — 남는 교차는 직각 crossing 뿐.
+  //  · 라벨 — 장애물에 카드·기존 라벨 + *다른 엣지 세그먼트* 포함: 플레이트가
+  //    타 선 위나 선 교차점 위에 앉지 않는다.
+  const SM_FLAGS = { US:1, TW:1, CN:1, JP:1, UA:1, RU:1, KR:1 };
+  let SM_UID = 0;   // 원격 자산 오버레이 clipPath 고유 id (보고서당 여러 관계도 안전)
   const SM_SPRITE =
     '<defs>' +
     '<marker id="sm-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker>' +
+    '<filter id="sm-gray"><feColorMatrix type="saturate" values="0"/></filter>' +
     '<symbol id="sm-person" viewBox="0 0 32 32"><clipPath id="sm-cph"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cph)"><rect width="32" height="32" fill="#c9b79a"/><circle cx="16" cy="12.5" r="6" fill="#f1e6d4"/><path d="M4 30c0-7 6-10 12-10s12 3 12 10z" fill="#f1e6d4"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.3"/></symbol>' +
     '<symbol id="sm-flag-US" viewBox="0 0 32 32"><clipPath id="sm-cUS"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cUS)"><rect width="32" height="32" fill="#fff"/><g fill="#b22234"><rect y="0" width="32" height="2.46"/><rect y="4.92" width="32" height="2.46"/><rect y="9.84" width="32" height="2.46"/><rect y="14.76" width="32" height="2.46"/><rect y="19.69" width="32" height="2.46"/><rect y="24.61" width="32" height="2.46"/><rect y="29.54" width="32" height="2.46"/></g><rect width="14.2" height="13.2" fill="#3c3b6e"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
     '<symbol id="sm-flag-TW" viewBox="0 0 32 32"><clipPath id="sm-cTW"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cTW)"><rect width="32" height="32" fill="#fe0000"/><rect width="16" height="16" fill="#000095"/><g transform="translate(8,8)" fill="#fff"><circle r="3.4"/><circle r="2.8" fill="#000095"/><circle r="2.2" fill="#fff"/></g></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
@@ -3255,6 +3266,7 @@
     '<symbol id="sm-flag-JP" viewBox="0 0 32 32"><clipPath id="sm-cJP"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cJP)"><rect width="32" height="32" fill="#fff"/><circle cx="16" cy="16" r="7.5" fill="#bc002d"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
     '<symbol id="sm-flag-UA" viewBox="0 0 32 32"><clipPath id="sm-cUA"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cUA)"><rect width="32" height="16" fill="#0057b7"/><rect y="16" width="32" height="16" fill="#ffd700"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
     '<symbol id="sm-flag-RU" viewBox="0 0 32 32"><clipPath id="sm-cRU"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cRU)"><rect width="32" height="10.67" fill="#fff"/><rect y="10.67" width="32" height="10.67" fill="#0039a6"/><rect y="21.33" width="32" height="10.67" fill="#d52b1e"/></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
+    '<symbol id="sm-flag-KR" viewBox="0 0 32 32"><clipPath id="sm-cKR"><circle cx="16" cy="16" r="16"/></clipPath><g clip-path="url(#sm-cKR)"><rect width="32" height="32" fill="#fff"/><g transform="translate(16,16)"><circle r="8" fill="#0047a0"/><path d="M-8,0 A8,8 0 0 1 8,0 A4,4 0 0 1 0,0 A4,4 0 0 0 -8,0 z" fill="#cd2e3a"/></g><g fill="#000"><g transform="translate(7,7) rotate(-45)"><rect x="-3.4" y="-2.6" width="6.8" height="1.2"/><rect x="-3.4" y="-0.6" width="6.8" height="1.2"/><rect x="-3.4" y="1.4" width="6.8" height="1.2"/></g><g transform="translate(25,25) rotate(-45)"><rect x="-3.4" y="-2.6" width="3" height="1.2"/><rect x="0.4" y="-2.6" width="3" height="1.2"/><rect x="-3.4" y="-0.6" width="3" height="1.2"/><rect x="0.4" y="-0.6" width="3" height="1.2"/><rect x="-3.4" y="1.4" width="3" height="1.2"/><rect x="0.4" y="1.4" width="3" height="1.2"/></g><g transform="translate(25,7) rotate(45)"><rect x="-3.4" y="-2.6" width="6.8" height="1.2"/><rect x="-3.4" y="-0.6" width="3" height="1.2"/><rect x="0.4" y="-0.6" width="3" height="1.2"/><rect x="-3.4" y="1.4" width="6.8" height="1.2"/></g><g transform="translate(7,25) rotate(45)"><rect x="-3.4" y="-2.6" width="3" height="1.2"/><rect x="0.4" y="-2.6" width="3" height="1.2"/><rect x="-3.4" y="-0.6" width="6.8" height="1.2"/><rect x="-3.4" y="1.4" width="3" height="1.2"/><rect x="0.4" y="1.4" width="3" height="1.2"/></g></g></g><circle cx="16" cy="16" r="15.3" fill="none" stroke="rgba(0,0,0,.16)" stroke-width="1.3"/></symbol>' +
     '</defs>';
 
   function smSprite() {
@@ -3275,13 +3287,24 @@
     return t.muted;
   }
 
-  function smRoute(x0, y0, x1, y1, r) {
+  // v8.2.18 — 직교 폴리라인(waypoints) → 모서리 라운딩 path. CHART-AP-41 레인
+  // 라우터의 일반화 (구 smRoute 의 단일 중점 꺾임 폐기 — 코리더·우회 라우팅 지원).
+  function smRouteLane(pts, r) {
     r = r || 12;
-    if (Math.abs(y0 - y1) < 0.5) return `M${x0},${y0} H${x1}`;
-    if (Math.abs(x0 - x1) < 0.5) return `M${x0},${y0} V${y1}`;
-    const sx = x1 >= x0 ? 1 : -1, sy = y1 >= y0 ? 1 : -1, mx = (x0 + x1) / 2;
-    const rr = Math.min(r, Math.abs(mx - x0), Math.abs(y1 - y0) / 2);
-    return `M${x0},${y0} H${mx - sx * rr} Q${mx},${y0} ${mx},${y0 + sy * rr} V${y1 - sy * rr} Q${mx},${y1} ${mx + sx * rr},${y1} H${x1}`;
+    if (pts.length < 2) return '';
+    if (pts.length === 2) return `M${pts[0].x},${pts[0].y} L${pts[1].x},${pts[1].y}`;
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const a = pts[i - 1], b = pts[i], c = pts[i + 1];
+      const la = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+      const lc = Math.abs(c.x - b.x) + Math.abs(c.y - b.y);
+      const rr = Math.min(r, la / 2, lc / 2);
+      const uax = Math.sign(b.x - a.x), uay = Math.sign(b.y - a.y);
+      const ucx = Math.sign(c.x - b.x), ucy = Math.sign(c.y - b.y);
+      d += ` L${b.x - uax * rr},${b.y - uay * rr} Q${b.x},${b.y} ${b.x + ucx * rr},${b.y + ucy * rr}`;
+    }
+    d += ` L${pts[pts.length - 1].x},${pts[pts.length - 1].y}`;
+    return d;
   }
 
   function smLinkStyle(type, t) {
@@ -3343,11 +3366,16 @@
     const valid = edges.filter(e => pos[e.source] && pos[e.target] && e.source !== e.target);
 
     // 노드+side 별 엣지 → other-cy 정렬 후 가장자리에 분산 (한 점 겹침 방지)
+    const rowAdjacent = (A, B) => Math.abs(A.cy - B.cy) <= VSP + 1;
     function sides(a, b) {
       const A = pos[a], B = pos[b];
       if (A.col < B.col) return ['R', 'L'];
       if (A.col > B.col) return ['L', 'R'];
-      return (A.cy <= B.cy) ? ['B', 'T'] : ['T', 'B'];
+      if (rowAdjacent(A, B)) return (A.cy <= B.cy) ? ['B', 'T'] : ['T', 'B'];
+      // 같은 칼럼 skip(행 건너뜀) — 사이 카드를 수직 관통하지 않도록 옆으로 우회
+      // (CHART-AP-43). 좌측 칼럼은 바깥-왼쪽, 가운데·우측 칼럼은 오른쪽으로.
+      const sd = (A.col === 0) ? 'L' : 'R';
+      return [sd, sd];
     }
     const slots = {};
     valid.forEach((e, ei) => {
@@ -3370,49 +3398,257 @@
       }
     });
 
-    // 엣지 (노드 아래 레이어) — v8.2.17: 교차 칼럼 엣지의 세로 구간이 한 통로에
-    // 포개져 어느 선이 어디로 가는지 구분 불가하던 회귀(CHART-AP-41) 차단. 모든
-    // 교차 엣지를 중점(mx) 한 곳에서 꺾던 smRoute 대신, 칼럼 사이 '레인'(세로
-    // 통로) x 를 엣지마다 분배해 세로 구간을 서로 벌린다. 같은 칼럼 수직 체인은
-    // 기존 직선 유지. 레인은 대상 칼럼 왼쪽 gap 에 배치(col0→col2 는 가운데 칼럼을
-    // 가로질러 오른쪽 gap 에서 하강 — 세로 구간이 카드 통로를 피한다).
+    // 엣지 (노드 아래 레이어) — v8.2.17(CHART-AP-41): 세로 구간을 칼럼 사이 gap 의
+    // '레인' x 로 엣지마다 분배해 포개짐 차단. v8.2.18(CHART-AP-43): 여기에 더해
+    // 엣지가 카드 *뒤를 관통* 하지 않도록 라우팅 자체를 장애물 인지형으로 —
+    //  · 교차(좌↔우) 엣지: 가운데 칼럼 행 *사이* 빈 수평 밴드('코리더')로 우회.
+    //    구(舊) 라우팅은 수평 구간이 가운데 칼럼 카드 밴드를 그대로 통과해 가려졌다.
+    //  · 같은 칼럼 skip 엣지: 사이 카드를 수직 관통하는 대신 바깥 세로 레인으로.
+    //  · 코리더 y 는 밴드 내 14px 간격 분산 + 타 엣지 수평 스텁 y(±8px) 회피 —
+    //    평행(공선) 겹침 0, 남는 교차는 직각 crossing 뿐.
     const GAP_BOUNDS = [
       [colX[0] + colW[0], colX[1]],   // gap A: col0 ↔ col1
       [colX[1] + colW[1], colX[2]],   // gap B: col1 ↔ col2
     ];
-    const gapEdges = [[], []];
-    valid.forEach((e, ei) => {
-      const cs = pos[e.source].col, ct = pos[e.target].col;
-      if (cs === ct) return;
-      gapEdges[Math.min(1, Math.max(0, Math.max(cs, ct) - 1))].push(ei);
-    });
-    const bendX = {};
-    gapEdges.forEach((arr, gi) => {
-      const gl = GAP_BOUNDS[gi][0], gr = GAP_BOUNDS[gi][1], n = arr.length;
-      arr.sort((a, b) =>
-        (pos[valid[a].source].cy + pos[valid[a].target].cy) -
-        (pos[valid[b].source].cy + pos[valid[b].target].cy));
-      arr.forEach((ei, i) => { bendX[ei] = gl + (gr - gl) * (i + 1) / (n + 1); });
-    });
-    function smRouteLane(x0, y0, x1, y1, bx) {
-      if (Math.abs(y0 - y1) < 0.5) return `M${x0},${y0} H${x1}`;
-      if (bx === undefined) return smRoute(x0, y0, x1, y1);
-      const r = 12, sx0 = bx >= x0 ? 1 : -1, sx1 = x1 >= bx ? 1 : -1, sy = y1 >= y0 ? 1 : -1;
-      const rr = Math.min(r, Math.abs(bx - x0), Math.abs(bx - x1), Math.abs(y1 - y0) / 2);
-      return `M${x0},${y0} H${bx - sx0 * rr} Q${bx},${y0} ${bx},${y0 + sy * rr}` +
-             ` V${y1 - sy * rr} Q${bx},${y1} ${bx + sx1 * rr},${y1} H${x1}`;
+    // 세로 레인 채널 4개 — 바깥-좌 / gap A / gap B / 바깥-우.
+    const CHANNELS = {
+      outL: { x0: colX[0] - 86, x1: colX[0] - 16 },
+      gapA: { x0: GAP_BOUNDS[0][0] + 14, x1: GAP_BOUNDS[0][1] - 14 },
+      gapB: { x0: GAP_BOUNDS[1][0] + 14, x1: GAP_BOUNDS[1][1] - 14 },
+      outR: { x0: colX[2] + colW[2] + 16, x1: colX[2] + colW[2] + 86 },
+    };
+    // 가운데 칼럼의 빈 수평 밴드(행 카드 사이 통로) — 교차 엣지 코리더 후보.
+    const midRows = cols[1].map(nd => pos[nd.id]).sort((a, b) => a.y - b.y);
+    const bands = [];
+    if (!midRows.length) {
+      bands.push([-9999, 9999]);
+    } else {
+      const bp = 10;
+      bands.push([midRows[0].y - 150, midRows[0].y - bp]);
+      for (let i = 0; i + 1 < midRows.length; i++) {
+        const bt = midRows[i].y + midRows[i].h + bp, bb2 = midRows[i + 1].y - bp;
+        if (bb2 - bt >= 16) bands.push([bt, bb2]);
+      }
+      const lastRow = midRows[midRows.length - 1];
+      bands.push([lastRow.y + lastRow.h + bp, lastRow.y + lastRow.h + 150]);
     }
-    valid.forEach((e, ei) => {
+
+    // 계획 1단 — 엣지별 라우트 골격(세로 채널·수평 코리더 요청).
+    const plans = valid.map((e, ei) => {
       const A = attach[ei + '|' + e.source] || { x: pos[e.source].rx, y: pos[e.source].cy };
       const B = attach[ei + '|' + e.target] || { x: pos[e.target].lx, y: pos[e.target].cy };
-      const st = smLinkStyle(e.type, t);
-      const p = root.append('path').attr('d', smRouteLane(A.x, A.y, B.x, B.y, bendX[ei]))
+      const cs = pos[e.source].col, ct = pos[e.target].col;
+      const p = { ei, A, B, cs, ct, chan: null, chan2: null, corr: null };
+      if (cs === ct) {
+        if (!rowAdjacent(pos[e.source], pos[e.target]))
+          p.chan = (cs === 0) ? 'outL' : (cs === 2) ? 'outR' : 'gapB';
+      } else if (Math.abs(cs - ct) === 1) {
+        if (Math.abs(A.y - B.y) >= 0.5) p.chan = (Math.min(cs, ct) === 0) ? 'gapA' : 'gapB';
+      } else {
+        p.chan = 'gapA'; p.chan2 = 'gapB';
+        p.corr = { want: (A.y + B.y) / 2 };
+      }
+      return p;
+    });
+
+    // 계획 2단 — 채널별 세로 레인 x 분배 (CHART-AP-41).
+    const laneReq = { outL: [], gapA: [], gapB: [], outR: [] };
+    plans.forEach(p => {
+      if (p.chan) laneReq[p.chan].push(p);
+      if (p.chan2) laneReq[p.chan2].push(p);
+    });
+    const laneX = {};
+    Object.keys(laneReq).forEach(ck => {
+      const arr = laneReq[ck], n = arr.length; if (!n) return;
+      const c = CHANNELS[ck];
+      arr.sort((p, q) => ((p.A.y + p.B.y) - (q.A.y + q.B.y)) || (p.ei - q.ei));
+      arr.forEach((p, i) => { laneX[p.ei + '|' + ck] = c.x0 + (c.x1 - c.x0) * (i + 1) / (n + 1); });
+    });
+
+    // 계획 3단 — 코리더 y 배정: 원하는 y 에 가장 가까운 밴드로 클램프한 뒤,
+    // 타 엣지 수평 스텁 y 를 피해 nudge + 같은 밴드 안에서 14px 간격 보장.
+    const stubYs = [];
+    plans.forEach(p => { stubYs.push(p.A.y, p.B.y); });
+    const byBand = new Map();
+    plans.filter(p => p.corr).forEach(p => {
+      let best = 0, bd = Infinity;
+      bands.forEach((b, i) => {
+        const cl = Math.max(b[0], Math.min(b[1], p.corr.want));
+        const dd = Math.abs(cl - p.corr.want);
+        if (dd < bd - 0.5) { bd = dd; best = i; }
+      });
+      if (!byBand.has(best)) byBand.set(best, []);
+      byBand.get(best).push(p);
+    });
+    byBand.forEach((arr, bi) => {
+      const b = bands[bi];
+      arr.sort((p, q) => p.corr.want - q.corr.want);
+      arr.forEach(p => {
+        let y = Math.max(b[0] + 6, Math.min(b[1] - 6, p.corr.want));
+        for (let k = 0; k < 6; k++) {
+          const hit = stubYs.find(sy => Math.abs(sy - y) < 8);
+          if (hit === undefined) break;
+          y = hit + (y >= hit ? 8.5 : -8.5);
+        }
+        p.corr.y = Math.max(b[0] + 6, Math.min(b[1] - 6, y));
+      });
+      for (let i = 1; i < arr.length; i++)
+        if (arr[i].corr.y - arr[i - 1].corr.y < 14) arr[i].corr.y = arr[i - 1].corr.y + 14;
+      const over = arr.length ? arr[arr.length - 1].corr.y - (b[1] - 6) : 0;
+      if (over > 0) arr.forEach(p => { p.corr.y = Math.max(b[0] + 6, p.corr.y - over); });
+    });
+
+    // 계획 4단 — waypoint 열 산출 (+중복·공선 정리).
+    function smWaypoints(p) {
+      const A = p.A, B = p.B;
+      const pts = [{ x: A.x, y: A.y }];
+      if (p.corr) {
+        const xa = laneX[p.ei + '|gapA'], xb = laneX[p.ei + '|gapB'];
+        const first = (p.cs === 0) ? xa : xb, second = (p.cs === 0) ? xb : xa;
+        pts.push({ x: first, y: A.y }, { x: first, y: p.corr.y },
+                 { x: second, y: p.corr.y }, { x: second, y: B.y });
+      } else if (p.chan) {
+        const lx2 = laneX[p.ei + '|' + p.chan];
+        pts.push({ x: lx2, y: A.y }, { x: lx2, y: B.y });
+      } else if (p.cs === p.ct && Math.abs(A.x - B.x) >= 0.5) {
+        const my = (A.y + B.y) / 2;
+        pts.push({ x: A.x, y: my }, { x: B.x, y: my });
+      }
+      pts.push({ x: B.x, y: B.y });
+      const out = [pts[0]];
+      for (let i = 1; i < pts.length; i++) {
+        const q = pts[i], l = out[out.length - 1];
+        if (Math.abs(q.x - l.x) < 0.5 && Math.abs(q.y - l.y) < 0.5) continue;
+        out.push(q);
+      }
+      for (let i = out.length - 2; i >= 1; i--) {
+        const a = out[i - 1], m = out[i], c = out[i + 1];
+        if ((Math.abs(a.x - m.x) < 0.5 && Math.abs(m.x - c.x) < 0.5) ||
+            (Math.abs(a.y - m.y) < 0.5 && Math.abs(m.y - c.y) < 0.5)) out.splice(i, 1);
+      }
+      return out;
+    }
+
+    // 렌더 + 라벨 앵커·세그먼트 수집 (라벨 장애물 검사용).
+    const bendX = {};            // ei → 라벨 앵커 x (교차 엣지는 코리더 중앙)
+    const edgeSegs = [];         // ei → 축정렬 세그먼트 목록
+    const edgeAnchor = {};
+    plans.forEach(p => {
+      const pts = smWaypoints(p);
+      const segs = [];
+      for (let i = 0; i + 1 < pts.length; i++)
+        segs.push({ x0: pts[i].x, y0: pts[i].y, x1: pts[i + 1].x, y1: pts[i + 1].y });
+      edgeSegs[p.ei] = segs;
+      let anchor;
+      if (p.corr) {
+        anchor = { x: (laneX[p.ei + '|gapA'] + laneX[p.ei + '|gapB']) / 2, y: p.corr.y, horiz: true };
+      } else {
+        let bs = segs[0], bl = -1;
+        segs.forEach(s => {
+          const L2 = Math.abs(s.x1 - s.x0) + Math.abs(s.y1 - s.y0);
+          if (L2 > bl) { bl = L2; bs = s; }
+        });
+        anchor = { x: (bs.x0 + bs.x1) / 2, y: (bs.y0 + bs.y1) / 2,
+                   horiz: Math.abs(bs.y1 - bs.y0) < 0.5 };
+      }
+      bendX[p.ei] = anchor.x;
+      edgeAnchor[p.ei] = anchor;
+      const st = smLinkStyle(valid[p.ei].type, t);
+      const path = root.append('path').attr('d', smRouteLane(pts, 12))
         .attr('fill', 'none').attr('stroke', st.stroke).attr('stroke-width', st.w)
         .attr('data-anim', 'static');
-      if (st.dash) p.attr('stroke-dasharray', st.dash);
-      if (st.arrow) p.attr('marker-end', 'url(#sm-arr)');
-      if (SM_ANIM) p.attr('stroke-dasharray', st.dash || '5 9').classed('sm-flow', true);
+      if (st.dash) path.attr('stroke-dasharray', st.dash);
+      if (st.arrow) path.attr('marker-end', 'url(#sm-arr)');
+      if (SM_ANIM) path.attr('stroke-dasharray', st.dash || '5 9').classed('sm-flow', true);
     });
+
+    // ── 노드 자산 (v8.2.18, CHART-AP-42) ──
+    // base(동기): 인라인 국기 sprite / 인물 실루엣 / 이니셜 모노그램 — 항상 먼저
+    // 그린다. 원격 자산(인물 사진→조직 로고→국기 CDN)은 Image() 프리로드가 *성공한
+    // 것만* base 를 걷어내고 오버레이 — 404·오프라인이어도 빈 슬롯이 생기지 않는다.
+    function smImgOverlay(ga, x, y, s, cands, i) {
+      if (i >= cands.length) return;
+      const c = cands[i];
+      const im = new Image();
+      im.onload = function () {
+        // v8.2.19 — Google favicon 서비스는 미등록 도메인에도 200 + 16px 기본
+        // 지구본을 준다. naturalWidth 로 판별해 가짜 로고 대신 다음 후보/base 유지.
+        if (c.minPx && im.naturalWidth > 0 && im.naturalWidth < c.minPx) {
+          smImgOverlay(ga, x, y, s, cands, i + 1); return;
+        }
+        ga.selectAll('[data-sm-base]').remove();
+        const uid = 'sm-clip-' + (SM_UID++);
+        const ccx = x + s / 2, ccy = y + s / 2;
+        ga.append('clipPath').attr('id', uid)
+          .append('circle').attr('cx', ccx).attr('cy', ccy).attr('r', s / 2);
+        if (c.back) ga.append('circle').attr('cx', ccx).attr('cy', ccy).attr('r', s / 2).attr('fill', c.back);
+        const ip = c.pad ? s * 0.16 : 0;
+        const img = ga.append('image').attr('href', c.url)
+          .attr('x', x + ip).attr('y', y + ip).attr('width', s - ip * 2).attr('height', s - ip * 2)
+          .attr('preserveAspectRatio', 'xMidYMid slice').attr('clip-path', `url(#${uid})`);
+        if (c.gray) img.attr('filter', 'url(#sm-gray)');   // 인물 사진은 흑백 원형
+        ga.append('circle').attr('cx', ccx).attr('cy', ccy).attr('r', s / 2 - 0.7)
+          .attr('fill', 'none').attr('stroke', 'rgba(0,0,0,.18)').attr('stroke-width', 1.3);
+      };
+      im.onerror = function () { smImgOverlay(ga, x, y, s, cands, i + 1); };
+      im.src = c.url;
+    }
+    function smAvatar(g, x, y, s, nd) {
+      const ga = g.append('g');
+      const fc = String(nd.flag || '').toUpperCase();
+      const isPerson = (nd.kind === 'person' || nd.type === 'person');
+      const photo = String(nd.photo || '');
+      const dom = String(nd.logo || '').replace(/^https?:\/\//, '').split(/[/?#]/)[0].trim();
+      const wantOverlay = /^https?:\/\//.test(photo) || (dom.indexOf('.') > 0);
+      if (fc && SM_FLAGS[fc] && !wantOverlay) {
+        ga.append('use').attr('href', '#sm-flag-' + fc).attr('x', x).attr('y', y)
+          .attr('width', s).attr('height', s).attr('data-sm-base', 1);
+      } else if (isPerson) {
+        ga.append('use').attr('href', '#sm-person').attr('x', x).attr('y', y)
+          .attr('width', s).attr('height', s).attr('data-sm-base', 1);
+      } else {
+        const ini = String(nd.label || nd.id || '?').trim().slice(0, 2);
+        ga.append('rect').attr('x', x).attr('y', y).attr('width', s).attr('height', s)
+          .attr('rx', SM_REP ? 0 : 7).attr('fill', smColor(nd.group, t)).attr('data-sm-base', 1);
+        ga.append('text').attr('x', x + s / 2).attr('y', y + s / 2 + 5).attr('text-anchor', 'middle')
+          .attr('font-family', 'Noto Sans KR').attr('font-weight', 700).attr('font-size', 12)
+          .attr('fill', t.bg).attr('data-sm-base', 1).text(ini);
+      }
+      const cands = [];
+      if (/^https?:\/\//.test(photo)) cands.push({ url: photo, gray: true, back: t.card });
+      if (dom.indexOf('.') > 0) {
+        // 로고 소스 2단 체인 (v8.2.19) — ① Clearbit 브랜드 로고 (고품질, 미등록
+        // 도메인은 404 → onerror 로 체인 진행) ② Google favicon (커버리지 최광,
+        // 미등록에도 200 + 16px 기본 지구본이 와서 minPx 로 판별해 걸러냄).
+        cands.push({ url: 'https://logo.clearbit.com/' + encodeURIComponent(dom) + '?size=64',
+                     back: '#fff', pad: true });
+        cands.push({ url: 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(dom) + '&sz=64',
+                     back: '#fff', pad: true, minPx: 24 });
+      }
+      if (/^[A-Z]{2}$/.test(fc) && (wantOverlay || !SM_FLAGS[fc]))
+        cands.push({ url: 'https://flagcdn.com/w80/' + fc.toLowerCase() + '.png' });
+      smImgOverlay(ga, x, y, s, cands, 0);
+    }
+    function smBadge(g, x, y, s, bc) {
+      if (SM_FLAGS[bc]) {
+        g.append('use').attr('href', '#sm-flag-' + bc).attr('x', x).attr('y', y)
+          .attr('width', s).attr('height', s);
+      } else if (/^[A-Z]{2}$/.test(bc)) {
+        const url = 'https://flagcdn.com/w80/' + bc.toLowerCase() + '.png';
+        const im = new Image();
+        im.onload = function () {
+          const uid = 'sm-clip-' + (SM_UID++);
+          g.append('clipPath').attr('id', uid)
+            .append('circle').attr('cx', x + s / 2).attr('cy', y + s / 2).attr('r', s / 2);
+          g.append('image').attr('href', url).attr('x', x).attr('y', y)
+            .attr('width', s).attr('height', s)
+            .attr('preserveAspectRatio', 'xMidYMid slice').attr('clip-path', `url(#${uid})`);
+          g.append('circle').attr('cx', x + s / 2).attr('cy', y + s / 2).attr('r', s / 2 - 0.5)
+            .attr('fill', 'none').attr('stroke', 'rgba(0,0,0,.2)').attr('stroke-width', 1);
+        };
+        im.src = url;
+      }
+    }
 
     // 노드 카드
     function drawCard(P) {
@@ -3424,19 +3660,10 @@
         .attr('stroke', isHub ? t.text : (accent ? t.accent : t.border))
         .attr('stroke-width', isHub ? 2.2 : (accent ? 1.6 : 1)).attr('data-anim', 'static');
       const ay = (P.h - 30) / 2;
-      const fc = String(nd.flag || '').toUpperCase();
-      if (fc && SM_FLAGS[fc]) {
-        g.append('use').attr('href', '#sm-flag-' + fc).attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30);
-      } else if (nd.kind === 'person' || nd.type === 'person') {
-        g.append('use').attr('href', '#sm-person').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30);
-      } else {
-        const ini = String(nd.label || nd.id || '?').trim().slice(0, 2);
-        g.append('rect').attr('x', 12).attr('y', ay).attr('width', 30).attr('height', 30).attr('rx', SM_REP ? 0 : 7).attr('fill', smColor(nd.group, t));
-        g.append('text').attr('x', 27).attr('y', ay + 20).attr('text-anchor', 'middle')
-          .attr('font-family', 'Noto Sans KR').attr('font-weight', 700).attr('font-size', 12).attr('fill', t.bg).text(ini);
-      }
-      const bc = String(nd.badge || '').toUpperCase();
-      if (bc && SM_FLAGS[bc]) g.append('use').attr('href', '#sm-flag-' + bc).attr('x', 30).attr('y', ay + 18).attr('width', 14).attr('height', 14);
+      smAvatar(g, 12, ay, 30, nd);
+      // 국적 배지 — 명시 badge 우선. 사진·로고가 메인 슬롯을 차지하면 flag 를 배지로 강등.
+      const bc = String(nd.badge || ((nd.photo || nd.logo) ? nd.flag : '') || '').toUpperCase();
+      if (bc) smBadge(g, 30, ay + 18, 14, bc);
       g.append('text').attr('x', 52).attr('y', P.h / 2 - 3).attr('font-family', 'Noto Sans KR')
         .attr('font-weight', 600).attr('font-size', 13).attr('fill', t.text).text(smClip(nd.label || nd.id, 16));
       if (nd.role) g.append('text').attr('x', 52).attr('y', P.h / 2 + 13).attr('font-family', 'Noto Sans KR')
@@ -3453,39 +3680,48 @@
         .attr('class', 'sm-pulse');
     }
 
-    // 라벨 (선 위) — 카드 위 레이어. v8.2.16 — 엣지 라벨이 가운데 칼럼 카드(또는
-    // 다른 라벨) 위에 찍혀 글자가 가려지던 회귀(CHART-AP-40) 차단. col0→col2 를
-    // 가로지르는 엣지의 기하학적 중점이 정확히 가운데 칼럼 카드에 떨어지는 게 근원.
-    // 카드 + 기존 라벨을 장애물로 보고 빈 곳으로 밀어내며, 멀리 밀리면 가는
-    // 연결선을 남겨 어느 선의 라벨인지 보존(slope CHART-AP-26 의 dodge 패턴).
+    // 라벨 (선 위) — 카드 위 레이어. v8.2.16(CHART-AP-40): 카드·기존 라벨 장애물
+    // 회피 + 밀려나면 연결선. v8.2.18(CHART-AP-43): 장애물에 *다른 엣지의 세그먼트*
+    // 도 포함 — 플레이트가 타 선 위·선 교차점 위에 앉아 시인성을 깨던 것 차단.
+    // 앵커는 라우팅이 정한 자기 선의 가장 긴 구간(교차 엣지는 코리더) 중점이고,
+    // 후보 이동은 ① 자기 선 방향 슬라이드(선 위 유지) ② 수직 ③ 수평·대각 순.
     const labelObstacles = Object.values(pos).map(P => ({ x: P.x, y: P.y, w: P.w, h: P.h }));
     const placedLabels = [];
     const rectsHit = (r, list, gap) => list.some(o =>
       r.x < o.x + o.w + gap && r.x + r.w + gap > o.x &&
       r.y < o.y + o.h + gap && r.y + r.h + gap > o.y);
+    const segHit = (r, segs, gap) => segs.some(s => {
+      const sx0 = Math.min(s.x0, s.x1) - gap, sx1 = Math.max(s.x0, s.x1) + gap;
+      const sy0 = Math.min(s.y0, s.y1) - gap, sy1 = Math.max(s.y0, s.y1) + gap;
+      return r.x < sx1 && r.x + r.w > sx0 && r.y < sy1 && r.y + r.h > sy0;
+    });
     valid.forEach((e, ei) => {
-      const A = attach[ei + '|' + e.source], B = attach[ei + '|' + e.target];
-      if (!A || !B) return;
       const st = smLinkStyle(e.type, t), lab = String(e.label || '');
       if (!lab && !st.gl) return;
+      const anchor = edgeAnchor[ei];
+      if (!anchor) return;
       const w = 16 + lab.length * 9 + (st.gl ? 14 : 0), hh = 18;
-      // 교차 엣지는 라벨을 세로 레인 위에 둬 실제 선과 붙인다(v8.2.17).
-      const mx = (bendX[ei] !== undefined) ? bendX[ei] : (A.x + B.x) / 2;
-      const my = (A.y + B.y) / 2;
-      // 중점에서 시작 → 카드/기존 라벨과 겹치면 수직(우선)·수평으로 밀어낸다.
+      const mx = anchor.x, my = anchor.y;
+      const otherSegs = [];
+      edgeSegs.forEach((segs, k) => { if (k !== ei && segs) otherSegs.push.apply(otherSegs, segs); });
       const cand = [[0, 0]];
+      if (anchor.horiz) { for (let d = 14; d <= 84; d += 14) cand.push([-d, 0], [d, 0]); }
+      else { for (let d = 14; d <= 84; d += 14) cand.push([0, -d], [0, d]); }
       for (let d = 12; d <= 72; d += 12) cand.push([0, -d], [0, d]);
       for (let d = 22; d <= 66; d += 22) cand.push([-d, 0], [d, 0], [-d, -d], [d, -d], [-d, d], [d, d]);
       let best = { x: mx, y: my };
       for (let ci = 0; ci < cand.length; ci++) {
         const dx = cand[ci][0], dy = cand[ci][1];
         const r = { x: mx + dx - w / 2, y: my + dy - hh / 2, w, h: hh };
-        if (!rectsHit(r, labelObstacles, 3) && !rectsHit(r, placedLabels, 2)) {
+        if (!rectsHit(r, labelObstacles, 3) && !rectsHit(r, placedLabels, 2) &&
+            !segHit(r, otherSegs, 4)) {
           best = { x: mx + dx, y: my + dy }; break;
         }
       }
       placedLabels.push({ x: best.x - w / 2, y: best.y - hh / 2, w, h: hh });
-      if (Math.abs(best.x - mx) + Math.abs(best.y - my) > 8) {
+      // 자기 선 방향 슬라이드는 여전히 선 위 — 연결선은 선에서 *수직으로* 벗어났을 때만.
+      const perp = anchor.horiz ? Math.abs(best.y - my) : Math.abs(best.x - mx);
+      if (perp > 8) {
         root.append('line').attr('x1', mx).attr('y1', my).attr('x2', best.x).attr('y2', best.y)
           .attr('stroke', t.border).attr('stroke-width', 1).attr('stroke-opacity', 0.6)
           .attr('data-anim', 'static');

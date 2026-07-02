@@ -265,9 +265,13 @@ class StakeholderNode(BaseModel):
     role: str = ""
     group: str | None = None
     col: object | None = None          # 0/1/2 또는 left/center/right (렌더 칼럼)
-    flag: str | None = None            # 국가코드 (US/CN/...) → 둥근 국기
+    flag: str | None = None            # ISO alpha-2 국가코드 (KR/US/CN/... 전 국가) → 둥근 국기
     badge: str | None = None           # 기업·인물 국적 배지
     kind: str | None = None            # "person" 이면 사진 슬롯
+    # v8.2.18 (CHART-AP-42) — 조직 로고·인물 실사진. 렌더러가 프리로드 성공 시에만
+    # 오버레이하므로 잘못된 값이어도 국기/실루엣/이니셜 fallback (가드는 관용).
+    logo: str | None = None            # 기관·기업 공식 도메인 (예: "samsung.com") → 원형 로고
+    photo: str | None = None           # 인물 사진 URL (https) → 흑백 원형 렌더
     accent: bool = False
 
     model_config = ConfigDict(extra="allow")

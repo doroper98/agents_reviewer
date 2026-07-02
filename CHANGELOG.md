@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.17
+last_synced_with: v8.3.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,29 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.0 — 일반 보고서 차트 다양성 회복 4종 세트
+
+사용자 catch — "일반 보고서 차트 유형이 점점 제한적으로 변한다". 실발행 243건 분석으로 정량 확인: event 보고서 line 비중 5월 35.4% → 6월 53.2%(그중 81%가 30행+ 시장 일봉), 보고서당 distinct type 2.9 정체, 6월에 heatmap/range_bar/lollipop/area/forecast/stacked/dual_line/choropleth 8종 0회. 구조 원인 = ⓐ 자동 주입 시장 가격 차트가 다양성 쿼터 선점 ⓑ 강제 장치 전무(V5 게이트 flag OFF·starvation 경보 bot.log 사장·프롬프트 "권장 강제X") ⓒ 조건 엄격 type 의 리스크 회피 후퇴. 대응 4종:
+
+1. **서사/시장 분리 + 필수 하한** — composer SYSTEM_PROMPT 반-편향 가드 격상: 시장 가격 차트(available_time_series 기반)는 다양성 계산에서 제외, *서사 차트* 기준 서로 다른 type standard ≥3 / deep ≥4 필수(권장 문구 폐기), line 은 1번 분기 마지막 수단 명시, forecast/heatmap 트리거 어휘 보강.
+2. **자기교정 루프** (사용자 결정 — 관리자 알림 대신 봇이 스스로 빈도 회복) — `usage_log.composer_rebalance_hint` 신설: 최근 30건에서 0회(starved)+희귀(rare) *서사* type(주입 전용 candle/combo_candle/iv_skew/indicator·르포 전용 stakeholder_map·map 채널 제외)을 최대 6개 반환, orchestrator 가 composer 프롬프트에 `_CHART_REBALANCE_BLOCK`(조건 맞을 때만 우선 채택, 억지 사용 금지) 주입. 표본 <10건·힌트 0개면 프롬프트 byte-equal, 르포 미주입.
+3. **다양성 쿼터 게이트 production 배선** — `deterministic_gate.check_chart_type_monotony` public 진입점 신설(sections-shape 평탄화 포함 — 기존 private 는 빈 top-level charts 에서 sections 폴백 불달 결함), orchestrator 가 V5 게이트와 독립적으로 매 보고서 log-only 호출. 발행 불차단, 강제 승격은 관찰 후 사용자 게이트.
+4. **시계열 행수 상한** — `_DENSIFY_MAX_ROWS=260`(≈1년 거래일) + `_downsample_rows`(균등 스트라이드, 마지막 봉 보존)를 `_densify_ts_charts` 치환분과 `_build_ts_chart` 주입분에 공통 적용. 3년 751행 일봉이 통째로 실리던 발행 사례 4건 차단.
+
+회귀 `tests/regression/test_chart_diversity.py` 12종 (하한 문구/힌트 산출·주입·byte-equal/게이트 public/다운샘플·densify 상한).
+
+## v8.2.19 — 르포 관계도 기업 로고 상시화 (CHART-AP-42 후속)
+
+사용자 지적 — "기업 로고도 다 보이게 해야 하는 거 아니야?". v8.2.18 은 logo 를 "확실할 때만" 선택 사항으로 뒀고, 단일 소스(Google favicon)는 미등록 도메인에도 200 + 16px 기본 지구본을 반환해 가짜 아이콘이 박힐 위험이 있었다. Fix ① composer 프롬프트(스키마 라인 + `_REPORTAGE_BLOCK`) — 기업·정부기관·국제기구·언론사 노드는 공식 도메인이 잘 알려져 있으면 logo 를 *반드시* 채우도록 격상 (도메인 창작은 여전히 금지 — fallback 안전망 전제). ② 렌더러 로고 소스 2단 체인 — Clearbit 브랜드 로고(고품질, 미등록 404→onerror 체인 진행) → Google favicon (커버리지 최광, `naturalWidth < minPx(24)` 로 기본 지구본 판별·거부). 프리로드 성공분만 오버레이하는 v8.2.18 fallback 구조 불변. Playwright 라우트 인터셉션으로 4경로(클리어빗 성공/favicon 수락/기본 지구본 거부/전부 실패) 검증.
+
+## v8.2.18 — 르포 관계도 완성도 격상: 노드 자산 + 장애물 인지형 라우팅 (CHART-AP-42/43)
+
+사용자 catch — 르포 관계도의 완성도 종합 지적: 로고를 붙일 수 있는 주체(정부기관·국가·기업)엔 대표 로고, 인물엔 흑백 사진을 넣고, 엣지가 노드에 가려지거나 서로 겹치지 않아야 하며, 엣지 라벨 플레이트가 노드를 가리거나 선 교차점에 앉지 않아야 한다.
+
+**노드 자산 (CHART-AP-42)** — 실발행 payload 가 `flag:"KR"` 을 emit 했는데 인라인 국기 6종(US/TW/CN/JP/UA/RU) 화이트리스트 밖이라 태극기가 이니셜로 silent 강등되던 결함 포함. Fix: ① `flag` ISO alpha-2 전 국가 지원 — 인라인 sprite 에 KR 태극기 추가(7종), 그 외 코드는 flagcdn CDN 을 `Image()` 프리로드해 성공 시에만 둥근 국기 오버레이. ② 신규 `logo`(기관·기업 공식 도메인, 예 "samsung.com") → favicon 서비스 원형 로고 코인. ③ 신규 `photo`(인물 사진 URL) → `sm-gray`(saturate 0) 흑백 원형 렌더. 우선순위 photo→logo→flag, 실패·오프라인이면 국기/실루엣/이니셜 base 유지(빈 슬롯 없음). 사진·로고 노드의 flag 는 국적 배지로 자동 강등. composer SYSTEM_PROMPT + `_REPORTAGE_BLOCK` 에 "공식 도메인·실존 확인 URL 만, 추측 금지" 지시, `StakeholderNode` 에 logo/photo 필드(관용).
+
+**엣지 라우팅·라벨 (CHART-AP-43)** — v8.2.17 레인 라우터 이후에도 ① 교차(좌↔우) 엣지의 수평 구간이 가운데 칼럼 카드 밴드를 관통(엣지가 카드 아래 레이어라 가려짐) ② 같은 칼럼 skip 엣지가 사이 카드를 수직 관통 ③ 라벨이 다른 엣지 선·교차점 위에 안착. Fix: 장애물 인지형 직교 라우터 — 교차 엣지는 가운데 칼럼 행 사이 빈 수평 코리더(밴드 내 14px 분산 + 타 엣지 스텁 y ±8px 회피)로 우회, 같은 칼럼 skip 은 바깥 세로 레인으로 우회, 세로 구간은 채널 4개(바깥-좌/gapA/gapB/바깥-우)에 레인 분배 — 평행(공선) 겹침 0, 남는 교차는 직각 crossing 뿐. 라벨 장애물에 카드·기존 라벨 + 다른 엣지 전 세그먼트 포함, 앵커는 자기 선의 가장 긴 구간(교차 엣지는 코리더) 중점 + 자기 선 방향 슬라이드 우선. `smRoute` 폐기, `smRouteLane` 을 waypoint 폴리라인 + 라운딩으로 일반화. 데이터 계약·가드·registry 불변. 발행본은 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용. SSOT: CHART-AP-42/43.
 
 ## v8.2.17 — 르포 관계도 교차 엣지 세로 레인 분리 (CHART-AP-41)
 
