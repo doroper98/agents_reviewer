@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-07-02T23:36:45.435037+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v8.3.3",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260702_233645_8344f10c32",
+    "headline": "우크라이나의 러시아 후방 드론 타격 강화 (2026년 6월)",
+    "deck": "우크라이나가 자국산 장거리 드론과 스웜(swarm, 무리) 전술을 앞세워 모스크바 정유시설·위성통신소·에너지 인프라를 연달아 타격 중임. 젤렌스키가 '40일 영향력 작전'을 지시하며 6월 25일 하룻밤 660기 발사로 개전 이후 최대 규모를 기록함. 러시아 정유능력은 봄철 기준 약 17% 손실 추정.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260702_233645_8344f10c32.html",
+    "theme": {
+      "id": "reportage_princess",
+      "tokens": {
+        "bg": "#015AA0",
+        "card": "#0A66AC",
+        "border": "#2A74B6",
+        "text": "#ECECFF",
+        "muted": "#AEC4E0",
+        "accent": "#FF9457",
+        "up": "#88C0B0",
+        "down": "#FF8378"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": null
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "우크라이나가 자국산 장거리 드론과 스웜(swarm, 무리) 전술을 앞세워 모스크바 정유시설·위성통신소·에너지 인프라를 연달아 타격 중임. 젤렌스키가 '40일 영향력 작전'을 지시하며 6월 25일 하룻밤 660기 발사로 개전 이후 최대 규모를 기록함. 러시아 정유능력은 봄철 기준 약 17% 손실 추정.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": null
+    }
+  ],
+  "charts": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://www.npr.org/2026/06/18/g-s1-128782/moscow-ukraine-drone-attack-russia-oil-refinery",
+      "publisher": "npr.org",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://www.cnn.com/2026/06/30/europe/moscow-dubna-attack-ukraine-intl",
+      "publisher": "cnn.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.npr.org/2026/06/27/g-s1-129704/ukraine-long-range-drones-russia-war",
+      "publisher": "npr.org",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://www.forbes.com/sites/davidhambling/2026/06/19/moscow-refinery-attack-is-a-landmark-in-complex-drone-strikes/",
+      "publisher": "forbes.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.pravda.com.ua/eng/news/2026/05/31/8037148/",
+      "publisher": "pravda.com.ua",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.militarytimes.com/news/pentagon-congress/2026/03/11/these-are-ukraines-1000-interceptor-drones-the-pentagon-wants-to-buy/",
+      "publisher": "militarytimes.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://ukraine-war-analytics.com/comparisons/ukraine-russia-drone-production-2026.html",
+      "publisher": "ukraine-war-analytics.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://www.kyivpost.com/post/77275",
+      "publisher": "kyivpost.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://www.cnbc.com/2026/06/24/ukraine-russia-drone-strikes-moscow-escalation.html",
+      "publisher": "cnbc.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://united24media.com/war-in-ukraine/drones-strike-russias-largest-satellite-ground-hub-near-moscow-for-second-time-20289",
+      "publisher": "united24media.com",
+      "title": "",
+      "fetched_at": "2026-06-30"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2026-05-21",
+        "label": "장거리 드론으로 러시아 정유시설 타격",
+        "phase": "past",
+        "note": "봄 시즌 러시아 정유능력 약 110만 배럴/일(-17%) 손실 유발"
+      },
+      {
+        "date": "2026-05-31",
+        "label": "우크라이나 정보부(HUR), 딥스트라이크 작전에 수백기 디코이(decoy, 미끼) 드론 투입 확인",
+        "phase": "past",
+        "note": "러시아 방공망 소진 유도, 값비싼 요격탄 낭비 강요"
+      },
+      {
+        "date": "2026-06-18",
+        "label": "모스크바 카포트냐(Kapotnya) 정유공장 타격 — 한 주 내 두 번째, 화재 5건",
+        "phase": "past",
+        "note": "모스크바 지역 가솔린 40% 공급원, 수도 첫 심각한 유류 부족 발생"
+      },
+      {
+        "date": "2026-06-25",
+        "label": "하룻밤 660기 대규모 공습(러시아 국방부 집계), 12개 주·크림·인근 해역 동시 타격",
+        "phase": "past",
+        "note": "개전 이후 최대 규모, 5월 17일 556기 기록 갱신"
+      },
+      {
+        "date": "2026-06-30",
+        "label": "모스크바 북쪽 두브나(Dubna) 위성통신센터 재타격(9일 만에 두 번째), 국경에서 500km",
+        "phase": "present",
+        "note": "러시아 익스프레스 위성 통제·군 정보수집망 손상, 민간인 6개월 영아 사망 발생"
+      }
+    ],
+    "video": null
+  }
+}
