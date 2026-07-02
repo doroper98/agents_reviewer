@@ -436,8 +436,9 @@ SYSTEM_PROMPT = (
     "  1. 시간축 있음?\n"
     "     ├─ 단일 시리즈 + OHLC 있음 → candle (line 금지)\n"
     "     ├─ 단일 시리즈 + 원자재/누적 부피 → area\n"
-    "     ├─ 단일 시리즈 + 예측·신뢰구간 → forecast (line 금지)\n"
-    "     ├─ 단일 시리즈 (그 외) → line\n"
+    "     ├─ 단일 시리즈 + 예측·신뢰구간 → forecast (line 금지 — 전망치·컨센서스·\n"
+    "     │  가이던스가 본문에 있으면 이 분기다. '올해 말 X 전망' 한 줄이면 충분)\n"
+    "     ├─ 단일 시리즈 (그 외 *전부* 확인한 뒤 마지막 수단) → line\n"
     "     ├─ 부피·건수 시리즈 + 수준 시리즈 결합 → combo (dual_line 금지 — 부피는 막대)\n"
     "     ├─ 두 시리즈 (다른 단위/비교 anchor, 둘 다 수준) → dual_line\n"
     "     ├─ 두 변수의 *평면 궤적* (방향 전환이 thesis) → connected_scatter (dual_line 금지)\n"
@@ -466,14 +467,28 @@ SYSTEM_PROMPT = (
     "     ├─ 2 변수 + 라벨 (size 균일) → scatter (FT 좌측 스타일)\n"
     "     └─ (르포 한정) 인물·국기·로고가 들어가는 이해당사자 관계도 → stakeholder_map\n"
     "     · 일반 보고서의 행위자 관계망은 차트로 만들지 말 것 — 본문 서술 또는 표로 (network 폐기, CHART-AP-36).\n"
-    "  6. 2D 격자 + 강도? → heatmap (≥4×4 권장)\n"
+    "  6. 2D 격자 + 강도? → heatmap (≥4×4 권장 — 리스크 매트릭스, 국가×항목,\n"
+    "     시나리오×영향 축, 부문×기간 강도처럼 *두 축의 조합마다 세기* 가 있으면 이 분기)\n"
     "  7. 이벤트 일정 (start≠end 가 ≥30%)? → gantt\n\n"
-    "[반-편향 (anti-bias) 가드 — line/bar/donut 으로 collapse 금지]\n"
-    "  · 같은 보고서 안에 *같은 type 3개 이상* 박지 말 것 — 시각 단조.\n"
-    "  · standard 모드면 *서로 다른 type 4개 이상* 박을 것을 권장 (강제 X).\n"
-    "  · deep 모드면 *서로 다른 type 6개 이상* 권장.\n"
+    "[반-편향 (anti-bias) 가드 — line/bar/donut 으로 collapse 금지 (v8.3.0 필수 격상)]\n"
+    "  ★ 차트는 두 부류로 나눠 센다 (v8.3.0):\n"
+    "    ① *시장 가격 차트* — available_time_series 기반의 지수·주가·환율 가격 추이\n"
+    "       (line/candle/area). 사건 관련 종목은 필요한 만큼 다 넣어라 (위 강제 규칙).\n"
+    "    ② *서사 차트* — 그 외 전부. 비교·구성·분해·관계·분포를 그리는, 네가 분석으로\n"
+    "       만들어내는 차트. **다양성 하한은 서사 차트만 센다** — 시장 가격 line 을\n"
+    "       몇 장 넣었든 서사 차트 의무는 줄지 않는다 (2026-06 회귀: 시장 line 이\n"
+    "       쿼터를 선점해 서사 차트가 실종, event 보고서 line 비중 35%→53%).\n"
+    "  ★ 필수 하한 (권장이 아니다 — 위반은 회귀):\n"
+    "    · standard: *서사 차트* 서로 다른 type 3개 이상.\n"
+    "    · deep: *서사 차트* 서로 다른 type 4개 이상.\n"
+    "    · 예외는 데이터가 정말 빈약한 짧은 보고서뿐 — 그때도 표·리스트로 때우지 말고\n"
+    "      가능한 서사 type 을 먼저 소진할 것.\n"
+    "  · 같은 보고서 안에 *같은 서사 type 3개 이상* 박지 말 것 — 시각 단조.\n"
     "  · '시계열 데이터인데 안전하게 line' 회피 — 위 결정 트리의 OHLC / 예측 /\n"
-    "    부피 분기를 *반드시 먼저* 점검할 것.\n"
+    "    부피 분기를 *반드시 먼저* 점검할 것. line 은 1번 분기의 *마지막 수단*.\n"
+    "  · 조건(행수 밴드 등)이 안 맞아 어떤 type 을 포기하게 되면, line/bar 로\n"
+    "    후퇴하지 말고 *조건을 채우는 다른 서사 type* (heatmap·slope·range_bar·\n"
+    "    diverging_bar 등) 을 먼저 검토할 것.\n"
     "  · '카테고리 비교인데 자동 bar' 회피 — 항목 ≥8 이면 lollipop, 2 시점이면\n"
     "    slope, 분해형이면 waterfall 가 더 적절한 경우가 많음.\n"
     "  · **재무·수익성 보고서인데 시계열 + bar 만** 회피 (v5.4.3 신설). 매출·\n"
@@ -1119,6 +1134,20 @@ _REPORTAGE_BLOCK = (
 )
 
 
+# v8.3.0 — 시각 다양성 자기교정 힌트 (orchestrator 가 usage_log 집계로 굶주린
+# 서사 type 을 감지했을 때만 주입 — 힌트 없으면 프롬프트 byte-equal). {TYPES} 는
+# .replace() 로 치환 (Execution Rule #7 — .format() 금지).
+_CHART_REBALANCE_BLOCK = (
+    "\n\n=== 시각 다양성 재균형 (자동 신호) ===\n"
+    "최근 발행된 보고서들에서 다음 차트 type 이 전혀 또는 거의 쓰이지 않았다:\n"
+    "  {TYPES}\n"
+    "이 보고서의 데이터가 위 type 의 결정 트리 조건과 맞는 대목이 있으면, 익숙한\n"
+    "line/bar 로 후퇴하지 말고 그 type 을 *우선 채택* 하라. 단 데이터가 조건과 맞지\n"
+    "않는데 억지로 끼워 넣는 것은 금지 — 무관한 차트는 다양성 부족보다 나쁜 회귀다\n"
+    "(mono guide §6). 조건이 맞는 게 하나도 없으면 이 신호는 무시해도 된다.\n"
+)
+
+
 class NarrativeComposer:
     """Opus 4.7 단일 콜로 보고서를 자유 형식으로 작성.
 
@@ -1190,7 +1219,11 @@ class NarrativeComposer:
     # Public entry point
     # ------------------------------------------------------------------
 
-    def _compose_system_prompt(self, report_format: str = "standard") -> str:
+    def _compose_system_prompt(
+        self,
+        report_format: str = "standard",
+        starved_chart_types: list[str] | None = None,
+    ) -> str:
         """compose 용 system prompt — V6_FACT_PROMPT 켜지면 사실 규율 블록을 직교 추가.
 
         flag OFF + format=standard 면 모듈 SYSTEM_PROMPT 그대로 →
@@ -1199,6 +1232,10 @@ class NarrativeComposer:
         v8.0.0 — ``report_format == "reportage"`` 면 르포 장르 블록을 직교 추가
         (5막 구조 + 행위자 관계망 중심 + 감시신호 제거 + user_directive 앵글).
         standard 는 미주입 → 기존 경로 byte-equal.
+
+        v8.3.0 — ``starved_chart_types`` 가 비어있지 않으면 시각 다양성 재균형
+        힌트 블록을 직교 추가 (usage_log 자기교정 루프). 빈 리스트/None 은
+        미주입 → byte-equal.
         """
         prompt = SYSTEM_PROMPT
         if getattr(self.config, "enable_fact_prompt", False):
@@ -1209,6 +1246,10 @@ class NarrativeComposer:
             prompt += _SCROLL_ARC_BLOCK
         if report_format == "reportage":
             prompt += _REPORTAGE_BLOCK
+        if starved_chart_types:
+            prompt += _CHART_REBALANCE_BLOCK.replace(
+                "{TYPES}", ", ".join(starved_chart_types)
+            )
         return prompt
 
     async def compose_unified(
@@ -1218,6 +1259,7 @@ class NarrativeComposer:
         parent_context: ParentContext | None = None,
         report_format: str = "standard",
         user_directive: str = "",
+        starved_chart_types: list[str] | None = None,
     ) -> ComposedReport | None:
         """v4.0.0 Tier 4 — ContextAnalysis 만 받아 *단독 분석 + 작성*.
 
@@ -1245,7 +1287,7 @@ class NarrativeComposer:
         # 경우(returncode 0 이지만 파싱 불가) + 호출 자체 실패/timeout 시 *재시도*.
         # rate-limit 비정상 종료가 아니라 "성공했는데 쓸 수 없는 응답" 회귀라 재시도 안전.
         timeout_s = self.CLI_TIMEOUT_BY_MODE.get(mode, 360.0)
-        sys_prompt = self._compose_system_prompt(report_format)
+        sys_prompt = self._compose_system_prompt(report_format, starved_chart_types)
         # v8.2.2 — 르포는 Opus 4.8, 일반 보고서는 4.7. format != reportage 면 byte-equal.
         use_model = self._model_for_format(report_format)
         composed = None

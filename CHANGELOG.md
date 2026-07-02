@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.19
+last_synced_with: v8.3.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.0 — 일반 보고서 차트 다양성 회복 4종 세트
+
+사용자 catch — "일반 보고서 차트 유형이 점점 제한적으로 변한다". 실발행 243건 분석으로 정량 확인: event 보고서 line 비중 5월 35.4% → 6월 53.2%(그중 81%가 30행+ 시장 일봉), 보고서당 distinct type 2.9 정체, 6월에 heatmap/range_bar/lollipop/area/forecast/stacked/dual_line/choropleth 8종 0회. 구조 원인 = ⓐ 자동 주입 시장 가격 차트가 다양성 쿼터 선점 ⓑ 강제 장치 전무(V5 게이트 flag OFF·starvation 경보 bot.log 사장·프롬프트 "권장 강제X") ⓒ 조건 엄격 type 의 리스크 회피 후퇴. 대응 4종:
+
+1. **서사/시장 분리 + 필수 하한** — composer SYSTEM_PROMPT 반-편향 가드 격상: 시장 가격 차트(available_time_series 기반)는 다양성 계산에서 제외, *서사 차트* 기준 서로 다른 type standard ≥3 / deep ≥4 필수(권장 문구 폐기), line 은 1번 분기 마지막 수단 명시, forecast/heatmap 트리거 어휘 보강.
+2. **자기교정 루프** (사용자 결정 — 관리자 알림 대신 봇이 스스로 빈도 회복) — `usage_log.composer_rebalance_hint` 신설: 최근 30건에서 0회(starved)+희귀(rare) *서사* type(주입 전용 candle/combo_candle/iv_skew/indicator·르포 전용 stakeholder_map·map 채널 제외)을 최대 6개 반환, orchestrator 가 composer 프롬프트에 `_CHART_REBALANCE_BLOCK`(조건 맞을 때만 우선 채택, 억지 사용 금지) 주입. 표본 <10건·힌트 0개면 프롬프트 byte-equal, 르포 미주입.
+3. **다양성 쿼터 게이트 production 배선** — `deterministic_gate.check_chart_type_monotony` public 진입점 신설(sections-shape 평탄화 포함 — 기존 private 는 빈 top-level charts 에서 sections 폴백 불달 결함), orchestrator 가 V5 게이트와 독립적으로 매 보고서 log-only 호출. 발행 불차단, 강제 승격은 관찰 후 사용자 게이트.
+4. **시계열 행수 상한** — `_DENSIFY_MAX_ROWS=260`(≈1년 거래일) + `_downsample_rows`(균등 스트라이드, 마지막 봉 보존)를 `_densify_ts_charts` 치환분과 `_build_ts_chart` 주입분에 공통 적용. 3년 751행 일봉이 통째로 실리던 발행 사례 4건 차단.
+
+회귀 `tests/regression/test_chart_diversity.py` 12종 (하한 문구/힌트 산출·주입·byte-equal/게이트 public/다운샘플·densify 상한).
 
 ## v8.2.19 — 르포 관계도 기업 로고 상시화 (CHART-AP-42 후속)
 

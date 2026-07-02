@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.2.19"
+VERSION = "v8.3.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -360,7 +360,7 @@ def _build_ts_chart(series: dict, context) -> dict:
 
     mockup 수준 = title + subtitle + source + takeaway + event markers + 적절한 data shape.
     """
-    raw_data = list(series.get("data") or [])
+    raw_data = _downsample_rows(list(series.get("data") or []))  # v8.3.0 행수 상한
     ctype = (series.get("chart_type") or "line").lower()
     if ctype not in _TS_CHART_TYPES:
         ctype = "line"
@@ -676,6 +676,26 @@ def _strip_inline_md(text: str) -> str:
     return " ".join(out.split())
 
 
+# v8.3.0 — 시계열 차트 데이터 행수 상한 (≈ 1년 거래일). 사용자 catch: 3년치
+# 751행 일봉이 통째로 차트에 실려 폭 700px 에서 선이 뭉개지고 HTML 만 무거워지는
+# 발행 사례 4건. 상한 초과 시 균등 스트라이드 다운샘플 (마지막 봉은 항상 보존 —
+# '현재가' 가 잘리면 안 됨). _densify_ts_charts 치환분 + _build_ts_chart 주입분
+# 공통 적용.
+_DENSIFY_MAX_ROWS = 260
+
+
+def _downsample_rows(rows: list) -> list:
+    """행수가 _DENSIFY_MAX_ROWS 초과면 균등 간격으로 솎고 마지막 행 보존."""
+    n = len(rows)
+    if n <= _DENSIFY_MAX_ROWS:
+        return rows
+    stride = -(-n // _DENSIFY_MAX_ROWS)  # ceil
+    sampled = rows[::stride]
+    if sampled and sampled[-1] is not rows[-1]:
+        sampled.append(rows[-1])
+    return sampled
+
+
 def _densify_ts_charts(composed, context) -> None:
     """v7.0.2 (CHART-AP-31, 사용자 catch) — composer 시계열 차트의 *일별 밀도* 보장.
 
@@ -732,6 +752,7 @@ def _densify_ts_charts(composed, context) -> None:
                 rows = [d for d in all_rows if lo <= str(d["date"]) <= hi]
             else:
                 rows = all_rows  # 날짜 창 해석 불가 → 전체 일별 series (원칙 우선)
+            rows = _downsample_rows(rows)  # v8.3.0 — 1년 초과 창 행수 상한
             if len(rows) <= len(old):
                 continue  # 이미 일별 밀도 (또는 series 가 더 빈약)
             # 이벤트 마커 보존 — composer 가 쓴 날짜 표기(단축 포함)와 suffix 매칭.
@@ -1934,11 +1955,27 @@ class Orchestrator:
             f"✍️ 편집장 ({_model_label}): 행위자/구조/시나리오/모순 분석 + 보고서 작성 (단일 호출)",
             status_callback,
         )
+        # v8.3.0 — 시각 다양성 자기교정 루프 (starvation 경보의 '적용' 절반).
+        # 최근 발행분(usage_log JSONL)에서 굶주린 *서사* type 을 골라 composer
+        # 프롬프트에 우선-고려 힌트로 주입. 제어는 0-LLM (결정적 집계) 이고,
+        # 힌트가 비면 프롬프트 byte-equal. 르포는 장르 문법이 달라 미주입.
+        _starved_hint: list[str] = []
+        if report_format != "reportage":
+            try:
+                from src.visual.usage_log import composer_rebalance_hint
+                _starved_hint = composer_rebalance_hint()
+            except Exception as _e:  # noqa: BLE001 — 힌트 실패가 발행 막지 않음
+                logger.warning("[orchestrator] chart rebalance hint skip: %s", _e)
+        if _starved_hint:
+            logger.info(
+                "[orchestrator] 시각 다양성 재균형 힌트 주입: %s", _starved_hint,
+            )
         stage = self.telemetry.stage_start("unified_composer")
         try:
             result.composed_report = await self.narrative_composer.compose_unified(
                 result.context, mode=mode, parent_context=parent_context,
                 report_format=report_format, user_directive=user_directive,
+                starved_chart_types=_starved_hint,
             )
         except Exception as e:
             logger.warning("[orchestrator] unified_composer error: %s", e)
@@ -2316,6 +2353,30 @@ class Orchestrator:
             warn_if_starved()
         except Exception as e:  # noqa: BLE001
             logger.warning("[orchestrator] chart usage tracking fail: %s", e)
+
+        # v8.3.0 — 다양성 쿼터 게이트(5-Layer ④ chart_type_monotony)를 V5
+        # run_deterministic_gate(flag OFF)에서 분리해 production 에 log-only 배선.
+        # 발행은 절대 막지 않음 — 단조 보고서를 측정·가시화만 한다 (관찰 후 강제
+        # 승격은 사용자 게이트). 재균형 힌트 루프(위)와 짝을 이루는 '감지' 절반.
+        try:
+            from src.visual.deterministic_gate import check_chart_type_monotony
+            _mono_composed = {
+                "sections": [
+                    {"charts": [c for c in (sec.charts or []) if isinstance(c, dict)]}
+                    for sec in (result.composed_report.sections or [])
+                ]
+            }
+            _mono_flag, _mono_cnt, _mono_distinct = check_chart_type_monotony(
+                _mono_composed, mode,
+            )
+            if _mono_flag:
+                logger.warning(
+                    "[orchestrator] chart_type_monotony: distinct %d / charts %d "
+                    "(mode=%s) — 시각 단조 보고서 (log-only)",
+                    _mono_distinct, _mono_cnt, mode,
+                )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[orchestrator] chart monotony check fail: %s", e)
 
         # -- Phase 4: Watchlist 등록 (composed_report.watch_signals 에서) --
         # v5.5.7: chain depth 가드 제거. v5.4.9 의 MAX_CHAIN_DEPTH=0 은 자동 후속

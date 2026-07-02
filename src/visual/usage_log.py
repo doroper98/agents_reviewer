@@ -66,6 +66,18 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
 # 누적 N 보고서 동안 0회 emit 시 starved 로 표시. 운영 경험으로 조정.
 DEFAULT_STARVATION_WINDOW = 30
 
+# v8.3.0 — composer 가 *스스로 선택할 수 없는* type. 재균형 힌트에서 제외:
+#  · candle — available_time_series OHLC 데이터가 있을 때만 (데이터 의존, 창작 금지)
+#  · combo_candle / iv_skew / indicator — 장마감 브리핑의 결정적 주입 전용
+#  · stakeholder_map — 르포(reportage) 전용
+#  · map — embedded_map 별도 채널 (charts 배열 type 아님)
+NON_NARRATIVE_TYPES: frozenset = frozenset(
+    {"candle", "combo_candle", "iv_skew", "indicator", "stakeholder_map", "map"}
+)
+
+# 힌트로 넘길 최대 type 수 — 프롬프트 토큰 경제 + 한 보고서에서 소화 가능한 양.
+REBALANCE_HINT_MAX_TYPES = 6
+
 
 def _default_path() -> Path:
     raw = os.environ.get("CHART_USAGE_LOG_PATH")
@@ -162,6 +174,31 @@ def analyze(
         "starved_types": starved,
         "rare_types": rare,
     }
+
+
+def composer_rebalance_hint(
+    window: int = DEFAULT_STARVATION_WINDOW,
+    *,
+    max_types: int = REBALANCE_HINT_MAX_TYPES,
+    path: Path | None = None,
+) -> list[str]:
+    """v8.3.0 — 시각 다양성 자기교정 루프의 '적용' 절반.
+
+    최근 ``window`` 개 보고서에서 굶주린(0회 emit) + 희귀(rare) *서사* type 을
+    composer 프롬프트 힌트용으로 반환. 사용자 결정(2026-07-02): starvation 을
+    관리자에게 알리는 대신 봇이 스스로 발생 빈도를 높인다 — orchestrator 가
+    보고서마다 본 힌트를 composer 프롬프트에 주입 (제어 0-LLM).
+
+    - 표본 <10 보고서면 빈 리스트 (신뢰 불가 — 힌트 미주입 = 프롬프트 byte-equal)
+    - composer 가 선택할 수 없는 type (NON_NARRATIVE_TYPES) 제외
+    - starved 우선, 이어 rare, 최대 ``max_types`` 개
+    """
+    result = analyze(window, path=path)
+    if result["reports_analyzed"] < 10:
+        return []
+    pool = [t for t in result["starved_types"] if t not in NON_NARRATIVE_TYPES]
+    pool += [t for t in result["rare_types"] if t not in NON_NARRATIVE_TYPES]
+    return pool[:max_types]
 
 
 def warn_if_starved(
