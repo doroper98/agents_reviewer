@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.0
+last_synced_with: v8.3.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.1 — 르포 관계도 결합 노드 금지 (CHART-AP-42 후속)
+
+사용자 catch — "구글과 MS 도 동일해". "구글·MS" 처럼 두 주체를 한 노드로 묶으면 어느 쪽 로고도 달 수 없어 v8.2.19 의 로고 상시화가 구조적으로 막힌다. composer SYSTEM_PROMPT(스키마 라인) + `_REPORTAGE_BLOCK` 에 결합 노드 금지 규칙 추가 — 각각 노드로 분리하고 같은 role·진영(col)을 부여, 노드 2~12 한도가 차면 덜 중요한 쪽 제외. 발행본 2건은 payload 소급 패치(hyperscaler → google/msft 분리 + logo 주입) 후 `--rerender-only` 재발행.
 
 ## v8.3.0 — 일반 보고서 차트 다양성 회복 4종 세트
 
