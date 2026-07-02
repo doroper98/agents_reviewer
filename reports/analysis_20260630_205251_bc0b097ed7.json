@@ -2012,28 +2012,32 @@
                   "label": "OpenAI",
                   "col": "left",
                   "flag": "US",
-                  "role": "90만장 수요처"
+                  "role": "90만장 수요처",
+                  "logo": "openai.com"
                 },
                 {
                   "id": "softbank",
                   "label": "소프트뱅크",
                   "col": "left",
                   "flag": "JP",
-                  "role": "스타게이트 자본"
+                  "role": "스타게이트 자본",
+                  "logo": "softbank.jp"
                 },
                 {
                   "id": "oracle",
                   "label": "오라클",
                   "col": "left",
                   "flag": "US",
-                  "role": "인프라 파트너"
+                  "role": "인프라 파트너",
+                  "logo": "oracle.com"
                 },
                 {
                   "id": "gov",
                   "label": "이재명 정부",
                   "col": "center",
                   "flag": "KR",
-                  "role": "자금·입법 설계"
+                  "role": "자금·입법 설계",
+                  "logo": "korea.kr"
                 },
                 {
                   "id": "kim",
@@ -2055,14 +2059,16 @@
                   "label": "삼성전자",
                   "col": "right",
                   "flag": "KR",
-                  "role": "D램 공급·증설"
+                  "role": "D램 공급·증설",
+                  "logo": "samsung.com"
                 },
                 {
                   "id": "sk",
                   "label": "SK하이닉스",
                   "col": "right",
                   "flag": "KR",
-                  "role": "D램 공급·증설"
+                  "role": "D램 공급·증설",
+                  "logo": "skhynix.com"
                 }
               ],
               "edges": [
@@ -2574,6 +2580,6 @@
   "total_duration_seconds": 2799.8207099437714,
   "system_version": "v8.3.0",
   "revision": 0,
-  "render_revision": 3,
+  "render_revision": 4,
   "disable_scroll_arc": false
 }
