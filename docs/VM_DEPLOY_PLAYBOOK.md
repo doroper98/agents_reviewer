@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v7.9.8
+last_synced_with: v8.3.0
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -67,7 +67,15 @@ idempotent — 봇이 떠있든 안 떠있든 같은 결과.
     exit 1
   fi
 
-  # ─── Stage 2: pull + 의존성 변경 감지 (VM-AP-6 가드) ───
+  # ─── Stage 2: main 확인 + pull + 의존성 변경 감지 (VM-AP-6 / VM-AP-11 가드) ───
+  # VM 이 과거 세션에서 feature 브랜치에 checkout 된 채 남아있으면 git pull 이
+  # 그 브랜치 기준 no-op ("Already up to date") 되고 옛 버전이 재기동된다
+  # (VM-AP-11, 2026-07-02 실제 발생 — v8.3.0 배포가 v8.2.17 재기동으로 끝남).
+  BR=$(git rev-parse --abbrev-ref HEAD)
+  if [ "$BR" != "main" ]; then
+    echo "⚠️ 현재 브랜치 $BR ≠ main — main 으로 전환 (VM-AP-11)"
+    git checkout main || exit 1
+  fi
   git fetch origin main
   LOCAL=$(git rev-parse HEAD)
   REMOTE=$(git rev-parse origin/main)
@@ -310,6 +318,24 @@ working tree 만 patched 버전으로 diverge → 다음 pull 이 "local changes
 일반화. reports/ 하위 tracked 수정은 전부 자동 `git checkout -- reports/` 후 진행 (pull 이
 origin 의 정본 회복, Cloudflare live 는 git 과 무관하게 보존). 폐기 전 목록을 echo 로 표시.
 reports/ 밖 파일이 dirty 면 기존대로 멈추고 사람 판단.
+
+### VM-AP-11 — VM 이 feature 브랜치에 checkout 된 채 재배포 → 옛 버전 재기동 (2026-07-02 발생)
+
+**증상**: §1 블록이 끝까지 정상 실행됐는데 `코드 버전: VERSION = "v8.2.17"` 처럼
+*옛 버전* 이 찍히고, bot.log 시작 라인도 옛 버전 + `branch=claude/...` 를 표기.
+`git fetch origin main` 은 origin/main 을 새 커밋으로 갱신했지만 `git pull` 은
+"Already up to date".
+
+**원인**: 과거 세션에서 feature 브랜치(예: `claude/youthful-galileo-01gjgh`)를 VM 에
+직접 checkout 해 배포한 잔재. §1 Stage 2 의 `git pull` 은 *현재 브랜치의 upstream*
+을 당기므로, main 이 아닌 브랜치에 서 있으면 main 의 새 커밋은 영원히 반영되지 않고
+Stage 4~6 이 옛 코드를 충실히 재기동한다. `LOCAL != REMOTE` 비교도 HEAD(feature) vs
+origin/main 비교라 pull 을 트리거하지만 결과가 no-op ("Already up to date").
+
+**Fix (2026-07-02)**: §1 Stage 2 맨 앞에 브랜치 가드 추가 — `git rev-parse
+--abbrev-ref HEAD` 가 main 이 아니면 echo 후 `git checkout main` (실패 시 exit).
+Stage 1 이 working tree 를 이미 깨끗하게 만든 뒤라 checkout 은 안전. 재발 진단
+단서 = Stage 3 의 `코드 버전` echo 와 bot.log 시작 라인의 `branch=` 표기.
 
 ---
 
