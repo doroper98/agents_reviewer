@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.2
+last_synced_with: v8.3.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.3 — 르포 관계도 로고 직접 이미지 URL 지원 (CHART-AP-42 후속)
+
+사용자 요청 — 삼성전자·SK하이닉스도 제대로 된 기업 로고를. 파비콘 폴백의 한계(탭 아이콘 ≠ 브랜드 로고)를 도메인 체인 강화로는 못 넘으므로, `logo` 필드가 https:// *직접 이미지 URL* 이면 파비콘 체인을 건너뛰고 그 이미지를 원형 코인으로 렌더 (위키미디어 공식 로고 파일 등 — 프리로드 성공 시에만, 실패 시 기존 fallback 불변). 삼성 워드마크처럼 가로로 긴 로고가 원형 crop 으로 글자 중간만 잘리지 않도록 로고는 contain(meet) fit, 사진·국기는 cover(slice) 유지. composer 프롬프트에 직접 URL 허용(실존 확인 시) 명시. 발행본은 VM 에서 위키피디아 API 로 공식 로고 URL 을 조회·검증해 소급 주입.
 
 ## v8.3.2 — 르포 관계도 정부 노드 로고 규칙 (CHART-AP-42 후속, 사용자 결정)
 
