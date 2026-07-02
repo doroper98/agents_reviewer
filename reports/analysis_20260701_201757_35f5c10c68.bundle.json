@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "bundle_kind": "report_bundle",
-  "generated_at": "2026-07-02T22:28:29.972245+09:00",
+  "generated_at": "2026-07-02T22:51:22.554604+09:00",
   "producer": {
     "system": "agents_reviewer",
     "version": "v8.3.0",
@@ -361,20 +361,32 @@
             "col": "center",
             "role": "모델 개발사",
             "accent": true,
-            "badge": "US"
+            "badge": "US",
+            "logo": "anthropic.com"
+          },
+          {
+            "id": "google",
+            "label": "구글",
+            "col": "left",
+            "role": "재판매 채널",
+            "flag": "US",
+            "logo": "google.com"
+          },
+          {
+            "id": "msft",
+            "label": "마이크로소프트",
+            "col": "left",
+            "role": "재판매 채널",
+            "flag": "US",
+            "logo": "microsoft.com"
           },
           {
             "id": "amazon",
             "label": "아마존",
             "col": "left",
             "role": "대주주이자 재판매사",
-            "flag": "US"
-          },
-          {
-            "id": "hyperscaler",
-            "label": "구글·MS",
-            "col": "left",
-            "role": "재판매 채널"
+            "flag": "US",
+            "logo": "amazon.com"
           },
           {
             "id": "researcher",
@@ -388,14 +400,16 @@
             "label": "미 상무부",
             "col": "right",
             "role": "수출통제 발동·해제",
-            "flag": "US"
+            "flag": "US",
+            "logo": "commerce.gov"
           },
           {
             "id": "whitehouse",
             "label": "백악관",
             "col": "right",
             "role": "압박 통로",
-            "flag": "US"
+            "flag": "US",
+            "logo": "whitehouse.gov"
           },
           {
             "id": "china_oss",
@@ -437,16 +451,22 @@
             "label": "해제촉구"
           },
           {
-            "source": "hyperscaler",
+            "source": "china_oss",
+            "target": "anthropic",
+            "type": "대립",
+            "label": "추격"
+          },
+          {
+            "source": "google",
             "target": "anthropic",
             "type": "연관",
             "label": "재판매"
           },
           {
-            "source": "china_oss",
+            "source": "msft",
             "target": "anthropic",
-            "type": "대립",
-            "label": "추격"
+            "type": "연관",
+            "label": "재판매"
           }
         ]
       },
