@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.2.17
+last_synced_with: v8.2.18
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.2.18 — 르포 관계도 완성도 격상: 노드 자산 + 장애물 인지형 라우팅 (CHART-AP-42/43)
+
+사용자 catch — 르포 관계도의 완성도 종합 지적: 로고를 붙일 수 있는 주체(정부기관·국가·기업)엔 대표 로고, 인물엔 흑백 사진을 넣고, 엣지가 노드에 가려지거나 서로 겹치지 않아야 하며, 엣지 라벨 플레이트가 노드를 가리거나 선 교차점에 앉지 않아야 한다.
+
+**노드 자산 (CHART-AP-42)** — 실발행 payload 가 `flag:"KR"` 을 emit 했는데 인라인 국기 6종(US/TW/CN/JP/UA/RU) 화이트리스트 밖이라 태극기가 이니셜로 silent 강등되던 결함 포함. Fix: ① `flag` ISO alpha-2 전 국가 지원 — 인라인 sprite 에 KR 태극기 추가(7종), 그 외 코드는 flagcdn CDN 을 `Image()` 프리로드해 성공 시에만 둥근 국기 오버레이. ② 신규 `logo`(기관·기업 공식 도메인, 예 "samsung.com") → favicon 서비스 원형 로고 코인. ③ 신규 `photo`(인물 사진 URL) → `sm-gray`(saturate 0) 흑백 원형 렌더. 우선순위 photo→logo→flag, 실패·오프라인이면 국기/실루엣/이니셜 base 유지(빈 슬롯 없음). 사진·로고 노드의 flag 는 국적 배지로 자동 강등. composer SYSTEM_PROMPT + `_REPORTAGE_BLOCK` 에 "공식 도메인·실존 확인 URL 만, 추측 금지" 지시, `StakeholderNode` 에 logo/photo 필드(관용).
+
+**엣지 라우팅·라벨 (CHART-AP-43)** — v8.2.17 레인 라우터 이후에도 ① 교차(좌↔우) 엣지의 수평 구간이 가운데 칼럼 카드 밴드를 관통(엣지가 카드 아래 레이어라 가려짐) ② 같은 칼럼 skip 엣지가 사이 카드를 수직 관통 ③ 라벨이 다른 엣지 선·교차점 위에 안착. Fix: 장애물 인지형 직교 라우터 — 교차 엣지는 가운데 칼럼 행 사이 빈 수평 코리더(밴드 내 14px 분산 + 타 엣지 스텁 y ±8px 회피)로 우회, 같은 칼럼 skip 은 바깥 세로 레인으로 우회, 세로 구간은 채널 4개(바깥-좌/gapA/gapB/바깥-우)에 레인 분배 — 평행(공선) 겹침 0, 남는 교차는 직각 crossing 뿐. 라벨 장애물에 카드·기존 라벨 + 다른 엣지 전 세그먼트 포함, 앵커는 자기 선의 가장 긴 구간(교차 엣지는 코리더) 중점 + 자기 선 방향 슬라이드 우선. `smRoute` 폐기, `smRouteLane` 을 waypoint 폴리라인 + 라운딩으로 일반화. 데이터 계약·가드·registry 불변. 발행본은 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용. SSOT: CHART-AP-42/43.
 
 ## v8.2.17 — 르포 관계도 교차 엣지 세로 레인 분리 (CHART-AP-41)
 

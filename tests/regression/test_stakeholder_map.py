@@ -106,3 +106,47 @@ def test_charts_js_edge_lane_router() -> None:
     assert "bendX" in js
     assert "smRouteLane" in js
     assert "GAP_BOUNDS" in js
+
+
+def test_charts_js_node_assets() -> None:
+    """CHART-AP-42 — 노드 자산: ISO 전 국가 국기(flagcdn + 인라인 KR 포함
+    fallback) + 조직 로고(favicon) + 인물 흑백 사진(sm-gray) 슬롯, 원격 자산은
+    프리로드 성공 시에만 오버레이."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[2]
+          / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
+    assert "CHART-AP-42" in js
+    assert "sm-flag-KR" in js            # 인라인 태극기 (실발행 KR 강등 회귀)
+    assert "flagcdn.com" in js           # ISO 전 국가 국기 CDN
+    assert "s2/favicons" in js           # 조직 로고 (공식 도메인 → favicon)
+    assert "sm-gray" in js               # 인물 사진 흑백 필터
+    assert "smImgOverlay" in js          # 프리로드 성공 시에만 오버레이 (fallback 보존)
+    assert "data-sm-base" in js          # base(국기/실루엣/이니셜) 태깅
+
+
+def test_charts_js_obstacle_aware_routing() -> None:
+    """CHART-AP-43 — 엣지가 카드 뒤를 관통하지 않는 장애물 인지형 직교 라우팅
+    (교차 엣지 수평 코리더 + 같은 칼럼 skip 바깥 레인) + 라벨의 타 엣지
+    세그먼트 회피."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[2]
+          / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
+    assert "CHART-AP-43" in js
+    assert "CHANNELS" in js              # 세로 레인 채널 (outL/gapA/gapB/outR)
+    assert "smWaypoints" in js           # waypoint 라우트 골격
+    assert "segHit" in js                # 라벨이 타 엣지 선/교차점 위 금지
+    assert "edgeSegs" in js
+
+
+def test_node_logo_photo_fields_accepted() -> None:
+    """CHART-AP-42 — StakeholderNode 의 logo(공식 도메인)/photo(인물 사진 URL)
+    필드가 가드를 통과해야 (렌더러 fallback 이 안전망이므로 가드는 관용)."""
+    d = _valid()
+    d["nodes"][0]["logo"] = "mnd.go.kr"
+    d["nodes"][1]["kind"] = "person"
+    d["nodes"][1]["photo"] = "https://upload.wikimedia.org/example.jpg"
+    d["nodes"][2]["flag"] = "KR"
+    g = StakeholderMapGuard(**d)
+    assert g.nodes[0].logo == "mnd.go.kr"
+    assert g.nodes[1].photo == "https://upload.wikimedia.org/example.jpg"
+    assert g.nodes[2].flag == "KR"
