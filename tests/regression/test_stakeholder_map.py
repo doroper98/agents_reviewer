@@ -118,7 +118,10 @@ def test_charts_js_node_assets() -> None:
     assert "CHART-AP-42" in js
     assert "sm-flag-KR" in js            # 인라인 태극기 (실발행 KR 강등 회귀)
     assert "flagcdn.com" in js           # ISO 전 국가 국기 CDN
-    assert "s2/favicons" in js           # 조직 로고 (공식 도메인 → favicon)
+    assert "logo.clearbit.com" in js     # 로고 1차 소스 (브랜드 로고, 미등록 404)
+    assert "s2/favicons" in js           # 로고 2차 소스 (favicon)
+    assert "minPx" in js                 # google 기본 지구본(16px) 거부 (v8.2.19)
+    assert "naturalWidth" in js
     assert "sm-gray" in js               # 인물 사진 흑백 필터
     assert "smImgOverlay" in js          # 프리로드 성공 시에만 오버레이 (fallback 보존)
     assert "data-sm-base" in js          # base(국기/실루엣/이니셜) 태깅

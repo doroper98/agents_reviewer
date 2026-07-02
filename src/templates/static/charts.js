@@ -3571,6 +3571,11 @@
       const c = cands[i];
       const im = new Image();
       im.onload = function () {
+        // v8.2.19 — Google favicon 서비스는 미등록 도메인에도 200 + 16px 기본
+        // 지구본을 준다. naturalWidth 로 판별해 가짜 로고 대신 다음 후보/base 유지.
+        if (c.minPx && im.naturalWidth > 0 && im.naturalWidth < c.minPx) {
+          smImgOverlay(ga, x, y, s, cands, i + 1); return;
+        }
         ga.selectAll('[data-sm-base]').remove();
         const uid = 'sm-clip-' + (SM_UID++);
         const ccx = x + s / 2, ccy = y + s / 2;
@@ -3611,9 +3616,15 @@
       }
       const cands = [];
       if (/^https?:\/\//.test(photo)) cands.push({ url: photo, gray: true, back: t.card });
-      if (dom.indexOf('.') > 0)
-        cands.push({ url: 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(dom) + '&sz=64',
+      if (dom.indexOf('.') > 0) {
+        // 로고 소스 2단 체인 (v8.2.19) — ① Clearbit 브랜드 로고 (고품질, 미등록
+        // 도메인은 404 → onerror 로 체인 진행) ② Google favicon (커버리지 최광,
+        // 미등록에도 200 + 16px 기본 지구본이 와서 minPx 로 판별해 걸러냄).
+        cands.push({ url: 'https://logo.clearbit.com/' + encodeURIComponent(dom) + '?size=64',
                      back: '#fff', pad: true });
+        cands.push({ url: 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(dom) + '&sz=64',
+                     back: '#fff', pad: true, minPx: 24 });
+      }
       if (/^[A-Z]{2}$/.test(fc) && (wantOverlay || !SM_FLAGS[fc]))
         cands.push({ url: 'https://flagcdn.com/w80/' + fc.toLowerCase() + '.png' });
       smImgOverlay(ga, x, y, s, cands, 0);
