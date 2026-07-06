@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-07-06T09:31:47.043668+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v8.3.3",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260706_093147_9dfe16507b",
+    "headline": "노무라 DC Capex 기반 메모리 수요 전망과 중국 추격 변수",
+    "deck": "노무라는 데이터센터(DC) 자본지출을 근거로 글로벌 메모리 수요가 2026년 4,540억 달러, 2030년 1조 3,980억 달러까지 늘어난다고 봄. 2026년 이후 DC가 전체 메모리 매출의 49~56%를 차지해 사이클의 축이 모바일·PC에서 DC로 옮겨감. 관건은 2030년 전까지 한·미·일이 HBM/DDR 공급을 얼마나 늘리면서 CXMT·YMTC 등 중국 업체의 침투를 막느냐임.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260706_093147_9dfe16507b.html",
+    "theme": {
+      "id": "reportage_bridal",
+      "tokens": {
+        "bg": "#741A2F",
+        "card": "#86283C",
+        "border": "#8E3548",
+        "text": "#FFE2D4",
+        "muted": "#C99A92",
+        "accent": "#FFB38F",
+        "up": "#D0A88A",
+        "down": "#F2998F"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": null
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "노무라는 데이터센터(DC) 자본지출을 근거로 글로벌 메모리 수요가 2026년 4,540억 달러, 2030년 1조 3,980억 달러까지 늘어난다고 봄. 2026년 이후 DC가 전체 메모리 매출의 49~56%를 차지해 사이클의 축이 모바일·PC에서 DC로 옮겨감. 관건은 2030년 전까지 한·미·일이 HBM/DDR 공급을 얼마나 늘리면서 CXMT·YMTC 등 중국 업체의 침투를 막느냐임.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": null
+    }
+  ],
+  "charts": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "그로쓰리서치 원자료 (사용자 제공)",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://www.tomshardware.com/tech-industry/artificial-intelligence/samsung-and-sk-hynix-warn-ai-driven-memory-shortages-could-last-until-2027-and-beyond",
+      "publisher": "tomshardware.com",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://www.digitimes.com/news/a20260204PD205/cxmt-ymtc-dram-hbm-chip-shortage.html",
+      "publisher": "digitimes.com",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://newsletter.semianalysis.com/p/chinas-cxmt-is-set-to-challenge-dram",
+      "publisher": "newsletter.semianalysis.com",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.scmp.com/tech/tech-war/article/3358301/us-chip-giant-micron-validates-growth-chinas-cxmt-and-ymtc-amid-tight-memory-market",
+      "publisher": "scmp.com",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.digitaltoday.co.kr/en/view/45884/memory-to-account-for-30-percent-of-hyperscalers-capex-in-2026-on-ai-demand",
+      "publisher": "digitaltoday.co.kr",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://news.skhynix.co.kr/2026-market-outlook/",
+      "publisher": "news.skhynix.co.kr",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://www.etoday.co.kr/news/view/2600146",
+      "publisher": "etoday.co.kr",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://siliconanalysts.com/tools/hbm-analysis",
+      "publisher": "siliconanalysts.com",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://www.astutegroup.com/news/general/sk-hynix-holds-62-of-hbm-micron-overtakes-samsung-2026-battle-pivots-to-hbm4/",
+      "publisher": "astutegroup.com",
+      "title": "",
+      "fetched_at": "2026-07-06"
+    }
+  ],
+  "confidence": {
+    "score": 0.3,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": null
+}
