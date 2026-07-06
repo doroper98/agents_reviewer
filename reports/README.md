@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 273건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 274건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-07-07 06:17 | 2026-07-07 화요일 아침 브리핑 — 키이우 재공습·NATO 앙카라 정상회의·삼성 잠정실적·SK하이닉스 나스닥 상장 | 종합 (지정학/전쟁/산업/정치) | [md](analysis_20260707_061715_535dea6fb7.md) · [json](analysis_20260707_061715_535dea6fb7.json) · [bundle](analysis_20260707_061715_535dea6fb7.bundle.json) |
 | 2026-07-06 18:53 | 코스피 8000선 사수·코스닥 2% 급락 — 미 빅테크 조정·AI 반도체 피크 우려 여파 | 국내 증시 마감 브리핑 | [md](analysis_20260706_185309_dde69a3b77.md) · [json](analysis_20260706_185309_dde69a3b77.json) · [bundle](analysis_20260706_185309_dde69a3b77.bundle.json) |
 | 2026-07-06 09:31 | [르포] 노무라 DC Capex 기반 메모리 수요 전망과 중국 추격 변수 | 반도체·메모리 | [md](analysis_20260706_093147_9dfe16507b.md) · [json](analysis_20260706_093147_9dfe16507b.json) · [bundle](analysis_20260706_093147_9dfe16507b.bundle.json) |
 | 2026-07-06 06:28 | 2026-07-06 조간 종합 브리핑 — AI 반도체 급락·800조 서남권 클러스터·트럼프-푸틴 통화 | 종합(산업/지정학/정치/전쟁) | [md](analysis_20260706_062821_6c5b86a33f.md) · [json](analysis_20260706_062821_6c5b86a33f.json) · [bundle](analysis_20260706_062821_6c5b86a33f.bundle.json) |
