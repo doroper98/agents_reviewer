@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 275건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 276건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-07-08 06:29 | 2026-07-08 아침 일일 브리핑: 삼성 사상 최대 실적·NATO 앙카라 정상회의·호르무즈 유조선 피격 | 종합 (산업·지정학·전쟁·정치) | [md](analysis_20260708_062900_470e7e63d4.md) · [json](analysis_20260708_062900_470e7e63d4.json) · [bundle](analysis_20260708_062900_470e7e63d4.bundle.json) |
 | 2026-07-07 18:48 | 2026년 7월 7일 코스피 급락 및 서킷브레이커 발동 (올해 6번째) | 국내 주식시장 · 반도체 · 파생시장 | [md](analysis_20260707_184802_ec6eddd39c.md) · [json](analysis_20260707_184802_ec6eddd39c.json) · [bundle](analysis_20260707_184802_ec6eddd39c.bundle.json) |
 | 2026-07-07 06:17 | 2026-07-07 화요일 아침 브리핑 — 키이우 재공습·NATO 앙카라 정상회의·삼성 잠정실적·SK하이닉스 나스닥 상장 | 종합 (지정학/전쟁/산업/정치) | [md](analysis_20260707_061715_535dea6fb7.md) · [json](analysis_20260707_061715_535dea6fb7.json) · [bundle](analysis_20260707_061715_535dea6fb7.bundle.json) |
 | 2026-07-06 18:53 | 코스피 8000선 사수·코스닥 2% 급락 — 미 빅테크 조정·AI 반도체 피크 우려 여파 | 국내 증시 마감 브리핑 | [md](analysis_20260706_185309_dde69a3b77.md) · [json](analysis_20260706_185309_dde69a3b77.json) · [bundle](analysis_20260706_185309_dde69a3b77.bundle.json) |
