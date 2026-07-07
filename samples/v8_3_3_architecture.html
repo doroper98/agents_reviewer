@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="editorial_cream">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Analysis Team v8.3.3 — System Architecture</title>
+<meta name="description" content="2-call Tier 4 baseline + V6 Codex fact-critic loop + 27종 차트 + 르포(reportage) 전용 파이프라인 + 장마감 파생·시장폭 데스크. v5.4.3 아키텍처의 버전 업.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=Noto+Serif+KR:wght@400;700;900&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* editorial_cream — 라이트 테마 (5테마 풀의 디폴트 가독성 기준, v6.2.0). */
+  --bg: #F2EBDB;
+  --bg-2: #EBE2CC;
+  --card: #ECE3D0;
+  --card-2: #E5DBC4;
+  --card-3: #DDD0B5;
+  --border: #D4C8B0;
+  --border-soft: rgba(212,200,176,0.55);
+  --border-strong: #BFB094;
+  --text: #1F1814;
+  --text-2: #2E2620;
+  --text-3: #4A3F35;
+  --muted: #6B5C4A;
+  --accent: #B05A38;
+  --accent-2: #C9764E;
+  --up: #6F8A5E;
+  --down: #B05A38;
+  --codex: #5E7A8A;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+/* ─── Hero ──────────────────────────────────────────────────────── */
+.hero {
+  padding: 72px 0 48px;
+  background:
+    radial-gradient(ellipse at top, rgba(176, 90, 56, 0.07) 0%, transparent 60%),
+    linear-gradient(180deg, var(--card) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border-soft);
+  position: relative;
+}
+.hero::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+.hero .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 3.2px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 18px;
+}
+.hero h1 {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 48px; font-weight: 800; line-height: 1.1;
+  color: var(--text); margin-bottom: 18px; letter-spacing: -1.2px;
+}
+.hero h1 em { font-style: italic; color: var(--accent); font-weight: 700; }
+.hero .deck {
+  font-size: 17px; line-height: 1.6; color: var(--text-3);
+  font-weight: 300; max-width: 700px; margin-bottom: 26px;
+}
+.hero .meta {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px;
+  color: var(--muted); padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.hero .meta strong { color: var(--accent); font-weight: 700; }
+.hero .meta .pill {
+  display: inline-block; padding: 3px 10px; border-radius: 100px;
+  background: var(--card-2); border: 1px solid var(--border);
+  color: var(--text-2); font-size: 11px; letter-spacing: 0.4px;
+}
+.hero .meta .pill.up { color: var(--up); border-color: rgba(111,138,94,0.4); }
+.hero .meta .pill.accent { color: var(--accent); border-color: var(--accent); }
+.hero .meta .pill.codex { color: var(--codex); border-color: rgba(94,122,138,0.5); }
+
+/* ─── Sections ──────────────────────────────────────────────────── */
+section { padding: 56px 0; border-bottom: 1px solid var(--border-soft); }
+section:last-of-type { border-bottom: none; }
+.section-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: 2.4px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 30px; font-weight: 800; line-height: 1.2;
+  color: var(--text); margin-bottom: 12px; letter-spacing: -0.5px;
+}
+.section-deck {
+  font-size: 16px; line-height: 1.65; color: var(--text-3);
+  margin-bottom: 32px; max-width: 740px; font-weight: 300;
+}
+section p { font-size: 15px; line-height: 1.8; margin-bottom: 14px; max-width: 780px; }
+section p strong { color: var(--text); font-weight: 600; }
+section p em { font-style: italic; color: var(--accent); }
+code { font-family: 'IBM Plex Mono', monospace; font-size: 0.88em; background: rgba(176,90,56,0.08); padding: 1px 6px; border-radius: 3px; color: var(--accent); }
+
+/* ─── Pipeline diagram ──────────────────────────────────────────── */
+.pipeline {
+  margin: 30px 0 10px;
+  display: grid; gap: 14px;
+}
+.stage {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px 22px;
+  position: relative;
+}
+.stage::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--accent); border-radius: 3px 0 0 3px;
+}
+.stage.input::before { background: var(--up); }
+.stage.output::before { background: var(--text); }
+.stage.critic::before { background: var(--codex); }
+.stage-hd {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.stage-no {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  font-weight: 700; letter-spacing: 2px; color: var(--accent);
+}
+.stage.critic .stage-no { color: var(--codex); }
+.stage h3 {
+  font-family: 'Newsreader', 'Noto Serif KR', serif;
+  font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.3px;
+}
+.stage .stage-agent {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  color: var(--muted); margin-left: auto;
+}
+.stage p { font-size: 13.5px; line-height: 1.65; color: var(--text-3); margin: 0 0 8px; max-width: none; }
+.stage p:last-child { margin-bottom: 0; }
+.stage .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.stage .badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
+  padding: 3px 9px; border-radius: 4px;
+  background: var(--card-2); border: 1px solid var(--border-soft);
+  color: var(--text-3);
+}
+.stage .badge.new { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+.stage .badge.codex { background: var(--codex); color: #F2EBDB; border-color: var(--codex); font-weight: 700; }
+.stage .arrow {
+  text-align: center; color: var(--border-strong);
+  font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+  margin: -6px 0 -6px;
+}
+.arrow { text-align: center; color: var(--border-strong); font-family: 'IBM Plex Mono', monospace; font-size: 13px; margin: 2px 0; }
+
+/* ─── Chart catalog ─────────────────────────────────────────────── */
+.chart-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px; margin: 28px 0;
+}
+.chip {
+  padding: 10px 14px; background: var(--card); border: 1px solid var(--border-soft);
+  border-radius: var(--radius); font-size: 13px;
+}
+.chip .name { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text); font-weight: 600; letter-spacing: 0.2px; }
+.chip .tag { font-size: 10.5px; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+.chip.new { border-color: var(--accent); background: rgba(176,90,56,0.05); }
+.chip.new .tag { color: var(--accent); font-weight: 600; }
+.chip.special { border-color: var(--codex); background: rgba(94,122,138,0.06); }
+.chip.special .tag { color: var(--codex); font-weight: 600; }
+
+/* ─── Layer guarantee ───────────────────────────────────────────── */
+.layers { display: grid; gap: 10px; margin: 26px 0; }
+.layer {
+  display: grid; grid-template-columns: 38px 1fr;
+  gap: 14px; padding: 14px 18px;
+  background: var(--card); border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+}
+.layer .ln {
+  font-family: 'IBM Plex Mono', monospace; font-size: 18px;
+  font-weight: 800; color: var(--accent);
+  align-self: center;
+}
+.layer .lt { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 3px; }
+.layer .ld { font-size: 12.5px; color: var(--text-3); line-height: 1.6; }
+.layer .ld code { font-size: 11.5px; }
+
+/* ─── Stats grid ────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin: 28px 0;
+}
+.stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px 18px;
+}
+.stat .stat-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
+  letter-spacing: 1.6px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+.stat .stat-value {
+  font-family: 'Newsreader', serif; font-size: 34px; font-weight: 800;
+  color: var(--text); line-height: 1; letter-spacing: -1px;
+}
+.stat .stat-delta { font-size: 12px; color: var(--up); margin-top: 8px; font-weight: 600; }
+.stat .stat-delta.muted { color: var(--muted); font-weight: 500; }
+
+/* ─── Changelog list ────────────────────────────────────────────── */
+.releases { display: grid; gap: 0; margin: 28px 0; }
+.release {
+  display: grid; grid-template-columns: 96px 1fr;
+  gap: 18px; padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.release:last-child { border-bottom: none; }
+.release .rv {
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  font-weight: 700; color: var(--accent); letter-spacing: 0.5px;
+}
+.release .rv .rd { display: block; color: var(--muted); font-weight: 400; font-size: 10.5px; margin-top: 2px; }
+.release .rb { font-size: 14px; color: var(--text-2); line-height: 1.65; }
+.release .rb strong { color: var(--text); font-weight: 600; }
+
+/* ─── Theme strip ───────────────────────────────────────────────── */
+.theme-strip {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 6px; margin: 22px 0 10px;
+  border: 1px solid var(--border-soft); border-radius: var(--radius);
+  overflow: hidden;
+}
+.theme-strip.rep { grid-template-columns: repeat(8, 1fr); }
+.swatch {
+  padding: 14px 8px 10px; text-align: center;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 0.5px; line-height: 1.4;
+}
+.sw1 { background: #F2EBDB; color: #B05A38; }
+.sw2 { background: #2A0E14; color: #D4A858; }
+.sw3 { background: #1A1D2E; color: #C9B4E8; }
+.sw4 { background: #12211A; color: #8FBF9F; }
+.sw5 { background: #23262B; color: #C9946A; }
+.rp1 { background: #16241C; color: #D9A441; }
+.rp2 { background: #0E1A1A; color: #E8622A; }
+.rp3 { background: #2A1418; color: #E8B49C; }
+.rp4 { background: #12162E; color: #D24A5A; }
+.rp5 { background: #12241C; color: #A8C49B; }
+.rp6 { background: #16223A; color: #E89C7A; }
+.rp7 { background: #24272B; color: #E0B458; }
+.rp8 { background: #14183A; color: #C9B4E8; }
+.swatch .sn { display: block; font-weight: 700; font-size: 9.5px; }
+.swatch .st { display: block; opacity: 0.75; margin-top: 2px; font-size: 9px; }
+
+/* ─── Callout ───────────────────────────────────────────────────── */
+.callout {
+  background: var(--card-2); border-left: 3px solid var(--accent);
+  padding: 20px 26px; margin: 26px 0; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.callout.codex { border-left-color: var(--codex); }
+.callout .ce {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px; font-weight: 700;
+}
+.callout.codex .ce { color: var(--codex); }
+.callout p { font-size: 14.5px; line-height: 1.75; color: var(--text-2); margin-bottom: 0; max-width: none; }
+.callout p strong { color: var(--text); }
+
+/* ─── Code block ────────────────────────────────────────────────── */
+.code-block {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 20px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  color: var(--text-2); line-height: 1.7; overflow-x: auto;
+  margin: 18px 0; white-space: pre;
+}
+.code-block .comment { color: var(--muted); }
+.code-block .hl { color: var(--accent); font-weight: 600; }
+.code-block .cx { color: var(--codex); font-weight: 600; }
+
+/* ─── Two-col feature grid ──────────────────────────────────────── */
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 26px 0; }
+.feat {
+  background: var(--card); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg); padding: 18px 20px;
+}
+.feat h4 {
+  font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 17px;
+  font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.2px;
+}
+.feat p { font-size: 13px; line-height: 1.65; color: var(--text-3); margin: 0; max-width: none; }
+.feat .ft-tag {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 6px;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────── */
+footer {
+  padding: 44px 0 60px; background: var(--bg-2);
+  border-top: 1px solid var(--border-soft);
+  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted);
+}
+footer .container { display: grid; gap: 18px; grid-template-columns: 1fr auto; align-items: end; }
+footer h5 { font-size: 13px; color: var(--text); margin-bottom: 10px; letter-spacing: 0.5px; font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 600; }
+footer ul { list-style: none; }
+footer li { padding: 3px 0; }
+footer a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted rgba(176,90,56,0.4); }
+footer a:hover { color: var(--accent-2); border-bottom-color: var(--accent-2); }
+footer .right { color: var(--text-3); text-align: right; }
+footer .right code { background: rgba(176,90,56,0.08); }
+
+/* ─── Version badge (corner) ────────────────────────────────────── */
+.version-badge {
+  position: fixed; top: 14px; right: 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
+  font-weight: 700; letter-spacing: 1.2px;
+  padding: 5px 11px; border-radius: 100px;
+  background: var(--accent); color: var(--bg);
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(31,24,20,0.18);
+}
+
+@media (max-width: 760px) {
+  .hero h1 { font-size: 34px; }
+  .hero .deck { font-size: 15px; }
+  .section-title { font-size: 24px; }
+  .stage .stage-agent { margin-left: 0; width: 100%; }
+  .theme-strip { grid-template-columns: repeat(5, 1fr); }
+  .theme-strip.rep { grid-template-columns: repeat(4, 1fr); }
+  .feat-grid { grid-template-columns: 1fr; }
+  .release { grid-template-columns: 1fr; gap: 4px; }
+  footer .container { grid-template-columns: 1fr; }
+  footer .right { text-align: left; }
+  .version-badge { top: 8px; right: 8px; font-size: 9.5px; padding: 4px 9px; }
+}
+</style>
+</head>
+<body>
+
+<div class="version-badge">v8.3.3</div>
+
+<!-- ═══════════════════════════ Hero ═══════════════════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">Event Analysis Team · System Map</div>
+    <h1>v8.3.3 — <em>Tier 4</em><br>+ Codex Fact-Critic · 르포 · 27 Charts</h1>
+    <p class="deck">
+      텔레그램 한 줄에서 시작해 사실 수집 (웹 + 실시간 시세 + 파생·시장폭 + og:image) → 단일 호출 집필 →
+      교차 모델(Codex) 팩트 검수 루프 → mono 테마 HTML 발행 → Cloudflare Pages 까지.
+      v5.4.3 의 2-call baseline 위에 <strong>V6 사실 grounding</strong>, <strong>V7 시장 데이터 무결성</strong>,
+      <strong>V8 르포(탐사보도) 전용 경로</strong> 가 얹혔다.
+    </p>
+    <div class="meta">
+      <span>VERSION <strong>v8.3.3</strong></span>
+      <span class="pill accent">claude-opus-4-7</span>
+      <span class="pill accent">opus-4-8 · 르포</span>
+      <span class="pill codex">codex gpt-5.5 critic</span>
+      <span class="pill up">27 chart types</span>
+      <span class="pill">5 + 8 theme pool</span>
+      <span>2026-07-07</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ Pipeline ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">Pipeline · Default Path</div>
+    <h2 class="section-title">호출 경로 — 한 메시지에서 한 보고서까지</h2>
+    <p class="section-deck">
+      뼈대는 v4.5.7 의 <strong>2-call Tier 4</strong> 그대로 (ContextAnalyst → NarrativeComposer). 그 위에
+      외부 데이터 3채널 (시세 · 파생/시장폭 · og:image) 보강과, 발행 전 <strong>Codex 교차 검수 루프</strong>
+      (flag-gated) 가 얹혔다. ReportSynthesizer 가 사진을 로컬화해 HTML 로 묶고 Cloudflare Pages 에 배포.
+    </p>
+
+    <div class="pipeline">
+      <div class="stage input">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 0</span>
+          <h3>텔레그램 메시지 + 모드·포맷 라우팅</h3>
+          <span class="stage-agent">src/telegram_bot.py</span>
+        </div>
+        <p>사용자 한 줄. 키워드로 <strong>깊이(mode)</strong> 자동 라우팅 — <code>짧게/요약</code>=fast, <code>심층/면밀</code>=deep, 그 외 = <strong>deep</strong> (v5.8.2 디폴트 변경). 이와 직교하게 <strong>포맷(장르)</strong> 축 — 메시지에 <code>르포</code> 토큰이 있으면 탐사보도 경로, 아니면 기사형.</p>
+        <div class="badges">
+          <span class="badge">mode: fast/standard/deep</span>
+          <span class="badge new">format: standard/reportage</span>
+          <span class="badge">user_directive 채널</span>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="stage">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 1</span>
+          <h3>ContextAnalyst — 사실 수집</h3>
+          <span class="stage-agent">Opus 4.7 · 웹 검색 · 4K~10K tok</span>
+        </div>
+        <p>타임라인·핵심 수치·출처 URL·언급 종목(<code>instruments_mentioned</code>) 을 구조화. <code>_RECENCY_BLOCK</code> (V6_RECENCY_BOUND) 로 stale 검색 차단.</p>
+        <div class="badges">
+          <span class="badge">ContextAnalysis</span>
+          <span class="badge">sources[]</span>
+          <span class="badge">instruments_mentioned[]</span>
+        </div>
+      </div>
+
+      <div class="arrow">↓ 외부 데이터 보강 (post-context hooks)</div>
+
+      <div class="stage input">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 1A</span>
+          <h3>Market Data Fetcher</h3>
+          <span class="stage-agent">src/tools/market_fetcher.py · v7.9.15</span>
+        </div>
+        <p>emit 된 instrument 를 4-source 가 분담 → <code>ContextAnalysis.time_series</code> → composer 가 candle/line/area 로 emit. <strong>코스피·코스닥 지수는 KRX(pykrx) primary + Yahoo fallback</strong> — 해외 피드 EOD 지연으로 직전일 봉이 박히던 회귀 차단.</p>
+        <div class="badges">
+          <span class="badge">KRX 개별주 + 지수</span>
+          <span class="badge">Yahoo 미국·DXY</span>
+          <span class="badge">FRED / ECOS macro</span>
+          <span class="badge new">24 instrument</span>
+        </div>
+      </div>
+
+      <div class="stage input">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 1B</span>
+          <h3>파생·시장폭 데스크 (장마감 브리핑 전용)</h3>
+          <span class="stage-agent">derivatives · breadth · greeks · v7.9.0</span>
+        </div>
+        <p>KOSPI200 선물·옵션 체인 → Black-Scholes IV 역산 + 그릭·max pain·풋콜비율 (순수 stdlib), 전종목 등락 종목수·하락비율 (SQLite 캐시). <code>key_figures</code> 로 본문 실수치 노출 + iv_skew/combo_candle 차트 주입. <code>fetch_kr_market_internals=True</code> 일 때만 작동 (일반 <code>/analyze</code> byte-equal).</p>
+        <div class="badges">
+          <span class="badge">iv_skew 2단 패널</span>
+          <span class="badge">market breadth</span>
+          <span class="badge new">KRX 로그인 세션</span>
+        </div>
+      </div>
+
+      <div class="stage input">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 1C</span>
+          <h3>Image Fetcher — og:image 자동 추출</h3>
+          <span class="stage-agent">src/tools/image_fetcher.py · v5.4.0</span>
+        </div>
+        <p>sources URL 첫 64KB → og:image / title / description / publisher 파싱 → <code>available_images</code>. 16개 매체 매핑, per-URL 5s + total 12s timeout, 외부 lib 0.</p>
+        <div class="badges">
+          <span class="badge">hero + inline 이미지</span>
+          <span class="badge">graceful degrade</span>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="stage">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 2</span>
+          <h3>NarrativeComposer — 단일 호출 집필</h3>
+          <span class="stage-agent">Opus 4.7 (르포=4.8) · 12K~48K tok</span>
+        </div>
+        <p>행위자·구조·시나리오·모순 분석 + 본문 essay + <strong>27종 차트 data</strong> + <strong>지도</strong> + <strong>사진 선택</strong> 을 단일 호출로 emit. <code>_FACT_DISCIPLINE_BLOCK</code> (V6_FACT_PROMPT) 로 작성단계 사실 규율. 르포면 <code>_REPORTAGE_BLOCK</code> 직교 주입 + composer 모델 Opus 4.8 격상 (v8.2.2). 5테마 풀에서 <code>random.choice</code>.</p>
+        <div class="badges">
+          <span class="badge">ComposedReport</span>
+          <span class="badge">charts: list[dict]</span>
+          <span class="badge">embedded_map</span>
+          <span class="badge">hero_image + images</span>
+          <span class="badge new">reportage block</span>
+        </div>
+      </div>
+
+      <div class="arrow">↓ Phase 2.5 — flag-gated (V6_CODEX_CRITIC)</div>
+
+      <div class="stage critic">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 2.5</span>
+          <h3>Codex 팩트 검수 루프 — 교차 모델 critic</h3>
+          <span class="stage-agent">codex CLI · gpt-5.5 · src/factcheck/critic_loop.py</span>
+        </div>
+        <p>외부 모델(ChatGPT 구독 <code>codex</code>)이 Claude(Opus) confabulation 을 검수. 확정 루프 <strong>Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1)</strong> (bounded, 제어 0-LLM). 사실·문구 + 차트 데이터 + 미학(렌더 PNG 비전) + 자체 웹verify 까지 보되 <strong>본문은 직접 쓰지 않음</strong> (보완은 Opus). 착지 = 헤지 기본 + <code>unsourced_number</code> drop. 그 앞에 결정적 가드 (unsourced/scope/novelty/market/nan + market_anchor_coherence) 가 사전 필터.</p>
+        <div class="badges">
+          <span class="badge codex">FactVerdict JSON</span>
+          <span class="badge">deterministic guards</span>
+          <span class="badge">vision + webverify</span>
+          <span class="badge">graceful degrade</span>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="stage">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 3</span>
+          <h3>ReportSynthesizer — HTML 렌더 + 사진 로컬화</h3>
+          <span class="stage-agent">Jinja2 · freeform_essay / reportage.html</span>
+        </div>
+        <p>ComposedReport → 템플릿 렌더. 일반 보고서 = <code>freeform_essay.html</code>, 르포 = 전용 <code>reportage.html</code> (완전 분기). 발행 직전 og:image URL 을 봇이 직접 다운로드해 <code>reports/img/&lt;hash&gt;</code> same-origin serve (CDN hotlink 403 회피). d3.v7 + charts.js + maps.js 동기화.</p>
+        <div class="badges">
+          <span class="badge">2 전용 템플릿</span>
+          <span class="badge">SHA256 dedup</span>
+          <span class="badge">same-origin img</span>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="stage output">
+        <div class="stage-hd">
+          <span class="stage-no">STEP 4</span>
+          <h3>발행 — Cloudflare Pages + Telegram 회신</h3>
+          <span class="stage-agent">wrangler CLI · python-telegram-bot</span>
+        </div>
+        <p>HTML + img/ + static/ 묶음 wrangler 업로드. Telegram 채팅엔 URL + broadcast_summary. 감시 신호가 있으면 <code>WatchlistRegistry</code> (SQLite) 에 등록 — 후속 보고서 자동 트리거 (르포는 watch_signals epilogue 제거로 등록 스킵).</p>
+        <div class="badges">
+          <span class="badge">Cloudflare Pages</span>
+          <span class="badge">watchlist 후속</span>
+          <span class="badge">patch_report 핫픽스</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ V6 Codex Fact-Critic ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">V6 Track · Fact Grounding</div>
+    <h2 class="section-title">workflow → agent — Codex 교차 검수 루프</h2>
+    <p class="section-deck">
+      2026-06-01 NVIDIA 보고서 팩트체크 회귀에서 출발. 자유 본문에 evidence-binding 미적용 + fact-critic 루프
+      부재가 근본 결함이었다. 빠진 critic 을 <strong>외부 모델 codex CLI (ChatGPT 구독)</strong> 로 내재화 —
+      교차 모델(GPT)이 Claude(Opus) 의 환각을 검수한다. 모든 <code>V6_*</code> flag default OFF = v5.8.8 byte-equal.
+    </p>
+
+    <div class="callout codex">
+      <div class="ce">확정 루프 — bounded, 제어 0-LLM</div>
+      <p><strong>Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1).</strong> 재작성은 bounded (위반카운트 AP-V6-5), codex 는 본문을 직접 쓰지 않는다 (보완은 Opus, AP-V6-1/11). 착지는 헤지 기본 + <code>unsourced_number</code> 만 drop. 외부 의존은 graceful degrade — codex 미설치·타임아웃이면 루프 SKIP 후 정상 발행 (AP-V6-12).</p>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat">
+        <span class="ft-tag">Phase V6-2 · 사전필터</span>
+        <h4>결정적 가드 6종</h4>
+        <p><code>deterministic_guards.py</code> — unsourced / scope / novelty / market / nan + <code>market_anchor_coherence</code> (같은 KRX 지표 기준일 불일치 + 최신 봉 연도≠발행연도). LLM 이전 데이터 계층에서 high 검출. <code>V6_FACT_GUARDS</code>.</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">Phase V6-1/3 · critic</span>
+        <h4>codex-cli 실연동</h4>
+        <p>codex 0.136.0 / gpt-5.5 e2e 검수가 scope/unsourced 정확 검출. NVIDIA 4위반을 보완 1회로 위반 0 수렴 (scope/unsourced/novelty 교정). 출력은 <code>FactVerdict</code> JSON 고정 (파서·루프 계약).</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">Phase V6-4/5 · 확장</span>
+        <h4>비전 + 웹verify</h4>
+        <p>codex 비전이 렌더 PNG 로 실제 차트 판독·미학 지적 (<code>V6_CODEX_VISUAL</code>), codex 웹검색이 정답 + URL 반환 (<code>V6_CODEX_WEBVERIFY</code>). 시장 수치는 time_series 만 믿지 말고 웹 직접 대조.</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">Phase V6-6/7/8 · 운영</span>
+        <h4>자율보강 · 바이라인 · provenance</h4>
+        <p>자율 보강은 적립↔적용 분리 (critique_log 자동적립 → 재발 시 log-only 소프트가드 → 정식 편입만 사용자 게이트, AP-V6-9). 바이라인은 검수 실제 수행 시에만 (AP-V6-10).</p>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="comment"># .env — V6 팩트 grounding (모두 default OFF, 단계적)</span>
+<span class="cx">V6_CODEX_CRITIC=1</span>      <span class="comment"># Phase 2.5 — Codex 교차 검수 루프 orchestrator 연결</span>
+<span class="cx">V6_FACT_GUARDS=1</span>       <span class="comment"># 결정적 사전필터 6종 (log-only)</span>
+<span class="cx">V6_FACT_PROMPT=1</span>       <span class="comment"># composer 작성단계 사실 규율 블록</span>
+<span class="cx">V6_CODEX_VISUAL=1</span>      <span class="comment"># 렌더 PNG 미학·차트 비전 검수</span>
+<span class="cx">V6_CODEX_WEBVERIFY=1</span>   <span class="comment"># codex 자체 웹검색 대조</span>
+<span class="hl">V7_REF_FRAME=1</span>         <span class="comment"># 기준시점 계약 + wrong_timeframe 가드</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Reportage ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">V8 Track · Genre Axis</div>
+    <h2 class="section-title">르포 — 탐사보도 전용 파이프라인</h2>
+    <p class="section-deck">
+      mode(분석 깊이)와 <em>직교한</em> 포맷(장르) 축. 메시지에 <strong>"르포"</strong> 토큰이 있으면
+      <code>report_format="reportage"</code>. 트리거 토큰을 떼어낸 나머지 원문이 <code>user_directive</code> —
+      ContextAnalyst 사실 증류로 거세되던 사용자 <em>앵글</em> ("특히 OOO 의 역할에 집중") 을 composer 에 직접 복원하는 채널.
+    </p>
+
+    <div class="feat-grid">
+      <div class="feat">
+        <span class="ft-tag">페르소나 · v8.2.0</span>
+        <h4>탐사 기자 3도구</h4>
+        <p>① 묻힌 디테일 들춰내기 ② connecting dots (흩어진 사실을 패턴으로) ③ 시나리오 추론 (명시 가설 라벨 안에서). 표현은 <strong>사실 / 추론 / 가설</strong> 3등급 필수 구분 — 라벨 없는 단정 추측은 codex 가 <code>speculation_as_fact</code> (high) 로 검출.</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">골격 · v8.2.6</span>
+        <h4>5막 서사 · 분량 2배</h4>
+        <p>발단 → 이해당사자 → 내막·동기 → 전개 → 전망. 5막 각 2섹션 이상 (8~12 섹션), 섹션당 3~6 문단. 행위자 중심 관계망/지도/sankey/timeline. 감시신호 epilogue 제거 (가벼운 소설처럼 끝).</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">디자인 · v8.0.0</span>
+        <h4>전용 템플릿 · 8 다크 테마</h4>
+        <p><code>reportage.html</code> 완전 분리 (freeform_essay 아님). G마켓 Sans + Noto Sans, 플랫 미니멀 (둥근모서리·그림자 제거), 현재형·박진감 어투. UI 헤더 <code>[르포]</code> 배지로만 장르 표시.</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">관계도 · v8.2.16~8.3.3</span>
+        <h4>stakeholder_map 완성도</h4>
+        <p>진영 칼럼 결정적 배치 (force 금지). 장애물 인지형 직교 라우터 (엣지 겹침 0), 노드 자산 — 국기(ISO 전 국가)·로고(공식 도메인/직접 URL)·인물 흑백 사진. ambient 애니 (엣지 흐름 + hub 펄스), reduced-motion 정지.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="ce">byte-equal 보증</div>
+      <p><code>report_format=standard</code> (르포 트리거 없음) + directive 없을 때 <code>_compose_system_prompt</code> / <code>_build_unified_payload</code> 모두 기존과 <strong>byte-equal</strong>. 르포는 순수 additive — 일반 보고서에 영향 0. 회귀 <code>tests/regression/test_reportage_format.py</code> 가 탐사 페르소나 marker 를 가드.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Chart Catalog ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">Chart Catalog · v7.9.17</div>
+    <h2 class="section-title">27종 차트 · 단일 호출 emit</h2>
+    <p class="section-deck">
+      composer 가 외부 빌더 없이 <code>ComposedSection.charts</code> 에 직접 emit. v5.3.0 의 20종에서
+      <strong>network 폐기 (CHART-AP-36)</strong> + v7.0.0/v7.5.0 신규 7종 순증으로 <strong>27종</strong>. 신규는
+      <em>guarded</em> tier — chart_critic + Visual Sanity Gate 통과 필수. 카테고리 구분은 색이 아닌 45° 패턴.
+    </p>
+
+    <div class="chart-grid">
+      <div class="chip"><div class="name">bar</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">donut</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">line</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">gantt</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">stacked</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">bubble</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">heatmap</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">dual_line</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">forecast</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">choropleth</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">candle</div><div class="tag">v5.2.0</div></div>
+      <div class="chip"><div class="name">area</div><div class="tag">safe</div></div>
+      <div class="chip"><div class="name">scatter</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">stacked_area</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">lollipop</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">slope</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">small_multiples</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">waterfall</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">range_bar</div><div class="tag">v5.3.0</div></div>
+      <div class="chip"><div class="name">sankey</div><div class="tag">v5.3.0</div></div>
+      <div class="chip new"><div class="name">bump</div><div class="tag">★ v7.0.0</div></div>
+      <div class="chip new"><div class="name">bullet</div><div class="tag">★ v7.0.0</div></div>
+      <div class="chip new"><div class="name">connected_scatter</div><div class="tag">★ v7.0.0</div></div>
+      <div class="chip new"><div class="name">combo</div><div class="tag">★ v7.5.0</div></div>
+      <div class="chip new"><div class="name">diverging_bar</div><div class="tag">★ v7.5.0</div></div>
+      <div class="chip new"><div class="name">pyramid</div><div class="tag">★ v7.5.0</div></div>
+      <div class="chip new"><div class="name">dot_matrix</div><div class="tag">★ v7.5.0</div></div>
+    </div>
+
+    <p>
+      <strong>특수 채널 (결정적 주입 · 서사 쿼터 제외)</strong> — composer 가 자유 선택하지 않는 type:
+    </p>
+    <div class="chart-grid">
+      <div class="chip special"><div class="name">combo_candle</div><div class="tag">장마감 breadth</div></div>
+      <div class="chip special"><div class="name">iv_skew</div><div class="tag">옵션 데스크</div></div>
+      <div class="chip special"><div class="name">indicator</div><div class="tag">부호 한줄 지표</div></div>
+      <div class="chip special"><div class="name">stakeholder_map</div><div class="tag">르포 전용</div></div>
+      <div class="chip special"><div class="name">map</div><div class="tag">embedded_map 채널</div></div>
+    </div>
+    <p>
+      <strong>지도</strong> 는 <code>ComposedReport.embedded_map</code> 별도 채널. v7.5.0 부터 <code>projection: "globe"</code>
+      (정사영 지구본 — 대권 호·탄도·위성) + <code>rings</code> (사거리권 동심원). v8.2.13 — 경도 span ≥100° 평면 지도는
+      globe 로 결정적 자동 격상 (CHART-AP-39).
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ 5-Layer Guarantee ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">Anti-Starvation · v8.3.0</div>
+    <h2 class="section-title">5-Layer Usage Guarantee + 자기교정 루프</h2>
+    <p class="section-deck">
+      "신규 차트 추가했는데 한 번도 안 박힌다" 의 캔들 회귀 교훈. production wiring 만으로는 부족 — 5층으로 emit 보장.
+      v8.3.0 에서 실발행 243건 분석으로 다양성 정체 (line 비중 6월 53%) 를 확인, <strong>봇이 스스로 빈도를 회복</strong>하는
+      자기교정 루프를 추가했다.
+    </p>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="ln">1</div>
+        <div>
+          <div class="lt">Telemetry + 자기교정 힌트 (v8.3.0)</div>
+          <div class="ld"><code>usage_log.py</code> — type emit JSONL 영구 기록. <code>composer_rebalance_hint</code> 가 최근 30건에서 굶주린 <em>서사</em> type 을 골라 orchestrator 가 다음 프롬프트에 우선-고려 힌트로 자동 주입 (0-LLM 제어, 힌트 비면 byte-equal)</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="ln">2</div>
+        <div>
+          <div class="lt">결정 트리 — SYSTEM_PROMPT 의 negative constraint</div>
+          <div class="ld">LLM 의 line/bar default bias 차단. 시장 가격 차트는 다양성 계산 제외, <em>서사 차트</em> 기준 distinct standard ≥3 / deep ≥4 <strong>필수 하한</strong> ('권장' 폐기, v8.3.0)</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="ln">3</div>
+        <div>
+          <div class="lt">Method × Exhibit 매트릭스</div>
+          <div class="ld"><code>research_director.py:_DEFAULT_REQUIRED_EXHIBITS</code> · fault_tree → waterfall · pre_mortem → scatter · 9종 method 별 매핑</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="ln">4</div>
+        <div>
+          <div class="lt">다양성 쿼터 — Deterministic Gate (production 배선, v8.3.0)</div>
+          <div class="ld"><code>check_chart_type_monotony</code> public 진입점으로 V5 게이트와 독립해 매 보고서 log-only 상시 호출 (발행 불차단, 강제 승격은 관찰 후 사용자 게이트)</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="ln">5</div>
+        <div>
+          <div class="lt">회귀 fixture — 29 시나리오 SSOT</div>
+          <div class="ld"><code>tests/regression/fixtures/chart_type_scenarios.yaml</code> · <code>KNOWN_CHART_TYPES</code> 와 1:1 매핑 검증</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Market Data Integrity ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">V7 Track · Data Integrity</div>
+    <h2 class="section-title">시장 데이터 무결성 — 다층 방어</h2>
+    <p class="section-deck">
+      2026-06-19 브리핑 사고 — ① 코스피만 6/17 봉 (해외 Yahoo EOD 지연), 삼성전자·환율은 6/18 (cross-source 기준일 불일치)
+      ② 본문 7,516 ↔ 표 8,864 둘 다 오답, 실제 9,063.84. codex 가 켜진 채로도 <em>틀린 time_series 와의 일치만</em> 봐서
+      전부 통과했다. 이후 4층 방어를 쌓았다.
+    </p>
+
+    <div class="feat-grid">
+      <div class="feat">
+        <span class="ft-tag">Layer 1 · 데이터 소스</span>
+        <h4>KRX primary + Yahoo fallback</h4>
+        <p>코스피·코스닥 지수는 KRX(pykrx 1001/2001) primary. 해외 피드 지연이 근원이므로 국내 거래소를 1차로. pykrx 실패 시 Yahoo 폴백 (회귀 무).</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">Layer 2 · 결정적 가드</span>
+        <h4>market_anchor_coherence</h4>
+        <p>같은 KRX 지표 기준일 불일치 (<code>stale_market_anchor</code>) + 최신 봉 연도≠발행연도 (<code>wrong_year_market_anchor</code>) 를 데이터 계층에서 high 검출. prose 가드 시야 밖 표 카드·차트와 무관하게 동작.</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">Layer 3 · codex 페르소나</span>
+        <h4>웹 직접 대조 · 연도까지</h4>
+        <p>시장 수치는 time_series 만 믿지 말고 웹 직접 대조, 구조화 필드(표·차트) ↔ prose intra-report 모순, 연도까지 확인, 한국 지표 기준일·수급 방향 정합을 high 로 검수.</p>
+      </div>
+      <div class="feat">
+        <span class="ft-tag">Layer 4 · 운영</span>
+        <h4>flag 필요</h4>
+        <p>가드가 실제로 돌려면 VM <code>.env</code> 에 <code>V6_FACT_GUARDS=1</code> (+ 기준시점 가드는 <code>V7_REF_FRAME=1</code>). 꺼져 있으면 검출 0 — 가드는 있는데 작동 안 함.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="ce">핫픽스 불변규칙 — 외부 1차 출처 검증</div>
+      <p>발행본 시장 수치를 정정할 때 <strong>보고서가 적어둔 값을 "정답"으로 신뢰하지 말 것</strong>. 그 보고서의 다른 필드도 똑같이 오염됐을 수 있다. 반드시 <code>WebSearch</code>/KRX 로 실제 종가를 먼저 검증 → 2곳 이상 교차확인 + 산술 정합(직전봉×(1+등락률)=종가) 검산 후에야 <code>--replace</code> 값 확정. SSOT 도구 <code>scripts/patch_report.py</code> (LLM 0, URL 보존, revision 증가).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Themes ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">Theme · v6.2.0 + v8.0.0</div>
+    <h2 class="section-title">2개 테마 풀 — 일반 5 · 르포 8</h2>
+    <p class="section-deck">
+      일반 보고서는 <code>lens_policy.select_theme()</code> 가 5개 풀에서 <code>random.choice</code> (v6.2.0 — 라이트 1 + 다크 4,
+      짙은 계열 중심 재편). 르포는 <code>select_reportage_theme()</code> 가 전용 8 다크 풀에서 선택 — 일반 풀과 <em>완전 분기</em>.
+      모든 테마는 동일 레이아웃, bg/card/text/accent 만 다르다.
+    </p>
+
+    <p><strong>일반 보고서 — 5 테마 풀</strong></p>
+    <div class="theme-strip">
+      <div class="swatch sw1"><span class="sn">editorial</span><span class="st">cream · 라이트</span></div>
+      <div class="swatch sw2"><span class="sn">burgundy</span><span class="st">mono</span></div>
+      <div class="swatch sw3"><span class="sn">midnight</span><span class="st">indigo</span></div>
+      <div class="swatch sw4"><span class="sn">pine</span><span class="st">forest</span></div>
+      <div class="swatch sw5"><span class="sn">graphite</span><span class="st">slate</span></div>
+    </div>
+
+    <p style="margin-top: 24px;"><strong>르포 전용 — 8 다크 테마 풀</strong> (v8.0.0)</p>
+    <div class="theme-strip rep">
+      <div class="swatch rp1"><span class="sn">cyprus</span><span class="st">green</span></div>
+      <div class="swatch rp2"><span class="sn">noturno</span><span class="st">teal</span></div>
+      <div class="swatch rp3"><span class="sn">bridal</span><span class="st">maroon</span></div>
+      <div class="swatch rp4"><span class="sn">cosmos</span><span class="st">navy</span></div>
+      <div class="swatch rp5"><span class="sn">laurel</span><span class="st">pine</span></div>
+      <div class="swatch rp6"><span class="sn">princess</span><span class="st">blue</span></div>
+      <div class="swatch rp7"><span class="sn">steel</span><span class="st">gray</span></div>
+      <div class="swatch rp8"><span class="sn">navy</span><span class="st">beyond</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Stats ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">By the numbers · v8.3.3</div>
+    <h2 class="section-title">시스템의 부피 — 한눈에</h2>
+
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-label">LLM 호출 (디폴트)</div><div class="stat-value">2</div><div class="stat-delta muted">context + composer</div></div>
+      <div class="stat"><div class="stat-label">차트 type</div><div class="stat-value">27</div><div class="stat-delta">+7 vs v5.4.3</div></div>
+      <div class="stat"><div class="stat-label">market instrument</div><div class="stat-value">24</div><div class="stat-delta">+13</div></div>
+      <div class="stat"><div class="stat-label">테마 (일반+르포)</div><div class="stat-value">5+8</div></div>
+      <div class="stat"><div class="stat-label">CHART anti-pattern</div><div class="stat-value">43</div></div>
+      <div class="stat"><div class="stat-label">WRITE anti-pattern</div><div class="stat-value">26</div></div>
+      <div class="stat"><div class="stat-label">결정적 팩트 가드</div><div class="stat-value">6</div><div class="stat-delta muted">+ market_anchor</div></div>
+      <div class="stat"><div class="stat-label">v5.8.8 호출 경로</div><div class="stat-value">0</div><div class="stat-delta muted">V6/7/8 flag OFF byte-equal</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Changelog since v5.4.3 ═══════════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">Since v5.4.3 · v6 → v8</div>
+    <h2 class="section-title">변경의 부피 — 트랙별 궤적</h2>
+    <p class="section-deck">
+      v5.4.3 (2026-05-20) 부터 v8.3.3 (2026-07-07) 까지의 굵직한 이정표. 자세히는
+      <a href="https://github.com/doroper98/agents_reviewer/blob/main/CHANGELOG.md" style="color: var(--accent);">CHANGELOG.md</a>.
+    </p>
+
+    <div class="releases">
+      <div class="release">
+        <div class="rv">v8.3.x<span class="rd">07-02~07</span></div>
+        <div class="rb"><strong>일반 보고서 차트 다양성 회복 + 르포 관계도 노드 자산.</strong> 실발행 243건 분석 기반 자기교정 루프 (서사 type 빈도 자동 회복) + 다양성 쿼터 production 배선 + 시계열 행수 상한. stakeholder_map 로고·국기·인물 사진 상시화.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v8.2.x<span class="rd">06~07</span></div>
+        <div class="rb"><strong>르포 안정화 + 관계도 완성도.</strong> Opus 4.8 격상 (탐사 추론), 편집장 CLI head-loss 근본 수정 (json envelope 캡처), 분량 2배 강령, 장애물 인지형 엣지 라우터, 대륙 간 지도 globe 자동 격상.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v8.0.0<span class="rd">06</span></div>
+        <div class="rb"><strong>르포(reportage) 전용 파이프라인.</strong> mode 와 직교한 장르 축. 탐사 페르소나 3도구 + 5막 서사 + 전용 <code>reportage.html</code> 템플릿 + 8 다크 테마 + stakeholder_map + user_directive 앵글 채널. standard byte-equal.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v7.9.x<span class="rd">06</span></div>
+        <div class="rb"><strong>장마감 파생·시장폭 데스크 + KRX 지수 primary.</strong> 선물·옵션 IV·그릭·max pain (순수 stdlib), 전종목 시장폭 (SQLite 캐시), iv_skew 2단 패널. 코스피·코스닥 KRX primary + Yahoo fallback (EOD 지연 회귀 차단). network 차트 폐기.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v7.5.0<span class="rd">06</span></div>
+        <div class="rb"><strong>차트 4종 + 지도 어휘 확장.</strong> combo (이중축) / diverging_bar (대립쌍) / pyramid (인구) / dot_matrix (100칸 와플). 지도 <code>projection: globe</code> (정사영 지구본) + <code>rings</code> (사거리권 동심원).</div>
+      </div>
+      <div class="release">
+        <div class="rv">v7.0.0<span class="rd">06</span></div>
+        <div class="rb"><strong>차트 3종 + 기준시점 계약.</strong> bump (순위 경쟁) / bullet (목표 대비) / connected_scatter (2변수 궤적) + annotation 레이어 cartesian 개방. <code>reference_frame</code> 계약 (WRITE-AP-22 시점 선택 회귀 차단). 시계열 곡선 보간·듬성 emit 결정적 픽스.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v6.2.0<span class="rd">06</span></div>
+        <div class="rb"><strong>테마 풀 다크 중심 재편.</strong> 7종 → 5종 (라이트 1 + 다크 4). pine_forest / graphite_slate 신설, slate_steel / forest_sage / dusk_rose / paper_classic 제거.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v6.0.0<span class="rd">06</span></div>
+        <div class="rb"><strong>V6 Codex 팩트 검수 루프.</strong> 외부 모델 codex CLI (gpt-5.5) 가 Opus confabulation 을 교차 검수. bounded loop (작성→검수→보완≤1→확인≤1) + 결정적 가드 6종 + 비전·웹verify. 모든 V6_* flag default OFF byte-equal.</div>
+      </div>
+      <div class="release">
+        <div class="rv">v5.4.3<span class="rd">05-20</span></div>
+        <div class="rb"><strong>(이전 아키텍처 페이지 기준점.)</strong> 재무 보고서 sankey/waterfall 누락 fix + 20종 차트 + 보고서 사진 자동 삽입 + Market Data Fetcher.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ Footer ═══════════════════════════ -->
+<footer>
+  <div class="container">
+    <div>
+      <h5>Event Analysis Team v8.3.3</h5>
+      <ul>
+        <li>VERSION SSOT: <code>src/orchestrator.py:VERSION</code></li>
+        <li>Architecture: <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a></li>
+        <li>Mono theme guide: <a href="https://github.com/doroper98/agents_reviewer/blob/main/docs/MONO_THEME_GUIDE.md">docs/MONO_THEME_GUIDE.md</a></li>
+        <li>V6 plan: <a href="https://github.com/doroper98/agents_reviewer/blob/main/REFACTOR_V6_PLAN.md">REFACTOR_V6_PLAN.md</a></li>
+        <li>Changelog: <a href="https://github.com/doroper98/agents_reviewer/blob/main/CHANGELOG.md">CHANGELOG.md</a></li>
+      </ul>
+    </div>
+    <div class="right">
+      <div>2026-07-07 · Editorial Cream</div>
+      <div>Theme: <code>editorial_cream</code></div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
