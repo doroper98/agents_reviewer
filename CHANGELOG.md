@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.3
+last_synced_with: v8.3.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.4 — 보고서 완료 메시지에서 본문 .md 링크 제거 (HTML + 번들만 유지)
+
+사용자 요청 — 보고서 발행 시 두 종류의 링크 묶음이 나가는데, 하나는 보고서 본문을 마크다운으로 변환한 `.md` 링크(`🤖 AI 전달용 (Markdown)` + `🤝 AI 직접 열람용 (GitHub raw): …md`), 다른 하나는 영상 제작용 `.bundle.json` 번들 링크(`📦 영상 제작용 번들` + `🔗 …bundle.json` + `🤝 …bundle.json`)다. 본문 `.md` 링크 묶음을 없애고 HTML 보고서 링크(`🔗 보고서 링크`)와 `.bundle.json` 번들만 남긴다. 대상은 자동 보고서 출력 3경로 — 대화형 `/analyze` ([src/telegram_bot.py](src/telegram_bot.py)) + 일일 브리핑 ([src/scheduler/daily_briefing.py](src/scheduler/daily_briefing.py)) + 장마감 브리핑 ([src/scheduler/market_briefing.py](src/scheduler/market_briefing.py)). 각 완료 메시지에서 `🤖 AI 전달용 (Markdown)` 줄과 `.md` GitHub raw 미러 줄(`_mirror_line`/`mirror_line`)을 제거, 미사용이 된 `md_url` 지역변수도 삭제. HTML 보고서 링크·검수 바이라인·`.bundle.json` 번들 메시지(파일 첨부 포함)는 불변. 수동 `/bundle` 명령도 불변.
 
 ## v8.3.3 — 르포 관계도 로고 직접 이미지 URL 지원 (CHART-AP-42 후속)
 
