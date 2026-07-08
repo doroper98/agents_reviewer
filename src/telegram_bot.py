@@ -1066,22 +1066,13 @@ class TelegramBot:
             _verif = (result.composed_report.verification if result.composed_report else None) or {}
             verif_line = f"\n🔎 {_verif['text']}" if _verif.get("text") else ""
 
-            # v6.1.0 — pages.dev 를 egress 허용목록에서 막는 샌드박스 AI(Claude Code
-            # on the web 등) 용 GitHub raw 미러 링크 (미러 성공 시만).
-            mirror_line = ""
-            if result.mirror_url and result.mirror_url.startswith("http"):
-                mirror_line = (
-                    f"\n🤝 AI 직접 열람용 (GitHub raw): "
-                    f"{result.mirror_url.replace('.html', '.md')}"
-                )
-
+            # 보고서 본문 .md 링크(🤖 AI 전달용 Markdown / 🤝 GitHub raw .md)는
+            # 제거 — HTML 보고서 링크만 유지 (사용자 요청). .bundle.json 번들 링크는
+            # 아래 번들 메시지에서 그대로 동반.
             if result.report_url and result.report_url.startswith("http"):
-                md_url = result.report_url.replace(".html", ".md")
                 await send(
                     f"📊 Full Analysis Report{followup_tag}{warn_tag}\n\n"
-                    f"🔗 보고서 링크: {result.report_url}\n"
-                    f"🤖 AI 전달용 (Markdown): {md_url}"
-                    f"{mirror_line}"
+                    f"🔗 보고서 링크: {result.report_url}"
                     f"{verif_line}"
                 )
             elif report_path and os.path.isfile(report_path):
