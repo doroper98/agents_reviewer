@@ -33,7 +33,7 @@
       "pull_quote": "수요가 공급을 추월했다.",
       "chart_refs": ["ch-1"],
       "map_ref": null,
-      "image_refs": [],
+      "image_refs": ["img-1"],
       "claim_refs": ["C-1"],
       "video": {
         "narration": ["최근 석 달 동안 삼성전자 주가는 71,800원에서 74,100원까지 올라섰습니다.", "특히 HBM 공시가 나온 주에는 거래량이 몰렸습니다."],
@@ -103,6 +103,19 @@
         ]
       },
       "prerendered_svg": null
+    }
+  ],
+
+  "images": [
+    {
+      "image_id": "img-1",
+      "url": "https://cdn.example.com/press/fab-line.jpg",
+      "caption": "평택 캠퍼스 P4 라인 전경",
+      "credit": "삼성전자 제공",
+      "rights_status": "cleared",
+      "license": "보도자료",
+      "source_id": "src-2",
+      "focus": "center"
     }
   ],
 
