@@ -1070,6 +1070,8 @@ VerificationStatus = Literal["confirmed", "inferred", "claim", "unverified", "di
 ConfidenceLevel = Literal["low", "medium", "high"]
 ProvenanceOrigin = Literal["measured", "narrative_inference", "model_forecast"]
 EvidenceStance = Literal["supports", "refutes", "contextual"]
+# 계약 IMAGE_BUNDLE_CONTRACT §3.1 — 보도 사진 권리 상태 (consumer fail-closed 기준).
+ImageRightsStatus = Literal["cleared", "needs_review", "blocked"]
 
 # 계약 §2 — origin → verification 기본 매핑 (SSOT). bundle_builder 가 참조.
 # 개별 차트/주장이 verification 을 직접 지정하면 그 값이 우선 (§2 단서).
@@ -1299,6 +1301,36 @@ class BundleTimeline(BaseModel):
     video: BundleTimelineVideo | None = None  # 계약 §13 (v7.6.0 additive) — 없으면 null
 
 
+class BundleImage(BaseModel):
+    """v8.3.5 — 보도 사진 (osint_generator 영상 photo 씬용, IMAGE_BUNDLE_CONTRACT v1).
+
+    producer(agents_reviewer)가 ContextAnalyst 의 og:image 후보 중 composer 가 보고서
+    hero/섹션 inline 으로 고른 사진을 영상용으로 emit. 영상 쪽은 rights_status 가
+    'cleared' 인 사진만 다운로드·사용하고, 그 외(needs_review/blocked)는 스킵하되
+    photos_manifest.json 에 사유와 함께 기록한다 (권리 추적 fail-closed).
+
+    - image_id: 번들 내 유일 (img-N 권장). section.image_refs 의 resolve 대상.
+    - url: 이미지 파일 직링크 (og:image 절대 URL). 페이지 URL 금지.
+    - caption: ≤60자. 화면 캡션 겸 대체텍스트. 넘으면 builder 가 말줄임.
+    - credit: 출처 표기 (영상 우하단 크레딧, '© Publisher' 형식).
+    - rights_status: cleared|needs_review|blocked. 근거 없는 cleared 금지 (§3.1).
+    - license: 재사용 근거 (권장, 예 '공공누리'/'보도자료').
+    - source_id: sources[] 역추적 연결 (권장).
+    - focus: Ken Burns 초점 (center|top|bottom|left|right).
+
+    SSOT: docs/CONTRACTS/IMAGE_BUNDLE_CONTRACT.md.
+    """
+
+    image_id: str
+    url: str
+    caption: str = ""
+    credit: str = ""
+    rights_status: ImageRightsStatus = "needs_review"
+    license: str = ""
+    source_id: str = ""
+    focus: Literal["center", "top", "bottom", "left", "right"] = "center"
+
+
 class ReportBundle(BaseModel):
     """osint_generator 핸드오프 산출물 v1. emit 전용.
 
@@ -1313,6 +1345,7 @@ class ReportBundle(BaseModel):
     report: BundleReport
     sections: list[BundleSection] = Field(default_factory=list)
     charts: list[BundleChart] = Field(default_factory=list)
+    images: list[BundleImage] = Field(default_factory=list)  # v8.3.5 — 보도 사진 (IMAGE_BUNDLE_CONTRACT v1, additive)
     map: BundleMap | None = None
     claims: list[BundleClaim] = Field(default_factory=list)
     signals: list[BundleSignal] = Field(default_factory=list)
@@ -1326,8 +1359,10 @@ class ReportBundle(BaseModel):
         chart_ids = [c.chart_id for c in self.charts]
         claim_ids = [c.claim_id for c in self.claims]
         section_ids = [s.section_id for s in self.sections]
+        image_ids = [im.image_id for im in self.images]
         for name, ids in (
             ("chart_id", chart_ids), ("claim_id", claim_ids), ("section_id", section_ids),
+            ("image_id", image_ids),
         ):
             dups = sorted({i for i in ids if ids.count(i) > 1})
             if dups:
@@ -1335,6 +1370,7 @@ class ReportBundle(BaseModel):
 
         chart_set = set(chart_ids)
         claim_set = set(claim_ids)
+        image_set = set(image_ids)
         map_id = self.map.id if self.map else None
         src_ids = {s.source_id for s in self.sources}
         for c in self.charts:
@@ -1352,6 +1388,11 @@ class ReportBundle(BaseModel):
                 if r not in claim_set:
                     raise ValueError(
                         f"ReportBundle §8: section {s.section_id} 미해결 claim_ref {r!r}"
+                    )
+            for r in s.image_refs:
+                if r not in image_set:
+                    raise ValueError(
+                        f"ReportBundle §8: section {s.section_id} 미해결 image_ref {r!r}"
                     )
             if s.map_ref is not None and s.map_ref != map_id:
                 raise ValueError(

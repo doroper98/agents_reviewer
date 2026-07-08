@@ -36,6 +36,7 @@ from src.models import (
     BundleConfidence,
     BundleContradiction,
     BundleContradictionVideo,
+    BundleImage,
     BundleMap,
     BundleProducer,
     BundleProvenance,
@@ -395,6 +396,110 @@ def _chart_provenance(
     )
 
 
+# ── 보도 사진 (계약 IMAGE_BUNDLE_CONTRACT v1, v8.3.5) ───────────────────────
+_CAPTION_MAX = 60  # 계약 §1 — caption ≤60자 (영상 화면 캡션 겸 대체텍스트)
+
+# 계약(개정) §3.1 — 정부 공식 배포(공공누리 계열)·보도자료 와이어 도메인. credit
+# 유무와 무관하게 '공식 배포' 근거로 cleared.
+_CLEARED_HOST_SUFFIXES = (
+    ".go.kr", ".gov", ".gov.kr", "korea.kr",           # 정부 공식 배포 (공공누리)
+    "prnewswire.com", "businesswire.com", "newswire.co.kr", "prtimes.jp",  # 보도자료 와이어
+)
+
+
+def _cap_caption(text: str, limit: int = _CAPTION_MAX) -> str:
+    """계약 §1 — caption ≤60자. 넘으면 잘라 말줄임 (영상 화면 캡션용)."""
+    t = (text or "").strip()
+    if len(t) <= limit:
+        return t
+    return t[: limit - 1].rstrip() + "…"
+
+
+def _image_rights(credit: str, source_url: str) -> tuple[str, str]:
+    """계약(개정) §3.1 — 보도 사진 권리 상태 + license 근거.
+
+    본 시스템은 *봇 본인 사용 목적* 이라 출처표기(credit)로 저작권을 갈음한다
+    (CLAUDE.md 기존 방침 'Report Images'; 사용자 결정 2026-07-08 —
+    IMAGE_BUNDLE_CONTRACT §3.1 개정, osint_generator 와 동기화). 따라서:
+      · 정부 공식 배포·보도자료 와이어 도메인 → cleared (license='공식 배포')
+      · credit(출처표기)이 있으면            → cleared (license='출처표기')
+      · credit 도 근거 도메인도 없으면        → needs_review (영상 스킵 + 기록)
+    반환: (rights_status, license).
+    """
+    try:
+        host = (urlparse(source_url).hostname or "").lower()
+    except Exception:
+        host = ""
+    official = bool(host and any(
+        host == suf.lstrip(".") or host.endswith(suf) for suf in _CLEARED_HOST_SUFFIXES
+    ))
+    if official:
+        return "cleared", "공식 배포"
+    if (credit or "").strip():
+        return "cleared", "출처표기"
+    return "needs_review", ""
+
+
+def _build_images(
+    composed, sources: list[BundleTopSource],
+) -> tuple[list[BundleImage], dict[int, list[str]]]:
+    """composer 가 고른 hero/섹션 사진 → BundleImage[] + 섹션 인덱스별 image_refs.
+
+    계약 IMAGE_BUNDLE_CONTRACT v1. dedup by url (hero==섹션사진 중복 방지). hero 는
+    첫 섹션의 오프닝(발단) 사진으로 연결. 반환: (images, {section_idx: [image_id]}).
+    """
+    if not composed:
+        return [], {}
+    src_by_url = {s.url: s.source_id for s in sources if s.url}
+    url_to_id: dict[str, str] = {}
+    images: list[BundleImage] = []
+    section_refs: dict[int, list[str]] = {}
+
+    def _add(img: object) -> str | None:
+        if not isinstance(img, dict):
+            return None
+        url = (img.get("image_url") or "").strip()
+        if not url:
+            return None
+        if url in url_to_id:
+            return url_to_id[url]
+        image_id = f"img-{len(images) + 1}"
+        source_url = (img.get("source_url") or "").strip()
+        credit = (img.get("credit") or "").strip()
+        rights, lic = _image_rights(credit, source_url)
+        images.append(BundleImage(
+            image_id=image_id,
+            url=url,
+            caption=_cap_caption(img.get("caption") or ""),
+            credit=credit,
+            rights_status=rights,
+            license=lic,
+            source_id=src_by_url.get(source_url, ""),
+            focus="center",
+        ))
+        url_to_id[url] = image_id
+        return image_id
+
+    hero_id = _add(composed.hero_image) if composed.hero_image else None
+
+    for i, sec in enumerate(composed.sections):
+        refs: list[str] = []
+        for img in (getattr(sec, "images", None) or []):
+            iid = _add(img)
+            if iid and iid not in refs:
+                refs.append(iid)
+        if refs:
+            section_refs[i] = refs
+
+    # hero → 첫 섹션 오프닝 사진 (발단). 섹션 자체 사진보다 앞.
+    if hero_id is not None and composed.sections:
+        first = section_refs.setdefault(0, [])
+        if hero_id not in first:
+            first.insert(0, hero_id)
+
+    return images, section_refs
+
+
 def build_report_bundle(
     result: FullAnalysisResult,
     *,
@@ -537,6 +642,13 @@ def build_report_bundle(
             publisher=_publisher_from_url(url), fetched_at=fetched_at,
         ))
 
+    # 계약 IMAGE_BUNDLE_CONTRACT v1 (v8.3.5) — hero/섹션 사진 → images[] + image_refs.
+    images, section_refs = _build_images(composed, sources)
+    for i, s in enumerate(sections):
+        refs = section_refs.get(i)
+        if refs:
+            s.image_refs = refs
+
     confidence = None
     if composed:
         confidence = BundleConfidence(
@@ -563,6 +675,7 @@ def build_report_bundle(
         report=report,
         sections=sections,
         charts=charts,
+        images=images,
         map=bundle_map,
         claims=[],
         signals=signals,

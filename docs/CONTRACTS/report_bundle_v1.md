@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v7.6.3
+last_synced_with: v8.3.5
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -269,6 +269,15 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
 뒤에도 원본 video 가 보존되며, prose 교정으로 narration 과 어긋난 사실은 consumer
 검증기의 결정론 폐기·폴백 경로가 흡수한다.
 
+### §14 보도 사진 (images[] + image_refs) — v8.3.5 additive
+
+영상 photo 씬(풀블리드 + Ken Burns + 캡션/크레딧)용 보도 사진 계약. top-level
+`images[]`(신설) + `sections[].image_refs`(기존 필드 활용) + `rights_status`
+권리 추적(consumer fail-closed — `cleared` 만 사용). 전부 additive,
+schema_version **1 유지**. 상세 계약(필드·작성 규칙·권리 판단 근거·producer 배선)의
+SSOT 는 별도 하위 계약 문서 **[IMAGE_BUNDLE_CONTRACT.md](IMAGE_BUNDLE_CONTRACT.md)**
+(양쪽 repo 동기화). `image_refs` 참조 무결성은 §8 가드가 강제.
+
 ## 2. 번들 스키마 (필드 / 타입)
 
 > chart `data` 내부 모양은 §9 에 따라 schemas.py 참조. 아래는 *컨테이너* 계약.
@@ -333,6 +342,17 @@ emit 주체는 composer (LLM, 본문과 단일 호출) — V6 critic 루프의 O
       "sources": [{ "source_id":"str","provider":"KRX|FRED|ECOS|YAHOO|web","code":"str","unit":"str","fetched_at":"str","url":"str" }]
     },
     "prerendered_svg": "str | null"           // §5 — A안 차트는 null
+  }],
+
+  "images": [{                               // [신규 v8.3.5] §14 — 보도 사진 (IMAGE_BUNDLE_CONTRACT.md)
+    "image_id": "str (unique, img-N)",        // section.image_refs resolve 대상
+    "url": "이미지 파일 직링크 (페이지 URL 금지)",
+    "caption": "str ≤60자 (화면 캡션 겸 대체텍스트)",
+    "credit": "str (출처 표기)",
+    "rights_status": "cleared|needs_review|blocked",  // consumer 는 cleared 만 사용
+    "license": "str",                         // 권장 — 재사용 근거
+    "source_id": "str",                       // 권장 — sources[] 역추적
+    "focus": "center|top|bottom|left|right"   // Ken Burns 초점
   }],
 
   "map": {                                   // [기존] embedded_map + [신규] id/provenance/svg

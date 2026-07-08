@@ -389,6 +389,7 @@ ReportBundle
 ├─ report          BundleReport (report_id, headline, deck, closing, html_url, theme→BundleTheme, video?→BundleReportVideo [v7.3.0 §13])
 ├─ sections[]      BundleSection (chart_refs / map_ref / image_refs / claim_refs — §8 resolve, video?→BundleSectionVideo [v7.3.0 §13])
 ├─ charts[]        BundleChart (type, data=schemas.py shape, display [v6.1.1 strip|full], provenance→BundleProvenance, prerendered_svg)
+├─ images[]        BundleImage (image_id / url / caption / credit / rights_status / license / source_id / focus — v8.3.5 §14, section.image_refs resolve)
 ├─ map?            BundleMap (id, center, zoom, markers, arcs, legend, provenance)
 ├─ claims[]        BundleClaim (status, evidence→BundleEvidence)   ← v5.5.0 라이브 경로엔 빈 list
 ├─ signals[]       BundleSignal      ├─ contradictions[]  BundleContradiction (video?→BundleContradictionVideo [v7.6.2 §13])
@@ -404,7 +405,16 @@ ReportBundle
   한 줄로 묶이는 보조 시계열) vs `"full"`(본문 단일차트). 영상 파이프라인이 비주얼
   배치를 구분하는 축. composed chart 의 `role=='compact'` → `"strip"`, 그 외 → `"full"`.
   렌더러(`freeform_essay.html` 의 `ch.role=='compact'` 분기)와 동일 규칙. 항상 존재(기본 `"full"`).
-- **참조 무결성** `ReportBundle._validate_refs_and_ids` (계약 §8).
+- **참조 무결성** `ReportBundle._validate_refs_and_ids` (계약 §8 — chart/claim/section/**image** id unique + 각 `*_refs` resolve).
+- **`images` (v8.3.5, 계약 §14 additive)**: 보도 사진 (osint_generator 영상 photo 씬).
+  빌더 `_build_images` 가 `ComposedReport.hero_image` + `ComposedSection.images`
+  (og:image 후보 중 composer 선택분) → `BundleImage[]` + 섹션별 `image_refs` 로 매핑.
+  url dedup, hero → 첫 섹션 오프닝(발단) 삽입, `caption` ≤60 말줄임(`_cap_caption`),
+  `source_url` → `source_id` 역추적, `rights_status`/`license` 는 `_image_rights`
+  (§3.1-a 개정 — 공식배포 도메인 또는 **credit 출처표기** 있으면 `cleared`, 둘 다
+  없으면 `needs_review`. 봇 자체 사용이라 출처표기로 저작권 갈음, 사용자 결정 2026-07-08).
+  consumer 는 `cleared` 만 다운로드·사용. 부재 시 `images: []` + `image_refs: []`
+  (기존 번들 byte-equal). SSOT: [docs/CONTRACTS/IMAGE_BUNDLE_CONTRACT.md](CONTRACTS/IMAGE_BUNDLE_CONTRACT.md).
 - **`video` (v7.3.0, 계약 §13 additive)**: 영상 자막·음성 대본. composer 가
   `ComposedSection.video` / `ComposedReport.video` / `timeline_flow.video` (v7.6.0)
   로 emit → 빌더의 결정적 가드 (`_section_video`/`_timeline_video`: emphasis 부분

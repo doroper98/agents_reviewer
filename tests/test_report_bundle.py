@@ -120,6 +120,94 @@ def test_ref_integrity_guard():
         ReportBundle.model_validate(data)
 
 
+def _make_result_with_images() -> FullAnalysisResult:
+    """hero + 섹션 사진이 있는 result (IMAGE_BUNDLE_CONTRACT v1)."""
+    ctx = ContextAnalysis(
+        date="2026-05-25",
+        sources=["https://www.ft.com/a", "https://www.korea.kr/news/x"],
+    )
+    comp = ComposedReport(
+        headline="H", deck="D",
+        hero_image={
+            "image_url": "https://img.ft.com/hero.jpg",
+            "caption": "히" + "어" * 80,          # >60자 — 말줄임 대상
+            "credit": "© FT", "source_url": "https://www.ft.com/a",
+        },
+        sections=[
+            ComposedSection(heading="발단", prose="p", images=[{
+                "image_url": "https://cdn.korea.kr/photo1.jpg",
+                "caption": "울산 AI 데이터센터 예정 부지", "credit": "SKT 제공",
+                "source_url": "https://www.korea.kr/news/x",
+            }]),
+            ComposedSection(heading="현장", prose="p2", images=[
+                {
+                    # hero 와 동일 url — dedup 되어 img-1 재사용.
+                    "image_url": "https://img.ft.com/hero.jpg",
+                    "caption": "중복", "credit": "© FT", "source_url": "https://www.ft.com/a",
+                },
+                {
+                    # credit 없음 — needs_review.
+                    "image_url": "https://img.example.com/nocredit.jpg",
+                    "caption": "출처 미상", "credit": "", "source_url": "https://example.com/z",
+                },
+            ]),
+        ],
+    )
+    return FullAnalysisResult(
+        request=AnalysisRequest(event_description="x", mode="deep", emit_bundle=True),
+        composed_report=comp, context=ctx,
+        report_path="/r/analysis_IMG.html", report_theme="editorial_cream",
+        system_version="v8.3.5",
+    )
+
+
+def test_images_emit_refs_dedup_rights_caption():
+    """IMAGE_BUNDLE_CONTRACT v1 — hero/섹션 사진 → images[] + image_refs.
+
+    dedup(hero==섹션 url) · hero→첫 섹션 오프닝 · 권리 판정(credit 갈음 §3.1 개정) ·
+    caption ≤60 · source_id 역추적.
+    """
+    b = build_report_bundle(_make_result_with_images())
+    # dedup: hero(ft) + korea + nocredit 3장 (FT 중복 url 은 img-1 재사용).
+    assert len(b.images) == 3
+    by_id = {im.image_id: im for im in b.images}
+    assert set(by_id) == {"img-1", "img-2", "img-3"}
+    # 모든 caption ≤60, 넘던 hero 는 말줄임.
+    assert all(len(im.caption) <= 60 for im in b.images)
+    assert by_id["img-1"].caption.endswith("…")
+    # 권리 (§3.1 개정 — credit 있으면 cleared, 봇 자체사용 출처표기 갈음):
+    #  · ft.com + credit '© FT' → cleared / license '출처표기'
+    #  · korea.kr(공공누리 도메인) → cleared / license '공식 배포'
+    #  · credit 없음 → needs_review
+    assert by_id["img-1"].rights_status == "cleared" and by_id["img-1"].license == "출처표기"
+    assert by_id["img-2"].rights_status == "cleared" and by_id["img-2"].license == "공식 배포"
+    assert by_id["img-3"].rights_status == "needs_review" and by_id["img-3"].license == ""
+    # source_id 역추적 (sources[] 의 src-N).
+    assert by_id["img-1"].source_id == "src-1"
+    assert by_id["img-2"].source_id == "src-2"
+    # hero 는 첫 섹션 오프닝, 섹션 자체 사진보다 앞.
+    assert b.sections[0].image_refs == ["img-1", "img-2"]
+    # 두 번째 섹션: 중복 url(hero=img-1) + credit 없는 신규(img-3).
+    assert b.sections[1].image_refs == ["img-1", "img-3"]
+    # 참조 무결성 round-trip (모든 image_ref 가 images[] 로 resolve).
+    ReportBundle.model_validate(b.model_dump(mode="json"))
+
+
+def test_images_absent_backward_compat():
+    """images 부재 시 images=[] + image_refs 빈 배열 (기존 번들 전부 유효, §additive)."""
+    b = build_report_bundle(_make_result())
+    assert b.images == []
+    assert all(s.image_refs == [] for s in b.sections)
+
+
+def test_image_ref_integrity_guard():
+    """§8: 미해결 image_ref → ValidationError."""
+    data = json.loads(_EXAMPLE.read_text(encoding="utf-8"))
+    data["sections"][0]["image_refs"] = ["img-does-not-exist"]
+    with pytest.raises(Exception):
+        ReportBundle.model_validate(data)
+
+
 def test_timeline_flow_backbone_and_graceful():
     """v5.5.2 — 결정론 backbone (context.timeline 과거 + watch_signals 미래) + graceful."""
     from src.timeline_flow import build_timeline_flow

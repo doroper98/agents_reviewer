@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.4
+last_synced_with: v8.3.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.5 — report_bundle 에 보도 사진 필드 추가 (IMAGE_BUNDLE_CONTRACT v1)
+
+osint_generator(영상 파이프라인)가 보고서 사진을 영상 photo 씬(풀블리드 + Ken Burns + 캡션/크레딧)으로 소비하는 계약(consumer v0.42.0)에 맞춰 producer emit 을 추가. 전부 **additive** — `schema_version` **1 유지**, 기존 번들(image_refs 빈 배열) 전부 유효.
+
+- **`ReportBundle.images: list[BundleImage]` 신설** ([src/models.py](src/models.py)) — `{image_id, url, caption(≤60), credit, rights_status(cleared|needs_review|blocked), license, source_id, focus}`. `sections[].image_refs`(기존 필드)로 섹션↔사진 연결. 참조 무결성 가드(`_validate_refs_and_ids`)에 image_id unique + image_ref resolve 추가.
+- **빌더 배선** ([src/handoff/bundle_builder.py](src/handoff/bundle_builder.py) `_build_images`) — `ComposedReport.hero_image` + `ComposedSection.images`(og:image 후보 중 composer 선택분) → `BundleImage[]`. url dedup(hero==섹션 사진 중복 방지), hero→첫 섹션 오프닝(발단) 삽입, caption ≤60 말줄임, `source_url`→`source_id` 역추적.
+- **rights_status/license 판단** (`_image_rights`, 계약 §3.1-a) — 본 시스템은 봇 자체 사용 목적이라 출처표기(credit)로 저작권을 갈음한다(CLAUDE.md 'Report Images' 방침, 사용자 결정 2026-07-08). 정부 공식 배포(`*.go.kr`/`*.gov`/`korea.kr`)·보도자료 와이어 도메인 → `cleared`(license '공식 배포'), **credit 있는 사진 → `cleared`**(license '출처표기'), 둘 다 없으면 `needs_review`. 이때 cleared 는 "검증된 재사용 라이선스" 가 아니라 "출처표기 갈음 자체 사용" 을 뜻하며, 원 계약 §3.1 엄격 정의를 osint_generator 와 **양쪽 repo 동기화로 개정**.
+- **계약 문서** — 신규 [docs/CONTRACTS/IMAGE_BUNDLE_CONTRACT.md](docs/CONTRACTS/IMAGE_BUNDLE_CONTRACT.md)(양쪽 repo 동기화 SSOT) + [report_bundle_v1.md §14](docs/CONTRACTS/report_bundle_v1.md) 참조 + 스키마 블록 + 예시(`report_bundle_v1.example.json`) images[] parity + [DATA_MODELS.md §5.5](docs/DATA_MODELS.md). 회귀 `tests/test_report_bundle.py` 3종(emit·dedup·권리·caption / 부재 byte-equal / 미해결 image_ref 거부).
 
 ## v8.3.4 — 보고서 완료 메시지에서 본문 .md 링크 제거 (HTML + 번들만 유지)
 
