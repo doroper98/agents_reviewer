@@ -91,26 +91,32 @@ last_review: 2026-05-05
 > 오가야 하면 이 채널을 쓴다. 답변을 텔레그램·채팅으로 사용자에게 넘겨 "osint 에
 > 전달하세요" 라고 시키는 것 금지.
 >
-> **② 한 사안 = 한 스레드 파일.** 새로 전달·질문할 게 생기면 항상 **새 파일**을
+> **② 메시지 종류(kind) = 질문(q) / 통지(n).** *상대의 답변·결정이 필요* 하면
+> **질문 `q`**(open→answered→closed), *이미 정해진 걸 알리는* 계약 변경·릴리스·결정
+> 이면 **통지 `n`**(posted→(acked)→closed). 통지는 답변 강제 X — 상대 동기화가
+> 필요하면 `ack_required: yes`.
+>
+> **③ 한 사안 = 한 스레드 파일.** 새로 전달·질문·통지할 게 생기면 항상 **새 파일**을
 > `reviewer_osint_q_a/threads/` 에 만든다. 파일명 코드 체계:
-> `yyyy_mm_dd_hhmmss_agent_reviewer_bot_q_nn.md` (`nn`=발신자별 2자리 일련번호,
-> 타임스탬프는 KST — `TZ=Asia/Seoul date +%Y_%m_%d_%H%M%S`). osint 발신은
-> `..._osint_generator_q_nn.md`.
+> `yyyy_mm_dd_hhmmss_agent_reviewer_bot_<kind>_nn.md` (`<kind>`=`q`|`n`, `nn`=발신자·
+> kind 별 2자리 일련번호, 타임스탬프 KST — `TZ=Asia/Seoul date +%Y_%m_%d_%H%M%S`).
+> osint 발신은 `..._osint_generator_<kind>_nn.md`.
 >
-> **③ 스레드 구조.** 한 파일 안에서 `## 질문 / 전달`(발신자) → `## 답변`(수신자)
-> → `## 조치 · 종결`(발신자). 헤더 메타 `status`: `open`→`answered`→`closed`.
-> 양식은 repo 의 `templates/question_template.md`.
+> **④ 스레드 구조.** 질문(q): `## 질문 / 전달`(발신자) → `## 답변`(수신자) →
+> `## 조치 · 종결`(발신자). 통지(n): `## 통지`(발신자) → (ack 필요 시) `## 확인 ·
+> 동기화`(수신자) → `## 종결`(발신자). 헤더 `status` 를 kind 흐름대로 갱신. 양식은
+> repo 의 `templates/question_template.md` / `notice_template.md`.
 >
-> **④ 종결 의무.** osint 답변을 받으면 실제 조치(코드/문서/버전 반영 또는 "조치
-> 불요" 판단)를 하고 **`## 조치 · 종결` 을 채운 뒤 `status: closed`**. 답변만 받고
-> 방치 금지 — "어떻게 조치하고 종결했는지" 를 반드시 남긴다.
+> **⑤ 종결 의무.** 상대 답변·ack 를 받으면 실제 조치(코드/문서/버전 반영 또는 "조치
+> 불요" 판단)를 하고 **종결 섹션을 채운 뒤 `status: closed`**. 답변만 받고 방치 금지
+> — "어떻게 조치하고 종결했는지" 를 반드시 남긴다.
 >
-> **⑤ 답변에 새 요청 금지.** 답변·종결을 쓰다 새로 부탁·질문할 게 생기면 그 답변에
-> 끼워넣지 말고 **별도 질문 파일**(②)을 새로 만든다. 한 스레드는 원 사안만.
+> **⑥ 답변·확인에 새 요청 금지.** 답변·확인·종결을 쓰다 새로 부탁·질문·통지할 게
+> 생기면 거기 끼워넣지 말고 **별도 스레드 파일**(③)을 새로 만든다. 한 스레드는 원 사안만.
 >
-> **⑥ 실행 환경.** 이 repo 가 세션 scope 에 없으면 `add_repo`(doroper98/
+> **⑦ 실행 환경.** 이 repo 가 세션 scope 에 없으면 `add_repo`(doroper98/
 > reviewer_osint_q_a) 로 추가 후 clone. 자기 쪽 변경만 커밋·푸시(상대 섹션 임의
-> 수정 금지), 커밋 메시지에 스레드 코드(`q_nn`) 포함. 계약(IMAGE_BUNDLE_CONTRACT
+> 수정 금지), 커밋 메시지에 스레드 코드(`<kind>_nn`) 포함. 계약(IMAGE_BUNDLE_CONTRACT
 > 등) 실제 반영은 agents_reviewer repo 에서 별도로 하고, 그 사실을 스레드
 > `## 조치 · 종결` 에 기록해 교신과 코드 변경을 연결한다.
 
