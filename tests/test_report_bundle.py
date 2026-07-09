@@ -193,6 +193,20 @@ def test_images_emit_refs_dedup_rights_caption():
     ReportBundle.model_validate(b.model_dump(mode="json"))
 
 
+def test_image_rights_credit_required_for_cleared():
+    """§3.1-a 불변식 — cleared 는 credit 필수 (consumer v0.42.2 credit gate 정합)."""
+    from src.handoff.bundle_builder import _image_rights
+    # credit 없음 → 공식 도메인이라도 needs_review.
+    assert _image_rights("", "https://www.korea.kr/x") == ("needs_review", "")
+    assert _image_rights("", "https://www.ft.com/x") == ("needs_review", "")
+    # credit 있음 → cleared. 공식 도메인='공식 배포', 그 외='출처표기'.
+    assert _image_rights("정부 제공", "https://www.korea.kr/x") == ("cleared", "공식 배포")
+    assert _image_rights("© FT", "https://www.ft.com/x") == ("cleared", "출처표기")
+    # 빌드된 번들의 모든 cleared 이미지는 credit 비어있지 않다 (불변식).
+    b = build_report_bundle(_make_result_with_images())
+    assert all(im.credit.strip() for im in b.images if im.rights_status == "cleared")
+
+
 def test_images_absent_backward_compat():
     """images 부재 시 images=[] + image_refs 빈 배열 (기존 번들 전부 유효, §additive)."""
     b = build_report_bundle(_make_result())
