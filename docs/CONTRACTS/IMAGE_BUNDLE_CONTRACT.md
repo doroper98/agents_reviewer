@@ -1,8 +1,8 @@
 ---
 tier: 2
-status: active (v8.3.5 producer emit 배선 완료 — consumer v0.42.0)
+status: active (v8.3.6 producer emit + credit-gate 정합 — consumer v0.42.2)
 contract_version: 1
-last_synced_with: v8.3.5
+last_synced_with: v8.3.6
 ssot_for:
   - "report_bundle 보도 사진 계약 v1 (images[] + sections[].image_refs)"
   - "BundleImage 필드 / 타입 / 의미 / 권리 상태"
@@ -72,14 +72,20 @@ report_bundle 에 보도 사진을 실어 osint_generator 의 영상 파이프�
    > 시스템(agents_reviewer↔osint_generator)은 **봇 본인 사용 목적**이라 저작권을
    > *출처표기(credit)* 로 갈음한다 (agents_reviewer CLAUDE.md 'Report Images'
    > 기존 방침). 따라서 이 계약에서 `cleared` 의 근거를 다음으로 **확장**한다:
-   >   - 정부 공식 배포·보도자료 와이어 도메인 → `cleared` (`license="공식 배포"`)
-   >   - **credit(출처표기)이 채워진 사진 → `cleared`** (`license="출처표기"`)
-   >   - credit 도 근거 도메인도 없는 사진 → `needs_review`
+   >   - **credit(출처표기)이 채워진 사진 → `cleared`.** 정부 공식 배포·보도자료
+   >     와이어 도메인이면 `license="공식 배포"`, 그 외는 `license="출처표기"`.
+   >   - credit 이 빈 사진 → `needs_review` (공식 도메인이라도).
+   >
+   > **불변식: `cleared` ⇒ `credit` 비어있지 않음.** cleared 의 근거가 출처표기
+   > 갈음이라 credit 없이는 attribution 이 불가 → cleared 불가. consumer
+   > (osint_generator v0.42.2)의 credit gate(credit 빈 `cleared` 를 소비측도 거부·
+   > 스킵)와 정합 — producer 가 애초에 credit 없는 `cleared` 를 emit 하지 않는다.
    >
    > ⚠️ 이때 `cleared` 는 "검증된 재사용 라이선스" 가 아니라 **"출처표기로 갈음한
-   > 자체 사용"** 을 뜻한다. consumer(osint_generator)는 이 의미로 `cleared` 를
-   > 소비한다 (여전히 우하단 credit 표기 필수). 제3자 배포·상업 판매용이 아니라
-   > 자체 브리핑 영상 한정. 인물 초상권 우려 등은 아래 규칙 5로 `blocked` 처리.
+   > 자체 사용"** 을 뜻한다. consumer 는 이 의미로 `cleared` 를 소비하고 photo 씬
+   > 우하단에 credit 을 **항상 표기**한다 (v0.42.2 정합). 제3자 배포·상업 판매용이
+   > 아니라 자체 브리핑 영상 한정. 인물 초상권 우려 등은 아래 규칙 5로 `blocked`
+   > 처리(현재는 producer 위임 — 추후 composer `person_flag` 신호로 확장 예정).
    >
    > producer SSOT: `bundle_builder._image_rights` / `_CLEARED_HOST_SUFFIXES`.
 
@@ -100,9 +106,10 @@ report_bundle 에 보도 사진을 실어 osint_generator 의 영상 파이프�
   - **dedup by url** — hero 와 섹션 사진이 같은 url 이면 한 `image_id` 재사용.
   - **hero → 첫 섹션 오프닝** — hero 의 `image_id` 를 `sections[0].image_refs`
     맨 앞에 삽입(발단 장면). 섹션 없으면 `images[]` 에만 존재(참조는 없음, 유효).
-- `rights_status`/`license` — `_image_rights(credit, source_url)` (§3.1-a): 공식
-  배포 도메인 → `cleared`/`"공식 배포"`, credit 있음 → `cleared`/`"출처표기"`,
-  둘 다 없음 → `needs_review`/`""`.
+- `rights_status`/`license` — `_image_rights(credit, source_url)` (§3.1-a): credit
+  없음 → `needs_review`/`""`; credit 있음 + 공식배포 도메인 → `cleared`/`"공식 배포"`;
+  그 외 credit 있음 → `cleared`/`"출처표기"`. **cleared ⇒ credit 필수 불변식**
+  (consumer v0.42.2 credit gate 정합).
 - `focus` 는 현재 항상 `center`(composer 가 초점을 emit 하지 않음).
 
 ## 5. 하위 호환

@@ -411,8 +411,9 @@ ReportBundle
   (og:image 후보 중 composer 선택분) → `BundleImage[]` + 섹션별 `image_refs` 로 매핑.
   url dedup, hero → 첫 섹션 오프닝(발단) 삽입, `caption` ≤60 말줄임(`_cap_caption`),
   `source_url` → `source_id` 역추적, `rights_status`/`license` 는 `_image_rights`
-  (§3.1-a 개정 — 공식배포 도메인 또는 **credit 출처표기** 있으면 `cleared`, 둘 다
-  없으면 `needs_review`. 봇 자체 사용이라 출처표기로 저작권 갈음, 사용자 결정 2026-07-08).
+  (§3.1-a — credit 있으면 `cleared`[공식배포 도메인=`공식 배포`/그 외=`출처표기`],
+  credit 없으면 `needs_review`. **불변식 `cleared ⇒ credit` 필수** — consumer v0.42.2
+  credit gate 정합. 봇 자체 사용이라 출처표기로 저작권 갈음, 사용자 결정 2026-07-08).
   consumer 는 `cleared` 만 다운로드·사용. 부재 시 `images: []` + `image_refs: []`
   (기존 번들 byte-equal). SSOT: [docs/CONTRACTS/IMAGE_BUNDLE_CONTRACT.md](CONTRACTS/IMAGE_BUNDLE_CONTRACT.md).
 - **`video` (v7.3.0, 계약 §13 additive)**: 영상 자막·음성 대본. composer 가

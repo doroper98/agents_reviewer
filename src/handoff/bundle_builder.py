@@ -416,16 +416,25 @@ def _cap_caption(text: str, limit: int = _CAPTION_MAX) -> str:
 
 
 def _image_rights(credit: str, source_url: str) -> tuple[str, str]:
-    """계약(개정) §3.1 — 보도 사진 권리 상태 + license 근거.
+    """계약(개정) §3.1-a — 보도 사진 권리 상태 + license 근거.
 
     본 시스템은 *봇 본인 사용 목적* 이라 출처표기(credit)로 저작권을 갈음한다
     (CLAUDE.md 기존 방침 'Report Images'; 사용자 결정 2026-07-08 —
-    IMAGE_BUNDLE_CONTRACT §3.1 개정, osint_generator 와 동기화). 따라서:
-      · 정부 공식 배포·보도자료 와이어 도메인 → cleared (license='공식 배포')
-      · credit(출처표기)이 있으면            → cleared (license='출처표기')
-      · credit 도 근거 도메인도 없으면        → needs_review (영상 스킵 + 기록)
+    IMAGE_BUNDLE_CONTRACT §3.1-a 개정, osint_generator 와 동기화).
+
+    **불변식: cleared ⇒ credit 비어있지 않음.** cleared 의 근거가 '출처표기 갈음'
+    이므로 credit 없이는 attribution 이 불가 → cleared 불가. consumer(osint_generator
+    v0.42.2)의 credit gate(credit 빈 cleared 거부)와 정합 — producer 가 애초에
+    credit 없는 cleared 를 emit 하지 않는다 (공식배포 도메인이라도 credit 필수).
+
+      · credit 없음                          → needs_review (영상 스킵 + 기록)
+      · credit 있음 + 정부 공식 배포·와이어 도메인 → cleared (license='공식 배포')
+      · credit 있음 (그 외)                   → cleared (license='출처표기')
     반환: (rights_status, license).
     """
+    credit = (credit or "").strip()
+    if not credit:
+        return "needs_review", ""
     try:
         host = (urlparse(source_url).hostname or "").lower()
     except Exception:
@@ -433,11 +442,7 @@ def _image_rights(credit: str, source_url: str) -> tuple[str, str]:
     official = bool(host and any(
         host == suf.lstrip(".") or host.endswith(suf) for suf in _CLEARED_HOST_SUFFIXES
     ))
-    if official:
-        return "cleared", "공식 배포"
-    if (credit or "").strip():
-        return "cleared", "출처표기"
-    return "needs_review", ""
+    return ("cleared", "공식 배포") if official else ("cleared", "출처표기")
 
 
 def _build_images(

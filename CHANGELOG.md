@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.5
+last_synced_with: v8.3.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.3.6 — 보도 사진 cleared ⇒ credit 필수 불변식 (consumer v0.42.2 정합)
+
+osint_generator v0.42.2 회신 — 소비측에 credit gate 추가(credit 빈 `cleared` 사진 거부·스킵)로 "credit 없는 cleared 는 없다"는 producer 보증을 이중화. 그런데 producer 의 `_image_rights` 가 **공식배포 도메인 경로에서 credit 을 확인하지 않아**, 공식 도메인인데 credit 이 빈 사진이 `cleared`+빈 credit 으로 나갈 수 있었다(→ 소비측이 스킵해 낭비 + 보증 위반). Fix — `_image_rights` 를 **credit 없으면 무조건 `needs_review`** 로 강제(공식 도메인이라도). 이제 불변식 `cleared ⇒ credit 비어있지 않음` 이 코드로 보장된다. 회귀 `test_image_rights_credit_required_for_cleared` + 빌드 번들의 모든 cleared 이미지 credit 비어있지 않음 assert. 계약 [IMAGE_BUNDLE_CONTRACT.md §3.1-a](docs/CONTRACTS/IMAGE_BUNDLE_CONTRACT.md) 에 불변식 명문화. 순수 강화 — credit 있는 사진(대다수)의 동작 불변.
 
 ## v8.3.5 — report_bundle 에 보도 사진 필드 추가 (IMAGE_BUNDLE_CONTRACT v1)
 
