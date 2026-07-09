@@ -79,6 +79,41 @@ last_review: 2026-05-05
 > 4. **운영** — 이 가드들이 실제로 돌려면 VM `.env` 에 **`V6_FACT_GUARDS=1`** (+ 기준시점
 >    가드 원하면 `V7_REF_FRAME=1`) 필요. 꺼져 있으면 검출 0 (가드는 있는데 작동 안 함).
 
+## 🔴 OSINT(osint_generator) 교신 규칙 — 복붙 중계 금지 SSOT
+
+> **🔴🔴 절대 규칙 (사용자 강력 요청, 2026-07-09).** `osint_generator`(영상
+> consumer)에게 전달·질문·통지할 게 생기거나 osint 회신을 처리할 때 — **사용자를
+> 복붙 중계기로 쓰지 말 것.** 전용 교신 저장소 **[doroper98/reviewer_osint_q_a](https://github.com/doroper98/reviewer_osint_q_a)**
+> 에 파일로 직접 주고받는다. 규칙 정본은 그 repo 의 `PROTOCOL.md` (SSOT). 아래는
+> 그 요약 — 두 문서는 항상 정합.
+>
+> **① 트리거.** 계약 변경 통지 / 질문 / 요청 / osint 회신 처리 — 무엇이든 osint 와
+> 오가야 하면 이 채널을 쓴다. 답변을 텔레그램·채팅으로 사용자에게 넘겨 "osint 에
+> 전달하세요" 라고 시키는 것 금지.
+>
+> **② 한 사안 = 한 스레드 파일.** 새로 전달·질문할 게 생기면 항상 **새 파일**을
+> `reviewer_osint_q_a/threads/` 에 만든다. 파일명 코드 체계:
+> `yyyy_mm_dd_hhmmss_agent_reviewer_bot_q_nn.md` (`nn`=발신자별 2자리 일련번호,
+> 타임스탬프는 KST — `TZ=Asia/Seoul date +%Y_%m_%d_%H%M%S`). osint 발신은
+> `..._osint_generator_q_nn.md`.
+>
+> **③ 스레드 구조.** 한 파일 안에서 `## 질문 / 전달`(발신자) → `## 답변`(수신자)
+> → `## 조치 · 종결`(발신자). 헤더 메타 `status`: `open`→`answered`→`closed`.
+> 양식은 repo 의 `templates/question_template.md`.
+>
+> **④ 종결 의무.** osint 답변을 받으면 실제 조치(코드/문서/버전 반영 또는 "조치
+> 불요" 판단)를 하고 **`## 조치 · 종결` 을 채운 뒤 `status: closed`**. 답변만 받고
+> 방치 금지 — "어떻게 조치하고 종결했는지" 를 반드시 남긴다.
+>
+> **⑤ 답변에 새 요청 금지.** 답변·종결을 쓰다 새로 부탁·질문할 게 생기면 그 답변에
+> 끼워넣지 말고 **별도 질문 파일**(②)을 새로 만든다. 한 스레드는 원 사안만.
+>
+> **⑥ 실행 환경.** 이 repo 가 세션 scope 에 없으면 `add_repo`(doroper98/
+> reviewer_osint_q_a) 로 추가 후 clone. 자기 쪽 변경만 커밋·푸시(상대 섹션 임의
+> 수정 금지), 커밋 메시지에 스레드 코드(`q_nn`) 포함. 계약(IMAGE_BUNDLE_CONTRACT
+> 등) 실제 반영은 agents_reviewer repo 에서 별도로 하고, 그 사실을 스레드
+> `## 조치 · 종결` 에 기록해 교신과 코드 변경을 연결한다.
+
 ## Project Overview
 텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 + NarrativeComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
