@@ -16,6 +16,22 @@ last_review: 2026-05-05
 
 > **🔴 운영 모드 SSOT — 절대 잊지 말 것.** 이 봇은 **Claude Code CLI 구독 플랜** 으로 돈다. `.env` 의 `ANTHROPIC_API_KEY` 는 *빈 값이 정상*. [src/config.py:131-135](src/config.py) 의 `_select_mode` 가 키가 비어있으면 자동으로 `use_cli_mode=True` 선택. `bot.log` 의 `WARNING: ANTHROPIC_API_KEY is not set` 은 [src/main.py:29](src/main.py) 가 무조건 찍는 노이즈 — 무시. 사용자에게 "API 키 채우라" 같은 조언 절대 금지. 사용자가 명시적으로 "API 로 바꿔달라" 라고 하지 않는 한 키 채우라고 하지 말 것.
 
+> **🔴 봇 재시작·운영 SSOT — systemd 서비스다 (사용자 강력 요청, 2026-07-11 실제 사고).**
+> VM 의 봇은 **systemd 서비스 [`agents-reviewer.service`]** 로 돈다 (`enabled` — 부팅
+> 시 자동 기동, `/etc/systemd/system/agents-reviewer.service`, 실행 유저 `ubuntu`,
+> `.../venv/bin/python -m src.main`). **재시작·재배포 반영은 딱 한 줄:**
+> ```
+> sudo systemctl restart agents-reviewer.service
+> ```
+> - 상태 `systemctl status agents-reviewer.service` · 로그 `journalctl -u agents-reviewer.service -f` · 중지 `sudo systemctl stop agents-reviewer.service`.
+> - `.env` 변경도 이 restart 한 줄로 반영 (config 는 startup 1회 로드). 재배포 = `git pull` 후 이 한 줄.
+> - **🚫 절대 `nohup python -m src.main` 수동 기동 금지.** systemd 인스턴스와 *중복* 으로
+>   떠서 텔레그램 `getUpdates` **Conflict** + 메모리 이중 낭비 → 1GB VM 에서 **OOM 프리즈**
+>   유발(2026-07-11 실제 사고 — 이 규칙이 없어 nohup 안내 → 봇 2개 → 전면 프리즈). 봇을
+>   완전히 죽여야 하면 `pgrep -af 'src\.main'` 로 확인 후 systemd MainPID 외 잔재만 정리.
+> - **[VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md) §1 의 `pkill`+`nohup` 블록은
+>   systemd 도입 전 legacy** — systemd 서비스가 있으면 그 블록 대신 이 한 줄을 쓴다.
+
 > **🔴 제1규칙 — 보고서 핫픽스 시퀀스 (사용자가 발행된 보고서의 결함을 지적하면 *즉시* 이 순서로).**
 > 사용자가 발행된 보고서(보통 `analysis-reports.pages.dev/...` 링크 + "이 문구 / 이 차트 / 이 표현 고쳐"
 > 형태)의 결함을 지적하면 — 되묻지 말고 — 아래 시퀀스로 이해·진행한다. SSOT 도구는
@@ -190,9 +206,9 @@ V5 Phase 1A 부터 추가 가능한 에이전트:
 **필수 안내 사항 (playbook §1 외 운영 컨텍스트):**
 - 처음 clone 후 1회: `git config core.hooksPath .githooks` (commit-msg hook 활성화 — Execution Rule #12). 미설정 시 hook 작동 안 함.
 - venv 가 없으면 `python -m venv venv && source venv/bin/activate && pip install -r requirements.txt` 후 진행
-- `.env` 변경 시 (env flag 추가 등) 재시작 *반드시* 필요. config 는 startup 시점 1회만 로드
-- systemd 서비스로 등록되어 있다면 `sudo systemctl restart agents-reviewer` 한 줄로 대체 가능 — 없으면 playbook §1
-- 사용자가 SSH foreground 로 봇을 띄운 상태에서 SSH 가 끊기면 봇 죽음 → `nohup ... & disown` 필수 (§1 Stage 5 포함)
+- `.env` 변경 시 (env flag 추가 등) 재시작 *반드시* 필요. config 는 startup 시점 1회만 로드 → **`sudo systemctl restart agents-reviewer.service`** (상단 '봇 재시작·운영 SSOT' 참조)
+- **봇은 systemd 서비스 `agents-reviewer.service` 로 관리된다 (확정).** 재시작·재배포 반영은 `sudo systemctl restart agents-reviewer.service` 한 줄. `nohup` 수동 기동 금지(중복→Conflict/OOM). 정본 규칙은 상단 '🔴 봇 재시작·운영 SSOT' 블록.
+- (legacy) `nohup ... & disown` 방식은 systemd 서비스가 *없을 때만*. 현 VM 은 서비스 등록돼 있으므로 쓰지 말 것 — playbook §1 의 nohup 블록도 systemd restart 로 대체.
 
 **보안:**
 - 봇 토큰·API 키가 노출된 로그를 사용자가 붙여넣으면 즉시 토큰 회전 안내 (`@BotFather /revoke` → `.env` 갱신 → 재시작)
