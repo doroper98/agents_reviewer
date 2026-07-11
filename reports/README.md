@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 284건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 285건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-07-12 06:17 | 2026-07-12 아침 일일 브리핑 — 이란·유가, SK하이닉스 뉴욕 상장, 대미 관세 데드라인, 태풍 바비 | 산업/지정학/정치/전쟁 종합 | [md](analysis_20260712_061758_35c3a838db.md) · [json](analysis_20260712_061758_35c3a838db.json) · [bundle](analysis_20260712_061758_35c3a838db.bundle.json) |
 | 2026-07-11 17:49 | SK하이닉스 나스닥 상장 첫 거래일 이후 평가 및 삼성전자 동반 시나리오 분석 | 기업/자본시장/반도체 | [md](analysis_20260711_174956_af39b3f8ee.md) · [json](analysis_20260711_174956_af39b3f8ee.json) · [bundle](analysis_20260711_174956_af39b3f8ee.bundle.json) |
 | 2026-07-11 10:49 | [르포] SK하이닉스 미국 나스닥 ADR 상장 및 첫 거래 | IPO / 반도체 / 자본시장 | [md](analysis_20260711_104906_18248c8b25.md) · [json](analysis_20260711_104906_18248c8b25.json) · [bundle](analysis_20260711_104906_18248c8b25.bundle.json) |
 | 2026-07-11 06:29 | 2026-07-11 아침 종합 브리핑: SK하이닉스 뉴욕 상장·호르무즈 위기·윤석열 확정판결 | 산업+지정학+정치+전쟁 | [md](analysis_20260711_062923_cdb78a0c8a.md) · [json](analysis_20260711_062923_cdb78a0c8a.json) · [bundle](analysis_20260711_062923_cdb78a0c8a.bundle.json) |
