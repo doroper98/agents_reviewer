@@ -23,8 +23,23 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
 
 ## §1 표준 재배포 절차 (회귀 가드 내장)
 
+> **🔴 현 VM 은 봇을 systemd 서비스 `agents-reviewer.service` 로 관리한다 (2026-07-11
+> 확정).** 그래서 아래 `pkill`+`nohup` 블록은 **legacy** 다 — 쓰면 systemd 인스턴스와
+> *중복* 으로 떠서 텔레그램 Conflict + OOM 프리즈를 유발한다(VM-AP-12, 실제 사고). **표준
+> 재배포는:**
+> ```bash
+> cd ~/agents_reviewer && git checkout main && git pull
+> sudo systemctl restart agents-reviewer.service
+> systemctl status agents-reviewer.service --no-pager | head -5
+> journalctl -u agents-reviewer.service -n 20 --no-pager | grep -E 'Starting|Conflict|ERROR'
+> ```
+> requirements 변경 시엔 pull 후 `source venv/bin/activate && pip install -r requirements.txt`
+> 를 restart 앞에 넣는다. 아래 nohup 블록은 **systemd 서비스가 없는 환경에서만**.
+> 정본 규칙: CLAUDE.md '🔴 봇 재시작·운영 SSOT'.
+
 VM 의 `~/agents_reviewer` 에서 그대로 복붙. **§2 VM-AP-1~8 모든 가드 포함**.
 idempotent — 봇이 떠있든 안 떠있든 같은 결과.
+**(systemd 환경에서는 위 systemctl 블록을 쓰고 아래는 참고용으로만 둔다.)**
 
 > **★ paste-safe 설계 (VM-AP-8, VM-AP-7 개정).** 전체를 **즉시 실행 서브셸
 > `( … )`** 로 감싼다. **별도 호출 명령(`redeploy`) 이 없다** — 닫는 `)` 까지
@@ -336,6 +351,27 @@ origin/main 비교라 pull 을 트리거하지만 결과가 no-op ("Already up t
 --abbrev-ref HEAD` 가 main 이 아니면 echo 후 `git checkout main` (실패 시 exit).
 Stage 1 이 working tree 를 이미 깨끗하게 만든 뒤라 checkout 은 안전. 재발 진단
 단서 = Stage 3 의 `코드 버전` echo 와 bot.log 시작 라인의 `branch=` 표기.
+
+---
+
+### VM-AP-12 — systemd 서비스 봇에 `nohup` 수동 기동 → 중복 인스턴스 → Conflict/OOM (2026-07-11 발생)
+
+**증상**: 봇 재시작/재배포 후 텔레그램 `getUpdates` **Conflict** 가 간헐 발생하거나,
+1GB VM(E2.1.Micro)이 무거운 보고서 중 **전면 OOM 프리즈**(SSH·모든 서비스 동시 사망).
+`pgrep -af 'src\.main'` 에 **2개 이상** 인스턴스가 뜬다(systemd MainPID + 수동 nohup PID).
+
+**원인**: 이 VM 의 봇은 이미 systemd 서비스 `agents-reviewer.service`(enabled)로 관리되는데,
+재시작을 `nohup python -m src.main` 로 안내·실행하면 **systemd 인스턴스에 더해 수동
+인스턴스가 중복**으로 뜬다. 두 봇이 같은 토큰으로 polling → Conflict. 메모리도 이중
+점유(수동 인스턴스가 보고서 돌며 100MB+ 로 비대) → 스왑 없는 1GB 에서 OOM 프리즈.
+근본은 §1 의 legacy `pkill`+`nohup` 블록이 systemd 도입 사실을 반영 못 한 것 +
+CLAUDE.md 에 재시작 규칙이 확정형으로 없어 매 세션 nohup 을 재발명한 것.
+
+**Fix (2026-07-11)**: ① 재배포·재시작 표준을 **`sudo systemctl restart agents-reviewer.service`**
+한 줄로 확정(§1 상단 박스). ② CLAUDE.md 최상단에 '🔴 봇 재시작·운영 SSOT' 블록 신설
+(nohup 금지 명문화). ③ 스왑 4G 추가(OOM 프리즈 완충, E2.1.Micro 필수). 중복 정리는
+`SYSPID=$(systemctl show -p MainPID --value agents-reviewer.service)` 후 그 외 `src.main`
+PID 만 `kill`.
 
 ---
 
