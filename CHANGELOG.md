@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.3.6
+last_synced_with: v8.4.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.4.0 — osint_generator 저장소로 번들 직접 미러 (`json/` 폴더)
+
+보고서마다 생성되는 `.bundle.json`(텔레그램에 `📦 영상 제작용 번들`로 첨부되는 것과 동일 파일)을 영상 파이프라인 repo(`doroper98/osint_generator`)의 `json/` 폴더로 자동 push 하는 두 번째 미러 타깃 신설. 지금까지 osint 쪽은 텔레그램 첨부로만 번들을 받았는데, 이제 자기 repo 에서 보고서 생성 시마다 바로 집어갈 수 있다. `GitHubMirror.for_osint(config)` — 기존 raw 미러(`GITHUB_MIRROR_*`)와 독립된 `GITHUB_OSINT_*` config 4종(token/repo/branch/path, path 기본 `json`). 대상 repo 가 *private* 이라 별도 PAT 필요(`GITHUB_OSINT_TOKEN`, 비면 `GITHUB_MIRROR_TOKEN` 폴백 — 같은 PAT 가 양쪽 권한 시). **`degraded`(생성 실패/열화) 보고서·르포는 push 하지 않는다** — 편집장 타임아웃/파싱불가/CLI오류로 minimal fallback 된 것은 `composed_report.degraded==True` 게이트로 제외(사용자 요청). 토큰/repo 미설정 시 `enabled` False → graceful skip(Cloudflare/raw 미러 흐름 byte-equal). `report_synthesizer` 가 raw 미러 직후 호출. 회귀 `tests/test_github_mirror.py` 6종(osint config 읽기·mirror 토큰 폴백·osint 토큰 우선·`push_files` 성공 카운트·disabled 0). `.env.example` + 문서 갱신. (기존 v8.x 정상 번들 63건은 별도 백필로 osint repo 에 적재.)
 
 ## v8.3.6 — 보도 사진 cleared ⇒ credit 필수 불변식 (consumer v0.42.2 정합)
 

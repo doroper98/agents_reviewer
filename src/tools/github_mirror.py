@@ -152,12 +152,47 @@ def build_reports_index(reports_dir: str, *, limit: int | None = None) -> str:
 class GitHubMirror:
     """보고서 산출물을 공개 GitHub repo 로 미러하는 graceful 헬퍼."""
 
-    def __init__(self, config: "Config") -> None:
-        self._token = (getattr(config, "github_mirror_token", "") or "").strip()
-        self._repo = (getattr(config, "github_mirror_repo", "") or "").strip().strip("/")
-        self._branch = (getattr(config, "github_mirror_branch", "") or "main").strip() or "main"
+    def __init__(
+        self,
+        config: "Config",
+        *,
+        token: str | None = None,
+        repo: str | None = None,
+        branch: str | None = None,
+        prefix: str | None = None,
+    ) -> None:
+        # 명시 override 가 있으면 그 값, 없으면 github_mirror_* config 를 읽는다.
+        # override 는 osint_generator 같은 *두 번째* 미러 타깃을 위한 것.
+        self._token = (
+            token if token is not None else getattr(config, "github_mirror_token", "") or ""
+        ).strip()
+        self._repo = (
+            repo if repo is not None else getattr(config, "github_mirror_repo", "") or ""
+        ).strip().strip("/")
+        _branch = branch if branch is not None else getattr(config, "github_mirror_branch", "") or "main"
+        self._branch = (_branch or "main").strip() or "main"
         # repo 안에서 보고서를 둘 경로 prefix (예: "reports"). 빈 값이면 repo 루트.
-        self._prefix = (getattr(config, "github_mirror_path", "") or "").strip().strip("/")
+        _prefix = prefix if prefix is not None else getattr(config, "github_mirror_path", "") or ""
+        self._prefix = (_prefix or "").strip().strip("/")
+
+    @classmethod
+    def for_osint(cls, config: "Config") -> "GitHubMirror":
+        """osint_generator(영상 파이프라인) repo 로 번들을 미러하는 변형.
+
+        github_osint_* config 를 읽되, 토큰이 비면 github_mirror_token 으로 폴백
+        (같은 PAT 가 양쪽 접근 권한을 가지는 경우). 토큰/repo 미설정 시 ``enabled``
+        False → 호출부 graceful skip.
+        """
+        token = (getattr(config, "github_osint_token", "") or "").strip()
+        if not token:
+            token = (getattr(config, "github_mirror_token", "") or "").strip()
+        return cls(
+            config,
+            token=token,
+            repo=getattr(config, "github_osint_repo", "") or "",
+            branch=getattr(config, "github_osint_branch", "") or "main",
+            prefix=getattr(config, "github_osint_path", "") or "",
+        )
 
     @property
     def enabled(self) -> bool:
@@ -210,6 +245,33 @@ class GitHubMirror:
         if html_raw_url:
             logger.info("[github_mirror] mirrored to %s", html_raw_url)
         return html_raw_url
+
+    async def push_files(self, filepaths: list[str]) -> int:
+        """파일들을 repo 에 push 하고 성공 개수를 반환. HTML raw url 을 돌려주는
+        ``mirror`` 와 달리 산출물 종류에 무관하게 순수 업로드만 한다 (osint 번들
+        미러용). graceful — 비활성/실패 시 0.
+        """
+        if not self.enabled:
+            return 0
+
+        headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "agents-reviewer-mirror",
+        }
+        ok_count = 0
+        try:
+            async with aiohttp.ClientSession(timeout=_TIMEOUT, headers=headers) as session:
+                for fp in filepaths:
+                    if not fp or not os.path.isfile(fp):
+                        continue
+                    if await self._put_file(session, fp, os.path.basename(fp)):
+                        ok_count += 1
+        except Exception as e:  # 네트워크 차단·예외 → 보고서 진행 우선
+            logger.warning("[github_mirror] push_files failed: %s", e)
+            return ok_count
+        return ok_count
 
     async def _put_file(
         self, session: aiohttp.ClientSession, filepath: str, filename: str

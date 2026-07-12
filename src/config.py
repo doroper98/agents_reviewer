@@ -51,6 +51,31 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("GITHUB_MIRROR_PATH", "github_mirror_path"),
     )
 
+    # v8.4.0 — osint_generator 저장소로 번들(.bundle.json) 직접 미러. 영상 파이프라인
+    # (doroper98/osint_generator) 이 보고서마다 생성되는 번들을 자기 repo 의 ``json/``
+    # 폴더에서 바로 집어갈 수 있게 한다. github raw mirror 와 독립된 두 번째 미러
+    # 타깃 — 대상 repo 가 *private* 이라 별도 토큰이 필요하다 (private repo Contents
+    # read/write 권한 PAT). 토큰 미설정 시 ``github_mirror_token`` 로 폴백(같은 PAT 가
+    # 양쪽 접근 권한을 가지면 재사용). 토큰·repo 둘 다 없으면 graceful skip — 기존
+    # 흐름 byte-equal. *degraded(생성 실패/열화) 보고서는 push 하지 않는다* (호출부
+    # 게이트). .env 에만 보관, git 커밋 금지.
+    github_osint_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("GITHUB_OSINT_TOKEN", "github_osint_token"),
+    )
+    github_osint_repo: str = Field(  # "owner/repo" 형식
+        default="doroper98/osint_generator",
+        validation_alias=AliasChoices("GITHUB_OSINT_REPO", "github_osint_repo"),
+    )
+    github_osint_branch: str = Field(
+        default="main",
+        validation_alias=AliasChoices("GITHUB_OSINT_BRANCH", "github_osint_branch"),
+    )
+    github_osint_path: str = Field(  # repo 안 번들 경로 prefix
+        default="json",
+        validation_alias=AliasChoices("GITHUB_OSINT_PATH", "github_osint_path"),
+    )
+
     # v5.2.0 — Market data fetcher API keys (src/tools/market_fetcher.py).
     # 셋 다 비어있어도 보고서 정상 진행 — 차트만 빈 series 로 emit. 각 키는
     # 무료 발급:
