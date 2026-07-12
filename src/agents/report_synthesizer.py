@@ -1271,6 +1271,33 @@ class ReportSynthesizer:
         except Exception as e:
             logger.warning(f"[report_synthesizer] GitHub mirror failed: {e}")
 
+        # v8.4.0 — osint_generator(영상 파이프라인) 저장소로 번들 직접 미러.
+        # 텔레그램에 첨부되는 것과 동일한 ``.bundle.json`` 을 대상 repo 의 ``json/``
+        # 폴더에 push 해, 영상 쪽이 자기 repo 에서 바로 집어갈 수 있게 한다.
+        # *생성 실패/열화(degraded) 보고서는 보내지 않는다* (사용자 요청) —
+        # 편집장 타임아웃/파싱불가/CLI오류로 minimal fallback 된 보고서·르포는 제외.
+        # 토큰/repo 미설정 시 graceful skip (기존 흐름 byte-equal).
+        try:
+            _cr = getattr(result, "composed_report", None)
+            _degraded = bool(getattr(_cr, "degraded", False)) if _cr else False
+            if bundle_filepath and os.path.exists(bundle_filepath) and not _degraded:
+                from src.tools.github_mirror import GitHubMirror
+                osint_mirror = GitHubMirror.for_osint(self.config)
+                if osint_mirror.enabled:
+                    n_ok = await osint_mirror.push_files([bundle_filepath])
+                    if n_ok:
+                        logger.info(
+                            "[report_synthesizer] osint bundle mirrored: %s -> %s/%s",
+                            os.path.basename(bundle_filepath),
+                            osint_mirror._repo, osint_mirror.path_prefix,
+                        )
+            elif _degraded:
+                logger.info(
+                    "[report_synthesizer] osint mirror skipped (degraded report)"
+                )
+        except Exception as e:
+            logger.warning(f"[report_synthesizer] osint mirror failed: {e}")
+
         # Upload entire reports directory to Cloudflare Pages
         report_url = await self._upload_to_cloudflare(filepath)
         if report_url:

@@ -19,6 +19,11 @@ def _cfg(**kw) -> SimpleNamespace:
         github_mirror_repo="",
         github_mirror_branch="main",
         github_mirror_path="reports",
+        # v8.4.0 — osint_generator 번들 미러
+        github_osint_token="",
+        github_osint_repo="doroper98/osint_generator",
+        github_osint_branch="main",
+        github_osint_path="json",
     )
     base.update(kw)
     return SimpleNamespace(**base)
@@ -180,3 +185,52 @@ def test_mirror_skips_missing_files(tmp_path) -> None:
         url = asyncio.run(m.mirror([str(html), str(tmp_path / "missing.md")]))
     assert url.endswith("/a.html")
     assert len(fake.puts) == 1
+
+
+# ─── v8.4.0 osint_generator 번들 미러 ────────────────────────────
+
+
+def test_for_osint_reads_osint_config() -> None:
+    m = GitHubMirror.for_osint(_cfg(github_osint_token="ot"))
+    assert m.enabled is True
+    assert m._repo == "doroper98/osint_generator"
+    assert m.path_prefix == "json"
+    assert m._repo_path("analysis_x.bundle.json") == "json/analysis_x.bundle.json"
+
+
+def test_for_osint_disabled_without_any_token() -> None:
+    # osint 토큰도 mirror 토큰도 없으면 graceful skip
+    assert GitHubMirror.for_osint(_cfg()).enabled is False
+
+
+def test_for_osint_falls_back_to_mirror_token() -> None:
+    # osint 전용 토큰이 비면 mirror 토큰으로 폴백 (같은 PAT 양쪽 권한 시)
+    m = GitHubMirror.for_osint(_cfg(github_mirror_token="mtok"))
+    assert m.enabled is True
+    assert m._token == "mtok"
+
+
+def test_for_osint_prefers_osint_token() -> None:
+    m = GitHubMirror.for_osint(_cfg(github_osint_token="ot", github_mirror_token="mtok"))
+    assert m._token == "ot"
+
+
+def test_push_files_returns_success_count(tmp_path) -> None:
+    b1 = tmp_path / "analysis_a.bundle.json"
+    b2 = tmp_path / "analysis_b.bundle.json"
+    b1.write_text("{}", encoding="utf-8")
+    b2.write_text("{}", encoding="utf-8")
+    m = GitHubMirror.for_osint(_cfg(github_osint_token="ot"))
+    fake = _FakeSession()
+    with patch("src.tools.github_mirror.aiohttp.ClientSession", return_value=fake):
+        n = asyncio.run(m.push_files([str(b1), str(b2), str(tmp_path / "missing.json")]))
+    assert n == 2
+    # json/ prefix 경로로 PUT
+    assert all("/contents/json/" in u for u in fake.puts)
+
+
+def test_push_files_disabled_returns_zero(tmp_path) -> None:
+    b1 = tmp_path / "analysis_a.bundle.json"
+    b1.write_text("{}", encoding="utf-8")
+    m = GitHubMirror.for_osint(_cfg())  # 토큰 없음 → disabled
+    assert asyncio.run(m.push_files([str(b1)])) == 0
