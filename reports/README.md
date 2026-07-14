@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 289건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 290건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-07-14 18:47 | 코스피 반등·코스닥 사이드카 — 블랙먼데이 다음날 | 국내 주식시장 마감 브리핑 | [md](analysis_20260714_184756_0d8f74d5ef.md) · [json](analysis_20260714_184756_0d8f74d5ef.json) · [bundle](analysis_20260714_184756_0d8f74d5ef.bundle.json) |
 | 2026-07-14 06:28 | 2026-07-14 일일 브리핑: 미·이란 재충돌·코스피 7000 붕괴·이재명 미래대응기금 | 종합(산업·지정학·정치·전쟁) | [md](analysis_20260714_062859_e1ae334ce3.md) · [json](analysis_20260714_062859_e1ae334ce3.json) · [bundle](analysis_20260714_062859_e1ae334ce3.bundle.json) |
 | 2026-07-13 19:04 | 코스피 7.96% 폭락·서킷브레이커 발동 (2026-07-13) | 국내 증시 / 시장 구조 | [md](analysis_20260713_190442_e0707cd5d4.md) · [json](analysis_20260713_190442_e0707cd5d4.json) · [bundle](analysis_20260713_190442_e0707cd5d4.bundle.json) |
 | 2026-07-13 06:17 | 2026-07-13 아침 종합 브리핑: 파리 정상회의·이란 정전 붕괴·한국 반도체 슈퍼사이클·Apple vs OpenAI | 종합(산업·지정학·정치·전쟁) | [md](analysis_20260713_061707_33faa06c50.md) · [json](analysis_20260713_061707_33faa06c50.json) · [bundle](analysis_20260713_061707_33faa06c50.bundle.json) |
