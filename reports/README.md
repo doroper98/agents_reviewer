@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 301건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 302건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-07-21 18:46 | 2026-07-21 한국 증시 마감 — 반도체 투톱 급반등에 코스피 3.56% 상승, 매수 사이드카 발동 | market_close_daily / equity / KR | [md](analysis_20260721_184630_63fa774c73.md) · [json](analysis_20260721_184630_63fa774c73.json) · [bundle](analysis_20260721_184630_63fa774c73.bundle.json) |
 | 2026-07-21 06:21 | 2026-07-21 아침 일일 브리핑: 코스피 4.46% 급락·미이란 전쟁 9일차·AI 반도체 조정 | 산업/지정학/전쟁 종합 | [md](analysis_20260721_062140_a31789356a.md) · [json](analysis_20260721_062140_a31789356a.json) · [bundle](analysis_20260721_062140_a31789356a.bundle.json) |
 | 2026-07-20 18:46 | Analysis |  | [md](analysis_20260720_184621_a0b2541df7.md) · [json](analysis_20260720_184621_a0b2541df7.json) · [bundle](analysis_20260720_184621_a0b2541df7.bundle.json) |
 | 2026-07-20 06:17 | 2026-07-20 아침 일일 브리핑: 이란·우크라 이중전선, 영국 총리 교체, 한국 반도체 쇼크 | 종합 브리핑 (지정학·전쟁·정치·산업) | [md](analysis_20260720_061711_ff607d50b3.md) · [json](analysis_20260720_061711_ff607d50b3.json) · [bundle](analysis_20260720_061711_ff607d50b3.bundle.json) |
