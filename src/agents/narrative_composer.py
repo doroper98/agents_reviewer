@@ -1165,15 +1165,19 @@ class NarrativeComposer:
     실패 시 ``compose()`` 가 ``None`` 반환 → 호출자가 폴백 archetype 으로 재라우팅.
     """
 
-    # Opus 4.7 모델 ID. config.model_name 이 4.6 이라도 composer 만 4.7 사용.
-    COMPOSER_MODEL: str = "claude-opus-4-7"
-    # v8.2.2 — 르포(reportage) 전용 모델. 르포는 탐사 페르소나·점잇기·시나리오 추론
-    # 등 *더 높은 추론*을 요구하므로 한 단계 위 모델(Opus 4.8)로 작성한다. 일반
-    # 보고서는 COMPOSER_MODEL(4.7) 그대로 — report_format != "reportage" 면 무변경.
-    COMPOSER_MODEL_REPORTAGE: str = "claude-opus-4-8"
+    # v8.5.0 — Opus 5 모델 ID. config.model_name 이 legacy 라도 composer 는 직접 지정.
+    COMPOSER_MODEL: str = "claude-opus-5"
+    # v8.2.2 에서 르포(reportage) 전용으로 한 단계 위 모델(당시 Opus 4.8)을 썼으나,
+    # v8.5.0 부터 일반·르포 모두 Opus 5 로 통일 (Opus 5 가 4.8 을 상회). 분기 배선은
+    # 향후 상위 모델 재분리를 위해 보존 — report_format != "reportage" 면 무변경.
+    COMPOSER_MODEL_REPORTAGE: str = "claude-opus-5"
+    # v8.5.0 — 모델 안전망(v8.2.7)의 *최후 폴백* 모델. 주 모델(Opus 5)이 작성·재시도
+    # 전부 미파싱/실패일 때 minimal fallback(열화 발행) 전에 딱 1회 시도하는, 오래
+    # 검증된 구세대 모델. 주 모델과 반드시 *다른* 값이어야 안전망이 작동한다.
+    COMPOSER_MODEL_STABLE: str = "claude-opus-4-7"
 
     def _model_for_format(self, report_format: str) -> str:
-        """report_format → composer 모델 ID. 르포만 4.8, 그 외 4.7 (byte-equal)."""
+        """report_format → composer 모델 ID. v8.5.0 부터 둘 다 Opus 5 (배선은 보존)."""
         if report_format == "reportage":
             return self.COMPOSER_MODEL_REPORTAGE
         return self.COMPOSER_MODEL
@@ -1369,28 +1373,29 @@ class NarrativeComposer:
                         self._last_failure_reason = "편집장이 빈 응답을 반환함"
             if attempt < self.COMPOSE_MAX_ATTEMPTS:
                 await asyncio.sleep(self.COMPOSE_RETRY_BACKOFF_S * attempt)
-        # v8.2.7 — 모델 안전망 (WRITE-AP-25 계열, 2026-06-27 르포 회귀). 르포 전용
-        # 모델(4.8)로 작성·재시도가 *모두* 미파싱/실패면, 발행 가능 보고서 0건으로
-        # 떨어져 minimal fallback(588자 미파싱 → 1-섹션 열화 발행)을 내보내기 전에,
-        # 검증된 안정 모델(COMPOSER_MODEL=4.7)로 *마지막 한 번* 더 시도한다. 4.8 이
-        # 긴 르포 JSON 계약을 불안정하게 따를 때 4.7 이 받아낸다. 일반 보고서는
-        # use_model == COMPOSER_MODEL 이라 이 분기 자체를 타지 않아 byte-equal.
-        if composed is None and use_model != self.COMPOSER_MODEL:
+        # v8.2.7 — 모델 안전망 (WRITE-AP-25 계열, 2026-06-27 르포 회귀). 주 모델로
+        # 작성·재시도가 *모두* 미파싱/실패면, 발행 가능 보고서 0건으로 떨어져
+        # minimal fallback(588자 미파싱 → 1-섹션 열화 발행)을 내보내기 전에,
+        # 오래 검증된 안정 모델(COMPOSER_MODEL_STABLE=4.7)로 *마지막 한 번* 더
+        # 시도한다. v8.5.0 — 주 모델이 일반·르포 모두 Opus 5(신모델)로 통일되면서
+        # 안전망 대상도 전 포맷으로 확장 (구현은 폴백 모델 상수 분리로 동일 branch).
+        if composed is None and use_model != self.COMPOSER_MODEL_STABLE:
             logger.warning(
                 "[unified_composer] %s 작성 전부 실패(%s) — 안정 모델 %s 로 폴백 재시도",
-                use_model, self._last_failure_reason or "원인 미상", self.COMPOSER_MODEL,
+                use_model, self._last_failure_reason or "원인 미상",
+                self.COMPOSER_MODEL_STABLE,
             )
             fb_raw: str | None
             try:
                 if self.config.use_cli_mode:
                     fb_raw = await self._call_cli(
                         user_message, timeout_s=timeout_s, system_prompt=sys_prompt,
-                        model=self.COMPOSER_MODEL,
+                        model=self.COMPOSER_MODEL_STABLE,
                     )
                 else:
                     fb_raw = await self._call_api(
                         user_message, mode=mode, system_prompt=sys_prompt,
-                        model=self.COMPOSER_MODEL,
+                        model=self.COMPOSER_MODEL_STABLE,
                     )
             except _ComposerTimeout as e:
                 fb_raw = e.partial or None  # 부분 출력이라도 살려본다
@@ -1403,7 +1408,7 @@ class NarrativeComposer:
                     composed = salvaged
                     logger.info(
                         "[unified_composer] 안정 모델(%s) 폴백 성공 (%d sections)",
-                        self.COMPOSER_MODEL, len(composed.sections),
+                        self.COMPOSER_MODEL_STABLE, len(composed.sections),
                     )
         if composed is None:
             return None

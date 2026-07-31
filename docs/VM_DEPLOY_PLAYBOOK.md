@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.3.0
+last_synced_with: v8.5.0
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -388,6 +388,28 @@ grep -E 'Starting Event Analysis Team bot' bot.log | tail -1
 
 # 코드 버전 (떠있는 봇과 일치해야 — 불일치는 VM-AP-4)
 grep '^VERSION = ' src/orchestrator.py
+```
+
+### CLI 구독 인증 만료 점검 (2026-07-31 실제 사고 — 보고서 전면 실패의 1순위 용의자)
+
+봇은 Claude Code CLI 구독 플랜으로 돈다 (CLAUDE.md '운영 모드 SSOT'). CLI 의 OAuth
+토큰이 만료되면 **봇·텔레그램은 멀쩡한데 모든 보고서 생성만 실패** 한다 (LLM 호출이
+전부 401). 보고서가 연속 실패하면 가장 먼저 이걸 확인:
+
+```bash
+# is_error:false + result 에 응답 텍스트면 정상. "OAuth access token has expired" 면 만료.
+claude -p "ping" --output-format json
+```
+
+만료 시 조치 (VM 에서, 봇 재시작 불요 — CLI subprocess 가 매 호출마다 자격증명을 읽음):
+
+```bash
+# 대화형 로그인: 출력되는 URL 을 로컬 브라우저에서 열고, 코드를 터미널에 붙여넣기.
+claude
+# 프롬프트에서: /login   → 완료 후 /exit
+
+# 확인
+claude -p "ping" --output-format json
 ```
 
 ### 보고서 생성 진행 여부 (이전 bot-if-working 대체)

@@ -238,8 +238,8 @@ def test_editor_critique_default_empty() -> None:
 
 
 def test_editor_class_constants_match_plan_5_3() -> None:
-    """Plan §5.3 — claude-opus-4-7, MAX_TOKENS=16000."""
-    assert Editor.EDITOR_MODEL == "claude-opus-4-7"
+    """Plan §5.3 — composer 동일 모델(v8.5.0 부터 claude-opus-5), MAX_TOKENS=16000."""
+    assert Editor.EDITOR_MODEL == "claude-opus-5"
     assert Editor.MAX_TOKENS == 16000
 
 
@@ -249,5 +249,5 @@ def test_editor_init_smoke() -> None:
     config = Config()
     editor = Editor(config)
     assert editor.name == "editor"
-    assert editor.model_name == "claude-opus-4-7"
+    assert editor.model_name == "claude-opus-5"
     assert editor.system_prompt == SYSTEM_PROMPT

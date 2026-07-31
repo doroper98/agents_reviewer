@@ -137,7 +137,7 @@ last_review: 2026-05-05
 > `## 조치 · 종결` 에 기록해 교신과 코드 변경을 연결한다.
 
 ## Project Overview
-텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 4.7 + NarrativeComposer Opus 4.7) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+텔레그램 메시지 → **2-call Tier 4 파이프라인** (ContextAnalyst Opus 5 + NarrativeComposer Opus 5, v8.5.0) → mono 테마 HTML 보고서 → Cloudflare Pages 배포. 시스템 흐름 SSOT 는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 > **V5 리팩토링 진행 중.** [REFACTOR_V5_PLAN.md](REFACTOR_V5_PLAN.md) 가 v5.0.0 의 4-Tier 17-Phase 마스터 플랜 SSOT. 현재는 Phase 0 (Baseline + SSOT Repair) 에 진입한 상태이고, v4.5.7 baseline 으로 코드·문서 정합성을 복원하는 작업이 진행된다. 코드는 v4.5.7 그대로 유지된다.
 
@@ -145,7 +145,7 @@ last_review: 2026-05-05
 
 ## Tech Stack (v4.5.7)
 - Language: Python 3.11+
-- AI 모델: **claude-opus-4-7** (composer + context, 일관) · **claude-opus-4-8** (르포 composer 전용, v8.2.2 — `NarrativeComposer.COMPOSER_MODEL_REPORTAGE`, report_format=reportage 일 때만) · claude-sonnet-4-6 (legacy 보존)
+- AI 모델: **claude-opus-5** (composer + context + 르포, v8.5.0 부터 일관 — 구 4.7/4.8. 르포 분기 배선 `NarrativeComposer.COMPOSER_MODEL_REPORTAGE` 은 보존, 값 동일) · claude-sonnet-4-6 (legacy 보존)
 - AI 호출: Claude Code CLI (--dangerously-skip-permissions) 또는 Anthropic API
 - Messaging: python-telegram-bot
 - Data Validation: Pydantic v2
@@ -159,12 +159,12 @@ last_review: 2026-05-05
 
 ## Agents (v4.5.7 Tier 4)
 실제 호출되는 에이전트는 **2개**:
-1. **ContextAnalyst** (Opus 4.7, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 수집. mode 별 max_tokens (fast 4K / standard 4K / deep 10K, v4.5.7).
-2. **NarrativeComposer** (Opus 4.7, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 작성 + 차트 / 지도 데이터 emit. mode 별 max_tokens (fast 12K / standard 20K / deep 32K, v4.5.4 의 `MAX_TOKENS_BY_MODE`).
+1. **ContextAnalyst** (Opus 5, 웹 검색) — 사실 / 타임라인 / 핵심 수치 / 출처 수집. mode 별 max_tokens (fast 4K / standard 4K / deep 10K, v4.5.7).
+2. **NarrativeComposer** (Opus 5, 단일 호출) — 행위자 / 구조 / 시나리오 / 모순 분석 + 보고서 작성 + 차트 / 지도 데이터 emit. mode 별 max_tokens (fast 12K / standard 20K / deep 32K, v4.5.4 의 `MAX_TOKENS_BY_MODE`).
 
 V5 Phase 1A 부터 추가 가능한 에이전트:
 
-3. **ResearchDirector** (Opus 4.7, MAX_TOKENS=6000) — `Config.enable_research_director` 가 켜진 환경 (env: `V5_RESEARCH_DIRECTOR=1`) 에서만 호출. 사용자 질의 + EvidencePack 을 받아 AnalysisBrief (분석 설계도 — thesis / selected_methods / report_shape / visual_constraints / strategic_hint) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 꺼진 환경에선 `design_via_heuristics` 결정적 fallback 이 LLM 호출 없이 동일 형태로 emit. 9종 method SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](docs/RESEARCH_DIRECTOR_METHODS.md).
+3. **ResearchDirector** (Opus 5, MAX_TOKENS=6000) — `Config.enable_research_director` 가 켜진 환경 (env: `V5_RESEARCH_DIRECTOR=1`) 에서만 호출. 사용자 질의 + EvidencePack 을 받아 AnalysisBrief (분석 설계도 — thesis / selected_methods / report_shape / visual_constraints / strategic_hint) 를 emit. 디폴트 OFF — v4.5.7 호출 경로 byte-equal 보존. 꺼진 환경에선 `design_via_heuristics` 결정적 fallback 이 LLM 호출 없이 동일 형태로 emit. 9종 method SSOT: [docs/RESEARCH_DIRECTOR_METHODS.md](docs/RESEARCH_DIRECTOR_METHODS.md).
 
 > legacy 7-agent (PlayerAnalyst, DynamicsAnalyst, ChainReactionAnalyst, ScenarioArchitect, SynthesisJudge, QualityInspector, VisualAnalyst) 는 v4.0.0 부터 호출 안 됐고 **v5.2.9 에서 모듈 자체가 삭제됨**. 11-lens pool + 11-archetype matrix 는 모듈 보존 (lens registry 가 `src/orchestrator.py:get_lens` 에서 import 되지만 호출 경로 없음).
 

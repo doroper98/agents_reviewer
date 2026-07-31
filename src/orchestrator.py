@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.4.0"
+VERSION = "v8.5.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1948,9 +1948,9 @@ class Orchestrator:
         )
 
         # -- Phase 2: UnifiedComposer — 분석 + 작성 단일 호출 --
-        # v8.2.3 — 르포는 Opus 4.8, 일반은 4.7. 알림 라벨도 실제 호출 모델과 정합.
+        # v8.2.3 — 알림 라벨은 실제 호출 모델과 정합. v8.5.0 — 일반·르포 모두 Opus 5.
         _composer_model_used = self.narrative_composer._model_for_format(report_format)
-        _model_label = "Opus 4.8" if report_format == "reportage" else "Opus 4.7"
+        _model_label = "Opus 5"
         await self._notify(
             f"✍️ 편집장 ({_model_label}): 행위자/구조/시나리오/모순 분석 + 보고서 작성 (단일 호출)",
             status_callback,
