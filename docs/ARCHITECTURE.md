@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.2.0
+last_synced_with: v8.5.0
 ssot_for:
   - "시스템 아키텍처 다이어그램 (v5.1.0 Tier 4)"
   - "2-call 파이프라인 흐름"
@@ -43,8 +43,8 @@ flowchart TD
     DEEP --> P1
 
     subgraph PIPELINE ["v4.5.7 Tier 4 — LLM 호출 2회"]
-        P1["Phase 1 — ContextAnalyst (Opus 4.7, 웹 검색)<br/>max_tokens: fast/standard 4K, deep 10K (v4.5.7)<br/>→ ContextAnalysis (사실/타임라인/핵심수치/출처)"]
-        P1 --> P2["Phase 2 — NarrativeComposer (Opus 4.7, 단일 호출)<br/>max_tokens: fast 12K / standard 20K / deep 32K (v4.5.4)<br/>→ ComposedReport (headline/sections/charts/map/<br/>watch_signals/contradictions/confidence)"]
+        P1["Phase 1 — ContextAnalyst (Opus 5, 웹 검색)<br/>max_tokens: fast/standard 4K, deep 10K (v4.5.7)<br/>→ ContextAnalysis (사실/타임라인/핵심수치/출처)"]
+        P1 --> P2["Phase 2 — NarrativeComposer (Opus 5, 단일 호출)<br/>max_tokens: fast 12K / standard 20K / deep 32K (v4.5.4)<br/>→ ComposedReport (headline/sections/charts/map/<br/>watch_signals/contradictions/confidence)"]
     end
 
     P2 --> P3["Phase 3 — ReportSynthesizer (코드, LLM 0)<br/>freeform_essay.html 렌더 + select_theme(category)<br/>→ Cloudflare Pages 배포"]
@@ -87,11 +87,11 @@ flowchart LR
 
 ## 3. 분석 파이프라인 (Phase 별 상세)
 
-### 3.1 Phase 1 — ContextAnalyst (Opus 4.7, 웹 검색)
+### 3.1 Phase 1 — ContextAnalyst (Opus 5, 웹 검색)
 
 | 항목 | 값 |
 |------|-----|
-| 모델 | `claude-opus-4-7` (v4.1.0 부터 — Sonnet 4.6 폐기) |
+| 모델 | `claude-opus-5` (v8.5.0 부터 — 구 claude-opus-4-7, v4.1.0 에서 Sonnet 4.6 폐기) |
 | 호출 방식 | Claude Code CLI subprocess 또는 Anthropic API |
 | 검색 | WebFetch / WebSearch 허용 |
 | max_tokens | fast 4096 · standard 4096 · deep 10000 (v4.5.7 — `BaseAgent._max_tokens_override`) |
@@ -99,13 +99,13 @@ flowchart LR
 | 출력 | `ContextAnalysis` (event_name, category, summary, timeline, key_figures, sources, instruments_mentioned, time_series) |
 | 책무 | 사건의 사실 / 타임라인 / 핵심 수치 / 출처 URL 만 수집. 분석 / 결론 / 시나리오는 *작성하지 않는다*. |
 
-v4.1.0 에서 ContextAnalyst 가 Opus 4.7 로 상향된 이유는 *2-call 파이프라인에서 context 가 composer 가 보는 유일한 사실 입력* 이기 때문이다. 사실 추출 품질 = 보고서 품질의 상한.
+v4.1.0 에서 ContextAnalyst 가 composer 동일 상위 모델로 상향된 이유는 *2-call 파이프라인에서 context 가 composer 가 보는 유일한 사실 입력* 이기 때문이다. 사실 추출 품질 = 보고서 품질의 상한.
 
-### 3.2 Phase 2 — NarrativeComposer (Opus 4.7, 단일 호출)
+### 3.2 Phase 2 — NarrativeComposer (Opus 5, 단일 호출)
 
 | 항목 | 값 |
 |------|-----|
-| 모델 | `claude-opus-4-7` |
+| 모델 | `claude-opus-5` (v8.5.0 부터 — 일반·르포 동일) |
 | 호출 방식 | Claude Code CLI subprocess 또는 Anthropic API |
 | max_tokens | fast 12000 · standard 20000 · deep 32000 (v4.5.4 — `MAX_TOKENS_BY_MODE`) |
 | 입력 | `ContextAnalysis` + mode |
@@ -289,7 +289,7 @@ Cloudflare Pages 가 CDN 캐시.
 | 영역 | 기술 | 비고 |
 |------|------|------|
 | 언어 | Python 3.11+ | async/await, type hints |
-| AI 모델 | `claude-opus-4-7` (composer + context, v4.1.0 부터 일관) | claude-sonnet-4-6 보존 (legacy 코드 경로) |
+| AI 모델 | `claude-opus-5` (composer + context, v8.5.0 부터 — 구 claude-opus-4-7) | claude-sonnet-4-6 보존 (legacy 코드 경로) |
 | AI 호출 | Claude Code CLI (Max 플랜 인증) 또는 Anthropic API | subprocess `--dangerously-skip-permissions --allowedTools "WebFetch,WebSearch"` |
 | 메시징 | python-telegram-bot | 비동기 텔레그램 봇 |
 | 데이터 검증 | Pydantic v2 | 모든 데이터 모델 (raw dict 금지) |
@@ -332,8 +332,8 @@ TelegramBot (Application.run_polling)
     │                     ├── BriefingSubscriberRegistry.list_all() 순회
     │                     └── per chat_id:
     │                          Orchestrator.run_analysis(prompt, chat_id, mode='deep')
-    │                          → ContextAnalyst (Opus 4.7, 웹 검색)
-    │                          → NarrativeComposer (Opus 4.7, 5~7 섹션 + 모순 명시)
+    │                          → ContextAnalyst (Opus 5, 웹 검색)
+    │                          → NarrativeComposer (Opus 5, 5~7 섹션 + 모순 명시)
     │                          → Cloudflare Pages 배포 → chat 송신
     │
     └── _on_app_post_shutdown
@@ -419,9 +419,9 @@ Phase 4.5 [V3 Step 5-B] 📒 Watchlist Registry
 - **Phase 4** ([§11](../REFACTOR_V5_PLAN.md)) — Exhibit 번호제. `src/visual/exhibit_numbering.py`. `[[ex:N]]` / `[[exr:N]]` / `[[exs:N-M]]` 정규식 + 자동 번호 부여 (AP-V5-6) + plain text/HTML anchor 양쪽 치환 + Phase 7A exhibit_ref_broken 사전 가드. Renderer Jinja filter 결합 시 활성.
 - **Phase 5** ([§12](../REFACTOR_V5_PLAN.md)) — Word Budget + 절단 회복. `src/visual/word_budget.py`. mode 별 분량 budget (Plan §12.3) + `COMPOSER_MAX_TOKENS_V5` (Plan §12.6 — *v4.5.7 deep 32K → V5 64K* 한계 해소) + 5종 절단 시그널 결정적 검출 + 연속 호출 stitching (Plan §12.5) + gini 비대칭 측정. **V5 의 마지막 Phase — Tier 4 종료.**
 - **Phase 3** ([§10](../REFACTOR_V5_PLAN.md)) — Layout Primitives. `src/state/models.py:LayoutPrimitive` Literal 9종 (standard / hero_map / hero_chart / split_2col / sidebar_callout / qna_panel / timeline_strip / signature_summary / exhibit_grid) + AP-V5-3 강제 (분석 모드 9종 동결). `src/agents/layout_typesetter.py` (Sonnet 4.6) 가 섹션별 layout 결정 — 60~70% standard + 액센트 정책. `plan_layouts_via_heuristics` 결정적 fallback. HTML 템플릿은 별도 작업.
-- **Phase 1** ([§5](../REFACTOR_V5_PLAN.md)) — Editor Pass. `src/agents/editor.py` (Opus 4.7, 16K) 가 Composer DraftReport 받아 7-rubric (군더더기/결론의 칼날/모순 봉합/차트-본문 결합/분량 비대칭/신선함/외래어 풀이) 비평·재집필. `EditedReport` 모델 (ComposedReport 호환). `assert_signal_count_preserved` 가 Anti-pattern #5 (모순 봉합) 회귀 차단. opt-in flag `V5_EDITOR_PASS=1`. *V5 의 보고서 글쓰기 품질 개선 시작점*.
+- **Phase 1** ([§5](../REFACTOR_V5_PLAN.md)) — Editor Pass. `src/agents/editor.py` (Opus 5, 16K — v8.5.0 격상) 가 Composer DraftReport 받아 7-rubric (군더더기/결론의 칼날/모순 봉합/차트-본문 결합/분량 비대칭/신선함/외래어 풀이) 비평·재집필. `EditedReport` 모델 (ComposedReport 호환). `assert_signal_count_preserved` 가 Anti-pattern #5 (모순 봉합) 회귀 차단. opt-in flag `V5_EDITOR_PASS=1`. *V5 의 보고서 글쓰기 품질 개선 시작점*.
 - **Phase 8 + 8A** ([§17 + §18](../REFACTOR_V5_PLAN.md)) — Strategic Mode (의사결정 보조). `docs/STRATEGIC_MODE_PROMPT.md` (composer system prompt 확장 SSOT) + `src/agents/strategic_router.py` (prefix 7종 + 패턴 8종 + AP-V5-23 fallback) + `src/state/models.py` 의 `StrategicReport` 8 필수 출력 (Plan §18.3) + `run_strategic_kill_rules` (Plan §17.6 + §18.4 의 9종, AP-V5-18 갱신 — 옵션 0개 hold). `evaluate_strategic_mode` 가 publish/hold/kill 판정. 회귀 테스트 30건 라벨에서 routing 100% 정확도 (Plan §17.7 #1 ≥90% 통과).
-- **Phase 7** ([§16](../REFACTOR_V5_PLAN.md)) — Desk Editor (Logical + Visual Proof). `src/agents/desk_editor.py` (Opus 4.7 vision, MAX_TOKENS 8000) + `src/visual/capture.py` (Playwright wrapper, graceful skip) + `docs/DESK_VISUAL_RUBRIC.md` (append-only Visual 8-rubric SSOT, Plan §16.12 self-improving). 권한 위계 — Revise 권한 (lower editor) / **KILL 권한 (Desk 단독)**. Logical 7-rubric + Visual 8-rubric 결합 검수. 자동 KILL_RULES (Logical 5 + Visual 3) 가 LLM 결과와 *독립* 으로 발화 (AP-V5-14). HOLD_DISPATCH 17종 매트릭스. opt-in flag `V5_DESK_EDITOR=1`. *V5 의 가장 큰 사용자 체감 변화 시작점*.
+- **Phase 7** ([§16](../REFACTOR_V5_PLAN.md)) — Desk Editor (Logical + Visual Proof). `src/agents/desk_editor.py` (Opus 5 vision, MAX_TOKENS 8000 — v8.5.0 격상) + `src/visual/capture.py` (Playwright wrapper, graceful skip) + `docs/DESK_VISUAL_RUBRIC.md` (append-only Visual 8-rubric SSOT, Plan §16.12 self-improving). 권한 위계 — Revise 권한 (lower editor) / **KILL 권한 (Desk 단독)**. Logical 7-rubric + Visual 8-rubric 결합 검수. 자동 KILL_RULES (Logical 5 + Visual 3) 가 LLM 결과와 *독립* 으로 발화 (AP-V5-14). HOLD_DISPATCH 17종 매트릭스. opt-in flag `V5_DESK_EDITOR=1`. *V5 의 가장 큰 사용자 체감 변화 시작점*.
 - **Phase 7A** ([§15](../REFACTOR_V5_PLAN.md)) — Deterministic Publish Gate. `src/visual/deterministic_gate.py` 신설. DeskEditor (Phase 7 LLM) 호출 *전* 11종 Hard fail (html_render/parseable/required_section/exhibit_ref/chart_source/chart_container/report_short/closing/asset_404/mobile_overflow/playwright_timeout) + 5종 Soft fail (gini/chart_count/heading/watch_signal/stale_source) 결정적 검사. Hard fail 1건이라도 → decision='kill' → LLM 호출 0 (AP-V5-29 강제). Tier 2 종료.
 - **Phase 6A** ([§14](../REFACTOR_V5_PLAN.md)) — Exhibit Priority Policy. `ExhibitPriority` 3-tier (required / supporting / decorative) + `RequiredExhibit` 모델 (Plan §14.4) + `AnalysisMethod.required_exhibits: list[RequiredExhibit]` 강화. `run_chart_gate(priority, required_fallback_form)` 가 priority 별 분기 — required 는 AP-V5-28 강제 (drop 금지, 데이터 결손 시에도 placeholder text emit). `ChartGateResult.required_fallback_used` 가 DeskEditor hold 사유 신호. `FallbackLadder.to_table` 추가 — 행 다수 데이터의 표 격하.
 - **Phase 6** ([§13](../REFACTOR_V5_PLAN.md)) — Chart Correctness Gate (4중 게이트). `src/visual/schemas.py` (9종 type 별 Pydantic 가드 — CHART-AP-1/3/7/12/13 차단) + `src/visual/sanity_check.py` (Plan §13.4 의 SVG 정적 검증, lxml 의존, AP-5/6/10/12 catch) + `src/agents/chart_critic.py` (Sonnet 4.6 — Plan §13.3 의 7-question critic, AP-V5-7 + AP-14 catch) + `src/visual/chart_gate.py` (`run_chart_gate` 통합 + Plan §13.5 Fallback Ladder 3단계: fact_grid → 자연어 → drop). 깨진 차트 보고서 노출 0건 목표.
@@ -453,10 +453,10 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    REQ["AnalysisRequest"] --> CTX["ContextAnalyst (Phase 1)<br/>Opus 4.7"]
+    REQ["AnalysisRequest"] --> CTX["ContextAnalyst (Phase 1)<br/>Opus 5"]
     CTX --> EP["EvidencePack<br/>(Phase 0C adapter)"]
     EP --> FLAG{"Config.enable_research_director?<br/>(env V5_RESEARCH_DIRECTOR=1)"}
-    FLAG -->|"True (opt-in)"| RD["ResearchDirector.design()<br/>Opus 4.7, MAX_TOKENS=6000"]
+    FLAG -->|"True (opt-in)"| RD["ResearchDirector.design()<br/>Opus 5, MAX_TOKENS=6000"]
     FLAG -->|"False (default)"| HEUR["design_via_heuristics()<br/>(LLM 0, 결정적)"]
     RD --> AB["AnalysisBrief<br/>(thesis + selected_methods +<br/>report_shape + visual_constraints)"]
     HEUR --> AB

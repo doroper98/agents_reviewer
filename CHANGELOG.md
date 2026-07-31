@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.4.0
+last_synced_with: v8.5.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.0 — 보고서 파이프라인 모델 Opus 5 격상
+
+보고서 생성이 실패하는 문제 대응 + 사용자 요청으로 파이프라인 전 Opus 계열 모델을 **`claude-opus-5`** 로 격상. Opus 5 는 Opus 4.8 과 동일 가격의 상위 모델(1M context / 128K output)이라 드롭인 교체.
+
+- **모델 통일** — ContextAnalyst(`context_analyst.py`) + NarrativeComposer(`COMPOSER_MODEL`/`COMPOSER_MODEL_REPORTAGE` 둘 다, 일반·르포 동일) + V5 opt-in 4종(Editor/ResearchDirector/VisualPlanner/DeskEditor)을 `claude-opus-4-7`/`claude-opus-4-8` → `claude-opus-5`. 르포 분기 배선(`_model_for_format`)은 향후 상위 모델 재분리 대비로 보존(값 동일). chart_critic 등 light 경로(sonnet-4-6)는 불변.
+- **모델 안전망 전 포맷 확장 (`COMPOSER_MODEL_STABLE`)** — v8.2.7 안전망(주 모델 전부 미파싱/실패 시 안정 모델 최후 1회)의 폴백 모델을 `COMPOSER_MODEL` 에서 별도 상수 `COMPOSER_MODEL_STABLE=claude-opus-4-7`(오래 검증된 구세대)로 분리. 주 모델이 신모델 Opus 5 로 통일되면서 (구현상 자연히) 일반 보고서도 안전망 대상에 포함 — 신모델 초기 불안정 대비. 회귀 `test_reportage_model_fallback.py` 2종 갱신.
+- **바이라인·라벨 정합** — `critic_loop._pretty_writer` 에 단일 메이저 버전 ID 매핑 추가(`claude-opus-5` → 'Claude Opus 5'; 기존 `X-Y` 매핑은 그대로). orchestrator 텔레그램 진행 알림 라벨을 'Opus 5' 단일 값으로 (구 4.8/4.7 ternary 제거).
+- **회귀 테스트 갱신** — `test_reportage_format.py`(모델 상수·라벨 marker) / `test_codex_loop.py`(_pretty_writer opus-5) / `test_editor.py`(EDITOR_MODEL).
+- **문서** — CLAUDE.md Tech Stack·Agents, docs/ARCHITECTURE.md §3.1/§3.2·다이어그램, README. 과거 버전 항목(v8.2.x 등)의 4.7/4.8 표기는 이력이므로 불변.
+- **운영 노트** — VM 반영은 `git pull` + `sudo systemctl restart agents-reviewer.service`. 재배포 전 CLI 에서 `claude -p "ping" --model claude-opus-5 --output-format json` 1회 확인 권장.
 
 ## v8.4.0 — osint_generator 저장소로 번들 직접 미러 (`json/` 폴더)
 

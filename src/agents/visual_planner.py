@@ -207,11 +207,11 @@ class VisualPlanner(BaseAgent):
     환경에서만 호출. 꺼져 있으면 plan_via_heuristics 가 fallback.
 
     [모델·예산]
-        PLANNER_MODEL = "claude-opus-4-7"
+        PLANNER_MODEL = "claude-opus-5"
         MAX_TOKENS = 12000  (Plan §7.3)
     """
 
-    PLANNER_MODEL = "claude-opus-4-7"
+    PLANNER_MODEL = "claude-opus-5"
     MAX_TOKENS = 12000
 
     def __init__(self, config: Config) -> None:

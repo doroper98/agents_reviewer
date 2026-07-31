@@ -437,7 +437,7 @@ class ResearchDirector(BaseAgent):
     AnalysisBrief 를 emit.
 
     [모델·예산]
-        DIRECTOR_MODEL = "claude-opus-4-7"  (분석기법 선택은 Opus capability)
+        DIRECTOR_MODEL = "claude-opus-5"  (분석기법 선택은 Opus capability)
         MAX_TOKENS     = 6000               (Plan §21 Phase 1A 추정)
 
     [사용]
@@ -454,7 +454,7 @@ class ResearchDirector(BaseAgent):
         + telemetry 에 ``research_director_fallback=true`` 기록.
     """
 
-    DIRECTOR_MODEL = "claude-opus-4-7"
+    DIRECTOR_MODEL = "claude-opus-5"
     MAX_TOKENS = 6000
 
     def __init__(self, config: Config) -> None:

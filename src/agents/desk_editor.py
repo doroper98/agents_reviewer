@@ -376,14 +376,14 @@ def dispatch_hold_action(action: str) -> tuple[str, str] | None:
 
 
 class DeskEditor(BaseAgent):
-    """Plan §16.2 의 DeskEditor — Opus 4.7 vision (이미지 입력).
+    """Plan §16.2 의 DeskEditor — Opus 5 vision (이미지 입력, v8.5.0 격상).
 
     [모델·예산 — Plan §16.2]
-        DESK_MODEL = "claude-opus-4-7"  (vision capability 필수)
-        MAX_TOKENS = 8000                (Logical only ~7K, Visual 추가 ~6K)
+        DESK_MODEL = "claude-opus-5"  (vision capability 필수)
+        MAX_TOKENS = 8000              (Logical only ~7K, Visual 추가 ~6K)
     """
 
-    DESK_MODEL = "claude-opus-4-7"
+    DESK_MODEL = "claude-opus-5"
     MAX_TOKENS = 8000
 
     def __init__(self, config: Config) -> None:

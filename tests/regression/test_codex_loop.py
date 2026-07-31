@@ -386,6 +386,7 @@ def test_diff_span_shows_only_changed_region() -> None:
 def test_pretty_writer_version() -> None:
     assert _pretty_writer("claude-opus-4-7") == "Claude Opus 4.7"
     assert _pretty_writer("claude-sonnet-4-6") == "Claude Sonnet 4.6"
+    assert _pretty_writer("claude-opus-5") == "Claude Opus 5"  # v8.5.0
     assert _pretty_writer("") == "Claude (Opus)"
 
 

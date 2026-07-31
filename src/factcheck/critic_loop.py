@@ -99,7 +99,7 @@ class CriticLoopResult(BaseModel):
 
 
 def _pretty_writer(model_id: str) -> str:
-    """모델 ID → 사람-읽기 (예: 'claude-opus-4-7' → 'Claude Opus 4.7'). 바이라인용."""
+    """모델 ID → 사람-읽기 (예: 'claude-opus-5' → 'Claude Opus 5'). 바이라인용."""
     s = (model_id or "").strip()
     if not s:
         return "Claude (Opus)"
@@ -107,6 +107,12 @@ def _pretty_writer(model_id: str) -> str:
     s = re.sub(
         r"(opus|sonnet|haiku)-(\d+)-(\d+)",
         lambda m: f"{m.group(1).capitalize()} {m.group(2)}.{m.group(3)}",
+        s,
+    )
+    # v8.5.0 — 단일 메이저 버전 ID (예: 'claude-opus-5' → 'Claude Opus 5').
+    s = re.sub(
+        r"(opus|sonnet|haiku)-(\d+)$",
+        lambda m: f"{m.group(1).capitalize()} {m.group(2)}",
         s,
     )
     return s

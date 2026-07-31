@@ -290,15 +290,15 @@ def detect_cliches(text: str) -> list[str]:
 
 
 class Editor(BaseAgent):
-    """Plan §5.3 의 Editor — composer 와 *동일* 모델 (Opus 4.7), system prompt
-    만 다름.
+    """Plan §5.3 의 Editor — composer 와 *동일* 모델 (v8.5.0 부터 Opus 5),
+    system prompt 만 다름.
 
     [모델·예산 — Plan §5.3]
-        EDITOR_MODEL = "claude-opus-4-7"
+        EDITOR_MODEL = "claude-opus-5"
         MAX_TOKENS = 16000   (편집은 분량 *유지 또는 축소*. 32K 불필요)
     """
 
-    EDITOR_MODEL = "claude-opus-4-7"
+    EDITOR_MODEL = "claude-opus-5"
     MAX_TOKENS = 16000
 
     def __init__(self, config: Config) -> None:

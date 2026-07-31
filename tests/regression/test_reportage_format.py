@@ -173,47 +173,48 @@ def test_payload_reportage_without_directive_omits_field() -> None:
 
 
 # --------------------------------------------------------------------------
-# v8.2.2 — 르포 전용 모델 (Opus 4.8), 일반은 4.7
+# v8.2.2 — 르포 전용 모델 분기 배선. v8.5.0 — 일반·르포 모두 Opus 5 로 통일.
 # --------------------------------------------------------------------------
 
 
-def test_reportage_uses_opus_4_8() -> None:
+def test_reportage_uses_opus_5() -> None:
     nc = NarrativeComposer(Config(_env_file=None))
-    assert nc._model_for_format("reportage") == "claude-opus-4-8"
-    assert nc.COMPOSER_MODEL_REPORTAGE == "claude-opus-4-8"
+    assert nc._model_for_format("reportage") == "claude-opus-5"
+    assert nc.COMPOSER_MODEL_REPORTAGE == "claude-opus-5"
 
 
-def test_standard_keeps_opus_4_7() -> None:
+def test_standard_uses_opus_5() -> None:
     nc = NarrativeComposer(Config(_env_file=None))
-    # 일반 보고서·빈 값·미지정은 모두 기존 4.7 (byte-equal 모델 경로)
-    assert nc._model_for_format("standard") == "claude-opus-4-7"
-    assert nc._model_for_format("") == "claude-opus-4-7"
-    assert nc.COMPOSER_MODEL == "claude-opus-4-7"
+    # 일반 보고서·빈 값·미지정은 모두 COMPOSER_MODEL (Opus 5) 경로
+    assert nc._model_for_format("standard") == "claude-opus-5"
+    assert nc._model_for_format("") == "claude-opus-5"
+    assert nc.COMPOSER_MODEL == "claude-opus-5"
 
 
-def test_pretty_writer_maps_4_8() -> None:
-    """v8.2.3 — 바이라인 모델 ID → 사람-읽기 매핑이 4.8 도 지원해야 한다."""
+def test_pretty_writer_maps_opus_5() -> None:
+    """v8.2.3 신설, v8.5.0 확장 — 바이라인 모델 ID → 사람-읽기 매핑."""
     from src.factcheck.critic_loop import _pretty_writer
     assert _pretty_writer("claude-opus-4-7") == "Claude Opus 4.7"
     assert _pretty_writer("claude-opus-4-8") == "Claude Opus 4.8"
+    assert _pretty_writer("claude-opus-5") == "Claude Opus 5"
 
 
-def test_orchestrator_notify_label_uses_reportage_model() -> None:
-    """v8.2.3 — 진행 알림 라벨이 르포면 'Opus 4.8' / 일반이면 'Opus 4.7' 로 분기.
+def test_orchestrator_notify_label_matches_composer_model() -> None:
+    """v8.2.3 — 진행 알림 라벨은 실제 호출 모델과 정합해야 한다 (v8.5.0: Opus 5).
 
     회귀: 사용자 보고(2026-06-24) — 텔레그램에 '편집장 (Opus 4.7)' 이 르포에서도
-    하드코딩으로 박혀, 실제로는 4.8 로 호출됐는데 라벨만 4.7. 본 테스트가 source
-    에서 라벨 분기 보장.
+    하드코딩으로 박혀, 실제로는 4.8 로 호출됐는데 라벨만 4.7. v8.5.0 부터 일반·르포
+    모두 Opus 5 이므로 라벨도 'Opus 5' 단일 값 — 옛 4.x 라벨 잔재를 차단.
     """
     from pathlib import Path
     src = (Path(__file__).resolve().parents[2] / "src" / "orchestrator.py").read_text(encoding="utf-8")
-    # 옛 하드코딩 ('편집장 (Opus 4.7):') 은 사라져야
+    # 옛 하드코딩 라벨 잔재 금지
     assert "편집장 (Opus 4.7):" not in src, (
-        "orchestrator 에 하드코딩된 '편집장 (Opus 4.7):' 잔재 — 르포 4.8 분기와 충돌"
+        "orchestrator 에 하드코딩된 '편집장 (Opus 4.7):' 잔재"
     )
-    # 새 동적 라벨 분기 marker 가 있어야
-    assert '"Opus 4.8" if report_format == "reportage" else "Opus 4.7"' in src, \
-        "format-별 라벨 분기 누락"
+    assert '"Opus 4.8" if report_format == "reportage"' not in src, \
+        "옛 4.8/4.7 라벨 분기 잔재 — v8.5.0 부터 Opus 5 단일 라벨"
+    assert '_model_label = "Opus 5"' in src, "Opus 5 알림 라벨 누락"
     assert "_model_for_format(request.report_format)" in src, \
         "byline writer 모델이 _model_for_format 으로 분기되지 않음"
 
