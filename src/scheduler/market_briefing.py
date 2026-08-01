@@ -315,6 +315,8 @@ async def _market_brief_for_chat(
         # v7.9.0 — 장마감 브리핑 전용: KOSPI200 선물·옵션(그릭) + 시장 폭(등락 종목 수)
         # 실데이터를 KRX 에서 fetch 해 key_figures·차트로 주입. 다른 보고서엔 미적용.
         fetch_kr_market_internals=True,
+        # v8.5.3 — 보고서 목록 [장마감브리핑] 배지 판별용 출처 표식.
+        report_kind="market_briefing",
     )
 
     # 텍스트 보고서 청크 + glossary 송신 제거 (v5.1.1 의 daily_briefing 도 추후 같은 정리

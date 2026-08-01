@@ -1773,13 +1773,11 @@ tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:non
             else:
                 display_date = fname
             title = fname
-            # v8.5.2 — 르포 판별. 목록에서 한눈에 구분되도록 [르포] 배지를 붙인다
-            # (CLAUDE.md v8.0.0 설계 — 본문·제목엔 '르포' 단어 금지, UI 배지로만).
-            # 판별은 HTML 머리 3000자 안에서 끝난다(제목 추출과 같은 read 재사용,
-            # 추가 파일 IO 0): ① <meta name="report-format" content="reportage">
-            # (v8.5.2~ 신규 발행분) ② data-theme="reportage_*" 폴백 — v8.0.0~v8.5.1
-            # 사이에 이미 발행돼 meta 가 없는 르포도 재렌더 없이 배지가 붙는다.
-            is_rep = False
+            # v8.5.2/v8.5.3 — 종류 배지 ([르포]/[일일브리핑]/[장마감브리핑]).
+            # 판별 로직은 src/tools/report_kind.py 가 SSOT (GitHub 미러 README 와
+            # 공유 — 두 목록이 어긋나지 않게). 여기서 읽은 HTML 머리를 넘겨 주면
+            # 그 안에서 끝나는 경우 추가 파일 IO 가 없다.
+            content = ""
             try:
                 with open(rpath, "r", encoding="utf-8") as fr:
                     content = fr.read(3000)
@@ -1787,13 +1785,18 @@ tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:non
                     cand = content.split("<title>")[1].split("</title>")[0].strip()
                     if cand and cand != "Analysis":
                         title = cand
-                is_rep = (
-                    'name="report-format" content="reportage"' in content
-                    or 'data-theme="reportage' in content
-                )
             except Exception:
                 pass
-            badge = '<span class="badge-rep">르포</span>' if is_rep else ""
+            badge = ""
+            try:
+                from src.tools.report_kind import badge_label, detect_report_kind
+                label = badge_label(
+                    detect_report_kind(output_dir, fname[:-len(".html")], html_head=content)
+                )
+                if label:
+                    badge = f'<span class="badge-rep">{label}</span>'
+            except Exception:  # noqa: BLE001 — 배지는 부가정보. 실패해도 목록은 나간다.
+                pass
             rows.append(
                 f'<tr><td class="cell-title">{badge}<a href="{fname}">{title}</a></td>'
                 f'<td class="cell-date">{display_date}</td></tr>'

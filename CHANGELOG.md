@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.2
+last_synced_with: v8.5.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.3 — 보고서 목록에 [일일브리핑] · [장마감브리핑] 배지 (구 발행분 소급)
+
+사용자 요청 — "전체보고서 목록에 장마감브리핑, 일일브리핑 헤더도 추가해놔."
+
+- **출처 표식 신설** — `AnalysisRequest.report_kind`(`standard`/`daily_briefing`/`market_briefing`). 스케줄러가 `run_analysis(report_kind=...)` 로 요청 시점에 심는다. mode(깊이)·report_format(장르)과 직교한 세 번째 축(*누가 왜 만들었나*). **제목·분류로 추측하지 않는다** — 둘 다 LLM 생성이라 같은 브리핑도 매번 다르게 나온다(실측: '조간 종합 브리핑' / '아침 일일 브리핑' / 'market_close_daily / equity / KR'). 추측 판별은 오분류를 낳는다.
+- **판별 SSOT 통합** — 신규 [src/tools/report_kind.py](src/tools/report_kind.py) 가 유일한 판별 진입점. 목록이 두 곳(Pages 관리자 목록 / GitHub 미러 README)이라 로직을 두 번 쓰면 반드시 어긋난다(v8.5.2 의 르포 배지가 실제로 한쪽에만 있었다). 르포 배지도 이 모듈로 흡수.
+- **구 발행분 소급** — v8.5.3 이전 브리핑에는 `report_kind` 가 없지만, 스케줄러가 만든 **고정 프롬프트 문구**가 `request.event_description` 에 그대로 저장돼 있어 정확히 판별된다. 실 발행분 287건에 돌려 일일 71 · 장마감 40 · 르포 26 · 수동 150 으로 전수 분류, 오분류·누락 0 확인(스케줄 시간대의 미분류 20건은 전부 같은 시간에 만든 수동 요청임을 원문으로 확인).
+- **장마감 판별 함정** — 장마감 프롬프트는 앞에 페르소나(실측 ~8.8K자)가 붙어 요청 문구가 9K자 뒤로 밀린다. JSON 머리를 4KB 만 읽던 첫 구현이 실 발행분 40건을 전부 놓쳤다 → 페르소나 헤더(`Market Briefing Persona`)를 마커로 추가 + head 16KB 로 확대. 회귀 테스트가 이 케이스를 고정.
+- **표기** — Pages 관리자 목록은 배지 span, GitHub README 는 `[일일브리핑] ` 접두. 수동 보고서는 배지 없음.
+- **회귀** `tests/regression/test_report_kind_badge.py` 11종 — meta/JSON/프롬프트 3경로 판별 · 페르소나 뒤 마커 · 수동 오부착 방지 · 스케줄러 문구↔마커 정합(프롬프트를 고치면 실패) · 목록 2곳 통합. 변이 주입으로 non-vacuous 확인.
 
 ## v8.5.2 — 르포 목록 등록 확인 + [르포] 배지 표기 (Pages 목록 · 전문 헤더)
 

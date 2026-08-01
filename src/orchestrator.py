@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.5.2"
+VERSION = "v8.5.3"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -1610,6 +1610,7 @@ class Orchestrator:
         mode: AnalysisMode | None = None,
         parent_context: ParentContext | None = None,
         fetch_kr_market_internals: bool = False,
+        report_kind: str = "standard",
     ) -> FullAnalysisResult:
         """v4.0.0 Tier 4: 2-call unified pipeline.
 
@@ -1666,6 +1667,8 @@ class Orchestrator:
             emit_bundle=emit_bundle,
             report_format=report_format,
             user_directive=user_directive,
+            # v8.5.3 — 스케줄러가 심는 출처 표식. 목록 배지 판별 SSOT.
+            report_kind=report_kind,
         )
         result = FullAnalysisResult(request=request, parent_context=parent_context)
 

@@ -29,6 +29,12 @@ class AnalysisRequest(BaseModel):
     # 주입돼 "어느 실타래를 당길지" 를 지시 (ContextAnalyst 증류로 거세되던 채널 복원).
     # 주관적 앵글은 fact-critic 검증 면제, 그 안의 검증가능 사실 주장만 grounding 대상.
     user_directive: str = ""
+    # v8.5.3: 보고서 *출처*(누가 왜 만들었나). report_format(장르)·mode(깊이)와 직교.
+    # 스케줄러가 명시 설정 — 수동 /analyze 는 "standard". 보고서 목록의 배지
+    # ([일일브리핑]/[장마감브리핑]) 판별 SSOT. 제목·분류는 LLM 생성이라 제각각이라
+    # (실측: '조간 종합 브리핑'/'아침 일일 브리핑'/'market_close_daily') 추측 판별은
+    # 오분류를 낳는다 — 요청 시점에 심는 이 필드만 신뢰한다.
+    report_kind: Literal["standard", "daily_briefing", "market_briefing"] = "standard"
 
 
 class ContextAnalysis(BaseModel):

@@ -246,6 +246,8 @@ async def _briefing_for_chat(
         chat_id=chat_id,
         status_callback=status_callback,
         mode=mode,
+        # v8.5.3 — 보고서 목록 [일일브리핑] 배지 판별용 출처 표식.
+        report_kind="daily_briefing",
     )
 
     # 1) Text report (best-effort, chunked).

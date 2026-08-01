@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
+{# v8.5.3 — 보고서 종류 기계 표식. 목록 페이지가 HTML 머리만 읽고
+   [일일브리핑]/[장마감브리핑] 배지를 붙이는 근거 (src/tools/report_kind.py).
+   일반 보고서(standard)면 아예 안 찍어 기존 발행분과 동일. #}
+{% set _kind = (result.request.report_kind if result.request else 'standard') %}
+{% if _kind and _kind != 'standard' %}<meta name="report-kind" content="{{ _kind }}">
+{% endif %}<title>{{ result.composed_report.headline if result.composed_report else (result.context.event_name or 'Analysis') }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
