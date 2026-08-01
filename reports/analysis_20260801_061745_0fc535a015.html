@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
 <title>코스피 하루에 17.91%, 반등인가 요동인가</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1424,13 +1426,21 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 .freeform-section .container{max-width:780px}
 .freeform-kicker{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:8px}
 .freeform-heading{font-family:'Newsreader','Noto Serif KR',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--fg-1,#F0E2CC);margin:0 0 16px}
-.freeform-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400}
-.freeform-prose p{margin:0 0 16px}
+/* v8.5.1 — 줄글 양끝 정렬 (사용자 요청). 기존 왼쪽 정렬은 오른쪽 끝단이
+   들쭉날쭉해 단정한 느낌이 없었다. 르포 템플릿(.rep-prose, v8.2.15)과 같은
+   조합을 쓴다: text-align:justify 로 양끝을 맞추되, ①word-break:keep-all 로
+   한글은 *어절 단위* 로만 줄바꿈(단어 중간 절단 금지 — 한글 조판 관례) ②
+   text-align-last:left 로 문단 마지막 줄은 늘리지 않음(끝 줄이 억지로 벌어지는
+   전형적 justify 결함 차단) ③overflow-wrap:break-word 로 긴 URL·영문 토큰이
+   컨테이너를 넘지 않게. 본문 정렬 SSOT — 새 줄글 블록 추가 시 이 3종 동반. */
+.freeform-prose{font-size:15.5px;line-height:1.85;color:var(--fg-2,#D4C4AA);font-weight:400;
+  text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
+.freeform-prose p{margin:0 0 16px;text-align:justify;text-align-last:left}
 .freeform-prose strong, .freeform-prose b{color:var(--fg-1,#F0E2CC);font-weight:600}
 .freeform-prose em, .freeform-prose i{color:var(--accent,#C9A84C);font-style:normal}
 .freeform-prose blockquote{margin:18px 0;padding:6px 0 6px 16px;border-left:3px solid var(--accent,#C9A84C);color:var(--fg-1,#F0E2CC);font-style:italic;font-size:16.5px}
 .freeform-prose ul, .freeform-prose ol{margin:0 0 16px;padding-left:22px}
-.freeform-prose li{margin-bottom:6px}
+.freeform-prose li{margin-bottom:6px;text-align:justify;text-align-last:left}
 /* v5.8.1 — pull_quote 재설계 (C안 양쪽 룰). 기존 background + border-radius +
    border-left 4px 의 "AI 인용 박스" 룩 폐기. 배경 제거 + 좌우 가는 룰(accent
    2px) + 이탤릭 세리프로 편집 디자인 인용 톤. 메시지는 그대로, 형상만 절제. */
@@ -1444,13 +1454,16 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 .freeform-closing{padding:32px 0 48px;background:var(--bg-3,#1B1010)}
 .freeform-closing .container{max-width:780px}
 .freeform-closing-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#C9A84C);margin-bottom:10px}
-.freeform-closing-body{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2,#D4C4AA);font-style:italic}
+.freeform-closing-body{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;line-height:1.7;color:var(--fg-2,#D4C4AA);font-style:italic;
+  text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
 /* v4.5.0 — editorial 컴포넌트 (LG AI Seminar 차용) */
-.freeform-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:18.5px;line-height:1.65;color:var(--fg-1,#F0E2CC);font-weight:400;font-style:italic;margin:0 0 22px;padding:0 0 18px;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.20))}
+.freeform-lede{font-family:'Newsreader','Noto Serif KR',serif;font-size:18.5px;line-height:1.65;color:var(--fg-1,#F0E2CC);font-weight:400;font-style:italic;margin:0 0 22px;padding:0 0 18px;border-bottom:1px solid var(--border-soft,rgba(125,98,76,0.20));
+  text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
 .freeform-analogy{margin:24px 0;padding:18px 22px;background:var(--bg-2,rgba(0,0,0,0.10));border:1px solid var(--border-soft,rgba(125,98,76,0.30));border-left:4px solid var(--accent,#B05A38);border-radius:0 8px 8px 0}
 .freeform-analogy-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent,#B05A38);margin-bottom:8px}
 .freeform-analogy-title{font-family:'Newsreader','Noto Serif KR',serif;font-size:16.5px;font-weight:700;line-height:1.4;color:var(--fg-1);margin-bottom:8px}
-.freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2)}
+.freeform-analogy-body{font-size:14.5px;line-height:1.75;color:var(--fg-2);
+  text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
 /* v5.5.5 — 전문 용어 주석 (문단 하단 각주). 일반 독자 우선 = 최우선 가치.
    본문보다 한 단계 작고 차분한 톤으로, 평이한 말로 못 바꾼 용어만 풀어준다. */
 .freeform-footnotes{margin:16px 0 4px;padding:13px 18px;background:var(--bg-2,rgba(0,0,0,0.06));border-left:3px solid var(--border-soft,rgba(125,98,76,0.40));border-radius:0 6px 6px 0}
@@ -1492,8 +1505,10 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 /* v5.5.1 — 모순 섹션 서술형 화. 각 모순 = 한 단락, '그러나' 로 전환, resolution
    으로 착지. 각주형 라벨('근거 충돌:' / '분석가의 정리 —')·border-left 박스 폐기
    (WRITE-AP-9). 강조는 전환점(accent) + 판단(fg-1 bold) 2단만. */
-.contradiction-prose{font-size:15.5px;line-height:1.9;color:var(--fg-2,#D4C4AA);font-weight:400}
-.contradiction-prose p{margin:0 0 20px}
+/* v8.5.1 — 본문과 같은 줄글이므로 양끝 정렬도 동일 (.freeform-prose 주석 참조). */
+.contradiction-prose{font-size:15.5px;line-height:1.9;color:var(--fg-2,#D4C4AA);font-weight:400;
+  text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
+.contradiction-prose p{margin:0 0 20px;text-align:justify;text-align-last:left}
 .contradiction-prose p:last-child{margin-bottom:0}
 .contradiction-prose .ct-turn{color:var(--accent,#C9A84C);font-weight:600}
 .contradiction-prose .ct-evidence{color:var(--fg-3,#A89880)}
@@ -1527,7 +1542,8 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 .epilogue-watch-row.no-deadline{grid-template-columns:1fr}
 .epilogue-watch-deadline{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--accent);letter-spacing:0.4px;line-height:1.5;padding-top:4px;white-space:nowrap}
 .epilogue-watch-signal{font-family:'Newsreader','Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--fg-1);line-height:1.4;margin:0 0 6px}
-.epilogue-watch-desc{font-size:13.5px;line-height:1.7;color:var(--fg-2);margin:0}
+.epilogue-watch-desc{font-size:13.5px;line-height:1.7;color:var(--fg-2);margin:0;
+  text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
 .epilogue-watch-indicates{display:block;margin-top:8px;padding-left:14px;border-left:2px solid var(--accent);font-family:'Newsreader','Noto Serif KR',serif;font-style:italic;font-size:13.5px;line-height:1.65;color:var(--fg-1)}
 .epilogue-watch-indicates::before{content:"시사 — ";font-style:normal;font-family:'IBM Plex Sans KR',sans-serif;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-right:4px}
 /* v5.4.0 — 사진 figure (hero + inline). FT/Economist 스타일. caption 은 Newsreader
@@ -1615,13 +1631,13 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
 
 <header class="freeform-hero">
   <div class="container">
-    <div class="freeform-eyebrow">Event Analysis · Composed · <span class="freeform-version">Analysis Team v8.3.6 · Rev 0.0</span></div>
+    <div class="freeform-eyebrow">Event Analysis · Composed · <span class="freeform-version">Analysis Team v8.5.3 · Rev 0.1</span></div>
     <h1 class="freeform-headline">코스피 하루에 17.91%, 반등인가 요동인가</h1>
     <p class="freeform-deck">7월 29일 FOMC 동결 뒤 미 장기금리가 급등했고, 7월 30일 삼성전자가 분기 사상 최대 실적을 확정했으며, 7월 31일 한미 관세 타결과 함께 코스피가 폭등했다. 어제의 폭등을 오래 갈 이야기로 만들 조건과 되돌릴 조건을 함께 본다.</p>
     <div class="freeform-meta">
       <span>종합(산업/정치/전쟁/지정학)</span>
       <span>2026-08-01</span>
-      <span>2026-08-01 06:17:45</span>
+      <span>2026-08-01 10:28:22</span>
     </div>
     
     
@@ -2639,7 +2655,7 @@ section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
   <div class="footer-byline" style="margin-bottom:10px;font-weight:600;color:var(--accent,#C9A84C)">Claude Opus 4.7 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 6건 반영 · 4건 미해결(신뢰도 반영)</div>
   
   <div class="footer-confidence">Confidence: Context 78%</div>
-  <div>archetype: freeform_essay · Generated 2026-08-01 06:17:45 · Duration: 1063.9s</div>
+  <div>archetype: freeform_essay · Generated 2026-08-01 10:28:22 · Duration: 1063.9s</div>
   
 </footer>
 
