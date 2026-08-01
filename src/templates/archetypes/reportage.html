@@ -11,6 +11,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{# v8.5.2 — 기계 판별용 포맷 마커. 목록 페이지(_generate_index)가 HTML 머리만 읽고
+   [르포] 배지를 붙이는 근거. data-theme 추론보다 명시적이고 테마 개편에 안 깨진다. #}
+<meta name="report-format" content="reportage">
 <title>{{ composed.headline if composed else (result.context.event_name or 'Reportage') }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,8 +27,13 @@
        -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
   .rep-wrap{max-width:820px;margin:0 auto;padding:0 26px 90px}
   /* 상단 바 — 버전만 */
-  .rep-top{display:flex;justify-content:flex-end;align-items:center;border-bottom:1px solid var(--border);
+  /* v8.5.2 — 좌: [르포] 배지 / 우: 버전. 기존엔 flex-end 로 버전만 있었다.
+     CLAUDE.md v8.0.0 설계('본문·제목에 르포 단어 금지, UI 헤더 배지로만')가
+     전문 헤더에는 실제로 구현돼 있지 않던 drift 해소. */
+  .rep-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);
            padding:16px 0 12px;font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-badge{font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--accent);
+             border:1px solid var(--accent);border-radius:2px;padding:2px 7px}
   /* 제목 / 작성일시 */
   .rep-headline{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:44px;
                 line-height:1.12;letter-spacing:-.015em;color:var(--text);margin:34px 0 12px}
@@ -69,7 +77,7 @@
 <body>
 <div class="rep-wrap">
 
-  <div class="rep-top">{% if result.system_version %}{{ result.system_version }} · Rev {{ result.revision_label }}{% endif %}</div>
+  <div class="rep-top"><span class="rep-badge">르포</span><span>{% if result.system_version %}{{ result.system_version }} · Rev {{ result.revision_label }}{% endif %}</span></div>
 
   <h1 class="rep-headline">{{ (composed.headline if composed else (result.context.event_name or 'Reportage')) | strip_md }}</h1>
   <div class="rep-meta">{{ generated_at[:16] }}</div>

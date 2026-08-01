@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.0
+last_synced_with: v8.5.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,34 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.2 — 르포 목록 등록 확인 + [르포] 배지 표기 (Pages 목록 · 전문 헤더)
+
+사용자 확인 요청 — "르포도 보고서 저장되는 웹사이트에 등록되나? 등록될 때 [르포] 헤더를 달고 등록되게 해달라."
+
+**확인 결과 — 저장·등록 자체는 이미 정상.** 르포도 일반 보고서와 *같은* 경로로 `analysis_<id>.html` 로 저장되어 Cloudflare Pages 에 배포되고, 관리자 목록(`_generate_index`)이 `analysis_*.html` 를 glob 하므로 목록에도 이미 올라가 있었다. GitHub raw 미러도 포맷 필터 없이 전 보고서를 push 한다. 빠져 있던 것은 **표기**였고, 이는 CLAUDE.md v8.0.0 이 "보고서 전문 헤더 + 리스트에 [르포] 배지" 라고 적어둔 설계가 코드에 구현돼 있지 않던 문서-코드 drift 였다.
+
+| 표기 위치 | v8.5.1 까지 | v8.5.2 |
+|---|---|---|
+| GitHub 미러 README (`build_reports_index`) | `[르포]` 있음 (v8.0.0) | 유지 |
+| Cloudflare Pages 관리자 목록 (`_generate_index`) | **없음** | `[르포]` 배지 추가 |
+| 르포 보고서 전문 헤더 (`.rep-top`) | **없음** | `[르포]` 배지 추가 |
+
+- **판별 근거 2단** — 목록은 HTML 머리 3000자만 읽어 판별한다(제목 추출 read 재사용, 추가 파일 IO 0). ① `<meta name="report-format" content="reportage">` — `reportage.html` 에 신설, v8.5.2~ 신규 발행분. ② `data-theme="reportage_*"` 폴백 — v8.0.0~v8.5.1 사이 이미 발행돼 meta 가 없는 르포도 **재렌더 없이** 배지가 붙는다.
+- **전문 헤더** — `.rep-top` 을 `flex-end` → `space-between` 으로 바꿔 좌측 `[르포]` 배지 / 우측 버전·Rev. 본문·제목엔 여전히 '르포' 단어를 넣지 않는다(v8.0.0 원칙 유지 — UI 배지로만).
+- **검증** — 실제 `_generate_index` 를 임시 디렉토리에서 돌려 신규 르포(meta)·구 발행 르포(폴백)·일반 보고서 3종 혼재 목록을 생성, 르포 2건에만 배지가 붙는 것을 스크린샷·문자열 양쪽으로 확인. 르포 템플릿도 렌더해 헤더 배지 확인.
+- **회귀** `tests/regression/test_reportage_index_badge.py` 6종 — 등록 자체 가드(목록에 르포 행 존재) · meta/폴백 배지 · 일반 보고서 오부착 방지 · 일반 템플릿의 르포 마커 오염 방지 · GitHub 미러 배지 유지. 변이 주입(폴백 제거)으로 non-vacuous 확인.
+
+## v8.5.1 — 일반 보고서 줄글 양끝 정렬 (오른쪽 끝단 정돈)
+
+사용자 요청 — 일반 보고서 본문의 오른쪽 끝이 들쭉날쭉해 "뒤죽박죽" 하니 르포처럼 오른쪽도 꽉 차게. 르포(`reportage.html`)는 v8.2.15 부터 `.rep-prose` 에 양끝 정렬이 걸려 있었는데 일반 보고서(`freeform_essay.html`)만 왼쪽 정렬로 남아 있던 비대칭을 해소.
+
+- **줄글 6종에 양끝 정렬 3종 조합 적용** — `.freeform-prose`(본문, p/li 포함) · `.contradiction-prose`(모순 산문) · `.freeform-lede`(머리글) · `.freeform-analogy-body`(비유) · `.freeform-closing-body`(맺음말) · `.epilogue-watch-desc`(감시신호 설명). 조합은 르포와 동일: ① `text-align:justify` 양끝 정렬 ② `text-align-last:left` 로 문단 *마지막 줄은 늘리지 않음*(끝 줄이 억지로 벌어지는 전형적 justify 결함 차단) ③ `word-break:keep-all` 로 한글은 어절 단위로만 줄바꿈(단어 중간 절단 금지, 한글 조판 관례) + `overflow-wrap:break-word` 로 긴 URL·영문 토큰 넘침 방지.
+- **비-줄글은 제외** — 제목·라벨·사진 캡션(`figcaption`, v5.5.11 의 명시적 left 유지)·인용 디스플레이(`pull_quote`)·수치 타일은 정렬 대상 아님.
+- **검증** — Playwright/Chromium 으로 실제 템플릿을 렌더해 데스크탑(900px)·모바일(420px) 스크린샷 대조. 데스크탑에서 우측 끝단 완전 정렬 확인, 문단 마지막 줄은 왼쪽 유지. 모바일 좁은 폭의 어절 간격은 르포 본문과 픽셀 단위로 동일(같은 규칙) — 어절 유지를 포기하면 간격은 촘촘해지나 한글 단어가 잘려, 조판 관례상 어절 유지를 택함.
+- **회귀** `tests/regression/test_prose_justify.py` 4종 — 줄글 6종의 3종 조합 + p/li 자식 규칙 + 르포 정합 + figcaption left 고정. 변이 주입으로 non-vacuous 확인.
+- **문서 정합** — v8.5.0 에서 누락됐던 `docs/CATALOGS.md` 의 composer 모델 표기(Opus 4.7 → Opus 5) 동반 정정.
+- **발행본 소급** — CSS 는 보고서 HTML 에 인라인되므로 *이미 발행된 보고서는 자동 반영되지 않는다*. 소급하려면 VM 에서 `scripts/patch_report.py <report_id> --rerender-only`(내용 무변경·URL 보존·revision 소수부 +1).
 
 ## v8.5.0 — 보고서 파이프라인 모델 Opus 5 격상
 
