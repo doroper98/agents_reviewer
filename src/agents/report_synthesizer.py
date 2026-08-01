@@ -1715,6 +1715,7 @@ tbody tr:hover{background:var(--card-hover)}
 .cell-title{padding:14px 16px;border-bottom:1px solid var(--border-soft)}
 .cell-title a{font-family:'Newsreader','Noto Serif KR',serif;color:var(--text);text-decoration:none;font-weight:700;font-size:15.5px;line-height:1.4;border-bottom:1px solid transparent;transition:border-color .15s,color .15s}
 .cell-title a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.badge-rep{display:inline-block;vertical-align:2px;margin-right:8px;padding:1px 6px;border:1px solid var(--accent);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:1.2px;color:var(--accent);white-space:nowrap}
 .cell-date{padding:14px 16px;border-bottom:1px solid var(--border-soft);color:var(--muted);font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px;white-space:nowrap}
 tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:none}
 .cell-empty{padding:36px 20px;text-align:center;color:var(--muted);font-style:italic;font-size:14px}
@@ -1772,6 +1773,13 @@ tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:non
             else:
                 display_date = fname
             title = fname
+            # v8.5.2 — 르포 판별. 목록에서 한눈에 구분되도록 [르포] 배지를 붙인다
+            # (CLAUDE.md v8.0.0 설계 — 본문·제목엔 '르포' 단어 금지, UI 배지로만).
+            # 판별은 HTML 머리 3000자 안에서 끝난다(제목 추출과 같은 read 재사용,
+            # 추가 파일 IO 0): ① <meta name="report-format" content="reportage">
+            # (v8.5.2~ 신규 발행분) ② data-theme="reportage_*" 폴백 — v8.0.0~v8.5.1
+            # 사이에 이미 발행돼 meta 가 없는 르포도 재렌더 없이 배지가 붙는다.
+            is_rep = False
             try:
                 with open(rpath, "r", encoding="utf-8") as fr:
                     content = fr.read(3000)
@@ -1779,10 +1787,15 @@ tbody tr:last-child .cell-title,tbody tr:last-child .cell-date{border-bottom:non
                     cand = content.split("<title>")[1].split("</title>")[0].strip()
                     if cand and cand != "Analysis":
                         title = cand
+                is_rep = (
+                    'name="report-format" content="reportage"' in content
+                    or 'data-theme="reportage' in content
+                )
             except Exception:
                 pass
+            badge = '<span class="badge-rep">르포</span>' if is_rep else ""
             rows.append(
-                f'<tr><td class="cell-title"><a href="{fname}">{title}</a></td>'
+                f'<tr><td class="cell-title">{badge}<a href="{fname}">{title}</a></td>'
                 f'<td class="cell-date">{display_date}</td></tr>'
             )
         empty_row = '<tr><td colspan="2" class="cell-empty">보고서가 없습니다</td></tr>'

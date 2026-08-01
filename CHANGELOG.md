@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.1
+last_synced_with: v8.5.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.2 — 르포 목록 등록 확인 + [르포] 배지 표기 (Pages 목록 · 전문 헤더)
+
+사용자 확인 요청 — "르포도 보고서 저장되는 웹사이트에 등록되나? 등록될 때 [르포] 헤더를 달고 등록되게 해달라."
+
+**확인 결과 — 저장·등록 자체는 이미 정상.** 르포도 일반 보고서와 *같은* 경로로 `analysis_<id>.html` 로 저장되어 Cloudflare Pages 에 배포되고, 관리자 목록(`_generate_index`)이 `analysis_*.html` 를 glob 하므로 목록에도 이미 올라가 있었다. GitHub raw 미러도 포맷 필터 없이 전 보고서를 push 한다. 빠져 있던 것은 **표기**였고, 이는 CLAUDE.md v8.0.0 이 "보고서 전문 헤더 + 리스트에 [르포] 배지" 라고 적어둔 설계가 코드에 구현돼 있지 않던 문서-코드 drift 였다.
+
+| 표기 위치 | v8.5.1 까지 | v8.5.2 |
+|---|---|---|
+| GitHub 미러 README (`build_reports_index`) | `[르포]` 있음 (v8.0.0) | 유지 |
+| Cloudflare Pages 관리자 목록 (`_generate_index`) | **없음** | `[르포]` 배지 추가 |
+| 르포 보고서 전문 헤더 (`.rep-top`) | **없음** | `[르포]` 배지 추가 |
+
+- **판별 근거 2단** — 목록은 HTML 머리 3000자만 읽어 판별한다(제목 추출 read 재사용, 추가 파일 IO 0). ① `<meta name="report-format" content="reportage">` — `reportage.html` 에 신설, v8.5.2~ 신규 발행분. ② `data-theme="reportage_*"` 폴백 — v8.0.0~v8.5.1 사이 이미 발행돼 meta 가 없는 르포도 **재렌더 없이** 배지가 붙는다.
+- **전문 헤더** — `.rep-top` 을 `flex-end` → `space-between` 으로 바꿔 좌측 `[르포]` 배지 / 우측 버전·Rev. 본문·제목엔 여전히 '르포' 단어를 넣지 않는다(v8.0.0 원칙 유지 — UI 배지로만).
+- **검증** — 실제 `_generate_index` 를 임시 디렉토리에서 돌려 신규 르포(meta)·구 발행 르포(폴백)·일반 보고서 3종 혼재 목록을 생성, 르포 2건에만 배지가 붙는 것을 스크린샷·문자열 양쪽으로 확인. 르포 템플릿도 렌더해 헤더 배지 확인.
+- **회귀** `tests/regression/test_reportage_index_badge.py` 6종 — 등록 자체 가드(목록에 르포 행 존재) · meta/폴백 배지 · 일반 보고서 오부착 방지 · 일반 템플릿의 르포 마커 오염 방지 · GitHub 미러 배지 유지. 변이 주입(폴백 제거)으로 non-vacuous 확인.
 
 ## v8.5.1 — 일반 보고서 줄글 양끝 정렬 (오른쪽 끝단 정돈)
 
