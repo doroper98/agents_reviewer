@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.3
+last_synced_with: v8.5.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,19 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.4 — 지난 거래일 장마감 브리핑 소급 발행 (CLI)
+
+사용자 요청 — "어제자 장마감 보고서를 만들게 할 수 있나?"
+
+정시 스케줄러(18:30 KST)가 못 돈 날(봇 다운·인증 만료·휴장 오판 등)의 장마감 브리핑을 나중에 손으로 만드는 진입점. 스케줄러 경로는 건드리지 않는다.
+
+- **CLI** — `python3 -m src.scheduler.market_briefing yesterday` (기본: 구독자 전원에게 송신). 인자는 `yesterday` / `YYYYMMDD` / `YYYY-MM-DD`. 옵션 `--no-send`(생성만·URL 출력) · `--chat-id N`(반복 지정) · `--mode fast|standard|deep`(기본 deep) · `--force`(휴장일 강행).
+- **브리핑 계약 유지** — 소급 경로도 `fetch_kr_market_internals=True`(KOSPI200 선물·옵션 그릭 + 시장 폭 실데이터, v7.9.0)와 `report_kind="market_briefing"`(목록 `[장마감브리핑]` 배지, v8.5.3)을 그대로 넘긴다. 프롬프트 본문도 스케줄러와 같은 고정 문구라 구 발행분 판별과 정합.
+- **날짜 앵커** — 파생·시장폭 fetch 의 기준일은 `context.date` 를 타고 대상 거래일로 잡힌다(오늘이 아님). 프롬프트에 **[소급 발행]** 지시를 추가해 ① 모든 수치를 대상일 기준으로만 쓰고 ② 이후 거래일 사건을 소급해 섞지 않으며 ③ 첫 단락에서 대상일과 발행일이 다르다는 사실을 명시하게 강제 (WRITE-AP-11/22 계열 차단).
+- **휴장일 가드** — 주말·공휴일은 종가가 없어 기본 거부(`--force` 로만 강행). 스케줄러와 같은 pykrx 거래일 판정 재사용.
+- **정시 경로 byte-equal** — `published_on` 을 안 주거나 대상일==발행일이면 프롬프트가 기존과 완전히 동일. 매일 나가는 브리핑엔 영향 0.
+- **회귀** `tests/regression/test_market_briefing_backfill.py` 7종 — byte-equal · 소급 시점 규율 · 브리핑 계약(실데이터 + 배지 + 고정 문구) · 대상일 반영 · 휴장일 거부 · 날짜 파싱 · CLI 진입점. 변이 5종 주입으로 non-vacuous 확인.
 
 ## v8.5.3 — 보고서 목록에 [일일브리핑] · [장마감브리핑] 배지 (구 발행분 소급)
 

@@ -74,8 +74,15 @@ def _is_krx_trading_day(today: date) -> tuple[bool, str | None]:
         return True, None
 
 
-def _build_market_briefing_prompt(now_local: datetime, persona: str) -> str:
-    """페르소나 + 시장 브리핑 요청. 페르소나가 *앞에* 위치 (사용자 결정)."""
+def _build_market_briefing_prompt(
+    now_local: datetime, persona: str, *, published_on: date | None = None,
+) -> str:
+    """페르소나 + 시장 브리핑 요청. 페르소나가 *앞에* 위치 (사용자 결정).
+
+    ``published_on`` (v8.5.4) — 소급 발행용. 분석 대상일(``now_local``)과 실제
+    발행일이 다를 때만 채운다. 같은 날이거나 ``None`` 이면 정시 스케줄러와
+    byte-equal (기존 경로 무영향).
+    """
     today_str = now_local.strftime("%Y-%m-%d (%a)")
     cutoff_str = now_local.strftime("%H:%M")
     tz_label = (
@@ -116,6 +123,19 @@ def _build_market_briefing_prompt(now_local: datetime, persona: str) -> str:
         f"7. 마지막에 '내일 검증할 후속 신호' 3~5건과 데드라인 제시 "
         f"(감시 신호 시스템 등록 대상).\n"
     )
+
+    # v8.5.4 — 소급 발행 (지난 거래일 브리핑을 나중에 만들 때).
+    # WRITE-AP-11/22 회귀 차단: 분석 대상일 ≠ 발행일이면 그 사실을 본문이 명시하고,
+    # 대상일 이후에 나온 사건·수치를 소급 반영하지 않게 못 박는다.
+    if published_on is not None and published_on != now_local.date():
+        request += (
+            f"8. **[소급 발행 — 중요]** 본 보고서는 {published_on.isoformat()} 에 "
+            f"작성되지만 분석 대상은 {now_local.strftime('%Y-%m-%d')} 정규장 마감이다. "
+            f"모든 시장 수치·수급·종가는 {now_local.strftime('%Y-%m-%d')} 기준으로만 쓰고, "
+            f"그 이후 거래일에 일어난 일을 소급해 섞지 말 것. 첫 단락에서 대상일과 "
+            f"발행일이 다르다는 사실을 한 번 명시한다 (예: '{now_local.strftime('%m월 %d일')} "
+            f"장 마감을 뒤늦게 짚는다'). '오늘'/'현재' 같은 표현으로 두 날짜를 뭉개지 말 것.\n"
+        )
 
     if persona:
         return f"{persona}\n\n---\n\n{request}"
@@ -366,3 +386,205 @@ async def _market_brief_for_chat(
         f"{result.total_duration_seconds:.0f}" if result.total_duration_seconds else "?"
     )
     await send_text_fn(chat_id, f"✅ 장마감 브리핑 완료 (소요시간: {duration}초)")
+
+
+# ======================================================================
+# v8.5.4 — 소급 발행 (지난 거래일 장마감 브리핑을 나중에 생성)
+#
+# 정시 스케줄러(18:30)가 못 돌았거나 봇이 죽어 있었던 날의 브리핑을 손으로
+# 만들기 위한 진입점. 스케줄러 경로(`run_market_briefing_loop`)는 건드리지
+# 않는다 — 이 함수들은 CLI 에서만 호출된다.
+#
+#   python3 -m src.scheduler.market_briefing yesterday
+#   python3 -m src.scheduler.market_briefing 20260731 --no-send
+# ======================================================================
+
+
+def _resolve_target_date(token: str, tz_name: str) -> date:
+    """CLI 인자를 대상 거래일로 변환. ``yesterday`` / ``YYYYMMDD`` / ``YYYY-MM-DD``."""
+    t = token.strip().lower()
+    today = datetime.now(ZoneInfo(tz_name)).date()
+    if t in ("yesterday", "어제"):
+        return today - timedelta(days=1)
+    if t in ("today", "오늘"):
+        return today
+    digits = t.replace("-", "")
+    if len(digits) == 8 and digits.isdigit():
+        return date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
+    raise ValueError(
+        f"날짜를 알 수 없음: {token!r} (yesterday / YYYYMMDD / YYYY-MM-DD)"
+    )
+
+
+async def run_backfill_market_briefing(
+    *,
+    target: date,
+    config,
+    chat_ids: list[int] | None = None,
+    mode: "AnalysisMode" = "deep",
+    force: bool = False,
+) -> object:
+    """지정한 과거 거래일의 장마감 브리핑을 1건 생성 (+ 선택적 텔레그램 송신).
+
+    스케줄러의 거래일 가드는 그대로 적용 — 휴장일이면 ``ValueError``.
+    (`force=True` 로 무시 가능하나, 그 날은 종가 데이터가 없어 빈 보고서가 된다.)
+
+    보고서는 **한 번만** 생성하고 그 URL 을 모든 대상 채팅에 뿌린다
+    (정시 스케줄러는 구독자마다 재생성하지만, 소급 발행은 같은 날짜라 재생성이 낭비).
+    """
+    from src.orchestrator import Orchestrator
+
+    is_trading, reason = _is_krx_trading_day(target)
+    if not is_trading and not force:
+        raise ValueError(
+            f"{target.isoformat()} 은 KRX 휴장일({reason}) — 장마감 브리핑 대상 아님. "
+            f"그래도 만들려면 --force."
+        )
+
+    persona = _load_persona(getattr(config, "market_briefing_persona_path", None))
+    tz_name = getattr(config, "market_briefing_tz", "Asia/Seoul") or "Asia/Seoul"
+    cutoff = getattr(config, "market_briefing_time", "18:30") or "18:30"
+    hh, mm = (int(x) for x in cutoff.split(":", 1))
+    anchor_local = datetime(
+        target.year, target.month, target.day, hh, mm, tzinfo=ZoneInfo(tz_name),
+    )
+    today_local = datetime.now(ZoneInfo(tz_name)).date()
+
+    prompt = _build_market_briefing_prompt(
+        anchor_local, persona, published_on=today_local,
+    )
+
+    targets = list(chat_ids or [])
+    logger.info(
+        "[backfill] %s 장마감 브리핑 생성 시작 (mode=%s, persona=%d자, 송신 대상=%d)",
+        target.isoformat(), mode, len(persona), len(targets),
+    )
+
+    orchestrator = Orchestrator(config)
+
+    async def _status(msg: str) -> None:
+        logger.info("[backfill] %s", msg)
+
+    result = await orchestrator.run_analysis(
+        event_description=prompt,
+        chat_id=(targets[0] if targets else 0),
+        status_callback=_status,
+        mode=mode,
+        fetch_kr_market_internals=True,
+        report_kind="market_briefing",
+    )
+
+    if targets:
+        await _deliver_backfill(result, config, targets, target)
+    return result
+
+
+async def _deliver_backfill(
+    result: object, config, chat_ids: list[int], target: date,
+) -> None:
+    """생성된 소급 보고서를 텔레그램으로 송신 (요약 + URL + bundle)."""
+    from telegram import Bot
+
+    token = getattr(config, "telegram_bot_token", "")
+    if not token:
+        logger.warning("[backfill] TELEGRAM_BOT_TOKEN 없음 — 송신 생략")
+        return
+
+    run_date = target.isoformat()
+    composed = getattr(result, "composed_report", None)
+    broadcast = (composed.broadcast_summary or "").strip() if composed else ""
+    url = getattr(result, "report_url", "") or ""
+    path = getattr(result, "report_path", "") or ""
+    bundle = path.replace(".html", ".bundle.json") if path else ""
+
+    bot = Bot(token)
+    for chat_id in chat_ids:
+        try:
+            if broadcast:
+                await bot.send_message(chat_id=chat_id, text=broadcast)
+            if url.startswith("http"):
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text=(
+                        f"📈 한국 장마감 브리핑 ({run_date}) · 소급 발행\n\n"
+                        f"🔗 보고서: {url}"
+                    ),
+                )
+            elif path and os.path.isfile(path):
+                with open(path, "rb") as f:
+                    await bot.send_document(
+                        chat_id=chat_id, document=f,
+                        caption=f"📈 장마감 브리핑 ({run_date}) — 업로드 실패, 파일 첨부",
+                    )
+            if bundle and os.path.isfile(bundle):
+                with open(bundle, "rb") as f:
+                    await bot.send_document(
+                        chat_id=chat_id, document=f,
+                        caption="📦 영상 제작용 번들 (osint_generator)",
+                    )
+        except Exception as e:
+            logger.warning("[backfill] chat=%s 송신 실패: %s", chat_id, e)
+
+
+def _main() -> None:  # pragma: no cover — CLI
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="python3 -m src.scheduler.market_briefing",
+        description="지난 거래일의 한국 장마감 브리핑을 소급 생성한다 (v8.5.4).",
+    )
+    parser.add_argument(
+        "date", nargs="?", default="yesterday",
+        help="대상 거래일 — yesterday(기본) / YYYYMMDD / YYYY-MM-DD",
+    )
+    parser.add_argument("--mode", default="deep", choices=["fast", "standard", "deep"])
+    parser.add_argument(
+        "--chat-id", action="append", type=int, default=None,
+        help="송신할 채팅 ID (반복 지정 가능). 생략하면 장마감 브리핑 구독자 전원.",
+    )
+    parser.add_argument(
+        "--no-send", action="store_true",
+        help="텔레그램 송신 없이 보고서만 생성하고 URL 출력.",
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="휴장일이어도 강행 (데이터 없을 수 있음).",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+    )
+
+    from src.config import get_config
+
+    config = get_config()
+    tz_name = getattr(config, "market_briefing_tz", "Asia/Seoul") or "Asia/Seoul"
+    target = _resolve_target_date(args.date, tz_name)
+
+    chat_ids: list[int] = []
+    if not args.no_send:
+        if args.chat_id:
+            chat_ids = list(args.chat_id)
+        else:
+            from src.scheduler.subscriptions import MarketBriefSubscriberRegistry
+            db_path = os.path.join(config.report_output_dir, "scheduler.db")
+            chat_ids = [cid for cid, _mode in
+                        MarketBriefSubscriberRegistry(db_path).list_all()]
+            if not chat_ids:
+                print("구독자가 없어 송신은 생략합니다 (보고서는 생성).")
+
+    result = asyncio.run(run_backfill_market_briefing(
+        target=target, config=config, chat_ids=chat_ids,
+        mode=args.mode, force=args.force,
+    ))
+
+    url = getattr(result, "report_url", "") or ""
+    path = getattr(result, "report_path", "") or ""
+    print(f"\n=== 장마감 브리핑 소급 발행 완료 ({target.isoformat()}) ===")
+    print(f"URL : {url or '(배포 실패 — 로컬 파일만)'}")
+    print(f"파일: {path}")
+
+
+if __name__ == "__main__":  # pragma: no cover
+    _main()

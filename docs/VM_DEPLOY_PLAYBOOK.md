@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.5.0
+last_synced_with: v8.5.4
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -432,6 +432,33 @@ tail -500 bot.log | grep -E '(narrative_composer|unified_composer|composer 호�
 - `recovered truncated JSON` — 절단 복구 작동
 - `head-loss 복구: 1-섹션` — v5.6.8 head-loss 복구 작동
 - `composer failed; emitting minimal fallback` — 모든 복구 실패 → 0% fallback
+
+### 지난 거래일 장마감 브리핑 소급 발행 (v8.5.4)
+
+정시 스케줄러(18:30 KST)가 못 돈 날 — 봇이 죽어 있었거나, CLI 인증이 만료됐거나,
+휴장 판정이 어긋난 날 — 의 장마감 브리핑을 나중에 만든다. **v8.5.4 이상 필요**
+(그 아래 버전에선 `No module named` / `unrecognized arguments`).
+
+```bash
+cd ~/agents_reviewer && source venv/bin/activate
+
+# 어제자 (구독자 전원에게 텔레그램 송신 + Pages 발행)
+python3 -m src.scheduler.market_briefing yesterday
+
+# 특정 날짜 / 생성만 하고 URL 만 확인 / 특정 채팅에만
+python3 -m src.scheduler.market_briefing 20260731
+python3 -m src.scheduler.market_briefing 20260731 --no-send
+python3 -m src.scheduler.market_briefing 20260731 --chat-id 123456789
+```
+
+- deep 모드라 수 분 걸린다. SSH 가 끊겨도 살아남게 하려면 앞에 `nohup ... &` 대신
+  `tmux new -s brief` 안에서 돌린다 (**봇 본체는 절대 nohup 금지 — VM-AP-12**. 이건
+  봇이 아니라 1회성 CLI 라 중복 인스턴스 문제가 없다).
+- 휴장일(주말·공휴일)은 종가가 없어 거부된다. 그래도 만들려면 `--force`.
+- 발행되는 보고서는 정시 브리핑과 동일 — 선물·옵션 그릭 + 시장 폭 실데이터,
+  목록의 `[장마감브리핑]` 배지, 영상용 `.bundle.json` 까지 그대로.
+- 파생·시장폭 데이터는 KRX 로그인이 필요하다 (`.env` 의 `KRX_ID`/`KRX_PW`).
+  없으면 그 섹션만 비고 보고서는 정상 발행된다.
 
 ---
 
