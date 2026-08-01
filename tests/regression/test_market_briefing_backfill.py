@@ -131,6 +131,43 @@ def test_backfill_prompt_targets_requested_date(monkeypatch) -> None:
 # --------------------------------------------------------------------------
 
 
+def test_backfill_notifies_start_and_failure(monkeypatch) -> None:
+    """v8.5.5 — 소급 발행도 시작·실패를 텔레그램에 알려야 한다.
+
+    2026-08-01 실사고: 사실수집 타임아웃으로 통째 실패했는데 텔레그램엔 *아무
+    메시지도* 안 갔다. 정시 스케줄러는 시작 안내(_market_brief_for_chat)와 실패
+    안내(_run_one_market_cycle)를 둘 다 보내는데, 소급 경로엔 성공 시 송신밖에
+    없었다 — 터미널을 안 보고 있으면 실패한 줄도 모른다.
+    """
+    import src.orchestrator as orch_mod
+    import src.scheduler.market_briefing as mb
+
+    sent: list[str] = []
+
+    async def _fake_notify(config, chat_ids, text):  # type: ignore[no-untyped-def]
+        sent.extend(text for _ in chat_ids)
+
+    class _Boom:
+        def __init__(self, config, **kw) -> None: ...
+        async def run_analysis(self, **kw):  # type: ignore[no-untyped-def]
+            raise RuntimeError("claude CLI failed after 3 attempt(s): timeout after 300s")
+
+    monkeypatch.setattr(orch_mod, "Orchestrator", _Boom)
+    monkeypatch.setattr(mb, "_notify_backfill", _fake_notify)
+    monkeypatch.setattr(mb, "_is_krx_trading_day", lambda d: (True, None))
+
+    with pytest.raises(RuntimeError):
+        asyncio.run(run_backfill_market_briefing(
+            target=date(2026, 7, 31), config=_StubConfig(), chat_ids=[7],
+        ))
+
+    assert len(sent) == 2, f"시작·실패 알림 2건이어야 하는데 {len(sent)}건"
+    assert "시작" in sent[0]
+    assert "실패" in sent[1] and "timeout after 300s" in sent[1], (
+        "실패 알림에 원인이 안 담김 — 사용자가 왜 실패했는지 모른다"
+    )
+
+
 def test_holiday_is_rejected_unless_forced() -> None:
     saturday = date(2026, 8, 1)
     with pytest.raises(ValueError, match="휴장일"):

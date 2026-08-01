@@ -465,18 +465,54 @@ async def run_backfill_market_briefing(
     async def _status(msg: str) -> None:
         logger.info("[backfill] %s", msg)
 
-    result = await orchestrator.run_analysis(
-        event_description=prompt,
-        chat_id=(targets[0] if targets else 0),
-        status_callback=_status,
-        mode=mode,
-        fetch_kr_market_internals=True,
-        report_kind="market_briefing",
+    # v8.5.5 — 시작·실패도 텔레그램에 알린다. 정시 스케줄러는 시작 안내
+    # (`_market_brief_for_chat`)와 실패 안내(`_run_one_market_cycle`)를 둘 다
+    # 보내는데 소급 경로엔 성공 시 송신밖에 없어서, 2026-08-01 사실수집 타임아웃
+    # 실패 때 텔레그램에 *아무것도* 안 갔다 (터미널을 안 보고 있으면 실패한 줄도 모름).
+    mode_label = {"fast": "⚡ fast", "deep": "🔬 deep"}.get(mode, "🟢 standard")
+    await _notify_backfill(
+        config, targets,
+        f"📈 {target.isoformat()} 한국 장마감 브리핑 소급 생성 시작 ({mode_label} 모드)\n"
+        f"  · 시장 구조 해석가 페르소나로 분석 중입니다.\n"
+        f"  · 수 분 정도 소요됩니다.",
     )
+
+    try:
+        result = await orchestrator.run_analysis(
+            event_description=prompt,
+            chat_id=(targets[0] if targets else 0),
+            status_callback=_status,
+            mode=mode,
+            fetch_kr_market_internals=True,
+            report_kind="market_briefing",
+        )
+    except Exception as e:
+        await _notify_backfill(
+            config, targets,
+            f"❌ 장마감 브리핑 소급 생성 실패 ({target.isoformat()})\n{str(e)[:300]}",
+        )
+        raise
 
     if targets:
         await _deliver_backfill(result, config, targets, target)
     return result
+
+
+async def _notify_backfill(config, chat_ids: list[int], text: str) -> None:
+    """소급 발행 진행 알림. 송신 실패가 보고서 흐름을 막지 않는다."""
+    token = getattr(config, "telegram_bot_token", "")
+    if not token or not chat_ids:
+        return
+    try:
+        from telegram import Bot
+        bot = Bot(token)
+        for chat_id in chat_ids:
+            try:
+                await bot.send_message(chat_id=chat_id, text=text)
+            except Exception as e:
+                logger.warning("[backfill] chat=%s 알림 실패: %s", chat_id, e)
+    except Exception as e:  # noqa: BLE001 — 알림은 부가. 본 흐름 불차단.
+        logger.warning("[backfill] 알림 초기화 실패: %s", e)
 
 
 async def _deliver_backfill(

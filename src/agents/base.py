@@ -94,6 +94,21 @@ class BaseAgent:
     _CLI_RETRY_BACKOFF_S: float = 4.0   # attempt N 전 대기 = backoff*(N-1): 0/4/8s
     _CLI_TIMEOUT_S: float = 300.0       # 단일 호출 상한 (hang 방지). 초과 시 transient 취급.
 
+    # v8.5.5 — 호출별 상한 override. None 이면 위 클래스 기본값(300s) 그대로라
+    # 이 값을 안 세팅하는 에이전트는 byte-equal.
+    #
+    # 왜 필요했나 (2026-08-01 실사고): 장마감 브리핑 소급 발행이 context_analyst
+    # 300s 타임아웃 3연속으로 통째 실패. deep 모드 사실수집은 웹검색을 여러 번 돌고
+    # 10K 토큰까지 쓰는데 상한이 fast 와 같은 300s 였다. 편집장(narrative_composer)은
+    # v8.2.4 에서 이미 같은 실패로 mode 별 상한(deep 1500s)을 받았는데, 사실수집만
+    # 평면 300s 로 남아 있었다 — 같은 결함의 미적용 절반.
+    _cli_timeout_override: float | None = None
+
+    @property
+    def cli_timeout_s(self) -> float:
+        """이번 호출의 CLI 상한 (override 우선)."""
+        return self._cli_timeout_override or self._CLI_TIMEOUT_S
+
     async def _analyze_cli(self, context: dict) -> str:
         directive, user_message = self._serialize_context(context)
 
@@ -169,7 +184,10 @@ class BaseAgent:
             "--allowedTools", "WebFetch,WebSearch",
         ]
 
-        logger.info(f"[{self.name}] Starting CLI analysis ({self.model_name})...")
+        logger.info(
+            "[%s] Starting CLI analysis (%s, prompt=%d chars, timeout=%.0fs)",
+            self.name, self.model_name, len(full_prompt), self.cli_timeout_s,
+        )
         start_ts = time.time()
         try:
             proc = await asyncio.create_subprocess_exec(
@@ -180,14 +198,14 @@ class BaseAgent:
                 cwd=cli_cwd,
             )
             stdout_b, stderr_b = await asyncio.wait_for(
-                proc.communicate(), timeout=self._CLI_TIMEOUT_S
+                proc.communicate(), timeout=self.cli_timeout_s
             )
         except asyncio.TimeoutError:
             try:
                 proc.kill()
             except ProcessLookupError:
                 pass
-            return "", f"timeout after {self._CLI_TIMEOUT_S:.0f}s", True
+            return "", f"timeout after {self.cli_timeout_s:.0f}s", True
 
         stdout = stdout_b.decode().strip() if stdout_b else ""
         stderr = stderr_b.decode().strip() if stderr_b else ""

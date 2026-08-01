@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.5.4
+last_synced_with: v8.5.5
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -432,6 +432,19 @@ tail -500 bot.log | grep -E '(narrative_composer|unified_composer|composer 호�
 - `recovered truncated JSON` — 절단 복구 작동
 - `head-loss 복구: 1-섹션` — v5.6.8 head-loss 복구 작동
 - `composer failed; emitting minimal fallback` — 모든 복구 실패 → 0% fallback
+
+### CLI 타임아웃으로 보고서가 통째 실패했는지 (v8.5.5)
+
+```bash
+cd ~/agents_reviewer
+grep -c 'timeout after 300s' bot.log
+journalctl -u agents-reviewer.service --since '7 days ago' --no-pager | grep -c 'timeout after'
+```
+
+`claude CLI failed after 3 attempt(s): timeout after 300s` 는 사실수집(context_analyst)이
+상한을 넘긴 것. v8.5.5 부터 deep 사실수집 상한이 900s 라 이 라인은 사라져야 정상이다.
+여전히 `timeout after 900s` 가 보이면 CLI 자체가 느려진 것이니 `claude -p "ping"
+--output-format json` 응답 시간부터 잰다.
 
 ### 지난 거래일 장마감 브리핑 소급 발행 (v8.5.4)
 
