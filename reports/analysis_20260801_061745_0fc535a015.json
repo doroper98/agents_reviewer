@@ -8,7 +8,8 @@
     "parent_context": null,
     "emit_bundle": false,
     "report_format": "standard",
-    "user_directive": ""
+    "user_directive": "",
+    "report_kind": "standard"
   },
   "strategy": null,
   "blocks": [
@@ -2948,8 +2949,8 @@
   "parent_context": null,
   "analysis_timestamp": "2026-08-01T06:00:01.036387+09:00",
   "total_duration_seconds": 1063.8859021663666,
-  "system_version": "v8.3.6",
+  "system_version": "v8.5.3",
   "revision": 0,
-  "render_revision": 0,
+  "render_revision": 1,
   "disable_scroll_arc": false
 }
