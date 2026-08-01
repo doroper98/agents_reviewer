@@ -114,7 +114,32 @@ def test_index_badges_only_reportage(tmp_path: Path) -> None:
     assert ".badge-rep{" in idx, "배지 스타일이 목록 페이지에 없음"
 
 
-def test_github_mirror_index_keeps_badge() -> None:
-    """GitHub 미러 README 의 [르포] 배지(v8.0.0)도 유지 — 세 경로 표기 정합."""
-    src = (_ROOT / "src" / "tools" / "github_mirror.py").read_text(encoding="utf-8")
-    assert '"[르포] "' in src, "build_reports_index 의 르포 배지가 사라짐"
+def test_github_mirror_index_keeps_badge(tmp_path: Path) -> None:
+    """GitHub 미러 README 의 [르포] 배지(v8.0.0)도 유지 — 두 목록 표기 정합.
+
+    v8.5.3 에서 판별이 src/tools/report_kind.py 로 통합되며 소스 문자열이 바뀌었다.
+    소스 grep 대신 *실제 README 를 생성해* 검증한다 (리팩토링에 안 깨짐).
+    """
+    from src.tools.github_mirror import build_reports_index
+
+    # GitHub 미러 목록은 .md(제목) + .json(종류)을 읽는다 — 실제 발행분과 동일 구성.
+    import json
+
+    (tmp_path / "analysis_20260801_100000_bbb.html").write_text(
+        _html("reportage_noturno", "르포 제목", meta=True), encoding="utf-8")
+    (tmp_path / "analysis_20260801_100000_bbb.md").write_text(
+        "# 르포 제목\n\n**Category:** 종합\n", encoding="utf-8")
+    (tmp_path / "analysis_20260801_100000_bbb.json").write_text(
+        json.dumps({"request": {"report_format": "reportage"}}, ensure_ascii=False),
+        encoding="utf-8")
+    (tmp_path / "analysis_20260801_090000_aaa.md").write_text(
+        "# 일반 제목\n\n**Category:** 종합\n", encoding="utf-8")
+    (tmp_path / "analysis_20260801_090000_aaa.json").write_text(
+        json.dumps({"request": {"event_description": "직접 물어본 주제"}}, ensure_ascii=False),
+        encoding="utf-8")
+
+    md = build_reports_index(str(tmp_path))
+    rep_line = next(ln for ln in md.splitlines() if "르포 제목" in ln)
+    gen_line = next(ln for ln in md.splitlines() if "일반 제목" in ln)
+    assert "[르포]" in rep_line, "GitHub 미러 README 의 르포 배지가 사라짐"
+    assert "[르포]" not in gen_line, "일반 보고서에 르포 배지 오부착"

@@ -125,18 +125,18 @@ def build_reports_index(reports_dir: str, *, limit: int | None = None) -> str:
         stem = f"analysis_{rid}"
         title, category = _title_category_from_md(md)
         date = _date_from_report_id(rid)
-        # v8.0.0 — 르포는 리스트 제목에 [르포] 배지. report_format 은 json 의 request 에.
+        # v8.0.0 르포 배지 → v8.5.3 부터 종류 배지 일반화
+        # ([르포]/[일일브리핑]/[장마감브리핑]). 판별은 src/tools/report_kind.py 가
+        # SSOT — Pages 관리자 목록과 같은 로직을 공유해 두 목록이 어긋나지 않는다.
         badge = ""
         jp = os.path.join(reports_dir, f"{stem}.json")
-        if os.path.exists(jp):
-            try:
-                import json as _json
-                with open(jp, encoding="utf-8") as _jf:
-                    _d = _json.load(_jf)
-                if (_d.get("request") or {}).get("report_format") == "reportage":
-                    badge = "[르포] "
-            except Exception:
-                pass
+        try:
+            from src.tools.report_kind import badge_label, detect_report_kind
+            label = badge_label(detect_report_kind(reports_dir, stem))
+            if label:
+                badge = f"[{label}] "
+        except Exception:
+            pass
         links = [f"[md]({stem}.md)"]
         if os.path.exists(jp):
             links.append(f"[json]({stem}.json)")
