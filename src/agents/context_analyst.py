@@ -104,6 +104,16 @@ _PROVENANCE_BLOCK = (
 class ContextAnalyst(BaseAgent):
     """Establishes facts, timeline, and key data points."""
 
+    # v8.5.5 — mode 별 CLI 상한 (편집장 `CLI_TIMEOUT_BY_MODE` 와 같은 패턴).
+    # fast/standard 는 BaseAgent 기본값과 같은 300s 라 기존 동작 유지.
+    # deep 만 900s — 웹검색 다회 + 10K 토큰 사실수집의 실측 상한을 덮는다.
+    # (2026-08-01: 장마감 브리핑 사실수집이 300s 3연속 초과로 보고서 통째 실패.)
+    CLI_TIMEOUT_BY_MODE: dict[str, float] = {
+        "fast": 300.0,
+        "standard": 300.0,
+        "deep": 900.0,
+    }
+
     def __init__(self, config: Config) -> None:
         super().__init__(
             name="context_analyst",
@@ -124,6 +134,13 @@ class ContextAnalyst(BaseAgent):
         # 4K 부족 가능. fast/standard 는 4K 충분.
         MAX_TOKENS_BY_MODE = {"fast": 4096, "standard": 4096, "deep": 10000}
         self._max_tokens_override = MAX_TOKENS_BY_MODE.get(request.mode, 4096)
+        # v8.5.5 — mode 별 CLI 상한. deep 사실수집은 웹검색을 여러 번 돌고 10K
+        # 토큰까지 쓰는데 상한이 fast 와 같은 평면 300s 라, 무거운 주제(장마감
+        # 브리핑처럼 종가·수급·환율·금리·섹터를 한 번에 훑는 프롬프트)에서
+        # 3회 재시도가 전부 300s 로 죽고 보고서가 통째로 실패했다 (2026-08-01 실사고).
+        # 편집장은 v8.2.4 에서 같은 이유로 이미 mode 별 상한을 받았다 — 그 절반이
+        # 사실수집에 미적용이었던 것을 맞춘다. fast/standard 는 기존 300s 유지(byte-equal).
+        self._cli_timeout_override = self.CLI_TIMEOUT_BY_MODE.get(request.mode)
         context = {
             "event_description": request.event_description,
             "request_type": request.request_type,

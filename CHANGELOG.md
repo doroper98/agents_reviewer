@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.4
+last_synced_with: v8.5.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,15 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.5 — 사실수집 CLI 상한 mode 인지 + 소급 발행 진행·실패 알림
+
+2026-08-01 실사고 — 어제자 장마감 브리핑 소급 발행이 `context_analyst` **300s 타임아웃 3연속**으로 통째 실패했고(`claude CLI failed after 3 attempt(s): timeout after 300s`), 텔레그램엔 아무 메시지도 가지 않았다.
+
+- **원인 (같은 결함의 미적용 절반)** — deep 사실수집은 웹검색을 여러 번 돌고 10K 토큰까지 쓰는데 CLI 상한이 fast 와 같은 **평면 300s**(`BaseAgent._CLI_TIMEOUT_S`)였다. 편집장(`narrative_composer`)은 v8.2.4 에서 정확히 같은 실패(deep 초과 → minimal fallback, WRITE-AP-25)로 이미 mode 별 상한(deep 1500s)을 받았는데, 사실수집만 평면으로 남아 있었다. 장마감 브리핑처럼 종가·수급·환율·금리·섹터를 한 번에 훑는 무거운 프롬프트가 정확히 이 구멍을 밟는다.
+- **Fix ①** — `BaseAgent._cli_timeout_override` + `cli_timeout_s` 프로퍼티 도입(미설정 에이전트는 기존 300s byte-equal), `ContextAnalyst.CLI_TIMEOUT_BY_MODE` = fast/standard 300s · **deep 900s**. `analyze()` 가 `max_tokens` 와 같은 자리에서 mode 상한을 심는다. `asyncio.wait_for` 배선까지 회귀로 고정 — 상수만 만들고 wait_for 는 옛 값을 쓰는 회귀가 실제로 가능한 형태였다.
+- **Fix ②** — 소급 발행(v8.5.4)에 **시작 안내 + 실패 안내** 추가. 정시 스케줄러는 시작(`_market_brief_for_chat`)·실패(`_run_one_market_cycle`) 알림을 둘 다 보내는데 소급 경로엔 성공 시 송신밖에 없어, 실패하면 터미널을 보고 있지 않는 한 실패 사실조차 알 수 없었다. 실패 알림에는 원인 문자열을 함께 싣는다.
+- **회귀** `tests/regression/test_cli_timeout_by_mode.py` 6종(deep>fast · fast/standard 불변 · wait_for 실배선 · **analyze 가 CLI 호출 전 override 를 심는지** · 기본 에이전트 불변 · 편집장 맵 유지) + backfill 알림 1종. 변이 5종 주입으로 non-vacuous 확인(첫 회차에 '맵만 선언, 인스턴스 미배선' 변이가 살아남아 실배선 테스트를 추가).
 
 ## v8.5.4 — 지난 거래일 장마감 브리핑 소급 발행 (CLI)
 
