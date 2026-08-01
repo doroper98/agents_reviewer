@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v5.3.0
+last_synced_with: v8.5.1
 ssot_for:
   - "에이전트 카탈로그 (mirror of src/agents/*)"
   - "Mode 별 정책 (mirror of src/token_budget.py)"
@@ -56,7 +56,7 @@ last_review: 2026-05-18
 | 7 | 보고서 합성관 | `src/agents/report_synthesizer.py` | HTML/Markdown 생성, Cloudflare 업로드. fast/standard 는 deterministic summary + default narrative plan | 결정적 | 결정적 | ✅ LLM |
 | 8 | 품질 검사관 (V3 Step 4) | `src/agents/quality_inspector.py` | Gate 1 + Gate 2. fast/standard 는 heuristic 만, deep 또는 `QUALITY_LLM_JUDGE=true` 일 때만 LLM judge | heuristic | heuristic | ✅ LLM |
 | 9 | 종합 판단관 (V3 Step 4) | `src/agents/synthesis_judge.py` | findings → JudgmentVerdict, 모순 노출 (봉합 X), 3축 신뢰도. standard 는 contradictions/저신뢰 시에만 LLM | heuristic | 조건부 | ✅ LLM |
-| 10 | 편집장 / Narrative Composer (v3.3.0) | `src/agents/narrative_composer.py` | Opus 4.7 단일 콜로 자유 형식 보고서 작성. 정형 17 슬롯이 아닌 사건별 3~7 섹션. 차트는 본문 흐름에 따라 embed. 성공 시 archetype 이 `freeform_essay` 로 라우팅. | ❌ | ❌ | ✅ Opus 4.7 |
+| 10 | 편집장 / Narrative Composer (v3.3.0) | `src/agents/narrative_composer.py` | Opus 5 단일 콜로 자유 형식 보고서 작성. 정형 17 슬롯이 아닌 사건별 3~7 섹션. 차트는 본문 흐름에 따라 embed. 성공 시 archetype 이 `freeform_essay` 로 라우팅. | ❌ | ❌ | ✅ Opus 5 |
 
 DEPRECATED 페르소나 (#2/#3/#4) 는 import 시 `DeprecationWarning` 출력. v3.1.0 부터는 deep 모드에서만 호출 — fast/standard 에서는 lens pool 의 `stakeholder` / `structural` / `cascade` 가 대체 (§2 표 참조). v4.0.0 에서 6막 템플릿 재작업과 함께 정식 제거 (`GOAL.md FUT-LEGACY-001`).
 
@@ -142,7 +142,7 @@ archetype registry 의 SSOT 는 `src/archetypes/registry.py`. 본 표는 미러.
 | `scenario_first` (5-C) | `src/archetypes/scenario_first.py` | 향후 분기 — `what_next` 의도 전용. | `what_next` | 기준 시나리오 → 분기 시나리오 → 베이지안 업데이트 가이드 → 감시 신호 |
 | `mechanism_decomp` (5-C) | `src/archetypes/mechanism_decomp.py` | 원인 해부 — `why_happened` 의도 전용. | `why_happened` | 표층 현상 → 직접 원인 → 구조적 원인 → 제1원리 → 흔한 오해 |
 | `industry_value_chain` (5-C) | `src/archetypes/industry_value_chain.py` | 산업·가치사슬 (M&A, 경쟁, 공급망). | `who_benefits`, `where_vulnerable` | 산업 구조 → 가치사슬 → 경쟁 구도 → 수익성 압력 → 전략 옵션 → 의사결정 포인트 |
-| `freeform_essay` (v3.3.0) | `src/archetypes/freeform_essay.py` | **Composer 전용** — Opus 4.7 narrative_composer 가 자유 형식으로 작성. select_archetype matrix 에서 매칭되지 않으며, deep 모드 + composer 성공 시 orchestrator 가 명시 라우팅. | (matrix 외) | composer 가 사건별로 자유 결정 (3~7 섹션) |
+| `freeform_essay` (v3.3.0) | `src/archetypes/freeform_essay.py` | **Composer 전용** — Opus 5 narrative_composer 가 자유 형식으로 작성. select_archetype matrix 에서 매칭되지 않으며, deep 모드 + composer 성공 시 orchestrator 가 명시 라우팅. | (matrix 외) | composer 가 사건별로 자유 결정 (3~7 섹션) |
 
 ### 3.1 선택 매트릭스 — `select_archetype()` (v3.0.0)
 

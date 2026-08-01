@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.0
+last_synced_with: v8.5.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,17 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.1 — 일반 보고서 줄글 양끝 정렬 (오른쪽 끝단 정돈)
+
+사용자 요청 — 일반 보고서 본문의 오른쪽 끝이 들쭉날쭉해 "뒤죽박죽" 하니 르포처럼 오른쪽도 꽉 차게. 르포(`reportage.html`)는 v8.2.15 부터 `.rep-prose` 에 양끝 정렬이 걸려 있었는데 일반 보고서(`freeform_essay.html`)만 왼쪽 정렬로 남아 있던 비대칭을 해소.
+
+- **줄글 6종에 양끝 정렬 3종 조합 적용** — `.freeform-prose`(본문, p/li 포함) · `.contradiction-prose`(모순 산문) · `.freeform-lede`(머리글) · `.freeform-analogy-body`(비유) · `.freeform-closing-body`(맺음말) · `.epilogue-watch-desc`(감시신호 설명). 조합은 르포와 동일: ① `text-align:justify` 양끝 정렬 ② `text-align-last:left` 로 문단 *마지막 줄은 늘리지 않음*(끝 줄이 억지로 벌어지는 전형적 justify 결함 차단) ③ `word-break:keep-all` 로 한글은 어절 단위로만 줄바꿈(단어 중간 절단 금지, 한글 조판 관례) + `overflow-wrap:break-word` 로 긴 URL·영문 토큰 넘침 방지.
+- **비-줄글은 제외** — 제목·라벨·사진 캡션(`figcaption`, v5.5.11 의 명시적 left 유지)·인용 디스플레이(`pull_quote`)·수치 타일은 정렬 대상 아님.
+- **검증** — Playwright/Chromium 으로 실제 템플릿을 렌더해 데스크탑(900px)·모바일(420px) 스크린샷 대조. 데스크탑에서 우측 끝단 완전 정렬 확인, 문단 마지막 줄은 왼쪽 유지. 모바일 좁은 폭의 어절 간격은 르포 본문과 픽셀 단위로 동일(같은 규칙) — 어절 유지를 포기하면 간격은 촘촘해지나 한글 단어가 잘려, 조판 관례상 어절 유지를 택함.
+- **회귀** `tests/regression/test_prose_justify.py` 4종 — 줄글 6종의 3종 조합 + p/li 자식 규칙 + 르포 정합 + figcaption left 고정. 변이 주입으로 non-vacuous 확인.
+- **문서 정합** — v8.5.0 에서 누락됐던 `docs/CATALOGS.md` 의 composer 모델 표기(Opus 4.7 → Opus 5) 동반 정정.
+- **발행본 소급** — CSS 는 보고서 HTML 에 인라인되므로 *이미 발행된 보고서는 자동 반영되지 않는다*. 소급하려면 VM 에서 `scripts/patch_report.py <report_id> --rerender-only`(내용 무변경·URL 보존·revision 소수부 +1).
 
 ## v8.5.0 — 보고서 파이프라인 모델 Opus 5 격상
 
