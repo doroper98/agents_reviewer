@@ -298,7 +298,9 @@ SSOT 는 별도 하위 계약 문서 **[IMAGE_BUNDLE_CONTRACT.md](IMAGE_BUNDLE_C
     "closing": "str",                         // [기존] optional
     "html_url": "str",                        // [기존] Pages 보고서 URL
     "theme": {                                // [신규] 선택된 테마 박제 (random 이므로 필수)
-      "id": "editorial_cream|burgundy_mono|midnight_indigo|pine_forest|graphite_slate",  // v6.2.0 5종 풀
+      "id": "editorial_cream|burgundy_mono|midnight_indigo|pine_forest|graphite_slate"
+          + "|cyprus|noturno|bridal|cosmos|laurel|princess|steel|navy"   // v8.5.6 일반 13종 풀
+          + "|reportage_*(8종)",                                          // 르포 전용 (v8.0.0)
       "tokens": { "bg","card","text","muted","accent","up","down","border": "#hex" },
       "fonts": { "serif":"Noto Serif KR", "sans":"Noto Sans KR", "mono":"IBM Plex Mono" }
     },
