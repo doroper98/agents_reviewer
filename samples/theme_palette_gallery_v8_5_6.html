@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="editorial_cream">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>일반 보고서 테마 팔레트 13종 (v8.5.6)</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/templates/report.css">
+<style>
+  body{margin:0;background:#14110E;color:#E8E0D2;font-family:'IBM Plex Sans KR',sans-serif}
+  .page{max-width:1180px;margin:0 auto;padding:44px 22px 80px}
+  .page > h1{font-family:'Newsreader','Noto Serif KR',serif;font-size:34px;font-weight:800;
+    letter-spacing:-0.5px;margin:0 0 10px;color:#F3EDE2}
+  .lede{font-size:14px;line-height:1.85;color:#A99B87;max-width:74ch;margin:0 0 6px}
+  .lede b{color:#E8E0D2;font-weight:600}
+  .meta{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.6px;
+    text-transform:uppercase;color:#7E7263;margin:26px 0 12px;padding-top:18px;
+    border-top:1px solid #2E2820}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+
+  /* 각 카드는 자기 테마의 --bg/--card/--text/--muted/--accent 만으로 그려진다.
+     즉 아래 스타일에 색 리터럴이 없다 = 보이는 색은 전부 report.css 의 팔레트다. */
+  .swatch{border:1px solid #2E2820;overflow:hidden;border-radius:var(--radius,10px)}
+  .swatch .body{background:var(--bg);color:var(--text);padding:20px 20px 22px}
+  .swatch .name{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;
+    letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
+  .swatch h2{font-family:'Newsreader','Noto Serif KR',serif;font-size:20px;font-weight:800;
+    line-height:1.25;letter-spacing:-0.3px;margin:0 0 8px;color:var(--text)}
+  .swatch p{font-size:13.5px;line-height:1.8;margin:0 0 12px;color:var(--text);
+    text-align:justify;text-align-last:left;word-break:keep-all}
+  .swatch .card{background:var(--card);border:1px solid var(--border-soft,rgba(255,255,255,.09));
+    border-radius:var(--radius,10px);padding:13px 14px;margin-bottom:11px}
+  .swatch .fig{font-family:'Newsreader',serif;font-size:26px;font-weight:800;color:var(--text);
+    line-height:1;margin-bottom:5px}
+  .swatch .cap{font-size:11.5px;color:var(--muted);line-height:1.6}
+  .chips{display:flex;gap:6px;margin-top:12px}
+  .chip{flex:1;height:26px;border-radius:3px;font-family:'IBM Plex Mono',monospace;
+    font-size:9px;display:flex;align-items:center;justify-content:center;letter-spacing:.4px}
+  .c-acc{background:var(--accent);color:var(--bg)}
+  .c-up{background:var(--up);color:var(--bg)}
+  .c-dn{background:var(--down);color:var(--bg)}
+  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;
+    letter-spacing:1px;padding:2px 7px;border:1px solid var(--muted);color:var(--muted);
+    margin-left:7px;vertical-align:2px;border-radius:2px}
+  footer{margin-top:44px;padding-top:18px;border-top:1px solid #2E2820;
+    font-size:12px;color:#7E7263;line-height:1.9}
+  code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#C6B79F}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>일반 보고서 테마 팔레트 13종</h1>
+<p class="lede">
+  v8.5.6 에서 르포 팔레트 8종을 일반 보고서 풀에 추가했습니다. 보고서마다
+  <code>random.choice</code> 로 하나가 뽑힙니다. <b>가져온 것은 색뿐입니다</b> —
+  르포의 플랫 지오메트리(각진 모서리)와 G마켓 Sans 디스플레이는 가져오지 않았고,
+  일반 보고서는 둥근 모서리 + Newsreader 세리프 조판을 그대로 유지합니다.
+</p>
+<p class="lede">
+  아래 카드의 색은 전부 <code>report.css</code> 의 테마 변수에서 나옵니다
+  (이 페이지의 CSS 에는 색 리터럴이 없습니다). 실제 보고서에서 보이는 색과 같습니다.
+</p>
+
+<div class="meta">기존 5종 (v6.2.0)</div>
+<div class="grid" id="g-old"></div>
+
+<div class="meta">르포에서 가져온 8종 (v8.5.6)</div>
+<div class="grid" id="g-new"></div>
+
+<footer>
+  팔레트 정의는 <code>src/templates/report.css</code> 가 SSOT 이고, 풀 등록은
+  <code>src/lens_policy.py:ALL_THEMES</code> 입니다. 두 이름(<code>cyprus</code> ↔
+  <code>reportage_cyprus</code>)은 CSS 선언을 <b>공유</b>합니다 — 복제가 아니라 선택자만
+  겹쳐 둔 것이라 한쪽만 손봐서 색이 갈라질 수 없습니다.
+  <br>
+  princess / bridal 의 보조 텍스트 색은 원 팔레트 값이 대비 기준(WCAG AA 4.5:1)에
+  미달해(각 3.96 / 4.41) 같은 색조를 유지한 채 4.8 이상으로 끌어올렸습니다. 일반
+  보고서는 르포보다 이 색을 쓰는 곳이 훨씬 많습니다(사진 크레딧·각주·차트 설명·감시신호).
+</footer>
+
+</div>
+
+<script>
+const OLD = [
+  ["editorial_cream", "라이트 · 크림 + 테라코타"],
+  ["burgundy_mono",   "다크 · 와인 + 앰버"],
+  ["midnight_indigo", "다크 · 남색 + 하늘"],
+  ["pine_forest",     "다크 · 짙은 녹색 + 옥"],
+  ["graphite_slate",  "다크 · 흑연 + 구리"],
+];
+const NEW = [
+  ["cyprus",   "짙은 녹색 + 모래 + 황토"],
+  ["noturno",  "먹빛 청록 + 화산 주황"],
+  ["bridal",   "마룬 + 살구"],
+  ["cosmos",   "코스모스 남색 + 진홍"],
+  ["laurel",   "짙은 솔 + 크림"],
+  ["princess", "코발트 + 은 + 산호"],
+  ["steel",    "강철 회색 + 앰버"],
+  ["navy",     "심야 네이비 + 라벤더"],
+];
+
+const BODY = "코스피는 사흘 만에 반등했다. 지수를 끌어올린 것은 소수 대형주였고, " +
+             "등락 종목 수로 보면 오른 종목보다 내린 종목이 많았다. 지수와 체감이 " +
+             "갈라지는 전형적인 좁은 장이다.";
+
+function card([name, desc], isNew) {
+  return `<div class="swatch" data-theme="${name}">
+    <div class="body">
+      <div class="name">${name}${isNew ? '<span class="tag">NEW</span>' : ''}</div>
+      <h2>지수는 올랐지만 시장은 좁아졌다</h2>
+      <p>${BODY}</p>
+      <div class="card">
+        <div class="fig">9,063.84</div>
+        <div class="cap">코스피 종가 · 전일 대비 +2.25% · 출처 KRX</div>
+      </div>
+      <div class="cap">${desc}</div>
+      <div class="chips">
+        <div class="chip c-acc">accent</div>
+        <div class="chip c-up">up</div>
+        <div class="chip c-dn">down</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+document.getElementById("g-old").innerHTML = OLD.map(t => card(t, false)).join("");
+document.getElementById("g-new").innerHTML = NEW.map(t => card(t, true)).join("");
+</script>
+</body>
+</html>

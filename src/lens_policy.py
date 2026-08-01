@@ -149,6 +149,20 @@ ALL_THEMES: tuple[str, ...] = (
     "midnight_indigo",     # deep indigo + sky blue (다크)
     "pine_forest",         # deep pine green + jade (다크, v6.2.0)
     "graphite_slate",      # deep graphite gray + copper (다크, v6.2.0)
+    # v8.5.6 — 르포 팔레트 8종을 일반 보고서에도 개방 (사용자 결정 2026-08-01).
+    # 기존 5종은 전부 저채도라 랜덤으로 골라도 인상 차이가 작았다. 이 8종은
+    # 채도·대비가 훨씬 강해 시각 다양성이라는 random.choice 의 목적에 부합한다.
+    # **가져오는 것은 색뿐** — 르포의 플랫 지오메트리와 G마켓 Sans 는
+    # `[data-theme^="reportage_"]` 접두 선택자에 걸려 있어 아래 이름엔 안 붙는다.
+    # CSS 는 `reportage_*` 와 선언을 공유한다 (report.css, 복제 아님 — drift 차단).
+    "cyprus",              # deep green + sand + ochre
+    "noturno",             # near-black teal + vulcanico orange
+    "bridal",              # maroon + skin + peach
+    "cosmos",              # cosmos navy + crimson + varden
+    "laurel",              # deep pine + moderate green + cream
+    "princess",            # princess blue + silver + coral
+    "steel",               # steel gray + white chocolate + amber
+    "navy",                # beyond navy + sweet lavender + mist
 )
 
 # legacy: 카테고리 기반 매핑은 보존 (호환). 직접 호출 시 사용 가능하지만

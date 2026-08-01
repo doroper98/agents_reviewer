@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.5
+last_synced_with: v8.5.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.6 — 르포 팔레트 8종을 일반 보고서에도 개방 (색만)
+
+사용자 결정 — "보고서의 색감과 테마를 르포의 양식을 한번 적용해 본느건 어떨까" → "색상팔레트만 적용하자".
+
+- **왜** — 기존 일반 5종은 전부 저채도(와인/남색/녹색/회색)라 보고서마다 `random.choice` 를 돌려도 인상 차이가 작았다. 르포 8종은 채도·대비가 훨씬 강해 '시각 다양성' 이라는 랜덤 선택의 목적에 부합한다. 일반 풀 5종 → **13종**(라이트 1 + 다크 12).
+- **색만 가져온다** — 르포의 플랫 지오메트리(`border-radius:0` / `box-shadow:none`)와 G마켓 Sans 디스플레이는 **가져오지 않았다**. 두 오버라이드가 `[data-theme^="reportage_"]` 접두 선택자에 걸려 있어 접두 없는 일반 이름엔 붙지 않고, `--radius`/`--shadow` 는 `:root` 로 폴백해 둥근 모서리가 유지된다. 일반 보고서는 새 색 + 기존 Newsreader 세리프 조판. 장르 구분은 색이 아니라 조판·지오메트리·템플릿이 맡는다.
+- **복제 아님** — CSS 는 `[data-theme="reportage_cyprus"], [data-theme="cyprus"]` 처럼 **선언을 공유**한다. 복제하면 한쪽만 손볼 때 색이 갈라진다. 지도 토큰(`--map-*`)도 함께 공유 — 빠지면 `:root`(라이트)로 폴백해 어두운 배경에 밝은 지도가 박힌다.
+- **대비 보정** — princess / bridal 의 `--muted` 가 보조 텍스트 대비 AA(4.5:1) 미달이었다(각 3.96 / 4.41). 일반 보고서는 르포보다 이 색을 쓰는 곳이 훨씬 많아(사진 크레딧·각주·차트 note·감시신호 설명·fact_grid 라벨) 같은 색조를 유지한 채 4.8 이상으로 상향. 블록 공유라 르포 가독성도 함께 개선.
+- **계약** — `ReportBundle.report.theme.id` enum 에 8종 추가(additive, `schema_version` 불변). 번들의 `theme.tokens` 는 report.css 를 문자열 파싱해 뽑으므로 묶음 선택자에서도 8토큰이 온전히 나오는지 21종 전수 회귀로 고정 — 깨지면 영상 색이 조용히 사라진다.
+- **갤러리** [samples/theme_palette_gallery_v8_5_6.html](samples/theme_palette_gallery_v8_5_6.html) — 13종을 실제 보고서 단면(제목·본문·수치 카드·accent/up/down)으로 렌더. 색은 전부 report.css 변수에서 나온다(페이지 CSS 에 색 리터럴 없음).
+- **회귀** `tests/regression/test_shared_palettes.py` 55종 — 풀 등록 · 쌍 색 동일성 · 플랫/폰트 미적용 · 지도 토큰 · WCAG AA · 번들 토큰 추출. 변이 5종 주입으로 non-vacuous 확인. 실제 Chromium 으로 21종 computed style 도 검증(일반 radius 10px / 르포 0px).
 
 ## v8.5.5 — 사실수집 CLI 상한 mode 인지 + 소급 발행 진행·실패 알림
 
