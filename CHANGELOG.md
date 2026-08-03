@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.8
+last_synced_with: v8.5.9
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,16 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.9 — 첫 문단도 들여쓰기 (일반·르포 공통)
+
+사용자 지적 — "르포도 그렇고 보고서도 그런데 첫 문단에는 왜 들여쓰기 적용이 안되어있지".
+
+v8.5.7/8 에서 `p:first-child{text-indent:0}` 예외를 뒀던 것을 걷어냈다. 당시 판단은 '첫 문단은 제목 바로 아래라 들여쓰면 좌측이 어긋나 보인다'였는데, 문단마다 일관되게 들여쓰는 쪽이 낫다는 사용자 결정. 일반 본문·모순 섹션·르포 본문 3곳 모두 적용.
+
+- **유일하게 남긴 예외 — 드롭캡.** `has-dropcap` 섹션의 첫 문단은 첫 글자를 `float:left` 로 띄우므로 들여쓰기를 주면 드롭캡 자체가 밀려 깨진다. 취향이 아니라 렌더링 제약이라 `.freeform-prose.has-dropcap p:first-child{text-indent:0}` 만 유지. 르포는 드롭캡을 렌더하지 않으므로 예외 없음.
+- **회귀** 기존 '첫 문단 들여쓰기 없음' 테스트 2종을 뒤집어 `test_first_paragraph_is_also_indented`(3곳 전수) + `test_dropcap_paragraph_stays_flush` 로 교체. 변이 3종(일반/르포 예외 부활, 드롭캡 예외 삭제) 주입으로 non-vacuous 확인.
+- **검증** 실제 Chromium computed style — 일반 `['15.5px'×4]`, 드롭캡 `['0px', '15.5px'×3]`, 르포 `['16px'×4]`.
 
 ## v8.5.8 — 르포 본문에도 첫 줄 들여쓰기 (WRITE-AP-27 마무리)
 

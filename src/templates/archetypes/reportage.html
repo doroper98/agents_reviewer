@@ -60,9 +60,9 @@
   /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
   /* v8.5.8 — 첫 줄 들여쓰기(사용자 요청). 문단 분할 자체는 v8.5.7 에서 공용 필터
      (_as_paragraphs)로 이미 적용됐다 — 그 전까지 이 `p` 규칙은 <p> 가 안 만들어져
-     죽어 있었다. 첫 문단은 소제목 바로 아래라 들여쓰지 않는다(좌측이 어긋나 보인다). */
+     죽어 있었다. v8.5.9 부터 첫 문단도 들여쓴다(사용자 결정 — 문단마다 일관되게). 르포는 드롭캡을
+     렌더하지 않으므로 예외가 없다. */
   .rep-prose p{margin:0 0 1.15em;text-indent:1em;text-align:justify;text-align-last:left}
-  .rep-prose p:first-child{text-indent:0}
   .rep-prose p:last-child{margin-bottom:0}
   /* 용어풀이 (유일하게 남기는 부가요소) */
   .rep-fn{margin:18px 0 4px;padding:14px 16px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03)}
