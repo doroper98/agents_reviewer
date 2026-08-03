@@ -30,6 +30,9 @@ _TPL = (_ROOT / "src" / "templates" / "archetypes" / "freeform_essay.html").read
     encoding="utf-8"
 )
 _COMPOSER = (_ROOT / "src" / "agents" / "narrative_composer.py").read_text(encoding="utf-8")
+_REPORTAGE_TPL = (_ROOT / "src" / "templates" / "archetypes" / "reportage.html").read_text(
+    encoding="utf-8"
+)
 
 
 def _paras(text: str) -> list[str]:
@@ -133,8 +136,8 @@ def test_empty_input_unchanged() -> None:
 # --------------------------------------------------------------------------
 
 
-def _rule(selector: str) -> str:
-    m = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", _TPL)
+def _rule(selector: str, css: str | None = None) -> str:
+    m = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", css if css is not None else _TPL)
     assert m, f"{selector} 규칙 없음"
     return m.group(1)
 
@@ -162,3 +165,34 @@ def test_composer_prompt_mandates_paragraph_breaks() -> None:
     assert "WRITE-AP-27" in _COMPOSER, "문단 강령이 프롬프트에 없음"
     for marker in ("3~5 문장", "\\n\\n", "최소 3문단"):
         assert marker in _COMPOSER, f"프롬프트에 '{marker}' 지시 누락"
+
+
+# --------------------------------------------------------------------------
+# ⑧ 르포도 같은 처우 (v8.5.8)
+#
+# 문단 분할은 v8.5.7 에서 공용 필터로 이미 적용됐다 (르포도 같은 `structured` 를
+# 탄다 — 그 전까지 `.rep-prose p` 규칙이 <p> 부재로 죽어 있었다). 들여쓰기만 v8.5.8.
+# --------------------------------------------------------------------------
+
+
+def test_reportage_prose_has_spacing_and_indent() -> None:
+    body = _rule(".rep-prose p", _REPORTAGE_TPL)
+    assert "text-indent:1em" in body, "르포 첫 줄 들여쓰기 누락 (사용자 요청)"
+    assert "margin:0 0 1.15em" in body, "르포 문단 아래 여백 누락"
+
+
+def test_reportage_first_paragraph_not_indented() -> None:
+    assert "text-indent:0" in _rule(".rep-prose p:first-child", _REPORTAGE_TPL)
+
+
+def test_reportage_shares_the_paragraph_filter() -> None:
+    """르포 템플릿이 같은 필터를 타야 문단 분할이 공짜로 따라온다."""
+    assert "| structured" in _REPORTAGE_TPL, (
+        "르포가 structured 필터를 안 쓰면 문단 분할이 일반 보고서에만 적용된다"
+    )
+
+
+def test_reportage_prompt_keeps_paragraph_mandate() -> None:
+    """르포 작성 강령의 문단 규칙(일반보다 강함)이 유지돼야 한다."""
+    assert "한 문단은 다섯 문장을 넘기지 않는다" in _COMPOSER
+    assert "문단 서넛 이상" in _COMPOSER

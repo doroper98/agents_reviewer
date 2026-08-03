@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.7
+last_synced_with: v8.5.8
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.8 — 르포 본문에도 첫 줄 들여쓰기 (WRITE-AP-27 마무리)
+
+사용자 요청 — "르포부분도 같이 개선 할 수 있어? 단락구분 들여쓰기 등등에 대해".
+
+확인해 보니 **절반은 v8.5.7 에서 이미 적용돼 있었다.**
+
+- **문단 분할 — 이미 적용됨.** 르포 템플릿도 같은 `structured` 필터를 타므로 v8.5.7 의 실 `<p>` 변환 + 5문장 초과 결정적 분할이 그대로 걸린다. 오히려 v8.5.7 이 르포의 **잠재 버그도 같이 고쳤다** — `.rep-prose p{margin:0 0 1.15em}` 규칙이 `<p>` 가 안 만들어져 그동안 죽어 있었다.
+- **작성 강령 — 이미 더 강함.** `_REPORTAGE_BLOCK` 의 '한 문단은 다섯 문장을 넘기지 않는다 / 한 섹션에 문단 서넛 이상' 이 일반 보고서 규칙보다 강하다. 손댈 필요 없음.
+- **빠져 있던 것 = 들여쓰기.** v8.5.7 은 사용자 요청 범위(일반 보고서)에 맞춰 `.rep-prose` 를 일부러 건드리지 않았다. 이번에 첫 줄 들여쓰기 `1em` + 마지막 문단 여백 정리 추가. 첫 문단은 소제목 바로 아래라 들여쓰지 않는다(`p:first-child{text-indent:0}`).
+- **회귀** `tests/regression/test_prose_paragraphs.py` 에 르포 4종 추가(총 24종) — 들여쓰기·첫 문단 예외·**`structured` 필터 공유**(르포가 필터를 벗어나면 문단 분할이 일반에만 적용된다)·르포 프롬프트 문단 강령 유지. 변이 3종 주입으로 non-vacuous 확인.
+- **검증** 실제 Chromium 으로 르포 테마(reportage_noturno, 플랫·Noto Sans) 모바일 폭 렌더 — 벽 1개 → 문단 4개, 들여쓰기 16px, 문단 간격 18.4px.
 
 ## v8.5.7 — 본문 문단 구분 + 들여쓰기 (WRITE-AP-27)
 
