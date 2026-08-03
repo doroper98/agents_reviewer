@@ -304,7 +304,66 @@ class ReportSynthesizer:
         # Clean up duplicate leading <br> and collapse 3+ consecutive <br>
         text = re.sub(r"^(?:<br>\s*)+", "", text)
         text = re.sub(r"(?:<br>\s*){3,}", "<br><br>", text)
-        return text
+
+        # v8.5.7 — 여기서부터 *진짜 문단*으로 만든다 (사용자 catch 2026-08-01).
+        #
+        # 그 전까지 본 필터는 문단 경계를 ``<br><br>`` 로만 냈다. `<p>` 가 하나도
+        # 안 생기니 CSS 의 ``.freeform-prose p{margin:0 0 16px}`` / ``.rep-prose p``
+        # 가 통째로 죽은 규칙이었고, 문단 사이가 빈 줄 하나뿐이라 간격이 약했다.
+        # 게다가 composer 가 ``\n\n`` 자체를 안 내놓으면(프롬프트 규칙은 있으나
+        # 준수가 안 됨) 30줄짜리 벽이 그대로 나갔다 — 실제 발행본에서 관찰.
+        return ReportSynthesizer._as_paragraphs(text)
+
+    # 한 문단 최대 문장 수. 넘으면 결정적으로 쪼갠다 (프롬프트는 3~5문장을 지시하나
+    # 준수가 보장되지 않는다). 이미 잘 나뉜 문단은 건드리지 않도록 하한을 넉넉히 둔다.
+    _MAX_SENTENCES_PER_P = 5
+    _TARGET_SENTENCES_PER_P = 4
+    # 문장 종결 뒤 공백에서만 자른다 — '84.25달러' / '8.16%' 처럼 마침표 뒤가
+    # 공백이 아니면 매치되지 않아 소수점이 문장 경계로 오인되지 않는다.
+    _SENTENCE_SPLIT = re.compile(r"(?<=[.!?。？！])\s+")
+
+    @staticmethod
+    def _split_long_paragraph(chunk: str) -> list[str]:
+        """지나치게 긴 문단을 문장 경계에서 나눈다. 짧으면 그대로 반환."""
+        sentences = [s for s in ReportSynthesizer._SENTENCE_SPLIT.split(chunk) if s.strip()]
+        if len(sentences) <= ReportSynthesizer._MAX_SENTENCES_PER_P:
+            return [chunk]
+        step = ReportSynthesizer._TARGET_SENTENCES_PER_P
+        out: list[str] = []
+        for i in range(0, len(sentences), step):
+            group = " ".join(sentences[i:i + step]).strip()
+            if group:
+                out.append(group)
+        # 마지막 조각이 한 문장뿐이면 앞 문단에 붙인다 (고아 문장 방지).
+        # ⚠ pop() 을 f-string 안에서 하지 말 것 — RHS 가 먼저 평가돼 리스트가 줄어든
+        # 뒤에 대입 대상 out[-2] 가 계산되면서 엉뚱한 문단을 덮어쓴다 (실제로 밟은 버그).
+        if len(out) >= 2 and len(ReportSynthesizer._SENTENCE_SPLIT.split(out[-1])) == 1:
+            orphan = out.pop()
+            out[-1] = f"{out[-1]} {orphan}"
+        return out
+
+    @staticmethod
+    def _as_paragraphs(text: str) -> str:
+        """``<br><br>`` 로 구분된 본문을 실제 ``<p>`` 문단으로 변환.
+
+        단일 ``<br>`` 은 문단 *안의* 줄바꿈이라 그대로 둔다 (블록 헤더
+        ``<strong>제목</strong><br>본문`` 이 한 문단으로 유지된다).
+        """
+        if not text.strip():
+            return text
+        chunks = [c.strip() for c in re.split(r"(?:<br>\s*){2,}", text)]
+        paragraphs: list[str] = []
+        for chunk in chunks:
+            if not chunk:
+                continue
+            # 블록 헤더로 시작하는 조각은 쪼개지 않는다 (제목과 본문이 갈라진다).
+            if chunk.startswith("<strong>"):
+                paragraphs.append(chunk)
+            else:
+                paragraphs.extend(ReportSynthesizer._split_long_paragraph(chunk))
+        if not paragraphs:
+            return text
+        return "".join(f"<p>{p}</p>" for p in paragraphs)
 
     # ------------------------------------------------------------------
     # V3 Step 3 — AnalysisBlock builders (per BlockType)
