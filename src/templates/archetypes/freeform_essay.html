@@ -54,7 +54,10 @@
    문단 간격(1em)에 더해 첫 줄 들여쓰기(1em) — 사용자 요청. 첫 문단은 제목 바로
    아래라 들여쓰지 않는다(들여쓰면 제목과 어긋나 보인다). */
 .freeform-prose p{margin:0 0 1em;text-indent:1em;text-align:justify;text-align-last:left}
-.freeform-prose p:first-child{text-indent:0}
+/* v8.5.9 — 첫 문단도 들여쓴다 (사용자 지적). v8.5.7 은 '제목 아래라 어긋나 보인다'는
+   판단으로 제외했으나, 문단마다 일관되게 들여쓰는 쪽이 낫다는 사용자 결정.
+   유일한 예외는 드롭캡 — 첫 글자를 float 로 띄우므로 들여쓰기를 주면 드롭캡이 밀려 깨진다. */
+.freeform-prose.has-dropcap p:first-child{text-indent:0}
 .freeform-prose p:last-child{margin-bottom:0}
 /* 블록 헤더(<strong>제목</strong><br>본문)로 시작하는 문단은 들여쓰기 대상이 아니다. */
 .freeform-prose p > strong:first-child{display:inline-block;text-indent:0}
@@ -131,7 +134,6 @@
 .contradiction-prose{font-size:15.5px;line-height:1.9;color:var(--fg-2,#D4C4AA);font-weight:400;
   text-align:justify;text-justify:auto;text-align-last:left;word-break:keep-all;overflow-wrap:break-word}
 .contradiction-prose p{margin:0 0 1em;text-indent:1em;text-align:justify;text-align-last:left}
-.contradiction-prose p:first-child{text-indent:0}
 .contradiction-prose p:last-child{margin-bottom:0}
 .contradiction-prose .ct-turn{color:var(--accent,#C9A84C);font-weight:600}
 .contradiction-prose .ct-evidence{color:var(--fg-3,#A89880)}

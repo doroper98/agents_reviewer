@@ -149,11 +149,26 @@ def test_paragraph_has_spacing_and_indent(sel: str) -> None:
     assert re.search(r"margin:0 0 1em", body), f"{sel}: 문단 아래 여백 누락"
 
 
-@pytest.mark.parametrize("sel", [".freeform-prose p:first-child",
-                                 ".contradiction-prose p:first-child"])
-def test_first_paragraph_not_indented(sel: str) -> None:
-    """첫 문단은 제목 바로 아래라 들여쓰면 제목과 어긋나 보인다."""
-    assert "text-indent:0" in _rule(sel)
+def test_first_paragraph_is_also_indented() -> None:
+    """v8.5.9 — 첫 문단도 들여쓴다 (사용자 지적: 왜 첫 문단만 안 되나).
+
+    v8.5.7 은 '제목 아래라 어긋나 보인다'는 판단으로 `p:first-child{text-indent:0}`
+    예외를 뒀으나, 문단마다 일관되게 들여쓰는 쪽으로 사용자가 결정했다.
+    """
+    for css, sel in ((_TPL, ".freeform-prose p:first-child"),
+                     (_TPL, ".contradiction-prose p:first-child"),
+                     (_REPORTAGE_TPL, ".rep-prose p:first-child")):
+        assert re.search(re.escape(sel) + r"\s*\{[^}]*text-indent:0", css) is None, (
+            f"{sel}: 첫 문단 들여쓰기 예외가 남아 있음 — 전 문단 일관 적용해야 한다"
+        )
+
+
+def test_dropcap_paragraph_stays_flush() -> None:
+    """드롭캡은 첫 글자를 float 로 띄운다 — 들여쓰기를 주면 드롭캡이 밀려 깨진다.
+
+    이건 취향이 아니라 렌더링 제약이므로 예외를 유지한다.
+    """
+    assert "text-indent:0" in _rule(".freeform-prose.has-dropcap p:first-child")
 
 
 # --------------------------------------------------------------------------
@@ -179,10 +194,6 @@ def test_reportage_prose_has_spacing_and_indent() -> None:
     body = _rule(".rep-prose p", _REPORTAGE_TPL)
     assert "text-indent:1em" in body, "르포 첫 줄 들여쓰기 누락 (사용자 요청)"
     assert "margin:0 0 1.15em" in body, "르포 문단 아래 여백 누락"
-
-
-def test_reportage_first_paragraph_not_indented() -> None:
-    assert "text-indent:0" in _rule(".rep-prose p:first-child", _REPORTAGE_TPL)
 
 
 def test_reportage_shares_the_paragraph_filter() -> None:
