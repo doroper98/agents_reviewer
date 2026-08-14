@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+
+<html lang="ko" data-theme="reportage_navy">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="report-format" content="reportage">
+<title>누가 더 빨리 짓느냐, 그 물음이 민주주의를 흔든다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+
+<style>/* ===== Report Theme System — Mono + Editorial (v4.5.0) =====
+   SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
+   세 톤 (Editorial Cream · Burgundy Mono · Light Mono).
+   - editorial_cream: 디폴트. cream + terracotta. 편집·분석·일반 보고서.
+   - burgundy_mono: 위기·분쟁·사고. dark wine + amber. (v4.5.0 어둡게 보정)
+   - light_mono: 폐기 예정 (legacy). 아래 블록은 호환 위해 보존.
+   카테고리 구분은 hue 가 아닌 border-style + 패턴.
+   ============================================================ */
+
+/* --- Default: Editorial Cream (warm cream + terracotta + warm dark) ---
+   v4.5.0 신규. LG AI Seminar 보고서 톤 차용. 인쇄·캡처·장문 가독성 우위. */
+:root, [data-theme="editorial_cream"] {
+  /* Surfaces */
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-hover: #E5DBC4;
+  --accent-surface: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --divider: #D4C8B0;
+
+  /* Text */
+  --text: #1F1814;       /* warm dark — pure black 보다 따뜻 */
+  --muted: #6B5C4A;      /* warm grey */
+
+  /* Semantic accents — guide §3.2 */
+  --accent: #B05A38;     /* terracotta — editorial 강조, hatch stroke, callout border */
+  --up: #4A6B3E;         /* forest green — 상승·기회 (작은 변동만) */
+  --down: #8B2A2A;       /* deep crimson — 하락·위험 (작은 변동, 이벤트 vline) */
+
+  /* Map tokens */
+  --map-land: #F2EBDB;
+  --map-water: #DFD3B8;  /* sand — water as "aged paper" */
+  --map-boundary: #1F1814;
+  --map-graticule: #D4C8B0;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases (멀티컬러 → mono 매핑 보존) */
+  --text-primary: var(--text);
+  --text-secondary: #2D241B;
+  --text-muted: var(--muted);
+  --text-faded: #8A7A66;
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 톤 변형 토큰 */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --card-deep: #E5DBC4;       /* v4.5.3 — chart-card-stage 배경 (본문보다 한 단계 깊게) */
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+}
+
+/* --- Burgundy Mono (deep wine + amber gold + parchment) — v4.5.0 어둡게 보정 ---
+   이전 #3D1820 은 "맑은 와인" 톤이었고 사용자 피드백으로 더 짙은 dried-blood 톤으로.
+   위기·분쟁·사고 보고서 전용 (lens_policy._THEME_BY_CATEGORY 참조). */
+[data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #2A0F18;             /* v4.5.0: 3D1820 → 2A0F18 (R-22, G-9, B-8) */
+  --card: #371721;           /* 카드는 bg 보다 한 단계 위 */
+  --card-hover: #371721;
+  --accent-surface: #371721;
+  --border: #5A2832;         /* 6E3340 → 5A2832 (어둡게) */
+  --border-light: #371721;
+  --divider: #5A2832;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents */
+  --accent: #D4A858;
+  --up: #A8B582;
+  --down: #C9837A;
+
+  /* Map tokens — water 도 한 단계 더 깊게 */
+  --map-land: #2A0F18;
+  --map-water: #1A0810;      /* 2A0E16 → 1A0810 (near-black wine) */
+  --map-boundary: #EFE5D1;
+  --map-graticule: #5A2832;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases */
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
+  --card-deep: #1A0810;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #D8CCB8;
+  --fg-3: var(--muted);
+  --border-soft: rgba(90,40,50,0.4);
+}
+
+/* --- Light Mono (cream + deep burgundy + forest green) --- */
+[data-theme="light_mono"] {
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-hover: #f8f2e4;
+  --accent-surface: #f8f2e4;
+  --border: #b3a586;
+  --border-light: #d4c8a8;
+  --divider: #b3a586;
+
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+
+  --map-land: #efe8d9;
+  --map-water: #dccea8;
+  --map-boundary: #1a1a1a;
+  --map-graticule: #b3a586;
+
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0, light mono) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --card-deep: #dccea8;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #3a3a3a;
+  --fg-3: var(--muted);
+  --border-soft: rgba(179,165,134,0.4);
+}
+
+/* ================================================================
+   v5.0.2 — 5개 신규 테마 (총 7종 중 5종 추가, 사용자 요청)
+   원칙: mono guide §3.3 단일 액센트. 가독성 우선. 카테고리 무관 랜덤.
+   ================================================================ */
+
+/* --- Midnight Indigo (deep indigo + sky blue) — 다크 모드, 기술·심층 톤 */
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E;
+  --card: #1F2440;
+  --card-hover: #262C4A;
+  --accent-surface: #1F2440;
+  --border: #3A4060;
+  --border-light: #262C4A;
+  --divider: #3A4060;
+
+  --text: #E8ECEF;
+  --muted: #8A92A8;
+
+  --accent: #6FB3FF;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #161A2E;
+  --map-water: #0D1020;
+  --map-boundary: #E8ECEF;
+  --map-graticule: #3A4060;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0D1020;
+  --card-deep: #0D1020;
+  --fg-1: var(--text); --fg-2: #D0D8E0; --fg-3: var(--muted);
+  --border-soft: rgba(58,64,96,0.45);
+}
+
+/* --- Pine Forest (deep pine green + jade) — 다크 모드, 짙은 녹색 (v6.2.0) */
+[data-theme="pine_forest"] {
+  --bg: #132019;
+  --card: #1B2C22;
+  --card-hover: #233529;
+  --accent-surface: #1B2C22;
+  --border: #32503E;
+  --border-light: #233529;
+  --divider: #32503E;
+
+  --text: #E7EEE8;
+  --muted: #8AA294;
+
+  --accent: #7CC6A4;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #132019;
+  --map-water: #0C140F;
+  --map-boundary: #E7EEE8;
+  --map-graticule: #32503E;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0C140F;
+  --card-deep: #0C140F;
+  --fg-1: var(--text); --fg-2: #CFE0D4; --fg-3: var(--muted);
+  --border-soft: rgba(50,80,62,0.45);
+}
+
+/* --- Graphite Slate (deep graphite gray + copper) — 다크 모드, 짙은 회색 (v6.2.0) */
+[data-theme="graphite_slate"] {
+  --bg: #191B1E;
+  --card: #23262B;
+  --card-hover: #2B2F35;
+  --accent-surface: #23262B;
+  --border: #3D424A;
+  --border-light: #2B2F35;
+  --divider: #3D424A;
+
+  --text: #E9EBED;
+  --muted: #969BA3;
+
+  --accent: #D69A5E;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #191B1E;
+  --map-water: #0E0F12;
+  --map-boundary: #E9EBED;
+  --map-graticule: #3D424A;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0E0F12;
+  --card-deep: #0E0F12;
+  --fg-1: var(--text); --fg-2: #D2D6DA; --fg-3: var(--muted);
+  --border-soft: rgba(61,66,74,0.45);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* --- Layout --- */
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
+
+/* --- Hero --- */
+.hero { background: var(--bg); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; }
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(24px, 6vw, 42px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 14px;
+  line-height: 1.7;
+}
+
+/* --- Key Summary (핵심 요약) --- */
+.key-summary {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.key-summary-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.key-summary ol {
+  list-style: none;
+  counter-reset: ks;
+  padding: 0;
+  margin: 0;
+}
+.key-summary li {
+  counter-increment: ks;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding: 3px 0;
+}
+.key-summary li::before {
+  content: counter(ks) ")";
+  color: var(--gold);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* --- Key Metrics Grid --- */
+.key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .key-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 400px) {
+  .key-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.key-metric-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px 8px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.key-metric-icon { font-size: 16px; margin-bottom: 6px; }
+.key-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.key-metric-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+/* --- Canvas Chart Grid --- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span {
+  background: var(--card);
+  padding: 3px 12px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* --- Navigation --- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(43, 26, 26, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-inner { display: flex; white-space: nowrap; padding: 0 4px; }
+.nav a {
+  display: block;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faded);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color .2s;
+}
+.nav a:hover { color: var(--text-muted); }
+.nav a.on { color: var(--text-primary); border-bottom-color: var(--gold); }
+
+/* --- Section Headings --- */
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: var(--text-faded);
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+/* --- Card --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+/* --- Callout --- */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--text-primary); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+/* --- Balance Analysis (균형 분석) ---
+   Long-form structured analysis with paragraph spacing for readability. */
+.balance-analysis {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 18px 20px;
+  margin: 18px 0;
+}
+.balance-analysis-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: 0.3px;
+}
+.balance-analysis-body {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.balance-analysis-body strong {
+  display: inline-block;
+  color: var(--gold);
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+.balance-analysis-body br + br {
+  line-height: 0.5;
+}
+
+/* --- Grid --- */
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* --- Act Cue (막 전환 문구) --- */
+.act-cue {
+  text-align: center;
+  padding: 24px 0 0;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  color: var(--text-faded);
+  font-style: italic;
+}
+
+/* --- Player Cards --- */
+.player-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.player-card.extreme::before { background: var(--red); }
+.player-card.high::before { background: var(--orange); }
+.player-card.medium::before { background: var(--gold); }
+.player-card.low::before { background: var(--green); }
+
+.player-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.player-emoji { font-size: 20px; }
+.player-name { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+
+.badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.badge.extreme { background: var(--red-light); color: var(--red); border: 1px solid var(--red); }
+.badge.high { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange); }
+.badge.medium { background: rgba(201,168,76,.12); color: var(--gold); border: 1px solid var(--gold); }
+.badge.low { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
+
+.player-summary { font-size: 10px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+.player-detail {
+  font-size: 10px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* --- Flow (Chain Reaction) --- */
+.flow-list { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.flow-node {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-align: center;
+  width: 100%;
+  max-width: 440px;
+}
+.flow-node strong { font-size: 12px; color: var(--text-primary); }
+.flow-node span { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+.flow-arrow {
+  width: 1px;
+  height: 16px;
+  background: var(--divider);
+  position: relative;
+}
+.flow-arrow::after {
+  content: '\25BC';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  color: var(--text-faded);
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.data-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 10px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.data-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--card-hover); }
+
+/* --- Signal Grid --- */
+.signal-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .signal-grid { grid-template-columns: 1fr 1fr; } }
+
+.signal-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.signal-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--card-hover);
+}
+.signal-item h4 { font-size: 11px; font-weight: 700; margin-bottom: 1px; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+/* --- Timeline --- */
+.timeline-content { font-size: 10px; line-height: 1.85; color: var(--text-secondary); }
+
+/* --- Gauge Bar --- */
+.gauge-bar { margin-bottom: 8px; }
+.gauge-label {
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+.gauge-label span:last-child { color: var(--text-primary); font-weight: 600; }
+.gauge-track { height: 20px; background: var(--card); border-radius: 3px; overflow: hidden; }
+.gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- Terms --- */
+.terms {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.terms b { color: var(--text-secondary); font-size: 10px; }
+
+/* --- Radar --- */
+.radar-wrap { display: flex; justify-content: center; margin: 20px 0; }
+#radarCanvas { max-width: 100%; }
+
+/* --- Footer --- */
+.footer {
+  background: var(--bg);
+  border-top: 1px solid var(--divider);
+  color: var(--text-faded);
+  padding: 24px 14px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.footer a { color: var(--text-muted); text-decoration: underline; }
+
+/* ============================================================ */
+/* === v5.1.1 — 후속 보고서 헤더 + 출처 footnote 시스템         === */
+/* ============================================================ */
+
+/* --- Followup parent reference (h1 [1] footnote target) --- */
+.followup-parent {
+  padding: 18px 0 6px;
+}
+.followup-parent .container,
+.followup-parent {
+  /* container 안에서 한 단계 들여쓰기. .container 자체는 max-width 적용 됨 */
+}
+.followup-parent-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.followup-parent-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.followup-parent-body { flex: 1; }
+.followup-parent-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faded);
+  margin-bottom: 4px;
+}
+.followup-parent-id { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.followup-parent-id a { color: var(--text); text-decoration: underline; }
+.followup-parent-signal { color: var(--text-secondary); margin-bottom: 4px; }
+.followup-parent-dir {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.followup-parent-dir-confirms_base { background: rgba(74,107,62,0.18); color: var(--up); }
+.followup-parent-dir-rejects_base { background: rgba(139,42,42,0.18); color: var(--down); }
+.followup-parent-dir-ambiguous { background: rgba(176,90,56,0.18); color: var(--accent); }
+.followup-parent-event { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.followup-parent-depth { color: var(--text-faded); font-size: 9px; letter-spacing: 1px; }
+
+/* --- Title footnote mark on h1 (link [1] → #followup-parent) --- */
+.title-footnote-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.45em;
+  vertical-align: super;
+  margin-left: 6px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.title-footnote-mark sup { line-height: 1; }
+
+/* --- Footnote refs (inline ⁽n⁾ markers throughout body) --- */
+.fn-ref {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+.fn-ref:hover { text-decoration: underline; }
+
+/* --- Bottom footnotes section (통합 출처 리스트) --- */
+.footnotes {
+  padding: 28px 0 36px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+}
+.footnotes-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+.footnotes-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.footnotes-item {
+  padding: 4px 0;
+  word-break: break-all;
+}
+.footnotes-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.footnotes-link:hover { color: var(--text); }
+.footnotes-text { color: var(--muted); }
+.footnotes-item:target {
+  background: rgba(176,90,56,0.12);
+  border-radius: 3px;
+  padding-left: 4px;
+}
+
+/* --- Fade-in Animation --- */
+.fade-in { opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+.fade-in.visible { opacity: 1; transform: none; }
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 24px; }
+  .data-table { font-size: 10px; }
+}
+@media (max-width: 540px) {
+  .hero { padding: 36px 12px 28px; }
+  section { padding: 32px 0 24px; }
+  .player-card, .card { padding: 12px; }
+}
+
+/* ============================================================ */
+/* === V3 Step 3 — Block Rendering System (append-only)        === */
+/* === 디자인 토큰(--text-primary, --gold, --red 등) 재사용     === */
+/* ============================================================ */
+
+.report-block-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-section-empty { color: var(--text-muted); font-size: 11px; padding: 8px 0; font-style: italic; }
+.report-block-key-summary-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-fallback { padding: 32px 0; }
+.hero-eyebrow { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faded); margin-bottom: 8px; font-family: 'Noto Serif KR', serif; font-style: italic; }
+.footer-confidence { max-width: 600px; margin: 0 auto 10px; color: var(--text-faded); font-size: 10px; }
+.footer-share { margin-top: 10px; font-size: 11px; }
+.footer-share span { color: rgba(255,255,255,.5); }
+
+/* --- narrative --- */
+.block-narrative { margin-bottom: 14px; }
+.block-narrative-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary); }
+.block-narrative-body { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+.block-narrative-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- claim_card --- */
+.block-claim-card { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-claim-card-header { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-claim-card-id { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+.block-claim-card-type { font-size: 9px; color: var(--text-muted); padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; }
+.block-claim-card-confidence { font-size: 10px; color: var(--blue); font-weight: 600; margin-left: auto; }
+.block-claim-card-statement { font-size: 12px; color: var(--text-primary); line-height: 1.6; margin-bottom: 6px; }
+.block-claim-card-evidence { font-size: 10px; color: var(--text-secondary); }
+.block-claim-card-evidence-label { color: var(--text-muted); margin-right: 4px; }
+.block-claim-card-evidence-id { display: inline-block; padding: 1px 5px; margin: 1px 2px; background: var(--accent); border-radius: 3px; font-size: 9px; color: var(--bg); }
+.block-claim-card-evidence-missing { font-size: 10px; color: var(--orange); font-style: italic; }
+
+/* --- evidence_table --- */
+.block-evidence-table { margin: 12px 0; overflow-x: auto; }
+.block-evidence-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-evidence-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-evidence-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-evidence-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-evidence-table-id { color: var(--gold); font-weight: 600; }
+.block-evidence-table-quote { line-height: 1.6; }
+.block-evidence-table-link { color: var(--blue); text-decoration: none; }
+.block-evidence-table-reliability { font-size: 9px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+.block-evidence-table-rel-primary { background: var(--green-light); color: var(--green); }
+.block-evidence-table-rel-secondary { background: var(--blue-light); color: var(--blue); }
+.block-evidence-table-rel-expert { background: var(--gold); color: var(--bg); }
+.block-evidence-table-rel-model_inference { background: var(--orange-light); color: var(--orange); }
+.block-evidence-table-empty { font-size: 10px; color: var(--text-muted); padding: 12px 0; font-style: italic; }
+
+/* --- timeline --- */
+.block-timeline { margin: 12px 0; }
+.block-timeline-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-timeline-list { list-style: none; padding: 0; margin: 0; }
+.block-timeline-item { display: flex; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 11px; line-height: 1.6; }
+.block-timeline-item:last-child { border-bottom: 0; }
+.block-timeline-date { color: var(--blue); font-weight: 600; min-width: 110px; flex-shrink: 0; white-space: nowrap; }
+.block-timeline-event { color: var(--text-secondary); flex: 1; }
+.block-timeline-impact { color: var(--red); font-weight: 600; margin-left: 6px; }
+.block-timeline-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- matrix --- */
+.block-matrix { margin: 12px 0; overflow-x: auto; }
+.block-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-matrix-corner { background: var(--card); border: 1px solid var(--border); padding: 8px; }
+.block-matrix-col { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; }
+.block-matrix-row-label { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+.block-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- actor_cards --- */
+.block-actor-cards { margin: 12px 0; }
+.block-actor-cards-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-actor-cards-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-actor-cards-grid { grid-template-columns: 1fr 1fr; } }
+.block-actor-cards-card { background: var(--card); border-radius: var(--radius); padding: 12px; border-left: 3px solid var(--gold); }
+.block-actor-cards-risk-극심 { border-left-color: var(--red); }
+.block-actor-cards-risk-높음 { border-left-color: var(--orange); }
+.block-actor-cards-risk-보통 { border-left-color: var(--gold); }
+.block-actor-cards-risk-낮음 { border-left-color: var(--green); }
+.block-actor-cards-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-actor-cards-emoji { font-size: 16px; }
+.block-actor-cards-name { font-weight: 700; font-size: 12px; color: var(--text-primary); }
+.block-actor-cards-role { font-size: 9px; padding: 2px 6px; background: var(--accent); border-radius: 3px; color: var(--bg); font-weight: 600; }
+.block-actor-cards-position { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.6; }
+.block-actor-cards-detail { font-size: 10px; color: var(--text-muted); margin: 3px 0; line-height: 1.6; }
+.block-actor-cards-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- flow_chain --- */
+.block-flow-chain { margin: 12px 0; }
+.block-flow-chain-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-flow-chain-list { list-style: none; padding: 0; margin: 0; }
+.block-flow-chain-step { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); position: relative; }
+.block-flow-chain-step:not(:last-child)::after { content: '↓'; position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); color: var(--text-muted); font-size: 12px; }
+.block-flow-chain-sev-high { border-left-color: var(--red); }
+.block-flow-chain-sev-medium { border-left-color: var(--orange); }
+.block-flow-chain-sev-low { border-left-color: var(--gold); }
+.block-flow-chain-header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.block-flow-chain-num { font-weight: 700; color: var(--gold); font-size: 11px; }
+.block-flow-chain-title-text { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-flow-chain-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0; }
+.block-flow-chain-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-muted); flex-wrap: wrap; }
+.block-flow-chain-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- scenario_table --- */
+.block-scenario-table { margin: 12px 0; overflow-x: auto; }
+.block-scenario-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-scenario-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-scenario-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-scenario-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); vertical-align: top; }
+.block-scenario-table-name strong { color: var(--text-primary); font-size: 11px; }
+.block-scenario-table-tag { font-size: 9px; color: var(--gold); }
+.block-scenario-table-tag-최선 { border-left: 2px solid var(--green); }
+.block-scenario-table-tag-악화 { border-left: 2px solid var(--orange); }
+.block-scenario-table-tag-최악 { border-left: 2px solid var(--red); }
+.block-scenario-table-prob { font-weight: 700; color: var(--text-primary); }
+.block-scenario-table-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- decomposition --- */
+.block-decomposition { margin: 12px 0; }
+.block-decomposition-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decomposition-root { font-weight: 700; font-size: 13px; color: var(--gold); padding: 10px 12px; background: var(--card); border-radius: var(--radius); margin-bottom: 8px; }
+.block-decomposition-tree, .block-decomposition-children { list-style: none; padding-left: 16px; margin: 0; border-left: 1px dashed var(--border); }
+.block-decomposition-node { padding: 6px 0 6px 12px; position: relative; }
+.block-decomposition-node::before { content: '─'; position: absolute; left: -1px; top: 12px; color: var(--border); }
+.block-decomposition-label { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+.block-decomposition-detail { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-decomposition-depth-1 .block-decomposition-label { color: var(--gold); }
+.block-decomposition-depth-2 .block-decomposition-label { color: var(--blue); }
+.block-decomposition-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- argument_pair --- */
+.block-argument-pair { margin: 12px 0; }
+.block-argument-pair-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-argument-pair-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 700px) { .block-argument-pair-grid { grid-template-columns: 1fr 1fr; } }
+.block-argument-pair-side { background: var(--card); padding: 12px; border-radius: var(--radius); border-top: 3px solid var(--gold); }
+.block-argument-pair-side-a { border-top-color: var(--blue); }
+.block-argument-pair-side-b { border-top-color: var(--orange); }
+.block-argument-pair-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.block-argument-pair-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-argument-pair-alignment { margin-top: 10px; padding: 10px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; }
+.block-argument-pair-alignment-title { font-weight: 700; color: var(--gold); margin-bottom: 4px; font-size: 10px; }
+.block-argument-pair-alignment-list { padding-left: 16px; margin: 0; color: var(--text-secondary); }
+
+/* --- data_series --- */
+.block-data-series { margin: 12px 0; }
+.block-data-series-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-data-series-unit { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.block-data-series-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-data-series-grid { grid-template-columns: 1fr 1fr; } }
+.block-data-series-card { background: var(--card); padding: 10px 12px; border-radius: var(--radius); }
+.block-data-series-label { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 6px; }
+.block-data-series-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-data-series-table th { color: var(--text-muted); text-align: left; padding: 4px 6px; font-weight: 600; border-bottom: 1px solid var(--border-light); }
+.block-data-series-table td { padding: 4px 6px; color: var(--text-secondary); }
+.block-data-series-x { color: var(--text-muted); }
+.block-data-series-y { font-weight: 600; color: var(--text-primary); }
+.block-data-series-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- watchlist --- */
+.block-watchlist { margin: 12px 0; }
+.block-watchlist-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-watchlist-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .block-watchlist-grid { grid-template-columns: 1fr 1fr; } }
+.block-watchlist-item { display: flex; gap: 10px; padding: 10px 12px; background: var(--card); border-radius: var(--radius); border-left: 3px solid var(--gold); }
+.block-watchlist-dir-confirms_base { border-left-color: var(--green); }
+.block-watchlist-dir-rejects_base { border-left-color: var(--red); }
+.block-watchlist-dir-ambiguous { border-left-color: var(--gold); }
+.block-watchlist-icon { font-size: 18px; flex-shrink: 0; }
+.block-watchlist-body { flex: 1; }
+.block-watchlist-signal { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-watchlist-desc { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-watchlist-indicates { font-size: 10px; color: var(--blue); margin-top: 2px; }
+.block-watchlist-deadline { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+.block-watchlist-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- qna --- */
+.block-qna { margin: 12px 0; }
+.block-qna-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-qna-list { padding: 0; margin: 0; }
+.block-qna-pair { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px; }
+.block-qna-q { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 4px; }
+.block-qna-a { font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-left: 16px; }
+.block-qna-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- callout --- */
+.block-callout { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-callout-style-warning { border-left-color: var(--orange); }
+.block-callout-style-info { border-left-color: var(--blue); }
+.block-callout-style-insight { border-left-color: var(--gold); }
+.block-callout-title { font-size: 12px; margin-bottom: 4px; color: var(--text-primary); }
+.block-callout-body { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+/* --- counter_hypothesis --- */
+.block-counter-hypothesis { background: var(--card); padding: 12px 14px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin: 12px 0; }
+.block-counter-hypothesis-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--blue); }
+.block-counter-hypothesis-base, .block-counter-hypothesis-counter, .block-counter-hypothesis-required { margin: 8px 0; }
+.block-counter-hypothesis-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.block-counter-hypothesis-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-counter-hypothesis-list { padding-left: 18px; margin: 0; font-size: 10px; color: var(--text-secondary); line-height: 1.6; }
+.block-counter-hypothesis-conflict { margin-top: 8px; font-size: 10px; color: var(--orange); padding-top: 8px; border-top: 1px solid var(--border-light); }
+
+/* --- decision_matrix --- */
+.block-decision-matrix { margin: 12px 0; overflow-x: auto; }
+.block-decision-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decision-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-decision-matrix-corner, .block-decision-matrix-criterion { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); font-weight: 600; }
+.block-decision-matrix-option { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); text-align: left; font-weight: 600; }
+.block-decision-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); text-align: center; }
+.block-decision-matrix-rec { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; color: var(--bg); font-weight: 600; }
+.block-decision-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- risk_matrix --- */
+.block-risk-matrix { margin: 12px 0; overflow-x: auto; }
+.block-risk-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-risk-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-risk-matrix-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-risk-matrix-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-risk-matrix-impact-high { border-left: 3px solid var(--red); }
+.block-risk-matrix-impact-medium { border-left: 3px solid var(--orange); }
+.block-risk-matrix-impact-low { border-left: 3px solid var(--gold); }
+.block-risk-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* ============================================================ */
+/* === Mobile readability (PR1', 2026-05-01)                   === */
+/* === scenario_grid 등은 charts.css 가 처리. 여기는 timeline 과 === */
+/* === evidence/risk_matrix 의 좁은 폭 cram 을 해소.           === */
+/* ============================================================ */
+
+@media (max-width: 540px) {
+  /* timeline: flex 좌우 → 세로 스택. min-width:110px 의 날짜 칸 해제. */
+  .block-timeline-item { flex-direction: column; gap: 2px; padding: 10px 0; align-items: stretch; }
+  .block-timeline-date { min-width: 0; white-space: normal; font-size: 10px; }
+  .block-timeline-event { font-size: 11px; }
+  .block-timeline-impact { margin-left: 0; font-size: 11px; }
+
+  /* table 폰트 10px → 11px (모바일 가독성) */
+  .block-evidence-table-grid,
+  .block-matrix-grid,
+  .block-risk-matrix-grid,
+  .block-decision-matrix-grid { font-size: 11px; }
+
+  /* evidence_table / risk_matrix: thead 숨기고 row → 카드, td → 라벨된 행 */
+  .block-evidence-table-grid thead,
+  .block-risk-matrix-grid thead { display: none; }
+
+  .block-evidence-table-grid,
+  .block-evidence-table-grid tbody,
+  .block-risk-matrix-grid,
+  .block-risk-matrix-grid tbody { display: block; }
+
+  .block-evidence-table-grid tr,
+  .block-risk-matrix-grid tr {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .block-evidence-table-grid td,
+  .block-risk-matrix-grid td {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  /* td[data-label] 가 있으면 라벨 표시 (template 갱신 필요) */
+  .block-evidence-table-grid td[data-label]::before,
+  .block-risk-matrix-grid td[data-label]::before {
+    content: attr(data-label) ":  ";
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  /* matrix 류는 가로 스크롤 유지 (이게 더 읽힘) */
+  .block-matrix, .block-decision-matrix { -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================ */
+/* === PR3 (v3.4.6) — Narrative stage badges + AMC warning      === */
+/* === 5단 DSL 시각 차별화로 단조로움 직접 해소                   === */
+/* ============================================================ */
+
+.section-header { margin-bottom: 16px; }
+.section-stage-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid currentColor;
+  background: var(--accent);
+}
+.section-stage-badge.stage-fact       { color: var(--blue); }
+.section-stage-badge.stage-mechanism  { color: var(--gold); }
+.section-stage-badge.stage-divergence { color: var(--orange); }
+.section-stage-badge.stage-decision   { color: var(--green); }
+.section-stage-badge.stage-trigger    { color: var(--red); }
+
+/* 섹션 자체에도 좌측 컬러 액센트 — 스크롤하면서 단계 흐름이 한눈에 보이게 */
+.report-block-section.stage-fact       { border-left: 2px solid var(--blue);   padding-left: 12px; }
+.report-block-section.stage-mechanism  { border-left: 2px solid var(--gold);   padding-left: 12px; }
+.report-block-section.stage-divergence { border-left: 2px solid var(--orange); padding-left: 12px; }
+.report-block-section.stage-decision   { border-left: 2px solid var(--green);  padding-left: 12px; }
+.report-block-section.stage-trigger    { border-left: 2px solid var(--red);    padding-left: 12px; }
+
+/* AMC 미달 경고 배너 */
+.report-block-amc-warning {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius);
+  background: var(--orange-light);
+}
+.amc-warning-badge {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.amc-warning-badge code {
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.amc-warning-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.amc-stage-missing {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  color: var(--orange);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   v8.0.0 — 르포(reportage) 전용 테마 8종 (다크 통일). lens_policy.REPORTAGE_THEMES
+   와 1:1. 르포일 때만 data-theme 으로 적용 — 일반 보고서 5테마와 완전 분기.
+   ═══════════════════════════════════════════════════════════════ */
+/* v8.5.6 — 8 팔레트를 일반 보고서와 르포가 *공유* 한다 (사용자 결정 2026-08-01).
+   선언을 복제하지 않고 선택자만 겹쳐 둔 이유: 복제하면 한쪽만 손보다 색이 갈라진다.
+   가져오는 것은 *색뿐* — 르포의 플랫 지오메트리(radius 0 / shadow none)와 G마켓 Sans
+   디스플레이는 `[data-theme^="reportage_"]` 접두 선택자에 걸려 있어 접두 없는 일반
+   이름엔 적용되지 않는다. 즉 일반 보고서는 이 색을 쓰면서 둥근 모서리 + Newsreader
+   세리프를 그대로 유지한다 (radius/shadow 는 :root 폴백). 장르 구분은 색이 아니라
+   조판·지오메트리·템플릿이 맡는다. */
+[data-theme="reportage_cyprus"],
+[data-theme="cyprus"] {
+  --bg: #004741; --card: #0B5349; --card-hover: #156055; --accent-surface: #0B5349;
+  --border: #1E5C52; --border-light: #156055; --divider: #1E5C52;
+  --text: #F0EDE4; --muted: #9DB5AC;
+  --accent: #E3A93C; --up: #86C0A4; --down: #E89070;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #003A33; --card-deep: #003A33;
+  --fg-1: var(--text); --fg-2: #D8E0D8; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_noturno"],
+[data-theme="noturno"] {
+  --bg: #001621; --card: #06222E; --card-hover: #0A2A38; --accent-surface: #06222E;
+  --border: #1C3A45; --border-light: #0A2A38; --divider: #1C3A45;
+  --text: #EFE3D4; --muted: #8AA0A6;
+  --accent: #FF4103; --up: #8AC0A0; --down: #FF8A5C;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #000E16; --card-deep: #000E16;
+  --fg-1: var(--text); --fg-2: #D8E0DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+/* v8.5.6 — princess / bridal 의 --muted 는 원 팔레트 값이 보조 텍스트 대비
+   AA(4.5:1) 미달이었다(각 3.96 / 4.41). 일반 보고서는 르포보다 muted 사용처가
+   훨씬 많다(사진 크레딧·각주·감시신호 설명·차트 note·fact_grid 라벨) → 같은 색조를
+   유지한 채 여유 0.3 을 두고 끌어올림. 블록 공유이므로 르포 가독성도 함께 개선된다. */
+[data-theme="reportage_bridal"],
+[data-theme="bridal"] {
+  --bg: #741A2F; --card: #86283C; --card-hover: #94324A; --accent-surface: #86283C;
+  --border: #8E3548; --border-light: #94324A; --divider: #8E3548;
+  --text: #FFE2D4; --muted: #CEA39C;
+  --accent: #FFB38F; --up: #D0A88A; --down: #F2998F;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #5E1326; --card-deep: #5E1326;
+  --fg-1: var(--text); --fg-2: #F2D0C4; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_cosmos"],
+[data-theme="cosmos"] {
+  --bg: #002F49; --card: #073A56; --card-hover: #0A4564; --accent-surface: #073A56;
+  --border: #134A63; --border-light: #0A4564; --divider: #134A63;
+  --text: #FEF0D5; --muted: #8BA3B2;
+  --accent: #E8503F; --up: #88B888; --down: #C9837A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #00263B; --card-deep: #00263B;
+  --fg-1: var(--text); --fg-2: #E6D8C0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_laurel"],
+[data-theme="laurel"] {
+  --bg: #0D3A35; --card: #164640; --card-hover: #1E5249; --accent-surface: #164640;
+  --border: #27534A; --border-light: #1E5249; --divider: #27534A;
+  --text: #FBF6F0; --muted: #9CB5AC;
+  --accent: #86C0A4; --up: #86C0A4; --down: #E2937A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #082E2A; --card-deep: #082E2A;
+  --fg-1: var(--text); --fg-2: #DCE6E0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_princess"],
+[data-theme="princess"] {
+  --bg: #015AA0; --card: #0A66AC; --card-hover: #1572B8; --accent-surface: #0A66AC;
+  --border: #2A74B6; --border-light: #1572B8; --divider: #2A74B6;
+  --text: #ECECFF; --muted: #C8D7EA;
+  --accent: #FF9457; --up: #88C0B0; --down: #FF8378;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #014A85; --card-deep: #014A85;
+  --fg-1: var(--text); --fg-2: #D8E0F5; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_steel"],
+[data-theme="steel"] {
+  --bg: #282433; --card: #332E41; --card-hover: #3D374D; --accent-surface: #332E41;
+  --border: #453F56; --border-light: #3D374D; --divider: #453F56;
+  --text: #F3E0D9; --muted: #B0A8BE;
+  --accent: #E2B25C; --up: #A0C090; --down: #E89C94;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #1E1B27; --card-deep: #1E1B27;
+  --fg-1: var(--text); --fg-2: #E0D4DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_navy"],
+[data-theme="navy"] {
+  --bg: #0F0E49; --card: #1A1860; --card-hover: #24226E; --accent-surface: #1A1860;
+  --border: #2D2B79; --border-light: #24226E; --divider: #2D2B79;
+  --text: #ECE6F5; --muted: #B0AED4;
+  --accent: #D9ABE8; --up: #A0C0B0; --down: #F08AB0;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0A0934; --card-deep: #0A0934;
+  --fg-1: var(--text); --fg-2: #DCD6EC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+
+/* 르포 전용 폰트 — G마켓 Sans(디스플레이) + Noto Sans(본문). 일반 보고서는 영향 없음. */
+@font-face{font-family:'GmarketSans';font-weight:700;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');font-display:swap}
+@font-face{font-family:'GmarketSans';font-weight:500;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-display:swap}
+
+/* 르포: 본문 Noto Sans, 헤드라인/키커/소제목 G마켓 Sans */
+[data-theme^="reportage_"],
+[data-theme^="reportage_"] .freeform-prose,
+[data-theme^="reportage_"] .freeform-deck,
+[data-theme^="reportage_"] .freeform-lede,
+[data-theme^="reportage_"] body{font-family:'Noto Sans KR','IBM Plex Sans KR',sans-serif !important}
+[data-theme^="reportage_"] .freeform-headline,
+[data-theme^="reportage_"] .freeform-heading,
+[data-theme^="reportage_"] .freeform-kicker,
+[data-theme^="reportage_"] .freeform-eyebrow,
+[data-theme^="reportage_"] h1,
+[data-theme^="reportage_"] h2,
+[data-theme^="reportage_"] h3{font-family:'GmarketSans','Noto Sans KR',sans-serif !important;letter-spacing:-0.01em}
+
+/* 르포: 플랫 미니멀 — 둥근 모서리/그림자 제거 */
+[data-theme^="reportage_"] .freeform-figure,
+[data-theme^="reportage_"] .chart-card,
+[data-theme^="reportage_"] .freeform-fact-grid > *,
+[data-theme^="reportage_"] .freeform-pullquote,
+[data-theme^="reportage_"] .freeform-analogy,
+[data-theme^="reportage_"] .freeform-origin,
+[data-theme^="reportage_"] figure,
+[data-theme^="reportage_"] img,
+[data-theme^="reportage_"] [class*="card"]{border-radius:0 !important;box-shadow:none !important}
+
+/* 르포 [르포] 배지 (헤더 eyebrow). 본문 텍스트 아님 — UI 라벨. */
+.reportage-badge{display:inline-block;font-family:'GmarketSans',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.12em;padding:3px 9px;border:1px solid var(--accent);color:var(--accent);margin-right:10px;vertical-align:middle}
+
+
+/* v8.0.0 — 르포 테마 지도(globe) 색 변수. 없으면 :root(라이트)를 상속해 크림색으로 나옴. */
+[data-theme="reportage_cyprus"],[data-theme="cyprus"]{--map-water:#003A33;--map-land:#156055;--map-boundary:#1E5C52}
+[data-theme="reportage_noturno"],[data-theme="noturno"]{--map-water:#000E16;--map-land:#0A2A38;--map-boundary:#1C3A45}
+[data-theme="reportage_bridal"],[data-theme="bridal"]{--map-water:#5E1326;--map-land:#94324A;--map-boundary:#8E3548}
+[data-theme="reportage_cosmos"],[data-theme="cosmos"]{--map-water:#00263B;--map-land:#0A4564;--map-boundary:#134A63}
+[data-theme="reportage_laurel"],[data-theme="laurel"]{--map-water:#082E2A;--map-land:#1E5249;--map-boundary:#27534A}
+[data-theme="reportage_princess"],[data-theme="princess"]{--map-water:#014A85;--map-land:#1572B8;--map-boundary:#2A74B6}
+[data-theme="reportage_steel"],[data-theme="steel"]{--map-water:#1E1B27;--map-land:#3D374D;--map-boundary:#453F56}
+[data-theme="reportage_navy"],[data-theme="navy"]{--map-water:#0A0934;--map-land:#24226E;--map-boundary:#2D2B79}
+</style>
+<style>
+  /* ── 르포 담백 레이아웃 (theme color 변수는 report.css [data-theme=reportage_*] 에서) ── */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+       -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+  .rep-wrap{max-width:820px;margin:0 auto;padding:0 26px 90px}
+  /* 상단 바 — 버전만 */
+  /* v8.5.2 — 좌: [르포] 배지 / 우: 버전. 기존엔 flex-end 로 버전만 있었다.
+     CLAUDE.md v8.0.0 설계('본문·제목에 르포 단어 금지, UI 헤더 배지로만')가
+     전문 헤더에는 실제로 구현돼 있지 않던 drift 해소. */
+  .rep-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);
+           padding:16px 0 12px;font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-badge{font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--accent);
+             border:1px solid var(--accent);border-radius:2px;padding:2px 7px}
+  /* 제목 / 작성일시 */
+  .rep-headline{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:44px;
+                line-height:1.12;letter-spacing:-.015em;color:var(--text);margin:34px 0 12px}
+  .rep-meta{font:500 12px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted);margin:0 0 8px}
+  .rep-rule{height:1px;background:var(--border);margin:30px 0}
+  /* 사진 */
+  .rep-fig{margin:26px 0}
+  .rep-fig img{width:100%;height:auto;display:block;border-radius:0}
+  .rep-fig figcaption{font:400 12.5px/1.5 'Noto Sans KR',sans-serif;color:var(--muted);margin-top:8px}
+  .rep-fig .credit{margin-left:6px;opacity:.85}
+  .rep-fig .credit a{color:inherit}
+  /* 섹션 — 번호 + 소제목 + 본문 */
+  .rep-section{padding:6px 0 2px}
+  .rep-num{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:13px;color:var(--accent);
+           letter-spacing:.08em;display:block;margin:0 0 6px}
+  .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
+          line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
+  /* v8.2.15 — 본문도 차트/지도/용어풀이와 동일하게 .rep-wrap 콘텐츠 폭을 꽉 채운다.
+     이전엔 본문만 max-width:66ch 로 좁아 데스크탑에서 우측 끝단이 시각물보다 안쪽에서
+     줄바뀜 → 우측 끝 정렬 어긋남(모바일은 뷰포트가 더 좁아 무증상). 한 열로 통일. */
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;
+             text-align:justify;text-justify:auto;text-align-last:left;
+             word-break:keep-all;overflow-wrap:break-word}
+  /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
+  /* v8.5.8 — 첫 줄 들여쓰기(사용자 요청). 문단 분할 자체는 v8.5.7 에서 공용 필터
+     (_as_paragraphs)로 이미 적용됐다 — 그 전까지 이 `p` 규칙은 <p> 가 안 만들어져
+     죽어 있었다. v8.5.9 부터 첫 문단도 들여쓴다(사용자 결정 — 문단마다 일관되게). 르포는 드롭캡을
+     렌더하지 않으므로 예외가 없다. */
+  .rep-prose p{margin:0 0 1.15em;text-indent:1em;text-align:justify;text-align-last:left}
+  .rep-prose p:last-child{margin-bottom:0}
+  /* 용어풀이 (유일하게 남기는 부가요소) */
+  .rep-fn{margin:18px 0 4px;padding:14px 16px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03)}
+  .rep-fn-label{font:700 11px 'Noto Sans KR',sans-serif;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
+  .rep-fn-item{font:400 13px/1.6 'Noto Sans KR',sans-serif;color:var(--text);opacity:.9;margin-bottom:6px}
+  .rep-fn-term{font-weight:700;margin-right:6px}
+  /* 차트/지도 카드 — 플랫(report.css reportage override) */
+  .rep-figwrap{margin:24px 0}
+  /* 결론 */
+  .rep-conc{margin-top:30px;padding-top:22px;border-top:1px solid var(--border)}
+  /* 푸터 — 최소 */
+  .rep-foot{max-width:820px;margin:0 auto;padding:26px;border-top:1px solid var(--border);
+            font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-foot a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="rep-wrap">
+
+  <div class="rep-top"><span class="rep-badge">르포</span><span>v8.5.9 · Rev 0.0</span></div>
+
+  <h1 class="rep-headline">누가 더 빨리 짓느냐, 그 물음이 민주주의를 흔든다</h1>
+  <div class="rep-meta">2026-08-14 15:00</div>
+  
+  
+
+  
+  
+
+  <div class="rep-rule"></div>
+
+  
+  
+
+  
+  
+  
+  <section class="rep-section">
+    <span class="rep-num">01</span>
+    <h2 class="rep-h2">22개월과 42개월, 두 개의 시계</h2>
+    <div class="rep-prose"><p>아랍에미리트 사막 어디쯤, 데이터센터 부지의 전력 연결이 스물두 달 만에 마무리된다. 같은 규모의 설비가 독일에서는 마흔두 달을 기다린다. 스무 달의 격차는 종이 위 숫자가 아니다. 100메가와트급 시설 한 곳의 1년 지연은 생애주기 가치로 약 5억 5,000만 달러가 사라진다는 계산이 카네기국제평화재단의 지난 6월 보고서에 적혀 있다.</p><p>2026년 여름, 이 두 개의 시계가 정책 결정자들의 책상 위에 나란히 올라 있다. 한쪽에는 '민주주의는 느리다'는 명제가, 다른 쪽에는 그것을 뒤집을 자원표가 놓여 있다. 골드만삭스 추정에 따르면 올해 미국의 대형 기술 기업들이 인공지능 설비에 쏟는 돈은 약 7,640억 달러다. 중국은 알리바바와 텐센트, 바이트댄스, 바이두 같은 민간 대형 사업자의 설비투자를 다 합친 추정치가 약 1,020억 달러다.</p><p>이 비교만 놓으면 격차는 대략 일곱 배 반이다. 다만 이 수치는 민간 기업의 설비투자만 잡은 것으로, 중국이 따로 발표한 국가 벤처펀드 1,380억 달러나 국가 인공지능 데이터센터망 2,950억 달러 같은 국가 유도자금은 여기에 들어가 있지 않다. 두 흐름은 서로 다른 통계로 봐야 한다. 같은 시기, V-Dem 연구소가 발표한 2026년 민주주의 보고서는 전 세계 민주주의 수준이 1978년 지점으로 후퇴했다고 적었다.</p><p>세계 인구의 74퍼센트, 약 60억 명이 독재국가에 산다. 자유민주주의 국가 거주자는 7퍼센트, 6억 명뿐이다. 독재국가 92개, 민주주의 국가 87개. 숫자가 뒤집힌 것이다.</p><p>그런데 이 보고서에서 정책 담당자들을 진짜 흔든 것은 다른 대목이었다. V-Dem이 '독재화 진행국' 명단에 미국과 영국, 이탈리아를 새로 올렸다. 다시 말해 지금 논쟁의 축은 '민주주의 대 권위주의'가 아니라, 민주주의 안쪽에서 벌어지는 무언가로 옮겨가는 중이다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">V-Dem</span>스웨덴 예테보리대학이 운영하는 국제 비교 민주주의 연구 프로젝트다. 매년 세계 각국의 민주주의 수준을 다차원 지표로 측정해 발표하며, 정치학계의 표준으로 널리 인용된다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">생애주기 가치</span>설비가 가동을 시작해 폐기될 때까지 만들어내는 총 경제 가치를 뜻한다. 데이터센터에서는 임대료와 컴퓨팅 수익을 미래에 걸쳐 합산한 금액을 가리킨다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">데이터센터 전력 연결 기간 (100MW급, 개월)</div>
+          <div class="chart-card-subtitle">속도 격차 담론의 가장 구체적 근거</div>
+          <div class="chart-card-stage chart-stage-bar" data-chart-type="bar" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> Carnegie Endowment, The Compute Coalition, 2026-06</div>
+          <div class="chart-card-note">1년 지연 = 시설당 약 5억 5,000만 달러 손실 (생애주기 기준)</div>
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\uc544\ub78d\uc5d0\ubbf8\ub9ac\ud2b8", "value": 22}, {"label": "\ubbf8\uad6d", "note": "\uad8c\uc5ed\ubcc4 \ud3b8\ucc28 \ud07c", "value": 30}, {"label": "\ub3c5\uc77c", "value": 42}], "note": "1\ub144 \uc9c0\uc5f0 = \uc2dc\uc124\ub2f9 \uc57d 5\uc5b5 5,000\ub9cc \ub2ec\ub7ec \uc190\uc2e4 (\uc0dd\uc560\uc8fc\uae30 \uae30\uc900)", "source": "Carnegie Endowment, The Compute Coalition, 2026-06", "subtitle": "\uc18d\ub3c4 \uaca9\ucc28 \ub2f4\ub860\uc758 \uac00\uc7a5 \uad6c\uccb4\uc801 \uadfc\uac70", "title": "\ub370\uc774\ud130\uc13c\ud130 \uc804\ub825 \uc5f0\uacb0 \uae30\uac04 (100MW\uae09, \uac1c\uc6d4)", "type": "bar"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">02</span>
+    <h2 class="rep-h2">'느리다'는 명제가 정책의 기본값이 되기까지</h2>
+    <div class="rep-prose"><p>인공지능 성능이 컴퓨팅 자원과 전력, 자본의 규모에 크게 좌우된다는 사실이 확인되면서, 국가 사이의 경쟁 규칙이 조용히 다시 쓰였다. 토지를 얼마나 빨리 수용하는가, 전력망을 얼마나 빨리 까는가, 규제를 얼마나 빨리 걷어내는가. 이 세 가지가 국가 경쟁력의 새로운 지표가 됐다. 바로 이 지점에서 '권위주의 우위론'이 등장한다.</p><p>논리는 단순하다. 중국은 지역 주민의 반대를 무시하고 인허가를 단축하며 자본을 한 방향으로 몰 수 있다. 민주주의는 그런 걸 못한다. 따라서 민주주의는 진다.</p><p>실리콘밸리 창업자들과 워싱턴의 안보 관료들, 유럽의 산업정책 담당자들이 어느 순간부터 이 명제를 공유하기 시작했다. 지난해 11월, 유럽연합 집행위는 디지털 옴니버스라는 이름의 규제 완화안을 내놨다. 6월 29일 이사회는 이를 최종 채택했다. 고위험 인공지능 규제의 발효 시점을 최대 스물네 달 연기하는 내용이다.</p><p>부속서 3의 의무는 2027년 12월로, 부속서 1은 2028년 8월로 밀렸다. 세계 인공지능 규제의 표준이 되겠다던 '브뤼셀 효과'가 스스로 물러선 첫 사례다. 미국은 다른 방식으로 움직였다. 지난해 12월 11일, '인공지능 국가정책 체계 보장' 행정명령이 서명됐다.</p><p>요지는 각 주의 인공지능 법률을 연방 차원에서 무력화한다는 것이다. 속도를 위해 연방제의 견제와 균형을 눌렀다는 평가가 곧바로 나왔다. 민주주의 진영이 경쟁 압력을 받자 스스로의 분권 원리를 눌러가며 대응하기 시작한 것이다. 한국도 예외가 아니다.</p><p>올해 AI 예산은 9조 9,000억 원, 지난해의 세 배다. 국가 AI 컴퓨팅센터 사업비만 2조 5,000억 원이 넘고, 2026년 말까지 GPU 1만 5,000장을 확보한 뒤 2030년까지 5만 장으로 늘린다는 계획이 지난 2월 확정됐다. 규제법을 시행하는 동시에 대규모 국가 동원 계획을 밀어붙이는, 새로운 유형의 실험이 진행 중이다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">브뤼셀 효과</span>유럽연합이 만든 규제가 시장 접근을 원하는 다국적 기업들을 통해 사실상 세계 표준이 되는 현상을 가리킨다. 개인정보보호 규정 GDPR이 대표적 사례로 꼽혀 왔다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">03</span>
+    <h2 class="rep-h2">누가 이 논쟁에 앉아 있나, 세 진영의 지도</h2>
+    <div class="rep-prose"><p>논쟁의 무대에는 크게 세 진영이 앉아 있다. 왼쪽에는 권위주의 우위론을 밀어붙이거나 은근히 활용하는 사람들이 있다. 실리콘밸리의 일부 창업자와 투자자, 그리고 그들의 이론적 대변자를 자처하는 지식인들이다. 언론인 Gil Duran이 지난 7월 낸 'The Nerd Reich'는 커티스 야빈과 피터 틸을 중심으로 형성된 반민주주의 기술권력론을 학술과 언론이 어떻게 검증해야 하는지를 다룬다.</p><p>NPR이 8월 10일 이 책을 대서특필하면서, 그동안 '음지의 담론'이던 흐름이 공적 토론의 대상이 됐다. 가운데에는 이 논쟁의 지형도를 그리려는 연구기관들이 앉아 있다. V-Dem은 지난 3월 열 번째 보고서를 내놨고, 카네기국제평화재단은 지난 1월 'AI와 민주주의'라는 지도 그리기 문서를 발표한 뒤 6월에는 '컴퓨팅 동맹' 정책 제안을 냈다. 예일대 정치사회정책연구소는 같은 1월에 '민주주의 재상상하기' 국제회의를 열어 세계 각지의 연구자를 불러 모았다.</p><p>개별 논문 수준이던 논의가 하나의 연구 의제로 정리되는 중이다. 오른쪽에는 대안 제도를 실제로 설계하려는 사람들이 있다. 대런 애쓰모글루와 마이클 샌델은 3월 6일 공동 대담에서 '민주주의 대 권위주의'라는 이분법 자체를 거부했다. Hélène Landemore는 예일에서 추첨으로 뽑힌 시민의회를 이론화하고, 대만의 오드리 탕은 Glen Weyl과 함께 'Plurality'라는 이름의 협력 기술 프레임을 밀고 있다.</p><p>헨리 패럴은 인공지능이 시장과 관료제, 민주주의 다음의 네 번째 정보처리 체제가 될지를 묻는다. 세 진영이 서로 다른 언어를 쓰지만, 이상하게도 한 지점에서는 겹친다. Anthropic의 다리오 아모데이가 6월 발표한 정책 제언이 그렇다. 그는 한편으로 '민주주의가 이겨야 한다'고 말하면서, 다른 한편으로 '민주국가가 스스로를 감시국가로 만들지 말아야 한다'고 못박았다.</p><p>배포 전 의무 심사, 민주국가 연합의 반도체 통제, 자국민 대상 대량감시와 대량선전의 절대 금지. 왼쪽의 기업가이면서 오른쪽의 조건을 요구하는, 이 겹침이 논쟁의 실제 구조를 보여준다. 아래 관계도가 세 진영과 그들의 접점을 정리한다. 여기서 이어지는 선은 조직 사이의 공식 관계가 아니라, 문제의식이 겹치거나 정책 제안이 비슷한 지점을 표시한 것이다. 그런 접점이 없으면 이 논쟁은 정치 슬로건들의 충돌로 끝나겠지만, 접점이 있는 한 정책 논의는 살아남는다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">커티스 야빈</span>미국의 소프트웨어 개발자 출신 정치평론가로, 민주주의를 폐기하고 최고경영자형 통치자로 국가를 운영해야 한다는 주장을 오랫동안 펴 왔다. 실리콘밸리 일부 투자자들에게 영향을 미친 인물로 알려져 있다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">AI 시대 체제 논쟁의 세 진영</div>
+          <div class="chart-card-subtitle">권위주의 우위론과 민주주의 재건론, 그리고 그들의 접점</div>
+          <div class="chart-card-stage chart-stage-stakeholder_map" data-chart-type="stakeholder_map" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 본문 인용 자료 종합</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"edges": [{"label": "\uc774\ub860\u00b7\uc790\uae08", "source": "yarvin", "target": "thiel", "type": "\ub3d9\ub9f9"}, {"label": "\ud22c\uc790", "source": "thiel", "target": "svtech", "type": "\uc601\ud5a5"}, {"label": "\uaddc\uc81c \uc644\ud654", "source": "svtech", "target": "trump_eo", "type": "\uc601\ud5a5"}, {"label": "\ub3d9\uc885", "source": "amodei", "target": "svtech", "type": "\uc5f0\uad00"}, {"label": "\ub3d9\ub9f9 \uc81c\uc548 \uacf5\uc720", "source": "amodei", "target": "carnegie", "type": "\ub3d9\ub9f9"}, {"label": "\ub3c5\uc7ac\ud654 \uc9c4\ub2e8", "source": "vdem", "target": "trump_eo", "type": "\ub300\ub9bd"}, {"label": "\uc5f0\uad6c \uc758\uc81c", "source": "carnegie", "target": "yale", "type": "\ub3d9\ub9f9"}, {"label": "\ud68c\uc758 \uc8fc\ucd5c", "source": "yale", "target": "landemore", "type": "\uc601\ud5a5"}, {"label": "\uacf5\ub3d9 \ub300\ub2f4", "source": "acemoglu", "target": "sandel", "type": "\ub3d9\ub9f9"}, {"label": "\uae30\uc220 \ubc29\ud5a5 \ube44\ud310", "source": "acemoglu", "target": "svtech", "type": "\ub300\ub9bd"}, {"label": "\ucc38\uc5ec\uc81c\ub3c4", "source": "tang", "target": "landemore", "type": "\uc5f0\uad00"}, {"label": "\uad8c\ub825 \uc9d1\uc911 \ube44\ud310", "source": "sandel", "target": "trump_eo", "type": "\ub300\ub9bd"}], "nodes": [{"col": "left", "id": "yarvin", "kind": "person", "label": "\ucee4\ud2f0\uc2a4 \uc57c\ube48", "role": "\ubc18\ubbfc\uc8fc\uc8fc\uc758 \uc774\ub860\uac00"}, {"col": "left", "id": "thiel", "kind": "person", "label": "\ud53c\ud130 \ud2f8", "role": "\ud14c\ud06c\ub178 \uc6b0\ud30c \ud22c\uc790\uc790"}, {"col": "left", "id": "svtech", "label": "\uc2e4\ub9ac\ucf58\ubc38\ub9ac \ucc3d\uc5c5\uc790\uad70", "role": "\uc18d\ub3c4\uac00 \uc774\uae34\ub2e4"}, {"col": "left", "id": "trump_eo", "label": "\ubbf8 \ud589\uc815\ubd80", "logo": "whitehouse.gov", "role": "\uc8fc \uaddc\uc81c \uc5f0\ubc29\ud654"}, {"col": "left", "id": "amodei", "kind": "person", "label": "\ub2e4\ub9ac\uc624 \uc544\ubaa8\ub370\uc774", "role": "\ubbfc\uc8fc\uc8fc\uc758 \uc2b9\ub9ac + \uac10\uc2dc\uad6d\uac00 \uae08\uc9c0"}, {"col": "center", "id": "vdem", "label": "V-Dem \uc5f0\uad6c\uc18c", "role": "\ubbfc\uc8fc\uc8fc\uc758 \ud6c4\ud1f4 \uc9c4\ub2e8"}, {"col": "center", "id": "carnegie", "label": "\uce74\ub124\uae30\uc7ac\ub2e8", "role": "\ucef4\ud4e8\ud305 \ub3d9\ub9f9 \uc81c\uc548"}, {"col": "center", "id": "yale", "label": "\uc608\uc77c ISPS", "role": "\ubbfc\uc8fc\uc8fc\uc758 \uc7ac\uc0c1\uc0c1\ud558\uae30"}, {"col": "right", "id": "acemoglu", "kind": "person", "label": "\ub300\ub7f0 \uc560\uc4f0\ubaa8\uae00\ub8e8", "role": "\uae30\uc220 \ubc29\ud5a5\uc740 \uc120\ud0dd"}, {"col": "right", "id": "sandel", "kind": "person", "label": "\ub9c8\uc774\ud074 \uc0cc\ub378", "role": "\uc2dc\uc7a5 \uc544\ub2cc \ubbfc\uc8fc\uc801 \ud1b5\uc81c"}, {"col": "right", "id": "landemore", "kind": "person", "label": "H\u00e9l\u00e8ne Landemore", "role": "\ucd94\ucca8 \uc2dc\ubbfc\uc758\ud68c"}, {"col": "right", "id": "tang", "kind": "person", "label": "\uc624\ub4dc\ub9ac \ud0d5", "role": "Plurality \ud611\ub825 \uae30\uc220"}]}, "source": "\ubcf8\ubb38 \uc778\uc6a9 \uc790\ub8cc \uc885\ud569", "subtitle": "\uad8c\uc704\uc8fc\uc758 \uc6b0\uc704\ub860\uacfc \ubbfc\uc8fc\uc8fc\uc758 \uc7ac\uac74\ub860, \uadf8\ub9ac\uace0 \uadf8\ub4e4\uc758 \uc811\uc810", "title": "AI \uc2dc\ub300 \uccb4\uc81c \ub17c\uc7c1\uc758 \uc138 \uc9c4\uc601", "type": "stakeholder_map"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">04</span>
+    <h2 class="rep-h2">'느리다'의 진짜 지도, 자원 격차는 반대 방향이다</h2>
+    <div class="rep-prose"><p>권위주의 우위론의 첫 번째 균열은 사실 아주 단순한 곳에서 벌어진다. 자원의 지도가 반대 방향을 가리킨다는 것이다. 올해 미국의 대형 기술 기업들이 인공지능 설비에 쓴 돈이 약 7,640억 달러, 중국 민간 대형 사업자들이 약 1,020억 달러라는 골드만삭스의 추정은 이미 소개했다. 이 비교가 민간 설비투자만 잡은 것이고 중국의 국가 유도자금은 별도로 흐른다는 점도 함께 놓고 봐야 한다.</p><p>그리고 2025년 5월 기준으로 전 세계 첨단 인공지능 컴퓨팅 클러스터의 약 75퍼센트가 미국 영토에서 돌아간다. 자본과 물적 기반, 두 축 모두에서 민주주의 진영이 앞서 있다. 그런데 최상위 모델의 벤치마크 성능 격차는 3월 기준 2.7퍼센트포인트로 좁혀졌다. 2023년 중반만 해도 17에서 31퍼센트포인트였다.</p><p>민간 설비투자 기준으로 일곱 배가 넘는 자원 격차가 성능 격차 3퍼센트포인트 안쪽으로 압축된 셈이다. 이 숫자를 어떻게 읽을지가 논쟁의 실제 갈림길이다. 한 가지 해석은 이렇다. 중국이 자원의 열세를 알고리즘 효율화로 메웠다.</p><p>다른 해석은 이렇다. 자원을 더 넣는다고 성능이 비례해 오르지는 않는다. 어느 쪽이든 결론은 같다. '돈을 더 쓰면 이긴다'는 전제 자체가 흔들린다.</p><p>카네기재단의 지난 6월 보고서는 여기서 한 발 더 나아간다. 민주주의 진영의 우위가 각자 흩어져 있어서, 자원을 규합하지 않으면 흩어진 채로 잠식된다는 진단이다. 부지와 전력, 자본과 공급망을 함께 묶는 '컴퓨팅 동맹'이 해법으로 제시된다. 아직 존재하는 기구가 아니라 제안된 구상이다.</p><p>규모의 열세를 국가 하나가 국가 하나와 다투는 것이 아니라, 진영이 진영과 다투는 방식으로 다시 짜자는 것이다. 미국이 자본을, 유럽이 규제 프레임을, 아시아 민주국가가 제조와 인재를 대는 방식이다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">하이퍼스케일러</span>대규모 데이터센터를 세계 여러 곳에 두고 클라우드 컴퓨팅을 대량 공급하는 초대형 사업자를 뜻한다. 미국에서는 아마존과 마이크로소프트, 구글, 메타가 대표적이다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">컴퓨팅 동맹</span>여러 민주국가가 인공지능에 필요한 부지와 전력, 자본과 공급망을 함께 묶어 운영하자는 정책 구상이다. 카네기재단의 지난 6월 보고서에서 정식으로 제안됐다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">국가별 AI 자원의 흐름</div>
+          <div class="chart-card-subtitle">민간 설비투자 뒤에 숨은 국가 유도자금까지 함께 봐야 격차의 실제가 잡힌다</div>
+          <div class="chart-card-stage chart-stage-sankey" data-chart-type="sankey" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 골드만삭스, 카네기재단, 한국 국가AI전략위 자료 종합</div>
+          <div class="chart-card-note">중국 유도자금은 국가벤처펀드 1,380억 달러와 데이터센터망 2,950억 달러 중 2026년 배분분을 개략 반영. 한국은 조 원 단위</div>
+          <script type="application/json" class="chart-payload-inline">{"data": {"links": [{"source": "us_cap", "target": "us_hs", "value": 7640}, {"source": "cn_state", "target": "cn_bat", "value": 1020}, {"negative": false, "source": "cn_state", "target": "cn_cluster", "value": 1600}, {"source": "us_hs", "target": "us_cluster", "value": 7640}, {"source": "cn_bat", "target": "cn_cluster", "value": 1020}, {"source": "kr_gov", "target": "kr_infra", "value": 2.5}, {"source": "kr_gov", "target": "kr_rd", "value": 2.9}, {"source": "kr_infra", "target": "kr_cluster", "value": 2.5}], "nodes": [{"id": "us_cap", "label": "\ubbf8\uad6d \ubbfc\uac04 \uc790\ubcf8"}, {"id": "cn_state", "label": "\uc911\uad6d \uad6d\uac00 \uc720\ub3c4\uc790\uae08"}, {"id": "kr_gov", "label": "\ud55c\uad6d \uc7ac\uc815 (9.9\uc870 \uc6d0)"}, {"id": "us_hs", "label": "\ubbf8 \ud558\uc774\ud37c\uc2a4\ucf00\uc77c\ub7ec 4\uc0ac"}, {"id": "cn_bat", "label": "BAT + \ubc14\uc774\ud2b8\ub304\uc2a4"}, {"id": "kr_infra", "label": "\ud55c\uad6d GPU\u00b7\uc778\ud504\ub77c"}, {"id": "kr_rd", "label": "\ud55c\uad6d \uae30\uc220\uac1c\ubc1c"}, {"accent": true, "id": "us_cluster", "label": "\ubbf8\uad6d \uc18c\uc7ac \ucef4\ud4e8\ud305 (75%)"}, {"id": "cn_cluster", "label": "\uc911\uad6d \uc18c\uc7ac \ucef4\ud4e8\ud305"}, {"id": "kr_cluster", "label": "\ud55c\uad6d \uc18c\uc7ac \ucef4\ud4e8\ud305"}]}, "note": "\uc911\uad6d \uc720\ub3c4\uc790\uae08\uc740 \uad6d\uac00\ubca4\ucc98\ud380\ub4dc 1,380\uc5b5 \ub2ec\ub7ec\uc640 \ub370\uc774\ud130\uc13c\ud130\ub9dd 2,950\uc5b5 \ub2ec\ub7ec \uc911 2026\ub144 \ubc30\ubd84\ubd84\uc744 \uac1c\ub7b5 \ubc18\uc601. \ud55c\uad6d\uc740 \uc870 \uc6d0 \ub2e8\uc704", "source": "\uace8\ub4dc\ub9cc\uc0ad\uc2a4, \uce74\ub124\uae30\uc7ac\ub2e8, \ud55c\uad6d \uad6d\uac00AI\uc804\ub7b5\uc704 \uc790\ub8cc \uc885\ud569", "subtitle": "\ubbfc\uac04 \uc124\ube44\ud22c\uc790 \ub4a4\uc5d0 \uc228\uc740 \uad6d\uac00 \uc720\ub3c4\uc790\uae08\uae4c\uc9c0 \ud568\uaed8 \ubd10\uc57c \uaca9\ucc28\uc758 \uc2e4\uc81c\uac00 \uc7a1\ud78c\ub2e4", "title": "\uad6d\uac00\ubcc4 AI \uc790\uc6d0\uc758 \ud750\ub984", "type": "sankey"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">05</span>
+    <h2 class="rep-h2">권위주의의 데이터 문제, 검열은 학습을 오염시킨다</h2>
+    <div class="rep-prose"><p>자원 격차의 지도는 첫 번째 균열이다. 두 번째 균열은 훨씬 더 근본적이다. 권위주의는 인공지능을 잘 만들 수 없는 구조적 약점을 안고 있다. 2023년 10월 Journal of Democracy에 실린 Eddie Yang과 Margaret Roberts의 논문 'The Authoritarian Data Problem'이 이 논의의 출발점이다.</p><p>이들의 주장은 이렇다. 검열과 선전이 데이터를 균질화한다. 반체제적 표현이 사라지고 공식 담론이 반복되면, 그 위에서 학습한 언어 모델은 세계의 다양성을 학습할 재료를 잃는다. 검열이 심할수록 성능 상한이 낮아지는 구조다.</p><p>Yang은 2025년 5월에 공개한 후속 논문 'The Limits of AI for Authoritarian Control'에서 다른 각도로 이 문제를 파고들었다. 이후 American Journal of Political Science에 게재된 이 논문은 억압이 심해질수록 시민이 속마음을 숨기는 이른바 선호 위장이 늘어난다는 것을 실증한다. 그러면 검열 담당자가 아무리 정교한 감시 인공지능을 붙여도, 학습 데이터 자체가 시민의 진짜 상태를 담고 있지 않다. 감시 인공지능의 분류 정확도가 이론적 상한보다 훨씬 낮게 나오는 이유다.</p><p>올해 Journal of Democracy 37권 2호에 실린 L. Jason Anastasopoulos와 Jie Lian의 논문 'The Limits of Authoritarian AI'는 여기에 사례를 더한다. 이란의 히잡 단속용 감시 인공지능이 오작동을 반복하면서 오히려 시민 저항을 자극했다는 분석이다. 이들이 던지는 통찰은 흥미롭다.</p><p>감시 인공지능이 진짜로 잘 작동하지 않을수록, 정권은 그 시스템이 '전능하다'는 이미지를 더 강하게 심으려 한다. 실제 성능이 아닌 인식된 성능이 억압의 도구가 된다는 뜻이다. 점 세 개를 이으면 그림이 하나 나온다. 권위주의의 자원 우위는 통계로 확인되지 않고, 알고리즘 효율에서는 오히려 데이터 오염이라는 페널티를 진다.</p><p>그러면 남는 것은 속도, 정확히는 인허가와 규제 완화의 속도 하나뿐이다. 그런데 그 하나만으로 체제 우열을 논하기에는 자원과 데이터라는 두 축이 너무 크다. 한 가지 가설은 이렇다. 권위주의 우위론은 실제 자원의 지도가 아니라, 민주주의 국가 안에서 규제 완화를 정당화하고 싶은 세력의 담론 도구로 기능해 왔다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">선호 위장</span>억압적 환경에서 사람들이 실제 생각과 다른 태도를 공개적으로 표현하는 현상을 가리키는 정치학 용어다. 티모르 쿠란이 개념화했고, 권위주의 체제의 갑작스러운 붕괴를 설명할 때 자주 인용된다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">06</span>
+    <h2 class="rep-h2">느린 게 아니라 무너진 것이다, 국가역량 재건론</h2>
+    <div class="rep-prose"><p>여기서 논쟁은 방향을 튼다. 권위주의 우위론이 흔들린다면, 도대체 '민주주의는 느리다'는 감각은 어디서 왔는가. 최근 몇 년 사이 미국과 유럽에서 조용히 힘을 얻은 답이 하나 있다. 문제는 민주주의 자체가 아니라, 민주국가의 집행 기구가 무너진 데 있다는 것이다.</p><p>Democracy Journal에 최근 실린 'Rethinking State Capacity' 특집과 토니 블레어 연구소의 'Reimagining the State: A Playbook for 2026', 루즈벨트 연구소의 'Democratic Abundance' 보고서가 모두 같은 지점을 가리킨다. 미국 인프라 인허가에 스무 개 넘는 기관이 순차적으로 개입하고, 각 기관의 인력이 부족하며, 부처 간 조율이 되지 않는다. 이것은 민주주의의 결함이 아니라 국가역량의 결함이다. 헨리 패럴은 'Markets, Bureaucracy, Democracy...</p><p>AI?'에서 이 문제를 정보처리 방식의 진화라는 관점에서 다시 짠다. 인간 사회는 여러 사람의 흩어진 지식을 어떻게 모아 결정을 내리는가로 조직의 형태를 진화시켜 왔다. 시장은 가격으로, 관료제는 위계로, 민주주의는 투표와 숙의로 이 문제를 풀었다. 그런데 각 방식은 저마다의 병을 안는다.</p><p>관료제는 경직되고, 민주주의는 조율에 오래 걸린다. 인공지능이 이 목록에 들어올 네 번째 정보처리 체제가 될 것인가, 아니면 세 체제를 잇는 도구가 될 것인가가 그가 던지는 물음이다. 국가역량 재건론자들의 정책 처방은 구체적이다. 인허가 기관의 인력을 늘리고, 부처 간 협의를 강제하는 조정 기구를 두며, 절차 단축과 사후 통제를 맞바꾼다.</p><p>'반대를 무시하자'가 아니라 '반대를 빠르게 처리하자'로 관점을 바꾼다. 민주적 정당성을 유지하면서도 결정 속도를 회복하는 길이 있다는 것이다. 이 논의의 무게는 지난해 11월 미국이 발표한 제네시스 미션 행정명령에서 확인된다. 에너지부가 슈퍼컴퓨터와 연방 과학데이터를 묶어 '미국 과학안보 플랫폼'을 구축한다는 내용이다.</p><p>민주국가가 국가 주도의 대규모 자원 동원을 실제로 해내고 있다는 반례다. 문제는 국가역량이 없어서 못하는 것이지, 민주주의라서 못하는 것이 아니라는 논지에 이 사례가 힘을 실었다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">국가역량</span>정부가 정책을 실제로 집행하고 사회를 조율하는 능력을 뜻하는 정치학·경제학 용어다. 세금 징수, 공공서비스 제공, 법 집행 같은 기본 기능부터 대규모 산업정책까지 포함한다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">07</span>
+    <h2 class="rep-h2">안쪽의 위협, 스스로를 감시국가로 만들 위험</h2>
+    <div class="rep-prose"><p>V-Dem 2026이 미국과 영국을 독재화 진행국 명단에 올린 것은 아직 논쟁의 소재로만 다뤄지지만, 그 함의는 정책권 안쪽에서 훨씬 더 크게 울린다. 문제는 바깥의 권위주의가 아니라 안쪽의 자기 왜곡일 수 있다는 것이다. 지난해 12월 11일 서명된 미국의 인공지능 국가정책 체계 보장 행정명령은 이 왜곡의 첫 번째 신호로 읽힌다. 각 주가 만든 인공지능 규제를 연방 차원에서 무력화한다는 내용은, 그 자체로 견제와 균형이라는 미국 헌정의 뼈대를 건드린다.</p><p>Sidley 로펌의 분석은 이 명령의 법적 근거와 소송 가능성을 다루면서, 이것이 '속도를 위해 분권 원리를 눌렀다'는 점에서 전례가 드물다고 적었다. Anthropic의 다리오 아모데이가 지난 6월 발표한 정책 종합 제언은 이 위험을 정면으로 지목한다. 그는 배포 전 의무 심사와 민주국가 연합의 반도체 통제를 주장하는 동시에, '자국민 대상 대량감시와 대량선전은 절대 금지'라는 조건을 못박았다. 감시 능력을 정부가 손에 쥔 순간, 민주국가는 자기가 이기려 했던 상대를 스스로 닮아간다는 경고다.</p><p>지난 1월 26일 그는 인공지능이 '종으로서 우리를 시험할 것'이라고도 말했다. 인공지능 기업 최고경영자의 발언 치고는 이례적으로 무거운 문장이었다. 지난 7월 나온 Gil Duran의 'The Nerd Reich'는 이 위험의 반대편 극단을 그린다. 커티스 야빈과 피터 틸 계열의 반민주주의 기술권력론이 실리콘밸리의 일부 자본을 통해 실제 정치로 흘러 들어간다는 진단이다.</p><p>뉴욕시립대 랄프 번치 연구소가 개설한 'Emerging Anocracy' 특집도 같은 흐름을 다룬다. 이들이 쓰는 아노크라시라는 용어는, 민주주의도 권위주의도 아닌 어중간한 혼합 체제를 뜻한다. 형식만 남은 선거 아래에 기술·자본 과두제가 자리 잡는 형태다. 점을 이으면 이런 그림이 나온다.</p><p><strong>첫째,</strong> 자원 격차는 민주주의 진영이 앞선다.</p><p><strong>둘째,</strong> 권위주의는 데이터 문제로 학습에 불리하다.</p><p><strong>셋째,</strong> 그런데도 민주주의는 스스로의 분권 원리를 눌러가며 경쟁에 대응하고 있다.</p><p><strong>넷째,</strong> 그 결과 민주주의 안에서 새로운 유형의 권력 집중이 자라나는 중이다. 정말 무게가 실리는 위협은 바깥이 아니라 안쪽에 있다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">아노크라시</span>민주주의와 권위주의의 중간 형태를 가리키는 정치학 용어다. 선거 같은 민주적 형식은 남아 있지만 실제 권력이 소수에게 집중되는 체제를 말한다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">08</span>
+    <h2 class="rep-h2">대안의 네 갈래, 규제 완화가 아닌 재설계</h2>
+    <div class="rep-prose"><p>학계와 정책권에서 진지하게 논의되는 대안은 네 갈래로 정리된다. '민주주의를 버리자'는 이야기는 이 목록에 없다. 첫 번째 갈래는 국가역량 재건이다. 앞서 소개한 Democracy Journal 특집과 토니 블레어 연구소, 루즈벨트 연구소의 보고서가 여기에 해당한다.</p><p>인허가 기관 인력 확충, 부처 간 조정 기구, 절차 단축과 사후 통제의 교환. 민주적 정당성은 유지하면서 결정 속도를 회복하는 길이다. 두 번째 갈래는 민주국가끼리 컴퓨팅 자원을 규합하자는 이른바 컴퓨팅 동맹 구상이다. 카네기재단의 지난 6월 보고서가 대표적 문서다.</p><p>부지와 전력, 자본과 공급망을 함께 묶는다. 미국이 자본을, 유럽이 규제 프레임을, 아시아 민주국가가 제조와 인재를 대는 방식으로 규모의 열세를 진영 차원에서 뒤집는다는 제안이다. 세 번째 갈래는 참여 제도의 재설계다. Hélène Landemore의 'Open Democracy'는 추첨으로 뽑힌 시민의회를 정치체계의 정식 기관으로 승격시키자고 제안한다.</p><p>오드리 탕과 Glen Weyl의 'Plurality'는 인공지능을 활용해 서로 다른 가치관을 가진 시민들의 의견 지도를 실시간으로 그리는 방법을 실험한다. 탕이 자기 블로그 'Reboot Democracy'에 쓴 'Alignment Assemblies' 글은 인공지능 개발의 방향 자체를 시민의회가 조율할 수 있다는 구상이다. 예일 ISPS의 지난 1월 국제회의가 이 흐름을 하나로 모은 자리였다. David Altman의 'The AI Democracy Dilemma'는 이 갈래의 위험도 함께 짚는다.</p><p>인공지능은 직접민주주의, 이를테면 국민발안이나 국민투표를 기술적으로 훨씬 쉽게 만든다. 그런데 그 쉬움이 오히려 정당성을 갉아먹는다. 매일 국민투표가 열리는 사회, 그가 '영구 국민투표'라 부른 상태는 대의제의 숙의 기능을 파괴한다. 그의 대안은 '증강된 숙의'다.</p><p>인공지능이 정보 격차를 줄이고 다양한 관점을 요약해, 시민의회 같은 오프라인 숙의 기구를 지원하는 형태다. 네 번째 갈래가 가장 근본적이다. 대런 애쓰모글루와 마이클 샌델은 지난 3월 6일 공동 대담에서, 이 논쟁의 진짜 물음은 '민주주의냐 권위주의냐'가 아니라 '기술 발전의 방향을 누가 정하는가'라고 못박았다. 인공지능이 어떤 방향으로 발전할지는 자연법칙이 아니라 선택이다.</p><p>지금 그 선택은 몇몇 기업의 이사회에서 이뤄진다. 이걸 민주적 통제 아래로 가져오지 않으면, 아무리 국가역량을 재건하고 참여 제도를 정교화해도 결과가 같다는 것이다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">추첨 시민의회</span>선거가 아닌 무작위 추첨으로 뽑힌 일반 시민들이 특정 정책 사안을 숙의해 결정하거나 권고하는 제도를 뜻한다. 아일랜드의 낙태법 개정, 프랑스의 기후 시민의회가 실제 도입 사례로 자주 인용된다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">증강된 숙의</span>인공지능이 정보 격차와 언어 장벽, 자료 요약 부담을 줄여 시민들이 더 깊이 있는 토론을 할 수 있도록 돕는 방식의 참여제도를 가리킨다. 인공지능이 결정을 대신하지 않고 숙의의 조건을 개선한다는 데 초점이 있다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">대안 네 갈래의 개입 지점</div>
+          <div class="chart-card-subtitle">왼쪽 = 국가·집행 개혁, 오른쪽 = 시민·기술 방향 통제</div>
+          <div class="chart-card-stage chart-stage-diverging_bar" data-chart-type="diverging_bar" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 본문 인용 자료 종합, 상대적 비중은 편집부 도식화</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\uad6d\uac00\uc5ed\ub7c9 \uc7ac\uac74", "neg": 8, "pos": 2}, {"label": "\ucef4\ud4e8\ud305 \ub3d9\ub9f9", "neg": 7, "pos": 3}, {"label": "\ucc38\uc5ec \uc81c\ub3c4 \uc7ac\uc124\uacc4", "neg": 3, "pos": 7}, {"label": "\uae30\uc220 \ubc29\ud5a5 \ud1b5\uc81c", "neg": 2, "pos": 8}], "neg_label": "\uad6d\uac00\u00b7\uc778\ud504\ub77c \uac1c\uc785", "pos_label": "\uc2dc\ubbfc\u00b7\uae30\uc220 \ubc29\ud5a5 \uac1c\uc785", "source": "\ubcf8\ubb38 \uc778\uc6a9 \uc790\ub8cc \uc885\ud569, \uc0c1\ub300\uc801 \ube44\uc911\uc740 \ud3b8\uc9d1\ubd80 \ub3c4\uc2dd\ud654", "subtitle": "\uc67c\ucabd = \uad6d\uac00\u00b7\uc9d1\ud589 \uac1c\ud601, \uc624\ub978\ucabd = \uc2dc\ubbfc\u00b7\uae30\uc220 \ubc29\ud5a5 \ud1b5\uc81c", "title": "\ub300\uc548 \ub124 \uac08\ub798\uc758 \uac1c\uc785 \uc9c0\uc810", "type": "diverging_bar"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">09</span>
+    <h2 class="rep-h2">애쓰모글루와 샌델, 물음을 다시 세운다</h2>
+    <div class="rep-prose"><p>네 번째 갈래는 가장 근본적이지만, 가장 정치적으로 어려운 길이기도 하다. 3월 6일 공개된 애쓰모글루와 샌델의 공동 대담을 자세히 들여다볼 필요가 있다. 두 사람이 던지는 첫 문제 제기는 이렇다. 지금 인공지능 발전의 방향은 사무직 자동화, 즉 노동을 대체하는 쪽으로 집중돼 있다.</p><p>이는 자연스러운 것이 아니다. 같은 기술이 사무직 노동자를 보조하는 쪽으로 개발될 수도 있다. 어느 방향을 갈지는 자본시장의 투자 결정과 정부의 세제, 연구 우선순위가 함께 정한다. 그런데 이 결정은 지금 소수의 기업 이사회에서 이뤄진다.</p><p>이걸 민주적 논의 안으로 가져와야 한다. 두 번째 문제 제기는 더 무겁다. 인공지능이 판단하는 영역이 넓어질수록 시민의 판단 근육이 위축된다. 판단이 도구에 위임되는 사회에서 민주주의는 껍데기가 된다.</p><p>샌델은 이 지점에서 그의 오랜 주제인 '공동선의 정치'를 다시 꺼낸다. 시민이 무엇이 좋은 삶인지에 대해 함께 논의하는 실천이 사라지면, 인공지능이 아무리 정확한 답을 내놔도 그 답은 정치적 정당성을 얻지 못한다. 세 번째 문제 제기는 실행 방안이다. 두 사람은 세 가지를 든다.</p><p><strong>첫째,</strong> 인공지능 개발자에 대한 공적 감독. 배포 전 심사와 사후 감사, 사고에 대한 책임 강제.</p><p><strong>둘째,</strong> 노동자 참여의 확대. 인공지능이 도입되는 작업장에서 노동자가 방향 설정에 참여할 권한.</p><p><strong>셋째,</strong> 공공 인공지능 인프라. 몇몇 사기업이 컴퓨팅 자원을 독점하는 상태를 깨고, 대학과 공공기관이 접근할 수 있는 공적 컴퓨팅 자원을 국가가 마련하는 것이다. 무리한 추측을 보태자면, 이 세 번째 방안이 실제로 가장 큰 정치적 저항에 부딪힐 것이다. 왜냐하면 이는 지금 인공지능 산업의 이익 구조를 정면으로 건드리기 때문이다. 애쓰모글루와 샌델이 제안한 방향이 학술적 정합성에도 불구하고 실제 입법으로 옮겨지지 않는다면, 이유는 논리가 부족해서가 아니라 이해관계가 너무 커서일 가능성이 높다. 이는 정황을 이은 가설이지 확인된 사실은 아니다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">공동선의 정치</span>정치가 개인의 이익을 조정하는 것을 넘어, 시민이 함께 무엇이 좋은 삶인지 논의하고 결정하는 실천이어야 한다는 정치철학 흐름을 가리킨다. 샌델이 오랫동안 대표해 온 입장이다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">10</span>
+    <h2 class="rep-h2">한국의 자리, 규제와 동원을 동시에 밀어붙이는 실험실</h2>
+    <div class="rep-prose"><p>이 논쟁을 한국의 자리에서 다시 보면 어떤 그림이 나올까. 한국은 이례적인 위치에 있다. AI기본법을 지난 1월 22일 시행하는 동시에, 지난 2월 확정된 '대한민국 인공지능 행동계획'으로 3년 단위 국가 동원 계획을 밀어붙이는 중이다. 올해 AI 예산 9조 9,000억 원의 구성은 흥미롭다.</p><p>기술개발이 2.9조 원, 인프라와 연구기반이 2.5조 원, 산업 확산이 2.4조 원, 인재가 1.4조 원, 생태계가 0.6조 원이다. GPU 확보 계획은 2026년 말 1만 5,000장 추가, 2030년 5만 장. AI컴퓨팅자원 사업 2조 800억 원과 별개로, 삼성SDS 컨소시엄이 짓는 국가AI컴퓨팅센터의 총사업비가 2조 5,000억 원을 넘는다. 지난 7월 착공했고 2028년 개소가 목표다.</p><p>한국의 실험이 특이한 점은, 앞서 정리한 대안 네 갈래 중 두 갈래를 동시에 시도한다는 것이다. 국가역량 재건과 컴퓨팅 자원 규합이라는 두 갈래의 문제의식을 함께 안고 있는 셈이다. 규제법은 유지한 채 국가 재정으로 인프라를 짓고, 삼성SDS 같은 민간 컨소시엄과 결합해 공적 성격의 컴퓨팅 자원을 만든다. 애쓰모글루와 샌델이 말한 '공공 인공지능 인프라'의 한국형이라 볼 여지가 있다.</p><p>반면 참여 제도 재설계와 기술 방향의 민주적 통제라는 두 갈래에서는 눈에 띄는 실험이 아직 없다. 시민의회를 인공지능 정책 결정에 어떻게 결합할지, 기술 방향 자체를 어떻게 민주적으로 논의할지에 대한 공식 논의는 정부 문서에 잘 잡히지 않는다. 이 공백은 지금은 별 문제로 보이지 않지만, 몇 년 뒤 자원 투입의 결과물이 나오기 시작하면 정당성 문제로 부상할 가능성이 크다. 한 가지 가설을 던져 본다.</p><p>한국이 지금 짓고 있는 국가AI컴퓨팅센터가 몇 년 뒤 정말로 세계급 성능을 낸다면, 그 결과를 어떻게 쓸지에 대한 결정을 누가 할 것인가라는 물음이 반드시 나온다. 산업통상부인가, 삼성SDS 컨소시엄인가, 국회인가, 아니면 시민의회인가. 이 물음에 대한 답을 지금부터 준비하지 않으면, 몇 년 뒤 한국도 미국이 겪는 것과 비슷한 '기술 과두제 대 민주적 통제'의 갈등에 빠질 수 있다. 이는 정황과 국제 사례를 겹쳐 본 가설이지, 예언이 아니다.</p></div>
+
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">한국 2026년 AI 예산 9.9조 원의 구성</div>
+          <div class="chart-card-subtitle">인프라 비중이 큰 국가 동원형 배분</div>
+          <div class="chart-card-stage chart-stage-donut" data-chart-type="donut" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 국가인공지능전략위원회, 대한민국 인공지능 행동계획(2026~2028)</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"label": "\uae30\uc220\uac1c\ubc1c", "value": 2.9}, {"label": "\uc778\ud504\ub77c\u00b7\uc5f0\uad6c\uae30\ubc18", "value": 2.5}, {"label": "\uc0b0\uc5c5 \ud655\uc0b0", "value": 2.4}, {"label": "\uc778\uc7ac", "value": 1.4}, {"label": "\uc0dd\ud0dc\uacc4", "value": 0.6}], "source": "\uad6d\uac00\uc778\uacf5\uc9c0\ub2a5\uc804\ub7b5\uc704\uc6d0\ud68c, \ub300\ud55c\ubbfc\uad6d \uc778\uacf5\uc9c0\ub2a5 \ud589\ub3d9\uacc4\ud68d(2026~2028)", "subtitle": "\uc778\ud504\ub77c \ube44\uc911\uc774 \ud070 \uad6d\uac00 \ub3d9\uc6d0\ud615 \ubc30\ubd84", "title": "\ud55c\uad6d 2026\ub144 AI \uc608\uc0b0 9.9\uc870 \uc6d0\uc758 \uad6c\uc131", "type": "donut"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">11</span>
+    <h2 class="rep-h2">질문이 옮겨간다</h2>
+    <div class="rep-prose"><p>지금 벌어지는 논쟁을 처음부터 다시 훑으면 방향이 뚜렷하다. '민주주의는 권위주의보다 인공지능 경쟁에서 불리한가.' 이 물음은 자원 지도와 데이터 문제, 두 가지 지점에서 흔들린다. 흔들리는 만큼 물음 자체가 바뀐다. 새로운 물음은 이렇다.</p><p>민주주의는 자기 안쪽에서 자라나는 권력 집중과 기술 과두제를, 자기 자신을 부수지 않고 어떻게 조율할 것인가. 답은 하나가 아니다. 국가역량을 재건하는 길, 민주국가끼리 자원을 묶는 길, 시민의 참여를 정교하게 다시 설계하는 길, 기술 방향 자체를 민주적 논의 안으로 끌어들이는 길. 네 갈래가 각자의 무게로 논의되는 중이다.</p><p>2026년 여름, 이 논의는 아직 결론에 도달하지 않았다. 그러나 한 가지는 분명해졌다. 민주주의를 폐기하자는 목소리는 학술의 무대에서 진지하게 논의되는 대안이 아니다. 그 목소리는 특정 산업의 특정 이해관계와 얽혀 있고, 지식인과 언론이 최근에야 그것을 검증 대상으로 다루기 시작했다.</p><p>반면 민주주의를 다시 설계하려는 시도는 여러 방향에서 동시에 진행되고 있고, 각자의 실험실도 이미 돌아가고 있다. 스물두 달과 마흔두 달, 두 개의 시계는 여전히 나란히 놓여 있다. 그러나 그 두 개의 시계가 우리에게 던지는 물음은 처음과 달라졌다. 어느 시계가 더 빠른가가 아니라, 시간을 어떻게 쓸 것인가.</p></div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  
+
+  
+  
+
+</div>
+
+<footer class="rep-foot">
+  archetype: reportage · Generated 2026-08-14 15:00:31 · Duration: 2545.5s
+  
+</footer>
+
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+
+</body>
+</html>
