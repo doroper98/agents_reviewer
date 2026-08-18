@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v7.1.0
+last_synced_with: v8.5.9
 ssot_for:
   - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
@@ -9,6 +9,7 @@ ssot_for:
   - "샘플 호스팅 — GitHub Pages + Actions 자동 배포"
 depends_on:
   - "samples/chart_map_mono_compare.html"
+  - "samples/report_design_sheet_v8_5_9.html"
   - ".github/workflows/pages.yml"
   - "docs/REPORT_STYLE_GUIDE.md"
   - "src/templates/report.css (테마 토큰 SSOT — v4.5.3 부터 --card-deep 정의 추가)"
@@ -180,6 +181,7 @@ https://doroper98.github.io/agents_reviewer/samples/<file>.html
 
 현재 활성 샘플:
 - [chart_map_mono_compare.html](https://doroper98.github.io/agents_reviewer/samples/chart_map_mono_compare.html) — 모노 테마 + 차트·지도 비교 레퍼런스
+- [report_design_sheet_v8_5_9.html](https://doroper98.github.io/agents_reviewer/samples/report_design_sheet_v8_5_9.html) — **디자인 규약 시트** (v8.5.9). 보고서(`freeform_essay`) · 르포(`reportage`) 두 장르의 색 토큰 · 타이포그래피 · 레이아웃 · 컴포넌트 18종 · 차트/지도 어휘 · 모션 · 접근성 · 확장 절차를 한 장에. 팔레트/토큰 값은 `src/templates/report.css` 에서 파싱해 주입하고 컴포넌트 미리보기는 실제 템플릿 CSS 를 이식했다 (문서가 코드를 베끼지 않는다). 테마 21종 · 장르 2종 라이브 전환 + WCAG 대비 실시간 산출.
 
 ### 7.2 자동 배포 흐름
 
