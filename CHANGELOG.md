@@ -20,6 +20,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v8.5.9 — 디자인 규약 시트 (samples/report_design_sheet_v8_5_9.html)
+
+사용자 요청 — "최신의 보고서 및 르포 테마에 대한 디자인시트를 최대한 상세히. 향후 어떤 새로운 웹 디자인 가이드 같은걸 만들때 샘플로 쓸 수 있을 정도의 수준으로".
+
+보고서(`freeform_essay`)와 르포(`reportage`) 두 장르의 디자인 규약을 한 페이지에 모았다. 라이브: <https://doroper98.github.io/agents_reviewer/samples/report_design_sheet_v8_5_9.html>
+
+- **구성 13절** — 00 읽는 법(규약/예시/반례 3층) · 01 두 장르 대조 · 02 색·토큰(5층 토큰 사전 + 21 팔레트 + 액센트 규율) · 03 타이포그래피(폰트 스택·타입 스케일·한글 조판 4종 세트·문단 규칙) · 04 레이아웃·지오메트리 · 05 컴포넌트 18종 · 06 데이터 시각화(패턴 5종·잉크 사다리·선 어휘·차트 31종·지도 어휘) · 07 모션 · 08 문체가 거는 제약 · 09 접근성·인쇄 · 10 확장 절차 · 부록 A 토큰 전량표 · 부록 B SSOT 파일 지도.
+- **값을 손으로 옮기지 않는다.** 팔레트·토큰은 신설 [scripts/extract_theme_tokens.py](scripts/extract_theme_tokens.py) 가 `report.css` 를 파싱해 뽑은 값을 그대로 주입 (`var()` 재귀 해석 + `:root` 폴백 상속 표시). 컴포넌트 미리보기 CSS 는 `freeform_essay.html` / `reportage.html` / `charts.css` 선언을 `.pv` 로만 스코프해 이식 — 문서와 코드가 원리적으로 드리프트하지 않는다. 생성 시점에 추출기 출력과 임베드 값이 완전 일치함을 확인.
+- **살아있는 시트.** 테마 13종 · 장르 2종을 스위처로 갈아끼우면 미리보기 10곳과 SVG 어휘 데모(패턴·잉크·dash·지도·combo)가 현재 토큰으로 다시 그려진다. 대비 배지(AA/AAA)는 WCAG 상대휘도로 브라우저가 실측 — 새 테마를 넣으면 이 페이지가 바로 판정한다. 시트 자체도 라이트/다크 전환.
+- **검증** Chromium 렌더 — JS 에러 0, 가로 오버플로 0(1440·390 양쪽), 팔레트 13+8, 토큰 22행, 차트 타입 31, 대비 미달 팔레트 0.
+- **문서** [docs/MONO_THEME_GUIDE.md](docs/MONO_THEME_GUIDE.md) §7.1 활성 샘플 등재 + `last_synced_with` 갱신, `samples/index.html` 최상단 카드 추가 (겸사겸사 "테마 5종" 이라는 v8.5.6 이후 낡은 표기를 13종으로 정정).
+
 ## v8.5.9 — 첫 문단도 들여쓰기 (일반·르포 공통)
 
 사용자 지적 — "르포도 그렇고 보고서도 그런데 첫 문단에는 왜 들여쓰기 적용이 안되어있지".
