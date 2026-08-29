@@ -20,6 +20,21 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
+## v8.5.10 — `config.model_name` 기본값을 파이프라인 모델과 정렬
+
+사용자 질문("opus5 로 바꿔도 돼?")에서 출발. 확인해 보니 **바꿀 게 없었다** — 살아있는 경로는 이미 전부 Opus 5다.
+
+| 단계 | 모델 | 정의 위치 |
+|---|---|---|
+| ContextAnalyst (사실 수집) | `claude-opus-5` | `context_analyst.py` (v8.5.0 격상) |
+| NarrativeComposer (본문·르포) | `claude-opus-5` | `COMPOSER_MODEL` / `COMPOSER_MODEL_REPORTAGE` |
+| 실패 시 안전망 재시도 | `claude-opus-4-7` | `COMPOSER_MODEL_STABLE` (의도적으로 *다른* 검증 모델) |
+| 목차 계획 등 경량 작업 | `claude-sonnet-4-6` | `config.model_name_light` (의도적) |
+
+- **고친 것.** `config.model_name` 만 `claude-opus-4-6` 으로 남아 있었다. 살아있는 에이전트(context_analyst / narrative_composer / editor / desk_editor / research_director / visual_planner)가 전부 자기 상수로 override 하므로 **런타임 동작은 바뀌지 않는다.** 그럼에도 맞춘 이유는 둘 — ① `config.py` 만 보고 "이 봇은 4.6 으로 돈다" 고 오독하기 쉽다(이번 세션에서 실제로 발생) ② override 를 빠뜨린 새 에이전트가 `BaseAgent` 기본값을 타고 조용히 구모델로 떨어진다. 값과 함께 이 이유를 주석으로 고정했다.
+- **건드리지 않은 것.** `COMPOSER_MODEL_STABLE`(4.7)은 주 모델이 실패했을 때 마지막으로 한 번 더 시도하는 폴백이라, 주 모델과 같게 만들면 안전망 역할이 사라진다. `model_name_light`(sonnet-4-6)는 목차 계획처럼 가벼운 작업 전용이라 Opus 로 올릴 이유가 없다(비용·지연만 증가).
+- **검증** `python -m py_compile` 통과. 모델 상수를 검증하는 회귀(`tests/regression/test_editor.py`)는 에이전트 자체 상수를 보므로 무영향. `src/tests/` 의 두 stub config 는 테스트 로컬 값이라 무관.
+
 ## v8.5.9 — 디자인 규약 시트 (samples/report_design_sheet_v8_5_9.html)
 
 사용자 요청 — "최신의 보고서 및 르포 테마에 대한 디자인시트를 최대한 상세히. 향후 어떤 새로운 웹 디자인 가이드 같은걸 만들때 샘플로 쓸 수 있을 정도의 수준으로".

@@ -23,7 +23,15 @@ class Config(BaseSettings):
     # 미설정 시 미생성 (공개 index 는 목록 없음, /reports 로 대체). URL-safe 영숫자
     # 난수 권장 (파일명으로 그대로 쓰임).
     admin_index_token: str = ""
-    model_name: str = "claude-opus-4-6"
+    # v8.5.10 — 살아있는 에이전트(context_analyst / narrative_composer / editor /
+    # desk_editor / research_director / visual_planner)는 모두 자기 상수로
+    # 모델을 override 하므로 이 기본값은 실제 호출에 쓰이지 않는다. 그래도
+    # 파이프라인 모델(v8.5.0 부터 Opus 5)과 값을 맞춰 둔다 — 여기만 보고
+    # "이 봇은 4.6 으로 돈다" 고 오독하기 쉽고(실제 발생), override 를
+    # 빠뜨린 새 에이전트가 조용히 구모델로 떨어지는 함정이기도 하다.
+    model_name: str = "claude-opus-5"
+    # light 는 의도적으로 유지 — report_synthesizer 의 목차 계획처럼 가벼운
+    # 작업 전용이라 Opus 가 필요 없다 (비용·지연만 늘어난다).
     model_name_light: str = "claude-sonnet-4-6"
     use_cli_mode: bool = True
 
