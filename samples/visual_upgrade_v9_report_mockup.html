@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="editorial_cream">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V9 시각 고도화 목업 — 일반 보고서 (지도 어휘 공유 · 사건 타임라인 · heatmap 소생)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Noto+Sans+KR:wght@350;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F2EBDB; --card:#ECE3D0; --card-deep:#E5DBC4; --border:#D4C8B0;
+    --text:#1F1814; --muted:#6B5C4A; --accent:#B05A38; --up:#4A6B3E; --down:#8B2A2A;
+    --map-water:#E5DBC4; --map-land:#DCD2BA; --map-boundary:#C4B698;
+    --serif:'Newsreader','Noto Serif KR',serif; --sans:'Noto Sans KR',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); font-weight:400; line-height:1.7; }
+  .wrap { max-width:920px; margin:0 auto; padding:48px 20px 90px; }
+  header .kicker { font-family:var(--mono); font-size:11px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; }
+  header h1 { font-family:var(--serif); font-weight:600; font-size:28px; line-height:1.35; margin:10px 0 8px; }
+  header .sub { color:var(--muted); font-size:14px; max-width:660px; }
+  .badge { display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:1px; border:1px solid var(--border); color:var(--muted); padding:2px 8px; margin-left:8px; vertical-align:4px; }
+  .exhibit { margin-top:56px; }
+  .exhibit .exno { font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:2px; }
+  .exhibit h2 { font-family:var(--serif); font-size:20px; font-weight:600; margin:6px 0 4px; }
+  .exhibit .exdesc { color:var(--muted); font-size:13.5px; margin-bottom:14px; max-width:700px; }
+  .stagecard { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 16px 12px; }
+  .stagecard .ctitle { font-family:var(--serif); font-size:17px; font-weight:600; }
+  .stagecard .csub { font-size:12px; color:var(--muted); margin:2px 0 10px; }
+  .stage svg { display:block; width:100%; height:auto; }
+  .chart-note { font-size:12px; color:var(--muted); border-top:1px solid var(--border); margin-top:10px; padding-top:8px; }
+  .specbox { background:var(--card-deep); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:6px; padding:14px 16px; margin-top:14px; font-size:13px; color:var(--muted); }
+  .specbox b { color:var(--text); font-weight:500; }
+  .specbox code { font-family:var(--mono); font-size:11.5px; color:var(--down); background:rgba(0,0,0,0.05); padding:1px 5px; border-radius:3px; }
+  .specbox ul { margin:6px 0 0 18px; }
+  .specbox li { margin:3px 0; }
+  .legendrow { display:flex; flex-wrap:wrap; gap:12px 22px; margin-top:10px; font-size:11.5px; color:var(--muted); align-items:center; }
+  .legendrow .li { display:flex; align-items:center; gap:7px; }
+  footer { margin-top:70px; border-top:1px solid var(--border); padding-top:16px; color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">V9 VISUAL UPGRADE — DESIGN SHEET</div>
+  <h1>일반 보고서 시각물 고도화 목업 <span class="badge">PROPOSAL · 구현 전</span></h1>
+  <p class="sub">일반 보고서(기사형·브리핑)용 제안 3건: ① 르포와 공유하는 지도 확장 어휘(구역·사거리권 — 전선 제외) ② 사건 보고서용 event_timeline ③ 프롬프트↔가드 스키마 불일치로 발행 0건이 되어 있던 heatmap 의 소생. 일반 보고서 디자인 문법(둥근 모서리 · Newsreader 세리프 · editorial_cream)을 유지한다.</p>
+</header>
+
+<!-- ═══════════════ S-1 지정학 지도 어휘 ═══════════════ -->
+<section class="exhibit">
+  <div class="exno">EXHIBIT S-1</div>
+  <h2>지정학 지도 — zones · rings 어휘의 일반 보고서 개방</h2>
+  <p class="exdesc">일반 보고서 306건 중 102건이 지도를 실었지만 사거리권(rings)은 v7.5.0 도입 이후 발행 실적 0회, 구역(zones)은 어휘 자체가 없었다. 대만해협·호르무즈 같은 단골 지정학 토픽은 점·호만으로는 긴장의 공간 구조를 못 그린다. 전선(front)·국면(phases)은 르포 전용으로 남기고, zones·rings 만 일반 보고서에 개방한다.</p>
+  <div class="stagecard">
+    <div class="ctitle">해협을 사이에 둔 세 겹의 압박</div>
+    <div class="csub">대만해협 · 훈련 구역과 미사일 도달권 (예시 데이터 — 실제 보고서 수치 아님)</div>
+    <div class="stage" id="s1-stage"></div>
+    <div class="legendrow" id="s1-legend"></div>
+    <div class="chart-note">구역 좌표는 개략 표시. radius_km 는 본문 근거 수치만 사용 (WRITE-AP-5 동일 원칙).</div>
+  </div>
+  <div class="specbox">
+    <b>구현 스펙 (additive)</b>
+    <ul>
+      <li>rings 는 기존 계약 그대로 — 코드 변경이 아니라 <b>composer 결정 트리에 발동 트리거를 명문화</b>하는 문제 (본문에 사거리·도달권·작전반경 수치가 있으면 rings 후보)</li>
+      <li><code>zones</code> 는 르포 R-1 과 동일 계약. 일반 보고서 발동 조건: 훈련·봉쇄·분쟁 수역 등 면(面) 사건</li>
+      <li>maps.js 의 markers-필수 조건(maps.js:945 — 마커 0개면 지도 전체 미렌더) 을 markers·zones·rings·paths 중 1개 이상으로 완화</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ S-2 event_timeline ═══════════════ -->
+<section class="exhibit">
+  <div class="exno">EXHIBIT S-2</div>
+  <h2>event_timeline — 사건 보고서용 (라이트 변형)</h2>
+  <p class="exdesc">일반 사건 보고서도 "무슨 일이 어떤 순서로 벌어졌나"가 뼈대인데, 현재는 point event 나열을 gantt(기간 막대 전용, zero-duration 금지)로 우겨넣거나 포기한다. 르포 R-2 와 같은 type 을 공유하되, 일반 보고서 디자인 문법(세리프 날짜, 둥근 카드)으로 렌더된다. type 1개 = 두 포맷 공용, 테마 토큰만 다르다.</p>
+  <div class="stagecard">
+    <div class="ctitle">칩값이 두 배가 되기까지</div>
+    <div class="csub">2026년 상반기 · 메모리 가격 사태 전개 (예시 데이터)</div>
+    <div class="stage" id="s2-stage"></div>
+    <div class="chart-note">◆ = 전환점. 막 밴드는 composer 가 emit 하는 국면 이름 (선택 필드).</div>
+  </div>
+  <div class="specbox">
+    <b>구현 스펙</b>
+    <ul>
+      <li>데이터 계약은 르포와 동일: <code>{events:[{date,title,desc?,pivot?,act?}]}</code>, 3~12개, pivot ≤3</li>
+      <li>결정 트리 편입: "시간 순서가 서사의 뼈대인데 수치 축이 없다" → event_timeline (line/gantt 오용 차단 negative constraint)</li>
+      <li>가드·템플릿 has_data·렌더러 경계값을 <b>한 fixture 에서 3중 정합 검증</b> (신규 type 은 처음부터 parity 테스트와 함께 랜딩)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ S-3 heatmap 소생 ═══════════════ -->
+<section class="exhibit">
+  <div class="exno">EXHIBIT S-3</div>
+  <h2>heatmap 소생 — 2D 격자 (스키마 불일치 수정 후의 모습)</h2>
+  <p class="exdesc">heatmap 은 SYSTEM_PROMPT 가 가르치는 데이터 모양(<code style="font-family:var(--mono);font-size:12px">[{title,severity}]</code>)과 validator 가 요구하는 모양(<code style="font-family:var(--mono);font-size:12px">{x,y,value}</code>)이 어긋나 있어, composer 가 프롬프트대로 만들면 100% 조용히 버려진다. 발행 실적이 0에 수렴한 이유가 "AI 가 안 골라서"가 아니라 배관 단선이었다. 수정 후 표준 형태: 국가×항목 2D 격자, 잉크 농도 사다리(≤4단), 액센트 0~1셀.</p>
+  <div class="stagecard">
+    <div class="ctitle">누가 어디서 아픈가</div>
+    <div class="csub">반도체 공급망 취약도 · 국가 × 병목 항목 (예시 데이터, 5=심각)</div>
+    <div class="stage" id="s3-stage"></div>
+    <div class="chart-note">색조(hue) 대신 --text 불투명도 사다리. 최대값 1셀만 액센트 테두리.</div>
+  </div>
+  <div class="specbox">
+    <b>구현 스펙 (버그 수정 — 최우선, 시각 신규 기능보다 먼저)</b>
+    <ul>
+      <li>heatmap: 프롬프트 스키마를 가드·렌더러와 같은 <code>[{x,y,value}]</code> 2D 격자로 통일 (렌더러도 severity 리스트 → 격자 렌더로 교체), stacked: 프롬프트 <code>{scenarios:[...]}</code> ↔ 가드 <code>{categories,series}</code> ↔ 템플릿 세 곳 통일</li>
+      <li>재발 차단: 등록된 전 type 에 대해 "프롬프트 문서 모양 → validate_chart_data 통과 → 템플릿 has_data 통과 → 렌더러 필드명 일치" 를 한 번에 검증하는 <b>3중 parity 회귀 fixture</b> 신설 (CHART-AP-38·B5·B6 급 사고를 클래스로 차단)</li>
+      <li>usage_log 를 emit(드롭 전)/kept(드롭 후) 2단 기록으로 확장 — 지금은 드롭된 type 이 "기아"로 위장되어 자기교정 힌트가 깨진 type 을 더 밀어넣는 악순환</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  V9 목업 · 일반 보고서 축. 르포 축(전황 지도 · 국면 전환 · 작전 스키매틱)은 visual_upgrade_v9_reportage_mockup.html 참조. 근거 분석·구현 페이즈는 docs/VISUAL_ENHANCEMENT_V9_PLAN.md.
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script>if(!window.d3){document.write('<script src="../src/templates/static/d3.v7.min.js"><\/script>');}</script>
+<script>
+window.__V9_GEO_B__ = null; // 대만해협 지리는 아래 인라인 로드
+</script>
+<script id="v9-geo-b" type="application/json">{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Vietnam"},"geometry":{"type":"Polygon","coordinates":[[[104.33,10.49],[105.2,10.89],[106.25,10.96],[105.81,11.57],[107.49,12.34],[107.61,13.54],[107.38,14.2],[107.56,15.2],[107.31,15.91],[106.56,16.6],[105.93,17.48],[105.09,18.67],[103.9,19.27],[104.18,19.62],[104.82,19.89],[104.44,20.76],[103.2,20.77],[102.75,21.68],[102.17,22.46],[102.71,22.71],[103.5,22.7],[104.48,22.82],[105.33,23.35],[105.81,22.98],[106.72,22.79],[106.57,22.22],[107.04,21.81],[108.05,21.55],[106.71,20.7],[105.88,19.75],[105.66,19.06],[106.43,18],[107.36,16.7],[108.27,16.08],[108.88,15.28],[109.33,13.43],[109.2,11.67],[108.37,11.01],[107.22,10.36],[106.4,9.53],[105.16,8.6],[104.8,9.24],[105.08,9.92],[104.33,10.49]]]}},{"type":"Feature","properties":{"name":"South Korea"},"geometry":{"type":"Polygon","coordinates":[[[126.18,37.75],[126.24,37.84],[126.68,37.81],[127.07,38.26],[127.78,38.3],[128.21,38.37],[128.35,38.61],[129.21,37.43],[129.46,36.78],[129.47,35.63],[129.09,35.08],[128.18,34.89],[127.39,34.48],[126.49,34.39],[126.37,34.93],[126.56,35.68],[126.12,36.73],[126.86,36.89],[126.18,37.75]]]}},{"type":"Feature","properties":{"name":"China"},"geometry":{"type":"MultiPolygon","coordinates":[[[[109.48,18.2],[108.65,18.51],[108.63,19.37],[109.12,19.82],[110.21,20.1],[110.79,20.08],[111.01,19.7],[110.57,19.26],[110.34,18.68],[109.48,18.2]]],[[[80.26,42.35],[80.18,42.92],[80.87,43.18],[79.97,44.92],[81.95,45.32],[82.46,45.54],[83.18,47.33],[85.16,47],[85.72,47.45],[85.77,48.46],[86.6,48.55],[87.36,49.22],[87.75,49.3],[88.02,48.6],[88.85,48.07],[90.28,47.69],[90.97,46.89],[90.59,45.72],[90.95,45.29],[92.13,45.12],[93.48,44.98],[94.69,44.35],[95.31,44.24],[95.76,43.32],[96.35,42.73],[97.45,42.75],[99.52,42.52],[100.85,42.66],[101.83,42.51],[103.31,41.91],[104.52,41.91],[104.96,41.6],[106.13,42.14],[107.74,42.48],[109.24,42.52],[110.41,42.87],[111.13,43.41],[111.83,43.74],[111.67,44.07],[111.35,44.46],[111.87,45.1],[112.43,45.01],[113.46,44.81],[114.46,45.34],[115.98,45.73],[116.72,46.39],[117.42,46.67],[118.87,46.8],[119.66,46.69],[119.77,47.05],[118.87,47.75],[118.06,48.07],[117.29,47.7],[116.31,47.85],[115.74,47.73],[115.48,48.14],[116.19,49.13],[116.68,49.89],[117.88,49.51],[119.29,50.14],[119.28,50.58],[120.18,51.64],[120.74,51.96],[120.73,52.52],[120.18,52.75],[121,53.25],[122.24,53.43],[123.57,53.46],[125.07,53.16],[125.95,52.79],[126.56,51.78],[126.94,51.35],[127.29,50.74],[127.66,49.76],[129.4,49.44],[130.58,48.73],[130.99,47.79],[132.51,47.79],[133.37,48.18],[135.02,48.48],[134.5,47.58],[134.11,47.21],[133.77,46.12],[133.1,45.14],[131.88,45.32],[131.03,44.97],[131.29,44.11],[131.14,42.93],[130.63,42.9],[130.64,42.4],[130,42.98],[129.6,42.42],[128.05,41.99],[128.21,41.47],[127.34,41.5],[126.87,41.82],[126.18,41.11],[125.08,40.57],[124.26,39.93],[122.87,39.64],[122.13,39.17],[121.05,38.9],[121.59,39.36],[121.38,39.75],[122.17,40.42],[121.64,40.95],[120.77,40.59],[119.64,39.9],[119.02,39.25],[118.04,39.2],[117.53,38.74],[118.06,38.06],[118.88,37.9],[118.91,37.45],[119.7,37.16],[120.82,37.87],[121.71,37.48],[122.36,37.46],[122.52,36.93],[121.1,36.65],[120.64,36.11],[119.66,35.61],[119.15,34.91],[120.23,34.36],[120.62,33.38],[121.23,32.46],[121.91,31.69],[121.89,30.95],[121.27,30.68],[121.5,30.14],[122.09,29.83],[121.94,29.02],[121.68,28.23],[121.13,28.14],[120.39,27.05],[119.58,25.74],[118.66,24.55],[117.28,23.63],[115.89,22.78],[114.76,22.67],[114.15,22.22],[113.81,22.55],[113.24,22.05],[111.84,21.55],[110.79,21.4],[110.44,20.34],[109.89,20.28],[109.63,21.01],[109.86,21.39],[108.52,21.71],[108.05,21.55],[107.04,21.81],[106.57,22.22],[106.72,22.79],[105.81,22.98],[105.33,23.35],[104.48,22.82],[103.5,22.7],[102.71,22.71],[102.17,22.46],[101.65,22.32],[101.8,21.17],[101.27,21.2],[101.18,21.44],[101.15,21.85],[100.42,21.56],[99.98,21.74],[99.24,22.12],[99.53,22.95],[98.9,23.14],[98.66,24.06],[97.61,23.9],[97.72,25.08],[98.67,25.92],[98.71,26.74],[98.68,27.51],[98.25,27.75],[97.91,28.34],[97.33,28.26],[96.25,28.41],[96.59,28.83],[96.12,29.45],[95.41,29.03],[94.57,29.28],[93.41,28.64],[92.5,27.9],[91.7,27.77],[91.26,28.04],[90.73,28.06],[90.02,28.3],[89.48,28.04],[88.81,27.3],[88.73,28.09],[88.12,27.88],[86.95,27.97],[85.82,28.2],[85.01,28.64],[84.24,28.84],[83.9,29.32],[83.34,29.46],[82.33,30.11],[81.52,30.42],[81.11,30.18],[79.72,30.88],[78.74,31.52],[78.46,32.62],[79.18,32.48],[79.21,32.99],[78.81,33.51],[78.91,34.32],[77.84,35.49],[76.19,35.9],[75.9,36.67],[75.16,37.13],[74.98,37.42],[74.83,37.99],[74.86,38.38],[74.26,38.61],[73.93,38.51],[73.68,39.43],[73.96,39.66],[73.82,39.89],[74.78,40.37],[75.47,40.56],[76.53,40.43],[76.91,41.07],[78.19,41.19],[78.54,41.58],[80.12,42.12],[80.26,42.35]]]]}},{"type":"Feature","properties":{"name":"Taiwan"},"geometry":{"type":"Polygon","coordinates":[[[121.78,24.39],[121.18,22.79],[120.75,21.97],[120.22,22.81],[120.11,23.56],[120.69,24.54],[121.5,25.3],[121.95,25],[121.78,24.39]]]}},{"type":"Feature","properties":{"name":"Philippines"},"geometry":{"type":"MultiPolygon","coordinates":[[[[120.83,12.7],[120.32,13.47],[121.18,13.43],[121.53,13.07],[121.26,12.21],[120.83,12.7]]],[[[122.59,9.98],[122.84,10.26],[122.95,10.88],[123.5,10.94],[123.34,10.27],[124.08,11.23],[123.98,10.28],[123.62,9.95],[123.31,9.32],[123,9.02],[122.38,9.71],[122.59,9.98]]],[[[126.38,8.41],[126.48,7.75],[126.54,7.19],[126.2,6.27],[125.83,7.29],[125.36,6.79],[125.68,6.05],[125.4,5.58],[124.22,6.16],[123.94,6.89],[124.24,7.36],[123.61,7.83],[123.3,7.42],[122.82,7.46],[122.09,6.9],[121.92,7.19],[122.31,8.04],[122.94,8.32],[123.49,8.69],[123.84,8.24],[124.6,8.51],[124.76,8.96],[125.47,8.99],[125.41,9.76],[126.22,9.29],[126.31,8.78],[126.38,8.41]]],[[[118.5,9.32],[117.18,8.37],[117.67,9.07],[118.39,9.68],[118.99,10.38],[119.51,11.37],[119.69,10.55],[119.03,10],[118.5,9.32]]],[[[122.34,18.22],[122.17,17.81],[122.51,17.09],[122.25,16.26],[121.66,15.93],[121.51,15.13],[121.73,14.33],[122.26,14.22],[122.7,14.34],[123.95,13.78],[123.85,13.24],[124.18,13],[124.08,12.54],[123.3,13.03],[122.93,13.55],[122.67,13.19],[122.04,13.78],[121.13,13.64],[120.63,13.86],[120.68,14.27],[120.99,14.53],[120.69,14.76],[120.56,14.4],[120.07,14.97],[119.92,15.41],[119.88,16.36],[120.29,16.03],[120.39,17.6],[120.71,18.51],[121.32,18.5],[121.94,18.22],[122.24,18.48],[122.34,18.22]]],[[[122.04,11.42],[121.88,11.89],[122.48,11.58],[123.12,11.58],[123.1,11.17],[122.64,10.74],[122,10.44],[121.97,10.91],[122.04,11.42]]],[[[125.5,12.16],[125.78,11.05],[125.01,11.31],[125.03,10.98],[125.28,10.36],[124.8,10.13],[124.76,10.84],[124.46,10.89],[124.3,11.49],[124.89,11.42],[124.88,11.79],[124.27,12.56],[125.23,12.54],[125.5,12.16]]]]}},{"type":"Feature","properties":{"name":"Japan"},"geometry":{"type":"MultiPolygon","coordinates":[[[[141.88,39.18],[140.96,38.17],[140.98,37.14],[140.6,36.34],[140.77,35.84],[140.25,35.14],[138.97,34.67],[137.22,34.61],[135.79,33.46],[135.12,33.85],[135.08,34.6],[133.34,34.38],[132.16,33.9],[130.99,33.89],[132,33.15],[131.33,31.45],[130.69,31.03],[130.2,31.42],[130.45,32.32],[129.82,32.61],[129.41,33.3],[130.36,33.6],[130.88,34.23],[131.89,34.75],[132.62,35.43],[134.61,35.73],[135.68,35.53],[136.72,37.3],[137.39,36.83],[138.86,37.83],[139.43,38.22],[140.05,39.44],[139.88,40.56],[140.31,41.2],[141.37,41.38],[141.92,39.99],[141.88,39.18]]],[[[144.61,43.96],[145.32,44.38],[145.54,43.26],[144.06,42.99],[143.18,41.99],[141.61,42.68],[141.07,41.59],[139.96,41.57],[139.82,42.56],[140.31,43.33],[141.38,43.39],[141.67,44.77],[141.97,45.55],[143.14,44.51],[143.91,44.17],[144.61,43.96]]],[[[132.37,33.46],[132.93,34.06],[133.49,33.94],[133.91,34.36],[134.64,34.15],[134.77,33.81],[134.2,33.2],[133.79,33.52],[133.28,33.29],[133.02,32.7],[132.36,32.99],[132.37,33.46]]]]}}]}</script>
+<script>
+(function(){
+  'use strict';
+  var css = getComputedStyle(document.documentElement);
+  var T = function(n){ return css.getPropertyValue(n).trim(); };
+  var COL = { text:T('--text'), muted:T('--muted'), accent:T('--accent'), up:T('--up'), down:T('--down'),
+              water:T('--map-water'), land:T('--map-land'), boundary:T('--map-boundary'), card:T('--card') };
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function hatchDef(svg, id, color, opacity, gap){
+    svg.append('defs').append('pattern').attr('id', id).attr('width', gap).attr('height', gap)
+      .attr('patternUnits','userSpaceOnUse').attr('patternTransform','rotate(45)')
+      .append('line').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',gap)
+      .attr('stroke',color).attr('stroke-width',1.1).attr('opacity',opacity);
+    return 'url(#'+id+')';
+  }
+
+  /* ── S-1: 대만해협 지도 (zones + rings + 기존 marker/arc 어휘) ── */
+  (function(){
+    var geo = JSON.parse(document.getElementById('v9-geo-b').textContent);
+    var W=880, H=560;
+    var svg=d3.select('#s1-stage').append('svg').attr('viewBox','0 0 '+W+' '+H);
+    var proj=d3.geoMercator().center([120.6,23.6]).scale(3300).translate([W/2,H/2]);
+    var path=d3.geoPath(proj);
+    svg.append('rect').attr('width',W).attr('height',H).attr('fill',COL.water);
+    svg.append('g').selectAll('path').data(geo.features).join('path')
+      .attr('d',path).attr('fill',COL.land).attr('stroke',COL.boundary).attr('stroke-width',0.8);
+    var hZone=hatchDef(svg,'s1-hz',COL.down,0.45,7);
+    // zones: 훈련 구역 3곳 (개략)
+    var ZONES=[
+      {pts:[[119.2,25.2],[120.4,25.6],[120.2,26.4],[118.9,26.0]],label:'북부 훈련구역'},
+      {pts:[[118.2,22.6],[119.6,22.3],[119.9,23.3],[118.6,23.6]],label:'서남 훈련구역'},
+      {pts:[[121.7,21.6],[122.9,21.9],[122.6,22.9],[121.4,22.5]],label:'동남 훈련구역'}
+    ];
+    ZONES.forEach(function(z){
+      var poly=z.pts.map(function(c){return proj(c);});
+      svg.append('polygon').attr('points',poly.map(function(p){return p.join(',');}).join(' '))
+        .attr('fill',hZone).attr('stroke',COL.down).attr('stroke-width',0.9).attr('opacity',0.95);
+      var cx=d3.mean(poly,function(p){return p[0];}), cy=d3.min(poly,function(p){return p[1];});
+      svg.append('text').attr('x',cx).attr('y',cy-6).attr('text-anchor','middle').attr('fill',COL.down)
+        .attr('font-size',10.5).attr('font-family','Noto Sans KR')
+        .attr('paint-order','stroke').attr('stroke',COL.water).attr('stroke-width',3).text(z.label);
+    });
+    // rings: 미사일 도달권 (개략 예시)
+    var ring=d3.geoCircle().center([119.3,25.0]).radius(320/111.32)();
+    svg.append('path').datum(ring).attr('d',path).attr('fill','none')
+      .attr('stroke',COL.down).attr('stroke-dasharray','7,4').attr('stroke-width',1.2).attr('opacity',0.8);
+    svg.append('text').attr('x',proj([116.4,22.4])[0]).attr('y',proj([116.4,22.4])[1])
+      .attr('fill',COL.down).attr('font-size',10.5).attr('font-family','Noto Sans KR').text('단거리 미사일 도달권 320km (예시)');
+    // 해상 운송로 arc (flow)
+    var lane=[[119.7,20.6],[120.6,22.5],[121.4,24.6],[122.3,26.4]];
+    var laneLine=d3.line().curve(d3.curveCatmullRom)(lane.map(function(c){return proj(c);}));
+    svg.append('path').attr('d',laneLine).attr('fill','none').attr('stroke',COL.accent)
+      .attr('stroke-width',2).attr('opacity',0.85);
+    var tip=proj([122.3,26.4]), prev=proj([121.4,24.6]);
+    var dx=tip[0]-prev[0],dy=tip[1]-prev[1],l=Math.hypot(dx,dy),ux=dx/l,uy=dy/l,nx=-uy,ny=ux;
+    svg.append('path').attr('d','M'+tip[0]+' '+tip[1]+' L'+(tip[0]-ux*11+nx*6)+' '+(tip[1]-uy*11+ny*6)+' L'+(tip[0]-ux*11-nx*6)+' '+(tip[1]-uy*11-ny*6)+' Z').attr('fill',COL.accent);
+    svg.append('text').attr('x',proj([121.6,23.4])[0]+14).attr('y',proj([121.6,23.4])[1])
+      .attr('fill',COL.accent).attr('font-size',10.5).attr('font-family','Noto Sans KR').text('컨테이너 주항로');
+    // markers
+    var MK=[{n:'타이베이',c:[121.56,25.03],k:'city'},{n:'가오슝항',c:[120.28,22.62],k:'port'},{n:'바시해협',c:[121.0,21.3],k:'choke'}];
+    MK.forEach(function(m){
+      var p=proj(m.c), g=svg.append('g');
+      if(m.k==='port'){ g.append('circle').attr('cx',p[0]).attr('cy',p[1]).attr('r',5).attr('fill','none').attr('stroke',COL.text).attr('stroke-width',1.4); g.append('circle').attr('cx',p[0]).attr('cy',p[1]).attr('r',1.8).attr('fill',COL.text); }
+      else if(m.k==='choke'){ g.append('rect').attr('x',p[0]-3.8).attr('y',p[1]-3.8).attr('width',7.6).attr('height',7.6).attr('transform','rotate(45 '+p[0]+' '+p[1]+')').attr('fill',COL.accent); }
+      else g.append('circle').attr('cx',p[0]).attr('cy',p[1]).attr('r',3.6).attr('fill',COL.text);
+      g.append('text').attr('x',p[0]+9).attr('y',p[1]+4).attr('fill',COL.text).attr('font-size',11.5)
+        .attr('font-family','Noto Sans KR').attr('paint-order','stroke').attr('stroke',COL.water).attr('stroke-width',3).text(m.n);
+    });
+    svg.append('text').attr('x',proj([119.0,24.0])[0]).attr('y',proj([119.0,24.0])[1])
+      .attr('fill',COL.muted).attr('opacity',0.4).attr('font-family','Newsreader,serif').attr('font-style','italic')
+      .attr('font-size',13).attr('letter-spacing',5).text('대 만 해 협');
+    var LEG=[['zone','훈련 구역 (해치)'],['ring','도달권 (점선 링)'],['flow','운송로 →'],['choke','요충 ◆'],['port','항만 ◎']];
+    var lg=d3.select('#s1-legend');
+    LEG.forEach(function(l){
+      var li=lg.append('div').attr('class','li');
+      var s=li.append('svg').attr('width',26).attr('height',12);
+      if(l[0]==='zone') s.append('rect').attr('x',1).attr('y',1).attr('width',24).attr('height',10).attr('fill','url(#s1-hz)').attr('stroke',COL.down).attr('stroke-width',0.8);
+      else if(l[0]==='ring') s.append('line').attr('x1',1).attr('y1',6).attr('x2',25).attr('y2',6).attr('stroke',COL.down).attr('stroke-dasharray','5,3');
+      else if(l[0]==='flow') s.append('line').attr('x1',1).attr('y1',6).attr('x2',25).attr('y2',6).attr('stroke',COL.accent).attr('stroke-width',2);
+      else if(l[0]==='choke') s.append('rect').attr('x',9).attr('y',2).attr('width',8).attr('height',8).attr('transform','rotate(45 13 6)').attr('fill',COL.accent);
+      else { s.append('circle').attr('cx',13).attr('cy',6).attr('r',4.5).attr('fill','none').attr('stroke',COL.text); s.append('circle').attr('cx',13).attr('cy',6).attr('r',1.5).attr('fill',COL.text); }
+      li.append('span').text(l[1]);
+    });
+  })();
+
+  /* ── S-2: event_timeline (light) ── */
+  (function(){
+    var EVENTS=[
+      {d:'1-20', act:'점화', t:'HBM 라인 전환으로 범용 D램 감산', pivot:false},
+      {d:'2-14', act:'점화', t:'현물가 첫 두 자릿수 월간 상승', pivot:false},
+      {d:'3-05', act:'가속', t:'대형 클라우드 3사, 장기계약 물량 선점', pivot:true},
+      {d:'4-18', act:'가속', t:'고정거래가격 4개월 연속 인상', pivot:false},
+      {d:'5-30', act:'파급', t:'세트업체 원가 전가 시작, 소비자가 인상', pivot:false},
+      {d:'6-27', act:'파급', t:'가격표 한 장이 공급자 우위를 공식화', pivot:true}
+    ];
+    var W=880, ROW=62, PADT=34, PADB=18, H=PADT+PADB+ROW*EVENTS.length;
+    var svg=d3.select('#s2-stage').append('svg').attr('viewBox','0 0 '+W+' '+H);
+    var spineX=190;
+    var acts=[]; EVENTS.forEach(function(e,i){ var last=acts[acts.length-1]; if(!last||last.name!==e.act) acts.push({name:e.act,i0:i,i1:i}); else last.i1=i; });
+    acts.forEach(function(a,ai){
+      var y0=PADT+a.i0*ROW-14, y1=PADT+a.i1*ROW+26;
+      if(ai%2===1) svg.append('rect').attr('x',0).attr('y',y0).attr('width',W).attr('height',y1-y0).attr('fill',COL.card).attr('opacity',0.8);
+      svg.append('text').attr('x',26).attr('y',(y0+y1)/2+4).attr('fill',COL.muted).attr('font-size',11)
+        .attr('font-family','IBM Plex Mono,monospace').attr('letter-spacing',2).text(a.name);
+    });
+    var spine=svg.append('line').attr('x1',spineX).attr('x2',spineX).attr('y1',PADT-8).attr('y2',H-PADB)
+      .attr('stroke',COL.boundary).attr('stroke-width',2);
+    if(!reduced){ var L=H-PADB-(PADT-8); spine.attr('stroke-dasharray',L).attr('stroke-dashoffset',L).transition().duration(700).ease(d3.easeCubicOut).attr('stroke-dashoffset',0); }
+    EVENTS.forEach(function(e,i){
+      var y=PADT+i*ROW;
+      var g=svg.append('g').attr('opacity',reduced?1:0);
+      svg.append('text').attr('x',spineX-16).attr('y',y+4).attr('text-anchor','end')
+        .attr('fill',COL.muted).attr('font-family','Newsreader,serif').attr('font-size',13.5).text('2026·'+e.d);
+      if(e.pivot) g.append('rect').attr('x',spineX-5.4).attr('y',y-5.4).attr('width',10.8).attr('height',10.8)
+        .attr('transform','rotate(45 '+spineX+' '+y+')').attr('fill',COL.accent);
+      else g.append('circle').attr('cx',spineX).attr('cy',y).attr('r',4.4).attr('fill',COL.card).attr('stroke',COL.text).attr('stroke-width',1.5);
+      g.append('text').attr('x',spineX+22).attr('y',y+4.5).attr('fill',COL.text)
+        .attr('font-size',e.pivot?14.5:13.5).attr('font-weight',e.pivot?500:400).attr('font-family','Noto Sans KR').text(e.t);
+      if(!reduced) g.transition().delay(250+i*70).duration(340).attr('opacity',1);
+    });
+  })();
+
+  /* ── S-3: heatmap 소생 (2D 격자, 잉크 사다리) ── */
+  (function(){
+    var X=['첨단 파운드리','패키징','장비','소재','전력·용수'];
+    var Y=['대만','한국','미국','일본','중국'];
+    var V=[[5,4,2,3,4],[3,3,2,3,3],[2,3,4,2,2],[1,2,3,5,1],[4,2,5,3,3]];
+    var W=880, cellW=132, cellH=52, padL=120, padT=46;
+    var H=padT+cellH*Y.length+30;
+    var svg=d3.select('#s3-stage').append('svg').attr('viewBox','0 0 '+W+' '+H);
+    var maxV=5, maxPos=null, maxSeen=-1;
+    // 잉크 사다리 (≤4단): value 1~5 → opacity
+    var ladder=[0.06,0.13,0.24,0.42,0.60];
+    X.forEach(function(x,xi){
+      svg.append('text').attr('x',padL+xi*cellW+cellW/2).attr('y',padT-14).attr('text-anchor','middle')
+        .attr('fill',COL.muted).attr('font-size',11.5).attr('font-family','Noto Sans KR').text(x);
+    });
+    Y.forEach(function(y,yi){
+      svg.append('text').attr('x',padL-12).attr('y',padT+yi*cellH+cellH/2+4).attr('text-anchor','end')
+        .attr('fill',COL.text).attr('font-size',12.5).attr('font-family','Noto Sans KR').attr('font-weight',500).text(y);
+      X.forEach(function(x,xi){
+        var v=V[yi][xi];
+        if(v>maxSeen){maxSeen=v;maxPos=[xi,yi];}
+        var g=svg.append('g').attr('opacity',reduced?1:0);
+        g.append('rect').attr('x',padL+xi*cellW+2).attr('y',padT+yi*cellH+2)
+          .attr('width',cellW-4).attr('height',cellH-4).attr('rx',4)
+          .attr('fill',COL.text).attr('fill-opacity',ladder[v-1]).attr('stroke',COL.border).attr('stroke-width',0.6);
+        g.append('text').attr('x',padL+xi*cellW+cellW/2).attr('y',padT+yi*cellH+cellH/2+5)
+          .attr('text-anchor','middle').attr('fill',v>=4?COL.card:COL.text)
+          .attr('font-family','Newsreader,serif').attr('font-size',15).attr('font-weight',600).text(v);
+        if(!reduced) g.transition().delay(120+(yi*X.length+xi)*28).duration(260).attr('opacity',1);
+      });
+    });
+    // 최대 셀 액센트 테두리
+    svg.append('rect').attr('x',padL+maxPos[0]*cellW+2).attr('y',padT+maxPos[1]*cellH+2)
+      .attr('width',cellW-4).attr('height',cellH-4).attr('rx',4)
+      .attr('fill','none').attr('stroke',COL.accent).attr('stroke-width',2);
+  })();
+})();
+</script>
+</body>
+</html>

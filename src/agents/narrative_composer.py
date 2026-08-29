@@ -301,7 +301,9 @@ SYSTEM_PROMPT = (
     "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자\n"
     "             (value 는 *양수 magnitude 만*. 부호 있는 점수면 bar 로)\n"
     "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향\n"
-    "  · heatmap: [{title, severity:'low'|'medium'|'high'}]        단계별 위험도\n\n"
+    "  · heatmap: [{x, y, value:number}]                           2D 격자 강도 (결정 트리 6 —\n"
+    "             국가×항목·시나리오×영향처럼 *두 축 조합마다 세기* 가 있을 때. ≥2×2, ≥4×4 권장)\n"
+    "             또는 [{title, severity:'low'|'medium'|'high'}]    단계별 위험도 *리스트* (축이 1개일 때)\n\n"
     "신규 3종 (Tier 2 — v4.4.0):\n"
     "  · dual_line:  {                                                두 metric *상관관계* — 금리 vs 환율 등\n"
     '      \"left\":  {\"label\":\"원유\", \"unit\":\"$/bbl\", \"series\":[{x,y},...]},\n'

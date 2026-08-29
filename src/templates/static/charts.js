@@ -855,10 +855,95 @@
   // ----- HEATMAP -----
   // v7.1.0 리디자인 (사용자 승인): 풀폭 해치 띠 → 5칸 강도 트랙 (채운 칸 수 =
   // 위험도) + 우측 등급 태그 + 범례. 농도/칸수가 서수 위계를 직접 운반 — 패턴
-  // 식별 퀴즈 폐기. 데이터 계약 ({title, severity}) 불변.
+  // 식별 퀴즈 폐기.
+  // v8.5.11 (CHART-AP-44): 데이터 계약 양형 — 강도 트랙형 [{title,severity}]
+  // (v7.1.0, 기존 렌더 유지) + 격자형 [{x,y,value}] (결정 트리 §6 의 2축 조합
+  // 강도 — 국가×항목 등). 격자형은 잉크 농도 사다리 셀 매트릭스로 렌더.
+  function drawHeatmapGrid(stage, payload, t) {
+    const data = (payload.data || []);
+    const xs = [], ys = [];
+    data.forEach(d => {
+      const x = String(d.x), y = String(d.y);
+      if (xs.indexOf(x) === -1) xs.push(x);
+      if (ys.indexOf(y) === -1) ys.push(y);
+    });
+    if (xs.length < 2 || ys.length < 2) return;
+    const byKey = {};
+    let vmin = Infinity, vmax = -Infinity, maxKey = null;
+    data.forEach(d => {
+      const v = +d.value;
+      if (!isFinite(v)) return;
+      byKey[String(d.x) + ' ' + String(d.y)] = v;
+      if (v < vmin) vmin = v;
+      if (v > vmax) { vmax = v; maxKey = String(d.x) + ' ' + String(d.y); }
+    });
+    if (!isFinite(vmin) || !isFinite(vmax)) return;
+    const trunc = (sv, n) => {
+      const str = String(sv || '');
+      return str.length > n ? str.slice(0, n - 1) + '…' : str;
+    };
+    const W = 720, padL = 128, padT = 40, padR = 14;
+    const cellW = Math.max(56, Math.floor((W - padL - padR) / xs.length));
+    const cellH = 40;
+    const H = padT + ys.length * cellH + 14;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // 잉크 농도 사다리 (mono guide §10 — hue 금지, ≤4단 + 최대셀 액센트 테두리)
+    const ladder = [0.06, 0.14, 0.24, 0.42, 0.60];
+    const step = (v) => {
+      if (vmax === vmin) return 2;
+      return Math.min(4, Math.floor(((v - vmin) / (vmax - vmin)) * 5));
+    };
+    const fmt = (v) => Math.abs(v) >= 100 ? d3.format(',.0f')(v)
+      : (Number.isInteger(v) ? String(v) : d3.format(',.1f')(v));
+    xs.forEach((x, xi) => {
+      svg.append('text').attr('x', padL + xi * cellW + cellW / 2).attr('y', padT - 12)
+        .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 10.5).attr('fill', t.muted).text(trunc(x, 10));
+    });
+    ys.forEach((y, yi) => {
+      svg.append('text').attr('x', padL - 12).attr('y', padT + yi * cellH + cellH / 2 + 4)
+        .attr('text-anchor', 'end').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 11.5).attr('font-weight', 500).attr('fill', t.text)
+        .text(trunc(y, 12));
+      xs.forEach((x, xi) => {
+        const key = x + ' ' + y;
+        const v = byKey[key];
+        const cx = padL + xi * cellW, cy = padT + yi * cellH;
+        if (v === undefined) {
+          svg.append('rect').attr('x', cx + 2).attr('y', cy + 2)
+            .attr('width', cellW - 4).attr('height', cellH - 4).attr('rx', 2)
+            .attr('fill', t.text).attr('fill-opacity', 0.03);
+          return;
+        }
+        const op = ladder[step(v)];
+        svg.append('rect').attr('x', cx + 2).attr('y', cy + 2)
+          .attr('width', cellW - 4).attr('height', cellH - 4).attr('rx', 2)
+          .attr('fill', t.text).attr('fill-opacity', op);
+        svg.append('text').attr('x', cx + cellW / 2).attr('y', cy + cellH / 2 + 5)
+          .attr('text-anchor', 'middle')
+          .attr('font-family', "Newsreader, 'Noto Serif KR', serif")
+          .attr('font-size', 13.5).attr('font-weight', 600)
+          .attr('fill', op >= 0.42 ? t.card : t.text)
+          .attr('data-anim', 'static').text(fmt(v));
+        if (key === maxKey) {
+          svg.append('rect').attr('x', cx + 2).attr('y', cy + 2)
+            .attr('width', cellW - 4).attr('height', cellH - 4).attr('rx', 2)
+            .attr('fill', 'none').attr('stroke', t.accent).attr('stroke-width', 1.8)
+            .attr('data-anim', 'static');
+        }
+      });
+    });
+  }
+
   function drawHeatmap(stage, payload, t) {
     const data = (payload.data || []);
     if (!data.length) return;
+    // CHART-AP-44 — 격자형 판별: 행이 x/y/value 를 갖고 severity 가 없으면 격자 렌더
+    if (data[0] && data[0].severity === undefined
+        && data[0].x !== undefined && data[0].y !== undefined && data[0].value !== undefined) {
+      return drawHeatmapGrid(stage, payload, t);
+    }
     const W = 720, rowH = 34, top = 30;
     const H = top + data.length * rowH + 10;
     const x0 = 184, cells = 5;

@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.9
+last_synced_with: v8.5.11
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,21 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.11 — heatmap·stacked 100% silent drop 수정 (CHART-AP-44) + V9 시각 고도화 제안
+
+시각물 누락 전수 감사(발행본 335건 실측 + 파이프라인 드롭 지점 census)에서 발견된 **살아있는 회귀 수정**과, 그 감사에 기반한 **V9 시각 고도화 마스터 플랜(제안)** 랜딩.
+
+**버그 수정 (CHART-AP-44 — CHART-AP-38 과 동일 클래스, 2건 병존):**
+- `heatmap` 과 `stacked` 는 composer SYSTEM_PROMPT 가 가르치는 데이터 모양과 `src/visual/schemas.py` 가드가 요구하는 모양이 상호 배타적이라, 프롬프트를 준수한 emit 이 `_drop_invalid_charts` 에서 **100% 조용히 드롭**되고 있었다 (발행 실측: 두 type 모두 가드 배선 이후 발행 0건. usage_log 에는 "0회 emit" 으로 기록돼 기아로 위장 → v8.3.0 자기교정 힌트가 깨진 type 을 더 밀어넣는 악순환).
+- `HeatmapGuard` 양형 수용 — 격자형 `[{x,y,value}]` (결정 트리 §6 정본) + 강도 트랙형 `[{title,severity}]` (v7.1.0 렌더러 계약, 기존 발행본 12건의 patch_report 재발행 하위호환).
+- `StackedBarGuard` 를 렌더 계약 `{scenarios:[{name, segments:[{label,value≥0}]}]}` 로 재작성 — 구 `{categories,series}` 는 템플릿 has_data 가 거르는 렌더 불가 모양이라 reject 로 전환.
+- `charts.js drawHeatmap` 에 격자형 렌더 분기 신설 (`drawHeatmapGrid` — 잉크 농도 사다리 셀 매트릭스 + 최대셀 액센트 테두리, mono guide §10) + 프롬프트 heatmap 스키마 라인에 격자형 명기.
+- **재발 차단**: `tests/regression/test_prompt_guard_parity.py` 신설 — `_TYPE_TO_GUARD` 전 type 에 대해 *프롬프트가 문서화한 모양 그대로* 가 `validate_chart_data` 를 통과하는지 + 신규 type 의 fixture 누락을 강제 검출. `test_composed_section_guard.py` / `test_chart_correctness.py` 에 heatmap/stacked 케이스 추가. 회귀 스위트 기준 신규 파손 0, 기존 실패 2건 해소.
+
+**V9 시각 고도화 제안 (구현 전 — 별도 세션에서 페이즈별 진행):**
+- `docs/VISUAL_ENHANCEMENT_V9_PLAN.md` — 르포 29건·전체 335건 실측 분석, 시각물 드롭 지점 전수 지도, 전황 지도 어휘(paths/zones/phases)·event_timeline 신규 type·작전 스키매틱 제안, 시각물 전달 보증 설계, Anime.js 불채택 권고, wrangler 타임아웃·CLAUDE.md 다이어트 스펙.
+- 디자인 시트 목업 2종: `samples/visual_upgrade_v9_reportage_mockup.html` (르포 축 — 전황 지도 + 국면 전환 + 사건 타임라인 + 가와나카지마 작전 스키매틱) / `samples/visual_upgrade_v9_report_mockup.html` (일반 보고서 축 — zones·rings 개방 + event_timeline 라이트 + heatmap 격자 소생).
 
 ## v8.5.10 — `config.model_name` 기본값을 파이프라인 모델과 정렬
 

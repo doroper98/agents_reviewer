@@ -433,38 +433,87 @@ class HeatmapCell(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class HeatmapGuard(BaseModel):
-    data: list[HeatmapCell] = Field(min_length=1)
+class HeatmapSeverityRow(BaseModel):
+    """heatmap 강도 트랙형 행 — v7.1.0 렌더러 계약 ({title, severity})."""
+
+    title: str
+    severity: str
+
+    model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
-    def validate_finite(self) -> "HeatmapGuard":
-        if not all(math.isfinite(c.value) for c in self.data):
-            raise ValueError("CHART-AP-3 가드: heatmap value 에 NaN/inf")
+    def validate_severity(self) -> "HeatmapSeverityRow":
+        if str(self.severity).lower() not in ("low", "medium", "high"):
+            raise ValueError(
+                f"CHART-AP-44 가드: heatmap severity 는 low|medium|high — {self.severity!r}"
+            )
         return self
 
 
-class StackedBarGuard(BaseModel):
-    """stacked: categories[] × series[*].values[]."""
+class HeatmapGuard(BaseModel):
+    """heatmap 양형 수용 (CHART-AP-44 — 프롬프트↔가드 계약 불일치 수정, v8.5.11).
 
-    categories: list[str] = Field(min_length=1)
-    series: list[dict] = Field(min_length=1)
+    v7.1.0 이래 composer 프롬프트·렌더러(drawHeatmap)는 강도 트랙형
+    ``[{title, severity}]`` 을 쓰는데 본 가드는 격자형 ``[{x, y, value}]`` 만
+    받아 프롬프트 준수 heatmap 이 100% silent drop 됐다 (발행본 기준 2026-05
+    중순 이후 heatmap 발행 0건의 근본 원인 — CHART-AP-38 과 동일 클래스).
+    - 격자형 ``[{x, y, value}]``: 결정 트리 §6 (두 축 조합 강도, 국가×항목 등)
+    - 강도 트랙형 ``[{title, severity:'low'|'medium'|'high'}]``: v7.1.0 계약
+      (발행본 12건 하위호환 — patch_report 재발행 시 재검증 통과 필요)
+    행 첫 원소의 키로 판별하며, 두 형태 혼합은 reject.
+    """
+
+    data: list[dict] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_shape(self) -> "StackedBarGuard":
-        n = len(self.categories)
-        for s in self.series:
-            if not isinstance(s, dict):
-                raise ValueError("CHART-AP-1 가드: series 항목이 dict 가 아님")
-            values = s.get("values") or []
-            if len(values) != n:
-                raise ValueError(
-                    f"CHART-AP-1 가드: series {s.get('name')!r} 의 values 개수 "
-                    f"({len(values)}) ≠ categories ({n})"
-                )
-            for v in values:
-                if not isinstance(v, (int, float)) or not math.isfinite(float(v)):
+    def validate_rows(self) -> "HeatmapGuard":
+        first = self.data[0]
+        if isinstance(first, dict) and "severity" in first:
+            for row in self.data:
+                HeatmapSeverityRow.model_validate(row)
+        else:
+            cells = [HeatmapCell.model_validate(row) for row in self.data]
+            if not all(math.isfinite(c.value) for c in cells):
+                raise ValueError("CHART-AP-3 가드: heatmap value 에 NaN/inf")
+        return self
+
+
+class StackedSegment(BaseModel):
+    label: str
+    value: float
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StackedScenario(BaseModel):
+    name: str
+    segments: list[StackedSegment] = Field(min_length=1, max_length=8)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StackedBarGuard(BaseModel):
+    """stacked: {scenarios:[{name, segments:[{label, value}]}]}.
+
+    CHART-AP-44 (v8.5.11): 구 가드는 ``{categories, series}`` 를 요구했지만
+    composer 프롬프트·drawStacked 렌더러·두 템플릿 has_data 게이트는 전부
+    ``{scenarios}`` 계약이다 (발행본 3건도 전부 scenarios 형태). 프롬프트 준수
+    stacked 가 100% silent drop 되던 것을 렌더 계약 쪽으로 통일.
+    value 는 양수 magnitude (부호 있는 점수는 bar — 프롬프트 계약과 동일).
+    """
+
+    scenarios: list[StackedScenario] = Field(min_length=1, max_length=8)
+
+    @model_validator(mode="after")
+    def validate_values(self) -> "StackedBarGuard":
+        for sc in self.scenarios:
+            for seg in sc.segments:
+                if not math.isfinite(seg.value):
+                    raise ValueError("CHART-AP-3 가드: stacked value 에 NaN/inf")
+                if seg.value < 0:
                     raise ValueError(
-                        f"CHART-AP-3 가드: stacked value 에 비-finite 값 — {v!r}"
+                        "CHART-AP-44 가드: stacked segment value 는 양수 magnitude "
+                        f"(부호 있는 값은 bar 로) — {sc.name!r}/{seg.label!r}={seg.value!r}"
                     )
         return self
 
@@ -1202,7 +1251,7 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
         return True, "no_typed_guard"
 
     try:
-        # gantt 는 rows 키 / network 는 nodes+links / stacked 는 categories+series.
+        # gantt 는 rows 키 / stacked 는 scenarios (CHART-AP-44) / 나머지 dict 형은 kwargs.
         if chart_type in ("gantt",):
             if isinstance(data, list):
                 guard(rows=data)  # type: ignore[arg-type]
@@ -1211,10 +1260,11 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
             else:
                 guard(rows=[data] if isinstance(data, dict) else [])  # type: ignore[arg-type]
         elif chart_type in ("stacked", "stacked_bar"):
+            # CHART-AP-44 — 계약은 {scenarios:[{name, segments}]} (프롬프트·렌더러·템플릿 정합)
             if isinstance(data, dict):
                 guard(**data)
             else:
-                return False, "stacked 는 {categories, series} dict 형식 필요"
+                return False, "stacked 는 {scenarios:[{name, segments}]} dict 형식 필요"
         elif chart_type == "dual_line":
             # {left: {...}, right: {...}}
             if isinstance(data, dict):

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.18
+last_synced_with: v8.5.11
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1364,6 +1364,45 @@ waypoint 폴리라인 + 모서리 라운딩으로 일반화. 데이터 계약·�
 발행본은 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용.
 
 ---
+
+## CHART-AP-44: composer 프롬프트 스키마 ↔ validator 가드 스키마 계약 불일치 — heatmap·stacked 100% silent drop (v8.5.11 신설)
+
+**증상**: composer 가 SYSTEM_PROMPT 의 [type 별 data 스키마] 대로 heatmap
+(`[{title, severity}]`) / stacked (`{scenarios:[...]}`) 를 emit 하면
+`ComposedSection._drop_invalid_charts` (디폴트 ON) 가 **전량 조용히 드롭**.
+발행본 실측: 두 type 모두 2026-05 중순 (가드 배선) 이후 발행 0건 — heatmap 12건·
+stacked 3건의 기존 발행본도 전부 그 이전. 드롭된 type 은 usage_log 에 "0회 emit"
+으로 기록돼 **기아(starvation)로 위장**되고, v8.3.0 자기교정 힌트가 깨진 type 을
+더 자주 emit 시켜 전부 다시 버리는 악순환까지 형성. `tests/regression/
+test_chart_diversity.py` 의 "8종 0회 emit" 관찰 중 heatmap/stacked 가 바로 이 케이스
+(composer 편향으로 오진).
+
+**원인**: CHART-AP-38 (stakeholder_map dispatch 분기 누락) 과 동일 클래스의 변종 —
+이번엔 분기는 있으나 **가드가 요구하는 데이터 모양 자체가 프롬프트·렌더러·템플릿과
+다른 계약**이었다. heatmap 가드는 `[{x,y,value}]` 를, stacked 가드는
+`{categories, series}` 를 요구했지만 프롬프트·`drawHeatmap`/`drawStacked`·두 템플릿
+has_data 게이트는 각각 `[{title,severity}]` / `{scenarios}` 계약. 가드는 자기 모양
+으로만 테스트되고 *프롬프트가 문서화한 모양으로는 한 번도 검증된 적이 없어* 3개 층의
+drift 가 누구에게도 안 보였다.
+
+**Fix (v8.5.11)**: [schemas.py](../src/visual/schemas.py) —
+① `HeatmapGuard` 양형 수용: 격자형 `[{x,y,value}]` (결정 트리 §6 정본) + 강도
+트랙형 `[{title, severity:low|medium|high}]` (v7.1.0 렌더러 계약, 발행본 12건의
+patch_report 재발행 하위호환). ② `StackedBarGuard` 를 렌더 계약 (`{scenarios:
+[{name, segments:[{label,value≥0}]}]}`) 으로 재작성 — 구 `{categories,series}` 는
+템플릿 has_data 가 거르는 렌더 불가 모양이라 reject 로 전환.
+③ [charts.js:`drawHeatmap`](../src/templates/static/charts.js) 에 격자형 렌더 분기
+신설 (`drawHeatmapGrid` — 잉크 농도 사다리 셀 매트릭스, mono guide §10) — 격자형이
+가드를 통과하고도 severity 렌더러에서 깨지는 역방향 사고 차단. ④ 프롬프트 heatmap
+스키마 라인에 격자형 명기. ⑤ **재발 차단 SSOT**:
+[tests/regression/test_prompt_guard_parity.py](../tests/regression/test_prompt_guard_parity.py)
+— `_TYPE_TO_GUARD` 전 type 에 대해 *프롬프트가 문서화한 모양 그대로* 가
+`validate_chart_data` 를 통과하는지 + 새 type 등록 시 fixture 누락을 강제 검출.
+CHART-AP-38/44 클래스(프롬프트↔가드 drift)를 테스트 층에서 통째로 차단.
+
+**교훈**: 가드·렌더러·프롬프트·템플릿 4층이 각자 데이터 모양의 사본을 가진다 —
+어느 층을 고치든 **프롬프트 문서 모양의 라운드트립 테스트** 없이는 정합을 보장할 수
+없다. 신규 type 추가 절차에 parity fixture 등록이 필수 단계로 추가됨.
 
 ## 본 문서 갱신 규칙 (DOCS_GOVERNANCE 정합)
 

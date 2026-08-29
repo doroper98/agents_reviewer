@@ -1174,6 +1174,12 @@ VisualPlanner (Phase 2) emit 차트 spec
 1. Vega-Lite spec 자체의 JSON Schema 정합 (vl-convert / vega-cli 의 built-in validator).
 2. 타입별 Pydantic 가드를 추가한다 — `src/visual/schemas.py` 를 신설한다.
 
+> **v8.5.11 (CHART-AP-44)**: 가드의 데이터 모양은 composer SYSTEM_PROMPT 가 문서화한
+> 모양과 *반드시* 라운드트립해야 한다 — `HeatmapGuard` 는 양형(격자형+강도 트랙형),
+> `StackedBarGuard` 는 렌더 계약(`{scenarios}`)으로 통일됐고, 전 type parity 는
+> `tests/regression/test_prompt_guard_parity.py` 가 SSOT 로 강제한다. 새 가드 추가
+> 시 그 fixture 등록이 필수 (누락 시 완전성 테스트 실패).
+
 **타입별 가드 예시:**
 ```python
 class BubbleChartGuard(BaseModel):

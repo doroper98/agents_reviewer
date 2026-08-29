@@ -519,3 +519,52 @@ def test_ts_chart_no_event_markers_when_timeline_empty() -> None:
     _ensure_time_series_chart(composed, _make_context(time_series=[_line_ts()]))
     data = composed.sections[0].charts[0]["data"]
     assert all("event" not in d for d in data)
+
+
+# ─── CHART-AP-44 — 프롬프트 준수 heatmap/stacked 는 보존 (v8.5.11) ─────────
+# 프롬프트↔가드 계약 불일치로 두 type 이 100% silent drop 되던 회귀의 재발 방지.
+# (heatmap: v7.1.0 강도 트랙 계약 + 신규 격자형 / stacked: scenarios 계약)
+
+
+def test_keeps_prompt_shape_heatmap_severity() -> None:
+    s = _section([
+        {"type": "heatmap", "title": "위험도", "data": [
+            {"title": "공급 차질", "severity": "high"},
+            {"title": "수요 둔화", "severity": "medium"},
+            {"title": "재고 소진", "severity": "low"},
+        ]},
+    ])
+    assert len(s.charts) == 1
+
+
+def test_keeps_prompt_shape_heatmap_grid() -> None:
+    s = _section([
+        {"type": "heatmap", "title": "국가×항목", "data": [
+            {"x": "대만", "y": "파운드리", "value": 5},
+            {"x": "대만", "y": "패키징", "value": 4},
+            {"x": "한국", "y": "파운드리", "value": 3},
+            {"x": "한국", "y": "패키징", "value": 3},
+        ]},
+    ])
+    assert len(s.charts) == 1
+
+
+def test_keeps_prompt_shape_stacked_scenarios() -> None:
+    s = _section([
+        {"type": "stacked", "title": "시나리오", "data": {"scenarios": [
+            {"name": "낙관", "segments": [{"label": "수출", "value": 40}, {"label": "내수", "value": 30}]},
+            {"name": "비관", "segments": [{"label": "수출", "value": 22}, {"label": "내수", "value": 18}]},
+        ]}},
+    ])
+    assert len(s.charts) == 1
+
+
+def test_drops_stacked_legacy_categories_series() -> None:
+    """구 {categories, series} 는 렌더 불가 형태 — drop 유지."""
+    s = _section([
+        {"type": "stacked", "title": "legacy", "data": {
+            "categories": ["a", "b"],
+            "series": [{"name": "x", "values": [1, 2]}],
+        }},
+    ])
+    assert len(s.charts) == 0

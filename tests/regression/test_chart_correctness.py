@@ -264,22 +264,68 @@ def test_gantt_guard_rejects_at_threshold() -> None:
         ])
 
 
-# AP-1 — StackedBar
-def test_stacked_guard_rejects_size_mismatch() -> None:
-    """series 의 values 개수 ≠ categories 개수 → fail."""
+# CHART-AP-44 — StackedBar: 계약은 {scenarios:[{name, segments}]} (프롬프트·렌더러·템플릿 정합)
+def test_stacked_guard_accepts_prompt_shape() -> None:
+    """composer SYSTEM_PROMPT 가 문서화한 scenarios 형태가 통과해야 한다.
+
+    구 가드는 {categories, series} 를 요구해 프롬프트 준수 stacked 가
+    100% silent drop 됐다 (CHART-AP-44, CHART-AP-38 동일 클래스).
+    """
+    StackedBarGuard(scenarios=[
+        {"name": "낙관", "segments": [{"label": "수출", "value": 40}, {"label": "내수", "value": 30}]},
+        {"name": "비관", "segments": [{"label": "수출", "value": 22}, {"label": "내수", "value": 18}]},
+    ])
+
+
+def test_stacked_guard_rejects_legacy_categories_series() -> None:
+    """구 {categories, series} 형태는 렌더 불가(템플릿 has_data 탈락) — reject."""
     with pytest.raises(Exception):
         StackedBarGuard(
-            categories=["a", "b", "c"],
-            series=[{"name": "x", "values": [1, 2]}],   # 3 expected, got 2
+            categories=["a", "b"],
+            series=[{"name": "x", "values": [1, 2]}],
         )
 
 
 def test_stacked_guard_rejects_nan_value() -> None:
     with pytest.raises(Exception):
-        StackedBarGuard(
-            categories=["a", "b"],
-            series=[{"name": "x", "values": [1, float("nan")]}],
-        )
+        StackedBarGuard(scenarios=[
+            {"name": "x", "segments": [{"label": "a", "value": float("nan")}]},
+        ])
+
+
+def test_stacked_guard_rejects_negative_value() -> None:
+    """value 는 양수 magnitude (프롬프트 계약 — 부호 있는 점수는 bar)."""
+    with pytest.raises(Exception):
+        StackedBarGuard(scenarios=[
+            {"name": "x", "segments": [{"label": "a", "value": -3}]},
+        ])
+
+
+# CHART-AP-44 — Heatmap 양형 수용
+def test_heatmap_guard_accepts_severity_rows() -> None:
+    """v7.1.0 강도 트랙 계약 [{title, severity}] — 프롬프트·렌더러가 쓰는 형태."""
+    HeatmapGuard(data=[
+        {"title": "공급 차질", "severity": "high"},
+        {"title": "수요 둔화", "severity": "low"},
+    ])
+
+
+def test_heatmap_guard_accepts_grid_cells() -> None:
+    """격자형 [{x, y, value}] — 결정 트리 §6 의 2축 조합 강도."""
+    HeatmapGuard(data=[
+        {"x": "대만", "y": "파운드리", "value": 5},
+        {"x": "한국", "y": "메모리", "value": 3},
+    ])
+
+
+def test_heatmap_guard_rejects_unknown_severity() -> None:
+    with pytest.raises(Exception):
+        HeatmapGuard(data=[{"title": "x", "severity": "extreme"}])
+
+
+def test_heatmap_guard_rejects_grid_nan() -> None:
+    with pytest.raises(Exception):
+        HeatmapGuard(data=[{"x": "a", "y": "b", "value": float("nan")}])
 
 
 # ─── validate_chart_data 통합 ────────────────────────────────────────
