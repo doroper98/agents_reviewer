@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+
+<html lang="ko" data-theme="reportage_steel">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="report-format" content="reportage">
+<title>모스크바에 내린 수송기 한 대, 그 안에서 무엇이 오갔나</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="charts.css">
+<link rel="stylesheet" href="maps.css">
+<style>/* ===== Report Theme System — Mono + Editorial (v4.5.0) =====
+   SSOT: docs/MONO_THEME_GUIDE.md (Tier 2)
+   세 톤 (Editorial Cream · Burgundy Mono · Light Mono).
+   - editorial_cream: 디폴트. cream + terracotta. 편집·분석·일반 보고서.
+   - burgundy_mono: 위기·분쟁·사고. dark wine + amber. (v4.5.0 어둡게 보정)
+   - light_mono: 폐기 예정 (legacy). 아래 블록은 호환 위해 보존.
+   카테고리 구분은 hue 가 아닌 border-style + 패턴.
+   ============================================================ */
+
+/* --- Default: Editorial Cream (warm cream + terracotta + warm dark) ---
+   v4.5.0 신규. LG AI Seminar 보고서 톤 차용. 인쇄·캡처·장문 가독성 우위. */
+:root, [data-theme="editorial_cream"] {
+  /* Surfaces */
+  --bg: #F2EBDB;
+  --card: #ECE3D0;
+  --card-hover: #E5DBC4;
+  --accent-surface: #ECE3D0;
+  --border: #D4C8B0;
+  --border-light: #E2D8C0;
+  --divider: #D4C8B0;
+
+  /* Text */
+  --text: #1F1814;       /* warm dark — pure black 보다 따뜻 */
+  --muted: #6B5C4A;      /* warm grey */
+
+  /* Semantic accents — guide §3.2 */
+  --accent: #B05A38;     /* terracotta — editorial 강조, hatch stroke, callout border */
+  --up: #4A6B3E;         /* forest green — 상승·기회 (작은 변동만) */
+  --down: #8B2A2A;       /* deep crimson — 하락·위험 (작은 변동, 이벤트 vline) */
+
+  /* Map tokens */
+  --map-land: #F2EBDB;
+  --map-water: #DFD3B8;  /* sand — water as "aged paper" */
+  --map-boundary: #1F1814;
+  --map-graticule: #D4C8B0;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases (멀티컬러 → mono 매핑 보존) */
+  --text-primary: var(--text);
+  --text-secondary: #2D241B;
+  --text-muted: var(--muted);
+  --text-faded: #8A7A66;
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 톤 변형 토큰 */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #E5DBC4;            /* deeper cream — closing 톤 */
+  --card-deep: #E5DBC4;       /* v4.5.3 — chart-card-stage 배경 (본문보다 한 단계 깊게) */
+  --fg-1: var(--text);
+  --fg-2: #2D241B;
+  --fg-3: var(--muted);
+  --border-soft: rgba(212,200,176,0.55);
+}
+
+/* --- Burgundy Mono (deep wine + amber gold + parchment) — v4.5.0 어둡게 보정 ---
+   이전 #3D1820 은 "맑은 와인" 톤이었고 사용자 피드백으로 더 짙은 dried-blood 톤으로.
+   위기·분쟁·사고 보고서 전용 (lens_policy._THEME_BY_CATEGORY 참조). */
+[data-theme="burgundy_mono"] {
+  /* Surfaces */
+  --bg: #2A0F18;             /* v4.5.0: 3D1820 → 2A0F18 (R-22, G-9, B-8) */
+  --card: #371721;           /* 카드는 bg 보다 한 단계 위 */
+  --card-hover: #371721;
+  --accent-surface: #371721;
+  --border: #5A2832;         /* 6E3340 → 5A2832 (어둡게) */
+  --border-light: #371721;
+  --divider: #5A2832;
+
+  /* Text */
+  --text: #EFE5D1;
+  --muted: #A88E7A;
+
+  /* Semantic accents */
+  --accent: #D4A858;
+  --up: #A8B582;
+  --down: #C9837A;
+
+  /* Map tokens — water 도 한 단계 더 깊게 */
+  --map-land: #2A0F18;
+  --map-water: #1A0810;      /* 2A0E16 → 1A0810 (near-black wine) */
+  --map-boundary: #EFE5D1;
+  --map-graticule: #5A2832;
+
+  /* Geometry */
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  /* Legacy aliases */
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #1A0810;            /* deepest wine — closing/footer 톤 */
+  --card-deep: #1A0810;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #D8CCB8;
+  --fg-3: var(--muted);
+  --border-soft: rgba(90,40,50,0.4);
+}
+
+/* --- Light Mono (cream + deep burgundy + forest green) --- */
+[data-theme="light_mono"] {
+  --bg: #efe8d9;
+  --card: #f8f2e4;
+  --card-hover: #f8f2e4;
+  --accent-surface: #f8f2e4;
+  --border: #b3a586;
+  --border-light: #d4c8a8;
+  --divider: #b3a586;
+
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+
+  --accent: #9a1e3c;
+  --up: #2d6a3e;
+  --down: #9a1e3c;
+
+  --map-land: #efe8d9;
+  --map-water: #dccea8;
+  --map-boundary: #1a1a1a;
+  --map-graticule: #b3a586;
+
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: none;
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text);
+  --text-muted: var(--muted);
+  --text-faded: var(--muted);
+  --gold: var(--accent);
+  --gold-light: var(--accent);
+  --red: var(--down);
+  --red-light: var(--card);
+  --orange: var(--accent);
+  --orange-light: var(--card);
+  --green: var(--up);
+  --green-light: var(--card);
+  --blue: var(--muted);
+  --blue-light: var(--card);
+
+  /* freeform_essay.html 용 톤 변형 토큰 (v3.5.0, light mono) */
+  --bg-1: var(--bg);
+  --bg-2: var(--card);
+  --bg-3: #dccea8;            /* deeper cream — closing 톤 */
+  --card-deep: #dccea8;       /* v4.5.3 — chart-card-stage 배경 */
+  --fg-1: var(--text);
+  --fg-2: #3a3a3a;
+  --fg-3: var(--muted);
+  --border-soft: rgba(179,165,134,0.4);
+}
+
+/* ================================================================
+   v5.0.2 — 5개 신규 테마 (총 7종 중 5종 추가, 사용자 요청)
+   원칙: mono guide §3.3 단일 액센트. 가독성 우선. 카테고리 무관 랜덤.
+   ================================================================ */
+
+/* --- Midnight Indigo (deep indigo + sky blue) — 다크 모드, 기술·심층 톤 */
+[data-theme="midnight_indigo"] {
+  --bg: #161A2E;
+  --card: #1F2440;
+  --card-hover: #262C4A;
+  --accent-surface: #1F2440;
+  --border: #3A4060;
+  --border-light: #262C4A;
+  --divider: #3A4060;
+
+  --text: #E8ECEF;
+  --muted: #8A92A8;
+
+  --accent: #6FB3FF;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #161A2E;
+  --map-water: #0D1020;
+  --map-boundary: #E8ECEF;
+  --map-graticule: #3A4060;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0D1020;
+  --card-deep: #0D1020;
+  --fg-1: var(--text); --fg-2: #D0D8E0; --fg-3: var(--muted);
+  --border-soft: rgba(58,64,96,0.45);
+}
+
+/* --- Pine Forest (deep pine green + jade) — 다크 모드, 짙은 녹색 (v6.2.0) */
+[data-theme="pine_forest"] {
+  --bg: #132019;
+  --card: #1B2C22;
+  --card-hover: #233529;
+  --accent-surface: #1B2C22;
+  --border: #32503E;
+  --border-light: #233529;
+  --divider: #32503E;
+
+  --text: #E7EEE8;
+  --muted: #8AA294;
+
+  --accent: #7CC6A4;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #132019;
+  --map-water: #0C140F;
+  --map-boundary: #E7EEE8;
+  --map-graticule: #32503E;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0C140F;
+  --card-deep: #0C140F;
+  --fg-1: var(--text); --fg-2: #CFE0D4; --fg-3: var(--muted);
+  --border-soft: rgba(50,80,62,0.45);
+}
+
+/* --- Graphite Slate (deep graphite gray + copper) — 다크 모드, 짙은 회색 (v6.2.0) */
+[data-theme="graphite_slate"] {
+  --bg: #191B1E;
+  --card: #23262B;
+  --card-hover: #2B2F35;
+  --accent-surface: #23262B;
+  --border: #3D424A;
+  --border-light: #2B2F35;
+  --divider: #3D424A;
+
+  --text: #E9EBED;
+  --muted: #969BA3;
+
+  --accent: #D69A5E;
+  --up: #88B888;
+  --down: #DC7A7A;
+
+  --map-land: #191B1E;
+  --map-water: #0E0F12;
+  --map-boundary: #E9EBED;
+  --map-graticule: #3D424A;
+
+  --radius: 6px; --radius-lg: 8px; --shadow: none;
+
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0E0F12;
+  --card-deep: #0E0F12;
+  --fg-1: var(--text); --fg-2: #D2D6DA; --fg-3: var(--muted);
+  --border-soft: rgba(61,66,74,0.45);
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* --- Layout --- */
+.container { max-width: 960px; margin: 0 auto; padding: 0 14px; }
+section { padding: 44px 0 36px; border-bottom: 1px solid var(--border-light); }
+
+/* --- Hero --- */
+.hero { background: var(--bg); color: var(--text-primary); padding: 56px 16px 36px; text-align: center; }
+.hero h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(24px, 6vw, 42px);
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 14px;
+  line-height: 1.7;
+}
+
+/* --- Key Summary (핵심 요약) --- */
+.key-summary {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.key-summary-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.key-summary ol {
+  list-style: none;
+  counter-reset: ks;
+  padding: 0;
+  margin: 0;
+}
+.key-summary li {
+  counter-increment: ks;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding: 3px 0;
+}
+.key-summary li::before {
+  content: counter(ks) ")";
+  color: var(--gold);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* --- Key Metrics Grid --- */
+.key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+  .key-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 400px) {
+  .key-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.key-metric-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px 8px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.key-metric-icon { font-size: 16px; margin-bottom: 6px; }
+.key-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.key-metric-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+/* --- Canvas Chart Grid --- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 10px; }
+.hero-tags span {
+  background: var(--card);
+  padding: 3px 12px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* --- Navigation --- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(43, 26, 26, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-inner { display: flex; white-space: nowrap; padding: 0 4px; }
+.nav a {
+  display: block;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faded);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color .2s;
+}
+.nav a:hover { color: var(--text-muted); }
+.nav a.on { color: var(--text-primary); border-bottom-color: var(--gold); }
+
+/* --- Section Headings --- */
+.section-label {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 1px;
+  color: var(--text-faded);
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+/* --- Card --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+/* --- Callout --- */
+.callout {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin: 16px 0;
+}
+.callout b { font-size: 12px; display: block; margin-bottom: 2px; color: var(--text-primary); }
+.callout p { font-size: 11px; color: var(--text-muted); line-height: 1.75; }
+
+/* --- Balance Analysis (균형 분석) ---
+   Long-form structured analysis with paragraph spacing for readability. */
+.balance-analysis {
+  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 18px 20px;
+  margin: 18px 0;
+}
+.balance-analysis-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: 0.3px;
+}
+.balance-analysis-body {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.balance-analysis-body strong {
+  display: inline-block;
+  color: var(--gold);
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+.balance-analysis-body br + br {
+  line-height: 0.5;
+}
+
+/* --- Grid --- */
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* --- Act Cue (막 전환 문구) --- */
+.act-cue {
+  text-align: center;
+  padding: 24px 0 0;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  color: var(--text-faded);
+  font-style: italic;
+}
+
+/* --- Player Cards --- */
+.player-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.player-card.extreme::before { background: var(--red); }
+.player-card.high::before { background: var(--orange); }
+.player-card.medium::before { background: var(--gold); }
+.player-card.low::before { background: var(--green); }
+
+.player-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.player-emoji { font-size: 20px; }
+.player-name { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+
+.badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.badge.extreme { background: var(--red-light); color: var(--red); border: 1px solid var(--red); }
+.badge.high { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange); }
+.badge.medium { background: rgba(201,168,76,.12); color: var(--gold); border: 1px solid var(--gold); }
+.badge.low { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
+
+.player-summary { font-size: 10px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+.player-detail {
+  font-size: 10px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* --- Flow (Chain Reaction) --- */
+.flow-list { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.flow-node {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-align: center;
+  width: 100%;
+  max-width: 440px;
+}
+.flow-node strong { font-size: 12px; color: var(--text-primary); }
+.flow-node span { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+.flow-arrow {
+  width: 1px;
+  height: 16px;
+  background: var(--divider);
+  position: relative;
+}
+.flow-arrow::after {
+  content: '\25BC';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  color: var(--text-faded);
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.data-table th {
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 10px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.data-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--card-hover); }
+
+/* --- Signal Grid --- */
+.signal-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .signal-grid { grid-template-columns: 1fr 1fr; } }
+
+.signal-item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.signal-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--card-hover);
+}
+.signal-item h4 { font-size: 11px; font-weight: 700; margin-bottom: 1px; color: var(--text-primary); }
+.signal-item p { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+/* --- Timeline --- */
+.timeline-content { font-size: 10px; line-height: 1.85; color: var(--text-secondary); }
+
+/* --- Gauge Bar --- */
+.gauge-bar { margin-bottom: 8px; }
+.gauge-label {
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+.gauge-label span:last-child { color: var(--text-primary); font-weight: 600; }
+.gauge-track { height: 20px; background: var(--card); border-radius: 3px; overflow: hidden; }
+.gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- Terms --- */
+.terms {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.terms b { color: var(--text-secondary); font-size: 10px; }
+
+/* --- Radar --- */
+.radar-wrap { display: flex; justify-content: center; margin: 20px 0; }
+#radarCanvas { max-width: 100%; }
+
+/* --- Footer --- */
+.footer {
+  background: var(--bg);
+  border-top: 1px solid var(--divider);
+  color: var(--text-faded);
+  padding: 24px 14px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.footer a { color: var(--text-muted); text-decoration: underline; }
+
+/* ============================================================ */
+/* === v5.1.1 — 후속 보고서 헤더 + 출처 footnote 시스템         === */
+/* ============================================================ */
+
+/* --- Followup parent reference (h1 [1] footnote target) --- */
+.followup-parent {
+  padding: 18px 0 6px;
+}
+.followup-parent .container,
+.followup-parent {
+  /* container 안에서 한 단계 들여쓰기. .container 자체는 max-width 적용 됨 */
+}
+.followup-parent-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.followup-parent-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.followup-parent-body { flex: 1; }
+.followup-parent-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-faded);
+  margin-bottom: 4px;
+}
+.followup-parent-id { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.followup-parent-id a { color: var(--text); text-decoration: underline; }
+.followup-parent-signal { color: var(--text-secondary); margin-bottom: 4px; }
+.followup-parent-dir {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.followup-parent-dir-confirms_base { background: rgba(74,107,62,0.18); color: var(--up); }
+.followup-parent-dir-rejects_base { background: rgba(139,42,42,0.18); color: var(--down); }
+.followup-parent-dir-ambiguous { background: rgba(176,90,56,0.18); color: var(--accent); }
+.followup-parent-event { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.followup-parent-depth { color: var(--text-faded); font-size: 9px; letter-spacing: 1px; }
+
+/* --- Title footnote mark on h1 (link [1] → #followup-parent) --- */
+.title-footnote-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 0.45em;
+  vertical-align: super;
+  margin-left: 6px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.title-footnote-mark sup { line-height: 1; }
+
+/* --- Footnote refs (inline ⁽n⁾ markers throughout body) --- */
+.fn-ref {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+.fn-ref:hover { text-decoration: underline; }
+
+/* --- Bottom footnotes section (통합 출처 리스트) --- */
+.footnotes {
+  padding: 28px 0 36px;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+}
+.footnotes-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+.footnotes-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.footnotes-item {
+  padding: 4px 0;
+  word-break: break-all;
+}
+.footnotes-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.footnotes-link:hover { color: var(--text); }
+.footnotes-text { color: var(--muted); }
+.footnotes-item:target {
+  background: rgba(176,90,56,0.12);
+  border-radius: 3px;
+  padding-left: 4px;
+}
+
+/* --- Fade-in Animation --- */
+.fade-in { opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+.fade-in.visible { opacity: 1; transform: none; }
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 24px; }
+  .data-table { font-size: 10px; }
+}
+@media (max-width: 540px) {
+  .hero { padding: 36px 12px 28px; }
+  section { padding: 32px 0 24px; }
+  .player-card, .card { padding: 12px; }
+}
+
+/* ============================================================ */
+/* === V3 Step 3 — Block Rendering System (append-only)        === */
+/* === 디자인 토큰(--text-primary, --gold, --red 등) 재사용     === */
+/* ============================================================ */
+
+.report-block-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-section-empty { color: var(--text-muted); font-size: 11px; padding: 8px 0; font-style: italic; }
+.report-block-key-summary-section { padding: 28px 0 24px; border-bottom: 1px solid var(--border-light); }
+.report-block-fallback { padding: 32px 0; }
+.hero-eyebrow { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faded); margin-bottom: 8px; font-family: 'Noto Serif KR', serif; font-style: italic; }
+.footer-confidence { max-width: 600px; margin: 0 auto 10px; color: var(--text-faded); font-size: 10px; }
+.footer-share { margin-top: 10px; font-size: 11px; }
+.footer-share span { color: rgba(255,255,255,.5); }
+
+/* --- narrative --- */
+.block-narrative { margin-bottom: 14px; }
+.block-narrative-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary); }
+.block-narrative-body { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+.block-narrative-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- claim_card --- */
+.block-claim-card { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-claim-card-header { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-claim-card-id { font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+.block-claim-card-type { font-size: 9px; color: var(--text-muted); padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; }
+.block-claim-card-confidence { font-size: 10px; color: var(--blue); font-weight: 600; margin-left: auto; }
+.block-claim-card-statement { font-size: 12px; color: var(--text-primary); line-height: 1.6; margin-bottom: 6px; }
+.block-claim-card-evidence { font-size: 10px; color: var(--text-secondary); }
+.block-claim-card-evidence-label { color: var(--text-muted); margin-right: 4px; }
+.block-claim-card-evidence-id { display: inline-block; padding: 1px 5px; margin: 1px 2px; background: var(--accent); border-radius: 3px; font-size: 9px; color: var(--bg); }
+.block-claim-card-evidence-missing { font-size: 10px; color: var(--orange); font-style: italic; }
+
+/* --- evidence_table --- */
+.block-evidence-table { margin: 12px 0; overflow-x: auto; }
+.block-evidence-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-evidence-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-evidence-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-evidence-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-evidence-table-id { color: var(--gold); font-weight: 600; }
+.block-evidence-table-quote { line-height: 1.6; }
+.block-evidence-table-link { color: var(--blue); text-decoration: none; }
+.block-evidence-table-reliability { font-size: 9px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+.block-evidence-table-rel-primary { background: var(--green-light); color: var(--green); }
+.block-evidence-table-rel-secondary { background: var(--blue-light); color: var(--blue); }
+.block-evidence-table-rel-expert { background: var(--gold); color: var(--bg); }
+.block-evidence-table-rel-model_inference { background: var(--orange-light); color: var(--orange); }
+.block-evidence-table-empty { font-size: 10px; color: var(--text-muted); padding: 12px 0; font-style: italic; }
+
+/* --- timeline --- */
+.block-timeline { margin: 12px 0; }
+.block-timeline-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-timeline-list { list-style: none; padding: 0; margin: 0; }
+.block-timeline-item { display: flex; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 11px; line-height: 1.6; }
+.block-timeline-item:last-child { border-bottom: 0; }
+.block-timeline-date { color: var(--blue); font-weight: 600; min-width: 110px; flex-shrink: 0; white-space: nowrap; }
+.block-timeline-event { color: var(--text-secondary); flex: 1; }
+.block-timeline-impact { color: var(--red); font-weight: 600; margin-left: 6px; }
+.block-timeline-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- matrix --- */
+.block-matrix { margin: 12px 0; overflow-x: auto; }
+.block-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-matrix-corner { background: var(--card); border: 1px solid var(--border); padding: 8px; }
+.block-matrix-col { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; }
+.block-matrix-row-label { background: var(--card); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+.block-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- actor_cards --- */
+.block-actor-cards { margin: 12px 0; }
+.block-actor-cards-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-actor-cards-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-actor-cards-grid { grid-template-columns: 1fr 1fr; } }
+.block-actor-cards-card { background: var(--card); border-radius: var(--radius); padding: 12px; border-left: 3px solid var(--gold); }
+.block-actor-cards-risk-극심 { border-left-color: var(--red); }
+.block-actor-cards-risk-높음 { border-left-color: var(--orange); }
+.block-actor-cards-risk-보통 { border-left-color: var(--gold); }
+.block-actor-cards-risk-낮음 { border-left-color: var(--green); }
+.block-actor-cards-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.block-actor-cards-emoji { font-size: 16px; }
+.block-actor-cards-name { font-weight: 700; font-size: 12px; color: var(--text-primary); }
+.block-actor-cards-role { font-size: 9px; padding: 2px 6px; background: var(--accent); border-radius: 3px; color: var(--bg); font-weight: 600; }
+.block-actor-cards-position { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.6; }
+.block-actor-cards-detail { font-size: 10px; color: var(--text-muted); margin: 3px 0; line-height: 1.6; }
+.block-actor-cards-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- flow_chain --- */
+.block-flow-chain { margin: 12px 0; }
+.block-flow-chain-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-flow-chain-list { list-style: none; padding: 0; margin: 0; }
+.block-flow-chain-step { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--gold); position: relative; }
+.block-flow-chain-step:not(:last-child)::after { content: '↓'; position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); color: var(--text-muted); font-size: 12px; }
+.block-flow-chain-sev-high { border-left-color: var(--red); }
+.block-flow-chain-sev-medium { border-left-color: var(--orange); }
+.block-flow-chain-sev-low { border-left-color: var(--gold); }
+.block-flow-chain-header { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.block-flow-chain-num { font-weight: 700; color: var(--gold); font-size: 11px; }
+.block-flow-chain-title-text { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-flow-chain-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.6; margin: 4px 0; }
+.block-flow-chain-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-muted); flex-wrap: wrap; }
+.block-flow-chain-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- scenario_table --- */
+.block-scenario-table { margin: 12px 0; overflow-x: auto; }
+.block-scenario-table-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-scenario-table-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-scenario-table-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-scenario-table-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); vertical-align: top; }
+.block-scenario-table-name strong { color: var(--text-primary); font-size: 11px; }
+.block-scenario-table-tag { font-size: 9px; color: var(--gold); }
+.block-scenario-table-tag-최선 { border-left: 2px solid var(--green); }
+.block-scenario-table-tag-악화 { border-left: 2px solid var(--orange); }
+.block-scenario-table-tag-최악 { border-left: 2px solid var(--red); }
+.block-scenario-table-prob { font-weight: 700; color: var(--text-primary); }
+.block-scenario-table-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- decomposition --- */
+.block-decomposition { margin: 12px 0; }
+.block-decomposition-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decomposition-root { font-weight: 700; font-size: 13px; color: var(--gold); padding: 10px 12px; background: var(--card); border-radius: var(--radius); margin-bottom: 8px; }
+.block-decomposition-tree, .block-decomposition-children { list-style: none; padding-left: 16px; margin: 0; border-left: 1px dashed var(--border); }
+.block-decomposition-node { padding: 6px 0 6px 12px; position: relative; }
+.block-decomposition-node::before { content: '─'; position: absolute; left: -1px; top: 12px; color: var(--border); }
+.block-decomposition-label { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+.block-decomposition-detail { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-decomposition-depth-1 .block-decomposition-label { color: var(--gold); }
+.block-decomposition-depth-2 .block-decomposition-label { color: var(--blue); }
+.block-decomposition-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- argument_pair --- */
+.block-argument-pair { margin: 12px 0; }
+.block-argument-pair-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-argument-pair-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 700px) { .block-argument-pair-grid { grid-template-columns: 1fr 1fr; } }
+.block-argument-pair-side { background: var(--card); padding: 12px; border-radius: var(--radius); border-top: 3px solid var(--gold); }
+.block-argument-pair-side-a { border-top-color: var(--blue); }
+.block-argument-pair-side-b { border-top-color: var(--orange); }
+.block-argument-pair-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.block-argument-pair-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-argument-pair-alignment { margin-top: 10px; padding: 10px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; }
+.block-argument-pair-alignment-title { font-weight: 700; color: var(--gold); margin-bottom: 4px; font-size: 10px; }
+.block-argument-pair-alignment-list { padding-left: 16px; margin: 0; color: var(--text-secondary); }
+
+/* --- data_series --- */
+.block-data-series { margin: 12px 0; }
+.block-data-series-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-data-series-unit { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.block-data-series-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 540px) { .block-data-series-grid { grid-template-columns: 1fr 1fr; } }
+.block-data-series-card { background: var(--card); padding: 10px 12px; border-radius: var(--radius); }
+.block-data-series-label { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 6px; }
+.block-data-series-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-data-series-table th { color: var(--text-muted); text-align: left; padding: 4px 6px; font-weight: 600; border-bottom: 1px solid var(--border-light); }
+.block-data-series-table td { padding: 4px 6px; color: var(--text-secondary); }
+.block-data-series-x { color: var(--text-muted); }
+.block-data-series-y { font-weight: 600; color: var(--text-primary); }
+.block-data-series-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- watchlist --- */
+.block-watchlist { margin: 12px 0; }
+.block-watchlist-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-watchlist-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 540px) { .block-watchlist-grid { grid-template-columns: 1fr 1fr; } }
+.block-watchlist-item { display: flex; gap: 10px; padding: 10px 12px; background: var(--card); border-radius: var(--radius); border-left: 3px solid var(--gold); }
+.block-watchlist-dir-confirms_base { border-left-color: var(--green); }
+.block-watchlist-dir-rejects_base { border-left-color: var(--red); }
+.block-watchlist-dir-ambiguous { border-left-color: var(--gold); }
+.block-watchlist-icon { font-size: 18px; flex-shrink: 0; }
+.block-watchlist-body { flex: 1; }
+.block-watchlist-signal { font-weight: 700; font-size: 11px; color: var(--text-primary); }
+.block-watchlist-desc { font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+.block-watchlist-indicates { font-size: 10px; color: var(--blue); margin-top: 2px; }
+.block-watchlist-deadline { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+.block-watchlist-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- qna --- */
+.block-qna { margin: 12px 0; }
+.block-qna-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-qna-list { padding: 0; margin: 0; }
+.block-qna-pair { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px; }
+.block-qna-q { font-weight: 700; font-size: 11px; color: var(--text-primary); margin-bottom: 4px; }
+.block-qna-a { font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-left: 16px; }
+.block-qna-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- callout --- */
+.block-callout { background: var(--card); border-left: 3px solid var(--gold); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin: 12px 0; }
+.block-callout-style-warning { border-left-color: var(--orange); }
+.block-callout-style-info { border-left-color: var(--blue); }
+.block-callout-style-insight { border-left-color: var(--gold); }
+.block-callout-title { font-size: 12px; margin-bottom: 4px; color: var(--text-primary); }
+.block-callout-body { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+/* --- counter_hypothesis --- */
+.block-counter-hypothesis { background: var(--card); padding: 12px 14px; border-radius: var(--radius); border-left: 3px solid var(--blue); margin: 12px 0; }
+.block-counter-hypothesis-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--blue); }
+.block-counter-hypothesis-base, .block-counter-hypothesis-counter, .block-counter-hypothesis-required { margin: 8px 0; }
+.block-counter-hypothesis-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.block-counter-hypothesis-text { font-size: 11px; color: var(--text-primary); line-height: 1.6; }
+.block-counter-hypothesis-list { padding-left: 18px; margin: 0; font-size: 10px; color: var(--text-secondary); line-height: 1.6; }
+.block-counter-hypothesis-conflict { margin-top: 8px; font-size: 10px; color: var(--orange); padding-top: 8px; border-top: 1px solid var(--border-light); }
+
+/* --- decision_matrix --- */
+.block-decision-matrix { margin: 12px 0; overflow-x: auto; }
+.block-decision-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-decision-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-decision-matrix-corner, .block-decision-matrix-criterion { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); font-weight: 600; }
+.block-decision-matrix-option { background: var(--card); padding: 8px; border: 1px solid var(--border); color: var(--text-primary); text-align: left; font-weight: 600; }
+.block-decision-matrix-cell { padding: 8px; border: 1px solid var(--border-light); color: var(--text-secondary); text-align: center; }
+.block-decision-matrix-rec { margin-top: 8px; padding: 8px 12px; background: var(--accent); border-radius: var(--radius); font-size: 10px; color: var(--bg); font-weight: 600; }
+.block-decision-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* --- risk_matrix --- */
+.block-risk-matrix { margin: 12px 0; overflow-x: auto; }
+.block-risk-matrix-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: var(--text-primary); }
+.block-risk-matrix-grid { width: 100%; border-collapse: collapse; font-size: 10px; }
+.block-risk-matrix-th { background: var(--card); color: var(--text-muted); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+.block-risk-matrix-row td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.block-risk-matrix-impact-high { border-left: 3px solid var(--red); }
+.block-risk-matrix-impact-medium { border-left: 3px solid var(--orange); }
+.block-risk-matrix-impact-low { border-left: 3px solid var(--gold); }
+.block-risk-matrix-empty { font-size: 10px; color: var(--text-muted); font-style: italic; }
+
+/* ============================================================ */
+/* === Mobile readability (PR1', 2026-05-01)                   === */
+/* === scenario_grid 등은 charts.css 가 처리. 여기는 timeline 과 === */
+/* === evidence/risk_matrix 의 좁은 폭 cram 을 해소.           === */
+/* ============================================================ */
+
+@media (max-width: 540px) {
+  /* timeline: flex 좌우 → 세로 스택. min-width:110px 의 날짜 칸 해제. */
+  .block-timeline-item { flex-direction: column; gap: 2px; padding: 10px 0; align-items: stretch; }
+  .block-timeline-date { min-width: 0; white-space: normal; font-size: 10px; }
+  .block-timeline-event { font-size: 11px; }
+  .block-timeline-impact { margin-left: 0; font-size: 11px; }
+
+  /* table 폰트 10px → 11px (모바일 가독성) */
+  .block-evidence-table-grid,
+  .block-matrix-grid,
+  .block-risk-matrix-grid,
+  .block-decision-matrix-grid { font-size: 11px; }
+
+  /* evidence_table / risk_matrix: thead 숨기고 row → 카드, td → 라벨된 행 */
+  .block-evidence-table-grid thead,
+  .block-risk-matrix-grid thead { display: none; }
+
+  .block-evidence-table-grid,
+  .block-evidence-table-grid tbody,
+  .block-risk-matrix-grid,
+  .block-risk-matrix-grid tbody { display: block; }
+
+  .block-evidence-table-grid tr,
+  .block-risk-matrix-grid tr {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .block-evidence-table-grid td,
+  .block-risk-matrix-grid td {
+    display: block;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  /* td[data-label] 가 있으면 라벨 표시 (template 갱신 필요) */
+  .block-evidence-table-grid td[data-label]::before,
+  .block-risk-matrix-grid td[data-label]::before {
+    content: attr(data-label) ":  ";
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  /* matrix 류는 가로 스크롤 유지 (이게 더 읽힘) */
+  .block-matrix, .block-decision-matrix { -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================ */
+/* === PR3 (v3.4.6) — Narrative stage badges + AMC warning      === */
+/* === 5단 DSL 시각 차별화로 단조로움 직접 해소                   === */
+/* ============================================================ */
+
+.section-header { margin-bottom: 16px; }
+.section-stage-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  border: 1px solid currentColor;
+  background: var(--accent);
+}
+.section-stage-badge.stage-fact       { color: var(--blue); }
+.section-stage-badge.stage-mechanism  { color: var(--gold); }
+.section-stage-badge.stage-divergence { color: var(--orange); }
+.section-stage-badge.stage-decision   { color: var(--green); }
+.section-stage-badge.stage-trigger    { color: var(--red); }
+
+/* 섹션 자체에도 좌측 컬러 액센트 — 스크롤하면서 단계 흐름이 한눈에 보이게 */
+.report-block-section.stage-fact       { border-left: 2px solid var(--blue);   padding-left: 12px; }
+.report-block-section.stage-mechanism  { border-left: 2px solid var(--gold);   padding-left: 12px; }
+.report-block-section.stage-divergence { border-left: 2px solid var(--orange); padding-left: 12px; }
+.report-block-section.stage-decision   { border-left: 2px solid var(--green);  padding-left: 12px; }
+.report-block-section.stage-trigger    { border-left: 2px solid var(--red);    padding-left: 12px; }
+
+/* AMC 미달 경고 배너 */
+.report-block-amc-warning {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px dashed var(--orange);
+  border-radius: var(--radius);
+  background: var(--orange-light);
+}
+.amc-warning-badge {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.amc-warning-badge code {
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.amc-warning-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.amc-stage-missing {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--orange);
+  border-radius: 4px;
+  color: var(--orange);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   v8.0.0 — 르포(reportage) 전용 테마 8종 (다크 통일). lens_policy.REPORTAGE_THEMES
+   와 1:1. 르포일 때만 data-theme 으로 적용 — 일반 보고서 5테마와 완전 분기.
+   ═══════════════════════════════════════════════════════════════ */
+/* v8.5.6 — 8 팔레트를 일반 보고서와 르포가 *공유* 한다 (사용자 결정 2026-08-01).
+   선언을 복제하지 않고 선택자만 겹쳐 둔 이유: 복제하면 한쪽만 손보다 색이 갈라진다.
+   가져오는 것은 *색뿐* — 르포의 플랫 지오메트리(radius 0 / shadow none)와 G마켓 Sans
+   디스플레이는 `[data-theme^="reportage_"]` 접두 선택자에 걸려 있어 접두 없는 일반
+   이름엔 적용되지 않는다. 즉 일반 보고서는 이 색을 쓰면서 둥근 모서리 + Newsreader
+   세리프를 그대로 유지한다 (radius/shadow 는 :root 폴백). 장르 구분은 색이 아니라
+   조판·지오메트리·템플릿이 맡는다. */
+[data-theme="reportage_cyprus"],
+[data-theme="cyprus"] {
+  --bg: #004741; --card: #0B5349; --card-hover: #156055; --accent-surface: #0B5349;
+  --border: #1E5C52; --border-light: #156055; --divider: #1E5C52;
+  --text: #F0EDE4; --muted: #9DB5AC;
+  --accent: #E3A93C; --up: #86C0A4; --down: #E89070;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #003A33; --card-deep: #003A33;
+  --fg-1: var(--text); --fg-2: #D8E0D8; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_noturno"],
+[data-theme="noturno"] {
+  --bg: #001621; --card: #06222E; --card-hover: #0A2A38; --accent-surface: #06222E;
+  --border: #1C3A45; --border-light: #0A2A38; --divider: #1C3A45;
+  --text: #EFE3D4; --muted: #8AA0A6;
+  --accent: #FF4103; --up: #8AC0A0; --down: #FF8A5C;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #000E16; --card-deep: #000E16;
+  --fg-1: var(--text); --fg-2: #D8E0DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+/* v8.5.6 — princess / bridal 의 --muted 는 원 팔레트 값이 보조 텍스트 대비
+   AA(4.5:1) 미달이었다(각 3.96 / 4.41). 일반 보고서는 르포보다 muted 사용처가
+   훨씬 많다(사진 크레딧·각주·감시신호 설명·차트 note·fact_grid 라벨) → 같은 색조를
+   유지한 채 여유 0.3 을 두고 끌어올림. 블록 공유이므로 르포 가독성도 함께 개선된다. */
+[data-theme="reportage_bridal"],
+[data-theme="bridal"] {
+  --bg: #741A2F; --card: #86283C; --card-hover: #94324A; --accent-surface: #86283C;
+  --border: #8E3548; --border-light: #94324A; --divider: #8E3548;
+  --text: #FFE2D4; --muted: #CEA39C;
+  --accent: #FFB38F; --up: #D0A88A; --down: #F2998F;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #5E1326; --card-deep: #5E1326;
+  --fg-1: var(--text); --fg-2: #F2D0C4; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_cosmos"],
+[data-theme="cosmos"] {
+  --bg: #002F49; --card: #073A56; --card-hover: #0A4564; --accent-surface: #073A56;
+  --border: #134A63; --border-light: #0A4564; --divider: #134A63;
+  --text: #FEF0D5; --muted: #8BA3B2;
+  --accent: #E8503F; --up: #88B888; --down: #C9837A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #00263B; --card-deep: #00263B;
+  --fg-1: var(--text); --fg-2: #E6D8C0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_laurel"],
+[data-theme="laurel"] {
+  --bg: #0D3A35; --card: #164640; --card-hover: #1E5249; --accent-surface: #164640;
+  --border: #27534A; --border-light: #1E5249; --divider: #27534A;
+  --text: #FBF6F0; --muted: #9CB5AC;
+  --accent: #86C0A4; --up: #86C0A4; --down: #E2937A;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #082E2A; --card-deep: #082E2A;
+  --fg-1: var(--text); --fg-2: #DCE6E0; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_princess"],
+[data-theme="princess"] {
+  --bg: #015AA0; --card: #0A66AC; --card-hover: #1572B8; --accent-surface: #0A66AC;
+  --border: #2A74B6; --border-light: #1572B8; --divider: #2A74B6;
+  --text: #ECECFF; --muted: #C8D7EA;
+  --accent: #FF9457; --up: #88C0B0; --down: #FF8378;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #014A85; --card-deep: #014A85;
+  --fg-1: var(--text); --fg-2: #D8E0F5; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_steel"],
+[data-theme="steel"] {
+  --bg: #282433; --card: #332E41; --card-hover: #3D374D; --accent-surface: #332E41;
+  --border: #453F56; --border-light: #3D374D; --divider: #453F56;
+  --text: #F3E0D9; --muted: #B0A8BE;
+  --accent: #E2B25C; --up: #A0C090; --down: #E89C94;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #1E1B27; --card-deep: #1E1B27;
+  --fg-1: var(--text); --fg-2: #E0D4DC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+[data-theme="reportage_navy"],
+[data-theme="navy"] {
+  --bg: #0F0E49; --card: #1A1860; --card-hover: #24226E; --accent-surface: #1A1860;
+  --border: #2D2B79; --border-light: #24226E; --divider: #2D2B79;
+  --text: #ECE6F5; --muted: #B0AED4;
+  --accent: #D9ABE8; --up: #A0C0B0; --down: #F08AB0;
+  --text-primary: var(--text); --text-secondary: var(--text);
+  --text-muted: var(--muted); --text-faded: var(--muted);
+  --gold: var(--accent); --gold-light: var(--accent);
+  --red: var(--down); --red-light: var(--card);
+  --orange: var(--accent); --orange-light: var(--card);
+  --green: var(--up); --green-light: var(--card);
+  --blue: var(--accent); --blue-light: var(--card);
+  --bg-1: var(--bg); --bg-2: var(--card); --bg-3: #0A0934; --card-deep: #0A0934;
+  --fg-1: var(--text); --fg-2: #DCD6EC; --fg-3: var(--muted);
+  --border-soft: rgba(255,255,255,0.09);
+}
+
+/* 르포 전용 폰트 — G마켓 Sans(디스플레이) + Noto Sans(본문). 일반 보고서는 영향 없음. */
+@font-face{font-family:'GmarketSans';font-weight:700;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');font-display:swap}
+@font-face{font-family:'GmarketSans';font-weight:500;font-style:normal;src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-display:swap}
+
+/* 르포: 본문 Noto Sans, 헤드라인/키커/소제목 G마켓 Sans */
+[data-theme^="reportage_"],
+[data-theme^="reportage_"] .freeform-prose,
+[data-theme^="reportage_"] .freeform-deck,
+[data-theme^="reportage_"] .freeform-lede,
+[data-theme^="reportage_"] body{font-family:'Noto Sans KR','IBM Plex Sans KR',sans-serif !important}
+[data-theme^="reportage_"] .freeform-headline,
+[data-theme^="reportage_"] .freeform-heading,
+[data-theme^="reportage_"] .freeform-kicker,
+[data-theme^="reportage_"] .freeform-eyebrow,
+[data-theme^="reportage_"] h1,
+[data-theme^="reportage_"] h2,
+[data-theme^="reportage_"] h3{font-family:'GmarketSans','Noto Sans KR',sans-serif !important;letter-spacing:-0.01em}
+
+/* 르포: 플랫 미니멀 — 둥근 모서리/그림자 제거 */
+[data-theme^="reportage_"] .freeform-figure,
+[data-theme^="reportage_"] .chart-card,
+[data-theme^="reportage_"] .freeform-fact-grid > *,
+[data-theme^="reportage_"] .freeform-pullquote,
+[data-theme^="reportage_"] .freeform-analogy,
+[data-theme^="reportage_"] .freeform-origin,
+[data-theme^="reportage_"] figure,
+[data-theme^="reportage_"] img,
+[data-theme^="reportage_"] [class*="card"]{border-radius:0 !important;box-shadow:none !important}
+
+/* 르포 [르포] 배지 (헤더 eyebrow). 본문 텍스트 아님 — UI 라벨. */
+.reportage-badge{display:inline-block;font-family:'GmarketSans',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.12em;padding:3px 9px;border:1px solid var(--accent);color:var(--accent);margin-right:10px;vertical-align:middle}
+
+
+/* v8.0.0 — 르포 테마 지도(globe) 색 변수. 없으면 :root(라이트)를 상속해 크림색으로 나옴. */
+[data-theme="reportage_cyprus"],[data-theme="cyprus"]{--map-water:#003A33;--map-land:#156055;--map-boundary:#1E5C52}
+[data-theme="reportage_noturno"],[data-theme="noturno"]{--map-water:#000E16;--map-land:#0A2A38;--map-boundary:#1C3A45}
+[data-theme="reportage_bridal"],[data-theme="bridal"]{--map-water:#5E1326;--map-land:#94324A;--map-boundary:#8E3548}
+[data-theme="reportage_cosmos"],[data-theme="cosmos"]{--map-water:#00263B;--map-land:#0A4564;--map-boundary:#134A63}
+[data-theme="reportage_laurel"],[data-theme="laurel"]{--map-water:#082E2A;--map-land:#1E5249;--map-boundary:#27534A}
+[data-theme="reportage_princess"],[data-theme="princess"]{--map-water:#014A85;--map-land:#1572B8;--map-boundary:#2A74B6}
+[data-theme="reportage_steel"],[data-theme="steel"]{--map-water:#1E1B27;--map-land:#3D374D;--map-boundary:#453F56}
+[data-theme="reportage_navy"],[data-theme="navy"]{--map-water:#0A0934;--map-land:#24226E;--map-boundary:#2D2B79}
+</style>
+<style>
+  /* ── 르포 담백 레이아웃 (theme color 변수는 report.css [data-theme=reportage_*] 에서) ── */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+       -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+  .rep-wrap{max-width:820px;margin:0 auto;padding:0 26px 90px}
+  /* 상단 바 — 버전만 */
+  /* v8.5.2 — 좌: [르포] 배지 / 우: 버전. 기존엔 flex-end 로 버전만 있었다.
+     CLAUDE.md v8.0.0 설계('본문·제목에 르포 단어 금지, UI 헤더 배지로만')가
+     전문 헤더에는 실제로 구현돼 있지 않던 drift 해소. */
+  .rep-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);
+           padding:16px 0 12px;font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-badge{font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--accent);
+             border:1px solid var(--accent);border-radius:2px;padding:2px 7px}
+  /* 제목 / 작성일시 */
+  .rep-headline{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:44px;
+                line-height:1.12;letter-spacing:-.015em;color:var(--text);margin:34px 0 12px}
+  .rep-meta{font:500 12px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted);margin:0 0 8px}
+  .rep-rule{height:1px;background:var(--border);margin:30px 0}
+  /* 사진 */
+  .rep-fig{margin:26px 0}
+  .rep-fig img{width:100%;height:auto;display:block;border-radius:0}
+  .rep-fig figcaption{font:400 12.5px/1.5 'Noto Sans KR',sans-serif;color:var(--muted);margin-top:8px}
+  .rep-fig .credit{margin-left:6px;opacity:.85}
+  .rep-fig .credit a{color:inherit}
+  /* 섹션 — 번호 + 소제목 + 본문 */
+  .rep-section{padding:6px 0 2px}
+  .rep-num{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:13px;color:var(--accent);
+           letter-spacing:.08em;display:block;margin:0 0 6px}
+  .rep-h2{font-family:'GmarketSans','Noto Sans KR',sans-serif;font-weight:700;font-size:25px;
+          line-height:1.25;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
+  /* v8.2.15 — 본문도 차트/지도/용어풀이와 동일하게 .rep-wrap 콘텐츠 폭을 꽉 채운다.
+     이전엔 본문만 max-width:66ch 로 좁아 데스크탑에서 우측 끝단이 시각물보다 안쪽에서
+     줄바뀜 → 우측 끝 정렬 어긋남(모바일은 뷰포트가 더 좁아 무증상). 한 열로 통일. */
+  .rep-prose{font:400 16px/1.9 'Noto Sans KR',sans-serif;color:var(--text);opacity:.94;
+             text-align:justify;text-justify:auto;text-align-last:left;
+             word-break:keep-all;overflow-wrap:break-word}
+  /* 양끝 정렬 — 어절 단위(keep-all)로 간격 미세조정만, 마지막 줄은 늘리지 않음(왼쪽 정렬) */
+  /* v8.5.8 — 첫 줄 들여쓰기(사용자 요청). 문단 분할 자체는 v8.5.7 에서 공용 필터
+     (_as_paragraphs)로 이미 적용됐다 — 그 전까지 이 `p` 규칙은 <p> 가 안 만들어져
+     죽어 있었다. v8.5.9 부터 첫 문단도 들여쓴다(사용자 결정 — 문단마다 일관되게). 르포는 드롭캡을
+     렌더하지 않으므로 예외가 없다. */
+  .rep-prose p{margin:0 0 1.15em;text-indent:1em;text-align:justify;text-align-last:left}
+  .rep-prose p:last-child{margin-bottom:0}
+  /* 용어풀이 (유일하게 남기는 부가요소) */
+  .rep-fn{margin:18px 0 4px;padding:14px 16px;border-left:2px solid var(--accent);background:rgba(255,255,255,.03)}
+  .rep-fn-label{font:700 11px 'Noto Sans KR',sans-serif;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
+  .rep-fn-item{font:400 13px/1.6 'Noto Sans KR',sans-serif;color:var(--text);opacity:.9;margin-bottom:6px}
+  .rep-fn-term{font-weight:700;margin-right:6px}
+  /* 차트/지도 카드 — 플랫(report.css reportage override) */
+  .rep-figwrap{margin:24px 0}
+  /* 결론 */
+  .rep-conc{margin-top:30px;padding-top:22px;border-top:1px solid var(--border)}
+  /* 푸터 — 최소 */
+  .rep-foot{max-width:820px;margin:0 auto;padding:26px;border-top:1px solid var(--border);
+            font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.4px;color:var(--muted)}
+  .rep-foot a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="rep-wrap">
+
+  <div class="rep-top"><span class="rep-badge">르포</span><span>v8.5.9 · Rev 0.0</span></div>
+
+  <h1 class="rep-headline">모스크바에 내린 수송기 한 대, 그 안에서 무엇이 오갔나</h1>
+  <div class="rep-meta">2026-08-29 11:54</div>
+  
+  
+
+  
+  
+
+  <div class="rep-rule"></div>
+
+  
+  
+  <div class="rep-figwrap">
+    <div class="map-card">
+      <div class="map-controls">
+        <button type="button" data-map-zoom="in" aria-label="확대">＋</button>
+        <button type="button" data-map-zoom="out" aria-label="축소">−</button>
+        <button type="button" data-map-zoom="reset" aria-label="원위치">⟲</button>
+      </div>
+      <div id="freeform-map" class="map-stage" data-theme="reportage_steel"></div>
+      <script type="application/json" id="map-payload">{"arcs": [{"from_id": "andrews", "kind": "flow", "label": "8\uc6d4 23\uc77c", "label_t": 0.55, "to_id": "riga", "weight": 2}, {"from_id": "riga", "kind": "flow", "label": "8\uc6d4 25\uc77c \ub3c4\ucc29", "label_t": 0.5, "to_id": "moscow", "weight": 3}, {"from_id": "moscow", "kind": "tension", "label": "7\uc6d4 29\uc77c \ubbf8\uc0ac\uc77c", "label_t": 0.6, "to_id": "lublin", "weight": 2}, {"from_id": "moscow", "kind": "tension", "label": "8\uc6d4 \ub4dc\ub860", "label_t": 0.65, "to_id": "tulcea", "weight": 2}, {"from_id": "moscow", "kind": "tension", "label": "\uc804\uc120", "label_t": 0.45, "to_id": "kyiv", "weight": 3}, {"from_id": "moscow", "kind": "flow", "label": "\uc774\ub780 \ub4b7\ubc1b\uce68", "label_t": 0.6, "to_id": "hormuz", "weight": 2}], "center": [8, 45], "legend": [{"kind": "flow", "label": "\ubc29\ubb38 \ub3d9\uc120"}, {"kind": "tension", "label": "\uae34\uc7a5\uacfc \uce68\ubc94"}], "markers": [{"id": "andrews", "kind": "military", "label_side": "left", "lat": 38.81, "lng": -76.87, "name": "\uc564\ub4dc\ub8e8\uc2a4 \ud569\ub3d9\uae30\uc9c0", "value": "8\uc6d4 23\uc77c \ucd9c\ubc1c"}, {"id": "riga", "label_side": "top", "lat": 56.95, "lng": 24.11, "name": "\ub9ac\uac00", "value": "\uacbd\uc720\uc9c0"}, {"highlight": true, "id": "moscow", "label_side": "right", "lat": 55.75, "lng": 37.62, "name": "\ubaa8\uc2a4\ud06c\ubc14", "value": "8\uc6d4 25\uc77c \ud68c\ub2f4"}, {"id": "lublin", "label_side": "left", "lat": 51.25, "lng": 22.57, "name": "\ub8e8\ube14\ub9b0", "value": "\uc57d 50km \uc9c0\uc810 \ubbf8\uc0ac\uc77c \ub099\ud558"}, {"id": "leipzig", "label_side": "left", "lat": 51.34, "lng": 12.37, "name": "\ub77c\uc774\ud504\uce58\ud788", "value": "\ub098\ud1a0 \uc218\uc1a1 \uac70\uc810 \ub4dc\ub860 \ud3d0\uc1c4"}, {"id": "tulcea", "label_side": "bottom", "lat": 45.18, "lng": 28.8, "name": "\ud234\uccb4\uc544", "value": "\ub4dc\ub860 1\ub300 \uc601\uacf5 \uc9c4\uc785"}, {"id": "kyiv", "label_side": "bottom", "lat": 50.45, "lng": 30.52, "name": "\ud0a4\uc774\uc6b0", "value": "\uc0ac\uc804 \ud1b5\ubcf4 \ub300\uc0c1"}, {"id": "hormuz", "kind": "chokepoint", "label_side": "right", "lat": 26.6, "lng": 56.4, "name": "\ud638\ub974\ubb34\uc988 \ud574\ud611", "value": "\uc138\uacc4 \uc11d\uc720 \uc218\uc1a1 \uc57d 20%"}], "projection": "globe", "regions": [{"label": "\ubbf8\uad6d", "name": "United States of America", "role": "subject"}, {"label": "\ub7ec\uc2dc\uc544", "name": "Russia", "role": "rival"}, {"label": "\uc6b0\ud06c\ub77c\uc774\ub098", "name": "Ukraine", "role": "contested"}, {"label": "\uc774\ub780", "name": "Iran", "role": "rival"}], "sea_labels": [{"lat": 57.8, "lng": 19.5, "name": "\ubc1c\ud2b8\ud574"}, {"lat": 43.2, "lng": 34.0, "name": "\ud751\ud574"}], "zoom": 1.1}</script>
+      <div class="map-hint">드래그·휠로 지구본 회전·확대</div>
+    </div>
+  </div>
+  
+
+  
+  
+  
+  <section class="rep-section">
+    <span class="rep-num">01</span>
+    <h2 class="rep-h2">활주로를 떠난 한 대</h2>
+    <div class="rep-prose"><p>8월 23일, 워싱턴 인근 앤드루스 합동기지에서 미 공군 C-17A 수송기 한 대가 이륙한다. 승객도 목적지도 공개되지 않는다. 이 비행의 동선은 나중에 공개 항공추적 자료를 통해 드러난다.</p><p>기체는 라트비아 리가에 한 번 내렸다가 다시 뜬다. 그리고 8월 25일, 모스크바 공항 계류장에 미 공군 마크를 단 수송기가 서 있는 장면이 포착된다. 항공 추적 자료를 들여다보는 사람들이 먼저 알아본다. 미국도 러시아도 그때까지 아무 발표를 하지 않은 상태였다.</p><p>기체에 타고 있던 사람은 미국 중앙정보국 국장 존 랫클리프다. 그는 그날 러시아 대외정보국 국장 세르게이 나리시킨과 연방보안국 국장 알렉산드르 보르트니코프를 만나고 오후에 같은 길로 떠난다. 체류 시간은 하루를 넘기지 않는다. 전면전이 시작된 2022년 이후 CIA 수장이 러시아 땅을 밟은 것은 이번이 처음이다.</p><p>떠난 뒤에도 양쪽은 의제를 공식으로 밝히지 않는다. 지금 우리가 아는 내용은 전부 회담장 밖으로 새어 나온 이야기다. 무엇이 오갔는지를 두고 워싱턴과 모스크바가 서로 다른 말을 하고 있고, 그 어긋남 자체가 이번 방문의 무게를 알려 준다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">C-17A</span>미 공군의 대형 화물 수송기다. 물자와 병력을 옮기는 기체라서, 고위 인사가 눈에 덜 띄게 움직일 때 오히려 유용한 수단이 되기도 한다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">02</span>
+    <h2 class="rep-h2">세 개의 문제가 한 점에서 만난다</h2>
+    <div class="rep-prose"><p>이 비행이 왜 하필 지금 떠났는지는 8월의 달력을 펼쳐 보면 윤곽이 잡힌다. 서로 다른 세 개의 문제가 같은 시기에 미국 쪽 책상 위에 올라와 있다. 하나씩 떼어 놓으면 각각 오래된 사안이지만, 겹쳐 놓으면 한 사람이 한 번에 들고 갈 만한 묶음이 된다.</p><p>첫째는 우크라이나 종전 협상이다. 영토를 어디까지 되돌릴지, 전후 안전을 누가 어떻게 보장할지에서 대화가 멈춰 있다. 둘째는 호르무즈 해협이다. 2026년 2월 말 이란 공습 이후 해협이 막혔고, 러시아와 중국이 유엔 안전보장이사회에서 재개방 결의를 거부권으로 막고 있다.</p><p>셋째는 나토 동쪽 국경이다. 폴란드와 루마니아 영공 침범이 이어지고 유럽 전역에서 파괴공작과 사이버 공격이 늘고 있다.</p><p>지도가 보여주듯 세 문제는 각각 다른 무대에 놓여 있다. 우크라이나 전선, 발트해와 흑해를 낀 나토 동쪽 측면, 그리고 페르시아만 입구다. 무대는 떨어져 있지만 한쪽에서 양보를 얻으려면 다른 쪽 카드를 내밀어야 한다는 점에서 하나로 묶인다.</p><p>정보 수장의 방문은 이 묶음을 다루기에 편리한 형식이다. 정상 간 대화는 결과를 내놓아야 하지만, 정보기관 사이의 만남은 아무것도 발표하지 않아도 된다. 실제로 이번에도 양쪽 모두 의제를 공표하지 않았고, 그 침묵이 형식의 목적에 부합한다고 읽을 여지가 크다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">유엔 안전보장이사회 거부권</span>미국, 러시아, 중국, 영국, 프랑스 다섯 나라가 가진 권한이다. 한 나라만 반대해도 결의안이 통과되지 않는다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">03</span>
+    <h2 class="rep-h2">책상 양편에 앉은 사람들</h2>
+    <div class="rep-prose"><p>아래 관계도는 이번 만남을 둘러싼 사람과 기관을 한 화면에 모은 것이다. 가운데에 랫클리프가 서고, 왼쪽에 그를 보낸 미국 쪽이, 오른쪽에 그를 맞은 러시아 쪽이 놓인다. 선의 종류가 관계의 성격을 나타낸다.</p><p>러시아 쪽에서 나온 두 사람은 성격이 다르다. 나리시킨이 이끄는 대외정보국은 국외 정보를 다루고, 오랫동안 미국 정보기관과 접촉해 온 창구다. 랫클리프는 2025년 1월 취임 이후 나리시킨과 전화로 대화를 이어 왔다. 이번에 새로 마주 앉은 상대는 오히려 보르트니코프 쪽이다.</p><p>보르트니코프가 이끄는 연방보안국은 국내 방첩과 치안을 담당하는 기관이다. 국외 협상보다 내부 통제에 가까운 조직이 이 자리에 나왔다는 사실은 그 자체로 읽을거리가 된다. 크렘린 안에서 실제 결정에 가까운 인물을 앉혔다는 해석과 부합하지만, 단순한 의전상 배석이었을 가능성도 남아 있다.</p><p>한 가지 가설을 붙이자면 이렇다. 대외정보국만 나왔다면 이 만남은 정보 교환에 그쳤겠지만, 방첩기관 수장이 함께 앉았다는 것은 전달된 내용이 러시아 내부의 판단 구조까지 닿기를 미국이 원했다는 신호일 수 있다. 증거는 아직 참석자 명단뿐이므로 여기까지가 추론의 한계다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">대외정보국(SVR)</span>러시아가 국외에서 벌이는 정보 활동을 담당하는 기관이다. 냉전기부터 미국 CIA와 직접 연락을 주고받는 통로 노릇을 해 왔다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">연방보안국(FSB)</span>러시아 국내의 방첩과 치안을 맡는 기관이다. 국외 협상보다 내부 감시와 통제에 무게가 실린 조직이다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">모스크바 회담을 둘러싼 사람들</div>
+          <div class="chart-card-subtitle">가운데는 전달자, 좌우는 보낸 쪽과 맞은 쪽</div>
+          <div class="chart-card-stage chart-stage-stakeholder_map" data-chart-type="stakeholder_map" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 워싱턴포스트, CNN, CBS, 모스크바타임스 보도 종합 / 2026년 8월</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"edges": [{"label": "\uc9c0\uc2dc", "source": "whitehouse", "target": "ratcliffe", "type": "\uc601\ud5a5"}, {"label": "\ucc44\ub110", "source": "cia", "target": "ratcliffe", "type": "\uc5f0\uad00"}, {"label": "\ucd95\uc18c", "source": "trump", "target": "ratcliffe", "type": "\uc601\ud5a5"}, {"label": "\ud68c\ub2f4", "source": "ratcliffe", "target": "naryshkin", "type": "\uc5f0\uad00"}, {"label": "\ud68c\ub2f4", "source": "ratcliffe", "target": "bortnikov", "type": "\uc5f0\uad00"}, {"label": "\ud1b5\ubcf4", "source": "ratcliffe", "target": "zelensky", "type": "\uc5f0\uad00"}, {"label": "\ubcf4\uace0", "source": "naryshkin", "target": "putin", "type": "\uc5f0\uad00"}, {"label": "\ubcf4\uace0", "source": "bortnikov", "target": "putin", "type": "\uc5f0\uad00"}, {"label": "\uc2dc\ud5d8", "source": "putin", "target": "nato", "type": "\ub300\ub9bd"}, {"label": "\uc9c0\uc6d0", "source": "putin", "target": "iran", "type": "\ub3d9\ub9f9"}, {"label": "\ubd09\uc1c4", "source": "iran", "target": "whitehouse", "type": "\ub300\ub9bd"}, {"label": "\uc555\ubc15", "source": "whitehouse", "target": "putin", "type": "\uc601\ud5a5"}], "nodes": [{"col": "left", "flag": "US", "id": "trump", "kind": "person", "label": "\ub3c4\ub110\ub4dc \ud2b8\ub7fc\ud504", "role": "\ubc29\ubb38 \uc131\uaca9 \ucd95\uc18c"}, {"col": "left", "id": "whitehouse", "label": "\ubbf8\uad6d \ud589\uc815\ubd80", "logo": "whitehouse.gov", "role": "\ud611\uc0c1 \uc7ac\uac1c \uc555\ubc15"}, {"col": "left", "id": "cia", "label": "CIA", "logo": "cia.gov", "role": "\ub4b7\ubb38 \ud1b5\ub85c \uad00\ub9ac"}, {"accent": true, "col": "center", "flag": "US", "id": "ratcliffe", "kind": "person", "label": "\uc874 \ub7ab\ud074\ub9ac\ud504", "role": "\uba54\uc2dc\uc9c0 \uc804\ub2ec\uc790"}, {"col": "center", "id": "nato", "label": "\ub098\ud1a0", "logo": "nato.int", "role": "\uacbd\uace0\uac00 \uaca8\ub208 \ub300\uc0c1"}, {"col": "center", "flag": "UA", "id": "zelensky", "kind": "person", "label": "\ubcfc\ub85c\ub514\ubbf8\ub974 \uc824\ub80c\uc2a4\ud0a4", "role": "\uc0ac\uc804 \ud1b5\ubcf4 \ubc1b\uc74c"}, {"col": "right", "flag": "RU", "id": "naryshkin", "kind": "person", "label": "\uc138\ub974\uac8c\uc774 \ub098\ub9ac\uc2dc\ud0a8", "role": "\ub300\uc678\uc815\ubcf4\uad6d \uad6d\uc7a5"}, {"col": "right", "flag": "RU", "id": "bortnikov", "kind": "person", "label": "\ubcf4\ub974\ud2b8\ub2c8\ucf54\ud504", "role": "\uc5f0\ubc29\ubcf4\uc548\uad6d \uad6d\uc7a5"}, {"col": "right", "flag": "RU", "id": "putin", "kind": "person", "label": "\ube14\ub77c\ub514\ubbf8\ub974 \ud478\ud2f4", "role": "\uc774\ubc88\uc5d4 \ub9cc\ub098\uc9c0 \uc54a\uc74c"}, {"col": "right", "flag": "IR", "id": "iran", "label": "\uc774\ub780", "role": "\ud574\ud611 \ubd09\uc1c4 \uc720\uc9c0"}]}, "source": "\uc6cc\uc2f1\ud134\ud3ec\uc2a4\ud2b8, CNN, CBS, \ubaa8\uc2a4\ud06c\ubc14\ud0c0\uc784\uc2a4 \ubcf4\ub3c4 \uc885\ud569 / 2026\ub144 8\uc6d4", "subtitle": "\uac00\uc6b4\ub370\ub294 \uc804\ub2ec\uc790, \uc88c\uc6b0\ub294 \ubcf4\ub0b8 \ucabd\uacfc \ub9de\uc740 \ucabd", "takeaway": "\ud55c \uc0ac\ub78c\uc774 \uc138 \uac08\ub798 \uc758\uc81c\ub97c \ud55c \ubc88\uc5d0 \ub4e4\uace0 \uac14\ub2e4.", "title": "\ubaa8\uc2a4\ud06c\ubc14 \ud68c\ub2f4\uc744 \ub458\ub7ec\uc2fc \uc0ac\ub78c\ub4e4", "type": "stakeholder_map"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">04</span>
+    <h2 class="rep-h2">그 방에 없던 이름들</h2>
+    <div class="rep-prose"><p>회담에서 누가 빠졌는지는 누가 나왔는지만큼 중요하다. 푸틴 대통령은 랫클리프를 만나지 않는다. 러시아 대통령이 미국 정보 수장을 접견하면 그 자체가 정상급 대화의 재개로 읽히기 때문에, 그 문턱을 넘지 않은 것은 계산된 선택으로 보인다.</p><p>키이우는 사전에 통보를 받는다. 젤렌스키 대통령은 미국이 회담 내용을 알려 왔다고 밝혔다. 여기에 덧붙여진 세부가 흥미롭다. 미국은 우크라이나에 월요일부터 수요일까지 모스크바를 비롯한 북부 도시 타격을 잠시 멈춰 달라고 요청한 것으로 전해진다.</p><p>이 요청은 회담 자체보다 더 많은 것을 말한다. 미국 정보 수장이 모스크바에 머무는 동안 그 도시에 무인기가 떨어지지 않도록 하는 조치이고, 동시에 우크라이나가 그 정도 요청을 받아들일 수 있는 관계라는 뜻이기도 하다. 신변 안전이라는 실무적 이유로 충분히 설명되지만, 회담 분위기를 미리 관리하려 했다는 해석과도 어긋나지 않는다.</p><p>유럽은 명단에 잘 보이지 않는다. 경고의 대상이 나토라면 그 경고를 전달받아야 할 당사자들이 어느 정도까지 공유를 받았는지는 공개된 자료로 확인되지 않는다. 확인되지 않은 사항을 단정하지는 않겠지만, 나토 동쪽 국경이 의제였다는 보도가 사실이라면 유럽은 언론을 통해 뒤늦게 알게 된 셈이 된다.</p></div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">05</span>
+    <h2 class="rep-h2">미국이 들고 간 계산서</h2>
+    <div class="rep-prose"><p>뉴욕타임스는 8월 28일, 랫클리프가 보르트니코프에게 러시아의 전황과 경제가 앞으로 더 나빠질 것이라는 미국 쪽 평가를 전달했다고 보도한다. 위협이 아니라 진단서에 가까운 방식이다. 상대의 계산을 바꾸려면 상대가 스스로 셈을 다시 하게 만드는 편이 빠르다는 접근이다.</p><p>그 진단서의 첫 줄이 아래 그림에 있다. 랫클리프가 취임한 2025년 1월 이후 18개월 남짓 동안 러시아가 추가로 확보한 우크라이나 영토는 약 1퍼센트다. 같은 기간의 인명 손실 규모를 함께 놓으면 이 숫자는 다르게 읽힌다. 미국 정보당국이 러시아의 전쟁 수행이 수지에 맞지 않는다고 보는 근거가 여기에 있다.</p><p>숫자 자체는 새로 나온 것이 아니다. 새로운 것은 그 숫자를 미국 정보 수장이 러시아 방첩기관 수장 앞에서 직접 읽었다는 사실이다. 정보 판단은 보통 상대에게 숨기는 자산이고, 이를 꺼내 보인다는 건 판단을 무기가 아니라 설득 재료로 쓰겠다는 뜻으로 읽힐 여지가 크다.</p><p>후속 보도를 겹치면 그림이 조금 더 선명해진다. 우크라인스카 프라우다는 같은 날 뉴욕타임스를 인용해, 랫클리프가 구체적인 보복 조치를 위협하지는 않았다고 전한다. 경고와 설득 사이 어디쯤에 있었다는 뜻이고, 이 어긋남은 뒤에서 다시 다룬다.</p></div>
+
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">18개월, 전선이 움직인 폭</div>
+          <div class="chart-card-subtitle">지도 위 변화는 100분의 1, 그 대가는 그렇지 않았다</div>
+          <div class="chart-card-stage chart-stage-dot_matrix" data-chart-type="dot_matrix" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 미국 정보당국 판단, 뉴욕타임스 보도 / 2026-08</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"accent": true, "label": "\ucd94\uac00\ub85c \uc810\ub839\ud55c \ubaab", "value": 1}, {"label": "\uc6c0\uc9c1\uc774\uc9c0 \uc54a\uc740 \ub098\uba38\uc9c0", "value": 99}], "source": "\ubbf8\uad6d \uc815\ubcf4\ub2f9\uad6d \ud310\ub2e8, \ub274\uc695\ud0c0\uc784\uc2a4 \ubcf4\ub3c4 / 2026-08", "subtitle": "\uc9c0\ub3c4 \uc704 \ubcc0\ud654\ub294 100\ubd84\uc758 1, \uadf8 \ub300\uac00\ub294 \uadf8\ub807\uc9c0 \uc54a\uc558\ub2e4", "takeaway": "\ubbf8\uad6d\uc774 \ub7ec\uc2dc\uc544\uc5d0 \ub0b4\ubbfc \uacc4\uc0b0\uc11c\uc758 \uccab \uc904\uc774\ub2e4.", "title": "18\uac1c\uc6d4, \uc804\uc120\uc774 \uc6c0\uc9c1\uc778 \ud3ed", "type": "dot_matrix", "unit_line": "\ub2e8\uc704: \uc6b0\ud06c\ub77c\uc774\ub098 \uc601\ud1a0 100\uce78 \uae30\uc900 / 2025\ub144 1\uc6d4 \uc774\ud6c4"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">06</span>
+    <h2 class="rep-h2">러시아가 이 문을 열어 두는 이유</h2>
+    <div class="rep-prose"><p>정보 수장 사이의 직접 접촉은 냉전기부터 이어진 오래된 형식이다. 외교가 막히고 정상이 서로 전화를 받지 않을 때, 이 통로만은 열려 있는 경우가 많았다. 양쪽 다 발표할 의무가 없고, 실패해도 공식 실패로 기록되지 않기 때문이다.</p><p>8월 27일, 나리시킨은 회담 사실을 확인하면서 특별할 것 없는 통상적인 실무 형식이었다고 말한다. 같은 날 크렘린 대변인 페스코프는 겁주는 이야기들은 사실과 무관하다고 일축한다. 두 발언은 모두 사안의 무게를 낮추는 방향이다.</p><p>이 축소가 곧 부인은 아니다. 러시아는 회담이 있었다는 사실은 인정하면서 내용의 심각성만 부정한다. 이런 구도는 통로를 계속 열어 두려는 쪽이 흔히 취하는 태도와 부합한다. 대단한 일이 아니었다고 말해 두면 다음 회담을 여는 데 정치적 비용이 들지 않는다.</p><p>무리한 추측을 보태자면, 러시아 입장에서 이번 만남의 실익은 전달받은 경고가 아니라 만남 자체에 있었을 수 있다. 고립된 상태에서 미국 정보 수장을 모스크바로 부른 장면은 대내적으로 쓸모가 있다. 다만 이를 뒷받침하는 것은 발언의 어조와 공개 방식뿐이므로, 여기까지가 정황에서 나올 수 있는 최대치다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">뒷문 통로</span>공식 외교 경로가 막혔을 때 쓰는 비공개 연락선을 말한다. 정보기관 사이의 접촉이 대표적이며, 결과를 발표하지 않아도 되는 점이 특징이다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">07</span>
+    <h2 class="rep-h2">나토를 친다는 이야기의 실체</h2>
+    <div class="rep-prose"><p>이번 방문을 두고 가장 많이 도는 이야기가 러시아의 나토 공격 가능성이다. CNN과 CBS는 랫클리프가 나토 회원국을 공격하거나 도발하지 말라는 경고를 전달했다고 보도한다. 배경에는 8월 7일 CNN이 전한 미국 정보당국 평가가 있다. 푸틴이 나토의 결속을 시험하려 제한적인 공격을 시도할 수 있고, 그 시점은 올가을부터 2029년 사이라는 것이다.</p><p>같은 판단이 유럽에서도 나온다. 독일 외무장관 바데풀은 러시아가 2029년까지 나토와 싸울 선택지를 만들고 있다고 별도로 언급했다. 두 평가는 출처가 다른데 시간대가 겹친다. 겹친다는 사실이 이 판단을 한 기관의 특이한 견해로 보기 어렵게 만든다.</p><p>아래 표는 그 판단을 떠받치는 실제 사건들이다. 7월 29일 러시아제로 추정되는 순항미사일이 폴란드 루블린에서 약 50킬로미터 떨어진 곳에 떨어졌다. 8월 12일과 13일 밤에는 드론 5대가 루마니아 영공 근처에서 포착됐고 그중 1대가 툴체아주 영공에 잠시 들어왔다. 루마니아는 러시아 타격의 나토 영토 유출이 기하급수적으로 늘었다고 밝혔다.</p><p>영국을 겨냥한 이야기는 여기서 갈라 볼 필요가 있다. 확인된 사실은 두 가지다. 4월 영국 국방장관 힐리가 러시아 잠수함이 영국 인근 해저 에너지관과 데이터케이블 근처에서 활동했다고 공개했고, 7월 영국은 러시아 군정보국 의용군단을 국가안보 위협으로 지정했다. 영국을 공격하려는 계획이 확인됐다는 자료는 공개된 범위에 없다.</p><p>한 가지 가설은 이렇다. 러시아가 노리는 것이 전면적인 무력 충돌이 아니라 나토의 대응 문턱을 재는 일이라면, 지금까지의 사건들은 실패가 아니라 성공적인 측정이었을 수 있다. 2025년 9월 폴란드 사례 이후 나토 조약 4조는 한 번도 발동되지 않았다. 순항미사일이 떨어지고 나토 수송 거점이 드론으로 폐쇄돼도 공식 협의 절차가 열리지 않았다는 사실은, 문턱이 어디에 있는지를 상대에게 알려 주는 정보이기도 하다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">나토 조약 4조</span>회원국이 안보 위협을 느낄 때 동맹 전체에 공식 협의를 요청하는 조항이다. 무력 대응을 규정한 5조와 달리 논의를 여는 절차에 가깝다.</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">하이브리드 공격</span>군대를 직접 보내지 않고 사이버 공격이나 파괴공작처럼 전쟁과 평시의 경계에 있는 수단으로 상대를 흔드는 방식이다.</div>
+      
+    </div>
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">08</span>
+    <h2 class="rep-h2">여덟 달을 한 장에 펼치면</h2>
+    <div class="rep-prose"><p>개별 사건을 시간 위에 늘어놓으면 다른 것이 보인다. 아래 그림은 2026년의 주요 구간을 겹쳐 놓은 것이다. 점이 아니라 폭으로 봐야 하는 사안들이다.</p><p>가장 눈에 띄는 막대는 호르무즈 해협 봉쇄다. 2월 28일 시작해 지금까지 이어지니 여섯 달째다. 그 위로 미국 정보당국이 본 나토 시험 시간대가 얹힌다. 올가을에 시작해 2029년까지 이어지는 이 구간은 다른 어떤 막대보다 길고, 그래서 협상 테이블에 앉는 쪽의 시간 계산을 바꾼다.</p><p>랫클리프가 취임한 뒤 전선이 거의 움직이지 않은 18개월 구간도 함께 있다. 이 막대와 봉쇄 막대가 겹치는 지점이 지금이다. 러시아 입장에서는 전선에서 얻는 것이 거의 없는 상태로, 중동 사태가 밀어 올린 유가에 기대는 구간이기도 하다.</p><p>마지막 막대는 미 에너지정보청이 내다본 중동 생산 정상화 시점이다. 2027년 초로 잡혀 있다. 이 전망이 맞다면 봉쇄로 얻는 이익은 시한이 있는 자산이 되고, 시한이 다가올수록 협상의 유인은 커진다. 미국이 하필 지금 사람을 보낸 이유를 여기서 찾는 해석도 가능하다.</p></div>
+
+    
+
+    
+    
+      
+      
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">겹쳐 놓고 봐야 하는 구간들</div>
+          <div class="chart-card-subtitle">점으로 보면 사건, 폭으로 보면 협상의 시간표</div>
+          <div class="chart-card-stage chart-stage-gantt" data-chart-type="gantt" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> CNN, 영국 하원도서관, 미 에너지정보청 자료 종합</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": [{"end": "2026-08-29", "label": "\ud638\ub974\ubb34\uc988 \ud574\ud611 \ubd09\uc1c4", "note": "\ubc1c\ud589\uc77c \uae30\uc900 \uc9c4\ud589 \uc911", "start": "2026-02-28"}, {"end": "2026-08-25", "label": "\uc804\uc120\uc774 \uba48\ucd98 18\uac1c\uc6d4", "note": "2025\ub144 1\uc6d4 \ucde8\uc784 \uc774\ud6c4 \uc57d 18\uac1c\uc6d4", "start": "2025-01-20"}, {"end": "2029-12-31", "label": "\ub098\ud1a0 \uc2dc\ud5d8 \uac00\ub2a5 \uc2dc\uac04\ub300", "note": "\ubbf8\uad6d \uc815\ubcf4\ub2f9\uad6d \ud3c9\uac00", "start": "2026-09-01"}, {"end": "2027-06-30", "label": "\uc911\ub3d9 \uc0dd\uc0b0 \uc815\uc0c1\ud654 \uc804\ub9dd", "note": "\ubbf8 \uc5d0\ub108\uc9c0\uc815\ubcf4\uccad \uc804\ub9dd", "start": "2027-01-01"}], "source": "CNN, \uc601\uad6d \ud558\uc6d0\ub3c4\uc11c\uad00, \ubbf8 \uc5d0\ub108\uc9c0\uc815\ubcf4\uccad \uc790\ub8cc \uc885\ud569", "subtitle": "\uc810\uc73c\ub85c \ubcf4\uba74 \uc0ac\uac74, \ud3ed\uc73c\ub85c \ubcf4\uba74 \ud611\uc0c1\uc758 \uc2dc\uac04\ud45c", "takeaway": "\uac00\uc7a5 \uae34 \ub9c9\ub300\uac00 \ud611\uc0c1\uc758 \uc555\ubc15\uc744 \ub9cc\ub4e0\ub2e4.", "title": "\uacb9\uccd0 \ub193\uace0 \ubd10\uc57c \ud558\ub294 \uad6c\uac04\ub4e4", "type": "gantt", "unit_line": "\uae30\uac04: 2025\ub144 1\uc6d4 ~ 2029\ub144 12\uc6d4"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">09</span>
+    <h2 class="rep-h2">두 번째 계산서, 호르무즈</h2>
+    <div class="rep-prose"><p>랫클리프가 들고 간 두 번째 의제는 이란이다. 러시아가 이란 지원을 끊고 호르무즈 해협 재개방에 협조하라는 압박이며, 응하지 않으면 추가 제재가 뒤따를 수 있다는 경고가 함께 전달됐다고 CNN은 전한다. 이 해협은 봉쇄 전까지 세계 석유 수송의 약 20퍼센트가 지나던 길목이다.</p><p>8월 26일, 이란 혁명수비대는 미국이 조건을 받아들일 때까지 봉쇄를 유지한다고 발표한다. 랫클리프가 모스크바를 떠난 다음 날 나온 발표다. 시점의 근접성만으로 인과를 단정할 수는 없지만, 모스크바에서 오간 압박이 테헤란의 계산을 즉시 바꾸지 못했다는 정도는 말할 수 있다.</p><p>아래 그림은 그 사이 유가가 어떻게 움직였는지를 보여준다. 브렌트유는 8월 초 배럴당 87.72달러에서 중순 94.39달러까지 올랐다가 하순에 88달러 안팎으로 내려온다. 미 서부텍사스유도 같은 궤적을 그려 8월 초 82.13달러에서 중순 87.06달러로 올랐고, 8월 25일 종가는 83.90달러로 하루 전보다 2.83퍼센트 내렸다. 중순의 급등은 해협 재개방 기대를 꺾은 공격 소식이 만든 것이다.</p><p>여기서 점을 이어 보면 하나의 그림이 나온다. 러시아는 전선에서 얻는 것이 거의 없는 상태에서, 중동의 혼란이 떠받치는 유가로 전쟁 비용을 감당하고 있다. 미국이 우크라이나 협상과 호르무즈를 한 사람 편에 실어 보낸 이유가 여기 있다고 볼 여지가 크다. 두 문제를 따로 풀면 각각 막히지만, 묶으면 서로가 서로의 지렛대가 된다.</p></div>
+
+    
+    <div class="rep-fn">
+      <div class="rep-fn-label">용어 풀이</div>
+      
+      <div class="rep-fn-item"><span class="rep-fn-term">배럴</span>원유 거래에 쓰는 부피 단위다. 1배럴은 약 159리터이며, 국제 유가는 보통 1배럴당 달러로 표시한다.</div>
+      
+    </div>
+    
+
+    
+    
+      
+      
+        
+        
+      
+      
+      <div class="rep-figwrap">
+        <div class="chart-card">
+          <div class="chart-card-title">8월의 유가, 오르내린 자리</div>
+          <div class="chart-card-subtitle">중순의 급등은 해협 재개방 기대가 꺾인 자국이다</div>
+          <div class="chart-card-stage chart-stage-dual_line" data-chart-type="dual_line" data-chart-id="rep-s0-1"><svg></svg></div>
+          <div class="chart-card-source"><span class="chart-card-source-label">출처:</span> 미 에너지정보청 및 시장 시세 / 8월 하순 서부텍사스유는 8월 25일 종가 83.90달러 기준</div>
+          
+          <script type="application/json" class="chart-payload-inline">{"data": {"left": {"label": "\ube0c\ub80c\ud2b8\uc720", "series": [{"x": "8\uc6d4 \ucd08", "y": 87.72}, {"x": "8\uc6d4 \uc911\uc21c", "y": 94.39}, {"x": "8\uc6d4 \ud558\uc21c", "y": 88.0}], "unit": "\ub2ec\ub7ec/\ubc30\ub7f4"}, "right": {"label": "\uc11c\ubd80\ud14d\uc0ac\uc2a4\uc720", "series": [{"x": "8\uc6d4 \ucd08", "y": 82.13}, {"x": "8\uc6d4 \uc911\uc21c", "y": 87.06}, {"x": "8\uc6d4 \ud558\uc21c", "y": 83.9}], "unit": "\ub2ec\ub7ec/\ubc30\ub7f4"}}, "source": "\ubbf8 \uc5d0\ub108\uc9c0\uc815\ubcf4\uccad \ubc0f \uc2dc\uc7a5 \uc2dc\uc138 / 8\uc6d4 \ud558\uc21c \uc11c\ubd80\ud14d\uc0ac\uc2a4\uc720\ub294 8\uc6d4 25\uc77c \uc885\uac00 83.90\ub2ec\ub7ec \uae30\uc900", "subtitle": "\uc911\uc21c\uc758 \uae09\ub4f1\uc740 \ud574\ud611 \uc7ac\uac1c\ubc29 \uae30\ub300\uac00 \uaebe\uc778 \uc790\uad6d\uc774\ub2e4", "takeaway": "\ubd09\uc1c4\uac00 \ub9cc\ub4e0 \uc6c3\ub3c8\uc774 \ub7ec\uc2dc\uc544\uc758 \uc804\uc7c1 \ube44\uc6a9\uc744 \ub5a0\ubc1b\uce5c\ub2e4.", "title": "8\uc6d4\uc758 \uc720\uac00, \uc624\ub974\ub0b4\ub9b0 \uc790\ub9ac", "type": "dual_line", "unit_line": "\ub2e8\uc704: \ub2ec\ub7ec/\ubc30\ub7f4 \u00b7 2026\ub144 8\uc6d4"}</script>
+        </div>
+      </div>
+      
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">10</span>
+    <h2 class="rep-h2">말들이 어긋나는 자리</h2>
+    <div class="rep-prose"><p>8월 26일, 트럼프 대통령은 글렌 벡 라디오 인터뷰에서 이번 방문이 준일상적인 것이었다고 말한다. 나토와 관련된 경고는 아니었다고도 덧붙인다. 같은 시기 월스트리트저널과 CNN과 CBS가 전한 내용과는 정면으로 어긋난다.</p><p>어긋남의 방향이 한쪽으로 쏠려 있다는 점이 눈에 띈다. 백악관은 축소하고, 정보기관 쪽 취재원을 인용한 보도는 확대한다. 크렘린 역시 축소 쪽에 선다. 결과적으로 방문의 무게를 키우는 쪽은 익명의 관리들이고, 낮추는 쪽은 공식 발언대에 선 사람들이다.</p><p>이 배치는 두 가지로 설명될 수 있다. 하나는 행정부 안에서 러시아를 다루는 방식을 두고 견해가 갈린다는 설명이다. 다른 하나는 경고는 실제로 전달됐고 대통령은 협상 분위기를 지키려 공개적으로만 낮췄다는 설명이다. 어느 쪽이든 회담 내용 자체가 부인된 적은 없다는 사실은 남는다.</p><p>8월 28일에 나온 두 보도도 서로 결이 다르다. 뉴욕타임스는 랫클리프가 비관적인 전황 평가를 전달했다고 쓰고, 우크라인스카 프라우다는 같은 보도를 인용해 구체적 보복 위협은 없었다고 전한다. 이 두 문장은 모순이 아니라 같은 장면의 다른 각도일 수 있다. 다만 그 각도의 차이가 경고와 설득 중 무엇이 본질이었는지를 가른다.</p></div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">11</span>
+    <h2 class="rep-h2">여기서 갈라지는 길들</h2>
+    <div class="rep-prose"><p>앞으로의 그림은 아직 열려 있다. 다만 열린 방향이 무한하지는 않고, 지금까지 쌓인 사실들이 몇 갈래를 남긴다.</p><p>첫째 갈래는 이 방문이 실무 접촉의 재개로 이어지는 경우다. 정보 채널이 열려 있고 러시아가 그 무게를 낮춰 두었으므로, 다음 만남을 여는 비용은 이미 낮아져 있다. 뒤이어 실무 협상이 재개된다면 그 시작점은 이번 하루짜리 방문으로 기록될 것이다.</p><p>둘째 갈래는 아무 일도 이어지지 않는 경우다. 이란은 이미 봉쇄 유지를 공언했고 전선은 여전히 움직이지 않는다. 메시지는 전달됐지만 계산은 바뀌지 않는 상태가 얼마든지 지속될 수 있다. 이 경우 이번 방문은 시도했다는 기록으로만 남는다.</p><p>셋째 갈래는 나토 동쪽에서 다음 사건이 벌어지는 경우다. 미국 정보당국이 제시한 시간대의 시작점이 바로 올가을이고, 지금은 8월 말이다. 경고가 전달된 직후에 또 하나의 영공 침범이 일어난다면 그때는 사고로 넘길 여지가 줄어든다. 나토가 조약 4조를 다시 꺼내 드는지가 하나의 갈림길이 된다.</p><p>한 가지 가설을 마지막으로 덧붙인다. 미국이 경고와 진단서를 함께 들려 보낸 것은 러시아를 위협하려는 것이 아니라 시간을 사려는 시도였을 수 있다. 봉쇄 이익에 시한이 있고 나토 시험 시간대가 아직 시작되지 않았다면, 그 두 시계가 겹치기 전에 대화를 여는 것이 미국에는 가장 값싼 선택이다. 근거는 정황과 시점의 배열뿐이므로 여기까지가 이 가설이 갈 수 있는 거리다.</p></div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  <section class="rep-section">
+    <span class="rep-num">12</span>
+    <h2 class="rep-h2">남는 것</h2>
+    <div class="rep-prose"><p>확인된 사실만 추리면 목록은 짧다. 미국 정보 수장이 8월 25일 모스크바에 갔고, 두 정보기관 수장을 만났고, 푸틴은 만나지 않았고, 하루 만에 돌아왔다. 나머지는 전부 해석이다.</p><p>그런데 이 짧은 목록에도 무게가 있다. 전면전이 시작된 뒤 처음 열린 문이고, 그 문을 여는 데 양쪽 다 아무 조건을 걸지 않았다. 발표할 것이 없는 만남이었기에 오히려 성사됐다고 보는 편이 자연스럽다.</p><p>지금 도는 이야기들 가운데 가장 자극적인 대목은 러시아가 나토나 영국을 치려 한다는 부분이다. 확인된 것은 계획이 아니라 신호들이다. 영공 침범과 해저 케이블 주변의 움직임, 그리고 그때마다 열리지 않은 협의 절차. 이 세 가지가 반복되는 동안 문턱은 조금씩 재조정되고 있다.</p><p>수송기 한 대가 오간 하루가 그 흐름을 바꿨는지는 지금 말할 수 없다. 공개된 시점 배열과 의제만 놓고 보면, 워싱턴이 이 정도의 수고를 들일 만한 이유가 있었다는 해석이 가능한 정도다. 그 판단의 근거로 짚을 수 있는 것은 이미 공개된 숫자들이다.</p></div>
+
+    
+
+    
+    
+
+    
+    
+  </section>
+  
+  
+
+  
+  
+
+</div>
+
+<footer class="rep-foot">
+  archetype: reportage · Generated 2026-08-29 11:54:57 · Duration: 1812.9s
+  
+</footer>
+
+<script src="d3.v7.min.js"></script>
+<script src="charts.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script src="maps.js?v=v8_0_0"></script>
+
+</body>
+</html>
