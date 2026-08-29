@@ -1,0 +1,1858 @@
+{
+  "request": {
+    "event_description": "cia 국장이 왜 러시아 머스크바에 비행기를 타고 방문 했을까? 막전 막후 내용과 현재 주요 미디어나 정보기관을 통해 흘러나오는 방문 이유와 협의 내용에 대해 형태로 작성해. 들리기로는 러시아가 nato국가를 공격하려 한다던지 영구글 공격하려 했다는 이야기가 있던데 말야",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false,
+    "report_format": "reportage",
+    "user_directive": "cia 국장이 왜 러시아 머스크바에 비행기를 타고 방문 했을까? 막전 막후 내용과 현재 주요 미디어나 정보기관을 통해 흘러나오는 방문 이유와 협의 내용에 대해 형태로 작성해. 들리기로는 러시아가 nato국가를 공격하려 한다던지 영구글 공격하려 했다는 이야기가 있던데 말야",
+    "report_kind": "standard"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "미국·러시아 정보 수장 간 직접 접촉은 냉전기부터 이어진 '뒷문 통로'로, 정상 간 대화가 막혔을 때 열리는 창구임. 이번 방문은 세 가지 문제가 겹친 지점에서 이뤄짐. 첫째, 우크라이나 종전 협상이 영토 반환 범위와 안전보장 조건에서 막혀 있음. 둘째, 2026년 2월 이란 공습 이후 호르무즈 해협이 봉쇄돼 유가와 세계 물류가 흔들리는데, 러시아가 안보리에서 재개방 결의를 막고 이란을 지원하고 있음. 셋째, 폴란드·루마니아 영공 침범, 유럽 전역의 파괴공작·사이버 공격이 늘면서 러시아가 나토의 결속을 떠보려 한다는 정보 판단이 쌓임. 즉 이번 방문은 '경고 전달'과 '협상 재개 타진'을 한 번에 시도한 성격으로 보임.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-02-28",
+            "event": "이스라엘·미국의 대이란 공습 개시. 이란 최고지도자 하메네이 사망. 이란은 대응으로 호르무즈 해협 봉쇄",
+            "impact": "러시아·중국이 해협 재개방 유엔 안보리 결의안을 거부권으로 막으면서, 우크라이나 전쟁과 중동 문제가 하나의 협상 묶음이 됨"
+          },
+          {
+            "date": "2026-07-29",
+            "event": "러시아제로 추정되는 순항미사일이 폴란드 루블린에서 약 50km 떨어진 지점에 추락",
+            "impact": "나토 영토 침범 사례 누적. 다만 폴란드는 조약 4조(협의 요청) 발동은 하지 않음"
+          },
+          {
+            "date": "2026-08-07",
+            "event": "CNN 보도 — 미국 정보당국, 푸틴이 나토의 결속을 시험하려 제한적 공격을 시도할 수 있다고 평가",
+            "impact": "'가을~2029년 사이' 라는 시간대가 공개 논의에 등장"
+          },
+          {
+            "date": "2026-08-12~13",
+            "event": "드론 5대가 루마니아 영공 근처에서 포착, 1대는 툴체아주 영공에 잠시 진입. 같은 날 나토 대사급 회의가 브뤼셀에서 열림",
+            "impact": "나토는 '러시아가 위험을 감수하는 정도가 커지고 있다'고 규정"
+          },
+          {
+            "date": "2026-08-23",
+            "event": "미 공군 C-17A 수송기가 워싱턴 인근 앤드루스 합동기지를 출발",
+            "impact": "라트비아 리가를 경유. 공개 항공추적 자료로 나중에 동선이 드러남"
+          },
+          {
+            "date": "2026-08-25",
+            "event": "랫클리프 CIA 국장 모스크바 도착. SVR 국장 나리시킨, FSB 국장 보르트니코프와 회담 후 당일 오후 출국",
+            "impact": "전면전 개시 이후 CIA 수장의 첫 러시아 방문. 미국은 사전에 우크라이나에 통보하고 월~수요일 모스크바 등 북부 도시 타격 일시 중단을 요청"
+          },
+          {
+            "date": "2026-08-25",
+            "event": "미 공군기가 모스크바 공항에서 포착되며 방문 사실이 외부에 알려짐",
+            "impact": "미국·러시아 양쪽 모두 의제를 공식 발표하지 않음"
+          },
+          {
+            "date": "2026-08-26",
+            "event": "트럼프 대통령, 글렌 벡 라디오 인터뷰에서 '준일상적' 방문이며 나토 공격 경고가 아니라고 발언",
+            "impact": "WSJ·정치전문매체 보도 내용과 정면으로 엇갈림"
+          },
+          {
+            "date": "2026-08-26",
+            "event": "이란 혁명수비대(IRGC), 미국이 조건을 받아들일 때까지 호르무즈 해협 봉쇄를 유지한다고 발표",
+            "impact": "랫클리프가 전달한 추가 제재 경고의 배경"
+          },
+          {
+            "date": "2026-08-27",
+            "event": "나리시킨 SVR 국장이 회담 사실을 확인하며 '특별할 것 없는 통상적 실무 형식'이라고 발언. 페스코프 크렘린 대변인은 '겁주는 이야기들은 사실과 무관'하다고 일축",
+            "impact": "러시아는 사안의 무게를 낮추는 방향으로 대응"
+          },
+          {
+            "date": "2026-08-28",
+            "event": "뉴욕타임스 보도 — 랫클리프가 보르트니코프 FSB 국장에게 러시아의 전황·경제가 더 나빠질 것이라는 비관적 평가를 전달. 다만 구체적 보복 조치를 위협하지는 않았다는 후속 보도(우크라인스카 프라우다)",
+            "impact": "경고보다는 '현실 직시 유도'에 가까웠다는 해석이 나옴"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "CIA 국장 존 랫클리프의 비공개 모스크바 방문",
+    "event_name_en": "CIA Director Ratcliffe's Unannounced Moscow Visit",
+    "date": "2026-08-25",
+    "category": "국제정치 / 정보기관 외교 / 안보",
+    "summary": "미국 CIA(중앙정보국) 국장 존 랫클리프가 2026년 8월 25일 사전 공지 없이 모스크바를 방문해 러시아 대외정보국(SVR) 국장 나리시킨, 연방보안국(FSB) 국장 보르트니코프를 만났음. 푸틴과는 만나지 않음. 언론 보도를 종합하면 방문 목적은 세 갈래로, ①러시아가 나토(NATO, 북대서양조약기구) 회원국을 공격·도발하지 말라는 경고 ②이란 지원 중단 및 호르무즈 해협 재개방 압박 ③전쟁 상황이 러시아에 불리하다는 미국 정보 판단을 전달해 협상 테이블로 끌어내는 것. 트럼프 대통령은 8월 26일 라디오 인터뷰에서 '준(準)일상적인' 방문이며 나토 관련 경고가 아니라고 언론 보도를 부인해, 행정부 내 메시지가 엇갈림.",
+    "timeline": [
+      {
+        "date": "2026-02-28",
+        "event": "이스라엘·미국의 대이란 공습 개시. 이란 최고지도자 하메네이 사망. 이란은 대응으로 호르무즈 해협 봉쇄",
+        "impact": "러시아·중국이 해협 재개방 유엔 안보리 결의안을 거부권으로 막으면서, 우크라이나 전쟁과 중동 문제가 하나의 협상 묶음이 됨"
+      },
+      {
+        "date": "2026-07-29",
+        "event": "러시아제로 추정되는 순항미사일이 폴란드 루블린에서 약 50km 떨어진 지점에 추락",
+        "impact": "나토 영토 침범 사례 누적. 다만 폴란드는 조약 4조(협의 요청) 발동은 하지 않음"
+      },
+      {
+        "date": "2026-08-07",
+        "event": "CNN 보도 — 미국 정보당국, 푸틴이 나토의 결속을 시험하려 제한적 공격을 시도할 수 있다고 평가",
+        "impact": "'가을~2029년 사이' 라는 시간대가 공개 논의에 등장"
+      },
+      {
+        "date": "2026-08-12~13",
+        "event": "드론 5대가 루마니아 영공 근처에서 포착, 1대는 툴체아주 영공에 잠시 진입. 같은 날 나토 대사급 회의가 브뤼셀에서 열림",
+        "impact": "나토는 '러시아가 위험을 감수하는 정도가 커지고 있다'고 규정"
+      },
+      {
+        "date": "2026-08-23",
+        "event": "미 공군 C-17A 수송기가 워싱턴 인근 앤드루스 합동기지를 출발",
+        "impact": "라트비아 리가를 경유. 공개 항공추적 자료로 나중에 동선이 드러남"
+      },
+      {
+        "date": "2026-08-25",
+        "event": "랫클리프 CIA 국장 모스크바 도착. SVR 국장 나리시킨, FSB 국장 보르트니코프와 회담 후 당일 오후 출국",
+        "impact": "전면전 개시 이후 CIA 수장의 첫 러시아 방문. 미국은 사전에 우크라이나에 통보하고 월~수요일 모스크바 등 북부 도시 타격 일시 중단을 요청"
+      },
+      {
+        "date": "2026-08-25",
+        "event": "미 공군기가 모스크바 공항에서 포착되며 방문 사실이 외부에 알려짐",
+        "impact": "미국·러시아 양쪽 모두 의제를 공식 발표하지 않음"
+      },
+      {
+        "date": "2026-08-26",
+        "event": "트럼프 대통령, 글렌 벡 라디오 인터뷰에서 '준일상적' 방문이며 나토 공격 경고가 아니라고 발언",
+        "impact": "WSJ·정치전문매체 보도 내용과 정면으로 엇갈림"
+      },
+      {
+        "date": "2026-08-26",
+        "event": "이란 혁명수비대(IRGC), 미국이 조건을 받아들일 때까지 호르무즈 해협 봉쇄를 유지한다고 발표",
+        "impact": "랫클리프가 전달한 추가 제재 경고의 배경"
+      },
+      {
+        "date": "2026-08-27",
+        "event": "나리시킨 SVR 국장이 회담 사실을 확인하며 '특별할 것 없는 통상적 실무 형식'이라고 발언. 페스코프 크렘린 대변인은 '겁주는 이야기들은 사실과 무관'하다고 일축",
+        "impact": "러시아는 사안의 무게를 낮추는 방향으로 대응"
+      },
+      {
+        "date": "2026-08-28",
+        "event": "뉴욕타임스 보도 — 랫클리프가 보르트니코프 FSB 국장에게 러시아의 전황·경제가 더 나빠질 것이라는 비관적 평가를 전달. 다만 구체적 보복 조치를 위협하지는 않았다는 후속 보도(우크라인스카 프라우다)",
+        "impact": "경고보다는 '현실 직시 유도'에 가까웠다는 해석이 나옴"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "러시아의 18개월간 우크라이나 영토 추가 점령 비율",
+        "value": "약 1%",
+        "context": "랫클리프가 2025년 1월 취임한 이후 기간 기준. 대규모 인명 손실에 견줘 성과가 미미하다는 미국 정보당국 판단의 핵심 근거 (NYT)"
+      },
+      {
+        "label": "CIA 수장의 러시아 방문 공백",
+        "value": "전면전 개시(2022년) 이후 첫 사례",
+        "context": "랫클리프 개인으로도 CIA 국장 자격 첫 방러. 다만 나리시킨과는 2025년 1월 취임 후 전화 접촉을 이어옴"
+      },
+      {
+        "label": "러시아의 나토 시험 가능 시점",
+        "value": "2026년 가을 ~ 2029년",
+        "context": "미국 정보당국 평가(WSJ·CNN). 독일 외무장관 바데풀도 '러시아가 2029년까지 나토와 싸울 선택지를 만들고 있다'고 별도 언급"
+      },
+      {
+        "label": "루마니아 영공 접근 드론",
+        "value": "5대 (2026-08-12~13 야간)",
+        "context": "1대가 툴체아주 영공에 잠시 진입. 루마니아는 러시아 타격의 나토 영토 유출이 '기하급수적으로' 늘었다고 밝힘"
+      },
+      {
+        "label": "폴란드 미사일 낙하 지점",
+        "value": "루블린에서 약 50km",
+        "context": "2026년 7월 29일. 러시아제로 '추정'되나 확정 발표는 아님"
+      },
+      {
+        "label": "나토 조약 4조 발동 횟수",
+        "value": "2025년 9월 폴란드 사례 이후 0회",
+        "context": "이후 순항미사일 낙하, 라이프치히 나토 수송 거점 드론 폐쇄 등이 있었음에도 발동 없음. 나토가 공식 대응 문턱을 높게 유지 중이라는 뜻"
+      },
+      {
+        "label": "호르무즈 해협 봉쇄 전 세계 석유 수송 비중",
+        "value": "약 20%",
+        "context": "2026년 2월 말 봉쇄 이후 사실상 마비 상태"
+      },
+      {
+        "label": "국제유가 (2026년 8월)",
+        "value": "브렌트유 배럴당 87.72달러(8월 초) → 94.39달러(중순) → 약 88달러(하순)",
+        "context": "미 서부텍사스유(WTI)는 8월 초 82.13달러, 중순 87.06달러. 미 에너지정보청(EIA)은 2026년 브렌트 평균 87달러, 중동 생산 정상화는 2027년 초로 전망"
+      },
+      {
+        "label": "영국 대상 러시아 활동 (2026년)",
+        "value": "잠수함 작전 1건(4월), 국가안보 위협 지정 1건(7월)",
+        "context": "영국 국방장관 힐리가 4월 러시아 잠수함이 영국 인근 해저 에너지관·데이터케이블 근처에서 활동했다고 공개. 7월엔 러시아 군정보국(GRU) 의용군단을 국가안보 위협으로 지정"
+      }
+    ],
+    "background": "미국·러시아 정보 수장 간 직접 접촉은 냉전기부터 이어진 '뒷문 통로'로, 정상 간 대화가 막혔을 때 열리는 창구임. 이번 방문은 세 가지 문제가 겹친 지점에서 이뤄짐. 첫째, 우크라이나 종전 협상이 영토 반환 범위와 안전보장 조건에서 막혀 있음. 둘째, 2026년 2월 이란 공습 이후 호르무즈 해협이 봉쇄돼 유가와 세계 물류가 흔들리는데, 러시아가 안보리에서 재개방 결의를 막고 이란을 지원하고 있음. 셋째, 폴란드·루마니아 영공 침범, 유럽 전역의 파괴공작·사이버 공격이 늘면서 러시아가 나토의 결속을 떠보려 한다는 정보 판단이 쌓임. 즉 이번 방문은 '경고 전달'과 '협상 재개 타진'을 한 번에 시도한 성격으로 보임.",
+    "sources": [
+      "The Washington Post, 'CIA director makes rare, unannounced visit to Moscow', 2026-08-25 (https://www.washingtonpost.com/national-security/2026/08/25/cia-director-moscow-rare-unannounced-trip/)",
+      "CNN Politics, 'CIA Director John Ratcliffe makes unannounced visit to Moscow', 2026-08-25 (https://www.cnn.com/2026/08/25/politics/cia-director-visits-moscow)",
+      "CNN Politics, 'Ratcliffe was in Moscow to warn Russia against attacking NATO and encourage cutting off Iran', 2026-08-27 (https://www.cnn.com/2026/08/27/politics/john-ratcliffe-cia-moscow-visit)",
+      "CBS News, 'CIA Director John Ratcliffe, during secretive trip, warned Russia not to attack NATO', 2026-08-27 (https://www.cbsnews.com/news/cia-john-ratcliffe-warned-russia-not-to-attack-nato-moscow-trip/)",
+      "The Moscow Times, 'Russian Spy Chief Says Meeting With CIA Director Was Nothing Special', 2026-08-27 (https://www.themoscowtimes.com/2026/08/27/russian-spy-chief-says-meeting-with-cia-director-was-nothing-special-a93585)",
+      "The Moscow Times, 'Trump Confirms CIA Director's Moscow Trip, Calling It Semi-Routine', 2026-08-26 (https://www.themoscowtimes.com/2026/08/26/trump-confirms-cia-directors-moscow-trip-calling-it-semi-routine-a93582)",
+      "Kyiv Post, 'CIA Chief Ratcliffe Warned Kremlin of Worsening War Position – NYT', 2026-08-28 (https://www.kyivpost.com/post/83245)",
+      "Ukrainska Pravda, 'CIA chief did not threaten Russia with consequences over war during Moscow visit – NYT', 2026-08-28 (https://www.pravda.com.ua/eng/news/2026/08/28/8050678/)",
+      "UNITED24 Media, 'CIA Director in Moscow Amid Intel on Russian Draft Plans, NATO Escalation Risks', 2026-08 (https://united24media.com/world/cia-director-in-moscow-amid-intel-on-russian-draft-plans-nato-escalation-risks-21955)",
+      "CNN Politics, 'US intel assesses Putin could launch attack aimed at testing NATO unity', 2026-08-07 (https://www.cnn.com/2026/08/07/politics/us-intelligence-russia-putin-nato-attack)",
+      "Euronews, 'NATO stands with Poland and Romania amid Russian airspace violations', 2026-08-12 (https://www.euronews.com/my-europe/2026/08/12/nato-stands-with-poland-and-romania-amid-russian-airspace-violations)",
+      "CNN, 'UK cyberspying chief says the West is between peace and war as Russia ramps up hybrid attacks', 2026-05-27 (https://www.cnn.com/2026/05/27/europe/gchq-russia-relentlessly-targeting-uk-intl)",
+      "House of Commons Library, 'Israel/US-Iran conflict 2026: Reopening the Strait of Hormuz' (https://commonslibrary.parliament.uk/research-briefings/cbp-10636/)",
+      "The Washington Times, 'Iran says the Strait of Hormuz stays closed until the U.S. meets its terms', 2026-08-26 (https://www.washingtontimes.com/news/2026/aug/26/irgc-strait-hormuz-closed-us-accepts-mou/)",
+      "Al Jazeera, 'Oil prices rise as attacks dent hopes for Strait of Hormuz reopening', 2026-08-12 (https://www.aljazeera.com/economy/2026/8/12/oil-prices-rise-as-attacks-dent-hopes-for-strait-of-hormuz-reopening)",
+      "Kyiv Post, 'Zelensky Says US Briefed Ukraine on CIA-Moscow Meetings' (https://www.kyivpost.com/post/83293)"
+    ],
+    "glossary": [
+      {
+        "term": "CIA (중앙정보국)",
+        "definition": "미국의 해외 정보 수집·분석을 담당하는 기관. 국장은 대통령이 임명하며, 현 국장은 존 랫클리프(2025년 1월 취임)"
+      },
+      {
+        "term": "SVR (러시아 대외정보국)",
+        "definition": "러시아의 해외 정보기관. 옛 소련 KGB의 해외 담당 부문이 분리된 조직. 국장은 세르게이 나리시킨"
+      },
+      {
+        "term": "FSB (러시아 연방보안국)",
+        "definition": "러시아의 국내 방첩·보안 기관. KGB의 국내 담당 부문 후신. 국장은 알렉산드르 보르트니코프. 우크라이나 관련 업무도 상당 부분 담당"
+      },
+      {
+        "term": "나토 조약 4조",
+        "definition": "회원국의 영토·정치적 독립·안보가 위협받는다고 판단될 때 동맹 전체의 협의를 요청할 수 있는 조항. 자동 참전을 뜻하는 5조와는 다름"
+      },
+      {
+        "term": "하이브리드 공격 (회색지대 활동)",
+        "definition": "정규 군사 공격 수준에는 못 미치지만 상대를 흔드는 활동. 사이버 공격, 시설 방화·파괴, 해저 케이블 훼손, 여론 조작 등이 해당. 책임 소재를 부인하기 쉬운 것이 특징"
+      },
+      {
+        "term": "호르무즈 해협",
+        "definition": "페르시아만과 인도양을 잇는 좁은 바닷길. 봉쇄 전 세계 석유 수송의 약 20%가 통과했음"
+      },
+      {
+        "term": "GRU (러시아 군정보국)",
+        "definition": "러시아군 소속 정보기관. 유럽 내 파괴공작·암살 시도의 배후로 서방 정보기관이 지목해 온 조직"
+      },
+      {
+        "term": "APT28 (유닛 26165)",
+        "definition": "GRU 소속으로 알려진 해킹 조직의 코드명. 2026년 4월 영국 국가사이버보안센터가 공유기 감염을 통한 통신 탈취 수법을 공개함"
+      },
+      {
+        "term": "백채널 (뒷문 통로)",
+        "definition": "공식 외교 경로가 막혔을 때 정보기관이나 특사를 통해 비공개로 의사를 주고받는 통로"
+      }
+    ],
+    "confidence_score": 0.76,
+    "instruments_mentioned": [
+      "WTI"
+    ],
+    "time_series": [
+      {
+        "instrument": "WTI 유가",
+        "source": "FRED",
+        "code": "DCOILWTICO",
+        "unit": "$",
+        "chart_type": "area",
+        "start_date": "2026-05-25",
+        "end_date": "2026-08-25",
+        "data": [
+          {
+            "date": "2026-05-26",
+            "open": 97.63,
+            "high": 97.63,
+            "low": 97.63,
+            "close": 97.63,
+            "volume": null
+          },
+          {
+            "date": "2026-05-27",
+            "open": 92.35,
+            "high": 92.35,
+            "low": 92.35,
+            "close": 92.35,
+            "volume": null
+          },
+          {
+            "date": "2026-05-28",
+            "open": 92.65,
+            "high": 92.65,
+            "low": 92.65,
+            "close": 92.65,
+            "volume": null
+          },
+          {
+            "date": "2026-05-29",
+            "open": 91.16,
+            "high": 91.16,
+            "low": 91.16,
+            "close": 91.16,
+            "volume": null
+          },
+          {
+            "date": "2026-06-01",
+            "open": 95.96,
+            "high": 95.96,
+            "low": 95.96,
+            "close": 95.96,
+            "volume": null
+          },
+          {
+            "date": "2026-06-02",
+            "open": 97.47,
+            "high": 97.47,
+            "low": 97.47,
+            "close": 97.47,
+            "volume": null
+          },
+          {
+            "date": "2026-06-03",
+            "open": 99.76,
+            "high": 99.76,
+            "low": 99.76,
+            "close": 99.76,
+            "volume": null
+          },
+          {
+            "date": "2026-06-04",
+            "open": 96.83,
+            "high": 96.83,
+            "low": 96.83,
+            "close": 96.83,
+            "volume": null
+          },
+          {
+            "date": "2026-06-05",
+            "open": 94.32,
+            "high": 94.32,
+            "low": 94.32,
+            "close": 94.32,
+            "volume": null
+          },
+          {
+            "date": "2026-06-08",
+            "open": 95.0,
+            "high": 95.0,
+            "low": 95.0,
+            "close": 95.0,
+            "volume": null
+          },
+          {
+            "date": "2026-06-09",
+            "open": 91.9,
+            "high": 91.9,
+            "low": 91.9,
+            "close": 91.9,
+            "volume": null
+          },
+          {
+            "date": "2026-06-10",
+            "open": 93.68,
+            "high": 93.68,
+            "low": 93.68,
+            "close": 93.68,
+            "volume": null
+          },
+          {
+            "date": "2026-06-11",
+            "open": 91.58,
+            "high": 91.58,
+            "low": 91.58,
+            "close": 91.58,
+            "volume": null
+          },
+          {
+            "date": "2026-06-12",
+            "open": 88.62,
+            "high": 88.62,
+            "low": 88.62,
+            "close": 88.62,
+            "volume": null
+          },
+          {
+            "date": "2026-06-15",
+            "open": 84.65,
+            "high": 84.65,
+            "low": 84.65,
+            "close": 84.65,
+            "volume": null
+          },
+          {
+            "date": "2026-06-16",
+            "open": 79.8,
+            "high": 79.8,
+            "low": 79.8,
+            "close": 79.8,
+            "volume": null
+          },
+          {
+            "date": "2026-06-17",
+            "open": 80.65,
+            "high": 80.65,
+            "low": 80.65,
+            "close": 80.65,
+            "volume": null
+          },
+          {
+            "date": "2026-06-18",
+            "open": 80.35,
+            "high": 80.35,
+            "low": 80.35,
+            "close": 80.35,
+            "volume": null
+          },
+          {
+            "date": "2026-06-22",
+            "open": 78.94,
+            "high": 78.94,
+            "low": 78.94,
+            "close": 78.94,
+            "volume": null
+          },
+          {
+            "date": "2026-06-23",
+            "open": 74.62,
+            "high": 74.62,
+            "low": 74.62,
+            "close": 74.62,
+            "volume": null
+          },
+          {
+            "date": "2026-06-24",
+            "open": 71.42,
+            "high": 71.42,
+            "low": 71.42,
+            "close": 71.42,
+            "volume": null
+          },
+          {
+            "date": "2026-06-25",
+            "open": 72.67,
+            "high": 72.67,
+            "low": 72.67,
+            "close": 72.67,
+            "volume": null
+          },
+          {
+            "date": "2026-06-26",
+            "open": 70.3,
+            "high": 70.3,
+            "low": 70.3,
+            "close": 70.3,
+            "volume": null
+          },
+          {
+            "date": "2026-06-29",
+            "open": 71.87,
+            "high": 71.87,
+            "low": 71.87,
+            "close": 71.87,
+            "volume": null
+          },
+          {
+            "date": "2026-06-30",
+            "open": 70.56,
+            "high": 70.56,
+            "low": 70.56,
+            "close": 70.56,
+            "volume": null
+          },
+          {
+            "date": "2026-07-01",
+            "open": 69.74,
+            "high": 69.74,
+            "low": 69.74,
+            "close": 69.74,
+            "volume": null
+          },
+          {
+            "date": "2026-07-02",
+            "open": 69.73,
+            "high": 69.73,
+            "low": 69.73,
+            "close": 69.73,
+            "volume": null
+          },
+          {
+            "date": "2026-07-06",
+            "open": 69.6,
+            "high": 69.6,
+            "low": 69.6,
+            "close": 69.6,
+            "volume": null
+          },
+          {
+            "date": "2026-07-07",
+            "open": 71.53,
+            "high": 71.53,
+            "low": 71.53,
+            "close": 71.53,
+            "volume": null
+          },
+          {
+            "date": "2026-07-08",
+            "open": 74.56,
+            "high": 74.56,
+            "low": 74.56,
+            "close": 74.56,
+            "volume": null
+          },
+          {
+            "date": "2026-07-09",
+            "open": 73.15,
+            "high": 73.15,
+            "low": 73.15,
+            "close": 73.15,
+            "volume": null
+          },
+          {
+            "date": "2026-07-10",
+            "open": 72.45,
+            "high": 72.45,
+            "low": 72.45,
+            "close": 72.45,
+            "volume": null
+          },
+          {
+            "date": "2026-07-13",
+            "open": 79.2,
+            "high": 79.2,
+            "low": 79.2,
+            "close": 79.2,
+            "volume": null
+          },
+          {
+            "date": "2026-07-14",
+            "open": 80.44,
+            "high": 80.44,
+            "low": 80.44,
+            "close": 80.44,
+            "volume": null
+          },
+          {
+            "date": "2026-07-15",
+            "open": 80.73,
+            "high": 80.73,
+            "low": 80.73,
+            "close": 80.73,
+            "volume": null
+          },
+          {
+            "date": "2026-07-16",
+            "open": 80.03,
+            "high": 80.03,
+            "low": 80.03,
+            "close": 80.03,
+            "volume": null
+          },
+          {
+            "date": "2026-07-17",
+            "open": 83.43,
+            "high": 83.43,
+            "low": 83.43,
+            "close": 83.43,
+            "volume": null
+          },
+          {
+            "date": "2026-07-20",
+            "open": 84.38,
+            "high": 84.38,
+            "low": 84.38,
+            "close": 84.38,
+            "volume": null
+          },
+          {
+            "date": "2026-07-21",
+            "open": 86.04,
+            "high": 86.04,
+            "low": 86.04,
+            "close": 86.04,
+            "volume": null
+          },
+          {
+            "date": "2026-07-22",
+            "open": 87.66,
+            "high": 87.66,
+            "low": 87.66,
+            "close": 87.66,
+            "volume": null
+          },
+          {
+            "date": "2026-07-23",
+            "open": 93.08,
+            "high": 93.08,
+            "low": 93.08,
+            "close": 93.08,
+            "volume": null
+          },
+          {
+            "date": "2026-07-24",
+            "open": 91.74,
+            "high": 91.74,
+            "low": 91.74,
+            "close": 91.74,
+            "volume": null
+          },
+          {
+            "date": "2026-07-27",
+            "open": 84.25,
+            "high": 84.25,
+            "low": 84.25,
+            "close": 84.25,
+            "volume": null
+          },
+          {
+            "date": "2026-07-28",
+            "open": 80.91,
+            "high": 80.91,
+            "low": 80.91,
+            "close": 80.91,
+            "volume": null
+          },
+          {
+            "date": "2026-07-29",
+            "open": 86.08,
+            "high": 86.08,
+            "low": 86.08,
+            "close": 86.08,
+            "volume": null
+          },
+          {
+            "date": "2026-07-30",
+            "open": 85.15,
+            "high": 85.15,
+            "low": 85.15,
+            "close": 85.15,
+            "volume": null
+          },
+          {
+            "date": "2026-07-31",
+            "open": 86.16,
+            "high": 86.16,
+            "low": 86.16,
+            "close": 86.16,
+            "volume": null
+          },
+          {
+            "date": "2026-08-03",
+            "open": 81.96,
+            "high": 81.96,
+            "low": 81.96,
+            "close": 81.96,
+            "volume": null
+          },
+          {
+            "date": "2026-08-04",
+            "open": 77.33,
+            "high": 77.33,
+            "low": 77.33,
+            "close": 77.33,
+            "volume": null
+          },
+          {
+            "date": "2026-08-05",
+            "open": 76.78,
+            "high": 76.78,
+            "low": 76.78,
+            "close": 76.78,
+            "volume": null
+          },
+          {
+            "date": "2026-08-06",
+            "open": 78.88,
+            "high": 78.88,
+            "low": 78.88,
+            "close": 78.88,
+            "volume": null
+          },
+          {
+            "date": "2026-08-07",
+            "open": 79.77,
+            "high": 79.77,
+            "low": 79.77,
+            "close": 79.77,
+            "volume": null
+          },
+          {
+            "date": "2026-08-10",
+            "open": 83.76,
+            "high": 83.76,
+            "low": 83.76,
+            "close": 83.76,
+            "volume": null
+          },
+          {
+            "date": "2026-08-11",
+            "open": 84.77,
+            "high": 84.77,
+            "low": 84.77,
+            "close": 84.77,
+            "volume": null
+          },
+          {
+            "date": "2026-08-12",
+            "open": 84.97,
+            "high": 84.97,
+            "low": 84.97,
+            "close": 84.97,
+            "volume": null
+          },
+          {
+            "date": "2026-08-13",
+            "open": 82.77,
+            "high": 82.77,
+            "low": 82.77,
+            "close": 82.77,
+            "volume": null
+          },
+          {
+            "date": "2026-08-14",
+            "open": 83.99,
+            "high": 83.99,
+            "low": 83.99,
+            "close": 83.99,
+            "volume": null
+          },
+          {
+            "date": "2026-08-17",
+            "open": 86.04,
+            "high": 86.04,
+            "low": 86.04,
+            "close": 86.04,
+            "volume": null
+          },
+          {
+            "date": "2026-08-18",
+            "open": 86.48,
+            "high": 86.48,
+            "low": 86.48,
+            "close": 86.48,
+            "volume": null
+          },
+          {
+            "date": "2026-08-19",
+            "open": 87.28,
+            "high": 87.28,
+            "low": 87.28,
+            "close": 87.28,
+            "volume": null
+          },
+          {
+            "date": "2026-08-20",
+            "open": 89.75,
+            "high": 89.75,
+            "low": 89.75,
+            "close": 89.75,
+            "volume": null
+          },
+          {
+            "date": "2026-08-21",
+            "open": 87.21,
+            "high": 87.21,
+            "low": 87.21,
+            "close": 87.21,
+            "volume": null
+          },
+          {
+            "date": "2026-08-24",
+            "open": 86.34,
+            "high": 86.34,
+            "low": 86.34,
+            "close": 86.34,
+            "volume": null
+          },
+          {
+            "date": "2026-08-25",
+            "open": 83.9,
+            "high": 83.9,
+            "low": 83.9,
+            "close": 83.9,
+            "volume": null
+          }
+        ]
+      }
+    ],
+    "provenance": [
+      {
+        "fact": "랫클리프 CIA 국장이 2026년 8월 25일 모스크바 방문, 나리시킨·보르트니코프와 회담, 푸틴과는 미면담",
+        "source_date": "2026-08-27",
+        "scope_note": "크렘린 대변인 페스코프와 SVR 국장 나리시킨의 공개 확인. 미국 측은 공식 확인 후에도 의제 비공개",
+        "source_url": "https://www.cbsnews.com/news/cia-john-ratcliffe-warned-russia-not-to-attack-nato-moscow-trip/"
+      },
+      {
+        "fact": "이동 경로: C-17A 수송기, 8월 23일 앤드루스 합동기지 출발, 라트비아 리가 경유, 8월 25일 오후 모스크바 출발",
+        "source_date": "2026-08-25",
+        "scope_note": "공개 항공추적 자료 기반. 랫클리프 탑승은 '추정'으로 보도되었고 이후 사실로 확인됨",
+        "source_url": "https://united24media.com/world/cia-director-in-moscow-amid-intel-on-russian-draft-plans-nato-escalation-risks-21955"
+      },
+      {
+        "fact": "러시아가 랫클리프 취임 후 18개월간 추가로 확보한 우크라이나 영토는 약 1%",
+        "source_date": "2026-08-28",
+        "scope_note": "1% = 우크라이나 전체 국토 대비 비율이며, 2025년 1월~2026년 8월 기간의 '추가 점령분'. 러시아가 점령 중인 총 면적이 아님. NYT 보도를 키이우포스트가 인용",
+        "source_url": "https://www.kyivpost.com/post/83245"
+      },
+      {
+        "fact": "미국 정보당국은 푸틴이 2026년 가을~2029년 사이 나토를 시험하는 제한적 공격·사이버·하이브리드 행동을 승인할 수 있다고 평가",
+        "source_date": "2026-08-07",
+        "scope_note": "'가능성' 평가이며 특정 날짜나 표적 국가를 지목한 첩보가 아님. WSJ 최초 보도, CNN이 별도 확인",
+        "source_url": "https://www.cnn.com/2026/08/07/politics/us-intelligence-russia-putin-nato-attack"
+      },
+      {
+        "fact": "트럼프 대통령이 방문을 '준일상적'이라 표현하고 나토 관련 경고가 아니라고 부인",
+        "source_date": "2026-08-26",
+        "scope_note": "글렌 벡 라디오 전화 인터뷰. 진행자가 나토 영토 관련 우려와 연관되냐고 물은 데 대한 답변",
+        "source_url": "https://www.themoscowtimes.com/2026/08/26/trump-confirms-cia-directors-moscow-trip-calling-it-semi-routine-a93582"
+      },
+      {
+        "fact": "랫클리프가 이란 관련해 '호르무즈 해협이 선박 통항에 재개방되지 않으면 추가 제재'를 경고",
+        "source_date": "2026-08-27",
+        "scope_note": "제재 대상·시점 등 구체 내용은 미공개",
+        "source_url": "https://www.cbsnews.com/news/cia-john-ratcliffe-warned-russia-not-to-attack-nato-moscow-trip/"
+      },
+      {
+        "fact": "미국이 사전에 우크라이나에 통보하고 월~수요일 모스크바 등 북부 도시 타격 일시 중단을 요청",
+        "source_date": "2026-08-25",
+        "scope_note": "Axios 최초 보도. 실제 중단 이행 여부는 별도 확인 필요",
+        "source_url": "https://www.axios.com/2026/08/25/cia-director-ratcliffe-visits-moscow"
+      },
+      {
+        "fact": "2026년 8월 12~13일 야간 드론 5대가 루마니아 접근, 1대 툴체아주 영공 진입 / 7월 29일 순항미사일이 루블린 약 50km 지점 낙하",
+        "source_date": "2026-08-12",
+        "scope_note": "미사일은 '러시아제로 추정(probably)'이며 확정 규명 아님",
+        "source_url": "https://www.euronews.com/my-europe/2026/08/12/nato-stands-with-poland-and-romania-amid-russian-airspace-violations"
+      },
+      {
+        "fact": "이란 혁명수비대, 미국이 조건을 수용할 때까지 호르무즈 봉쇄 유지 발표",
+        "source_date": "2026-08-26",
+        "scope_note": "봉쇄는 2026년 2월 28일 이스라엘·미국 공습 및 하메네이 사망 이후 시작",
+        "source_url": "https://www.washingtontimes.com/news/2026/aug/26/irgc-strait-hormuz-closed-us-accepts-mou/"
+      },
+      {
+        "fact": "국제유가: 브렌트유 8월 초 87.72달러 → 중순 94.39달러 → 하순 약 88달러, WTI 8월 초 82.13달러 → 중순 87.06달러",
+        "source_date": "2026-08-21",
+        "scope_note": "모두 배럴당 종가 기준. 봉쇄 전 호르무즈는 세계 석유 공급의 약 5분의 1을 담당",
+        "source_url": "https://www.cnbc.com/2026/08/21/oil-prices-us-iran.html"
+      },
+      {
+        "fact": "영국 관련: 2026년 4월 러시아 잠수함의 영국 인근 해저 인프라 접근(국방장관 힐리 공개), 7월 GRU 의용군단 국가안보 위협 지정",
+        "source_date": "2026-05-27",
+        "scope_note": "영국에 대한 '군사 공격 계획'이 아니라 하이브리드·파괴공작 범주. 이번 CIA 국장 방문 의제에 영국이 언급된 근거는 없음",
+        "source_url": "https://www.cnn.com/2026/05/27/europe/gchq-russia-relentlessly-targeting-uk-intl"
+      }
+    ],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "모스크바에 내린 수송기 한 대, 그 안에서 무엇이 오갔나",
+    "deck": "미국 CIA 국장이 8월 25일 모스크바에 다녀왔다. 오간 말의 목록은 양쪽 모두 공개하지 않았다.",
+    "sections": [
+      {
+        "heading": "활주로를 떠난 한 대",
+        "kicker": "",
+        "prose": "8월 23일, 워싱턴 인근 앤드루스 합동기지에서 미 공군 C-17A 수송기 한 대가 이륙한다. 승객도 목적지도 공개되지 않는다. 이 비행의 동선은 나중에 공개 항공추적 자료를 통해 드러난다.\n\n기체는 라트비아 리가에 한 번 내렸다가 다시 뜬다. 그리고 8월 25일, 모스크바 공항 계류장에 미 공군 마크를 단 수송기가 서 있는 장면이 포착된다. 항공 추적 자료를 들여다보는 사람들이 먼저 알아본다. 미국도 러시아도 그때까지 아무 발표를 하지 않은 상태였다.\n\n기체에 타고 있던 사람은 미국 중앙정보국 국장 존 랫클리프다. 그는 그날 러시아 대외정보국 국장 세르게이 나리시킨과 연방보안국 국장 알렉산드르 보르트니코프를 만나고 오후에 같은 길로 떠난다. 체류 시간은 하루를 넘기지 않는다. 전면전이 시작된 2022년 이후 CIA 수장이 러시아 땅을 밟은 것은 이번이 처음이다.\n\n떠난 뒤에도 양쪽은 의제를 공식으로 밝히지 않는다. 지금 우리가 아는 내용은 전부 회담장 밖으로 새어 나온 이야기다. 무엇이 오갔는지를 두고 워싱턴과 모스크바가 서로 다른 말을 하고 있고, 그 어긋남 자체가 이번 방문의 무게를 알려 준다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "C-17A",
+            "explanation": "미 공군의 대형 화물 수송기다. 물자와 병력을 옮기는 기체라서, 고위 인사가 눈에 덜 띄게 움직일 때 오히려 유용한 수단이 되기도 한다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "8월 23일, 워싱턴 인근 기지에서 수송기 한 대가 조용히 떠납니다.",
+            "라트비아를 거쳐 이틀 뒤 모스크바에 내립니다.",
+            "안에는 미국 CIA 국장 존 랫클리프가 타고 있었습니다.",
+            "전면전이 시작된 뒤 CIA 수장이 러시아를 찾은 첫 사례입니다."
+          ],
+          "highlights": [
+            "전면전 이후 첫 방러",
+            "체류는 하루를 넘기지 않았다"
+          ],
+          "emphasis": [
+            "존 랫클리프",
+            "전면전 이후 첫 방러"
+          ],
+          "narration_tts": [
+            "팔월 이십삼일, 워싱턴 인근 기지에서 수송기 한 대가 조용히 떠납니다.",
+            "라트비아를 거쳐 이틀 뒤 모스크바에 내립니다.",
+            "안에는 미국 씨아이에이 국장 존 랫클리프가 타고 있었습니다.",
+            "전면전이 시작된 뒤 씨아이에이 수장이 러시아를 찾은 첫 사례입니다."
+          ]
+        }
+      },
+      {
+        "heading": "세 개의 문제가 한 점에서 만난다",
+        "kicker": "",
+        "prose": "이 비행이 왜 하필 지금 떠났는지는 8월의 달력을 펼쳐 보면 윤곽이 잡힌다. 서로 다른 세 개의 문제가 같은 시기에 미국 쪽 책상 위에 올라와 있다. 하나씩 떼어 놓으면 각각 오래된 사안이지만, 겹쳐 놓으면 한 사람이 한 번에 들고 갈 만한 묶음이 된다.\n\n첫째는 우크라이나 종전 협상이다. 영토를 어디까지 되돌릴지, 전후 안전을 누가 어떻게 보장할지에서 대화가 멈춰 있다. 둘째는 호르무즈 해협이다. 2026년 2월 말 이란 공습 이후 해협이 막혔고, 러시아와 중국이 유엔 안전보장이사회에서 재개방 결의를 거부권으로 막고 있다. 셋째는 나토 동쪽 국경이다. 폴란드와 루마니아 영공 침범이 이어지고 유럽 전역에서 파괴공작과 사이버 공격이 늘고 있다.\n\n지도가 보여주듯 세 문제는 각각 다른 무대에 놓여 있다. 우크라이나 전선, 발트해와 흑해를 낀 나토 동쪽 측면, 그리고 페르시아만 입구다. 무대는 떨어져 있지만 한쪽에서 양보를 얻으려면 다른 쪽 카드를 내밀어야 한다는 점에서 하나로 묶인다.\n\n정보 수장의 방문은 이 묶음을 다루기에 편리한 형식이다. 정상 간 대화는 결과를 내놓아야 하지만, 정보기관 사이의 만남은 아무것도 발표하지 않아도 된다. 실제로 이번에도 양쪽 모두 의제를 공표하지 않았고, 그 침묵이 형식의 목적에 부합한다고 읽을 여지가 크다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "유엔 안전보장이사회 거부권",
+            "explanation": "미국, 러시아, 중국, 영국, 프랑스 다섯 나라가 가진 권한이다. 한 나라만 반대해도 결의안이 통과되지 않는다."
+          }
+        ],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "이 비행이 왜 지금 떠났는지는 8월의 달력을 보면 짐작이 됩니다.",
+            "우크라이나 협상은 영토와 안전보장에서 멈춰 있습니다.",
+            "호르무즈 해협은 2월 말부터 막혀 있습니다.",
+            "여기에 나토 동쪽 국경의 영공 침범이 쌓입니다."
+          ],
+          "highlights": [
+            "멈춘 협상, 막힌 해협, 흔들리는 국경"
+          ],
+          "emphasis": [
+            "호르무즈 해협",
+            "나토 동쪽 국경"
+          ],
+          "narration_tts": [
+            "이 비행이 왜 지금 떠났는지는 팔월의 달력을 보면 짐작이 됩니다.",
+            "우크라이나 협상은 영토와 안전보장에서 멈춰 있습니다.",
+            "호르무즈 해협은 이월 말부터 막혀 있습니다.",
+            "여기에 나토 동쪽 국경의 영공 침범이 쌓입니다."
+          ]
+        }
+      },
+      {
+        "heading": "책상 양편에 앉은 사람들",
+        "kicker": "",
+        "prose": "아래 관계도는 이번 만남을 둘러싼 사람과 기관을 한 화면에 모은 것이다. 가운데에 랫클리프가 서고, 왼쪽에 그를 보낸 미국 쪽이, 오른쪽에 그를 맞은 러시아 쪽이 놓인다. 선의 종류가 관계의 성격을 나타낸다.\n\n러시아 쪽에서 나온 두 사람은 성격이 다르다. 나리시킨이 이끄는 대외정보국은 국외 정보를 다루고, 오랫동안 미국 정보기관과 접촉해 온 창구다. 랫클리프는 2025년 1월 취임 이후 나리시킨과 전화로 대화를 이어 왔다. 이번에 새로 마주 앉은 상대는 오히려 보르트니코프 쪽이다.\n\n보르트니코프가 이끄는 연방보안국은 국내 방첩과 치안을 담당하는 기관이다. 국외 협상보다 내부 통제에 가까운 조직이 이 자리에 나왔다는 사실은 그 자체로 읽을거리가 된다. 크렘린 안에서 실제 결정에 가까운 인물을 앉혔다는 해석과 부합하지만, 단순한 의전상 배석이었을 가능성도 남아 있다.\n\n한 가지 가설을 붙이자면 이렇다. 대외정보국만 나왔다면 이 만남은 정보 교환에 그쳤겠지만, 방첩기관 수장이 함께 앉았다는 것은 전달된 내용이 러시아 내부의 판단 구조까지 닿기를 미국이 원했다는 신호일 수 있다. 증거는 아직 참석자 명단뿐이므로 여기까지가 추론의 한계다.",
+        "charts": [
+          {
+            "type": "stakeholder_map",
+            "title": "모스크바 회담을 둘러싼 사람들",
+            "subtitle": "가운데는 전달자, 좌우는 보낸 쪽과 맞은 쪽",
+            "data": {
+              "nodes": [
+                {
+                  "id": "trump",
+                  "label": "도널드 트럼프",
+                  "role": "방문 성격 축소",
+                  "col": "left",
+                  "kind": "person",
+                  "flag": "US"
+                },
+                {
+                  "id": "whitehouse",
+                  "label": "미국 행정부",
+                  "role": "협상 재개 압박",
+                  "col": "left",
+                  "logo": "whitehouse.gov"
+                },
+                {
+                  "id": "cia",
+                  "label": "CIA",
+                  "role": "뒷문 통로 관리",
+                  "col": "left",
+                  "logo": "cia.gov"
+                },
+                {
+                  "id": "ratcliffe",
+                  "label": "존 랫클리프",
+                  "role": "메시지 전달자",
+                  "col": "center",
+                  "kind": "person",
+                  "flag": "US",
+                  "accent": true
+                },
+                {
+                  "id": "nato",
+                  "label": "나토",
+                  "role": "경고가 겨눈 대상",
+                  "col": "center",
+                  "logo": "nato.int"
+                },
+                {
+                  "id": "zelensky",
+                  "label": "볼로디미르 젤렌스키",
+                  "role": "사전 통보 받음",
+                  "col": "center",
+                  "kind": "person",
+                  "flag": "UA"
+                },
+                {
+                  "id": "naryshkin",
+                  "label": "세르게이 나리시킨",
+                  "role": "대외정보국 국장",
+                  "col": "right",
+                  "kind": "person",
+                  "flag": "RU"
+                },
+                {
+                  "id": "bortnikov",
+                  "label": "보르트니코프",
+                  "role": "연방보안국 국장",
+                  "col": "right",
+                  "kind": "person",
+                  "flag": "RU"
+                },
+                {
+                  "id": "putin",
+                  "label": "블라디미르 푸틴",
+                  "role": "이번엔 만나지 않음",
+                  "col": "right",
+                  "kind": "person",
+                  "flag": "RU"
+                },
+                {
+                  "id": "iran",
+                  "label": "이란",
+                  "role": "해협 봉쇄 유지",
+                  "col": "right",
+                  "flag": "IR"
+                }
+              ],
+              "edges": [
+                {
+                  "source": "whitehouse",
+                  "target": "ratcliffe",
+                  "type": "영향",
+                  "label": "지시"
+                },
+                {
+                  "source": "cia",
+                  "target": "ratcliffe",
+                  "type": "연관",
+                  "label": "채널"
+                },
+                {
+                  "source": "trump",
+                  "target": "ratcliffe",
+                  "type": "영향",
+                  "label": "축소"
+                },
+                {
+                  "source": "ratcliffe",
+                  "target": "naryshkin",
+                  "type": "연관",
+                  "label": "회담"
+                },
+                {
+                  "source": "ratcliffe",
+                  "target": "bortnikov",
+                  "type": "연관",
+                  "label": "회담"
+                },
+                {
+                  "source": "ratcliffe",
+                  "target": "zelensky",
+                  "type": "연관",
+                  "label": "통보"
+                },
+                {
+                  "source": "naryshkin",
+                  "target": "putin",
+                  "type": "연관",
+                  "label": "보고"
+                },
+                {
+                  "source": "bortnikov",
+                  "target": "putin",
+                  "type": "연관",
+                  "label": "보고"
+                },
+                {
+                  "source": "putin",
+                  "target": "nato",
+                  "type": "대립",
+                  "label": "시험"
+                },
+                {
+                  "source": "putin",
+                  "target": "iran",
+                  "type": "동맹",
+                  "label": "지원"
+                },
+                {
+                  "source": "iran",
+                  "target": "whitehouse",
+                  "type": "대립",
+                  "label": "봉쇄"
+                },
+                {
+                  "source": "whitehouse",
+                  "target": "putin",
+                  "type": "영향",
+                  "label": "압박"
+                }
+              ]
+            },
+            "source": "워싱턴포스트, CNN, CBS, 모스크바타임스 보도 종합 / 2026년 8월",
+            "takeaway": "한 사람이 세 갈래 의제를 한 번에 들고 갔다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "대외정보국(SVR)",
+            "explanation": "러시아가 국외에서 벌이는 정보 활동을 담당하는 기관이다. 냉전기부터 미국 CIA와 직접 연락을 주고받는 통로 노릇을 해 왔다."
+          },
+          {
+            "term": "연방보안국(FSB)",
+            "explanation": "러시아 국내의 방첩과 치안을 맡는 기관이다. 국외 협상보다 내부 감시와 통제에 무게가 실린 조직이다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "회담장에 앉은 러시아 쪽은 두 사람이었습니다.",
+            "국외 정보를 다루는 나리시킨은 오래된 연락 창구입니다.",
+            "방첩기관을 이끄는 보르트니코프와는 이번이 새로운 대면입니다.",
+            "누구를 앉혔는지가 이미 메시지였다는 해석이 나옵니다."
+          ],
+          "highlights": [
+            "방첩기관 수장까지 배석",
+            "푸틴은 자리에 없었다"
+          ],
+          "emphasis": [
+            "오래된 연락 창구",
+            "방첩기관 수장까지 배석"
+          ]
+        }
+      },
+      {
+        "heading": "그 방에 없던 이름들",
+        "kicker": "",
+        "prose": "회담에서 누가 빠졌는지는 누가 나왔는지만큼 중요하다. 푸틴 대통령은 랫클리프를 만나지 않는다. 러시아 대통령이 미국 정보 수장을 접견하면 그 자체가 정상급 대화의 재개로 읽히기 때문에, 그 문턱을 넘지 않은 것은 계산된 선택으로 보인다.\n\n키이우는 사전에 통보를 받는다. 젤렌스키 대통령은 미국이 회담 내용을 알려 왔다고 밝혔다. 여기에 덧붙여진 세부가 흥미롭다. 미국은 우크라이나에 월요일부터 수요일까지 모스크바를 비롯한 북부 도시 타격을 잠시 멈춰 달라고 요청한 것으로 전해진다.\n\n이 요청은 회담 자체보다 더 많은 것을 말한다. 미국 정보 수장이 모스크바에 머무는 동안 그 도시에 무인기가 떨어지지 않도록 하는 조치이고, 동시에 우크라이나가 그 정도 요청을 받아들일 수 있는 관계라는 뜻이기도 하다. 신변 안전이라는 실무적 이유로 충분히 설명되지만, 회담 분위기를 미리 관리하려 했다는 해석과도 어긋나지 않는다.\n\n유럽은 명단에 잘 보이지 않는다. 경고의 대상이 나토라면 그 경고를 전달받아야 할 당사자들이 어느 정도까지 공유를 받았는지는 공개된 자료로 확인되지 않는다. 확인되지 않은 사항을 단정하지는 않겠지만, 나토 동쪽 국경이 의제였다는 보도가 사실이라면 유럽은 언론을 통해 뒤늦게 알게 된 셈이 된다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "푸틴 대통령은 이번에 랫클리프를 만나지 않았습니다.",
+            "정상급 대화 재개로 읽힐 문턱을 넘지 않은 선택으로 보입니다.",
+            "우크라이나는 사전에 통보를 받았습니다.",
+            "미국은 월요일부터 수요일까지 모스크바 타격을 멈춰 달라고 요청했습니다."
+          ],
+          "highlights": [
+            "사흘간 북부 타격 중단 요청"
+          ],
+          "emphasis": [
+            "만나지 않았습니다",
+            "사흘간 북부 타격 중단 요청"
+          ]
+        }
+      },
+      {
+        "heading": "미국이 들고 간 계산서",
+        "kicker": "",
+        "prose": "뉴욕타임스는 8월 28일, 랫클리프가 보르트니코프에게 러시아의 전황과 경제가 앞으로 더 나빠질 것이라는 미국 쪽 평가를 전달했다고 보도한다. 위협이 아니라 진단서에 가까운 방식이다. 상대의 계산을 바꾸려면 상대가 스스로 셈을 다시 하게 만드는 편이 빠르다는 접근이다.\n\n그 진단서의 첫 줄이 아래 그림에 있다. 랫클리프가 취임한 2025년 1월 이후 18개월 남짓 동안 러시아가 추가로 확보한 우크라이나 영토는 약 1퍼센트다. 같은 기간의 인명 손실 규모를 함께 놓으면 이 숫자는 다르게 읽힌다. 미국 정보당국이 러시아의 전쟁 수행이 수지에 맞지 않는다고 보는 근거가 여기에 있다.\n\n숫자 자체는 새로 나온 것이 아니다. 새로운 것은 그 숫자를 미국 정보 수장이 러시아 방첩기관 수장 앞에서 직접 읽었다는 사실이다. 정보 판단은 보통 상대에게 숨기는 자산이고, 이를 꺼내 보인다는 건 판단을 무기가 아니라 설득 재료로 쓰겠다는 뜻으로 읽힐 여지가 크다.\n\n후속 보도를 겹치면 그림이 조금 더 선명해진다. 우크라인스카 프라우다는 같은 날 뉴욕타임스를 인용해, 랫클리프가 구체적인 보복 조치를 위협하지는 않았다고 전한다. 경고와 설득 사이 어디쯤에 있었다는 뜻이고, 이 어긋남은 뒤에서 다시 다룬다.",
+        "charts": [
+          {
+            "type": "dot_matrix",
+            "title": "18개월, 전선이 움직인 폭",
+            "subtitle": "지도 위 변화는 100분의 1, 그 대가는 그렇지 않았다",
+            "data": [
+              {
+                "label": "추가로 점령한 몫",
+                "value": 1,
+                "accent": true
+              },
+              {
+                "label": "움직이지 않은 나머지",
+                "value": 99
+              }
+            ],
+            "unit_line": "단위: 우크라이나 영토 100칸 기준 / 2025년 1월 이후",
+            "source": "미국 정보당국 판단, 뉴욕타임스 보도 / 2026-08",
+            "takeaway": "미국이 러시아에 내민 계산서의 첫 줄이다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "랫클리프가 들고 간 것은 위협이 아니라 진단서에 가까웠습니다.",
+            "18개월 동안 러시아가 새로 얻은 땅은 약 1퍼센트였습니다.",
+            "인명 손실 규모를 함께 놓으면 셈이 맞지 않는다는 판단입니다.",
+            "미국은 이 평가를 숨기지 않고 상대 앞에서 그대로 읽었습니다."
+          ],
+          "highlights": [
+            "18개월에 얻은 땅 약 1퍼센트"
+          ],
+          "emphasis": [
+            "약 1퍼센트",
+            "진단서에 가까웠습니다"
+          ],
+          "narration_tts": [
+            "랫클리프가 들고 간 것은 위협이 아니라 진단서에 가까웠습니다.",
+            "십팔 개월 동안 러시아가 새로 얻은 땅은 약 일 퍼센트였습니다.",
+            "인명 손실 규모를 함께 놓으면 셈이 맞지 않는다는 판단입니다.",
+            "미국은 이 평가를 숨기지 않고 상대 앞에서 그대로 읽었습니다."
+          ]
+        }
+      },
+      {
+        "heading": "러시아가 이 문을 열어 두는 이유",
+        "kicker": "",
+        "prose": "정보 수장 사이의 직접 접촉은 냉전기부터 이어진 오래된 형식이다. 외교가 막히고 정상이 서로 전화를 받지 않을 때, 이 통로만은 열려 있는 경우가 많았다. 양쪽 다 발표할 의무가 없고, 실패해도 공식 실패로 기록되지 않기 때문이다.\n\n8월 27일, 나리시킨은 회담 사실을 확인하면서 특별할 것 없는 통상적인 실무 형식이었다고 말한다. 같은 날 크렘린 대변인 페스코프는 겁주는 이야기들은 사실과 무관하다고 일축한다. 두 발언은 모두 사안의 무게를 낮추는 방향이다.\n\n이 축소가 곧 부인은 아니다. 러시아는 회담이 있었다는 사실은 인정하면서 내용의 심각성만 부정한다. 이런 구도는 통로를 계속 열어 두려는 쪽이 흔히 취하는 태도와 부합한다. 대단한 일이 아니었다고 말해 두면 다음 회담을 여는 데 정치적 비용이 들지 않는다.\n\n무리한 추측을 보태자면, 러시아 입장에서 이번 만남의 실익은 전달받은 경고가 아니라 만남 자체에 있었을 수 있다. 고립된 상태에서 미국 정보 수장을 모스크바로 부른 장면은 대내적으로 쓸모가 있다. 다만 이를 뒷받침하는 것은 발언의 어조와 공개 방식뿐이므로, 여기까지가 정황에서 나올 수 있는 최대치다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "뒷문 통로",
+            "explanation": "공식 외교 경로가 막혔을 때 쓰는 비공개 연락선을 말한다. 정보기관 사이의 접촉이 대표적이며, 결과를 발표하지 않아도 되는 점이 특징이다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "정보 수장끼리의 접촉은 냉전기부터 이어진 오래된 형식입니다.",
+            "외교가 막혀도 이 통로만은 열려 있는 경우가 많았습니다.",
+            "러시아는 회담 사실은 인정하면서 무게만 낮췄습니다.",
+            "통상적인 실무 협의였다는 설명이 그대로 나왔습니다."
+          ],
+          "highlights": [
+            "회담은 인정하고 무게만 낮췄다"
+          ],
+          "emphasis": [
+            "오래된 형식",
+            "회담은 인정하고 무게만 낮췄다"
+          ]
+        }
+      },
+      {
+        "heading": "나토를 친다는 이야기의 실체",
+        "kicker": "",
+        "prose": "이번 방문을 두고 가장 많이 도는 이야기가 러시아의 나토 공격 가능성이다. CNN과 CBS는 랫클리프가 나토 회원국을 공격하거나 도발하지 말라는 경고를 전달했다고 보도한다. 배경에는 8월 7일 CNN이 전한 미국 정보당국 평가가 있다. 푸틴이 나토의 결속을 시험하려 제한적인 공격을 시도할 수 있고, 그 시점은 올가을부터 2029년 사이라는 것이다.\n\n같은 판단이 유럽에서도 나온다. 독일 외무장관 바데풀은 러시아가 2029년까지 나토와 싸울 선택지를 만들고 있다고 별도로 언급했다. 두 평가는 출처가 다른데 시간대가 겹친다. 겹친다는 사실이 이 판단을 한 기관의 특이한 견해로 보기 어렵게 만든다.\n\n아래 표는 그 판단을 떠받치는 실제 사건들이다. 7월 29일 러시아제로 추정되는 순항미사일이 폴란드 루블린에서 약 50킬로미터 떨어진 곳에 떨어졌다. 8월 12일과 13일 밤에는 드론 5대가 루마니아 영공 근처에서 포착됐고 그중 1대가 툴체아주 영공에 잠시 들어왔다. 루마니아는 러시아 타격의 나토 영토 유출이 기하급수적으로 늘었다고 밝혔다.\n\n영국을 겨냥한 이야기는 여기서 갈라 볼 필요가 있다. 확인된 사실은 두 가지다. 4월 영국 국방장관 힐리가 러시아 잠수함이 영국 인근 해저 에너지관과 데이터케이블 근처에서 활동했다고 공개했고, 7월 영국은 러시아 군정보국 의용군단을 국가안보 위협으로 지정했다. 영국을 공격하려는 계획이 확인됐다는 자료는 공개된 범위에 없다.\n\n한 가지 가설은 이렇다. 러시아가 노리는 것이 전면적인 무력 충돌이 아니라 나토의 대응 문턱을 재는 일이라면, 지금까지의 사건들은 실패가 아니라 성공적인 측정이었을 수 있다. 2025년 9월 폴란드 사례 이후 나토 조약 4조는 한 번도 발동되지 않았다. 순항미사일이 떨어지고 나토 수송 거점이 드론으로 폐쇄돼도 공식 협의 절차가 열리지 않았다는 사실은, 문턱이 어디에 있는지를 상대에게 알려 주는 정보이기도 하다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "나토 조약 4조",
+            "explanation": "회원국이 안보 위협을 느낄 때 동맹 전체에 공식 협의를 요청하는 조항이다. 무력 대응을 규정한 5조와 달리 논의를 여는 절차에 가깝다."
+          },
+          {
+            "term": "하이브리드 공격",
+            "explanation": "군대를 직접 보내지 않고 사이버 공격이나 파괴공작처럼 전쟁과 평시의 경계에 있는 수단으로 상대를 흔드는 방식이다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "가장 많이 도는 이야기가 러시아의 나토 공격 가능성입니다.",
+            "미국 정보당국은 올가을부터 2029년 사이를 시험 시점으로 봅니다.",
+            "폴란드 인근 미사일 낙하와 루마니아 영공 드론이 그 근거입니다.",
+            "다만 영국을 공격하려는 계획은 아직 확인되지 않았습니다."
+          ],
+          "highlights": [
+            "시험 시점은 올가을에서 2029년 사이",
+            "영국 공격 계획은 미확인"
+          ],
+          "emphasis": [
+            "올가을부터 2029년 사이",
+            "영국 공격 계획은 미확인"
+          ],
+          "narration_tts": [
+            "가장 많이 도는 이야기가 러시아의 나토 공격 가능성입니다.",
+            "미국 정보당국은 올가을부터 이천이십구년 사이를 시험 시점으로 봅니다.",
+            "폴란드 인근 미사일 낙하와 루마니아 영공 드론이 그 근거입니다.",
+            "다만 영국을 공격하려는 계획은 아직 확인되지 않았습니다."
+          ]
+        }
+      },
+      {
+        "heading": "여덟 달을 한 장에 펼치면",
+        "kicker": "",
+        "prose": "개별 사건을 시간 위에 늘어놓으면 다른 것이 보인다. 아래 그림은 2026년의 주요 구간을 겹쳐 놓은 것이다. 점이 아니라 폭으로 봐야 하는 사안들이다.\n\n가장 눈에 띄는 막대는 호르무즈 해협 봉쇄다. 2월 28일 시작해 지금까지 이어지니 여섯 달째다. 그 위로 미국 정보당국이 본 나토 시험 시간대가 얹힌다. 올가을에 시작해 2029년까지 이어지는 이 구간은 다른 어떤 막대보다 길고, 그래서 협상 테이블에 앉는 쪽의 시간 계산을 바꾼다.\n\n랫클리프가 취임한 뒤 전선이 거의 움직이지 않은 18개월 구간도 함께 있다. 이 막대와 봉쇄 막대가 겹치는 지점이 지금이다. 러시아 입장에서는 전선에서 얻는 것이 거의 없는 상태로, 중동 사태가 밀어 올린 유가에 기대는 구간이기도 하다.\n\n마지막 막대는 미 에너지정보청이 내다본 중동 생산 정상화 시점이다. 2027년 초로 잡혀 있다. 이 전망이 맞다면 봉쇄로 얻는 이익은 시한이 있는 자산이 되고, 시한이 다가올수록 협상의 유인은 커진다. 미국이 하필 지금 사람을 보낸 이유를 여기서 찾는 해석도 가능하다.",
+        "charts": [
+          {
+            "type": "gantt",
+            "title": "겹쳐 놓고 봐야 하는 구간들",
+            "subtitle": "점으로 보면 사건, 폭으로 보면 협상의 시간표",
+            "data": [
+              {
+                "label": "호르무즈 해협 봉쇄",
+                "start": "2026-02-28",
+                "end": "2026-08-29",
+                "note": "발행일 기준 진행 중"
+              },
+              {
+                "label": "전선이 멈춘 18개월",
+                "start": "2025-01-20",
+                "end": "2026-08-25",
+                "note": "2025년 1월 취임 이후 약 18개월"
+              },
+              {
+                "label": "나토 시험 가능 시간대",
+                "start": "2026-09-01",
+                "end": "2029-12-31",
+                "note": "미국 정보당국 평가"
+              },
+              {
+                "label": "중동 생산 정상화 전망",
+                "start": "2027-01-01",
+                "end": "2027-06-30",
+                "note": "미 에너지정보청 전망"
+              }
+            ],
+            "unit_line": "기간: 2025년 1월 ~ 2029년 12월",
+            "source": "CNN, 영국 하원도서관, 미 에너지정보청 자료 종합",
+            "takeaway": "가장 긴 막대가 협상의 압박을 만든다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "개별 사건을 시간 위에 늘어놓으면 다른 것이 보입니다.",
+            "가장 오래 이어진 것은 여섯 달째인 호르무즈 봉쇄입니다.",
+            "그 위로 2029년까지 이어지는 나토 시험 시간대가 얹힙니다.",
+            "중동 생산 정상화 전망은 2027년 초로 잡혀 있습니다."
+          ],
+          "highlights": [
+            "봉쇄 이익에는 시한이 있다"
+          ],
+          "emphasis": [
+            "여섯 달째",
+            "봉쇄 이익에는 시한이 있다"
+          ],
+          "narration_tts": [
+            "개별 사건을 시간 위에 늘어놓으면 다른 것이 보입니다.",
+            "가장 오래 이어진 것은 여섯 달째인 호르무즈 봉쇄입니다.",
+            "그 위로 이천이십구년까지 이어지는 나토 시험 시간대가 얹힙니다.",
+            "중동 생산 정상화 전망은 이천이십칠년 초로 잡혀 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "두 번째 계산서, 호르무즈",
+        "kicker": "",
+        "prose": "랫클리프가 들고 간 두 번째 의제는 이란이다. 러시아가 이란 지원을 끊고 호르무즈 해협 재개방에 협조하라는 압박이며, 응하지 않으면 추가 제재가 뒤따를 수 있다는 경고가 함께 전달됐다고 CNN은 전한다. 이 해협은 봉쇄 전까지 세계 석유 수송의 약 20퍼센트가 지나던 길목이다.\n\n8월 26일, 이란 혁명수비대는 미국이 조건을 받아들일 때까지 봉쇄를 유지한다고 발표한다. 랫클리프가 모스크바를 떠난 다음 날 나온 발표다. 시점의 근접성만으로 인과를 단정할 수는 없지만, 모스크바에서 오간 압박이 테헤란의 계산을 즉시 바꾸지 못했다는 정도는 말할 수 있다.\n\n아래 그림은 그 사이 유가가 어떻게 움직였는지를 보여준다. 브렌트유는 8월 초 배럴당 87.72달러에서 중순 94.39달러까지 올랐다가 하순에 88달러 안팎으로 내려온다. 미 서부텍사스유도 같은 궤적을 그려 8월 초 82.13달러에서 중순 87.06달러로 올랐고, 8월 25일 종가는 83.90달러로 하루 전보다 2.83퍼센트 내렸다. 중순의 급등은 해협 재개방 기대를 꺾은 공격 소식이 만든 것이다.\n\n여기서 점을 이어 보면 하나의 그림이 나온다. 러시아는 전선에서 얻는 것이 거의 없는 상태에서, 중동의 혼란이 떠받치는 유가로 전쟁 비용을 감당하고 있다. 미국이 우크라이나 협상과 호르무즈를 한 사람 편에 실어 보낸 이유가 여기 있다고 볼 여지가 크다. 두 문제를 따로 풀면 각각 막히지만, 묶으면 서로가 서로의 지렛대가 된다.",
+        "charts": [
+          {
+            "type": "dual_line",
+            "title": "8월의 유가, 오르내린 자리",
+            "subtitle": "중순의 급등은 해협 재개방 기대가 꺾인 자국이다",
+            "data": {
+              "left": {
+                "label": "브렌트유",
+                "unit": "달러/배럴",
+                "series": [
+                  {
+                    "x": "8월 초",
+                    "y": 87.72
+                  },
+                  {
+                    "x": "8월 중순",
+                    "y": 94.39
+                  },
+                  {
+                    "x": "8월 하순",
+                    "y": 88.0
+                  }
+                ]
+              },
+              "right": {
+                "label": "서부텍사스유",
+                "unit": "달러/배럴",
+                "series": [
+                  {
+                    "x": "8월 초",
+                    "y": 82.13
+                  },
+                  {
+                    "x": "8월 중순",
+                    "y": 87.06
+                  },
+                  {
+                    "x": "8월 하순",
+                    "y": 83.9
+                  }
+                ]
+              }
+            },
+            "unit_line": "단위: 달러/배럴 · 2026년 8월",
+            "source": "미 에너지정보청 및 시장 시세 / 8월 하순 서부텍사스유는 8월 25일 종가 83.90달러 기준",
+            "takeaway": "봉쇄가 만든 웃돈이 러시아의 전쟁 비용을 떠받친다."
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "배럴",
+            "explanation": "원유 거래에 쓰는 부피 단위다. 1배럴은 약 159리터이며, 국제 유가는 보통 1배럴당 달러로 표시한다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "두 번째 의제는 이란이었습니다.",
+            "러시아가 이란 지원을 끊고 해협 재개방에 협조하라는 압박입니다.",
+            "이란 혁명수비대는 다음 날 봉쇄를 유지하겠다고 발표했습니다.",
+            "8월 25일 서부텍사스유 종가는 83.90달러였습니다."
+          ],
+          "highlights": [
+            "세계 석유 수송의 약 20퍼센트가 지나던 길목"
+          ],
+          "emphasis": [
+            "봉쇄를 유지하겠다고 발표했습니다",
+            "83.90달러"
+          ],
+          "narration_tts": [
+            "두 번째 의제는 이란이었습니다.",
+            "러시아가 이란 지원을 끊고 해협 재개방에 협조하라는 압박입니다.",
+            "이란 혁명수비대는 다음 날 봉쇄를 유지하겠다고 발표했습니다.",
+            "팔월 이십오일 서부텍사스유 종가는 팔십삼 점 구 달러였습니다."
+          ]
+        }
+      },
+      {
+        "heading": "말들이 어긋나는 자리",
+        "kicker": "",
+        "prose": "8월 26일, 트럼프 대통령은 글렌 벡 라디오 인터뷰에서 이번 방문이 준일상적인 것이었다고 말한다. 나토와 관련된 경고는 아니었다고도 덧붙인다. 같은 시기 월스트리트저널과 CNN과 CBS가 전한 내용과는 정면으로 어긋난다.\n\n어긋남의 방향이 한쪽으로 쏠려 있다는 점이 눈에 띈다. 백악관은 축소하고, 정보기관 쪽 취재원을 인용한 보도는 확대한다. 크렘린 역시 축소 쪽에 선다. 결과적으로 방문의 무게를 키우는 쪽은 익명의 관리들이고, 낮추는 쪽은 공식 발언대에 선 사람들이다.\n\n이 배치는 두 가지로 설명될 수 있다. 하나는 행정부 안에서 러시아를 다루는 방식을 두고 견해가 갈린다는 설명이다. 다른 하나는 경고는 실제로 전달됐고 대통령은 협상 분위기를 지키려 공개적으로만 낮췄다는 설명이다. 어느 쪽이든 회담 내용 자체가 부인된 적은 없다는 사실은 남는다.\n\n8월 28일에 나온 두 보도도 서로 결이 다르다. 뉴욕타임스는 랫클리프가 비관적인 전황 평가를 전달했다고 쓰고, 우크라인스카 프라우다는 같은 보도를 인용해 구체적 보복 위협은 없었다고 전한다. 이 두 문장은 모순이 아니라 같은 장면의 다른 각도일 수 있다. 다만 그 각도의 차이가 경고와 설득 중 무엇이 본질이었는지를 가른다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "트럼프 대통령은 준일상적인 방문이었다고 말했습니다.",
+            "나토 경고는 아니었다는 설명입니다.",
+            "여러 매체가 전한 내용과는 정면으로 어긋납니다.",
+            "다만 회담이 있었다는 사실 자체는 누구도 부인하지 않았습니다."
+          ],
+          "highlights": [
+            "백악관은 낮추고, 취재원은 키운다"
+          ],
+          "emphasis": [
+            "준일상적인 방문",
+            "백악관은 낮추고, 취재원은 키운다"
+          ]
+        }
+      },
+      {
+        "heading": "여기서 갈라지는 길들",
+        "kicker": "",
+        "prose": "앞으로의 그림은 아직 열려 있다. 다만 열린 방향이 무한하지는 않고, 지금까지 쌓인 사실들이 몇 갈래를 남긴다.\n\n첫째 갈래는 이 방문이 실무 접촉의 재개로 이어지는 경우다. 정보 채널이 열려 있고 러시아가 그 무게를 낮춰 두었으므로, 다음 만남을 여는 비용은 이미 낮아져 있다. 뒤이어 실무 협상이 재개된다면 그 시작점은 이번 하루짜리 방문으로 기록될 것이다.\n\n둘째 갈래는 아무 일도 이어지지 않는 경우다. 이란은 이미 봉쇄 유지를 공언했고 전선은 여전히 움직이지 않는다. 메시지는 전달됐지만 계산은 바뀌지 않는 상태가 얼마든지 지속될 수 있다. 이 경우 이번 방문은 시도했다는 기록으로만 남는다.\n\n셋째 갈래는 나토 동쪽에서 다음 사건이 벌어지는 경우다. 미국 정보당국이 제시한 시간대의 시작점이 바로 올가을이고, 지금은 8월 말이다. 경고가 전달된 직후에 또 하나의 영공 침범이 일어난다면 그때는 사고로 넘길 여지가 줄어든다. 나토가 조약 4조를 다시 꺼내 드는지가 하나의 갈림길이 된다.\n\n한 가지 가설을 마지막으로 덧붙인다. 미국이 경고와 진단서를 함께 들려 보낸 것은 러시아를 위협하려는 것이 아니라 시간을 사려는 시도였을 수 있다. 봉쇄 이익에 시한이 있고 나토 시험 시간대가 아직 시작되지 않았다면, 그 두 시계가 겹치기 전에 대화를 여는 것이 미국에는 가장 값싼 선택이다. 근거는 정황과 시점의 배열뿐이므로 여기까지가 이 가설이 갈 수 있는 거리다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "앞으로의 길은 몇 갈래로 열려 있습니다.",
+            "실무 접촉이 재개될 수도 있고, 아무 일도 이어지지 않을 수도 있습니다.",
+            "나토 동쪽에서 다음 사건이 벌어지는 길도 남아 있습니다.",
+            "미국이 사려 한 것은 어쩌면 시간이었을지도 모릅니다."
+          ],
+          "highlights": [
+            "시간을 사려는 시도였을 수 있다"
+          ],
+          "emphasis": [
+            "몇 갈래로 열려 있습니다",
+            "시간을 사려는 시도였을 수 있다"
+          ]
+        }
+      },
+      {
+        "heading": "남는 것",
+        "kicker": "",
+        "prose": "확인된 사실만 추리면 목록은 짧다. 미국 정보 수장이 8월 25일 모스크바에 갔고, 두 정보기관 수장을 만났고, 푸틴은 만나지 않았고, 하루 만에 돌아왔다. 나머지는 전부 해석이다.\n\n그런데 이 짧은 목록에도 무게가 있다. 전면전이 시작된 뒤 처음 열린 문이고, 그 문을 여는 데 양쪽 다 아무 조건을 걸지 않았다. 발표할 것이 없는 만남이었기에 오히려 성사됐다고 보는 편이 자연스럽다.\n\n지금 도는 이야기들 가운데 가장 자극적인 대목은 러시아가 나토나 영국을 치려 한다는 부분이다. 확인된 것은 계획이 아니라 신호들이다. 영공 침범과 해저 케이블 주변의 움직임, 그리고 그때마다 열리지 않은 협의 절차. 이 세 가지가 반복되는 동안 문턱은 조금씩 재조정되고 있다.\n\n수송기 한 대가 오간 하루가 그 흐름을 바꿨는지는 지금 말할 수 없다. 공개된 시점 배열과 의제만 놓고 보면, 워싱턴이 이 정도의 수고를 들일 만한 이유가 있었다는 해석이 가능한 정도다. 그 판단의 근거로 짚을 수 있는 것은 이미 공개된 숫자들이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "확인된 사실만 추리면 목록은 짧습니다.",
+            "갔고, 만났고, 하루 만에 돌아왔습니다.",
+            "나머지는 아직 전부 해석의 영역입니다.",
+            "다만 워싱턴이 시간을 촉박하게 봤다는 것만은 분명합니다."
+          ],
+          "highlights": [
+            "확인된 것은 계획이 아니라 신호들"
+          ],
+          "emphasis": [
+            "목록은 짧습니다",
+            "확인된 것은 계획이 아니라 신호들"
+          ]
+        }
+      }
+    ],
+    "closing": "",
+    "watch_signals": [],
+    "contradictions": [
+      {
+        "side_a": "CNN과 CBS 보도를 따르면 이번 방문의 핵심은 경고였다. 나토 회원국을 공격하거나 도발하지 말라는 메시지가 전달됐고, 이란 지원을 끊지 않으면 추가 제재가 뒤따른다는 압박이 함께 놓였다.",
+        "side_b": "트럼프 대통령은 사흘 전 인터뷰에서 준일상적인 방문이며 나토와 관련된 경고가 아니었다고 말했다. 크렘린 역시 겁주는 이야기들은 사실과 무관하다며 같은 방향으로 무게를 낮췄다.",
+        "evidence": "회담이 열렸다는 사실은 양쪽 모두 인정한다. 어긋나는 것은 내용의 성격뿐이며, 무게를 키우는 쪽은 익명의 관리들이고 낮추는 쪽은 공식 발언대에 선 사람들이다.",
+        "resolution": "여러 매체가 각기 다른 취재원으로 같은 내용을 전한 이상 경고가 전달됐다는 쪽에 무게를 둔다. 다만 대통령의 축소가 단순한 부인이 아니라 협상 분위기를 지키려는 관리일 가능성도 함께 살아 있고, 그렇다면 두 진술은 서로를 지우지 않는다.",
+        "video": {
+          "label_a": "경고론",
+          "label_b": "축소론",
+          "line_a": "나토를 건드리지 말라는 경고가 전달됐습니다.",
+          "line_b": "준일상적인 실무 방문이었을 뿐입니다.",
+          "narration": [
+            "같은 하루를 두고 두 가지 설명이 맞섭니다.",
+            "여러 매체는 나토를 겨눈 경고가 전달됐다고 전합니다.",
+            "반면 백악관과 크렘린은 통상적인 방문이라며 무게를 낮췄습니다."
+          ],
+          "narration_tts": [
+            "같은 하루를 두고 두 가지 설명이 맞섭니다.",
+            "여러 매체는 나토를 겨눈 경고가 전달됐다고 전합니다.",
+            "반면 백악관과 크렘린은 통상적인 방문이라며 무게를 낮췄습니다."
+          ]
+        }
+      },
+      {
+        "side_a": "뉴욕타임스는 랫클리프가 러시아의 전황과 경제가 더 나빠질 것이라는 비관적 평가를 전달했다고 보도했다. 상대의 셈을 흔들어 협상 테이블로 끌어내려는 접근으로 읽힌다.",
+        "side_b": "같은 보도를 인용한 우크라인스카 프라우다는 랫클리프가 구체적인 보복 조치를 위협하지는 않았다고 전했다. 압박의 실체가 생각보다 얇았다는 뜻이 된다.",
+        "evidence": "두 보도는 같은 취재를 출처로 하면서 강조점이 다르다. 전달된 것은 판단이지 조치가 아니었다는 점에는 양쪽이 일치한다.",
+        "resolution": "이번 접촉의 본질은 위협보다 설득에 가까웠다고 본다. 다만 나토 동쪽에서 다음 사건이 벌어지면 같은 채널이 조치를 예고하는 통로로 바뀔 수 있고, 그때는 경고론이 다시 무게를 얻는다.",
+        "video": {
+          "label_a": "압박론",
+          "label_b": "설득론",
+          "line_a": "전황이 더 나빠질 것이라는 평가를 내밀었습니다.",
+          "line_b": "구체적인 보복은 언급되지 않았습니다.",
+          "narration": [
+            "전달된 것은 조치가 아니라 판단이었습니다.",
+            "미국은 러시아의 전황이 더 나빠질 것이라고 짚었습니다.",
+            "구체적인 보복 위협은 없었다는 후속 보도가 이어졌습니다."
+          ],
+          "narration_tts": [
+            "전달된 것은 조치가 아니라 판단이었습니다.",
+            "미국은 러시아의 전황이 더 나빠질 것이라고 짚었습니다.",
+            "구체적인 보복 위협은 없었다는 후속 보도가 이어졌습니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "경고였나, 설득이었나",
+    "timeline_flow": null,
+    "confidence_summary": "",
+    "confidence_score": 0.32,
+    "degraded": false,
+    "degradation_reason": "",
+    "broadcast_summary": "미국 CIA 국장 존 랫클리프가 나흘 전인 8월 25일 모스크바에 다녀왔습니다. 사전 공지 없이 갔다가 그날 오후에 떠났어요.\n\n만난 상대는 러시아 대외정보국의 나리시킨과 연방보안국의 보르트니코프였습니다. 푸틴 대통령과는 만나지 않았어요.\n\n보도를 모으면 의제는 세 갈래입니다. 나토를 건드리지 말라는 경고, 이란 지원을 끊고 호르무즈 해협을 열라는 압박, 전황이 러시아에 불리하다는 미국 쪽 판단 전달이에요.\n\n미국 정보당국은 러시아가 올가을부터 2029년 사이에 나토의 결속을 시험할 수 있다고 봅니다. 폴란드 인근 미사일 낙하와 루마니아 영공 드론 진입이 근거로 꼽혀요.\n\n영국을 공격하려 했다는 이야기는 아직 확인된 사실이 아닙니다. 확인된 건 해저 케이블 주변 잠수함 활동과 하이브리드 공격이 늘었다는 정도입니다.\n\n트럼프 대통령은 준일상적 방문이라며 경고설을 부인했고, 크렘린도 겁주는 이야기라고 일축했어요. 어긋난 설명들을 하나씩 맞춰 본 과정은 본문에 담아 뒀습니다.",
+    "video": {
+      "intro_narration": [
+        "나흘 전, 미국 정보기관의 수장이 모스크바에 내렸습니다.",
+        "무슨 말이 오갔는지는 아직 어느 쪽도 밝히지 않았습니다."
+      ],
+      "outro_narration": [
+        "확인된 것은 갔고, 만났고, 하루 만에 돌아왔다는 사실뿐입니다.",
+        "그 하루가 무엇을 바꿨는지는 올가을이 답할 것입니다."
+      ]
+    },
+    "embedded_map": {
+      "center": [
+        8,
+        45
+      ],
+      "zoom": 1.1,
+      "projection": "globe",
+      "markers": [
+        {
+          "id": "andrews",
+          "name": "앤드루스 합동기지",
+          "lng": -76.87,
+          "lat": 38.81,
+          "kind": "military",
+          "value": "8월 23일 출발",
+          "label_side": "left"
+        },
+        {
+          "id": "riga",
+          "name": "리가",
+          "lng": 24.11,
+          "lat": 56.95,
+          "value": "경유지",
+          "label_side": "top"
+        },
+        {
+          "id": "moscow",
+          "name": "모스크바",
+          "lng": 37.62,
+          "lat": 55.75,
+          "highlight": true,
+          "value": "8월 25일 회담",
+          "label_side": "right"
+        },
+        {
+          "id": "lublin",
+          "name": "루블린",
+          "lng": 22.57,
+          "lat": 51.25,
+          "value": "약 50km 지점 미사일 낙하",
+          "label_side": "left"
+        },
+        {
+          "id": "leipzig",
+          "name": "라이프치히",
+          "lng": 12.37,
+          "lat": 51.34,
+          "value": "나토 수송 거점 드론 폐쇄",
+          "label_side": "left"
+        },
+        {
+          "id": "tulcea",
+          "name": "툴체아",
+          "lng": 28.8,
+          "lat": 45.18,
+          "value": "드론 1대 영공 진입",
+          "label_side": "bottom"
+        },
+        {
+          "id": "kyiv",
+          "name": "키이우",
+          "lng": 30.52,
+          "lat": 50.45,
+          "value": "사전 통보 대상",
+          "label_side": "bottom"
+        },
+        {
+          "id": "hormuz",
+          "name": "호르무즈 해협",
+          "lng": 56.4,
+          "lat": 26.6,
+          "kind": "chokepoint",
+          "value": "세계 석유 수송 약 20%",
+          "label_side": "right"
+        }
+      ],
+      "arcs": [
+        {
+          "from_id": "andrews",
+          "to_id": "riga",
+          "kind": "flow",
+          "weight": 2,
+          "label": "8월 23일",
+          "label_t": 0.55
+        },
+        {
+          "from_id": "riga",
+          "to_id": "moscow",
+          "kind": "flow",
+          "weight": 3,
+          "label": "8월 25일 도착",
+          "label_t": 0.5
+        },
+        {
+          "from_id": "moscow",
+          "to_id": "lublin",
+          "kind": "tension",
+          "weight": 2,
+          "label": "7월 29일 미사일",
+          "label_t": 0.6
+        },
+        {
+          "from_id": "moscow",
+          "to_id": "tulcea",
+          "kind": "tension",
+          "weight": 2,
+          "label": "8월 드론",
+          "label_t": 0.65
+        },
+        {
+          "from_id": "moscow",
+          "to_id": "kyiv",
+          "kind": "tension",
+          "weight": 3,
+          "label": "전선",
+          "label_t": 0.45
+        },
+        {
+          "from_id": "moscow",
+          "to_id": "hormuz",
+          "kind": "flow",
+          "weight": 2,
+          "label": "이란 뒷받침",
+          "label_t": 0.6
+        }
+      ],
+      "regions": [
+        {
+          "name": "United States of America",
+          "role": "subject",
+          "label": "미국"
+        },
+        {
+          "name": "Russia",
+          "role": "rival",
+          "label": "러시아"
+        },
+        {
+          "name": "Ukraine",
+          "role": "contested",
+          "label": "우크라이나"
+        },
+        {
+          "name": "Iran",
+          "role": "rival",
+          "label": "이란"
+        }
+      ],
+      "sea_labels": [
+        {
+          "name": "발트해",
+          "lng": 19.5,
+          "lat": 57.8
+        },
+        {
+          "name": "흑해",
+          "lng": 34.0,
+          "lat": 43.2
+        }
+      ],
+      "legend": [
+        {
+          "label": "방문 동선",
+          "kind": "flow"
+        },
+        {
+          "label": "긴장과 침범",
+          "kind": "tension"
+        }
+      ]
+    },
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 5",
+      "critic": "OpenAI Codex",
+      "violations_fixed": 3,
+      "unresolved": 4,
+      "web_verified": true,
+      "text": "Claude Opus 5 작성 · OpenAI Codex 사실 검수 · 웹 대조 — 지적 3건 반영 · 4건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "미국 CIA 국장이 8월 25일 모스크바에 다녀왔다. 오간 말의 목록은 양쪽 모두 공개하지 않았다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20260829_115457_ec53e620b2.html",
+  "mirror_url": "",
+  "report_theme": "reportage_steel",
+  "parent_context": null,
+  "analysis_timestamp": "2026-08-29T11:24:43.691914+09:00",
+  "total_duration_seconds": 1812.8589510917664,
+  "system_version": "v8.5.9",
+  "revision": 0,
+  "render_revision": 0,
+  "disable_scroll_arc": false
+}
