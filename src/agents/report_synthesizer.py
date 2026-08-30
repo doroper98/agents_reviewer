@@ -38,6 +38,9 @@ STATIC_ASSETS = (
     # v8.5.12 — world-atlas 110m 로컬 사본. maps.js 가 CDN fetch 실패 시
     # 폴백으로 읽는다 (CDN 단일 의존 → 차단 시 육지 없는 "빈 바다" 지도 차단).
     "world-atlas-110m.js",
+    # v8.5.14 — topojson 런타임 로컬 사본. 이게 없으면 CDN 차단 시 maps.js 가
+    # `!window.topojson` 에서 즉시 return 해 atlas 폴백까지 도달하지 못한다.
+    "topojson-client.min.js",
 )
 
 

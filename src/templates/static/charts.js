@@ -882,9 +882,14 @@
       const str = String(sv || '');
       return str.length > n ? str.slice(0, n - 1) + '…' : str;
     };
-    const W = 720, padL = 128, padT = 40, padR = 14;
-    const cellW = Math.max(56, Math.floor((W - padL - padR) / xs.length));
+    // v8.5.14 (Codex 리뷰 P2) — viewBox 를 열 수에 맞춰 늘린다. 고정 720px 에
+    // `cellW = max(56, …)` 를 쓰면 x축이 11열을 넘는 순간 padL + xs*cellW 가 720 을
+    // 넘어 오른쪽 열·라벨이 잘렸다. 가드도 프롬프트도 열 수 상한을 두지 않으므로
+    // (국가×항목 격자는 얼마든지 넓어진다) 폭이 따라 자라야 한다.
+    const padL = 128, padT = 40, padR = 14;
+    const cellW = Math.max(56, Math.floor((720 - padL - padR) / xs.length));
     const cellH = 40;
+    const W = Math.max(720, padL + xs.length * cellW + padR);
     const H = padT + ys.length * cellH + 14;
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
@@ -1194,13 +1199,18 @@
   }
   function loadTopojson() {
     if (window.topojson) return Promise.resolve(window.topojson);
-    return new Promise((resolve, reject) => {
+    // v8.5.14 — CDN → 로컬 사본 순으로 시도. atlas 만 벤더링하고 런타임을
+    // CDN 에 두면 차단 환경에서 결국 지도가 비어버린다 (Codex 리뷰 P2).
+    const _inject = (src) => new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/topojson-client@3';
+      s.src = src;
       s.onload = () => resolve(window.topojson);
       s.onerror = reject;
       document.head.appendChild(s);
     });
+    return _inject('https://cdn.jsdelivr.net/npm/topojson-client@3')
+      .then(t => t || _inject('topojson-client.min.js'))
+      .catch(() => _inject('topojson-client.min.js'));
   }
   // ISO alpha-2 → numeric (subset for common countries; extend as needed)
   const ISO_A2_TO_NUM = {

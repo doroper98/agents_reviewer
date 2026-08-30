@@ -257,3 +257,90 @@ def test_cloudflare_upload_timeout_returns_empty_url() -> None:
     url = asyncio.run(_run())
     assert url == "", "타임아웃인데 빈 URL 로 폴백하지 않음"
     assert _HangingProc.killed, "멎은 wrangler 를 죽이지 않음 (좀비 프로세스)"
+
+
+# ─── v8.5.14 — Codex 리뷰 4건 (P1 1 + P2 3) ──────────────────────────
+# P1 은 v8.5.12 가 CHART-AP-38/44 를 고치면서 *재생산한* 같은 클래스의 회귀다.
+# 가드는 통과하는데 템플릿 게이트가 걸러 카드가 사라지는 형태 — parity 테스트가
+# 2층(가드)만 보고 3층(템플릿 게이트)을 안 봐서 랜딩 전에 못 잡았다.
+
+
+def test_gantt_list_form_renders() -> None:
+    """P1 — gantt 프롬프트 계약은 list. dict{rows} 전용으로 막으면 전량 사라진다.
+
+    실제 발행본의 gantt 도 전부 list 형태다. `validate_chart_data` 는 양형을
+    받는데 `chart_renderable` 만 dict 를 요구하면 가드 통과 → 카드 소멸.
+    """
+    rows = [
+        {"label": "협상", "start": "2026-01", "end": "2026-03"},
+        {"label": "비준", "start": "2026-03", "end": "2026-06"},
+    ]
+    from src.visual.schemas import validate_chart_data
+    ok, _ = validate_chart_data("gantt", rows)
+    assert ok, "list 형 gantt 가 가드에서 탈락"
+    assert chart_renderable({"type": "gantt", "data": rows}), "list 형 gantt 카드 소멸"
+    # dict{rows} 형태도 계속 지원
+    assert chart_renderable({"type": "gantt", "data": {"rows": rows}})
+    # 빈 데이터는 양형 모두 거절
+    assert not chart_renderable({"type": "gantt", "data": []})
+    assert not chart_renderable({"type": "gantt", "data": {"rows": []}})
+
+
+def test_table_reference_not_satisfied_by_unrelated_chart() -> None:
+    """P2 — '표' 는 렌더 채널이 없으므로 무관한 차트가 대신 충족시킬 수 없다.
+
+    v8.5.13 은 '표' 를 그래프와 같은 그룹(needed=None)에 넣어, 섹션에 bar 차트
+    하나만 있어도 "아래 표는 …" 이 살아남았다 — 고치려던 깨진 약속이 그대로 남는다.
+    """
+    from types import SimpleNamespace
+
+    from src.orchestrator import _reconcile_visual_references
+
+    sec = SimpleNamespace(
+        heading="s", prose="아래 표는 지켜볼 지점을 정리한 것이다. 다음 문장.",
+        charts=[{"type": "bar"}],          # 표와 무관한 차트
+    )
+    n = _reconcile_visual_references(SimpleNamespace(sections=[sec], embedded_map=None))
+    assert n == 1, "무관한 차트가 '표' 참조를 충족시켜 버림"
+    assert "아래 표" not in sec.prose
+    # 반면 '그래프' 는 차트가 있으면 정상 충족 (기존 동작 유지)
+    sec2 = SimpleNamespace(heading="s", prose="아래 그래프는 추이를 보여준다.",
+                           charts=[{"type": "bar"}])
+    assert _reconcile_visual_references(
+        SimpleNamespace(sections=[sec2], embedded_map=None)) == 0
+
+
+def test_topojson_runtime_has_local_fallback() -> None:
+    """P2 — atlas 만 벤더링하면 소용없다. 런타임(topojson-client)도 로컬 폴백 필요.
+
+    CDN 차단 시 `!window.topojson` 에서 maps.js 가 즉시 return 해 atlas 로컬
+    폴백까지 도달조차 못 한다.
+    """
+    assert (_REPO / "src" / "templates" / "static" / "topojson-client.min.js").exists()
+    synth = (_REPO / "src" / "agents" / "report_synthesizer.py").read_text(encoding="utf-8")
+    assert '"topojson-client.min.js"' in synth, "STATIC_ASSETS 미등록"
+    for name in ("freeform_essay.html", "reportage.html"):
+        tpl = (_REPO / "src" / "templates" / "archetypes" / name).read_text(encoding="utf-8")
+        assert "topojson-client.min.js" in tpl, f"{name}: 템플릿 폴백 미배선"
+    charts = (_REPO / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
+    assert "topojson-client.min.js" in charts, "charts.js 동적 로더 폴백 미배선"
+
+
+def test_heatmap_grid_viewbox_grows_with_columns() -> None:
+    """P2 — 넓은 격자가 고정 720px viewBox 밖으로 잘리지 않는다.
+
+    `cellW = max(56, …)` 는 11열부터 padL + xs*cellW 가 720 을 넘긴다. 가드도
+    프롬프트도 열 수 상한을 두지 않으므로 폭이 따라 자라야 한다.
+    """
+    js = (_REPO / "src" / "templates" / "static" / "charts.js").read_text(encoding="utf-8")
+    idx = js.find("function drawHeatmapGrid")
+    assert idx > 0
+    body = js[idx:idx + 2500]
+    assert "const W = Math.max(720, padL + xs.length * cellW + padR)" in body, \
+        "viewBox 폭이 열 수에 따라 자라지 않음 (넓은 격자 잘림)"
+    # 산술 검산 — 3~20열에서 콘텐츠가 항상 viewBox 안에 든다
+    pad_l, pad_r = 128, 14
+    for n in range(2, 25):
+        cell_w = max(56, (720 - pad_l - pad_r) // n)
+        w = max(720, pad_l + n * cell_w + pad_r)
+        assert pad_l + n * cell_w + pad_r <= w, f"{n}열에서 잘림"

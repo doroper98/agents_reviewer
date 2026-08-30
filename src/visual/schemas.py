@@ -1362,7 +1362,15 @@ _DICT_DATA_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     "bump": ("periods", "items"),
     "combo": ("bars", "line"),
     "stakeholder_map": ("nodes",),
-    "gantt": ("rows",),
+}
+
+# 양형 type — list 계약과 dict 계약을 모두 받는다 (validate_chart_data 와 동일).
+# gantt 프롬프트 계약은 `[{label, start, end}]` *list* 이고 발행본도 전부 list 인데,
+# v8.5.12 가 dict{rows} 만 요구해 프롬프트 준수 gantt 를 전량 걸러냈다 (Codex 리뷰
+# P1 catch). CHART-AP-38/44 와 같은 클래스의 회귀를 수리하면서 재생산한 것 —
+# 그래서 parity 테스트를 `chart_renderable` 까지 3중으로 확장했다.
+_DUAL_FORM_TYPES: dict[str, str] = {
+    "gantt": "rows",
 }
 
 # nodes/items 처럼 *최소 개수* 가 있는 type (렌더러 조기 return 경계와 정합)
@@ -1387,6 +1395,15 @@ def chart_renderable(chart: Any) -> bool:
     if not data:
         return False
     ctype = str(chart.get("type") or "").lower()
+
+    dual_key = _DUAL_FORM_TYPES.get(ctype)
+    if dual_key:
+        if isinstance(data, dict):
+            return bool(data.get(dual_key))
+        try:
+            return len(data) > 0
+        except TypeError:
+            return False
 
     required = _DICT_DATA_REQUIREMENTS.get(ctype)
     if required:

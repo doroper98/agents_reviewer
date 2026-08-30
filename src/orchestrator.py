@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.5.13"
+VERSION = "v8.5.14"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -789,6 +789,11 @@ def _densify_ts_charts(composed, context) -> None:
             )
 
 
+# v8.5.14 — "이 토큰은 어떤 차트로도 충족될 수 없다" 는 센티널. `None`(아무 차트나)
+# 과 구분해야 한다 — '표' 는 시스템에 렌더 채널 자체가 없기 때문.
+_NEVER_SATISFIED: frozenset = frozenset()
+
+
 def _reconcile_visual_references(composed) -> int:
     """v8.2.9 — 본문이 '(아래 관계도/지도/그래프)' 로 *약속한* 시각물이 실제로 없으면
     그 깨진 약속(dangling reference)을 본문에서 지운다 (사용자 catch 2026-06-27).
@@ -824,12 +829,17 @@ def _reconcile_visual_references(composed) -> int:
         return 0
     has_map = getattr(composed, "embedded_map", None) is not None
     removed = 0
-    # (토큰들, 충족 차트 타입 집합 | None=아무 차트나)
+    # (토큰들, 충족 차트 타입 집합 | None=아무 차트나 | _NEVER_SATISFIED=렌더 채널 없음)
     groups = [
         (("관계도", "관계망"), {"stakeholder_map", "network"}),
-        # v8.5.13 — '표'/'차트' 추가. '도표' 는 있었지만 "아래 *표*는" 은 부분문자열이
-        # 아니라 매칭되지 않았다 (2026-08-29 르포 실사고의 직접 원인).
-        (("그래프", "도표", "차트", "표"), None),
+        # v8.5.13 — '차트' 추가. (그래프/도표/차트는 차트가 하나라도 있으면 충족)
+        (("그래프", "도표", "차트"), None),
+        # v8.5.14 (Codex 리뷰 P2) — '표' 는 **항상 불충족**. 표를 그릴 채널이 시스템에
+        # 아예 없다 (르포 템플릿은 fact_grid·embedded_blocks 미렌더 + watch_signals 빈
+        # 배열 고정, 일반 보고서도 blocks 실질 미사용). v8.5.13 은 '표' 를 그래프와 같은
+        # 그룹(needed=None)에 넣어, 섹션에 *무관한* bar/line 차트 하나만 있어도
+        # "아래 표는 …" 이 살아남았다 — 고치려던 깨진 약속이 그대로 남는다.
+        (("표",), _NEVER_SATISFIED),
     ]
 
     # 지시어 앞에 붙는 위치어 — 이게 있어야 '시각물을 가리키는' 문장으로 본다.
@@ -874,7 +884,12 @@ def _reconcile_visual_references(composed) -> int:
         new_prose = prose
         unmet: list[str] = []
         for tokens, needed in groups:
-            satisfied = bool(chart_types) if needed is None else bool(chart_types & needed)
+            if needed is _NEVER_SATISFIED:
+                satisfied = False          # 렌더 채널 부재 — 어떤 차트도 대신할 수 없다
+            elif needed is None:
+                satisfied = bool(chart_types)
+            else:
+                satisfied = bool(chart_types & needed)
             if satisfied:
                 continue
             unmet.extend(tokens)

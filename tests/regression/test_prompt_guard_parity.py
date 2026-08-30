@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from tests.regression._pytest_compat import pytest
 
-from src.visual.schemas import _TYPE_TO_GUARD, validate_chart_data
+from src.visual.schemas import _TYPE_TO_GUARD, chart_renderable, validate_chart_data
 
 # SYSTEM_PROMPT [type 별 data 스키마] 가 문서화한 모양 그대로.
 # key = chart type, value = 그 type 의 대표 data payload (list 는 여러 변형).
@@ -197,3 +197,31 @@ def test_alias_types_share_guard() -> None:
     """stacked_bar 별칭도 동일 (scenarios) 계약으로 통과."""
     ok, reason = validate_chart_data("stacked_bar", PROMPT_SHAPES["stacked"][0])
     assert ok, reason
+
+
+def test_prompt_shapes_pass_template_gate() -> None:
+    """v8.5.14 — parity 를 **3중** 으로: 가드 통과 → *템플릿 has_data 게이트도 통과*.
+
+    v8.5.12 는 이 층을 검증하지 않아, `chart_renderable` 에 gantt 를 dict{rows}
+    전용으로 등록하는 순간 프롬프트 준수 gantt(list 계약)가 전량 카드에서 사라졌다
+    (Codex 리뷰 P1 catch — CHART-AP-38/44 와 같은 클래스를 수리하면서 재생산).
+    가드만 보면 통과하므로 이 테스트 없이는 영원히 안 보인다.
+    """
+    failures = []
+    for chart_type, payloads in PROMPT_SHAPES.items():
+        for i, data in enumerate(payloads):
+            if not chart_renderable({"type": chart_type, "data": data}):
+                failures.append(f"{chart_type}[{i}]")
+    assert not failures, (
+        "가드는 통과하는데 템플릿 has_data 게이트에서 카드가 사라지는 type:\n"
+        + "\n".join(failures)
+    )
+
+
+def test_empty_data_never_renders() -> None:
+    """빈 데이터는 어떤 type 이든 카드를 만들지 않는다 (CHART-AP-28 빈 프레임)."""
+    for chart_type in PROMPT_SHAPES:
+        for empty in ([], {}, None):
+            assert not chart_renderable({"type": chart_type, "data": empty}), (
+                f"{chart_type}: 빈 데이터({empty!r})인데 렌더 허용"
+            )

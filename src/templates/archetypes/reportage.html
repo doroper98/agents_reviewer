@@ -186,6 +186,9 @@
 <script src="charts.js"></script>
 {% if composed and composed.embedded_map %}
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<!-- v8.5.14 — CDN 차단 시 로컬 사본 폴백. topojson 런타임이 없으면 maps.js 가
+     즉시 return 해 world-atlas 로컬 폴백까지 못 간다 (atlas 만 벤더링해선 무의미). -->
+<script>if(!window.topojson){document.write('<script src="topojson-client.min.js"><\/script>');}</script>
 <script src="maps.js?v=v8_0_0"></script>
 {% endif %}
 </body>

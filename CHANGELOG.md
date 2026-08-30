@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.13
+last_synced_with: v8.5.14
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,18 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.14 — Codex 리뷰 4건 수정 (P1: gantt 카드 소멸 회귀 + P2 3건)
+
+PR #97 에 Codex 자동 리뷰가 4건을 냈고 전부 타당해 수정했다. 특히 **P1 은 v8.5.12 가 CHART-AP-38/44 를 고치면서 재생산한 같은 클래스의 회귀**다.
+
+- **P1 — gantt 카드 전량 소멸**: `chart_renderable` 이 gantt 를 `dict{rows}` 전용으로 등록했는데, 프롬프트 계약도 실제 발행본도 전부 `[{label,start,end}]` **list** 다. `validate_chart_data` 는 양형을 받으므로 가드는 통과하고 템플릿 게이트에서만 걸러져 — **가드 로그조차 남지 않고** 카드가 사라진다. `_DUAL_FORM_TYPES` 로 list·dict 양형 수용.
+- **근본 방지**: `test_prompt_guard_parity.py` 를 **3중 parity** 로 확장 — 프롬프트 모양이 ① 가드 통과 ② **템플릿 has_data 게이트 통과** 를 모두 만족해야 한다. v8.5.12 는 ②를 검증하지 않아 이 회귀를 랜딩 전에 못 잡았다 (원래 §6.1 설계가 3중이었는데 2층만 구현한 것). 빈 데이터가 어떤 type 에서도 카드를 만들지 않는지도 함께 검증.
+- **P2 — '표' 참조를 무관한 차트가 충족**: v8.5.13 이 '표' 를 그래프와 같은 그룹(`needed=None`)에 넣어, 섹션에 bar 차트 하나만 있어도 "아래 표는 …" 이 살아남았다 — 고치려던 깨진 약속이 그대로 남는다. `_NEVER_SATISFIED` 센티널로 분리(표는 시스템에 렌더 채널 자체가 없다).
+- **P2 — topojson 런타임 CDN 의존**: atlas 만 벤더링해도 CDN 차단 시 `!window.topojson` 에서 maps.js 가 즉시 return 해 **atlas 폴백까지 도달조차 못 한다**. `topojson-client.min.js` 를 `STATIC_ASSETS` 에 편입하고 템플릿 2곳 + charts.js 동적 로더에 폴백 배선.
+- **P2 — 넓은 heatmap 격자 잘림**: `cellW = max(56, …)` + 고정 720px viewBox 라 11열부터 오른쪽 열·라벨이 잘렸다. 가드도 프롬프트도 열 수 상한이 없으므로 viewBox 폭을 열 수에 따라 키운다 (2~24열 산술 검산 포함).
+
+**회귀**: 4건 각각에 테스트 추가. 전체 924 pass / 69 fail (= 베이스라인 동일, 신규 파손 0).
 
 ## v8.5.13 — 괄호 없는 문장형 시각물 지시 차단 (WRITE-AP-28)
 
