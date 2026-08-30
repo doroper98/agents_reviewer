@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.14
+last_synced_with: v8.5.15
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.5.15 — `.env` 미지원 키 하나가 봇을 죽이던 문제 (VM-AP-13, hotfix)
+
+v8.5.14 재배포 직후 봇이 `status=1` 로 무한 auto-restart 하며 **전면 정지**했다. 원인은 이번 배포가 아니라 **`.env` 에 미리 적어둔 증권사 API 키 두 줄**이다.
+
+- **증상**: `systemctl restart` 후 `activating (auto-restart)` 반복, 봇 인스턴스 0개. 로그에 `ValidationError ... Extra inputs are not permitted`. `scripts/patch_report.py` 처럼 `Config()` 를 지나는 **CLI 도 전부 같은 지점에서 동시에 죽는다** (발행본 핫픽스도 불가).
+- **원인**: `pydantic-settings` 의 기본값이 `extra="forbid"` 인데 `Config.model_config` 가 이를 재정의하지 않아, `.env` 에 코드가 모르는 키가 **하나라도** 있으면 설정 객체 생성 자체가 실패했다. 아직 아무 기능도 요구하지 않는 문자열 두 줄이 서비스를 죽인 것.
+- **진단이 어려운 이유**: 봇은 config 를 startup 1회만 읽는다. 키를 적은 시점엔 멀쩡히 돌고 **다음 재배포에서야 터지므로**, 원인과 증상 사이에 시간이 벌어져 "방금 머지한 그게 봇을 깼다" 로 오진하기 쉽다.
+- **Fix**: `Config.model_config` 에 `"extra": "ignore"`. 앞으로 쓸 키를 `.env` 에 미리 적어두는 것은 정상 운영 행위이고, 그 대가가 서비스 전면 정지여선 안 된다. 실제로 값이 읽히려면 어차피 필드 선언이 필요하므로 "조용히 무시돼 설정이 안 먹는" 위험은 원래부터 필드 선언 여부로 결정된다.
+- **재발 방지 2중**: ① 회귀 `tests/regression/test_config_env_tolerance.py` (실사고 `.env` 모양 + 임의 미래 키 + 선언된 필드 정상 로딩). ② 재배포 블록(`VM_DEPLOY_PLAYBOOK §1.0`)에 **Stage 3.5 config 프리플라이트** — 살아있는 봇을 내리기 *전에* 새 코드 + 현재 `.env` 조합이 뜨는지 확인하고, 실패하면 재시작을 중단한다(봇은 옛 버전으로 계속 가동). 죽은 뒤 로그를 뒤지는 대신 애초에 안 죽인다.
+- 회귀 카탈로그: `docs/VM_DEPLOY_PLAYBOOK.md` §2 **VM-AP-13**.
 
 ---
 

@@ -432,6 +432,14 @@ class Config(BaseSettings):
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
+        # VM-AP-13 (v8.5.15) — .env 에 본 모델이 모르는 키가 하나라도 있으면
+        # pydantic-settings 기본값 extra="forbid" 가 Config() 생성을 통째로 실패시켜
+        # **봇이 기동 자체를 못 한다** (2026-08-30 실사고: KIS_APP_KEY/KIS_APP_SECRET 를
+        # .env 에 미리 넣어둔 상태로 systemd 재시작 → status=1 무한 auto-restart,
+        # patch_report 같은 CLI 도 동일 지점에서 전멸). 운영자가 앞으로 쓸 키를 미리
+        # 적어두는 것은 정상 운영 행위이고, 그 대가가 서비스 전면 정지여선 안 된다.
+        # 미지원 키는 무시하고 뜬다 — 필요한 키는 어차피 필드로 선언돼야 읽힌다.
+        "extra": "ignore",
     }
 
     @property
