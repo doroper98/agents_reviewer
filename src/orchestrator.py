@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.5.12"
+VERSION = "v8.5.13"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -801,9 +801,21 @@ def _reconcile_visual_references(composed) -> int:
 
     판정:
     - 관계도/관계망 → 그 섹션에 stakeholder_map 또는 network 차트가 있어야 충족.
-    - 그래프/도표 → 그 섹션에 차트가 하나라도 있어야 충족.
+    - 그래프/도표/차트 → 그 섹션에 차트가 하나라도 있어야 충족.
+    - 표 → 그 섹션에 차트가 있어야 충족 (v8.5.13 — 표 전용 렌더 채널이 없다.
+      르포 템플릿은 fact_grid·embedded_blocks 를 렌더하지 않고 watch_signals 도
+      강제로 비운다. 즉 '표' 지시어는 사실상 항상 깨진 약속이다).
     - 지도 → 보고서에 embedded_map 이 있어야 충족(보고서 단위).
-    충족 안 된 토큰의 괄호 지시어 '(…아래 관계도…)' 만 제거하고, 충족되면 보존한다.
+
+    제거 범위 (v8.5.13 — WRITE-AP-28 로 확장):
+    1. **괄호형** '(…아래 관계도…)' → 괄호째 제거 (v8.2.9 원본 동작).
+    2. **문장형** '아래 표는 … 정리한 것이다.' → 문장째 제거. 지시어가 문장 앞머리
+       (주어 자리)에 오고 서술형으로 끝나는 *순수 메타 문장* 만 대상. v8.2.9 는
+       괄호 안만 봤기 때문에 이 형태를 통째로 놓쳤다 (2026-08-29 르포 실사고 —
+       "아래 표는 앞으로 지켜볼 지점들을 위험도 순으로 정리한 것이다" 뒤에 아무것도
+       없었다).
+    3. 문장 *중간* 에 삽입된 지시어("아래 표에서 보듯 매출은 12% 늘었다")는 사실을
+       함께 잃을 수 있으므로 **제거하지 않고 경고만** 남긴다 (본문 훼손 방지).
 
     반환: 제거한 dangling reference 개수.
     """
@@ -815,12 +827,40 @@ def _reconcile_visual_references(composed) -> int:
     # (토큰들, 충족 차트 타입 집합 | None=아무 차트나)
     groups = [
         (("관계도", "관계망"), {"stakeholder_map", "network"}),
-        (("그래프", "도표"), None),
+        # v8.5.13 — '표'/'차트' 추가. '도표' 는 있었지만 "아래 *표*는" 은 부분문자열이
+        # 아니라 매칭되지 않았다 (2026-08-29 르포 실사고의 직접 원인).
+        (("그래프", "도표", "차트", "표"), None),
     ]
+
+    # 지시어 앞에 붙는 위치어 — 이게 있어야 '시각물을 가리키는' 문장으로 본다.
+    # ('표' 는 일반 명사라 위치어 없이 매칭하면 '발표/표시/대표' 등 오탐이 난다)
+    _POINTER = r"(?:아래|위|다음|앞|왼쪽|오른쪽|옆)\s*"
 
     def _paren_re(token: str) -> "_re.Pattern":
         # 선행 공백 + 여는 괄호(반각/전각) … token … 닫는 괄호. 괄호 안만 매칭.
         return _re.compile(r"\s*[\(（][^)）]*" + _re.escape(token) + r"[^)）]*[\)）]")
+
+    def _sentence_re(token: str) -> "_re.Pattern":
+        """문장 첫머리에서 시각물 *자체를 설명하는* 순수 메타 문장 전체.
+
+        예: "아래 표는 앞으로 지켜볼 지점들을 위험도 순으로 정리한 것이다."
+
+        핵심은 **조사로 문장의 역할을 가른다**는 것:
+        - 주격·주제격(`는/은/가/이`) → 문장의 주어가 그 시각물 자체 = 순수 메타 문장.
+          그림이 없으면 문장도 의미가 없다 → 문장째 제거.
+        - 부사격·목적격(`에서/에/를/의` 등) → 문장은 *다른 사실* 을 서술한다
+          ("아래 표에서 보듯 매출은 12% 늘었다"). 지우면 사실까지 잃으므로 보존.
+        """
+        return _re.compile(
+            r"(?:(?<=^)|(?<=[.!?]))\s*" + _POINTER + _re.escape(token)
+            + r"\s*(?:는|은|가|이)\s[^.!?]*[.!?]"
+        )
+
+    def _midsentence_re(token: str) -> "_re.Pattern":
+        """제거하지 않고 경고만 낼 잔존 지시어 (문장 중간 삽입형 등)."""
+        return _re.compile(_POINTER + _re.escape(token))
+
+    dangling_kept: list[str] = []
 
     for sec in composed.sections:
         prose = getattr(sec, "prose", None)
@@ -832,23 +872,38 @@ def _reconcile_visual_references(composed) -> int:
             if isinstance(c, dict)
         }
         new_prose = prose
+        unmet: list[str] = []
         for tokens, needed in groups:
             satisfied = bool(chart_types) if needed is None else bool(chart_types & needed)
             if satisfied:
                 continue
-            for tok in tokens:
-                new_prose, n = _paren_re(tok).subn("", new_prose)
-                removed += n
+            unmet.extend(tokens)
         if not has_map:
-            new_prose, n = _paren_re("지도").subn("", new_prose)
+            unmet.append("지도")
+        for tok in unmet:
+            # ① 괄호형 (v8.2.9)
+            new_prose, n = _paren_re(tok).subn("", new_prose)
             removed += n
+            # ② 문장형 (v8.5.13 — WRITE-AP-28)
+            new_prose, n = _sentence_re(tok).subn(" ", new_prose)
+            removed += n
+            # ③ 문장 중간 삽입형 — 제거 시 사실이 함께 사라지므로 경고만
+            if _midsentence_re(tok).search(new_prose):
+                dangling_kept.append(f"{getattr(sec, 'heading', '?')}/{tok}")
         if new_prose != prose:
             new_prose = _re.sub(r"\s+([.?!,])", r"\1", new_prose)   # ' .' → '.'
             new_prose = _re.sub(r"[ \t]{2,}", " ", new_prose).strip()
             sec.prose = new_prose
+    _log = logging.getLogger(__name__)
     if removed:
-        logging.getLogger(__name__).info(
+        _log.info(
             "[orchestrator] _reconcile_visual_references: dangling 시각물 참조 %d 개 제거", removed,
+        )
+    if dangling_kept:
+        # 자동 제거하면 문장 안의 사실까지 잃는 형태 — 사람이 봐야 한다 (WRITE-AP-28).
+        _log.warning(
+            "[orchestrator] 문장 중간에 박힌 dangling 시각물 참조 %d 건 (자동 제거 X, "
+            "본문 훼손 방지): %s", len(dangling_kept), ", ".join(dangling_kept[:6]),
         )
     return removed
 
