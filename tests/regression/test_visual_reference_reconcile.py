@@ -74,3 +74,65 @@ def test_reportage_block_has_visual_consistency_rule() -> None:
     from src.agents.narrative_composer import _REPORTAGE_BLOCK
     for marker in ("시각물-본문 일치", "깨진 약속", "반드시 emit", "위치-비의존"):
         assert marker in _REPORTAGE_BLOCK, f"시각물 일치 규칙 marker '{marker}' 누락"
+
+
+# ─── WRITE-AP-28 (v8.5.13) — 괄호 없는 *문장형* dangling 참조 ──────────
+# 2026-08-29 르포 실사고: 마지막 섹션이 "아래 표는 앞으로 지켜볼 지점들을 위험도
+# 순으로 정리한 것이다." 로 끝났는데 그 섹션에 차트가 0개였다. v8.2.9 안전망은
+# *괄호 안* 만 매칭했고 토큰 목록에 '표' 도 없어 통째로 놓쳤다.
+
+
+def test_removes_bare_sentence_reference_real_incident() -> None:
+    """실사고 재현 — 괄호 없는 메타 문장이 제거되고 앞뒤 문장은 온전하다."""
+    prose = (
+        "그때 조정되는 것은 수요가 아니라 조달 속도다. "
+        "아래 표는 앞으로 지켜볼 지점들을 위험도 순으로 정리한 것이다. "
+        "한 걸음 물러서서 보면, 진짜 주제는 40억 달러가 아니다."
+    )
+    cr = _report([_sec(prose)])
+    assert _reconcile_visual_references(cr) == 1
+    out = cr.sections[0].prose
+    assert "아래 표" not in out
+    assert "조달 속도다." in out and "40억 달러가 아니다." in out
+
+
+def test_table_token_is_covered() -> None:
+    """'표' 는 렌더 채널이 아예 없다 — 차트가 있어도 '도표/그래프' 와 같은 그룹."""
+    cr = _report([_sec("다음 표는 비중을 정리한 것이다. 이어지는 문장.")])
+    assert _reconcile_visual_references(cr) == 1
+    assert "다음 표" not in cr.sections[0].prose
+
+
+def test_keeps_sentence_carrying_facts() -> None:
+    """문장 중간·부사격 지시어는 **제거하지 않는다** — 사실을 함께 잃기 때문.
+
+    "아래 표에서 보듯 매출은 12% 늘었다" 를 통째로 지우면 12% 라는 사실이 사라진다.
+    조사(는/은/가/이 = 주제격 → 메타 문장 / 에서·를 = 다른 사실 서술)로 가른다.
+    """
+    for prose in (
+        "아래 표에서 보듯 매출은 12% 늘었다.",
+        "아래 그래프를 보면 흐름이 뒤집힌다.",
+    ):
+        cr = _report([_sec(prose)])
+        assert _reconcile_visual_references(cr) == 0, f"사실 문장이 제거됨: {prose}"
+        assert cr.sections[0].prose == prose
+
+
+def test_sentence_reference_preserved_when_chart_exists() -> None:
+    cr = _report([_sec("아래 그래프는 추이를 보여준다.", charts=[{"type": "bar"}])])
+    assert _reconcile_visual_references(cr) == 0
+    assert "아래 그래프는" in cr.sections[0].prose
+
+
+def test_no_false_positive_on_common_nouns() -> None:
+    """'발표 / 대표 / 표시 / 표결' 은 시각물 지시어가 아니다 (위치어 없음)."""
+    prose = "재무부가 발표한 대표 지표를 표시한다. 표결이 있었다."
+    cr = _report([_sec(prose)])
+    assert _reconcile_visual_references(cr) == 0
+    assert cr.sections[0].prose == prose
+
+
+def test_reportage_block_bans_table_reference() -> None:
+    """르포엔 표 렌더 채널이 없으므로 프롬프트가 '아래 표' 를 금지한다 (1차 방어)."""
+    from src.agents.narrative_composer import _REPORTAGE_BLOCK
+    assert "'아래 표' 는 절대 쓰지 마라" in _REPORTAGE_BLOCK

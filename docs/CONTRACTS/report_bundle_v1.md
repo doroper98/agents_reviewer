@@ -425,10 +425,11 @@ producer 코드 경로·직렬화는 real emit 과 동일). `claims=[]` 현실 +
 `prerendered_svg` → `null`, `map`/`confidence` 부재 시 키 존재 + `null`. consumer 는
 옵셔널 객체(`map`/`confidence`) 만 null 체크하면 된다.
 
-> fixture 의 heatmap 차트는 `ComposedSection._drop_invalid_charts` (HeatmapGuard,
-> `{x,y,value}` 요구) 가 fixture 의 `{title,severity}` 형태를 guard-drop 해 번들에
-> 미포함 — fixture 가 오래된 탓이지 빌더 결함 아님 (라이브 composer 는 guard 통과
-> 차트만 emit).
+> (v8.5.11 정정 — CHART-AP-44) 구 HeatmapGuard 가 `{x,y,value}` 만 요구해 fixture 의
+> `{title,severity}` 형태가 guard-drop 되던 것은 fixture 가 아니라 **가드의 결함**이었다
+> — 라이브 composer SYSTEM_PROMPT 가 바로 그 `{title,severity}` 모양을 가르치고 있어
+> 프롬프트 준수 heatmap 이 전량 드롭됐다. v8.5.11 부터 HeatmapGuard 는 양형(격자형
+> `{x,y,value}` + 강도 트랙형 `{title,severity}`)을 수용한다.
 
 ## 5. 변경 이력
 

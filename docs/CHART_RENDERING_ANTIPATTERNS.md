@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.2.18
+last_synced_with: v8.5.12
 ssot_for:
   - "차트 렌더링 코드/데이터 anti-patterns (charts.js + composer prompt 회귀 방지)"
 depends_on:
@@ -1364,6 +1364,88 @@ waypoint 폴리라인 + 모서리 라운딩으로 일반화. 데이터 계약·�
 발행본은 재배포 후 `patch_report.py <id> --rerender-only` 로 URL 동일 적용.
 
 ---
+
+## CHART-AP-44: composer 프롬프트 스키마 ↔ validator 가드 스키마 계약 불일치 — heatmap·stacked 100% silent drop (v8.5.11 신설)
+
+**증상**: composer 가 SYSTEM_PROMPT 의 [type 별 data 스키마] 대로 heatmap
+(`[{title, severity}]`) / stacked (`{scenarios:[...]}`) 를 emit 하면
+`ComposedSection._drop_invalid_charts` (디폴트 ON) 가 **전량 조용히 드롭**.
+발행본 실측: 두 type 모두 2026-05 중순 (가드 배선) 이후 발행 0건 — heatmap 12건·
+stacked 3건의 기존 발행본도 전부 그 이전. 드롭된 type 은 usage_log 에 "0회 emit"
+으로 기록돼 **기아(starvation)로 위장**되고, v8.3.0 자기교정 힌트가 깨진 type 을
+더 자주 emit 시켜 전부 다시 버리는 악순환까지 형성. `tests/regression/
+test_chart_diversity.py` 의 "8종 0회 emit" 관찰 중 heatmap/stacked 가 바로 이 케이스
+(composer 편향으로 오진).
+
+**원인**: CHART-AP-38 (stakeholder_map dispatch 분기 누락) 과 동일 클래스의 변종 —
+이번엔 분기는 있으나 **가드가 요구하는 데이터 모양 자체가 프롬프트·렌더러·템플릿과
+다른 계약**이었다. heatmap 가드는 `[{x,y,value}]` 를, stacked 가드는
+`{categories, series}` 를 요구했지만 프롬프트·`drawHeatmap`/`drawStacked`·두 템플릿
+has_data 게이트는 각각 `[{title,severity}]` / `{scenarios}` 계약. 가드는 자기 모양
+으로만 테스트되고 *프롬프트가 문서화한 모양으로는 한 번도 검증된 적이 없어* 3개 층의
+drift 가 누구에게도 안 보였다.
+
+**Fix (v8.5.11)**: [schemas.py](../src/visual/schemas.py) —
+① `HeatmapGuard` 양형 수용: 격자형 `[{x,y,value}]` (결정 트리 §6 정본) + 강도
+트랙형 `[{title, severity:low|medium|high}]` (v7.1.0 렌더러 계약, 발행본 12건의
+patch_report 재발행 하위호환). ② `StackedBarGuard` 를 렌더 계약 (`{scenarios:
+[{name, segments:[{label,value≥0}]}]}`) 으로 재작성 — 구 `{categories,series}` 는
+템플릿 has_data 가 거르는 렌더 불가 모양이라 reject 로 전환.
+③ [charts.js:`drawHeatmap`](../src/templates/static/charts.js) 에 격자형 렌더 분기
+신설 (`drawHeatmapGrid` — 잉크 농도 사다리 셀 매트릭스, mono guide §10) — 격자형이
+가드를 통과하고도 severity 렌더러에서 깨지는 역방향 사고 차단. ④ 프롬프트 heatmap
+스키마 라인에 격자형 명기. ⑤ **재발 차단 SSOT**:
+[tests/regression/test_prompt_guard_parity.py](../tests/regression/test_prompt_guard_parity.py)
+— `_TYPE_TO_GUARD` 전 type 에 대해 *프롬프트가 문서화한 모양 그대로* 가
+`validate_chart_data` 를 통과하는지 + 새 type 등록 시 fixture 누락을 강제 검출.
+CHART-AP-38/44 클래스(프롬프트↔가드 drift)를 테스트 층에서 통째로 차단.
+
+**교훈**: 가드·렌더러·프롬프트·템플릿 4층이 각자 데이터 모양의 사본을 가진다 —
+어느 층을 고치든 **프롬프트 문서 모양의 라운드트립 테스트** 없이는 정합을 보장할 수
+없다. 신규 type 추가 절차에 parity fixture 등록이 필수 단계로 추가됨.
+
+## CHART-AP-45: 관측 불가능한 시각물 손실 층 — 침묵 게이트·markers 필수·CDN 단일 의존·폴백 유실 (v8.5.12 신설)
+
+**증상**: 가드(CHART-AP-44)를 통과한 시각물도 독자에게 닿기 전 네 곳에서 조용히
+사라졌고, **어느 손실도 서버 로그에 한 줄을 남기지 않았다**.
+① 두 archetype 템플릿(`freeform_essay` / `reportage`)이 "그릴 데이터가 있는가"
+판정을 각자 Jinja 로 복제 소유 — drift 로 freeform 엔 폐기된 `network`(CHART-AP-36)
+분기가 남고 `stakeholder_map` 분기가 없어 노드 1개짜리 관계도가 빈 카드로 통과했다
+(CHART-AP-38 재발 대기 상태). ② `maps.js` 가 **markers 0개면 지도 전체를 미렌더** —
+`rings`(사거리권)·`regions`·`sea_labels` 만으로 성립하는 payload 는 제목·줌 버튼만
+있는 빈 상자로 발행 (rings 가 v7.5.0 도입 후 발행 실적 0회였던 배경 중 하나).
+③ world-atlas 가 `cdn.jsdelivr.net` **단일 의존** — CDN 차단 시 육지 없는 '빈 바다'
+지도. ④ `_recover_head_loss` 파국 폴백이 heading/prose 만 salvage 하고
+`charts`·`footnotes`·`images` 를 통째로 버림 — 발행본 335건 중 **30건(9%)이 1-섹션
+폴백이었고 그 전부가 시각물 0**.
+
+**원인**: 손실 경로마다 "실패해도 조용히 계속 간다" 는 graceful degrade 만 있고
+*관측* 이 없었다. 드롭은 `_drop_invalid_charts` 의 bot.log 한 줄이 전부였고, 템플릿
+게이트·렌더러 조기 return·지도 미렌더는 로그조차 없었다. 그 결과 손실이
+`usage_log` 에 "0회 emit"(=기아)으로 위장돼 자기교정 힌트가 깨진 type 을 더
+밀어넣는 악순환까지 형성됐다 (CHART-AP-44 의 자기증폭 고리).
+
+**Fix (v8.5.12) — 시각물 전달 보증 (Visual Delivery Guarantee)**
+원칙: *방출된 시각물은 렌더되거나, 드롭 사유가 관측되거나 둘 중 하나다. 셋째 길(침묵)은 없다.*
+① **has_data 게이트 SSOT** — [schemas.py:`chart_renderable`](../src/visual/schemas.py)
+한 함수로 통합, Jinja 필터로 두 템플릿에 주입 (`env.filters["chart_renderable"]`).
+미등록 dict-데이터 type 은 렌더 허용 + 경고(조용히 버리지 않는다).
+② **emit/kept 2단 계측** — [models.py:`ComposedSection._dropped_charts`](../src/models.py)
+private attr 에 드롭 사유 기록 → orchestrator 가 `usage_log.append_run(dropped_types=...)`
+로 남기고, `analyze` 가 `plumbing_suspect_types`(emit 됐는데 전량 drop)를 **기아와
+분리** 한다. 재균형 힌트는 배관 이상 type 을 제외하고, `warn_if_starved` 가
+`PLUMBING FAULT` 로 별도 경고 — 악순환 고리 절단.
+③ **지도 렌더 조건 완화** — markers·rings·regions·sea_labels·arcs 중 **하나라도**
+있으면 렌더.
+④ **world-atlas 로컬 폴백** — `src/templates/static/world-atlas-110m.js` 를
+`STATIC_ASSETS` 에 편입, `maps.js`/`charts.js` 가 CDN 실패 시 로컬 사본으로 폴백
+(`window.__WORLD_TOPO__` 캐시 공유).
+⑤ **폴백 시각물 보존** — `_recover_head_loss` 가 부분 객체의 완결된 charts·
+footnotes·images 도 함께 salvage.
+회귀: [tests/regression/test_visual_delivery_guarantee.py](../tests/regression/test_visual_delivery_guarantee.py) 12종.
+
+**교훈**: graceful degrade 는 *관측 가능할 때만* 안전하다. 조용히 계속 가는 폴백은
+손실을 없애는 게 아니라 손실을 **보이지 않게** 만든다 — 수개월간 아무도 몰랐던 이유.
 
 ## 본 문서 갱신 규칙 (DOCS_GOVERNANCE 정합)
 

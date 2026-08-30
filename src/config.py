@@ -16,6 +16,12 @@ class Config(BaseSettings):
     cloudflare_account_id: str = ""
     cloudflare_api_token: str = ""
     cloudflare_project_name: str = "analysis-reports"
+    # v8.5.12 — wrangler pages deploy 서브프로세스 상한(초). 상한이 없던 시절
+    # 업로드가 멎으면 `await proc.communicate()` 가 영원히 걸려 보고서를 다 만들고도
+    # 링크·파일 첨부가 영영 안 갔다 (2026-08-25 장마감 브리핑 실제 사고). 초과 시
+    # kill → 빈 URL 반환 → 자격증명 없음과 동일한 graceful degrade 경로로 합류해
+    # *파일 첨부 폴백은 항상 도착*한다. 0 이하면 상한 없음(구 동작).
+    wrangler_timeout_sec: int = 180
     report_output_dir: str = "reports"
     # v5.6.3 — 관리자 비공개 목록 페이지 토큰. 설정 시 {token}.html 에 전체 보고서
     # 목록(토큰 URL 포함)을 생성 — 접속 주소는 /{token} (Pages 가 .html 숨김 서빙,

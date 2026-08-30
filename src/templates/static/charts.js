@@ -855,10 +855,100 @@
   // ----- HEATMAP -----
   // v7.1.0 리디자인 (사용자 승인): 풀폭 해치 띠 → 5칸 강도 트랙 (채운 칸 수 =
   // 위험도) + 우측 등급 태그 + 범례. 농도/칸수가 서수 위계를 직접 운반 — 패턴
-  // 식별 퀴즈 폐기. 데이터 계약 ({title, severity}) 불변.
+  // 식별 퀴즈 폐기.
+  // v8.5.11 (CHART-AP-44): 데이터 계약 양형 — 강도 트랙형 [{title,severity}]
+  // (v7.1.0, 기존 렌더 유지) + 격자형 [{x,y,value}] (결정 트리 §6 의 2축 조합
+  // 강도 — 국가×항목 등). 격자형은 잉크 농도 사다리 셀 매트릭스로 렌더.
+  function drawHeatmapGrid(stage, payload, t) {
+    const data = (payload.data || []);
+    const xs = [], ys = [];
+    data.forEach(d => {
+      const x = String(d.x), y = String(d.y);
+      if (xs.indexOf(x) === -1) xs.push(x);
+      if (ys.indexOf(y) === -1) ys.push(y);
+    });
+    if (xs.length < 2 || ys.length < 2) return;
+    const byKey = {};
+    let vmin = Infinity, vmax = -Infinity, maxKey = null;
+    data.forEach(d => {
+      const v = +d.value;
+      if (!isFinite(v)) return;
+      byKey[String(d.x) + ' ' + String(d.y)] = v;
+      if (v < vmin) vmin = v;
+      if (v > vmax) { vmax = v; maxKey = String(d.x) + ' ' + String(d.y); }
+    });
+    if (!isFinite(vmin) || !isFinite(vmax)) return;
+    const trunc = (sv, n) => {
+      const str = String(sv || '');
+      return str.length > n ? str.slice(0, n - 1) + '…' : str;
+    };
+    // v8.5.14 (Codex 리뷰 P2) — viewBox 를 열 수에 맞춰 늘린다. 고정 720px 에
+    // `cellW = max(56, …)` 를 쓰면 x축이 11열을 넘는 순간 padL + xs*cellW 가 720 을
+    // 넘어 오른쪽 열·라벨이 잘렸다. 가드도 프롬프트도 열 수 상한을 두지 않으므로
+    // (국가×항목 격자는 얼마든지 넓어진다) 폭이 따라 자라야 한다.
+    const padL = 128, padT = 40, padR = 14;
+    const cellW = Math.max(56, Math.floor((720 - padL - padR) / xs.length));
+    const cellH = 40;
+    const W = Math.max(720, padL + xs.length * cellW + padR);
+    const H = padT + ys.length * cellH + 14;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // 잉크 농도 사다리 (mono guide §10 — hue 금지, ≤4단 + 최대셀 액센트 테두리)
+    const ladder = [0.06, 0.14, 0.24, 0.42, 0.60];
+    const step = (v) => {
+      if (vmax === vmin) return 2;
+      return Math.min(4, Math.floor(((v - vmin) / (vmax - vmin)) * 5));
+    };
+    const fmt = (v) => Math.abs(v) >= 100 ? d3.format(',.0f')(v)
+      : (Number.isInteger(v) ? String(v) : d3.format(',.1f')(v));
+    xs.forEach((x, xi) => {
+      svg.append('text').attr('x', padL + xi * cellW + cellW / 2).attr('y', padT - 12)
+        .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 10.5).attr('fill', t.muted).text(trunc(x, 10));
+    });
+    ys.forEach((y, yi) => {
+      svg.append('text').attr('x', padL - 12).attr('y', padT + yi * cellH + cellH / 2 + 4)
+        .attr('text-anchor', 'end').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 11.5).attr('font-weight', 500).attr('fill', t.text)
+        .text(trunc(y, 12));
+      xs.forEach((x, xi) => {
+        const key = x + ' ' + y;
+        const v = byKey[key];
+        const cx = padL + xi * cellW, cy = padT + yi * cellH;
+        if (v === undefined) {
+          svg.append('rect').attr('x', cx + 2).attr('y', cy + 2)
+            .attr('width', cellW - 4).attr('height', cellH - 4).attr('rx', 2)
+            .attr('fill', t.text).attr('fill-opacity', 0.03);
+          return;
+        }
+        const op = ladder[step(v)];
+        svg.append('rect').attr('x', cx + 2).attr('y', cy + 2)
+          .attr('width', cellW - 4).attr('height', cellH - 4).attr('rx', 2)
+          .attr('fill', t.text).attr('fill-opacity', op);
+        svg.append('text').attr('x', cx + cellW / 2).attr('y', cy + cellH / 2 + 5)
+          .attr('text-anchor', 'middle')
+          .attr('font-family', "Newsreader, 'Noto Serif KR', serif")
+          .attr('font-size', 13.5).attr('font-weight', 600)
+          .attr('fill', op >= 0.42 ? t.card : t.text)
+          .attr('data-anim', 'static').text(fmt(v));
+        if (key === maxKey) {
+          svg.append('rect').attr('x', cx + 2).attr('y', cy + 2)
+            .attr('width', cellW - 4).attr('height', cellH - 4).attr('rx', 2)
+            .attr('fill', 'none').attr('stroke', t.accent).attr('stroke-width', 1.8)
+            .attr('data-anim', 'static');
+        }
+      });
+    });
+  }
+
   function drawHeatmap(stage, payload, t) {
     const data = (payload.data || []);
     if (!data.length) return;
+    // CHART-AP-44 — 격자형 판별: 행이 x/y/value 를 갖고 severity 가 없으면 격자 렌더
+    if (data[0] && data[0].severity === undefined
+        && data[0].x !== undefined && data[0].y !== undefined && data[0].value !== undefined) {
+      return drawHeatmapGrid(stage, payload, t);
+    }
     const W = 720, rowH = 34, top = 30;
     const H = top + data.length * rowH + 10;
     const x0 = 184, cells = 5;
@@ -1086,24 +1176,41 @@
   // ----- CHOROPLETH — 국가별 색농도 -----
   // Lazy-loaded topojson + world-atlas
   let _worldPromise = null;
+  // v8.5.12 — CDN 실패 시 로컬 사본(STATIC_ASSETS 로 report dir 에 동기화) 폴백.
+  // maps.js 와 window.__WORLD_TOPO__ 캐시를 공유한다 (둘 중 먼저 받은 쪽이 채움).
+  function _loadLocalWorld() {
+    return new Promise((resolve) => {
+      if (window.__WORLD_TOPO__) { resolve(window.__WORLD_TOPO__); return; }
+      const s = document.createElement('script');
+      s.src = 'world-atlas-110m.js';
+      s.onload = () => resolve(window.__WORLD_TOPO__ || null);
+      s.onerror = () => resolve(null);
+      document.head.appendChild(s);
+    });
+  }
   function loadWorld() {
     if (window.__WORLD_TOPO__) return Promise.resolve(window.__WORLD_TOPO__);
     if (_worldPromise) return _worldPromise;
     _worldPromise = fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
       .then(r => r.ok ? r.json() : null)
-      .then(w => { if (w) window.__WORLD_TOPO__ = w; return w; })
-      .catch(() => null);
+      .then(w => { if (w) { window.__WORLD_TOPO__ = w; return w; } return _loadLocalWorld(); })
+      .catch(() => _loadLocalWorld());
     return _worldPromise;
   }
   function loadTopojson() {
     if (window.topojson) return Promise.resolve(window.topojson);
-    return new Promise((resolve, reject) => {
+    // v8.5.14 — CDN → 로컬 사본 순으로 시도. atlas 만 벤더링하고 런타임을
+    // CDN 에 두면 차단 환경에서 결국 지도가 비어버린다 (Codex 리뷰 P2).
+    const _inject = (src) => new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/topojson-client@3';
+      s.src = src;
       s.onload = () => resolve(window.topojson);
       s.onerror = reject;
       document.head.appendChild(s);
     });
+    return _inject('https://cdn.jsdelivr.net/npm/topojson-client@3')
+      .then(t => t || _inject('topojson-client.min.js'))
+      .catch(() => _inject('topojson-client.min.js'));
   }
   // ISO alpha-2 → numeric (subset for common countries; extend as needed)
   const ISO_A2_TO_NUM = {

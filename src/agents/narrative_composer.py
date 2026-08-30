@@ -301,7 +301,9 @@ SYSTEM_PROMPT = (
     "  · stacked: {scenarios:[{name, segments:[{label,value:number}]}]}  시나리오 × 행위자\n"
     "             (value 는 *양수 magnitude 만*. 부호 있는 점수면 bar 로)\n"
     "  · bubble:  [{label, x:number, y:number, size?:number}]      확률 × 영향\n"
-    "  · heatmap: [{title, severity:'low'|'medium'|'high'}]        단계별 위험도\n\n"
+    "  · heatmap: [{x, y, value:number}]                           2D 격자 강도 (결정 트리 6 —\n"
+    "             국가×항목·시나리오×영향처럼 *두 축 조합마다 세기* 가 있을 때. ≥2×2, ≥4×4 권장)\n"
+    "             또는 [{title, severity:'low'|'medium'|'high'}]    단계별 위험도 *리스트* (축이 1개일 때)\n\n"
     "신규 3종 (Tier 2 — v4.4.0):\n"
     "  · dual_line:  {                                                두 metric *상관관계* — 금리 vs 환율 등\n"
     '      \"left\":  {\"label\":\"원유\", \"unit\":\"$/bbl\", \"series\":[{x,y},...]},\n'
@@ -1082,7 +1084,11 @@ _REPORTAGE_BLOCK = (
     "(지도는 ``embedded_map``)에 함께 emit 한다. 반대로 emit 하지 않을 시각물은 본문에서\n"
     "*가리키지 마라*. 없는 그림을 가리키는 '깨진 약속'은 독자가 빈 자리를 보게 만드는\n"
     "치명적 결함이다 — 지시어를 썼으면 그림이 거기 있어야 하고, 그림이 없으면 지시어를\n"
-    "빼라(괄호 째). 특히 *2막(이해당사자)은 ``stakeholder_map`` 을 반드시 emit* 한다\n"
+    "빼라(괄호 째). ★ **'아래 표' 는 절대 쓰지 마라** — 르포에는 표를 그릴 채널이 아예\n"
+    "없다(fact_grid·embedded_blocks 미렌더, watch_signals 는 빈 배열 고정). 정리해서\n"
+    "보여주고 싶으면 *차트* 로 emit 하거나 본문 문장으로 풀어써라. 괄호 없는 문장\n"
+    "('아래 표는 …을 정리한 것이다')도 똑같이 금지 — 실제로 이 형태가 빈 자리를 남긴\n"
+    "사고가 있었다(2026-08-29). 특히 *2막(이해당사자)은 ``stakeholder_map`` 을 반드시 emit* 한다\n"
     "(행위자를 본문에서 '아래 관계도'로 가리켰다면 더더욱 필수).\n"
     "- 2막 이해당사자는 ``stakeholder_map`` 차트로 드러낸다 (르포 전용, *필수*). 각 노드에\n"
     "  col(left|center|right — 진영 칼럼, 중앙=접점/허브), flag(ISO 국가코드 — 전 국가 지원),\n"
@@ -2161,6 +2167,22 @@ class NarrativeComposer:
                 v = obj.get(opt)
                 if isinstance(v, str) and v.strip():
                     section_data[opt] = v
+            # v8.5.12 — 부분 객체에 살아남은 시각물도 함께 salvage.
+            # 그전까지 이 복구 경로는 heading/prose 만 건져 charts·footnotes·images 를
+            # 통째로 버렸다 (발행본의 9%가 1-섹션 폴백 = 시각물 전멸). 완결된 차트
+            # dict 만 넘기면 되고, 위반 차트는 `_drop_invalid_charts` 가 어차피 거른다.
+            _charts = obj.get("charts")
+            if isinstance(_charts, list):
+                _ok = [
+                    c for c in _charts
+                    if isinstance(c, dict) and c.get("type") and c.get("data") is not None
+                ]
+                if _ok:
+                    section_data["charts"] = _ok
+            for _opt_list in ("footnotes", "images"):
+                _v = obj.get(_opt_list)
+                if isinstance(_v, list) and _v:
+                    section_data[_opt_list] = _v
             try:
                 return ComposedReport(
                     headline="",

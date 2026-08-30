@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    field_validator,
+    model_validator,
+)
 
 from src.timeutil import now_kst
 
@@ -586,6 +593,13 @@ def _normalize_video_dict(v, keys: tuple[str, ...]) -> dict | None:
 class ComposedSection(BaseModel):
     """Composer 가 자유롭게 짠 한 섹션. ``prose`` 가 본문이고, 시각화는 모두 선택적."""
 
+    # v8.5.12 — `_drop_invalid_charts` 가 버린 차트의 기록 (telemetry 전용).
+    # Pydantic private attr 라 직렬화·번들 계약·DATA_MODELS 에 영향 없음.
+    # orchestrator 가 usage_log 의 emit/kept 2단 기록 + 드롭 표면화에 사용한다.
+    # 배관 이상(프롬프트↔가드 계약 불일치, CHART-AP-44)을 "기아" 로 오판하지
+    # 않으려면 *버린 것* 도 세어야 한다.
+    _dropped_charts: list[dict] = PrivateAttr(default_factory=list)
+
     heading: str
     kicker: str = ""              # 짧은 도입구 (생략 가능)
     prose: str                     # 본문 — 마크다운 단락 자유
@@ -758,6 +772,9 @@ class ComposedSection(BaseModel):
                 valid.append(ch)
             else:
                 dropped += 1
+                self._dropped_charts.append(
+                    {"type": ctype, "title": ch.get("title") or "", "reason": reason}
+                )
                 logger.warning(
                     "[composed_section] dropped invalid chart in %r: "
                     "title=%r, type=%s, reason=%s",

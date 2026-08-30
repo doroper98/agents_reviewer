@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.5.3
+last_synced_with: v8.5.12
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -67,7 +67,7 @@ v4.5.7 의 *실제* 데이터 흐름은 `AnalysisRequest → ContextAnalysis →
 |------|------|-----------|
 | `AnalysisRequest` | 사용자 요청 (텔레그램 메시지 → 모델). event_description / chat_id / mode / **`report_format: "standard"\|"reportage"` + `user_directive: str` (v8.0.0 — 르포 포맷 축 + 트리거를 떼어낸 사용자 앵글. mode 와 직교, standard 면 기존과 동일)**. **`report_kind: "standard"\|"daily_briefing"\|"market_briefing"` (v8.5.3 — 보고서 *출처*. 스케줄러가 명시 설정, mode·report_format 과 직교. 보고서 목록 배지 판별 SSOT — 제목·분류는 LLM 생성이라 추측 판별 금지)**. | `src/models.py` |
 | `ContextAnalysis` | ContextAnalyst (Opus 4.7) 출력. event_name / category / summary / timeline / key_figures / sources / instruments_mentioned / time_series / **`provenance: list[dict]` (v6.0.0 Phase V6-8 — 각 사실의 source_date/scope_note/source_url, additive·Optional, `V6_PROVENANCE` 시 채움)** | `src/models.py` |
-| `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)** / **`footnotes: list[{term, explanation}]` (v5.5.5 전문 용어 문단 하단 주석)** / **`narrative_phase: "기"|"승"|"전"|"결"|""` (v7.0.0 Track B — 스크롤 아크 단계 라벨, additive·Optional. 유효값 외엔 validator 가 "" 회복 → `src/visual/scroll_arc.py` 위치 폴백, AP-V7-4)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. | `src/models.py` |
+| `ComposedSection` | composer 가 짠 1개 자유 섹션. heading / kicker / prose / **`charts: list[dict]` (v4.2.0)** / pull_quote / cited_claim_ids / **`lede` / `analogy` / `fact_grid` / `dropcap` (v4.5.0 editorial 4종)** / **`footnotes: list[{term, explanation}]` (v5.5.5 전문 용어 문단 하단 주석)** / **`narrative_phase: "기"|"승"|"전"|"결"|""` (v7.0.0 Track B — 스크롤 아크 단계 라벨, additive·Optional. 유효값 외엔 validator 가 "" 회복 → `src/visual/scroll_arc.py` 위치 폴백, AP-V7-4)**. legacy `embedded_charts: list[str]` 와 `embedded_blocks: list[str]` 는 보존만. **v8.5.12 — private attr `_dropped_charts: list[dict]`** (`{type, title, reason}`): `_drop_invalid_charts` 가 버린 차트의 telemetry 기록. Pydantic PrivateAttr 이라 직렬화·ReportBundle 계약에 나타나지 않는다 (필드 아님). orchestrator 가 usage_log 의 emit/kept 2단 기록 + 드롭 표면화에 사용 — 배관 이상을 기아로 오판하지 않기 위함 (CHART-AP-45). | `src/models.py` |
 | `ComposedReport` | NarrativeComposer (Opus 4.7) 단일 호출 산출. headline / deck / sections / closing / **(v4.0.0) watch_signals + contradictions + confidence_summary + confidence_score + (v4.2.0) embedded_map**. v4.0.0 부터 보고서 SSOT. | `src/models.py` |
 | `FullAnalysisResult` | 모든 결과 + 메타데이터 컨테이너. request / context / composed_report / report_url / report_path / report_theme / **(v4.5.5) system_version + revision** / analysis_timestamp / total_duration_seconds. v3 시대 optional 필드 (strategy / blocks / findings / judgment / players / dynamics / chain_reaction / scenarios / visuals) 는 호환 목적으로 보존되나 v4.5.7 호출 경로에서는 채워지지 않는다. | `src/models.py` |
 | `WatchSignal` | 감시 신호 — signal_id / description / measurement / direction / deadline / parent_chat_id / fired / fired_at. `WatchlistRegistry` (SQLite) 에 영구 저장 (Anti-pattern #11). composer 의 `composed_report.watch_signals: list[dict]` → `convert_watch_signals()` 변환. | `src/models.py` |

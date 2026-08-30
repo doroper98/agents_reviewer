@@ -25,12 +25,15 @@ Public API:
 
 from __future__ import annotations
 
+import logging
 import math
 import re
 from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+logger = logging.getLogger(__name__)
 
 
 # ─── 시간 파싱 (GanttGuard) ─────────────────────────────────────────────
@@ -433,38 +436,87 @@ class HeatmapCell(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class HeatmapGuard(BaseModel):
-    data: list[HeatmapCell] = Field(min_length=1)
+class HeatmapSeverityRow(BaseModel):
+    """heatmap 강도 트랙형 행 — v7.1.0 렌더러 계약 ({title, severity})."""
+
+    title: str
+    severity: str
+
+    model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
-    def validate_finite(self) -> "HeatmapGuard":
-        if not all(math.isfinite(c.value) for c in self.data):
-            raise ValueError("CHART-AP-3 가드: heatmap value 에 NaN/inf")
+    def validate_severity(self) -> "HeatmapSeverityRow":
+        if str(self.severity).lower() not in ("low", "medium", "high"):
+            raise ValueError(
+                f"CHART-AP-44 가드: heatmap severity 는 low|medium|high — {self.severity!r}"
+            )
         return self
 
 
-class StackedBarGuard(BaseModel):
-    """stacked: categories[] × series[*].values[]."""
+class HeatmapGuard(BaseModel):
+    """heatmap 양형 수용 (CHART-AP-44 — 프롬프트↔가드 계약 불일치 수정, v8.5.11).
 
-    categories: list[str] = Field(min_length=1)
-    series: list[dict] = Field(min_length=1)
+    v7.1.0 이래 composer 프롬프트·렌더러(drawHeatmap)는 강도 트랙형
+    ``[{title, severity}]`` 을 쓰는데 본 가드는 격자형 ``[{x, y, value}]`` 만
+    받아 프롬프트 준수 heatmap 이 100% silent drop 됐다 (발행본 기준 2026-05
+    중순 이후 heatmap 발행 0건의 근본 원인 — CHART-AP-38 과 동일 클래스).
+    - 격자형 ``[{x, y, value}]``: 결정 트리 §6 (두 축 조합 강도, 국가×항목 등)
+    - 강도 트랙형 ``[{title, severity:'low'|'medium'|'high'}]``: v7.1.0 계약
+      (발행본 12건 하위호환 — patch_report 재발행 시 재검증 통과 필요)
+    행 첫 원소의 키로 판별하며, 두 형태 혼합은 reject.
+    """
+
+    data: list[dict] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_shape(self) -> "StackedBarGuard":
-        n = len(self.categories)
-        for s in self.series:
-            if not isinstance(s, dict):
-                raise ValueError("CHART-AP-1 가드: series 항목이 dict 가 아님")
-            values = s.get("values") or []
-            if len(values) != n:
-                raise ValueError(
-                    f"CHART-AP-1 가드: series {s.get('name')!r} 의 values 개수 "
-                    f"({len(values)}) ≠ categories ({n})"
-                )
-            for v in values:
-                if not isinstance(v, (int, float)) or not math.isfinite(float(v)):
+    def validate_rows(self) -> "HeatmapGuard":
+        first = self.data[0]
+        if isinstance(first, dict) and "severity" in first:
+            for row in self.data:
+                HeatmapSeverityRow.model_validate(row)
+        else:
+            cells = [HeatmapCell.model_validate(row) for row in self.data]
+            if not all(math.isfinite(c.value) for c in cells):
+                raise ValueError("CHART-AP-3 가드: heatmap value 에 NaN/inf")
+        return self
+
+
+class StackedSegment(BaseModel):
+    label: str
+    value: float
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StackedScenario(BaseModel):
+    name: str
+    segments: list[StackedSegment] = Field(min_length=1, max_length=8)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class StackedBarGuard(BaseModel):
+    """stacked: {scenarios:[{name, segments:[{label, value}]}]}.
+
+    CHART-AP-44 (v8.5.11): 구 가드는 ``{categories, series}`` 를 요구했지만
+    composer 프롬프트·drawStacked 렌더러·두 템플릿 has_data 게이트는 전부
+    ``{scenarios}`` 계약이다 (발행본 3건도 전부 scenarios 형태). 프롬프트 준수
+    stacked 가 100% silent drop 되던 것을 렌더 계약 쪽으로 통일.
+    value 는 양수 magnitude (부호 있는 점수는 bar — 프롬프트 계약과 동일).
+    """
+
+    scenarios: list[StackedScenario] = Field(min_length=1, max_length=8)
+
+    @model_validator(mode="after")
+    def validate_values(self) -> "StackedBarGuard":
+        for sc in self.scenarios:
+            for seg in sc.segments:
+                if not math.isfinite(seg.value):
+                    raise ValueError("CHART-AP-3 가드: stacked value 에 NaN/inf")
+                if seg.value < 0:
                     raise ValueError(
-                        f"CHART-AP-3 가드: stacked value 에 비-finite 값 — {v!r}"
+                        "CHART-AP-44 가드: stacked segment value 는 양수 magnitude "
+                        f"(부호 있는 값은 bar 로) — {sc.name!r}/{seg.label!r}={seg.value!r}"
                     )
         return self
 
@@ -1202,7 +1254,7 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
         return True, "no_typed_guard"
 
     try:
-        # gantt 는 rows 키 / network 는 nodes+links / stacked 는 categories+series.
+        # gantt 는 rows 키 / stacked 는 scenarios (CHART-AP-44) / 나머지 dict 형은 kwargs.
         if chart_type in ("gantt",):
             if isinstance(data, list):
                 guard(rows=data)  # type: ignore[arg-type]
@@ -1211,10 +1263,11 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
             else:
                 guard(rows=[data] if isinstance(data, dict) else [])  # type: ignore[arg-type]
         elif chart_type in ("stacked", "stacked_bar"):
+            # CHART-AP-44 — 계약은 {scenarios:[{name, segments}]} (프롬프트·렌더러·템플릿 정합)
             if isinstance(data, dict):
                 guard(**data)
             else:
-                return False, "stacked 는 {categories, series} dict 형식 필요"
+                return False, "stacked 는 {scenarios:[{name, segments}]} dict 형식 필요"
         elif chart_type == "dual_line":
             # {left: {...}, right: {...}}
             if isinstance(data, dict):
@@ -1284,3 +1337,104 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
         return False, str(e)
 
     return True, "ok"
+
+
+# ─── 템플릿 has_data 게이트 SSOT (v8.5.12) ──────────────────────────────
+# 두 archetype 템플릿(freeform_essay / reportage)이 각자 Jinja 로 들고 있던
+# "이 차트를 렌더할 데이터가 있는가" 판정을 *한 곳* 으로 통합한다.
+#
+# 통합 이유 (V9 감사): 규칙이 두 벌로 중복 소유되며 drift 가 쌓였다 —
+#  · freeform 쪽엔 폐기된 `network`(CHART-AP-36) 분기가 남고 `stakeholder_map`
+#    분기가 없었다 (CHART-AP-38 재발 대기 상태)
+#  · 이 게이트는 서버 로그를 한 줄도 남기지 않아 *완전 침묵* 드롭 층이었다
+#    (가드는 통과했는데 카드가 아예 안 그려지는 손실이 관측 불가)
+# 신규 dict-데이터 type 을 추가하면 여기 한 곳만 고치면 두 템플릿에 함께 적용된다.
+_DICT_DATA_REQUIREMENTS: dict[str, tuple[str, ...]] = {
+    # type: 데이터 dict 에서 *비어있지 않아야* 하는 키 (하나라도 비면 렌더 불가)
+    "dual_line": ("left", "right"),
+    "forecast": ("actual",),
+    "stacked": ("scenarios",),
+    "stacked_bar": ("scenarios",),
+    "stacked_area": ("series",),
+    "slope": ("items",),
+    "small_multiples": ("panels",),
+    "sankey": ("nodes", "links"),
+    "bump": ("periods", "items"),
+    "combo": ("bars", "line"),
+    "stakeholder_map": ("nodes",),
+}
+
+# 양형 type — list 계약과 dict 계약을 모두 받는다 (validate_chart_data 와 동일).
+# gantt 프롬프트 계약은 `[{label, start, end}]` *list* 이고 발행본도 전부 list 인데,
+# v8.5.12 가 dict{rows} 만 요구해 프롬프트 준수 gantt 를 전량 걸러냈다 (Codex 리뷰
+# P1 catch). CHART-AP-38/44 와 같은 클래스의 회귀를 수리하면서 재생산한 것 —
+# 그래서 parity 테스트를 `chart_renderable` 까지 3중으로 확장했다.
+_DUAL_FORM_TYPES: dict[str, str] = {
+    "gantt": "rows",
+}
+
+# nodes/items 처럼 *최소 개수* 가 있는 type (렌더러 조기 return 경계와 정합)
+_MIN_LEN_REQUIREMENTS: dict[str, tuple[str, int]] = {
+    "stakeholder_map": ("nodes", 2),
+    "sankey": ("nodes", 2),
+}
+
+
+def chart_renderable(chart: Any) -> bool:
+    """차트 dict 이 실제로 그려질 데이터를 갖고 있는지 (템플릿 has_data 게이트 SSOT).
+
+    Jinja 필터 ``chart_renderable`` 로 두 템플릿에 주입된다. False 면 카드 자체를
+    emit 하지 않는다 — 제목·출처만 있는 빈 프레임(CHART-AP-28) 차단이 목적이다.
+
+    본 함수는 *데이터 유무* 만 본다. 값의 적법성(부호·NaN·개수 상한 등)은
+    ``validate_chart_data`` 가 이미 걸렀다 (`ComposedSection._drop_invalid_charts`).
+    """
+    if not isinstance(chart, dict):
+        return False
+    data = chart.get("data")
+    if not data:
+        return False
+    ctype = str(chart.get("type") or "").lower()
+
+    dual_key = _DUAL_FORM_TYPES.get(ctype)
+    if dual_key:
+        if isinstance(data, dict):
+            return bool(data.get(dual_key))
+        try:
+            return len(data) > 0
+        except TypeError:
+            return False
+
+    required = _DICT_DATA_REQUIREMENTS.get(ctype)
+    if required:
+        if not isinstance(data, dict):
+            return False
+        for key in required:
+            val = data.get(key)
+            if not val:
+                return False
+            # dual_line 은 좌·우 각각의 series 까지 있어야 그려진다
+            if ctype == "dual_line" and not (isinstance(val, dict) and val.get("series")):
+                return False
+        min_key, min_n = _MIN_LEN_REQUIREMENTS.get(ctype, ("", 0))
+        if min_key:
+            try:
+                if len(data.get(min_key) or []) < min_n:
+                    return False
+            except TypeError:
+                return False
+        return True
+
+    # 그 외는 list[dict] 계약 — 비어있지 않으면 렌더 가능
+    if isinstance(data, dict):
+        # 등록되지 않은 dict-데이터 type (신규 type 등록 누락 의심) — 보존하되 경고.
+        # CHART-AP-38/44 의 교훈: 조용히 버리지 말고 관측 가능하게 만든다.
+        logger.warning(
+            "[chart_renderable] dict 데이터인데 _DICT_DATA_REQUIREMENTS 미등록 "
+            "type=%r — 렌더 허용하되 등록 필요 (CHART-AP-38 클래스)", ctype,
+        )
+        return True
+    try:
+        return len(data) > 0
+    except TypeError:
+        return False

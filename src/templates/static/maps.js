@@ -49,14 +49,31 @@
   }
 
   const WORLD_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+  // v8.5.12 — 로컬 사본 (report dir 로 동기화되는 STATIC_ASSETS). CDN 이 막히면
+  // 그전까진 육지가 통째로 사라진 '빈 바다' 지도가 발행됐다 — 단일 의존 제거.
+  const WORLD_LOCAL = 'world-atlas-110m.js';
   let worldPromise = null;
+  function loadLocalWorld() {
+    return new Promise((resolve) => {
+      if (window.__WORLD_TOPO__) { resolve(window.__WORLD_TOPO__); return; }
+      const s = document.createElement('script');
+      s.src = WORLD_LOCAL;
+      s.onload = () => resolve(window.__WORLD_TOPO__ || null);
+      s.onerror = () => { console.warn('[map] local world-atlas load failed'); resolve(null); };
+      document.head.appendChild(s);
+    });
+  }
   function loadWorld() {
     if (window.__WORLD_TOPO__) return Promise.resolve(window.__WORLD_TOPO__);
     if (worldPromise) return worldPromise;
     worldPromise = fetch(WORLD_URL).then(r => r.ok ? r.json() : null).then(w => {
-      if (w) window.__WORLD_TOPO__ = w;
-      return w;
-    }).catch(e => { console.warn('[map] world-atlas fetch failed', e); return null; });
+      if (w) { window.__WORLD_TOPO__ = w; return w; }
+      console.warn('[map] world-atlas CDN empty — local 사본으로 폴백');
+      return loadLocalWorld();
+    }).catch(e => {
+      console.warn('[map] world-atlas fetch failed — local 사본으로 폴백', e);
+      return loadLocalWorld();
+    });
     return worldPromise;
   }
 
@@ -942,7 +959,13 @@
     let payload;
     try { payload = JSON.parse(script.textContent); }
     catch (e) { console.warn('[map] payload parse fail', e); return; }
-    if (!payload || !(payload.markers || []).length) return;
+    // v8.5.12 — 그전까진 markers 가 0개면 지도 *전체* 를 안 그렸다. rings(사거리권)·
+    // regions(국가 역할 색조)·sea_labels 만으로 성립하는 payload 가 제목·줌 버튼만
+    // 있는 빈 상자로 발행되던 침묵 손실. 그릴 게 하나라도 있으면 렌더한다.
+    if (!payload) return;
+    const _hasContent = ['markers', 'rings', 'regions', 'sea_labels', 'arcs']
+      .some(k => ((payload[k] || []).length > 0));
+    if (!_hasContent) return;
 
     // IntersectionObserver 가 있으면 viewport 진입 시 렌더 + 애니메이션.
     // 미지원 브라우저는 backward-compat 즉시 렌더 (애니메이션 X).

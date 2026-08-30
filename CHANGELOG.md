@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.9
+last_synced_with: v8.5.14
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,63 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.14 — Codex 리뷰 4건 수정 (P1: gantt 카드 소멸 회귀 + P2 3건)
+
+PR #97 에 Codex 자동 리뷰가 4건을 냈고 전부 타당해 수정했다. 특히 **P1 은 v8.5.12 가 CHART-AP-38/44 를 고치면서 재생산한 같은 클래스의 회귀**다.
+
+- **P1 — gantt 카드 전량 소멸**: `chart_renderable` 이 gantt 를 `dict{rows}` 전용으로 등록했는데, 프롬프트 계약도 실제 발행본도 전부 `[{label,start,end}]` **list** 다. `validate_chart_data` 는 양형을 받으므로 가드는 통과하고 템플릿 게이트에서만 걸러져 — **가드 로그조차 남지 않고** 카드가 사라진다. `_DUAL_FORM_TYPES` 로 list·dict 양형 수용.
+- **근본 방지**: `test_prompt_guard_parity.py` 를 **3중 parity** 로 확장 — 프롬프트 모양이 ① 가드 통과 ② **템플릿 has_data 게이트 통과** 를 모두 만족해야 한다. v8.5.12 는 ②를 검증하지 않아 이 회귀를 랜딩 전에 못 잡았다 (원래 §6.1 설계가 3중이었는데 2층만 구현한 것). 빈 데이터가 어떤 type 에서도 카드를 만들지 않는지도 함께 검증.
+- **P2 — '표' 참조를 무관한 차트가 충족**: v8.5.13 이 '표' 를 그래프와 같은 그룹(`needed=None`)에 넣어, 섹션에 bar 차트 하나만 있어도 "아래 표는 …" 이 살아남았다 — 고치려던 깨진 약속이 그대로 남는다. `_NEVER_SATISFIED` 센티널로 분리(표는 시스템에 렌더 채널 자체가 없다).
+- **P2 — topojson 런타임 CDN 의존**: atlas 만 벤더링해도 CDN 차단 시 `!window.topojson` 에서 maps.js 가 즉시 return 해 **atlas 폴백까지 도달조차 못 한다**. `topojson-client.min.js` 를 `STATIC_ASSETS` 에 편입하고 템플릿 2곳 + charts.js 동적 로더에 폴백 배선.
+- **P2 — 넓은 heatmap 격자 잘림**: `cellW = max(56, …)` + 고정 720px viewBox 라 11열부터 오른쪽 열·라벨이 잘렸다. 가드도 프롬프트도 열 수 상한이 없으므로 viewBox 폭을 열 수에 따라 키운다 (2~24열 산술 검산 포함).
+
+**회귀**: 4건 각각에 테스트 추가. 전체 924 pass / 69 fail (= 베이스라인 동일, 신규 파손 0).
+
+## v8.5.13 — 괄호 없는 문장형 시각물 지시 차단 (WRITE-AP-28)
+
+발행본 `analysis_20260829_225100_3dfe84ee8e`(르포) 마지막 섹션이 **"아래 표는 앞으로 지켜볼 지점들을 위험도 순으로 정리한 것이다."** 로 끝나는데 그 뒤엔 구분선과 푸터뿐이었다 (사용자 catch). WRITE-AP-26 과 같은 '깨진 약속' 인데 v8.2.9 안전망을 그대로 통과했다.
+
+**원인 3중**: ① 안전망 정규식이 `(…아래 그래프…)` 처럼 **괄호 안만** 매칭 — 괄호 없는 독립 문장은 후보에도 못 올랐다 ② 토큰 목록에 **'표' 부재**('도표' 는 있지만 "아래 표는" 은 부분문자열이 아니다) ③ **르포엔 표를 그릴 채널이 아예 없다** (`reportage.html` 이 fact_grid·embedded_blocks 미렌더, watch_signals 는 장르 규칙상 빈 배열 고정) — composer 는 방출할 곳이 없는 줄 모르고 문장만 썼다.
+
+**Fix — 1차(프롬프트) + 2차(결정적 안전망)**:
+- `_REPORTAGE_BLOCK` 에 **"'아래 표' 는 절대 쓰지 마라"** 명문화 + 이유(렌더 채널 부재)와 대안(차트로 emit 하거나 본문으로 풀어쓰기) 제시. 괄호 없는 문장형도 동일 금지. standard 프롬프트 무영향.
+- `_reconcile_visual_references` 확장: 토큰에 `표`·`차트` 추가 + **문장형 제거** 신설(문장 첫머리 위치어+토큰 → 문장째).
+- **사실 훼손 방지가 핵심 설계**: 문장을 통째로 지우면 그 안의 사실도 잃는다. **조사로 역할을 가른다** — 주제격(`는/은/가/이`)이면 주어가 시각물 자체인 순수 메타 문장이라 제거, 부사격·목적격(`에서/를`)이면 다른 사실을 서술하므로("아래 표에서 보듯 매출은 12% 늘었다") 보존 + 경고 로그만. 위치어(아래/위/다음/앞/왼쪽/오른쪽/옆) 필수로 '발표·대표·표시·표결' 오탐 차단.
+
+**회귀**: `test_visual_reference_reconcile.py` 에 6종 추가(실사고 재현·'표' 커버·사실 문장 보존·차트 있을 때 보존·일반명사 오탐·프롬프트 marker). 전체 918 pass, 신규 파손 0.
+
+## v8.5.12 — 시각물 전달 보증 + wrangler 업로드 상한 (CHART-AP-45)
+
+v8.5.11 이 *가드가 버리던* 손실을 고쳤다면, 이번엔 **가드를 통과하고도 독자에게 닿지 못하던 손실**을 막는다. 원칙: 방출된 시각물은 렌더되거나, 드롭 사유가 관측되거나 둘 중 하나다 — 셋째 길(침묵)은 없다.
+
+**시각물 전달 보증 (CHART-AP-45):**
+- **템플릿 has_data 게이트 SSOT** — 두 archetype(`freeform_essay`/`reportage`)이 각자 Jinja 로 복제 소유하던 "그릴 데이터가 있는가" 판정을 `schemas.py:chart_renderable` 한 함수로 통합, Jinja 필터로 주입. 복제 시절 freeform 엔 폐기된 `network` 분기가 남고 `stakeholder_map` 분기가 없었다(CHART-AP-38 재발 대기). 미등록 dict-데이터 type 은 렌더 허용 + 경고(조용히 버리지 않음).
+- **usage_log emit/kept 2단 계측** — `ComposedSection._dropped_charts`(private attr)에 드롭 사유를 남기고 orchestrator 가 `append_run(dropped_types=...)` 로 기록. `analyze` 가 `plumbing_suspect_types`(emit 됐는데 전량 drop)를 **기아와 분리**하고, 재균형 힌트는 그 type 을 제외한다 — 깨진 type 을 더 밀어넣고 다시 버리는 자기증폭 고리(CHART-AP-44) 절단. `warn_if_starved` 는 `PLUMBING FAULT` 로 별도 경고.
+- **드롭 표면화** — 가드가 시각물을 버리면 발행 후 개수·type·제목이 경고 로그로 남는다(그전까진 개별 warning 뿐이라 총량이 안 보였다).
+- **지도 렌더 조건 완화** — markers 가 0개여도 rings·regions·sea_labels·arcs 중 하나가 있으면 그린다. 그전까진 markers 필수라 사거리권만 있는 지도가 제목·줌 버튼만 있는 빈 상자로 발행됐다(rings 가 v7.5.0 이후 발행 0회였던 배경 중 하나).
+- **world-atlas 로컬 폴백** — `src/templates/static/world-atlas-110m.js` 를 `STATIC_ASSETS` 에 편입. `maps.js`/`charts.js` 가 CDN 실패 시 로컬 사본으로 폴백 — CDN 차단 시 육지 없는 '빈 바다' 지도 차단.
+- **파국 폴백의 시각물 보존** — `_recover_head_loss` 가 부분 객체에서 완결된 charts·footnotes·images 도 함께 salvage. 발행본 335건 중 30건(9%)이 1-섹션 폴백이었고 그 전부가 시각물 0 이었다.
+
+**운영 — wrangler 업로드 무한 대기 수정 (2026-08-25 장마감 브리핑 사고):**
+- `_upload_to_cloudflare` 의 `await proc.communicate()` 에 상한이 없어 wrangler 가 멎으면 보고서를 다 만들고도 링크·파일 첨부가 영영 안 갔다. `asyncio.wait_for` + 초과 시 `proc.kill()` → 빈 URL 반환으로 기존 graceful degrade 경로(자격증명 없음과 동일)에 합류 — **파일 첨부 폴백은 항상 도착**한다. 상한은 `WRANGLER_TIMEOUT_SEC`(기본 180초, 0 이하면 무제한).
+
+**회귀**: `tests/regression/test_visual_delivery_guarantee.py` 12종 신설(드롭 기록·기아↔배관이상 분리·has_data SSOT·폴백 salvage·지도 조건·CDN 폴백·업로드 타임아웃 kill). 전체 스위트 912 pass, 신규 파손 0.
+
+## v8.5.11 — heatmap·stacked 100% silent drop 수정 (CHART-AP-44) + V9 시각 고도화 제안
+
+시각물 누락 전수 감사(발행본 335건 실측 + 파이프라인 드롭 지점 census)에서 발견된 **살아있는 회귀 수정**과, 그 감사에 기반한 **V9 시각 고도화 마스터 플랜(제안)** 랜딩.
+
+**버그 수정 (CHART-AP-44 — CHART-AP-38 과 동일 클래스, 2건 병존):**
+- `heatmap` 과 `stacked` 는 composer SYSTEM_PROMPT 가 가르치는 데이터 모양과 `src/visual/schemas.py` 가드가 요구하는 모양이 상호 배타적이라, 프롬프트를 준수한 emit 이 `_drop_invalid_charts` 에서 **100% 조용히 드롭**되고 있었다 (발행 실측: 두 type 모두 가드 배선 이후 발행 0건. usage_log 에는 "0회 emit" 으로 기록돼 기아로 위장 → v8.3.0 자기교정 힌트가 깨진 type 을 더 밀어넣는 악순환).
+- `HeatmapGuard` 양형 수용 — 격자형 `[{x,y,value}]` (결정 트리 §6 정본) + 강도 트랙형 `[{title,severity}]` (v7.1.0 렌더러 계약, 기존 발행본 12건의 patch_report 재발행 하위호환).
+- `StackedBarGuard` 를 렌더 계약 `{scenarios:[{name, segments:[{label,value≥0}]}]}` 로 재작성 — 구 `{categories,series}` 는 템플릿 has_data 가 거르는 렌더 불가 모양이라 reject 로 전환.
+- `charts.js drawHeatmap` 에 격자형 렌더 분기 신설 (`drawHeatmapGrid` — 잉크 농도 사다리 셀 매트릭스 + 최대셀 액센트 테두리, mono guide §10) + 프롬프트 heatmap 스키마 라인에 격자형 명기.
+- **재발 차단**: `tests/regression/test_prompt_guard_parity.py` 신설 — `_TYPE_TO_GUARD` 전 type 에 대해 *프롬프트가 문서화한 모양 그대로* 가 `validate_chart_data` 를 통과하는지 + 신규 type 의 fixture 누락을 강제 검출. `test_composed_section_guard.py` / `test_chart_correctness.py` 에 heatmap/stacked 케이스 추가. 회귀 스위트 기준 신규 파손 0, 기존 실패 2건 해소.
+
+**V9 시각 고도화 제안 (구현 전 — 별도 세션에서 페이즈별 진행):**
+- `docs/VISUAL_ENHANCEMENT_V9_PLAN.md` — 르포 29건·전체 335건 실측 분석, 시각물 드롭 지점 전수 지도, 전황 지도 어휘(paths/zones/phases)·event_timeline 신규 type·작전 스키매틱 제안, 시각물 전달 보증 설계, Anime.js 불채택 권고, wrangler 타임아웃·CLAUDE.md 다이어트 스펙.
+- 디자인 시트 목업 2종: `samples/visual_upgrade_v9_reportage_mockup.html` (르포 축 — 전황 지도 + 국면 전환 + 사건 타임라인 + 가와나카지마 작전 스키매틱) / `samples/visual_upgrade_v9_report_mockup.html` (일반 보고서 축 — zones·rings 개방 + event_timeline 라이트 + heatmap 격자 소생).
 
 ## v8.5.10 — `config.model_name` 기본값을 파이프라인 모델과 정렬
 

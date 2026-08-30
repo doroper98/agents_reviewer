@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.5.5
+last_synced_with: v8.5.13
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -36,6 +36,66 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
 > requirements 변경 시엔 pull 후 `source venv/bin/activate && pip install -r requirements.txt`
 > 를 restart 앞에 넣는다. 아래 nohup 블록은 **systemd 서비스가 없는 환경에서만**.
 > 정본 규칙: CLAUDE.md '🔴 봇 재시작·운영 SSOT'.
+
+### §1.0 systemd 표준 재배포 — 가드 내장 완전본 (현 VM 은 이걸 쓴다)
+
+> v8.5.13 신설. 상단 4줄 systemd 블록은 *최소본* 이라 VM-AP-3/9/10(reports 잔재)·
+> VM-AP-11(feature 브랜치 잔류)·VM-AP-4(옛 버전 가동) 가드가 빠져 있었고, 아래 긴
+> 블록은 systemd 이전 nohup legacy 다. 둘 사이가 비어 있어 매번 손으로 조립하던 것을
+> 정식 블록으로 고정한다. **여는 `(` 부터 닫는 `)` 까지 통째로** 붙여넣으면 1회 실행.
+
+```bash
+(
+  cd ~/agents_reviewer || exit 1
+
+  # ─── Stage 1: reports/ 미러 산출물 잔재 자동 폐기 (VM-AP-9 / VM-AP-10) ───
+  if git status --porcelain --untracked-files=no | grep -q '^ M reports/'; then
+    echo "ⓘ reports/ 로컬 수정 폐기 (origin+Cloudflare 가 정본)"
+    git checkout -- reports/
+  fi
+  DIRTY=$(git status --porcelain --untracked-files=no)
+  if [ -n "$DIRTY" ]; then
+    echo "⚠️ 로컬 tracked 수정사항 — pull 차단 위험:"; echo "$DIRTY"
+    echo "→ 잔재면 git checkout -- <file>, 의도적이면 stash 후 재실행."; exit 1
+  fi
+
+  # ─── Stage 2: main 확인 + pull + 의존성 감지 (VM-AP-11 / VM-AP-6) ───
+  BR=$(git rev-parse --abbrev-ref HEAD)
+  if [ "$BR" != "main" ]; then
+    echo "⚠️ 현재 브랜치 $BR ≠ main — 전환 (VM-AP-11)"; git checkout main || exit 1
+  fi
+  git fetch origin main
+  LOCAL=$(git rev-parse HEAD); REMOTE=$(git rev-parse origin/main)
+  if [ "$LOCAL" != "$REMOTE" ]; then
+    if git diff --name-only "$LOCAL..$REMOTE" | grep -qE '^requirements(-.*)?\.txt$'; then
+      NEED_PIP=1; echo "⚠️ requirements 변경 감지"
+    fi
+    git pull || exit 1
+    if [ -n "${NEED_PIP:-}" ]; then source venv/bin/activate && pip install -r requirements.txt; fi
+  else
+    echo "✓ 이미 최신 ($LOCAL)"
+  fi
+
+  # ─── Stage 3: 코드 버전 확인 (VM-AP-4) ───
+  echo "코드 버전: $(grep '^VERSION = ' src/orchestrator.py)"
+
+  # ─── Stage 4: systemd 재시작 (nohup 금지 — VM-AP-12 중복 기동 OOM) ───
+  sudo systemctl restart agents-reviewer.service
+  sleep 5
+
+  # ─── Stage 5: 가동 확인 (VM-AP-4 강화 — 버전·인스턴스·충돌) ───
+  systemctl status agents-reviewer.service --no-pager | head -5
+  N=$(pgrep -f 'python.*src\.main' | wc -l)
+  [ "$N" -ne 1 ] && { echo "⚠️ 봇 인스턴스 $N 개 (1이어야 정상)"; pgrep -af 'python.*src\.main'; }
+  journalctl -u agents-reviewer.service -n 40 --no-pager \
+    | grep -E 'Starting Event Analysis Team bot|Conflict|ERROR' | head
+  echo "─── 확인 포인트 ───"
+  echo "  ① 'Starting Event Analysis Team bot — vX.Y.Z' 가 위 코드 버전과 일치"
+  echo "  ② 'Conflict' / 'ERROR' 없음"
+)
+```
+
+---
 
 VM 의 `~/agents_reviewer` 에서 그대로 복붙. **§2 VM-AP-1~8 모든 가드 포함**.
 idempotent — 봇이 떠있든 안 떠있든 같은 결과.
