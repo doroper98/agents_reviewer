@@ -428,21 +428,11 @@
        schema (Tier 1+2): {type, title, subtitle?, data, annotations?, source?, takeaway?, note?}.
        data 비어있으면 chart-card 자체를 emit 하지 않음 (빈 frame 회귀 차단). #}
     {% for ch in _compact_split.f %}
-      {# data 검증: type 별로 빈 데이터 체크. composer 가 잘못 emit 했어도 화면에 빈 차트 안 박힘 #}
-      {% set has_data = false %}
-      {% if ch.data %}
-        {% if ch.type == 'dual_line' %}
-          {% if ch.data.left and ch.data.left.series and ch.data.right and ch.data.right.series %}{% set has_data = true %}{% endif %}
-        {% elif ch.type == 'forecast' %}
-          {% if ch.data.actual %}{% set has_data = true %}{% endif %}
-        {% elif ch.type == 'network' %}
-          {% if ch.data.nodes and (ch.data.nodes | length) >= 2 %}{% set has_data = true %}{% endif %}
-        {% elif ch.type == 'stacked' %}
-          {% if ch.data.scenarios %}{% set has_data = true %}{% endif %}
-        {% elif ch.data is iterable and (ch.data | length) > 0 %}
-          {% set has_data = true %}
-        {% endif %}
-      {% endif %}
+      {# v8.5.12 — data 검증 SSOT: src/visual/schemas.py:chart_renderable.
+         type 별 규칙을 템플릿마다 복제하던 것을 한 곳으로 통합 (drift 로 freeform
+         엔 폐기된 network 분기가 남고 stakeholder_map 분기가 없었다).
+         false 면 카드 자체를 emit 하지 않음 — 빈 프레임 차단 (CHART-AP-28). #}
+      {% set has_data = ch | chart_renderable %}
 
       {% if has_data %}
       <div class="freeform-chart-wrap">

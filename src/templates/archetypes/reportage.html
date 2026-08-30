@@ -140,14 +140,8 @@
 
     {# 차트 (빈 데이터/유효성 검증) #}
     {% for ch in (sec.charts or []) %}
-      {% set has_data = false %}
-      {% if ch.data %}
-        {% if ch.type == 'dual_line' %}{% if ch.data.left and ch.data.left.series and ch.data.right and ch.data.right.series %}{% set has_data = true %}{% endif %}
-        {% elif ch.type == 'forecast' %}{% if ch.data.actual %}{% set has_data = true %}{% endif %}
-        {% elif ch.type == 'stakeholder_map' %}{% if ch.data.nodes and (ch.data.nodes | length) >= 2 %}{% set has_data = true %}{% endif %}
-        {% elif ch.type == 'stacked' %}{% if ch.data.scenarios %}{% set has_data = true %}{% endif %}
-        {% elif ch.data is iterable and (ch.data | length) > 0 %}{% set has_data = true %}{% endif %}
-      {% endif %}
+      {# v8.5.12 — SSOT: src/visual/schemas.py:chart_renderable (freeform 과 공용) #}
+      {% set has_data = ch | chart_renderable %}
       {% if has_data %}
       <div class="rep-figwrap">
         <div class="chart-card">

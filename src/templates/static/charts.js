@@ -1171,13 +1171,25 @@
   // ----- CHOROPLETH — 국가별 색농도 -----
   // Lazy-loaded topojson + world-atlas
   let _worldPromise = null;
+  // v8.5.12 — CDN 실패 시 로컬 사본(STATIC_ASSETS 로 report dir 에 동기화) 폴백.
+  // maps.js 와 window.__WORLD_TOPO__ 캐시를 공유한다 (둘 중 먼저 받은 쪽이 채움).
+  function _loadLocalWorld() {
+    return new Promise((resolve) => {
+      if (window.__WORLD_TOPO__) { resolve(window.__WORLD_TOPO__); return; }
+      const s = document.createElement('script');
+      s.src = 'world-atlas-110m.js';
+      s.onload = () => resolve(window.__WORLD_TOPO__ || null);
+      s.onerror = () => resolve(null);
+      document.head.appendChild(s);
+    });
+  }
   function loadWorld() {
     if (window.__WORLD_TOPO__) return Promise.resolve(window.__WORLD_TOPO__);
     if (_worldPromise) return _worldPromise;
     _worldPromise = fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
       .then(r => r.ok ? r.json() : null)
-      .then(w => { if (w) window.__WORLD_TOPO__ = w; return w; })
-      .catch(() => null);
+      .then(w => { if (w) { window.__WORLD_TOPO__ = w; return w; } return _loadLocalWorld(); })
+      .catch(() => _loadLocalWorld());
     return _worldPromise;
   }
   function loadTopojson() {

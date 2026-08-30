@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.11
+last_synced_with: v8.5.12
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,23 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.5.12 — 시각물 전달 보증 + wrangler 업로드 상한 (CHART-AP-45)
+
+v8.5.11 이 *가드가 버리던* 손실을 고쳤다면, 이번엔 **가드를 통과하고도 독자에게 닿지 못하던 손실**을 막는다. 원칙: 방출된 시각물은 렌더되거나, 드롭 사유가 관측되거나 둘 중 하나다 — 셋째 길(침묵)은 없다.
+
+**시각물 전달 보증 (CHART-AP-45):**
+- **템플릿 has_data 게이트 SSOT** — 두 archetype(`freeform_essay`/`reportage`)이 각자 Jinja 로 복제 소유하던 "그릴 데이터가 있는가" 판정을 `schemas.py:chart_renderable` 한 함수로 통합, Jinja 필터로 주입. 복제 시절 freeform 엔 폐기된 `network` 분기가 남고 `stakeholder_map` 분기가 없었다(CHART-AP-38 재발 대기). 미등록 dict-데이터 type 은 렌더 허용 + 경고(조용히 버리지 않음).
+- **usage_log emit/kept 2단 계측** — `ComposedSection._dropped_charts`(private attr)에 드롭 사유를 남기고 orchestrator 가 `append_run(dropped_types=...)` 로 기록. `analyze` 가 `plumbing_suspect_types`(emit 됐는데 전량 drop)를 **기아와 분리**하고, 재균형 힌트는 그 type 을 제외한다 — 깨진 type 을 더 밀어넣고 다시 버리는 자기증폭 고리(CHART-AP-44) 절단. `warn_if_starved` 는 `PLUMBING FAULT` 로 별도 경고.
+- **드롭 표면화** — 가드가 시각물을 버리면 발행 후 개수·type·제목이 경고 로그로 남는다(그전까진 개별 warning 뿐이라 총량이 안 보였다).
+- **지도 렌더 조건 완화** — markers 가 0개여도 rings·regions·sea_labels·arcs 중 하나가 있으면 그린다. 그전까진 markers 필수라 사거리권만 있는 지도가 제목·줌 버튼만 있는 빈 상자로 발행됐다(rings 가 v7.5.0 이후 발행 0회였던 배경 중 하나).
+- **world-atlas 로컬 폴백** — `src/templates/static/world-atlas-110m.js` 를 `STATIC_ASSETS` 에 편입. `maps.js`/`charts.js` 가 CDN 실패 시 로컬 사본으로 폴백 — CDN 차단 시 육지 없는 '빈 바다' 지도 차단.
+- **파국 폴백의 시각물 보존** — `_recover_head_loss` 가 부분 객체에서 완결된 charts·footnotes·images 도 함께 salvage. 발행본 335건 중 30건(9%)이 1-섹션 폴백이었고 그 전부가 시각물 0 이었다.
+
+**운영 — wrangler 업로드 무한 대기 수정 (2026-08-25 장마감 브리핑 사고):**
+- `_upload_to_cloudflare` 의 `await proc.communicate()` 에 상한이 없어 wrangler 가 멎으면 보고서를 다 만들고도 링크·파일 첨부가 영영 안 갔다. `asyncio.wait_for` + 초과 시 `proc.kill()` → 빈 URL 반환으로 기존 graceful degrade 경로(자격증명 없음과 동일)에 합류 — **파일 첨부 폴백은 항상 도착**한다. 상한은 `WRANGLER_TIMEOUT_SEC`(기본 180초, 0 이하면 무제한).
+
+**회귀**: `tests/regression/test_visual_delivery_guarantee.py` 12종 신설(드롭 기록·기아↔배관이상 분리·has_data SSOT·폴백 salvage·지도 조건·CDN 폴백·업로드 타임아웃 kill). 전체 스위트 912 pass, 신규 파손 0.
 
 ## v8.5.11 — heatmap·stacked 100% silent drop 수정 (CHART-AP-44) + V9 시각 고도화 제안
 

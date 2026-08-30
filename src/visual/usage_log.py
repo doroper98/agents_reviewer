@@ -91,12 +91,19 @@ def append_run(
     mode: str,
     chart_types: Iterable[str],
     *,
+    dropped_types: Iterable[str] | None = None,
     path: Path | None = None,
 ) -> None:
-    """한 보고서의 emit chart type 분포를 JSONL 한 줄로 append.
+    """한 보고서의 chart type 분포를 JSONL 한 줄로 append.
 
     Orchestrator 가 보고서 완성 직후 호출. 파일 IO 실패는 warning 만, raise 안 함
     (보고서 생성을 막지 않기 위해).
+
+    v8.5.12 — **emit / kept 2단 기록**. ``types`` 는 살아남아 발행된 type(구 필드,
+    하위호환), ``dropped`` 는 ``_drop_invalid_charts`` 가 버린 type. 이 둘을 분리해야
+    "가드가 100% 버려서 0회" 인 배관 이상(CHART-AP-44)과 "composer 가 안 골라서 0회"
+    인 진짜 기아를 구분할 수 있다. 구분 전에는 드롭된 type 이 기아로 위장돼 재균형
+    힌트가 *깨진 type 을 더 밀어넣고 다시 전부 버리는* 악순환을 돌렸다.
     """
     target = path or _default_path()
     record = {
@@ -105,6 +112,9 @@ def append_run(
         "mode": mode,
         "types": list(chart_types),
     }
+    dropped_list = [t for t in (dropped_types or []) if isinstance(t, str)]
+    if dropped_list:
+        record["dropped"] = dropped_list
     try:
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("a", encoding="utf-8") as f:
@@ -157,22 +167,34 @@ def analyze(
     target = path or _default_path()
     records = _read_last_n(target, window)
     counter: Counter[str] = Counter()
+    dropped_counter: Counter[str] = Counter()
     for r in records:
         for t in r.get("types", []):
             if isinstance(t, str):
                 counter[t] += 1
+        for t in r.get("dropped", []):
+            if isinstance(t, str):
+                dropped_counter[t] += 1
     starved = sorted(t for t in known_types if counter.get(t, 0) == 0)
     rare = sorted(
         t for t in known_types
         if 0 < counter.get(t, 0) <= max(1, len(records) // 20)
         and t not in starved
     ) if len(records) >= 10 else []
+    # v8.5.12 — 배관 이상: composer 가 emit 했는데 가드가 전량 버린 type.
+    # 기아(starved)와 *반드시* 구분한다 — 재균형 힌트가 깨진 type 을 더 밀어넣는
+    # 악순환의 근원 (CHART-AP-44 의 자기증폭 고리).
+    plumbing = sorted(
+        t for t, n in dropped_counter.items() if n > 0 and counter.get(t, 0) == 0
+    )
     return {
         "window": window,
         "reports_analyzed": len(records),
         "distribution": dict(counter.most_common()),
+        "dropped_distribution": dict(dropped_counter.most_common()),
         "starved_types": starved,
         "rare_types": rare,
+        "plumbing_suspect_types": plumbing,
     }
 
 
@@ -196,8 +218,13 @@ def composer_rebalance_hint(
     result = analyze(window, path=path)
     if result["reports_analyzed"] < 10:
         return []
-    pool = [t for t in result["starved_types"] if t not in NON_NARRATIVE_TYPES]
-    pool += [t for t in result["rare_types"] if t not in NON_NARRATIVE_TYPES]
+    # v8.5.12 — 배관 이상 type 은 힌트에서 제외. emit 은 되는데 가드가 전량 버리는
+    # type 을 "더 자주 쓰라" 고 밀어넣으면 전부 다시 버려질 뿐이다 (CHART-AP-44).
+    # 고칠 곳은 프롬프트가 아니라 가드·렌더러 계약 — warn_if_starved 가 그렇게 경고한다.
+    broken = set(result.get("plumbing_suspect_types") or [])
+    excluded = NON_NARRATIVE_TYPES | broken
+    pool = [t for t in result["starved_types"] if t not in excluded]
+    pool += [t for t in result["rare_types"] if t not in excluded]
     return pool[:max_types]
 
 
@@ -217,6 +244,16 @@ def warn_if_starved(
         return
     starved = result["starved_types"]
     rare = result["rare_types"]
+    plumbing = result.get("plumbing_suspect_types") or []
+    if plumbing:
+        # 기아가 아니라 *배관 이상* — composer 는 만들었는데 가드가 전량 버렸다.
+        # 프롬프트를 손댈 게 아니라 프롬프트↔가드↔렌더러 계약을 맞춰야 한다
+        # (CHART-AP-44. parity 테스트: tests/regression/test_prompt_guard_parity.py).
+        logger.error(
+            "[chart_usage] PLUMBING FAULT — emit 됐으나 가드가 전량 drop 한 type "
+            "(최근 %d 보고서): %s. 프롬프트↔가드↔렌더러 계약 불일치 의심 (CHART-AP-44)",
+            result["reports_analyzed"], ", ".join(plumbing),
+        )
     if starved:
         logger.warning(
             "[chart_usage] STARVED chart types (0 emit in last %d reports): %s",

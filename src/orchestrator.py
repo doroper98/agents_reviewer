@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.5.11"
+VERSION = "v8.5.12"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -2350,9 +2350,38 @@ class Orchestrator:
             # embedded_map 도 시각화 채널 → starvation 분모 포함
             if getattr(result.composed_report, "embedded_map", None):
                 emitted_types.append("map")
+            # v8.5.12 — 버려진 차트도 함께 수집 (emit/kept 2단 기록).
+            # `_drop_invalid_charts` 가 남긴 private 기록. 이걸 세지 않으면
+            # 가드가 100% 버리는 type 이 "기아" 로 위장돼 재균형 힌트가 깨진 type 을
+            # 더 밀어넣는 악순환이 돈다 (CHART-AP-44 의 자기증폭 고리).
+            dropped_types: list[str] = []
+            dropped_detail: list[dict] = []
+            for sec in (result.composed_report.sections or []):
+                for rec in (getattr(sec, "_dropped_charts", None) or []):
+                    if not isinstance(rec, dict):
+                        continue
+                    dropped_detail.append(rec)
+                    dt = rec.get("type")
+                    if isinstance(dt, str) and dt:
+                        dropped_types.append(dt)
             if self.telemetry is not None:
                 self.telemetry.record_chart_types(emitted_types)
-            append_run(event=event_name, mode=mode, chart_types=emitted_types)
+            append_run(
+                event=event_name,
+                mode=mode,
+                chart_types=emitted_types,
+                dropped_types=dropped_types,
+            )
+            if dropped_detail:
+                # 드롭 표면화 — 지금까지 이 손실은 bot.log 안에서만 보였다.
+                logger.warning(
+                    "[orchestrator] 시각물 %d개가 가드에서 drop 됨: %s",
+                    len(dropped_detail),
+                    "; ".join(
+                        f"{d.get('type')}({d.get('title') or '무제'})"
+                        for d in dropped_detail[:6]
+                    ),
+                )
             warn_if_starved()
         except Exception as e:  # noqa: BLE001
             logger.warning("[orchestrator] chart usage tracking fail: %s", e)

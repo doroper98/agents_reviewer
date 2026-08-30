@@ -2163,6 +2163,22 @@ class NarrativeComposer:
                 v = obj.get(opt)
                 if isinstance(v, str) and v.strip():
                     section_data[opt] = v
+            # v8.5.12 — 부분 객체에 살아남은 시각물도 함께 salvage.
+            # 그전까지 이 복구 경로는 heading/prose 만 건져 charts·footnotes·images 를
+            # 통째로 버렸다 (발행본의 9%가 1-섹션 폴백 = 시각물 전멸). 완결된 차트
+            # dict 만 넘기면 되고, 위반 차트는 `_drop_invalid_charts` 가 어차피 거른다.
+            _charts = obj.get("charts")
+            if isinstance(_charts, list):
+                _ok = [
+                    c for c in _charts
+                    if isinstance(c, dict) and c.get("type") and c.get("data") is not None
+                ]
+                if _ok:
+                    section_data["charts"] = _ok
+            for _opt_list in ("footnotes", "images"):
+                _v = obj.get(_opt_list)
+                if isinstance(_v, list) and _v:
+                    section_data[_opt_list] = _v
             try:
                 return ComposedReport(
                     headline="",

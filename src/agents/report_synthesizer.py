@@ -29,7 +29,16 @@ STATIC_DIR = os.path.join(TEMPLATE_DIR, "static")
 # v5.7.0 — KST SSOT 는 src.timeutil. 여기선 import 해서 사용 (중복 정의 제거).
 
 # v3.2.0 — 정적 자산 (d3 + charts.js + charts.css). 보고서 디렉토리에 한 번만 복사.
-STATIC_ASSETS = ("d3.v7.min.js", "charts.js", "charts.css", "maps.js", "maps.css")
+STATIC_ASSETS = (
+    "d3.v7.min.js",
+    "charts.js",
+    "charts.css",
+    "maps.js",
+    "maps.css",
+    # v8.5.12 — world-atlas 110m 로컬 사본. maps.js 가 CDN fetch 실패 시
+    # 폴백으로 읽는다 (CDN 단일 의존 → 차단 시 육지 없는 "빈 바다" 지도 차단).
+    "world-atlas-110m.js",
+)
 
 
 def _inline_static_assets(html: str) -> str:
@@ -1015,7 +1024,33 @@ class ReportSynthesizer:
                 stderr=asyncio.subprocess.PIPE,
                 env=env,
             )
-            stdout, stderr = await proc.communicate()
+
+            # v8.5.12 — 업로드 상한 (2026-08-25 장마감 브리핑 행 사고).
+            # 상한이 없으면 wrangler 가 멎었을 때 communicate() 가 영원히 걸려
+            # 보고서를 다 만들고도 링크·파일 첨부가 영영 안 간다. 초과 시 강제 종료 후
+            # 빈 URL 반환 → 호출부의 파일 첨부 폴백(자격증명 없음과 동일 경로)이 살아난다.
+            timeout = getattr(self.config, "wrangler_timeout_sec", 180)
+            try:
+                if timeout and timeout > 0:
+                    stdout, stderr = await asyncio.wait_for(
+                        proc.communicate(), timeout=float(timeout)
+                    )
+                else:
+                    stdout, stderr = await proc.communicate()
+            except asyncio.TimeoutError:
+                logger.error(
+                    f"[report_synthesizer] Cloudflare upload timed out after {timeout}s "
+                    f"— killing wrangler, falling back to file attachment"
+                )
+                try:
+                    proc.kill()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await proc.wait()
+                except Exception:  # noqa: BLE001 — 종료 대기 실패해도 폴백은 진행
+                    pass
+                return ""
 
             output = stdout.decode() + stderr.decode()
 
@@ -1133,6 +1168,17 @@ class ReportSynthesizer:
         # 강조만 제거하고 다른 변환은 안 함. contradictions / watch_signals /
         # deck / headline / closing 등 raw text dict 에 적용.
         env.filters["strip_md"] = self._strip_markdown
+        # v8.5.12 — 템플릿 has_data 게이트 SSOT. 두 archetype 이 각자 Jinja 로
+        # 들고 있던 "그릴 데이터가 있는가" 판정을 한 Python 함수로 통합했다
+        # (규칙 중복 소유 → drift: freeform 엔 폐기된 network 분기가 남고
+        # stakeholder_map 분기가 없었다). 서버 로그도 남지 않던 침묵 드롭 층 제거.
+        try:
+            from src.visual.schemas import chart_renderable
+            env.filters["chart_renderable"] = chart_renderable
+        except ImportError:  # 가드 모듈 없는 환경 — 기존처럼 데이터 유무만
+            env.filters["chart_renderable"] = lambda ch: bool(
+                isinstance(ch, dict) and ch.get("data")
+            )
 
         # v5.4.1 — 보고서 이미지 로컬라이즈.
         # composed_report 의 hero_image + 각 sec.images 의 image_url (외부 매체

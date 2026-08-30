@@ -25,12 +25,15 @@ Public API:
 
 from __future__ import annotations
 
+import logging
 import math
 import re
 from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+logger = logging.getLogger(__name__)
 
 
 # ─── 시간 파싱 (GanttGuard) ─────────────────────────────────────────────
@@ -1334,3 +1337,87 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
         return False, str(e)
 
     return True, "ok"
+
+
+# ─── 템플릿 has_data 게이트 SSOT (v8.5.12) ──────────────────────────────
+# 두 archetype 템플릿(freeform_essay / reportage)이 각자 Jinja 로 들고 있던
+# "이 차트를 렌더할 데이터가 있는가" 판정을 *한 곳* 으로 통합한다.
+#
+# 통합 이유 (V9 감사): 규칙이 두 벌로 중복 소유되며 drift 가 쌓였다 —
+#  · freeform 쪽엔 폐기된 `network`(CHART-AP-36) 분기가 남고 `stakeholder_map`
+#    분기가 없었다 (CHART-AP-38 재발 대기 상태)
+#  · 이 게이트는 서버 로그를 한 줄도 남기지 않아 *완전 침묵* 드롭 층이었다
+#    (가드는 통과했는데 카드가 아예 안 그려지는 손실이 관측 불가)
+# 신규 dict-데이터 type 을 추가하면 여기 한 곳만 고치면 두 템플릿에 함께 적용된다.
+_DICT_DATA_REQUIREMENTS: dict[str, tuple[str, ...]] = {
+    # type: 데이터 dict 에서 *비어있지 않아야* 하는 키 (하나라도 비면 렌더 불가)
+    "dual_line": ("left", "right"),
+    "forecast": ("actual",),
+    "stacked": ("scenarios",),
+    "stacked_bar": ("scenarios",),
+    "stacked_area": ("series",),
+    "slope": ("items",),
+    "small_multiples": ("panels",),
+    "sankey": ("nodes", "links"),
+    "bump": ("periods", "items"),
+    "combo": ("bars", "line"),
+    "stakeholder_map": ("nodes",),
+    "gantt": ("rows",),
+}
+
+# nodes/items 처럼 *최소 개수* 가 있는 type (렌더러 조기 return 경계와 정합)
+_MIN_LEN_REQUIREMENTS: dict[str, tuple[str, int]] = {
+    "stakeholder_map": ("nodes", 2),
+    "sankey": ("nodes", 2),
+}
+
+
+def chart_renderable(chart: Any) -> bool:
+    """차트 dict 이 실제로 그려질 데이터를 갖고 있는지 (템플릿 has_data 게이트 SSOT).
+
+    Jinja 필터 ``chart_renderable`` 로 두 템플릿에 주입된다. False 면 카드 자체를
+    emit 하지 않는다 — 제목·출처만 있는 빈 프레임(CHART-AP-28) 차단이 목적이다.
+
+    본 함수는 *데이터 유무* 만 본다. 값의 적법성(부호·NaN·개수 상한 등)은
+    ``validate_chart_data`` 가 이미 걸렀다 (`ComposedSection._drop_invalid_charts`).
+    """
+    if not isinstance(chart, dict):
+        return False
+    data = chart.get("data")
+    if not data:
+        return False
+    ctype = str(chart.get("type") or "").lower()
+
+    required = _DICT_DATA_REQUIREMENTS.get(ctype)
+    if required:
+        if not isinstance(data, dict):
+            return False
+        for key in required:
+            val = data.get(key)
+            if not val:
+                return False
+            # dual_line 은 좌·우 각각의 series 까지 있어야 그려진다
+            if ctype == "dual_line" and not (isinstance(val, dict) and val.get("series")):
+                return False
+        min_key, min_n = _MIN_LEN_REQUIREMENTS.get(ctype, ("", 0))
+        if min_key:
+            try:
+                if len(data.get(min_key) or []) < min_n:
+                    return False
+            except TypeError:
+                return False
+        return True
+
+    # 그 외는 list[dict] 계약 — 비어있지 않으면 렌더 가능
+    if isinstance(data, dict):
+        # 등록되지 않은 dict-데이터 type (신규 type 등록 누락 의심) — 보존하되 경고.
+        # CHART-AP-38/44 의 교훈: 조용히 버리지 말고 관측 가능하게 만든다.
+        logger.warning(
+            "[chart_renderable] dict 데이터인데 _DICT_DATA_REQUIREMENTS 미등록 "
+            "type=%r — 렌더 허용하되 등록 필요 (CHART-AP-38 클래스)", ctype,
+        )
+        return True
+    try:
+        return len(data) > 0
+    except TypeError:
+        return False

@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.5.11
+last_synced_with: v8.5.12
 ssot_for:
   - "V9 시각 고도화 마스터 플랜 (전황 지도 어휘 · event_timeline · 작전 스키매틱)"
   - "시각물 누락(드롭) 지점 전수 조사 결과 (2026-08-29, 발행본 335건 실측)"
@@ -16,7 +16,10 @@ depends_on:
 
 # VISUAL_ENHANCEMENT_V9_PLAN — 시각 고도화 마스터 플랜 (제안)
 
-> **상태: 제안 (구현 전).** 본 문서는 2026-08-29 분석 세션의 산출물로, 미러된 발행본
+> **상태: V9-0(배관 수리) 랜딩 완료 · P2~P5(신규 시각 어휘)는 제안 — 사용자 결정 대기.**
+> v8.5.11(CHART-AP-44) + v8.5.12(CHART-AP-45)로 §2.1~§2.5·§6·§7.1 이 구현됐고,
+> 새 시각물(event_timeline·전황 지도 어휘·작전 스키매틱)은 목업 상태다.
+> 본 문서는 2026-08-29 분석 세션의 산출물로, 미러된 발행본
 > 335건(르포 29건 포함)의 실측 + 파이프라인 전수 감사에 근거한다. 구현은 본 문서의
 > §8 페이즈 순서대로 별도 세션(Opus 5)이 수행한다. 목업(디자인 시트) 2종:
 > - 르포 축: [samples/visual_upgrade_v9_reportage_mockup.html](../samples/visual_upgrade_v9_reportage_mockup.html)
@@ -53,13 +56,13 @@ gantt" 를 지시하면서 동시에 timeline_flow=null 을 지시하는 자기�
 
 | # | 제안 | 대상 | 성격 | 목업 |
 |---|------|------|------|------|
-| P1 | 배관 수리 — ~~heatmap/stacked 스키마 통일 + parity fixture~~ (✅ v8.5.11 완료) + usage_log 2단화 + 폴백 시각물 보존 (잔여) | 공통 | **버그 수정 (최우선)** | S-3 |
+| P1 | 배관 수리 — ~~heatmap/stacked 스키마 통일 + parity fixture (v8.5.11)~~ · ~~usage_log 2단화 + 드롭 표면화 + has_data SSOT + 폴백 salvage + 지도 조건·CDN 폴백 (v8.5.12)~~ → **✅ 완료** (잔여: MapPayloadGuard · 렌더러 경계 정합) | 공통 | **버그 수정 (최우선)** | S-3 |
 | P2 | `event_timeline` 신규 차트 type (사건 전개 세로 타임라인) | 공통 (르포·일반 공용) | 신규 type 1개 | R-2 / S-2 |
 | P3 | 전황 지도 어휘 — `paths`(front/advance/route) + `zones` + `phases` | 르포 (front·phases) / 일반 (zones) | embedded_map additive | R-1 / S-1 |
 | P4 | 작전 스키매틱 — `basemap:"schematic"` + `terrain` | 르포 | embedded_map additive | R-3 |
 | P5 | rings·zones 발동 트리거 프롬프트 명문화 + 르포 타임라인 모순 해소 | 공통 | 프롬프트만 | S-1 |
 | P6 | Anime.js — **불채택 권고** (기존 d3 모션 프레임워크 확장으로 갈음) | — | 결정 | §5 |
-| P7 | (이월) wrangler 업로드 타임아웃 + CLAUDE.md 토큰 다이어트 | 운영 | 별도 트랙 | §7 |
+| P7 | (이월) ~~wrangler 업로드 타임아웃~~ (✅ v8.5.12) + CLAUDE.md 토큰 다이어트 (잔여) | 운영 | 별도 트랙 | §7 |
 
 P1 은 P2~P5 보다 먼저다 — **배관이 새는 채로 새 시각물을 부으면 목업만 늘어난다.**
 
@@ -107,7 +110,7 @@ v7.1.0 사용자 승인 계약 + 발행본 12건 재발행 하위호환)을 모�
 라운드트립 + 신규 type fixture 강제). 경험 검증: 수정 전 두 모양 모두 가드 reject
 재현 → 수정 후 통과, 회귀 스위트 신규 파손 0 + 기존 실패 2건 해소.
 
-### §2.2 🔴 P0 — 자기교정 루프의 계측 오염
+### §2.2 🔴 P0 — 자기교정 루프의 계측 오염 — ✅ **v8.5.12 완료**
 
 `usage_log.append_run` 은 `_drop_invalid_charts` **이후** 의 type 을 기록한다
 ([orchestrator.py:2343-2352](../src/orchestrator.py)). 드롭된 type 은 "0회 emit"
@@ -115,7 +118,7 @@ v7.1.0 사용자 승인 계약 + 발행본 12건 재발행 하위호환)을 모�
 → 또 전량 드롭. **수정:** emit(드롭 전) / kept(드롭 후) 2단 기록 + 힌트는 kept 기준,
 `emit−kept` 차이가 누적되는 type 은 "배관 이상" 으로 경고 로그 (기아와 구분).
 
-### §2.3 P0 — 파국 폴백의 시각물 전멸 (발행본 9%)
+### §2.3 P0 — 파국 폴백의 시각물 전멸 (발행본 9%) — ✅ **v8.5.12 부분 완료** (head-loss salvage)
 
 - `_recover_head_loss` ([narrative_composer.py:2117-2177](../src/agents/narrative_composer.py))
   는 부분 객체에서 heading/prose 만 salvage — **charts·embedded_map·images 를 버린다.**
@@ -125,7 +128,7 @@ v7.1.0 사용자 승인 계약 + 발행본 12건 재발행 하위호환)을 모�
   `_ensure_time_series_chart` 를 태우면 0-LLM 으로 가능.
 - degraded 경고문에 "시각물 소실" 여부를 명시 (지금은 텍스트 절단만 알림).
 
-### §2.4 P1 — 관측 불가능한 드롭 층 2곳
+### §2.4 P1 — 관측 불가능한 드롭 층 2곳 — ✅ **v8.5.12 완료** (템플릿 게이트 SSOT; 렌더러 경계 정합은 잔여)
 
 - **템플릿 `has_data` 게이트** (`freeform_essay.html:429-445` / `reportage.html:143-151`):
   서버 로그 0. 두 템플릿이 규칙을 **중복 소유** — freeform 쪽은 폐기된 `network` 분기가
@@ -136,7 +139,7 @@ v7.1.0 사용자 승인 계약 + 발행본 12건 재발행 하위호환)을 모�
   가드 통과 → 렌더러 침묵 → "제목·출처만 있는 빈 카드" (CHART-AP-28 류). 경계값을
   가드와 1:1 로 맞추고, parity fixture(§6.1)로 drift 를 회귀 차단.
 
-### §2.5 P1 — 지도의 무방비
+### §2.5 P1 — 지도의 무방비 — ✅ **v8.5.12 부분 완료** (markers 조건 완화 + CDN 폴백; MapPayloadGuard 는 잔여)
 
 - `embedded_map` 은 **서버측 검증 0** ([models.py:856](../src/models.py) — 맨 dict).
   경량 `MapPayloadGuard` (markers/arcs/regions/rings/paths/zones 필드형 + 좌표 유한성
@@ -284,7 +287,7 @@ V5 의 chart_gate/sanity/critic/desk 게이트는 전부 flag OFF + orchestrator
 
 ## §7. 이월 2건 (이전 세션 지적 사항) — 구현 스펙
 
-### §7.1 wrangler 무한 대기 → 타임아웃 + 강제 종료
+### §7.1 wrangler 무한 대기 → 타임아웃 + 강제 종료 — ✅ **v8.5.12 완료**
 
 - 위치: [report_synthesizer.py:1011-1018](../src/agents/report_synthesizer.py) —
   `await proc.communicate()` 에 타임아웃이 없다 (8/25 브리핑 행 원인).
@@ -319,8 +322,12 @@ V5 의 chart_gate/sanity/critic/desk 게이트는 전부 flag OFF + orchestrator
 > 헤더 `last_synced_with` 갱신. VM 반영은 `git pull` + `sudo systemctl restart
 > agents-reviewer.service` (playbook §1).
 
-- **V9-0 배관 수리 (P1, 최우선)** — ~~§2.1 heatmap/stacked 통일 + parity fixture~~
-  (**v8.5.11 완료** — CHART-AP-44 등록, `test_prompt_guard_parity.py` 랜딩) · 잔여: §6.2 usage_log 2단화 · §6.3 드롭 표면화 · §6.4
+- **V9-0 배관 수리 (P1, 최우선)** — ✅ **완료 (v8.5.11 + v8.5.12)**.
+  v8.5.11: §2.1 heatmap/stacked 통일 + parity fixture (CHART-AP-44).
+  v8.5.12: §2.2 usage_log emit/kept 2단 · §2.3 폴백 salvage · §2.4 has_data SSOT ·
+  §2.5 지도 조건 완화 + world-atlas 로컬 폴백 · §6.3 드롭 표면화 · §7.1 wrangler
+  상한 (CHART-AP-45, `test_visual_delivery_guarantee.py` 12종).
+  잔여: MapPayloadGuard(§2.5) · 렌더러 경계값 가드 정합(§2.4) · CLAUDE.md 다이어트(§7.2) · 잔여: §6.2 usage_log 2단화 · §6.3 드롭 표면화 · §6.4
   has_data SSOT 화 · §2.3 폴백 salvage · §7.1 wrangler 타임아웃 · report_bundle_v1.md
   §해당 각주 정정. 검증: `pytest tests/regression/` 전체 + parity fixture 신규 통과.
 - **V9-1 event_timeline (P2)** — 9단계 절차 + 두 포맷 프롬프트 편입 + 르포 타임라인
