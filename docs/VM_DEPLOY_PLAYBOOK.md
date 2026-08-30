@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.5.13
+last_synced_with: v8.5.15
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -78,6 +78,15 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
 
   # ─── Stage 3: 코드 버전 확인 (VM-AP-4) ───
   echo "코드 버전: $(grep '^VERSION = ' src/orchestrator.py)"
+
+  # ─── Stage 3.5: config 로드 프리플라이트 (VM-AP-13) ───
+  # .env 의 미지원 키·형식 오류는 재시작 후에야 status=1 무한 루프로 드러난다.
+  # 살아있는 봇을 내리기 *전에* 새 코드 + 현재 .env 조합이 뜨는지 먼저 확인한다.
+  if ! venv/bin/python -c 'from src.config import Config; Config()' 2>/tmp/cfgcheck.err; then
+    echo "❌ config 로드 실패 — 재시작 중단 (봇은 옛 버전으로 계속 가동 중, VM-AP-13)"
+    cat /tmp/cfgcheck.err; exit 1
+  fi
+  echo "✓ config 로드 OK"
 
   # ─── Stage 4: systemd 재시작 (nohup 금지 — VM-AP-12 중복 기동 OOM) ───
   sudo systemctl restart agents-reviewer.service
@@ -432,6 +441,31 @@ CLAUDE.md 에 재시작 규칙이 확정형으로 없어 매 세션 nohup 을 �
 (nohup 금지 명문화). ③ 스왑 4G 추가(OOM 프리즈 완충, E2.1.Micro 필수). 중복 정리는
 `SYSPID=$(systemctl show -p MainPID --value agents-reviewer.service)` 후 그 외 `src.main`
 PID 만 `kill`.
+
+### VM-AP-13 — `.env` 의 미지원 키 하나가 봇 기동을 통째로 막음 (2026-08-30 발생)
+
+**증상**: `systemctl restart` 후 서비스가 `activating (auto-restart)` 와
+`code=exited, status=1/FAILURE` 를 무한 반복. `pgrep` 인스턴스 **0개**(봇 전면 정지).
+`journalctl` 에 `pydantic_core._pydantic_core.ValidationError: N validation errors for Config`
++ `Extra inputs are not permitted [type=extra_forbidden]`. `scripts/patch_report.py` 등
+`Config()` 를 지나는 **모든 CLI 도 같은 지점에서 동시에 전멸** 한다.
+
+**원인**: `pydantic-settings` BaseSettings 의 기본값이 `extra="forbid"` 인데
+`src/config.py:Config.model_config` 가 이를 재정의하지 않았다. 그래서 `.env` 에
+`Config` 가 모르는 키가 **하나라도** 있으면 설정 객체 생성 자체가 실패한다. 실사고에서는
+운영자가 앞으로 쓸 증권사 API 키(`KIS_APP_KEY` / `KIS_APP_SECRET`)를 `.env` 에 미리
+적어둔 것이 방아쇠였다. 코드는 그 키를 아직 안 쓰므로 *아무 기능도 요구하지 않는 문자열
+두 줄이 서비스를 죽인 것*. 실행 중인 봇은 config 를 startup 1회만 읽으므로 키를 적은
+시점엔 멀쩡했고, **다음 재시작(=재배포)에서야 터진다** — 원인과 증상의 시간이 벌어져
+"이번 배포가 봇을 깼다" 로 오진하기 쉽다.
+
+**Fix (2026-08-30, v8.5.15)**: `Config.model_config` 에 **`"extra": "ignore"`**. 앞으로 쓸
+키를 `.env` 에 미리 적어두는 것은 정상 운영 행위이고, 그 대가가 서비스 전면 정지여선
+안 된다. 미지원 키는 무시하고 뜬다 — 실제로 읽히려면 어차피 필드 선언이 필요하므로
+"조용히 무시돼 설정이 안 먹는" 위험은 원래부터 필드 선언 여부로 결정된다. 회귀
+`tests/regression/test_config_env_tolerance.py` (실사고 `.env` 모양 + 임의 미래 키 +
+선언된 필드 정상 로딩 3종). §1.0 Stage 3.5 에 **재시작 전 config 로드 프리플라이트**
+추가 — 죽은 뒤 로그를 뒤지지 말고, 재시작 전에 막는다.
 
 ---
 
