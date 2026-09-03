@@ -309,22 +309,24 @@
 
   spec({ id: 'stacked', tier: 'safe', family: '구성', name: 'stacked',
     when: '시나리오 × 구성요소 (양수 크기만)',
-    absorbed: '행 = 캡슐 막대, 구간은 4단 농도 + 마지막 구간 accent. 합계는 끝 세리프, 범례는 위 한 줄',
+    absorbed: '행 전체가 한 캡슐(clip), 구간 경계는 직선 + 2px 틈. 구간은 4단 농도 + 마지막 구간 accent. 합계는 끝 세리프, 범례는 위 한 줄',
     draw: function (t) {
       var rows = [['악화', [15.8, 38.9, 24.8]], ['기준', [42.8, 26.8, 17.8]], ['완화', [39.8, 18.8, 8.4]]], segs = ['수출', '환율', '내수'];
       var x0 = 60, sc = 2.9, lad = LADDER4, s = '';
       segs.forEach(function (n, i) { s += dot(x0 + i * 60, 18, 3.5, i === 2 ? t.accent : t.text, i === 2 ? 1 : lad[i + 1]) + T(x0 + i * 60 + 8, 21, n, { size: 9.5, fill: t.muted }); });
       rows.forEach(function (r, i) {
-        var y = 48 + i * 50, x = x0, total = d3.sum(r[1]);
+        var y = 48 + i * 50, x = x0, total = d3.sum(r[1]), cid = 'stk-clip-' + i;
         s += T(x0 - 10, y + 13, r[0], { anchor: 'end', size: 10.5, w: 500, fill: t.text });
-        s += el('rect', { x: x0, y: y, width: total * sc, height: 20, rx: 10, fill: t.text, 'fill-opacity': .06 });
+        // 행 전체를 캡슐로 자르고(clipPath) 안에 구간을 채운다 — 바깥 끝만 둥글고 구간 경계는 직선 + 2px 틈
+        s += el('defs', {}, el('clipPath', { id: cid }, el('rect', { x: x0, y: y, width: total * sc, height: 20, rx: 10 })));
+        var inner = '';
         r[1].forEach(function (v, k) {
-          var w = v * sc, first = k === 0, last = k === r[1].length - 1;
-          s += el('rect', { x: x, y: y, width: w, height: 20, rx: first || last ? 10 : 0, fill: last ? t.accent : t.text, 'fill-opacity': last ? .9 : lad[k + 1] });
-          if (!first && !last) s += '';
-          if (w > 26) s += T(x + w / 2, y + 14, v, { size: 9.5, anchor: 'middle', fill: inv(t, last ? .9 : lad[k + 1]) });
+          var w = v * sc, last = k === r[1].length - 1, gap = last ? 0 : 2;
+          inner += el('rect', { x: x, y: y, width: Math.max(0, w - gap), height: 20, fill: last ? t.accent : t.text, 'fill-opacity': last ? .9 : lad[k + 1] });
+          if (w > 26) inner += T(x + w / 2, y + 14, v, { size: 9.5, anchor: 'middle', fill: inv(t, last ? .9 : lad[k + 1]) });
           x += w;
         });
+        s += el('g', { 'clip-path': 'url(#' + cid + ')' }, inner);
         s += T(x + 8, y + 14.5, total.toFixed(0), { fam: 'serif', size: 12, w: 700, fill: t.text });
       });
       return frame(t, s + footer(t, '시나리오별 영향 구성 · 마지막 구간만 액센트'));
