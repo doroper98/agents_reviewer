@@ -457,7 +457,8 @@ caption{caption-side:bottom;text-align:left;padding:9px 13px;font-size:11.5px;co
   <div class="mast-meta">
     <span class="pill hot">v8.6.0 (목표)</span>
     <span class="pill">일반 13테마 · 르포 8테마</span>
-    <span class="pill">차트 38종 · 견본 42장</span>
+    <a class="pill hot" href="#s6-4" style="text-decoration:none">▶ 차트 견본 42장 바로 보기</a>
+    <span class="pill">차트 38종</span>
     <span class="pill">컴포넌트 18종</span>
     <span class="pill">템플릿 2종</span>
   </div>
@@ -1038,6 +1039,7 @@ caption{caption-side:bottom;text-align:left;padding:9px 13px;font-size:11.5px;co
   <p>값 라벨은 <strong>Newsreader 세리프로 대상 옆에 직접</strong> 붙인다(막대 끝 · 조각 중앙 · 기둥 위). 범례는 직접 라벨이 물리적으로 불가능할 때만 만든다 — 범례는 시선을 도표와 범례 사이로 왕복시키는 비용이 있다.</p>
 
   <h3 id="s6-2">6.4 차트 매트릭스 38종</h3>
+  <div class="note rule"><span class="lbl">견본은 아래 §6.5</span><p>이 매트릭스는 <em>목록</em>이다. 각 종류의 <strong>실제 그림(디자인 견본 42장)</strong>은 바로 아래 <a href="#s6-4">§6.5</a>에 있다 — 타일을 누르면 해당 견본으로 이동한다.</p></div>
   <p>작성 모델이 데이터를 보고 직접 <span class="tok">{type, title, data, note}</span> 를 내보낸다. 별도 빌더가 없으므로 <strong>데이터가 비면 차트도 없다</strong>. 왼쪽 색 띠는 검증 등급이다 — <span style="color:var(--s-ok)">■ safe</span> 는 기본 가드만, <span style="color:var(--s-warn)">■ guarded</span> 는 도표 비평 + 시각 정합 게이트를 통과해야 발행된다. <span style="color:var(--s-accent)">■ 주입</span> 은 작성 모델이 <em>고를 수 없는</em> 타입이다 — 데이터가 있을 때 코드가 결정적으로 꽂거나(브리핑 전용) 특정 장르에만 나온다. <span style="color:var(--s-new)">■ v8.6 신설</span> 4종과 <span style="color:var(--s-new2)">■ v8.7 2차</span> 3종은 플랜 확정 · 구현 진행 중이다.</p>
   <div class="types" id="chart-types"></div>
   <div class="note"><span class="lbl">타입 기아(starvation) 방지 5층</span>
@@ -1477,7 +1479,7 @@ const CHART_TYPES = [
   ['funnel','new2','단계별 이탈 — 눈금 질감 (v8.7)'],
 ];
 document.getElementById('chart-types').innerHTML = CHART_TYPES.map(([n,tier,u]) =>
-  '<div class="type" data-tier="' + tier + '"><div class="n">' + n + '</div><div class="u">' + u + '</div></div>').join('');
+  '<a class="type" data-tier="' + tier + '" href="#spec-' + n + '" style="text-decoration:none;display:block"><div class="n">' + n + ' ↓</div><div class="u">' + u + '</div></a>').join('');
 
 /* ── 어휘 데모 SVG — 현재 테마 토큰으로 그린다 ─────────── */
 function curTok(){

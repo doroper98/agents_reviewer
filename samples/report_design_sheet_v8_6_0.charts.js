@@ -800,16 +800,17 @@
   function drawChartSpecimens(t, id, vocabId) {
     var host = document.getElementById(id); if (!host) return;
     var byFam = {}; SPECS.forEach(function (sp) { (byFam[sp.family] = byFam[sp.family] || []).push(sp); });
-    var html = '';
+    var html = '', seen = {};
     Object.keys(byFam).forEach(function (fam) {
       html += '<div class="spec-fam">' + fam + ' <span>' + byFam[fam].length + '</span></div><div class="specs">';
       byFam[fam].forEach(function (sp) {
         var svg; try { svg = sp.draw(t); } catch (e) { svg = '<div class="spec-err">' + esc(String(e)) + '</div>'; if (global.console) console.warn('[specimen]', sp.id, e); }
-        html += '<div class="spec" data-tier="' + sp.tier + '">' + svg +
+        html += '<div class="spec" data-tier="' + sp.tier + '"' + (seen[sp.id] ? '' : ' id="spec-' + sp.id + '"') + '>' + svg +
           '<div class="spec-h"><span class="spec-id">' + sp.id + (sp.variant ? '<em> · ' + sp.variant + '</em>' : '') + '</span><span class="spec-tier">' + (TIER_LABEL[sp.tier] || sp.tier) + '</span></div>' +
           '<div class="spec-n">' + esc(sp.name) + '</div>' +
           '<div class="spec-w"><b>언제</b> ' + esc(sp.when) + '</div>' +
           '<div class="spec-a"><b>흡수</b> ' + esc(sp.absorbed) + '</div></div>';
+        seen[sp.id] = true;
       });
       html += '</div>';
     });
