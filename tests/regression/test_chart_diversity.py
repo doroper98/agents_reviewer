@@ -17,6 +17,7 @@ from types import SimpleNamespace
 
 from src.visual.usage_log import (
     KNOWN_CHART_TYPES,
+    DATA_GATED_TYPES,
     NON_NARRATIVE_TYPES,
     composer_rebalance_hint,
 )
@@ -66,6 +67,9 @@ def test_rebalance_hint_returns_starved_narrative_types(tmp_path: Path) -> None:
     assert len(hint) <= 6
     # composer 가 선택할 수 없는 type 은 힌트에 절대 포함 금지
     assert not set(hint) & NON_NARRATIVE_TYPES
+    # v8.6.3 — 데이터 의존 type 도 금지. 일별 값 60일치가 없는 보고서에
+    # "calendar_heat 를 더 써라" 는 힌트는 없는 데이터를 지어내게 한다.
+    assert not set(hint) & DATA_GATED_TYPES
     # 실제 6월 소멸 8종 계열이 포함돼야 (알파벳순 상위 6개 안에서)
     assert set(hint) <= set(KNOWN_CHART_TYPES)
 

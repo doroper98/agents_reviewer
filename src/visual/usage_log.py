@@ -61,6 +61,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "stakeholder_map",
     # v8.6.2 — 위계 2종 (2층 구성 / 소속)
     "treemap", "tree",
+    # v8.6.3 — 분포·달력 2종 (calendar_heat 는 일별 데이터 의존 — DATA_GATED_TYPES)
+    "histogram", "calendar_heat",
     # embedded_map (별도 채널)
     "map",
 )
@@ -76,6 +78,12 @@ DEFAULT_STARVATION_WINDOW = 30
 NON_NARRATIVE_TYPES: frozenset = frozenset(
     {"candle", "combo_candle", "iv_skew", "indicator", "stakeholder_map", "map"}
 )
+
+# v8.6.3 — *데이터가 있어야만* 정당한 type. 재균형 힌트에서 제외한다:
+# 일별 값이 60일치 없는 보고서에 "calendar_heat 를 더 써라" 는 힌트가 들어가면
+# 작성 모델이 없는 일별 데이터를 지어내게 된다 (candle 과 같은 성격, WRITE-AP-5).
+# composer 의 자발 emit 은 여전히 허용 — 데이터가 실제로 있을 때만 고르면 된다.
+DATA_GATED_TYPES: frozenset = frozenset({"calendar_heat"})
 
 # 힌트로 넘길 최대 type 수 — 프롬프트 토큰 경제 + 한 보고서에서 소화 가능한 양.
 REBALANCE_HINT_MAX_TYPES = 6
@@ -224,7 +232,8 @@ def composer_rebalance_hint(
     # type 을 "더 자주 쓰라" 고 밀어넣으면 전부 다시 버려질 뿐이다 (CHART-AP-44).
     # 고칠 곳은 프롬프트가 아니라 가드·렌더러 계약 — warn_if_starved 가 그렇게 경고한다.
     broken = set(result.get("plumbing_suspect_types") or [])
-    excluded = NON_NARRATIVE_TYPES | broken
+    # v8.6.3 — DATA_GATED_TYPES 도 제외 (데이터 없는 보고서에 힌트 = 날조 유도)
+    excluded = NON_NARRATIVE_TYPES | DATA_GATED_TYPES | broken
     pool = [t for t in result["starved_types"] if t not in excluded]
     pool += [t for t in result["rare_types"] if t not in excluded]
     return pool[:max_types]

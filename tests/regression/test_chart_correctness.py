@@ -175,6 +175,12 @@ def test_every_dict_guard_type_has_dispatch_branch() -> None:
             {"label": "A", "children": [{"label": "a1"}]},
             {"label": "B"},
         ]}},
+        # v8.6.3 — calendar_heat 도 dict 계약 (histogram 은 list 라 else 자동)
+        "calendar_heat": {"values": [
+            {"date": f"2026-04-{d:02d}", "value": d % 5} for d in range(1, 31)
+        ] + [
+            {"date": f"2026-05-{d:02d}", "value": d % 7} for d in range(1, 31)
+        ]},
     }
     for ctype, data in samples.items():
         assert ctype in _TYPE_TO_GUARD, f"{ctype} 가드 미등록"
@@ -1099,3 +1105,76 @@ def test_hierarchy_types_pass_template_gate() -> None:
     # 묶음이 하나뿐이면 treemap 이 아니다 (_MIN_LEN_REQUIREMENTS)
     assert not chart_renderable({"type": "treemap", "data": {
         "children": [{"label": "A", "children": [{"label": "a", "value": 1}]}]}})
+
+
+# ─── v8.6.3 — 분포·달력 2종 (CHART_REDESIGN_V8_6_PLAN §5.3 / §5.4) ──────
+
+def _cal_days(n: int, start_day: int = 1) -> list[dict]:
+    from datetime import date, timedelta
+    d0 = date(2026, 4, start_day)
+    return [{"date": (d0 + timedelta(days=i)).isoformat(), "value": (i % 9) * 0.4}
+            for i in range(n)]
+
+
+def test_histogram_guard_accepts_binned_counts() -> None:
+    ok, reason = validate_chart_data("histogram", [
+        {"bin": "~1천", "count": 4}, {"bin": "1~2천", "count": 9},
+        {"bin": "2~3천", "count": 15}, {"bin": "3~5천", "count": 22},
+    ])
+    assert ok, reason
+
+
+def test_histogram_guard_rejects_too_few_many_and_empty_distribution() -> None:
+    three = [{"bin": f"b{i}", "count": 3} for i in range(3)]
+    assert not validate_chart_data("histogram", three)[0]        # 4 구간 미만
+    many = [{"bin": f"b{i}", "count": 3} for i in range(25)]
+    assert not validate_chart_data("histogram", many)[0]         # 24 구간 초과
+    zeros = [{"bin": f"b{i}", "count": 0} for i in range(6)]
+    assert not validate_chart_data("histogram", zeros)[0]        # 도수 합 0
+
+
+def test_histogram_guard_rejects_negative_count_and_long_bin() -> None:
+    neg = [{"bin": "a", "count": -1}] + [{"bin": f"b{i}", "count": 3} for i in range(3)]
+    assert not validate_chart_data("histogram", neg)[0]
+    long_bin = [{"bin": "가" * 13, "count": 3}] + [
+        {"bin": f"b{i}", "count": 3} for i in range(3)]
+    assert not validate_chart_data("histogram", long_bin)[0]
+
+
+def test_calendar_heat_guard_accepts_daily_series() -> None:
+    ok, reason = validate_chart_data(
+        "calendar_heat", {"values": _cal_days(70), "metric_label": "등락 폭"})
+    assert ok, reason
+
+
+def test_calendar_heat_guard_rejects_short_series_and_bad_dates() -> None:
+    assert not validate_chart_data("calendar_heat", {"values": _cal_days(40)})[0]
+    bad = _cal_days(60)
+    bad[0]["date"] = "2026/04/01"
+    assert not validate_chart_data("calendar_heat", {"values": bad})[0]
+    neg = _cal_days(60)
+    neg[3]["value"] = -1
+    assert not validate_chart_data("calendar_heat", {"values": neg})[0]
+
+
+def test_calendar_heat_guard_rejects_duplicate_dates() -> None:
+    """같은 날짜가 두 번이면 어느 값이 참인지 알 수 없다."""
+    dup = _cal_days(60)
+    dup.append(dict(dup[0]))
+    assert not validate_chart_data("calendar_heat", {"values": dup})[0]
+
+
+def test_calendar_heat_guard_rejects_list_form() -> None:
+    """CHART-AP-38 — dict 계약인데 list 로 오면 명시적으로 거절."""
+    ok, reason = validate_chart_data("calendar_heat", _cal_days(70))
+    assert not ok and "dict" in reason
+
+
+def test_distribution_types_pass_template_gate() -> None:
+    from src.visual.schemas import chart_renderable
+    assert chart_renderable({"type": "histogram", "data": [
+        {"bin": "a", "count": 1}, {"bin": "b", "count": 2},
+        {"bin": "c", "count": 3}, {"bin": "d", "count": 4},
+    ]})
+    assert chart_renderable({"type": "calendar_heat", "data": {"values": _cal_days(70)}})
+    assert not chart_renderable({"type": "calendar_heat", "data": {"values": []}})

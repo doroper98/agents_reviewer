@@ -1355,6 +1355,87 @@ class TreeGuard(BaseModel):
         return self
 
 
+# ─── v8.6.3 — 분포·달력 2종 (CHART_REDESIGN_V8_6_PLAN §5.3 / §5.4) ─────
+
+
+class HistogramRow(BaseModel):
+    """histogram 한 구간 — 순서 있는 구간 라벨 + 도수."""
+
+    bin: str = Field(min_length=1, max_length=12)
+    count: float = Field(ge=0)
+    note: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_count(self) -> "HistogramRow":
+        if not math.isfinite(self.count):
+            raise ValueError(f"CHART-AP-3 가드: histogram count NaN/inf — {self.bin}")
+        return self
+
+
+class HistogramGuard(BaseModel):
+    """histogram: 1변수 구간 도수 (연령대별 인원·금액 구간별 건수·기간 분포).
+
+    `[{bin, count, note?}]` 4~24 구간, 합 > 0. **출처가 이미 집계를 준 경우에만**
+    — 건별 원자료를 지어내 binning 하는 것은 WRITE-AP-5(추정 단정) 위반이다.
+    구간이 순서를 갖지 않으면 bar 가 맞다.
+    """
+
+    data: list[HistogramRow] = Field(min_length=4, max_length=24)
+
+    @model_validator(mode="after")
+    def validate_total(self) -> "HistogramGuard":
+        if sum(r.count for r in self.data) <= 0:
+            raise ValueError("CHART-AP-3 가드: histogram 도수 합이 0 — 빈 분포")
+        return self
+
+
+class CalendarHeatRow(BaseModel):
+    """calendar_heat 하루 — ISO 날짜 + 값."""
+
+    date: str
+    value: float = Field(ge=0)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "CalendarHeatRow":
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", self.date or ""):
+            raise ValueError(
+                f"CHART-AP-3 가드: calendar_heat date 는 YYYY-MM-DD — {self.date!r}"
+            )
+        if not math.isfinite(self.value):
+            raise ValueError(f"CHART-AP-3 가드: calendar_heat value NaN/inf — {self.date}")
+        return self
+
+
+class CalendarHeatGuard(BaseModel):
+    """calendar_heat: 일별 강도 달력 (60일~1년).
+
+    `{values:[{date, value}], metric_label?, unit_label?}` 60~400행. 60일이 안 되면
+    달력 격자가 서지 않으므로 line 이 맞고, 400행을 넘으면 렌더러가 마지막 371일로
+    자른다. 같은 날짜가 두 번 오면 어느 값이 참인지 알 수 없어 drop.
+    """
+
+    values: list[CalendarHeatRow] = Field(min_length=60, max_length=400)
+    metric_label: str | None = None
+    unit_label: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_unique_dates(self) -> "CalendarHeatGuard":
+        seen: set[str] = set()
+        for r in self.values:
+            if r.date in seen:
+                raise ValueError(
+                    f"CHART-AP-3 가드: calendar_heat 날짜 중복 — {r.date}"
+                )
+            seen.add(r.date)
+        return self
+
+
 # ─── Type → Guard 매핑 ────────────────────────────────────────────────
 
 
@@ -1398,6 +1479,9 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     # v8.6.2 — 위계 2종 (구성 2층 / 소속)
     "treemap":      TreemapGuard,
     "tree":         TreeGuard,
+    # v8.6.3 — 분포·달력 2종
+    "histogram":    HistogramGuard,
+    "calendar_heat": CalendarHeatGuard,
 }
 
 
@@ -1490,6 +1574,12 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "combo 는 {bars, line} dict 형식 필요"
+        elif chart_type == "calendar_heat":
+            # {values:[{date, value}], metric_label?} — dict 계약 (CHART-AP-38)
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "calendar_heat 는 {values:[{date, value}]} dict 형식 필요"
         elif chart_type == "treemap":
             # {children:[...], unit_label?} — dict 계약 (CHART-AP-38 분기 필수)
             if isinstance(data, dict):
@@ -1663,6 +1753,8 @@ _DICT_DATA_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     # v8.6.2 — 위계 2종
     "treemap": ("children",),
     "tree": ("root",),
+    # v8.6.3 — 일별 강도 달력
+    "calendar_heat": ("values",),
 }
 
 # 양형 type — list 계약과 dict 계약을 모두 받는다 (validate_chart_data 와 동일).

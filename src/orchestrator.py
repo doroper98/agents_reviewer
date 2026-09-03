@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.6.2"
+VERSION = "v8.6.3"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -655,6 +655,147 @@ def _ensure_time_series_chart(composed, context) -> None:
         "[orchestrator] _ensure_time_series_chart: +%d 차트 (%s) → sections[0].charts (mockup-quality)",
         len(to_add), names,
     )
+
+
+# v8.6.3 (CHART_REDESIGN_V8_6_PLAN §5.4) — 일별 변동 강도 달력 자동 주입.
+# 시장 시계열은 '추세' 를 line/candle 로 이미 보여준다. 달력은 다른 질문에
+# 답한다 — *언제 몰렸나*. 60거래일이면 주 열 × 요일 행 격자가 서고, 값은
+# |일간 등락률| 이라 지어낼 여지가 없다 (렌더러가 단위·범례를 산출, WRITE-AP-5).
+_CALENDAR_HEAT_MIN_ROWS = 60
+_CALENDAR_HEAT_MAX_ROWS = 371   # 렌더러 클램프와 동일 (가드 상한 400 이내)
+
+
+def _daily_move_values(series: dict) -> list[dict]:
+    """series → ``[{date, value}]`` (value = |전일 대비 등락률| %).
+
+    ``close`` 가 1순위, 없으면 ``value`` → ``y`` 순 (market_fetcher 외 경로 호환).
+    NaN/0 이하 봉은 건너뛰고 *남은 인접 두 봉* 으로 이어 계산한다 (CHART-AP-29 —
+    NaN 봉이 차트에 새는 것을 소스·합류 2단에서 막는 것과 같은 원리). 같은 날짜가
+    두 번 오면 뒤엣것은 버린다 (가드가 중복 날짜를 거절).
+    """
+    out: list[dict] = []
+    seen: set[str] = set()
+    prev: float | None = None
+    for row in (series.get("data") or []):
+        if not isinstance(row, dict):
+            continue
+        date = str(row.get("date") or "")[:10]
+        if len(date) != 10 or date in seen:
+            continue
+        close = None
+        for key in ("close", "value", "y"):
+            cand = row.get(key)
+            if _is_finite_num(cand) and float(cand) > 0:
+                close = float(cand)
+                break
+        if close is None:
+            continue
+        if prev is not None:
+            seen.add(date)
+            out.append({"date": date, "value": round(abs(close / prev - 1) * 100, 2)})
+        else:
+            seen.add(date)   # 첫 봉은 기준일 — 등락률이 없으므로 값 없이 소비
+        prev = close
+    return out[-_CALENDAR_HEAT_MAX_ROWS:]
+
+
+def _ensure_calendar_heat(composed, context, mode: str = "standard") -> None:
+    """주제 우선 종목의 |일간 등락률| 달력을 풀 카드 바로 뒤에 1개 주입 (0-LLM).
+
+    ``_ensure_time_series_chart`` 직후에 돌기 때문에 주인공 종목의 풀 카드
+    (line/candle/area) 는 이미 자리를 잡은 상태다. 규칙 (플랜 §5.4 ①~⑦):
+
+    ① 대상 = ``_topic_priority_key`` 순서상 가장 앞이면서 *풀 카드가 실제로 있는*
+       instrument 1개 (달력은 그 카드에 붙는 보조 시각물이라 붙일 카드가 없으면 뜻이 없다)
+    ② 값 = ``|close_t / close_{t-1} - 1| × 100``, 60행 미만이면 no-op
+    ③~⑤ chart dict 를 그 풀 카드 *바로 뒤* 같은 섹션에 삽입
+    ⑥ ``ChartCountLimits`` 초과면 주입 생략 (deterministic_gate 와 같은 집계)
+    ⑦ ``Config.enable_calendar_heat_inject`` 가 꺼져 있으면 호출 자체를 안 한다
+       (호출부에서 게이트 — 꺼지면 v8.6.2 와 byte-equal)
+
+    composer 가 이미 ``calendar_heat`` 를 emit 했으면 no-op (중복 회피).
+    """
+    if composed is None or not composed.sections:
+        return
+    sections = list(composed.sections or [])
+    # ④ composer 자발 emit 이 있으면 손대지 않는다
+    total_charts = 0
+    for sec in sections:
+        for ch in (sec.charts or []):
+            total_charts += 1
+            if isinstance(ch, dict) and (ch.get("type") or "").lower() == "calendar_heat":
+                return
+
+    # ⑥ 차트 상한 — _check_chart_count_exceeded 와 같은 집계 (섹션별 charts 합)
+    from src.visual.deterministic_gate import ChartCountLimits
+    limit = {
+        "fast": ChartCountLimits.fast,
+        "standard": ChartCountLimits.standard,
+        "deep": ChartCountLimits.deep,
+    }.get(str(mode), ChartCountLimits.standard)
+    if total_charts + 1 > limit:
+        return
+
+    candidates = [
+        s for s in (getattr(context, "time_series", None) or [])
+        if isinstance(s, dict) and s.get("data")
+    ]
+    if not candidates:
+        return
+    title_text = getattr(context, "event_name", "") or ""
+    summary_text = getattr(context, "summary", "") or ""
+    candidates.sort(key=lambda s: _topic_priority_key(s, title_text, summary_text))
+
+    for series in candidates:
+        name = str(series.get("instrument") or "")
+        if not name:
+            continue
+        anchor = _find_full_ts_card(sections, name)
+        if anchor is None:
+            continue
+        values = _daily_move_values(series)
+        if len(values) < _CALENDAR_HEAT_MIN_ROWS:
+            continue
+        sec, idx = anchor
+        chart = {
+            "type": "calendar_heat",
+            "title": f"{name} 일별 변동 강도",
+            "subtitle": "거래일만 표시 · 주말·휴장일은 속빈 점",
+            "unit_line": "단위: |일간 등락률| %",
+            "source": _format_ts_source(series),
+            "metric_label": "등락 폭",
+            "data": {
+                "values": values,
+                "metric_label": "등락 폭",
+                "unit_label": "%",
+            },
+        }
+        charts = list(sec.charts or [])
+        sec.charts = charts[:idx + 1] + [chart] + charts[idx + 1:]
+        import logging
+        logging.getLogger(__name__).info(
+            "[orchestrator] _ensure_calendar_heat: '%s' 일별 변동 강도 달력 %d행 주입 "
+            "(풀 카드 뒤)", name, len(values),
+        )
+        return
+
+
+def _find_full_ts_card(sections: list, instrument: str) -> tuple | None:
+    """``instrument`` 의 풀 시계열 카드 위치 ``(section, index)`` — 없으면 None.
+
+    compact strip (``role='compact'``) 은 sparkline 한 줄이라 달력을 붙일 자리가
+    아니다. 제목 매칭은 ``_build_ts_chart`` / composer 양쪽 카드를 함께 잡는다.
+    """
+    for sec in sections:
+        for i, ch in enumerate(sec.charts or []):
+            if not isinstance(ch, dict) or ch.get("role") == "compact":
+                continue
+            if (ch.get("type") or "").lower() not in _TS_CHART_TYPES:
+                continue
+            hay = f"{ch.get('title') or ''} {ch.get('instrument') or ''}"
+            if instrument and instrument in hay:
+                return (sec, i)
+    return None
 
 
 def _strip_inline_md(text: str) -> str:
@@ -2103,6 +2244,16 @@ class Orchestrator:
                 _ensure_time_series_chart(result.composed_report, result.context)
             except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
                 logger.warning("[orchestrator] _ensure_time_series_chart skipped: %s", _e)
+            # v8.6.3 (플랜 §5.4) — 주인공 종목의 풀 카드 바로 뒤에 '일별 변동 강도'
+            # 달력 1개. 추세(line/candle) 가 답하지 못하는 '언제 몰렸나' 를 맡는다.
+            # flag OFF 면 호출 자체를 안 해 v8.6.2 와 byte-equal.
+            if getattr(self.config, "enable_calendar_heat_inject", True):
+                try:
+                    _ensure_calendar_heat(
+                        result.composed_report, result.context, mode=mode,
+                    )
+                except Exception as _e:  # pragma: no cover  — 보고서 흐름 영향 X
+                    logger.warning("[orchestrator] _ensure_calendar_heat skipped: %s", _e)
         # v7.0.2 (CHART-AP-31) — composer 가 직접 emit 한 시계열 차트의 일별 밀도
         # 보장. LLM 이 토큰 절약으로 듬성하게 추린 데이터를 실측 행으로 교체.
         try:

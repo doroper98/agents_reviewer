@@ -2865,6 +2865,14 @@
     const zones = computeZones(W, H, { left: 168, right: 76, top: annTop, bottom: 30 + FOOTER_H });
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // v8.6.3 — before_after 값이 전부 정수면 소수점을 붙이지 않는다 ('6.00' 이 아니라
+    // '6'). 개편 전후 소요 시간·건수처럼 셀 수 있는 값에 소수 두 자리는 거짓 정밀도다.
+    // range 모드(최저~최고)는 v8.6.1 표기를 유지한다 — 구간 폭은 소수가 정보다.
+    const allInts = mode === 'before_after' && isCountable(
+      data.reduce((acc, d) => acc.concat([d.a, d.b]), []),
+      payload.unit_label || payload.unit_line || '',
+    );
+    const fmtVal = (v) => (allInts ? d3.format(',')(Math.round(+v)) : fmtNum(v));
     const lo = d3.min(data, d => Math.min(d.a, d.b));
     const hi = d3.max(data, d => Math.max(d.a, d.b));
     const pad = (hi - lo) * 0.05 || 1;
@@ -2897,11 +2905,11 @@
       // 값 라벨은 두 원의 *바깥쪽* 에 둔다. 다만 감소 폭이 커 왼쪽 끝에 붙으면
       // 행 라벨과 충돌하므로 그때만 오른쪽으로 뒤집는다 (CHART-AP-33 계열).
       const rightward = xb >= xa;
-      const bTxt = fmtNum(d.b);
+      const bTxt = fmtVal(d.b);
       const flip = !rightward && (xb - 11 - bTxt.length * 7) < zones.data.x - 4;
       svg.append('text').attr('x', xa + (rightward ? -9 : 9)).attr('y', y - 8)
         .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR')
-        .attr('font-size', 10).attr('fill', t.muted).text(fmtNum(d.a));
+        .attr('font-size', 10).attr('fill', t.muted).text(fmtVal(d.a));
       svg.append('text').attr('x', xb + ((rightward || flip) ? 11 : -11)).attr('y', y + 4)
         .attr('text-anchor', (rightward || flip) ? 'start' : 'end')
         .attr('font-family', 'Noto Serif KR').attr('font-size', 12).attr('font-weight', 700)
@@ -3376,6 +3384,183 @@
           .attr('font-family', 'IBM Plex Mono, monospace').attr('font-size', 8.5)
           .attr('fill', t.muted).text(fmt(max));
       });
+  }
+
+  // ----- HISTOGRAM — 1변수 구간 도수 (v8.6.3, 플랜 §5.3 / 견본 histogram) -----
+  // 니치: 연령대별 인원·금액 구간별 건수·기간 분포 — *출처가 이미 집계를 줄 때만*
+  // (건별 원자료를 지어내 binning 하는 것은 WRITE-AP-5). x 가 순서 있는 구간이라
+  // 세로가 자연스럽고, 칸(rung)으로 세어 "몇 건인가" 를 직접 읽게 한다.
+  // data: [{bin, count, note?}] 4~24 + payload.unit / unit_label
+  function drawHistogram(stage, payload, t) {
+    const rows = (payload.data || []).filter(d =>
+      d && d.bin !== undefined && isFinite(+d.count) && +d.count >= 0);
+    if (rows.length < 4 || rows.length > 24) return;
+    const counts = rows.map(d => +d.count);
+    const max = d3.max(counts) || 1;
+    if (d3.sum(counts) <= 0) return;
+    // vline annotation 은 상단 콜아웃 박스(높이 32)를 쓰므로 위 여백을 넓힌다.
+    const W = 720;
+    const annTop = (payload.annotations || []).some(a => a.kind === 'vline') ? 60 : 30;
+    const H = annTop + 250 + 34 + FOOTER_H;
+    const zones = computeZones(W, H, { left: 34, right: 34, top: annTop, bottom: 34 + FOOTER_H });
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const base = zones.data.y + zones.data.h;      // 칸이 자라 오르는 0-기준선
+    const n = rows.length;
+    const span = zones.data.w;
+    // 열 폭·틈은 견본(디자인 시트 histogram)의 비율 — 틈은 열 폭의 0.5~0.8 배.
+    // 구간이 적을 때 틈이 무한정 벌어지지 않게 클램프하고 그룹을 가운데 정렬한다.
+    const colW = Math.max(10, Math.min(52, span / (n * 1.5)));
+    const gapX = n > 1
+      ? Math.min(colW * 0.8, (span - colW * n) / (n - 1))
+      : 0;
+    const groupW = colW * n + gapX * (n - 1);
+    const x0 = zones.data.x + (span - groupW) / 2;
+    // 칸 단위는 렌더러가 산출한다 (WRITE-AP-5 — LLM 이 지어낼 수 없다).
+    // 도수가 전부 정수면 "한 칸 = 0.2건" 같은 소수 단위를 만들지 않는다.
+    let unit = (+payload.unit > 0) ? +payload.unit : niceUnit(max, 40);
+    if (isCountable(counts, payload.unit_label || '')) unit = Math.max(1, unit);
+    const nMarks = Math.max(1, Math.round(max / unit));
+    // 최빈 열 위에 값 라벨이 앉으므로 26px 을 남긴다.
+    const rungGap = Math.max(2.6, Math.min(colW * 0.28, (zones.data.h - 26) / nMarks));
+    const peak = counts.indexOf(max);
+    const unitLab = payload.unit_label || '';
+    // annotation — vline 은 bin 이름(또는 인덱스)을 열 중심 x 로, hline 은 도수 축으로.
+    const colCx = (i) => x0 + i * (colW + gapX) + colW / 2;
+    const xAnn = (v) => {
+      const i = rows.findIndex(d => String(d.bin) === String(v));
+      if (i >= 0) return colCx(i);
+      const num = +v;
+      return isFinite(num) && num >= 0 && num < n ? colCx(Math.round(num)) : null;
+    };
+    const yAnn = (v) => base - (Math.abs(+v) / unit) * rungGap;
+    renderAnnotations(svg, payload, zones, t, xAnn, yAnn);
+    rows.forEach((d, i) => {
+      const x = x0 + i * (colW + gapX);
+      const key = i === peak;
+      const c = +d.count;
+      if (c <= 0) {
+        // 도수 0 — 칸이 없으므로 짧은 대시로 "빈 구간" 임을 남긴다 (CHART-AP-28).
+        svg.append('line').attr('x1', x + colW * 0.25).attr('x2', x + colW * 0.75)
+          .attr('y1', base).attr('y2', base)
+          .attr('stroke', t.muted).attr('stroke-opacity', 0.5).attr('stroke-width', 1);
+      } else {
+        const m = unitMarks(svg, {
+          kind: 'rung', x: x, y: base, value: c, unit: unit,
+          gap: rungGap, len: colW, color: t.text, opacity: key ? 1 : 0.55,
+        });
+        if (key) {
+          svg.append('text').attr('x', x + colW / 2).attr('y', m.end - 8)
+            .attr('text-anchor', 'middle').attr('font-family', 'Noto Serif KR')
+            .attr('font-size', 12).attr('font-weight', 700).attr('fill', t.accent)
+            .text(d3.format(',')(Math.round(c)) + unitLab);
+        }
+      }
+      // x 라벨 — 구간이 많으면 홀수 번째를 생략해 겹침을 막는다 (CHART-AP-33).
+      if (n <= 12 || i % 2 === 0) {
+        svg.append('text').attr('x', x + colW / 2).attr('y', base + 18)
+          .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR')
+          .attr('font-size', 10).attr('fill', key ? t.text : t.muted)
+          .text(String(d.bin).slice(0, 12));
+      }
+    });
+    svg.append('line').attr('x1', x0 - 8).attr('x2', x0 + groupW + 8)
+      .attr('y1', base + 3).attr('y2', base + 3)
+      .attr('stroke', t.text).attr('stroke-opacity', 0.55).attr('stroke-width', 1);
+    keyFooter(svg, W, H,
+      `한 칸 = ${fmtUnitKo(unit, unitLab)} · 다섯 칸마다 진한 선`, t);
+  }
+
+  // ----- CALENDAR HEAT — 일별 강도 달력 (v8.6.3, 플랜 §5.4 / 견본 calendar_heat) -----
+  // 니치: 60일~1년의 *일별* 강도 — 변동성·공습/시위 횟수·발언 빈도·확진·정전.
+  // 질문이 "추세" 가 아니라 "언제 몰렸나" 일 때. 주 열 × 요일 7행 (월요일이 맨 위).
+  // data: {values:[{date:"YYYY-MM-DD", value}], metric_label?, unit_label?}
+  function drawCalendarHeat(stage, payload, t) {
+    const D = payload.data || {};
+    let rows = (D.values || []).filter(d =>
+      d && /^\d{4}-\d{2}-\d{2}/.test(String(d.date)) && isFinite(+d.value));
+    if (rows.length < 60) return;
+    rows = rows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    if (rows.length > 371) rows = rows.slice(rows.length - 371);   // 마지막 371일 클램프
+    const byDate = {};
+    rows.forEach(d => { byDate[String(d.date).slice(0, 10)] = +d.value; });
+    // 첫 주 월요일 ~ 마지막 날짜까지 *빠짐없이* 칸을 만든다 (휴장일은 속빈 점).
+    const first = new Date(String(rows[0].date).slice(0, 10) + 'T00:00:00Z');
+    const last = new Date(String(rows[rows.length - 1].date).slice(0, 10) + 'T00:00:00Z');
+    const start = new Date(first.getTime() - ((first.getUTCDay() + 6) % 7) * 864e5);
+    const cells = [];
+    for (let ms = start.getTime(); ms <= last.getTime(); ms += 864e5) {
+      const dt = new Date(ms);
+      const iso = dt.toISOString().slice(0, 10);
+      cells.push({ dt: dt, iso: iso, v: (iso in byDate) ? byDate[iso] : null });
+    }
+    const weeks = Math.ceil(cells.length / 7);
+    // 칸 간격 — 1년치(≈53주) 가 720 폭에 들어가는 13 이 기준값(플랜 §5.4). 주 수가
+    // 적으면 카드를 채우도록 18 까지 키우고, 넘치면 11 까지 줄인다. 원 반지름은
+    // 간격에 비례 (13 → 4.2).
+    const LEFT = 46, RIGHT = 30, OY = 40;
+    const CELL = Math.max(11, Math.min(18, Math.floor((720 - LEFT - RIGHT) / weeks)));
+    const R = CELL * 0.323;
+    const gridW = weeks * CELL;
+    const W = Math.max(480, LEFT + gridW + RIGHT);
+    const OX = Math.max(LEFT, Math.round((W - gridW) / 2));
+    const H = OY + 7 * CELL + 44 + FOOTER_H;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    // 5분위 농도 램프 — 하위 20% 도 보이게 .14 에서 시작한다 (mono guide §10 잉크 사다리).
+    const vals = cells.map(c => c.v).filter(v => v != null);
+    const q = d3.scaleQuantile().domain(vals).range([0.14, 0.30, 0.48, 0.70, 1]);
+    let peak = -1, peakV = -Infinity;
+    cells.forEach((c, i) => { if (c.v != null && c.v > peakV) { peakV = c.v; peak = i; } });
+    const cxOf = (i) => OX + Math.floor(i / 7) * CELL + CELL / 2;
+    const cyOf = (i) => OY + (i % 7) * CELL + CELL / 2;
+    cells.forEach((c, i) => {
+      const cx = cxOf(i), cy = cyOf(i);
+      if (c.v == null || c.v <= 0) {
+        // 속빈 원 = 값 없음(주말·휴장·0). 형태가 의미를 진다 (플랜 §1.1-5).
+        svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', R * 0.95)
+          .attr('fill', 'none').attr('stroke', t.text)
+          .attr('stroke-opacity', 0.18).attr('stroke-width', 0.7);
+      } else {
+        svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', R)
+          .attr('fill', t.text).attr('fill-opacity', q(c.v));
+      }
+      // 월 라벨 — 그 달 1~7일이 걸린 주의 맨 윗칸 위에만
+      if (c.dt.getUTCDate() <= 7 && (i % 7) === 0) {
+        svg.append('text').attr('x', cx - CELL / 2).attr('y', OY - 10)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 9.5)
+          .attr('letter-spacing', '.06em').attr('fill', t.muted)
+          .text((c.dt.getUTCMonth() + 1) + '월');
+      }
+    });
+    ['월', '수', '금'].forEach((w, k) => {
+      svg.append('text').attr('x', OX - 10).attr('y', OY + k * 2 * CELL + CELL / 2 + 3.5)
+        .attr('text-anchor', 'end').attr('font-family', 'Noto Sans KR')
+        .attr('font-size', 9).attr('fill', t.muted).text(w);
+    });
+    if (peak >= 0) {
+      const px = cxOf(peak), py = cyOf(peak), footY = OY + 7 * CELL + 10;
+      svg.append('circle').attr('cx', px).attr('cy', py).attr('r', R * 1.65)
+        .attr('fill', 'none').attr('stroke', t.accent).attr('stroke-width', 1.2)
+        .attr('stroke-dasharray', '2 2').attr('data-anim', 'static');
+      svg.append('line').attr('x1', px).attr('x2', px)
+        .attr('y1', py + R * 1.65 + 2).attr('y2', footY)
+        .attr('stroke', t.accent).attr('stroke-width', 0.8).attr('stroke-dasharray', '2 2');
+      const label = `최대 ${cells[peak].iso.slice(5).replace('-', '/')} · `
+        + fmtNum(peakV) + (D.unit_label || '');
+      const lx = Math.max(OX + 40, Math.min(W - 60, px));
+      svg.append('text').attr('x', lx).attr('y', footY + 14).attr('text-anchor', 'middle')
+        .attr('font-family', 'Noto Serif KR').attr('font-size', 11).attr('font-weight', 700)
+        .attr('fill', t.accent).text(label);
+      if (Math.abs(lx - px) > 1) {
+        // 라벨이 가장자리에서 밀렸으면 연결선을 꺾어 어느 칸인지 잃지 않게 한다.
+        svg.append('line').attr('x1', px).attr('x2', lx)
+          .attr('y1', footY).attr('y2', footY)
+          .attr('stroke', t.accent).attr('stroke-width', 0.8).attr('stroke-dasharray', '2 2');
+      }
+    }
+    keyFooter(svg, W, H,
+      `점 하나 = 하루 · 진할수록 ${D.metric_label || '값'} 큼 · 속빈 점 = 값 없음`, t);
   }
 
   // ----- TREEMAP — 2층 구성 (v8.6.2, 플랜 §5.1 / 견본 treemap) -----
@@ -4594,6 +4779,8 @@
     stakeholder_map: drawStakeholderMap,
     // v8.6.2 — 위계 2종 (CHART_REDESIGN_V8_6_PLAN §5.1/§5.2)
     treemap: drawTreemap, tree: drawTree,
+    // v8.6.3 — 분포·달력 2종 (CHART_REDESIGN_V8_6_PLAN §5.3/§5.4)
+    histogram: drawHistogram, calendar_heat: drawCalendarHeat,
   };
 
   async function renderStage(stage, idx) {

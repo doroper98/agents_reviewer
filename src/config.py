@@ -144,6 +144,16 @@ class Config(BaseSettings):
         validation_alias=AliasChoices("SKEW_CACHE_PATH", "skew_cache_path"),
     )
 
+    # v8.6.3 — 시장 시계열이 있는 보고서에 '일별 변동 강도' 달력(calendar_heat)을
+    # 결정적으로 1개 주입 (CHART_REDESIGN_V8_6_PLAN §5.4, 0-LLM). 주제 우선 종목의
+    # |일간 등락률| 로 '언제 몰렸나' 를 보여준다. 0 으로 두면 v8.6.2 와 byte-equal.
+    enable_calendar_heat_inject: bool = Field(
+        default=True,
+        validation_alias=AliasChoices(
+            "ENABLE_CALENDAR_HEAT_INJECT", "enable_calendar_heat_inject"
+        ),
+    )
+
     # v8.2.8 — 편집장(NarrativeComposer) CLI 출력 캡처를 구조화 JSON envelope 로.
     # `--output-format text` 가 긴 응답에서 stdout 머리(앞부분)를 잃어 보고서가
     # head-loss → 파싱 불가 → minimal fallback 으로 떨어지던 회귀(2026-06-27 르포

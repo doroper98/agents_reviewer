@@ -26,6 +26,16 @@ from src.visual.schemas import (
     validate_chart_options,
 )
 
+def _calendar_days(n: int) -> list[dict]:
+    """calendar_heat fixture 용 결정적 일별 값 생성 (2026-04-01 부터 n일)."""
+    from datetime import date, timedelta
+    start = date(2026, 4, 1)
+    return [
+        {"date": (start + timedelta(days=i)).isoformat(), "value": round((i % 9) * 0.37, 2)}
+        for i in range(n)
+    ]
+
+
 # SYSTEM_PROMPT [type 별 data 스키마] 가 문서화한 모양 그대로.
 # key = chart type, value = 그 type 의 대표 data payload (list 는 여러 변형).
 PROMPT_SHAPES: dict[str, list] = {
@@ -135,6 +145,18 @@ PROMPT_SHAPES: dict[str, list] = {
             {"label": "C", "before": 17, "after": 21},
         ],
     ],
+    # v8.6.3 §5.3 — 순서 있는 구간의 도수
+    "histogram": [[
+        {"bin": "~1천", "count": 4}, {"bin": "1~2천", "count": 9},
+        {"bin": "2~3천", "count": 15}, {"bin": "3~5천", "count": 22},
+        {"bin": "5~7천", "count": 14}, {"bin": "7천~1억", "count": 9},
+    ]],
+    # v8.6.3 §5.4 — 일별 강도 달력 (결정적 70일 빌더)
+    "calendar_heat": [{
+        "values": _calendar_days(70),
+        "metric_label": "등락 폭",
+        "unit_label": "%",
+    }],
     # v8.6.2 §5.1 — 2층 구성 (부문 → 세부)
     "treemap": [{
         "children": [

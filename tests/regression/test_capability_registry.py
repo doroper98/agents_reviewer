@@ -43,9 +43,11 @@ def test_registry_loads_without_error() -> None:
 
 
 def test_registry_distribution_matches_plan_9_3() -> None:
-    """v8.6.2 정본 분포 — safe 11 / guarded 19 / experimental 1 (총 31).
+    """v8.6.3 정본 분포 — safe 11 / guarded 21 / experimental 1 (총 33).
 
-    v8.6.2 변경 (CHART_REDESIGN_V8_6_PLAN §5): treemap 을 experimental →
+    v8.6.3 변경 (CHART_REDESIGN_V8_6_PLAN §5.3/§5.4): histogram(구간 도수) +
+    calendar_heat(일별 강도 달력) 을 guarded 로 신설.
+    v8.6.2 변경 (§5.1/§5.2): treemap 을 experimental →
     guarded 로 승격(렌더러 실장, default_policy 제거)하고 tree 를 신설.
 
     v5.2.14 변경: Plan §9.3 의 원본 (safe 11 / guarded 3 / experimental 2 / 총 16)
@@ -65,9 +67,9 @@ def test_registry_distribution_matches_plan_9_3() -> None:
     total = list_all_types()
 
     assert len(safe) == 11, f"safe types: 11 expected, got {len(safe)}: {safe}"
-    assert len(guarded) == 19, f"guarded types: 19 expected, got {len(guarded)}: {guarded}"
+    assert len(guarded) == 21, f"guarded types: 21 expected, got {len(guarded)}: {guarded}"
     assert len(experimental) == 1, f"experimental types: 1 expected, got {len(experimental)}"
-    assert len(total) == 31, f"total: 31 expected, got {len(total)}"
+    assert len(total) == 33, f"total: 33 expected, got {len(total)}"
 
 
 def test_registry_safe_types_match_plan_9_3() -> None:
@@ -84,7 +86,7 @@ def test_registry_safe_types_match_plan_9_3() -> None:
 
 
 def test_registry_guarded_types_match_plan_9_3() -> None:
-    """v8.6.2 정본 — guarded 19종 (v8.6.2 treemap 승격 + tree 신설)."""
+    """v8.6.3 정본 — guarded 21종 (v8.6.2 treemap/tree + v8.6.3 histogram/calendar_heat)."""
     expected_guarded = {
         "choropleth", "sankey",
         # v5.2.14 — FT/Economist 스타일 신규 7종
@@ -98,6 +100,8 @@ def test_registry_guarded_types_match_plan_9_3() -> None:
         "stakeholder_map",
         # v8.6.2 — 위계 2종 (2층 구성 / 소속)
         "treemap", "tree",
+        # v8.6.3 — 분포·달력 2종
+        "histogram", "calendar_heat",
     }
     assert set(list_guarded_types()) == expected_guarded
 
@@ -113,9 +117,9 @@ def test_registry_distribution_section_consistent() -> None:
     reg = load_registry()
     declared = reg.get("distribution", {})
     assert declared.get("safe") == 11
-    assert declared.get("guarded") == 19
+    assert declared.get("guarded") == 21
     assert declared.get("experimental") == 1
-    assert reg.get("total") == 31
+    assert reg.get("total") == 33
 
 
 def test_each_capability_has_required_fields() -> None:
