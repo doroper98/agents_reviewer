@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chart Gallery V7 — 전 타입 × 5테마 베이스라인 (REFACTOR_V7_PLAN.md §1.5)</title>
+<title>Chart Gallery V7 — 전 타입 × 6테마 베이스라인 (REFACTOR_V7_PLAN.md §1.5 · V8.6 §3.2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
@@ -29,11 +29,14 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="gal-head">
   <h1>Chart Gallery V7 — 베이스라인</h1>
-  <p>production charts.js 가 렌더하는 전 28종 fixture 갤러리 — 기존 13종 + FT/Economist 7종 + sankey +
-     v7.0.0 신규 3종 (bump / bullet / connected_scatter) + v7.5.0 신규 4종 (combo / diverging_bar /
-     pyramid / dot_matrix) + choropleth. (보고서당 1개의 embedded_map 은
+  <p>production charts.js 의 <code>RENDERERS</code> 전 31종 fixture 갤러리 (v8.6.0 — 1:1 정합) —
+     기존 12종 + FT/Economist 7종 + sankey + v7.0.0 신규 3종 (bump / bullet / connected_scatter) +
+     v7.5.0 신규 4종 (combo / diverging_bar / pyramid / dot_matrix) + choropleth +
+     v8.6.0 편입 4종 (combo_candle / iv_skew / indicator / stakeholder_map).
+     폐기된 network 는 제거 (v7.9.17, CHART-AP-36). (보고서당 1개의 embedded_map 은
      별도 채널 maps.js — 본 갤러리 범위 밖.) Track A 리디자인의 전·후 비교 기준 아티팩트
-     (REFACTOR_V7_PLAN.md §1.5). 테마 버튼은 페이지를 다시 그려 SVG 색을 재적용한다.
+     (REFACTOR_V7_PLAN.md §1.5) 이자 DOM 스냅샷 회귀(<code>scripts/chart_dom_snapshot.py</code>)의
+     입력 fixture (CHART_REDESIGN_V8_6_PLAN.md §3.2). 테마 버튼은 페이지를 다시 그려 SVG 색을 재적용한다.
      annotation 데모는 line / candle / bullet / scatter 카드 참조. line / candle 은 실보고서와 같은
      일별 밀도 (62 / 40 거래일).</p>
   <div class="gal-themes" id="themes"></div>
@@ -43,7 +46,8 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <script>
 // ── 테마 스위처 (렌더된 SVG 는 색이 박제되므로 reload 로 재렌더) ──
 (function () {
-  var THEMES = ['editorial_cream', 'burgundy_mono', 'midnight_indigo', 'pine_forest', 'graphite_slate'];
+  var THEMES = ['editorial_cream', 'burgundy_mono', 'midnight_indigo', 'pine_forest', 'graphite_slate',
+                'reportage_steel'];
   var cur = localStorage.getItem('gal_theme') || 'midnight_indigo';
   document.documentElement.setAttribute('data-theme', cur);
   var wrap = document.getElementById('themes');
@@ -93,7 +97,6 @@ var PAYLOADS = [
     data: [{label:'미국',value:69},{label:'중국',value:33},{label:'EU',value:30},{label:'일본',value:18},{label:'한국',value:9}], source: '각국 정부 발표 집계' },
   { type: 'donut', title: '파운드리 점유율', subtitle: 'TSMC 독주 속 2위권 혼전', data: [{label:'TSMC',value:62},{label:'삼성',value:11},{label:'SMIC',value:6},{label:'기타',value:21}] },
   { type: 'gantt', title: '관세 협상 일정', data: [{label:'1차 실무협상',start:'2026-04-10',end:'2026-04-24'},{label:'고위급 회담',start:'2026-05-02',end:'2026-05-06'},{label:'잠정 합의 검토',start:'2026-05-20',end:'2026-06-10',note:'진행 중'},{label:'발효 목표',start:'2026-07-01',end:'2026-07-15'}] },
-  { type: 'network', title: '행위자 관계도', data: { nodes: [{id:'us',label:'미 행정부',group:'승인'},{id:'kr',label:'한국 정부',group:'검토'},{id:'semis',label:'반도체 업계',group:'검토'},{id:'cn',label:'중국 상무부',group:'반대'}], links: [{source:'us',target:'kr',type:'influence'},{source:'us',target:'cn',type:'conflict'},{source:'kr',target:'semis',type:'ally'},{source:'cn',target:'semis',type:'influence'}] } },
   { type: 'stacked', title: '시나리오별 영향 구성', data: { scenarios: [{name:'완화',segments:[{label:'수출',value:30},{label:'환율',value:18},{label:'내수',value:12}]},{name:'기준',segments:[{label:'수출',value:42},{label:'환율',value:26},{label:'내수',value:17}]},{name:'악화',segments:[{label:'수출',value:55},{label:'환율',value:38},{label:'내수',value:24}]}] } },
   { type: 'bubble', title: '시나리오 확률 × 영향', data: [{label:'관세 유예 연장',x:55,y:30,size:3},{label:'부분 타결',x:30,y:55,size:5},{label:'전면 확전',x:15,y:85,size:8}] },
   { type: 'heatmap', title: '공급망 위험도', data: [{title:'첨단 노광장비',severity:'high'},{title:'희토류',severity:'high'},{title:'레거시 칩',severity:'medium'},{title:'패키징 소재',severity:'medium'},{title:'웨이퍼',severity:'low'}] },
@@ -139,7 +142,64 @@ var PAYLOADS = [
     source: '통계청 (예시 데이터)' },
   { type: 'dot_matrix', title: '임금근로자 100명 중 비정규직', subtitle: '셋 중 한 명꼴',
     data: [{label:'비정규직',value:37,accent:true},{label:'정규직',value:63}],
-    source: '경제활동인구조사 (예시 데이터)' }
+    source: '경제활동인구조사 (예시 데이터)' },
+  /* ── v7.9.9~v8.0.0 주입·르포 전용 4종 (v8.6.0 갤러리 편입) ──
+     composer 가 emit 하지 않고 장마감 브리핑 주입(combo_candle / iv_skew / indicator)
+     또는 르포 본문(stakeholder_map)에서만 나오던 type. 갤러리 누락으로 스냅샷·시각
+     검수 사각지대였다 (CHART_REDESIGN_V8_6_PLAN §3.2). */
+  { type: 'combo_candle', title: '코스피 — 하락 종목 비율 × 지수', subtitle: '하락 비율 50% 상회 구간에서 지수 조정', unit_line: '단위: %(좌, 선) · pt(우, 캔들)',
+    get data() {
+      return {
+        line: { label: '하락 종목 비율', series: KOSPI_D.slice(0, 24).map(function (d, i) {
+          return { x: d.date, y: +(46 + ((i * 37) % 23) - ((i * 11) % 9)).toFixed(1) };
+        }) },
+        candle: { label: 'KOSPI', series: KOSPI_D.slice(0, 24) },
+      };
+    },
+    source: 'KRX 정보데이터시스템 · 시장 폭 캐시 (예시 데이터)' },
+  { type: 'iv_skew', title: '행사가별 옵션 가격·내재변동성(IV) — KOSPI200 6월물', subtitle: '외가격 풋이 기준선 위로 솟은 하락 방어 스큐', atm_iv: 14.8,
+    data: [
+      {strike:340,iv:19.4,premium:0.62,type:'put',date:'2026-06-11'},
+      {strike:350,iv:17.1,premium:1.18,type:'put',date:'2026-06-11'},
+      {strike:360,iv:15.3,premium:2.45,type:'put',date:'2026-06-11'},
+      {strike:370,iv:14.6,premium:4.90,type:'put',date:'2026-06-11'},
+      {strike:370,iv:14.5,premium:5.35,type:'call',date:'2026-06-11'},
+      {strike:380,iv:13.9,premium:2.61,type:'call',date:'2026-06-11'},
+      {strike:390,iv:13.6,premium:1.14,type:'call',date:'2026-06-11'},
+      {strike:400,iv:13.8,premium:0.47,type:'call',date:'2026-06-11'},
+      {strike:340,iv:20.8,premium:0.81,type:'put',date:'2026-06-12'},
+      {strike:350,iv:18.2,premium:1.49,type:'put',date:'2026-06-12'},
+      {strike:360,iv:16.0,premium:2.92,type:'put',date:'2026-06-12'},
+      {strike:370,iv:15.1,premium:5.44,type:'put',date:'2026-06-12'},
+      {strike:370,iv:15.0,premium:5.90,type:'call',date:'2026-06-12'},
+      {strike:380,iv:14.2,premium:2.98,type:'call',date:'2026-06-12'},
+      {strike:390,iv:13.9,premium:1.33,type:'call',date:'2026-06-12'},
+      {strike:400,iv:14.1,premium:0.55,type:'call',date:'2026-06-12'}
+    ],
+    x_label: '행사가',
+    source: 'KRX 종가에서 산출 (예시 데이터) / 2026-06-12' },
+  { type: 'indicator', title: '선물 베이시스 — 콘탱고/백워데이션',
+    data: [{label:'선물 - 현물',value:-0.42,unit:'p',pos_label:'콘탱고',neg_label:'백워데이션'}],
+    source: 'KRX (예시 데이터) / 2026-06-12' },
+  { type: 'stakeholder_map', title: '반도체 수출통제 — 이해당사자 지형',
+    data: {
+      nodes: [
+        {id:'us',label:'미 상무부',role:'수출통제 주무',col:'left',flag:'US'},
+        {id:'kr',label:'한국 정부',role:'중재·유예 요청',col:'left',flag:'KR'},
+        {id:'fab',label:'파운드리 연합',role:'생산 능력 보유',col:'center',accent:true},
+        {id:'tw',label:'대만 업계',role:'선단 공정 과점',col:'right',flag:'TW'},
+        {id:'cn',label:'중국 상무부',role:'대응 조치 예고',col:'right',flag:'CN'},
+        {id:'jp',label:'일본 소재사',role:'소재·장비 공급',col:'right',flag:'JP'}
+      ],
+      edges: [
+        {source:'us',target:'fab',type:'압박',label:'통제 준수 요구'},
+        {source:'kr',target:'fab',type:'지원',label:'유예 협상'},
+        {source:'fab',target:'tw',type:'영향',label:'수주 이동'},
+        {source:'cn',target:'fab',type:'대립',label:'희토류 통제'},
+        {source:'jp',target:'fab',type:'협력',label:'소재 장기계약'},
+        {source:'us',target:'cn',type:'대립',label:'상호 조치'}
+      ]
+    } }
 ];
 
 // ── 카드 DOM 생성 (charts.js init 의 .chart-card-stage 스캔과 동일 계약) ──

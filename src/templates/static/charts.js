@@ -296,6 +296,173 @@
     occupancy.add(placed.x, placed.y, labelW, labelH);
   }
 
+  // ===== v8.6.0 unit vocabulary helpers =====
+  // CHART_REDESIGN_V8_6_PLAN.md §3.1 — 참고 자료의 시각 문법("칸 하나 = 정해진
+  // 수량" · "잉크 농도 사다리" · "캡슐 + 직접 값 라벨" · "읽는 법 캡션")을 우리
+  // 어휘로 *재구현* 한 공유 계층. 참고 저장소의 코드·토큰 파일은 복제하지 않는다
+  // (플랜 §2.5 라이선스).
+  //
+  // Phase 0 (v8.6.0) 에서는 **정의만** 둔다 — 호출 0. 기존 렌더러는 한 줄도
+  // 건드리지 않으므로 DOM 스냅샷(scripts/chart_dom_snapshot.py)이 0 diff 여야
+  // 한다. 실제 배선은 Phase 1 (v8.6.1, 플랜 §4) 이 렌더러별로 수행한다.
+  // 어휘 규칙 SSOT: docs/MONO_THEME_GUIDE.md §10.1.
+
+  // 1. 숫자 포맷 단일 SSOT — 기존 인라인 idiom 을 한 곳으로 (출력 동일).
+  function fmtNum(v) {
+    const av = Math.abs(+v);
+    if (!isFinite(av)) return '';
+    if (av >= 100) return d3.format(',.0f')(+v);
+    if (av >= 10) return d3.format(',.1f')(+v);
+    return d3.format(',.2f')(+v);
+  }
+
+  // 2. 한국어 단위 — 1e12 조 / 1e8 억 / 1e4 만 / 1e3 천. unitLabel 은 뒤에 붙는다.
+  //    예: fmtUnitKo(2.5e8, '원') → '2.5억원' · fmtUnitKo(3, '건') → '3건'
+  function fmtUnitKo(unit, unitLabel) {
+    const lab = (unitLabel == null) ? '' : String(unitLabel);
+    const n = +unit;
+    if (!isFinite(n)) return lab;
+    const sign = n < 0 ? '-' : '';
+    const av = Math.abs(n);
+    let scaled = av, suffix = '';
+    if (av >= 1e12) { scaled = av / 1e12; suffix = '조'; }
+    else if (av >= 1e8) { scaled = av / 1e8; suffix = '억'; }
+    else if (av >= 1e4) { scaled = av / 1e4; suffix = '만'; }
+    else if (av >= 1e3) { scaled = av / 1e3; suffix = '천'; }
+    const txt = (Math.abs(scaled - Math.round(scaled)) < 1e-9)
+      ? String(Math.round(scaled))
+      : d3.format('.1f')(scaled);
+    return sign + txt + suffix + lab;
+  }
+
+  // 3. 잉크 농도 사다리 — n<=4 는 기존 4단(구성), 5~7 은 7단(순위), 8+ 는 선형.
+  //    mono guide §10: 위계는 hue 가 아니라 잉크 농도로만 (7단 값 사용자 승인).
+  const LADDER4 = [1, .42, .24, .13];
+  const LADDER7 = [1, .78, .60, .44, .30, .20, .12];
+  function inkLadder(n) {
+    const k = Math.max(1, Math.floor(+n) || 1);
+    if (k <= 4) return LADDER4.slice(0, k);
+    if (k <= 7) return LADDER7.slice(0, k);
+    return d3.range(k).map(i => 1 - (i / (k - 1)) * .88);
+  }
+
+  // 4. 칸 단위 자동 — 칸수가 maxMarks 이하가 되는 {1,2,2.5,5}×10^k 중 최소.
+  //    WRITE-AP-5 대응: 단위를 LLM 이 지어내지 않고 렌더러가 산출한다.
+  function niceUnit(maxValue, maxMarks) {
+    const max = Math.abs(+maxValue);
+    const cap = Math.max(1, Math.floor(+maxMarks) || 1);
+    if (!isFinite(max) || max <= 0) return 1;
+    const mant = [1, 2, 2.5, 5];
+    const base = Math.floor(Math.log10(max / cap)) - 1;
+    for (let e = base; e <= base + 8; e++) {
+      for (let i = 0; i < mant.length; i++) {
+        const u = mant[i] * Math.pow(10, e);
+        if (u > 0 && Math.ceil(max / u) <= cap) return u;
+      }
+    }
+    return max / cap;
+  }
+
+  // 5. 셀 수 있는 값 판정 — 전부 정수이고 최대값 <= 500 이면 칸 질감이 어울린다.
+  //    비율(%)·지수·소수는 false → 캡슐. (bar 기본 질감 결정의 SSOT)
+  function isCountable(values, unitLabel) {
+    if (unitLabel != null && String(unitLabel).indexOf('%') >= 0) return false;
+    const arr = (values || []).map(Number).filter(v => isFinite(v));
+    if (!arr.length) return false;
+    let max = 0;
+    for (let i = 0; i < arr.length; i++) {
+      const v = arr[i];
+      if (Math.abs(v - Math.round(v)) >= 1e-9) return false;
+      if (Math.abs(v) > max) max = Math.abs(v);
+    }
+    return max <= 500;
+  }
+
+  // 6. 칸 질감 — value/unit 개의 마크를 그린다. 다섯 번째마다 굵게·길게.
+  //    kind: 'tick'(세로 눈금, 가로 진행) | 'dot'(점) | 'rung'(가로 실선, 세로 진행).
+  //    반환 {count, end} — end 는 마지막 마크의 진행축 좌표 (값 라벨 배치용).
+  function unitMarks(g, opts) {
+    const o = opts || {};
+    const kind = o.kind || 'tick';
+    const unit = (+o.unit > 0) ? +o.unit : 1;
+    const gap = (+o.gap > 0) ? +o.gap : 6;
+    const len = (+o.len > 0) ? +o.len : 11;
+    const color = o.color || 'currentColor';
+    const op = (o.opacity == null) ? 1 : +o.opacity;
+    const x0 = +o.x || 0, y0 = +o.y || 0;
+    const count = Math.max(0, Math.round(Math.abs(+o.value || 0) / unit));
+    let end = (kind === 'rung') ? y0 : x0;
+    for (let i = 0; i < count; i++) {
+      const big = ((i + 1) % 5 === 0);
+      if (kind === 'dot') {
+        const cx = x0 + i * gap, r = big ? 4 : 3;
+        g.append('circle').attr('cx', cx).attr('cy', y0).attr('r', r)
+          .attr('fill', color).attr('fill-opacity', op);
+        end = cx + r;
+      } else if (kind === 'rung') {
+        const yy = y0 - i * gap;
+        g.append('line').attr('x1', x0).attr('x2', x0 + len).attr('y1', yy).attr('y2', yy)
+          .attr('stroke', color).attr('stroke-opacity', op)
+          .attr('stroke-width', big ? 1.8 : 1).attr('shape-rendering', 'crispEdges');
+        end = yy;
+      } else {
+        const xx = x0 + i * gap, h = big ? len + 4 : len;
+        g.append('line').attr('x1', xx).attr('x2', xx)
+          .attr('y1', y0 - h / 2).attr('y2', y0 + h / 2)
+          .attr('stroke', color).attr('stroke-opacity', op)
+          .attr('stroke-width', big ? 1.6 : 1).attr('shape-rendering', 'crispEdges');
+        end = xx;
+      }
+    }
+    return { count: count, end: end };
+  }
+
+  // 7. 캡슐 — rx = h/2. 폭이 높이보다 좁으면 최소폭 h 로 클램프해 알약 모양 유지.
+  function capsuleRect(g, x, y, w, h, fill, opacity) {
+    const hh = Math.max(1, +h || 0);
+    const ww = Math.max(hh, +w || 0);
+    return g.append('rect')
+      .attr('x', +x || 0).attr('y', +y || 0)
+      .attr('width', ww).attr('height', hh)
+      .attr('rx', hh / 2).attr('ry', hh / 2)
+      .attr('fill', fill)
+      .attr('fill-opacity', (opacity == null) ? 1 : +opacity);
+  }
+
+  // 8. 읽는 법 캡션 — SVG 하단 중앙 한 줄 ("한 칸 = 1천억원" 류).
+  //    호출 렌더러는 H 산정에 FOOTER_H 를 더한다. 라틴만인 문구는 대문자로.
+  const FOOTER_H = 18;
+  function keyFooter(svg, W, H, text, t) {
+    let s = String(text == null ? '' : text).trim();
+    if (!s) return null;
+    if (!/[ᄀ-ᇿ㄰-㆏가-힣]/.test(s)) s = s.toUpperCase();
+    return svg.append('text')
+      .attr('x', (+W || 0) / 2).attr('y', (+H || 0) - 6)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'Noto Sans KR').attr('font-size', 9.5)
+      .attr('letter-spacing', '.08em')
+      .attr('fill', (t && t.muted) || 'currentColor')
+      .text(s);
+  }
+
+  // 부가: content-fit viewBox — sankey · dot_matrix · stakeholder_map 의 ad-hoc
+  // getBBox 보정을 일반화한 것. 기존 3곳은 교체하지 않는다 (CHART-AP-20/21 이
+  // 그 자리에서 4회 재발한 표면이라 회귀 위험 대비 이득이 없다). 신규 type 용.
+  function contentFit(svg, pad) {
+    const p = (pad == null) ? 12 : (+pad || 0);
+    try {
+      const node = (svg && svg.node) ? svg.node() : svg;
+      if (!node || !node.getBBox) return null;
+      const bb = node.getBBox();
+      if (!bb || !isFinite(bb.width) || !isFinite(bb.height)) return null;
+      if (bb.width <= 0 || bb.height <= 0) return null;
+      const box = { x: bb.x - p, y: bb.y - p, w: bb.width + p * 2, h: bb.height + p * 2 };
+      d3.select(node).attr('viewBox', box.x + ' ' + box.y + ' ' + box.w + ' ' + box.h);
+      return box;
+    } catch (e) { return null; }
+  }
+  // ===== /v8.6.0 unit vocabulary helpers =====
+
   // ============================================================
   // Chart renderers (all use zones)
   // ============================================================

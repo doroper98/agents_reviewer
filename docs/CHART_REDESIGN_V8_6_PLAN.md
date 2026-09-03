@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: approved (Fable 분석·설계 완료 + §8 사용자 결정 전부 확정 2026-09-03 — Opus 5 실행 착수 가능)
+status: in progress (Phase 0 완료 v8.6.0 · Phase 1 이후 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.5.15
+last_synced_with: v8.6.0
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -599,11 +599,13 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 > ·발행본 접근이 필요한 검증(type_fit `--scan reports/`, codex 비전) 은 VM 명령을 사용자에게
 > *복사용 한 줄* 로 제시 (CLAUDE.md "명령어 없는 지시 금지").
 
-**Phase 0 (v8.6.0)**
-- [ ] `samples/chart_gallery_v7.html`: network 제거 · 누락 4종 추가 · `reportage_steel` 버튼
-- [ ] `scripts/chart_dom_snapshot.py` + `tests/regression/test_chart_dom_snapshot.py` + baseline JSON
-- [ ] charts.js 헬퍼 8개 + `contentFit` (정의만, 호출 0) · 구문 검사
-- [ ] MONO_THEME_GUIDE §10.1 · REPO_MAP · `docs/reference/README.md` · VERSION/README/CHANGELOG → 커밋
+**Phase 0 (v8.6.0)** — 완료 (2026-09-03)
+- [x] `samples/chart_gallery_v7.html`: network 제거 · 누락 4종 추가 · `reportage_steel` 버튼
+      (RENDERERS 31종과 1:1, 헤드리스 렌더 unknown/예외 0)
+- [x] `scripts/chart_dom_snapshot.py` + `tests/regression/test_chart_dom_snapshot.py` + baseline JSON
+      (31 type × 6 테마, loose 3종. 하네스로 IntersectionObserver·모션·CDN 의존을 제거해 결정적 렌더)
+- [x] charts.js 헬퍼 8개 + `contentFit` (정의만, 호출 0) · 구문 검사 · 스냅샷 `--check` 0 diff
+- [x] MONO_THEME_GUIDE §10.1 · REPO_MAP · `docs/reference/README.md` · VERSION/README/CHANGELOG → 커밋
 
 **Phase 1 (v8.6.1)** — 순서: bar → candle → donut → 캡슐 5종 → line/area/scatter → range_bar → heatmap
 - [ ] `samples/_legacy/charts.v8515.js` 고정 (`git show v8.5.15:src/templates/static/charts.js`)
