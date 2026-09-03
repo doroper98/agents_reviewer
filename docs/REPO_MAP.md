@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.2.0
+last_synced_with: v8.6.0
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -130,10 +130,12 @@ src/
 - `TESTING.md` — 테스트 전략 (Tier 2)
 - `REPO_MAP.md` — 본 문서 (Tier 3)
 - `references/` — 참조 자료 (prototype HTML 등)
+- `reference/` — 외부 참고 자료 원본 보관 (v8.6.0). 출처·라이선스·용도는 `reference/README.md`. 코드 복제 금지 대상 — 시각 문법만 우리 어휘로 재구현한다 (CHART_REDESIGN_V8_6_PLAN §2.5)
+- `CHART_REDESIGN_V8_6_PLAN.md` — 차트 표현 전면 흡수·신규 유형·type-fit 마스터 플랜 (Tier 2, v8.6.0~v8.7.0)
 
 ## Other directories
-- `samples/` — 샘플 입력·출력
-- `scripts/` — 보조 스크립트. `patch_report.py` (발행본 핫픽스, LLM 0), `backfill_report_meta.py` (옛 보고서 `report_meta` 백필 — v5.5.7 미만 보고서의 후속 버튼 복구, dry-run 기본), `html_to_md.py` 등
+- `samples/` — 샘플 입력·출력. `chart_gallery_v7.html` 은 production `RENDERERS` 와 1:1 인 전 type fixture 갤러리이자 DOM 스냅샷 회귀의 입력 (v8.6.0 부터 31종 × 6테마)
+- `scripts/` — 보조 스크립트. `patch_report.py` (발행본 핫픽스, LLM 0), `backfill_report_meta.py` (옛 보고서 `report_meta` 백필 — v5.5.7 미만 보고서의 후속 버튼 복구, dry-run 기본), `html_to_md.py` 등, `chart_dom_snapshot.py` (v8.6.0 — 갤러리 fixture 를 헤드리스 chromium 으로 렌더해 차트 SVG 의 DOM 해시를 기록·대조. `--out` 기록 / `--check` 대조 / `--diff-report` 변경 type 요약. 브라우저 없으면 skip. baseline 은 `tests/regression/fixtures/chart_dom_baseline.json`, pytest 래퍼는 `tests/regression/test_chart_dom_snapshot.py`)
 - `reports/` — 생성된 HTML 보고서 (git ignored). v5.5.0 부터 `--bundle` 시 `analysis_{ts}.bundle.json` 동반
 - `src/timeline_flow.py` — v5.5.2 시간 흐름도 조립 (결정론 backbone + composer 윤색). render + bundle emit 공유
 - `src/handoff/` — v5.5.0 ReportBundle 핸드오프 (osint_generator 연동). `bundle_builder.py` = `FullAnalysisResult → ReportBundle`. 계약 SSOT: `docs/CONTRACTS/report_bundle_v1.md`

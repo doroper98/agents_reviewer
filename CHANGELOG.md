@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.5.15
+last_synced_with: v8.6.0
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.6.0 — 차트 표현 어휘 계층 + 렌더 DOM 스냅샷 회귀 (CHART_REDESIGN_V8_6 Phase 0)
+
+차트 표현을 전면적으로 손보는 [마스터 플랜](docs/CHART_REDESIGN_V8_6_PLAN.md)의 첫 단계. 이번 버전은 **보이는 것을 바꾸지 않는다** — 다음 단계에서 기존 차트의 기본 표현을 바꿀 때(그 변경은 이미 발행된 보고서에도 소급된다) "무엇이 어떻게 바뀌었는지" 를 눈이 아니라 기계가 증빙하도록 바닥을 까는 일이다.
+
+- **공유 어휘 헬퍼 9종 (`src/templates/static/charts.js`, 정의만 · 호출 0)**: 참고 자료에서 읽어낸 시각 문법을 우리 어휘로 재구현했다 — 숫자 포맷 단일화(`fmtNum`), 한국어 단위 표기(`fmtUnitKo` — 조/억/만/천), 잉크 농도 사다리(`inkLadder`, 7단 값 `[1, .78, .60, .44, .30, .20, .12]`), 칸 단위 자동 산출(`niceUnit`), 셀 수 있는 값 판정(`isCountable`), 칸 질감(`unitMarks`), 캡슐 막대(`capsuleRect`), 읽는 법 캡션(`keyFooter`), content-fit viewBox(`contentFit`). 기존 렌더러는 한 줄도 건드리지 않았으므로 이번 버전의 차트는 v8.5.15 와 픽셀 단위로 같다 (아래 스냅샷이 0 diff 로 증명).
+- **렌더 DOM 스냅샷 회귀 (`scripts/chart_dom_snapshot.py` + `tests/regression/test_chart_dom_snapshot.py` + `tests/regression/fixtures/chart_dom_baseline.json`)**: 갤러리를 헤드리스 브라우저로 렌더해 각 차트 SVG 의 DOM 을 정규화·해시로 기록한다. 픽셀이 아니라 DOM 이라 폰트·OS 에 흔들리지 않는다. `--out` 기록 / `--check` 대조 / `--diff-report` 변경 type 요약. 브라우저가 없으면 조용히 skip. 텍스트 실측폭에 의존하는 3종(sankey · dot_matrix · stakeholder_map)은 해시 대신 요소 수·태그 분포만 본다. baseline = **31 type × 6 테마**.
+- **갤러리 정합 (`samples/chart_gallery_v7.html`)**: production `RENDERERS` 와 1:1 로 맞췄다. 폐기된 `network`(v7.9.17, CHART-AP-36) fixture 를 지우고, 그동안 갤러리에 없어 시각 검수 사각지대였던 4종 — `combo_candle` · `iv_skew` · `indicator` (장마감 브리핑 주입) · `stakeholder_map` (르포) — 을 추가했다. 테마 버튼에 `reportage_steel` 추가(6종). 헤드리스 렌더에서 미지원 type·렌더 예외 **0건**.
+- **어휘 규칙 SSOT**: [docs/MONO_THEME_GUIDE.md §10.1](docs/MONO_THEME_GUIDE.md) "셀 수 있는 단위 어휘" 신설 — 언제 칸 질감이고 언제 캡슐인지, 칸의 뜻은 누가 정하는지(렌더러가 자동 산출 — 지어낸 단위 차단), 7단 사다리는 순위 전용이고 구성은 4단, 속빈/채움의 뜻, 읽는 법 캡션 필수.
 
 ---
 
