@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 완료 · Phase 2a 부터 대기)
+status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 완료 · Phase 2b 부터 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.1
+last_synced_with: v8.6.2
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -224,11 +224,19 @@ function keyFooter(svg, W, H, text, t) { ... }
   sha256 을 `{type: {theme: hash}}` 로 기록. **픽셀이 아니라 DOM** — 폰트·OS 무관.
 - `--out <json>` 기록 / `--check <json>` 비교 (차이 type 목록 출력, exit 1) /
   `--diff-report` (변경 type 만 요약 — Phase 1 커밋 메시지 증빙용).
+- **스냅샷 키 (v8.6.1 구현 보정)**: 키는 갤러리 카드의 `data-snapshot-key`, 없으면
+  `data-chart-type`. Phase 1 처럼 *같은 type 의 새 기본 표현이 여러 갈래* 일 때
+  (bar 칸/캡슐/세로, heatmap 격자/강도, range_bar 두 모드, line 일별/실선) type 하나당
+  fixture 하나로는 전환을 고정할 수 없어 도입했다 — `bar:capsule` 처럼 `:` 앞이 실제
+  chart type 이고, `charts.js` 의 렌더 계약(`data-chart-type`)은 건드리지 않는다.
 - 브라우저: Playwright-python → `$CHROME_BIN` → `/opt/pw-browsers/chromium-*/chrome-linux/chrome`.
   없으면 "skip" + exit 0. getBBox 의존 3종 (sankey·dot_matrix·stakeholder_map) 은 요소
   수·태그 분포만 비교 (loose).
 - **갤러리 정비를 먼저**: `network` fixture 제거 + 누락 4종 (combo_candle / iv_skew /
   indicator / stakeholder_map) 추가 + `reportage_steel` 테마 버튼. 그 다음 baseline 기록.
+- loose 비교 대상은 `contentFit`/ad-hoc getBBox 로 viewBox 를 사후 보정하는 렌더러다 —
+  v8.6.2 기준 sankey · dot_matrix · stakeholder_map · **tree** (신규 type 이 `contentFit`
+  을 쓰면 `LOOSE_TYPES` 에 함께 등록할 것).
 - pytest 래퍼 `tests/regression/test_chart_dom_snapshot.py` (chromium 없으면 skip).
   VM-AP-2: `python scripts/...` 로만 실행, +x 불필요.
 
@@ -246,6 +254,16 @@ function keyFooter(svg, W, H, text, t) { ... }
 
 ## §4. Phase 1 — 기본 표현 전환 (소급) + 옵션 필드 (v8.6.1)
 
+> **구현 보정 (v8.6.1 랜딩 결과 — 아래 §4.x 의 "가드" 문장을 이렇게 읽는다).**
+> 표현 옵션(`texture` / `unit` / `orientation` / `marks` / `fill` / `mode` / `cells`)은
+> `data` 가 아니라 **payload 최상위** 필드다. `validate_chart_data(chart_type, data)` 는
+> `data` 만 받으므로 이 값들에 닿지 못한다 — 그래서 옵션 검사는 기존 data 가드에 필드를
+> 얹는 대신 **별도 진입점 `schemas.validate_chart_options(chart_type, payload)`**
+> (+ `_TYPE_TO_OPTION_GUARD` Literal 가드 7종) 로 두고 `ComposedSection._drop_invalid_charts`
+> 가 data 가드 통과 직후 호출한다. 정책은 동일(계약 밖 값 → drop). 행 단위 필드
+> (`prior`, before_after 행)만 기존 data 가드에 들어간다. 옵션이 하나도 없는 payload 는
+> 항상 통과 = v8.6.0 이전 발행본 additive 안전.
+>
 > 원칙: **표현은 바꾸고 데이터 계약은 안 바꾼다.** 각 렌더러 안에서 *조건이 결정적*
 > (값 정수 여부·포인트 수·셀 수) 이면 새 표현이 기본. 옵션 필드는 기본 판정을 *덮어쓰기*
 > 하는 용도. 매 렌더러 수정 후 `--diff-report` 로 바뀐 type 을 확인해 커밋 메시지에
@@ -351,6 +369,8 @@ function keyFooter(svg, W, H, text, t) { ... }
 > ⑪ `report_bundle_v1.md` §9 pin 줄 ⑫ `test_chart_correctness.py`.
 > 등록 후 분포: **safe 11 / guarded 21 / experimental 1 (chord) / total 33**
 > (treemap experimental→guarded, `default_policy` 제거, `added_in: v8_6_2`).
+> — Phase 2a(v8.6.2) 시점의 실제값은 **safe 11 / guarded 19 / experimental 1 / total 31**
+> (treemap 승격 + tree 신설). 위 33 은 Phase 2b 의 histogram·calendar_heat 까지 더한 값.
 
 ### §5.1 `treemap` — 2층 구성 (v8.6.2)
 
@@ -620,10 +640,23 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 - [x] 갤러리 표현 변형 fixture 6종 + 스냅샷 키(`data-snapshot-key`) 도입 → baseline 37키 × 6테마
 - [x] `--diff-report` 변경 목록 = §4 대상 13종 (그 밖 24종 DOM 불변) → CHANGELOG 기재 → 커밋
 
-**Phase 2a (v8.6.2) treemap·tree / 2b (v8.6.3) histogram·calendar_heat**
+**Phase 2a (v8.6.2) treemap·tree** — 완료 (2026-09-03)
+- [x] 절차 ①~⑫ · registry 11/17/2/30 → **11/19/1/31** (treemap 승격 + tree 신설) ·
+      `test_capability_registry.py` 3곳(카운트·guarded 집합·experimental 집합) + chart_gate
+      의 experimental 예시를 treemap → chord 로 교체
+- [x] dict 계약 2종이라 `validate_chart_data` elif + `_DICT_DATA_REQUIREMENTS` +
+      `_MIN_LEN_REQUIREMENTS["treemap"]` 까지 (CHART-AP-38 — 빠지면 100% silent drop)
+- [x] `usage_log.KNOWN_CHART_TYPES` · 결정 트리 2분기(4. 구성 끝 treemap / 5-b. 위계 tree)
+      + 스키마 줄 + emit X 규칙 · `PROMPT_SHAPES` · `chart_type_scenarios.yaml`(34) ·
+      `svg_prerender.B_PLAN_CHART_TYPES` · `report_bundle_v1.md` §9 pin
+- [x] 갤러리 `PAYLOADS` 2종 + baseline 신규 키만 추가 (기존 37키 불변 — `--diff-report` 증명),
+      `tree` 는 `contentFit` 의존이라 `LOOSE_TYPES` 등록
+- [x] CLAUDE.md `Chart System` "27종"→"29종" + 신규 type 절차 ⑩~⑫ 명문화 → 커밋
+
+**Phase 2b (v8.6.3) histogram·calendar_heat**
 - [ ] 절차 ①~⑫ · registry 11/19/1/31 → 11/21/1/33 · `test_capability_registry.py` 3곳
-- [ ] `usage_log` KNOWN + `DATA_GATED_TYPES`(2b) · 결정 트리 4곳 · 갤러리 · baseline 추가
-- [ ] (2b) `orchestrator._ensure_calendar_heat` + Config `ENABLE_CALENDAR_HEAT_INJECT` + `tests/regression/test_calendar_heat_inject.py` 6케이스 (§5.4)
+- [ ] `usage_log` KNOWN + `DATA_GATED_TYPES` · 결정 트리 2곳 · 갤러리 · baseline 추가
+- [ ] `orchestrator._ensure_calendar_heat` + Config `ENABLE_CALENDAR_HEAT_INJECT` + `tests/regression/test_calendar_heat_inject.py` 6케이스 (§5.4)
 - [ ] CLAUDE.md "31종" + `Market Data Fetcher` 절에 calendar_heat 주입 한 줄 → 커밋
 
 **Phase 2c (v8.6.4) type-fit**

@@ -166,6 +166,15 @@ def test_every_dict_guard_type_has_dispatch_branch() -> None:
                             "edges": [{"source": "a", "target": "b"}]},
         "sankey": {"nodes": [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}],
                    "links": [{"source": "a", "target": "b", "value": 1}]},
+        # v8.6.2 — 위계 2종도 dict 계약 (elif 분기 누락 시 100% silent drop)
+        "treemap": {"children": [
+            {"label": "A", "children": [{"label": "a1", "value": 3}, {"label": "a2", "value": 2}]},
+            {"label": "B", "children": [{"label": "b1", "value": 4}]},
+        ]},
+        "tree": {"root": {"label": "root", "children": [
+            {"label": "A", "children": [{"label": "a1"}]},
+            {"label": "B"},
+        ]}},
     }
     for ctype, data in samples.items():
         assert ctype in _TYPE_TO_GUARD, f"{ctype} 가드 미등록"
@@ -570,19 +579,23 @@ def test_run_chart_gate_drops_experimental_without_must_have() -> None:
 
 def test_run_chart_gate_allows_experimental_with_must_have() -> None:
     """ResearchDirector must_have 명시 시 experimental 허용. 단 다른 게이트
-    통과는 별개."""
+    통과는 별개.
+
+    v8.6.2 — 예시 type 을 treemap → chord 로 교체. treemap 은 렌더러가 실장되면서
+    experimental → guarded 로 승격돼 더는 이 케이스의 대표가 아니다 (플랜 §5.1).
+    """
     chart = {
-        "type": "treemap",
+        "type": "chord",
         "title": "테스트",
         "data": [
-            {"hierarchy": "X", "value": 30, "label": "A"},
-            {"hierarchy": "Y", "value": 50, "label": "B"},
+            {"source": "X", "target": "Y", "value": 30},
+            {"source": "Y", "target": "Z", "value": 50},
         ],
         "source_ids": ["S-001"],
     }
-    prose = "A 의 비중 30%, B 가 50% — treemap 으로 표현."
+    prose = "X→Y 30, Y→Z 50 — chord 로 표현."
     result = run_chart_gate(
-        chart, section_prose=prose, must_have_types=["treemap"]
+        chart, section_prose=prose, must_have_types=["chord"]
     )
     # Gate A 는 통과 (must_have). 그 후 다른 게이트 결과에 따라.
     assert result.gate_results.get("gate_a", {}).get("passed") is True
@@ -980,3 +993,109 @@ def test_option_guard_passes_legacy_payloads_untouched() -> None:
     from src.visual.schemas import validate_chart_options
     for ctype in ("bar", "line", "area", "scatter", "range_bar", "heatmap", "lollipop"):
         assert validate_chart_options(ctype, {"type": ctype, "data": []})[0], ctype
+
+
+# ─── v8.6.2 — 위계 2종 (CHART_REDESIGN_V8_6_PLAN §5.1 / §5.2) ───────────
+
+_TREEMAP_OK = {
+    "children": [
+        {"label": "메모리", "children": [
+            {"label": "DRAM", "value": 320}, {"label": "NAND", "value": 190},
+            {"label": "HBM", "value": 140},
+        ]},
+        {"label": "시스템", "children": [
+            {"label": "파운드리", "value": 210}, {"label": "설계", "value": 95},
+        ]},
+    ],
+    "unit_label": "억 달러",
+}
+
+_TREE_OK = {
+    "root": {"label": "○○지주", "children": [
+        {"label": "금융", "children": [
+            {"label": "○○은행", "note": "지분 100%"}, {"label": "○○증권"},
+        ]},
+        {"label": "산업", "children": [{"label": "○○중공업"}]},
+    ]},
+}
+
+
+def test_treemap_guard_accepts_two_level_composition() -> None:
+    ok, reason = validate_chart_data("treemap", _TREEMAP_OK)
+    assert ok, reason
+
+
+def test_treemap_guard_rejects_flat_and_deep_and_nonpositive() -> None:
+    flat = {"children": [{"label": "A", "value": 3}, {"label": "B", "value": 5}]}
+    assert not validate_chart_data("treemap", flat)[0]      # 1층은 bar/donut 자리
+    deep = {"children": [
+        {"label": "A", "children": [{"label": "a", "children": [{"label": "x", "value": 1}]}]},
+        {"label": "B", "children": [{"label": "b", "value": 2}]},
+    ]}
+    assert not validate_chart_data("treemap", deep)[0]      # 깊이 3층
+    zero = {"children": [
+        {"label": "A", "children": [{"label": "a", "value": 0}, {"label": "a2", "value": 1}]},
+        {"label": "B", "children": [{"label": "b", "value": 2}]},
+    ]}
+    assert not validate_chart_data("treemap", zero)[0]      # 잎 value 는 양수
+
+
+def test_treemap_guard_rejects_parent_child_sum_mismatch() -> None:
+    """부모 value 를 적었으면 자식 합과 맞아야 한다 — 어긋나면 어느 쪽이 참인지 모른다."""
+    bad = {"children": [
+        {"label": "A", "value": 900, "children": [{"label": "a", "value": 100}]},
+        {"label": "B", "children": [{"label": "b", "value": 50}, {"label": "b2", "value": 20}]},
+    ]}
+    assert not validate_chart_data("treemap", bad)[0]
+    good = {"children": [
+        {"label": "A", "value": 100, "children": [{"label": "a", "value": 100}]},
+        {"label": "B", "children": [{"label": "b", "value": 50}, {"label": "b2", "value": 20}]},
+    ]}
+    assert validate_chart_data("treemap", good)[0]
+
+
+def test_treemap_guard_rejects_list_form() -> None:
+    """CHART-AP-38 — dict 계약인데 list 로 오면 명시적으로 거절 (침묵 금지)."""
+    ok, reason = validate_chart_data("treemap", [{"label": "A", "value": 1}])
+    assert not ok and "dict" in reason
+
+
+def test_tree_guard_accepts_ownership_hierarchy() -> None:
+    ok, reason = validate_chart_data("tree", _TREE_OK)
+    assert ok, reason
+
+
+def test_tree_guard_rejects_shallow_deep_and_wide() -> None:
+    assert not validate_chart_data("tree", {"root": {"label": "혼자"}})[0]   # 노드 4 미만
+    deep = {"root": {"label": "r", "children": [
+        {"label": "a", "children": [
+            {"label": "b", "children": [{"label": "c", "children": [{"label": "d"}]}]},
+        ]},
+        {"label": "e"},
+    ]}}
+    assert not validate_chart_data("tree", deep)[0]                          # 깊이 4층
+    wide = {"root": {"label": "r", "children": [
+        {"label": "g", "children": [{"label": f"n{i}"} for i in range(9)]},
+    ]}}
+    assert not validate_chart_data("tree", wide)[0]                          # 자식 9개
+
+
+def test_tree_guard_rejects_overlong_label_and_note() -> None:
+    long_label = {"root": {"label": "r", "children": [
+        {"label": "가" * 19}, {"label": "b"}, {"label": "c"},
+    ]}}
+    assert not validate_chart_data("tree", long_label)[0]
+    long_note = {"root": {"label": "r", "children": [
+        {"label": "a", "note": "나" * 25}, {"label": "b"}, {"label": "c"},
+    ]}}
+    assert not validate_chart_data("tree", long_note)[0]
+
+
+def test_hierarchy_types_pass_template_gate() -> None:
+    """CHART-AP-45 — 가드를 통과해도 템플릿 has_data 게이트에서 사라지면 안 된다."""
+    from src.visual.schemas import chart_renderable
+    assert chart_renderable({"type": "treemap", "data": _TREEMAP_OK})
+    assert chart_renderable({"type": "tree", "data": _TREE_OK})
+    # 묶음이 하나뿐이면 treemap 이 아니다 (_MIN_LEN_REQUIREMENTS)
+    assert not chart_renderable({"type": "treemap", "data": {
+        "children": [{"label": "A", "children": [{"label": "a", "value": 1}]}]}})

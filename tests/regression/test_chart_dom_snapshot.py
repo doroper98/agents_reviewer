@@ -102,9 +102,9 @@ def test_baseline_covers_every_renderer_and_theme() -> None:
 
 
 def test_baseline_declares_getbbox_loose_types() -> None:
-    """getBBox 로 viewBox 를 보정하는 3종은 폰트 의존 → loose 비교 대상."""
+    """getBBox(contentFit) 로 viewBox 를 보정하는 4종은 폰트 의존 → loose 비교 대상."""
     assert set(_baseline()["loose_types"]) == set(snap.LOOSE_TYPES)
-    assert set(snap.LOOSE_TYPES) == {"sankey", "dot_matrix", "stakeholder_map"}
+    assert set(snap.LOOSE_TYPES) == {"sankey", "dot_matrix", "stakeholder_map", "tree"}
 
 
 def test_compare_tolerates_theme_subset_but_not_type_subset() -> None:

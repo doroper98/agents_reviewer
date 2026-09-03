@@ -18,7 +18,7 @@
 #   expected_chart_type — composer 가 emit 해야 할 type (id 와 동일하나 명시)
 #   negative_examples   — 헷갈리지만 *이 type 이 아닌* 시나리오 (decision tree 가드용)
 #
-# 29종 = production 28 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
+# 34종 = production 33 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
 # 7종 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall /
 # range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화. v7.0.0 에서
 # bump / bullet / connected_scatter 3종, v7.5.0 에서 combo / diverging_bar /
@@ -337,6 +337,32 @@ scenarios:
       - "시점 다중 구성비 → stacked"
 
   # ─────────────────────────────────────────────────────────────
+  # v8.6.2 위계 2종 (CHART_REDESIGN_V8_6_PLAN §5.1 / §5.2)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: treemap
+    status: active
+    data_shape: "{children:[{label, children:[{label, value}]}]} — 1층 2~8 묶음, 잎 3~40"
+    scenario: "2층 구성 — 부문 아래 세부 항목이 있는 예산·수출 품목·매출·지출 구조"
+    sample_prompt: "2026 예산안 부처별·사업별 구성"
+    expected_chart_type: treemap
+    negative_examples:
+      - "1층 구성비(묶음 없음) → donut 또는 bar"
+      - "시점별 구성 변화 → stacked / stacked_area"
+      - "소속 위계(누가 누구 아래인가) → tree"
+
+  - id: tree
+    status: active
+    data_shape: "{root:{label, children:[...]}} — 깊이 ≤3, 노드 4~40, 자식 ≤8"
+    scenario: "소속 위계 — 지배구조·계열사·조직도·정책 체계 (A 아래 B 아래 C)"
+    sample_prompt: "○○그룹 지배구조가 어떻게 짜여 있는지 정리해줘"
+    expected_chart_type: tree
+    negative_examples:
+      - "대립·동맹 등 *관계* 지형 → stakeholder_map (르포)"
+      - "면적으로 크기까지 보여야 하면 → treemap"
+      - "자금·지분 흐름의 양 → sankey"
+
+  # ─────────────────────────────────────────────────────────────
   # 결정적 주입 전용 3종 (composer 직접 선택 아님 — 장마감/옵션 데스크)
   # ─────────────────────────────────────────────────────────────
 
@@ -390,8 +416,8 @@ scenarios:
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 32
-  active_count: 32     # v8.0.0: stakeholder_map + 결정적주입 3종(combo_candle/iv_skew/indicator). v7.9.17: network 삭제(CHART-AP-36). 31 chart types + map
+  total_scenarios: 34
+  active_count: 34     # v8.6.2: treemap/tree 추가. v8.0.0: stakeholder_map + 결정적주입 3종(combo_candle/iv_skew/indicator). v7.9.17: network 삭제(CHART-AP-36). 33 chart types + map
   pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"

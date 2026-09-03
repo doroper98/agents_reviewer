@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.6.1
+last_synced_with: v8.6.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.6.2 — 위계 차트 2종 신설 (CHART_REDESIGN_V8_6 Phase 2a)
+
+계획 §5 의 사용자 지시 ③ — "기존 유형에 억지로 끼워 넣던 데이터를 제대로 보이게 한다" 의 첫 실행. 2층 구성과 소속 위계는 지금까지 donut·stacked·본문 서술로 뭉개던 모양이었다. 차트 type **27종 → 29종**.
+
+- **`treemap` — 2층 구성 (부문 → 세부)**: 예산 부처별·사업별, 수출 대분류·품목별, 매출 사업부·제품처럼 *묶음 안에 항목이 있는* 구성. 면적이 곧 값이고, 묶음마다 "메모리 · 52%" 헤더 캡션이 붙는다(폭이 모자라면 비율을 떼고, 더 모자라면 헤더를 생략). 잎 농도는 묶음 사다리 × 묶음 안 크기 보간이고, 진한 칸은 글자를 반전한다. 가장 큰 잎 하나만 액센트 테두리. 데이터: `{children:[{label, value?, children:[{label, value}]}], unit_label?}` — 1층 묶음 2~8, 잎 3~40. 1층뿐이면 donut/bar 가 맞으므로 가드가 거절한다. 부모 value 를 적었으면 자식 합과 2% 안에서 맞아야 한다(어긋나면 어느 쪽이 참인지 알 수 없다).
+- **`tree` — 소속 위계**: 지배구조·계열사·조직도·정책 체계처럼 "A 아래 B 아래 C" 인 구조. 좌에서 우로 뻗는 클러스터라 잎이 세로로 정렬되고, 가지마다 잉크 농도가 다르다. 잎에는 짧은 꼬리표(`note` — 지분율·편입 시점)를 달 수 있고 `accent_label` 로 한 노드만 강조한다. 라벨이 좌우로 뻗으므로 `contentFit` 으로 viewBox 를 실제 extent 에 맞춘다. 데이터: `{root:{label, note?, children:[...]}, accent_label?}` — 깊이 ≤3, 노드 4~40, 자식 ≤8. **대립·동맹 등 *관계* 지형은 tree 가 아니다** — 그건 르포의 `stakeholder_map` 이다.
+- **registry 승격**: `treemap` 은 2021년부터 registry 에 `experimental / default_policy: forbidden` 으로 등재만 돼 있고 렌더러가 없었다("계층 데이터에 적합 — 일반 사건엔 거의 부적합"). 렌더러를 실장하면서 `guarded` 로 승격하고 `default_policy` 를 지웠다. 분포 safe 11 / guarded 17 / experimental 2 / 총 30 → **11 / 19 / 1 / 31**.
+- **CHART-AP-38 전 구간 배선**: 둘 다 dict 데이터라 `validate_chart_data` 의 elif 분기, 템플릿 has_data 게이트(`_DICT_DATA_REQUIREMENTS`), 최소 길이(`_MIN_LEN_REQUIREMENTS["treemap"]`)를 함께 넣었다 — 하나라도 빠지면 가드는 통과하는데 카드가 100% 사라진다(르포 관계도가 v8.0.0 이래 안 보이던 그 사고). `test_every_dict_guard_type_has_dispatch_branch` 에 두 type 을 추가해 클래스를 고정했다.
+- **osint 계약**: `svg_prerender.B_PLAN_CHART_TYPES` 에 두 type 추가 + [report_bundle_v1.md §9](docs/CONTRACTS/report_bundle_v1.md) pin 갱신(additive, `schema_version` 1 유지). consumer 의 렌더 게이트가 모르는 신규 type 이면 `prerendered_svg` 폴백으로 받으면 된다 — 영상에서 무경고로 사라지지 않는다.
+- **회귀**: 결정 트리 2분기(구성 끝의 treemap / 새 "5-b. 위계" 의 tree) + 스키마 줄 + emit X 규칙, `PROMPT_SHAPES`·`chart_type_scenarios.yaml`(34)·`KNOWN_CHART_TYPES`, 가드 수용/거부 8종, 갤러리 fixture 2종. DOM 스냅샷은 **신규 2키만 추가**되고 기존 37키는 그대로다(`--diff-report` 로 확인). `tree` 는 `contentFit` 을 쓰므로 loose 비교 대상에 등록.
+- 견본 목업(`samples/report_design_sheet_v8_6_0.charts.js`)의 treemap 은 `paddingTop` 뒤에 `paddingOuter` 를 불러 그룹 헤더가 잎 라벨 위에 겹쳐 찍히고 있었다. production 렌더러는 호출 순서를 바로잡아 헤더 띠를 확보한다.
 
 ---
 

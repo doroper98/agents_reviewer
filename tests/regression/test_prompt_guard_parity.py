@@ -135,6 +135,32 @@ PROMPT_SHAPES: dict[str, list] = {
             {"label": "C", "before": 17, "after": 21},
         ],
     ],
+    # v8.6.2 §5.1 — 2층 구성 (부문 → 세부)
+    "treemap": [{
+        "children": [
+            {"label": "메모리", "children": [
+                {"label": "DRAM", "value": 320},
+                {"label": "NAND", "value": 190},
+                {"label": "HBM", "value": 140},
+            ]},
+            {"label": "시스템", "children": [
+                {"label": "파운드리", "value": 210},
+                {"label": "설계", "value": 95},
+            ]},
+        ],
+        "unit_label": "억 달러",
+    }],
+    # v8.6.2 §5.2 — 소속 위계
+    "tree": [{
+        "root": {"label": "○○지주", "children": [
+            {"label": "금융", "children": [
+                {"label": "○○은행", "note": "지분 100%"},
+                {"label": "○○증권", "note": "지분 63%"},
+            ]},
+            {"label": "산업", "children": [{"label": "○○중공업"}]},
+        ]},
+        "accent_label": "○○은행",
+    }],
     "sankey": [{
         "nodes": [
             {"id": "rev", "label": "총매출"},
