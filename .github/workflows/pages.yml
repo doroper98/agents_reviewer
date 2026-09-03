@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'samples/**'
+      # samples/*.html 은 production 자산(charts.js/charts.css/maps.js)을 ../src/templates/static/
+      # 에서 직접 로드한다. 이 경로가 빠져 있으면 렌더러만 바뀐 병합이 Pages 에 반영되지 않는다
+      # (2026-09-03 v8.6.5 실제 발생 — 사용자 catch).
+      - 'src/templates/static/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
