@@ -1,6 +1,6 @@
 ---
 tier: 2
-status: proposed (Fable 분석·설계 완료 2026-09-03 — Opus 5 실행 대기. §8 사용자 결정 2건 선행)
+status: approved (Fable 분석·설계 완료 + §8 사용자 결정 전부 확정 2026-09-03 — Opus 5 실행 착수 가능)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
 last_synced_with: v8.5.15
@@ -53,7 +53,7 @@ last_review: 2026-09-03
 | Phase 0 v8.6.0 | 공유 어휘 헬퍼 8개 + DOM 스냅샷 도구 + §10.1 문서 |
 | Phase 1 v8.6.1 | **기본 표현 전환 (소급)** — bar 캡슐/칸 질감·candle 둥근 몸통·donut 눈금 링·diverging/pyramid/gantt 캡슐·lollipop 점 사다리·scatter 추선·range_bar 구슬·area 실선·line 일별 점·heatmap 둥근 칸 + 옵션 필드 (prior / before_after / orientation) |
 | Phase 2a v8.6.2 | 신규 `treemap` (승격) · `tree` |
-| Phase 2b v8.6.3 | 신규 `histogram` · `calendar_heat` |
+| Phase 2b v8.6.3 | 신규 `histogram` · `calendar_heat` + **calendar_heat 시장 시계열 자동 주입** (`_ensure_calendar_heat`, 사용자 결정) |
 | Phase 2c v8.6.4 | **type-fit 파이프라인** `src/visual/type_fit.py` — 결정적 재배치 규칙 R1~R7 + 계측 + `patch_report --refit` |
 | Phase 3·4 v8.6.5 | 갤러리 33종 시각 검수 · CHART-AP-46/47 · osint 통지(n) · 문서 정합 |
 | Phase 5 v8.7.0 | 2차 흡수 — `gauge` · `spectrum` · `funnel` + 옵션 (bump strip / stacked rung / pictogram) |
@@ -418,7 +418,25 @@ function keyFooter(svg, W, H, text, t) { ... }
 - 결정 트리 (`:444~455` "1. 시간축"): "일별 값 ≥60일이고 질문이 *언제 몰렸나* → calendar_heat.
   추세 자체면 line."
 - PROMPT_SHAPES 는 결정적 빌더(70일). 갤러리: 코스피 |일간 등락률| 120일 (`dailySeries` 재사용).
-- 2차: 시장 time_series 자동 주입 (§8 결정 ② 후).
+- **시장 시계열 자동 주입 (사용자 결정 2026-09-03 — 이번 Phase 에 포함).**
+  `src/orchestrator.py` 에 `_ensure_calendar_heat(composed, context) -> None` 신설, 호출은
+  `_ensure_time_series_chart` (`:2103`) **직후** 같은 `report_format != "reportage"` 분기
+  안 (르포는 시장차트 자동 주입 자체를 건너뛰므로 동일 규칙). 규칙 (0-LLM, 결정적):
+  ① 주입 대상 = `_ensure_time_series_chart` 가 고른 *주제 우선 instrument* 1개
+  (`_topic_priority_key` 동일 순서) 의 series, 행 ≥60 (3M 기본 기간이면 거래일 ~60)
+  ② 값 = `|close_t / close_{t-1} - 1| × 100` (첫 행 제외, `close` 없으면 `value`/`y`
+  순으로 대체, NaN 봉 제외 — CHART-AP-29) ③ chart dict = `{type:"calendar_heat",
+  title:"{instrument} 일별 변동 강도", subtitle:"거래일만 표시 · 주말·휴장일은 속빈 점",
+  unit_line:"단위: |일간 등락률| %", source: series 의 source, metric_label:"등락 폭",
+  data:{values:[{date, value}]}}` ④ composer 가 이미 `calendar_heat` 를 emit 했으면
+  no-op (중복 회피, `_composer_instruments` 와 같은 원리) ⑤ 삽입 위치 = 주제 instrument
+  의 풀 카드(line/candle/area) *바로 뒤* 같은 섹션 ⑥ `ChartCountLimits` 초과 시 주입
+  생략 (deep 5 / standard 4 — `_check_chart_count_exceeded` 와 같은 집계) ⑦ flag
+  `ENABLE_CALENDAR_HEAT_INJECT` (Config, 기본 `1`; `0` → byte-equal). 테스트
+  `tests/regression/test_calendar_heat_inject.py`: 60행 미만 no-op · 중복 no-op · 상한
+  초과 no-op · 값 계산 정합 (3행 수기 검산) · 르포 no-op · flag OFF byte-equal.
+  usage_log 는 `types` 에 `calendar_heat` 로 집계되나 `DATA_GATED_TYPES` 라 rebalance
+  힌트엔 안 들어간다 — composer 자발 emit 은 여전히 데이터 있을 때만.
 
 ### §5.5 두 Phase 공통 마감
 
@@ -526,15 +544,32 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 
 ---
 
-## §8. 사용자 결정 필요 항목
+## §8. 사용자 결정 사항 (전부 확정 — 재질문 금지)
 
-| # | 결정 | 선택지 | Fable 권장 |
+| # | 결정 | 사용자 결정 (2026-09-03) | 반영 위치 |
 |---|------|--------|-----------|
-| ① | calendar_heat 시장 자동 주입 | (a) 이번 (b) 2차 (c) 안 함 | **(b)** — composer 선택 빈도 30건 관찰 후 |
-| ② | 7단 사다리 §10.1 등재 | (a) 승인 (b) 4단 유지 | **(a)** — 순위 전용, 구성은 4단 유지라 충돌 없음 |
+| ① | calendar_heat 시장 자동 주입 | **이번 Phase 에 주입** (Fable 권장 2차를 기각) | §5.4 `_ensure_calendar_heat` 스펙, Phase 2b 체크리스트 |
+| ② | 7단 잉크 사다리 §10.1 등재 | **승인** | §3.3 (Phase 0) |
+| ③ | 표현 방식 전면 흡수·소급 | 지시 | §2.1 / §4 |
+| ④ | 신규 유형 폭넓게 (1차 4 + 2차 3) · type-fit 파이프라인 · PDF 보관 | 지시 | §5 / §6 / §9 / `docs/reference/` |
 
-이미 사용자가 정한 것 (2026-09-03, 재질문 금지): 표현 방식 *전면 흡수·소급* (§2.1),
-신규 유형 폭넓게 (1차 4 + 2차 3), type-fit 파이프라인 신설, PDF 저장소 보관.
+**network·force 계열 기각 근거 (사용자 질문 2026-09-03 에 대한 답, 기록용).**
+- `network` 는 기능 부족이 아니라 **사용자 본인의 폐기 결정** 이다 (CHART-AP-36, v7.9.17).
+  v5.5.5 에서 radial hairball 을 인접행렬로 바꿨는데도 "의미 대비 세로 공간 과다" 로
+  포맷을 영구 제거했고, `validate_chart_data` 가 무조건 drop 한다.
+- force/physics 레이아웃은 **좌표가 데이터가 아니라 물리 시뮬레이션 결과** 라 ① 렌더마다
+  달라져 발행본·영상(osint)·스냅샷 회귀가 불가능하고 ② 노드가 카드(국기·로고·사진)인
+  우리 관계도에선 겹침·중심 관통 실타래가 필연이며 (CHART-AP-25 재현) ③ 위치에 의미가
+  없어 독자가 "왜 저기 있나" 를 읽을 수 없다. 그래서 v8.0.0 `stakeholder_map` 은 좌표를
+  진영 칼럼으로 *결정적* 계산한다 (CHART-AP-37).
+- 참고 자료의 G6 Circular / G11 Force / B1·B2 가 예뻐 보이는 이유는 노드 ≤12 이고
+  라벨이 짧은 영문이기 때문이다. 같은 조건을 우리 데이터(한글 기관명·인물 + 국기·로고)가
+  만족하지 않는다.
+- **열어 둔 문 (선택, 본 플랜 밖):** G6 의 *원형(ring) 배치* 자체는 force 가 아니라
+  결정적이다 (노드를 원주에 등간격, 엣지는 원 안 곡선). 사용자가 원하면
+  `stakeholder_map.layout:"ring"` 옵션 (≤12 노드, 진영별 호 구간, 엣지 type 별 선 스타일
+  유지) 으로 CHART-AP-37 을 위반하지 않고 그 *모양* 만 흡수할 수 있다. 채택 시 §9 표에
+  추가 — 사용자 지시 있을 때만.
 
 ---
 
@@ -580,7 +615,8 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 **Phase 2a (v8.6.2) treemap·tree / 2b (v8.6.3) histogram·calendar_heat**
 - [ ] 절차 ①~⑫ · registry 11/19/1/31 → 11/21/1/33 · `test_capability_registry.py` 3곳
 - [ ] `usage_log` KNOWN + `DATA_GATED_TYPES`(2b) · 결정 트리 4곳 · 갤러리 · baseline 추가
-- [ ] CLAUDE.md "31종" → 커밋
+- [ ] (2b) `orchestrator._ensure_calendar_heat` + Config `ENABLE_CALENDAR_HEAT_INJECT` + `tests/regression/test_calendar_heat_inject.py` 6케이스 (§5.4)
+- [ ] CLAUDE.md "31종" + `Market Data Fetcher` 절에 calendar_heat 주입 한 줄 → 커밋
 
 **Phase 2c (v8.6.4) type-fit**
 - [ ] `src/visual/type_fit.py` R1~R7 + CLI `--scan/--dry-run` · Config `V8_TYPE_REFIT`
