@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.6.1
+last_synced_with: v8.6.4
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -139,5 +139,6 @@ src/
 - `scripts/` — 보조 스크립트. `patch_report.py` (발행본 핫픽스, LLM 0), `backfill_report_meta.py` (옛 보고서 `report_meta` 백필 — v5.5.7 미만 보고서의 후속 버튼 복구, dry-run 기본), `html_to_md.py` 등, `chart_dom_snapshot.py` (v8.6.0 — 갤러리 fixture 를 헤드리스 chromium 으로 렌더해 차트 SVG 의 DOM 해시를 기록·대조. `--out` 기록 / `--check` 대조 / `--diff-report` 변경 type 요약. 브라우저 없으면 skip. baseline 은 `tests/regression/fixtures/chart_dom_baseline.json`, pytest 래퍼는 `tests/regression/test_chart_dom_snapshot.py`)
 - `reports/` — 생성된 HTML 보고서 (git ignored). v5.5.0 부터 `--bundle` 시 `analysis_{ts}.bundle.json` 동반
 - `src/timeline_flow.py` — v5.5.2 시간 흐름도 조립 (결정론 backbone + composer 윤색). render + bundle emit 공유
+- `src/visual/type_fit.py` — v8.6.4 차트 type-fit 파이프라인. 데이터 모양에 안 맞는 차트 type 을 결정적 규칙 R1~R7 로 재배치한다 (0-LLM · 값·라벨 생성 금지 · 변환 후 가드 실패면 원본 유지). orchestrator 가 `_densify_ts_charts` 직후 호출하고 flag 는 `V8_TYPE_REFIT`. 발행본 소급은 `scripts/patch_report.py --refit`, 코퍼스 실측은 `python -m src.visual.type_fit --scan reports/ --dry-run` (읽기 전용, `--rules` 로 규칙표만도 가능). 계약·규칙 SSOT 는 `docs/CHART_REDESIGN_V8_6_PLAN.md` §6, 회귀는 `tests/regression/test_type_fit.py`
 - `src/handoff/` — v5.5.0 ReportBundle 핸드오프 (osint_generator 연동). `bundle_builder.py` = `FullAnalysisResult → ReportBundle`. 계약 SSOT: `docs/CONTRACTS/report_bundle_v1.md`
 - `src/tests/` — pytest 단위 테스트 (V3 Step 4 부터; 현재 `test_quality_gates.py` 18 케이스)

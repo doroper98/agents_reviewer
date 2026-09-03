@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.6.3
+last_synced_with: v8.6.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.6.4 — 차트 type-fit 파이프라인 (CHART_REDESIGN_V8_6 Phase 2c)
+
+사용자 지시 ③ 의 마지막 조각 — "기존 유형에 억지로 끼워 넣던 데이터가 있었다면 이번에 추가된 유형으로 제대로 보이게 하는 파이프라인". Phase 2a·2b 가 새 유형을 만들었다면, 이번 버전은 **이미 잘못 고른 차트를 발행 직전에 결정적으로 바로잡는다**. LLM 호출은 0이고 데이터는 한 줄도 만들거나 버리지 않는다.
+
+- **규칙 5종 (+ 명시적 no-op 2종)** — [src/visual/type_fit.py](src/visual/type_fit.py):
+  - **R1 `bar` → `histogram`**: 라벨이 전부 순서 있는 구간(`1~2천` / `40대` / `20세` / `~이상·이하·미만·초과`)이고 값이 0 이상 정수인 4~24개 막대. 구간 분포를 막대 순위표로 그리던 것을 도수 분포로 되돌린다.
+  - **R2 `donut`·`stacked`(시나리오 1개) → `treemap`**: 라벨이 `반도체 · 메모리` 처럼 2층인 구성. 그룹 2~8 · 그룹당 잎 2개 이상 · 잎 6~40 일 때만. 분리자가 없는 라벨이 하나라도 섞이면 변환하지 않는다 — 그 라벨은 잎 1개짜리 그룹이 되어 제약에 걸리기 때문이다(데이터를 버리지 않으면서 애매한 경우를 배제한다).
+  - **R3 `heatmap` → `calendar_heat`**: x 가 전부 ISO 날짜 60~400개(중복 없음)이고 y 가 한 종류. 날짜를 격자의 한 축으로 밀어 넣던 것을 달력으로. y 라벨은 캡션의 `metric_label` 로 재사용한다. 400행을 넘으면 행을 자르는 대신 **변환하지 않는다**.
+  - **R4 `slope` → `range_bar` (`before_after`)**: 2 시점 항목이 8개 이상이면 기울기 선이 실타래가 된다. 전후 덤벨로 옮기고 `left_label`/`right_label` 을 `before_label`/`after_label` 로 계승.
+  - **R5 `bar` → 세로 칸 (표현만)**: 항목 8개 이하 · 라벨 6자 이하 · 셀 수 있는 값 · 작성 모델이 `orientation`/`texture` 를 지정하지 않았을 때 `orientation:"vertical"` 을 부여한다. `data` 는 한 글자도 안 건드린다.
+  - **R6 `line`**: 명시적 no-op. "점 하나 = 하루" 판정은 v8.6.1 렌더러 소유라 여기서 손대면 이중 소유가 된다 — 규칙표에 적어 오해를 막는다.
+  - **R7 길이 0 `gantt`**: 이미 CHART-AP-15 로 드롭되고 옮길 유형(event_timeline)이 아직 없어 `R7-pending` 으로 **세기만** 한다.
+- **안전 규칙 3가지 (예외 없음)**: ① 값·라벨을 만들지 않는다(빈 구간 채우기·그룹 이름 짓기는 애초에 규칙이 아니다) ② 일부 행만 옮겨야 하면 변환하지 않는다 ③ 변환 후 `validate_chart_data` + `validate_chart_options` 에 실패하면 **원본을 유지한다**. "더 나빠지지 않기" 가 이 파이프라인의 최소 보장이다. 변환된 섹션은 `ComposedSection.model_validate` 로 재구성해 `_drop_invalid_charts` 를 한 번 더 태운다(이전 드롭 기록은 이어 붙여 보존 — CHART-AP-44 의 emit/kept 2단 집계가 그 기록에 기댄다).
+- **호출 위치와 스위치**: orchestrator 의 `_densify_ts_charts` **직후**·`_reconcile_visual_references` **직전**. 밀도를 채운 뒤 유형을 정하고, 본문이 약속한 시각물과 대조하는 것은 최종 유형이 정해진 다음이어야 하기 때문이다. `.env` 의 `V8_TYPE_REFIT=0` 이면 호출 자체를 안 해 v8.6.3 과 동일하게 돈다.
+- **어떤 오배치가 잦은지 기록한다**: `usage_log` 한 줄에 `refit: [{from, to, rule}]` 를 함께 적고(JSONL additive — 없으면 필드 자체를 안 쓴다) `analyze()` 가 `refit_distribution` 으로 집계한다. 30건쯤 쌓이면 프롬프트 결정 트리를 어디서 보강해야 하는지가 그대로 보인다(5-Layer ① 자기교정 루프와 같은 원리).
+- **프롬프트가 1선**: 결정 트리에 `[자주 나는 오배치 4가지]` 블록을 신설하고(구간→histogram / 2층 라벨→treemap / 날짜 축→calendar_heat / 8항목 이상 2시점→range_bar), 시간축 분기에 "heatmap 금지", 카테고리 분기에 "항목 8개 이상이면 slope 금지" 를 명시했다. `chart_type_scenarios.yaml` 의 `negative_examples` 5곳도 같은 내용으로 맞췄다. 코드가 바로잡더라도 처음부터 맞게 고르면 제목·부제·읽는 법이 그 유형에 맞게 쓰인다.
+- **발행본 소급·코퍼스 실측**: `python scripts/patch_report.py <report_id> --refit` (URL 동일, 표현 변경이라 `render_revision` 소수부 +1). 어떤 규칙이 몇 건 걸리는지 미리 보려면 `python -m src.visual.type_fit --scan reports/ --dry-run` (읽기 전용, `--rules` 로 규칙표만도 출력).
+- **회귀**: `tests/regression/test_type_fit.py` 41종 — 규칙별 positive 1건 이상·negative 2건 이상, 값 보존, 가드 실패 시 원본 유지, orchestrator 호출 순서, flag OFF, CLI 스캔. charts.js 는 한 글자도 안 바뀌었고 DOM 스냅샷 41키 0 diff 가 그것을 증명한다. 부수적으로 `patch_report.py --help` 가 `nan%` 의 `%` 때문에 argparse 에서 죽던 것도 고쳤다(escape 누락).
 
 ---
 
