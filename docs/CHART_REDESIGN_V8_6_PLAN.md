@@ -740,8 +740,8 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 - [x] CHART-AP-46/47 + 사용자 catch 2건(48 겹침 / 49 CSS 폭 캡) · CLAUDE.md 요약 줄 ·
       문서 `last_synced_with` v8.6.6 → 커밋
 - [x] `svg_prerender.B_PLAN_CHART_TYPES` · `report_bundle_v1.md §9` 에 신규 4종 등록 확인
-- [ ] `reviewer_osint_q_a` 통지(n) — 상위 세션이 직접 작성 (본 커밋 범위 밖)
-- [ ] compare 페이지 사용자 게이트
+- [x] `reviewer_osint_q_a` 통지(n) — 상위 세션이 직접 작성. `threads/2026_09_03_125614_agent_reviewer_bot_n_02.md` (status posted, `ack_required: yes` — §7.3 초안의 `no` 와 달리 렌더 게이트 폴백 소비 여부·재렌더 규약 채택 여부 2건 확인이 필요해 상향). ack 수신 후 종결 섹션 작성.
+- [x] compare 페이지 사용자 게이트 — 2026-09-03 사용자 검토: 지적 5건(bar 칸 단위·donut 여백/구별·diverging_bar/pyramid 중앙·area 그라데이션) v8.6.5 반영 후 "잘 보이네" 로 통과. Pages 배포 트리거 누락(PR #107)도 같은 검토에서 발견·수정.
 
 **Phase 5 (v8.7.0)** — §9 표 순서 (gauge → spectrum → funnel → 옵션 3종), 각각 절차 ①~⑫,
 R8/R9 를 type_fit 에 추가.
