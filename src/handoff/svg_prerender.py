@@ -37,6 +37,8 @@ _STATIC_DIR = Path(__file__).resolve().parent.parent / "templates" / "static"
 # ("network" 는 v7.9.17 폐기 type — 옛 번들 호환용으로만 남긴다.)
 B_PLAN_CHART_TYPES = frozenset({
     "network", "choropleth", "sankey", "treemap", "tree",
+    # v8.6.3 — 분포·달력 2종
+    "histogram", "calendar_heat",
 })
 
 # CDN (report 템플릿과 동일 — maps.js 의 world-atlas fetch 용).

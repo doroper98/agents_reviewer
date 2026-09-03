@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 완료 · Phase 2b 부터 대기)
+status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 · Phase 2b v8.6.3 완료 · Phase 2c 부터 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.2
+last_synced_with: v8.6.3
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -460,7 +460,8 @@ function keyFooter(svg, W, H, text, t) { ... }
 
 ### §5.5 두 Phase 공통 마감
 
-- `KNOWN_CHART_TYPES` 4종, `chart_type_scenarios.yaml` 헤더 카운트 33, 갤러리 = RENDERERS 1:1,
+- `KNOWN_CHART_TYPES` 4종, `chart_type_scenarios.yaml` 헤더 카운트 36(= production 35 + embedded_map,
+  실측 기준), 갤러리 = RENDERERS 1:1,
   헤드리스 렌더 unknown/예외 0, 스냅샷 baseline 신규 type 추가 기록.
 - `report_bundle_v1.md` §9 pin 주석 "v8.6.3: +treemap/tree/histogram/calendar_heat (additive,
   schema_version 1, §5 B안 폴백 4종 추가)". CLAUDE.md `Chart System` "27종"→"31종".
@@ -653,11 +654,25 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
       `tree` 는 `contentFit` 의존이라 `LOOSE_TYPES` 등록
 - [x] CLAUDE.md `Chart System` "27종"→"29종" + 신규 type 절차 ⑩~⑫ 명문화 → 커밋
 
-**Phase 2b (v8.6.3) histogram·calendar_heat**
-- [ ] 절차 ①~⑫ · registry 11/19/1/31 → 11/21/1/33 · `test_capability_registry.py` 3곳
-- [ ] `usage_log` KNOWN + `DATA_GATED_TYPES` · 결정 트리 2곳 · 갤러리 · baseline 추가
-- [ ] `orchestrator._ensure_calendar_heat` + Config `ENABLE_CALENDAR_HEAT_INJECT` + `tests/regression/test_calendar_heat_inject.py` 6케이스 (§5.4)
-- [ ] CLAUDE.md "31종" + `Market Data Fetcher` 절에 calendar_heat 주입 한 줄 → 커밋
+**Phase 2b (v8.6.3) histogram·calendar_heat** — 완료 (2026-09-03)
+- [x] 절차 ①~⑫ · registry 11/19/1/31 → **11/21/1/33** · `test_capability_registry.py` 3곳
+- [x] `usage_log` KNOWN + `DATA_GATED_TYPES`(calendar_heat) · 결정 트리 2곳(1. 시간축 끝 calendar_heat /
+      3. 범주 비교 첫 분기 histogram) · 갤러리 fixture 2종 · baseline **신규 2키만 추가**
+      (`--diff-report` 로 기존 39키 중 38키 불변 증명 — 바뀐 1키는 아래 range_bar 덤)
+- [x] `orchestrator._ensure_calendar_heat`(+ `_daily_move_values` / `_find_full_ts_card`) + Config
+      `ENABLE_CALENDAR_HEAT_INJECT`(기본 ON) + `.env.example` + `tests/regression/test_calendar_heat_inject.py` 12종 (§5.4)
+- [x] 덤 — Phase 1 의 `range_bar` `before_after` 값 라벨 정수화 (`isCountable` 재사용).
+      최저~최고 range 모드는 소수가 정보라 v8.6.1 표기 유지 (스냅샷 `range_bar` 키 불변)
+- [x] CLAUDE.md "31종" + `Market Data Fetcher` 절에 calendar_heat 주입 한 줄 → 커밋
+
+> **구현 판단 3건 (계획서와 다르게 결정한 것).**
+> ① `_ensure_calendar_heat(composed, context)` 에 `mode` 인자를 추가했다 (`mode="standard"` 기본).
+>   §5.4 ⑥ 의 `ChartCountLimits` 는 mode 별 값이라 mode 없이는 상한을 알 수 없다.
+> ② 대상 instrument 는 "`_topic_priority_key` 최상위" 가 아니라 "그 순서로 훑어 *풀 카드가 실제로
+>   있는* 첫 종목" 이다. 달력은 추세 카드 뒤에 붙는 보조 시각물이라 붙일 카드가 없으면 뜻이 없고,
+>   주인공이 compact strip 으로만 덮인 경우(§5.4 ⑤ 가 상정하지 않은 경우)에 삽입 위치가 사라진다.
+> ③ `calendar_heat` 렌더러의 칸 간격은 고정 13 이 아니라 주 수에 따라 11~18 (1년치가 13 근방).
+>   720 폭 캔버스에 18주짜리 달력을 13 간격으로 그리면 왼쪽 1/3 에만 몰려 카드가 비어 보인다.
 
 **Phase 2c (v8.6.4) type-fit**
 - [ ] `src/visual/type_fit.py` R1~R7 + CLI `--scan/--dry-run` · Config `V8_TYPE_REFIT`

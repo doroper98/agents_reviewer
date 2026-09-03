@@ -18,7 +18,7 @@
 #   expected_chart_type — composer 가 emit 해야 할 type (id 와 동일하나 명시)
 #   negative_examples   — 헷갈리지만 *이 type 이 아닌* 시나리오 (decision tree 가드용)
 #
-# 34종 = production 33 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
+# 36종 = production 35 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
 # 7종 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall /
 # range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화. v7.0.0 에서
 # bump / bullet / connected_scatter 3종, v7.5.0 에서 combo / diverging_bar /
@@ -363,6 +363,32 @@ scenarios:
       - "자금·지분 흐름의 양 → sankey"
 
   # ─────────────────────────────────────────────────────────────
+  # v8.6.3 분포·달력 2종 (CHART_REDESIGN_V8_6_PLAN §5.3 / §5.4)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: histogram
+    status: active
+    data_shape: "[{bin, count, note?}] 4~24 구간 — 순서 있는 구간 라벨 + 도수"
+    scenario: "연령대별 인원·금액 구간별 건수·기간대별 처리 건수 — 출처가 이미 구간 집계를 준 경우"
+    sample_prompt: "가계대출 금액 구간별로 차주가 어떻게 분포하는지 분석해줘"
+    expected_chart_type: histogram
+    negative_examples:
+      - "구간에 순서가 없는 범주 비교 → bar"
+      - "건별 원자료뿐이고 집계가 없으면 아예 emit 금지 (WRITE-AP-5)"
+      - "연령대 × 두 집단 구조 → pyramid"
+
+  - id: calendar_heat
+    status: active
+    data_shape: "{values:[{date:'YYYY-MM-DD', value}], metric_label?} 60~400행"
+    scenario: "일별 강도 — '언제 몰렸나'. 공습·시위 횟수, 발언 빈도, 확진, 정전, 변동 폭"
+    sample_prompt: "올해 접경 지역 교전이 언제 집중됐는지 보여줘"
+    expected_chart_type: calendar_heat
+    negative_examples:
+      - "추세 자체가 thesis → line"
+      - "일별 값이 60일치 없으면 emit 금지 (데이터 의존 type)"
+      - "두 축 교차 강도 → heatmap"
+
+  # ─────────────────────────────────────────────────────────────
   # 결정적 주입 전용 3종 (composer 직접 선택 아님 — 장마감/옵션 데스크)
   # ─────────────────────────────────────────────────────────────
 
@@ -416,8 +442,8 @@ scenarios:
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 34
-  active_count: 34     # v8.6.2: treemap/tree 추가. v8.0.0: stakeholder_map + 결정적주입 3종(combo_candle/iv_skew/indicator). v7.9.17: network 삭제(CHART-AP-36). 33 chart types + map
+  total_scenarios: 36
+  active_count: 36     # v8.6.3: histogram/calendar_heat 추가. v8.6.2: treemap/tree 추가. v8.0.0: stakeholder_map + 결정적주입 3종(combo_candle/iv_skew/indicator). v7.9.17: network 삭제(CHART-AP-36). 35 chart types + map
   pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"

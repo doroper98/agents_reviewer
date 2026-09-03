@@ -29,11 +29,12 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="gal-head">
   <h1>Chart Gallery V7 — 베이스라인</h1>
-  <p>production charts.js 의 <code>RENDERERS</code> 전 33종 fixture 갤러리 (v8.6.2 — 1:1 정합) —
+  <p>production charts.js 의 <code>RENDERERS</code> 전 35종 fixture 갤러리 (v8.6.3 — 1:1 정합) —
      기존 12종 + FT/Economist 7종 + sankey + v7.0.0 신규 3종 (bump / bullet / connected_scatter) +
      v7.5.0 신규 4종 (combo / diverging_bar / pyramid / dot_matrix) + choropleth +
      v8.6.0 편입 4종 (combo_candle / iv_skew / indicator / stakeholder_map) +
-     v8.6.2 신규 2종 (treemap 2층 구성 / tree 소속 위계).
+     v8.6.2 신규 2종 (treemap 2층 구성 / tree 소속 위계) +
+     v8.6.3 신규 2종 (histogram 구간 도수 / calendar_heat 일별 강도 달력).
      폐기된 network 는 제거 (v7.9.17, CHART-AP-36). (보고서당 1개의 embedded_map 은
      별도 채널 maps.js — 본 갤러리 범위 밖.) Track A 리디자인의 전·후 비교 기준 아티팩트
      (REFACTOR_V7_PLAN.md §1.5) 이자 DOM 스냅샷 회귀(<code>scripts/chart_dom_snapshot.py</code>)의
@@ -198,6 +199,27 @@ var PAYLOADS = [
       { label: '서비스', children: [{label:'○○리테일'},{label:'○○물류',note:'2026 신규 편입'},{label:'○○데이터'}] }
     ] } },
     source: '공정위 기업집단 공시 (예시 데이터)' },
+  /* ── v8.6.3 신규 분포·달력 2종 (CHART_REDESIGN_V8_6_PLAN §5.3 / §5.4) ── */
+  { type: 'histogram', title: '가계대출 금액 구간별 차주 수', subtitle: '3~5천만원 구간이 가장 두껍다', unit_line: '단위: 만 명 · 2026 상반기',
+    unit_label: '만 명',
+    data: [{bin:'~1천',count:4},{bin:'1~2천',count:9},{bin:'2~3천',count:15},{bin:'3~5천',count:22},{bin:'5~7천',count:14},{bin:'7천~1억',count:9},{bin:'1~2억',count:6},{bin:'2억~',count:3}],
+    annotations: [{kind:'vline', x:'3~5천', label:'중앙값 구간'}],
+    source: '가계부채 통계 (예시 데이터)' },
+  { type: 'calendar_heat', title: '코스피 일별 변동 강도', subtitle: '4월 말과 5월 중순에 변동이 몰렸다', unit_line: '단위: |일간 등락률| %',
+    get data() {
+      /* 실제 주입(orchestrator._ensure_calendar_heat)과 같은 모양 — 거래일만 값이
+         있고 주말은 아예 빠진다 (렌더러가 속빈 점으로 그린다). */
+      var out = [], src = dailySeries(121, 2701, 4.0, 14);
+      for (var i = 1; i < src.length; i++) {
+        var d = new Date(Date.UTC(2026, 2, 2) + (i - 1) * 864e5);
+        var wd = d.getUTCDay();
+        if (wd === 0 || wd === 6) continue;
+        var chg = Math.abs(src[i].close / src[i - 1].close - 1) * 100;
+        out.push({ date: d.toISOString().slice(0, 10), value: +chg.toFixed(2) });
+      }
+      return { values: out, metric_label: '등락 폭', unit_label: '%' };
+    },
+    source: 'KRX / 일별 종가에서 산출 (예시 데이터)' },
   /* ── v8.6.1 표현 변형 fixture (같은 type 의 *다른 기본 표현* 을 스냅샷으로 고정) ──
      같은 type 을 여러 장 두므로 스냅샷 키(`key`)로 구분한다. charts.js 는
      `data-chart-type` 만 보므로 렌더 계약에는 영향이 없다. */

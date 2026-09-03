@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.6.2
+last_synced_with: v8.6.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.6.3 — 분포·달력 차트 2종 + 일별 변동 강도 자동 주입 (CHART_REDESIGN_V8_6 Phase 2b)
+
+계획 §5.3/§5.4 — "언제 몰렸나" 와 "어디에 두꺼운가" 를 묻는 두 모양에 제 자리를 만들었다. 차트 type **29종 → 31종**.
+
+- **`histogram` — 순서 있는 구간의 도수**: 연령대별 인원, 대출 금액대별 차주 수, 처리 기간대별 건수처럼 x 가 *순서를 가진 구간* 인 분포. 세로 칸(rung) 열로 세고, 가장 두꺼운 구간만 잉크를 채워 값을 직접 적는다(나머지는 옅게). 도수 0 인 구간은 빈칸이 아니라 짧은 대시로 남겨 "여기 값이 0" 임을 보인다. 한 칸이 몇인지는 렌더러가 산출해 캡션으로 적고, 도수가 전부 정수면 칸 단위도 정수로 맞춘다 — 작성 모델이 단위를 지어낼 여지가 없다. 데이터: `[{bin, count, note?}]` 4~24 구간, 합 > 0. `vline`(구간 이름으로 지정)·`hline` annotation 개방. **출처에 이미 구간별 집계가 있을 때만** — 건별 원자료를 나눠 구간을 만드는 것은 날조다(WRITE-AP-5). 구간에 순서가 없으면 bar 가 맞다.
+- **`calendar_heat` — 일별 강도 달력**: 60일~1년의 하루하루를 주 열 × 요일 행(월요일이 맨 위) 격자에 점으로 놓고 5분위 농도로 칠한다. 질문이 "추세" 가 아니라 **"언제 몰렸나"** 일 때 — 변동성, 공습·시위 횟수, 발언 빈도, 확진, 정전. 값이 없는 날(주말·휴장)은 속빈 점이라 격자만 봐도 거래일 리듬이 보이고, 최대일에는 점선 링과 격자 아래 라벨이 붙는다. 데이터: `{values:[{date:"YYYY-MM-DD", value}], metric_label?, unit_label?}` 60~400행(넘으면 마지막 371일), 날짜 중복 금지.
+- **시장 시계열이면 달력을 코드가 꽂는다 (0-LLM)**: 주인공 종목의 풀 카드(추세) 바로 뒤에 그 종목의 **|일간 등락률| 달력** 1개를 결정적으로 주입한다(`orchestrator._ensure_calendar_heat`). 추세선이 답하지 못하는 "이 분기의 출렁임이 언제 몰렸나" 를 같은 데이터로 한 장 더 보여주는 것 — 값은 종가에서 산출하므로 지어낼 여지가 없다. 60거래일이 안 되거나, 작성 모델이 이미 달력을 넣었거나, 차트 상한(`ChartCountLimits` standard 4 / deep 5)을 넘으면 넣지 않는다. 르포는 시장차트 자동 주입 자체를 건너뛰므로 대상이 아니다. 끄려면 `.env` 의 `ENABLE_CALENDAR_HEAT_INJECT=0` (v8.6.2 와 동일 동작).
+- **굶주림 힌트에서 제외**: `calendar_heat` 는 `usage_log.DATA_GATED_TYPES` 로 새로 분류했다. 일별 값이 60일치 없는 보고서에 "달력을 더 써라" 는 재균형 힌트가 들어가면 없는 데이터를 지어내게 되기 때문이다(candle 과 같은 성격). 작성 모델의 자발 emit 은 그대로 허용 — 데이터가 실제로 있을 때만 고르면 된다.
+- **덤 — `range_bar` 개편 전후 값 라벨**: before/after 가 전부 정수인데 "6.00 / 9.00 / 13.0" 처럼 소수로 찍히던 것을 정수로 맞췄다(거짓 정밀도 제거). 최저~최고 구간 모드는 소수가 정보이므로 그대로 둔다.
+- **registry·회귀**: 분포 safe 11 / guarded 19 / experimental 1 / 총 31 → **11 / 21 / 1 / 33**. `calendar_heat` 는 dict 데이터라 `validate_chart_data` elif + `_DICT_DATA_REQUIREMENTS` 까지 함께 넣었다(CHART-AP-38 — 빠지면 카드가 100% 사라진다). 결정 트리 2분기 + 스키마 줄 + emit X 규칙, `PROMPT_SHAPES`, `chart_type_scenarios.yaml`(36), `KNOWN_CHART_TYPES`, `svg_prerender.B_PLAN_CHART_TYPES`, [report_bundle_v1.md §9](docs/CONTRACTS/report_bundle_v1.md) pin(additive, `schema_version` 1 유지), 갤러리 fixture 2종, 주입 회귀 12종(`tests/regression/test_calendar_heat_inject.py`). DOM 스냅샷은 **신규 2키 추가 + `range_bar:before_after` 1키 변경**, 나머지 38키는 그대로다(`--diff-report` 로 확인).
 
 ---
 

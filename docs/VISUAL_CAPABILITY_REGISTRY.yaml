@@ -252,6 +252,20 @@ visual_capabilities:
     added_in: v8_6_2
     notes: "소속 위계 (지배구조·계열사·조직도·정책 체계). 깊이 ≤3 · 노드 4~40 · 자식 ≤8. stakeholder_map 이 *관계* 라면 이쪽은 *소속*."
 
+  histogram:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [bin, count]
+    added_in: v8_6_3
+    notes: "1변수 구간 도수 (연령대별 인원·금액 구간별 건수). 4~24 구간 · 합 > 0. **출처가 이미 집계를 줄 때만** — 건별 원자료를 지어내 binning 하면 WRITE-AP-5 위반. 구간에 순서가 없으면 bar."
+
+  calendar_heat:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [values]
+    added_in: v8_6_3
+    notes: "일별 강도 달력 (60~400행, 초과 시 마지막 371일). 질문이 '추세' 가 아니라 '언제 몰렸나' 일 때. 데이터 의존 type — usage_log.DATA_GATED_TYPES 라 재균형 힌트에서 제외한다."
+
   # ─── Tier — experimental (1종): 기본 forbidden, must_have 시만 ─────────
 
   chord:
@@ -280,6 +294,6 @@ visual_capabilities:
 # ─── 분포 (test_capability_registry 가 자동 검증) ─────────────────────────
 distribution:
   safe:         11
-  guarded:      19   # v7.9.17: network 폐기(CHART-AP-36). 2 (choropleth/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix) + v8.0.0: 1 (stakeholder_map) + v8.6.2: 2 (treemap 승격/tree 신설)
+  guarded:      21   # v7.9.17: network 폐기(CHART-AP-36). 2 (choropleth/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix) + v8.0.0: 1 (stakeholder_map) + v8.6.2: 2 (treemap 승격/tree 신설) + v8.6.3: 2 (histogram/calendar_heat)
   experimental: 1
-total: 31   # 11 safe + 19 guarded + 1 experimental (v8.6.2 — treemap experimental→guarded, tree 신설)
+total: 33   # 11 safe + 21 guarded + 1 experimental (v8.6.3 — histogram/calendar_heat 신설)
