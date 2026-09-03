@@ -341,7 +341,7 @@
         { label: '시스템', children: [{ label: '파운드리', value: 210 }, { label: '설계', value: 95 }] },
         { label: '장비', children: [{ label: '전공정', value: 120 }, { label: '후공정', value: 60 }, { label: '검사', value: 40 }] }] };
       var h = d3.hierarchy(root).sum(function (d) { return d.value || 0; }).sort(function (a, b) { return b.value - a.value; });
-      d3.treemap().size([W - 28, H - FOOT - 28]).paddingInner(3).paddingTop(24).paddingOuter(2).tile(d3.treemapSquarify)(h);
+      d3.treemap().size([W - 28, H - FOOT - 28]).paddingInner(3).paddingOuter(2).paddingTop(24).tile(d3.treemapSquarify)(h);
       var groups = h.children, lad = ladder(groups.length), s = '', maxLeaf = d3.max(h.leaves(), function (d) { return d.value; });
       var ox = 14, oy = 14;
       groups.forEach(function (g, gi) {
