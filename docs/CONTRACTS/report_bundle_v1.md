@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v8.3.5
+last_synced_with: v8.6.2
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -109,6 +109,11 @@ consumer 는 schemas.py 를 자기 Pydantic 으로 미러한다.
 > (`_TYPE_TO_GUARD` 21종: bar/line/area/donut/stacked/stacked_bar/bubble/heatmap/
 > gantt/network/candle/dual_line/forecast/choropleth/scatter/stacked_area/
 > lollipop/slope/small_multiples/waterfall/range_bar/sankey).
+> **v8.6.2 (additive, `schema_version` 1 유지)**: `_TYPE_TO_GUARD` 에 `treemap`
+> (2층 구성 — `{children:[{label, value?, children:[{label, value}]}], unit_label?}`)
+> 과 `tree` (소속 위계 — `{root:{label, note?, children:[...]}, accent_label?}`) 추가.
+> 둘 다 §5 B안 폴백 대상(`svg_prerender.B_PLAN_CHART_TYPES`) — consumer 의 렌더
+> 게이트가 모르는 type 이면 `prerendered_svg` 를 쓰면 된다 (무경고 소실 방지).
 > shape 변경 시 producer 가 본 pin 갱신 + §7 절차.
 
 ### §10 map 참조 해소 (v1 draft 보정 — 2026-05-25 seam 발견)

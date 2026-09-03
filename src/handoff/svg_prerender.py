@@ -31,8 +31,13 @@ logger = logging.getLogger(__name__)
 
 _STATIC_DIR = Path(__file__).resolve().parent.parent / "templates" / "static"
 
-# 계약 §5 B안 대상 — charts.js 가 그리는 복잡 차트 3종. (map 은 별도 함수.)
-B_PLAN_CHART_TYPES = frozenset({"network", "choropleth", "sankey"})
+# 계약 §5 B안 대상 — charts.js 가 그리는 복잡 차트. (map 은 별도 함수.)
+# v8.6.2 — treemap/tree 추가: osint 렌더 게이트가 모르는 신규 type 이라
+# prerendered_svg 폴백이 없으면 영상에서 무경고로 사라진다.
+# ("network" 는 v7.9.17 폐기 type — 옛 번들 호환용으로만 남긴다.)
+B_PLAN_CHART_TYPES = frozenset({
+    "network", "choropleth", "sankey", "treemap", "tree",
+})
 
 # CDN (report 템플릿과 동일 — maps.js 의 world-atlas fetch 용).
 _TOPOJSON_CDN = "https://cdn.jsdelivr.net/npm/topojson-client@3"

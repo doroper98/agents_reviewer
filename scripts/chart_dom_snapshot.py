@@ -18,8 +18,8 @@
 ``/opt/pw-browsers/chromium-*/chrome-linux/chrome`` glob. 하나도 없으면
 "skip" 을 출력하고 exit 0 (CI·개발 컨테이너에서 조용히 통과).
 
-``getBBox`` 로 viewBox 를 사후 보정하는 3종 (sankey / dot_matrix /
-stakeholder_map) 은 텍스트 실측폭이 폰트에 좌우되므로 sha256 대신
+``getBBox`` 로 viewBox 를 사후 보정하는 4종 (sankey / dot_matrix /
+stakeholder_map / tree) 은 텍스트 실측폭이 폰트에 좌우되므로 sha256 대신
 **요소 수 + 태그 분포** 만 비교한다 (loose).
 
 스냅샷 키는 갤러리 카드의 ``data-snapshot-key`` (없으면 ``data-chart-type``).
@@ -58,7 +58,7 @@ DEFAULT_THEMES: tuple[str, ...] = (
 
 # getBBox 로 viewBox 를 사후 보정하는 렌더러 — 텍스트 실측폭이 폰트에 좌우되므로
 # 해시가 환경마다 달라진다. 요소 수·태그 분포만 비교 (플랜 §3.2).
-LOOSE_TYPES: tuple[str, ...] = ("sankey", "dot_matrix", "stakeholder_map")
+LOOSE_TYPES: tuple[str, ...] = ("sankey", "dot_matrix", "stakeholder_map", "tree")
 
 SNAPSHOT_MARKER = "__chart_dom_snapshot__"
 

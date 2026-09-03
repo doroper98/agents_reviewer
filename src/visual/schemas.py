@@ -1243,6 +1243,118 @@ class DotMatrixGuard(BaseModel):
     data: list[DotMatrixSegment] = Field(min_length=2, max_length=6)
 
 
+# ─── v8.6.2 — 위계 2종 (CHART_REDESIGN_V8_6_PLAN §5.1 / §5.2) ──────────
+
+
+class TreemapNode(BaseModel):
+    """treemap 노드 — 잎이면 value, 묶음이면 children (깊이 ≤2)."""
+
+    label: str = Field(min_length=1)
+    value: float | None = None
+    children: list["TreemapNode"] | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class TreemapGuard(BaseModel):
+    """treemap: 2층 구성 (부문 → 세부).
+
+    `{children:[{label, value?, children?:[{label, value}]}], unit_label?}`.
+    1층 2~8 묶음, 잎 총 3~40, 잎 value > 0. 부모 value 를 적었으면 자식 합과
+    ±2% 안에서 맞아야 한다 (안 맞으면 어느 쪽이 참인지 알 수 없어 drop).
+    """
+
+    children: list[TreemapNode] = Field(min_length=2, max_length=8)
+    unit_label: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_tree(self) -> "TreemapGuard":
+        leaves = 0
+        for grp in self.children:
+            kids = grp.children or []
+            if not kids:
+                # 1층이 곧 잎 — 그러면 treemap 이 아니라 bar/donut 이다.
+                raise ValueError(
+                    f"CHART-AP-3 가드: treemap '{grp.label}' 에 children 이 없음 "
+                    "— 1층 구성은 bar/donut 이 맞다"
+                )
+            total = 0.0
+            for leaf in kids:
+                if leaf.children:
+                    raise ValueError("CHART-AP-3 가드: treemap 깊이는 2층까지")
+                v = leaf.value
+                if v is None or not math.isfinite(v) or v <= 0:
+                    raise ValueError(
+                        f"CHART-AP-3 가드: treemap 잎 '{leaf.label}' value 는 양수 필수"
+                    )
+                total += v
+                leaves += 1
+            if grp.value is not None:
+                if not math.isfinite(grp.value) or grp.value <= 0:
+                    raise ValueError(
+                        f"CHART-AP-3 가드: treemap 묶음 '{grp.label}' value 는 양수여야 함"
+                    )
+                if abs(grp.value - total) > max(1e-9, total * 0.02):
+                    raise ValueError(
+                        f"CHART-AP-3 가드: treemap 묶음 '{grp.label}' value({grp.value})"
+                        f" 와 자식 합({total}) 이 2% 넘게 어긋남"
+                    )
+        if not (3 <= leaves <= 40):
+            raise ValueError(
+                f"CHART-AP-3 가드: treemap 잎이 {leaves}개 — 3~40 이어야 한다"
+            )
+        return self
+
+
+class TreeNode(BaseModel):
+    """tree 노드 — 소속 위계. label ≤18자, note ≤24자."""
+
+    label: str = Field(min_length=1, max_length=18)
+    note: str | None = Field(default=None, max_length=24)
+    children: list["TreeNode"] | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class TreeGuard(BaseModel):
+    """tree: 소속 위계 (지배구조·계열사·조직도·정책 체계).
+
+    `{root:{label, note?, children:[...]}, accent_label?}`. 깊이 ≤3,
+    노드 4~40, 한 노드의 자식 ≤8. 대립·동맹 *관계* 는 stakeholder_map 이다.
+    """
+
+    root: TreeNode
+    accent_label: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_shape(self) -> "TreeGuard":
+        count = 0
+
+        def walk(node: TreeNode, depth: int) -> None:
+            nonlocal count
+            count += 1
+            if depth > 2:
+                raise ValueError("CHART-AP-3 가드: tree 깊이는 3층까지 (root 포함)")
+            kids = node.children or []
+            if len(kids) > 8:
+                raise ValueError(
+                    f"CHART-AP-3 가드: tree '{node.label}' 의 자식이 {len(kids)}개 — 8 이하"
+                )
+            for k in kids:
+                walk(k, depth + 1)
+
+        walk(self.root, 0)
+        if not (4 <= count <= 40):
+            raise ValueError(f"CHART-AP-3 가드: tree 노드가 {count}개 — 4~40 이어야 한다")
+        if not (self.root.children or []):
+            raise ValueError("CHART-AP-3 가드: tree root 에 children 이 없음")
+        return self
+
+
 # ─── Type → Guard 매핑 ────────────────────────────────────────────────
 
 
@@ -1283,6 +1395,9 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     "dot_matrix":   DotMatrixGuard,
     # v8.0.0 — 르포 행위자 관계도
     "stakeholder_map": StakeholderMapGuard,
+    # v8.6.2 — 위계 2종 (구성 2층 / 소속)
+    "treemap":      TreemapGuard,
+    "tree":         TreeGuard,
 }
 
 
@@ -1375,6 +1490,18 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "combo 는 {bars, line} dict 형식 필요"
+        elif chart_type == "treemap":
+            # {children:[...], unit_label?} — dict 계약 (CHART-AP-38 분기 필수)
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "treemap 는 {children:[...]} dict 형식 필요"
+        elif chart_type == "tree":
+            # {root:{...}, accent_label?} — dict 계약
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "tree 는 {root:{...}} dict 형식 필요"
         elif chart_type == "stakeholder_map":
             # {nodes: [{id, label, col, flag, role, ...}], edges|links: [{source, target, type, ...}]}
             # v8.2.10 — dict 형식인데 분기 누락으로 *항상* 아래 list[dict] else 에 떨어져
@@ -1533,6 +1660,9 @@ _DICT_DATA_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     "bump": ("periods", "items"),
     "combo": ("bars", "line"),
     "stakeholder_map": ("nodes",),
+    # v8.6.2 — 위계 2종
+    "treemap": ("children",),
+    "tree": ("root",),
 }
 
 # 양형 type — list 계약과 dict 계약을 모두 받는다 (validate_chart_data 와 동일).
@@ -1548,6 +1678,8 @@ _DUAL_FORM_TYPES: dict[str, str] = {
 _MIN_LEN_REQUIREMENTS: dict[str, tuple[str, int]] = {
     "stakeholder_map": ("nodes", 2),
     "sankey": ("nodes", 2),
+    # v8.6.2 — 묶음이 하나뿐이면 treemap 이 아니다 (bar/donut 자리)
+    "treemap": ("children", 2),
 }
 
 

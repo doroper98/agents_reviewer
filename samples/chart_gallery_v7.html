@@ -29,10 +29,11 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="gal-head">
   <h1>Chart Gallery V7 — 베이스라인</h1>
-  <p>production charts.js 의 <code>RENDERERS</code> 전 31종 fixture 갤러리 (v8.6.0 — 1:1 정합) —
+  <p>production charts.js 의 <code>RENDERERS</code> 전 33종 fixture 갤러리 (v8.6.2 — 1:1 정합) —
      기존 12종 + FT/Economist 7종 + sankey + v7.0.0 신규 3종 (bump / bullet / connected_scatter) +
      v7.5.0 신규 4종 (combo / diverging_bar / pyramid / dot_matrix) + choropleth +
-     v8.6.0 편입 4종 (combo_candle / iv_skew / indicator / stakeholder_map).
+     v8.6.0 편입 4종 (combo_candle / iv_skew / indicator / stakeholder_map) +
+     v8.6.2 신규 2종 (treemap 2층 구성 / tree 소속 위계).
      폐기된 network 는 제거 (v7.9.17, CHART-AP-36). (보고서당 1개의 embedded_map 은
      별도 채널 maps.js — 본 갤러리 범위 밖.) Track A 리디자인의 전·후 비교 기준 아티팩트
      (REFACTOR_V7_PLAN.md §1.5) 이자 DOM 스냅샷 회귀(<code>scripts/chart_dom_snapshot.py</code>)의
@@ -182,6 +183,21 @@ var PAYLOADS = [
   { type: 'indicator', title: '선물 베이시스 — 콘탱고/백워데이션',
     data: [{label:'선물 - 현물',value:-0.42,unit:'p',pos_label:'콘탱고',neg_label:'백워데이션'}],
     source: 'KRX (예시 데이터) / 2026-06-12' },
+  /* ── v8.6.2 신규 위계 2종 (CHART_REDESIGN_V8_6_PLAN §5.1 / §5.2) ── */
+  { type: 'treemap', title: '반도체 수출 구성 — 부문별·품목별', subtitle: '메모리가 절반을 넘는 2층 구조', unit_line: '단위: 억 달러 · 2026 상반기',
+    data: { unit_label: '억 달러', children: [
+      { label: '메모리', children: [{label:'DRAM',value:320},{label:'NAND',value:190},{label:'HBM',value:140}] },
+      { label: '시스템', children: [{label:'파운드리',value:210},{label:'설계',value:95},{label:'이미지센서',value:48}] },
+      { label: '장비·소재', children: [{label:'전공정 장비',value:120},{label:'후공정 장비',value:60},{label:'검사',value:40},{label:'소재',value:33}] }
+    ] },
+    source: '무역통계 종합 (예시 데이터)' },
+  { type: 'tree', title: '○○그룹 지배구조', subtitle: '지주 아래 중간지주 셋, 계열사 여덟',
+    data: { accent_label: '○○은행', root: { label: '○○지주', children: [
+      { label: '금융', children: [{label:'○○은행',note:'지분 100%'},{label:'○○증권',note:'지분 63%'},{label:'○○카드'}] },
+      { label: '산업', children: [{label:'○○중공업',note:'지분 41%'},{label:'○○에너지'}] },
+      { label: '서비스', children: [{label:'○○리테일'},{label:'○○물류',note:'2026 신규 편입'},{label:'○○데이터'}] }
+    ] } },
+    source: '공정위 기업집단 공시 (예시 데이터)' },
   /* ── v8.6.1 표현 변형 fixture (같은 type 의 *다른 기본 표현* 을 스냅샷으로 고정) ──
      같은 type 을 여러 장 두므로 스냅샷 키(`key`)로 구분한다. charts.js 는
      `data-chart-type` 만 보므로 렌더 계약에는 영향이 없다. */

@@ -43,7 +43,10 @@ def test_registry_loads_without_error() -> None:
 
 
 def test_registry_distribution_matches_plan_9_3() -> None:
-    """v7.5.0 정본 분포 — safe 11 / guarded 17 / experimental 2 (총 30).
+    """v8.6.2 정본 분포 — safe 11 / guarded 19 / experimental 1 (총 31).
+
+    v8.6.2 변경 (CHART_REDESIGN_V8_6_PLAN §5): treemap 을 experimental →
+    guarded 로 승격(렌더러 실장, default_policy 제거)하고 tree 를 신설.
 
     v5.2.14 변경: Plan §9.3 의 원본 (safe 11 / guarded 3 / experimental 2 / 총 16)
     에서 FT/Economist 스타일 신규 7종을 guarded 로 추가 → guarded 10 / 총 23.
@@ -62,9 +65,9 @@ def test_registry_distribution_matches_plan_9_3() -> None:
     total = list_all_types()
 
     assert len(safe) == 11, f"safe types: 11 expected, got {len(safe)}: {safe}"
-    assert len(guarded) == 17, f"guarded types: 17 expected, got {len(guarded)}: {guarded}"
-    assert len(experimental) == 2, f"experimental types: 2 expected, got {len(experimental)}"
-    assert len(total) == 30, f"total: 30 expected, got {len(total)}"
+    assert len(guarded) == 19, f"guarded types: 19 expected, got {len(guarded)}: {guarded}"
+    assert len(experimental) == 1, f"experimental types: 1 expected, got {len(experimental)}"
+    assert len(total) == 31, f"total: 31 expected, got {len(total)}"
 
 
 def test_registry_safe_types_match_plan_9_3() -> None:
@@ -81,7 +84,7 @@ def test_registry_safe_types_match_plan_9_3() -> None:
 
 
 def test_registry_guarded_types_match_plan_9_3() -> None:
-    """v7.9.17 정본 — guarded 17종 (network 폐기, CHART-AP-36)."""
+    """v8.6.2 정본 — guarded 19종 (v8.6.2 treemap 승격 + tree 신설)."""
     expected_guarded = {
         "choropleth", "sankey",
         # v5.2.14 — FT/Economist 스타일 신규 7종
@@ -93,13 +96,15 @@ def test_registry_guarded_types_match_plan_9_3() -> None:
         "combo", "diverging_bar", "pyramid", "dot_matrix",
         # v8.0.0 — 르포 행위자 관계도
         "stakeholder_map",
+        # v8.6.2 — 위계 2종 (2층 구성 / 소속)
+        "treemap", "tree",
     }
     assert set(list_guarded_types()) == expected_guarded
 
 
 def test_registry_experimental_types_match_plan_9_3() -> None:
-    """Plan §9.3 의 정본 — experimental 2종 (chord / treemap)."""
-    expected_experimental = {"chord", "treemap"}
+    """v8.6.2 정본 — experimental 1종 (chord). treemap 은 guarded 로 승격."""
+    expected_experimental = {"chord"}
     assert set(list_experimental_types()) == expected_experimental
 
 
@@ -108,9 +113,9 @@ def test_registry_distribution_section_consistent() -> None:
     reg = load_registry()
     declared = reg.get("distribution", {})
     assert declared.get("safe") == 11
-    assert declared.get("guarded") == 17
-    assert declared.get("experimental") == 2
-    assert reg.get("total") == 30
+    assert declared.get("guarded") == 19
+    assert declared.get("experimental") == 1
+    assert reg.get("total") == 31
 
 
 def test_each_capability_has_required_fields() -> None:

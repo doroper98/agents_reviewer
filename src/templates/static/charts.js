@@ -3378,6 +3378,161 @@
       });
   }
 
+  // ----- TREEMAP — 2층 구성 (v8.6.2, 플랜 §5.1 / 견본 treemap) -----
+  // 니치: 예산·수출 품목·매출·지출의 *2층* 구성 (부문 → 세부). stacked 는 1차원,
+  // donut 은 1층·≤8 조각. 잎이 6개를 넘고 묶음이 있으면 여기가 자리다.
+  // data: {children:[{label, value?, children?:[{label, value}]}], unit_label?}
+  function drawTreemap(stage, payload, t) {
+    const D = payload.data || {};
+    const rootData = { children: D.children || [] };
+    if (!(rootData.children || []).length) return;
+    const W = 720, H = 400 + FOOTER_H;
+    const OX = 14, OY = 14;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    let h;
+    try {
+      h = d3.hierarchy(rootData).sum(d => (+d.value > 0 ? +d.value : 0))
+        .sort((a, b) => b.value - a.value);
+      // ★ paddingOuter 는 상·하·좌·우를 한꺼번에 세팅하므로 *먼저* 부르고
+      // 그다음 paddingTop 으로 그룹 헤더 띠를 확보한다. 순서가 뒤집히면 헤더가
+      // 잎 라벨 위에 겹쳐 찍힌다 (견본 목업에 남아 있던 결함).
+      d3.treemap().size([W - OX * 2, H - FOOTER_H - OY * 2])
+        .paddingOuter(2).paddingInner(3).paddingTop(22)
+        .tile(d3.treemapSquarify)(h);
+    } catch (e) { console.warn('[charts] treemap layout fail', e); return; }
+    const groups = h.children || [];
+    if (!groups.length) return;
+    const ladder = inkLadder(groups.length);
+    const leaves = h.leaves();
+    const maxLeaf = d3.max(leaves, d => d.value) || 1;
+    const biggest = leaves.length ? leaves[0] : null;   // sum().sort(desc) 후 첫 잎
+    const inv = (op) => (op >= 0.55 ? t.card : t.text);
+    const trunc = (sv, n) => {
+      const str = String(sv || '');
+      return str.length > n ? str.slice(0, n - 1) + '…' : str;
+    };
+    groups.forEach((g, gi) => {
+      const gw = g.x1 - g.x0;
+      // 그룹 헤더 — 폭이 모자라면 비율을 떼고, 더 모자라면 헤더 자체를 생략한다.
+      const name = trunc(g.data.label, 14);
+      const share = Math.round((g.value / (h.value || 1)) * 100) + '%';
+      const nameW = name.length * 9.8;
+      let head = '';
+      if (gw >= nameW + 52) head = `${name} · ${share}`;
+      else if (gw >= nameW + 8) head = name;
+      if (head) {
+        svg.append('text').attr('x', g.x0 + OX + 4).attr('y', g.y0 + OY + 15)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 9.5)
+          .attr('letter-spacing', '.06em').attr('fill', t.muted)
+          .attr('data-anim', 'static').text(head);
+      }
+      g.leaves().forEach(l => {
+        const w = l.x1 - l.x0, hh = l.y1 - l.y0;
+        if (!(w > 0 && hh > 0)) return;
+        const op = ladder[gi] * (0.6 + 0.32 * (l.value / maxLeaf));
+        const key = (l === biggest);
+        svg.append('rect').attr('x', l.x0 + OX).attr('y', l.y0 + OY)
+          .attr('width', w).attr('height', hh).attr('rx', 3)
+          .attr('fill', t.text).attr('fill-opacity', op)
+          .attr('stroke', key ? t.accent : 'none').attr('stroke-width', key ? 1.4 : 0);
+        if (w >= 56 && hh >= 30) {
+          svg.append('text').attr('x', l.x0 + OX + 6).attr('y', l.y0 + OY + 15)
+            .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
+            .attr('fill', inv(op)).attr('data-anim', 'static')
+            .text(trunc(l.data.label, Math.max(2, Math.floor((w - 12) / 10))));
+          svg.append('text').attr('x', l.x0 + OX + 6).attr('y', l.y0 + OY + 29)
+            .attr('font-family', 'Noto Serif KR').attr('font-size', 11.5).attr('font-weight', 700)
+            .attr('fill', inv(op)).attr('data-anim', 'static').text(fmtNum(l.value));
+        } else if (w >= 30 && hh >= 16) {
+          svg.append('text').attr('x', l.x0 + OX + 5).attr('y', l.y0 + OY + 12)
+            .attr('font-family', 'Noto Sans KR').attr('font-size', 9)
+            .attr('fill', inv(op)).attr('data-anim', 'static')
+            .text(trunc(l.data.label, Math.max(2, Math.floor((w - 10) / 9))));
+        }
+      });
+    });
+    keyFooter(svg, W, H, `면적 = ${D.unit_label || '값'} · 진할수록 큰 묶음`, t);
+  }
+
+  // ----- TREE — 위계 (v8.6.2, 플랜 §5.2 / 견본 tree) -----
+  // 니치: 지배구조·계열사·조직도·정책 체계. stakeholder_map 이 *관계* 라면
+  // 이쪽은 *소속* (A 아래 B 아래 C). 좌→우 클러스터라 잎이 세로로 정렬된다.
+  // data: {root:{label, note?, children:[{label, note?, children?}]}, accent_label?}
+  function drawTree(stage, payload, t) {
+    const D = payload.data || {};
+    const rootData = D.root;
+    if (!rootData || !rootData.label) return;
+    let h;
+    try {
+      h = d3.hierarchy(rootData, d => d.children || null);
+    } catch (e) { console.warn('[charts] tree hierarchy fail', e); return; }
+    const leaves = h.leaves();
+    if (h.descendants().length < 2) return;
+    const W = 720;
+    const H = Math.max(280, leaves.length * 22 + 40) + FOOTER_H;
+    const OX = 140, OY = 24, innerW = 300;
+    const innerH = H - FOOTER_H - OY - 16;
+    const svg = d3.select(stage).select('svg')
+      .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    try { d3.cluster().size([innerH, innerW])(h); }
+    catch (e) { console.warn('[charts] tree layout fail', e); return; }
+    const branches = h.children || [];
+    const ladder = inkLadder(Math.max(1, branches.length));
+    const branchIdx = (n) => {
+      const b = n.ancestors().filter(a => a.depth === 1)[0];
+      const i = b ? branches.indexOf(b) : -1;
+      return i < 0 ? 0 : i;
+    };
+    const accentLabel = String(D.accent_label || '');
+    const isAccent = (n) => accentLabel !== '' && String(n.data.label || '') === accentLabel;
+    const px = (n) => n.y + OX, py = (n) => n.x + OY;
+    // 링크 — 1층은 굵고 진하게, 그 아래는 가지별 잉크 사다리
+    const link = d3.linkHorizontal().x(d => d.y + OX).y(d => d.x + OY);
+    h.links().forEach(L => {
+      const top = L.source.depth === 0;
+      svg.append('path').attr('d', link(L)).attr('fill', 'none')
+        .attr('stroke', t.text)
+        .attr('stroke-opacity', top ? 0.9 : ladder[branchIdx(L.target)])
+        .attr('stroke-width', top ? 1.4 : 1);
+    });
+    const trunc = (sv, n) => {
+      const str = String(sv || '');
+      return str.length > n ? str.slice(0, n - 1) + '…' : str;
+    };
+    h.descendants().forEach(n => {
+      const x = px(n), y = py(n), acc = isAccent(n);
+      const col = acc ? t.accent : t.text;
+      if (n.depth === 0) {
+        svg.append('circle').attr('cx', x).attr('cy', y).attr('r', 5).attr('fill', col);
+        svg.append('text').attr('x', x - 10).attr('y', y + 4.5).attr('text-anchor', 'end')
+          .attr('font-family', 'Noto Serif KR').attr('font-size', 13).attr('font-weight', 700)
+          .attr('fill', col).text(trunc(n.data.label, 18));
+      } else if (n.depth === 1) {
+        svg.append('circle').attr('cx', x).attr('cy', y).attr('r', 3.5).attr('fill', col);
+        svg.append('text').attr('x', x - 7).attr('y', y - 7).attr('text-anchor', 'end')
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 11).attr('font-weight', 600)
+          .attr('fill', col).text(trunc(n.data.label, 18));
+      } else {
+        const op = acc ? 1 : ladder[branchIdx(n)];
+        svg.append('circle').attr('cx', x).attr('cy', y).attr('r', 2.5)
+          .attr('fill', col).attr('fill-opacity', op);
+        const lbl = trunc(n.data.label, 18);
+        svg.append('text').attr('x', x + 8).attr('y', y + 3.5)
+          .attr('font-family', 'Noto Sans KR').attr('font-size', 10.5)
+          .attr('font-weight', acc ? 700 : 400).attr('fill', col).text(lbl);
+        if (n.data.note) {
+          svg.append('text').attr('x', x + 8 + lbl.length * 10.3 + 8).attr('y', y + 3.5)
+            .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
+            .text(trunc(n.data.note, 24));
+        }
+      }
+    });
+    keyFooter(svg, W, H, '위계 = 좌에서 우로 · 가지마다 농도', t);
+    // 라벨이 좌우로 뻗으므로 실제 extent 로 viewBox 를 다시 맞춘다 (CHART-AP-21 계열).
+    contentFit(svg, 14);
+  }
+
   // ----- DOT MATRIX — 100칸 와플 / 아이소타입 (v7.5.0, 사회 통계 체감) -----
   // '100명 중 N명' — largest-remainder 로 정확히 100칸 배분. 칸 잉크: accent
   // segment = 액센트 솔리드, 나머지는 잉크 농도 사다리 (칸이 작아 해치는
@@ -4437,6 +4592,8 @@
     iv_skew: drawIvSkew, indicator: drawIndicator,
     // v8.0.0 — 르포 전용 행위자 관계도 (진영 칼럼 결정적 배치, force 금지)
     stakeholder_map: drawStakeholderMap,
+    // v8.6.2 — 위계 2종 (CHART_REDESIGN_V8_6_PLAN §5.1/§5.2)
+    treemap: drawTreemap, tree: drawTree,
   };
 
   async function renderStage(stage, idx) {

@@ -168,10 +168,14 @@ def test_non_dict_in_charts_rejected_by_field_validation() -> None:
 
 
 def test_unknown_type_preserved() -> None:
-    """guard_for_type 이 None 반환 → validate_chart_data 가 ok=True 반환 → 보존."""
+    """guard_for_type 이 None 반환 → validate_chart_data 가 ok=True 반환 → 보존.
+
+    v8.6.2 — 예시 type 을 treemap → chord 로 교체. treemap 은 렌더러가 실장되면서
+    가드가 생겼으므로 더는 '가드 없는 type' 의 대표가 아니다 (플랜 §5.1).
+    """
     s = _section([
-        {"type": "treemap", "title": "신규 type", "data": [
-            {"name": "A", "value": 1},
+        {"type": "chord", "title": "신규 type", "data": [
+            {"source": "A", "target": "B", "value": 1},
         ]},
     ])
     assert len(s.charts) == 1

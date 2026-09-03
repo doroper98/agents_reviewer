@@ -59,6 +59,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "iv_skew", "indicator",
     # v8.0.0 — 르포 전용 행위자 관계도 (진영 칼럼 결정적 배치, force 금지)
     "stakeholder_map",
+    # v8.6.2 — 위계 2종 (2층 구성 / 소속)
+    "treemap", "tree",
     # embedded_map (별도 채널)
     "map",
 )
