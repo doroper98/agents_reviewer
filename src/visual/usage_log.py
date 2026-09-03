@@ -7,6 +7,7 @@
 스토리지:
 - 기본 경로: ``$CHART_USAGE_LOG_PATH`` 또는 ``logs/chart_usage.jsonl``
 - 한 줄 = 한 보고서. JSON: ``{ts, event, mode, types: list[str]}``
+  (+ optional ``dropped: list[str]`` · ``refit: [{from, to, rule}]``)
 - append-only. 회전 / truncate 없음 (수명 동안 < 1 MB)
 
 CLI::
@@ -102,6 +103,7 @@ def append_run(
     chart_types: Iterable[str],
     *,
     dropped_types: Iterable[str] | None = None,
+    refit: Iterable[dict] | None = None,
     path: Path | None = None,
 ) -> None:
     """한 보고서의 chart type 분포를 JSONL 한 줄로 append.
@@ -114,6 +116,11 @@ def append_run(
     "가드가 100% 버려서 0회" 인 배관 이상(CHART-AP-44)과 "composer 가 안 골라서 0회"
     인 진짜 기아를 구분할 수 있다. 구분 전에는 드롭된 type 이 기아로 위장돼 재균형
     힌트가 *깨진 type 을 더 밀어넣고 다시 전부 버리는* 악순환을 돌렸다.
+
+    v8.6.4 — ``refit`` 은 type-fit 파이프라인(`src/visual/type_fit.py`)이 재배치한
+    이력 ``[{from, to, rule}]``. JSONL additive (비면 필드 자체를 안 쓴다). 30건쯤
+    쌓이면 *어떤 오배치가 잦은가* 가 보이고, 그건 프롬프트 결정 트리를 어디서
+    보강해야 하는지의 근거가 된다 (5-Layer ① 자기교정 루프와 같은 원리).
     """
     target = path or _default_path()
     record = {
@@ -125,6 +132,9 @@ def append_run(
     dropped_list = [t for t in (dropped_types or []) if isinstance(t, str)]
     if dropped_list:
         record["dropped"] = dropped_list
+    refit_list = [r for r in (refit or []) if isinstance(r, dict) and r.get("rule")]
+    if refit_list:
+        record["refit"] = refit_list
     try:
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("a", encoding="utf-8") as f:
@@ -170,6 +180,7 @@ def analyze(
             "distribution": {"bar": 18, "line": 14, ...},
             "starved_types": ["candle", "heatmap"],  # 0회 emit
             "rare_types": ["sankey"],                  # 1회 emit (window>=10일 때만)
+            "refit_distribution": {"R1": 3, "R5": 8},  # v8.6.4 type-fit 규칙 적중
         }
 
     Orchestrator 가 보고서마다 호출하지 않음 — 별도 CLI 또는 cron 으로 점검.
@@ -178,6 +189,7 @@ def analyze(
     records = _read_last_n(target, window)
     counter: Counter[str] = Counter()
     dropped_counter: Counter[str] = Counter()
+    refit_counter: Counter[str] = Counter()
     for r in records:
         for t in r.get("types", []):
             if isinstance(t, str):
@@ -185,6 +197,11 @@ def analyze(
         for t in r.get("dropped", []):
             if isinstance(t, str):
                 dropped_counter[t] += 1
+        for ev in r.get("refit", []):
+            # v8.6.4 — 규칙 id 별 적중 수. 규칙 하나가 from→to 한 쌍이라 id 만 세면
+            # "어떤 오배치가 잦은가" 가 그대로 나온다 (type_fit.RULES 가 대응표).
+            if isinstance(ev, dict) and isinstance(ev.get("rule"), str):
+                refit_counter[ev["rule"]] += 1
     starved = sorted(t for t in known_types if counter.get(t, 0) == 0)
     rare = sorted(
         t for t in known_types
@@ -202,6 +219,7 @@ def analyze(
         "reports_analyzed": len(records),
         "distribution": dict(counter.most_common()),
         "dropped_distribution": dict(dropped_counter.most_common()),
+        "refit_distribution": dict(refit_counter.most_common()),
         "starved_types": starved,
         "rare_types": rare,
         "plumbing_suspect_types": plumbing,

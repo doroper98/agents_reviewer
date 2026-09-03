@@ -1702,6 +1702,19 @@ _TYPE_TO_OPTION_GUARD: dict[str, type[BaseModel]] = {
 }
 
 
+def option_fields(chart_type: str) -> frozenset[str]:
+    """이 type 이 payload 최상위에 가질 수 있는 *표현 옵션* 키 집합 (v8.6.4).
+
+    type-fit 파이프라인(`src/visual/type_fit.py`)이 type 을 바꿀 때, 원본 type
+    에만 있던 옵션 키를 떼어내려고 쓴다 — 새 type 의 가드가 모르는 키를 남기면
+    뜻 없는 잔재가 payload 에 쌓인다. 옵션 가드가 없는 type 은 빈 집합.
+    """
+    guard = _TYPE_TO_OPTION_GUARD.get((chart_type or "").lower())
+    if guard is None:
+        return frozenset()
+    return frozenset(getattr(guard, "model_fields", {}))
+
+
 def validate_chart_options(chart_type: str, payload: Any) -> tuple[bool, str]:
     """차트 payload 의 *표현 옵션* 을 검사한다 (v8.6.1).
 

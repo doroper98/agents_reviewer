@@ -154,6 +154,15 @@ class Config(BaseSettings):
         ),
     )
 
+    # v8.6.4 — 차트 type-fit 파이프라인 (CHART_REDESIGN_V8_6_PLAN §6). 작성 모델이
+    # 데이터 모양에 안 맞는 type 을 골랐을 때 결정적 규칙(R1~R5)으로 맞는 type 으로
+    # 바꾼다. 0-LLM · 값·라벨 생성 금지 · 변환 후 가드 실패면 원본 유지.
+    # 0 으로 두면 v8.6.3 과 byte-equal.
+    enable_type_refit: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("V8_TYPE_REFIT", "enable_type_refit"),
+    )
+
     # v8.2.8 — 편집장(NarrativeComposer) CLI 출력 캡처를 구조화 JSON envelope 로.
     # `--output-format text` 가 긴 응답에서 stdout 머리(앞부분)를 잃어 보고서가
     # head-loss → 파싱 불가 → minimal fallback 으로 떨어지던 회귀(2026-06-27 르포

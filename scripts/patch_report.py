@@ -58,6 +58,7 @@
       $EDITOR (vim/nano) 로 JSON 직접 편집
 
   python scripts/patch_report.py 20260502_154823 --rerender-only
+  python scripts/patch_report.py 20260502_154823 --refit
       수정 없이 재렌더만 (정적 자산 + HTML 갱신용)
 
   python scripts/patch_report.py 20260617_061707_cfcb75d0f8 --strip-arc
@@ -256,13 +257,23 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="(v7.9.17) 시장 시계열의 비유한값(NaN/inf) 봉을 결정적으로 제거하고 "
              "영향받은 차트(line/area/candle)·감시 스트립의 subtitle·등락률·takeaway 를 "
-             "재계산. 'nan%' / 'X → nan' / 빈 코스피 차트 회귀(CHART-AP-29) 복구용. "
+             "재계산. 'nan%%' / 'X → nan' / 빈 코스피 차트 회귀(CHART-AP-29) 복구용. "
              "LLM 0, URL 동일.",
     )
     p.add_argument(
         "--rerender-only",
         action="store_true",
         help="수정 없이 재렌더만 (정적 자산 / 새 charts.js 적용용).",
+    )
+    p.add_argument(
+        "--refit",
+        action="store_true",
+        help="(v8.6.4) 차트 type-fit — 데이터 모양에 안 맞는 type 을 결정적 규칙"
+             "(R1~R5)으로 재배치 (구간 라벨 bar→histogram, 2층 라벨 donut→treemap, "
+             "일별 heatmap→calendar_heat, 8항목+ slope→range_bar, 짧은 라벨 bar→세로 칸). "
+             "값·라벨을 만들지 않고, 변환 후 가드 실패면 원본 유지. LLM 0, URL 동일, "
+             "표현 변경이라 render_revision(소수부) +1. 사전 확인: "
+             "python -m src.visual.type_fit --scan reports/ --dry-run",
     )
     p.add_argument(
         "--strip-arc",
@@ -1061,6 +1072,21 @@ async def main() -> int:
         else:
             print("[patch] --ensure-time-series: 변경 없음 (composer 가 이미 다 박았거나 time_series 비어있음)")
 
+    # v8.6.4 — 차트 type-fit (표현 변경). 발행본에도 새 type 을 소급 적용한다.
+    refit_applied = False
+    if args.refit:
+        from src.visual.type_fit import refit_charts
+        _fmt = getattr(getattr(result, "request", None), "report_format", "standard")
+        _events = refit_charts(result.composed_report, report_format=_fmt or "standard")
+        _changed = [e for e in _events if e.from_type != e.to_type or e.rule == "R5"]
+        if _events:
+            for e in _events:
+                print(f"[patch] --refit: {e.rule} {e.from_type} → {e.to_type} "
+                      f"(sec {e.section} · {e.title or '무제'})")
+            refit_applied = bool(_changed)
+        else:
+            print("[patch] --refit: 재배치할 차트 없음 (전부 데이터 모양에 맞는 type).")
+
     # v7.9.7 — 기승전결 스크롤 아크 워터마크 이 보고서 한정 제거 (표현 변경).
     strip_arc_applied = False
     if args.strip_arc:
@@ -1082,7 +1108,7 @@ async def main() -> int:
         result.render_revision = 0
         write_json(result, json_path)
         print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision_label} · 내용 변경)")
-    elif args.rerender_only or strip_arc_applied:
+    elif args.rerender_only or strip_arc_applied or refit_applied:
         result.render_revision = (getattr(result, "render_revision", 0) or 0) + 1
         write_json(result, json_path)
         print(f"[patch] JSON 갱신: {json_path} (revision = {result.revision_label} · 표현/레이아웃 변경)")

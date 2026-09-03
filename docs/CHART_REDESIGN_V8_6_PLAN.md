@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 · Phase 2b v8.6.3 완료 · Phase 2c 부터 대기)
+status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 · Phase 2b v8.6.3 · Phase 2c v8.6.4 · 사다리 색 전환 v8.6.5 완료 · Phase 3 부터 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.3
+last_synced_with: v8.6.5
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -168,6 +168,14 @@ last_review: 2026-09-03
    일 때만. 아니면 렌더러가 *결정적으로* 가로(`tick`) 로 강등. 최종 방어는 렌더러.
 8. **Execution Rule #12.** 커밋 prefix = `src/orchestrator.py:VERSION`. `git config
    core.hooksPath .githooks` 선행. 매 버전 README `Status` + CHANGELOG.
+9. **위계 사다리의 색 = 테마 액센트 (사용자 결정 2026-09-03, v8.6.5 소급).** §1.1-2 의
+   "잉크 농도 사다리" 는 *농도* 문법만 흡수하고 *색* 은 우리 것을 쓴다. 참고 자료의 검정
+   잉크를 그대로 따라간 v8.6.1~v8.6.4 의 렌더는 13종 테마 위에서 회색으로만 보여 보고서와
+   겉돌았다. 데이터 마크는 `--accent` 를 깔고 사다리를 불투명도로만 쓰며, 축·눈금·라벨·
+   읽는 법 캡션은 `--text`/`--muted` 그대로다. up/down 의미색 · sankey 다색 팔레트 ·
+   pyramid 좌측 중립 집단은 불변. 최저 단은 `.16` (라이트 테마 가시성). 어휘 SSOT 는
+   [MONO_THEME_GUIDE §10.1](MONO_THEME_GUIDE.md) 의 v8.6.5 블록, 상수는 charts.js
+   `LADDER_MIN` 한 곳.
 
 ---
 
@@ -479,8 +487,17 @@ function keyFooter(svg, W, H, text, t) { ... }
 
 - 모듈 `src/visual/type_fit.py`: `refit_chart(chart: dict, *, report_format: str) ->
   tuple[dict, str | None]` (새 chart dict 또는 원본, 적용 규칙 id) + `refit_charts(composed)
-  -> list[RefitEvent]`. 순수 함수 — `ComposedSection` 재검증은 호출부가 `_drop_invalid_charts`
-  를 다시 타도록 `ComposedSection.model_validate` 로 재구성.
+  -> list[RefitEvent]`. 순수 함수 — `ComposedSection` 재검증은 `refit_charts` 가
+  `ComposedSection.model_validate` 로 재구성해 `_drop_invalid_charts` 를 한 번 더 태운다
+  (이전에 드롭된 `_dropped_charts` 기록은 이어 붙여 보존 — usage_log 의 emit/kept 2단
+  집계가 그 기록에 기댄다).
+  — **구현 보정 (v8.6.4 랜딩)**: ⑴ `refit_charts` 는 `report_format` 을 키워드로 받는다
+  (기본 `"standard"`). ⑵ 바꿀 게 없으면 `refit_chart` 가 *원본 객체 그대로* 를 돌려주고
+  (`out is chart`), 호출부는 identity 로 변경 여부를 판별한다 — 규칙 id 가 있는데 payload
+  가 원본인 경우도 있다 (`R7-pending`, 세기만 하는 규칙). ⑶ 변환 시 원본 type 에만 있는
+  표현 옵션 키(`schemas.option_fields` 차집합)와 annotation 레이어 없는 target
+  (treemap / calendar_heat)의 `annotations` 만 떼고, `title`/`subtitle`/`unit_line`/
+  `source`/`note`/`takeaway` 는 전부 계승한다.
 - 호출: `src/orchestrator.py` `_densify_ts_charts` 호출 (`:2109`) **직후·`_reconcile_visual_
   references` (`:2118`) 직전**. flag `V8_TYPE_REFIT` (Config, 기본 `1`; `0` 이면 byte-equal).
 - `scripts/patch_report.py` 에 `--refit` (rerender 경로에서 같은 함수 호출, `revision`
@@ -503,8 +520,21 @@ function keyFooter(svg, W, H, text, t) { ... }
 | R7 | gantt(all start==end) → (drop 유지) | CHART-AP-15 현행. V9 event_timeline 랜딩 시 그쪽으로 재배치 — 본 Phase 는 로그만 (`refit:[{rule:"R7-pending"}]`) | — |
 
 - 금지: 값·라벨을 *생성* 하는 변환 (예: bar 를 histogram 으로 바꾸며 빈 구간 채우기).
-  규칙은 필드 이름 바꾸기·재그룹만. 변환 후 `validate_chart_data` 실패면 **원본 유지**
-  (더 나빠지지 않기).
+  규칙은 필드 이름 바꾸기·재그룹만. 변환 후 `validate_chart_data`(+`validate_chart_options`)
+  실패면 **원본 유지** (더 나빠지지 않기).
+- **구현 보정 (v8.6.4 랜딩) — 위 표를 이렇게 읽는다.**
+  · R1 은 `count` 를 0 이상 *정수* 로만 받고 bin 라벨 12자 상한(HistogramRow)까지 미리
+    본다. R1 이 안 걸린 bar 에 R5(표현만)가 걸릴 수 있다 — 둘은 배타가 아니라 순차다.
+  · R2 의 "≥60%" 는 값싼 사전 게이트일 뿐이고, 분리자 *없는* 라벨은 **자기 자신을 그룹으로
+    하는 잎 1개** 로 취급한다. 그러면 "그룹당 잎 ≥2" 제약에 자동으로 걸려 변환이 취소된다
+    — 데이터를 한 행도 버리지 않으면서(안전 규칙 ②) 애매한 경우를 배제하는 방식이다.
+  · R3 은 행이 400을 넘으면 **변환하지 않는다**. 가드 상한을 맞추려면 행을 잘라야 하는데
+    그건 데이터를 버리는 것이다. y 단일 값은 `metric_label` 로 재사용한다(생성 아님).
+  · R5 는 `orientation` *또는* `texture` 가 이미 있으면 건너뛴다 (작성 모델의 표현 지정
+    존중). 조건은 `charts.js:drawBar` 의 rung 게이트와 같은 값 — 게이트를 못 넘을 값을
+    넣으면 렌더러가 가로로 강등할 뿐이라 미리 막는다.
+  · R6 은 `RULES` 레지스트리에 `active=False` 로 등재만 하고 이벤트도 내지 않는다.
+    R7 은 `active=False` 지만 `R7-pending` 이벤트를 내 계측에 남는다.
 - 테스트 `tests/regression/test_type_fit.py`: 규칙별 positive 1+ · negative 2+ (평범한
   bar 가 R1 에 안 걸림, 날짜 아닌 heatmap 이 R3 에 안 걸림, 7 items slope 는 R4 미적용),
   flag OFF byte-equal, 변환 실패 시 원본 유지.
@@ -674,11 +704,19 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 > ③ `calendar_heat` 렌더러의 칸 간격은 고정 13 이 아니라 주 수에 따라 11~18 (1년치가 13 근방).
 >   720 폭 캔버스에 18주짜리 달력을 13 간격으로 그리면 왼쪽 1/3 에만 몰려 카드가 비어 보인다.
 
-**Phase 2c (v8.6.4) type-fit**
-- [ ] `src/visual/type_fit.py` R1~R7 + CLI `--scan/--dry-run` · Config `V8_TYPE_REFIT`
-- [ ] orchestrator 호출 (`:2109` 직후) · `patch_report --refit` · `usage_log` refit 필드
-- [ ] `tests/regression/test_type_fit.py` · 결정 트리 negative 4건 · 시나리오 yaml → 커밋
-- [ ] 사용자에게 VM 실측 명령 제시: `cd ~/agents_reviewer && source venv/bin/activate && python -m src.visual.type_fit --scan reports/ --dry-run`
+**Phase 2c (v8.6.4) type-fit** — 완료 (2026-09-03)
+- [x] `src/visual/type_fit.py` R1~R7 (`RULES` 레지스트리 + `RefitRule`/`RefitEvent`) +
+      CLI `--scan/--dry-run/--rules` (읽기 전용) · Config `V8_TYPE_REFIT`(기본 ON) + `.env.example`
+- [x] orchestrator 호출 — `_densify_ts_charts` 직후 · `_reconcile_visual_references` 직전,
+      flag 게이트 뒤 · `patch_report --refit`(render_revision 소수부 +1) ·
+      `usage_log.append_run(refit=...)` + `analyze()['refit_distribution']`
+- [x] `schemas.option_fields()` 공개 헬퍼 신설 (type 변경 시 옛 표현 옵션 제거용)
+- [x] `tests/regression/test_type_fit.py` 41종 (규칙별 positive ≥1 · negative ≥2 ·
+      값 보존 · 가드 실패 시 원본 유지 · orchestrator 배선 · flag OFF · CLI scan) ·
+      결정 트리 negative 4건(`[자주 나는 오배치 4가지]` 블록 + 분기 2곳 보강) ·
+      `chart_type_scenarios.yaml` negative_examples 5곳 → 커밋
+- [x] charts.js 무변경 → DOM 스냅샷 41키 0 diff 가 렌더 불변을 증명
+- [x] 사용자에게 VM 실측 명령 제시: `cd ~/agents_reviewer && source venv/bin/activate && python -m src.visual.type_fit --scan reports/ --dry-run`
 
 **Phase 3·4 (v8.6.5)**
 - [ ] 갤러리 헤드리스 스크린샷 리뷰 · compare 페이지 사용자 게이트

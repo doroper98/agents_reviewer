@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.6.3"
+VERSION = "v8.6.5"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -2260,6 +2260,20 @@ class Orchestrator:
             _densify_ts_charts(result.composed_report, result.context)
         except Exception as _e:  # pragma: no cover  — hook 실패가 보고서 흐름 영향 X
             logger.warning("[orchestrator] _densify_ts_charts skipped: %s", _e)
+        # v8.6.4 (플랜 §6) — type-fit. 작성 모델이 데이터 모양에 안 맞는 type 을
+        # 골랐으면(연령대 구간을 bar 로, 2층 구성을 donut 으로, 일별 60일을 heatmap
+        # 으로) 결정적 규칙 R1~R5 로 맞는 type 에 앉힌다. 프롬프트 결정 트리가 1선,
+        # 이건 안전망 — 값·라벨을 만들지 않고, 변환 후 가드 실패면 원본을 유지한다.
+        # flag OFF 면 호출 자체를 안 해 v8.6.3 과 byte-equal.
+        refit_events: list = []
+        if getattr(self.config, "enable_type_refit", True):
+            try:
+                from src.visual.type_fit import refit_charts
+                refit_events = refit_charts(
+                    result.composed_report, report_format=request.report_format,
+                )
+            except Exception as _e:  # pragma: no cover  — 보고서 흐름 영향 X
+                logger.warning("[orchestrator] type_fit skipped: %s", _e)
         # v8.2.9 — 깨진 시각물 약속 제거 (사용자 catch). 본문이 '(아래 관계도/지도/
         # 그래프)' 로 약속한 시각물이 실제로 없으면 그 문구를 지워 없는 그림을 가리키지
         # 않게 한다. 르포에서 stakeholder_map 누락이 빈발 — 르포에 우선 적용(일반
@@ -2587,11 +2601,15 @@ class Orchestrator:
                         dropped_types.append(dt)
             if self.telemetry is not None:
                 self.telemetry.record_chart_types(emitted_types)
+            # v8.6.4 — type-fit 이력도 같은 줄에 적는다 (JSONL additive). 어떤
+            # 오배치가 잦은지가 프롬프트 결정 트리 보강의 근거가 된다.
+            from src.visual.type_fit import refit_records
             append_run(
                 event=event_name,
                 mode=mode,
                 chart_types=emitted_types,
                 dropped_types=dropped_types,
+                refit=refit_records(refit_events),
             )
             if dropped_detail:
                 # 드롭 표면화 — 지금까지 이 손실은 bot.log 안에서만 보였다.

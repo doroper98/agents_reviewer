@@ -51,6 +51,8 @@ scenarios:
       - "시계열 (>12 포인트) → line"
       - "카테고리 >15개 → lollipop"
       - "구성비 합=100% → donut/stacked"
+      # v8.6.4 type-fit R1 — 이 오배치는 발행 직전 코드가 결정적으로 바로잡는다
+      - "라벨이 순서 있는 구간(연령대·금액대·기간대)이고 값이 건수 → histogram"
 
   - id: candle
     status: active
@@ -95,6 +97,8 @@ scenarios:
       - "카테고리 ≤2 → 본문 텍스트로 (CHART-AP-16)"
       - "카테고리 >6 → bar"
       - "시점 다중 → stacked 또는 stacked_area"
+      # v8.6.4 type-fit R2
+      - "라벨이 '부문 · 세부' 처럼 2층이고 잎 ≥6 → treemap"
 
   - id: gantt
     status: active
@@ -115,6 +119,8 @@ scenarios:
     negative_examples:
       - "시점이 연속 (>10 포인트) → stacked_area"
       - "단일 시리즈 → bar"
+      # v8.6.4 type-fit R2 — scenario 1개짜리 stacked 는 사실상 1층 구성이다
+      - "scenario 1개 + 라벨이 '부문 · 세부' 2층 → treemap"
 
   - id: heatmap
     status: active
@@ -125,6 +131,8 @@ scenarios:
     negative_examples:
       - "격자 <4×4 → 본문 또는 bar 매트릭스"
       - "1D 데이터 → bar/line"
+      # v8.6.4 type-fit R3 — 날짜를 격자 한 축으로 밀어 넣지 말 것
+      - "x 가 ISO 날짜 60일 이상이고 y 가 한 종류 → calendar_heat"
 
   - id: dual_line
     status: active
@@ -209,6 +217,8 @@ scenarios:
     negative_examples:
       - "시점 ≥3 → small_multiples 또는 line"
       - "단일 카테고리 → 본문"
+      # v8.6.4 type-fit R4 — 선 8개가 겹치면 실타래가 된다
+      - "항목 8개 이상 → range_bar mode:'before_after'"
 
   - id: small_multiples
     status: active

@@ -131,8 +131,11 @@
    (위·아래 빈 공간) 발생. 따라서 aspect-ratio 강제 폐기 — stage 는 SVG 의
    natural ratio (viewBox 비율 + width:100% + height:auto) 를 그대로 따른다.
 
-   donut 만 가독성 위해 max-width 280px (모바일에서 너무 커지지 않게). */
-.chart-stage-donut{ max-width: 320px; margin: 0 auto; }
+   v8.6.5 (사용자 catch — "가운데에만 몰려있고 좌우 빈 여백이 큰 게 고질적으로
+   안 고쳐진다"): donut 에만 있던 `max-width: 320px` 캡을 삭제했다. v4.2.1 에
+   원형만 그리던 시절의 캡인데, 지금 donut SVG 는 W=560 에 우측 범례가 붙은
+   가로형이라 320px 로 눌리고 가운데 정렬돼 카드 좌우가 비어 보였다. 이제 다른
+   스테이지와 같이 width:100% + natural ratio 를 따른다. */
 
 @media (max-width: 540px){
   .chart-card{padding: 14px 12px 12px}
