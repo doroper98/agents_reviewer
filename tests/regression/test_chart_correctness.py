@@ -916,3 +916,67 @@ def test_dot_matrix_guard_rejects_nonpositive_and_too_many() -> None:
 def test_dot_matrix_guard_rejects_single_segment() -> None:
     ok, _ = validate_chart_data("dot_matrix", [{"label": "전체", "value": 100.0}])
     assert not ok
+
+
+# ─── v8.6.1 — 표현 전환 옵션 가드 (CHART_REDESIGN_V8_6_PLAN §4) ─────────
+
+def test_bar_guard_accepts_prior_and_rejects_nonfinite_prior() -> None:
+    """§4.1 — 행 단위 `prior` 는 선택 필드, 값은 유한해야 한다."""
+    ok, reason = validate_chart_data("bar", [
+        {"label": "무료", "value": 38, "prior": 31},
+        {"label": "프로", "value": 22, "prior": 16},
+    ])
+    assert ok, reason
+    ok, _ = validate_chart_data("bar", [{"label": "무료", "value": 38, "prior": float("inf")}])
+    assert not ok
+
+
+def test_range_bar_guard_accepts_before_after_rows() -> None:
+    """§4.6 — before_after 는 *양방향* 이 정상 (개편 후 값이 줄어드는 것도 결과)."""
+    ok, reason = validate_chart_data("range_bar", [
+        {"label": "초대 흐름", "before": 14, "after": 6},
+        {"label": "첫 보드", "before": 19, "after": 9},
+        {"label": "정산", "before": 17, "after": 21},
+    ])
+    assert ok, reason
+
+
+def test_range_bar_guard_rejects_flat_before_after_and_mixed_forms() -> None:
+    ok, _ = validate_chart_data("range_bar", [
+        {"label": "a", "before": 10, "after": 10},
+        {"label": "b", "before": 19, "after": 9},
+        {"label": "c", "before": 17, "after": 21},
+    ])
+    assert not ok  # before == after → 덤벨이 점으로 붕괴
+    ok, _ = validate_chart_data("range_bar", [
+        {"label": "a", "low": 1, "high": 2},
+        {"label": "b", "before": 19, "after": 9},
+        {"label": "c", "low": 3, "high": 9},
+    ])
+    assert not ok  # 한 차트에 두 행 형식 혼용 금지
+
+
+def test_range_bar_guard_still_rejects_low_ge_high() -> None:
+    """기존 계약 보존 — low >= high 는 여전히 drop."""
+    ok, _ = validate_chart_data("range_bar", [
+        {"label": "a", "low": 20, "high": 10},
+        {"label": "b", "low": 1, "high": 2},
+        {"label": "c", "low": 3, "high": 9},
+    ])
+    assert not ok
+
+
+def test_option_guard_rejects_out_of_contract_texture() -> None:
+    """§4.1 — texture / orientation / unit 은 Literal·양수 계약."""
+    from src.visual.schemas import validate_chart_options
+    assert validate_chart_options("bar", {"texture": "capsule"})[0]
+    assert not validate_chart_options("bar", {"texture": "wave"})[0]
+    assert not validate_chart_options("bar", {"orientation": "sideways"})[0]
+    assert not validate_chart_options("bar", {"unit": 0})[0]
+
+
+def test_option_guard_passes_legacy_payloads_untouched() -> None:
+    """v8.6.0 이전 payload(옵션 없음)는 어떤 type 이든 통과 — 소급 안전."""
+    from src.visual.schemas import validate_chart_options
+    for ctype in ("bar", "line", "area", "scatter", "range_bar", "heatmap", "lollipop"):
+        assert validate_chart_options(ctype, {"type": ctype, "data": []})[0], ctype
