@@ -79,6 +79,17 @@ RULES: tuple[RefitRule, ...] = (
         "→ orientation:'vertical' (세로 칸)",
     ),
     RefitRule(
+        "R8", "bar", "gauge",
+        "항목이 1개뿐인 bar 인데 그 행이 target 을 들고 있음 (target > 0) → 반원 눈금 링. "
+        "target 이 없으면 no-op — 목표를 지어내지 않는다",
+    ),
+    RefitRule(
+        "R9", "sankey", "funnel",
+        "사슬형 sankey (노드마다 들어오고 나가는 링크가 하나씩, 2~6 노드) 이고 "
+        "*모든 노드가 스스로 value 를 들고 있으며* 그 수가 단계마다 줄어듦 → 단계 감소. "
+        "링크 값만으로는 첫 단계의 수를 알 수 없어(생성 금지) 노드 value 가 있을 때만 건다",
+    ),
+    RefitRule(
         "R6", "line", "line",
         "명시적 no-op — 일별 ≤40 ISO line 의 '점 하나 = 하루' 는 v8.6.1 렌더러가 "
         "이미 데이터로 판정한다. 여기서 손대면 이중 소유가 된다",
@@ -140,7 +151,16 @@ _VERTICAL_MAX_LABEL = 6
 _COUNTABLE_MAX = 500      # charts.js `isCountable` 과 같은 상한
 
 # annotation 레이어가 없는 target — 옮겨봐야 렌더되지 않으므로 떼어낸다.
-_NO_ANNOTATION_TARGETS: frozenset[str] = frozenset({"treemap", "calendar_heat"})
+_NO_ANNOTATION_TARGETS: frozenset[str] = frozenset({
+    "treemap", "calendar_heat",
+    # v8.7.0 — 세 신규 type 모두 annotation 레이어가 없다 (렌더러에 renderAnnotations 호출 없음)
+    "gauge", "funnel", "spectrum",
+})
+
+# v8.7.0 계약 상한 — 각 target 가드와 같은 값.
+_FUNNEL_MIN_STAGES, _FUNNEL_MAX_STAGES = 2, 6
+_FUNNEL_STAGE_MAXLEN = 14
+_GAUGE_LABEL_MAXLEN = 22
 
 
 # ─── 작은 도우미 ─────────────────────────────────────────────────────────
@@ -407,6 +427,103 @@ def _r5_bar_vertical(chart: dict) -> dict | None:
     return out
 
 
+def _r8_bar_to_gauge(chart: dict) -> dict | None:
+    """bar(단일 항목) → gauge. 그 행이 *스스로* target 을 들고 있을 때만.
+
+    목표가 없으면 no-op 이다 — 목표를 지어내는 순간 WRITE-AP-5 이고, "값 하나"
+    만으로는 gauge 의 링(=목표)이 성립하지 않는다.
+    """
+    rows = chart.get("data")
+    if not isinstance(rows, list) or len(rows) != 1:
+        return None
+    row = rows[0]
+    if not isinstance(row, dict):
+        return None
+    value = _num(row.get("value"))
+    target = _num(row.get("target"))
+    if value is None or target is None or target <= 0:
+        return None
+    data: dict = {"value": value, "target": target}
+    label = _text(row.get("label"))
+    if label:
+        data["label"] = label[:_GAUGE_LABEL_MAXLEN]
+    unit_label = _text(chart.get("unit_label"))
+    if unit_label:
+        data["unit_label"] = unit_label[:8]
+    return _rebuild_payload(chart, target="gauge", data=data)
+
+
+def _r9_sankey_to_funnel(chart: dict) -> dict | None:
+    """사슬형 sankey → funnel. 노드가 *스스로* 수를 들고 있을 때만.
+
+    사슬(A→B→C)에서 링크 값은 '두 단계 사이를 통과한 수' 라, 첫 단계에 몇 명이
+    있었는지는 데이터에 없다. 그 수를 링크 값으로 대신 채우면 값을 만들어내는
+    것이고(안전 규칙 ①), 첫 노드를 빼면 데이터를 버리는 것이다(안전 규칙 ②).
+    그래서 노드마다 `value` 가 실려 있을 때만 — 그때는 옮겨 담기만 하면 된다.
+    """
+    d = chart.get("data")
+    if not isinstance(d, dict):
+        return None
+    nodes, links = d.get("nodes"), d.get("links")
+    if not isinstance(nodes, list) or not isinstance(links, list):
+        return None
+    if not (_FUNNEL_MIN_STAGES <= len(nodes) <= _FUNNEL_MAX_STAGES):
+        return None
+    if len(links) != len(nodes) - 1:
+        return None
+
+    by_id: dict[str, dict] = {}
+    for raw in nodes:
+        if not isinstance(raw, dict):
+            return None
+        nid = _text(raw.get("id"))
+        if not nid or nid in by_id:
+            return None
+        by_id[nid] = raw
+
+    out_edges: dict[str, str] = {}
+    in_count: dict[str, int] = {}
+    for raw in links:
+        if not isinstance(raw, dict):
+            return None
+        src, tgt = _text(raw.get("source")), _text(raw.get("target"))
+        if src not in by_id or tgt not in by_id or src == tgt:
+            return None
+        if src in out_edges:
+            return None                       # 분기 — 사슬이 아니다 (sankey 가 맞다)
+        out_edges[src] = tgt
+        in_count[tgt] = in_count.get(tgt, 0) + 1
+    if any(c > 1 for c in in_count.values()):
+        return None                           # 합류 — 사슬이 아니다
+    heads = [nid for nid in by_id if nid not in in_count]
+    if len(heads) != 1:
+        return None
+
+    chain: list[str] = [heads[0]]
+    while chain[-1] in out_edges:
+        chain.append(out_edges[chain[-1]])
+    if len(chain) != len(by_id):
+        return None                           # 끊긴 조각이 있다
+
+    stages: list[dict] = []
+    prev: float | None = None
+    for nid in chain:
+        node = by_id[nid]
+        label = _text(node.get("label"))
+        value = _num(node.get("value"))
+        if not label or len(label) > _FUNNEL_STAGE_MAXLEN:
+            return None
+        if value is None or value < 0:
+            return None                       # 노드가 수를 안 들고 있으면 만들지 않는다
+        if prev is not None and value > prev:
+            return None                       # 늘어나는 단계 — funnel 이 아니다
+        prev = value
+        stages.append({"stage": label, "count": value})
+    if sum(st["count"] for st in stages) <= 0:
+        return None
+    return _rebuild_payload(chart, target="funnel", data=stages)
+
+
 def _r7_gantt_zero_duration(chart: dict) -> bool:
     """구간 길이가 전부 0 인 gantt 인가 (CHART-AP-15 — 변환은 안 하고 세기만)."""
     rows = chart.get("data")
@@ -445,7 +562,11 @@ def refit_chart(chart: dict, *, report_format: str = "standard") -> tuple[dict, 
         return chart, None
 
     if ctype == "bar":
-        for rule_id, fn in (("R1", _r1_bar_to_histogram), ("R5", _r5_bar_vertical)):
+        for rule_id, fn in (
+            ("R8", _r8_bar_to_gauge),
+            ("R1", _r1_bar_to_histogram),
+            ("R5", _r5_bar_vertical),
+        ):
             candidate = fn(chart)
             if candidate is not None and _accept(candidate):
                 return candidate, rule_id
@@ -461,6 +582,12 @@ def refit_chart(chart: dict, *, report_format: str = "standard") -> tuple[dict, 
         candidate = _r3_heatmap_to_calendar(chart)
         if candidate is not None and _accept(candidate):
             return candidate, "R3"
+        return chart, None
+
+    if ctype == "sankey":
+        candidate = _r9_sankey_to_funnel(chart)
+        if candidate is not None and _accept(candidate):
+            return candidate, "R9"
         return chart, None
 
     if ctype == "slope":

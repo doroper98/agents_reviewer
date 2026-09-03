@@ -1436,6 +1436,110 @@ class CalendarHeatGuard(BaseModel):
         return self
 
 
+# ─── v8.7.0 — 2차 흡수 3종 (CHART_REDESIGN_V8_6_PLAN §9) ──────────────
+
+
+class GaugeGuard(BaseModel):
+    """gauge: 단일 KPI 반원 눈금 링 (지지율·달성률·가동률).
+
+    `{value, target, label?, unit_label?}`. 항목이 하나이고 견줄 목표가 하나일
+    때만 — 여러 항목을 목표선과 함께 줄 세우는 것은 bullet 이다. target 은 링
+    전체(눈금 100개)를 뜻하므로 양수 필수.
+    """
+
+    value: float
+    target: float = Field(gt=0)
+    label: str | None = Field(default=None, max_length=22)
+    unit_label: str | None = Field(default=None, max_length=8)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "GaugeGuard":
+        for fld in ("value", "target"):
+            if not math.isfinite(getattr(self, fld)):
+                raise ValueError(f"CHART-AP-3 가드: gauge {fld} NaN/inf")
+        return self
+
+
+class SpectrumPoint(BaseModel):
+    """spectrum 위의 점 한 개 — 값은 *수량이 아니라 위치* (-1 ~ +1)."""
+
+    label: str = Field(min_length=1, max_length=12)
+    value: float = Field(ge=-1, le=1)
+    emphasis: bool = False
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_finite(self) -> "SpectrumPoint":
+        if not math.isfinite(self.value):
+            raise ValueError(f"CHART-AP-3 가드: spectrum value NaN/inf — {self.label}")
+        return self
+
+
+class SpectrumRow(BaseModel):
+    """spectrum 한 줄 — 양극 축 하나. 점이 6개를 넘으면 라벨이 붙어 못 읽는다."""
+
+    left_label: str = Field(min_length=1, max_length=16)
+    right_label: str = Field(min_length=1, max_length=16)
+    points: list[SpectrumPoint] = Field(min_length=1, max_length=5)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class SpectrumGuard(BaseModel):
+    """spectrum: 양극 축 위 성향 배치 (정책 성향·국가 입장·진영 스펙트럼).
+
+    `{rows:[{left_label, right_label, points:[{label, value:-1..1, emphasis?}]}]}`
+    2~6행. 축 하나만 있으면 문장이 낫고, 7행을 넘으면 표가 낫다. 값이 *수량* 이면
+    이 type 이 아니다 (bar / diverging_bar).
+    """
+
+    rows: list[SpectrumRow] = Field(min_length=2, max_length=6)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class FunnelRow(BaseModel):
+    """funnel 단계 하나 — 이름 + 그 단계에 남은 수."""
+
+    stage: str = Field(min_length=1, max_length=14)
+    count: float = Field(ge=0)
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_count(self) -> "FunnelRow":
+        if not math.isfinite(self.count):
+            raise ValueError(f"CHART-AP-3 가드: funnel count NaN/inf — {self.stage}")
+        return self
+
+
+class FunnelGuard(BaseModel):
+    """funnel: 단계별 감소 (지원→서류→면접→최종, 방문→가입→결제).
+
+    `[{stage, count}]` 2~6 단계. 같은 모집단이 단계마다 *줄어드는* 흐름이므로
+    수가 늘어나는 단계가 있으면 funnel 이 아니다 (그건 sankey 의 분배이거나
+    bar 의 비교다). 합이 0 이면 그릴 것이 없다.
+    """
+
+    data: list[FunnelRow] = Field(min_length=2, max_length=6)
+
+    @model_validator(mode="after")
+    def validate_monotonic(self) -> "FunnelGuard":
+        if sum(r.count for r in self.data) <= 0:
+            raise ValueError("CHART-AP-3 가드: funnel 단계 수 합이 0")
+        for prev, cur in zip(self.data, self.data[1:]):
+            if cur.count > prev.count:
+                raise ValueError(
+                    f"CHART-AP-3 가드: funnel 단계가 늘어남 — "
+                    f"'{prev.stage}'({prev.count}) → '{cur.stage}'({cur.count}). "
+                    "감소 흐름이 아니면 funnel 이 아니다"
+                )
+        return self
+
+
 # ─── Type → Guard 매핑 ────────────────────────────────────────────────
 
 
@@ -1482,6 +1586,10 @@ _TYPE_TO_GUARD: dict[str, type[BaseModel]] = {
     # v8.6.3 — 분포·달력 2종
     "histogram":    HistogramGuard,
     "calendar_heat": CalendarHeatGuard,
+    # v8.7.0 — 2차 흡수 3종 (단일 KPI / 양극 성향 / 단계 감소)
+    "gauge":        GaugeGuard,
+    "spectrum":     SpectrumGuard,
+    "funnel":       FunnelGuard,
 }
 
 
@@ -1592,6 +1700,18 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
                 guard(**data)
             else:
                 return False, "tree 는 {root:{...}} dict 형식 필요"
+        elif chart_type == "gauge":
+            # {value, target, label?, unit_label?} — dict 계약 (CHART-AP-38)
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "gauge 는 {value, target} dict 형식 필요"
+        elif chart_type == "spectrum":
+            # {rows:[{left_label, right_label, points:[...]}]} — dict 계약
+            if isinstance(data, dict):
+                guard(**data)
+            else:
+                return False, "spectrum 는 {rows:[...]} dict 형식 필요"
         elif chart_type == "stakeholder_map":
             # {nodes: [{id, label, col, flag, role, ...}], edges|links: [{source, target, type, ...}]}
             # v8.2.10 — dict 형식인데 분기 누락으로 *항상* 아래 list[dict] else 에 떨어져
@@ -1604,7 +1724,7 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
         else:
             # bar / line / donut / bubble / heatmap / choropleth / scatter /
             # lollipop / waterfall / range_bar / diverging_bar / pyramid /
-            # dot_matrix — list[dict]
+            # dot_matrix / histogram / funnel — list[dict]
             if isinstance(data, list):
                 guard(data=data)  # type: ignore[arg-type]
             else:
@@ -1629,9 +1749,11 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
 class BarOptions(BaseModel):
     """bar payload 옵션 (전부 선택)."""
 
-    texture: Literal["tick", "dot", "capsule", "rung"] | None = None
+    texture: Literal["tick", "dot", "capsule", "rung", "pictogram"] | None = None
     orientation: Literal["horizontal", "vertical"] | None = None
     unit: float | None = None
+    # v8.7.0 — texture:"pictogram" 일 때 어떤 글리프를 셀 것인가 (기본 person).
+    glyph: Literal["person", "building", "vehicle", "circle"] | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -1691,6 +1813,26 @@ class HeatmapOptions(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+class BumpOptions(BaseModel):
+    """`layout:"strip"` 이면 선 대신 순위 격자 (v8.7.0 §9)."""
+
+    layout: Literal["line", "strip"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class StackedOptions(BaseModel):
+    """`texture:"rung"` 이면 세로 칸 적층 (v8.7.0 §9).
+
+    한글 라벨 게이트(이름 ≤6자·시나리오 ≤8)는 가드가 아니라 **렌더러가 가로로
+    강등** 한다 — bar 의 rung 과 같은 정책 (판독 불가 배치만 막고 차트는 살린다).
+    """
+
+    texture: Literal["bar", "rung"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
 _TYPE_TO_OPTION_GUARD: dict[str, type[BaseModel]] = {
     "bar": BarOptions,
     "lollipop": LollipopOptions,
@@ -1699,6 +1841,11 @@ _TYPE_TO_OPTION_GUARD: dict[str, type[BaseModel]] = {
     "scatter": ScatterOptions,
     "range_bar": RangeBarOptions,
     "heatmap": HeatmapOptions,
+    # v8.7.0 — 표현 옵션 3종 (bump 순위 격자 / stacked 세로 칸 / bar 그림 글리프는
+    # BarOptions 확장). funnel 의 `unit` 도 렌더러가 산출하므로 옵션에 두지 않는다.
+    "bump": BumpOptions,
+    "stacked": StackedOptions,
+    "stacked_bar": StackedOptions,
 }
 
 
@@ -1768,6 +1915,11 @@ _DICT_DATA_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     "tree": ("root",),
     # v8.6.3 — 일별 강도 달력
     "calendar_heat": ("values",),
+    # v8.7.0 — 단일 KPI / 양극 성향 (funnel 은 list 계약이라 여기 없다).
+    # gauge 는 `target` 만 요구한다 — `value` 는 0 이 정상값이라 truthy 검사에
+    # 걸리면 안 된다 (달성 0% 인 KPI 도 그려야 한다).
+    "gauge": ("target",),
+    "spectrum": ("rows",),
 }
 
 # 양형 type — list 계약과 dict 계약을 모두 받는다 (validate_chart_data 와 동일).
@@ -1785,6 +1937,8 @@ _MIN_LEN_REQUIREMENTS: dict[str, tuple[str, int]] = {
     "sankey": ("nodes", 2),
     # v8.6.2 — 묶음이 하나뿐이면 treemap 이 아니다 (bar/donut 자리)
     "treemap": ("children", 2),
+    # v8.7.0 — 축이 하나뿐이면 문장이 낫다
+    "spectrum": ("rows", 2),
 }
 
 

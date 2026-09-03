@@ -31,14 +31,15 @@ def _chart(cid, ctype, data=None):
 def test_b_plan_types_cover_consumer_unknown_charts():
     """계약 §5 B안 — consumer 렌더 게이트가 모르는 복잡 차트는 prerendered_svg 폴백.
 
-    v8.6.2 — treemap / tree 추가, v8.6.3 — histogram / calendar_heat 추가 (신규
-    type 이라 osint 쪽 SUPPORTED_CHART_TYPES 에 없다. 폴백이 없으면 영상에서
-    *무경고* 로 사라진다). "network" 는 v7.9.17 에 폐기된 type 이지만 옛 번들
-    호환을 위해 집합에 남긴다.
+    v8.6.2 — treemap / tree 추가, v8.6.3 — histogram / calendar_heat 추가,
+    v8.7.0 — gauge / spectrum / funnel 추가 (신규 type 이라 osint 쪽
+    SUPPORTED_CHART_TYPES 에 없다. 폴백이 없으면 영상에서 *무경고* 로 사라진다).
+    "network" 는 v7.9.17 에 폐기된 type 이지만 옛 번들 호환을 위해 집합에 남긴다.
     """
     assert sp.B_PLAN_CHART_TYPES == {
         "network", "choropleth", "sankey", "treemap", "tree",
         "histogram", "calendar_heat",
+        "gauge", "spectrum", "funnel",
     }
 
 

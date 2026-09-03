@@ -43,8 +43,10 @@ def test_registry_loads_without_error() -> None:
 
 
 def test_registry_distribution_matches_plan_9_3() -> None:
-    """v8.6.3 정본 분포 — safe 11 / guarded 21 / experimental 1 (총 33).
+    """v8.7.0 정본 분포 — safe 11 / guarded 24 / experimental 1 (총 36).
 
+    v8.7.0 변경 (CHART_REDESIGN_V8_6_PLAN §9 — Phase 5): gauge(단일 KPI 반원 링) +
+    spectrum(양극 축 성향) + funnel(단계 감소) 을 guarded 로 신설.
     v8.6.3 변경 (CHART_REDESIGN_V8_6_PLAN §5.3/§5.4): histogram(구간 도수) +
     calendar_heat(일별 강도 달력) 을 guarded 로 신설.
     v8.6.2 변경 (§5.1/§5.2): treemap 을 experimental →
@@ -67,9 +69,9 @@ def test_registry_distribution_matches_plan_9_3() -> None:
     total = list_all_types()
 
     assert len(safe) == 11, f"safe types: 11 expected, got {len(safe)}: {safe}"
-    assert len(guarded) == 21, f"guarded types: 21 expected, got {len(guarded)}: {guarded}"
+    assert len(guarded) == 24, f"guarded types: 24 expected, got {len(guarded)}: {guarded}"
     assert len(experimental) == 1, f"experimental types: 1 expected, got {len(experimental)}"
-    assert len(total) == 33, f"total: 33 expected, got {len(total)}"
+    assert len(total) == 36, f"total: 36 expected, got {len(total)}"
 
 
 def test_registry_safe_types_match_plan_9_3() -> None:
@@ -86,7 +88,7 @@ def test_registry_safe_types_match_plan_9_3() -> None:
 
 
 def test_registry_guarded_types_match_plan_9_3() -> None:
-    """v8.6.3 정본 — guarded 21종 (v8.6.2 treemap/tree + v8.6.3 histogram/calendar_heat)."""
+    """v8.7.0 정본 — guarded 24종 (v8.6.2~3 의 4종 + v8.7.0 gauge/spectrum/funnel)."""
     expected_guarded = {
         "choropleth", "sankey",
         # v5.2.14 — FT/Economist 스타일 신규 7종
@@ -102,6 +104,8 @@ def test_registry_guarded_types_match_plan_9_3() -> None:
         "treemap", "tree",
         # v8.6.3 — 분포·달력 2종
         "histogram", "calendar_heat",
+        # v8.7.0 — 2차 흡수 3종 (단일 KPI / 양극 성향 / 단계 감소)
+        "gauge", "spectrum", "funnel",
     }
     assert set(list_guarded_types()) == expected_guarded
 
@@ -117,9 +121,9 @@ def test_registry_distribution_section_consistent() -> None:
     reg = load_registry()
     declared = reg.get("distribution", {})
     assert declared.get("safe") == 11
-    assert declared.get("guarded") == 21
+    assert declared.get("guarded") == 24
     assert declared.get("experimental") == 1
-    assert reg.get("total") == 33
+    assert reg.get("total") == 36
 
 
 def test_each_capability_has_required_fields() -> None:

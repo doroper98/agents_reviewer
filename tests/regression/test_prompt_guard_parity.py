@@ -157,6 +157,29 @@ PROMPT_SHAPES: dict[str, list] = {
         "metric_label": "등락 폭",
         "unit_label": "%",
     }],
+    # v8.7.0 §9 — 단일 KPI 반원 눈금 링
+    "gauge": [{"value": 42.1, "target": 50, "label": "재생에너지 비중", "unit_label": "%"}],
+    # v8.7.0 §9 — 양극 축 성향 배치
+    "spectrum": [{
+        "rows": [
+            {"left_label": "긴축", "right_label": "완화", "points": [
+                {"label": "연준", "value": -0.35, "emphasis": True},
+                {"label": "ECB", "value": 0.1},
+                {"label": "한은", "value": 0.4},
+            ]},
+            {"left_label": "개방", "right_label": "보호", "points": [
+                {"label": "EU", "value": -0.2},
+                {"label": "미국", "value": 0.65},
+            ]},
+        ],
+    }],
+    # v8.7.0 §9 — 단계별 감소 (뒤 단계 ≤ 앞 단계)
+    "funnel": [[
+        {"stage": "신청", "count": 12400},
+        {"stage": "서류 통과", "count": 5100},
+        {"stage": "면접", "count": 1200},
+        {"stage": "최종 선발", "count": 310},
+    ]],
     # v8.6.2 §5.1 — 2층 구성 (부문 → 세부)
     "treemap": [{
         "children": [
@@ -297,6 +320,9 @@ def test_empty_data_never_renders() -> None:
 PROMPT_OPTIONS: dict[str, list[dict]] = {
     "bar": [
         {"unit_label": "건"},
+        # v8.7.0 — 그림 글리프 (한 글리프 = unit)
+        {"texture": "pictogram"}, {"texture": "pictogram", "glyph": "building"},
+        {"glyph": "person"}, {"glyph": "vehicle"}, {"glyph": "circle"},
         {"orientation": "vertical"},
         {"texture": "tick"}, {"texture": "dot"},
         {"texture": "capsule"}, {"texture": "rung"},
@@ -309,6 +335,9 @@ PROMPT_OPTIONS: dict[str, list[dict]] = {
     "range_bar": [{"mode": "before_after"}, {"mode": "range"},
                   {"low_label": "최저", "high_label": "최고"}],
     "heatmap": [{"cells": "grid"}],
+    # v8.7.0 §9 — 표현 옵션 3종
+    "bump": [{"layout": "strip"}, {"layout": "line"}],
+    "stacked": [{"texture": "rung"}, {"texture": "bar"}],
 }
 
 REJECTED_OPTIONS: list[tuple[str, dict]] = [
@@ -321,6 +350,10 @@ REJECTED_OPTIONS: list[tuple[str, dict]] = [
     ("area", {"fill": "solid"}),
     ("range_bar", {"mode": "delta"}),
     ("heatmap", {"cells": "round-ish"}),
+    # v8.7.0 — 신규 옵션 3종의 계약 밖 값
+    ("bar", {"glyph": "robot"}),
+    ("bump", {"layout": "grid"}),
+    ("stacked", {"texture": "tick"}),
 ]
 
 

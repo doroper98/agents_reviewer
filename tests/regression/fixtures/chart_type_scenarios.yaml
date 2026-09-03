@@ -18,7 +18,7 @@
 #   expected_chart_type — composer 가 emit 해야 할 type (id 와 동일하나 명시)
 #   negative_examples   — 헷갈리지만 *이 type 이 아닌* 시나리오 (decision tree 가드용)
 #
-# 36종 = production 35 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
+# 39종 = production 38 chart types + 1 embedded_map (KNOWN_CHART_TYPES 와 1:1).
 # 7종 (scatter / stacked_area / lollipop / slope / small_multiples / waterfall /
 # range_bar) 가 v5.3.0 에서 FT/Economist 스타일로 신규 활성화. v7.0.0 에서
 # bump / bullet / connected_scatter 3종, v7.5.0 에서 combo / diverging_bar /
@@ -447,13 +447,50 @@ scenarios:
       - "일반 보고서(르포 아님)에서는 사용 금지 → network"
       - "흐름 분해(자금/지분) → sankey"
 
+  # ─────────────────────────────────────────────────────────────
+  # v8.7.0 — 2차 흡수 3종 (단일 KPI / 양극 성향 / 단계 감소)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: gauge
+    status: active
+    data_shape: "{value, target, label?, unit_label?} — 값 하나 + 목표 하나"
+    scenario: "지지율·달성률·가동률·접종률처럼 *하나의 수치가 목표에 얼마나 닿았나* 를 반원 100 눈금 링으로. 남은 눈금이 갈 길"
+    sample_prompt: "정부 재생에너지 2030 목표 대비 현재 달성률 정리해줘"
+    expected_chart_type: gauge
+    negative_examples:
+      - "항목이 여럿이고 각각 목표가 있음 → bullet"
+      - "목표 없이 크기 비교만 → bar"
+      - "구성비 → donut"
+
+  - id: spectrum
+    status: active
+    data_shape: "{rows:[{left_label, right_label, points:[{label, value:-1..1, emphasis?}]}]} 2~6행"
+    scenario: "긴축↔완화·개방↔보호처럼 양극 축 위에 국가·정당·기관의 *입장 위치* 를 앉힐 때. 값은 수량이 아니라 위치"
+    sample_prompt: "주요국 중앙은행 통화정책 성향 어디쯤인지 비교해줘"
+    expected_chart_type: spectrum
+    negative_examples:
+      - "찬반 *수치* 대립 → diverging_bar"
+      - "두 변수 좌표 → scatter"
+      - "관계망 → stakeholder_map(르포) 또는 본문"
+
+  - id: funnel
+    status: active
+    data_shape: "[{stage, count}] 2~6 단계, 뒤 단계 ≤ 앞 단계"
+    scenario: "지원→서류→면접→최종, 신청→심사→집행처럼 같은 모집단이 단계마다 줄어드는 흐름. 단계 사이 전환율이 주인공"
+    sample_prompt: "청년 지원금 신청부터 실제 지급까지 단계별로 얼마나 걸러졌는지 봐줘"
+    expected_chart_type: funnel
+    negative_examples:
+      - "N→M 분배 (매출→사업부→비용) → sankey"
+      - "증감 누적 분해 → waterfall"
+      - "단계 수가 늘어남 → funnel 아님 (bar)"
+
 # ─────────────────────────────────────────────────────────────
 # 메타데이터 — test_chart_type_diversity.py 가 검증
 # ─────────────────────────────────────────────────────────────
 
 metadata:
-  total_scenarios: 36
-  active_count: 36     # v8.6.3: histogram/calendar_heat 추가. v8.6.2: treemap/tree 추가. v8.0.0: stakeholder_map + 결정적주입 3종(combo_candle/iv_skew/indicator). v7.9.17: network 삭제(CHART-AP-36). 35 chart types + map
+  total_scenarios: 39
+  active_count: 39     # v8.7.0: gauge/spectrum/funnel 추가. v8.6.3: histogram/calendar_heat 추가. v8.6.2: treemap/tree 추가. v8.0.0: stakeholder_map + 결정적주입 3종(combo_candle/iv_skew/indicator). v7.9.17: network 삭제(CHART-AP-36). 35 chart types + map
   pending_count: 0
   ssot_for:
     - "각 chart type 의 자연스러운 사용 시나리오"

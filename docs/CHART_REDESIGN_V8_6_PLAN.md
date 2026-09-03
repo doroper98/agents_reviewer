@@ -1,10 +1,11 @@
 ---
 tier: 2
-status: in progress (Phase 0~2c v8.6.0~v8.6.4 · 사다리 색 전환 v8.6.5 · Phase 3·4 v8.6.6 완료 · Phase 5 v8.7.0 대기)
+status: landed (Phase 0~2c v8.6.0~v8.6.4 · 사다리 색 전환 v8.6.5 · Phase 3·4 v8.6.6 · Phase 5 v8.7.0 완료)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.6
+last_synced_with: v8.7.0
 ssot_for:
+  - "2차 흡수 3종 (gauge / spectrum / funnel) 렌더 스펙 + 표현 옵션 3종 (bump strip / stacked rung / bar pictogram) — §9"
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
   - "기존 렌더러 기본 표현 전환 (캡슐·둥근 캔들·잉크 사다리·칸 질감·읽는 법 캡션) 규칙"
@@ -652,6 +653,53 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 착수 조건: Phase 2c 계측 30건에서 R8/R9 후보(단일 KPI bar, 사슬형 sankey) 적중이 관찰되면
 우선. 아니면 usage_log starvation 과 무관하게 v8.7.0 으로 진행 (사용자 "폭넓게" 지시).
 
+### §9.1 랜딩 기록 (v8.7.0, 2026-09-03)
+
+표의 6항목을 전부 랜딩했다. type 34종 · registry safe 11 / guarded 24 / experimental 1
+(총 36) · 갤러리 47 스냅샷 키(신규 6). 스냅샷은 기존 41키 불변을 `--diff-report` 로
+증명한 뒤 신규 키만 추가 기록했다.
+
+**구현 판단 4건 (계획서와 다르게 결정한 것).**
+
+① **gauge 의 목표 초과분은 링을 부풀리지 않는다.** 채움을 100 눈금으로 클램프하고
+초과분(≤100)을 링 *바깥* 반지름에 '두 번째 바퀴' 로 그린다. 링을 늘리면 같은 그림에서
+"목표 = 링 전체" 라는 약속이 깨지고, 100% 와 130% 의 링이 구분되지 않는다.
+
+② **spectrum 의 라벨은 두 레인 + 오른쪽 밀어내기.** 처음엔 두 층 배치만 뒀는데 시험
+렌더에서 점 4개가 몰리면 세 번째 라벨이 첫 층으로 되돌아와 겹쳤다 (CHART-AP-33 재현).
+지금은 레인마다 마지막 라벨의 오른쪽 끝을 들고 있다가 *덜 밀리는 레인* 으로 밀어 넣어
+겹침이 구조적으로 0 이다. 점은 제자리에 두고 연결선이 소속을 말한다.
+
+③ **R9(사슬형 sankey → funnel) 은 노드가 스스로 `value` 를 들고 있을 때만 건다.**
+사슬 `A -v1-> B -v2-> C` 에서 링크 값은 *두 단계 사이를 통과한 수* 라, 첫 단계에 몇이
+있었는지는 데이터에 없다. 링크 값으로 첫 단계를 채우면 값을 만들어내는 것이고(§6.2 안전
+규칙 ①), 첫 노드를 빼면 데이터를 버리는 것이다(안전 규칙 ②). 그래서 노드 `value` 가
+있을 때만 옮겨 담는다 — 적중률은 낮지만 *틀린 funnel* 을 만들지 않는다. (적중이 0 으로
+관찰되면 프롬프트 결정 트리의 funnel 분기가 1선으로 계속 일한다.)
+
+④ **funnel 가드는 단계가 늘어나면 거절한다.** 감소가 이 type 의 정의라, 늘어나는
+단계를 허용하면 전환율이 100% 를 넘는 그림이 나온다. 늘어나는 흐름은 sankey(분배)나
+bar(비교) 자리다.
+
+### §9.2 `parallel_coords` (L20) — **기각** (2026-09-03 시험 렌더 후)
+
+갤러리 밖 임시 페이지에 5축 × 5국 평행좌표를 *가로 라벨* 과 *세로쓰기(rotate -90)* 두
+방식으로 시험 렌더해 판단했다 (랜딩 코드 없음).
+
+- **한글 축 라벨이 구조적으로 안 맞는다.** '제조업 부가가치 비중'(11자 ≈ 105px)이
+  720px 캔버스의 축 간격(5축이면 ≈150px)을 거의 채운다 — 6축부터는 확실히 충돌한다.
+  세로쓰기는 한글 음절 블록이 옆으로 누워 판독성이 크게 떨어진다(라틴과 다르다).
+  참고 자료의 L20 이 예뻐 보이는 이유는 축 이름이 짧은 영문이기 때문이고, 이는
+  §8 의 network·force 기각 논리(같은 조건을 우리 데이터가 만족하지 않는다)와 같다.
+- **축마다 스케일이 달라 교차점에 수량적 의미가 없다.** 읽는 법 캡션으로도 구제되지
+  않는다 — §10.1 의 "칸 하나가 정해진 수량" 문법과 어긋나는 유일한 후보였다.
+- **같은 질문에 더 정직한 자리가 이미 있다.** 국가 × 지표 비교는 heatmap(둥근 칸 +
+  숫자 직독), 같은 구조 그룹 비교는 small_multiples, 축 위 위치는 v8.7.0 의 spectrum.
+- 5줄만 넘어도 실타래가 된다 — CHART-AP-25/36 이 폐기한 hairball 과 같은 클래스.
+
+재검토 조건: 축 이름을 2~4자로 줄일 수 있는 데이터(예: 연도·분기·등급)가 반복 관찰되고,
+축 3개 이하로 고정할 수 있을 때. 그전에는 추가하지 않는다.
+
 ---
 
 ## §10. Opus 실행 체크리스트 (순서 고정)
@@ -743,9 +791,27 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 - [x] `reviewer_osint_q_a` 통지(n) — 상위 세션이 직접 작성. `threads/2026_09_03_125614_agent_reviewer_bot_n_02.md` (status posted, `ack_required: yes` — §7.3 초안의 `no` 와 달리 렌더 게이트 폴백 소비 여부·재렌더 규약 채택 여부 2건 확인이 필요해 상향). ack 수신 후 종결 섹션 작성.
 - [x] compare 페이지 사용자 게이트 — 2026-09-03 사용자 검토: 지적 5건(bar 칸 단위·donut 여백/구별·diverging_bar/pyramid 중앙·area 그라데이션) v8.6.5 반영 후 "잘 보이네" 로 통과. Pages 배포 트리거 누락(PR #107)도 같은 검토에서 발견·수정.
 
-**Phase 5 (v8.7.0)** — §9 표 순서 (gauge → spectrum → funnel → 옵션 3종), 각각 절차 ①~⑫,
-R8/R9 를 type_fit 에 추가.
+**Phase 5 (v8.7.0)** — 완료 (2026-09-03). §9 표 순서 (gauge → spectrum → funnel → 옵션 3종)
+- [x] 신규 3종 절차 ①~⑫ — `RENDERERS`(34종) · 가드 3종 + `_TYPE_TO_GUARD` + `validate_chart_data`
+      dict 분기 2종(gauge/spectrum) + `_DICT_DATA_REQUIREMENTS`(gauge 는 `target` 만 — `value` 0 이
+      정상값이라 truthy 검사에 걸리면 안 된다) + `_MIN_LEN_REQUIREMENTS["spectrum"]`
+- [x] registry 11/21/1/33 → **11/24/1/36** · `test_capability_registry.py` 4곳(카운트·guarded 집합·
+      distribution 섹션·docstring) · `usage_log.KNOWN_CHART_TYPES` · `chart_type_scenarios.yaml`(39)
+- [x] composer 스키마 3줄 + 결정 트리 3분기(3. gauge/funnel · 5. spectrum) + emit X 규칙 3줄 +
+      옵션 안내(bar pictogram·glyph / bump layout / stacked texture) · `PROMPT_SHAPES` · `PROMPT_OPTIONS`
+      · `REJECTED_OPTIONS` · `svg_prerender.B_PLAN_CHART_TYPES` · `report_bundle_v1.md §9` pin(additive)
+- [x] 옵션 3종 — `BarOptions.texture` 에 `pictogram` + `glyph` Literal 4종 · `BumpOptions.layout` ·
+      `StackedOptions.texture/unit`. 미지정이면 v8.6.6 과 byte-equal (기존 41 스냅샷 키 불변으로 증명)
+- [x] `type_fit` R8(bar+target→gauge) · R9(사슬형 sankey→funnel, 노드 value 필수) + 회귀 12종
+- [x] 갤러리 fixture 6종(`gauge`/`spectrum`/`funnel` + `bump:strip`/`stacked:rung`/`bar:pictogram`)
+      + 스냅샷 baseline 신규 6키만 추가
+- [x] 3테마(midnight_indigo / editorial_cream / reportage_noturno) 헤드리스 캡처 + 결함 스캐너
+      (잘림·라벨 겹침·빈 프레임·읽는 법 캡션·콘솔 경고) **47카드 × 3테마 결함 0건**.
+      시험 렌더에서 잡아 고친 것 3건 — spectrum 라벨 겹침(§9.1 ②) · gauge 초과 눈금 간격 ·
+      stacked rung 열 간격/캔버스 여백
+- [x] `parallel_coords` 시험 렌더 후 **기각** (§9.2 — 한글 축 라벨·스케일 무의미·대체 type 존재)
+- [x] MONO_THEME_GUIDE §10.1 v8.7.0 어휘(⑧~⑫) · CLAUDE.md 34종 · README · CHANGELOG · 문서 헤더
 
-**완료 기준 (전체)**: 회귀 전체 pass · 스냅샷 변경 type = 의도 목록과 일치 · 갤러리 36종
+**완료 기준 (전체)**: 회귀 전체 pass · 스냅샷 변경 type = 의도 목록과 일치 · 갤러리 38종
 unknown/예외 0 · registry 36 · osint 스레드 posted · VM 반영 안내 (playbook §1 블록 +
 `sudo systemctl restart agents-reviewer.service`) 복사용 제시.

@@ -1178,3 +1178,113 @@ def test_distribution_types_pass_template_gate() -> None:
     ]})
     assert chart_renderable({"type": "calendar_heat", "data": {"values": _cal_days(70)}})
     assert not chart_renderable({"type": "calendar_heat", "data": {"values": []}})
+
+
+# ─── v8.7.0 — 2차 흡수 3종 (CHART_REDESIGN_V8_6_PLAN §9) ─────────────────
+
+
+def test_gauge_guard_accepts_single_kpi_against_target() -> None:
+    ok, reason = validate_chart_data(
+        "gauge", {"value": 42.1, "target": 50, "label": "재생에너지 비중", "unit_label": "%"})
+    assert ok, reason
+    # 달성 0% 도 정상 — 값이 0 이라고 차트가 사라지면 안 된다.
+    assert validate_chart_data("gauge", {"value": 0, "target": 50})[0]
+    # 목표 초과도 정상 (렌더러가 링 바깥에 초과분을 따로 그린다)
+    assert validate_chart_data("gauge", {"value": 61, "target": 50})[0]
+
+
+def test_gauge_guard_rejects_missing_or_nonpositive_target() -> None:
+    assert not validate_chart_data("gauge", {"value": 42})[0]
+    assert not validate_chart_data("gauge", {"value": 42, "target": 0})[0]
+    assert not validate_chart_data("gauge", {"value": 42, "target": -3})[0]
+
+
+def test_gauge_guard_rejects_list_form() -> None:
+    """CHART-AP-38 — dict 계약인데 list 로 오면 명시적으로 거절."""
+    ok, reason = validate_chart_data("gauge", [{"value": 42, "target": 50}])
+    assert not ok and "dict" in reason
+
+
+def _spectrum_rows(n_rows: int = 2, n_points: int = 3) -> dict:
+    return {"rows": [
+        {
+            "left_label": f"좌{r}", "right_label": f"우{r}",
+            "points": [
+                {"label": f"행위자{r}{i}", "value": -0.8 + i * 0.3, "emphasis": i == 0}
+                for i in range(n_points)
+            ],
+        }
+        for r in range(n_rows)
+    ]}
+
+
+def test_spectrum_guard_accepts_two_axis_placement() -> None:
+    ok, reason = validate_chart_data("spectrum", _spectrum_rows())
+    assert ok, reason
+
+
+def test_spectrum_guard_rejects_single_row_and_too_many() -> None:
+    assert not validate_chart_data("spectrum", _spectrum_rows(1))[0]     # 축 1개 → 문장
+    assert not validate_chart_data("spectrum", _spectrum_rows(7))[0]     # 7행 → 표
+    assert not validate_chart_data("spectrum", _spectrum_rows(2, 6))[0]  # 행당 점 6개
+
+
+def test_spectrum_guard_rejects_out_of_range_position() -> None:
+    """value 는 수량이 아니라 -1~+1 위치 — 범위를 넘으면 수량을 잘못 넣은 것이다."""
+    bad = _spectrum_rows()
+    bad["rows"][0]["points"][0]["value"] = 42
+    assert not validate_chart_data("spectrum", bad)[0]
+
+
+def test_funnel_guard_accepts_decreasing_stages() -> None:
+    ok, reason = validate_chart_data("funnel", [
+        {"stage": "신청", "count": 12400},
+        {"stage": "서류 통과", "count": 5100},
+        {"stage": "면접", "count": 1200},
+        {"stage": "최종 선발", "count": 310},
+    ])
+    assert ok, reason
+
+
+def test_funnel_guard_rejects_increasing_stage() -> None:
+    """뒤 단계가 앞 단계보다 크면 감소 흐름이 아니다 (sankey/bar 자리)."""
+    ok, reason = validate_chart_data("funnel", [
+        {"stage": "방문", "count": 100},
+        {"stage": "가입", "count": 180},
+    ])
+    assert not ok and "늘어남" in reason
+
+
+def test_funnel_guard_rejects_too_few_many_and_empty() -> None:
+    assert not validate_chart_data("funnel", [{"stage": "하나", "count": 10}])[0]
+    seven = [{"stage": f"s{i}", "count": 100 - i} for i in range(7)]
+    assert not validate_chart_data("funnel", seven)[0]
+    zeros = [{"stage": "a", "count": 0}, {"stage": "b", "count": 0}]
+    assert not validate_chart_data("funnel", zeros)[0]
+    neg = [{"stage": "a", "count": 10}, {"stage": "b", "count": -1}]
+    assert not validate_chart_data("funnel", neg)[0]
+
+
+def test_v870_types_pass_template_gate() -> None:
+    from src.visual.schemas import chart_renderable
+    assert chart_renderable({"type": "gauge", "data": {"value": 0, "target": 50}})
+    assert not chart_renderable({"type": "gauge", "data": {"value": 42}})
+    assert chart_renderable({"type": "spectrum", "data": _spectrum_rows()})
+    assert not chart_renderable({"type": "spectrum", "data": {"rows": []}})
+    assert not chart_renderable({"type": "spectrum", "data": _spectrum_rows(1)})
+    assert chart_renderable({"type": "funnel", "data": [
+        {"stage": "a", "count": 10}, {"stage": "b", "count": 4}]})
+    assert not chart_renderable({"type": "funnel", "data": []})
+
+
+def test_v870_options_are_contract_bound() -> None:
+    """표현 옵션은 계약 안 값만 통과하고, 미지정이면 항상 통과 (additive)."""
+    from src.visual.schemas import validate_chart_options
+    assert validate_chart_options("bar", {"texture": "pictogram", "glyph": "vehicle"})[0]
+    assert not validate_chart_options("bar", {"glyph": "dragon"})[0]
+    assert validate_chart_options("bump", {"layout": "strip"})[0]
+    assert not validate_chart_options("bump", {"layout": "hairball"})[0]
+    assert validate_chart_options("stacked", {"texture": "rung"})[0]
+    assert not validate_chart_options("stacked", {"texture": "pictogram"})[0]
+    for ctype in ("gauge", "spectrum", "funnel"):
+        assert validate_chart_options(ctype, {"type": ctype, "title": "t"})[0]

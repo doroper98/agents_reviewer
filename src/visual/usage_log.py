@@ -64,6 +64,8 @@ KNOWN_CHART_TYPES: tuple[str, ...] = (
     "treemap", "tree",
     # v8.6.3 — 분포·달력 2종 (calendar_heat 는 일별 데이터 의존 — DATA_GATED_TYPES)
     "histogram", "calendar_heat",
+    # v8.7.0 — 2차 흡수 3종 (단일 KPI / 양극 성향 / 단계 감소)
+    "gauge", "spectrum", "funnel",
     # embedded_map (별도 채널)
     "map",
 )
@@ -84,7 +86,11 @@ NON_NARRATIVE_TYPES: frozenset = frozenset(
 # 일별 값이 60일치 없는 보고서에 "calendar_heat 를 더 써라" 는 힌트가 들어가면
 # 작성 모델이 없는 일별 데이터를 지어내게 된다 (candle 과 같은 성격, WRITE-AP-5).
 # composer 의 자발 emit 은 여전히 허용 — 데이터가 실제로 있을 때만 고르면 된다.
-DATA_GATED_TYPES: frozenset = frozenset({"calendar_heat"})
+# v8.7.0 — 같은 이유로 gauge · funnel 도 제외한다. gauge 는 *목표* 가, funnel 은
+# *단계별 수* 가 출처에 있어야 성립하는데, 힌트가 그 둘을 지어내게 만들 수 있다.
+# spectrum 은 본문이 근거로 든 성향을 축 위 위치로 옮기는 편집 판단이라(bubble 의
+# 확률×영향과 같은 성격) 힌트 대상으로 남긴다.
+DATA_GATED_TYPES: frozenset = frozenset({"calendar_heat", "gauge", "funnel"})
 
 # 힌트로 넘길 최대 type 수 — 프롬프트 토큰 경제 + 한 보고서에서 소화 가능한 양.
 REBALANCE_HINT_MAX_TYPES = 6
