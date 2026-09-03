@@ -6,7 +6,8 @@
  *
  * 어휘 SSOT: docs/MONO_THEME_GUIDE.md §4 / §6 / §10 / §10.1(v8.6.0 신설 예정).
  *  - 칸 질감(tick·rung·dot) = 셀 수 있는 값 전용. 칸 하나의 뜻은 자동 산출·표기.
- *  - 잉크 사다리: ≤4 구성 / 5~7 순위 (LADDER7). accent 는 차트당 1 요소.
+ *  - 위계 사다리 = *테마 액센트 색* 의 농도 (≤4 구성 / 5~7 순위, LADDER7). 참고 자료의 검정 잉크 사다리는
+ *    우리 21 테마에선 회색으로만 보여 사용자 지시(2026-09-03)로 액센트 농도로 바꿨다. 축·캡션·본문은 --text/--muted.
  *  - 캡슐(rx = h/2) = 막대류 공통. 캔들 몸통도 캡슐.
  *  - 속빈 = 이전·주말·미확정, 채움 = 이후·평일·확정.
  *  - 읽는 법 캡션(keyFooter) = 칸 질감·형태 인코딩을 쓴 차트는 필수.
@@ -56,14 +57,14 @@
     return T(W / 2, (h || H) - 6, text.replace(/[a-z]/g, function (c) { return c.toUpperCase(); }), { size: 8.2, fill: t.muted, anchor: 'middle', ls: '.08em' });
   }
   function capsule(x, y, w, h, fill, op) { var ww = Math.max(w, h); return el('rect', { x: x, y: y, width: ww, height: h, rx: h / 2, fill: fill, 'fill-opacity': op }); }
-  function hollow(cx, cy, r, t, col) { return el('circle', { cx: cx, cy: cy, r: r, fill: t['card-deep'], stroke: col || t.text, 'stroke-width': 1.4 }); }
+  function hollow(cx, cy, r, t, col) { return el('circle', { cx: cx, cy: cy, r: r, fill: t['card-deep'], stroke: col || t.accent, 'stroke-width': 1.4 }); }
   function dot(cx, cy, r, fill, op) { return el('circle', { cx: cx, cy: cy, r: r, fill: fill, 'fill-opacity': op }); }
   function zero(x1, y1, x2, y2, t) { return el('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: t.text, 'stroke-opacity': .55, 'stroke-width': 1 }); }
   function grid(x1, y1, x2, y2, t) { return el('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: t.text, 'stroke-opacity': .06, 'stroke-width': 1 }); }
   function inv(t, op) { return op >= .55 ? t.card : t.text; }
   // 칸 질감 — tick(세로 눈금, 가로 진행) / rung(가로 실선, 세로 진행) / dot(점, 가로 진행)
   function marks(o, t) {
-    var n = Math.round(o.value / o.unit), s = '', col = o.color || t.text, op = o.op == null ? 1 : o.op;
+    var n = Math.round(o.value / o.unit), s = '', col = o.color || t.accent, op = o.op == null ? 1 : o.op;
     for (var i = 0; i < n; i++) {
       var big = (i + 1) % 5 === 0;
       if (o.kind === 'tick') {
@@ -103,7 +104,7 @@
       rows.forEach(function (r, i) {
         var y = 22 + i * 30, w = (r[1] / max) * (x1 - x0);
         s += T(x0 - 10, y + 12, r[0], { anchor: 'end', size: 10.5, w: i === 0 ? 700 : 400, fill: t.text });
-        s += capsule(x0, y, w, 18, t.text, lad[i]);
+        s += capsule(x0, y, w, 18, t.accent, lad[i]);
         s += T(x0 + Math.max(w, 18) + 8, y + 13.5, fmt(r[1]) + '%', { fam: 'serif', size: 12.5, w: 700, fill: i === 0 ? t.accent : t.text });
       });
       s += zero(x0, 18, x0, 22 + rows.length * 30 - 8, t);
@@ -182,7 +183,7 @@
       rows.forEach(function (r, i) {
         var y = 22 + i * 23, x = x0 + (r[1] / max) * (x1 - x0);
         s += T(x0 - 10, y + 3.5, r[0], { anchor: 'end', size: 10, w: i === 0 ? 700 : 400, fill: t.text });
-        s += el('line', { x1: x0, y1: y, x2: x, y2: y, stroke: t.text, 'stroke-opacity': .35, 'stroke-width': .8 });
+        s += el('line', { x1: x0, y1: y, x2: x, y2: y, stroke: t.accent, 'stroke-opacity': .35, 'stroke-width': .8 });
         s += dot(x, y, 5, i === 0 ? t.accent : t.text, i === 0 ? 1 : lad[i]);
         s += T(x + 9, y + 4, fmt(r[1]), { fam: 'serif', size: 11.5, w: 700, fill: i === 0 ? t.accent : t.text });
       });
@@ -217,8 +218,8 @@
       rows.forEach(function (r, i) {
         var y = 34 + i * 60, sc = function (v) { return x0 + (v / r[3]) * (x1 - x0); };
         s += T(x0 - 10, y + 12, r[0], { anchor: 'end', size: 10.5, w: 500, fill: t.text });
-        s += el('rect', { x: x0, y: y - 2, width: sc(r[3]) - x0, height: 22, rx: 11, fill: t.text, 'fill-opacity': .06 });
-        s += el('rect', { x: x0, y: y - 2, width: sc(r[3] * .7) - x0, height: 22, rx: 11, fill: t.text, 'fill-opacity': .06 });
+        s += el('rect', { x: x0, y: y - 2, width: sc(r[3]) - x0, height: 22, rx: 11, fill: t.accent, 'fill-opacity': .06 });
+        s += el('rect', { x: x0, y: y - 2, width: sc(r[3] * .7) - x0, height: 22, rx: 11, fill: t.accent, 'fill-opacity': .06 });
         s += capsule(x0, y + 3, sc(r[1]) - x0, 12, i === 0 ? t.accent : t.text, i === 0 ? 1 : .6);
         s += el('line', { x1: sc(r[2]), y1: y - 6, x2: sc(r[2]), y2: y + 24, stroke: t.text, 'stroke-width': 2 });
         s += T(sc(r[2]) + 6, y - 8, '목표 ' + r[2], { size: 8.5, fill: t.muted });
@@ -237,7 +238,7 @@
         var y = 28 + i * 30, a = x0 + r[1] / max * (x1 - x0), b = x0 + r[2] / max * (x1 - x0), down = r[2] < r[1];
         s += T(x0 - 12, y + 4, r[0], { anchor: 'end', size: 10, fill: t.text });
         for (var k = 1; k < 7; k++) s += dot(a + (b - a) * k / 7, y, 1.6, down ? t.text : t.down, .7);
-        s += hollow(a, y, 5, t) + dot(b, y, 5.2, t.text, 1);
+        s += hollow(a, y, 5, t) + dot(b, y, 5.2, t.accent, 1);
         s += T(a + (a < b ? -9 : 9), y - 7, r[1], { size: 8.5, fill: t.muted, anchor: 'middle' });
         s += T(b + (a < b ? 10 : -10), y + 4, r[2], { fam: 'serif', size: 11.5, w: 700, fill: t.text, anchor: a < b ? 'start' : 'end' });
       });
@@ -254,7 +255,7 @@
       var ya = rows.map(function (r) { return y(r[1]); }); ya = dodge(ya, 13);
       var yb = rows.map(function (r) { return y(r[2]); }); yb = dodge(yb, 13);
       rows.forEach(function (r, i) {
-        var key = i === 0, col = key ? t.accent : t.text, op = key ? 1 : .45;
+        var key = i === 0, col = t.accent, op = key ? 1 : .45;
         s += el('line', { x1: xa, y1: y(r[1]), x2: xb, y2: y(r[2]), stroke: col, 'stroke-opacity': op, 'stroke-width': key ? 2 : 1.2 });
         s += dot(xa, y(r[1]), 3.2, col, op) + dot(xb, y(r[2]), 3.2, col, op);
         s += T(xa - 8, ya[i] + 3.5, r[0] + ' ' + r[1], { size: 9.5, anchor: 'end', fill: col, w: key ? 700 : 400 });
@@ -272,7 +273,7 @@
       var x = d3.scalePoint().domain(periods).range([70, 250]), y = function (r) { return 30 + (r - 1) * 38; }, lad = ladder(items.length), s = '';
       periods.forEach(function (p) { s += T(x(p), 18, p, { size: 9.5, anchor: 'middle', fill: t.muted }); });
       items.forEach(function (it, i) {
-        var key = i === 1, col = key ? t.accent : t.text, op = key ? 1 : lad[i];
+        var key = i === 1, col = t.accent, op = key ? 1 : lad[i];
         var pts = it[1].map(function (r, k) { return [x(periods[k]), y(r)]; });
         s += el('path', { d: d3.line().curve(d3.curveMonotoneX)(pts), fill: 'none', stroke: col, 'stroke-opacity': op, 'stroke-width': key ? 2.4 : 1.4 });
         pts.forEach(function (p) { s += dot(p[0], p[1], 3, col, op); });
@@ -289,7 +290,7 @@
       var data = [['파운드리', 62], ['메모리', 21], ['설계', 11], ['기타', 6]], cx = 120, cy = 116, r = 62, lad = ladder(data.length), s = '';
       var acc = 0;
       data.forEach(function (d, i) {
-        var col = i === 0 ? t.accent : t.text, op = i === 0 ? 1 : lad[i];
+        var col = t.accent, op = i === 0 ? 1 : lad[i];
         for (var k = 0; k < d[1]; k++) {
           var pct = acc + k, ang = (pct / 100) * Math.PI * 2 - Math.PI / 2, big = pct % 10 === 0, len = big ? 15 : 10;
           if (k === 0 && i > 0) continue; // 조각 경계 틈
@@ -322,7 +323,7 @@
         var inner = '';
         r[1].forEach(function (v, k) {
           var w = v * sc, last = k === r[1].length - 1, gap = last ? 0 : 2;
-          inner += el('rect', { x: x, y: y, width: Math.max(0, w - gap), height: 20, fill: last ? t.accent : t.text, 'fill-opacity': last ? .9 : lad[k + 1] });
+          inner += el('rect', { x: x, y: y, width: Math.max(0, w - gap), height: 20, fill: t.accent, 'fill-opacity': last ? .9 : lad[k + 1] });
           if (w > 26) inner += T(x + w / 2, y + 14, v, { size: 9.5, anchor: 'middle', fill: inv(t, last ? .9 : lad[k + 1]) });
           x += w;
         });
@@ -349,7 +350,7 @@
         if (ghead) s += T(g.x0 + ox + 4, g.y0 + oy + 15, ghead, { size: 8.5, fill: t.muted, ls: '.06em' });
         g.leaves().forEach(function (l, li) {
           var op = lad[gi] * (.6 + .32 * (l.value / maxLeaf)), w = l.x1 - l.x0, hh = l.y1 - l.y0, big = l === h.leaves()[0];
-          s += el('rect', { x: l.x0 + ox, y: l.y0 + oy, width: w, height: hh, rx: 3, fill: t.text, 'fill-opacity': op, stroke: big ? t.accent : 'none', 'stroke-width': big ? 1.4 : 0 });
+          s += el('rect', { x: l.x0 + ox, y: l.y0 + oy, width: w, height: hh, rx: 3, fill: t.accent, 'fill-opacity': op, stroke: big ? t.accent : 'none', 'stroke-width': big ? 1.4 : 0 });
           if (w >= 56 && hh >= 30) { s += T(l.x0 + ox + 6, l.y0 + oy + 14, l.data.label, { size: 9.5, fill: inv(t, op) }) + T(l.x0 + ox + 6, l.y0 + oy + 27, l.value, { fam: 'serif', size: 11, w: 700, fill: inv(t, op) }); }
           else if (w >= 30 && hh >= 16) s += T(l.x0 + ox + 5, l.y0 + oy + 12, l.data.label, { size: 8.5, fill: inv(t, op) });
         });
@@ -378,7 +379,7 @@
       var cx = 180, sc = .3, s = '';
       ages.forEach(function (a, i) {
         var y = 16 + i * 21, h = 14;
-        s += el('rect', { x: cx - 16 - m[i] * sc, y: y, width: m[i] * sc, height: h, rx: h / 2, fill: t.text, 'fill-opacity': .5 }) + el('rect', { x: cx - 16 - h, y: y, width: h, height: h, fill: t.text, 'fill-opacity': .5 });
+        s += el('rect', { x: cx - 16 - m[i] * sc, y: y, width: m[i] * sc, height: h, rx: h / 2, fill: t.accent, 'fill-opacity': .5 }) + el('rect', { x: cx - 16 - h, y: y, width: h, height: h, fill: t.accent, 'fill-opacity': .5 });
         s += el('rect', { x: cx + 16, y: y, width: f[i] * sc, height: h, rx: h / 2, fill: t.accent, 'fill-opacity': .85 }) + el('rect', { x: cx + 16, y: y, width: h, height: h, fill: t.accent, 'fill-opacity': .85 });
         s += T(cx, y + 10.5, a, { size: 8.5, anchor: 'middle', fill: t.muted });
         if (i === 3) { s += T(cx - 22 - m[i] * sc, y + 11, m[i], { fam: 'serif', size: 11, w: 700, anchor: 'end', fill: t.text }) + T(cx + 22 + f[i] * sc, y + 11, f[i], { fam: 'serif', size: 11, w: 700, fill: t.accent }); }
@@ -408,9 +409,9 @@
     draw: function (t) {
       var days = isoDays(30), vals = series(30, 60, .003, .09, 11), y = d3.scaleLinear().domain([d3.min(vals) * .9, d3.max(vals) * 1.08]).range([190, 34]), x = d3.scalePoint().domain(d3.range(30)).range([30, 330]), s = '';
       var pts = vals.map(function (v, i) { return [x(i), y(v)]; });
-      s += el('path', { d: pathLine(pts), fill: 'none', stroke: t.text, 'stroke-width': 1.1 });
+      s += el('path', { d: pathLine(pts), fill: 'none', stroke: t.accent, 'stroke-width': 1.1 });
       var peak = d3.maxIndex(vals);
-      vals.forEach(function (v, i) { var wk = days[i].getUTCDay() === 0 || days[i].getUTCDay() === 6; s += wk ? hollow(x(i), y(v), 2.8, t) : dot(x(i), y(v), 2.8, t.text, 1); });
+      vals.forEach(function (v, i) { var wk = days[i].getUTCDay() === 0 || days[i].getUTCDay() === 6; s += wk ? hollow(x(i), y(v), 2.8, t) : dot(x(i), y(v), 2.8, t.accent, 1); });
       s += dot(x(peak), y(vals[peak]), 4.2, t.accent, 1) + T(x(peak), y(vals[peak]) - 9, fmt(vals[peak]), { fam: 'serif', size: 11, w: 700, anchor: 'middle', fill: t.accent });
       s += T(x(29) + 6, y(vals[29]) + 4, fmt(vals[29]), { fam: 'serif', size: 11, w: 700, fill: t.text });
       [0, 14, 29].forEach(function (i) { s += T(x(i), 208, iso(days[i]).slice(5).replace('-', '/'), { size: 8.5, anchor: 'middle', fill: t.muted }); });
@@ -422,8 +423,8 @@
     absorbed: 'F3 Hairline Area — 그라데이션 대신 바닥→값 세로 실선. 최고점 원 + 라벨',
     draw: function (t) {
       var vals = series(70, 70, .002, .08, 5), y = d3.scaleLinear().domain([d3.min(vals) * .85, d3.max(vals) * 1.08]).range([192, 34]), x = d3.scaleLinear().domain([0, 69]).range([30, 330]), s = '';
-      vals.forEach(function (v, i) { s += el('line', { x1: x(i), y1: 192, x2: x(i), y2: y(v), stroke: t.text, 'stroke-opacity': .28, 'stroke-width': .8 }); });
-      s += el('path', { d: pathLine(vals.map(function (v, i) { return [x(i), y(v)]; })), fill: 'none', stroke: t.text, 'stroke-width': 1.3 });
+      vals.forEach(function (v, i) { s += el('line', { x1: x(i), y1: 192, x2: x(i), y2: y(v), stroke: t.accent, 'stroke-opacity': .32, 'stroke-width': .8 }); });
+      s += el('path', { d: pathLine(vals.map(function (v, i) { return [x(i), y(v)]; })), fill: 'none', stroke: t.accent, 'stroke-width': 1.3 });
       var p = d3.maxIndex(vals);
       s += dot(x(p), y(vals[p]), 3.5, t.accent, 1) + T(x(p), y(vals[p]) - 9, fmt(vals[p]), { fam: 'serif', size: 11, w: 700, anchor: 'middle', fill: t.accent });
       s += zero(30, 192, 330, 192, t);
@@ -473,9 +474,9 @@
       s += el('defs', {}, el('pattern', { id: 'fc-hw', patternUnits: 'userSpaceOnUse', width: 3.8, height: 3.8, patternTransform: 'rotate(45)' }, el('line', { x1: 0, y1: 0, x2: 0, y2: 3.8, stroke: t.text, 'stroke-width': .7 })));
       var cone = [[x(19), y(last)]].concat(fc.map(function (d) { return [x(d[0]), y(d[2])]; })).concat(fc.slice().reverse().map(function (d) { return [x(d[0]), y(d[3])]; }));
       s += el('path', { d: pathLine(cone) + 'Z', fill: 'url(#fc-hw)', 'fill-opacity': .5, stroke: 'none' });
-      s += el('path', { d: pathLine(act.map(function (v, i) { return [x(i), y(v)]; })), fill: 'none', stroke: t.text, 'stroke-width': 1.5 });
+      s += el('path', { d: pathLine(act.map(function (v, i) { return [x(i), y(v)]; })), fill: 'none', stroke: t.accent, 'stroke-width': 1.5 });
       s += el('path', { d: pathLine([[x(19), y(last)]].concat(fc.map(function (d) { return [x(d[0]), y(d[1])]; }))), fill: 'none', stroke: t.accent, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' });
-      s += dot(x(19), y(last), 3.5, t.text, 1) + T(x(19), y(last) - 9, d3.format(',.0f')(last), { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: t.text });
+      s += dot(x(19), y(last), 3.5, t.accent, 1) + T(x(19), y(last) - 9, d3.format(',.0f')(last), { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: t.text });
       s += T(x(32) + 4, y(fc[12][1]) + 4, d3.format(',.0f')(fc[12][1]), { fam: 'serif', size: 10.5, w: 700, fill: t.accent });
       s += el('line', { x1: x(19), y1: 30, x2: x(19), y2: 192, stroke: t.text, 'stroke-opacity': .25, 'stroke-dasharray': '2 3' }) + T(x(19), 24, '실적 | 전망', { size: 8.5, anchor: 'middle', fill: t.muted });
       return frame(t, s + footer(t, '부채꼴 = 낙관~비관 · 점선 = 중앙 전망'));
@@ -505,7 +506,7 @@
     draw: function (t) {
       var bars = [22, 31, 45, 58, 52, 66, 74, 69, 61, 55, 48, 40], rate = [4, 5, 7, 12, 26, 44, 58, 66, 71, 74, 78, 80], x = function (i) { return 36 + i * 24; }, y = d3.scaleLinear().domain([0, 84]).range([192, 34]), s = '';
       bars.forEach(function (v, i) { var peak = i === 6; s += el('rect', { x: x(i), y: y(v), width: 14, height: 192 - y(v), rx: 7, fill: peak ? t.accent : t.text, 'fill-opacity': peak ? 1 : .24 }) + el('rect', { x: x(i), y: 185, width: 14, height: 7, fill: peak ? t.accent : t.text, 'fill-opacity': peak ? 1 : .24 }); if (peak) s += T(x(i) + 7, y(v) - 6, v, { fam: 'serif', size: 11, w: 700, anchor: 'middle', fill: t.accent }); });
-      s += el('path', { d: pathLine(rate.map(function (v, i) { return [x(i) + 7, y(v)]; })), fill: 'none', stroke: t.text, 'stroke-width': 1.6 });
+      s += el('path', { d: pathLine(rate.map(function (v, i) { return [x(i) + 7, y(v)]; })), fill: 'none', stroke: t.accent, 'stroke-width': 1.6 });
       s += el('line', { x1: x(4) - 5, y1: 26, x2: x(4) - 5, y2: 192, stroke: t.down, 'stroke-width': 1.1, 'stroke-dasharray': '4 3' }) + T(x(4), 22, '봉쇄 선언', { size: 8.5, fill: t.down });
       s += T(x(11) + 18, y(80) + 4, '0.80%', { fam: 'serif', size: 12, w: 700, fill: t.text }) + zero(30, 192, 330, 192, t);
       return frame(t, s + footer(t, '막대 = 거래대금(좌) · 선 = 외국인 비중(우)'));
@@ -519,8 +520,8 @@
       var x = d3.scaleLinear().domain(d3.extent(pts, function (d) { return d[0]; })).nice().range([50, 320]), y = d3.scaleLinear().domain(d3.extent(pts, function (d) { return d[1]; })).nice().range([190, 34]), s = '';
       x.ticks(3).forEach(function (v) { s += T(x(v), 206, v.toFixed(2) + '%', { size: 8.5, anchor: 'middle', fill: t.muted }); });
       y.ticks(4).forEach(function (v) { s += grid(46, y(v), 330, y(v), t) + T(42, y(v) + 3, d3.format(',')(v), { size: 8, anchor: 'end', fill: t.muted }); });
-      s += el('path', { d: pathLine(pts.map(function (d) { return [x(d[0]), y(d[1])]; })), fill: 'none', stroke: t.text, 'stroke-width': 1.3 });
-      pts.forEach(function (d, i) { if (i > 0 && i < 11) s += dot(x(d[0]), y(d[1]), 2.4, t.text, .7); });
+      s += el('path', { d: pathLine(pts.map(function (d) { return [x(d[0]), y(d[1])]; })), fill: 'none', stroke: t.accent, 'stroke-width': 1.3 });
+      pts.forEach(function (d, i) { if (i > 0 && i < 11) s += dot(x(d[0]), y(d[1]), 2.4, t.accent, .7); });
       s += hollow(x(pts[0][0]), y(pts[0][1]), 4.5, t) + T(x(pts[0][0]) - 8, y(pts[0][1]) + 4, '1월', { size: 9, anchor: 'end', fill: t.muted });
       s += dot(x(pts[11][0]), y(pts[11][1]), 5, t.accent, 1) + T(x(pts[11][0]) + 9, y(pts[11][1]) + 4, '12월', { fam: 'serif', size: 11, w: 700, fill: t.accent });
       return frame(t, s + footer(t, '속빈 원 = 시작 · 채운 원 = 현재 · x 금리 y 환율'));
@@ -536,7 +537,7 @@
       days.forEach(function (d, i) {
         var col = Math.floor(i / 7), row = (d.getUTCDay() + 6) % 7, cx = ox + col * cell + 6, cy = oy + row * cell + 6;
         if (vals[i] == null) s += el('circle', { cx: cx, cy: cy, r: 4, fill: 'none', stroke: t.text, 'stroke-opacity': .18, 'stroke-width': .7 });
-        else s += dot(cx, cy, 4.4, t.text, q(vals[i]));
+        else s += dot(cx, cy, 4.4, t.accent, q(vals[i]));
         if (d.getUTCDate() <= 7 && row === 0) s += T(cx - 6, oy - 8, (d.getUTCMonth() + 1) + '월', { size: 8.5, fill: t.muted, ls: '.06em' });
       });
       ['월', '수', '금'].forEach(function (w, i) { s += T(ox - 8, oy + i * 2 * cell + 9.5, w, { size: 8.5, anchor: 'end', fill: t.muted }); });
@@ -554,7 +555,7 @@
       names.forEach(function (n, i) {
         var ox = 20 + (i % 2) * 170, oy = 22 + Math.floor(i / 2) * 96, v = series(24, 100, i === 0 ? .004 : -.002, .05, 30 + i), x = d3.scaleLinear().domain([0, 23]).range([ox + 6, ox + 140]), y = d3.scaleLinear().domain([80, 125]).range([oy + 72, oy + 18]);
         s += T(ox + 6, oy + 10, n, { size: 9.5, w: 700, fill: i === 0 ? t.accent : t.text }) + grid(ox + 6, y(100), ox + 140, y(100), t);
-        s += el('path', { d: pathLine(v.map(function (d, k) { return [x(k), y(d)]; })), fill: 'none', stroke: i === 0 ? t.accent : t.text, 'stroke-width': 1.3, 'stroke-opacity': i === 0 ? 1 : .8 });
+        s += el('path', { d: pathLine(v.map(function (d, k) { return [x(k), y(d)]; })), fill: 'none', stroke: t.accent, 'stroke-width': 1.3, 'stroke-opacity': i === 0 ? 1 : .55 });
         s += T(x(23) + 4, y(v[23]) + 3.5, fmt(v[23]), { fam: 'serif', size: 10, w: 700, fill: i === 0 ? t.accent : t.text });
       });
       return frame(t, s + footer(t, '기준 100 · 같은 축 · 주인공 패널만 액센트'));
@@ -596,7 +597,7 @@
       var yp = d3.scaleLinear().domain([0, 11]).range([100, 30]), yv = d3.scaleLinear().domain([16, 22]).range([196, 122]);
       prem.forEach(function (v, i) { var atm = i === 4; s += el('rect', { x: x(ks[i]) - 6, y: yp(v), width: 12, height: 100 - yp(v), rx: 6, fill: atm ? t.accent : t.text, 'fill-opacity': atm ? 1 : .28 }) + el('rect', { x: x(ks[i]) - 6, y: 94, width: 12, height: 6, fill: atm ? t.accent : t.text, 'fill-opacity': atm ? 1 : .28 }); });
       s += T(x(ks[4]), yp(prem[4]) - 6, prem[4], { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: t.accent }) + T(44, 34, '프리미엄', { size: 8.5, anchor: 'end', fill: t.muted });
-      s += el('path', { d: pathLine(iv.map(function (v, i) { return [x(ks[i]), yv(v)]; })), fill: 'none', stroke: t.text, 'stroke-width': 1.4 });
+      s += el('path', { d: pathLine(iv.map(function (v, i) { return [x(ks[i]), yv(v)]; })), fill: 'none', stroke: t.accent, 'stroke-width': 1.4 });
       iv.forEach(function (v, i) { s += dot(x(ks[i]), yv(v), 3, i === 4 ? t.accent : t.text, 1); });
       s += T(44, 126, 'IV %', { size: 8.5, anchor: 'end', fill: t.muted }) + el('line', { x1: x(420), y1: 24, x2: x(420), y2: 200, stroke: t.text, 'stroke-opacity': .3, 'stroke-dasharray': '2 3' }) + T(x(420), 20, 'ATM 420', { size: 8.5, anchor: 'middle', fill: t.muted });
       ks.forEach(function (k, i) { if (i % 2 === 0) s += T(x(k), 210, k, { size: 8, anchor: 'middle', fill: t.muted }); });
@@ -626,7 +627,7 @@
     draw: function (t) {
       var r = rng(23), pts = d3.range(12).map(function (i) { return { x: .1 + i * .075 + r() * .05, y: .2 + r() * .7, n: ['한국', '대만', '미국', '일본', '독일', '중국', '인도', '영국', '프랑스', '호주', '캐나다', '브라질'][i] }; });
       var x = d3.scaleLinear().domain([0, 1]).range([40, 320]), y = d3.scaleLinear().domain([0, 1]).range([190, 34]), order = pts.slice().sort(function (a, b) { return b.y - a.y; }), lad = ladder(7), s = '';
-      pts.forEach(function (p) { var rank = order.indexOf(p); s += el('line', { x1: x(p.x), y1: 192, x2: x(p.x), y2: y(p.y), stroke: t.text, 'stroke-opacity': .22, 'stroke-width': .6 }) + dot(x(p.x), y(p.y), 5, rank === 0 ? t.accent : t.text, rank === 0 ? 1 : lad[Math.min(6, rank)]); if (rank < 2) s += T(x(p.x), y(p.y) - 9, p.n + ' · ' + Math.round(p.y * 100), { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: rank === 0 ? t.accent : t.text }); });
+      pts.forEach(function (p) { var rank = order.indexOf(p); s += el('line', { x1: x(p.x), y1: 192, x2: x(p.x), y2: y(p.y), stroke: t.accent, 'stroke-opacity': .28, 'stroke-width': .6 }) + dot(x(p.x), y(p.y), 5, rank === 0 ? t.accent : t.text, rank === 0 ? 1 : lad[Math.min(6, rank)]); if (rank < 2) s += T(x(p.x), y(p.y) - 9, p.n + ' · ' + Math.round(p.y * 100), { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: rank === 0 ? t.accent : t.text }); });
       s += zero(36, 192, 326, 192, t) + T(40, 206, '낮은 투자 강도', { size: 8.5, fill: t.muted, ls: '.06em' }) + T(320, 206, '높은 투자 강도', { size: 8.5, anchor: 'end', fill: t.muted, ls: '.06em' });
       s += T(30, 40, '성장률 ↑', { size: 8.5, fill: t.muted, anchor: 'start' });
       return frame(t, s + footer(t, '점마다 추선 · 바닥에서 x 를 읽는다'));
@@ -638,7 +639,7 @@
     draw: function (t) {
       var pts = [['전면 확전', .22, .9, 30], ['부분 타결', .55, .55, 44], ['장기 교착', .7, .35, 38], ['조기 합의', .18, .3, 20]], x = d3.scaleLinear().domain([0, 1]).range([40, 320]), y = d3.scaleLinear().domain([0, 1]).range([190, 34]), s = '';
       s += el('line', { x1: x(.5), y1: 30, x2: x(.5), y2: 192, stroke: t.text, 'stroke-opacity': .2, 'stroke-dasharray': '2 3' }) + el('line', { x1: 40, y1: y(.5), x2: 320, y2: y(.5), stroke: t.text, 'stroke-opacity': .2, 'stroke-dasharray': '2 3' });
-      pts.forEach(function (p, i) { var key = i === 1; s += el('circle', { cx: x(p[1]), cy: y(p[2]), r: p[3] / 2, fill: key ? t.accent : t.text, 'fill-opacity': key ? .35 : .16, stroke: key ? t.accent : t.text, 'stroke-width': 1.3 }); s += T(x(p[1]), y(p[2]) - p[3] / 2 - 6, p[0], { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: key ? t.accent : t.text }); });
+      pts.forEach(function (p, i) { var key = i === 1; s += el('circle', { cx: x(p[1]), cy: y(p[2]), r: p[3] / 2, fill: t.accent, 'fill-opacity': key ? .35 : .16, stroke: key ? t.accent : t.text, 'stroke-width': 1.3 }); s += T(x(p[1]), y(p[2]) - p[3] / 2 - 6, p[0], { fam: 'serif', size: 10.5, w: 700, anchor: 'middle', fill: t.accent }); });
       s += T(40, 206, '확률 낮음', { size: 8.5, fill: t.muted, ls: '.06em' }) + T(320, 206, '확률 높음', { size: 8.5, anchor: 'end', fill: t.muted, ls: '.06em' }) + T(36, 40, '영향 ↑', { size: 8.5, fill: t.muted });
       return frame(t, s + footer(t, '크기 = 시장 영향 · 속빈 원 + 농도 채움'));
     } });
@@ -651,7 +652,7 @@
       cols.forEach(function (c, i) { s += T(ox + i * (cw + 6) + cw / 2, oy - 10, c, { size: 9, anchor: 'middle', fill: t.muted }); });
       vals.forEach(function (row, r) {
         s += T(ox - 10, oy + r * (ch + 6) + ch / 2 + 4, rowsN[r], { size: 9.5, anchor: 'end', fill: t.text, w: r === 0 ? 700 : 400 });
-        row.forEach(function (v, c) { var op = q(v); s += el('rect', { x: ox + c * (cw + 6), y: oy + r * (ch + 6), width: cw, height: ch, rx: 8, fill: t.text, 'fill-opacity': op }) + T(ox + c * (cw + 6) + cw / 2, oy + r * (ch + 6) + ch / 2 + 4.5, v, { fam: 'serif', size: 12.5, w: 700, anchor: 'middle', fill: inv(t, op) }); });
+        row.forEach(function (v, c) { var op = q(v); s += el('rect', { x: ox + c * (cw + 6), y: oy + r * (ch + 6), width: cw, height: ch, rx: 8, fill: t.accent, 'fill-opacity': op }) + T(ox + c * (cw + 6) + cw / 2, oy + r * (ch + 6) + ch / 2 + 4.5, v, { fam: 'serif', size: 12.5, w: 700, anchor: 'middle', fill: inv(t, op) }); });
       });
       return frame(t, s + footer(t, '농도 = 사용률 · 최신 버전이 진하다'));
     } });
@@ -664,11 +665,11 @@
       rows.forEach(function (r, i) {
         var y = 36 + i * 44;
         s += el('line', { x1: x(-1), y1: y, x2: x(1), y2: y, stroke: t.text, 'stroke-opacity': .35, 'stroke-width': 1 }) + el('line', { x1: x(-1), y1: y - 5, x2: x(-1), y2: y + 5, stroke: t.text, 'stroke-opacity': .5 }) + el('line', { x1: x(1), y1: y - 5, x2: x(1), y2: y + 5, stroke: t.text, 'stroke-opacity': .5 });
-        r[3].forEach(function (v) { s += dot(x(v), y, 3.2, t.text, .45); });
+        r[3].forEach(function (v) { s += dot(x(v), y, 3.2, t.accent, .45); });
         s += dot(x(r[2]), y, 7, t.accent, 1);
         s += T(x(-1) - 10, y + 4, r[0], { size: 9.5, anchor: 'end', fill: t.text, ls: '.02em' }) + T(x(1) + 10, y + 4, r[1], { size: 9.5, fill: t.text, ls: '.02em' });
       });
-      s += dot(120, 212, 5, t.accent, 1) + T(130, 215, '집권당', { size: 8.5, fill: t.muted }) + dot(180, 212, 3, t.text, .45) + T(188, 215, '야 3당', { size: 8.5, fill: t.muted });
+      s += dot(120, 212, 5, t.accent, 1) + T(130, 215, '집권당', { size: 8.5, fill: t.muted }) + dot(180, 212, 3, t.accent, .45) + T(188, 215, '야 3당', { size: 8.5, fill: t.muted });
       return frame(t, s + footer(t, '양 끝이 둘 다 정답인 척도 · 큰 점 = 주인공'));
     } });
 
@@ -677,7 +678,7 @@
     absorbed: 'F11 Tick Gauge — 반원 100 눈금, 채운 눈금 = 실적, 중앙 큰 숫자(--text, 액센트 금지), 남은 눈금 캡션',
     draw: function (t) {
       var cx = 180, cy = 168, r = 100, pct = 73, s = '';
-      for (var i = 0; i <= 100; i++) { var a = Math.PI + (i / 100) * Math.PI, big = i % 25 === 0, len = big ? 18 : 11, on = i <= pct; s += el('line', { x1: cx + Math.cos(a) * r, y1: cy + Math.sin(a) * r, x2: cx + Math.cos(a) * (r + len), y2: cy + Math.sin(a) * (r + len), stroke: t.text, 'stroke-opacity': on ? 1 : .18, 'stroke-width': big ? 1.6 : 1 }); }
+      for (var i = 0; i <= 100; i++) { var a = Math.PI + (i / 100) * Math.PI, big = i % 25 === 0, len = big ? 18 : 11, on = i <= pct; s += el('line', { x1: cx + Math.cos(a) * r, y1: cy + Math.sin(a) * r, x2: cx + Math.cos(a) * (r + len), y2: cy + Math.sin(a) * (r + len), stroke: t.accent, 'stroke-opacity': on ? 1 : .18, 'stroke-width': big ? 1.6 : 1 }); }
       var pa = Math.PI + (pct / 100) * Math.PI; s += dot(cx + Math.cos(pa) * (r + 24), cy + Math.sin(pa) * (r + 24), 3.5, t.accent, 1);
       s += T(cx, cy - 6, pct + '%', { fam: 'serif', size: 34, w: 700, anchor: 'middle', fill: t.text }) + T(cx, cy + 12, '목표까지 ' + (100 - pct) + ' 눈금', { size: 9, anchor: 'middle', fill: t.muted, ls: '.06em' });
       s += T(cx - r - 4, cy + 14, '0', { size: 8.5, anchor: 'middle', fill: t.muted }) + T(cx + r + 4, cy + 14, '100', { size: 8.5, anchor: 'middle', fill: t.muted });
@@ -706,7 +707,7 @@
       var items = [['총매출', 42, 'total'], ['환불', -6, 'neg'], ['원가', -11, 'neg'], ['운영비', -8, 'neg'], ['순이익', 17, 'total']], unit = 1, base = 190, colW = 34, gapX = (W - 60 - colW * 5) / 4, run = 0, s = '';
       items.forEach(function (it, i) {
         var x = 30 + i * (colW + gapX), v = Math.abs(it[1]), start = it[2] === 'total' ? 0 : (it[1] < 0 ? run + it[1] : run);
-        for (var k = 0; k < v; k++) { var yy = base - (start + k) * 3.4 - 2, neg = it[1] < 0; s += el('line', { x1: x, y1: yy, x2: x + colW, y2: yy, stroke: it[2] === 'total' ? t.text : (neg ? t.down : t.accent), 'stroke-opacity': it[2] === 'total' ? (i === 0 ? .9 : 1) : .85, 'stroke-width': (k + 1) % 5 === 0 ? 1.5 : .9, 'stroke-dasharray': neg ? '2 2' : undefined }); }
+        for (var k = 0; k < v; k++) { var yy = base - (start + k) * 3.4 - 2, neg = it[1] < 0; s += el('line', { x1: x, y1: yy, x2: x + colW, y2: yy, stroke: it[2] === 'total' ? t.accent : (neg ? t.down : t.accent), 'stroke-opacity': it[2] === 'total' ? (i === 0 ? .9 : 1) : .85, 'stroke-width': (k + 1) % 5 === 0 ? 1.5 : .9, 'stroke-dasharray': neg ? '2 2' : undefined }); }
         if (it[2] !== 'total') run += it[1]; else if (i === 0) run = it[1];
         var topY = base - (start + v) * 3.4 - 8;
         s += T(x + colW / 2, topY, (it[1] > 0 && it[2] !== 'total' ? '+' : '') + it[1], { fam: 'serif', size: 11.5, w: 700, anchor: 'middle', fill: it[2] === 'total' ? t.text : (it[1] < 0 ? t.down : t.accent) }) + T(x + colW / 2, base + 15, it[0], { size: 8.5, anchor: 'middle', fill: t.muted });
@@ -721,10 +722,10 @@
     absorbed: 'G22 Aggregate Sankey — 노드 캡슐 바, 띠 농도 = 출처별 사다리, 라벨은 노드 바깥 세리프 값. 적자 띠 --down',
     draw: function (t) {
       var left = [['검색', 34], ['추천', 27], ['소셜', 18], ['광고', 12], ['기타', 9]], right = [['무료', 55], ['프로', 28], ['팀', 17]], lad = ladder(5), s = '', xl = 96, xr = 250, yl = 26, yr = 26, tot = 100, hh = 170, ln = [], rn = [];
-      left.forEach(function (d, i) { var h = d[1] / tot * hh - 4; ln.push([yl, h]); s += el('rect', { x: xl, y: yl, width: 8, height: h, rx: 4, fill: t.text, 'fill-opacity': lad[i] }) + T(xl - 8, yl + h / 2 + 3.5, d[0] + ' · ' + d[1], { size: 9.5, anchor: 'end', fill: t.text }); yl += h + 6; });
-      right.forEach(function (d, i) { var h = d[1] / tot * hh - 2; rn.push([yr, h]); s += el('rect', { x: xr, y: yr, width: 8, height: h, rx: 4, fill: i === 0 ? t.accent : t.text, 'fill-opacity': i === 0 ? 1 : .8 }) + T(xr + 16, yr + h / 2 - 4, d[0], { size: 9.5, fill: t.text }) + T(xr + 16, yr + h / 2 + 9, d[1], { fam: 'serif', size: 12, w: 700, fill: i === 0 ? t.accent : t.text }); yr += h + 8; });
+      left.forEach(function (d, i) { var h = d[1] / tot * hh - 4; ln.push([yl, h]); s += el('rect', { x: xl, y: yl, width: 8, height: h, rx: 4, fill: t.accent, 'fill-opacity': lad[i] }) + T(xl - 8, yl + h / 2 + 3.5, d[0] + ' · ' + d[1], { size: 9.5, anchor: 'end', fill: t.text }); yl += h + 6; });
+      right.forEach(function (d, i) { var h = d[1] / tot * hh - 2; rn.push([yr, h]); s += el('rect', { x: xr, y: yr, width: 8, height: h, rx: 4, fill: t.accent, 'fill-opacity': i === 0 ? 1 : .8 }) + T(xr + 16, yr + h / 2 - 4, d[0], { size: 9.5, fill: t.text }) + T(xr + 16, yr + h / 2 + 9, d[1], { fam: 'serif', size: 12, w: 700, fill: i === 0 ? t.accent : t.text }); yr += h + 8; });
       var flows = [[0, 0, 20], [0, 1, 10], [0, 2, 4], [1, 0, 14], [1, 1, 8], [1, 2, 5], [2, 0, 10], [2, 1, 5], [2, 2, 3], [3, 0, 7], [3, 1, 3], [3, 2, 2], [4, 0, 4], [4, 1, 2], [4, 2, 3]], lo = ln.map(function (n) { return n[0]; }), ro = rn.map(function (n) { return n[0]; }), ribbons = '';
-      flows.forEach(function (f) { var h = f[2] / tot * hh - 1, y0 = lo[f[0]], y1 = ro[f[1]]; lo[f[0]] += h; ro[f[1]] += h; ribbons += el('path', { d: 'M' + (xl + 8) + ',' + y0 + ' C' + (xl + 80) + ',' + y0 + ' ' + (xr - 80) + ',' + y1 + ' ' + xr + ',' + y1 + ' v' + h + ' C' + (xr - 80) + ',' + (y1 + h) + ' ' + (xl + 80) + ',' + (y0 + h) + ' ' + (xl + 8) + ',' + (y0 + h) + 'Z', fill: t.text, 'fill-opacity': lad[f[0]] * .38 }); });
+      flows.forEach(function (f) { var h = f[2] / tot * hh - 1, y0 = lo[f[0]], y1 = ro[f[1]]; lo[f[0]] += h; ro[f[1]] += h; ribbons += el('path', { d: 'M' + (xl + 8) + ',' + y0 + ' C' + (xl + 80) + ',' + y0 + ' ' + (xr - 80) + ',' + y1 + ' ' + xr + ',' + y1 + ' v' + h + ' C' + (xr - 80) + ',' + (y1 + h) + ' ' + (xl + 80) + ',' + (y0 + h) + ' ' + (xl + 8) + ',' + (y0 + h) + 'Z', fill: t.accent, 'fill-opacity': lad[f[0]] * .38 }); });
       return frame(t, ribbons + s + footer(t, '띠 굵기 = 계정 수 · 농도 = 유입 채널'));
     } });
 
@@ -738,12 +739,12 @@
         { label: '서비스', children: [{ label: '○○리테일' }, { label: '○○물류', note: '신규 편입' }] }] };
       var h = d3.hierarchy(root); d3.cluster().size([H - FOOT - 36, 190])(h);
       var ox = 76, oy = 18, lad = ladder(h.children.length), s = '';
-      h.links().forEach(function (L) { var bi = L.target.ancestors().filter(function (a) { return a.depth === 1; })[0], idx = h.children.indexOf(bi); s += el('path', { d: d3.linkHorizontal().x(function (d) { return d.y + ox; }).y(function (d) { return d.x + oy; })(L), fill: 'none', stroke: t.text, 'stroke-opacity': L.source.depth === 0 ? .9 : lad[idx], 'stroke-width': L.source.depth === 0 ? 1.4 : 1 }); });
+      h.links().forEach(function (L) { var bi = L.target.ancestors().filter(function (a) { return a.depth === 1; })[0], idx = h.children.indexOf(bi); s += el('path', { d: d3.linkHorizontal().x(function (d) { return d.y + ox; }).y(function (d) { return d.x + oy; })(L), fill: 'none', stroke: t.accent, 'stroke-opacity': L.source.depth === 0 ? .9 : lad[idx], 'stroke-width': L.source.depth === 0 ? 1.4 : 1 }); });
       h.descendants().forEach(function (n) {
         var x = n.y + ox, y = n.x + oy;
-        if (n.depth === 0) s += dot(x, y, 5, t.text, 1) + T(x - 9, y + 4.5, n.data.label, { fam: 'serif', size: 12.5, w: 700, anchor: 'end', fill: t.text });
-        else if (n.depth === 1) s += dot(x, y, 3.5, t.text, 1) + T(x - 6, y - 7, n.data.label, { size: 10, w: 600, anchor: 'end', fill: t.text });
-        else { var idx = h.children.indexOf(n.parent); s += dot(x, y, 2.5, t.text, lad[idx]) + T(x + 8, y + 3.5, n.data.label, { size: 9.5, fill: t.text }); if (n.data.note) s += T(x + 8 + n.data.label.length * 9.5 + 4, y + 3.5, n.data.note, { size: 8, fill: t.muted }); }
+        if (n.depth === 0) s += dot(x, y, 5, t.accent, 1) + T(x - 9, y + 4.5, n.data.label, { fam: 'serif', size: 12.5, w: 700, anchor: 'end', fill: t.text });
+        else if (n.depth === 1) s += dot(x, y, 3.5, t.accent, 1) + T(x - 6, y - 7, n.data.label, { size: 10, w: 600, anchor: 'end', fill: t.text });
+        else { var idx = h.children.indexOf(n.parent); s += dot(x, y, 2.5, t.accent, lad[idx]) + T(x + 8, y + 3.5, n.data.label, { size: 9.5, fill: t.text }); if (n.data.note) s += T(x + 8 + n.data.label.length * 9.5 + 4, y + 3.5, n.data.note, { size: 8, fill: t.muted }); }
       });
       return frame(t, s + footer(t, '위계 = 좌→우 · 가지마다 농도'));
     } });
@@ -753,7 +754,7 @@
     absorbed: '노드 카드 캡슐, 엣지 dash 어휘(§6.3) 유지. 국기·로고·사진 슬롯. 변경 없음 — 시트 정합 확인용',
     draw: function (t) {
       var cols = [['한국', '일본'], ['미국'], ['중국', '러시아']], s = '', pos = {};
-      cols.forEach(function (c, ci) { c.forEach(function (n, ni) { var x = 60 + ci * 120, y = 60 + ni * 80 + (ci === 1 ? 40 : 0); pos[n] = [x, y]; s += el('rect', { x: x - 34, y: y - 16, width: 68, height: 32, rx: 16, fill: t.text, 'fill-opacity': ci === 1 ? 1 : .12, stroke: t.text, 'stroke-opacity': .5, 'stroke-width': .8 }) + dot(x - 20, y, 7, ci === 1 ? t.card : t.text, ci === 1 ? .9 : .5) + T(x - 8, y + 4, n, { size: 10, w: ci === 1 ? 700 : 500, fill: ci === 1 ? t.card : t.text }); }); });
+      cols.forEach(function (c, ci) { c.forEach(function (n, ni) { var x = 60 + ci * 120, y = 60 + ni * 80 + (ci === 1 ? 40 : 0); pos[n] = [x, y]; s += el('rect', { x: x - 34, y: y - 16, width: 68, height: 32, rx: 16, fill: t.accent, 'fill-opacity': ci === 1 ? 1 : .12, stroke: t.text, 'stroke-opacity': .5, 'stroke-width': .8 }) + dot(x - 20, y, 7, ci === 1 ? t.card : t.text, ci === 1 ? .9 : .5) + T(x - 8, y + 4, n, { size: 10, w: ci === 1 ? 700 : 500, fill: ci === 1 ? t.card : t.text }); }); });
       var edges = [['한국', '미국', ''], ['일본', '미국', ''], ['미국', '중국', '5,3'], ['중국', '러시아', '2,3'], ['한국', '중국', '1,3']];
       var e = ''; edges.forEach(function (ed) { var a = pos[ed[0]], b = pos[ed[1]]; e += el('line', { x1: a[0] + 34 * Math.sign(b[0] - a[0] || 1), y1: a[1], x2: b[0] - 34 * Math.sign(b[0] - a[0] || 1), y2: b[1], stroke: ed[2] === '5,3' ? t.down : t.text, 'stroke-width': ed[2] === '5,3' ? 2 : 1.3, 'stroke-dasharray': ed[2] || undefined, 'stroke-opacity': .8 }); });
       return frame(t, e + s + footer(t, '실선 동맹 · 긴 점선 대립 · 짧은 점선 영향'));
@@ -766,8 +767,8 @@
       var lad = [.12, .28, .48, .7, 1], s = '';
       var shapes = [['M30 60 L90 40 L150 62 L140 120 L80 140 L34 118 Z', 1, 'CA 96k'], ['M150 62 L230 44 L300 70 L290 130 L220 150 L140 120 Z', 3, null], ['M90 140 L150 128 L200 160 L170 200 L100 196 Z', 2, null], ['M220 150 L290 130 L330 170 L300 205 L230 200 Z', 4, null], ['M250 30 L330 24 L338 60 L300 70 L230 44 Z', 0, null]];
       s += el('rect', { x: 14, y: 14, width: 332, height: 198, rx: 4, fill: t['map-water'] });
-      shapes.forEach(function (sh) { s += el('path', { d: sh[0], fill: t.text, 'fill-opacity': lad[sh[1]], stroke: t['map-boundary'], 'stroke-width': .8 }); if (sh[2]) s += T(90, 96, sh[2], { fam: 'serif', size: 11, w: 700, anchor: 'middle', fill: t.card }); });
-      lad.forEach(function (o, i) { s += el('rect', { x: 24 + i * 26, y: 196, width: 20, height: 8, rx: 2, fill: t.text, 'fill-opacity': o }); });
+      shapes.forEach(function (sh) { s += el('path', { d: sh[0], fill: t.accent, 'fill-opacity': lad[sh[1]], stroke: t['map-boundary'], 'stroke-width': .8 }); if (sh[2]) s += T(90, 96, sh[2], { fam: 'serif', size: 11, w: 700, anchor: 'middle', fill: t.card }); });
+      lad.forEach(function (o, i) { s += el('rect', { x: 24 + i * 26, y: 196, width: 20, height: 8, rx: 2, fill: t.accent, 'fill-opacity': o }); });
       s += T(160, 203, '≤9k · 10~20k · 21~38k · 39~64k · 65k+', { size: 7.5, fill: t.muted, ls: '.04em' });
       return frame(t, s + footer(t, '진할수록 많다 · 최대 지역만 라벨'));
     } });
@@ -780,14 +781,14 @@
       for (var i = 0; i < 4; i++) { var m3 = marks({ kind: 'rung', x: 14 + i * 22, y: 100, value: [17, 12, 8, 5][i], unit: 1, gap: 2.6, len: 16 }, t); s += m3.svg; } s += T(150, 90, 'rung', { fam: 'mono', size: 9, fill: t.muted });
       return el('svg', { viewBox: '0 0 190 110' }, el('rect', { width: 190, height: 110, rx: 5, fill: t['card-deep'] }) + s); } },
     { k: '잉크 사다리 7단', d: '순위 위계 전용 · 1 · .78 · .60 · .44 · .30 · .20 · .12', draw: function (t) {
-      var s = ''; LADDER7.forEach(function (o, i) { s += el('rect', { x: 12 + i * 24, y: 20, width: 20, height: 56, rx: 4, fill: t.text, 'fill-opacity': o }) + T(22 + i * 24, 92, o, { size: 7.5, anchor: 'middle', fill: t.muted, fam: 'mono' }); });
+      var s = ''; LADDER7.forEach(function (o, i) { s += el('rect', { x: 12 + i * 24, y: 20, width: 20, height: 56, rx: 4, fill: t.accent, 'fill-opacity': o }) + T(22 + i * 24, 92, o, { size: 7.5, anchor: 'middle', fill: t.muted, fam: 'mono' }); });
       return el('svg', { viewBox: '0 0 190 110' }, el('rect', { width: 190, height: 110, rx: 5, fill: t['card-deep'] }) + s); } },
     { k: '캡슐', d: 'rx = h/2 · 폭이 높이보다 작으면 최소폭 = 높이 · 캔들 몸통 포함', draw: function (t) {
-      var s = capsule(14, 16, 150, 18, t.text, 1) + capsule(14, 42, 90, 18, t.text, .6) + capsule(14, 68, 12, 18, t.text, .3) + T(40, 81, '← 최소폭 클램프', { size: 8.5, fill: t.muted });
+      var s = capsule(14, 16, 150, 18, t.accent, 1) + capsule(14, 42, 90, 18, t.accent, .6) + capsule(14, 68, 12, 18, t.accent, .3) + T(40, 81, '← 최소폭 클램프', { size: 8.5, fill: t.muted });
       s += el('rect', { x: 150, y: 44, width: 8, height: 40, rx: 4, fill: t.up }) + el('line', { x1: 154, y1: 36, x2: 154, y2: 92, stroke: t.up, 'stroke-width': 1 }) + el('rect', { x: 168, y: 52, width: 8, height: 26, rx: 4, fill: t.down }) + el('line', { x1: 172, y1: 44, x2: 172, y2: 88, stroke: t.down, 'stroke-width': 1 });
       return el('svg', { viewBox: '0 0 190 110' }, el('rect', { width: 190, height: 110, rx: 5, fill: t['card-deep'] }) + s); } },
     { k: '속빈 · 채움', d: '속빈 = 이전 · 주말 · 미확정 / 채움 = 이후 · 평일 · 확정', draw: function (t) {
-      var s = hollow(30, 34, 6, t) + T(44, 38, '이전 · 주말 · 미확정', { size: 9, fill: t.text }) + dot(30, 64, 6, t.text, 1) + T(44, 68, '이후 · 평일 · 확정', { size: 9, fill: t.text }) + hollow(30, 92, 5, t) + [1, 2, 3, 4, 5].map(function (k) { return dot(30 + k * 9, 92, 1.6, t.text, .7); }).join('') + dot(84, 92, 5.2, t.text, 1) + T(98, 96, '덤벨 구슬', { size: 9, fill: t.muted });
+      var s = hollow(30, 34, 6, t) + T(44, 38, '이전 · 주말 · 미확정', { size: 9, fill: t.text }) + dot(30, 64, 6, t.accent, 1) + T(44, 68, '이후 · 평일 · 확정', { size: 9, fill: t.text }) + hollow(30, 92, 5, t) + [1, 2, 3, 4, 5].map(function (k) { return dot(30 + k * 9, 92, 1.6, t.accent, .7); }).join('') + dot(84, 92, 5.2, t.accent, 1) + T(98, 96, '덤벨 구슬', { size: 9, fill: t.muted });
       return el('svg', { viewBox: '0 0 190 110' }, el('rect', { width: 190, height: 110, rx: 5, fill: t['card-deep'] }) + s); } },
     { k: '읽는 법 캡션', d: '9.5px · 자간 .08em · --muted · SVG 하단 중앙 · 라틴은 대문자', draw: function (t) {
       var s = T(95, 40, '한 칸 = 1천억 원 · 다섯 칸마다 긴 눈금', { size: 8.2, anchor: 'middle', fill: t.muted, ls: '.08em' }) + T(95, 64, 'ONE TICK = 1 · DOT EVERY FIFTH', { size: 8.2, anchor: 'middle', fill: t.muted, ls: '.08em' }) + T(95, 88, '속빈 원 = 이전 · 채운 원 = 이후', { size: 8.2, anchor: 'middle', fill: t.muted, ls: '.08em' });
