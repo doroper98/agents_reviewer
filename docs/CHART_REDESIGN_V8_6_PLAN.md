@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: in progress (Phase 0 완료 v8.6.0 · Phase 1 이후 대기)
+status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 완료 · Phase 2a 부터 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.0
+last_synced_with: v8.6.1
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -607,12 +607,18 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 - [x] charts.js 헬퍼 8개 + `contentFit` (정의만, 호출 0) · 구문 검사 · 스냅샷 `--check` 0 diff
 - [x] MONO_THEME_GUIDE §10.1 · REPO_MAP · `docs/reference/README.md` · VERSION/README/CHANGELOG → 커밋
 
-**Phase 1 (v8.6.1)** — 순서: bar → candle → donut → 캡슐 5종 → line/area/scatter → range_bar → heatmap
-- [ ] `samples/_legacy/charts.v8515.js` 고정 (`git show v8.5.15:src/templates/static/charts.js`)
-- [ ] 렌더러 12종 §4.1~4.7 · 인라인 포맷 → `fmtNum`
-- [ ] `schemas.py` 6 가드 optional 필드 · `narrative_composer.py` 스키마 줄 6곳 + 원칙
-- [ ] `PROMPT_SHAPES` · `test_chart_correctness.py` · `samples/chart_redesign_v8_6_compare.html`
-- [ ] `--diff-report` 변경 type == §4 대상 12종 확인 → CHANGELOG 에 목록 → 커밋
+**Phase 1 (v8.6.1)** — 완료 (2026-09-03). 순서: bar → candle → donut → 캡슐 5종 → line/area/scatter → range_bar → heatmap
+- [x] `samples/_legacy/charts.v8515.js` 고정 (릴리스 태그가 없어 커밋 메시지로 v8.5.15 커밋 특정)
+- [x] 렌더러 13종 §4.1~4.7 · 인라인 포맷 → `fmtNum` (칸 질감 라벨은 정수 그대로)
+- [x] `schemas.py` — 행 필드(`prior` / before_after 행) + **payload 옵션 가드 신설**
+      (`validate_chart_options`, `_TYPE_TO_OPTION_GUARD` 7종). 옵션은 data 가 아니라
+      payload 최상위라 `validate_chart_data` 로는 볼 수 없어 별도 진입점 +
+      `ComposedSection._drop_invalid_charts` 배선. rung 게이트는 drop 이 아닌 렌더러 강등.
+- [x] `narrative_composer.py` 스키마 줄 6곳(bar/line/area/heatmap/scatter/lollipop/range_bar) + §4.8 원칙 블록
+- [x] `PROMPT_SHAPES` (+옵션 parity 3종) · `test_chart_correctness.py` (수용/거부 6종) ·
+      `samples/chart_redesign_v8_6_compare.html` (좌 v8.5.15 실 렌더 vs 우 현행, 테마 3종)
+- [x] 갤러리 표현 변형 fixture 6종 + 스냅샷 키(`data-snapshot-key`) 도입 → baseline 37키 × 6테마
+- [x] `--diff-report` 변경 목록 = §4 대상 13종 (그 밖 24종 DOM 불변) → CHANGELOG 기재 → 커밋
 
 **Phase 2a (v8.6.2) treemap·tree / 2b (v8.6.3) histogram·calendar_heat**
 - [ ] 절차 ①~⑫ · registry 11/19/1/31 → 11/21/1/33 · `test_capability_registry.py` 3곳

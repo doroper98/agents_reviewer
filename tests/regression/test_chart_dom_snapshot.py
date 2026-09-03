@@ -58,6 +58,11 @@ def _baseline() -> dict:
     return json.loads(BASELINE.read_text(encoding="utf-8"))
 
 
+def _base_type(key: str) -> str:
+    """스냅샷 키 → chart type (`bar:capsule` → `bar`, v8.6.1 변형 fixture)."""
+    return key.split(":", 1)[0]
+
+
 # ─── 1. 구조 검증 ─────────────────────────────────────────────────────
 def test_gallery_covers_every_renderer() -> None:
     """갤러리 fixture ↔ RENDERERS 1:1 (CHART-AP-17 갤러리 측 가드)."""
@@ -86,7 +91,7 @@ def test_gallery_theme_buttons_match_tool_default() -> None:
 def test_baseline_covers_every_renderer_and_theme() -> None:
     doc = _baseline()
     assert doc["schema"] == 1
-    assert set(doc["types"]) == _renderer_types()
+    assert {_base_type(k) for k in doc["types"]} == _renderer_types()
     assert tuple(doc["themes"]) == snap.DEFAULT_THEMES
     for ctype, per_theme in doc["types"].items():
         assert tuple(sorted(per_theme)) == tuple(sorted(snap.DEFAULT_THEMES)), ctype

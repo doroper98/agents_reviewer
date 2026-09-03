@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.6.0
+last_synced_with: v8.6.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -17,6 +17,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src/orchestrator.py:VERSION`.
 
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
+
+---
+
+## v8.6.1 — 차트 기본 표현 전환 (소급, CHART_REDESIGN_V8_6 Phase 1)
+
+v8.6.0 이 깔아둔 어휘 헬퍼를 렌더러에 실제로 배선했다. **이번 버전은 보이는 것을 바꾼다** — charts.js 를 직접 고쳤으므로 이미 발행된 보고서의 차트도 다음 열람부터 새 그림으로 보인다. 데이터 계약(`{type, title, data}`)은 한 글자도 바뀌지 않았고, 새 표현은 전부 *데이터 모양* 으로 결정된다(0-LLM). 작성 모델은 그 판정을 덮어쓰는 옵션만 갖는다.
+
+**전·후 비교**: [samples/chart_redesign_v8_6_compare.html](samples/chart_redesign_v8_6_compare.html) — 왼쪽이 v8.5.15 의 실제 렌더러([samples/_legacy/charts.v8515.js](samples/_legacy/charts.v8515.js) 에 고정한 사본), 오른쪽이 현행. 목업이 아니라 두 버전의 실제 출력을 나란히 놓았다. 테마 3종 전환.
+
+**바뀐 표현 (렌더 DOM 스냅샷이 확인한 변경 type)**: `bar`(칸 질감 / 캡슐 / 세로 칸) · `candle` · `donut` · `diverging_bar` · `pyramid` · `gantt` · `bullet` · `lollipop` · `line`(일별 점 모드) · `area` · `scatter`(추선 모드) · `range_bar` · `heatmap`(둥근 칸 격자). 그 밖의 24종은 DOM 해시가 그대로다.
+
+- **셀 수 있으면 칸, 아니면 캡슐** — 건수·인원·금액처럼 값이 전부 정수이고 최대값이 크지 않으면 막대를 면이 아니라 칸으로 센다(눈금·점·가로 실선). 한 칸이 몇인지는 렌더러가 산출해 "한 칸 = 2조원 · 다섯 칸마다 긴 눈금" 같은 **읽는 법 캡션**으로 적는다 — 작성 모델이 단위를 지어내 차트에 박을 여지를 없앴다. 비율·지수는 끝이 둥근 캡슐 + 순위별 잉크 농도.
+- **형태가 뜻을 진다** — 속빈 원 = 이전·최저·주말, 채운 원 = 이후·최고·평일. 색이 아니라 모양이라 다크 테마 12종에서도 그대로 읽힌다.
+- **캔들 몸통 캡슐** · **도넛 100 눈금 링**(눈금 하나 = 1%, 12시가 0, 조각 경계는 한 칸 틈) · **막대류 캡슐 끝**(diverging_bar / pyramid / gantt / bullet) · **덤벨 구슬 연결** · **60칸 이하 격자는 둥근 칸 + 칸 안 숫자 직독**(진한 칸은 글자 반전).
+- **조건을 벗어나면 옛 표현 그대로** — 60 포인트가 넘는 시장 시계열 line, 120 포인트 초과 area, 21점 이상 scatter, 7조각 이상 donut, 61칸 이상 heatmap 은 손대지 않았다. 판독성이 떨어지는 지점을 렌더러가 알고 물러선다.
+- **덮어쓰기 옵션 (선택)** — bar `texture`/`unit`/`orientation`/행 `prior`, line·scatter `marks`, area `fill`, range_bar `mode:"before_after"`, heatmap `cells`. 전부 선택 필드라 v8.6.0 이전 payload 는 그대로 렌더된다. 계약 밖 값은 기존 drop 정책(`validate_chart_options` 신설, `ComposedSection._drop_invalid_charts` 배선). 단 **세로 칸 막대의 한글 라벨 게이트**(이름 ≤6자·항목 ≤8)만은 drop 이 아니라 렌더러가 가로 눈금으로 강등한다 — 판독 불가한 배치를 막는 것이 목적이지 차트를 버릴 일이 아니다.
+- **회귀** — 갤러리에 표현 변형 fixture 6종 추가(`bar:capsule` / `bar:rung` / `line:daily` / `scatter:plumb` / `range_bar:before_after` / `heatmap:grid`), 스냅샷 baseline 37키 × 6테마 재기록, `PROMPT_SHAPES` 에 `prior`·`before_after` 모양 + 옵션 parity 3종, `test_chart_correctness.py` 에 수용/거부 6종.
 
 ---
 

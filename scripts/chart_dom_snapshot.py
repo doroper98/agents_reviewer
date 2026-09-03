@@ -21,6 +21,10 @@
 ``getBBox`` 로 viewBox 를 사후 보정하는 3종 (sankey / dot_matrix /
 stakeholder_map) 은 텍스트 실측폭이 폰트에 좌우되므로 sha256 대신
 **요소 수 + 태그 분포** 만 비교한다 (loose).
+
+스냅샷 키는 갤러리 카드의 ``data-snapshot-key`` (없으면 ``data-chart-type``).
+같은 type 의 *다른 기본 표현* 을 따로 고정하려고 v8.6.1 에서 도입했다 —
+예: ``bar`` / ``bar:capsule`` / ``bar:rung``. ``:`` 앞이 실제 chart type.
 """
 
 from __future__ import annotations
@@ -133,7 +137,7 @@ _HARNESS = """
     var stages = document.querySelectorAll('.chart-card-stage[data-chart-type]');
     for (var i = 0; i < stages.length; i++) {
       var st = stages[i];
-      var type = st.getAttribute('data-chart-type');
+      var type = st.getAttribute('data-snapshot-key') || st.getAttribute('data-chart-type');
       var svg = st.querySelector('svg');
       out.charts[type] = {
         dom: svg ? ser(svg) : '',

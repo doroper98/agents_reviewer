@@ -61,6 +61,7 @@ from src.visual.capability_registry import (
 )
 from src.visual.schemas import (
     BarChartGuard,
+    BarOptions,
     BubbleChartGuard,
     DonutGuard,
     GanttGuard,
@@ -71,6 +72,7 @@ from src.visual.schemas import (
     guard_for_type,
     parse_time,
     validate_chart_data,
+    validate_chart_options,
 )
 from src.visual.sanity_check import (
     DEFAULT_THRESHOLDS,
@@ -153,6 +155,7 @@ __all__ = [
     "load_registry",
     # Phase 6 — Schema Pydantic guards (Gate A)
     "BarChartGuard",
+    "BarOptions",
     "BubbleChartGuard",
     "DonutGuard",
     "GanttGuard",
@@ -163,6 +166,7 @@ __all__ = [
     "guard_for_type",
     "parse_time",
     "validate_chart_data",
+    "validate_chart_options",
     # Phase 6 — Visual Sanity (Gate C)
     "DEFAULT_THRESHOLDS",
     "SanityCheckThresholds",

@@ -730,7 +730,7 @@ class ComposedSection(BaseModel):
         if not self.charts:
             return self
         try:
-            from src.visual.schemas import validate_chart_data
+            from src.visual.schemas import validate_chart_data, validate_chart_options
         except ImportError:
             return self
         import logging
@@ -746,6 +746,11 @@ class ComposedSection(BaseModel):
                 continue
             try:
                 ok, reason = validate_chart_data(ctype, ch.get("data"))
+                if ok:
+                    # v8.6.1 — 표현 옵션(texture/unit/orientation/mode/fill/marks/
+                    # cells)은 payload 최상위라 data 가드로는 못 본다. 계약 밖 값은
+                    # 같은 drop 정책 (플랜 §4).
+                    ok, reason = validate_chart_options(ctype, ch)
             except Exception as e:  # validate_chart_data 자체 버그 — 보고서 회피
                 logger.warning(
                     "[composed_section] validate_chart_data exception on %r/%r: %s "

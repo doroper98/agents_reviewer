@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="midnight_indigo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart Redesign V8.6 — 기본 표현 전환 전·후 비교 (v8.5.15 vs v8.6.1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/templates/report.css">
+<link rel="stylesheet" href="../src/templates/static/charts.css">
+<style>
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR', sans-serif; margin: 0; }
+.rd-head { max-width: 1240px; margin: 0 auto; padding: 36px 18px 6px; }
+.rd-head h1 { font-family: 'Newsreader', 'Noto Serif KR', serif; font-size: 27px; margin: 0 0 8px; color: var(--fg-1, var(--text)); }
+.rd-head p { font-size: 13.5px; line-height: 1.75; color: var(--fg-2, var(--muted)); margin: 0 0 12px; max-width: 900px; }
+.rd-themes { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 8px; }
+.rd-themes button { font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border-soft, var(--border)); background: var(--card); color: var(--text); cursor: pointer; }
+.rd-themes button.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.rd-wrap { max-width: 1240px; margin: 0 auto; padding: 8px 18px 90px; }
+.rd-section { margin: 38px 0 0; }
+.rd-type { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--accent); }
+.rd-rationale { font-size: 13px; line-height: 1.7; color: var(--fg-2, var(--muted)); margin: 4px 0 12px; max-width: 1000px; }
+.rd-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1020px) { .rd-pair { grid-template-columns: 1fr; } }
+.rd-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 4px; margin-bottom: 8px; }
+.rd-tag.cur { color: var(--fg-3, var(--muted)); border: 1px solid var(--border-soft, var(--border)); }
+.rd-tag.new { color: var(--accent); border: 1px solid var(--accent); }
+.rd-note { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<div class="rd-head">
+  <h1>기본 표현 전환 — v8.5.15 vs v8.6.1</h1>
+  <p>왼쪽은 <b>v8.5.15 의 실제 렌더러</b>(<code>samples/_legacy/charts.v8515.js</code> 에 고정한
+     사본), 오른쪽은 <b>현행 production</b> <code>src/templates/static/charts.js</code>.
+     같은 데이터를 같은 테마로 두 렌더러에 각각 먹인 결과다 — 목업이 아니라 두 버전의 실제 출력.
+     계획 SSOT: <code>docs/CHART_REDESIGN_V8_6_PLAN.md</code> §4, 어휘 SSOT:
+     <code>docs/MONO_THEME_GUIDE.md</code> §10.1.</p>
+  <p><b>이 변경은 이미 발행된 보고서에도 소급된다</b> (charts.js 를 직접 바꾸므로). 데이터 계약
+     (<code>{type, title, data}</code>) 은 한 글자도 바뀌지 않았고, 새 표현은 전부
+     <i>데이터 모양</i>(값이 정수인가 · 포인트가 몇 개인가 · 칸이 몇 개인가)으로 결정된다.
+     옵션 필드는 그 판정을 덮어쓰는 용도일 뿐이다.</p>
+  <div class="rd-themes" id="themes"></div>
+</div>
+<div class="rd-wrap" id="wrap"></div>
+
+<script>
+// 두 렌더러를 한 페이지에서 비교하려면 ① 화면 밖 카드도 즉시 그려야 하고
+// ② entry 애니메이션이 중간 상태로 굳지 않아야 한다. 갤러리 스냅샷 도구와 같은 방식.
+(function () {
+  window.matchMedia = function (q) {
+    return { matches: /prefers-reduced-motion/.test(String(q)), media: String(q),
+             addListener: function () {}, removeListener: function () {},
+             addEventListener: function () {}, removeEventListener: function () {},
+             onchange: null, dispatchEvent: function () { return false; } };
+  };
+  try { delete window.IntersectionObserver; } catch (e) { window.IntersectionObserver = undefined; }
+})();
+</script>
+<script>
+// ── 테마 스위처 (렌더된 SVG 는 색이 박제되므로 reload 로 재렌더) ──
+(function () {
+  var THEMES = ['editorial_cream', 'midnight_indigo', 'burgundy_mono'];
+  var cur = localStorage.getItem('rd86_theme') || 'midnight_indigo';
+  document.documentElement.setAttribute('data-theme', cur);
+  var wrap = document.getElementById('themes');
+  THEMES.forEach(function (th) {
+    var b = document.createElement('button');
+    b.textContent = th;
+    if (th === cur) b.className = 'on';
+    b.onclick = function () { localStorage.setItem('rd86_theme', th); location.reload(); };
+    wrap.appendChild(b);
+  });
+})();
+
+// ── 공용 fixture (양쪽 동일 데이터) ──
+function daily(n, start, drift, vol) {
+  var out = [], v = start, seed = 7;
+  var rand = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
+  for (var i = 0; i < n; i++) {
+    var m = 3 + Math.floor(i / 22), d = (i % 22) + 1 + (m === 6 ? 0 : 4);
+    var date = '2026-' + String(m).padStart(2, '0') + '-' + String(Math.min(d, 28)).padStart(2, '0');
+    var chg = drift + rand() * vol * 2, o = v, c = v + chg;
+    out.push({ date: date, open: +o.toFixed(2), high: +(Math.max(o, c) + Math.abs(rand()) * vol).toFixed(2),
+               low: +(Math.min(o, c) - Math.abs(rand()) * vol).toFixed(2), close: +c.toFixed(2) });
+    v = c;
+  }
+  return out;
+}
+
+var CASES = [
+  { type: 'bar', name: 'bar · 칸 질감 (셀 수 있는 값)',
+    why: '값이 전부 정수이고 최대값이 크지 않으면 막대를 면이 아니라 <b>칸</b> 으로 센다. 한 칸이 몇인지는 렌더러가 산출해 캡션으로 적는다 (지어낸 단위 차단). 다섯 칸마다 눈금이 길어져 눈으로 셀 수 있다.',
+    payload: { type: 'bar', title: '주요국 반도체 보조금', unit_label: '조원',
+      data: [{label:'미국',value:69},{label:'중국',value:33},{label:'EU',value:30},{label:'일본',value:18},{label:'한국',value:9}] } },
+  { type: 'bar', name: 'bar · 캡슐 (비율·지수)',
+    why: '비율은 칸으로 셀 수 없다. 그래서 끝이 둥근 캡슐 + 순위별 잉크 농도가 기본이고, 옅은 풀폭 트랙은 걷어냈다. 1위 <i>값 라벨</i> 만 액센트.',
+    payload: { type: 'bar', title: '주요국 반도체 자급률', unit_label: '%',
+      data: [{label:'대만',value:68.4},{label:'한국',value:52.1},{label:'미국',value:41.7},{label:'중국',value:33.2},{label:'일본',value:28.9},{label:'EU',value:21.5}] } },
+  { type: 'candle', name: 'candle · 둥근 몸통',
+    why: '몸통을 캡슐로, 심지를 1px 로. 색은 우리 상승·하락 토큰을 유지하고(참고 자료의 속빈=상승 관례는 다크 테마에서 읽히지 않아 미채택), 마지막 종가와 최고·최저 봉에 값을 직접 붙였다.',
+    payload: { type: 'candle', title: '삼성전자 — 일간 OHLC (40거래일)', data: daily(40, 296000, 700, 2600) } },
+  { type: 'donut', name: 'donut · 100 눈금 링',
+    why: '조각 6개 이하면 원을 100 눈금으로 나눈다 — 눈금 하나가 1%, 12시가 0. 조각 경계는 눈금 한 칸 틈으로 표시해 면적 대신 <b>세는</b> 도넛이 된다. 7조각 이상은 판독성 때문에 기존 arc.',
+    payload: { type: 'donut', title: '파운드리 점유율',
+      data: [{label:'TSMC',value:62},{label:'삼성',value:11},{label:'SMIC',value:6},{label:'기타',value:21}] } },
+  { type: 'diverging_bar', name: 'diverging_bar · 바깥 끝 캡슐',
+    why: '0 기준선 쪽은 직각, 바깥 끝만 둥글게 — 어디가 기준인지 형태가 말한다. 기준선은 점선으로.',
+    payload: { type: 'diverging_bar', title: '연금 개혁안 — 세대별 찬반', neg_label: '반대', pos_label: '찬성',
+      data: [{label:'20대',neg:48,pos:31},{label:'30대',neg:45,pos:36},{label:'40대',neg:41,pos:42},{label:'50대',neg:35,pos:49},{label:'60대 이상',neg:22,pos:61}] } },
+  { type: 'pyramid', name: 'pyramid · 바깥 끝 캡슐',
+    why: 'diverging_bar 와 같은 원리. 가운데 연령 축 쪽은 직각, 바깥 끝만 캡슐.',
+    payload: { type: 'pyramid', title: '한국 인구 구조 — 2026', left_label: '남', right_label: '여',
+      data: [{bracket:'0-9',left:166,right:158},{bracket:'10-19',left:232,right:219},{bracket:'20-29',left:310,right:283},{bracket:'30-39',left:351,right:330},{bracket:'40-49',left:405,right:392},{bracket:'50-59',left:428,right:421},{bracket:'60-69',left:381,right:397},{bracket:'70-79',left:201,right:243},{bracket:'80+',left:84,right:153}] } },
+  { type: 'gantt', name: 'gantt · 캡슐 구간',
+    why: '구간 막대의 양 끝을 반원으로. 짧은 구간일수록 알약에 가까워져 "점 하나짜리 사건" 과 시각적으로 구분된다.',
+    payload: { type: 'gantt', title: '관세 협상 일정',
+      data: [{label:'1차 실무협상',start:'2026-04-10',end:'2026-04-24'},{label:'고위급 회담',start:'2026-05-02',end:'2026-05-06'},{label:'잠정 합의 검토',start:'2026-05-20',end:'2026-06-10',note:'진행 중'},{label:'발효 목표',start:'2026-07-01',end:'2026-07-15'}] } },
+  { type: 'bullet', name: 'bullet · 캡슐 실적 막대',
+    why: '실적 막대를 캡슐로. 목표 세로 표식과 배경 밴드는 그대로 — 막대만 형태를 바꿔 "실적" 과 "구간" 을 형태로 가른다.',
+    payload: { type: 'bullet', title: '1Q 실적 vs 컨센서스',
+      data: [{label:'매출',value:133.9,target:128.0,ranges:[100,120,140]},{label:'영업이익',value:31.2,target:33.5,ranges:[20,28,36]},{label:'영업이익률(%)',value:23.3,target:26.2,ranges:[15,22,30]}] } },
+  { type: 'lollipop', name: 'lollipop · 가는 줄기 + 순위 사다리',
+    why: '줄기를 1.2px 회색에서 0.8px 옅은 실선으로 낮추고, 점 농도를 값 순위 사다리로. 잉크가 줄어 순위가 먼저 읽힌다.',
+    payload: { type: 'lollipop', title: '품목별 대미 수출 증가율',
+      data: [{label:'반도체',value:34.2},{label:'이차전지',value:28.7},{label:'자동차',value:18.9},{label:'바이오',value:15.3},{label:'조선',value:12.8},{label:'석유화학',value:9.4},{label:'철강',value:6.1},{label:'디스플레이',value:4.7},{label:'기계',value:3.2},{label:'섬유',value:1.8}] } },
+  { type: 'line', name: 'line · 일별 점 (40 포인트 이하)',
+    why: '짧은 일별 시계열이면 점 하나가 하루다. 주말은 속빈 점 — 색이 아니라 형태가 뜻을 진다. 처음·최고·끝만 값을 적고 가로축은 3 tick. (60 포인트가 넘는 시장 시계열은 조건을 벗어나 기존 실선 그대로.)',
+    payload: { type: 'line', title: '원/달러 — 최근 4주 (일별)', data: [
+      {x:'2026-06-01',y:1402.4},{x:'2026-06-02',y:1398.1},{x:'2026-06-03',y:1405.6},{x:'2026-06-04',y:1411.2},
+      {x:'2026-06-05',y:1408.7},{x:'2026-06-06',y:1408.7},{x:'2026-06-07',y:1408.7},{x:'2026-06-08',y:1414.9},
+      {x:'2026-06-09',y:1421.3},{x:'2026-06-10',y:1418.0},{x:'2026-06-11',y:1425.6},{x:'2026-06-12',y:1431.8},
+      {x:'2026-06-13',y:1431.8},{x:'2026-06-14',y:1431.8},{x:'2026-06-15',y:1427.4},{x:'2026-06-16',y:1419.9},
+      {x:'2026-06-17',y:1412.5},{x:'2026-06-18',y:1416.1},{x:'2026-06-19',y:1409.3},{x:'2026-06-20',y:1409.3},
+      {x:'2026-06-21',y:1409.3},{x:'2026-06-22',y:1403.8},{x:'2026-06-23',y:1397.2},{x:'2026-06-24',y:1392.6},
+      {x:'2026-06-25',y:1388.4},{x:'2026-06-26',y:1391.0},{x:'2026-06-27',y:1391.0},{x:'2026-06-28',y:1391.0}] } },
+  { type: 'area', name: 'area · 세로 실선',
+    why: '그라데이션 대신 바닥에서 값까지 세로 실선. 잉크가 값에 비례해 쌓이므로 "면적" 이 은유가 아니라 실제 셈이 된다. 최고점만 값 라벨.',
+    payload: { type: 'area', title: 'WTI 선물',
+      data: [{x:'01',y:78.2},{x:'02',y:80.1},{x:'03',y:76.4},{x:'04',y:72.9},{x:'05',y:74.5},{x:'06',y:71.8}] } },
+  { type: 'scatter', name: 'scatter · 추선 (20점 이하)',
+    why: '점마다 가로축까지 추선을 내려 x 값을 눈으로 따라갈 수 있게. 점 농도는 y 순위 사다리, 라벨은 상위 두 점만 (나머지는 소음). 축 양 끝을 말로 적을 수도 있다.',
+    payload: { type: 'scatter', title: '요금제 만족도 × 가격 부담', y_label: '만족도',
+      x_low_label: '가격 부담 낮음', x_high_label: '가격 부담 높음',
+      data: [{label:'무료',x:1.2,y:58},{label:'스타터',x:2.4,y:71},{label:'프로',x:3.9,y:83},{label:'팀',x:5.1,y:77},{label:'기업',x:6.8,y:64},{label:'교육',x:1.9,y:69}] } },
+  { type: 'range_bar', name: 'range_bar · 구슬 덤벨',
+    why: '연결선을 구슬로 바꾸고, 속빈 원 = 최저·이전 / 채운 원 = 최고·이후 로 형태에 뜻을 실었다. 범례는 읽는 법 캡션으로 대체.',
+    payload: { type: 'range_bar', title: 'OECD 남녀 임금격차 범위', low_label: '최저', high_label: '최고',
+      data: [{label:'한국',low:26,high:31},{label:'일본',low:21,high:24},{label:'미국',low:16,high:18},{label:'독일',low:14,high:17},{label:'스웨덴',low:7,high:9}] } },
+  { type: 'heatmap', name: 'heatmap · 둥근 칸 (60칸 이하)',
+    why: '칸을 둥글게 띄우고 안에 숫자를 직접 적었다. 진한 칸은 글자를 반전해 어느 테마에서도 읽힌다. 61칸 이상은 기존 농도 격자.',
+    payload: { type: 'heatmap', title: '버전별 기능 사용률', data: [
+      {x:'에디터',y:'v2.0',value:87},{x:'보드',y:'v2.0',value:75},{x:'문서',y:'v2.0',value:64},{x:'채팅',y:'v2.0',value:39},{x:'금고',y:'v2.0',value:26},
+      {x:'에디터',y:'v1.9',value:79},{x:'보드',y:'v1.9',value:69},{x:'문서',y:'v1.9',value:58},{x:'채팅',y:'v1.9',value:36},{x:'금고',y:'v1.9',value:21},
+      {x:'에디터',y:'v1.8',value:73},{x:'보드',y:'v1.8',value:64},{x:'문서',y:'v1.8',value:45},{x:'채팅',y:'v1.8',value:24},{x:'금고',y:'v1.8',value:9},
+      {x:'에디터',y:'v1.7',value:70},{x:'보드',y:'v1.7',value:56},{x:'문서',y:'v1.7',value:37},{x:'채팅',y:'v1.7',value:14},{x:'금고',y:'v1.7',value:2}] } },
+];
+
+// ── 카드 DOM (좌 = legacy, 우 = production) ──
+(function () {
+  var wrap = document.getElementById('wrap');
+  CASES.forEach(function (c, i) {
+    var sec = document.createElement('div');
+    sec.className = 'rd-section';
+    var card = function (side, tag, cls) {
+      return '<div>' +
+        '<span class="rd-tag ' + cls + '">' + tag + '</span>' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-title">' + c.payload.title + '</div>' +
+          '<div class="chart-card-stage chart-stage-' + c.type + '"' +
+            (side === 'old' ? ' data-chart-type="' + c.type + '"' : ' data-after-type="' + c.type + '"') +
+            ' data-chart-id="rd86-' + side + '-' + i + '"><svg></svg></div>' +
+        '</div>' +
+      '</div>';
+    };
+    sec.innerHTML =
+      '<div class="rd-type">' + c.name + '</div>' +
+      '<p class="rd-rationale">' + c.why + '</p>' +
+      '<div class="rd-pair">' +
+        card('old', 'v8.5.15 · 현행 발행본', 'cur') +
+        card('new', 'v8.6.1 · 신 렌더', 'new') +
+      '</div>';
+    wrap.appendChild(sec);
+    // payload 는 두 카드에 같은 내용으로 각각 붙인다 (렌더러 계약: 카드 안 inline JSON)
+    sec.querySelectorAll('.chart-card').forEach(function (cc) {
+      var sc = document.createElement('script');
+      sc.type = 'application/json';
+      sc.className = 'chart-payload-inline';
+      sc.textContent = JSON.stringify(c.payload);
+      cc.appendChild(sc);
+    });
+  });
+})();
+</script>
+<script src="../src/templates/static/d3.v7.min.js"></script>
+<script>
+// ── 2단 렌더 ──
+// ① v8.5.15 사본을 먼저 로드 → data-chart-type 이 붙은 *왼쪽* 카드만 그린다.
+// ② 왼쪽의 data-chart-type 을 떼고 오른쪽에 붙인 뒤 현행 charts.js 를 로드
+//    → 오른쪽만 그린다. 두 IIFE 는 서로의 전역을 건드리지 않는다.
+(function () {
+  function load(src, done) {
+    var s = document.createElement('script');
+    s.src = src; s.onload = done; s.onerror = done;
+    document.body.appendChild(s);
+  }
+  load('_legacy/charts.v8515.js', function () {
+    setTimeout(function () {
+      document.querySelectorAll('.chart-card-stage[data-chart-type]').forEach(function (st) {
+        st.removeAttribute('data-chart-type');
+      });
+      document.querySelectorAll('.chart-card-stage[data-after-type]').forEach(function (st) {
+        st.setAttribute('data-chart-type', st.getAttribute('data-after-type'));
+      });
+      load('../src/templates/static/charts.js', function () {});
+    }, 120);
+  });
+})();
+</script>
+</body>
+</html>

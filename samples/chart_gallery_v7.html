@@ -94,6 +94,7 @@ var PAYLOADS = [
     source: 'KRX / 일간 40거래일' },
   { type: 'area', title: 'WTI 선물', subtitle: '감산 연장에도 수요 둔화가 상단 제한', data: [{x:'01',y:78.2},{x:'02',y:80.1},{x:'03',y:76.4},{x:'04',y:72.9},{x:'05',y:74.5},{x:'06',y:71.8}], source: 'NYMEX / 월말 종가' },
   { type: 'bar', title: '주요국 반도체 보조금', subtitle: '미국이 2위와 2배 격차', unit_line: '단위: 조원 환산',
+    unit_label: '조원',
     data: [{label:'미국',value:69},{label:'중국',value:33},{label:'EU',value:30},{label:'일본',value:18},{label:'한국',value:9}], source: '각국 정부 발표 집계' },
   { type: 'donut', title: '파운드리 점유율', subtitle: 'TSMC 독주 속 2위권 혼전', data: [{label:'TSMC',value:62},{label:'삼성',value:11},{label:'SMIC',value:6},{label:'기타',value:21}] },
   { type: 'gantt', title: '관세 협상 일정', data: [{label:'1차 실무협상',start:'2026-04-10',end:'2026-04-24'},{label:'고위급 회담',start:'2026-05-02',end:'2026-05-06'},{label:'잠정 합의 검토',start:'2026-05-20',end:'2026-06-10',note:'진행 중'},{label:'발효 목표',start:'2026-07-01',end:'2026-07-15'}] },
@@ -181,6 +182,44 @@ var PAYLOADS = [
   { type: 'indicator', title: '선물 베이시스 — 콘탱고/백워데이션',
     data: [{label:'선물 - 현물',value:-0.42,unit:'p',pos_label:'콘탱고',neg_label:'백워데이션'}],
     source: 'KRX (예시 데이터) / 2026-06-12' },
+  /* ── v8.6.1 표현 변형 fixture (같은 type 의 *다른 기본 표현* 을 스냅샷으로 고정) ──
+     같은 type 을 여러 장 두므로 스냅샷 키(`key`)로 구분한다. charts.js 는
+     `data-chart-type` 만 보므로 렌더 계약에는 영향이 없다. */
+  { type: 'bar', key: 'bar:capsule', title: '주요국 반도체 자급률', subtitle: '값이 비율이면 캡슐이 기본', unit_line: '단위: %',
+    unit_label: '%',
+    data: [{label:'대만',value:68.4},{label:'한국',value:52.1},{label:'미국',value:41.7},{label:'중국',value:33.2},{label:'일본',value:28.9},{label:'EU',value:21.5}],
+    source: '각국 산업통계 (예시 데이터)' },
+  { type: 'bar', key: 'bar:rung', title: '요금제별 신규 계정', subtitle: '이름이 짧고 항목이 적으면 세로 칸', unit_line: '단위: 천 건',
+    orientation: 'vertical', unit_label: '건',
+    data: [{label:'무료',value:38},{label:'스타터',value:27},{label:'프로',value:22},{label:'팀',value:16},{label:'기업',value:7}],
+    source: '가입 로그 (예시 데이터)' },
+  { type: 'line', key: 'line:daily', title: '원/달러 — 최근 4주 (일별)', subtitle: '점 하나가 하루, 주말은 속빈 점', unit_line: '단위: 원 · 일별 종가',
+    data: [
+      {x:'2026-06-01',y:1402.4},{x:'2026-06-02',y:1398.1},{x:'2026-06-03',y:1405.6},{x:'2026-06-04',y:1411.2},
+      {x:'2026-06-05',y:1408.7},{x:'2026-06-06',y:1408.7},{x:'2026-06-07',y:1408.7},{x:'2026-06-08',y:1414.9},
+      {x:'2026-06-09',y:1421.3},{x:'2026-06-10',y:1418.0},{x:'2026-06-11',y:1425.6},{x:'2026-06-12',y:1431.8},
+      {x:'2026-06-13',y:1431.8},{x:'2026-06-14',y:1431.8},{x:'2026-06-15',y:1427.4},{x:'2026-06-16',y:1419.9},
+      {x:'2026-06-17',y:1412.5},{x:'2026-06-18',y:1416.1},{x:'2026-06-19',y:1409.3},{x:'2026-06-20',y:1409.3},
+      {x:'2026-06-21',y:1409.3},{x:'2026-06-22',y:1403.8},{x:'2026-06-23',y:1397.2},{x:'2026-06-24',y:1392.6},
+      {x:'2026-06-25',y:1388.4},{x:'2026-06-26',y:1391.0},{x:'2026-06-27',y:1391.0},{x:'2026-06-28',y:1391.0}
+    ],
+    source: '서울외국환중개 (예시 데이터)' },
+  { type: 'scatter', key: 'scatter:plumb', title: '요금제 만족도 × 가격 부담', subtitle: '점마다 추선을 내려 가로축을 읽는다',
+    x_low_label: '가격 부담 낮음', x_high_label: '가격 부담 높음', y_label: '만족도',
+    data: [{label:'무료',x:1.2,y:58},{label:'스타터',x:2.4,y:71},{label:'프로',x:3.9,y:83},{label:'팀',x:5.1,y:77},{label:'기업',x:6.8,y:64},{label:'교육',x:1.9,y:69}],
+    source: '사용자 조사 (예시 데이터)' },
+  { type: 'range_bar', key: 'range_bar:before_after', title: '온보딩 단계별 소요 시간 — 개편 전후', subtitle: '속빈 원이 개편 전, 채운 원이 개편 후',
+    mode: 'before_after', before_label: '개편 전', after_label: '개편 후', unit_line: '단위: 분',
+    data: [{label:'초대 흐름',before:14,after:6},{label:'첫 보드',before:19,after:9},{label:'데이터 가져오기',before:26,after:13},{label:'팀 설정',before:31,after:21},{label:'출시',before:38,after:30},{label:'정산',before:17,after:21}],
+    source: '제품 계측 (예시 데이터)' },
+  { type: 'heatmap', key: 'heatmap:grid', title: '버전별 기능 사용률', subtitle: '칸 60개 이하면 둥근 칸 + 숫자 직독', unit_line: '단위: %',
+    data: [
+      {x:'에디터',y:'v2.0',value:87},{x:'보드',y:'v2.0',value:75},{x:'문서',y:'v2.0',value:64},{x:'채팅',y:'v2.0',value:39},{x:'금고',y:'v2.0',value:26},
+      {x:'에디터',y:'v1.9',value:79},{x:'보드',y:'v1.9',value:69},{x:'문서',y:'v1.9',value:58},{x:'채팅',y:'v1.9',value:36},{x:'금고',y:'v1.9',value:21},
+      {x:'에디터',y:'v1.8',value:73},{x:'보드',y:'v1.8',value:64},{x:'문서',y:'v1.8',value:45},{x:'채팅',y:'v1.8',value:24},{x:'금고',y:'v1.8',value:9},
+      {x:'에디터',y:'v1.7',value:70},{x:'보드',y:'v1.7',value:56},{x:'문서',y:'v1.7',value:37},{x:'채팅',y:'v1.7',value:14},{x:'금고',y:'v1.7',value:2}
+    ],
+    source: '제품 계측 (예시 데이터)' },
   { type: 'stakeholder_map', title: '반도체 수출통제 — 이해당사자 지형',
     data: {
       nodes: [
@@ -207,13 +246,14 @@ var PAYLOADS = [
   var grid = document.getElementById('grid');
   PAYLOADS.forEach(function (p, i) {
     var wrap = document.createElement('div');
-    var typeLabel = '<div class="gal-type">' + p.type + '</div>';
+    var typeLabel = '<div class="gal-type">' + (p.key || p.type) + '</div>';
     wrap.innerHTML = typeLabel +
       '<div class="chart-card">' +
         '<div class="chart-card-title">' + p.title + '</div>' +
         (p.subtitle ? '<div class="chart-card-subtitle">' + p.subtitle + '</div>' : '') +
         (p.unit_line ? '<div class="chart-card-unitline">' + p.unit_line + '</div>' : '') +
-        '<div class="chart-card-stage chart-stage-' + p.type + '" data-chart-type="' + p.type + '" data-chart-id="gal-' + i + '"><svg></svg></div>' +
+        '<div class="chart-card-stage chart-stage-' + p.type + '" data-chart-type="' + p.type + '"' +
+          ' data-snapshot-key="' + (p.key || p.type) + '" data-chart-id="gal-' + i + '"><svg></svg></div>' +
         (p.source ? '<div class="chart-card-source"><span class="chart-card-source-label">출처:</span> ' + p.source + '</div>' : '') +
       '</div>';
     var script = document.createElement('script');

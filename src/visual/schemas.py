@@ -29,7 +29,7 @@ import logging
 import math
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -327,8 +327,17 @@ class BarRow(BaseModel):
     label: str
     value: float
     group: str | None = None
+    # v8.6.1 (플랜 §4.1) — 같은 항목의 이전 값 (F6 Paired Rungs). 있으면 주 막대
+    # 아래에 같은 질감을 흐리게 한 줄 더 그린다. 선택 필드.
+    prior: float | None = None
 
     model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_prior(self) -> "BarRow":
+        if self.prior is not None and not math.isfinite(self.prior):
+            raise ValueError(f"CHART-AP-3 가드: bar prior NaN/inf — {self.label}")
+        return self
 
 
 class BarChartGuard(BaseModel):
@@ -868,12 +877,62 @@ class RangeBarRow(BaseModel):
         return self
 
 
+class RangeBarBeforeAfterRow(BaseModel):
+    """v8.6.1 (플랜 §4.6) — `mode:"before_after"` 의 행 형식.
+
+    low/high 와 달리 **양방향** 이 정상이다 (개편 후 값이 줄어드는 것도 결과).
+    같은 값이면 덤벨이 점 하나로 붕괴하므로 그것만 막는다.
+    """
+
+    label: str = Field(min_length=1)
+    before: float
+    after: float
+
+    model_config = ConfigDict(extra="allow")
+
+    @model_validator(mode="after")
+    def validate_row(self) -> "RangeBarBeforeAfterRow":
+        for fld in ("before", "after"):
+            v = getattr(self, fld)
+            if not math.isfinite(v):
+                raise ValueError(
+                    f"CHART-AP-3 가드: range_bar {fld} NaN/inf — {self.label}"
+                )
+        if self.before == self.after:
+            raise ValueError(
+                f"CHART-AP-3 가드: range_bar '{self.label}' before == after "
+                "— 변화가 없으면 덤벨이 점으로 붕괴한다"
+            )
+        return self
+
+
 class RangeBarGuard(BaseModel):
     """range_bar (dumbbell): 두 값 사이 갭.
 
-    [{label, low, high}]. low < high, 3-15 항목.
+    두 행 형식을 받는다 (한 차트 안에서 섞는 것은 금지):
+      · 기본     `[{label, low, high}]`  — low < high
+      · before_after `[{label, before, after}]` — 양방향 허용 (v8.6.1)
+    3-15 항목.
     """
-    data: list[RangeBarRow] = Field(min_length=3, max_length=15)
+    data: list[dict] = Field(min_length=3, max_length=15)
+
+    @model_validator(mode="after")
+    def validate_rows(self) -> "RangeBarGuard":
+        forms: set[str] = set()
+        for raw in self.data:
+            if not isinstance(raw, dict):
+                raise ValueError("CHART-AP-3 가드: range_bar 행은 dict 여야 함")
+            if "before" in raw or "after" in raw:
+                RangeBarBeforeAfterRow(**raw)
+                forms.add("before_after")
+            else:
+                RangeBarRow(**raw)
+                forms.add("range")
+        if len(forms) > 1:
+            raise ValueError(
+                "CHART-AP-3 가드: range_bar 한 차트에 low/high 행과 before/after 행 혼용 금지"
+            )
+        return self
 
 
 # ─── v5.3.0 — Sankey (재무 분해 / 자본 배분) ─────────────────────────────
@@ -1336,6 +1395,118 @@ def validate_chart_data(chart_type: str, data: Any) -> tuple[bool, str]:
     except Exception as e:
         return False, str(e)
 
+    return True, "ok"
+
+
+# ─── payload 옵션 가드 (v8.6.1, CHART_REDESIGN_V8_6_PLAN §4) ──────────────
+# v8.6.1 은 렌더러의 *기본 표현* 을 데이터 모양으로 결정한다(0-LLM). 작성 모델은
+# 그 판정을 **덮어쓰는 옵션** 만 payload 최상위에 둘 수 있다. 옵션 값은
+# ``data`` 가 아니라 payload 에 있으므로 ``validate_chart_data`` 로는 검사할 수
+# 없어 별도 진입점을 둔다 (`ComposedSection._drop_invalid_charts` 가 호출).
+#
+# 정책: 옵션 *값* 이 계약을 벗어나면 기존 drop 정책을 따른다. 다만 세로 rung 의
+# 한글 라벨 게이트(라벨 ≤6자·항목 ≤8)는 가드가 아니라 **렌더러가 가로 tick 으로
+# 강등** 한다 — 판독 불가한 배치를 막는 것이 목적이지 차트를 버릴 일이 아니다.
+
+
+class BarOptions(BaseModel):
+    """bar payload 옵션 (전부 선택)."""
+
+    texture: Literal["tick", "dot", "capsule", "rung"] | None = None
+    orientation: Literal["horizontal", "vertical"] | None = None
+    unit: float | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="after")
+    def validate_unit(self) -> "BarOptions":
+        if self.unit is not None and (not math.isfinite(self.unit) or self.unit <= 0):
+            raise ValueError("bar unit 은 0 보다 큰 유한값이어야 함")
+        return self
+
+
+class LollipopOptions(BaseModel):
+    texture: Literal["dot", "stem"] | None = None
+    unit: float | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="after")
+    def validate_unit(self) -> "LollipopOptions":
+        if self.unit is not None and (not math.isfinite(self.unit) or self.unit <= 0):
+            raise ValueError("lollipop unit 은 0 보다 큰 유한값이어야 함")
+        return self
+
+
+class LineOptions(BaseModel):
+    """`marks:"none"` 이면 일별 점을 끄고 실선만 (v8.6.1 §4.5)."""
+
+    marks: Literal["none", "auto"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class AreaOptions(BaseModel):
+    """`fill:"gradient"` 면 세로 실선 대신 옛 그라데이션 (v8.6.1 §4.5)."""
+
+    fill: Literal["gradient", "hairline"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class ScatterOptions(BaseModel):
+    marks: Literal["none", "auto"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class RangeBarOptions(BaseModel):
+    mode: Literal["range", "before_after"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class HeatmapOptions(BaseModel):
+    """`cells:"grid"` 면 둥근 칸 대신 옛 농도 격자 (v8.6.1 §4.7)."""
+
+    cells: Literal["grid", "round"] | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+_TYPE_TO_OPTION_GUARD: dict[str, type[BaseModel]] = {
+    "bar": BarOptions,
+    "lollipop": LollipopOptions,
+    "line": LineOptions,
+    "area": AreaOptions,
+    "scatter": ScatterOptions,
+    "range_bar": RangeBarOptions,
+    "heatmap": HeatmapOptions,
+}
+
+
+def validate_chart_options(chart_type: str, payload: Any) -> tuple[bool, str]:
+    """차트 payload 의 *표현 옵션* 을 검사한다 (v8.6.1).
+
+    Args:
+        chart_type: 'bar' / 'line' / 'range_bar' 등.
+        payload: 차트 dict 전체 (`{type, title, data, texture?, ...}`).
+
+    Returns:
+        (True, "") 통과 / (False, 사유) 위반. 옵션이 아예 없으면 항상 통과 —
+        v8.6.0 이전 payload 는 전부 그대로 렌더된다 (additive-by-construction).
+    """
+    guard = _TYPE_TO_OPTION_GUARD.get((chart_type or "").lower())
+    if guard is None or not isinstance(payload, dict):
+        return True, "no_option_guard"
+    fields = set(getattr(guard, "model_fields", {}))
+    present = {k: payload[k] for k in fields if payload.get(k) is not None}
+    if not present:
+        return True, "ok"
+    try:
+        guard(**present)
+    except Exception as e:
+        return False, str(e)
     return True, "ok"
 
 

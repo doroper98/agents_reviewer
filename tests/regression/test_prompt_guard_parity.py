@@ -19,12 +19,21 @@ from __future__ import annotations
 
 from tests.regression._pytest_compat import pytest
 
-from src.visual.schemas import _TYPE_TO_GUARD, chart_renderable, validate_chart_data
+from src.visual.schemas import (
+    _TYPE_TO_GUARD,
+    chart_renderable,
+    validate_chart_data,
+    validate_chart_options,
+)
 
 # SYSTEM_PROMPT [type 별 data 스키마] 가 문서화한 모양 그대로.
 # key = chart type, value = 그 type 의 대표 data payload (list 는 여러 변형).
 PROMPT_SHAPES: dict[str, list] = {
-    "bar": [[{"label": "A", "value": 10}, {"label": "B", "value": 20}]],
+    "bar": [
+        [{"label": "A", "value": 10}, {"label": "B", "value": 20}],
+        # v8.6.1 §4.1 — 행 단위 prior (F6 Paired Rungs)
+        [{"label": "A", "value": 10, "prior": 7}, {"label": "B", "value": 20, "prior": 22}],
+    ],
     "donut": [[
         {"label": "A", "value": 40}, {"label": "B", "value": 35}, {"label": "C", "value": 25},
     ]],
@@ -113,11 +122,19 @@ PROMPT_SHAPES: dict[str, list] = {
         {"label": "감소", "value": 12, "type": "neg"},
         {"label": "종료", "value": 118, "type": "total"},
     ]],
-    "range_bar": [[
-        {"label": "A", "low": 10, "high": 20},
-        {"label": "B", "low": 12, "high": 30},
-        {"label": "C", "low": 8, "high": 15},
-    ]],
+    "range_bar": [
+        [
+            {"label": "A", "low": 10, "high": 20},
+            {"label": "B", "low": 12, "high": 30},
+            {"label": "C", "low": 8, "high": 15},
+        ],
+        # v8.6.1 §4.6 — mode:"before_after" 행 형식 (감소도 정상)
+        [
+            {"label": "A", "before": 14, "after": 6},
+            {"label": "B", "before": 19, "after": 9},
+            {"label": "C", "before": 17, "after": 21},
+        ],
+    ],
     "sankey": [{
         "nodes": [
             {"id": "rev", "label": "총매출"},
@@ -225,3 +242,58 @@ def test_empty_data_never_renders() -> None:
             assert not chart_renderable({"type": chart_type, "data": empty}), (
                 f"{chart_type}: 빈 데이터({empty!r})인데 렌더 허용"
             )
+
+
+# ─── v8.6.1 — payload 표현 옵션 parity (플랜 §4) ─────────────────────────
+# 프롬프트가 가르치는 옵션 값이 옵션 가드를 통과하는지, 계약 밖 값은 막히는지.
+PROMPT_OPTIONS: dict[str, list[dict]] = {
+    "bar": [
+        {"unit_label": "건"},
+        {"orientation": "vertical"},
+        {"texture": "tick"}, {"texture": "dot"},
+        {"texture": "capsule"}, {"texture": "rung"},
+        {"unit": 5},
+    ],
+    "lollipop": [{"texture": "dot"}, {"texture": "stem"}, {"unit_label": "건"}],
+    "line": [{"marks": "none"}],
+    "area": [{"fill": "gradient"}],
+    "scatter": [{"marks": "none"}, {"x_low_label": "낮음", "x_high_label": "높음"}],
+    "range_bar": [{"mode": "before_after"}, {"mode": "range"},
+                  {"low_label": "최저", "high_label": "최고"}],
+    "heatmap": [{"cells": "grid"}],
+}
+
+REJECTED_OPTIONS: list[tuple[str, dict]] = [
+    ("bar", {"texture": "zigzag"}),
+    ("bar", {"orientation": "diagonal"}),
+    ("bar", {"unit": 0}),
+    ("bar", {"unit": -3}),
+    ("lollipop", {"texture": "capsule"}),
+    ("line", {"marks": "daily"}),
+    ("area", {"fill": "solid"}),
+    ("range_bar", {"mode": "delta"}),
+    ("heatmap", {"cells": "round-ish"}),
+]
+
+
+def test_prompt_documented_options_pass_option_guard() -> None:
+    failures = []
+    for chart_type, payloads in PROMPT_OPTIONS.items():
+        for i, opts in enumerate(payloads):
+            ok, reason = validate_chart_options(chart_type, dict(opts, type=chart_type))
+            if not ok:
+                failures.append(f"{chart_type}[{i}] {opts}: {reason}")
+    assert not failures, "프롬프트가 가르치는 옵션이 가드에서 drop 됨:\n" + "\n".join(failures)
+
+
+def test_out_of_contract_options_are_rejected() -> None:
+    for chart_type, opts in REJECTED_OPTIONS:
+        ok, _ = validate_chart_options(chart_type, dict(opts, type=chart_type))
+        assert not ok, f"{chart_type} {opts} 가 통과했다 — 옵션 Literal 계약 구멍"
+
+
+def test_option_guard_is_noop_without_options() -> None:
+    """v8.6.0 이전 payload 는 옵션이 없으므로 항상 통과 (additive-by-construction)."""
+    for chart_type in PROMPT_SHAPES:
+        ok, _ = validate_chart_options(chart_type, {"type": chart_type, "title": "t"})
+        assert ok, chart_type

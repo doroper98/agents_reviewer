@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.6.0
+last_synced_with: v8.6.1
 ssot_for:
   - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"
@@ -249,7 +249,16 @@ bar / donut / stacked / bubble / heatmap / network / waterfall 의 리디자인
 [CHART_REDESIGN_V8_6_PLAN.md](CHART_REDESIGN_V8_6_PLAN.md) §3.3 의 결정. §10 의 잉크
 농도 위계를 *유지한 채*, 그 위에 "칸 하나가 정해진 수량" 이라는 어휘를 얹는다. 구현은
 `src/templates/static/charts.js` 의 `// ===== v8.6.0 unit vocabulary helpers =====`
-블록 (v8.6.0 은 정의만, 배선은 v8.6.1).
+블록 (v8.6.0 정의 → **v8.6.1 에서 렌더러 13종에 배선**). 전·후 비교는
+[samples/chart_redesign_v8_6_compare.html](../samples/chart_redesign_v8_6_compare.html).
+
+**어느 조건에서 새 표현이 기본인가** (v8.6.1 — 전부 렌더러가 결정한다):
+bar 는 값이 전부 정수이고 최대 500 이하면 칸, 아니면 캡슐 · line 은 40 포인트 이하이고
+x 가 ISO 날짜면 일별 점 · area 는 120 포인트 이하면 세로 실선 · scatter 는 20 점 이하면
+추선 · donut 은 6 조각 이하면 눈금 링 · heatmap 격자는 60 칸 이하면 둥근 칸. 조건을
+벗어나면 옛 표현을 유지한다 — 판독성이 떨어지는 지점에서 렌더러가 물러선다.
+덮어쓰기 옵션은 `texture`·`unit`·`orientation`·`prior`·`marks`·`fill`·`mode`·`cells`
+(전부 선택. 계약 밖 값은 drop, 세로 칸 라벨 게이트만 가로 강등).
 
 ① **셀 수 있으면 칸, 아니면 캡슐.** 건수·인원·금액처럼 값이 전부 정수이고 최대값이
 크지 않으면 막대를 *면* 이 아니라 *칸* 으로 그린다 (`isCountable`). 비율(%)·지수·평균

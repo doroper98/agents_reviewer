@@ -418,8 +418,10 @@ SSOT: [docs/REPORT_WRITING_ANTIPATTERNS.md](docs/REPORT_WRITING_ANTIPATTERNS.md)
 - `src/state/models.py:EvidencePack.recommended_persona`, `AnalysisBrief.recommended_persona` 필드 삭제
 - `src/token_budget.py` 의 dead flag 6종 (`use_llm_quality_gate / use_llm_narrative_plan / use_llm_executive_summary / use_llm_visuals / use_llm_synthesis / use_legacy_personas`) 삭제. 본문 문체 SSOT 는 [docs/REPORT_STYLE_GUIDE.md](docs/REPORT_STYLE_GUIDE.md) 로 통합.
 
-## Chart System (v7.5.0)
+## Chart System (v7.5.0 · 표현 v8.6.1)
 - 차트 데이터는 **composer 가 단일 LLM 호출 안에서 직접 emit** (외부 빌더 없음). 빈 데이터면 차트 없음.
+- **기본 표현은 데이터가 정한다 (v8.6.1, 소급).** 셀 수 있는 값(정수·최대 500 이하)은 막대를 면이 아니라 *칸* 으로 세고 한 칸의 뜻을 렌더러가 산출해 읽는 법 캡션으로 적는다. 비율·지수는 캡슐. 캔들 몸통 캡슐 · 도넛 100 눈금 링(≤6조각) · 막대류 캡슐 끝(diverging_bar/pyramid/gantt/bullet) · lollipop 순위 사다리 · line 일별 점(≤40, ISO 날짜, 주말 속빈) · area 세로 실선(≤120) · scatter 추선(≤20) · range_bar 구슬 덤벨 · heatmap 둥근 칸(≤60). 조건을 벗어나면 옛 표현 유지. 덮어쓰기 옵션 `texture/unit/orientation/prior/marks/fill/mode/cells` 는 전부 선택이고 계약 밖 값은 drop(`schemas.validate_chart_options`) — 단 세로 칸의 한글 라벨 게이트만 렌더러가 가로로 강등한다. 어휘 SSOT [MONO_THEME_GUIDE §10.1](docs/MONO_THEME_GUIDE.md), 계획 SSOT [CHART_REDESIGN_V8_6_PLAN §4](docs/CHART_REDESIGN_V8_6_PLAN.md), 전·후 비교 [samples/chart_redesign_v8_6_compare.html](samples/chart_redesign_v8_6_compare.html).
+- **렌더 DOM 스냅샷 회귀 (v8.6.0)** — charts.js 를 고치면 `python scripts/chart_dom_snapshot.py --check tests/regression/fixtures/chart_dom_baseline.json --diff-report` 로 *어떤 type 의 DOM 이 바뀌었는지* 확인하고, 의도한 목록이면 `--out` 으로 baseline 을 재기록해 커밋 메시지에 남긴다. 갤러리(`samples/chart_gallery_v7.html`)는 `RENDERERS` 와 1:1 이어야 하며 표현 변형은 `data-snapshot-key` 로 따로 고정한다.
 - **27종 type** (v7.9.17 — network 폐기 CHART-AP-36):
   - 기존 12종 (v5.2.13 까지): bar / donut / line / gantt / stacked / bubble / heatmap / dual_line / forecast / choropleth / candle / area
   - v5.3.0 신규 7종 (FT/Economist 스타일, **guarded** tier): scatter / stacked_area / lollipop / slope / small_multiples / waterfall / range_bar
