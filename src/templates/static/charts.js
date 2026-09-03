@@ -139,12 +139,21 @@
       .attr('stroke', t.accent).attr('stroke-width', 1.4)
       .attr('stroke-dasharray', '5,3');
     if (ann.label) {
-      // Label in right margin (so doesn't overlap with end labels of data lines)
+      // v8.6.6 (전수 검수) — 라벨을 우측 여백에 두되 *들어갈 때만*. 여백보다 길면
+      // 캔버스 밖으로 잘려 나갔다 ('증권가 평균 목표' / '선진국 평균 성장률').
+      // 안 들어가면 선 위 오른쪽 끝에 안쪽 정렬 — 잘리느니 안으로 들인다.
+      const label = String(ann.label);
+      const estW = label.length * 7.2 + 4;      // Noto Sans KR 10px 근사(한글 기준)
+      const room = zones.W - (zones.data.x + zones.data.w) - 6;
+      const inMargin = estW <= room;
       svg.append('text')
-        .attr('x', zones.data.x + zones.data.w + 4).attr('y', y + 3)
+        .attr('x', inMargin ? zones.data.x + zones.data.w + 4
+                            : zones.data.x + zones.data.w - 2)
+        .attr('y', inMargin ? y + 3 : y - 5)
+        .attr('text-anchor', inMargin ? 'start' : 'end')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 10)
         .attr('fill', t.accent).attr('font-weight', 600)
-        .text(ann.label);
+        .text(label);
     }
   }
 
@@ -278,16 +287,33 @@
       { x: x + 6,            y: y - 8,  anchor: 'start' },  // right of marker
       { x: x + 6,            y: y - 18, anchor: 'start' },  // upper-right
       { x: x - 6 - labelW,   y: y - 8,  anchor: 'start' },  // left
+      // v8.6.6 (전수 검수) — 위 3개가 전부 막히면 예전엔 무조건 candidates[0] 으로
+      // 되돌아가 우측 축 눈금 위에 겹쳐 앉았다 (dual_line: '1,400' ↔ '원/달러 1402').
+      // 아래·위로 한 칸씩 더 벌린 후보를 주고, 그래도 다 막히면 *가장 덜 겹치는*
+      // 후보를 고른다. 무조건 첫 후보로 되돌아가지 않는다.
+      { x: x - 6 - labelW,   y: y - 20, anchor: 'start' },  // upper-left
+      { x: x - 6 - labelW,   y: y + 6,  anchor: 'start' },  // lower-left
+      { x: x + 6,            y: y + 6,  anchor: 'start' },  // lower-right
     ];
+    const inBounds = (c) => !(c.x + labelW > zones.W - 2 || c.x < 2);
     let placed = null;
     for (const c of candidates) {
-      if (c.x + labelW > zones.W - 2 || c.x < 2) continue;
+      if (!inBounds(c)) continue;
       if (!occupancy.hits(c.x, c.y, labelW, labelH)) {
         placed = c;
         break;
       }
     }
-    placed = placed || candidates[0];
+    if (!placed) {
+      const area = (c) => occupancy.list().reduce((sum, b) => {
+        const ox = Math.min(c.x + labelW, b.x + b.w) - Math.max(c.x, b.x);
+        const oy = Math.min(c.y + labelH, b.y + b.h) - Math.max(c.y, b.y);
+        return sum + (ox > 0 && oy > 0 ? ox * oy : 0);
+      }, 0);
+      const pool = candidates.filter(inBounds);
+      placed = (pool.length ? pool : candidates)
+        .reduce((best, c) => (area(c) < area(best) ? c : best));
+    }
     svg.append('text')
       .attr('x', placed.x).attr('y', placed.y + 10).attr('text-anchor', placed.anchor)
       .attr('font-family', 'Noto Serif KR').attr('font-size', 11).attr('font-weight', 700)
@@ -1451,21 +1477,33 @@
     const yR = d3.scaleLinear().domain(d3.extent(right.series, d => +d.y))
       .nice().range([zones.data.y + zones.data.h, zones.data.y]);
 
+    // v8.6.6 (전수 검수) — 축 눈금 라벨 정밀도. `.0f` 고정이라 3.5~4.0 구간의
+    // UST 금리 축이 "4 / 4 / 4 / 4" 로 전부 같은 글자였다. 눈금이 서로 구별되는
+    // *최소* 소수 자리를 고른다.
+    const axisFmt = (ticks) => {
+      for (let dec = 0; dec <= 3; dec += 1) {
+        const f = d3.format(`,.${dec}f`);
+        if (new Set(ticks.map(f)).size === ticks.length) return f;
+      }
+      return d3.format(',.2f');
+    };
+    const tL = yL.ticks(4), tR = yR.ticks(4);
+    const fmtL = axisFmt(tL), fmtR = axisFmt(tR);
     // Y axis L (left)
-    yL.ticks(4).forEach(v => {
+    tL.forEach(v => {
       svg.append('text').attr('x', zones.data.x - 6).attr('y', yL(v) + 3).attr('text-anchor', 'end')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
-        .text(d3.format('.0f')(v));
+        .text(fmtL(v));
     });
     svg.append('text').attr('x', zones.data.x).attr('y', zones.data.y - 6)
       .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.text)
       .attr('font-weight', 600)
       .text(`${left.label || ''} (${left.unit || ''})`);
     // Y axis R (right)
-    yR.ticks(4).forEach(v => {
+    tR.forEach(v => {
       svg.append('text').attr('x', zones.data.x + zones.data.w + 6).attr('y', yR(v) + 3)
         .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.muted)
-        .text(d3.format('.0f')(v));
+        .text(fmtR(v));
     });
     svg.append('text').attr('x', zones.data.x + zones.data.w).attr('y', zones.data.y - 6).attr('text-anchor', 'end')
       .attr('font-family', 'Noto Sans KR').attr('font-size', 9).attr('fill', t.accent)
@@ -1474,6 +1512,10 @@
 
     const occupancy = renderAnnotations(svg, payload, zones, t,
       (xv) => x(String(xv)), null);  // y not unique — annotations use x only
+    // v8.6.6 — 축 눈금 라벨을 occupancy 에 등록. 등록 전엔 placeEndLabel 이
+    // 우측 축 눈금('1400') 위에 끝 라벨('원/달러 1402')을 겹쳐 앉혔다.
+    tR.forEach(v => occupancy.add(zones.data.x + zones.data.w + 4, yR(v) - 7, 48, 14));
+    tL.forEach(v => occupancy.add(zones.data.x - 52, yL(v) - 7, 48, 14));
 
     // Lines
     // CHART-AP-30 — 실제 데이터 경로 (곡선 보간 금지).
@@ -2086,17 +2128,36 @@
     });
 
     // Country labels for top values (max 5)
+    // v8.6.6 (전수 검수, CHART-AP-33 계열) — 중심점에 그냥 찍으면 이웃한 나라끼리
+    // 겹친다 (한국 ↔ 일본이 매번). x 가 가까운 라벨끼리 묶어 세로로 밀어내고,
+    // 옮긴 라벨은 중심점까지 가는 실낱 연결선으로 어느 나라인지 잃지 않게 한다.
     const sorted = data.slice().sort((a, b) => +b.value - +a.value).slice(0, 5);
+    const marks = [];
     sorted.forEach(d => {
       const num = ISO_A2_TO_NUM[String(d.country_code).toUpperCase()];
       const f = countries.features.find(ft => String(ft.id).padStart(3, '0') === num);
       if (!f) return;
       const c = path.centroid(f);
       if (!isFinite(c[0]) || !isFinite(c[1])) return;
-      svg.append('text').attr('x', c[0]).attr('y', c[1])
+      marks.push({ cx: c[0], cy: c[1], ly: c[1],
+                   txt: `${d.country_code} ${d3.format('.1f')(+d.value)}` });
+    });
+    marks.sort((a, b) => a.cy - b.cy);
+    for (let i = 1; i < marks.length; i += 1) {
+      const a = marks[i - 1], b = marks[i];
+      const near = Math.abs(b.cx - a.cx) < (Math.max(a.txt.length, b.txt.length) * 5.4);
+      if (near && b.ly - a.ly < 12) b.ly = a.ly + 12;
+    }
+    marks.forEach(m => {
+      if (Math.abs(m.ly - m.cy) > 1) {
+        svg.append('line').attr('x1', m.cx).attr('y1', m.cy)
+          .attr('x2', m.cx).attr('y2', m.ly - 7)
+          .attr('stroke', t.text).attr('stroke-opacity', 0.4).attr('stroke-width', 0.6);
+      }
+      svg.append('text').attr('x', m.cx).attr('y', m.ly)
         .attr('text-anchor', 'middle').attr('font-family', 'Noto Sans KR').attr('font-size', 9)
         .attr('fill', t.text).attr('font-weight', 700)
-        .text(`${d.country_code} ${d3.format('.1f')(+d.value)}`);
+        .text(m.txt);
     });
   }
 
@@ -3790,17 +3851,22 @@
     });
     // 잉크 배정 — accent 명시 segment 우선, 없으면 첫 segment
     const hasAccent = segs.some(d => d.accent);
-    const LADDER = [0.85, 0.5, 0.3, 0.18, 0.11];
+    // v8.6.6 (전수 검수) — 옛 사다리는 첫 단이 .85 라 accent(.95) 와 구별이 안 돼
+    // 100칸이 한 덩어리로 보였다 (donut 링과 같은 클래스의 결함). 간격을 벌리고
+    // 최저 단은 v8.6.5 의 LADDER_MIN 과 같은 .16.
+    const LADDER = [0.55, 0.34, 0.24, 0.18, 0.16];
     let ladderIdx = 0;
     const fills = quota.map((q, i) => {
       const isAcc = hasAccent ? !!q.d.accent : i === 0;
-      if (isAcc) return { color: t.accent, op: 0.95 };
+      if (isAcc) return { color: t.accent, op: 1 };
       const op = LADDER[Math.min(ladderIdx, LADDER.length - 1)];
       ladderIdx += 1;
       return { color: t.accent, op };
     });
     const cell = 23, grid = cell * 10, padT = 18, padL = 26;
-    const W = 720, H = grid + padT + 26;
+    // v8.6.6 (전수 검수) — 100칸 와플은 "칸 하나 = 정해진 수량" 어휘의 원형인데
+    // 정작 읽는 법 캡션이 없었다 (mono guide §10.1 규칙 ⑤).
+    const W = 720, H = grid + padT + 26 + FOOTER_H;
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     // v7.9.8 — 그리드+범례를 그룹에 담아 getBBox 로 가로 중앙정렬 (sankey 와 동일
@@ -3839,6 +3905,8 @@
       const dx = (W - bb.width) / 2 - bb.x;
       if (isFinite(dx)) g.attr('transform', `translate(${dx},0)`);
     } catch (e) { /* getBBox 미지원 환경 — 좌측정렬 폴백 */ }
+    keyFooter(svg, W, H,
+      `점 하나 = ${payload.unit_label || '100 중 1'} · 한 줄 = 10`, t);
   }
 
   // ============================================================
@@ -4260,10 +4328,20 @@
       // 값 라벨
       var vtxt = (v >= 0 ? '+' : '') + (Math.abs(v) >= 100 ? d3.format(',.0f')(v) : d3.format(',.2f')(v)) + (d.unit || '');
       var sub = pos ? (d.pos_label || '') : (d.neg_label || '');
-      svg.append('text').attr('x', pos ? (cx + w + 8) : (cx - w - 8)).attr('y', cy + 4)
-        .attr('text-anchor', pos ? 'start' : 'end').attr('font-family', 'Noto Serif KR')
+      var full = vtxt + (sub ? '  ' + sub : '');
+      // v8.6.6 (전수 검수) — 값 라벨을 막대 바깥에 두되 *자리가 있을 때만*. 막대가
+      // 길면 음수 라벨이 왼쪽 행 라벨 컬럼까지 밀고 들어가 두 글자가 겹쳐 찍혔다
+      // ("선물 - 현물" 위에 "−0.42p 백워데이션"). 자리가 없으면 막대 끝 *위* 로.
+      var estW = full.length * 8.2 + 6;      // Noto Serif KR 14px 근사
+      var tip = pos ? (cx + w) : (cx - w);
+      var fits = pos ? (tip + 8 + estW <= W - 8) : (tip - 8 - estW >= labelW + 10);
+      svg.append('text')
+        .attr('x', fits ? (pos ? tip + 8 : tip - 8) : (pos ? tip - 4 : tip + 4))
+        .attr('y', fits ? cy + 4 : cy - 13)
+        .attr('text-anchor', fits ? (pos ? 'start' : 'end') : (pos ? 'end' : 'start'))
+        .attr('font-family', 'Noto Serif KR')
         .attr('font-size', 14).attr('font-weight', 700).attr('fill', col)
-        .text(vtxt + (sub ? '  ' + sub : ''));
+        .text(full);
     });
   }
 

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "tool": "scripts/chart_dom_snapshot.py",
-  "generated_with": "v8.6.5",
+  "generated_with": "v8.6.6",
   "gallery": "samples/chart_gallery_v7.html",
   "themes": [
     "editorial_cream",
@@ -276,66 +276,66 @@
     },
     "candle": {
       "editorial_cream": {
-        "sha256": "141c7af2ad79c085442a09fe724146d304450d9a148db0df641201e54894906c",
+        "sha256": "d5ff138a6ac210551f1713fc9cfb22bc2ede04846d027a253fe41215a1bb307a",
         "elements": 110,
         "tags": "circle:2|line:48|rect:40|text:20"
       },
       "burgundy_mono": {
-        "sha256": "6a57b88018b9df68794b2d68e89b6e118750f0e2128c86f1ed8fec74ee82e28a",
+        "sha256": "7c5438380e858016f7ccc1f82d13c4612705306fa5fc51ec9f4e6fe2f9ff6a3d",
         "elements": 110,
         "tags": "circle:2|line:48|rect:40|text:20"
       },
       "midnight_indigo": {
-        "sha256": "1b51d6d0eb4ee3582f69a3128f2568b2446017f628c9605131b7cd43fb9bb58b",
+        "sha256": "77b91850a26bc4b04ac33d3928ebc924339195d17446e6d893faa047632d71b8",
         "elements": 110,
         "tags": "circle:2|line:48|rect:40|text:20"
       },
       "pine_forest": {
-        "sha256": "a824ae638398cf78c84ee315a6fbf5098399c0478ddc634b5bddaa4cc3018d68",
+        "sha256": "f9d69e40c5ef24a362c6454625c2233413f45c28db72c36de2d45c332de3d69e",
         "elements": 110,
         "tags": "circle:2|line:48|rect:40|text:20"
       },
       "graphite_slate": {
-        "sha256": "b93ee4171b36f9968fbc2e3af8b8d2816ee5edef1e5260d3142dfeaab57475c1",
+        "sha256": "84ed766affad330462001ba23b242425d4336660209b79dbfd5430913905bfe3",
         "elements": 110,
         "tags": "circle:2|line:48|rect:40|text:20"
       },
       "reportage_steel": {
-        "sha256": "794d63a048a828aa0b909eb62a4db00e0c8cfbae5f643fa8baab5882aa64a09a",
+        "sha256": "386a11cb412cee0c3c3c856fa29281d3a4d076bce3c6fc22dcaedf3fa4328ac9",
         "elements": 110,
         "tags": "circle:2|line:48|rect:40|text:20"
       }
     },
     "choropleth": {
       "editorial_cream": {
-        "sha256": "e4c173ed0349765839e37bf3fbc527418feb790c671686692ef9221278c30daf",
-        "elements": 201,
-        "tags": "circle:1|defs:1|line:3|path:177|pattern:4|rect:5|text:10"
+        "sha256": "5849d2802eda8ac039e7ca9aba71551cde7021a0d02bd0874f47f6022f5c9f65",
+        "elements": 202,
+        "tags": "circle:1|defs:1|line:4|path:177|pattern:4|rect:5|text:10"
       },
       "burgundy_mono": {
-        "sha256": "b6d2dbd0f83d31c2a7a0e97c91c2a13d9b48738dc3df15707a71b6dcf675b925",
-        "elements": 201,
-        "tags": "circle:1|defs:1|line:3|path:177|pattern:4|rect:5|text:10"
+        "sha256": "dbc6db4bac44fa6f756a60da90424fecd97e88dd82acb683d8810776f777c580",
+        "elements": 202,
+        "tags": "circle:1|defs:1|line:4|path:177|pattern:4|rect:5|text:10"
       },
       "midnight_indigo": {
-        "sha256": "f011ca38b5810b3bd803a146a7c37ce71725532a2e6f9673510749118a06fa34",
-        "elements": 201,
-        "tags": "circle:1|defs:1|line:3|path:177|pattern:4|rect:5|text:10"
+        "sha256": "e5980e982786487fa2b9ef17d697af2abd445a482df489d3d539c7fece4a60d5",
+        "elements": 202,
+        "tags": "circle:1|defs:1|line:4|path:177|pattern:4|rect:5|text:10"
       },
       "pine_forest": {
-        "sha256": "e1c1080d37aca73c1c9d1ba72c10dbef09787ce62b9d5008c661c7f77e547dfb",
-        "elements": 201,
-        "tags": "circle:1|defs:1|line:3|path:177|pattern:4|rect:5|text:10"
+        "sha256": "da87d8820970741c1a50d2d26a8159e12448614e98afb3eacf3cc61290afb4c4",
+        "elements": 202,
+        "tags": "circle:1|defs:1|line:4|path:177|pattern:4|rect:5|text:10"
       },
       "graphite_slate": {
-        "sha256": "c867e365800c6136ea07182a846eaf5c0f7a6c60ad302348d56e7fc7cb6803ad",
-        "elements": 201,
-        "tags": "circle:1|defs:1|line:3|path:177|pattern:4|rect:5|text:10"
+        "sha256": "0fd60547378bb23cc49460bcfba6ac9582eb3f62c998445d4e952cf43ccb4075",
+        "elements": 202,
+        "tags": "circle:1|defs:1|line:4|path:177|pattern:4|rect:5|text:10"
       },
       "reportage_steel": {
-        "sha256": "337dcccd3791f264b9c00bb437940034e66b4dd0b4d2badd1aa0a6074a4feabc",
-        "elements": 201,
-        "tags": "circle:1|defs:1|line:3|path:177|pattern:4|rect:5|text:10"
+        "sha256": "3082f683620d7bdac86febabca4fb36841e217f222b6cacf2d2f50eaf9fc789c",
+        "elements": 202,
+        "tags": "circle:1|defs:1|line:4|path:177|pattern:4|rect:5|text:10"
       }
     },
     "combo": {
@@ -500,64 +500,64 @@
     },
     "dot_matrix": {
       "editorial_cream": {
-        "sha256": "e7098ad5f001e6dd3a16598a3db37f228fd1f0314ec2a8cad680f3da69eeda23",
-        "elements": 107,
-        "tags": "circle:102|g:1|text:4"
+        "sha256": "ac23f57bb95c4cb118439380b2fda7e2a45d765f0d281ad46c279c037f1b6418",
+        "elements": 108,
+        "tags": "circle:102|g:1|text:5"
       },
       "burgundy_mono": {
-        "sha256": "a01ee15411b02c93f5037154b2abfdd794befa38b1a156aede690aaa511a9579",
-        "elements": 107,
-        "tags": "circle:102|g:1|text:4"
+        "sha256": "f66d560311cff44e188435d12f31e2b9f8df4536b7094e1517b99d4cd6199bae",
+        "elements": 108,
+        "tags": "circle:102|g:1|text:5"
       },
       "midnight_indigo": {
-        "sha256": "94a103c3e41c1b3f59feb7a4c62cac6922da503ecade19d833fec3937fbed05c",
-        "elements": 107,
-        "tags": "circle:102|g:1|text:4"
+        "sha256": "3d668c067ca2bb692ab8a0a0f5e99d1263697c6b5bd90f6f8d09d193a43d0ae6",
+        "elements": 108,
+        "tags": "circle:102|g:1|text:5"
       },
       "pine_forest": {
-        "sha256": "cbb83cd291619d9727971a6bcfa67e389dc5ef7904c5da896a33cf192782b358",
-        "elements": 107,
-        "tags": "circle:102|g:1|text:4"
+        "sha256": "3b9e16357059a51ceba1ea434616f40d5ed6a9ae1e6cc3ea508e2d801a4aa005",
+        "elements": 108,
+        "tags": "circle:102|g:1|text:5"
       },
       "graphite_slate": {
-        "sha256": "cf7848bc5dbd291c72a5ab0682fa199655971a56da9091f54e4938556dde654b",
-        "elements": 107,
-        "tags": "circle:102|g:1|text:4"
+        "sha256": "e6b711bbd1e51bc4931127bd2550d7ff250e911a62955c58959e7334d8548264",
+        "elements": 108,
+        "tags": "circle:102|g:1|text:5"
       },
       "reportage_steel": {
-        "sha256": "a089b963787577a6232d1d4d2a8a300c6b94e0a207af777d54685b46fd4e8905",
-        "elements": 107,
-        "tags": "circle:102|g:1|text:4"
+        "sha256": "494fca57ee5d6ca270459e4f37bbd3d02b8a25ef00c831e706f37496a348346c",
+        "elements": 108,
+        "tags": "circle:102|g:1|text:5"
       }
     },
     "dual_line": {
       "editorial_cream": {
-        "sha256": "1b4f7212f1360744e6f467717a537975f198d1a74c12adead4a2d16d8319144c",
+        "sha256": "8248c0f4b0d26800d5eaf1543b8c045898e64ceab44dec88f4d2cdadd504028c",
         "elements": 33,
         "tags": "circle:3|defs:1|line:3|path:2|pattern:4|text:20"
       },
       "burgundy_mono": {
-        "sha256": "7560a0e71f3a92e4de7c920740802b3eed2c549b5b7a44a20499c0914aff1c37",
+        "sha256": "722d85135416c2188286400b753030062feb6426bcb17003d37e5346cf440f12",
         "elements": 33,
         "tags": "circle:3|defs:1|line:3|path:2|pattern:4|text:20"
       },
       "midnight_indigo": {
-        "sha256": "33e370849d807ab18e51ab514681b2fb1bbab8efb1602fa38aea7b30a863b554",
+        "sha256": "68679d5bc04ee3541a162faca8ea2f78aad25e86584d0b2bc563b26f27cdf879",
         "elements": 33,
         "tags": "circle:3|defs:1|line:3|path:2|pattern:4|text:20"
       },
       "pine_forest": {
-        "sha256": "c1f19400a3d184b07d9ab381b1200254f718e0c62d44e35cac0b170b90f74fd9",
+        "sha256": "c86399887c002f1660e7191d2cdcf9d9d802fa9db85055f9ada1d379ae40cecf",
         "elements": 33,
         "tags": "circle:3|defs:1|line:3|path:2|pattern:4|text:20"
       },
       "graphite_slate": {
-        "sha256": "f00c3698f5d40081cc2f3b828ee42624738d72f39f8c2c9d316e40b7cb6bd3db",
+        "sha256": "1777e2a9be8986c3bc6e773f323b3c272bf8bc3d73bb80a08b3f119ae191fe02",
         "elements": 33,
         "tags": "circle:3|defs:1|line:3|path:2|pattern:4|text:20"
       },
       "reportage_steel": {
-        "sha256": "a9585394bb29c2cfe452d3c51187e4430da1d4f87771fed9bd7602ed0c98c6bb",
+        "sha256": "5a4d3a965e494bb0654749ebee7bf234cb8188cdac1c5e9a0ed62e6335f37a41",
         "elements": 33,
         "tags": "circle:3|defs:1|line:3|path:2|pattern:4|text:20"
       }
@@ -724,32 +724,32 @@
     },
     "indicator": {
       "editorial_cream": {
-        "sha256": "4e49ff7dadb2ddb5341e26cd3d4500036870aca149cde396169d80f5ae34cb17",
+        "sha256": "38f89d2bb8a5a499252aa1fdefb0c85b368bdb9f4e2b3371a9c514e7ba730958",
         "elements": 5,
         "tags": "line:1|rect:1|text:3"
       },
       "burgundy_mono": {
-        "sha256": "4a55e1e8c20d17191a4248b119008c58212fe90a439e1383271a9c5414d1b9cc",
+        "sha256": "5b01e4a69d7c08f61c29ea18259f45dea5a5d696aa0abb3ea784b2fc94fef1e6",
         "elements": 5,
         "tags": "line:1|rect:1|text:3"
       },
       "midnight_indigo": {
-        "sha256": "6616ef79c707e961d433f63b8aa3000a9c6cc99443e715f5fccf52363dd22db5",
+        "sha256": "8ceb8def7729410881742a392dfec0ffd07ebc63b75761fa453719c100749276",
         "elements": 5,
         "tags": "line:1|rect:1|text:3"
       },
       "pine_forest": {
-        "sha256": "4ccc45571341b6016dd14310449669b05fe95e090650ea62b24805be0ee06ffc",
+        "sha256": "60faec7ff0e753995fd819e2eba8402c50532e2b2489c689254af7c6576572c4",
         "elements": 5,
         "tags": "line:1|rect:1|text:3"
       },
       "graphite_slate": {
-        "sha256": "816d16450500555d54eead37b54c6107caf3623c4776a79a669aa69e1bc329ac",
+        "sha256": "abecdd7cec7fdc1c70d8530be367787e0adba0acadcee8acd742e14b2f6fe847",
         "elements": 5,
         "tags": "line:1|rect:1|text:3"
       },
       "reportage_steel": {
-        "sha256": "6136b0a46362c5776f620d3c66c4fcd07acc474433f5c4f05c6770bc6e3faf15",
+        "sha256": "445a7302c379645d53a81c0f8870c6996cd72168d15b080752c4046d138b34a7",
         "elements": 5,
         "tags": "line:1|rect:1|text:3"
       }
@@ -788,32 +788,32 @@
     },
     "line": {
       "editorial_cream": {
-        "sha256": "98ae316c2d3578f42ffa9bbcd9583ad1b2e2ea7beafd6b9c73a2ef14d8c549ca",
+        "sha256": "31a652abb733ca1f80a3a399896094001852e2226c3b9c7fdc5a617e0bb6afe1",
         "elements": 38,
         "tags": "circle:5|defs:1|line:9|lineargradient:1|path:2|stop:2|text:18"
       },
       "burgundy_mono": {
-        "sha256": "3eacb9cda2d91c19d82f28a97fa5fa7646e930fa75428d6652a537144093e15c",
+        "sha256": "2bd960187530c52f3a3667412930d47e5890b9342ad3d792e46334b2eca9d3d5",
         "elements": 38,
         "tags": "circle:5|defs:1|line:9|lineargradient:1|path:2|stop:2|text:18"
       },
       "midnight_indigo": {
-        "sha256": "319eaa4e10006c074d4e3ae7da9da63ae54ab427b353089564f3a0373de67b68",
+        "sha256": "dbba70b88f726a70f4e0a63819811c7da93530ea79a8564f1aa91514454aa84e",
         "elements": 38,
         "tags": "circle:5|defs:1|line:9|lineargradient:1|path:2|stop:2|text:18"
       },
       "pine_forest": {
-        "sha256": "809ad1c190af9caa518d13e625749bcdc190f6849c20f60883d28c1714b748c1",
+        "sha256": "1975d3c0e4105b5fc16f0d3eb8a67f34e623b7b8eed8dcf60e466c253b720701",
         "elements": 38,
         "tags": "circle:5|defs:1|line:9|lineargradient:1|path:2|stop:2|text:18"
       },
       "graphite_slate": {
-        "sha256": "cde663219f805c8d0098369bd2c7938a62e495239f9d72c82814a1aec22a6039",
+        "sha256": "37ebd958194a4c9fe7bf3685fe694d6560d8cc9ddfce821c0535310da6e4a80e",
         "elements": 38,
         "tags": "circle:5|defs:1|line:9|lineargradient:1|path:2|stop:2|text:18"
       },
       "reportage_steel": {
-        "sha256": "da0f02c8b7b65608f258e374a2ab652379111341cd5e67a290e97b5a34992900",
+        "sha256": "afdf351668570a91802d49b52de7777bd9dd6c4b622e6ee30616bb1d4bf82f70",
         "elements": 38,
         "tags": "circle:5|defs:1|line:9|lineargradient:1|path:2|stop:2|text:18"
       }
@@ -1012,32 +1012,32 @@
     },
     "scatter": {
       "editorial_cream": {
-        "sha256": "a8e3e8502b456e12ab5161141cc093166df04c198f6973284b459946625fffa0",
+        "sha256": "3cb2fc3bd7efde9f1d371753ab323ec0fef2e8865509343a32aeb2d12b624643",
         "elements": 57,
         "tags": "circle:6|g:12|line:21|path:2|text:16"
       },
       "burgundy_mono": {
-        "sha256": "182da82dc7087efa8f96602818df0d6d586a922b901a807987268880c6f79627",
+        "sha256": "3f2b0b3f8e6e40f30ad17289e48f5edea72171df844df323ceaf572c6384dc84",
         "elements": 57,
         "tags": "circle:6|g:12|line:21|path:2|text:16"
       },
       "midnight_indigo": {
-        "sha256": "97bf3c81bf98de36df163647b804ba8d7114a2f5f921dc9ab438289dc3effdcf",
+        "sha256": "5f64695e8b24239f74ab69c0a6b0c49f401ac5b0e825853ccbce321cdc23c954",
         "elements": 57,
         "tags": "circle:6|g:12|line:21|path:2|text:16"
       },
       "pine_forest": {
-        "sha256": "cb37f4d55bfa044bcea7b2c1d9622e37e326c9561cd315801ee91ba75139f08f",
+        "sha256": "530d25e93105aca04fde02e4c0a1ca127ab13c81bb0f5a8fe3bda3b63926dc6d",
         "elements": 57,
         "tags": "circle:6|g:12|line:21|path:2|text:16"
       },
       "graphite_slate": {
-        "sha256": "cc2e1f9035a9b388218fe7807b0f9c429b8399edb0f9f209bb2c400129be07d3",
+        "sha256": "355e356287f79307877e3cc01d8119d7fe97fcc1f7b8e96616a038c5cfbdef9f",
         "elements": 57,
         "tags": "circle:6|g:12|line:21|path:2|text:16"
       },
       "reportage_steel": {
-        "sha256": "b6e5d9e87172e408f986b4ac9f7460fe7021b1e9dae5e8efd5617881f7dfd481",
+        "sha256": "2131ea773b017fa1e4832d285bd18e5c03bca8c837928805e91116b5d9c8dd4a",
         "elements": 57,
         "tags": "circle:6|g:12|line:21|path:2|text:16"
       }
