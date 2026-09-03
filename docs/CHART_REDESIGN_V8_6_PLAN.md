@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 · Phase 2b v8.6.3 · Phase 2c v8.6.4 완료 · Phase 3 부터 대기)
+status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 · Phase 2b v8.6.3 · Phase 2c v8.6.4 · 사다리 색 전환 v8.6.5 완료 · Phase 3 부터 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.4
+last_synced_with: v8.6.5
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -168,6 +168,14 @@ last_review: 2026-09-03
    일 때만. 아니면 렌더러가 *결정적으로* 가로(`tick`) 로 강등. 최종 방어는 렌더러.
 8. **Execution Rule #12.** 커밋 prefix = `src/orchestrator.py:VERSION`. `git config
    core.hooksPath .githooks` 선행. 매 버전 README `Status` + CHANGELOG.
+9. **위계 사다리의 색 = 테마 액센트 (사용자 결정 2026-09-03, v8.6.5 소급).** §1.1-2 의
+   "잉크 농도 사다리" 는 *농도* 문법만 흡수하고 *색* 은 우리 것을 쓴다. 참고 자료의 검정
+   잉크를 그대로 따라간 v8.6.1~v8.6.4 의 렌더는 13종 테마 위에서 회색으로만 보여 보고서와
+   겉돌았다. 데이터 마크는 `--accent` 를 깔고 사다리를 불투명도로만 쓰며, 축·눈금·라벨·
+   읽는 법 캡션은 `--text`/`--muted` 그대로다. up/down 의미색 · sankey 다색 팔레트 ·
+   pyramid 좌측 중립 집단은 불변. 최저 단은 `.16` (라이트 테마 가시성). 어휘 SSOT 는
+   [MONO_THEME_GUIDE §10.1](MONO_THEME_GUIDE.md) 의 v8.6.5 블록, 상수는 charts.js
+   `LADDER_MIN` 한 곳.
 
 ---
 

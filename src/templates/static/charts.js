@@ -55,14 +55,14 @@
     defs.append('pattern').attr('id', id('hatch-tight')).attr('patternUnits', 'userSpaceOnUse')
       .attr('width', 2.4).attr('height', 2.4).attr('patternTransform', 'rotate(45)')
       .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 2.4)
-      .attr('stroke', t.text).attr('stroke-width', 0.85);
+      .attr('stroke', t.accent).attr('stroke-width', 0.85);
     defs.append('pattern').attr('id', id('hatch-wide')).attr('patternUnits', 'userSpaceOnUse')
       .attr('width', 3.8).attr('height', 3.8).attr('patternTransform', 'rotate(45)')
       .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 3.8)
-      .attr('stroke', t.text).attr('stroke-width', 0.7);
+      .attr('stroke', t.accent).attr('stroke-width', 0.7);
     defs.append('pattern').attr('id', id('dots')).attr('patternUnits', 'userSpaceOnUse')
       .attr('width', 2.4).attr('height', 2.4)
-      .append('circle').attr('cx', 1.2).attr('cy', 1.2).attr('r', 0.22).attr('fill', t.text);
+      .append('circle').attr('cx', 1.2).attr('cy', 1.2).attr('r', 0.22).attr('fill', t.accent);
     defs.append('pattern').attr('id', id('accent-hatch')).attr('patternUnits', 'userSpaceOnUse')
       .attr('width', 2.4).attr('height', 2.4).attr('patternTransform', 'rotate(45)')
       .append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 2.4)
@@ -302,6 +302,13 @@
   // 어휘로 *재구현* 한 공유 계층. 참고 저장소의 코드·토큰 파일은 복제하지 않는다
   // (플랜 §2.5 라이선스).
   //
+  // v8.6.5 — 위계 사다리의 *색* 이 잉크(`t.text`)에서 **테마 액센트**(`t.accent`)로
+  // 바뀌었다 (사용자 지시 2026-09-03). 데이터 마크(막대 칸·캡슐·점·경로선·area 세로선·
+  // 도넛 링·롤리팝 줄기·treemap/heatmap/calendar_heat 칸·tree 연결선·waterfall 합계·
+  // bullet 구간 띠·dot_matrix 채움)는 액센트를 깔고 농도로만 위계를 준다. 축·눈금·
+  // 라벨·읽는 법 캡션은 `t.text`/`t.muted`, up/down 의미색과 sankey 다색 팔레트
+  // (mono guide §10 의 sankey 예외)와 pyramid 좌측 중립 집단은 불변.
+  //
   // v8.6.0 은 정의만 두었고(호출 0), **v8.6.1 이 렌더러 13종에 배선**했다 —
   // bar / candle / donut / diverging_bar / pyramid / gantt / bullet / lollipop /
   // line / area / scatter / range_bar / heatmap. 어느 조건에서 새 표현이 기본인지는
@@ -336,15 +343,24 @@
     return sign + txt + suffix + lab;
   }
 
-  // 3. 잉크 농도 사다리 — n<=4 는 기존 4단(구성), 5~7 은 7단(순위), 8+ 는 선형.
-  //    mono guide §10: 위계는 hue 가 아니라 잉크 농도로만 (7단 값 사용자 승인).
-  const LADDER4 = [1, .42, .24, .13];
-  const LADDER7 = [1, .78, .60, .44, .30, .20, .12];
+  // 3. 위계 농도 사다리 — n<=4 는 4단(구성), 5~7 은 7단(순위), 8+ 는 선형.
+  //    mono guide §10: 위계는 hue 가 아니라 *농도* 로만.
+  //    v8.6.5 (사용자 지시 2026-09-03) — 그 농도를 입히는 색이 **테마 액센트**다.
+  //    참고 자료의 검정 잉크 사다리를 그대로 따라가니 13종 테마 위에서 회색으로만
+  //    보여 보고서와 겉돌았다. 이제 데이터 마크는 `t.accent` 를 깔고 이 사다리를
+  //    fill-opacity / stroke-opacity 로만 쓴다. 축·눈금·라벨·읽는 법 캡션은 그대로
+  //    `t.text` / `t.muted` (§3.3 의 "큰 숫자에 액센트 금지" 와 충돌하지 않는다 —
+  //    바뀌는 것은 채움이지 숫자 글자색이 아니다).
+  //    최저 단은 .16 — 액센트가 옅은 라이트 테마(editorial_cream)에서 .12 는
+  //    `--card` 위에서 사실상 사라졌다. 상한은 이 한 곳에서만 관리한다.
+  const LADDER_MIN = .16;
+  const LADDER4 = [1, .46, .28, LADDER_MIN];
+  const LADDER7 = [1, .78, .60, .44, .30, .22, LADDER_MIN];
   function inkLadder(n) {
     const k = Math.max(1, Math.floor(+n) || 1);
     if (k <= 4) return LADDER4.slice(0, k);
     if (k <= 7) return LADDER7.slice(0, k);
-    return d3.range(k).map(i => 1 - (i / (k - 1)) * .88);
+    return d3.range(k).map(i => Math.max(LADDER_MIN, 1 - (i / (k - 1)) * .88));
   }
 
   // 4. 칸 단위 자동 — 칸수가 maxMarks 이하가 되는 {1,2,2.5,5}×10^k 중 최소.
@@ -430,6 +446,27 @@
       .attr('rx', hh / 2).attr('ry', hh / 2)
       .attr('fill', fill)
       .attr('fill-opacity', (opacity == null) ? 1 : +opacity);
+  }
+
+  // 7-b. 축 쪽은 직각, 바깥 끝만 둥근 막대 (v8.6.5, 사용자 catch).
+  //    이전엔 캡슐 rect 위에 축쪽 사각 rect 를 *겹쳐* 그렸는데 둘 다 반투명이라
+  //    겹친 h×h 영역만 불투명도가 두 배로 쌓여 "중앙에 짙은 색 덩어리" 가 생겼다
+  //    (diverging_bar · pyramid). 단일 path 로 그리면 겹침 자체가 없다.
+  //    폭이 h/2 보다 짧으면 둥근 끝을 그만큼만 눕혀 값을 부풀리지 않는다.
+  function flatEndBar(g, opts) {
+    const o = opts || {};
+    const x = +o.x || 0, y = +o.y || 0;
+    const h = Math.max(1, +o.h || 1);
+    const w = Math.max(0, +o.w || 0);
+    if (w <= 0) return null;
+    const dir = (+o.dir < 0) ? -1 : 1;            // 1 = 우향 · -1 = 좌향
+    const rx = Math.min(h / 2, w);
+    const tip = x + dir * (w - rx);
+    const sweep = dir > 0 ? 1 : 0;
+    const d = `M ${x},${y} H ${tip} A ${rx},${h / 2} 0 0 ${sweep} ${tip},${y + h} H ${x} Z`;
+    return g.append('path').attr('d', d)
+      .attr('fill', o.fill || 'currentColor')
+      .attr('fill-opacity', (o.opacity == null) ? 1 : +o.opacity);
   }
 
   // 8. 읽는 법 캡션 — SVG 하단 중앙 한 줄 ("한 칸 = 1천억원" 류).
@@ -545,7 +582,7 @@
             .text(trunc(d.note, 26));
         }
         const barW = Math.max(2, xScale(d.value) - x0);
-        capsuleRect(svg, x0, y, barW, 18, t.text, ladder[rank])
+        capsuleRect(svg, x0, y, barW, 18, t.accent, ladder[rank])
           .attr('data-anim', 'bar-grow').attr('data-final-w', Math.max(18, barW));
         svg.append('text').attr('x', x0 + Math.max(barW, 18) + 9).attr('y', y + 13.5)
           .attr('font-family', 'Noto Serif KR').attr('font-size', 13).attr('font-weight', 700)
@@ -562,9 +599,18 @@
     // ── 칸 질감 (tick / dot) ──
     // 칸 질감은 '셀 수 있는 값' 전용이므로 값 라벨은 정수 그대로 (9.00 이 아니라 9)
     const fmtCount = (v) => d3.format(',')(Math.round(+v));
-    const maxMarks = texture === 'dot' ? 40 : 48;
-    const unit = (+payload.unit > 0) ? +payload.unit : niceUnit(max, maxMarks);
-    const gap = Math.max(2.6, Math.min(texture === 'dot' ? 12 : 11, avail / maxMarks));
+    // v8.6.5 (사용자 catch) — "한 칸 = 2조원인데 칸이 너무 넓다".
+    // 원인 둘: ⑴ 칸 수 상한이 48 이라 max 69 에 unit 2 가 잡혔고 ⑵ 틈을 *상한* 으로
+    // 나눠서(avail/48) 실제로는 35칸뿐인 막대가 폭 전체로 퍼졌다. 상한을 올려 값
+    // 100 이하면 한 칸 = 1 이 되게 하고, 틈은 *가장 긴 막대의 실제 칸 수* 로 나눈다.
+    const maxMarks = texture === 'dot' ? 50 : 100;
+    // 칸 질감은 countable(전부 정수) 일 때만 오므로 칸 단위도 정수여야 한다 —
+    // niceUnit 은 작은 max 에서 0.2 같은 값을 내놓는다 ("한 칸 = 0.2건" 방지).
+    const unit = (+payload.unit > 0)
+      ? +payload.unit : Math.max(1, niceUnit(max, maxMarks));
+    const longest = Math.max(1, Math.ceil(max / unit));
+    const gap = Math.max(texture === 'dot' ? 5 : 3.2,
+                         Math.min(texture === 'dot' ? 12 : 11, avail / longest));
     data.forEach((d, i) => {
       const y = zones.data.y + i * rowH + 11;
       const rank = rankOf[i], key = rank === 0;
@@ -579,7 +625,7 @@
       }
       const m = unitMarks(svg, {
         kind: texture, x: x0 + 3, y: y, value: d.value, unit: unit,
-        gap: gap, len: 11, color: t.text, opacity: key ? 1 : 0.62,
+        gap: gap, len: 11, color: t.accent, opacity: key ? 1 : 0.62,
       });
       svg.append('text').attr('x', m.end + 12).attr('y', y + 4.5)
         .attr('font-family', 'Noto Serif KR').attr('font-size', 13).attr('font-weight', 700)
@@ -587,7 +633,7 @@
       if (hasPrior && isFinite(+d.prior)) {
         const pm = unitMarks(svg, {
           kind: texture, x: x0 + 3, y: y + 15, value: d.prior, unit: unit,
-          gap: gap, len: 8, color: t.text, opacity: 0.22,
+          gap: gap, len: 8, color: t.accent, opacity: 0.22,
         });
         svg.append('text').attr('x', pm.end + 12).attr('y', y + 18.5)
           .attr('font-family', 'Noto Sans KR').attr('font-size', 10).attr('fill', t.muted)
@@ -611,17 +657,20 @@
       const zonesV = computeZones(Wv, Hv, { left: 40, right: 40, top: 30, bottom: 34 + FOOTER_H });
       const svgV = d3.select(stage).select('svg')
         .attr('viewBox', `0 0 ${Wv} ${Hv}`).attr('preserveAspectRatio', 'xMidYMid meet');
-      const unitV = (+payload.unit > 0) ? +payload.unit : niceUnit(max, 40);
+      // v8.6.5 — 가로 칸과 같은 원칙: 칸 수 상한을 올리고 층 간격은 *실제 칸 수* 로.
+      const unitV = (+payload.unit > 0)
+        ? +payload.unit : Math.max(1, niceUnit(max, 60));
       const n = data.length;
       const spanV = zonesV.data.w;
       const gapX = n > 1 ? (spanV - colW * n) / (n - 1) : 0;
-      const rungGap = Math.max(3, Math.min(6, (base - 60) / Math.max(1, Math.round(max / unitV))));
+      const rungsV = Math.max(1, Math.ceil(max / unitV));
+      const rungGap = Math.max(3, Math.min(6, (base - 60) / rungsV));
       data.forEach((d, i) => {
         const x = zonesV.data.x + i * (colW + gapX);
         const rank = rankOf[i], key = rank === 0;
         const m = unitMarks(svgV, {
           kind: 'rung', x: x, y: base, value: d.value, unit: unitV,
-          gap: rungGap, len: colW, color: t.text, opacity: key ? 1 : 0.62,
+          gap: rungGap, len: colW, color: t.accent, opacity: key ? 1 : 0.62,
         });
         svgV.append('text').attr('x', x + colW / 2).attr('y', m.end - 8).attr('text-anchor', 'middle')
           .attr('font-family', 'Noto Serif KR').attr('font-size', 13).attr('font-weight', 700)
@@ -652,34 +701,42 @@
     // 눈금 하나 = 1%, 12시가 0, 매 10번째가 길다. 조각 사이는 눈금 한 칸 틈.
     // 7 조각 이상은 판독성 때문에 기존 arc 유지 (CHART-AP-16 계승).
     const ringMode = data.length <= 6;
-    const H = Math.max(ringMode ? 262 : 230, data.length * 26 + 44) + (ringMode ? FOOTER_H : 0);
+    // v8.6.5 — 링을 키운다(rr 96→118, 눈금 40% 길게). H 는 링 바깥(rr+27) + 상하 여백.
+    const RING_RR = 118, RING_OUT = RING_RR + 27;
+    const H = Math.max(ringMode ? RING_OUT * 2 + 28 : 230, data.length * 26 + 44)
+      + (ringMode ? FOOTER_H : 0);
     const svg = d3.select(stage).select('svg')
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     const cyBase = ringMode ? (H - FOOTER_H) / 2 : H / 2;
-    const cx = 122, cy = cyBase, r = 84, ir = 62;
+    const cx = ringMode ? 150 : 122, cy = cyBase, r = 84, ir = 62;
     const total = d3.sum(data, d => +d.value) || 1;
     const keyIdx = data.reduce((b, d, i) => (+d.value > +data[b].value ? i : b), 0);
-    const LADDER = ringMode ? inkLadder(Math.max(2, data.length)) : [0.32, 0.20, 0.13, 0.08];
+    // v8.6.5 (사용자 catch — "유형 구별이 약하다"): ring 모드의 비핵심 조각이
+    // 7단 사다리(.78/.60/.44)로 붙어 있어 서로 구분이 안 됐다. 링은 조각 수가
+    // ≤6 이라 단수를 아낄 이유가 없으므로 *간격이 넓은* 전용 사다리를 쓴다.
+    const RING_LADDER = [0.72, 0.42, 0.22, 0.12];
+    const LADDER = ringMode ? RING_LADDER : [0.32, 0.20, 0.13, 0.08];
     const trunc = (sv, n) => {
       const str = String(sv || '');
       return str.length > n ? str.slice(0, n - 1) + '…' : str;
     };
     if (ringMode) {
-      const rr = 96;
+      const rr = RING_RR;
       const ring = svg.append('g').attr('data-anim', 'static');
       let acc = 0;
       data.forEach((d, i) => {
         const key = i === keyIdx;
-        const col = key ? t.accent : t.text;
+        const col = t.accent;
         const op = key ? 1 : LADDER[Math.min(i, LADDER.length - 1)];
         const span = Math.max(1, Math.round((+d.value / total) * 100));
         for (let k = 0; k < span; k++) {
-          if (k === 0 && i > 0) continue;          // 조각 경계 틈
+          // v8.6.5 — 조각 경계 틈 2칸 (1칸으로는 옆 조각과 붙어 보였다)
+          if (k < 2 && i > 0) continue;
           const pct = acc + k;
           if (pct >= 100) break;
           const ang = (pct / 100) * Math.PI * 2 - Math.PI / 2;
           const big = pct % 10 === 0;
-          const len = big ? 19 : 13;
+          const len = big ? 27 : 18;
           ring.append('line')
             .attr('x1', cx + Math.cos(ang) * rr).attr('y1', cy + Math.sin(ang) * rr)
             .attr('x2', cx + Math.cos(ang) * (rr + len)).attr('y2', cy + Math.sin(ang) * (rr + len))
@@ -696,7 +753,7 @@
         const key = i === keyIdx;
         const op = key ? 1 : LADDER[Math.min(li++, LADDER.length - 1)];
         svg.append('path').attr('d', arc(a)).attr('transform', `translate(${cx},${cy})`)
-          .attr('fill', key ? t.accent : t.text).attr('fill-opacity', op)
+          .attr('fill', t.accent).attr('fill-opacity', op)
           .attr('data-anim', 'donut-arc')
           .attr('data-start', a.startAngle).attr('data-end', a.endAngle);
       });
@@ -706,7 +763,7 @@
     // 중앙 — 핵심 점유율
     svg.append('text').attr('x', cx).attr('y', cy + (ringMode ? 6 : 2)).attr('text-anchor', 'middle')
       .attr('font-family', 'Newsreader, Noto Serif KR, serif')
-      .attr('font-size', ringMode ? 42 : 30)
+      .attr('font-size', ringMode ? 48 : 30)
       .attr('font-weight', 800).attr('fill', t.text)
       .text(d3.format('.0f')(+data[keyIdx].value / total * 100) + '%');
     svg.append('text').attr('x', cx).attr('y', cy + (ringMode ? 28 : 22)).attr('text-anchor', 'middle')
@@ -721,18 +778,19 @@
         ? (key ? 1 : LADDER[Math.min(i, LADDER.length - 1)])
         : (key ? 1 : LADDER[Math.min(li++, LADDER.length - 1)]);
       const y = ly0 + i * 26;
-      svg.append('circle').attr('cx', 262).attr('cy', y).attr('r', 4.5)
-        .attr('fill', key ? t.accent : t.text).attr('fill-opacity', op);
-      svg.append('text').attr('x', 276).attr('y', y + 4)
+      const lgX = ringMode ? 300 : 262;
+      svg.append('circle').attr('cx', lgX).attr('cy', y).attr('r', 4.5)
+        .attr('fill', t.accent).attr('fill-opacity', op);
+      svg.append('text').attr('x', lgX + 14).attr('y', y + 4)
         .attr('font-family', 'Noto Sans KR').attr('font-size', ringMode ? 13.5 : 12)
         .attr('font-weight', key ? 700 : 400).attr('fill', t.text)
         .text(trunc(d.label, 14));
-      svg.append('text').attr('x', 510).attr('y', y + 4).attr('text-anchor', 'end')
+      svg.append('text').attr('x', 530).attr('y', y + 4).attr('text-anchor', 'end')
         .attr('font-family', 'Noto Serif KR').attr('font-size', ringMode ? 14 : 12.5)
         .attr('font-weight', 700)
         .attr('fill', key ? t.accent : t.text)
         .text(fmtShare(d.value) + ' · ' + d3.format('.0f')(+d.value / total * 100) + '%');
-      svg.append('line').attr('x1', 254).attr('x2', 510).attr('y1', y + 12).attr('y2', y + 12)
+      svg.append('line').attr('x1', lgX - 8).attr('x2', 530).attr('y1', y + 12).attr('y2', y + 12)
         .attr('stroke', t.border).attr('stroke-opacity', 0.5).attr('stroke-width', 0.5);
     });
     if (ringMode) keyFooter(svg, W, H, '눈금 하나 = 1% · 12시 방향이 0 · 시계 방향', t, 13);
@@ -799,7 +857,7 @@
     const area = d3.area().x(d => x(String(d.x))).y0(zones.data.y + zones.data.h)
       .y1(d => y(+d.y)).curve(d3.curveLinear);
     if (!dayMode) svg.append('path').attr('d', area(data)).attr('fill', `url(#${gradId})`);
-    svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', t.text)
+    svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', t.accent)
       .attr('stroke-width', dayMode ? 1.1 : 1.4);
 
     // End marker + label
@@ -818,9 +876,9 @@
         const cx = x(String(d.x)), cy = y(+d.y);
         if (weekend) {
           svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 3)
-            .attr('fill', t.card).attr('stroke', t.text).attr('stroke-width', 1.2);
+            .attr('fill', t.card).attr('stroke', t.accent).attr('stroke-width', 1.2);
         } else {
-          svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 3).attr('fill', t.text);
+          svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 3).attr('fill', t.accent);
         }
       });
       // 첫·최고 값 라벨 (끝 값은 아래 placeEndLabel 이 담당)
@@ -1044,7 +1102,7 @@
     const labelToIndex = Object.fromEntries(labelOrder.map((l, i) => [l, i]));
     const segStyle = (idx) => idx === 0
       ? { f: t.accent, o: 1 }
-      : { f: t.text, o: [0.42, 0.24, 0.13][Math.min(idx - 1, 2)] };
+      : { f: t.accent, o: [0.42, 0.24, 0.13][Math.min(idx - 1, 2)] };
     const trunc = (sv, n) => {
       const str = String(sv || '');
       return str.length > n ? str.slice(0, n - 1) + '…' : str;
@@ -1289,13 +1347,13 @@
         if (v === undefined) {
           svg.append('rect').attr('x', cx + inset).attr('y', cy + inset)
             .attr('width', cellW - inset * 2).attr('height', cellH - inset * 2).attr('rx', rx)
-            .attr('fill', t.text).attr('fill-opacity', 0.03);
+            .attr('fill', t.accent).attr('fill-opacity', 0.03);
           return;
         }
         const op = ladder[step(v)];
         svg.append('rect').attr('x', cx + inset).attr('y', cy + inset)
           .attr('width', cellW - inset * 2).attr('height', cellH - inset * 2).attr('rx', rx)
-          .attr('fill', t.text).attr('fill-opacity', op);
+          .attr('fill', t.accent).attr('fill-opacity', op);
         svg.append('text').attr('x', cx + cellW / 2).attr('y', cy + cellH / 2 + 5)
           .attr('text-anchor', 'middle')
           .attr('font-family', "Newsreader, 'Noto Serif KR', serif")
@@ -1329,8 +1387,8 @@
       .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
     const SPEC = {
       high:   { n: 5, f: t.accent, o: 0.92, tag: '높음' },
-      medium: { n: 3, f: t.text,   o: 0.38, tag: '중간' },
-      low:    { n: 1, f: t.text,   o: 0.20, tag: '낮음' },
+      medium: { n: 3, f: t.accent,   o: 0.38, tag: '중간' },
+      low:    { n: 1, f: t.accent,   o: 0.20, tag: '낮음' },
     };
     const trunc = (sv, n) => {
       const str = String(sv || '');
@@ -1358,7 +1416,7 @@
         const filled = c < sp.n;
         svg.append('rect').attr('x', x0 + c * (cellW + gap)).attr('y', y)
           .attr('width', cellW).attr('height', 15).attr('rx', 2)
-          .attr('fill', filled ? sp.f : t.text)
+          .attr('fill', filled ? sp.f : t.accent)
           .attr('fill-opacity', filled ? sp.o : 0.06);
       }
       svg.append('text').attr('x', x0 + cells * (cellW + gap) + 10).attr('y', y + 12)
@@ -1422,14 +1480,14 @@
     const lineL = d3.line().x(d => x(String(d.x))).y(d => yL(+d.y)).curve(d3.curveLinear);
     const lineR = d3.line().x(d => x(String(d.x))).y(d => yR(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', lineL(left.series)).attr('fill', 'none')
-      .attr('stroke', t.text).attr('stroke-width', 1.6);
+      .attr('stroke', t.accent).attr('stroke-width', 1.6);
     svg.append('path').attr('d', lineR(right.series)).attr('fill', 'none')
       .attr('stroke', t.accent).attr('stroke-width', 1.6).attr('stroke-dasharray', '4,2');
 
     // End markers + labels
     const lL = left.series[left.series.length - 1];
     const lR = right.series[right.series.length - 1];
-    svg.append('circle').attr('cx', x(String(lL.x))).attr('cy', yL(+lL.y)).attr('r', 3.2).attr('fill', t.text);
+    svg.append('circle').attr('cx', x(String(lL.x))).attr('cy', yL(+lL.y)).attr('r', 3.2).attr('fill', t.accent);
     svg.append('circle').attr('cx', x(String(lR.x))).attr('cy', yR(+lR.y)).attr('r', 3.2).attr('fill', t.accent);
     placeEndLabel(svg, x(String(lL.x)), yL(+lL.y), `${left.label} ${lL.y}`, t, occupancy, zones, t.text);
     placeEndLabel(svg, x(String(lR.x)), yR(+lR.y), `${right.label} ${lR.y}`, t, occupancy, zones, t.accent);
@@ -1506,7 +1564,7 @@
     // Actual line
     const lineA = d3.line().x(d => x(String(d.x))).y(d => y(+d.y)).curve(d3.curveLinear);  // CHART-AP-30
     svg.append('path').attr('d', lineA(actual)).attr('fill', 'none')
-      .attr('stroke', t.text).attr('stroke-width', 1.6);
+      .attr('stroke', t.accent).attr('stroke-width', 1.6);
     // Forecast (mid) dashed line — bridge prepended for visual continuity
     if (forecastBridge.length) {
       const lineF = d3.line().x(d => x(String(d.x))).y(d => y(+d.mid)).curve(d3.curveLinear);  // CHART-AP-30
@@ -1527,7 +1585,7 @@
 
     // End markers
     const lastA = actual[actual.length - 1];
-    svg.append('circle').attr('cx', x(String(lastA.x))).attr('cy', y(+lastA.y)).attr('r', 3.2).attr('fill', t.text);
+    svg.append('circle').attr('cx', x(String(lastA.x))).attr('cy', y(+lastA.y)).attr('r', 3.2).attr('fill', t.accent);
     placeEndLabel(svg, x(String(lastA.x)), y(+lastA.y), String(lastA.y), t, occupancy, zones, t.text);
     if (forecast.length) {
       const lastF = forecast[forecast.length - 1];
@@ -1861,7 +1919,21 @@
 
     const gradId = `grad-area-${stage.getAttribute('data-chart-id') || Math.random().toString(36).slice(2,8)}`;
     const baseY = zones.data.y + zones.data.h;
+    // v8.6.5 (사용자 요청) — 그라데이션은 세로 실선 모드에서도 깐다. v8.6.1 이
+    // 그라데이션을 세로선으로 *대체* 했는데, 구형의 "선 아래 옅은 채움" 이 면적의
+    // 크기를 눈으로 잡아주던 역할까지 같이 사라졌다. 이제 채움을 먼저 깔고 그 위에
+    // 세로 실선을 얹는다 (둘 다 액센트, 채움은 .22 → .02).
+    const grad = svg.append('defs').append('linearGradient')
+      .attr('id', gradId).attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+    grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent)
+      .attr('stop-opacity', hairMode ? 0.22 : 0.28);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent)
+      .attr('stop-opacity', 0.02);
     if (hairMode) {
+      svg.append('path')
+        .attr('d', d3.area().x(d => x(String(d.x))).y0(baseY).y1(d => y(+d.y))
+          .curve(d3.curveLinear)(data))
+        .attr('fill', `url(#${gradId})`);
       // 세로 실선 — 간격이 2.5px 미만이면 선만 stride 로 솎는다 (path 는 전 포인트,
       // CHART-AP-31 준수: 데이터를 버리지 않고 잉크만 줄인다).
       const spacing = data.length > 1
@@ -1871,13 +1943,8 @@
         if (i % stride !== 0 && i !== data.length - 1) return;
         svg.append('line').attr('x1', x(String(d.x))).attr('x2', x(String(d.x)))
           .attr('y1', baseY).attr('y2', y(+d.y))
-          .attr('stroke', t.text).attr('stroke-opacity', 0.28).attr('stroke-width', 0.8);
+          .attr('stroke', t.accent).attr('stroke-opacity', 0.32).attr('stroke-width', 0.8);
       });
-    } else {
-      const grad = svg.append('defs').append('linearGradient')
-        .attr('id', gradId).attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
-      grad.append('stop').attr('offset', '0%').attr('stop-color', t.accent).attr('stop-opacity', 0.28);
-      grad.append('stop').attr('offset', '100%').attr('stop-color', t.accent).attr('stop-opacity', 0.02);
     }
 
     // CHART-AP-30 — 실제 데이터 경로 (곡선 보간 금지).
@@ -1886,7 +1953,7 @@
       .y0(baseY).y1(d => y(+d.y)).curve(d3.curveLinear);
     if (!hairMode) svg.append('path').attr('d', areaGen(data)).attr('fill', `url(#${gradId})`);
     svg.append('path').attr('d', lineGen(data)).attr('fill', 'none')
-      .attr('stroke', t.text).attr('stroke-width', hairMode ? 1.3 : 1.4);
+      .attr('stroke', t.accent).attr('stroke-width', hairMode ? 1.3 : 1.4);
 
     // End marker
     const last = data[data.length - 1];
@@ -2132,9 +2199,9 @@
         const rank = rankOf[i], key = rank === 0 || p.isAccent;
         svg.append('line').attr('x1', p.cx).attr('x2', p.cx)
           .attr('y1', baseY).attr('y2', p.cy)
-          .attr('stroke', t.text).attr('stroke-opacity', 0.22).attr('stroke-width', 0.6);
+          .attr('stroke', t.accent).attr('stroke-opacity', 0.22).attr('stroke-width', 0.6);
         svg.append('circle').attr('cx', p.cx).attr('cy', p.cy).attr('r', 5)
-          .attr('fill', key ? t.accent : t.text)
+          .attr('fill', key ? t.accent : t.accent)
           .attr('fill-opacity', key ? 1 : ladder[Math.min(6, rank)]);
       });
       // 상위 2점만 라벨 (나머지는 소음)
@@ -2151,7 +2218,7 @@
     }
     pts.forEach(p => {
       svg.append('circle').attr('cx', p.cx).attr('cy', p.cy).attr('r', 5)
-        .attr('fill', p.isAccent ? t.accent : t.text).attr('fill-opacity', 0.85);
+        .attr('fill', p.isAccent ? t.accent : t.accent).attr('fill-opacity', 0.85);
     });
 
     // v7.9.8 — 라벨 충돌 회피 (CHART-AP-33, 사용자 catch: IV 스큐 우측 군집
@@ -2295,15 +2362,15 @@
       if (dotTexture) {
         const m = unitMarks(svg, {
           kind: 'dot', x: zones.data.x + 3, y: y, value: d.value, unit: unit,
-          gap: gap, color: key ? t.accent : t.text, opacity: key ? 1 : ladder[rank],
+          gap: gap, color: key ? t.accent : t.accent, opacity: key ? 1 : ladder[rank],
         });
         labelX = m.end + 12;
       } else {
         const xv = xScale(+d.value);
         svg.append('line').attr('x1', zones.data.x).attr('x2', xv).attr('y1', y).attr('y2', y)
-          .attr('stroke', t.text).attr('stroke-opacity', 0.35).attr('stroke-width', 0.8);
+          .attr('stroke', t.accent).attr('stroke-opacity', 0.35).attr('stroke-width', 0.8);
         svg.append('circle').attr('cx', xv).attr('cy', y).attr('r', 5)
-          .attr('fill', key ? t.accent : t.text).attr('fill-opacity', key ? 1 : ladder[rank]);
+          .attr('fill', key ? t.accent : t.accent).attr('fill-opacity', key ? 1 : ladder[rank]);
         labelX = xv + 10;
       }
       svg.append('text').attr('x', labelX).attr('y', y + 4).attr('font-size', 11.5)
@@ -2352,9 +2419,9 @@
       const stroke = r.rising ? t.accent : t.muted;
       svg.append('line').attr('x1', xA).attr('y1', r.yA).attr('x2', xB).attr('y2', r.yB)
         .attr('stroke', stroke).attr('stroke-width', 1.4);
-      svg.append('circle').attr('cx', xA).attr('cy', r.yA).attr('r', 4).attr('fill', t.text);
+      svg.append('circle').attr('cx', xA).attr('cy', r.yA).attr('r', 4).attr('fill', t.accent);
       svg.append('circle').attr('cx', xB).attr('cy', r.yB).attr('r', 4)
-        .attr('fill', r.rising ? t.accent : t.text);
+        .attr('fill', r.rising ? t.accent : t.accent);
     });
     // CHART-AP-26 — 동일/근접 값 다수 시 라벨이 같은 y 에 겹침 (예: 모두 100.0 기준선).
     // 라벨 baseline 을 최소 간격으로 dodge + 범위 클램프. 점은 실제 위치 유지, 멀어지면 connector.
@@ -2419,7 +2486,7 @@
       const yScale = d3.scaleLinear().domain(yDomain).range([cy + cellH - 12, cy + 24]);
       const line = d3.line().x(d => xScale(+d.x)).y(d => yScale(+d.y)).curve(d3.curveLinear);  // CHART-AP-30
       svg.append('path').datum(data).attr('fill', 'none')
-        .attr('stroke', t.text).attr('stroke-width', 1.4).attr('d', line);
+        .attr('stroke', t.accent).attr('stroke-width', 1.4).attr('d', line);
     });
   }
 
@@ -2468,12 +2535,12 @@
     items.forEach((it, i) => {
       const bx = xs(i), bw = xs.bandwidth();
       const isTotal = it.type === 'total';
-      const col = isTotal ? t.text : (it.type === 'pos' ? t.accent : t.down);
+      const col = isTotal ? t.accent : (it.type === 'pos' ? t.accent : t.down);
       // 시작·끝 합계 기둥 배경 밴드 (앵커)
       if (isTotal) {
         svg.append('rect').attr('x', bx - 7).attr('y', yTop - 6).attr('width', bw + 14)
           .attr('height', yBot - yTop + 30).attr('rx', 4)
-          .attr('fill', t.text).attr('fill-opacity', 0.045).attr('data-anim', 'static');
+          .attr('fill', t.accent).attr('fill-opacity', 0.045).attr('data-anim', 'static');
       }
       svg.append('rect').attr('x', bx).attr('y', ys(it.y1)).attr('width', bw)
         .attr('height', Math.max(1.5, ys(it.y0) - ys(it.y1))).attr('rx', 1.5)
@@ -2488,7 +2555,7 @@
         const yc = ys(it.type === 'neg' ? it.y0 : it.y1);
         svg.append('line').attr('x1', bx + bw).attr('x2', xs(i + 1))
           .attr('y1', yc).attr('y2', yc)
-          .attr('stroke', t.text).attr('stroke-opacity', 0.35).attr('stroke-width', 0.8);
+          .attr('stroke', t.accent).attr('stroke-opacity', 0.35).attr('stroke-width', 0.8);
       }
       // 수평 라벨 — 길면 2줄 (회전 금지)
       const lbl = String(it.label || '');
@@ -2894,14 +2961,14 @@
       for (let k = 1; k < 7; k++) {
         svg.append('circle')
           .attr('cx', xa + (xb - xa) * (k / 7)).attr('cy', y).attr('r', 1.6)
-          .attr('fill', down ? (t.down || '#C45C4C') : t.text).attr('fill-opacity', 0.7)
+          .attr('fill', down ? (t.down || '#C45C4C') : t.accent).attr('fill-opacity', 0.7)
           .attr('data-anim', 'static');
       }
       // 속빈 = 이전·최저, 채움 = 이후·최고
       svg.append('circle').attr('cx', xa).attr('cy', y).attr('r', 5)
-        .attr('fill', t.card).attr('stroke', t.text).attr('stroke-width', 1.4);
+        .attr('fill', t.card).attr('stroke', t.accent).attr('stroke-width', 1.4);
       svg.append('circle').attr('cx', xb).attr('cy', y).attr('r', 5.2)
-        .attr('fill', mode === 'before_after' ? t.text : t.accent);
+        .attr('fill', mode === 'before_after' ? t.accent : t.accent);
       // 값 라벨은 두 원의 *바깥쪽* 에 둔다. 다만 감소 폭이 커 왼쪽 끝에 붙으면
       // 행 라벨과 충돌하므로 그때만 오른쪽으로 뒤집는다 (CHART-AP-33 계열).
       const rightward = xb >= xa;
@@ -2973,7 +3040,7 @@
       it.ranks.forEach((r, k) => {
         svg.append('circle').attr('cx', x(periods[k])).attr('cy', y(r))
           .attr('r', isAccent ? 5 : 3.8)
-          .attr('fill', isAccent ? t.accent : t.text)
+          .attr('fill', isAccent ? t.accent : t.accent)
           .attr('stroke', t.bg).attr('stroke-width', 1);
       });
     });
@@ -2983,7 +3050,7 @@
     const rY = dodgeYs(items.map(it => y(it.ranks[it.ranks.length - 1])), 14, lo, hi);
     items.forEach((it, i) => {
       const isAccent = i === accentIdx;
-      const col = isAccent ? t.accent : t.text;
+      const col = isAccent ? t.accent : t.accent;
       svg.append('text').attr('x', zones.data.x - 12).attr('y', lY[i] + 4).attr('text-anchor', 'end')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 11)
         .attr('font-weight', isAccent ? 700 : 400).attr('fill', col)
@@ -3028,7 +3095,7 @@
         const xB = xScale(Math.min(b, maxVal * 1.06));
         if (xB > xPrev) {
           svg.append('rect').attr('x', xPrev).attr('y', yRow).attr('width', xB - xPrev)
-            .attr('height', 18).attr('fill', t.text)
+            .attr('height', 18).attr('fill', t.accent)
             .attr('fill-opacity', 0.05 + k * 0.045).attr('data-static', '1');
         }
         xPrev = xB;
@@ -3133,9 +3200,9 @@
       const first = i === 0, last = i === data.length - 1;
       svg.append('circle').attr('cx', cx).attr('cy', cy)
         .attr('r', first ? 4.5 : (last ? 6 : 2.6))
-        .attr('fill', first ? t.bg : (last ? t.accent : t.text))
+        .attr('fill', first ? t.bg : (last ? t.accent : t.accent))
         .attr('fill-opacity', first || last ? 1 : 0.8)
-        .attr('stroke', first ? t.text : (last ? t.text : 'none'))
+        .attr('stroke', first ? t.accent : (last ? t.accent : 'none'))
         .attr('stroke-width', first ? 1.4 : (last ? 0.8 : 0));
       // 라벨: label 있는 점 + 시작·끝 (renderPoint 와 동일 4-후보 충돌 회피).
       const text = d.label || (first ? '시작' : (last ? '최근' : ''));
@@ -3219,7 +3286,7 @@
       svg.append('rect').attr('x', bx).attr('y', y)
         .attr('width', xBand.bandwidth())
         .attr('height', Math.max(0, zones.data.y + zones.data.h - y))
-        .attr('fill', t.text).attr('fill-opacity', 0.30);
+        .attr('fill', t.accent).attr('fill-opacity', 0.30);
     });
     // 0-기준선 crisp
     svg.append('line').attr('x1', zones.data.x).attr('x2', zones.data.x + zones.data.w)
@@ -3283,26 +3350,18 @@
       svg.append('text').attr('x', labelW).attr('y', y + h / 2 + 4).attr('text-anchor', 'end')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 11.5).attr('fill', t.text)
         .text(trunc(d.label, 11));
-      // neg (좌향) — 바깥 끝만 캡슐 (0 축 쪽은 직각: 캡슐 rect + 축쪽 사각 rect 겹침)
+      // neg (좌향) — 축 쪽은 직각, 바깥 끝만 둥글게 (v8.6.5 단일 path)
       const nw = scale(d.neg);
       if (nw > 0) {
-        svg.append('rect').attr('x', cx - nw).attr('y', y)
-          .attr('width', Math.max(nw, h)).attr('height', h)
-          .attr('rx', h / 2).attr('fill', t.down).attr('fill-opacity', 0.85);
-        svg.append('rect').attr('x', cx - h).attr('y', y).attr('width', h).attr('height', h)
-          .attr('fill', t.down).attr('fill-opacity', 0.85).attr('data-anim', 'static');
+        flatEndBar(svg, { x: cx, y: y, w: nw, h: h, dir: -1, fill: t.down, opacity: 0.85 });
         svg.append('text').attr('x', cx - nw - 5).attr('y', y + h / 2 + 4).attr('text-anchor', 'end')
           .attr('font-family', 'Noto Serif KR').attr('font-size', 11.5).attr('font-weight', 700)
           .attr('fill', t.down).text(fmt(d.neg));
       }
-      // pos (우향) — 바깥 끝만 캡슐
+      // pos (우향) — 같은 규칙
       const pw = scale(d.pos);
       if (pw > 0) {
-        svg.append('rect').attr('x', cx).attr('y', y)
-          .attr('width', Math.max(pw, h)).attr('height', h)
-          .attr('rx', h / 2).attr('fill', t.accent).attr('fill-opacity', 0.9);
-        svg.append('rect').attr('x', cx).attr('y', y).attr('width', h).attr('height', h)
-          .attr('fill', t.accent).attr('fill-opacity', 0.9).attr('data-anim', 'static');
+        flatEndBar(svg, { x: cx, y: y, w: pw, h: h, dir: 1, fill: t.accent, opacity: 0.9 });
         svg.append('text').attr('x', cx + pw + 5).attr('y', y + h / 2 + 4)
           .attr('font-family', 'Noto Serif KR').attr('font-size', 11.5).attr('font-weight', 700)
           .attr('fill', t.accent).text(fmt(d.pos));
@@ -3345,20 +3404,13 @@
       svg.append('text').attr('x', cx).attr('y', y + h / 2 + 3.5).attr('text-anchor', 'middle')
         .attr('font-family', 'Noto Sans KR').attr('font-size', 9.5).attr('fill', t.muted)
         .text(String(d.bracket).slice(0, 7));
-      // v8.6.1 — 바깥 끝만 캡슐 (중앙 축 쪽은 직각)
+      // v8.6.5 — 축 쪽은 직각, 바깥 끝만 둥글게 (단일 path — 겹침 덩어리 제거).
+      // 왼쪽 집단은 중립(t.text) 유지, 오른쪽만 액센트 (mono guide 대칭 규칙).
       const lw = scale(d.left), rw = scale(d.right);
-      svg.append('rect').attr('x', cx - centerW / 2 - lw).attr('y', y)
-        .attr('width', Math.max(h, lw)).attr('height', h).attr('rx', h / 2)
-        .attr('fill', t.text).attr('fill-opacity', 0.55);
-      svg.append('rect').attr('x', cx - centerW / 2 - h).attr('y', y)
-        .attr('width', h).attr('height', h)
-        .attr('fill', t.text).attr('fill-opacity', 0.55).attr('data-anim', 'static');
-      svg.append('rect').attr('x', cx + centerW / 2).attr('y', y)
-        .attr('width', Math.max(h, rw)).attr('height', h).attr('rx', h / 2)
-        .attr('fill', t.accent).attr('fill-opacity', 0.9);
-      svg.append('rect').attr('x', cx + centerW / 2).attr('y', y)
-        .attr('width', h).attr('height', h)
-        .attr('fill', t.accent).attr('fill-opacity', 0.9).attr('data-anim', 'static');
+      flatEndBar(svg, { x: cx - centerW / 2, y: y, w: lw, h: h, dir: -1,
+                        fill: t.text, opacity: 0.55 });
+      flatEndBar(svg, { x: cx + centerW / 2, y: y, w: rw, h: h, dir: 1,
+                        fill: t.accent, opacity: 0.9 });
       // 값 라벨 — 각 측 최대 행만 세리프 직접 라벨 (전 행 라벨은 소음)
       if (+d.left === maxL) {
         svg.append('text').attr('x', cx - centerW / 2 - lw - 5).attr('y', y + h / 2 + 4)
@@ -3447,7 +3499,7 @@
       } else {
         const m = unitMarks(svg, {
           kind: 'rung', x: x, y: base, value: c, unit: unit,
-          gap: rungGap, len: colW, color: t.text, opacity: key ? 1 : 0.55,
+          gap: rungGap, len: colW, color: t.accent, opacity: key ? 1 : 0.55,
         });
         if (key) {
           svg.append('text').attr('x', x + colW / 2).attr('y', m.end - 8)
@@ -3519,11 +3571,11 @@
       if (c.v == null || c.v <= 0) {
         // 속빈 원 = 값 없음(주말·휴장·0). 형태가 의미를 진다 (플랜 §1.1-5).
         svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', R * 0.95)
-          .attr('fill', 'none').attr('stroke', t.text)
+          .attr('fill', 'none').attr('stroke', t.accent)
           .attr('stroke-opacity', 0.18).attr('stroke-width', 0.7);
       } else {
         svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', R)
-          .attr('fill', t.text).attr('fill-opacity', q(c.v));
+          .attr('fill', t.accent).attr('fill-opacity', q(c.v));
       }
       // 월 라벨 — 그 달 1~7일이 걸린 주의 맨 윗칸 위에만
       if (c.dt.getUTCDate() <= 7 && (i % 7) === 0) {
@@ -3619,7 +3671,7 @@
         const key = (l === biggest);
         svg.append('rect').attr('x', l.x0 + OX).attr('y', l.y0 + OY)
           .attr('width', w).attr('height', hh).attr('rx', 3)
-          .attr('fill', t.text).attr('fill-opacity', op)
+          .attr('fill', t.accent).attr('fill-opacity', op)
           .attr('stroke', key ? t.accent : 'none').attr('stroke-width', key ? 1.4 : 0);
         if (w >= 56 && hh >= 30) {
           svg.append('text').attr('x', l.x0 + OX + 6).attr('y', l.y0 + OY + 15)
@@ -3677,7 +3729,7 @@
     h.links().forEach(L => {
       const top = L.source.depth === 0;
       svg.append('path').attr('d', link(L)).attr('fill', 'none')
-        .attr('stroke', t.text)
+        .attr('stroke', t.accent)
         .attr('stroke-opacity', top ? 0.9 : ladder[branchIdx(L.target)])
         .attr('stroke-width', top ? 1.4 : 1);
     });
@@ -3687,7 +3739,7 @@
     };
     h.descendants().forEach(n => {
       const x = px(n), y = py(n), acc = isAccent(n);
-      const col = acc ? t.accent : t.text;
+      const col = acc ? t.accent : t.accent;
       if (n.depth === 0) {
         svg.append('circle').attr('cx', x).attr('cy', y).attr('r', 5).attr('fill', col);
         svg.append('text').attr('x', x - 10).attr('y', y + 4.5).attr('text-anchor', 'end')
@@ -3745,7 +3797,7 @@
       if (isAcc) return { color: t.accent, op: 0.95 };
       const op = LADDER[Math.min(ladderIdx, LADDER.length - 1)];
       ladderIdx += 1;
-      return { color: t.text, op };
+      return { color: t.accent, op };
     });
     const cell = 23, grid = cell * 10, padT = 18, padL = 26;
     const W = 720, H = grid + padT + 26;
@@ -3966,7 +4018,7 @@
     const ln = d3.line().x(d => xScale(String(d.x))).y(d => yL(+d.y))
       .defined(d => xScale(String(d.x)) != null && isFinite(+d.y)).curve(d3.curveLinear);
     svg.append('path').attr('d', ln(lineS.series)).attr('fill', 'none')
-      .attr('stroke', t.text).attr('stroke-width', 1.9);
+      .attr('stroke', t.accent).attr('stroke-width', 1.9);
     // x 라벨 (sparse)
     const xstep = Math.max(1, Math.ceil(xVals.length / 7));
     xVals.forEach((xv, i) => {
