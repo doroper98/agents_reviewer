@@ -29,12 +29,14 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans KR
 <body>
 <div class="gal-head">
   <h1>Chart Gallery V7 — 베이스라인</h1>
-  <p>production charts.js 의 <code>RENDERERS</code> 전 35종 fixture 갤러리 (v8.6.3 — 1:1 정합) —
+  <p>production charts.js 의 <code>RENDERERS</code> 전 38종 fixture 갤러리 (v8.7.0 — 1:1 정합) —
      기존 12종 + FT/Economist 7종 + sankey + v7.0.0 신규 3종 (bump / bullet / connected_scatter) +
      v7.5.0 신규 4종 (combo / diverging_bar / pyramid / dot_matrix) + choropleth +
      v8.6.0 편입 4종 (combo_candle / iv_skew / indicator / stakeholder_map) +
      v8.6.2 신규 2종 (treemap 2층 구성 / tree 소속 위계) +
-     v8.6.3 신규 2종 (histogram 구간 도수 / calendar_heat 일별 강도 달력).
+     v8.6.3 신규 2종 (histogram 구간 도수 / calendar_heat 일별 강도 달력) +
+     v8.7.0 신규 3종 (gauge 단일 KPI / spectrum 양극 성향 / funnel 단계 감소)
+     + 표현 옵션 3종 (bump:strip / stacked:rung / bar:pictogram).
      폐기된 network 는 제거 (v7.9.17, CHART-AP-36). (보고서당 1개의 embedded_map 은
      별도 채널 maps.js — 본 갤러리 범위 밖.) Track A 리디자인의 전·후 비교 기준 아티팩트
      (REFACTOR_V7_PLAN.md §1.5) 이자 DOM 스냅샷 회귀(<code>scripts/chart_dom_snapshot.py</code>)의
@@ -276,7 +278,43 @@ var PAYLOADS = [
         {source:'jp',target:'fab',type:'협력',label:'소재 장기계약'},
         {source:'us',target:'cn',type:'대립',label:'상호 조치'}
       ]
-    } }
+    } },
+  /* ── v8.7.0 신규 3종 (CHART_REDESIGN_V8_6_PLAN §9) ── */
+  { type: 'gauge', title: '재생에너지 발전 비중 — 2030 목표 대비', subtitle: '눈금 100개가 목표, 남은 눈금이 갈 길', unit_line: '단위: % · 2026 상반기',
+    data: { value: 21.4, target: 30, label: '발전량 기준 재생에너지 비중', unit_label: '%' },
+    source: '전력통계 (예시 데이터)' },
+  { type: 'spectrum', title: '주요국 통화정책 성향', subtitle: '같은 국면에서도 축마다 자리가 다르다',
+    data: { rows: [
+      { left_label: '긴축', right_label: '완화', points: [
+        {label:'연준',value:-0.35,emphasis:true},{label:'ECB',value:0.05},{label:'한은',value:0.42},{label:'일본은행',value:0.78} ] },
+      { left_label: '개방', right_label: '보호', points: [
+        {label:'EU',value:-0.28},{label:'한국',value:0.12},{label:'미국',value:0.66,emphasis:true} ] },
+      { left_label: '재정 확대', right_label: '재정 건전', points: [
+        {label:'일본',value:-0.55},{label:'미국',value:-0.18},{label:'독일',value:0.72} ] }
+    ] },
+    source: '중앙은행 성명 종합 (예시 데이터)' },
+  { type: 'funnel', title: '청년 지원금 — 신청에서 집행까지', subtitle: '서류 단계에서 셋 중 둘이 걸러진다', unit_line: '단위: 건',
+    unit_label: '건',
+    data: [{stage:'신청',count:12400},{stage:'서류 통과',count:5100},{stage:'심사',count:1980},{stage:'집행',count:1310}],
+    source: '지자체 집행 실적 (예시 데이터)' },
+  /* ── v8.7.0 표현 옵션 3종 (같은 type 의 다른 표현 — 스냅샷 키로 구분) ── */
+  { type: 'bump', key: 'bump:strip', title: '파운드리 점유율 순위 — 격자', subtitle: '선이 엉키는 대신 칸에 순위를 적는다', unit_line: '순위 · 2023~2026',
+    layout: 'strip',
+    data: { periods: ['2023','2024','2025','2026'], items: [
+      {name:'TSMC',ranks:[1,1,1,1]},{name:'삼성',ranks:[2,2,3,2],accent:true},{name:'SMIC',ranks:[4,3,2,3]},
+      {name:'글로벌파운드리',ranks:[3,4,4,5]},{name:'UMC',ranks:[5,5,5,4]},{name:'라피더스',ranks:[6,6,6,6]} ] },
+    source: '시장조사기관 집계 (예시 데이터)' },
+  { type: 'stacked', key: 'stacked:rung', title: '시나리오별 피해 건수 구성', subtitle: '칸을 세면 합이 보인다', unit_line: '단위: 건',
+    texture: 'rung', unit_label: '건',
+    data: { scenarios: [
+      {name:'완화',segments:[{label:'수출',value:30},{label:'환율',value:18},{label:'내수',value:12}]},
+      {name:'기준',segments:[{label:'수출',value:42},{label:'환율',value:26},{label:'내수',value:17}]},
+      {name:'악화',segments:[{label:'수출',value:55},{label:'환율',value:38},{label:'내수',value:24}]} ] },
+    source: '시나리오 분석 (예시 데이터)' },
+  { type: 'bar', key: 'bar:pictogram', title: '태풍 피해 — 시군별 이재민', subtitle: '사람 하나가 정해진 수', unit_line: '단위: 명',
+    texture: 'pictogram', glyph: 'person', unit_label: '명',
+    data: [{label:'남해군',value:184},{label:'하동군',value:132},{label:'사천시',value:96},{label:'고성군',value:58},{label:'통영시',value:31}],
+    source: '재해대책본부 집계 (예시 데이터)' }
 ];
 
 // ── 카드 DOM 생성 (charts.js init 의 .chart-card-stage 스캔과 동일 계약) ──

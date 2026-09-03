@@ -39,6 +39,8 @@ B_PLAN_CHART_TYPES = frozenset({
     "network", "choropleth", "sankey", "treemap", "tree",
     # v8.6.3 — 분포·달력 2종
     "histogram", "calendar_heat",
+    # v8.7.0 — 2차 흡수 3종
+    "gauge", "spectrum", "funnel",
 })
 
 # CDN (report 템플릿과 동일 — maps.js 의 world-atlas fetch 용).

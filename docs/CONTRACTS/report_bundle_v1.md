@@ -2,7 +2,7 @@
 tier: 2
 status: active (v5.5.0 producer PR — emit 배선 완료)
 contract_version: 1
-last_synced_with: v8.6.6
+last_synced_with: v8.7.0
 ssot_for:
   - "agents_reviewer ↔ osint_generator report_bundle 핸드오프 계약 v1"
   - "ReportBundle JSON 필드 / 타입 / 의미"
@@ -116,6 +116,13 @@ consumer 는 schemas.py 를 자기 Pydantic 으로 미러한다.
 > `calendar_heat` (일별 강도 — `{values:[{date, value}], metric_label?, unit_label?}`).
 > 4종 모두 §5 B안 폴백 대상(`svg_prerender.B_PLAN_CHART_TYPES`) — consumer 의 렌더
 > 게이트가 모르는 type 이면 `prerendered_svg` 를 쓰면 된다 (무경고 소실 방지).
+> **v8.7.0 (additive, `schema_version` 1 유지)**: `_TYPE_TO_GUARD` 에 신규 3종 —
+> `gauge` (단일 KPI 반원 눈금 링 — `{value, target, label?, unit_label?}`),
+> `spectrum` (양극 축 성향 배치 — `{rows:[{left_label, right_label, points:[{label, value:-1..1, emphasis?}]}]}`),
+> `funnel` (단계 감소 — `[{stage, count}]` list, 수가 늘어나는 단계 금지).
+> 3종 모두 §5 B안 폴백 대상. 같은 릴리스에서 기존 type 의 *표현 옵션* 도 확장 —
+> `bar.texture:"pictogram"` + `bar.glyph`, `bump.layout:"strip"`, `stacked.texture:"rung"`
+> (payload 최상위 optional 필드, 미지정이면 v8.6.6 과 동일 렌더).
 > shape 변경 시 producer 가 본 pin 갱신 + §7 절차.
 
 ### §10 map 참조 해소 (v1 draft 보정 — 2026-05-25 seam 발견)

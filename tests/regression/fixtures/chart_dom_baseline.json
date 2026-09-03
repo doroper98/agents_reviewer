@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "tool": "scripts/chart_dom_snapshot.py",
-  "generated_with": "v8.6.6",
+  "generated_with": "v8.7.0",
   "gallery": "samples/chart_gallery_v7.html",
   "themes": [
     "editorial_cream",
@@ -112,6 +112,38 @@
         "sha256": "dfb5b52fa48459dc7e7aec786a75baa23c7e4b06d55e4d3120129bec6428ba83",
         "elements": 20,
         "tags": "line:1|rect:6|text:13"
+      }
+    },
+    "bar:pictogram": {
+      "editorial_cream": {
+        "sha256": "4597f5cdf49b3cb22722f6115114f20b6056235e3daaf35dcf9109fc557f3ca3",
+        "elements": 62,
+        "tags": "line:1|path:50|text:11"
+      },
+      "burgundy_mono": {
+        "sha256": "249d50c7d7fe7290644ebf6f47880fffa5040b02ae01ca045655f7efdb8907f5",
+        "elements": 62,
+        "tags": "line:1|path:50|text:11"
+      },
+      "midnight_indigo": {
+        "sha256": "dae8c7f04c54e3bb6d0ef12f05678855c4ace87f0908262754b929e8844e650a",
+        "elements": 62,
+        "tags": "line:1|path:50|text:11"
+      },
+      "pine_forest": {
+        "sha256": "30332905ee1b4285f80735d16f78e4de413570c4b036ac239b72c59ee80d8cf9",
+        "elements": 62,
+        "tags": "line:1|path:50|text:11"
+      },
+      "graphite_slate": {
+        "sha256": "d507b3cba88b3ef4a634d6d1368a3c5476dc6717eddc6fe042668111110ae4a7",
+        "elements": 62,
+        "tags": "line:1|path:50|text:11"
+      },
+      "reportage_steel": {
+        "sha256": "013556115ee64e176200c7270a12c4d1792b4bc8cdfb91af290ac75370ceb548",
+        "elements": 62,
+        "tags": "line:1|path:50|text:11"
       }
     },
     "bar:rung": {
@@ -240,6 +272,38 @@
         "sha256": "54d1061b2b8ebd40b446a5bafb8bfd8d1149da4aa71fbb89033359e6ba9cf216",
         "elements": 36,
         "tags": "circle:15|line:3|path:5|text:13"
+      }
+    },
+    "bump:strip": {
+      "editorial_cream": {
+        "sha256": "a5774ba7a3edb98602e3774d3e42e45518ae36aadf37f89a9bbf175f24c33e30",
+        "elements": 65,
+        "tags": "rect:24|text:41"
+      },
+      "burgundy_mono": {
+        "sha256": "55056f8c77e9c36e8d3dc91b1e95c0af06b5bbcde369a5fdc88a6f078df96218",
+        "elements": 65,
+        "tags": "rect:24|text:41"
+      },
+      "midnight_indigo": {
+        "sha256": "2adb4cb71ca8dff012b73cf97aabe9c233e6b548059d007562df88832c40b109",
+        "elements": 65,
+        "tags": "rect:24|text:41"
+      },
+      "pine_forest": {
+        "sha256": "4998d9f5c888e5807d4587bd8e39cf697fb6c5d15074066c11f25f16c9c67e11",
+        "elements": 65,
+        "tags": "rect:24|text:41"
+      },
+      "graphite_slate": {
+        "sha256": "9dfa84735624f0ba3ea2df9c9560a3779ee250b41d96b29396f2d7c8c4909d45",
+        "elements": 65,
+        "tags": "rect:24|text:41"
+      },
+      "reportage_steel": {
+        "sha256": "3cb3a51eda1d41bd22dfc2157d69f84e69a2e1fe6670150801f1bb52a79adb4e",
+        "elements": 65,
+        "tags": "rect:24|text:41"
       }
     },
     "calendar_heat": {
@@ -594,6 +658,38 @@
         "tags": "circle:2|line:6|path:3|text:13"
       }
     },
+    "funnel": {
+      "editorial_cream": {
+        "sha256": "63d95d6904ef5cde93251adfa4cef987dbf4b26ad03ad231eb9725059149d73f",
+        "elements": 57,
+        "tags": "line:45|text:12"
+      },
+      "burgundy_mono": {
+        "sha256": "0169e6bd095a1d3eabae6cb571dbd31fe7cd649ae504628ca08b3b24f83d2561",
+        "elements": 57,
+        "tags": "line:45|text:12"
+      },
+      "midnight_indigo": {
+        "sha256": "31669a1fd31444cc63ebb726956e92273297f9c3e0bd4dbdc166cabcb276fdbe",
+        "elements": 57,
+        "tags": "line:45|text:12"
+      },
+      "pine_forest": {
+        "sha256": "498fb7436b963cb9b414247af1bffc0464bba15ee77353b23ca861977558b705",
+        "elements": 57,
+        "tags": "line:45|text:12"
+      },
+      "graphite_slate": {
+        "sha256": "63d86bd9759934709ac1d5c7d1d278dd820ad1dfa46b869b809777a762e34d4b",
+        "elements": 57,
+        "tags": "line:45|text:12"
+      },
+      "reportage_steel": {
+        "sha256": "38702f5f1f70d02761c87b81c6651f14e94267f45e445a2ed83cd951ede80bc3",
+        "elements": 57,
+        "tags": "line:45|text:12"
+      }
+    },
     "gantt": {
       "editorial_cream": {
         "sha256": "0d690c9ee61bde8e2dccd1433ee52564db2366aafcbf0d36e130df706ce50c9a",
@@ -624,6 +720,38 @@
         "sha256": "a5398e910c67e3cba889f5eb5181eb6c4727e7d8a754d26d1e830da028636ffa",
         "elements": 28,
         "tags": "g:1|line:12|rect:4|text:11"
+      }
+    },
+    "gauge": {
+      "editorial_cream": {
+        "sha256": "9f706304bb364c1450a0665b3b5a36e76f490b74a3a15117005594b5b15ba8ae",
+        "elements": 107,
+        "tags": "line:101|text:6"
+      },
+      "burgundy_mono": {
+        "sha256": "61e40d8cac843901cab9278359406220de15ee6253c45bf17551d57c6e7faa84",
+        "elements": 107,
+        "tags": "line:101|text:6"
+      },
+      "midnight_indigo": {
+        "sha256": "aa37a4fc3fab980bb77839d794a6e720f96a7db6309a3485e8ef6e02dabd476a",
+        "elements": 107,
+        "tags": "line:101|text:6"
+      },
+      "pine_forest": {
+        "sha256": "c4ea683180aebbccec1b78b9e0a1e5ba6f0549c8c1c87f8b071ecdd7fe0ed350",
+        "elements": 107,
+        "tags": "line:101|text:6"
+      },
+      "graphite_slate": {
+        "sha256": "9ade3c68c21029fbadcb6f48e1c94958135b782825031425fb90065a87fafeb4",
+        "elements": 107,
+        "tags": "line:101|text:6"
+      },
+      "reportage_steel": {
+        "sha256": "ae6669cda3ac21866d4179d8f81f5c923429648f62e1bbe4aaff72eb92ed0207",
+        "elements": 107,
+        "tags": "line:101|text:6"
       }
     },
     "heatmap": {
@@ -1138,6 +1266,38 @@
         "tags": "path:4|rect:4|text:4"
       }
     },
+    "spectrum": {
+      "editorial_cream": {
+        "sha256": "650e9129977fa0b80f54ddcb1f081b564b901be5570297c574e3312507ec7582",
+        "elements": 49,
+        "tags": "circle:10|line:22|text:17"
+      },
+      "burgundy_mono": {
+        "sha256": "84c705d1fa1e4a641d36ecfc6fcc47ba92a72d020417a42c70fd14f563970c11",
+        "elements": 49,
+        "tags": "circle:10|line:22|text:17"
+      },
+      "midnight_indigo": {
+        "sha256": "8dcf4e6303fa726babead1efa0fb84cf82c236a59bd6bef6d8f567ed15c17cf9",
+        "elements": 49,
+        "tags": "circle:10|line:22|text:17"
+      },
+      "pine_forest": {
+        "sha256": "790bb1da70c978ee6ade87b2a40235d52c58ffd6ea5e751a60b7cdf3e21fe973",
+        "elements": 49,
+        "tags": "circle:10|line:22|text:17"
+      },
+      "graphite_slate": {
+        "sha256": "7bc1e0ec314170c3e5a42590a75d36d3e94a27fedc43d26fb2b82a0f18622af2",
+        "elements": 49,
+        "tags": "circle:10|line:22|text:17"
+      },
+      "reportage_steel": {
+        "sha256": "6a0bc00ef7217cdfcbaeb002048efd461c6cc6d863557747f80b42f3bde0c5f7",
+        "elements": 49,
+        "tags": "circle:10|line:22|text:17"
+      }
+    },
     "stacked": {
       "editorial_cream": {
         "sha256": "c96222cbc9e525f354f9cca1d96297afbff6735062b04a85f7ddcd99fdce2744",
@@ -1168,6 +1328,38 @@
         "sha256": "081eae9b731334e99887cde7f478a1bb105e2d2f1194121500d293590fac7aae",
         "elements": 32,
         "tags": "g:1|line:1|rect:12|text:18"
+      }
+    },
+    "stacked:rung": {
+      "editorial_cream": {
+        "sha256": "38cd96d648c22dc9fcbc88d549966cb7890384beebfb6602fabdc6b222b3482d",
+        "elements": 67,
+        "tags": "g:1|line:56|text:10"
+      },
+      "burgundy_mono": {
+        "sha256": "eb7cb0c068d21153b9b7bd2724cafe45d254a3c84aa1a198dbce7013c12ab909",
+        "elements": 67,
+        "tags": "g:1|line:56|text:10"
+      },
+      "midnight_indigo": {
+        "sha256": "9141d096a4a1dd1572140aa527eed403871c172e3e781bc6bf5a03a3a259dbce",
+        "elements": 67,
+        "tags": "g:1|line:56|text:10"
+      },
+      "pine_forest": {
+        "sha256": "0d1de0d7ced1e499be84ef2059eb23add83286a19ee92b534b70057c89e0f4ab",
+        "elements": 67,
+        "tags": "g:1|line:56|text:10"
+      },
+      "graphite_slate": {
+        "sha256": "5d718d75dfffe3fbdd947f694d249a70ec260ce4e9a71bbbe5a504afe7f01678",
+        "elements": 67,
+        "tags": "g:1|line:56|text:10"
+      },
+      "reportage_steel": {
+        "sha256": "656af7641ec52ed6008d1dd6d2f7d674900567e2374804ac1809ce4e317fbbaf",
+        "elements": 67,
+        "tags": "g:1|line:56|text:10"
       }
     },
     "stacked_area": {

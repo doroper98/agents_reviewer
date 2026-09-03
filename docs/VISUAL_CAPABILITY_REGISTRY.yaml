@@ -266,6 +266,27 @@ visual_capabilities:
     added_in: v8_6_3
     notes: "일별 강도 달력 (60~400행, 초과 시 마지막 371일). 질문이 '추세' 가 아니라 '언제 몰렸나' 일 때. 데이터 의존 type — usage_log.DATA_GATED_TYPES 라 재균형 힌트에서 제외한다."
 
+  gauge:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [value, target]
+    added_in: v8_7_0
+    notes: "단일 KPI 반원 100 눈금 링 (지지율·달성률·가동률). 값 1개 + 목표 1개일 때만 — 여러 항목을 목표선과 함께 줄 세우면 bullet."
+
+  spectrum:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [rows]
+    added_in: v8_7_0
+    notes: "양극 축 위 성향 배치 (정책 성향·국가 입장). 2~6행 · 행당 점 ≤5. value 는 수량이 아니라 -1~+1 위치 — 수량이면 bar/diverging_bar."
+
+  funnel:
+    renderer: d3_custom
+    status: guarded
+    required_fields: [stage, count]
+    added_in: v8_7_0
+    notes: "단계별 감소 (지원→서류→면접→최종). 2~6 단계 · 수가 늘어나는 단계가 있으면 funnel 아님. N→M 분배는 sankey."
+
   # ─── Tier — experimental (1종): 기본 forbidden, must_have 시만 ─────────
 
   chord:
@@ -294,6 +315,6 @@ visual_capabilities:
 # ─── 분포 (test_capability_registry 가 자동 검증) ─────────────────────────
 distribution:
   safe:         11
-  guarded:      21   # v7.9.17: network 폐기(CHART-AP-36). 2 (choropleth/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix) + v8.0.0: 1 (stakeholder_map) + v8.6.2: 2 (treemap 승격/tree 신설) + v8.6.3: 2 (histogram/calendar_heat)
+  guarded:      24   # v8.7.0: 3 (gauge/spectrum/funnel). v7.9.17: network 폐기(CHART-AP-36). 2 (choropleth/sankey) + 7 (scatter/stacked_area/lollipop/slope/small_multiples/waterfall/range_bar) + v7.0.0: 3 (bump/bullet/connected_scatter) + v7.5.0: 4 (combo/diverging_bar/pyramid/dot_matrix) + v8.0.0: 1 (stakeholder_map) + v8.6.2: 2 (treemap 승격/tree 신설) + v8.6.3: 2 (histogram/calendar_heat)
   experimental: 1
-total: 33   # 11 safe + 21 guarded + 1 experimental (v8.6.3 — histogram/calendar_heat 신설)
+total: 36   # 11 safe + 24 guarded + 1 experimental (v8.7.0 — gauge/spectrum/funnel 신설)

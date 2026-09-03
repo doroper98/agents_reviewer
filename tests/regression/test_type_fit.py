@@ -1,7 +1,7 @@
 """차트 type-fit 파이프라인 회귀 가드 (v8.6.4).
 
 기능 SSOT: [docs/CHART_REDESIGN_V8_6_PLAN.md](../../docs/CHART_REDESIGN_V8_6_PLAN.md) §6.
-구현: `src/visual/type_fit.py` (규칙 R1~R7) + `src/orchestrator.py` 호출부 +
+구현: `src/visual/type_fit.py` (규칙 R1~R9) + `src/orchestrator.py` 호출부 +
 `src/config.py:enable_type_refit` (`V8_TYPE_REFIT`) + `src/visual/usage_log.py` 의
 `refit` 필드 · `refit_distribution`.
 
@@ -50,11 +50,12 @@ def _out(chart: dict, fmt: str = "standard") -> dict:
 def test_rules_table_matches_plan_6_2() -> None:
     """R1~R7 이 전부 있고, R6/R7 은 *변환하지 않는* 규칙으로 표시돼 있다."""
     ids = [r.id for r in RULES]
-    assert ids == ["R1", "R2", "R3", "R4", "R5", "R6", "R7"]
+    assert ids == ["R1", "R2", "R3", "R4", "R5", "R8", "R9", "R6", "R7"]
     by_id = {r.id: r for r in RULES}
     assert by_id["R6"].active is False, "R6 은 명시적 no-op (플랜 §6.2)"
     assert by_id["R7"].active is False, "R7 은 계측 전용 (event_timeline 대기)"
-    assert all(r.active for r in RULES if r.id in {"R1", "R2", "R3", "R4", "R5"})
+    assert all(r.active for r in RULES
+               if r.id in {"R1", "R2", "R3", "R4", "R5", "R8", "R9"})
 
 
 # ─── R1 bar → histogram ─────────────────────────────────────────────────
@@ -561,3 +562,107 @@ def test_scan_reports_counts_rule_hits(tmp_path: Path) -> None:
     # 파일을 건드리지 않았는지 (읽기 전용)
     assert json.loads((tmp_path / "analysis_20260901_120000_aaaa.json")
                       .read_text(encoding="utf-8")) == doc
+
+
+# ─── R8 bar(단일 항목 + target) → gauge (v8.7.0, 플랜 §9) ────────────────
+
+
+def _kpi_bar(**row) -> dict:
+    base = {"label": "재생에너지 비중", "value": 42.1}
+    base.update(row)
+    return {"type": "bar", "title": "목표 대비 달성률", "unit_label": "%", "data": [base]}
+
+
+def test_r8_single_bar_with_target_becomes_gauge() -> None:
+    out = _out(_kpi_bar(target=50))
+    assert _rule(_kpi_bar(target=50)) == "R8"
+    assert out["type"] == "gauge"
+    assert out["data"] == {
+        "value": 42.1, "target": 50.0, "label": "재생에너지 비중", "unit_label": "%",
+    }
+    assert out["title"] == "목표 대비 달성률"      # 작성 모델이 쓴 글은 그대로 계승
+    assert validate_chart_data("gauge", out["data"])[0]
+
+
+def test_r8_no_target_is_noop() -> None:
+    """목표가 없으면 만들지 않는다 (안전 규칙 ① — 값 생성 금지)."""
+    chart = _kpi_bar()
+    out, rule = refit_chart(chart, report_format="standard")
+    assert rule is None and out is chart
+
+
+def test_r8_rejects_multi_row_and_nonpositive_target() -> None:
+    two = {"type": "bar", "data": [
+        {"label": "A", "value": 3, "target": 5}, {"label": "B", "value": 4, "target": 5}]}
+    # 항목이 둘이면 gauge 자리가 아니다 (bullet). R5(표현만 바꾸는 규칙)는 걸릴 수 있다.
+    assert _rule(two) != "R8"
+    assert _rule(_kpi_bar(target=0)) is None
+    assert _rule(_kpi_bar(target=-4)) is None
+
+
+def test_r8_drops_bar_only_options_when_converting() -> None:
+    chart = _kpi_bar(target=50)
+    chart["texture"] = "capsule"
+    out = _out(chart)
+    assert out["type"] == "gauge" and "texture" not in out
+
+
+# ─── R9 사슬형 sankey → funnel (v8.7.0, 플랜 §9) ─────────────────────────
+
+
+def _chain_sankey(values: list[float] | None = None, labels: list[str] | None = None) -> dict:
+    labels = labels or ["신청", "심사", "집행"]
+    nodes = []
+    for i, lab in enumerate(labels):
+        node = {"id": f"n{i}", "label": lab}
+        if values is not None:
+            node["value"] = values[i]
+        nodes.append(node)
+    links = [
+        {"source": f"n{i}", "target": f"n{i+1}",
+         "value": (values[i + 1] if values else 10 - i)}
+        for i in range(len(labels) - 1)
+    ]
+    return {"type": "sankey", "title": "지원금 흐름", "data": {"nodes": nodes, "links": links}}
+
+
+def test_r9_chain_with_node_values_becomes_funnel() -> None:
+    chart = _chain_sankey([1200, 480, 95])
+    out, rule = refit_chart(chart, report_format="standard")
+    assert rule == "R9" and out["type"] == "funnel"
+    assert out["data"] == [
+        {"stage": "신청", "count": 1200.0},
+        {"stage": "심사", "count": 480.0},
+        {"stage": "집행", "count": 95.0},
+    ]
+    assert validate_chart_data("funnel", out["data"])[0]
+
+
+def test_r9_without_node_values_is_noop() -> None:
+    """링크 값만으로는 첫 단계의 수를 알 수 없다 — 만들지 않는다."""
+    chart = _chain_sankey(None)
+    out, rule = refit_chart(chart, report_format="standard")
+    assert rule is None and out is chart
+
+
+def test_r9_rejects_branching_and_increasing_chain() -> None:
+    branching = {"type": "sankey", "data": {
+        "nodes": [{"id": "a", "label": "매출", "value": 100},
+                  {"id": "b", "label": "DS", "value": 60},
+                  {"id": "c", "label": "모바일", "value": 40}],
+        "links": [{"source": "a", "target": "b", "value": 60},
+                  {"source": "a", "target": "c", "value": 40}]}}
+    assert _rule(branching) is None                 # 분배는 sankey 그대로
+    assert _rule(_chain_sankey([100, 180, 200])) is None   # 늘어나면 funnel 아님
+
+
+def test_r9_rejects_too_many_stages() -> None:
+    labels = [f"단계{i}" for i in range(7)]
+    assert _rule(_chain_sankey([100 - i * 5 for i in range(7)], labels)) is None
+
+
+def test_r9_drops_annotations_for_funnel_target() -> None:
+    chart = _chain_sankey([1200, 480, 95])
+    chart["annotations"] = [{"kind": "vline", "x": "심사"}]
+    out = _out(chart)
+    assert out["type"] == "funnel" and "annotations" not in out
