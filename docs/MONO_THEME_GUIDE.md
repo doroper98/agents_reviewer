@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.6.5
+last_synced_with: v8.6.6
 ssot_for:
   - "Editorial Cream / Burgundy Mono / Light Mono 세 톤 팔레트"
   - "모노톤 차트·지도 패턴 시스템 (해칭·도트 정의 + 적용 규칙)"

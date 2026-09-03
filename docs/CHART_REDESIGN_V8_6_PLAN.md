@@ -1,9 +1,9 @@
 ---
 tier: 2
-status: in progress (Phase 0 v8.6.0 · Phase 1 v8.6.1 · Phase 2a v8.6.2 · Phase 2b v8.6.3 · Phase 2c v8.6.4 · 사다리 색 전환 v8.6.5 완료 · Phase 3 부터 대기)
+status: in progress (Phase 0~2c v8.6.0~v8.6.4 · 사다리 색 전환 v8.6.5 · Phase 3·4 v8.6.6 완료 · Phase 5 v8.7.0 대기)
 target_version: v8.6.0 ~ v8.7.0
 based_on_baseline: v8.5.15
-last_synced_with: v8.6.5
+last_synced_with: v8.6.6
 ssot_for:
   - "차트 표현 방식 전면 흡수 마스터 플랜 — 참고 자료 '차트 실전 키트'(lieflat-charts 64종) 분석 결과"
   - "신규 차트 type 1차 4종 (treemap / tree / histogram / calendar_heat) + 2차 3종 (gauge / spectrum / funnel) 데이터 계약·렌더 스펙"
@@ -550,7 +550,7 @@ function keyFooter(svg, W, H, text, t) { ... }
 
 ---
 
-## §7. Phase 3·4 — 검수·안티패턴·osint·문서 (v8.6.5)
+## §7. Phase 3·4 — 검수·안티패턴·osint·문서 (v8.6.6)
 
 ### §7.1 시각 검수
 
@@ -563,14 +563,27 @@ function keyFooter(svg, W, H, text, t) { ... }
 3. `samples/chart_redesign_v8_6_compare.html` 사용자 리뷰 → 머지 게이트.
 4. codex 비전(`V6_CODEX_VISUAL`) 실보고서 평가는 VM 후속.
 
-### §7.2 안티패턴 등재 (`docs/CHART_RENDERING_ANTIPATTERNS.md` `:1454` 뒤)
+### §7.2 안티패턴 등재 — 랜딩본 (v8.6.6)
 
-- `## CHART-AP-46: 단위 질감을 비정수·큰 값·비율에 적용 → 수백 칸 노이즈 또는 무의미 단위
-  (v8.6.5 신설, 선제)` — 증상/원인(LLM 이 texture·unit 직접 지정)/Fix(`isCountable`
-  자동 판정 + `niceUnit` 칸수 상한 + 프롬프트 "texture·unit 미지정" + 가드 `unit>0`).
-- `## CHART-AP-47: 데이터 모양과 type 불일치를 프롬프트에만 맡김 → 구간·2층·일별 데이터가
-  bar/donut/heatmap 으로 발행 (v8.6.5 신설, 사용자 지적)` — Fix = §6 type-fit.
-- CLAUDE.md `Anti-Patterns (차트 렌더링)` 요약 줄 + CHANGELOG.
+4건을 append 했다 (기획 시점의 2건 + 검수·사용자 지적에서 나온 2건).
+
+- `CHART-AP-46` **셀 수 있는 값을 면적으로 그림** — 칸 어휘 미적용 *또는* 칸 단위 날조.
+  Fix = `isCountable` 렌더러 판정 · `niceUnit` 정수 클램프 · 틈을 실제 칸 수로 나눔 ·
+  읽는 법 캡션 필수 · 프롬프트 "texture·unit 미지정".
+- `CHART-AP-47` **위계를 hue 로 구분** — 액센트 농도 사다리만 허용. 단이 붙어 구별이 안
+  되는 경우(도넛 링·dot_matrix)도 같은 클래스로 묶었다. hue 예외는 up/down · sankey ·
+  해치 3곳뿐.
+- `CHART-AP-48` **한쪽만 둥근 막대를 반투명 도형 겹침으로 제작** (사용자 catch) —
+  겹친 h×h 만 불투명도가 쌓여 "중앙 짙은 덩어리". Fix = `flatEndBar` 단일 path.
+  규칙: 반투명 도형을 겹쳐 쌓지 않는다.
+- `CHART-AP-49` **type 전용 CSS 폭 캡이 viewBox 와 어긋남** (사용자 catch) —
+  `.chart-stage-donut{max-width:320px}`. Fix = 규칙 삭제, 스테이지는 natural ratio 만.
+  규칙: 크기는 `viewBox` 한 곳에서만.
+
+> 기획 시점의 CHART-AP-47 초안("데이터 모양과 type 불일치를 프롬프트에만 맡김")은 §6
+> type-fit 이 이미 그 클래스를 코드로 막았고, 문서상으로는 결정 트리 negative 4건 +
+> `chart_type_scenarios.yaml` 로 남아 있어 별도 AP 로 중복 등재하지 않았다. 47 번은
+> 대신 v8.6.5 의 사다리 색 결정을 고정하는 데 썼다 (같은 번호를 두 뜻으로 쓰지 않기).
 
 ### §7.3 osint 통지(n) — `reviewer_osint_q_a`
 
@@ -718,9 +731,17 @@ DATA_MODELS.md` 는 모델 무변경이라 제외 (usage_log JSONL 필드는 계
 - [x] charts.js 무변경 → DOM 스냅샷 41키 0 diff 가 렌더 불변을 증명
 - [x] 사용자에게 VM 실측 명령 제시: `cd ~/agents_reviewer && source venv/bin/activate && python -m src.visual.type_fit --scan reports/ --dry-run`
 
-**Phase 3·4 (v8.6.5)**
-- [ ] 갤러리 헤드리스 스크린샷 리뷰 · compare 페이지 사용자 게이트
-- [ ] CHART-AP-46/47 · CLAUDE.md 요약 줄 · `reviewer_osint_q_a` 통지(n) · 문서 `last_synced_with` → 커밋
+**Phase 3·4 (v8.6.6)** — 완료 (2026-09-03)
+- [x] 갤러리 **전수 검수** — 41 스냅샷 키 × 3테마(midnight_indigo / editorial_cream /
+      reportage_noturno) 헤드리스 렌더 + 자동 결함 스캐너(화면좌표 기준 잘림·라벨 겹침·
+      빈 프레임·읽는 법 캡션 누락·최저 농도). **결함 7건 발견 → 전부 수정 → 잔여 0건**
+      (hline 라벨 잘림 2 · dual_line 축 정밀도/끝라벨 충돌 · choropleth 이웃 라벨 겹침 ·
+      dot_matrix 캡션 누락 + 사다리 구별 불가 · indicator 값라벨 덮어쓰기)
+- [x] CHART-AP-46/47 + 사용자 catch 2건(48 겹침 / 49 CSS 폭 캡) · CLAUDE.md 요약 줄 ·
+      문서 `last_synced_with` v8.6.6 → 커밋
+- [x] `svg_prerender.B_PLAN_CHART_TYPES` · `report_bundle_v1.md §9` 에 신규 4종 등록 확인
+- [x] `reviewer_osint_q_a` 통지(n) — 상위 세션이 직접 작성. `threads/2026_09_03_125614_agent_reviewer_bot_n_02.md` (status posted, `ack_required: yes` — §7.3 초안의 `no` 와 달리 렌더 게이트 폴백 소비 여부·재렌더 규약 채택 여부 2건 확인이 필요해 상향). ack 수신 후 종결 섹션 작성.
+- [x] compare 페이지 사용자 게이트 — 2026-09-03 사용자 검토: 지적 5건(bar 칸 단위·donut 여백/구별·diverging_bar/pyramid 중앙·area 그라데이션) v8.6.5 반영 후 "잘 보이네" 로 통과. Pages 배포 트리거 누락(PR #107)도 같은 검토에서 발견·수정.
 
 **Phase 5 (v8.7.0)** — §9 표 순서 (gauge → spectrum → funnel → 옵션 3종), 각각 절차 ①~⑫,
 R8/R9 를 type_fit 에 추가.
