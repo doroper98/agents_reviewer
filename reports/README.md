@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 369건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 370건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-09-08 06:24 | [일일브리핑] 2026-09-08 아침 종합 브리핑: 호르무즈 해상 전면 확전과 한국 파병 동의안, AI 반도체 급등장 | 종합 (전쟁·지정학·정치·산업) | [md](analysis_20260908_062442_615eeb82cc.md) · [json](analysis_20260908_062442_615eeb82cc.json) · [bundle](analysis_20260908_062442_615eeb82cc.bundle.json) |
 | 2026-09-07 19:11 | [장마감브리핑] Analysis |  | [md](analysis_20260907_191142_d8e4f54b0a.md) · [json](analysis_20260907_191142_d8e4f54b0a.json) · [bundle](analysis_20260907_191142_d8e4f54b0a.bundle.json) |
 | 2026-09-07 06:30 | [일일브리핑] 2026-09-07 아침 종합 브리핑: 호르무즈 파병 압박·유가 96달러·미 고용 서프라이즈 | 종합 (전쟁/지정학/산업/정치) | [md](analysis_20260907_063049_1b0b097007.md) · [json](analysis_20260907_063049_1b0b097007.json) · [bundle](analysis_20260907_063049_1b0b097007.bundle.json) |
 | 2026-09-06 06:26 | [일일브리핑] 2026-09-06 종합 브리핑: 유가 충격·연준 금리인상 압력·우크라이나 종전 협상 동시 진행 | 종합 (전쟁·지정학·정치·산업) | [md](analysis_20260906_062640_2eeac8dbe7.md) · [json](analysis_20260906_062640_2eeac8dbe7.json) · [bundle](analysis_20260906_062640_2eeac8dbe7.bundle.json) |
