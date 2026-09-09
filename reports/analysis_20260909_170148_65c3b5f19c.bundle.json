@@ -1,0 +1,895 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-09-09T17:01:58.146070+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v8.7.0",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260909_170148_65c3b5f19c",
+    "headline": "유체가 터지는 순간, 그 증명은 누구의 것인가",
+    "deck": "88시간 만에 나온 100쪽짜리 증명, 그리고 그 뒤에 남은 이름들.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260909_170148_65c3b5f19c.html",
+    "theme": {
+      "id": "reportage_noturno",
+      "tokens": {
+        "bg": "#001621",
+        "card": "#06222E",
+        "border": "#1C3A45",
+        "text": "#EFE3D4",
+        "muted": "#8AA0A6",
+        "accent": "#FF4103",
+        "up": "#8AC0A0",
+        "down": "#FF8A5C"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": {
+      "intro_narration": [
+        "유체가 터지는 순간을 두고 하루 만에 세계가 술렁였습니다.",
+        "증명은 공개됐지만, 공로는 아직 정리되지 않았습니다."
+      ],
+      "outro_narration": [
+        "풀린 갈래와 남은 갈래는 서로 다른 칸에 있습니다.",
+        "이 사건이 남긴 숙제는 그 순서를 기록하는 일입니다."
+      ],
+      "intro_narration_tts": [
+        "유체가 터지는 순간을 두고 하루 만에 세계가 술렁였습니다.",
+        "증명은 공개됐지만, 공로는 아직 정리되지 않았습니다."
+      ],
+      "outro_narration_tts": [
+        "풀린 갈래와 남은 갈래는 서로 다른 칸에 있습니다.",
+        "이 사건이 남긴 숙제는 그 순서를 기록하는 일입니다."
+      ]
+    }
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "10시 53분, 저장소 하나가 열린다",
+      "kicker": "",
+      "prose": "어제, 그러니까 9월 8일 오전 10시 53분(협정세계시)에 GitHub에 저장소 하나가 만들어진다. 이름은 openai/NavierStokesAndEuler, 라이선스는 아파치 2.0. 안에는 100쪽 남짓한 증명 문서와 Lean이라는 프로그램이 읽는 형태의 증명 코드가 들어 있다. 오늘 9월 9일 확인 시점에 별은 1,185개가 붙어 있다.\n\nOpenAI가 내놓은 주장은 이렇다. 3차원 나비에-스토크스 방정식에서 유체의 속도가 유한한 시간 안에 무한대로 치솟는 사례를 만들어 냈다는 것이다. 미공개 내부 모델과 자율 에이전트 약 1만 개를 동원했고, 증명을 찾는 데 88시간이 걸렸다고 회사는 설명한다.\n\n그런데 같은 날 쏟아진 기사 제목의 절반은 증명이 아니라 다툼을 가리킨다. 뉴욕대의 트리스탄 버크마스터(Tristan Buckmaster)는 발표 이틀 전 전화를 받았고, 공동저자 제안과 함께 동료를 명단에서 빼라는 요구를 들었다고 말한다. OpenAI의 세바스티앙 부벡(Sébastien Bubeck)은 그 주장이 거짓이고 선동적이라고 반박한다.\n\n여기에 하나가 더 있다. 사람들이 나비에-스토크스 난제라고 부를 때 떠올리는 그 문제는, 어제 발표 뒤에도 그대로 열려 있다. 이 글은 그 어긋남을 따라간다. 무엇이 실제로 풀렸는지, 방법은 누가 언제 만들었는지, GPT-6 Astra가 어느 대목에서 무슨 일을 했는지를 하나씩 벗겨 본다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "어제 오전, GitHub에 저장소 하나가 조용히 열렸습니다.",
+          "100쪽짜리 증명과 기계가 검증한 코드가 그 안에 있었습니다.",
+          "그런데 같은 날, 그 증명이 누구의 것이냐를 두고 다툼이 시작됩니다."
+        ],
+        "highlights": [
+          "증명 100쪽, 하루 만에 별 1,185개",
+          "같은 날 시작된 공로 분쟁"
+        ],
+        "emphasis": [
+          "100쪽짜리 증명",
+          "누구의 것이냐"
+        ],
+        "narration_tts": [
+          "어제 오전, 깃허브에 저장소 하나가 조용히 열렸습니다.",
+          "백 쪽짜리 증명과 기계가 검증한 코드가 그 안에 있었습니다.",
+          "그런데 같은 날, 그 증명이 누구의 것이냐를 두고 다툼이 시작됩니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s2",
+      "heading": "92년 동안 닫히지 않은 질문",
+      "kicker": "",
+      "prose": "나비에-스토크스 방정식은 1822년에서 1845년 사이에 나비에(Navier)와 스토크스(Stokes)가 정리한 식이다. 물이든 공기든 끈적임이 있는 유체가 밀리고 돌고 부딪칠 때 속도가 어떻게 변하는지를 적어 놓았다. 오늘 아침 일기예보에도, 항공기 날개 주변 공기 흐름 계산에도, 혈관 안 피의 흐름 해석에도 이 식이 깔려 있다.\n\n식이 있으니 답도 있을 것 같지만 수학이 묻는 것은 다른 질문이다. 처음에 부드럽게 출발한 흐름이 시간이 지나도 계속 부드럽게 유지되는지, 아니면 어느 순간 한 지점에서 속도가 무한대로 치솟는지다. 뒤쪽이 실제로 일어난다면 그 지점 이후로 방정식은 아무 말도 하지 못한다.\n\n1934년에 장 르레(Jean Leray)가 여기까지는 밝혔다. 약한 해는 언제나 존재한다는 것이다. 그러나 그 답이 끝까지 매끄러운지, 하나뿐인지는 밝히지 못했다. 언론이 말하는 90년 된 난제는 르레가 남기고 간 이 빈칸을 가리킨다. 그로부터 92년이 흘렀다.\n\n빈칸이 무거운 이유는 따로 있다. 난류를 수치로 계산하는 거의 모든 소프트웨어가 답이 끝까지 얌전하다는 전제 위에서 돈다. 어딘가에서 속도가 정말 터진다면 그 전제는 조건부가 된다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "이 방정식은 물과 공기가 어떻게 흐르는지를 적어 놓은 식입니다.",
+          "1934년 르레는 답이 늘 존재한다는 것까지만 보였습니다.",
+          "그 답이 끝까지 얌전한지는 92년 동안 아무도 답하지 못했습니다."
+        ],
+        "highlights": [
+          "1934년 르레가 남긴 빈칸",
+          "터지면 난류 계산의 전제가 흔들린다"
+        ],
+        "emphasis": [
+          "92년 동안"
+        ],
+        "narration_tts": [
+          "이 방정식은 물과 공기가 어떻게 흐르는지를 적어 놓은 식입니다.",
+          "천구백삼십사 년 르레는 답이 늘 존재한다는 것까지만 보였습니다.",
+          "그 답이 끝까지 얌전한지는 구십이 년 동안 아무도 답하지 못했습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s3",
+      "heading": "풀린 것은 그 문제가 아니다",
+      "kicker": "",
+      "prose": "2000년 5월 24일, 클레이 수학연구소가 밀레니엄 문제 일곱 개를 지정한다. 문제마다 상금은 100만 달러다. 이때 찰스 페퍼먼(Charles Fefferman)이 쓴 공식 문제 설명이 이 사건의 열쇠다. 그 문서는 나비에-스토크스를 하나가 아니라 네 갈래로 쪼개 놓았다.\n\n갈래 그림에서 보듯 기준은 단순하다. 외부에서 힘을 밀어 넣느냐 아니냐다. A와 B는 외부 힘이 없을 때 흐름이 언제나 매끄러운지를 묻고, C와 D는 매끄러운 외부 힘을 허용했을 때 터지는 사례가 존재하는지를 묻는다. 넷 다 똑같이 공식적인 질문이다.\n\n이번 결과가 앉은 자리는 C와 D다. 가만히 놔둔 물이 스스로 터졌다는 이야기가 아니라, 매끄러운 손으로 계속 휘저었더니 유한한 시간 안에 터지는 배치를 만들어 냈다는 이야기다. 사람들이 난제라고 말할 때 머릿속에 있는 것은 거의 언제나 A와 B 쪽이다.\n\n그래서 어제 하루 돌아다닌 밀레니엄 문제가 풀렸다는 문장은 절반만 맞다. 공식 문제의 한 갈래에 답한 것도 사실이고, 대중이 기다리던 갈래가 그대로 열려 있는 것도 사실이다.\n\nOpenAI는 100만 달러 상금을 청구하지 않겠다고 밝혔다. 클레이 연구소 회장 마틴 브리드슨(Martin Bridson)은 분명 흥미로운 날이라고 말하면서도, 규정상 심사는 동료심사 학술지 게재 뒤 2년의 학계 수용 기간을 거쳐야 한다고 확인했다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-1"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "클레이 연구소의 공식 설명은 이 문제를 네 갈래로 나눠 놓았습니다.",
+          "이번에 사례가 나온 쪽은 매끄러운 힘을 허용하는 두 갈래입니다.",
+          "가만히 둔 물이 아니라, 계속 휘저은 물이 터진 겁니다."
+        ],
+        "highlights": [
+          "A와 B 갈래는 그대로 열려 있다",
+          "상금 100만 달러는 미청구"
+        ],
+        "emphasis": [
+          "네 갈래",
+          "계속 휘저은 물"
+        ],
+        "narration_tts": [
+          "클레이 연구소의 공식 설명은 이 문제를 네 갈래로 나눠 놓았습니다.",
+          "이번에 사례가 나온 쪽은 매끄러운 힘을 허용하는 두 갈래입니다.",
+          "가만히 둔 물이 아니라, 계속 휘저은 물이 터진 겁니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s4",
+      "heading": "판 위에 선 사람들",
+      "kicker": "",
+      "prose": "이 사건은 회사 하나와 방정식 하나의 이야기가 아니다. 관계도에 보이듯 서로 다른 자리에 선 세 무리가 각자 다른 것을 걸고 있다.\n\n한쪽에는 OpenAI가 있다. 발표의 주체이고, 8월 28일부터 학습을 시작한 미공개 내부 모델을 가지고 있으며, 증명을 찾아낸 에이전트 무리의 주인이다. 부벡은 그 회사 쪽에서 이번 논란에 직접 목소리를 낸 사람이다.\n\n맞은편에는 사람 연구자들이 있다. 뉴욕대의 버크마스터와 Anthropic 소속의 레벤트 알푀게(Levent Alpöge)다. 두 사람은 8월 15일에 이미 3차원 오일러 방정식의 붕괴 사례를 얻어 놓고 있었고, 9월 7일 자정 직전에 자기들 증명을 공개한다. 알푀게가 경쟁사 소속이라는 사실은 뒤에서 무겁게 돌아온다.\n\n가운데에는 당사자도 심판도 아닌 자리에 선 사람들이 있다. 마드리드 수리과학연구소의 디에고 코르도바(Diego Córdoba)와 CUNEF 대학의 루이스 마르티네스-소로아(Luis Martínez-Zoroa)는 이번에 쓰인 방법의 원천을 만든 사람들이다. 페퍼먼은 네 갈래 문제 설명을 쓴 사람이자 이 둘을 이야기의 진짜 주인공이라고 평한 사람이고, 테런스 타오(Terence Tao)는 9월 7일 블로그에 기술 해설을 올려 바깥에서도 읽을 수 있게 만들었다.\n\n관계도를 한 번 훑고 나면 이상한 점이 눈에 들어온다. 발표를 한 쪽과 방법을 만든 쪽이 서로 다른 칸에 있다는 것이다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-2"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "이 이야기에는 서로 다른 자리에 선 세 무리가 있습니다.",
+          "마드리드의 두 수학자가 문을 여는 방법을 먼저 만들었습니다.",
+          "뉴욕대와 Anthropic의 두 연구자가 그 방법을 3차원으로 넓혔습니다."
+        ],
+        "highlights": [
+          "방법을 만든 두 사람은 마드리드에 있다",
+          "공저자 한 명은 Anthropic 소속"
+        ],
+        "emphasis": [
+          "마드리드의 두 수학자",
+          "Anthropic 소속"
+        ],
+        "narration_tts": [
+          "이 이야기에는 서로 다른 자리에 선 세 무리가 있습니다.",
+          "마드리드의 두 수학자가 문을 여는 방법을 먼저 만들었습니다.",
+          "뉴욕대와 앤트로픽의 두 연구자가 그 방법을 삼차원으로 넓혔습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s5",
+      "heading": "방법은 마드리드에서 왔다",
+      "kicker": "",
+      "prose": "2020년대에 코르도바와 마르티네스-소로아가 하나의 길을 낸다. 매끄러운 외부 힘을 주면서, 아주 잔 떨림을 반복해서 얹어 쌓아 올리는 방식이다. 떨림 하나하나는 작고 얌전하지만 그것이 겹겹이 누적되면 유한한 시간 안에 값이 무한대로 향한다. 두 사람은 이 방식으로 IPM 방정식의 특이점을 구성했다.\n\n이 아이디어가 이번 사건에 쓰인 모든 증명의 뿌리다. 페퍼먼은 두 사람을 이 이야기의 진짜 주인공이라고 평했다. 문제를 네 갈래로 나눠 적은 사람이 남긴 평가라는 점에서 무게가 가볍지 않다.\n\n8월 15일, 버크마스터와 알푀게가 그 길을 확장한다. 같은 방식을 밀어붙여 3차원 오일러 방정식의 유한 시간 붕괴를 얻는데, 이때도 결과는 공개하지 않는다. 두 사람은 작업에 AI 도구를 활용했다고 밝혔고 거기에는 OpenAI의 Codex도 들어 있다. 사람 대 기계라는 구도가 처음부터 깔끔하게 갈라지지 않는 이유다.\n\n점을 이어 보면 층이 보인다. 길을 낸 것은 마드리드의 두 사람이고, 그 길을 3차원까지 넓힌 것은 뉴욕과 Anthropic의 두 사람이며, 어제 발표된 결과는 그 위에 서 있다. 이 순서는 어느 쪽도 부인하지 않는 사실이다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "두 수학자는 아주 잔 떨림을 반복해 쌓는 방법을 고안했습니다.",
+          "페퍼먼은 이 두 사람을 이야기의 진짜 주인공이라고 평했습니다.",
+          "8월 15일에는 버크마스터와 알푀게가 그 길을 3차원으로 넓힙니다."
+        ],
+        "highlights": [
+          "페퍼먼이 꼽은 진짜 주인공",
+          "8월 15일, 3차원 오일러 확장"
+        ],
+        "emphasis": [
+          "진짜 주인공"
+        ],
+        "narration_tts": [
+          "두 수학자는 아주 잔 떨림을 반복해 쌓는 방법을 고안했습니다.",
+          "페퍼먼은 이 두 사람을 이야기의 진짜 주인공이라고 평했습니다.",
+          "팔월 십오일에는 버크마스터와 알푀게가 그 길을 삼차원으로 넓힙니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s6",
+      "heading": "소문을 듣고 시작했다",
+      "kicker": "",
+      "prose": "8월 28일, OpenAI가 새 내부 모델의 학습을 시작한다. 회사는 이 모델이 GPT-6 Astra보다 상당히 더 뛰어나다고 설명했다. 오늘까지 이 모델은 공개되지 않았고, 따라서 바깥에서 성능을 확인할 방법도 없다.\n\n9월 1일에 에이전트가 투입된다. 착수 이유에 대한 회사 설명이 이 사건에서 가장 많이 인용되는 문장이다. 밀레니엄 문제 두 개가 풀렸다는 소문을 듣고 시작했다는 것이다. 남이 어디까지 갔는지 알고 출발했다는 자기 인정이 그대로 분쟁의 뇌관이 된다.\n\n시간 분해를 보면 작업은 두 토막이다. 에이전트들이 88시간 만에 나비에-스토크스 결과에 닿고, 그다음 GPT-6 Astra가 17시간에 걸쳐 그것을 Lean 형식으로 옮겨 기계 검증을 통과시킨다. 나비에-스토크스 하나에만 270만 건의 메시지와 약 1,300억 개의 출력 토큰이 들었고, 시도한 문제 전체로는 490만 건과 약 3,000억 개다.\n\n여기서 한 가지를 바로잡아야 한다. Astra가 방정식을 풀었다는 말은 널리 퍼졌지만 정확하지 않다. 증명을 탐색한 것은 이름도 성능도 공개되지 않은 내부 모델이고, Astra가 맡은 것은 그 결과를 사람과 기계가 함께 검증할 수 있는 형태로 옮기는 17시간의 작업이다. 검증 가능한 부분은 공개된 모델이 했고, 검증 불가능한 부분은 비공개 모델이 했다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-3"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "OpenAI는 문제가 풀렸다는 소문을 듣고 착수했다고 밝혔습니다.",
+          "9월 1일에 시작해 88시간 만에 결과에 닿았습니다.",
+          "형식 검증에는 GPT-6 Astra가 17시간을 더 썼습니다.",
+          "정작 탐색을 맡은 모델은 지금도 공개되지 않았습니다."
+        ],
+        "highlights": [
+          "에이전트 약 1만 개 동원",
+          "출력 토큰 약 1,300억"
+        ],
+        "emphasis": [
+          "88시간",
+          "공개되지 않았습니다"
+        ],
+        "narration_tts": [
+          "오픈에이아이는 문제가 풀렸다는 소문을 듣고 착수했다고 밝혔습니다.",
+          "구월 일일에 시작해 팔십팔 시간 만에 결과에 닿았습니다.",
+          "형식 검증에는 지피티 육 아스트라가 십칠 시간을 더 썼습니다.",
+          "정작 탐색을 맡은 모델은 지금도 공개되지 않았습니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s7",
+      "heading": "무엇이 걸려 있었나",
+      "kicker": "",
+      "prose": "확인된 사실부터 세워 두자. 9월 6일에 OpenAI가 버크마스터에게 연락해 약 100쪽 분량의 증명을 알렸다. 버크마스터는 이때 공동저자 제안과 함께 Anthropic 소속인 알푀게를 명단에서 빼라는 요구를 들었고 위협성 발언도 있었다고 말한다. 부벡은 그것이 거짓이고 선동적이라고 부인한다. 두 진술이 어긋난다는 것까지가 지금 확실한 전부다.\n\n여기서 한 발 더 들어가 보면, 소속을 이유로 공저자를 빼라는 요구는 학문적 이유로는 설명되지 않는다는 점이 눈에 걸린다. 증명에 기여했는지가 기준이지 어느 회사 명함을 들고 있는지가 기준이 아니기 때문이다. 그런 요구가 실제로 있었다면 학계의 관행이 아니라 회사 사이의 경쟁 논리가 작동한 것으로 읽힐 여지가 크다.\n\n한 가지 가설은 이렇다. 8월 28일에 학습을 시작한 미공개 모델에게는 첫 대외 시연 무대가 필요했고, 마침 밀레니엄 문제라는 가장 눈에 띄는 무대가 소문의 형태로 눈앞에 있었다는 것이다. 소문 청취에서 착수까지 나흘, 착수에서 결과까지 88시간이라는 속도, 그리고 심사에 최소 2년이 걸리는 상금을 아예 청구하지 않겠다고 먼저 밝힌 선택. 이 셋을 겹쳐 놓으면 상금이 아니라 서사를 가져가는 그림이 그려진다.\n\n다만 이것은 정황을 이은 추측이고, 회사는 부당한 행위를 부인하고 있다. 반대 방향의 설명도 충분히 가능하다. 증명 문서와 Lean 코드를 아파치 2.0으로 통째로 공개한 것은 서사만 챙기려는 쪽에서 굳이 하지 않을 선택이며, 순수한 과학적 흥미로도 이 속도는 설명될 수 있다. 지금 단계에서 어느 쪽이 참인지는 공개된 자료만으로 가려지지 않는다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "9월 6일, OpenAI가 버크마스터에게 전화를 겁니다.",
+          "그는 동료를 명단에서 빼라는 요구를 들었다고 말합니다.",
+          "부벡은 그런 일이 없었고 선동적인 주장이라고 부인합니다.",
+          "확인된 것은 두 진술이 정면으로 어긋난다는 사실뿐입니다."
+        ],
+        "highlights": [
+          "소속을 이유로 한 배제 요구 주장",
+          "상금은 처음부터 미청구"
+        ],
+        "emphasis": [
+          "두 진술이 정면으로 어긋난다"
+        ],
+        "narration_tts": [
+          "구월 육일, 오픈에이아이가 버크마스터에게 전화를 겁니다.",
+          "그는 동료를 명단에서 빼라는 요구를 들었다고 말합니다.",
+          "부벡은 그런 일이 없었고 선동적인 주장이라고 부인합니다.",
+          "확인된 것은 두 진술이 정면으로 어긋난다는 사실뿐입니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s8",
+      "heading": "여드레의 기동",
+      "kicker": "",
+      "prose": "시간표를 붙여 보면 이 사건의 성격이 달라 보인다. 8월 15일에 버크마스터와 알푀게가 결과를 손에 쥔다. 8월 28일에 OpenAI의 새 모델이 학습을 시작한다. 9월 1일에 에이전트가 투입되고, 9월 5일에 결과에 닿고, 9월 6일에 전화가 걸린다.\n\n9월 7일, 버크마스터와 알푀게는 자정 직전에 자기들 증명을 공개한다. IPM과 2차원 부시네스크, 3차원 오일러 세 방정식의 붕괴 증명을 Lean 검증본과 함께 내놓았다. 버크마스터는 소문이 OpenAI에 새어 나간 뒤 공개 일정을 앞당길 수밖에 없었다고 밝혔다. 같은 날 타오가 블로그에 기술 해설을 올린다.\n\n그리고 다음 날 아침, OpenAI의 공식 발표가 나온다. 하루 차이다. 순서만 놓고 보면 사람 연구자들이 먼저 공개했고 회사가 뒤이어 발표했지만, 세상에 남은 헤드라인은 회사의 것이다.\n\n이 여드레에서 눈여겨볼 대목은 기술이 아니라 속도의 비대칭이다. 한쪽은 결과를 다듬어 정식으로 내놓을 시간을 계산하고 있었고, 다른 쪽은 그 계산 자체를 압축해 버릴 수 있는 자원을 가지고 있었다. 연구의 시계와 발표의 시계가 서로 다른 속도로 도는 장면이다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "8월 28일에 새 내부 모델의 학습이 시작됩니다.",
+          "9월 1일 착수, 9월 5일 도달, 9월 6일 통화로 이어집니다.",
+          "두 연구자는 9월 7일 자정 직전에 자기 증명을 공개합니다.",
+          "회사의 공식 발표는 그다음 날 아침에 나옵니다."
+        ],
+        "highlights": [
+          "여드레 사이에 벌어진 일",
+          "공개 일정을 앞당겼다는 증언"
+        ],
+        "emphasis": [
+          "자정 직전"
+        ],
+        "narration_tts": [
+          "팔월 이십팔일에 새 내부 모델의 학습이 시작됩니다.",
+          "구월 일일 착수, 구월 오일 도달, 구월 육일 통화로 이어집니다.",
+          "두 연구자는 구월 칠일 자정 직전에 자기 증명을 공개합니다.",
+          "회사의 공식 발표는 그다음 날 아침에 나옵니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s9",
+      "heading": "누구의 증명인가",
+      "kicker": "",
+      "prose": "공로는 한 덩어리가 아니라 세 층이다. 첫째 층은 방법이다. 매끄러운 힘에 잔 떨림을 반복해 쌓는 길을 낸 것은 코르도바와 마르티네스-소로아다. 둘째 층은 확장이다. 그 길이 3차원에서도 통한다는 것을 보인 것은 버크마스터와 알푀게다. 셋째 층이 이번 구성이며, 그 길 끝에서 나비에-스토크스라는 마지막 구간을 빠르게 달린 것이 OpenAI의 시스템이다.\n\n세 층 가운데 어느 층에 이름을 붙일지에 따라 이 사건의 제목이 달라진다. 회사의 발표문은 셋째 층을 강조하고, 페퍼먼의 평가는 첫째 층을 가리키며, 버크마스터의 항의는 둘째 층이 지워지는 것을 향한다. 성향 배치는 그 갈림을 두 축으로 옮겨 놓은 것이다.\n\n두 번째 축도 못지않게 중요하다. 이번 일이 이미 확정된 성취인지, 아니면 몇 해 뒤에나 판가름 날 주장인지가 사람마다 다르게 읽힌다. 어제 하루의 헤드라인은 확정 쪽에 서 있었고, 클레이 연구소의 규정은 정반대 끝에 서 있다.\n\n한 가지는 분명하다. 증명이 옳은지와 공로가 누구 것인지는 서로 다른 질문이다. Lean 검증은 앞의 질문에만 답한다. 뒤의 질문에 답할 장치는 아직 아무 데도 없다.",
+      "pull_quote": "",
+      "chart_refs": [
+        "ch-4"
+      ],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "이 사건의 공로는 세 층으로 나눠서 봐야 합니다.",
+          "방법을 만든 사람과 그것을 넓힌 사람이 각각 따로 있습니다.",
+          "회사가 한 일은 그 길 위에서 마지막 구간을 달린 것입니다.",
+          "증명이 옳은지와 공로가 누구 것인지는 다른 질문입니다."
+        ],
+        "highlights": [
+          "방법, 확장, 마지막 구간",
+          "Lean 검증은 앞의 질문에만 답한다"
+        ],
+        "emphasis": [
+          "세 층",
+          "마지막 구간"
+        ],
+        "narration_tts": [
+          "이 사건의 공로는 세 층으로 나눠서 봐야 합니다.",
+          "방법을 만든 사람과 그것을 넓힌 사람이 각각 따로 있습니다.",
+          "회사가 한 일은 그 길 위에서 마지막 구간을 달린 것입니다.",
+          "증명이 옳은지와 공로가 누구 것인지는 다른 질문입니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s10",
+      "heading": "이제부터가 검증이다",
+      "kicker": "",
+      "prose": "좋은 소식부터 적자. 증명은 실제로 공개돼 있다. Lean 도구를 갖춘 사람이라면 누구나 그 형식 증명을 다시 돌려 볼 수 있고, 발표 하루 만에 저장소에 별 1,185개가 붙은 것은 적어도 사람들이 그 파일을 들여다보고 있다는 뜻이다. 주장만 던지고 검증을 막는 방식과는 분명히 다르다.\n\n반대쪽에는 공백이 있다. 증명을 찾아낸 내부 모델도, 에이전트 1만 개가 남긴 기록도 공개되지 않았다. 결과는 검증할 수 있지만 과정은 검증할 수 없다. 같은 조건에서 다시 해 보겠다는 시도가 원천적으로 불가능하다는 뜻이고, 이는 과학의 재현 가능성이라는 기준에서 보면 절반만 열린 문이다.\n\n공식 절차는 아직 시작조차 하지 않았다. 클레이 연구소 규정은 동료심사 학술지 게재를 요구하고, 그 뒤 2년 동안 학계가 결과를 받아들이는지를 본다. 빨라도 2028년 이후에나 심사가 열린다는 뜻이다. 브리드슨이 흥미로운 날이라고만 말하고 더 나가지 않은 이유가 여기에 있다.\n\n그리고 A와 B 갈래는 그대로다. 밀레니엄 문제 일곱 개 가운데 지금까지 풀린 것은 푸앵카레 추측 하나뿐이고, 그마저도 증명자 그리고리 페렐만은 상금을 거부했다. 나머지 여섯은 오늘도 열려 있다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "증명 코드는 공개돼 누구나 다시 검증할 수 있습니다.",
+          "반면 탐색을 수행한 모델과 기록은 공개되지 않았습니다.",
+          "클레이 규정은 학술지 게재 뒤 2년의 검증을 요구합니다.",
+          "공식 확정은 빨라야 2028년 이후의 일입니다."
+        ],
+        "highlights": [
+          "결과는 검증 가능, 과정은 비공개",
+          "밀레니엄 문제 여섯은 여전히 미해결"
+        ],
+        "emphasis": [
+          "2년의 검증"
+        ],
+        "narration_tts": [
+          "증명 코드는 공개돼 누구나 다시 검증할 수 있습니다.",
+          "반면 탐색을 수행한 모델과 기록은 공개되지 않았습니다.",
+          "클레이 규정은 학술지 게재 뒤 이 년의 검증을 요구합니다.",
+          "공식 확정은 빨라야 이천이십팔 년 이후의 일입니다."
+        ]
+      }
+    },
+    {
+      "section_id": "s11",
+      "heading": "길을 낸 쪽과 달린 쪽",
+      "kicker": "",
+      "prose": "이번 일이 실제로 보여준 것은 속도다. 사람이 낸 길 위에서 기계가 나흘 만에 끝까지 달렸고, 그 결과를 사람과 기계가 함께 확인할 수 있는 형태로 옮겼다. 수학이라는 일에서 탐색이라는 공정이 처음으로 대량 생산의 대상이 된 장면으로 기록될 만하다.\n\n바뀌지 않은 것도 뚜렷하다. 어느 방정식이 중요한지, 어느 방향으로 파고들어야 하는지, 잔 떨림을 쌓는다는 발상을 어디서 꺼내올지를 고른 것은 사람이다. 기계가 압축한 것은 88시간짜리 구간이지, 그 앞에 놓인 수십 년이 아니다.\n\n남은 문제는 규범의 공백이다. 논문에는 저자 이름을 적는 칸이 있지만, 남의 방법 위에서 기계가 마지막 구간을 달렸을 때 그 공로를 어떻게 나눌지에 대한 규칙은 아직 없다. 이번 분쟁이 유난히 사나웠던 것은 사람들이 나빠서가 아니라 기댈 규칙이 없었기 때문일 가능성이 크다.\n\n무한대가 태어나는 자리를 먼저 가리킨 것은 사람이었고, 그리로 달려간 것은 기계였다. 순서를 기록해 두는 일, 이번 사건이 남긴 숙제는 결국 그것이다.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": {
+        "narration": [
+          "이번 일이 보여준 것은 속도입니다.",
+          "사람이 낸 길 위에서 기계가 나흘 만에 끝까지 달렸습니다.",
+          "무엇을 물을지 고른 것은 여전히 사람이었습니다.",
+          "남은 숙제는 그 순서를 어떻게 기록할 것인가입니다."
+        ],
+        "highlights": [
+          "길을 낸 것은 사람, 달린 것은 기계"
+        ],
+        "emphasis": [
+          "나흘 만에"
+        ],
+        "narration_tts": [
+          "이번 일이 보여준 것은 속도입니다.",
+          "사람이 낸 길 위에서 기계가 나흘 만에 끝까지 달렸습니다.",
+          "무엇을 물을지 고른 것은 여전히 사람이었습니다.",
+          "남은 숙제는 그 순서를 어떻게 기록할 것인가입니다."
+        ]
+      }
+    }
+  ],
+  "charts": [
+    {
+      "chart_id": "ch-1",
+      "type": "tree",
+      "title": "클레이 공식 문제의 네 갈래",
+      "data": {
+        "root": {
+          "label": "나비에-스토크스 문제",
+          "children": [
+            {
+              "label": "외부 힘 없음",
+              "note": "둘 다 미해결",
+              "children": [
+                {
+                  "label": "A 전체 공간",
+                  "note": "대중이 아는 그 문제"
+                },
+                {
+                  "label": "B 주기 공간",
+                  "note": "여전히 열려 있음"
+                }
+              ]
+            },
+            {
+              "label": "매끄러운 힘 허용",
+              "note": "이번 결과의 자리",
+              "children": [
+                {
+                  "label": "C 전체 공간",
+                  "note": "붕괴 사례 제시됨"
+                },
+                {
+                  "label": "D 주기 공간",
+                  "note": "붕괴 사례 제시됨"
+                }
+              ]
+            }
+          ]
+        },
+        "accent_label": "C 전체 공간"
+      },
+      "note": "",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"-10.950891733169556 44.02605438232422 628.013427734375 263.86871337890625\" preserveAspectRatio=\"xMidYMid meet\"><rect x=\"-100000\" y=\"-100000\" width=\"200000\" height=\"200000\" fill=\"#06222E\"/><path d=\"M140,144C215,144,215,84,290,84\" fill=\"none\" stroke=\"#FF4103\" stroke-opacity=\"0.9\" stroke-width=\"1.4\" stroke-dashoffset=\"0\"></path><path d=\"M140,144C215,144,215,204,290,204\" fill=\"none\" stroke=\"#FF4103\" stroke-opacity=\"0.9\" stroke-width=\"1.4\" stroke-dashoffset=\"0\"></path><path d=\"M290,84C365,84,365,64,440,64\" fill=\"none\" stroke=\"#FF4103\" stroke-opacity=\"1\" stroke-width=\"1\" stroke-dashoffset=\"0\"></path><path d=\"M290,84C365,84,365,104,440,104\" fill=\"none\" stroke=\"#FF4103\" stroke-opacity=\"1\" stroke-width=\"1\" stroke-dashoffset=\"0\"></path><path d=\"M290,204C365,204,365,184,440,184\" fill=\"none\" stroke=\"#FF4103\" stroke-opacity=\"0.46\" stroke-width=\"1\" stroke-dashoffset=\"0\"></path><path d=\"M290,204C365,204,365,224,440,224\" fill=\"none\" stroke=\"#FF4103\" stroke-opacity=\"0.46\" stroke-width=\"1\" stroke-dashoffset=\"0\"></path><circle cx=\"140\" cy=\"144\" r=\"5\" fill=\"#FF4103\"></circle><text x=\"130\" y=\"148.5\" text-anchor=\"end\" font-family=\"Noto Serif KR\" font-size=\"13\" font-weight=\"700\" fill=\"#FF4103\">나비에-스토크스 문제</text><circle cx=\"290\" cy=\"84\" r=\"3.5\" fill=\"#FF4103\"></circle><text x=\"283\" y=\"77\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" font-weight=\"600\" fill=\"#FF4103\">외부 힘 없음</text><circle cx=\"290\" cy=\"204\" r=\"3.5\" fill=\"#FF4103\"></circle><text x=\"283\" y=\"197\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"11\" font-weight=\"600\" fill=\"#FF4103\">매끄러운 힘 허용</text><circle cx=\"440\" cy=\"64\" r=\"2.5\" fill=\"#FF4103\" fill-opacity=\"1\"></circle><text x=\"448\" y=\"67.5\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#FF4103\">A 전체 공간</text><text x=\"528.1\" y=\"67.5\" font-family=\"Noto Sans KR\" font-size=\"9\" fill=\"#8AA0A6\">대중이 아는 그 문제</text><circle cx=\"440\" cy=\"104\" r=\"2.5\" fill=\"#FF4103\" fill-opacity=\"1\"></circle><text x=\"448\" y=\"107.5\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#FF4103\">B 주기 공간</text><text x=\"528.1\" y=\"107.5\" font-family=\"Noto Sans KR\" font-size=\"9\" fill=\"#8AA0A6\">여전히 열려 있음</text><circle cx=\"440\" cy=\"184\" r=\"2.5\" fill=\"#FF4103\" fill-opacity=\"1\"></circle><text x=\"448\" y=\"187.5\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"700\" fill=\"#FF4103\">C 전체 공간</text><text x=\"528.1\" y=\"187.5\" font-family=\"Noto Sans KR\" font-size=\"9\" fill=\"#8AA0A6\">붕괴 사례 제시됨</text><circle cx=\"440\" cy=\"224\" r=\"2.5\" fill=\"#FF4103\" fill-opacity=\"0.46\"></circle><text x=\"448\" y=\"227.5\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#FF4103\">D 주기 공간</text><text x=\"528.1\" y=\"227.5\" font-family=\"Noto Sans KR\" font-size=\"9\" fill=\"#8AA0A6\">붕괴 사례 제시됨</text><text x=\"360\" y=\"292\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"9.5\" letter-spacing=\".08em\" fill=\"#8AA0A6\">위계 = 좌에서 우로 · 가지마다 농도</text></svg>"
+    },
+    {
+      "chart_id": "ch-2",
+      "type": "stakeholder_map",
+      "title": "증명 하나를 둘러싼 세 무리",
+      "data": {
+        "nodes": [
+          {
+            "id": "openai",
+            "label": "OpenAI",
+            "col": "left",
+            "logo": "openai.com",
+            "role": "증명 발표 주체"
+          },
+          {
+            "id": "bubeck",
+            "label": "세바스티앙 부벡",
+            "col": "left",
+            "kind": "person",
+            "role": "OpenAI 측 반박"
+          },
+          {
+            "id": "buckmaster",
+            "label": "트리스탄 버크마스터",
+            "col": "right",
+            "kind": "person",
+            "role": "3차원 오일러 확장"
+          },
+          {
+            "id": "alpoge",
+            "label": "레벤트 알푀게",
+            "col": "right",
+            "kind": "person",
+            "role": "버크마스터 공저자"
+          },
+          {
+            "id": "anthropic",
+            "label": "Anthropic",
+            "col": "right",
+            "logo": "anthropic.com",
+            "role": "알푀게 소속 회사"
+          },
+          {
+            "id": "cordoba",
+            "label": "디에고 코르도바",
+            "col": "center",
+            "kind": "person",
+            "role": "원천 방법 고안"
+          },
+          {
+            "id": "zoroa",
+            "label": "루이스 마르티네스-소로아",
+            "col": "center",
+            "kind": "person",
+            "role": "방법 공동 고안"
+          },
+          {
+            "id": "fefferman",
+            "label": "찰스 페퍼먼",
+            "col": "center",
+            "kind": "person",
+            "role": "공식 문제 설명 작성"
+          },
+          {
+            "id": "clay",
+            "label": "클레이 수학연구소",
+            "col": "center",
+            "logo": "claymath.org",
+            "role": "상금 심사 기관"
+          }
+        ],
+        "edges": [
+          {
+            "source": "openai",
+            "target": "buckmaster",
+            "type": "대립",
+            "label": "공로 분쟁"
+          },
+          {
+            "source": "bubeck",
+            "target": "buckmaster",
+            "type": "대립",
+            "label": "진술 반박"
+          },
+          {
+            "source": "openai",
+            "target": "bubeck",
+            "type": "연관",
+            "label": "소속"
+          },
+          {
+            "source": "buckmaster",
+            "target": "alpoge",
+            "type": "동맹",
+            "label": "공동 증명"
+          },
+          {
+            "source": "alpoge",
+            "target": "anthropic",
+            "type": "연관",
+            "label": "소속"
+          },
+          {
+            "source": "cordoba",
+            "target": "zoroa",
+            "type": "동맹",
+            "label": "공동 고안"
+          },
+          {
+            "source": "cordoba",
+            "target": "buckmaster",
+            "type": "영향",
+            "label": "방법 제공"
+          },
+          {
+            "source": "cordoba",
+            "target": "openai",
+            "type": "영향",
+            "label": "방법 제공"
+          },
+          {
+            "source": "fefferman",
+            "target": "cordoba",
+            "type": "연관",
+            "label": "주인공 평가"
+          },
+          {
+            "source": "clay",
+            "target": "openai",
+            "type": "연관",
+            "label": "심사 규정"
+          }
+        ]
+      },
+      "note": "선의 종류는 관계의 성격이고, 길이에는 뜻이 없다.",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-3",
+      "type": "waterfall",
+      "title": "결과에 닿기까지 든 시간",
+      "data": [
+        {
+          "label": "9월 1일 착수",
+          "value": 0,
+          "type": "total"
+        },
+        {
+          "label": "에이전트 증명 탐색",
+          "value": 88,
+          "type": "pos"
+        },
+        {
+          "label": "Astra 형식 검증",
+          "value": 17,
+          "type": "pos"
+        },
+        {
+          "label": "누적 소요",
+          "value": 105,
+          "type": "total"
+        }
+      ],
+      "note": "",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": null
+    },
+    {
+      "chart_id": "ch-4",
+      "type": "spectrum",
+      "title": "같은 사건, 갈라지는 두 축",
+      "data": {
+        "rows": [
+          {
+            "left_label": "사람의 성취",
+            "right_label": "기계의 성취",
+            "points": [
+              {
+                "label": "페퍼먼 논평",
+                "value": -0.9
+              },
+              {
+                "label": "버크마스터",
+                "value": -0.5
+              },
+              {
+                "label": "OpenAI 발표문",
+                "value": 0.8,
+                "emphasis": true
+              }
+            ]
+          },
+          {
+            "left_label": "이미 확정",
+            "right_label": "수년 뒤 판가름",
+            "points": [
+              {
+                "label": "언론 헤드라인",
+                "value": -0.8
+              },
+              {
+                "label": "상금 미청구",
+                "value": 0.3
+              },
+              {
+                "label": "클레이 심사 규정",
+                "value": 0.9
+              }
+            ]
+          }
+        ]
+      },
+      "note": "각 점의 위치는 공개된 발언과 규정을 근거로 이 글이 배치한 것이다.",
+      "display": "full",
+      "provenance": {
+        "origin": "narrative_inference",
+        "verification": "inferred",
+        "confidence": "medium",
+        "sources": []
+      },
+      "prerendered_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 720 218\" preserveAspectRatio=\"xMidYMid meet\"><rect x=\"-100000\" y=\"-100000\" width=\"200000\" height=\"200000\" fill=\"#06222E\"/><line x1=\"62\" x2=\"658\" y1=\"76\" y2=\"76\" stroke=\"#EFE3D4\" stroke-opacity=\"0.35\" stroke-width=\"1\"></line><line x1=\"62\" x2=\"62\" y1=\"70\" y2=\"82\" stroke=\"#EFE3D4\" stroke-opacity=\"0.45\" stroke-width=\"1\"></line><line x1=\"360\" x2=\"360\" y1=\"72\" y2=\"80\" stroke=\"#EFE3D4\" stroke-opacity=\"0.22\" stroke-width=\"1\"></line><line x1=\"658\" x2=\"658\" y1=\"70\" y2=\"82\" stroke=\"#EFE3D4\" stroke-opacity=\"0.45\" stroke-width=\"1\"></line><text x=\"62\" y=\"96\" font-family=\"Noto Sans KR\" font-size=\"9.5\" letter-spacing=\".08em\" fill=\"#8AA0A6\">사람의 성취</text><text x=\"658\" y=\"96\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"9.5\" letter-spacing=\".08em\" fill=\"#8AA0A6\">기계의 성취</text><circle cx=\"91.80000000000001\" cy=\"76\" r=\"4.115271733299272\" fill=\"#FF4103\" fill-opacity=\"0.55\" stroke=\"#001621\" stroke-width=\"0.8\" data-anim=\"static\"></circle><text x=\"91.80000000000001\" y=\"60\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#EFE3D4\">페퍼먼 논평</text><line x1=\"91.80000000000001\" x2=\"91.80000000000001\" y1=\"64\" y2=\"71\" stroke=\"#EFE3D4\" stroke-opacity=\"0.28\" stroke-width=\"0.7\"></line><circle cx=\"211\" cy=\"76\" r=\"4.115271733299272\" fill=\"#FF4103\" fill-opacity=\"0.55\" stroke=\"#001621\" stroke-width=\"0.8\" data-anim=\"static\"></circle><text x=\"211\" y=\"60\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#EFE3D4\">버크마스터</text><line x1=\"211\" x2=\"211\" y1=\"64\" y2=\"71\" stroke=\"#EFE3D4\" stroke-opacity=\"0.28\" stroke-width=\"0.7\"></line><circle cx=\"598.4\" cy=\"76\" r=\"7.201725533273725\" fill=\"#FF4103\" fill-opacity=\"1\" stroke=\"#001621\" stroke-width=\"1.2\" data-anim=\"static\"></circle><text x=\"598.4\" y=\"60\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"700\" fill=\"#FF4103\">OpenAI 발표문</text><line x1=\"598.4\" x2=\"598.4\" y1=\"64\" y2=\"68\" stroke=\"#EFE3D4\" stroke-opacity=\"0.28\" stroke-width=\"0.7\"></line><line x1=\"62\" x2=\"658\" y1=\"162\" y2=\"162\" stroke=\"#EFE3D4\" stroke-opacity=\"0.35\" stroke-width=\"1\"></line><line x1=\"62\" x2=\"62\" y1=\"156\" y2=\"168\" stroke=\"#EFE3D4\" stroke-opacity=\"0.45\" stroke-width=\"1\"></line><line x1=\"360\" x2=\"360\" y1=\"158\" y2=\"166\" stroke=\"#EFE3D4\" stroke-opacity=\"0.22\" stroke-width=\"1\"></line><line x1=\"658\" x2=\"658\" y1=\"156\" y2=\"168\" stroke=\"#EFE3D4\" stroke-opacity=\"0.45\" stroke-width=\"1\"></line><text x=\"62\" y=\"182\" font-family=\"Noto Sans KR\" font-size=\"9.5\" letter-spacing=\".08em\" fill=\"#8AA0A6\">이미 확정</text><text x=\"658\" y=\"182\" text-anchor=\"end\" font-family=\"Noto Sans KR\" font-size=\"9.5\" letter-spacing=\".08em\" fill=\"#8AA0A6\">수년 뒤 판가름</text><circle cx=\"121.6\" cy=\"162\" r=\"4.115271733299272\" fill=\"#FF4103\" fill-opacity=\"0.55\" stroke=\"#001621\" stroke-width=\"0.8\" data-anim=\"static\"></circle><text x=\"121.6\" y=\"146\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#EFE3D4\">언론 헤드라인</text><line x1=\"121.6\" x2=\"121.6\" y1=\"150\" y2=\"157\" stroke=\"#EFE3D4\" stroke-opacity=\"0.28\" stroke-width=\"0.7\"></line><circle cx=\"449.4\" cy=\"162\" r=\"4.115271733299272\" fill=\"#FF4103\" fill-opacity=\"0.55\" stroke=\"#001621\" stroke-width=\"0.8\" data-anim=\"static\"></circle><text x=\"449.4\" y=\"146\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#EFE3D4\">상금 미청구</text><line x1=\"449.4\" x2=\"449.4\" y1=\"150\" y2=\"157\" stroke=\"#EFE3D4\" stroke-opacity=\"0.28\" stroke-width=\"0.7\"></line><circle cx=\"628.2\" cy=\"162\" r=\"4.115271733299272\" fill=\"#FF4103\" fill-opacity=\"0.55\" stroke=\"#001621\" stroke-width=\"0.8\" data-anim=\"static\"></circle><text x=\"628.2\" y=\"146\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"10.5\" font-weight=\"400\" fill=\"#EFE3D4\">클레이 심사 규정</text><line x1=\"628.2\" x2=\"628.2\" y1=\"150\" y2=\"157\" stroke=\"#EFE3D4\" stroke-opacity=\"0.28\" stroke-width=\"0.7\"></line><text x=\"360\" y=\"212\" text-anchor=\"middle\" font-family=\"Noto Sans KR\" font-size=\"9.5\" letter-spacing=\".08em\" fill=\"#8AA0A6\">점 위치 = 두 끝 사이 성향 · 큰 점 = 초점</text></svg>"
+    }
+  ],
+  "images": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [
+    {
+      "side_a": "OpenAI가 내놓은 증명은 Lean으로 기계 검증까지 마친 독립된 결과물이고, 문서와 코드를 아파치 2.0으로 전부 공개해 누구든 다시 확인할 수 있게 했다.",
+      "side_b": "그 증명은 마드리드에서 만들어진 방법과 이미 돌던 소문 위에 세워졌으며, 남의 진행 상황을 알고 착수했다는 사실을 회사 스스로 인정했다.",
+      "evidence": "저장소 공개와 Lean 검증은 확인된 사실이고, 소문을 듣고 착수했다는 진술도 회사 발표에 있다. 반대로 방법의 원천이 코르도바와 마르티네스-소로아에게 있다는 점은 페퍼먼의 평가가 뒷받침한다.",
+      "resolution": "무게는 뒤쪽에 둔다. 결과가 유효한지와 공로가 누구 것인지는 다른 질문이고, 이번 증명이 선 자리는 남이 놓은 길의 마지막 구간이기 때문이다. 다만 미공개 모델과 에이전트 기록이 공개돼 탐색 과정 자체의 독자성이 드러난다면 앞쪽 주장이 되살아난다.",
+      "video": {
+        "label_a": "독자 성취론",
+        "label_b": "올라타기론",
+        "line_a": "코드까지 공개된 독립된 결과입니다.",
+        "line_b": "남이 낸 길의 마지막 구간이었습니다.",
+        "narration": [
+          "한쪽은 검증까지 공개된 독립된 성취라고 말합니다.",
+          "다른 쪽은 남이 만든 방법 위에 올라탄 것이라고 봅니다.",
+          "결과의 유효성과 공로의 귀속은 서로 다른 질문입니다."
+        ],
+        "narration_tts": [
+          "한쪽은 검증까지 공개된 독립된 성취라고 말합니다.",
+          "다른 쪽은 남이 만든 방법 위에 올라탄 것이라고 봅니다.",
+          "결과의 유효성과 공로의 귀속은 서로 다른 질문입니다."
+        ]
+      }
+    },
+    {
+      "side_a": "클레이 연구소의 공식 문제 설명에는 C와 D 갈래가 분명히 들어 있고, 그 갈래의 붕괴 사례를 형식 검증까지 마친 것은 밀레니엄 문제 본문에 답한 것이다.",
+      "side_b": "대중과 언론이 나비에-스토크스 난제라고 부를 때 가리키는 것은 외부 힘이 없는 A와 B 갈래이며, 그쪽은 이번 발표 뒤에도 그대로 열려 있다.",
+      "evidence": "네 갈래 구분은 페퍼먼이 쓴 공식 문제 설명에 있고, 클레이 연구소는 심사에 학술지 게재와 그 뒤 2년의 수용 기간이 필요하다고 확인했다. OpenAI도 상금을 청구하지 않았다.",
+      "resolution": "무게는 뒤쪽에 둔다. 공식 문서의 한 갈래에 답한 것은 분명한 성과지만, 심사가 시작조차 되지 않았고 회사 스스로 청구를 접었다는 사실이 지금 이 성과의 크기를 말해 준다. 다만 같은 방법이 외부 힘 없는 갈래로 확장된다면 앞쪽 주장이 단숨에 무게를 얻는다.",
+      "video": {
+        "label_a": "해결론",
+        "label_b": "절반론",
+        "line_a": "공식 문제의 한 갈래에 답한 것입니다.",
+        "line_b": "대중이 아는 갈래는 그대로 열려 있습니다.",
+        "narration": [
+          "공식 문제는 네 갈래이고, 답이 나온 것은 그중 두 갈래입니다.",
+          "사람들이 난제라 부르는 갈래는 아직 그대로입니다.",
+          "그래서 풀렸다는 말은 절반만 맞습니다."
+        ],
+        "narration_tts": [
+          "공식 문제는 네 갈래이고, 답이 나온 것은 그중 두 갈래입니다.",
+          "사람들이 난제라 부르는 갈래는 아직 그대로입니다.",
+          "그래서 풀렸다는 말은 절반만 맞습니다."
+        ]
+      }
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "OpenAI, 'On the Navier–Stokes Millennium Prize Problem', 2026-09-08, https://openai.com/index/navier-stokes-solution/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-2",
+      "url": "GitHub, openai/NavierStokesAndEuler (Lean 인증 코드, Apache-2.0, 생성 2026-09-08T10:53Z), https://github.com/openai/NavierStokesAndEuler",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-3",
+      "url": "Terence Tao, 'Finite time blowup with smooth forcing term for the incompressible porous medium, Boussinesq, and incompressible Euler equations', 2026-09-07, https://terrytao.wordpress.com/2026/09/07/finite-time-blowup-with-smooth-forcing-term-for-the-incompressible-porous-medium-boussinesq-and-incompressible-euler-equations/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-4",
+      "url": "Quanta Magazine, 'AI Has Solved One of Math's $1 Million Millennium Prize Problems', 2026-09-08, https://www.quantamagazine.org/ai-has-solved-one-of-maths-1-million-millennium-prize-problems-20260908/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-5",
+      "url": "Nature, 'OpenAI claims huge maths breakthrough on a famed Millennium Problem', 2026-09-08, https://www.nature.com/articles/d41586-026-02842-5",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-6",
+      "url": "Scientific American, 'OpenAI claims blockbuster math breakthrough amid swirl of controversy', 2026-09-08, https://www.scientificamerican.com/article/openai-claims-blockbuster-math-breakthrough-amid-swirl-of-controversy/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-7",
+      "url": "Axios, 'OpenAI's historic math solution overshadowed by credit controversy', 2026-09-08, https://www.axios.com/2026/09/08/openai-math-solution-navier-stokes-credit",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-8",
+      "url": "Semafor, 'OpenAI agents find proof to $1 million Millennium Prize Problem', 2026-09-08, https://www.semafor.com/article/09/08/2026/openai-agents-find-proof-to-1-million-millennium-prize-problem",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-9",
+      "url": "Fortune, 'OpenAI says it cracked Navier-Stokes, one of math's grand challenges', 2026-09-08, https://fortune.com/2026/09/08/openai-says-it-cracked-navier-stokes-math-grand-challenge-buckmaster-accusation-cheating-intimidation-tao-lament/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-10",
+      "url": "Simon Willison, 'On the Navier–Stokes Millennium Prize Problem', 2026-09-08, https://simonwillison.net/2026/Sep/8/on-navier-stokes/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-11",
+      "url": "Clay Mathematics Institute, 'Rules for the Millennium Prize Problems', https://www.claymath.org/millennium-problems/rules/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    },
+    {
+      "source_id": "src-12",
+      "url": "Unite.AI, 'Buckmaster and Alpöge Post AI Fluid Blowup Proofs, Dispute OpenAI Contact', 2026-09-08, https://www.unite.ai/buckmaster-and-alpoge-post-ai-fluid-blowup-proofs-dispute-openai-contact/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-08"
+    }
+  ],
+  "confidence": {
+    "score": 0.72,
+    "summary": ""
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2000-05-24",
+        "label": "클레이 수학연구소가 밀레니엄 문제 7개를 지정. 나비에-스토크스 포함, 각 100만 달러 상금",
+        "phase": "past",
+        "note": "찰스 페퍼먼(Charles Fefferman)이 작성한 공식 문제 설명에 A/B(전역 매끄러움)와 C/D(붕괴 사례) 네 갈래가 명시됨"
+      },
+      {
+        "date": "2026-08-15",
+        "label": "트리스탄 버크마스터(Tristan Buckmaster, 뉴욕대)와 레벤트 알푀게(Levent Alpöge, 앤스로픽)가 코르도바-마르티네스-소로아 방식을 확장해 3차원 오일러 방정식의 유한 시간 붕괴를 얻음 (미공개 상태)",
+        "phase": "past",
+        "note": "이후 벌어질 공로 분쟁의 시발점. 두 사람은 AI 도구(오픈AI Codex 포함)를 활용해 작업했다고 밝힘"
+      },
+      {
+        "date": "2026-08-28",
+        "label": "오픈AI가 'GPT-6 Astra 보다 상당히 더 뛰어나다'고 설명한 새 내부 모델의 학습을 시작",
+        "phase": "past",
+        "note": "이 모델은 오늘까지 미공개. 외부 검증이 불가능한 상태"
+      },
+      {
+        "date": "2026-09-01",
+        "label": "오픈AI가 에이전트 투입을 시작. 회사 설명으로는 '밀레니엄 문제 두 개가 풀렸다는 소문을 듣고' 착수",
+        "phase": "past",
+        "note": "'소문을 듣고 시작했다'는 자체 인정이 분쟁의 핵심 쟁점이 됨"
+      },
+      {
+        "date": "2026-09-05",
+        "label": "에이전트들이 나비에-스토크스 결과 도달. 투입 후 약 88시간. 이어서 GPT-6 Astra 가 17시간에 걸쳐 Lean 형식화·검증 수행",
+        "phase": "past",
+        "note": "탐색은 내부 모델, 검증 형식화는 공개 모델 Astra 가 담당하는 분업 구조"
+      },
+      {
+        "date": "2026-09-06",
+        "label": "오픈AI가 버크마스터에게 연락해 약 100쪽 분량 증명을 알림. 버크마스터 주장에 따르면 공동저자를 제안하면서 앤스로픽 소속인 알푀게는 제외할 것을 요구",
+        "phase": "past",
+        "note": "버크마스터는 이 통화에서 위협성 발언을 들었다고 주장. 오픈AI 세바스티앙 부벡(Sébastien Bubeck)은 '거짓이고 선동적'이라고 부인"
+      },
+      {
+        "date": "2026-09-07",
+        "label": "버크마스터·알푀게가 자정 직전 IPM·2차원 부시네스크·3차원 오일러 세 방정식의 붕괴 증명을 Lean 검증본과 함께 공개. 같은 날 테런스 타오(Terence Tao)가 자기 블로그에 기술 해설을 올림",
+        "phase": "past",
+        "note": "버크마스터는 '소문이 오픈AI에 새어 나간 뒤 공개 일정을 앞당길 수밖에 없었다'고 밝힘"
+      },
+      {
+        "date": "2026-09-08",
+        "label": "오픈AI가 공식 발표. 증명 PDF 와 Lean 인증 코드를 github.com/openai/NavierStokesAndEuler 저장소에 아파치 2.0 라이선스로 공개 (저장소 생성 시각 10:53 UTC)",
+        "phase": "present",
+        "note": "누구나 Lean 도구만 있으면 형식 증명을 재검증 가능. 다만 미공개 모델 자체와 에이전트 로그는 비공개 유지"
+      },
+      {
+        "date": "2026-09-08",
+        "label": "오픈AI가 100만 달러 상금은 청구하지 않겠다고 밝힘. 클레이 연구소 마틴 브리드슨(Martin Bridson) 회장은 '분명 흥미로운 날'이라면서도 규정상 심사에는 학술지 게재 후 2년의 검증 기간이 필요하다고 확인",
+        "phase": "present",
+        "note": "상금 수여 여부는 최소 2년 이상 뒤에나 판가름. 현재 상금은 미청구 상태"
+      }
+    ],
+    "video": null
+  }
+}
