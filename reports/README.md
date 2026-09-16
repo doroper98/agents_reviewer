@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 385건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 386건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-09-17 06:34 | [일일브리핑] 연준 3년 만의 첫 금리 인상 — 한국 증시 개장 직전 거시 레짐 확정 | 정치(통화정책) / 전쟁 / 지정학 / 산업(통상) | [md](analysis_20260917_063403_bebb05ae93.md) · [json](analysis_20260917_063403_bebb05ae93.json) · [bundle](analysis_20260917_063403_bebb05ae93.bundle.json) |
 | 2026-09-16 06:17 | [일일브리핑] Analysis |  | [md](analysis_20260916_061713_22eb98d187.md) · [json](analysis_20260916_061713_22eb98d187.json) · [bundle](analysis_20260916_061713_22eb98d187.bundle.json) |
 | 2026-09-15 18:57 | [장마감브리핑] 코스피 4거래일 연속 하락 — 미 국채 10년물 5% 돌파·유가 100달러 국면의 FOMC 대기 장세 | 금융시장 / 한국 증시 마감 | [md](analysis_20260915_185709_e188c55be1.md) · [json](analysis_20260915_185709_e188c55be1.json) · [bundle](analysis_20260915_185709_e188c55be1.bundle.json) |
 | 2026-09-15 06:24 | [일일브리핑] 2026-09-15 아침 종합 브리핑: 중동 공급망 이중 봉쇄·AI 속도조절론·FOMC 인상 임박 | 종합 (산업·지정학·정치·전쟁) | [md](analysis_20260915_062433_99b67e00fa.md) · [json](analysis_20260915_062433_99b67e00fa.json) · [bundle](analysis_20260915_062433_99b67e00fa.bundle.json) |
