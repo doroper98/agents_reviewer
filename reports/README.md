@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 386건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 387건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-09-17 18:53 | [장마감브리핑] 2026-09-17 한국 증시 마감 — 연준 금리 인상 당일, 지수 보합 속 반도체 집중 매도와 주도주 교체 | 금융시장 / 한국 주식시장 장마감 구조 분석 | [md](analysis_20260917_185358_6652f0fbef.md) · [json](analysis_20260917_185358_6652f0fbef.json) · [bundle](analysis_20260917_185358_6652f0fbef.bundle.json) |
 | 2026-09-17 06:34 | [일일브리핑] 연준 3년 만의 첫 금리 인상 — 한국 증시 개장 직전 거시 레짐 확정 | 정치(통화정책) / 전쟁 / 지정학 / 산업(통상) | [md](analysis_20260917_063403_bebb05ae93.md) · [json](analysis_20260917_063403_bebb05ae93.json) · [bundle](analysis_20260917_063403_bebb05ae93.bundle.json) |
 | 2026-09-16 06:17 | [일일브리핑] Analysis |  | [md](analysis_20260916_061713_22eb98d187.md) · [json](analysis_20260916_061713_22eb98d187.json) · [bundle](analysis_20260916_061713_22eb98d187.bundle.json) |
 | 2026-09-15 18:57 | [장마감브리핑] 코스피 4거래일 연속 하락 — 미 국채 10년물 5% 돌파·유가 100달러 국면의 FOMC 대기 장세 | 금융시장 / 한국 증시 마감 | [md](analysis_20260915_185709_e188c55be1.md) · [json](analysis_20260915_185709_e188c55be1.json) · [bundle](analysis_20260915_185709_e188c55be1.bundle.json) |
