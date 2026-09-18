@@ -1,9 +1,10 @@
 # 분석 보고서 목록
 
-> 자동 생성 (agents_reviewer). 총 388건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
+> 자동 생성 (agents_reviewer). 총 389건 · 최신순. 각 보고서는 md(본문) · json(전체 덤프) · bundle(영상용) 3종.
 
 | 날짜(KST) | 제목 | 분류 | 파일 |
 |---|---|---|---|
+| 2026-09-18 11:31 | [르포] TypeSafe AI, 텍스트를 쓰지 않는 의사결정 전용 모델 'Jev' 공개 | 인공지능 / 기술 제품 출시 | [md](analysis_20260918_113124_e6b7930af3.md) · [json](analysis_20260918_113124_e6b7930af3.json) · [bundle](analysis_20260918_113124_e6b7930af3.bundle.json) |
 | 2026-09-18 06:23 | [일일브리핑] FOMC 인상 다음날 — 한국 시장을 둘러싼 4중 압력 (연준·BOJ·이란전·대미투자) | 산업·지정학·정치·전쟁 종합 | [md](analysis_20260918_062331_d4e77f05eb.md) · [json](analysis_20260918_062331_d4e77f05eb.json) · [bundle](analysis_20260918_062331_d4e77f05eb.bundle.json) |
 | 2026-09-17 18:53 | [장마감브리핑] 2026-09-17 한국 증시 마감 — 연준 금리 인상 당일, 지수 보합 속 반도체 집중 매도와 주도주 교체 | 금융시장 / 한국 주식시장 장마감 구조 분석 | [md](analysis_20260917_185358_6652f0fbef.md) · [json](analysis_20260917_185358_6652f0fbef.json) · [bundle](analysis_20260917_185358_6652f0fbef.bundle.json) |
 | 2026-09-17 06:34 | [일일브리핑] 연준 3년 만의 첫 금리 인상 — 한국 증시 개장 직전 거시 레짐 확정 | 정치(통화정책) / 전쟁 / 지정학 / 산업(통상) | [md](analysis_20260917_063403_bebb05ae93.md) · [json](analysis_20260917_063403_bebb05ae93.json) · [bundle](analysis_20260917_063403_bebb05ae93.bundle.json) |
