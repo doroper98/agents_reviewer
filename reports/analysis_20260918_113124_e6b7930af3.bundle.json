@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "report_bundle",
+  "generated_at": "2026-09-18T11:31:24.567337+09:00",
+  "producer": {
+    "system": "agents_reviewer",
+    "version": "v8.7.0",
+    "mode": "deep"
+  },
+  "report": {
+    "report_id": "analysis_20260918_113124_e6b7930af3",
+    "headline": "TypeSafe AI, 텍스트를 쓰지 않는 의사결정 전용 모델 'Jev' 공개",
+    "deck": "전 OpenAI 연구자 Diogo Almeida 가 세운 TypeSafe AI 가 2026-09-15 스텔스를 벗고 시드 4,000만 달러 유치와 함께 첫 모델 'Jev' 를 얼리액세스로 공개함. Jev 는 글을 전혀 쓰지 않고 개발자가 미리 정의한 선택지 중 하나를 확률과 함께 돌려주는 '시스템 원(System One)' 모델로, 지연 70~500ms 에 입력 100만 토큰당 0.042달러 · 출력 무료를 내세우며 중급 프런티어 LLM 수준 정확도를 40~200배 빠르게 · 40~400배 싸게 낸다는 것이 회사 주장이나 벤치마크는 전부 자체 평가임.",
+    "closing": "",
+    "html_url": "https://analysis-reports.pages.dev/analysis_20260918_113124_e6b7930af3.html",
+    "theme": {
+      "id": "reportage_cyprus",
+      "tokens": {
+        "bg": "#004741",
+        "card": "#0B5349",
+        "border": "#1E5C52",
+        "text": "#F0EDE4",
+        "muted": "#9DB5AC",
+        "accent": "#E3A93C",
+        "up": "#86C0A4",
+        "down": "#E89070"
+      },
+      "fonts": {
+        "serif": "Noto Serif KR",
+        "sans": "Noto Sans KR",
+        "mono": "IBM Plex Mono"
+      }
+    },
+    "video": null
+  },
+  "sections": [
+    {
+      "section_id": "s1",
+      "heading": "요약",
+      "kicker": "",
+      "prose": "전 OpenAI 연구자 Diogo Almeida 가 세운 TypeSafe AI 가 2026-09-15 스텔스를 벗고 시드 4,000만 달러 유치와 함께 첫 모델 'Jev' 를 얼리액세스로 공개함. Jev 는 글을 전혀 쓰지 않고, 개발자가 미리 정의한 선택지 중 하나를 확률과 함께 돌려주는 '시스템 원(System One)' 모델임. 지연 70~500ms, 입력 100만 토큰당 0.042달러 · 출력 무료로, 중급 프런티어 LLM 수준 정확도를 40~200배 빠르게 · 40~400배 싸게 낸다는 것이 회사 주장이나 벤치마크는 전부 자체 평가임.",
+      "pull_quote": "",
+      "chart_refs": [],
+      "map_ref": null,
+      "image_refs": [],
+      "claim_refs": [],
+      "video": null
+    }
+  ],
+  "charts": [],
+  "images": [],
+  "map": null,
+  "claims": [],
+  "signals": [],
+  "contradictions": [],
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "TypeSafe AI 공식 블로그, 'Introducing System One Models & Jev' (2026-09-15), https://typesafe.ai/blog/introducing-system-one-models-and-jev",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-2",
+      "url": "Business Wire 보도자료, 'TypeSafe AI Emerges From Stealth With $40M in Funding' (2026-09-15), https://www.businesswire.com/news/home/20260915525333/en/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-3",
+      "url": "The Register, 'TypeSafe AI debuts model for machines that plays Doom' (2026-09-16), https://www.theregister.com/ai-and-ml/2026/09/16/typesafe-ai-debuts-model-for-machines-that-plays-doom/5296711",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-4",
+      "url": "TypeSafe AI 공식 문서, https://docs.typesafe.ai/introduction",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-5",
+      "url": "DEV Community, 'How to Use Jev: A practical guide to TypeSafe's System One model' (2026-09), https://dev.to/valyuai/how-to-use-jev-a-practical-guide-to-typesafes-system-one-model-g5e",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-6",
+      "url": "Sean Goedecke, 'Jev means structured output is interesting again' (2026-09), https://www.seangoedecke.com/jev-means-structured-output-is-interesting-again/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-7",
+      "url": "Developers Digest, 'TypeSafe Jev: the First Decision-Only Model Class, Benchmarked and Priced' (2026-09), https://www.developersdigest.tech/blog/typesafe-jev-system-one-models-release-guide-2026",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-8",
+      "url": "DataCamp 블로그, 'Jev: TypeSafe's System One Model That Never Hallucinates' (2026-09), https://www.datacamp.com/blog/system-one-models-jev",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-9",
+      "url": "GIGAZINE (2026-09-16), https://gigazine.net/gsc_news/en/20260916-system-one-jev/",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    },
+    {
+      "source_id": "src-10",
+      "url": "Hacker News 토론 스레드, https://news.ycombinator.com/item?id=49717558",
+      "publisher": "",
+      "title": "",
+      "fetched_at": "2026-09-15"
+    }
+  ],
+  "confidence": {
+    "score": 0.0,
+    "summary": "composer 호출 실패. 사실 자료만 표시."
+  },
+  "timeline": {
+    "heading": "사건의 궤적",
+    "points": [
+      {
+        "date": "2026-09-15",
+        "label": "TypeSafe AI 스텔스 종료. DCVC 주도 시드 4,000만 달러 유치 발표. 공동창업자는 Diogo Almeida (CEO, 전 OpenAI · RLHF 및 ChatGPT 개발 참여), Erik Gafni, Sasha Sheng.",
+        "phase": "present",
+        "note": "'사람과 대화하는 AI' 가 아니라 '소프트웨어 안에서 도는 AI' 를 표방한 신생 랩이 등장. 시드 단계 규모로는 큰 편."
+      },
+      {
+        "date": "2026-09-15",
+        "label": "'시스템 원 모델' 이라는 새 모델 분류와 첫 모델 Jev 를 대기자 명단 기반 얼리액세스로 공개. 이름은 19세기 경제학자 윌리엄 스탠리 제번스(Jevons)에서 땀 — 값이 싸지면 되레 총 사용량이 폭증한다는 '제번스 역설' 을 노린 작명.",
+        "phase": "present",
+        "note": "가격을 극단적으로 낮춰 '지금은 AI 를 안 쓰는 판단 지점' 까지 파고들겠다는 전략을 이름에 박아넣음."
+      },
+      {
+        "date": "2026-09-16",
+        "label": "The Register, GIGAZINE 등 기술 매체 보도. Jev 가 게임 상태값을 구조화해 받아 둠(Doom)을 실시간으로 플레이하는 데모가 화제가 됨. 데모에서 Jev 응답 0.114초 vs 비교 대상 LLM 8.566초.",
+        "phase": "future",
+        "note": "'실시간 루프 안에 모델을 넣을 수 있다' 는 점을 시각적으로 증명. 다만 회사도 개념 증명 성격임을 인정."
+      },
+      {
+        "date": "2026-09-16",
+        "label": "해커뉴스 및 개발자 블로그(Sean Goedecke 등)에서 비판 제기. ① '환각 불가' 주장은 말장난 — 없는 선택지를 지어내지 않을 뿐 틀린 선택은 함. ② 기존 LLM 도 문법 제약 디코딩(grammar-constrained decoding)과 단일 토큰 응답 배치로 상당 부분 흉내 가능 → 진입장벽이 약할 수 있음. ③ 벤치마크가 공개 리더보드가 아닌 자체 워크플로 평가임.",
+        "phase": "future",
+        "note": "출시 사흘 만에 '새로운 계산 원시(primitive)냐, 포장 바꾼 구조화 출력이냐' 로 논쟁 구도가 형성됨."
+      }
+    ],
+    "video": null
+  }
+}
