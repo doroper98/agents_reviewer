@@ -15,7 +15,7 @@ last_review: 2026-05-17
 텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 5.5 → NarrativeComposer Opus 5.5, v8.7.2) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템. v5.1.0 부터 매일 06:00 KST 자동 일일 브리핑 (`/briefing_on` 으로 구독). v5.2.0 부터 KRX / FRED / ECOS / Yahoo Finance 실 OHLC 시계열로 candle / line / area 금융 차트 자동 emit.
 
 ## Status
-- Version: **v8.7.3** (SSOT: `src/orchestrator.py:VERSION`) — **밀린 복구 3건**: 코스피·코스닥 지수를 KRX 로그인 세션으로 받는다(그전엔 늘 Yahoo 폴백) · Codex 검수를 건너뛰면 사유와 조치를 함께 알린다 · KRX 비밀번호 만료 알림이 '90일 뒤 변경'(재시작 불요)을 먼저 안내한다. 재배포 블록에 Claude CLI 모델 프리플라이트 추가. 이전 v8.7.2 — 보고서 모델 Opus 5.5 교체.
+- Version: **v8.7.4** (SSOT: `src/orchestrator.py:VERSION`) — **Codex 실패 원인 오분류 수정**: 'gpt-5.5 미지원' 오류가 사용량 한도(`rate_limited`)로 기록되던 것을 최종 오류 줄로 분류하고 새 사유 `model_unsupported`(조치: Codex CLI 업데이트)를 추가. 재배포 블록이 Codex 를 실제로 한 번 호출해 상태를 보여 준다(VM-AP-16). 이전 v8.7.3 — KRX 지수 로그인 · Codex 건너뜀 사유 · KRX 만료 안내.
 - **V5 활성화 단계** — 코드는 v5.0.0 이지만 단계적 활성화 권장 (Plan §0.3). `docs/V5_ACTIVATION.md` 의 5-step 절차 따라 한 phase 씩 켜고 회귀 테스트 통과 확인.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)

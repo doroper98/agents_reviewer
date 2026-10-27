@@ -47,6 +47,11 @@ from src.models import (
 
 logger = logging.getLogger(__name__)
 
+# v8.7.4 — codex stderr 진단용. 내부 추적 로그 줄(예: "2026-10-27T12:02:07.75Z ERROR
+# codex_models_manager::manager: …")과 최종 오류 JSON 줄("ERROR: {…}")을 구분한다.
+_TRACE_LINE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\S+Z\s+(?:TRACE|DEBUG|INFO|WARN|ERROR)\s")
+_ERROR_JSON_RE = re.compile(r"^\s*ERROR:\s*(\{.*\})\s*$")
+
 # v8.7.3 — 검수 건너뜀 사유 → 사용자용 조치 문구 (텔레그램 진행 알림에 붙는다).
 # 2026-10-27 사용자 질문 "왜 외부 사실 검수를 건너뛴 걸까?" — 알림이 "건너뜀" 만 말하고
 # 이유를 숨겨 로그를 뒤져야 했다. 사유 코드는 skip verdict 의 ``skip_reason`` 그대로.
@@ -55,6 +60,10 @@ SKIP_REASON_HINTS: dict[str, str] = {
     "rate_limited": "ChatGPT 사용량 한도 → 한도가 풀리면 자동 복구",
     "timeout": "Codex 응답 {timeout}초 초과 → 잦으면 .env 의 V6_CODEX_TIMEOUT_S 상향",
     "codex_not_found": "VM 에 codex CLI 없음 → codex --version 확인",
+    "model_unsupported": (
+        "Codex 모델 미지원(대개 낡은 CLI) → sudo npm install -g @openai/codex@latest, "
+        "모델을 고정했다면 .env 의 V6_CODEX_MODEL·~/.codex/config.toml 확인"
+    ),
     "parse_failed": "Codex 응답 형식 오류 → 다음 보고서에서 다시 시도",
     "codex_error": "Codex 실행 오류 → journalctl -u agents-reviewer.service | grep codex_critic",
 }
@@ -268,12 +277,12 @@ class CodexCritic:
             return verdict
 
         if returncode != 0:
-            reason = self._classify_failure(returncode, stderr)
+            reason = self._classify_failure(returncode, stderr, prompt)
             verdict = FactVerdict.skip(reason, latency_ms=elapsed_ms)
             self._record_call(verdict, prompt_chars=len(prompt))
             logger.warning(
                 "[codex_critic] codex exit=%d (%s): %s",
-                returncode, reason, (stderr or "")[:300],
+                returncode, reason, self._failure_excerpt(stderr, prompt),
             )
             return verdict
 
@@ -342,7 +351,7 @@ class CodexCritic:
             return FactVerdict.skip("codex_error", latency_ms=int((time.time() - start) * 1000))
         if returncode != 0:
             return FactVerdict.skip(
-                self._classify_failure(returncode, stderr), latency_ms=elapsed_ms,
+                self._classify_failure(returncode, stderr, prompt), latency_ms=elapsed_ms,
             )
         verdict = self._parse_verdict(stdout, latency_ms=elapsed_ms)
         verdict.model_label = "OpenAI Codex (vision)"  # 미학 verdict 명시 (파서 기본 라벨 덮음)
@@ -474,9 +483,56 @@ class CodexCritic:
             return ""
 
     @staticmethod
-    def _classify_failure(returncode: int, stderr: str) -> str:
-        """non-zero exit 의 stderr 로 degrade 사유를 추정 (graceful degrade 분기)."""
-        s = (stderr or "").lower()
+    def _diagnostic_text(stderr: str, prompt: str = "") -> str:
+        """stderr 에서 진단에 쓸 부분만 남긴다 (v8.7.4).
+
+        codex exec 는 stderr 에 배너·되풀이한 프롬프트·내부 추적 로그를 함께 찍는다.
+        2026-10-27 실사고: 9만 자 보고서 echo 와 모델 목록 응답(내부 추적 로그 한 줄)
+        안의 단어 때문에 'gpt-5.5 미지원' 오류가 rate_limited 로 오분류됐다. 그래서
+        프롬프트 echo 와 ``<시각>Z LEVEL target:`` 형식의 내부 추적 줄을 걷어낸다.
+        """
+        text = stderr or ""
+        if prompt:
+            text = text.replace(prompt, "")
+        return "\n".join(l for l in text.splitlines() if not _TRACE_LINE_RE.match(l))
+
+    @staticmethod
+    def _failure_excerpt(stderr: str, prompt: str = "", limit: int = 400) -> str:
+        """로그용 실패 요약 — 앞이 아니라 끝의 최종 오류 (앞은 늘 'Reading prompt…')."""
+        text = CodexCritic._diagnostic_text(stderr, prompt)
+        errors = [l.strip() for l in text.splitlines() if l.strip().startswith("ERROR")]
+        if errors:
+            return errors[-1][:limit]
+        return text.strip()[-limit:]
+
+    @staticmethod
+    def _classify_failure(returncode: int, stderr: str, prompt: str = "") -> str:
+        """non-zero exit 의 stderr 로 degrade 사유를 추정 (graceful degrade 분기).
+
+        v8.7.4 — 최종 오류 JSON 줄(``ERROR: {"status":…,"error":{"code":…}}``)을 먼저
+        본다. 없으면 진단 텍스트(프롬프트 echo·내부 추적 줄 제외)에서 키워드로 추정.
+        """
+        text = CodexCritic._diagnostic_text(stderr, prompt)
+        for line in reversed(text.splitlines()):
+            m = _ERROR_JSON_RE.match(line)
+            if not m:
+                continue
+            try:
+                obj = json.loads(m.group(1))
+            except ValueError:
+                continue
+            err = obj.get("error") if isinstance(obj.get("error"), dict) else {}
+            status = obj.get("status") or err.get("status")
+            code = str(err.get("code") or err.get("type") or "").lower()
+            msg = str(err.get("message") or "").lower()
+            if status == 429 or "rate_limit" in code or "usage_limit" in code:
+                return "rate_limited"
+            if status in (401, 403) or "auth" in code:
+                return "auth_failed"
+            if "model" in code or ("model" in msg and "not supported" in msg):
+                return "model_unsupported"
+            return "codex_error"
+        s = text.lower()
         if any(k in s for k in ("rate limit", "429", "quota", "too many requests", "usage limit")):
             return "rate_limited"
         if any(
@@ -484,6 +540,8 @@ class CodexCritic:
             for k in ("unauthorized", "401", "403", "forbidden", "not logged in", "login", "auth")
         ):
             return "auth_failed"
+        if "model" in s and "not supported" in s:
+            return "model_unsupported"
         return "codex_error"
 
     # ------------------------------------------------------------------

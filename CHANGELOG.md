@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.3
+last_synced_with: v8.7.4
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,29 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.7.4 — Codex 실패 원인 오분류 수정 (VM-AP-16)
+
+2026-10-27 VM 점검 — 오늘 보고서 전부 Codex 검수를 건너뛰었고 로그 사유는 `rate_limited`
+(사용량 한도)였다. 직접 호출해 보니 실제 오류는 `The 'gpt-5.5' model is not supported when using
+Codex with a ChatGPT account.` 였다. codex-cli 0.136.0 이 낡아 새 모델 목록을 못 읽고 예전 기본
+모델로 요청한 것이다. 같은 날 Claude CLI 2.1.85 도 Opus 5.5 를 못 써 재배포 프리플라이트가 막았다.
+
+- **분류를 최종 오류 줄로.** codex 는 stderr 에 배너·되풀이한 프롬프트(보고서 본문)·내부 추적
+  로그를 함께 찍는다. 그 전체에서 `429`·`quota`·`auth` 를 찾던 분류가 본문 속 단어에 걸려
+  엉뚱한 사유를 냈다. 이제 `ERROR: {"status":…,"error":{"code":…}}` 줄을 먼저 해석하고
+  (401·403 → `auth_failed`, 429·usage_limit → `rate_limited`, model_not_found → 새 사유
+  **`model_unsupported`**), 그 줄이 없을 때만 프롬프트 echo 와 내부 추적 줄을 걷어낸 나머지에서
+  키워드로 추정한다.
+- **로그에 진짜 오류를.** 실패 로그가 stderr 앞 300자(늘 `Reading prompt from stdin...`)였다.
+  이제 최종 `ERROR` 줄(없으면 정리된 텍스트의 끝)을 남긴다.
+- **조치 문구** — `model_unsupported` → `sudo npm install -g @openai/codex@latest`, 모델을
+  고정했다면 `.env` 의 `V6_CODEX_MODEL`·`~/.codex/config.toml` 확인.
+- **재배포 블록 Stage 3.6** — `codex login status`(로그인 여부만) 대신 codex 를 실제로 한 번
+  호출해 `✓ codex OK` 또는 최종 오류 줄을 보여 준다. 정보용이라 재시작은 막지 않는다.
+- VM-AP-16 등록 ([docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md)) — 낡은 외부 CLI 와 새 모델.
+- 회귀 `tests/regression/test_codex_critic.py` +4 (실출력 재현: model_not_found 를 rate_limited 로
+  보지 않음 · 로그에 최종 오류 · 본문 echo 단어 무시 · 오류 JSON 상태 매핑).
 
 ## v8.7.3 — 밀린 복구: KRX 지수 로그인 · Codex 건너뜀 사유 · KRX 만료 안내
 

@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.7.3
+last_synced_with: v8.7.4
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -100,7 +100,15 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
   fi
   echo "✓ Claude CLI OK ($MODEL)"
   # Codex 는 없어도 보고서가 나간다(검수만 건너뜀) — 중단하지 않고 상태만 보여 준다.
-  echo "ⓘ codex: $(codex login status 2>&1 | head -1)"
+  # 'Logged in' 표시만으론 부족하다(VM-AP-16) — 실제로 한 번 물어본다.
+  CX=$(cd /tmp && echo "Reply with the single word pong." | timeout 90 codex exec --skip-git-repo-check --sandbox read-only 2>&1)
+  if echo "$CX" | grep -qiE '^pong[.!]?$'; then
+    echo "✓ codex OK ($(codex --version 2>&1))"
+  else
+    CXE=$(echo "$CX" | grep '^ERROR' | tail -1); [ -z "$CXE" ] && CXE=$(echo "$CX" | tail -1)
+    echo "⚠️ codex 검수 불가 (보고서는 나가고 검수만 건너뜀): $(echo "$CXE" | head -c 300)"
+    echo "   → §3 'Codex 검수 점검' 표 참고"
+  fi
 
   # ─── Stage 4: systemd 재시작 (nohup 금지 — VM-AP-12 중복 기동 OOM) ───
   sudo systemctl restart agents-reviewer.service
@@ -545,6 +553,34 @@ pykrx 1.2.x 는 이 원인을 **print 로만** 알리고 `None` 을 돌려주므
 
 ---
 
+### VM-AP-16 — 낡은 외부 CLI 가 새 모델을 못 써 검수·작성 실패, 원인 오분류 (2026-10-27 발견)
+
+**증상 ① Claude CLI**: Opus 5.5 교체(v8.7.2) 재배포에서 Stage 3.6 이 재시작을 멈췄다.
+`Claude Code 2.1.85 does not support this model; version 2.1.280 or newer is required`.
+프리플라이트가 없었다면 재시작 직후부터 모든 보고서가 실패했다.
+
+**증상 ② Codex CLI**: 10/27 보고서 전부 Codex 검수를 건너뛰었고 로그 사유는 `rate_limited`
+였다. 그러나 실제 오류는 `The 'gpt-5.5' model is not supported when using Codex with a ChatGPT
+account.`(400 `model_not_found`). codex-cli 0.136.0(2026-06)이 새 모델 목록을 해석하지 못해
+(`unknown variant max`) 예전 기본값 gpt-5.5 로만 요청했다. `codex login status` 는 내내
+`Logged in using ChatGPT` 였다.
+
+**오분류 원인**: codex 는 stderr 에 배너·되풀이한 프롬프트(보고서 9만 자)·내부 추적 로그
+(모델 목록 응답 전체)를 함께 찍는다. 봇은 그 전체에서 `429`·`quota`·`auth` 같은 단어를 찾아
+분류했고, 로그에는 앞 300자(`Reading prompt from stdin...`)만 남겨 진짜 오류를 가렸다.
+
+**Fix**: ① Claude CLI `sudo npm install -g @anthropic-ai/claude-code@latest`(2.1.311 확인),
+Codex CLI `sudo npm install -g @openai/codex@latest`. ② v8.7.4 — `codex_critic` 이 최종 오류
+JSON 줄(`ERROR: {"status":…,"error":{"code":…}}`)로 먼저 분류하고, 프롬프트 echo·내부 추적
+줄을 걷어낸 뒤에만 키워드를 본다. 새 사유 `model_unsupported`. 로그엔 최종 오류 줄을 남긴다.
+③ §1.0 Stage 3.6 이 codex 를 실제로 한 번 호출해 상태를 보여 준다(정보용, 재시작은 막지 않음).
+회귀 `tests/regression/test_codex_critic.py`(실출력 재현 4종).
+
+**교훈**: 모델을 바꾸거나 계정 쪽 모델 목록이 바뀌면 *CLI 버전* 부터 의심한다. 외부 도구의
+"로그인됨" 은 "작동함" 이 아니다 — 실제로 한 번 호출해 본다.
+
+---
+
 ## §3 진단 명령어
 
 ### 봇 현재 상태 한눈에
@@ -641,15 +677,18 @@ cd ~/agents_reviewer && source venv/bin/activate && python -m src.tools.breadth_
 v8.7.3 부터 코스피·코스닥 **지수** 도 이 로그인을 쓴다 (그전엔 로그인 세션이 없어 늘
 Yahoo 폴백). 로그인이 안 되면 지수만 Yahoo 로 내려가고 보고서는 정상 발행된다.
 
-### Codex 검수 점검 (v8.7.3)
+### Codex 검수 점검 (v8.7.3 · v8.7.4)
 
 진행 알림에 `ⓘ 외부 사실 검수 건너뜀` 이 뜨면 v8.7.3 부터 다음 줄에 사유와 조치가 붙는다.
-지난 보고서의 사유는 로그로 본다.
+지난 보고서의 사유는 로그로 본다. v8.7.4 부터 로그에는 첫 줄이 아니라 **최종 오류 줄** 이 남는다.
 
 ```bash
 journalctl -u agents-reviewer.service --since "3 days ago" --no-pager | grep -E 'codex_critic' | tail -20
-codex login status
+cd /tmp && echo "Reply with the single word pong." | timeout 120 codex exec --skip-git-repo-check --sandbox read-only 2>&1 | grep -E '^ERROR|^pong' | tail -3; codex --version; cd ~
 ```
+
+`codex login status` 가 `Logged in` 이어도 검수는 실패할 수 있다(VM-AP-16). 위 두 번째 줄처럼
+실제로 한 번 물어봐야 확실하다.
 
 | 로그 사유 | 뜻 | 조치 |
 |---|---|---|
@@ -657,6 +696,7 @@ codex login status
 | `timeout` | `V6_CODEX_TIMEOUT_S`(기본 180초) 초과 | 잦으면 `.env` 에 `V6_CODEX_TIMEOUT_S=300` 후 재시작 |
 | `rate_limited` | ChatGPT 사용량 한도 | 한도가 풀리면 자동 복구 |
 | `codex_not_found` | codex CLI 없음 | `codex --version` 확인 |
+| `model_unsupported` | 모델을 계정이 못 씀 (대개 낡은 CLI) | `sudo npm install -g @openai/codex@latest`, 모델을 고정했다면 `.env` 의 `V6_CODEX_MODEL`·`~/.codex/config.toml` 확인 (봇 재시작 불요) |
 
 재로그인은 이 VM 에서 검증된 방식(V6_TEST_RESULTS)으로 한다. 내 PC 에서
 `ssh -L 1455:localhost:1455 ubuntu@<VM주소>` 로 접속 → VM 에서 `codex login` → 출력된 주소를
