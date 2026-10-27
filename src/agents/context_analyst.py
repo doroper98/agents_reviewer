@@ -125,8 +125,8 @@ class ContextAnalyst(BaseAgent):
         # v4.1.0 — Tier 4 의 2-call 파이프라인에서는 context 가 편집장이 보는
         # *유일한* 사실 입력. 사실/숫자/타임라인 추출 품질이 보고서 전체 품질의
         # 상한선이 되므로 composer 와 같은 모델을 일관 적용.
-        # v8.5.0 — Opus 5 로 격상 (구 claude-opus-4-7).
-        self.model_name = "claude-opus-5"
+        # v8.5.0 — Opus 5 로 격상 (구 claude-opus-4-7). v8.7.2 — Opus 5.5.
+        self.model_name = "claude-opus-5-5"
 
     async def analyze(self, request: AnalysisRequest) -> ContextAnalysis:
         """Analyze event and return context / situation board."""

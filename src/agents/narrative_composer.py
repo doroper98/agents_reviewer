@@ -1284,11 +1284,12 @@ class NarrativeComposer:
     """
 
     # v8.5.0 — Opus 5 모델 ID. config.model_name 이 legacy 라도 composer 는 직접 지정.
-    COMPOSER_MODEL: str = "claude-opus-5"
+    # v8.7.2 — Opus 5.5 (`claude-opus-5-5`) 로 교체 (사용자 요청 2026-10-27).
+    COMPOSER_MODEL: str = "claude-opus-5-5"
     # v8.2.2 에서 르포(reportage) 전용으로 한 단계 위 모델(당시 Opus 4.8)을 썼으나,
     # v8.5.0 부터 일반·르포 모두 Opus 5 로 통일 (Opus 5 가 4.8 을 상회). 분기 배선은
     # 향후 상위 모델 재분리를 위해 보존 — report_format != "reportage" 면 무변경.
-    COMPOSER_MODEL_REPORTAGE: str = "claude-opus-5"
+    COMPOSER_MODEL_REPORTAGE: str = "claude-opus-5-5"
     # v8.5.0 — 모델 안전망(v8.2.7)의 *최후 폴백* 모델. 주 모델(Opus 5)이 작성·재시도
     # 전부 미파싱/실패일 때 minimal fallback(열화 발행) 전에 딱 1회 시도하는, 오래
     # 검증된 구세대 모델. 주 모델과 반드시 *다른* 값이어야 안전망이 작동한다.

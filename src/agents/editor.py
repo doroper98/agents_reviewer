@@ -294,11 +294,11 @@ class Editor(BaseAgent):
     system prompt 만 다름.
 
     [모델·예산 — Plan §5.3]
-        EDITOR_MODEL = "claude-opus-5"
+        EDITOR_MODEL = "claude-opus-5-5"
         MAX_TOKENS = 16000   (편집은 분량 *유지 또는 축소*. 32K 불필요)
     """
 
-    EDITOR_MODEL = "claude-opus-5"
+    EDITOR_MODEL = "claude-opus-5-5"
     MAX_TOKENS = 16000
 
     def __init__(self, config: Config) -> None:
