@@ -498,7 +498,8 @@ continue."`. 7/31 에 이은 **두 번째 같은 사고**.
 PAT) 대체 → osint 쓰기 `HTTP 403 Resource not accessible by personal access token`
 (2026-10-27 소급 발행 로그로 확정). 진단 중 GET 200 을 "읽기 권한 있음"으로 오독했는데,
 osint_generator 는 **공개 저장소** 라 GET 200 은 권한과 무관하다 — 쓰기 권한은 쓰기로만
-확인한다 (아래 §3 의 blob 시험).
+확인한다 (아래 §3 의 blob 시험). **해결**: 기존 미러 PAT 의 저장소 목록에 osint_generator
+를 추가(토큰 값 불변 → `.env`·재시작 불요) → 같은 날 재전송으로 첫 성공 (osint `4f8a749`).
 실패가 로그 한 줄로만 남아 무감지였다. v8.7.1 부터 실패 사유(`HTTP 403 …`)와 조치가
 번들 메시지(일일 브리핑은 링크 메시지)에 한 줄로 붙는다 (`FullAnalysisResult.osint_mirror_error`).
 진단 명령은 §3 'osint 번들 전송 점검'.

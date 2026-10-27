@@ -1309,6 +1309,9 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
   access token` 으로 확정 — 미러 PAT 는 agents_reviewer 전용 fine-grained 토큰이다.
   진단 중 osint GET 200 을 "읽기 권한 있음"으로 봤으나, osint_generator 는 공개 저장소라
   GET 200 은 권한과 무관했다(오독). 쓰기 권한은 쓰기로만 확인한다.
+  해결: 기존 미러 PAT 의 저장소 목록에 osint_generator 추가(토큰 값 불변, `.env`·재시작
+  불요). 10/27 04:05 UTC 수동 재전송으로 첫 성공 — osint `4f8a749`
+  (`json/analysis_20261027_114123_d0efa2223f.bundle.json`, schema_version 1).
 - **KRX 비밀번호 만료.** 같은 소급 발행에서 pykrx 로그인 `CD010`(비밀번호 변경 필요) →
   선물·옵션 그릭·시장 폭 0건(`breadth=0 deriv=0`). 봇 로그는 `[krx] 로그인 실패 —
   자격증명 확인` 이라 원인을 오도한다. 사용자 비밀번호 변경 대기. 경고 보강은 별건.
