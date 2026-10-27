@@ -1385,26 +1385,23 @@ class ReportSynthesizer:
         # *생성 실패/열화(degraded) 보고서는 보내지 않는다* (사용자 요청) —
         # 편집장 타임아웃/파싱불가/CLI오류로 minimal fallback 된 보고서·르포는 제외.
         # 토큰/repo 미설정 시 graceful skip (기존 흐름 byte-equal).
+        # v8.7.1 — 실패 사유를 result.osint_mirror_error 에 남겨 텔레그램이 알린다
+        # (그전엔 로그 한 줄뿐이라 v8.4.0 이후 전송 0건을 석 달간 아무도 몰랐다).
         try:
             _cr = getattr(result, "composed_report", None)
             _degraded = bool(getattr(_cr, "degraded", False)) if _cr else False
             if bundle_filepath and os.path.exists(bundle_filepath) and not _degraded:
-                from src.tools.github_mirror import GitHubMirror
-                osint_mirror = GitHubMirror.for_osint(self.config)
-                if osint_mirror.enabled:
-                    n_ok = await osint_mirror.push_files([bundle_filepath])
-                    if n_ok:
-                        logger.info(
-                            "[report_synthesizer] osint bundle mirrored: %s -> %s/%s",
-                            os.path.basename(bundle_filepath),
-                            osint_mirror._repo, osint_mirror.path_prefix,
-                        )
+                from src.tools.github_mirror import mirror_bundle_to_osint
+                result.osint_mirror_error = await mirror_bundle_to_osint(
+                    self.config, bundle_filepath,
+                )
             elif _degraded:
                 logger.info(
                     "[report_synthesizer] osint mirror skipped (degraded report)"
                 )
         except Exception as e:
             logger.warning(f"[report_synthesizer] osint mirror failed: {e}")
+            result.osint_mirror_error = f"{type(e).__name__}: {e}"[:200]
 
         # Upload entire reports directory to Cloudflare Pages
         report_url = await self._upload_to_cloudflare(filepath)

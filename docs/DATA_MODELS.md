@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.5.12
+last_synced_with: v8.7.1
 ssot_for:
   - "Pydantic 모델 관계 도식 (필드 정의는 미러 아님)"
 depends_on:
@@ -147,6 +147,7 @@ NarrativeComposer (Opus 4.7) 의 단일 호출 산출. v4.0.0 부터 `freeform_e
 - `composed_report: ComposedReport | None`: Phase 2 출력. v4.0.0 부터 보고서 SSOT.
 - `report_url`, `report_path`: Phase 3 산출 — 배포된 URL 과 로컬 HTML 경로.
 - `mirror_url` (v6.1.0): GitHub raw 미러 HTML URL (`raw.githubusercontent.com/.../analysis_{id}.html`). `src/tools/github_mirror.py:GitHubMirror` 가 Cloudflare 배포와 함께 보고서 산출물을 공개 GitHub repo 에 push 성공 시 채워짐. 텔레그램 메시지가 여기서 `.md`/`.bundle.json` 을 파생해 "AI 직접 열람용" 링크로 안내 — `*.pages.dev` 를 egress 허용목록에서 막는 샌드박스 AI(Claude Code on the web 등)가 보고서를 직접 열람하게 한다. 미러 비활성(토큰/repo 미설정)/실패 시 빈 문자열 → 메시지 흐름 byte-equal 불변.
+- `osint_mirror_error` (v8.7.1): osint_generator 번들 미러 실패 사유 (예: `HTTP 403 Resource not accessible by personal access token`). `src/tools/github_mirror.py:mirror_bundle_to_osint` 가 돌려준 값을 `report_synthesizer` 가 채운다. 성공·비활성(토큰 미설정)·열화 보고서 스킵이면 빈 문자열. 텔레그램 번들 메시지(일일 브리핑은 링크 메시지)가 `osint_mirror_warning` 으로 사유와 조치를 한 줄 붙인다 — v8.4.0 이후 석 달간 전송 0건이 무감지였던 사고(VM-AP-14) 재발 방지. JSON 덤프 이후에 채워지므로 보고서 `.json` 에는 남지 않는다.
 - `report_theme`: `lens_policy.select_theme(category)` 결과 (`editorial_cream` 또는 `burgundy_mono`).
 - `executive_summary`: composer 의 `deck` 또는 `headline` (markdown index 공통 텍스트).
 - `system_version` (v4.5.5): 매 렌더 시점의 `orchestrator.VERSION`. 재렌더 시엔 *재렌더 시점* 으로 갱신.

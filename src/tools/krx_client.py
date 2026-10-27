@@ -16,13 +16,26 @@ warmup → MDCCOMS001D1.cmd POST → 중복로그인 skipDup 처리)를 이미 �
   async 래퍼 제공.
 - 자격증명 없음·로그인 실패·pykrx 미설치는 *조용히* graceful — RuntimeError 를 던져
   fetcher 의 try/except 가 빈 snapshot + warning 으로 흡수(보고서 흐름 무영향).
+
+v8.7.1 (VM-AP-15) — 로그인 실패를 *구분해서* 알린다. 2026-10-27 실사고: KRX 가
+비밀번호 변경 주기 만료(오류코드 CD010)로 로그인을 거부했는데, pykrx 는 경고를 stdout 에
+print 만 하고 None 을 돌려줘 봇 로그에는 "자격증명 확인" 만 남았다(원인 오도). 선물·옵션
+·시장 폭이 빈 채로 장마감 브리핑이 나갔다. 이제
+- pykrx 출력을 잡아 원인을 분류한다 (비밀번호 변경 필요 / 로그인 실패).
+- 로그인은 락 하나로 직렬화하고, 실패하면 쿨다운 동안 재시도하지 않는다 — 한 보고서
+  안에서 여러 스레드가 동시에 틀린 비밀번호로 로그인해 계정이 잠기는 것을 막는다.
+- ``login_problem()`` 이 사용자용 조치 문구를 돌려줘 장마감 브리핑 메시지에 붙는다.
 """
 
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import io
 import logging
 import os
+import threading
+import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -31,6 +44,43 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 KRX_JSON_URL = "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+
+# v8.7.1 — 로그인 실패 원인 → 조치 문구 (텔레그램에 그대로 나간다).
+LOGIN_PROBLEM_MESSAGES: dict[str, str] = {
+    "password_change_required": (
+        "KRX 비밀번호 변경 필요 (KRX 응답 CD010) → data.krx.co.kr 에서 비밀번호를 바꾼 뒤 "
+        ".env 의 KRX_PW 를 갱신하고 sudo systemctl restart agents-reviewer.service"
+    ),
+    "login_failed": (
+        "KRX 로그인 실패 → .env 의 KRX_ID·KRX_PW 확인 후 "
+        "sudo systemctl restart agents-reviewer.service"
+    ),
+}
+# 실패 후 재로그인 금지 시간. 틀린 비밀번호로 반복 로그인하면 계정이 잠길 수 있다.
+LOGIN_FAIL_COOLDOWN_S = 600.0
+
+_login_lock = threading.Lock()
+_last_failure: tuple[float, str] | None = None  # (time.monotonic(), 원인 코드)
+
+
+def classify_login_output(text: str) -> str:
+    """pykrx 로그인 출력(stdout) → 원인 코드."""
+    if any(m in text for m in ("비밀번호 변경", "패스워드 변경", "CD010")):
+        return "password_change_required"
+    return "login_failed"
+
+
+def login_problem() -> str:
+    """마지막 로그인 실패의 조치 문구. 성공했거나 시도 전이면 ""."""
+    if _last_failure is None:
+        return ""
+    return LOGIN_PROBLEM_MESSAGES.get(_last_failure[1], "")
+
+
+def _reset_login_state() -> None:
+    """테스트용 — 실패 기록 초기화."""
+    global _last_failure
+    _last_failure = None
 
 
 def _creds(config: "Config | None") -> tuple[str, str]:
@@ -65,23 +115,49 @@ def ensure_session(config: "Config | None"):
         )
         return None
 
-    try:
-        new = auth.build_krx_session(kid, kpw)  # warmup + 로그인 핸드셰이크
-    except Exception as e:  # pragma: no cover
-        logger.warning("[krx] 로그인 예외: %s", e)
-        return None
-    if new is None:
-        logger.warning("[krx] 로그인 실패 — 자격증명 확인(KRX_ID/KRX_PW).")
-        return None
-    auth.set_auth_session(new)
-    return new
+    global _last_failure
+    with _login_lock:
+        # 기다리는 사이 다른 스레드가 로그인했으면 그 세션을 쓴다.
+        sess = auth.get_auth_session()
+        try:
+            if sess is not None and sess.is_valid():
+                return sess
+        except Exception:
+            pass
+        if _last_failure is not None and (
+            time.monotonic() - _last_failure[0] < LOGIN_FAIL_COOLDOWN_S
+        ):
+            return None  # 쿨다운 — 같은 실패를 반복하지 않는다
+
+        # pykrx 는 실패 원인을 print 로만 알린다. 잡아서 분류하고 로그로 옮긴다.
+        # (스레드들은 위 락에서 기다리므로 그동안 stdout 을 바꿔도 서로 섞이지 않는다.)
+        buf = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buf):
+                new = auth.build_krx_session(kid, kpw)  # warmup + 로그인 핸드셰이크
+        except Exception as e:  # pragma: no cover — 네트워크 예외는 원인 분류 대상 아님
+            logger.warning("[krx] 로그인 예외: %s", e)
+            return None
+        out = buf.getvalue().strip()
+        if out:
+            logger.info("[krx] pykrx: %s", " / ".join(l.strip() for l in out.splitlines() if l.strip()))
+        if new is None:
+            reason = classify_login_output(out)
+            _last_failure = (time.monotonic(), reason)
+            logger.warning("[krx] %s", LOGIN_PROBLEM_MESSAGES[reason])
+            return None
+        _last_failure = None
+        auth.set_auth_session(new)
+        return new
 
 
 def _post_rows_sync(config: "Config | None", bld: str, params: dict) -> list[dict]:
     """인증 세션으로 getJsonData POST → output rows (sync). 실패 시 RuntimeError."""
     sess = ensure_session(config)
     if sess is None:
-        raise RuntimeError("KRX 인증 세션 없음 (KRX_ID/KRX_PW 미설정 또는 로그인 실패)")
+        raise RuntimeError(
+            login_problem() or "KRX 인증 세션 없음 (KRX_ID/KRX_PW 미설정 또는 로그인 실패)"
+        )
     headers = sess.get_headers()  # User-Agent/Referer/Cookie(로그인 쿠키) 포함
     body = {"bld": bld, **params}
     resp = sess.session.post(KRX_JSON_URL, data=body, headers=headers, timeout=20)

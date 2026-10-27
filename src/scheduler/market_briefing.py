@@ -20,6 +20,10 @@ from datetime import date, datetime, timedelta
 from typing import Awaitable, Callable, TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
+from src.tools.cli_auth import failure_message, is_cli_auth_error
+from src.tools.github_mirror import osint_mirror_warning
+from src.tools.krx_client import login_problem as krx_login_problem
+
 if TYPE_CHECKING:
     from src.orchestrator import Orchestrator
     from src.scheduler.subscriptions import MarketBriefSubscriberRegistry
@@ -289,9 +293,10 @@ async def _run_one_market_cycle(
                 chat_id, e, exc_info=True,
             )
             try:
+                # v8.7.1 — 인증 만료면 원문 대신 복구 명령 (VM-AP-14).
                 await send_text_fn(
                     chat_id,
-                    f"❌ 시장 브리핑 ({run_date}) 생성 실패: {str(e)[:200]}",
+                    failure_message(f"❌ 시장 브리핑 ({run_date}) 생성 실패", e),
                 )
             except Exception:
                 pass
@@ -301,6 +306,12 @@ async def _run_one_market_cycle(
         "[scheduler] Market brief cycle %s done — success=%d failed=%d",
         run_date, succeeded, failed,
     )
+
+
+def _krx_warning_line() -> str:
+    """v8.7.1 (VM-AP-15) — KRX 로그인이 막혀 시장 내부 데이터가 빠졌으면 조치 한 줄."""
+    problem = krx_login_problem()
+    return f"\n⚠️ 선물·옵션·시장 폭 데이터 빠짐 — {problem}" if problem else ""
 
 
 async def _market_brief_for_chat(
@@ -357,28 +368,31 @@ async def _market_brief_for_chat(
 
     # 보고서 본문 .md 링크(🤖 AI 전달용 Markdown / 🤝 GitHub raw .md)는 제거 —
     # HTML 보고서 링크만 유지 (사용자 요청).
+    _krx_line = _krx_warning_line()
     if result.report_url and result.report_url.startswith("http"):
         await send_text_fn(
             chat_id,
             f"📈 한국 장마감 브리핑 ({run_date})\n\n"
-            f"🔗 보고서: {result.report_url}",
+            f"🔗 보고서: {result.report_url}{_krx_line}",
         )
     elif result.report_path and os.path.isfile(result.report_path) and send_document_fn:
         await send_document_fn(
             chat_id,
             result.report_path,
-            f"📈 장마감 브리핑 ({run_date}) — Cloudflare 업로드 실패, 파일 첨부",
+            f"📈 장마감 브리핑 ({run_date}) — Cloudflare 업로드 실패, 파일 첨부{_krx_line}",
         )
 
     # 영상 제작용 ReportBundle 자동 첨부 (v5.5.0 패턴).
     if result.report_path:
         bundle_path = result.report_path.replace(".html", ".bundle.json")
         if os.path.isfile(bundle_path) and send_document_fn:
+            # v8.7.1 — osint 저장소 전송이 실패했으면 사유와 조치를 붙인다.
+            bundle_cap = "📦 영상 제작용 번들 (osint_generator)"
+            _osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
+            if _osint_warn:
+                bundle_cap += f"\n{_osint_warn}"
             try:
-                await send_document_fn(
-                    chat_id, bundle_path,
-                    "📦 영상 제작용 번들 (osint_generator)",
-                )
+                await send_document_fn(chat_id, bundle_path, bundle_cap)
             except Exception as e:
                 logger.warning("[scheduler] bundle send failed: %s", e)
 
@@ -487,9 +501,12 @@ async def run_backfill_market_briefing(
             report_kind="market_briefing",
         )
     except Exception as e:
+        _prefix = f"❌ 장마감 브리핑 소급 생성 실패 ({target.isoformat()})"
         await _notify_backfill(
             config, targets,
-            f"❌ 장마감 브리핑 소급 생성 실패 ({target.isoformat()})\n{str(e)[:300]}",
+            # v8.7.1 — 인증 만료면 원문 대신 복구 명령 (VM-AP-14).
+            failure_message(_prefix, e) if is_cli_auth_error(e)
+            else f"{_prefix}\n{str(e)[:300]}",
         )
         raise
 
@@ -532,6 +549,8 @@ async def _deliver_backfill(
     url = getattr(result, "report_url", "") or ""
     path = getattr(result, "report_path", "") or ""
     bundle = path.replace(".html", ".bundle.json") if path else ""
+    osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
+    krx_line = _krx_warning_line()
 
     bot = Bot(token)
     for chat_id in chat_ids:
@@ -543,7 +562,7 @@ async def _deliver_backfill(
                     chat_id=chat_id,
                     text=(
                         f"📈 한국 장마감 브리핑 ({run_date}) · 소급 발행\n\n"
-                        f"🔗 보고서: {url}"
+                        f"🔗 보고서: {url}{krx_line}"
                     ),
                 )
             elif path and os.path.isfile(path):
@@ -553,10 +572,12 @@ async def _deliver_backfill(
                         caption=f"📈 장마감 브리핑 ({run_date}) — 업로드 실패, 파일 첨부",
                     )
             if bundle and os.path.isfile(bundle):
+                bundle_cap = "📦 영상 제작용 번들 (osint_generator)"
+                if osint_warn:
+                    bundle_cap += f"\n{osint_warn}"
                 with open(bundle, "rb") as f:
                     await bot.send_document(
-                        chat_id=chat_id, document=f,
-                        caption="📦 영상 제작용 번들 (osint_generator)",
+                        chat_id=chat_id, document=f, caption=bundle_cap,
                     )
         except Exception as e:
             logger.warning("[backfill] chat=%s 송신 실패: %s", chat_id, e)
@@ -620,6 +641,13 @@ def _main() -> None:  # pragma: no cover — CLI
     print(f"\n=== 장마감 브리핑 소급 발행 완료 ({target.isoformat()}) ===")
     print(f"URL : {url or '(배포 실패 — 로컬 파일만)'}")
     print(f"파일: {path}")
+    # v8.7.1 — osint 저장소 번들 전송 결과 (토큰 권한 점검용).
+    osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
+    if osint_warn:
+        print(osint_warn)
+    krx_line = _krx_warning_line().strip()
+    if krx_line:
+        print(krx_line)
 
 
 if __name__ == "__main__":  # pragma: no cover

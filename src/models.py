@@ -1036,6 +1036,11 @@ class FullAnalysisResult(BaseModel):
     # .md/.bundle.json 을 파생해 함께 안내 — pages.dev 를 막는 샌드박스 AI 가
     # 보고서를 직접 열람할 수 있게. 미러 비활성/실패 시 빈 문자열(흐름 불변).
     mirror_url: str = ""
+    # v8.7.1 — osint_generator 번들 미러 실패 사유 (src/tools/github_mirror.py:
+    # mirror_bundle_to_osint). 예: "HTTP 403 Resource not accessible by personal access
+    # token". 성공·비활성(토큰 미설정)·열화 보고서 스킵이면 빈 문자열. 텔레그램
+    # 완료 메시지가 사유와 조치를 한 줄로 붙인다 (석 달간 무감지 실패 재발 방지).
+    osint_mirror_error: str = ""
     # v3.4.3 — block builder 가 light/burgundy 분기 위해 사용 (synthesize() 초입에 설정).
     # 이 필드 없이 v3.4.0 _payload_map() 이 result.report_theme 읽다가 Pydantic 거부 → 분석 실패.
     report_theme: str = ""

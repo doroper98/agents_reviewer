@@ -1,6 +1,6 @@
 ---
 tier: 2
-last_synced_with: v8.5.0
+last_synced_with: v8.7.1
 ssot_for:
   - "시스템 아키텍처 다이어그램 (v5.1.0 Tier 4)"
   - "2-call 파이프라인 흐름"
@@ -326,24 +326,29 @@ TelegramBot (Application.run_polling)
     │       ├── asyncio.create_task(run_monitor_loop)            # V3 Step 5-B (v2.9.5)
     │       │      └── 1h 주기 — watchsignals deadline 자동 발화
     │       │
-    │       └── asyncio.create_task(run_daily_briefing_loop)     # v5.1.0
-    │              └── 매일 DAILY_BRIEFING_TIME (기본 06:00 KST)
-    │                     ├── briefing_runs.run_date PK 로 dedupe
-    │                     ├── BriefingSubscriberRegistry.list_all() 순회
-    │                     └── per chat_id:
-    │                          Orchestrator.run_analysis(prompt, chat_id, mode='deep')
-    │                          → ContextAnalyst (Opus 5, 웹 검색)
-    │                          → NarrativeComposer (Opus 5, 5~7 섹션 + 모순 명시)
-    │                          → Cloudflare Pages 배포 → chat 송신
+    │       ├── asyncio.create_task(run_daily_briefing_loop)     # v5.1.0
+    │       │      └── 매일 DAILY_BRIEFING_TIME (기본 06:00 KST)
+    │       │             ├── briefing_runs.run_date PK 로 dedupe
+    │       │             ├── BriefingSubscriberRegistry.list_all() 순회
+    │       │             └── per chat_id:
+    │       │                  Orchestrator.run_analysis(prompt, chat_id, mode='deep')
+    │       │                  → ContextAnalyst (Opus 5, 웹 검색)
+    │       │                  → NarrativeComposer (Opus 5, 5~7 섹션 + 모순 명시)
+    │       │                  → Cloudflare Pages 배포 → chat 송신
+    │       │
+    │       └── asyncio.create_task(run_cli_auth_watch_loop)     # v8.7.1
+    │              └── 켜진 브리핑마다 (브리핑 시각 - CLI_AUTH_WATCH_LEAD_MIN, 기본 60분)
+    │                     claude -p ping → 인증 만료면 구독자에게 복구 명령 선송신
     │
     └── _on_app_post_shutdown
-            └── 두 task 모두 cancel (SQLite 데이터는 영속)
+            └── 모든 task cancel (SQLite 데이터는 영속)
 ```
 
 | Track | 트리거 | 액션 | 저장소 |
 |-------|--------|------|--------|
 | Watchlist Monitor (v2.9.5) | 1시간 주기 + 사용자 `/fire` | deadline 도래 시 자동 발화 + 텔레그램 알림 | `reports/watchlist.db` (`watchsignals`) |
 | Daily Briefing Scheduler (v5.1.0) | 매일 `DAILY_BRIEFING_TIME` (기본 06:00 KST, v5.1.2 부터) | 구독한 채팅에 간밤 산업/지정학/정치/전쟁 deep 보고서 자동 송신 | `reports/scheduler.db` (`briefing_subscribers`, `briefing_runs`) |
+| CLI Auth Watch (v8.7.1) | 켜진 브리핑 시각 `CLI_AUTH_WATCH_LEAD_MIN`(기본 60)분 전 | `claude -p ping` 으로 구독 인증 점검, 만료면 브리핑 구독자에게 복구 명령 선송신 (VM-AP-14) | 없음 (상태 비저장) |
 
 일일 브리핑은 기존 v4.0.0 Tier 4 2-call 파이프라인을 `mode='deep'` 으로 호출 — composer 가
 5~7 섹션 + 모순 명시 + 감시 신호 추출. 새 파이프라인 도입 없음. `DAILY_BRIEFING_ENABLED=false`
