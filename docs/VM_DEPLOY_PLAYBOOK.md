@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.7.1
+last_synced_with: v8.7.3
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -87,6 +87,20 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
     cat /tmp/cfgcheck.err; exit 1
   fi
   echo "✓ config 로드 OK"
+
+  # ─── Stage 3.6: Claude CLI 로그인·모델 프리플라이트 (v8.7.3, VM-AP-14) ───
+  # 구독 로그인이 만료됐거나 새 모델이 계정에서 안 열리면, 재시작해도 보고서가 전부
+  # 실패한다. 내리기 전에 편집장 모델로 ping 1회. 저장소 CLAUDE.md 를 읽지 않게 /tmp 에서.
+  MODEL=$(venv/bin/python -c 'from src.agents.narrative_composer import NarrativeComposer as N; print(N.COMPOSER_MODEL)')
+  PING=$(cd /tmp && timeout 120 claude -p "ping" --model "$MODEL" --output-format json 2>&1)
+  if ! echo "$PING" | grep -qE '"is_error": ?false'; then
+    echo "❌ Claude CLI 점검 실패 ($MODEL) — 재시작 중단 (봇은 옛 버전으로 계속 가동 중)"
+    echo "$PING" | head -c 600; echo
+    echo "→ 'OAuth'·'401' 이면 claude 실행 후 /login. 모델 오류면 위 출력을 확인."; exit 1
+  fi
+  echo "✓ Claude CLI OK ($MODEL)"
+  # Codex 는 없어도 보고서가 나간다(검수만 건너뜀) — 중단하지 않고 상태만 보여 준다.
+  echo "ⓘ codex: $(codex login status 2>&1 | head -1)"
 
   # ─── Stage 4: systemd 재시작 (nohup 금지 — VM-AP-12 중복 기동 OOM) ───
   sudo systemctl restart agents-reviewer.service
@@ -615,9 +629,40 @@ settings → Fine-grained tokens → 해당 토큰 → Edit 에서 저장소 목
 cd ~/agents_reviewer && source venv/bin/activate && python -m src.tools.breadth_fetcher 2>&1 | grep -E 'KRX|하락|warn|krx' | head
 ```
 
-`비밀번호 변경이 필요` 가 나오면 data.krx.co.kr 에서 비밀번호를 바꾸고 `.env` 의 `KRX_PW`
-를 갱신한 뒤 `sudo systemctl restart agents-reviewer.service`. 특수문자가 있으면
+`비밀번호 변경이 필요` 가 나오면 **먼저 KRX 사이트에 로그인해 '90일 뒤 변경'** 을 누른다.
+비밀번호가 그대로라 `.env` 수정·재시작이 필요 없다. 봇은 실패 쿨다운(10분) 뒤 다음 보고서에서
+다시 로그인한다. 2026-10-27 이 방법으로 복구됐다 — 같은 날 18:30 장마감 브리핑에 선물·옵션·
+시장 폭이 다시 들어갔다. 다음 만료는 2027-01-25 전후로 예상한다.
+
+비밀번호를 실제로 바꿨다면 `.env` 의 `KRX_PW` 를 갱신한 뒤
+`sudo systemctl restart agents-reviewer.service`. 특수문자가 있으면
 `KRX_PW='새비밀번호'` 처럼 작은따옴표로 감싼다.
+
+v8.7.3 부터 코스피·코스닥 **지수** 도 이 로그인을 쓴다 (그전엔 로그인 세션이 없어 늘
+Yahoo 폴백). 로그인이 안 되면 지수만 Yahoo 로 내려가고 보고서는 정상 발행된다.
+
+### Codex 검수 점검 (v8.7.3)
+
+진행 알림에 `ⓘ 외부 사실 검수 건너뜀` 이 뜨면 v8.7.3 부터 다음 줄에 사유와 조치가 붙는다.
+지난 보고서의 사유는 로그로 본다.
+
+```bash
+journalctl -u agents-reviewer.service --since "3 days ago" --no-pager | grep -E 'codex_critic' | tail -20
+codex login status
+```
+
+| 로그 사유 | 뜻 | 조치 |
+|---|---|---|
+| `auth_failed` | ChatGPT 로그인 만료 | 아래 재로그인 (봇 재시작 불요) |
+| `timeout` | `V6_CODEX_TIMEOUT_S`(기본 180초) 초과 | 잦으면 `.env` 에 `V6_CODEX_TIMEOUT_S=300` 후 재시작 |
+| `rate_limited` | ChatGPT 사용량 한도 | 한도가 풀리면 자동 복구 |
+| `codex_not_found` | codex CLI 없음 | `codex --version` 확인 |
+
+재로그인은 이 VM 에서 검증된 방식(V6_TEST_RESULTS)으로 한다. 내 PC 에서
+`ssh -L 1455:localhost:1455 ubuntu@<VM주소>` 로 접속 → VM 에서 `codex login` → 출력된 주소를
+내 PC 브라우저로 연다. `codex login --device-auth`(브라우저 없이 코드 입력)도 있으나 ChatGPT
+보안 설정에서 기기 코드 로그인을 먼저 켜야 한다. 로그인은 파일(`~/.codex/auth.json`)로 남아
+봇 재시작 없이 다음 보고서부터 적용된다.
 
 ### 보고서 생성 진행 여부 (이전 bot-if-working 대체)
 

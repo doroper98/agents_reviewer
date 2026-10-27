@@ -88,6 +88,73 @@ def test_kospi_prefers_krx_when_available() -> None:
     assert series.data[0].close == 7516.04
 
 
+# ─── v8.7.3 — KRX 지수는 로그인 세션을 먼저 깐다 ─────────────────
+# pykrx 는 개별주를 네이버로, 지수는 data.krx(로그인 필수)로 받는다. 봇은 .env 를 환경
+# 변수로 올리지 않아 pykrx 가 스스로 로그인하지 못했고, 지수는 늘 Yahoo 폴백이었다.
+
+
+def _index_df():
+    import pandas as pd
+
+    return pd.DataFrame(
+        {"시가": [9000.0], "고가": [9100.0], "저가": [8950.0], "종가": [9063.84], "거래량": [1]},
+        index=pd.to_datetime(["2026-10-27"]),
+    )
+
+
+def test_krx_index_logs_in_with_config_before_fetch(monkeypatch) -> None:
+    from pykrx import stock
+
+    from src.tools import krx_client
+
+    cfg = object()
+    seen: list = []
+    monkeypatch.setattr(krx_client, "ensure_session", lambda c: seen.append(c) or object())
+    monkeypatch.setattr(stock, "get_index_ohlcv", lambda s, e, code: _index_df())
+
+    series = asyncio.run(fetch_market_series("코스피", period="1M", config=cfg))
+
+    assert seen == [cfg]  # _build_fetcher 가 config 를 넘겨 그 자격증명으로 로그인
+    assert series.source == "KRX" and series.code == "1001"
+    assert series.data[-1].close == 9063.84
+
+
+def test_krx_index_without_session_falls_back_without_calling_pykrx(monkeypatch) -> None:
+    from pykrx import stock
+
+    from src.tools import krx_client
+    from src.tools.market_fetcher import YahooFetcher
+
+    def _no_call(*a, **k):
+        raise AssertionError("세션 없이 pykrx 지수 요청을 보내면 안 됨")
+
+    async def _yahoo(self, code, start, end):
+        return [OHLCBar(date="2026-10-27", open=1, high=1, low=1, close=9063.84)]
+
+    monkeypatch.setattr(krx_client, "ensure_session", lambda c: None)
+    monkeypatch.setattr(stock, "get_index_ohlcv", _no_call)
+    with patch.object(YahooFetcher, "fetch", _yahoo):
+        series = asyncio.run(fetch_market_series("코스피", period="1M"))
+
+    assert series.source == "YAHOO" and series.code == "^KS11"
+
+
+def test_krx_single_stock_does_not_need_login(monkeypatch) -> None:
+    from pykrx import stock
+
+    from src.tools import krx_client
+    from src.tools.market_fetcher import KRXFetcher
+
+    def _no_login(c):
+        raise AssertionError("개별주는 네이버 경로라 KRX 로그인 불요")
+
+    monkeypatch.setattr(krx_client, "ensure_session", _no_login)
+    monkeypatch.setattr(stock, "get_market_ohlcv", lambda s, e, code: _index_df())
+
+    bars = asyncio.run(KRXFetcher().fetch("005930", date(2026, 10, 1), date(2026, 10, 27)))
+    assert bars and bars[-1].close == 9063.84
+
+
 def test_resolve_korean_alias() -> None:
     assert resolve_instrument("코스피") is not None
     assert resolve_instrument("삼성전자") is not None

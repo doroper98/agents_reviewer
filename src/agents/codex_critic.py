@@ -47,6 +47,23 @@ from src.models import (
 
 logger = logging.getLogger(__name__)
 
+# v8.7.3 — 검수 건너뜀 사유 → 사용자용 조치 문구 (텔레그램 진행 알림에 붙는다).
+# 2026-10-27 사용자 질문 "왜 외부 사실 검수를 건너뛴 걸까?" — 알림이 "건너뜀" 만 말하고
+# 이유를 숨겨 로그를 뒤져야 했다. 사유 코드는 skip verdict 의 ``skip_reason`` 그대로.
+SKIP_REASON_HINTS: dict[str, str] = {
+    "auth_failed": "Codex 인증 실패 → VM 에서 codex login status 확인 후 재로그인",
+    "rate_limited": "ChatGPT 사용량 한도 → 한도가 풀리면 자동 복구",
+    "timeout": "Codex 응답 {timeout}초 초과 → 잦으면 .env 의 V6_CODEX_TIMEOUT_S 상향",
+    "codex_not_found": "VM 에 codex CLI 없음 → codex --version 확인",
+    "parse_failed": "Codex 응답 형식 오류 → 다음 보고서에서 다시 시도",
+    "codex_error": "Codex 실행 오류 → journalctl -u agents-reviewer.service | grep codex_critic",
+}
+
+
+def skip_hint(reason: str, *, timeout_s: int = 0) -> str:
+    """skip 사유 코드 → 조치 문구. 모르는 사유면 ""."""
+    return SKIP_REASON_HINTS.get(reason, "").replace("{timeout}", str(timeout_s))
+
 
 # codex 에게 주는 검수 지침. JSON 예시의 ``{}`` 와 .format() 충돌을 피하려고
 # placeholder 치환은 .replace() 로만 한다 (CLAUDE.md Execution Rule #7).

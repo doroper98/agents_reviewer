@@ -396,10 +396,19 @@ class KRXFetcher:
     aiohttp 로 동일 endpoint 호출 시 ``HTTP 400 LOGOUT`` 반환 (운영 환경 검증).
     warm-up GET, 헤더 보강, payload 변형 모두 시도했으나 해결 X. pykrx 는
     requests 기반 + 자체 세션 관리로 안정 동작 — 의존성 추가가 더 실용적.
+
+    [v8.7.3 — 지수는 로그인 세션 먼저]
+    pykrx 는 개별주를 네이버에서 받아(로그인 불요) 지수만 data.krx 에서 받는다.
+    data.krx 는 2026-06 부터 로그인 필수인데, pykrx 는 세션을 환경변수 KRX_ID/KRX_PW
+    로만 만든다(봇은 .env 를 pydantic 으로 읽어 환경변수가 비어 있음). 그래서 지수는
+    무인증 요청 → 빈 결과 → Yahoo 폴백(EOD 지연, kospi-date-mismatch)으로만 나갔다.
+    이제 지수 조회 전에 ``krx_client.ensure_session`` 으로 인증 세션을 깔아 둔다.
+    로그인이 안 되면 빈 결과 → 기존 Yahoo 폴백 그대로.
     """
 
-    def __init__(self, api_key: str = "") -> None:
+    def __init__(self, api_key: str = "", config: Any | None = None) -> None:
         self.api_key = api_key  # forward-compat, 미사용
+        self.config = config  # v8.7.3 — 지수 조회용 KRX 로그인 자격증명
 
     async def fetch(self, code: str, start: date, end: date) -> list[OHLCBar]:
         try:
@@ -415,6 +424,15 @@ class KRXFetcher:
         start_str = start.strftime("%Y%m%d")
         end_str = end.strftime("%Y%m%d")
         is_index = len(code) == 4
+
+        if is_index:
+            from src.tools.krx_client import ensure_session
+
+            if await asyncio.to_thread(ensure_session, self.config) is None:
+                logger.info(
+                    "[market_fetcher] KRX 지수 %s — 로그인 세션 없음, 폴백 소스 사용", code,
+                )
+                return []
 
         try:
             if is_index:
@@ -721,7 +739,7 @@ def _build_fetcher(
     if source == "ECOS":
         return ECOSFetcher(ecos_key)
     if source == "KRX":
-        return KRXFetcher(krx_key)
+        return KRXFetcher(krx_key, config)
     if source == "YAHOO":
         return YahooFetcher()
     return None
