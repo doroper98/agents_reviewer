@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.1
+last_synced_with: v8.7.2
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,25 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.7.2 — 보고서 파이프라인 모델 Opus 5.5 교체
+
+사용자 요청(2026-10-27) — 텔레그램 진행 알림에 `편집장 (Opus 5)` 로 표시되는 모델을 Opus 5.5 로.
+
+- **모델 교체** — ContextAnalyst(`context_analyst.py`) + NarrativeComposer(`COMPOSER_MODEL` /
+  `COMPOSER_MODEL_REPORTAGE`, 일반·르포 동일) + V5 opt-in 4종(Editor / ResearchDirector /
+  VisualPlanner / DeskEditor) + `Config.model_name`(질문 답변 경로)을 `claude-opus-5` →
+  **`claude-opus-5-5`**. v8.5.0 과 같은 범위의 드롭인 교체(1M context · 128K output · 같은 토크나이저).
+- **그대로 둔 것** — 모델 안전망의 최후 폴백 `COMPOSER_MODEL_STABLE=claude-opus-4-7`, 가벼운 작업용
+  `model_name_light`. CLI 호출 인자는 `--model` 만 바뀐다(`--effort` 는 VM CLI 버전 확인 전이라 추가하지 않음).
+- **라벨 정합** — orchestrator 진행 알림 `편집장 (Opus 5.5)`, 바이라인 `_pretty_writer('claude-opus-5-5')`
+  → 'Claude Opus 5.5'(기존 X-Y 매핑 그대로).
+- **회귀 테스트** — `test_reportage_format.py`(모델 상수·알림 라벨) / `test_codex_loop.py`(5.5 매핑) /
+  `test_editor.py`(EDITOR_MODEL).
+- **문서** — CLAUDE.md, README, docs/ARCHITECTURE.md, docs/CATALOGS.md 의 현재 모델 표기. 과거 버전
+  항목의 Opus 5 / 4.x 표기는 이력이므로 불변.
+- **운영 노트** — 반영은 재배포(`git pull` + `sudo systemctl restart agents-reviewer.service`). 재시작 전에
+  `claude -p "ping" --model claude-opus-5-5 --output-format json` 으로 구독 계정에서 모델이 열리는지 1회 확인.
 
 ## v8.7.1 — 로그인 만료·osint 전송·KRX 비밀번호 만료를 조치형으로 알림 (VM-AP-14·15)
 

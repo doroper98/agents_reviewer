@@ -179,16 +179,16 @@ def test_payload_reportage_without_directive_omits_field() -> None:
 
 def test_reportage_uses_opus_5() -> None:
     nc = NarrativeComposer(Config(_env_file=None))
-    assert nc._model_for_format("reportage") == "claude-opus-5"
-    assert nc.COMPOSER_MODEL_REPORTAGE == "claude-opus-5"
+    assert nc._model_for_format("reportage") == "claude-opus-5-5"
+    assert nc.COMPOSER_MODEL_REPORTAGE == "claude-opus-5-5"
 
 
 def test_standard_uses_opus_5() -> None:
     nc = NarrativeComposer(Config(_env_file=None))
     # 일반 보고서·빈 값·미지정은 모두 COMPOSER_MODEL (Opus 5) 경로
-    assert nc._model_for_format("standard") == "claude-opus-5"
-    assert nc._model_for_format("") == "claude-opus-5"
-    assert nc.COMPOSER_MODEL == "claude-opus-5"
+    assert nc._model_for_format("standard") == "claude-opus-5-5"
+    assert nc._model_for_format("") == "claude-opus-5-5"
+    assert nc.COMPOSER_MODEL == "claude-opus-5-5"
 
 
 def test_pretty_writer_maps_opus_5() -> None:
@@ -197,6 +197,7 @@ def test_pretty_writer_maps_opus_5() -> None:
     assert _pretty_writer("claude-opus-4-7") == "Claude Opus 4.7"
     assert _pretty_writer("claude-opus-4-8") == "Claude Opus 4.8"
     assert _pretty_writer("claude-opus-5") == "Claude Opus 5"
+    assert _pretty_writer("claude-opus-5-5") == "Claude Opus 5.5"
 
 
 def test_orchestrator_notify_label_matches_composer_model() -> None:
@@ -214,7 +215,8 @@ def test_orchestrator_notify_label_matches_composer_model() -> None:
     )
     assert '"Opus 4.8" if report_format == "reportage"' not in src, \
         "옛 4.8/4.7 라벨 분기 잔재 — v8.5.0 부터 Opus 5 단일 라벨"
-    assert '_model_label = "Opus 5"' in src, "Opus 5 알림 라벨 누락"
+    # v8.7.2 — 모델이 Opus 5.5 로 바뀌면 라벨도 함께 (라벨·모델 불일치 회귀 차단).
+    assert '_model_label = "Opus 5.5"' in src, "Opus 5.5 알림 라벨 누락"
     assert "_model_for_format(request.report_format)" in src, \
         "byline writer 모델이 _model_for_format 으로 분기되지 않음"
 
