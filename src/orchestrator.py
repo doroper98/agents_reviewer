@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.7.2"
+VERSION = "v8.7.3"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -2068,7 +2068,8 @@ class Orchestrator:
                         "title": "코스피 종합지수",
                         "data": _rows,
                         "moving_average": {"period": 20, "label": "20일 이동평균"},
-                        "source": "Yahoo Finance / 최근 3개월 / 일간",
+                        # v8.7.3 — 실제로 받은 소스로 표기 (KRX 로그인 시 KRX, 아니면 Yahoo 폴백).
+                        "source": f"{_SOURCE_DISPLAY.get(_k3[0].source, _k3[0].source)} / 최근 3개월 / 일간",
                         "note": (
                             "최근 3개월 일봉 캔들 + 20일 이동평균선. 종가가 이동평균선 위에 "
                             "있으면 단기 상승 추세, 아래면 하락 추세로 본다."

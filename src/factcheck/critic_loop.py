@@ -23,7 +23,7 @@ from typing import Awaitable, Callable, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.agents.codex_critic import CodexCritic
+from src.agents.codex_critic import CodexCritic, skip_hint
 from src.config import Config
 from src.factcheck.deterministic_guards import run_fact_guards
 from src.models import ComposedReport, ContextAnalysis, FactVerdict
@@ -399,9 +399,12 @@ class CriticLoop:
         if v1.skipped:
             # 외부 degrade → 단일패스 (AP-V6-12). 검수 안 했으니 "통과" 라 거짓말 안 함.
             # (codex degrade 시엔 byline 정합 위해 hard 보완도 생략 — 결정 신호는 로그로 남음.)
-            await self._emit(
-                on_progress, "ⓘ 외부 사실 검수 건너뜀 — 단일 패스로 발행",
-            )
+            # v8.7.3 — 사유와 조치를 함께 알린다 (그전엔 "건너뜀" 만).
+            notice = "ⓘ 외부 사실 검수 건너뜀 — 단일 패스로 발행"
+            hint = skip_hint(v1.skip_reason, timeout_s=self.config.codex_timeout_s)
+            if hint:
+                notice += f"\n({hint})"
+            await self._emit(on_progress, notice)
             return CriticLoopResult(
                 report=report, skipped=True, skip_reason=v1.skip_reason,
                 pre_flag_count=len(pre_flags),

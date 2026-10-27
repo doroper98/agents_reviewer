@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.2
+last_synced_with: v8.7.3
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,30 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.7.3 — 밀린 복구: KRX 지수 로그인 · Codex 건너뜀 사유 · KRX 만료 안내
+
+2026-10-27 점검에서 뒤로 미룬 항목들.
+
+- **코스피·코스닥 지수를 KRX 에서 받는다.** v7.9.15 부터 지수는 KRX 우선·Yahoo 폴백인데,
+  실제로는 늘 Yahoo 였다(같은 날 장마감 브리핑 `코스피:YAHOO`). pykrx 는 개별주를 네이버로,
+  지수를 data.krx(2026-06 부터 로그인 필수)로 받는다. 그런데 pykrx 는 로그인 세션을 환경변수
+  `KRX_ID`/`KRX_PW` 로만 만들고, 봇은 `.env` 를 pydantic 으로 읽어 환경변수가 비어 있다.
+  이제 `KRXFetcher` 가 config 를 받아 지수 조회 전에 `krx_client.ensure_session` 으로 인증
+  세션을 깐다(락·실패 쿨다운 공유). 로그인이 안 되면 pykrx 요청을 보내지 않고 바로 Yahoo 폴백.
+  장마감 브리핑의 3개월 캔들 카드 출처도 고정 문구 `Yahoo Finance` 대신 실제로 받은 소스로 적는다.
+- **Codex 검수를 건너뛰면 이유를 말한다.** 진행 알림이 `ⓘ 외부 사실 검수 건너뜀` 만 보내
+  로그를 뒤져야 했다. 이제 다음 줄에 사유와 조치를 붙인다 — 인증 실패(`codex login`) ·
+  시간 초과(`V6_CODEX_TIMEOUT_S`) · 사용량 한도 · CLI 없음 · 응답 형식 오류 · 실행 오류.
+  문구 SSOT `codex_critic.SKIP_REASON_HINTS`. 모르는 사유면 기존 한 줄 그대로.
+- **KRX 비밀번호 만료 안내에 '90일 뒤 변경' 을 먼저.** 2026-10-27 실제 복구 경로다. 비밀번호가
+  그대로라 `.env` 수정·재시작이 필요 없다. 다음 만료 예상 2027-01-25 전후.
+- **재배포 블록 Stage 3.6** ([VM_DEPLOY_PLAYBOOK §1.0](docs/VM_DEPLOY_PLAYBOOK.md)) — 재시작 전에
+  편집장 모델로 `claude -p ping` 1회. 로그인 만료·모델 미개방이면 재시작을 멈춰 옛 봇이 계속 돈다.
+  codex 로그인 상태는 정보로만 보여 준다. §3 에 'Codex 검수 점검' 신설.
+- 회귀 `tests/test_market_fetcher.py` +3(지수 로그인에 config 전달·세션 없으면 pykrx 미호출 후
+  폴백·개별주는 로그인 불요) / `tests/regression/test_codex_loop.py` +3(사유·조치 표시·모르는
+  사유는 기존 문구·본문 검수 사유 전부 문구 보유) / `tests/test_krx_login.py`('90일 뒤 변경' 안내).
 
 ## v8.7.2 — 보고서 파이프라인 모델 Opus 5.5 교체
 

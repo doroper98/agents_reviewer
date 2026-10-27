@@ -47,9 +47,11 @@ KRX_JSON_URL = "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
 
 # v8.7.1 — 로그인 실패 원인 → 조치 문구 (텔레그램에 그대로 나간다).
 LOGIN_PROBLEM_MESSAGES: dict[str, str] = {
+    # v8.7.3 — '90일 뒤 변경' 을 먼저 안내 (2026-10-27 실복구 경로, .env·재시작 불요).
     "password_change_required": (
-        "KRX 비밀번호 변경 필요 (KRX 응답 CD010) → data.krx.co.kr 에서 비밀번호를 바꾼 뒤 "
-        ".env 의 KRX_PW 를 갱신하고 sudo systemctl restart agents-reviewer.service"
+        "KRX 비밀번호 변경 필요 (KRX 응답 CD010) → KRX 사이트에 로그인해 '90일 뒤 변경' 을 "
+        "누르면 재시작 없이 복구. 비밀번호를 바꿨다면 .env 의 KRX_PW 갱신 후 "
+        "sudo systemctl restart agents-reviewer.service"
     ),
     "login_failed": (
         "KRX 로그인 실패 → .env 의 KRX_ID·KRX_PW 확인 후 "
@@ -110,7 +112,7 @@ def ensure_session(config: "Config | None"):
     kid, kpw = _creds(config)
     if not (kid and kpw):
         logger.warning(
-            "[krx] KRX_ID/KRX_PW 미설정 — data.krx 로그인 불가 (선물·옵션·breadth skip). "
+            "[krx] KRX_ID/KRX_PW 미설정 — data.krx 로그인 불가 (지수는 Yahoo 폴백, 선물·옵션·breadth skip). "
             "무료 data.krx.co.kr 계정 후 .env 에 KRX_ID/KRX_PW 설정."
         )
         return None

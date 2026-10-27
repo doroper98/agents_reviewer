@@ -358,6 +358,46 @@ def test_progress_skipped_is_honest() -> None:
     assert not any("검수 통과" in m for m in msgs)
 
 
+def test_progress_skip_names_reason_and_action() -> None:
+    # v8.7.3 — "건너뜀" 만 말하면 사용자가 로그를 뒤져야 한다 (2026-10-27 사용자 질문).
+    msgs, cb = _collect_progress()
+    loop = CriticLoop(_cfg(), StubCritic([FactVerdict.skip("auth_failed")]), StubReviser())
+    _run(loop.run(_report(), ContextAnalysis(), on_progress=cb))
+    skip = [m for m in msgs if "건너뜀" in m]
+    assert len(skip) == 1 and "codex login" in skip[0]
+
+    msgs, cb = _collect_progress()
+    loop = CriticLoop(
+        _cfg(codex_timeout_s=240), StubCritic([FactVerdict.skip("timeout")]), StubReviser(),
+    )
+    _run(loop.run(_report(), ContextAnalysis(), on_progress=cb))
+    skip = [m for m in msgs if "건너뜀" in m]
+    assert "240초" in skip[0] and "V6_CODEX_TIMEOUT_S" in skip[0]
+
+
+def test_progress_skip_unknown_reason_keeps_plain_notice() -> None:
+    msgs, cb = _collect_progress()
+    loop = CriticLoop(_cfg(), StubCritic([FactVerdict.skip("something_new")]), StubReviser())
+    _run(loop.run(_report(), ContextAnalysis(), on_progress=cb))
+    assert "ⓘ 외부 사실 검수 건너뜀 — 단일 패스로 발행" in msgs
+
+
+def test_every_text_skip_reason_has_a_hint() -> None:
+    # 본문 검수(critique)가 낼 수 있는 사유는 전부 조치 문구가 있어야 한다. 새 사유를
+    # 추가하고 문구를 빠뜨리면 여기서 걸린다. flag_off 는 알림 전에 빠지고,
+    # no_images / no_capture 는 차트 비전 검수 전용이라 이 알림을 타지 않는다.
+    import re
+    from pathlib import Path
+
+    from src.agents.codex_critic import SKIP_REASON_HINTS
+
+    src = Path("src/agents/codex_critic.py").read_text(encoding="utf-8")
+    reasons = set(re.findall(r'FactVerdict\.skip\(\s*"([a-z_]+)"', src))
+    reasons |= set(re.findall(r'return "([a-z_]+)"', src))
+    reasons -= {"flag_off", "no_images", "no_capture"}
+    assert reasons and reasons <= set(SKIP_REASON_HINTS), reasons - set(SKIP_REASON_HINTS)
+
+
 def test_progress_none_is_safe() -> None:
     # on_progress 미지정이어도 정상 동작 (기존 호출 호환).
     loop = CriticLoop(_cfg(), StubCritic([_clean()]), StubReviser())

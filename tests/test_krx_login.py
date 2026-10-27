@@ -72,6 +72,7 @@ def test_password_expiry_is_named_and_not_printed(monkeypatch, capsys) -> None:
     assert ensure_session(CFG) is None
     msg = login_problem()
     assert "비밀번호 변경 필요" in msg and "KRX_PW" in msg and "systemctl restart" in msg
+    assert "90일 뒤 변경" in msg  # v8.7.3 — 재시작 없는 복구 경로를 먼저 안내
     # pykrx 출력은 stdout 이 아니라 로그로 옮겨진다.
     assert capsys.readouterr().out == ""
 

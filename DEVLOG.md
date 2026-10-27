@@ -1325,3 +1325,18 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
 회귀 `tests/test_cli_auth.py` + `tests/test_github_mirror.py` 추가분. 기존 실패 3건
 (`test_composed_section_guard` 2 · `test_narrative_composer::test_token_budget_composer_only_in_deep`)
 은 변경 전에도 실패 — 본 작업 무관.
+
+## v8.7.3 — 밀린 복구: KRX 지수 로그인 · Codex 건너뜀 사유 (2026-10-27)
+
+- **지수가 늘 Yahoo 였던 원인.** 장마감 브리핑 JSON 의 time_series 가 `코스피:YAHOO` ·
+  `삼성전자:KRX`. pykrx 1.2.9 를 읽어 보니 개별주(`get_market_ohlcv`, adjusted)는 네이버
+  경로라 로그인이 필요 없고, 지수(`get_index_ohlcv`)만 data.krx 다. pykrx 의 세션은 import
+  시점과 만료 갱신 모두 환경변수 `KRX_ID`/`KRX_PW` 로만 만들어지는데 봇은 `.env` 를
+  pydantic 으로 읽어 환경변수가 비어 있다. 장마감 브리핑은 지수 조회 *뒤에* 선물·옵션
+  fetch 가 로그인하므로 첫 지수 조회는 무인증이었다. Fix — `KRXFetcher` 가 config 를 받아
+  지수 조회 전에 `krx_client.ensure_session`. 실연동은 VM 에서 확인(샌드박스는 KRX egress 차단).
+- **Codex 건너뜀.** 10/27 보고서 3건 모두 Codex 바이라인 없음(9/25·9/27 은 있음). 원인은
+  VM 로그로 확정해야 한다 — 진행 알림이 사유를 숨겼기 때문. 사유·조치 문구를 붙였다.
+- **KRX 비밀번호.** 사용자가 KRX 사이트에서 '90일 뒤 변경' 선택 → 같은 날 로그인 정상,
+  18:30 장마감 브리핑에 선물·옵션·시장 폭 복귀. 만료 안내 문구가 이 경로를 먼저 말하게 고쳤다.
+- osint 통지(reviewer_osint_q_a n_03)는 사용자 결정으로 보내지 않음.
