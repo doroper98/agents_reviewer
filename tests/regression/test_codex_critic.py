@@ -209,6 +209,71 @@ def test_degrade_generic_error() -> None:
     assert v.skipped and v.skip_reason == "codex_error"
 
 
+# v8.7.4 — 2026-10-27 실사고 재현. codex-cli 0.136.0 이 'gpt-5.5 미지원(400)' 으로 실패했는데,
+# stderr 에 섞인 프롬프트 echo(보고서 본문)·모델 목록 추적 로그의 단어 때문에 rate_limited 로
+# 오분류됐고, 로그엔 첫 줄 'Reading prompt from stdin...' 만 남아 원인이 가려졌다.
+_MODEL_LIST_TRACE = (
+    "2026-10-27T12:02:07.752536Z ERROR codex_models_manager::manager: failed to refresh "
+    "available models: unknown variant `max`; body: {\"models\":[{\"policy\":\"user_authorization "
+    "auth login 401 403 increased usage quota\"}]}"
+)
+_MODEL_NOT_FOUND = (
+    'ERROR: {"type":"error","status":400,"error":{"type":"invalid_request_error",'
+    '"message":"The \'gpt-5.5\' model is not supported when using Codex with a ChatGPT account.",'
+    '"code":"model_not_found"}}'
+)
+
+
+def _echo_stub(tail: str, returncode: int = 1):
+    async def _stub(bin_path, prompt, **kwargs):  # noqa: ANN001
+        stderr = (
+            "Reading prompt from stdin...\n--------\nmodel: gpt-5.5\n--------\nuser\n"
+            + prompt + "\n\n" + tail
+        )
+        return "", stderr, returncode, 30000
+    return _stub
+
+
+def test_model_not_found_is_not_rate_limited() -> None:
+    report = _make_report()
+    report.sections[0].prose += " 거래 429건, 쿼터 quota 초과 논란, rate limit 규제."
+    tail = _MODEL_LIST_TRACE + "\n" + _MODEL_NOT_FOUND + "\n" + _MODEL_NOT_FOUND
+    critic = _critic_with_stub(_make_config(), call_stub=_echo_stub(tail))
+    v = _run(critic.critique(report, _make_context()))
+    assert v.skipped and v.skip_reason == "model_unsupported"
+
+
+def test_failure_log_keeps_final_error_not_first_line(caplog) -> None:
+    import logging
+
+    critic = _critic_with_stub(
+        _make_config(), call_stub=_echo_stub(_MODEL_LIST_TRACE + "\n" + _MODEL_NOT_FOUND),
+    )
+    with caplog.at_level(logging.WARNING, logger="src.agents.codex_critic"):
+        _run(critic.critique(_make_report(), _make_context()))
+    line = next(r.getMessage() for r in caplog.records if "codex exit=" in r.getMessage())
+    assert "model_not_found" in line and "gpt-5.5" in line
+    assert "Reading prompt from stdin" not in line
+
+
+def test_prompt_echo_words_do_not_drive_classification() -> None:
+    # 실패 이유가 불명확할 때 보고서 본문(echo)의 '429'·'auth' 로 분류하지 않는다.
+    report = _make_report()
+    report.sections[0].prose += " 429 quota auth login"
+    critic = _critic_with_stub(_make_config(), call_stub=_echo_stub("segfault somewhere"))
+    v = _run(critic.critique(report, _make_context()))
+    assert v.skip_reason == "codex_error"
+
+
+def test_error_json_status_mapping() -> None:
+    cls = CodexCritic._classify_failure
+    assert cls(1, 'ERROR: {"status":401,"error":{"code":"token_expired"}}') == "auth_failed"
+    assert cls(1, 'ERROR: {"status":429,"error":{"code":"usage_limit_reached"}}') == "rate_limited"
+    assert cls(1, 'ERROR: {"status":500,"error":{"code":"server_error"}}') == "codex_error"
+    # 사용량 한도는 JSON 이 아닌 문장으로도 온다.
+    assert cls(1, "ERROR: You've hit your usage limit. Try again at 3:45 PM.") == "rate_limited"
+
+
 def test_degrade_timeout() -> None:
     async def _timeout_stub(bin_path, prompt, **kwargs):  # noqa: ANN001
         raise asyncio.TimeoutError()

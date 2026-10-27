@@ -1340,3 +1340,16 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
 - **KRX 비밀번호.** 사용자가 KRX 사이트에서 '90일 뒤 변경' 선택 → 같은 날 로그인 정상,
   18:30 장마감 브리핑에 선물·옵션·시장 폭 복귀. 만료 안내 문구가 이 경로를 먼저 말하게 고쳤다.
 - osint 통지(reviewer_osint_q_a n_03)는 사용자 결정으로 보내지 않음.
+
+## v8.7.4 — Codex 실패 원인 오분류 (VM-AP-16, 2026-10-27)
+
+- v8.7.3 재배포 Stage 3.6 이 `Claude Code 2.1.85 does not support this model; 2.1.280 or newer`
+  로 재시작을 막았다. `sudo npm install -g @anthropic-ai/claude-code@latest` → 2.1.311, 새 CLI
+  의 json envelope 에 `is_error`·`result` 그대로 있음을 확인(키 순서만 바뀜) 후 재배포 성공.
+- 같은 날 Codex 건너뜀 2건(14:12·18:53 KST) 로그 사유 `rate_limited`. VM 에서 직접
+  `codex exec` 해 보니 `400 model_not_found — 'gpt-5.5' is not supported when using Codex with a
+  ChatGPT account`. codex-cli 0.136.0 이 모델 목록 응답을 못 읽음(`unknown variant max`).
+  `codex login status` 는 `Logged in using ChatGPT` — 로그인은 문제가 아니었다.
+- 오분류 경위: stderr 전체(프롬프트 echo 9만 자 + 모델 목록 추적 로그)에서 키워드 매칭.
+  로그는 앞 300자라 원인 불가시. 수정 — 최종 `ERROR: {json}` 줄 우선 분류, echo·추적 줄 제거,
+  로그는 최종 오류 줄, 사유 `model_unsupported` 신설. 회귀 4종은 실출력 재현.
