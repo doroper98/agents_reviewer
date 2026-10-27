@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.5.15
+last_synced_with: v8.7.1
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -469,6 +469,42 @@ PID 만 `kill`.
 
 ---
 
+### VM-AP-14 — CLI 구독 인증 만료로 한 달간 보고서 전면 실패, 아무도 모름 (2026-09-27 ~ 10-27 발생)
+
+**증상**: 봇 서비스는 `active (running)`, 인스턴스 1개, 메모리 여유 — 겉으로는 정상.
+그런데 9/28 아침 브리핑부터 **모든 보고서가 0건**. GitHub `reports/` 미러도 9/27 이
+마지막. `journalctl` 에 매일 `claude CLI failed after 1 attempt(s): exit=1: Failed to
+authenticate. API Error: 401 … "OAuth access token has expired. Re-authenticate to
+continue."`. 7/31 에 이은 **두 번째 같은 사고**.
+
+**원인**: 원인 자체는 §3 'CLI 구독 인증 만료 점검' 의 그것(구독 OAuth 만료)이다.
+문제는 *감지* 였다. 봇은 실패할 때마다 텔레그램에 `❌ 일일 브리핑 생성 실패:
+{str(e)[:200]}` 를 보냈지만, 내용이 200자에서 잘린 오류 원문(JSON)이라 *무엇을 해야
+하는지* 읽히지 않았다. 사전 점검도 없어 브리핑 시각이 되어서야 실패했다.
+
+**Fix (v8.7.1)**:
+- `src/tools/cli_auth.py:failure_message` — 실패 원인이 인증 만료면 원문 대신 **복구
+  명령**(`claude` → `/login` → `/exit`, 확인 `claude -p "ping"`)을 보낸다. 일일·장마감
+  브리핑, `/analyze`, 질문 답변, 장마감 소급 발행 5경로 공통. 다른 실패는 기존 문구 그대로.
+- `src/scheduler/cli_auth_watch.py` — 켜진 브리핑마다 **브리핑 60분 전**
+  (`CLI_AUTH_WATCH_LEAD_MIN`)에 `claude -p ping` 으로 점검, 만료면 구독자에게 먼저
+  경고. 다른 실패(타임아웃 등)는 오경보를 피해 로그만. 끄려면 `CLI_AUTH_WATCH=0`.
+- 회귀 `tests/test_cli_auth.py` (실로그 문자열 판별·문구 byte-equal·ping 파싱·점검 시각·
+  만료 시에만 경고·브리핑 실패 경로 배선).
+
+같은 날 함께 드러난 결함 — **osint 번들 전송 0건 (v8.4.0 이후 석 달)**. 같은 업로드
+코드가 agents_reviewer 쪽으로는 동작했으므로 코드가 아니라 토큰 권한 문제다
+(`GITHUB_OSINT_TOKEN` 미설정 → `GITHUB_MIRROR_TOKEN` 대체, 읽기는 되지만 쓰기 미확인).
+실패가 로그 한 줄로만 남아 무감지였다. v8.7.1 부터 실패 사유(`HTTP 403 …`)와 조치가
+번들 메시지(일일 브리핑은 링크 메시지)에 한 줄로 붙는다 (`FullAnalysisResult.osint_mirror_error`).
+진단 명령은 §3 'osint 번들 전송 점검'.
+
+**교훈**: graceful degrade 는 *보고서를 살리는* 장치이지 *실패를 숨기는* 장치가 아니다.
+실패 알림은 원문이 아니라 **조치** 를 담아야 하고, 반복되는 외부 의존(구독 인증)은
+실패 전에 점검한다.
+
+---
+
 ## §3 진단 명령어
 
 ### 봇 현재 상태 한눈에
@@ -488,7 +524,10 @@ grep '^VERSION = ' src/orchestrator.py
 
 봇은 Claude Code CLI 구독 플랜으로 돈다 (CLAUDE.md '운영 모드 SSOT'). CLI 의 OAuth
 토큰이 만료되면 **봇·텔레그램은 멀쩡한데 모든 보고서 생성만 실패** 한다 (LLM 호출이
-전부 401). 보고서가 연속 실패하면 가장 먼저 이걸 확인:
+전부 401). 보고서가 연속 실패하면 가장 먼저 이걸 확인 (2026-09-27 재발 — VM-AP-14).
+v8.7.1 부터는 봇이 브리핑 60분 전에 스스로 점검해 만료면 텔레그램으로 아래 복구
+명령을 먼저 보낸다. 실패 알림도 오류 원문 대신 같은 명령을 담는다
+(`src/tools/cli_auth.py:CLI_AUTH_FIX` — 이 절과 문구 정합 유지).
 
 ```bash
 # is_error:false + result 에 응답 텍스트면 정상. "OAuth access token has expired" 면 만료.
@@ -505,6 +544,38 @@ claude
 # 확인
 claude -p "ping" --output-format json
 ```
+
+### osint 번들 전송 점검 (v8.7.1 — VM-AP-14)
+
+번들 메시지에 `⚠️ osint 저장소 번들 전송 실패 (HTTP 403)` 같은 줄이 붙으면 토큰 권한
+문제다. 토큰 값은 출력하지 않고 종류·쓰기 권한만 본다. 쓰기 시험은 어디에도 연결되지
+않는 빈 데이터 조각(blob) 하나만 만든다 (커밋·파일 생성 없음).
+
+```bash
+cd ~/agents_reviewer && source venv/bin/activate
+python - <<'EOF'
+import json, urllib.request, urllib.error
+from src.config import get_config
+c = get_config()
+tok = c.github_osint_token or c.github_mirror_token
+repo = c.github_osint_repo
+h = {"Authorization": f"Bearer {tok}", "User-Agent": "diag"}
+with urllib.request.urlopen(urllib.request.Request(f"https://api.github.com/repos/{repo}", headers=h), timeout=15) as r:
+    print("토큰 종류:", "classic" if r.headers.get("X-OAuth-Scopes") is not None else "fine-grained", "/ scopes:", r.headers.get("X-OAuth-Scopes"))
+print("osint 전용 토큰:", "있음" if c.github_osint_token else "없음(미러 토큰으로 대체)")
+req = urllib.request.Request(f"https://api.github.com/repos/{repo}/git/blobs",
+    data=json.dumps({"content": "probe", "encoding": "utf-8"}).encode(),
+    headers={**h, "Content-Type": "application/json"}, method="POST")
+try:
+    with urllib.request.urlopen(req, timeout=15) as r:
+        print("쓰기 권한: 있음 (HTTP", r.status, ")")
+except urllib.error.HTTPError as e:
+    print("쓰기 권한: 없음 (HTTP", e.code, ")", e.read()[:200].decode(errors="replace"))
+EOF
+```
+
+쓰기 권한이 없으면 osint_generator 에 Contents 읽기/쓰기 권한을 가진 PAT 를 발급해
+`.env` 의 `GITHUB_OSINT_TOKEN=` 에 넣고 `sudo systemctl restart agents-reviewer.service`.
 
 ### 보고서 생성 진행 여부 (이전 bot-if-working 대체)
 

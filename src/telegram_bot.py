@@ -28,11 +28,15 @@ from src.models import ParentContext, WatchSignal
 from src.watchlist import WatchlistRegistry, run_monitor_loop
 from src.watchlist.monitor import format_telegram_alert
 from src.scheduler import (
+    AuthCheckSlot,
     BriefingSubscriberRegistry,
     MarketBriefSubscriberRegistry,
+    run_cli_auth_watch_loop,
     run_daily_briefing_loop,
     run_market_briefing_loop,
 )
+from src.tools.cli_auth import failure_message, is_cli_auth_error
+from src.tools.github_mirror import osint_mirror_warning
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +93,8 @@ class TelegramBot:
         self._briefing_task: asyncio.Task | None = None
         # v5.5.9: asyncio task handle for the market close briefing scheduler loop.
         self._market_brief_task: asyncio.Task | None = None
+        # v8.7.1: asyncio task handle for the Claude CLI auth pre-check loop.
+        self._cli_auth_task: asyncio.Task | None = None
         # Application reference for telegram message sending from monitor task.
         self._app: Application | None = None
         global _bot_start_time
@@ -973,12 +979,26 @@ class TelegramBot:
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, stderr = await proc.communicate()
+            out_text = stdout.decode().strip()
+            err_text = stderr.decode().strip()
 
-            if proc.returncode != 0:
-                await msg.edit_text(f"답변 실패: {stderr.decode()[:200]}")
+            # v8.7.1 — 인증 만료 오류는 stdout 으로 올 때가 있어 stderr 만 보면
+            # "답변 실패: " 빈 문구가 된다. 둘 다 보고, 만료면 복구 명령을 보낸다.
+            # stdout 판정은 CLI 오류 머리말로 시작할 때만 — 정상 답변 본문에 같은
+            # 단어가 들어간 경우를 오판하지 않도록.
+            cli_error_out = out_text.startswith(
+                ("Failed to authenticate", "Invalid API key", "API Error")
+            ) and is_cli_auth_error(out_text)
+            if proc.returncode != 0 or cli_error_out:
+                await msg.edit_text(
+                    failure_message("답변 실패", err_text or out_text or "unknown error")
+                )
                 return
 
-            answer = stdout.decode().strip().replace("**", "")
+            answer = out_text.replace("**", "")
+            if not answer:
+                await msg.edit_text("답변 실패: 빈 응답")
+                return
             if len(answer) > 4000:
                 answer = answer[:4000] + "..."
 
@@ -1107,6 +1127,10 @@ class TelegramBot:
                         f"\n🤝 AI 직접 열람용 (GitHub raw): "
                         f"{result.mirror_url.replace('.html', '.bundle.json')}"
                     )
+                # v8.7.1 — osint 저장소 전송이 실패했으면 사유와 조치를 붙인다.
+                _osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
+                if _osint_warn:
+                    bundle_cap += f"\n{_osint_warn}"
                 try:
                     if update is not None and update.message is not None:
                         with open(bundle_path, "rb") as bf:
@@ -1169,7 +1193,7 @@ class TelegramBot:
 
         except Exception as e:
             logger.exception("Analysis failed")
-            await send(f"❌ 분석 실패: {str(e)[:200]}")
+            await send(failure_message("❌ 분석 실패", e))
 
         finally:
             self._is_analyzing = False
@@ -1296,12 +1320,46 @@ class TelegramBot:
         )
         logger.info("[telegram_bot] Market close briefing scheduler task started")
 
+        # v8.7.1 — Claude CLI 인증 사전 점검 (VM-AP-14). 켜진 브리핑 시각 N분 전에
+        # ping 을 돌려 구독 OAuth 만료를 브리핑 실패 전에 알린다. CLI 모드 전용.
+        slots: list[AuthCheckSlot] = []
+        if self.config.daily_briefing_enabled:
+            slots.append(AuthCheckSlot(
+                label="일일 브리핑",
+                briefing_time=self.config.daily_briefing_time,
+                tz_name=self.config.daily_briefing_tz,
+            ))
+        if self.config.market_briefing_enabled:
+            slots.append(AuthCheckSlot(
+                label="장마감 브리핑",
+                briefing_time=self.config.market_briefing_time,
+                tz_name=self.config.market_briefing_tz,
+            ))
+        if self.config.use_cli_mode and self.config.cli_auth_watch_enabled and slots:
+            self._cli_auth_task = asyncio.create_task(
+                run_cli_auth_watch_loop(
+                    slots=slots,
+                    recipients_fn=self._briefing_recipients,
+                    send_text_fn=self._send_text_to_chat,
+                    lead_min=self.config.cli_auth_watch_lead_min,
+                ),
+                name="cli_auth_watch",
+            )
+            logger.info("[telegram_bot] CLI auth watch task started")
+
+    def _briefing_recipients(self) -> list[int]:
+        """일일·장마감 브리핑 구독 채팅 (CLI 인증 경고 수신자)."""
+        return [cid for cid, _mode in self.briefing_registry.list_all()] + [
+            cid for cid, _mode in self.market_brief_registry.list_all()
+        ]
+
     async def _on_app_post_shutdown(self, app: Application) -> None:
         """봇 종료 시 background task 정리. SQLite 데이터는 영구 보존."""
         for task_attr, task_label in (
             ("_monitor_task", "watchlist monitor"),
             ("_briefing_task", "daily briefing scheduler"),
             ("_market_brief_task", "market briefing scheduler"),
+            ("_cli_auth_task", "cli auth watch"),
         ):
             task = getattr(self, task_attr, None)
             if task is not None and not task.done():

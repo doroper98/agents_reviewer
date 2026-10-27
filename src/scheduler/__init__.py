@@ -6,8 +6,10 @@
 Public API:
 - ``BriefingSubscriberRegistry`` — SQLite-backed 구독 저장소 (``/briefing_on`` 명령으로 등록).
 - ``run_daily_briefing_loop()`` — 봇 시작 시 ``asyncio.create_task(...)`` 로 띄우는 background loop.
+- ``run_cli_auth_watch_loop()`` — v8.7.1, 브리핑 전 Claude CLI 인증 사전 점검 loop.
 """
 
+from src.scheduler.cli_auth_watch import AuthCheckSlot, run_cli_auth_watch_loop
 from src.scheduler.daily_briefing import run_daily_briefing_loop
 from src.scheduler.market_briefing import run_market_briefing_loop
 from src.scheduler.subscriptions import (
@@ -16,8 +18,10 @@ from src.scheduler.subscriptions import (
 )
 
 __all__ = [
+    "AuthCheckSlot",
     "BriefingSubscriberRegistry",
     "MarketBriefSubscriberRegistry",
+    "run_cli_auth_watch_loop",
     "run_daily_briefing_loop",
     "run_market_briefing_loop",
 ]

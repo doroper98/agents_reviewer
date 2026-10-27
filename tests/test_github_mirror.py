@@ -234,3 +234,60 @@ def test_push_files_disabled_returns_zero(tmp_path) -> None:
     b1.write_text("{}", encoding="utf-8")
     m = GitHubMirror.for_osint(_cfg())  # 토큰 없음 → disabled
     assert asyncio.run(m.push_files([str(b1)])) == 0
+
+
+# ─── v8.7.1 osint 전송 실패 사유 표면화 ──────────────────────────
+# v8.4.0 이후 석 달간 osint 저장소로 간 번들이 0건이었는데, 실패가 로그 한 줄로만
+# 남아 아무도 몰랐다. 실패 사유를 돌려받아 텔레그램이 알리게 한다.
+
+from src.tools.github_mirror import mirror_bundle_to_osint, osint_mirror_warning  # noqa: E402
+
+
+class _FakeErrResp(_FakeResp):
+    def __init__(self, status: int, body: str) -> None:
+        super().__init__(status)
+        self._body = body
+
+    async def text(self):
+        return self._body
+
+
+class _FakeDeniedSession(_FakeSession):
+    """PUT 이 403 (fine-grained PAT 에 쓰기 권한 없음) 으로 거부되는 세션."""
+
+    def put(self, url, **kw):
+        self.puts.append(url)
+        return _FakeErrResp(
+            403,
+            '{"message":"Resource not accessible by personal access token",'
+            '"documentation_url":"https://docs.github.com/rest"}',
+        )
+
+
+def test_osint_mirror_returns_reason_on_403(tmp_path) -> None:
+    b = tmp_path / "analysis_a.bundle.json"
+    b.write_text("{}", encoding="utf-8")
+    with patch("src.tools.github_mirror.aiohttp.ClientSession",
+               return_value=_FakeDeniedSession()):
+        err = asyncio.run(mirror_bundle_to_osint(_cfg(github_mirror_token="mtok"), str(b)))
+    assert err == "HTTP 403 Resource not accessible by personal access token"
+
+
+def test_osint_mirror_success_and_disabled_return_empty(tmp_path) -> None:
+    b = tmp_path / "analysis_a.bundle.json"
+    b.write_text("{}", encoding="utf-8")
+    with patch("src.tools.github_mirror.aiohttp.ClientSession", return_value=_FakeSession()):
+        assert asyncio.run(mirror_bundle_to_osint(_cfg(github_osint_token="ot"), str(b))) == ""
+    # 토큰 미설정 = 의도적으로 끈 상태 → 경고 대상 아님
+    assert asyncio.run(mirror_bundle_to_osint(_cfg(), str(b))) == ""
+
+
+def test_osint_mirror_warning_maps_status_to_action() -> None:
+    assert osint_mirror_warning("") == ""
+    w403 = osint_mirror_warning("HTTP 403 Resource not accessible by personal access token")
+    assert w403.startswith("⚠️ osint 저장소 번들 전송 실패 (HTTP 403)")
+    assert "GITHUB_OSINT_TOKEN" in w403 and "쓰기" in w403
+    assert "GITHUB_OSINT_REPO" in osint_mirror_warning("HTTP 404 Not Found")
+    assert "재발급" in osint_mirror_warning("HTTP 401 Bad credentials")
+    other = osint_mirror_warning("ClientConnectorError: cannot connect")
+    assert "ClientConnectorError" in other and "재확인" in other

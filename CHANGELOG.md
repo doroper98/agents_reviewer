@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.0
+last_synced_with: v8.7.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,45 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.7.1 — 로그인 만료·osint 전송 실패를 조치형으로 알림 (VM-AP-14)
+
+**사고(2026-09-27 ~ 10-27)** — Claude CLI 구독 로그인이 만료돼 9/28 아침부터 한 달간
+일일·장마감 브리핑이 전부 실패했다. 봇은 살아 있었고 매번 실패 알림도 보냈지만,
+알림 본문이 200자에서 잘린 오류 원문(JSON)이라 무엇을 해야 하는지 읽히지 않았다.
+7/31 에 이은 두 번째 같은 사고다.
+
+같은 점검에서 **osint 번들 자동 전송이 v8.4.0 도입 이후 한 번도 성공하지 못한 것**도
+드러났다. osint_generator 저장소의 모든 브랜치에 전송 커밋이 0건이다. 실패가 로그
+한 줄로만 남아 석 달 넘게 몰랐다.
+
+### 바뀐 것
+
+- **로그인 만료 알림이 복구 명령을 담는다.** 실패 원인이 인증 만료면 오류 원문 대신
+  `claude` → `/login` → `/exit` 와 확인 명령을 보낸다. 일일·장마감 브리핑, `/analyze`,
+  질문 답변, 장마감 소급 발행 5경로 공통 ([src/tools/cli_auth.py](src/tools/cli_auth.py)).
+  다른 실패의 알림 문구는 그대로다.
+- **브리핑 60분 전 사전 점검.** 켜진 브리핑마다 그 시각 60분 전에 `claude -p ping` 을
+  돌려, 만료됐으면 구독자에게 먼저 알린다. 브리핑이 실패하기 전에 고칠 시간이 생긴다
+  ([src/scheduler/cli_auth_watch.py](src/scheduler/cli_auth_watch.py)). 만료가 아닌
+  실패(타임아웃 등)는 오경보를 피해 로그만 남긴다. ping 은 중립 디렉터리에서 돌려
+  CLAUDE.md 자동 로드를 피한다. 설정 `CLI_AUTH_WATCH`(기본 1) · `CLI_AUTH_WATCH_LEAD_MIN`
+  (기본 60, 5~720 클램프). CLI 모드에서만 동작.
+- **osint 전송 실패 사유를 알린다.** 실패하면 번들 메시지(일일 브리핑은 링크 메시지)에
+  `⚠️ osint 저장소 번들 전송 실패 (HTTP 403): …` 한 줄과 고칠 `.env` 키가 붙는다.
+  `FullAnalysisResult.osint_mirror_error` 신설(additive),
+  `github_mirror.mirror_bundle_to_osint` · `osint_mirror_warning` 신설. 토큰을
+  설정하지 않아 *의도적으로 끈* 상태와 열화 보고서 스킵은 알리지 않는다.
+- **질문 답변 경로 보강.** 인증 오류가 stdout 으로 오면 `답변 실패: ` 빈 문구가 나가던
+  것을 고쳤다. 빈 응답도 명시적으로 알린다.
+
+### 운영
+
+- VM-AP-14 등록 + §3 'osint 번들 전송 점검' 진단 명령 추가
+  ([docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md)).
+- 회귀 `tests/test_cli_auth.py` 19종(실로그 판별·문구 byte-equal·ping 파싱·점검 시각·
+  만료 시에만 경고·브리핑 실패 배선) + `tests/test_github_mirror.py` 3종(403 사유 반환·
+  성공/비활성 무경고·상태별 조치 문구).
 
 ## v8.7.0 — 차트 유형 3종 신설 · 표현 옵션 3종 (CHART_REDESIGN_V8_6 Phase 5)
 

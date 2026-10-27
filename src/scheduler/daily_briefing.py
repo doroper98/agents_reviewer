@@ -23,6 +23,9 @@ from datetime import datetime, timedelta
 from typing import Awaitable, Callable, TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
+from src.tools.cli_auth import failure_message
+from src.tools.github_mirror import osint_mirror_warning
+
 if TYPE_CHECKING:
     from src.orchestrator import Orchestrator
     from src.scheduler.subscriptions import BriefingSubscriberRegistry
@@ -199,9 +202,10 @@ async def _run_one_briefing_cycle(
                 chat_id, e, exc_info=True,
             )
             try:
+                # v8.7.1 — 인증 만료면 원문 대신 복구 명령 (VM-AP-14).
                 await send_text_fn(
                     chat_id,
-                    f"❌ 일일 브리핑 ({run_date}) 생성 실패: {str(e)[:200]}",
+                    failure_message(f"❌ 일일 브리핑 ({run_date}) 생성 실패", e),
                 )
             except Exception:
                 pass
@@ -283,6 +287,9 @@ async def _briefing_for_chat(
     # Phase V6-7/b — 검수 바이라인 (검수 수행 시만).
     _verif = (result.composed_report.verification if result.composed_report else None) or {}
     _verif_line = f"\n🔎 {_verif['text']}" if _verif.get("text") else ""
+    # v8.7.1 — osint 저장소 번들 전송 실패 사유 (일일 브리핑은 번들 메시지가 없어 여기 붙임).
+    _osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
+    _osint_line = f"\n{_osint_warn}" if _osint_warn else ""
     # 보고서 본문 .md 링크(🤖 AI 전달용 Markdown / 🤝 GitHub raw .md)는 제거 —
     # HTML 보고서 링크만 유지 (사용자 요청).
     if result.report_url and result.report_url.startswith("http"):
@@ -290,7 +297,7 @@ async def _briefing_for_chat(
             chat_id,
             f"📊 일일 브리핑 ({run_date})\n\n"
             f"🔗 보고서 링크: {result.report_url}"
-            f"{_verif_line}",
+            f"{_verif_line}{_osint_line}",
         )
     elif result.report_path and os.path.isfile(result.report_path) and send_document_fn:
         await send_document_fn(

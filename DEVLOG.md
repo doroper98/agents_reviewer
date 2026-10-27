@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v5.5.4
+last_synced_with: v8.7.1
 ssot_for:
   - "개발 상세 로그 (append-only)"
   - "인프라 설치 가이드"
@@ -1293,3 +1293,25 @@ fix: `_call_cli(timeout_s)` + `asyncio.wait_for` (mode 별 fast 240/standard 360
 fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부터 `json.JSONDecoder().raw_decode` 로 **첫 완결 객체만** 파싱(뒤 extra 무시, 앞 prose 스킵). `_parse_response` 는 후보 3종(```json 펜스 / raw 전체 / 일반 펜스)을 순서대로 시도해 첫 검증 통과 ComposedReport 채택, 실패 시 raw head 200자 로깅. `re` import 제거(미사용). 회귀 테스트 2종 추가(trailing extra / leading prose), 기존 3종(json_block / bare_json[sections=[] 도 통과해야 함 → sections-비었음 가드 금지] / invalid) 보존.
 
 한계: "작은 JSON 파편 → 그 뒤 진짜 보고서" 순서면 raw_decode 가 파편만 잡아 validate 실패 → 다음 후보 → None 가능. 그러나 대부분의 "Extra data" 는 진짜 객체 *뒤* 꼬리 텍스트라 본 fix 로 해결. v5.5.9 재시도 + 본 파싱강건 + head 로깅 3중으로 confidence-0 fallback 확률 대폭 감소.
+
+## v8.7.1 — 로그인 만료 한 달 무감지 + osint 전송 0건 (VM-AP-14, 2026-10-27)
+
+사용자 "작동을 안하는 것 같다" 제보. 두 저장소 이력 대조로 두 결함 확인.
+
+- **보고서 0건 (9/28~10/27).** GitHub `reports/` 미러가 9/27 06:26 이 마지막. VM 진단:
+  서비스 active(9/3 기동)·인스턴스 1·메모리 여유, `claude -p ping` → `is_error:true`
+  `OAuth access token has expired`. journal 에 매일 브리핑 401 실패. 7/31 에 이은 재발.
+  `/login` 재인증으로 즉시 복구 (`is_error:false`, "pong").
+- **osint 번들 전송 0건 (v8.4.0 이후).** osint_generator 전 브랜치에 `mirror …` 커밋 0,
+  `json/` 은 7/12 백필 63건뿐. 같은 `_put_file` 경로가 agents_reviewer 로는 9/27 까지
+  동작 → 코드가 아니라 토큰. VM 점검: `GITHUB_OSINT_TOKEN` 미설정(미러 토큰 대체),
+  osint 저장소 GET 200 → 읽기는 됨. 쓰기 권한은 v8.7.1 배포 후 실제 보고서의 실패
+  사유(HTTP 상태)로 확정한다. 처음 404 추정은 GET 200 으로 기각.
+
+공통 원인은 *감지 실패*: 실패 알림이 200자 잘린 오류 JSON 이었고, osint 실패는 로그
+한 줄뿐. Fix — `src/tools/cli_auth.py`(만료 판별·복구 명령 문구·ping 점검),
+`src/scheduler/cli_auth_watch.py`(브리핑 60분 전 점검), `FullAnalysisResult.osint_mirror_error`
++ `github_mirror.mirror_bundle_to_osint`/`osint_mirror_warning`(실패 사유·조치 한 줄).
+회귀 `tests/test_cli_auth.py` + `tests/test_github_mirror.py` 추가분. 기존 실패 3건
+(`test_composed_section_guard` 2 · `test_narrative_composer::test_token_budget_composer_only_in_deep`)
+은 변경 전에도 실패 — 본 작업 무관.

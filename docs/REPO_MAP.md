@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.0
+last_synced_with: v8.7.1
 ssot_for:
   - "파일·디렉토리 설명 (저장소 지도)"
 depends_on:
@@ -84,7 +84,8 @@ src/
 │   ├── __init__.py
 │   ├── subscriptions.py              # BriefingSubscriberRegistry (SQLite CRUD + 실행 이력)
 │   ├── db_schema.sql                 # briefing_subscribers + briefing_runs 테이블
-│   └── daily_briefing.py             # run_daily_briefing_loop asyncio task (기본 06:00 KST)
+│   ├── daily_briefing.py             # run_daily_briefing_loop asyncio task (기본 06:00 KST)
+│   └── cli_auth_watch.py             # v8.7.1 — 브리핑 N분 전 Claude CLI 인증 사전 점검 (VM-AP-14)
 └── templates/
     ├── report.css          # ✅ Mono 2테마 (burgundy_mono + light_mono) SSOT. v3.5.0 부터 멀티컬러 폐기.
     ├── report.html         # [deprecated] six_act_theater 용

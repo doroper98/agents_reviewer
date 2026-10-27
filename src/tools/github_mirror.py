@@ -15,6 +15,8 @@ on the web 같은 *샌드박스 컨테이너*)는 사전 허용목록(egress all
 [Public API]
     GitHubMirror(config).enabled -> bool
     await GitHubMirror(config).mirror(filepaths) -> str   # raw HTML url 또는 ""
+    await mirror_bundle_to_osint(config, bundle_path) -> str   # 실패 사유 또는 ""
+    osint_mirror_warning(error) -> str                    # 텔레그램 경고 한 줄 또는 ""
 
 [Graceful degradation]
 - 토큰/repo 미설정 → ``enabled`` False, 호출부가 skip (Cloudflare 흐름 불변)
@@ -38,6 +40,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import glob
+import json
 import logging
 import os
 import re
@@ -174,6 +177,10 @@ class GitHubMirror:
         # repo 안에서 보고서를 둘 경로 prefix (예: "reports"). 빈 값이면 repo 루트.
         _prefix = prefix if prefix is not None else getattr(config, "github_mirror_path", "") or ""
         self._prefix = (_prefix or "").strip().strip("/")
+        # v8.7.1 — 마지막 업로드 실패 사유 ("HTTP 403 ..." 등). 성공만 있었으면 "".
+        # graceful degrade 가 실패를 로그 한 줄로 삼켜, osint 번들 전송이 v8.4.0
+        # 도입 후 석 달간 한 건도 안 됐는데 아무도 몰랐다 — 호출부가 사유를 알리게 한다.
+        self.last_error = ""
 
     @classmethod
     def for_osint(cls, config: "Config") -> "GitHubMirror":
@@ -270,6 +277,7 @@ class GitHubMirror:
                         ok_count += 1
         except Exception as e:  # 네트워크 차단·예외 → 보고서 진행 우선
             logger.warning("[github_mirror] push_files failed: %s", e)
+            self.last_error = f"{type(e).__name__}: {e}"[:200]
             return ok_count
         return ok_count
 
@@ -300,9 +308,11 @@ class GitHubMirror:
                 logger.warning(
                     "[github_mirror] PUT %s -> HTTP %s: %s", path, resp.status, detail
                 )
+                self.last_error = f"HTTP {resp.status} {_api_message(detail)}".strip()
                 return False
         except Exception as e:
             logger.warning("[github_mirror] PUT %s failed: %s", path, e)
+            self.last_error = f"{type(e).__name__}: {e}"[:200]
             return False
 
     async def _get_sha(self, session: aiohttp.ClientSession, contents_url: str) -> str:
@@ -323,3 +333,57 @@ class GitHubMirror:
 async def mirror_report_files(config: "Config", filepaths: list[str]) -> str:
     """편의 함수 — GitHubMirror 를 생성해 미러. raw HTML url 또는 ""."""
     return await GitHubMirror(config).mirror(filepaths)
+
+
+def _api_message(detail: str) -> str:
+    """GitHub 오류 응답 본문에서 ``message`` 만 추린다 (JSON 아니면 앞부분)."""
+    try:
+        data = json.loads(detail)
+        if isinstance(data, dict) and data.get("message"):
+            return str(data["message"])[:120]
+    except (json.JSONDecodeError, ValueError):
+        pass
+    return detail.replace("\n", " ")[:120]
+
+
+async def mirror_bundle_to_osint(config: "Config", bundle_filepath: str) -> str:
+    """번들을 osint_generator 저장소로 push. 실패 사유를 돌려준다 (v8.7.1).
+
+    성공이거나 비활성(토큰/repo 미설정 — 의도적으로 끈 상태)이면 "". 실패면
+    ``"HTTP 403 Resource not accessible ..."`` 같은 사유. 호출부(report_synthesizer)
+    가 ``FullAnalysisResult.osint_mirror_error`` 에 담아 텔레그램에 알린다.
+    """
+    m = GitHubMirror.for_osint(config)
+    if not m.enabled:
+        return ""
+    n_ok = await m.push_files([bundle_filepath])
+    if n_ok:
+        logger.info(
+            "[github_mirror] osint bundle mirrored: %s -> %s/%s",
+            os.path.basename(bundle_filepath), m._repo, m.path_prefix,
+        )
+        return ""
+    err = m.last_error or "업로드 실패 (원인 미상)"
+    logger.warning("[github_mirror] osint bundle mirror FAILED: %s", err)
+    return err
+
+
+# HTTP 상태 → 조치. 토큰 이름은 .env 키 그대로 적는다 (그 자리에서 고칠 수 있게).
+_OSINT_HINTS: dict[str, str] = {
+    "401": "토큰 만료·무효 → GITHUB_OSINT_TOKEN 재발급",
+    "403": "토큰에 osint_generator 쓰기 권한 없음 → GITHUB_OSINT_TOKEN 을 Contents 쓰기 권한으로 발급",
+    "404": "토큰이 osint_generator 에 접근 못 함 → GITHUB_OSINT_TOKEN 권한·GITHUB_OSINT_REPO 확인",
+    "409": "브랜치 충돌 → GITHUB_OSINT_BRANCH 확인",
+    "422": "브랜치·경로 거부 → GITHUB_OSINT_BRANCH·GITHUB_OSINT_PATH 확인",
+}
+
+
+def osint_mirror_warning(error: str) -> str:
+    """osint 번들 전송 실패를 텔레그램 한 줄로. 실패가 없으면 ""."""
+    if not error:
+        return ""
+    m = re.match(r"HTTP (\d{3})", error)
+    code = m.group(1) if m else ""
+    hint = _OSINT_HINTS.get(code, "네트워크·일시 오류일 수 있음 → 다음 보고서에서 재확인")
+    label = f"HTTP {code}" if code else error[:60]
+    return f"⚠️ osint 저장소 번들 전송 실패 ({label}): {hint}"

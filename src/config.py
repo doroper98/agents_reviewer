@@ -300,6 +300,20 @@ class Config(BaseSettings):
         ),
     )
 
+    # v8.7.1 — Claude CLI 인증 사전 점검 (src/scheduler/cli_auth_watch.py, VM-AP-14).
+    # 켜진 브리핑마다 ``브리핑 시각 - cli_auth_watch_lead_min`` 에 ``claude -p ping``
+    # 을 돌려, 구독 OAuth 가 만료됐으면 구독자에게 복구 명령을 먼저 보낸다
+    # (2026-09-27 부터 한 달간 브리핑 전면 실패를 아무도 몰랐던 사고). CLI 모드에서만
+    # 동작. 끄려면 CLI_AUTH_WATCH=0. lead 는 5~720분으로 클램프.
+    cli_auth_watch_enabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("CLI_AUTH_WATCH", "cli_auth_watch_enabled"),
+    )
+    cli_auth_watch_lead_min: int = Field(
+        default=60,
+        validation_alias=AliasChoices("CLI_AUTH_WATCH_LEAD_MIN", "cli_auth_watch_lead_min"),
+    )
+
     # === V6 Phase V6-1 — Codex 외부 critic CLI 통합 (Tier 0 spike) ===
     # REFACTOR_V6_PLAN.md §3 Phase V6-1. codex CLI (ChatGPT 구독) 를 headless 로
     # 호출해 ComposedReport 를 사실 검수하고 FactVerdict 를 받는 경로의 마스터 스위치.
