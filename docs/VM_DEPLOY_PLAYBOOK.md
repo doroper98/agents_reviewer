@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.7.4
+last_synced_with: v8.7.5
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -100,10 +100,11 @@ VM (Oracle Cloud Ubuntu) 에서 봇을 재배포하고 운영할 때 **유일한
   fi
   echo "✓ Claude CLI OK ($MODEL)"
   # Codex 는 없어도 보고서가 나간다(검수만 건너뜀) — 중단하지 않고 상태만 보여 준다.
-  # 'Logged in' 표시만으론 부족하다(VM-AP-16) — 실제로 한 번 물어본다.
-  CX=$(cd /tmp && echo "Reply with the single word pong." | timeout 90 codex exec --skip-git-repo-check --sandbox read-only 2>&1)
+  # 'Logged in' 표시만으론 부족하다(VM-AP-16) — 봇이 쓸 모델로 실제로 한 번 물어본다.
+  CXM=$(venv/bin/python -c 'from src.config import Config; print(Config().codex_model)')
+  CX=$(cd /tmp && echo "Reply with the single word pong." | timeout 90 codex exec --skip-git-repo-check --sandbox read-only -m "$CXM" 2>&1)
   if echo "$CX" | grep -qiE '^pong[.!]?$'; then
-    echo "✓ codex OK ($(codex --version 2>&1))"
+    echo "✓ codex OK ($CXM · $(codex --version 2>&1))"
   else
     CXE=$(echo "$CX" | grep '^ERROR' | tail -1); [ -z "$CXE" ] && CXE=$(echo "$CX" | tail -1)
     echo "⚠️ codex 검수 불가 (보고서는 나가고 검수만 건너뜀): $(echo "$CXE" | head -c 300)"
@@ -684,11 +685,13 @@ Yahoo 폴백). 로그인이 안 되면 지수만 Yahoo 로 내려가고 보고�
 
 ```bash
 journalctl -u agents-reviewer.service --since "3 days ago" --no-pager | grep -E 'codex_critic' | tail -20
-cd /tmp && echo "Reply with the single word pong." | timeout 120 codex exec --skip-git-repo-check --sandbox read-only 2>&1 | grep -E '^ERROR|^pong' | tail -3; codex --version; cd ~
+cd /tmp && echo "Reply with the single word pong." | timeout 120 codex exec --skip-git-repo-check --sandbox read-only -m gpt-6-astra 2>&1 | grep -E '^ERROR|^pong' | tail -3; codex --version; cd ~
 ```
 
 `codex login status` 가 `Logged in` 이어도 검수는 실패할 수 있다(VM-AP-16). 위 두 번째 줄처럼
-실제로 한 번 물어봐야 확실하다.
+실제로 한 번 물어봐야 확실하다. 검수 모델은 v8.7.5 부터 `gpt-6-astra`(SSOT `src/config.py:CODEX_MODEL_DEFAULT`,
+codex-cli 0.153.1 이상). 계정에서 이 모델이 안 열리면 `model_unsupported` 로 건너뛴다 — 그땐 `.env` 에
+`V6_CODEX_MODEL=<쓸 수 있는 모델>` 을 넣고 재시작한다.
 
 | 로그 사유 | 뜻 | 조치 |
 |---|---|---|

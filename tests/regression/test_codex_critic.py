@@ -356,6 +356,37 @@ def test_build_cmd_respects_config() -> None:
     assert cmd == ["/usr/bin/codex", "exec", "--json", "--cd", "/tmp", "-m", "gpt-5"]
 
 
+def test_default_codex_model_is_gpt6_astra(monkeypatch) -> None:
+    # v8.7.5 — 검수 모델 GPT-6 Astra (사용자 지시). 빈 V6_CODEX_MODEL 은 기본값을 덮지 않는다
+    # (.env.example 의 `V6_CODEX_MODEL=` 빈 줄을 그대로 복사한 .env 대비).
+    monkeypatch.setenv("V6_CODEX_MODEL", "")
+    cfg = _make_config(codex_subcommand="exec", codex_extra_args="")
+    assert cfg.codex_model == "gpt-6-astra"
+    assert CodexCritic(cfg)._build_cmd("/usr/bin/codex")[-2:] == ["-m", "gpt-6-astra"]
+
+
+def test_byline_model_read_from_stderr_banner(tmp_path) -> None:
+    # 새 codex CLI 는 배너("model: …")를 stderr 로 낸다. 바이라인이 그 실측값을 써야 한다.
+    import os
+    import stat
+    import sys
+
+    fake = tmp_path / "codex"
+    fake.write_text(
+        "#!" + sys.executable + "\n"
+        "import sys\n"
+        "sys.stdin.read()\n"
+        "out = sys.argv[sys.argv.index('-o') + 1]\n"
+        "open(out, 'w').write(" + repr(_VALID_VERDICT) + ")\n"
+        "sys.stderr.write('--------\\nmodel: gpt-6-astra\\n--------\\n')\n"
+    )
+    fake.chmod(fake.stat().st_mode | stat.S_IXUSR)
+    cfg = _make_config(codex_bin=str(fake), codex_extra_args="")
+    v = _run(CodexCritic(cfg).critique(_make_report(), _make_context()))
+    assert not v.skipped
+    assert v.model_label == "OpenAI Codex (gpt-6-astra)"
+
+
 # --------------------------------------------------------------------------
 # v8.2.0 — 르포(reportage) 모드 마커 wire-up
 # --------------------------------------------------------------------------

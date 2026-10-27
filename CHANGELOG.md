@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.4
+last_synced_with: v8.7.5
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,24 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.7.5 — 외부 사실 검수(Codex) 모델 GPT-6 Astra 교체
+
+사용자 요청(2026-10-27) — Codex 검수 모델도 최신으로. 그전엔 모델을 지정하지 않아 CLI 기본값을
+따랐고, 낡은 CLI 의 기본값(gpt-5.5)이 계정에서 막히며 검수가 전부 건너뛰어졌다(VM-AP-16).
+
+- **모델 명시** — `Config.codex_model` 기본값 `""`(CLI 기본) → **`gpt-6-astra`**. SSOT 는
+  `src/config.py:CODEX_MODEL_DEFAULT` 한 곳. codex 호출에 `-m gpt-6-astra` 가 붙는다.
+  codex-cli 0.153.1 이상 필요(VM 은 0.164.0 확인).
+- **빈 설정 덮어쓰기 차단** — `.env.example` 의 `V6_CODEX_MODEL=` 빈 줄을 그대로 복사한 `.env`
+  에서는 빈 문자열이 기본값을 덮어 모델 교체가 반영되지 않는다. 빈 값은 '미설정' 으로 보고
+  기본값을 쓴다(`_codex_model_default`). 다른 모델을 쓰려면 값을 넣는다.
+- **바이라인 모델명** — 새 CLI 는 배너(`model: …`)를 stderr 로 낸다. stdout 다음 stderr 에서도
+  읽어 바이라인이 `OpenAI Codex (gpt-6-astra)` 로 나온다.
+- **재배포 블록 Stage 3.6** — codex 점검이 봇과 같은 모델(`-m`)로 묻는다. 계정에서 안 열리는 모델이면
+  여기서 바로 드러난다.
+- 회귀 `tests/regression/test_codex_critic.py` +2 (빈 env 에서도 기본 모델·`-m` 부착 / 가짜 codex
+  실행 파일로 stderr 배너 → 바이라인).
 
 ## v8.7.4 — Codex 실패 원인 오분류 수정 (VM-AP-16)
 
