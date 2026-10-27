@@ -1353,3 +1353,10 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
 - 오분류 경위: stderr 전체(프롬프트 echo 9만 자 + 모델 목록 추적 로그)에서 키워드 매칭.
   로그는 앞 300자라 원인 불가시. 수정 — 최종 `ERROR: {json}` 줄 우선 분류, echo·추적 줄 제거,
   로그는 최종 오류 줄, 사유 `model_unsupported` 신설. 회귀 4종은 실출력 재현.
+
+## v8.7.5 — Codex 검수 모델 GPT-6 Astra (2026-10-27)
+
+- 사용자 요청. 모델 ID 는 `gpt-6-astra`(별칭 `astra` 는 CLI 가 받아도 서버가 400 — openai/codex#46410),
+  codex-cli 0.153.1+ 필요. VM 은 `sudo npm install -g @openai/codex@latest` 로 0.164.0.
+- `Config.codex_model` 기본값을 명시하고, 빈 `V6_CODEX_MODEL=` 이 기본값을 덮는 함정을 validator 로 차단.
+  새 CLI 의 stderr 배너에서 바이라인 모델명을 읽도록 보강. 계정 접근은 VM 재배포 Stage 3.6 이 실측한다.

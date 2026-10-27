@@ -7,6 +7,9 @@ import os
 from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings
 
+# 외부 사실 검수(Codex CLI) 기본 모델 — v8.7.5. 바꿀 땐 이 한 곳만.
+CODEX_MODEL_DEFAULT = "gpt-6-astra"
+
 
 class Config(BaseSettings):
     """Application configuration loaded from environment variables."""
@@ -341,8 +344,10 @@ class Config(BaseSettings):
         default="--skip-git-repo-check --sandbox read-only",
         validation_alias=AliasChoices("V6_CODEX_EXTRA_ARGS", "codex_extra_args"),
     )
+    # v8.7.5 — 검수 모델 GPT-6 Astra (사용자 지시 2026-10-27). codex-cli 0.153.1 이상 필요.
+    # .env 에 `V6_CODEX_MODEL=` 처럼 빈 값만 남아 있으면 기본값을 쓴다(`_codex_model_default`).
     codex_model: str = Field(
-        default="",
+        default=CODEX_MODEL_DEFAULT,
         validation_alias=AliasChoices("V6_CODEX_MODEL", "codex_model"),
     )
     codex_timeout_s: int = Field(
@@ -492,6 +497,17 @@ class Config(BaseSettings):
         if raw.strip():
             return [int(x.strip()) for x in raw.split(",") if x.strip()]
         return []
+
+    @model_validator(mode="after")
+    def _codex_model_default(self) -> "Config":
+        """빈 V6_CODEX_MODEL 은 '미설정' 으로 본다 (v8.7.5).
+
+        .env.example 이 `V6_CODEX_MODEL=` 빈 줄을 담고 있어, 그대로 복사한 .env 에서는
+        빈 문자열이 기본값을 덮어 CLI 기본 모델로 돌아간다. 모델을 바꿔도 반영되지 않는
+        덮어쓰기 함정이라 여기서 막는다.
+        """
+        self.codex_model = (self.codex_model or "").strip() or CODEX_MODEL_DEFAULT
+        return self
 
     @model_validator(mode="after")
     def _select_mode(self) -> "Config":

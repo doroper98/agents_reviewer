@@ -461,13 +461,16 @@ class CodexCritic:
             elapsed_ms = int((time.time() - start) * 1000)
             # 최종 메시지는 -o 파일에서 (깨끗). 비면 raw stdout 으로 폴백.
             raw_stdout = stdout_b.decode("utf-8", "replace")
-            # codex 배너의 "model: gpt-5.5" 실측 (바이라인 버전, Phase V6-7).
-            m = re.search(r"(?mi)^\s*model:\s*(\S+)", raw_stdout)
+            stderr = stderr_b.decode("utf-8", "replace").strip()
+            # codex 배너의 "model: gpt-6-astra" 실측 (바이라인 버전, Phase V6-7).
+            # 새 CLI 는 배너를 stderr 로 낸다(v8.7.5) — stdout 다음 stderr 순으로 본다.
+            m = re.search(r"(?mi)^\s*model:\s*(\S+)", raw_stdout) or re.search(
+                r"(?mi)^\s*model:\s*(\S+)", stderr,
+            )
             if m:
                 self._last_codex_model = m.group(1).strip()
             message = self._read_text(msg_path)
             stdout = message or raw_stdout.strip()
-            stderr = stderr_b.decode("utf-8", "replace").strip()
             return stdout, stderr, proc.returncode or 0, elapsed_ms
         finally:
             with contextlib.suppress(OSError):
