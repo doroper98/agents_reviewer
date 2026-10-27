@@ -371,7 +371,7 @@ async def mirror_bundle_to_osint(config: "Config", bundle_filepath: str) -> str:
 # HTTP 상태 → 조치. 토큰 이름은 .env 키 그대로 적는다 (그 자리에서 고칠 수 있게).
 _OSINT_HINTS: dict[str, str] = {
     "401": "토큰 만료·무효 → GITHUB_OSINT_TOKEN 재발급",
-    "403": "토큰에 osint_generator 쓰기 권한 없음 → GITHUB_OSINT_TOKEN 을 Contents 쓰기 권한으로 발급",
+    "403": "토큰에 osint_generator 쓰기 권한 없음 → PAT 저장소 목록에 osint_generator 추가(Contents 쓰기) 또는 GITHUB_OSINT_TOKEN 발급",
     "404": "토큰이 osint_generator 에 접근 못 함 → GITHUB_OSINT_TOKEN 권한·GITHUB_OSINT_REPO 확인",
     "409": "브랜치 충돌 → GITHUB_OSINT_BRANCH 확인",
     "422": "브랜치·경로 거부 → GITHUB_OSINT_BRANCH·GITHUB_OSINT_PATH 확인",

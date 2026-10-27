@@ -1305,8 +1305,13 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
 - **osint 번들 전송 0건 (v8.4.0 이후).** osint_generator 전 브랜치에 `mirror …` 커밋 0,
   `json/` 은 7/12 백필 63건뿐. 같은 `_put_file` 경로가 agents_reviewer 로는 9/27 까지
   동작 → 코드가 아니라 토큰. VM 점검: `GITHUB_OSINT_TOKEN` 미설정(미러 토큰 대체),
-  osint 저장소 GET 200 → 읽기는 됨. 쓰기 권한은 v8.7.1 배포 후 실제 보고서의 실패
-  사유(HTTP 상태)로 확정한다. 처음 404 추정은 GET 200 으로 기각.
+  소급 발행(10/26분) 로그에서 `PUT json/… -> HTTP 403 Resource not accessible by personal
+  access token` 으로 확정 — 미러 PAT 는 agents_reviewer 전용 fine-grained 토큰이다.
+  진단 중 osint GET 200 을 "읽기 권한 있음"으로 봤으나, osint_generator 는 공개 저장소라
+  GET 200 은 권한과 무관했다(오독). 쓰기 권한은 쓰기로만 확인한다.
+- **KRX 비밀번호 만료.** 같은 소급 발행에서 pykrx 로그인 `CD010`(비밀번호 변경 필요) →
+  선물·옵션 그릭·시장 폭 0건(`breadth=0 deriv=0`). 봇 로그는 `[krx] 로그인 실패 —
+  자격증명 확인` 이라 원인을 오도한다. 사용자 비밀번호 변경 대기. 경고 보강은 별건.
 
 공통 원인은 *감지 실패*: 실패 알림이 200자 잘린 오류 JSON 이었고, osint 실패는 로그
 한 줄뿐. Fix — `src/tools/cli_auth.py`(만료 판별·복구 명령 문구·ping 점검),

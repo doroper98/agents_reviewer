@@ -68,9 +68,11 @@ class Config(BaseSettings):
     # v8.4.0 — osint_generator 저장소로 번들(.bundle.json) 직접 미러. 영상 파이프라인
     # (doroper98/osint_generator) 이 보고서마다 생성되는 번들을 자기 repo 의 ``json/``
     # 폴더에서 바로 집어갈 수 있게 한다. github raw mirror 와 독립된 두 번째 미러
-    # 타깃 — 대상 repo 가 *private* 이라 별도 토큰이 필요하다 (private repo Contents
-    # read/write 권한 PAT). 토큰 미설정 시 ``github_mirror_token`` 로 폴백(같은 PAT 가
-    # 양쪽 접근 권한을 가지면 재사용). 토큰·repo 둘 다 없으면 graceful skip — 기존
+    # 타깃 — 대상 repo 의 Contents *쓰기* 권한이 있는 PAT 가 필요하다. 토큰 미설정 시
+    # ``github_mirror_token`` 로 폴백(같은 PAT 가 양쪽 저장소에 쓰기 권한을 가질 때만
+    # 동작). v8.7.1 — osint_generator 는 공개 저장소라 GET 200 은 권한의 증거가 아니다.
+    # agents_reviewer 전용 fine-grained PAT 로 폴백되면 쓰기가 403 으로 거부된다
+    # (v8.4.0 이후 전송 0건의 실제 원인, VM-AP-14). 토큰·repo 둘 다 없으면 graceful skip — 기존
     # 흐름 byte-equal. *degraded(생성 실패/열화) 보고서는 push 하지 않는다* (호출부
     # 게이트). .env 에만 보관, git 커밋 금지.
     github_osint_token: str = Field(

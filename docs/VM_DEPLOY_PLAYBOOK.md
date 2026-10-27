@@ -493,8 +493,12 @@ continue."`. 7/31 에 이은 **두 번째 같은 사고**.
   만료 시에만 경고·브리핑 실패 경로 배선).
 
 같은 날 함께 드러난 결함 — **osint 번들 전송 0건 (v8.4.0 이후 석 달)**. 같은 업로드
-코드가 agents_reviewer 쪽으로는 동작했으므로 코드가 아니라 토큰 권한 문제다
-(`GITHUB_OSINT_TOKEN` 미설정 → `GITHUB_MIRROR_TOKEN` 대체, 읽기는 되지만 쓰기 미확인).
+코드가 agents_reviewer 쪽으로는 동작했으므로 코드가 아니라 토큰 권한 문제다.
+`GITHUB_OSINT_TOKEN` 미설정 → `GITHUB_MIRROR_TOKEN`(agents_reviewer 전용 fine-grained
+PAT) 대체 → osint 쓰기 `HTTP 403 Resource not accessible by personal access token`
+(2026-10-27 소급 발행 로그로 확정). 진단 중 GET 200 을 "읽기 권한 있음"으로 오독했는데,
+osint_generator 는 **공개 저장소** 라 GET 200 은 권한과 무관하다 — 쓰기 권한은 쓰기로만
+확인한다 (아래 §3 의 blob 시험).
 실패가 로그 한 줄로만 남아 무감지였다. v8.7.1 부터 실패 사유(`HTTP 403 …`)와 조치가
 번들 메시지(일일 브리핑은 링크 메시지)에 한 줄로 붙는다 (`FullAnalysisResult.osint_mirror_error`).
 진단 명령은 §3 'osint 번들 전송 점검'.
@@ -576,6 +580,9 @@ EOF
 
 쓰기 권한이 없으면 osint_generator 에 Contents 읽기/쓰기 권한을 가진 PAT 를 발급해
 `.env` 의 `GITHUB_OSINT_TOKEN=` 에 넣고 `sudo systemctl restart agents-reviewer.service`.
+기존 미러 PAT 가 fine-grained 면 새로 발급하는 대신 GitHub → Settings → Developer
+settings → Fine-grained tokens → 해당 토큰 → Edit 에서 저장소 목록에 osint_generator 를
+추가해도 된다 (토큰 값이 그대로라 `.env`·재시작 불필요).
 
 ### 보고서 생성 진행 여부 (이전 bot-if-working 대체)
 
