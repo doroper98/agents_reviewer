@@ -20,7 +20,7 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 
 ---
 
-## v8.7.1 — 로그인 만료·osint 전송 실패를 조치형으로 알림 (VM-AP-14)
+## v8.7.1 — 로그인 만료·osint 전송·KRX 비밀번호 만료를 조치형으로 알림 (VM-AP-14·15)
 
 **사고(2026-09-27 ~ 10-27)** — Claude CLI 구독 로그인이 만료돼 9/28 아침부터 한 달간
 일일·장마감 브리핑이 전부 실패했다. 봇은 살아 있었고 매번 실패 알림도 보냈지만,
@@ -50,6 +50,14 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
   설정하지 않아 *의도적으로 끈* 상태와 열화 보고서 스킵은 알리지 않는다.
 - **질문 답변 경로 보강.** 인증 오류가 stdout 으로 오면 `답변 실패: ` 빈 문구가 나가던
   것을 고쳤다. 빈 응답도 명시적으로 알린다.
+- **KRX 비밀번호 만료를 구분해 알린다 (VM-AP-15).** KRX 가 비밀번호 변경 주기 만료
+  (오류코드 CD010)로 로그인을 거부하면, pykrx 는 원인을 print 만 하고 봇 로그엔
+  "자격증명 확인" 만 남았다. 선물·옵션·시장 폭이 빈 채로 장마감 브리핑이 나갔다.
+  이제 pykrx 출력을 잡아 원인을 분류하고(`krx_client.classify_login_output`),
+  장마감 브리핑 메시지에 `⚠️ 선물·옵션·시장 폭 데이터 빠짐 — KRX 비밀번호 변경 필요 …`
+  한 줄과 조치를 붙인다(소급 발행 포함). 로그인은 락으로 직렬화하고 실패 후 10분간
+  재시도하지 않는다 — 한 보고서 안에서 여러 스레드가 같은 틀린 비밀번호로 동시에
+  로그인해 계정이 잠기는 것을 막는다. 자격증명을 비워 둔 상태(의도적으로 끔)는 알리지 않는다.
 
 ### 운영
 
@@ -57,7 +65,10 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
   ([docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md)).
 - 회귀 `tests/test_cli_auth.py` 19종(실로그 판별·문구 byte-equal·ping 파싱·점검 시각·
   만료 시에만 경고·브리핑 실패 배선) + `tests/test_github_mirror.py` 3종(403 사유 반환·
-  성공/비활성 무경고·상태별 조치 문구).
+  성공/비활성 무경고·상태별 조치 문구) + `tests/test_krx_login.py` 8종(CD010 실출력 분류·
+  stdout 누수 없음·쿨다운·동시 호출 1회 로그인·성공 시 해제·미설정 무경고·POST 오류 문구·
+  브리핑 문구).
+- VM-AP-15 등록 ([docs/VM_DEPLOY_PLAYBOOK.md](docs/VM_DEPLOY_PLAYBOOK.md)).
 
 ## v8.7.0 — 차트 유형 3종 신설 · 표현 옵션 3종 (CHART_REDESIGN_V8_6 Phase 5)
 

@@ -510,6 +510,27 @@ osint_generator 는 **공개 저장소** 라 GET 200 은 권한과 무관하다 
 
 ---
 
+### VM-AP-15 — KRX 비밀번호 만료(CD010)를 "자격증명 확인"으로 오인, 시장 내부 데이터 무경고 누락 (2026-10-27 발견)
+
+**증상**: 장마감 브리핑이 정상 발행되는데 선물·옵션 그릭과 시장 폭이 비어 있다
+(`브리핑 차트 주입: breadth=0 deriv=0`). 실행 화면에 pykrx 의 `⚠️ KRX 비밀번호 변경이
+필요합니다. 오류 메시지: 패스워드 변경 필요` 가 여러 번 찍히고, 봇 로그에는
+`[krx] 로그인 실패 — 자격증명 확인(KRX_ID/KRX_PW).` 만 남는다.
+
+**원인**: KRX 계정의 비밀번호 변경 주기가 지나 로그인 API 가 `CD010` 을 돌려준다.
+pykrx 1.2.x 는 이 원인을 **print 로만** 알리고 `None` 을 돌려주므로, 봇은 원인을 모른 채
+"자격증명 확인" 이라는 틀린 문구를 남겼다. 보고서는 그 섹션만 빈 채로 나가 무감지였다.
+또 한 보고서 안의 여러 fetch 스레드가 각자 로그인을 시도해, 같은 실패 로그인이 동시에
+여러 번 나갔다 — 틀린 비밀번호 반복 로그인은 계정 잠금 위험이다.
+
+**Fix (v8.7.1)**: `src/tools/krx_client.py` — pykrx 출력을 잡아 원인 분류
+(`password_change_required` / `login_failed`), 로그인을 락으로 직렬화, 실패 후 10분
+쿨다운(`LOGIN_FAIL_COOLDOWN_S`). `login_problem()` 의 조치 문구가 장마감 브리핑 메시지·
+소급 발행 송신·CLI 출력에 한 줄로 붙는다. 자격증명 미설정(의도적으로 끔)은 알리지 않는다.
+회귀 `tests/test_krx_login.py`. 진단은 §3 'KRX 로그인 점검'.
+
+---
+
 ## §3 진단 명령어
 
 ### 봇 현재 상태 한눈에
@@ -584,6 +605,19 @@ EOF
 기존 미러 PAT 가 fine-grained 면 새로 발급하는 대신 GitHub → Settings → Developer
 settings → Fine-grained tokens → 해당 토큰 → Edit 에서 저장소 목록에 osint_generator 를
 추가해도 된다 (토큰 값이 그대로라 `.env`·재시작 불필요).
+
+### KRX 로그인 점검 (v8.7.1 — VM-AP-15)
+
+장마감 브리핑에 `⚠️ 선물·옵션·시장 폭 데이터 빠짐 — KRX …` 가 붙거나 로그에
+`breadth=0 deriv=0` 이 보이면 확인한다. `KRX 로그인 완료.` 가 나오면 정상.
+
+```bash
+cd ~/agents_reviewer && source venv/bin/activate && python -m src.tools.breadth_fetcher 2>&1 | grep -E 'KRX|하락|warn|krx' | head
+```
+
+`비밀번호 변경이 필요` 가 나오면 data.krx.co.kr 에서 비밀번호를 바꾸고 `.env` 의 `KRX_PW`
+를 갱신한 뒤 `sudo systemctl restart agents-reviewer.service`. 특수문자가 있으면
+`KRX_PW='새비밀번호'` 처럼 작은따옴표로 감싼다.
 
 ### 보고서 생성 진행 여부 (이전 bot-if-working 대체)
 

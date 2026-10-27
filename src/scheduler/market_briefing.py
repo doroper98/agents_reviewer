@@ -22,6 +22,7 @@ from zoneinfo import ZoneInfo
 
 from src.tools.cli_auth import failure_message, is_cli_auth_error
 from src.tools.github_mirror import osint_mirror_warning
+from src.tools.krx_client import login_problem as krx_login_problem
 
 if TYPE_CHECKING:
     from src.orchestrator import Orchestrator
@@ -307,6 +308,12 @@ async def _run_one_market_cycle(
     )
 
 
+def _krx_warning_line() -> str:
+    """v8.7.1 (VM-AP-15) — KRX 로그인이 막혀 시장 내부 데이터가 빠졌으면 조치 한 줄."""
+    problem = krx_login_problem()
+    return f"\n⚠️ 선물·옵션·시장 폭 데이터 빠짐 — {problem}" if problem else ""
+
+
 async def _market_brief_for_chat(
     *,
     orchestrator: "Orchestrator",
@@ -361,17 +368,18 @@ async def _market_brief_for_chat(
 
     # 보고서 본문 .md 링크(🤖 AI 전달용 Markdown / 🤝 GitHub raw .md)는 제거 —
     # HTML 보고서 링크만 유지 (사용자 요청).
+    _krx_line = _krx_warning_line()
     if result.report_url and result.report_url.startswith("http"):
         await send_text_fn(
             chat_id,
             f"📈 한국 장마감 브리핑 ({run_date})\n\n"
-            f"🔗 보고서: {result.report_url}",
+            f"🔗 보고서: {result.report_url}{_krx_line}",
         )
     elif result.report_path and os.path.isfile(result.report_path) and send_document_fn:
         await send_document_fn(
             chat_id,
             result.report_path,
-            f"📈 장마감 브리핑 ({run_date}) — Cloudflare 업로드 실패, 파일 첨부",
+            f"📈 장마감 브리핑 ({run_date}) — Cloudflare 업로드 실패, 파일 첨부{_krx_line}",
         )
 
     # 영상 제작용 ReportBundle 자동 첨부 (v5.5.0 패턴).
@@ -542,6 +550,7 @@ async def _deliver_backfill(
     path = getattr(result, "report_path", "") or ""
     bundle = path.replace(".html", ".bundle.json") if path else ""
     osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
+    krx_line = _krx_warning_line()
 
     bot = Bot(token)
     for chat_id in chat_ids:
@@ -553,7 +562,7 @@ async def _deliver_backfill(
                     chat_id=chat_id,
                     text=(
                         f"📈 한국 장마감 브리핑 ({run_date}) · 소급 발행\n\n"
-                        f"🔗 보고서: {url}"
+                        f"🔗 보고서: {url}{krx_line}"
                     ),
                 )
             elif path and os.path.isfile(path):
@@ -636,6 +645,9 @@ def _main() -> None:  # pragma: no cover — CLI
     osint_warn = osint_mirror_warning(getattr(result, "osint_mirror_error", "") or "")
     if osint_warn:
         print(osint_warn)
+    krx_line = _krx_warning_line().strip()
+    if krx_line:
+        print(krx_line)
 
 
 if __name__ == "__main__":  # pragma: no cover

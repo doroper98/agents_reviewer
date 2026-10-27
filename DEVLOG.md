@@ -1314,7 +1314,9 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
   (`json/analysis_20261027_114123_d0efa2223f.bundle.json`, schema_version 1).
 - **KRX 비밀번호 만료.** 같은 소급 발행에서 pykrx 로그인 `CD010`(비밀번호 변경 필요) →
   선물·옵션 그릭·시장 폭 0건(`breadth=0 deriv=0`). 봇 로그는 `[krx] 로그인 실패 —
-  자격증명 확인` 이라 원인을 오도한다. 사용자 비밀번호 변경 대기. 경고 보강은 별건.
+  자격증명 확인` 이라 원인을 오도한다. 비밀번호 변경은 사용자 조치 대기. 코드 보강은
+  같은 v8.7.1 에 포함(VM-AP-15): pykrx 출력 분류·로그인 직렬화·실패 쿨다운 10분·
+  장마감 브리핑 메시지에 조치 한 줄. 회귀 `tests/test_krx_login.py`.
 
 공통 원인은 *감지 실패*: 실패 알림이 200자 잘린 오류 JSON 이었고, osint 실패는 로그
 한 줄뿐. Fix — `src/tools/cli_auth.py`(만료 판별·복구 명령 문구·ping 점검),

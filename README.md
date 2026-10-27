@@ -15,7 +15,7 @@ last_review: 2026-05-17
 텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 5 → NarrativeComposer Opus 5, v8.5.0) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템. v5.1.0 부터 매일 06:00 KST 자동 일일 브리핑 (`/briefing_on` 으로 구독). v5.2.0 부터 KRX / FRED / ECOS / Yahoo Finance 실 OHLC 시계열로 candle / line / area 금융 차트 자동 emit.
 
 ## Status
-- Version: **v8.7.1** (SSOT: `src/orchestrator.py:VERSION`) — **로그인 만료·osint 전송 실패를 조치형으로 알림 (VM-AP-14)**: Claude CLI 구독 로그인이 만료되면 실패 알림이 오류 원문 대신 복구 명령을 담고, 켜진 브리핑 60분 전에 `claude -p ping` 으로 미리 점검해 먼저 알린다. osint 번들 전송이 실패하면 사유(HTTP 상태)와 고칠 `.env` 키를 번들 메시지에 붙인다. 이전 v8.7.0 — 차트 유형 3종 신설 + 표현 옵션 3종.
+- Version: **v8.7.1** (SSOT: `src/orchestrator.py:VERSION`) — **로그인 만료·osint 전송 실패를 조치형으로 알림 (VM-AP-14)**: Claude CLI 구독 로그인이 만료되면 실패 알림이 오류 원문 대신 복구 명령을 담고, 켜진 브리핑 60분 전에 `claude -p ping` 으로 미리 점검해 먼저 알린다. osint 번들 전송이 실패하면 사유(HTTP 상태)와 고칠 `.env` 키를 번들 메시지에 붙인다. KRX 비밀번호가 만료되면(CD010) 장마감 브리핑에 데이터가 빠진 이유와 조치를 붙이고, 틀린 비밀번호 반복 로그인을 막는다(VM-AP-15). 이전 v8.7.0 — 차트 유형 3종 신설 + 표현 옵션 3종.
 - **V5 활성화 단계** — 코드는 v5.0.0 이지만 단계적 활성화 권장 (Plan §0.3). `docs/V5_ACTIVATION.md` 의 5-step 절차 따라 한 phase 씩 켜고 회귀 테스트 통과 확인.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
