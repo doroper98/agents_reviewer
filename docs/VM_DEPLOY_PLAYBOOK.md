@@ -601,6 +601,13 @@ alias 를 먼저 `unalias` 해, 같은 셸에 옛 정의가 남아 있어도 새
 **교훈**: 운영 방식을 바꾸면(nohup → systemd) 그 방식을 품은 *편의 도구* 까지 같이 바꾼다. 문서에
 없는 스크립트는 낡아도 아무도 모른다.
 
+**실제 발생 (2026-10-28 07:5x UTC)**: v8.7.6 병합 뒤 설치 스크립트를 다시 돌리기 전에 "단축어가
+있으면 `bot-up`" 이라고 안내했다. VM 에 남아 있던 *옛* `bot-up` 이 실행돼 `pkill` + `nohup` 봇이 떴다
+(출력에 `[1] <PID>` · `✓ 봇 켜짐` · `tail: cannot open 'bot.log'`). 복구: `systemctl stop` →
+`pkill -f 'python.*src\.main'` → 남은 프로세스 0 확인 → `systemctl start` → 프로세스 1 확인 → 설치 스크립트
+재실행(`type bot-up` 이 `function`). **규칙**: `bot-up` 을 안내하기 전에 `type bot-up | head -1` 이
+`bot-up is a function` 인지 먼저 확인시킨다. `alias` 로 나오면 옛 판이다 — 설치 스크립트부터.
+
 ---
 
 ## §3 진단 명령어
@@ -622,6 +629,8 @@ grep '^VERSION = ' src/orchestrator.py
 
 `bot`(상태) · `bot-up`(재배포 = §1.0 블록 실행) · `bot-log`(로그) · `bot-cancel`(진행 중 분석 취소) ·
 `bot-version`(코드/떠 있는 버전) · `botz`(목록). 설치·갱신은 한 줄, 다시 실행해도 안전하다.
+⚠️ `type bot-up | head -1` 이 `alias` 로 나오면 v8.7.6 이전 *옛* 판이다 — 실행하지 말고 아래 설치부터
+(옛 `bot-up` 은 nohup 중복 기동, VM-AP-17).
 
 ```bash
 bash ~/agents_reviewer/scripts/install_bot_aliases.sh && source ~/.bashrc && botz
