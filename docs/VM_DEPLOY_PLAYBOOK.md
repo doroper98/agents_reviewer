@@ -1,6 +1,6 @@
 ---
 tier: 1
-last_synced_with: v8.7.5
+last_synced_with: v8.7.6
 ssot_for:
   - "VM (Oracle Ubuntu) 표준 재배포 절차 (회귀 가드 포함)"
   - "VM 운영 회귀 (VM-AP-N) 카탈로그 — append-only"
@@ -582,6 +582,27 @@ JSON 줄(`ERROR: {"status":…,"error":{"code":…}}`)로 먼저 분류하고, �
 
 ---
 
+### VM-AP-17 — 단축어(botz 계열)가 systemd 이전 방식에 머묾, `bot-up` 이 중복 기동 유발 (2026-10-28 발견)
+
+**증상**: VM 에서 `botz`·`bot-up` 등 단축어가 안 먹는다는 사용자 질문. 확인해 보니
+`scripts/install_bot_aliases.sh`(v5.8.6 시절)는 systemd 도입 전 판이었다. `bot-up` 이
+`pkill -f src.main` 후 `nohup python -m src.main` 으로 봇을 띄우고, `bot-log` 는 systemd 가
+쓰지 않는 `bot.log` 를 본다. 문서 어디에도 언급이 없어 아무도 갱신하지 않았다.
+
+**위험**: 지금 VM 에서 옛 `bot-up` 을 쓰면 systemd 가 죽은 봇을 다시 살리는 동시에 nohup 봇이
+하나 더 뜬다 → 텔레그램 `getUpdates` Conflict + 1GB VM OOM 프리즈(VM-AP-12, 2026-07-11 실사고).
+
+**Fix (v8.7.6)**: 단축어를 systemd 기준 함수로 다시 썼다. `bot-up` 은 §1.0 가드 블록을 문서에서
+읽어 `bash -c` 로 실행만 한다(사본 없음 — 재배포 절차의 정본은 §1.0 한 곳). `bot-log` 는
+`journalctl -f`, `bot`·`bot-version` 은 서비스 상태와 *떠 있는* 버전까지 보여 준다. 설치 블록이 옛
+alias 를 먼저 `unalias` 해, 같은 셸에 옛 정의가 남아 있어도 새 함수가 이긴다. 설치·갱신은 §3
+'봇 단축어'. 같은 이유로 §3 '봇 현재 상태 한눈에' 의 `bot.log` 조회도 journal 로 바꿨다.
+
+**교훈**: 운영 방식을 바꾸면(nohup → systemd) 그 방식을 품은 *편의 도구* 까지 같이 바꾼다. 문서에
+없는 스크립트는 낡아도 아무도 모른다.
+
+---
+
 ## §3 진단 명령어
 
 ### 봇 현재 상태 한눈에
@@ -590,11 +611,20 @@ JSON 줄(`ERROR: {"status":…,"error":{"code":…}}`)로 먼저 분류하고, �
 # 봇 인스턴스 수 (1이어야 정상, 0=죽음, 2+=VM-AP-1)
 pgrep -fc 'python.*src\.main'
 
-# 봇이 어느 버전으로 떠있나
-grep -E 'Starting Event Analysis Team bot' bot.log | tail -1
+# 봇이 어느 버전으로 떠있나 (systemd — 로그는 journal 에 있다. bot.log 는 nohup 시절 것)
+journalctl -u agents-reviewer.service --no-pager | grep -E 'Starting Event Analysis Team bot' | tail -1
 
 # 코드 버전 (떠있는 봇과 일치해야 — 불일치는 VM-AP-4)
 grep '^VERSION = ' src/orchestrator.py
+```
+
+### 봇 단축어 (v8.7.6 — VM-AP-17)
+
+`bot`(상태) · `bot-up`(재배포 = §1.0 블록 실행) · `bot-log`(로그) · `bot-cancel`(진행 중 분석 취소) ·
+`bot-version`(코드/떠 있는 버전) · `botz`(목록). 설치·갱신은 한 줄, 다시 실행해도 안전하다.
+
+```bash
+bash ~/agents_reviewer/scripts/install_bot_aliases.sh && source ~/.bashrc && botz
 ```
 
 ### CLI 구독 인증 만료 점검 (2026-07-31 실제 사고 — 보고서 전면 실패의 1순위 용의자)

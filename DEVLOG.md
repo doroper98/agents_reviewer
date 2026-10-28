@@ -1360,3 +1360,11 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
   codex-cli 0.153.1+ 필요. VM 은 `sudo npm install -g @openai/codex@latest` 로 0.164.0.
 - `Config.codex_model` 기본값을 명시하고, 빈 `V6_CODEX_MODEL=` 이 기본값을 덮는 함정을 validator 로 차단.
   새 CLI 의 stderr 배너에서 바이라인 모델명을 읽도록 보강. 계정 접근은 VM 재배포 Stage 3.6 이 실측한다.
+
+## v8.7.6 — botz 계열 단축어 systemd 재작성 (VM-AP-17, 2026-10-28)
+
+- 사용자 질문 "VM 에서 왜 /botz 계열 명령어가 안 되나". `scripts/install_bot_aliases.sh` 는 v5.8.6
+  이후 그대로였고 어떤 문서에도 언급이 없었다. `bot-up` 이 금지된 nohup 기동, `bot-log` 가 죽은
+  `bot.log` 를 가리켰다. 함수로 재작성, `bot-up` 은 playbook §1.0 블록을 읽어 `bash -c`(표준입력은
+  터미널 유지 — 블록 안 `claude -p`·`sudo` 가 파이프된 스크립트를 먹지 않게). 옛 alias 가 로드된
+  셸에서 새 .bashrc 를 source 해도 함수가 이기는 것을 격리 HOME 에서 확인.

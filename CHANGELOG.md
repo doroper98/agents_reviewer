@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.7.5
+last_synced_with: v8.7.6
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,22 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.7.6 — 봇 단축어(botz 계열) systemd 기준 재작성 (VM-AP-17)
+
+사용자 질문(2026-10-28) — VM 에서 `botz` 계열 단축어가 왜 안 되나. `scripts/install_bot_aliases.sh`
+는 v5.8.6 시절 판으로, systemd 도입 이후 한 번도 갱신되지 않았다.
+
+- **위험 제거** — 옛 `bot-up` 은 `pkill -f src.main` + `nohup python -m src.main`. systemd 가 봇을
+  다시 살리는 지금은 봇 두 개 → 텔레그램 Conflict + 1GB VM OOM(VM-AP-12)을 부른다.
+- **새 단축어** (함수, 설치 스크립트 재실행으로 갱신)
+  - `bot` — `systemctl status` 요약 + 떠 있는 버전 + 프로세스 2개 이상이면 경고
+  - `bot-up` — playbook §1.0 가드 블록을 문서에서 읽어 `bash -c` 로 실행. 사본을 두지 않는다.
+  - `bot-log` — `journalctl -u agents-reviewer.service -f` (옛 판은 쓰이지 않는 `bot.log`)
+  - `bot-version` — 코드 버전과 떠 있는 버전을 나란히
+  - `bot-cancel`·`botz` — 유지, 문구 갱신
+- 설치 블록이 옛 alias 를 먼저 `unalias` — 같은 셸에 옛 정의가 남아 있어도 새 함수가 우선.
+- playbook §3 에 '봇 단축어' 절 신설, '봇 현재 상태 한눈에' 의 `bot.log` 조회를 journal 로 정정, VM-AP-17 등록.
 
 ## v8.7.5 — 외부 사실 검수(Codex) 모델 GPT-6 Astra 교체
 
