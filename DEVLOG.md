@@ -1381,3 +1381,10 @@ fix: `_loads_first_json_object` 신설 — `json.loads` 실패 시 첫 `{` 부�
 
 - 사용자가 `grep WRITE-AP-29` 빈 결과를 보내 왔다. v8.8.0 은 0곳이면 침묵이라 '옛 버전 가동 /
   보고서 없음 / 깨끗함' 을 구분할 수 없었다. 보고서마다 결과 한 줄을 항상 남기게 했다.
+
+## v8.8.1 — 옛 bot-up 실제 실행 사고 기록 (VM-AP-17, 2026-10-28)
+
+- v8.8.1 재배포 안내에서 "단축어가 있으면 `bot-up`" 이라고만 했고, VM 에는 v8.7.6 이전 *옛* 단축어가
+  남아 있었다. 옛 `bot-up` 이 `pkill` + `nohup` 으로 봇을 띄움. 즉시 `systemctl stop` → 잔여
+  `src.main` 전부 종료 → `systemctl start` 로 1개 복구, 설치 스크립트 재실행으로 함수판 교체,
+  `bot-version` 두 줄 v8.8.1 확인. 이후 단축어 안내 전 `type bot-up` 확인을 규칙으로 playbook 에 적음.
