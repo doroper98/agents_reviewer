@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.8.0"
+VERSION = "v8.8.1"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -2421,13 +2421,14 @@ class Orchestrator:
                     report_format=getattr(request, "report_format", "") or "",
                     notify=_slop_progress,
                 )
-                if _slop_before:
-                    logger.info(
-                        "[orchestrator] WRITE-AP-29 상투 문형: 교정 전 %d → 후 %d",
-                        len(_slop_before), len(_slop_after),
-                    )
-                    for f in _slop_after:
-                        logger.info("[orchestrator] WRITE-AP-29 잔존: %s «%s»", f.location, f.quote[:80])
+                # v8.8.1 — 0곳이어도 한 줄 남긴다. 그래야 "로그 없음" 이 '검사 안 함(옛 버전·
+                # 보고서 없음)' 과 '검사했는데 깨끗함' 으로 갈린다.
+                logger.info(
+                    "[orchestrator] WRITE-AP-29 상투 문형: 교정 전 %d → 후 %d",
+                    len(_slop_before), len(_slop_after),
+                )
+                for f in _slop_after:
+                    logger.info("[orchestrator] WRITE-AP-29 잔존: %s «%s»", f.location, f.quote[:80])
             except Exception as _e:  # pragma: no cover — 문체 교정 실패가 발행을 막지 않음
                 logger.warning("[orchestrator] WRITE-AP-29 문체 교정 skipped: %s", _e)
 
