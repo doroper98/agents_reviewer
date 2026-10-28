@@ -159,6 +159,13 @@ class Config(BaseSettings):
         ),
     )
 
+    # v8.8.0 — AI 상투 문형 강제 교정 (WRITE-AP-29, 사용자 지시 2026-10-28). 작성 직후
+    # 결정적 검출 → 걸린 문장만 Opus 보완 1회 → Codex 사실 검수. 0 이면 검출·교정 모두 끔.
+    enable_slop_guard: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("V8_SLOP_GUARD", "enable_slop_guard"),
+    )
+
     # v8.6.4 — 차트 type-fit 파이프라인 (CHART_REDESIGN_V8_6_PLAN §6). 작성 모델이
     # 데이터 모양에 안 맞는 type 을 골랐을 때 결정적 규칙(R1~R5)으로 맞는 type 으로
     # 바꾼다. 0-LLM · 값·라벨 생성 금지 · 변환 후 가드 실패면 원본 유지.
