@@ -1,6 +1,6 @@
 ---
 tier: 3
-last_synced_with: v8.8.0
+last_synced_with: v8.8.1
 ssot_for:
   - "사용자 관점 릴리스 노트 (versioned changes)"
 depends_on:
@@ -19,6 +19,13 @@ and this project adheres to a custom `vMAJOR.MINOR.PATCH` scheme tracked in `src
 상세한 개발 로그·트러블슈팅·인프라 메모는 [DEVLOG.md](DEVLOG.md) 참조.
 
 ---
+
+## v8.8.1 — WRITE-AP-29 검사 결과를 0곳이어도 로그로
+
+v8.8.0 은 상투 문형이 1곳 이상일 때만 로그를 남겼다. 그래서 VM 에서
+`journalctl … | grep WRITE-AP-29` 가 비어 있으면 세 경우를 가를 수 없었다. 옛 버전이 떠 있음 /
+배포 후 보고서가 아직 없음 / 검사했는데 깨끗함(2026-10-28 사용자 확인 중 실제로 겪음). 이제
+보고서마다 `WRITE-AP-29 상투 문형: 교정 전 N → 후 M` 한 줄을 남기며, N=0 이면 깨끗한 것이다.
 
 ## v8.8.0 — AI 상투 문형 금지 + 결정적 검출·교정 (WRITE-AP-29)
 

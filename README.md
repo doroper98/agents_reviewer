@@ -15,7 +15,7 @@ last_review: 2026-05-17
 텔레그램 메시지로 사건 분석을 지시하면, **2-call Tier 4 파이프라인** (ContextAnalyst Opus 5.5 → NarrativeComposer Opus 5.5, v8.7.2) 이 보고서를 자유 형식으로 작성한 뒤 editorial 톤 HTML (LG 벤치마크 차용) 로 Cloudflare Pages 에 배포하는 시스템. v5.1.0 부터 매일 06:00 KST 자동 일일 브리핑 (`/briefing_on` 으로 구독). v5.2.0 부터 KRX / FRED / ECOS / Yahoo Finance 실 OHLC 시계열로 candle / line / area 금융 차트 자동 emit.
 
 ## Status
-- Version: **v8.8.0** (SSOT: `src/orchestrator.py:VERSION`) — **AI 상투 문형 금지 (WRITE-AP-29)**: '~로 읽힌다 / ~가 남는다 / 세 겹의 문제 / 이유도 거기 있다 / 다음 계약서에 그대로 적힌다' 류를 작성 프롬프트에서 금지하고, 작성 직후 결정적으로 찾아 걸린 문장만 Opus 가 다시 쓴다(Codex 사실 검수 전). 발행본 388건 중 55%에 있던 문형. 이전 v8.7.6 — 봇 단축어 systemd 재작성(VM-AP-17).
+- Version: **v8.8.1** (SSOT: `src/orchestrator.py:VERSION`) — WRITE-AP-29 검사 결과를 0곳이어도 로그에 남긴다(검사 안 함과 깨끗함 구분). 이전 v8.8.0 — **AI 상투 문형 금지 (WRITE-AP-29)**: '~로 읽힌다 / ~가 남는다 / 세 겹의 문제 / 이유도 거기 있다 / 다음 계약서에 그대로 적힌다' 류를 작성 단계에서 금지하고, 걸린 문장만 Opus 가 다시 쓴다(Codex 사실 검수 전).
 - **V5 활성화 단계** — 코드는 v5.0.0 이지만 단계적 활성화 권장 (Plan §0.3). `docs/V5_ACTIVATION.md` 의 5-step 절차 따라 한 phase 씩 켜고 회귀 테스트 통과 확인.
 - Tier 1 docs: [GOAL](GOAL.md) · [CLAUDE](CLAUDE.md) · [STYLEGUIDE](docs/STYLEGUIDE.md) · [DOCS_GOVERNANCE_V3](DOCS_GOVERNANCE_V3.md) · [MONO_THEME_GUIDE](docs/MONO_THEME_GUIDE.md)
 - Tier 2 docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [DATA_MODELS](docs/DATA_MODELS.md) · [CATALOGS](docs/CATALOGS.md) · [TESTING](docs/TESTING.md)
