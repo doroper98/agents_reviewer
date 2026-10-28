@@ -28,6 +28,7 @@ import time
 from typing import Optional
 
 from src.config import Config
+from src.factcheck.slop_guard import prompt_block as _slop_prompt_block
 from src.timeutil import today_kst
 from src.models import (
     ComposedReport,
@@ -159,6 +160,7 @@ SYSTEM_PROMPT = (
     "- **진부 연결어 금지**: 다양한 측면에서 / 결론적으로 / 주목할 만한 점은 / 다시\n"
     "  말해 / 더 깊은 분석이 필요하다 / 심도 있게 살펴보면. 허용: 사실은 / 단 /\n"
     "  즉 / 그러나 / 반면 (WRITE-AP-4).\n"
+    + _slop_prompt_block() +  # v8.8.0 — WRITE-AP-29 (목록 SSOT: src/factcheck/slop_guard.py)
     "- **'N번' vs 서수**: 서수는 '첫 / 처음으로 / 첫 번째 / 가운데 첫'. 'N번' 은 식별\n"
     "  번호 뉘앙스 (WRITE-AP-7).\n"
     "- **★ 문단 나누기 (WRITE-AP-27, 반드시)**: ``prose`` 는 *한 덩어리로 쓰지 않는다*.\n"
@@ -1151,10 +1153,10 @@ _REPORTAGE_BLOCK = (
     "     문구는 X 지만, 같은 문서 4쪽 각주에는 Y 가 적혀 있다\" 류.\n"
     "  ② Connecting dots(점 잇기) — 여러 출처에 흩어진 사실 2~5개를 *묶어* 전체 그림을\n"
     "     그린다. 한 출처에선 사람, 다른 출처에선 자금, 또 다른 출처에선 시점 — 셋을\n"
-    "     겹쳐 보면 드러나는 패턴. 명시적으로 \"A 와 B 와 C 를 이으면 D 가 보인다\" 식\n"
-    "     서술. 각 점은 *입력 사실*이어야 하지만, 묶음(D)은 일반 보도엔 없는 너의 통찰.\n"
+    "     함께 놓아야 드러나는 패턴. 명시적으로 \"A·B·C 를 함께 놓으면 D 라는 가설이 나온다\"\n"
+    "     식으로 재료를 밝힌다. 각 점은 *입력 사실*이어야 하지만, 묶음(D)은 일반 보도엔 없는 너의 통찰.\n"
     "  ③ 시나리오 추론 — 표면 사실에서 한 발 더 들어간 *그럴법한 가설*. \"공식 발표는\n"
-    "     수습이지만, 정황을 모으면 다른 그림이 보인다 — 한 가지 가설은 …\". 이건 거짓이\n"
+    "     수습이지만, 정황을 모으면 다른 설명도 가능하다. 한 가지 가설은 …\". 이건 거짓이\n"
     "     아니라 *추론* 이다 (정황 기반의 educated guess). 약간 무리한 추측도 *명시적으로\n"
     "     가설이라고 표시*하면 허용된다. 르포의 묘미가 여기서 나온다.\n"
     "\n"
@@ -1163,7 +1165,7 @@ _REPORTAGE_BLOCK = (
     "한다. 셋을 섞어 단정하면 사실 규율 위반이다(WRITE-AP-15/16/17 와 직결). 세 등급:\n"
     "  · **확인된 사실** — 단정형. \"공식 발표는 X 다.\" / \"6/4 종가는 70,800원이다.\"\n"
     "     출처/시점/수치가 입력에 명시된 것만 이 톤.\n"
-    "  · **추론(정황 기반)** — 헤지형. \"…로 읽힐 여지가 크다\" / \"…와 부합한다\" /\n"
+    "  · **추론(정황 기반)** — 헤지형. \"…로 보인다\" / \"…와 부합한다\" /\n"
     "     \"…를 시사한다\" / \"…일 가능성이 작지 않다\". 점 잇기 결과·묻힌 디테일에서\n"
     "     도출한 통찰은 이 톤. 단정 금지.\n"
     "  · **가설(시나리오)** — 명시 라벨. \"한 가지 가설은 — …\" / \"정황을 가장 단순하게\n"
@@ -1248,8 +1250,9 @@ _REPORTAGE_BLOCK = (
     "[담백한 구조 + 문단 규칙] 르포는 *담백하게* 쓴다 — 여기서 담백함은 *무장식*(거창한\n"
     "수사·장식 컴포넌트 없음)을 뜻하지 *짧음*이 아니다. 문체는 담백하되 분량은 위 '[분량과\n"
     "깊이]' 강령대로 길고 깊게 간다. ① 긴 서사 도입부(첫 섹션)로 장면을 던지고, 이어 번호\n"
-    "매겨지는 섹션들(소제목 = 짧고 분석적인 한 줄)로 사건을 한 겹씩 벗긴 뒤, 마지막 섹션은\n"
-    "*담백한 결론*으로 맺는다(거창한 구호 없이, 한 발 물러선 통찰).\n"
+    "매겨지는 섹션들(소제목 = 짧고 분석적인 한 줄)로 사건을 하나씩 풀어 간 뒤, 마지막 섹션은\n"
+    "*담백한 결론*으로 맺는다(거창한 구호 없이, 한 발 물러선 통찰. 단 여운으로 끝내는\n"
+    "마무리 문장은 금지 — 위 'AI 상투 문형 절대 금지' 목록, WRITE-AP-29).\n"
     "② **한 문단은 다섯 문장을 넘기지 않는다.** 짧은 문단으로 호흡을 자주 끊어 몰입을\n"
     "만들되, 문단 *수*는 넉넉히 — 한 섹션에 문단 서넛 이상을 쌓아 깊이를 낸다(짧은 문단 ≠\n"
     "적은 문단).\n"
@@ -1660,13 +1663,19 @@ class NarrativeComposer:
         "6) 마크다운 강조·em/en dash 금지(평문). 일반 독자가 읽는 평이한 우리말.\n"
         "7) ★ 고치면서 *새로운* 주장·프레이밍·수식어를 근거 없이 끌어들이지 마라. 지적된\n"
         "   것만 빼거나 정확히 바꾼다. '복귀/최초/사상 최대/직격탄/사실상' 같은 함의 큰\n"
-        "   표현은 evidence 가 직접 뒷받침할 때만. (한 결함을 고치다 새 결함을 심는 것 방지.)\n\n"
+        "   표현은 evidence 가 직접 뒷받침할 때만. (한 결함을 고치다 새 결함을 심는 것 방지.)\n"
+        "8) ★ [문체·강제 WRITE-AP-29] 지적은 *그 문장만* 평이한 평서문으로 다시 쓴다. 비유·여운\n"
+        "   ('N겹', '~로 읽힌다', '~가 남는다', '서 있는 자리', '계약서에 적힌다' 류) 없이\n"
+        "   주어와 사실로 직설하되, 추정이던 문장은 추정 표현을 유지하고 수치·사실은 바꾸지\n"
+        "   않는다. 고치는 모든 문장에서 이런 상투 문형을 새로 쓰지 않는다.\n\n"
         "출력: 아래 JSON *하나만*. 코드펜스·설명 금지. 차트·이미지·신호는 시스템이 보존하니\n"
         "너는 *텍스트만* 낸다.\n"
         '{"headline":"(정정된 제목)","deck":"(정정된 부제)",'
         '"sections":[{"heading":"(섹션 제목)","prose":"(정정된 본문)"}],'
         '"contradictions_heading":"(쟁점 섹션 제목, 있으면)","closing":"(맺음, 없으면 빈 문자열)"}\n'
         "sections 는 원본과 *같은 개수·같은 순서* 로 낸다. 안 고친 섹션도 원문 그대로 포함.\n"
+        "입력 report_text 에 broadcast_summary 가 있으면 출력에도 \"broadcast_summary\" 를 넣는다\n"
+        "(지적이 없으면 원문 그대로).\n"
         "★ 제목 중복 지적이 있으면: 같은 제목을 두 곳(섹션 제목 / 쟁점 섹션 제목 "
         "contradictions_heading / 헤드라인)에 쓰지 말고, 각각 그 부분 내용에 맞는 *서로 "
         "다른* 제목으로 반드시 바꾼다."
@@ -1714,6 +1723,9 @@ class NarrativeComposer:
                 "closing": report.closing,
             },
         }
+        # v8.8.0 — 텔레그램 요약에 걸린 지적도 고칠 수 있게 (있을 때만 실어 기존 payload 유지).
+        if report.broadcast_summary:
+            payload["report_text"]["broadcast_summary"] = report.broadcast_summary
         # V7 Track C — 보완 패스에도 동일 계약 주입 (루프 양 패스의 맹점 공유 해소,
         # REFACTOR_V7_PLAN.md §3.5). flag OFF = payload·프롬프트 byte-equal.
         revise_prompt = self.REVISE_SYSTEM_PROMPT
@@ -1771,6 +1783,8 @@ class NarrativeComposer:
             new.closing = revised["closing"]
         if isinstance(revised.get("contradictions_heading"), str) and revised["contradictions_heading"].strip():
             new.contradictions_heading = revised["contradictions_heading"]
+        if isinstance(revised.get("broadcast_summary"), str) and revised["broadcast_summary"].strip():
+            new.broadcast_summary = revised["broadcast_summary"]
         rsecs = revised.get("sections")
         if isinstance(rsecs, list):
             for i, rs in enumerate(rsecs):

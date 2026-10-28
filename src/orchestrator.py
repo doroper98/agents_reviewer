@@ -36,7 +36,7 @@ from src.visual_builder import build_chart_catalog
 
 logger = logging.getLogger(__name__)
 
-VERSION = "v8.7.6"
+VERSION = "v8.8.0"
 
 
 # v3.4.1 — 봇 프로세스 시작 시점에 git 상태를 캡처해 두 곳에서 표시한다:
@@ -2400,6 +2400,37 @@ class Orchestrator:
         _was_degraded = bool(getattr(result.composed_report, "degraded", False))
         _degraded_reason = getattr(result.composed_report, "degradation_reason", "")
 
+        # -- Phase 2.4 (v8.8.0): AI 상투 문형 강제 교정 (WRITE-AP-29, 사용자 지시) --
+        # 작성 직후 결정적 검출 → 걸린 문장만 Opus 보완 1회. Codex 사실 검수(2.5) *전* 에
+        # 두어 다시 쓴 문장도 사실 검수를 받는다. 열화(폴백) 보고서는 건드리지 않는다.
+        if (
+            getattr(self.config, "enable_slop_guard", False)
+            and result.composed_report is not None
+            and not _was_degraded
+        ):
+            try:
+                from src.factcheck.slop_guard import enforce_slop_rewrite
+                from src.timeutil import today_kst
+
+                async def _slop_progress(msg: str) -> None:
+                    await self._notify(msg, status_callback)
+
+                result.composed_report, _slop_before, _slop_after = await enforce_slop_rewrite(
+                    result.composed_report, result.context, self.narrative_composer,
+                    publication_date=today_kst(),
+                    report_format=getattr(request, "report_format", "") or "",
+                    notify=_slop_progress,
+                )
+                if _slop_before:
+                    logger.info(
+                        "[orchestrator] WRITE-AP-29 상투 문형: 교정 전 %d → 후 %d",
+                        len(_slop_before), len(_slop_after),
+                    )
+                    for f in _slop_after:
+                        logger.info("[orchestrator] WRITE-AP-29 잔존: %s «%s»", f.location, f.quote[:80])
+            except Exception as _e:  # pragma: no cover — 문체 교정 실패가 발행을 막지 않음
+                logger.warning("[orchestrator] WRITE-AP-29 문체 교정 skipped: %s", _e)
+
         v6_loop_result = None  # Phase V6-7/c — 렌더 후 report_id 태깅 요약 로그용
         # -- Phase 2.5 (V6): Codex fact-critic 루프 (opt-in, flag OFF = byte-equal) --
         # Opus 작성 → Codex 검수 → Opus 보완(≤1) → Codex 확인패스(≤1). 외부 degrade /
@@ -2475,6 +2506,18 @@ class Orchestrator:
                         logger.warning("[orchestrator] V6 autolearn skipped: %s", _e)
             except Exception as _e:  # pragma: no cover — 외부 의존 실패가 발행을 막지 않음
                 logger.warning("[orchestrator] V6 critic loop skipped: %s", _e)
+
+        if getattr(self.config, "enable_slop_guard", False) and result.composed_report is not None:
+            try:
+                from src.factcheck.slop_guard import find_slop_flags
+                _late = find_slop_flags(result.composed_report)
+                if _late:
+                    logger.info(
+                        "[orchestrator] WRITE-AP-29 발행 직전 잔존 %d곳: %s", len(_late),
+                        " | ".join(f"{f.location} «{f.quote[:60]}»" for f in _late[:5]),
+                    )
+            except Exception as _e:  # pragma: no cover
+                logger.warning("[orchestrator] WRITE-AP-29 잔존 점검 skipped: %s", _e)
 
         # v5.6.7 — 최종 기호 정화 (사용자 최우선 규칙). composer 경로는 자체 정화하지만
         # minimal fallback / hook 가 추가한 텍스트 / context 기반 합성본까지 *모든* 경로를
