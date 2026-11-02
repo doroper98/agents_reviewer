@@ -1,0 +1,2672 @@
+{
+  "request": {
+    "event_description": "오늘 2026-11-03 (Tue) 아침 자동 일일 브리핑 (심층 분석).\n\n분석 대상: Asia/Seoul 기준 2026-11-02 자정(00:00) 이후 ~ 오늘 06:00 사이에 보도된 산업·지정학·정치·전쟁 이슈 종합.\n\n요구사항:\n1. 웹 검색으로 최신 보도를 직접 확인 (학습 데이터 의존 금지).\n2. 위 4개 분야에서 가장 임팩트가 큰 3~5건을 선별.\n3. 각 사건마다: (a) 사실관계 요약 (b) 핵심 행위자 (c) 한국 경제·증시·외교에 미칠 직간접 영향 (d) 오늘 (2026-11-03 (Tue)) 시장 개장/외교 일정에 미칠 즉시 영향.\n4. 각 사건의 카테고리(산업/지정학/정치/전쟁) 명시.\n5. 마지막에 '오늘 점검할 후속 신호' 3~5건과 데드라인 제시 (감시 신호 시스템 등록 대상).\n",
+    "request_type": "full_analysis",
+    "requested_by": "",
+    "chat_id": 50717095,
+    "mode": "deep",
+    "parent_context": null,
+    "emit_bundle": false,
+    "report_format": "standard",
+    "user_directive": "",
+    "report_kind": "daily_briefing"
+  },
+  "strategy": null,
+  "blocks": [
+    {
+      "block_id": "B-001",
+      "block_type": "narrative",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "text": "2026년 하반기 시장은 세 가지 축에 크게 흔들리고 있음. 첫째, 미·이란 전쟁과 미국의 해상 봉쇄로 호르무즈 해협이 막히면서 유가가 100달러를 넘는 고유가가 이어짐. 둘째, 물가가 다시 오르면서 연준이 금리 인상으로 돌아설 수 있다는 우려가 커짐. 셋째, AI 반도체 호황과 그 지속 여부에 대한 의구심이 맞서고 있음. 한국은 메모리 반도체 수출이 폭증하면서 코스피가 6,000선 안팎까지 올랐지만, 10-15 미국 물가 충격(-5.59%)과 10-30 Intel 쇼크로 하루 5% 넘는 급락이 되풀이됨. 수출에서 반도체 쏠림이 50%에 가까워 구조적으로 한 업종에 크게 기대는 상태임. 미·중은 2025년 11월 부산 합의에 따른 관세 휴전을 2027-01-10까지 연장했지만, 일부 301조 유예는 11-09~10 만료를 앞두고 있음.",
+        "tone": "neutral"
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    },
+    {
+      "block_id": "B-002",
+      "block_type": "timeline",
+      "title": "",
+      "purpose": "",
+      "payload": {
+        "events": [
+          {
+            "date": "2026-10-28",
+            "event": "연준(Fed), 기준금리 3.75~4.00% 동결(2차 출처 보도)",
+            "impact": "12-09 FOMC(연방공개시장위원회)에서 금리를 올릴 가능성이 72~85%로 반영됨"
+          },
+          {
+            "date": "2026-10-30",
+            "event": "인텔 3분기 실적 발표 뒤 주가 급락(시간외 20% 넘게, 10월 한 달 약 -45%). 코스피 5% 넘게 하락, 삼성전자 -7.6%, SK하이닉스 -8.3%",
+            "impact": "'Intel 쇼크'로 반도체 투자심리가 위축됨. 같은 날 나스닥은 2.9% 내린 25,437.00으로 마감"
+          },
+          {
+            "date": "2026-10-30",
+            "event": "우크라이나, 러시아 사마라 정유시설 공격(2주 유예 종료)",
+            "impact": "러시아 석유제품 공급 위험이 다시 부각됨"
+          },
+          {
+            "date": "2026-10-31",
+            "event": "북한, 평북 정주에서 서해 쪽으로 미사일 발사(집속탄두 시험)",
+            "impact": "한반도 재래식 위협이 커짐. 시장 영향은 제한적"
+          },
+          {
+            "date": "2026-11-01",
+            "event": "한국 10월 수출 1,153억 달러, 반도체 564억 달러(+259%) 발표. 이란 대표단 도하에서 귀국, 합의 초안 회람",
+            "impact": "11-02 코스피 반등과 유가 급락의 직접 계기"
+          },
+          {
+            "date": "2026-11-02",
+            "event": "코스피 5,859.08(+2.24%), 코스닥 734.36(+1.38%) 마감. 이재명 대통령 국회 예산안 시정연설. 러시아 공습으로 자포리자에서 18명 사망",
+            "impact": "국내 증시가 Intel 쇼크 낙폭 일부를 회복함"
+          },
+          {
+            "date": "2026-11-02 (미국장, 한국 시간 11-03 06:00 마감)",
+            "event": "다우 약 +1%(52,308, 장중), S&P 500 약 +0.6%(7,626, 장중). 브렌트 -7.6%(104.82달러), WTI -7.1%(96.72달러). 미국채 10년물 4.89%(-5bp). 아마존 +4.7%",
+            "impact": "에너지 가격 하락이 위험자산 반등을 이끔. 기술주 반등은 약했음"
+          },
+          {
+            "date": "2026-11-03 (미국 동부 시간)",
+            "event": "미국 중간선거 투표",
+            "impact": "개표 결과는 한국 시간 11-04 오전부터 반영"
+          },
+          {
+            "date": "2026-11-04 (미국 시간)",
+            "event": "미 재무부 분기 국채 발행 계획(refunding) 발표",
+            "impact": "장기채 발행을 줄이고 단기채를 늘릴지 여부. 30년물 금리는 5.30% 위에 머물러 있음"
+          },
+          {
+            "date": "2026-11-09~10",
+            "event": "미국 무역법 301조 관련 대중국 제외 품목 178개와 중국 연계 선박 입항 수수료 유예 만료 예정(미국 무역대표부(USTR)가 새로 공지하지 않으면). 미·중 휴전 자체는 2027-01-10까지 연장",
+            "impact": "조선·해운과 대중국 공급망 관련 불확실성"
+          },
+          {
+            "date": "2026-12-09",
+            "event": "FOMC 금리 결정",
+            "impact": "금리 인상 가능성이 높게 반영돼 있어 성장주 평가에 부담"
+          }
+        ]
+      },
+      "related_findings": [],
+      "section_id": "freeform"
+    }
+  ],
+  "findings": [],
+  "judgment": null,
+  "context": {
+    "event_name": "2026-11-03(화) 아침 종합 브리핑: 미·이란 도하 협상과 유가 7% 급락, 미국 중간선거 당일, 한국 10월 수출 사상 최대와 코스피 반등, 북한 집속탄두 시험",
+    "event_name_en": "Morning Briefing Nov 3, 2026: Oil Plunges on US-Iran Doha Draft, US Midterms Day, Korea Record Exports & KOSPI Rebound, North Korea Cluster-Warhead Test",
+    "date": "2026-11-03",
+    "category": "종합 (산업·지정학·정치·전쟁)",
+    "summary": "11-02 미·이란 도하 협상이 사흘째 타결 없이 끝났지만 합의 초안이 돌고 있다는 보도가 나옴. 이에 브렌트유는 장중 약 7% 떨어져 104~106달러, WTI는 96.72달러로 100달러 아래까지 내림. 같은 날 코스피는 10월 반도체 수출 259% 증가에 힘입어 5,859.08로 2.24% 올라 10-30 'Intel 쇼크' 낙폭 일부를 되찾음. 미국 동부 시간 11-03에는 중간선거 투표가 진행되고, 예측시장은 민주당의 상·하원 동시 장악 가능성을 약 70%로 봄. 개표 결과는 한국 시간 11-04 오전부터 나올 예정이고, 그 전까지 국내 증시는 관망하는 분위기로 보임.",
+    "timeline": [
+      {
+        "date": "2026-10-28",
+        "event": "연준(Fed), 기준금리 3.75~4.00% 동결(2차 출처 보도)",
+        "impact": "12-09 FOMC(연방공개시장위원회)에서 금리를 올릴 가능성이 72~85%로 반영됨"
+      },
+      {
+        "date": "2026-10-30",
+        "event": "인텔 3분기 실적 발표 뒤 주가 급락(시간외 20% 넘게, 10월 한 달 약 -45%). 코스피 5% 넘게 하락, 삼성전자 -7.6%, SK하이닉스 -8.3%",
+        "impact": "'Intel 쇼크'로 반도체 투자심리가 위축됨. 같은 날 나스닥은 2.9% 내린 25,437.00으로 마감"
+      },
+      {
+        "date": "2026-10-30",
+        "event": "우크라이나, 러시아 사마라 정유시설 공격(2주 유예 종료)",
+        "impact": "러시아 석유제품 공급 위험이 다시 부각됨"
+      },
+      {
+        "date": "2026-10-31",
+        "event": "북한, 평북 정주에서 서해 쪽으로 미사일 발사(집속탄두 시험)",
+        "impact": "한반도 재래식 위협이 커짐. 시장 영향은 제한적"
+      },
+      {
+        "date": "2026-11-01",
+        "event": "한국 10월 수출 1,153억 달러, 반도체 564억 달러(+259%) 발표. 이란 대표단 도하에서 귀국, 합의 초안 회람",
+        "impact": "11-02 코스피 반등과 유가 급락의 직접 계기"
+      },
+      {
+        "date": "2026-11-02",
+        "event": "코스피 5,859.08(+2.24%), 코스닥 734.36(+1.38%) 마감. 이재명 대통령 국회 예산안 시정연설. 러시아 공습으로 자포리자에서 18명 사망",
+        "impact": "국내 증시가 Intel 쇼크 낙폭 일부를 회복함"
+      },
+      {
+        "date": "2026-11-02 (미국장, 한국 시간 11-03 06:00 마감)",
+        "event": "다우 약 +1%(52,308, 장중), S&P 500 약 +0.6%(7,626, 장중). 브렌트 -7.6%(104.82달러), WTI -7.1%(96.72달러). 미국채 10년물 4.89%(-5bp). 아마존 +4.7%",
+        "impact": "에너지 가격 하락이 위험자산 반등을 이끔. 기술주 반등은 약했음"
+      },
+      {
+        "date": "2026-11-03 (미국 동부 시간)",
+        "event": "미국 중간선거 투표",
+        "impact": "개표 결과는 한국 시간 11-04 오전부터 반영"
+      },
+      {
+        "date": "2026-11-04 (미국 시간)",
+        "event": "미 재무부 분기 국채 발행 계획(refunding) 발표",
+        "impact": "장기채 발행을 줄이고 단기채를 늘릴지 여부. 30년물 금리는 5.30% 위에 머물러 있음"
+      },
+      {
+        "date": "2026-11-09~10",
+        "event": "미국 무역법 301조 관련 대중국 제외 품목 178개와 중국 연계 선박 입항 수수료 유예 만료 예정(미국 무역대표부(USTR)가 새로 공지하지 않으면). 미·중 휴전 자체는 2027-01-10까지 연장",
+        "impact": "조선·해운과 대중국 공급망 관련 불확실성"
+      },
+      {
+        "date": "2026-12-09",
+        "event": "FOMC 금리 결정",
+        "impact": "금리 인상 가능성이 높게 반영돼 있어 성장주 평가에 부담"
+      }
+    ],
+    "key_figures": [
+      {
+        "label": "코스피 종가 (11-02)",
+        "value": "5,859.08 (+128.34p, +2.24%)",
+        "context": "장 초반 5,600선에서 반등함. 1개월 기준 -15.6%, 1년 기준 +38.8%(Trading Economics)"
+      },
+      {
+        "label": "코스닥 종가 (11-02)",
+        "value": "734.36 (+1.38%)",
+        "context": "대형 반도체주보다 오름폭이 작았음"
+      },
+      {
+        "label": "기관 순매수 (11-02, 코스피)",
+        "value": "약 1.2조~1.36조 원",
+        "context": "출처마다 다름(BigGo 1.2조, Invezz 1.36조). 한국거래소(KRX) 원자료로 확인 필요"
+      },
+      {
+        "label": "SK하이닉스 / 삼성전자 (11-02)",
+        "value": "+3.81% / +1.78%",
+        "context": "Invezz 기준. TradingKey는 SK하이닉스 +4.5%로 보도(장중 수치였을 가능성). 10-30에는 각각 -8.3%, -7.6%"
+      },
+      {
+        "label": "10월 수출",
+        "value": "1,153억 달러 (전년 대비 +93.7%)",
+        "context": "월간 사상 최대. 무역수지 425억 달러 흑자. 1~10월 누적 9,000억 달러를 처음 넘음"
+      },
+      {
+        "label": "10월 반도체 수출",
+        "value": "564억 달러 (전년 대비 +259%)",
+        "context": "전체 수출에서 차지하는 비중은 약 49%(1,153억 달러 대비). 반도체 제외 수출도 +34%"
+      },
+      {
+        "label": "브렌트유 (11-02 미국장 중)",
+        "value": "약 104.82달러 (-7.6%)",
+        "context": "출처와 시점에 따라 104~110달러로 다름. 직전 MD 브리핑에서는 약 117달러. 7월 27일 이후 하루 최대 낙폭"
+      },
+      {
+        "label": "WTI (11-02 미국장 중)",
+        "value": "96.72달러 (-7.1%)",
+        "context": "100달러 아래로 내려옴"
+      },
+      {
+        "label": "미국채 10년물 금리",
+        "value": "4.89% (-5bp)",
+        "context": "30년물은 5.30% 위에 머물러 있음(10월 초 20여 년 만의 최고치를 찍은 뒤)"
+      },
+      {
+        "label": "나스닥 종합 (10-30 종가)",
+        "value": "25,437.00 (-2.9%, -747.73p)",
+        "context": "최소 3개월 만의 최저 종가. AI 투자 지출 의구심과 인텔 실적 쇼크 영향"
+      },
+      {
+        "label": "12월 연준 금리 인상 확률",
+        "value": "약 72~85%",
+        "context": "CME FedWatch 기준이며 시점과 출처에 따라 다름. 공식 페이지로 확인하지 못함"
+      },
+      {
+        "label": "민주당 상·하원 동시 장악 확률 (예측시장)",
+        "value": "약 70%",
+        "context": "Polymarket·Kalshi, 11-02 기준. 하원 교체가 기본 시나리오, 상원은 불확실"
+      },
+      {
+        "label": "중국 공식 제조업 PMI(구매관리자지수) (10월)",
+        "value": "49.3",
+        "context": "50 미만이면 경기 위축을 뜻함"
+      },
+      {
+        "label": "금 가격",
+        "value": "약 3,900~3,950달러/온스",
+        "context": "1년 내 최저치에서 반등함. 11-02 약 2% 상승"
+      }
+    ],
+    "background": "2026년 하반기 시장은 세 가지 축에 크게 흔들리고 있음. 첫째, 미·이란 전쟁과 미국의 해상 봉쇄로 호르무즈 해협이 막히면서 유가가 100달러를 넘는 고유가가 이어짐. 둘째, 물가가 다시 오르면서 연준이 금리 인상으로 돌아설 수 있다는 우려가 커짐. 셋째, AI 반도체 호황과 그 지속 여부에 대한 의구심이 맞서고 있음. 한국은 메모리 반도체 수출이 폭증하면서 코스피가 6,000선 안팎까지 올랐지만, 10-15 미국 물가 충격(-5.59%)과 10-30 Intel 쇼크로 하루 5% 넘는 급락이 되풀이됨. 수출에서 반도체 쏠림이 50%에 가까워 구조적으로 한 업종에 크게 기대는 상태임. 미·중은 2025년 11월 부산 합의에 따른 관세 휴전을 2027-01-10까지 연장했지만, 일부 301조 유예는 11-09~10 만료를 앞두고 있음.",
+    "sources": [
+      "Reuters via Yahoo/GMA/Cyprus Mail (2026-11-02): Iranians have left Doha talks, draft proposal circulated — https://cyprus-mail.com/2026/11/02/iranians-have-left-doha-talks-draft-proposal-for-us-deal-being-circulated-official-says",
+      "The Globe and Mail: Draft proposal to end U.S.-Iran war being circulated — https://www.theglobeandmail.com/world/article-us-iran-doha-talks-strait-of-hormuz/",
+      "Benzinga (2026-11-02): Dow Rises 1%, Oil Sinks 7% on Iran Peace Hopes — https://www.benzinga.com/markets/equities/26/11/62788338/stock-market-today-dow-oil-iran-peace-hopes-amazon-idexx",
+      "Quartz (2026-11-02): U.S. stocks rebound as oil sinks more than 6% — https://qz.com/us-stocks-rebound-oil-falls-iran-diplomacy-110226",
+      "Eurasia Business News (2026-11-02) — https://eurasiabusinessnews.com/2026/11/02/stock-market-today-oil-slides-on-middle-east-hopes-as-wall-street-rebounds-gold-price-gains-2/",
+      "Hawksmoor Capital Daily Standup (2026-11-02) — https://hawksmoorcapital.substack.com/p/daily-standup-nov-02",
+      "MD Weekly Briefing, Week of 2 Nov 2026 — https://mdbriefing.substack.com/p/md-weekly-briefing-week-of-2-november",
+      "Seoul Economic Daily (2026-11-02): KOSPI Closes Up 2.24% at 5,859.08 — https://en.sedaily.com/finance/2026/11/02/kospi-closes-up-224-percent-at-585908",
+      "Invezz (2026-11-02): Kospi reverses early decline — https://invezz.com/uk/news/2026/11/02/kospi-reverses-early-decline-to-close-224percent-higher-as-korean-chip-exports-jump-259percent/",
+      "KED Global (2026-11-02) — https://www.kedglobal.com/korean-stock-market/newsView/ked202611020004",
+      "BigGo Finance: KOSPI rebounds from Intel shock — https://finance.biggo.com/news/aae518fd-578e-4dc8-8543-8a3020e68f39",
+      "Forbes Middle East: Korea exports record $115.3B in October — https://forbesmiddleeast.com/industry/economy/south-koreas-exports-surge-937-to-record-high-on-semiconductor-boom-1",
+      "Tech Times (2026-11-02): Korea chip exports approach half — https://www.techtimes.com/articles/329879/20261102/south-korea-chip-exports-approach-half-economy-first-trillion-dollar-year-due-november.htm",
+      "Asia Business Daily editorial (2026-11-02) — https://view.asiae.co.kr/en/article/2026110209374246350",
+      "Börse Express: Intel Aktie, Asien-Börsen im Sog (2026-10-30) — https://www.boerse-express.com/news/articles/intel-aktie-asien-boersen-im-sog-957492",
+      "Investing.com: Midterm market outlook (2026-11-02) — https://in.investing.com/news/stock-market-news/midterm-market-outlook-what-the-2026-elections-mean-for-stocks-93CH-5672648",
+      "Bloomberg (2026-10-22): US Midterm Elections 2026 — https://www.bloomberg.com/news/articles/2026-10-22/us-midterm-elections-2026-what-results-could-mean-for-wall-street",
+      "TheStreet Pro (2026-11-02): Treasury borrowing estimates — https://pro.thestreet.com/stock-market-today/2026-11-02",
+      "UPI (2026-11-01): North Korea tests missile warhead — https://www.upi.com/Top_News/World-News/2026/11/01/tactical-ballistic-missile/6401793578077/",
+      "Stars and Stripes (2026-11-02): cluster-bomb warhead — https://www.stripes.com/theaters/asia_pacific/2026-11-02/north-korea-cluster-bomb-warhead-23335418.html",
+      "NK News: cluster warheads could threaten Busan — https://www.nknews.org/2026/11/north-korean-cluster-warheads-could-threaten-targets-as-far-as-busan-experts/",
+      "Korea Times (2026-11-02): PPP slams Lee's budget speech — https://www.koreatimes.co.kr/southkorea/politics/20261102/ppp-slams-lees-budget-speech-for-overlooking-n-korea-economic-concerns",
+      "Ukrinform: War rubric — https://www.ukrinform.net/rubric-ato",
+      "CFR Global Conflict Tracker: War in Ukraine — https://www.cfr.org/global-conflict-tracker/conflict/conflict-ukraine",
+      "Freight Figures: US-China Truce Extended to Jan 10, 2027 — https://www.freightfigures.com/articles/us-china-truce-extended-january-10-2027-november-10-exclusions-port-fees-excess-capacity-importer-playbook",
+      "Supply Chain Dive: US, China extend truce by 2 months — https://www.supplychaindive.com/news/us-china-to-extend-trade-war-truce-by-2-months/831251/",
+      "Norada (FedWatch 85% 인용, 2차 출처) — https://www.noradarealestate.com/blog/interest-rates-hike-odds-december-2026-jump-85-after-feds-recent-decision/"
+    ],
+    "glossary": [
+      {
+        "term": "호르무즈 해협",
+        "definition": "페르시아만과 아라비아해를 잇는 좁은 바닷길. 세계 원유 해상 운송의 약 5분의 1이 지나가는 길목"
+      },
+      {
+        "term": "브렌트유 / WTI",
+        "definition": "국제 유가의 대표 기준. 브렌트는 북해산 원유, WTI(서부 텍사스산 원유)는 미국산 원유 가격"
+      },
+      {
+        "term": "FOMC (연방공개시장위원회)",
+        "definition": "미국 기준금리를 정하는 연준의 회의 기구"
+      },
+      {
+        "term": "CME FedWatch",
+        "definition": "금리 선물 가격으로 다음 연준 회의의 금리 변동 확률을 계산해 보여주는 도구"
+      },
+      {
+        "term": "중간선거",
+        "definition": "미국 대통령 임기 중간에 치르는 선거. 하원 전체와 상원 약 3분의 1을 새로 뽑음"
+      },
+      {
+        "term": "국채 발행 계획 (Quarterly Refunding)",
+        "definition": "미 재무부가 분기마다 국채를 만기별로 얼마나 발행할지 밝히는 발표. 장기 금리에 영향"
+      },
+      {
+        "term": "집속탄두",
+        "definition": "하나의 탄두 안에 작은 폭탄 여러 개를 넣어 넓은 지역에 흩뿌리는 탄두"
+      },
+      {
+        "term": "무역법 301조",
+        "definition": "불공정 무역 관행에 대해 미국 대통령이 관세 등 보복 조치를 할 수 있게 한 미국 법 조항"
+      },
+      {
+        "term": "PMI (구매관리자지수)",
+        "definition": "기업 구매 담당자 설문으로 만든 경기 지표. 50보다 높으면 경기 확장, 낮으면 위축"
+      },
+      {
+        "term": "bp (베이시스 포인트)",
+        "definition": "0.01%포인트. 금리 변동 폭을 나타낼 때 씀"
+      }
+    ],
+    "confidence_score": 0.72,
+    "instruments_mentioned": [
+      "코스피",
+      "SK하이닉스",
+      "삼성전자",
+      "WTI",
+      "미국채 10Y",
+      "나스닥"
+    ],
+    "time_series": [
+      {
+        "instrument": "코스피",
+        "source": "KRX",
+        "code": "1001",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-10-04",
+        "end_date": "2026-11-03",
+        "data": [
+          {
+            "date": "2026-10-06",
+            "open": 7044.67,
+            "high": 7044.67,
+            "low": 6897.38,
+            "close": 6941.39,
+            "volume": 269831232.0
+          },
+          {
+            "date": "2026-10-07",
+            "open": 6864.25,
+            "high": 6977.77,
+            "low": 6803.81,
+            "close": 6803.9,
+            "volume": 269959050.0
+          },
+          {
+            "date": "2026-10-08",
+            "open": 6808.68,
+            "high": 6810.83,
+            "low": 6625.93,
+            "close": 6625.93,
+            "volume": 302538875.0
+          },
+          {
+            "date": "2026-10-12",
+            "open": 6578.17,
+            "high": 6589.69,
+            "low": 6368.49,
+            "close": 6384.24,
+            "volume": 340621090.0
+          },
+          {
+            "date": "2026-10-13",
+            "open": 6186.08,
+            "high": 6198.46,
+            "low": 5911.11,
+            "close": 6035.35,
+            "volume": 423091794.0
+          },
+          {
+            "date": "2026-10-14",
+            "open": 6062.08,
+            "high": 6190.65,
+            "low": 5944.65,
+            "close": 6008.81,
+            "volume": 372767825.0
+          },
+          {
+            "date": "2026-10-15",
+            "open": 5673.01,
+            "high": 5751.45,
+            "low": 5450.81,
+            "close": 5554.22,
+            "volume": 385805101.0
+          },
+          {
+            "date": "2026-10-16",
+            "open": 5653.99,
+            "high": 5809.94,
+            "low": 5590.33,
+            "close": 5668.05,
+            "volume": 298849933.0
+          },
+          {
+            "date": "2026-10-19",
+            "open": 5488.41,
+            "high": 5768.01,
+            "low": 5488.41,
+            "close": 5768.01,
+            "volume": 292780534.0
+          },
+          {
+            "date": "2026-10-20",
+            "open": 5733.57,
+            "high": 5733.57,
+            "low": 5493.24,
+            "close": 5552.74,
+            "volume": 274656027.0
+          },
+          {
+            "date": "2026-10-21",
+            "open": 5666.34,
+            "high": 5816.43,
+            "low": 5630.14,
+            "close": 5735.66,
+            "volume": 225900226.0
+          },
+          {
+            "date": "2026-10-22",
+            "open": 5670.11,
+            "high": 5740.28,
+            "low": 5485.98,
+            "close": 5533.77,
+            "volume": 217475644.0
+          },
+          {
+            "date": "2026-10-23",
+            "open": 5403.17,
+            "high": 5550.3,
+            "low": 5305.98,
+            "close": 5550.3,
+            "volume": 249517382.0
+          },
+          {
+            "date": "2026-10-26",
+            "open": 5499.05,
+            "high": 5565.67,
+            "low": 5455.11,
+            "close": 5469.47,
+            "volume": 202295278.0
+          },
+          {
+            "date": "2026-10-27",
+            "open": 5658.65,
+            "high": 5737.61,
+            "low": 5612.92,
+            "close": 5638.34,
+            "volume": 196172034.0
+          },
+          {
+            "date": "2026-10-28",
+            "open": 5763.85,
+            "high": 6032.28,
+            "low": 5745.51,
+            "close": 6012.44,
+            "volume": 237337459.0
+          },
+          {
+            "date": "2026-10-29",
+            "open": 6017.22,
+            "high": 6100.11,
+            "low": 5817.92,
+            "close": 5937.66,
+            "volume": 296495211.0
+          },
+          {
+            "date": "2026-10-30",
+            "open": 5760.35,
+            "high": 5784.98,
+            "low": 5599.42,
+            "close": 5730.74,
+            "volume": 228294293.0
+          },
+          {
+            "date": "2026-11-02",
+            "open": 5637.77,
+            "high": 5910.83,
+            "low": 5616.5,
+            "close": 5859.08,
+            "volume": 198130258.0
+          }
+        ]
+      },
+      {
+        "instrument": "SK하이닉스",
+        "source": "KRX",
+        "code": "000660",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-10-04",
+        "end_date": "2026-11-03",
+        "data": [
+          {
+            "date": "2026-10-06",
+            "open": 1835000.0,
+            "high": 1837000.0,
+            "low": 1771000.0,
+            "close": 1784000.0,
+            "volume": 2811364.0
+          },
+          {
+            "date": "2026-10-07",
+            "open": 1728000.0,
+            "high": 1779000.0,
+            "low": 1713000.0,
+            "close": 1715000.0,
+            "volume": 2618253.0
+          },
+          {
+            "date": "2026-10-08",
+            "open": 1722000.0,
+            "high": 1759000.0,
+            "low": 1680000.0,
+            "close": 1686000.0,
+            "volume": 3203231.0
+          },
+          {
+            "date": "2026-10-12",
+            "open": 1640000.0,
+            "high": 1653000.0,
+            "low": 1597000.0,
+            "close": 1605000.0,
+            "volume": 3113644.0
+          },
+          {
+            "date": "2026-10-13",
+            "open": 1538000.0,
+            "high": 1554000.0,
+            "low": 1425000.0,
+            "close": 1456000.0,
+            "volume": 5455791.0
+          },
+          {
+            "date": "2026-10-14",
+            "open": 1458000.0,
+            "high": 1497000.0,
+            "low": 1402000.0,
+            "close": 1425000.0,
+            "volume": 3739813.0
+          },
+          {
+            "date": "2026-10-15",
+            "open": 1304000.0,
+            "high": 1332000.0,
+            "low": 1237000.0,
+            "close": 1238000.0,
+            "volume": 5898372.0
+          },
+          {
+            "date": "2026-10-16",
+            "open": 1290000.0,
+            "high": 1325000.0,
+            "low": 1247000.0,
+            "close": 1265000.0,
+            "volume": 4561066.0
+          },
+          {
+            "date": "2026-10-19",
+            "open": 1212000.0,
+            "high": 1309000.0,
+            "low": 1208000.0,
+            "close": 1304000.0,
+            "volume": 3737172.0
+          },
+          {
+            "date": "2026-10-20",
+            "open": 1265000.0,
+            "high": 1267000.0,
+            "low": 1183000.0,
+            "close": 1190000.0,
+            "volume": 3464412.0
+          },
+          {
+            "date": "2026-10-21",
+            "open": 1260000.0,
+            "high": 1329000.0,
+            "low": 1254000.0,
+            "close": 1288000.0,
+            "volume": 4228927.0
+          },
+          {
+            "date": "2026-10-22",
+            "open": 1273000.0,
+            "high": 1297000.0,
+            "low": 1204000.0,
+            "close": 1234000.0,
+            "volume": 2841149.0
+          },
+          {
+            "date": "2026-10-23",
+            "open": 1200000.0,
+            "high": 1284000.0,
+            "low": 1171000.0,
+            "close": 1263000.0,
+            "volume": 3941446.0
+          },
+          {
+            "date": "2026-10-26",
+            "open": 1279000.0,
+            "high": 1315000.0,
+            "low": 1267000.0,
+            "close": 1290000.0,
+            "volume": 2681007.0
+          },
+          {
+            "date": "2026-10-27",
+            "open": 1346000.0,
+            "high": 1381000.0,
+            "low": 1336000.0,
+            "close": 1374000.0,
+            "volume": 3136495.0
+          },
+          {
+            "date": "2026-10-28",
+            "open": 1390000.0,
+            "high": 1510000.0,
+            "low": 1358000.0,
+            "close": 1508000.0,
+            "volume": 4244800.0
+          },
+          {
+            "date": "2026-10-29",
+            "open": 1511000.0,
+            "high": 1587000.0,
+            "low": 1479000.0,
+            "close": 1516000.0,
+            "volume": 4549384.0
+          },
+          {
+            "date": "2026-10-30",
+            "open": 1444000.0,
+            "high": 1449000.0,
+            "low": 1381000.0,
+            "close": 1391000.0,
+            "volume": 3859903.0
+          },
+          {
+            "date": "2026-11-02",
+            "open": 1402000.0,
+            "high": 1498000.0,
+            "low": 1389000.0,
+            "close": 1480000.0,
+            "volume": 2543239.0
+          }
+        ]
+      },
+      {
+        "instrument": "삼성전자",
+        "source": "KRX",
+        "code": "005930",
+        "unit": "원",
+        "chart_type": "candle",
+        "start_date": "2026-10-04",
+        "end_date": "2026-11-03",
+        "data": [
+          {
+            "date": "2026-10-06",
+            "open": 278500.0,
+            "high": 279000.0,
+            "low": 270000.0,
+            "close": 273000.0,
+            "volume": 12913819.0
+          },
+          {
+            "date": "2026-10-07",
+            "open": 269500.0,
+            "high": 279500.0,
+            "low": 268000.0,
+            "close": 269000.0,
+            "volume": 16395504.0
+          },
+          {
+            "date": "2026-10-08",
+            "open": 269500.0,
+            "high": 270000.0,
+            "low": 262000.0,
+            "close": 263000.0,
+            "volume": 21259056.0
+          },
+          {
+            "date": "2026-10-12",
+            "open": 260000.0,
+            "high": 262500.0,
+            "low": 249000.0,
+            "close": 251000.0,
+            "volume": 19771955.0
+          },
+          {
+            "date": "2026-10-13",
+            "open": 241500.0,
+            "high": 244000.0,
+            "low": 228000.0,
+            "close": 234000.0,
+            "volume": 26790913.0
+          },
+          {
+            "date": "2026-10-14",
+            "open": 233500.0,
+            "high": 241500.0,
+            "low": 230000.0,
+            "close": 234500.0,
+            "volume": 19009052.0
+          },
+          {
+            "date": "2026-10-15",
+            "open": 216500.0,
+            "high": 221500.0,
+            "low": 204500.0,
+            "close": 207500.0,
+            "volume": 34330565.0
+          },
+          {
+            "date": "2026-10-16",
+            "open": 215000.0,
+            "high": 222500.0,
+            "low": 210500.0,
+            "close": 217000.0,
+            "volume": 18908560.0
+          },
+          {
+            "date": "2026-10-19",
+            "open": 207000.0,
+            "high": 224000.0,
+            "low": 206500.0,
+            "close": 223500.0,
+            "volume": 17617415.0
+          },
+          {
+            "date": "2026-10-20",
+            "open": 219500.0,
+            "high": 219500.0,
+            "low": 208000.0,
+            "close": 209000.0,
+            "volume": 16561224.0
+          },
+          {
+            "date": "2026-10-21",
+            "open": 217000.0,
+            "high": 228000.0,
+            "low": 217000.0,
+            "close": 223500.0,
+            "volume": 17268762.0
+          },
+          {
+            "date": "2026-10-22",
+            "open": 221500.0,
+            "high": 226000.0,
+            "low": 212000.0,
+            "close": 214500.0,
+            "volume": 11469322.0
+          },
+          {
+            "date": "2026-10-23",
+            "open": 206000.0,
+            "high": 215500.0,
+            "low": 203500.0,
+            "close": 213500.0,
+            "volume": 16145972.0
+          },
+          {
+            "date": "2026-10-26",
+            "open": 213500.0,
+            "high": 216000.0,
+            "low": 211500.0,
+            "close": 213500.0,
+            "volume": 11376006.0
+          },
+          {
+            "date": "2026-10-27",
+            "open": 222000.0,
+            "high": 225500.0,
+            "low": 220000.0,
+            "close": 225000.0,
+            "volume": 14196879.0
+          },
+          {
+            "date": "2026-10-28",
+            "open": 231000.0,
+            "high": 247000.0,
+            "low": 228000.0,
+            "close": 245000.0,
+            "volume": 17840544.0
+          },
+          {
+            "date": "2026-10-29",
+            "open": 241000.0,
+            "high": 249000.0,
+            "low": 226000.0,
+            "close": 230500.0,
+            "volume": 24975596.0
+          },
+          {
+            "date": "2026-10-30",
+            "open": 223500.0,
+            "high": 229500.0,
+            "low": 216500.0,
+            "close": 220500.0,
+            "volume": 19668075.0
+          },
+          {
+            "date": "2026-11-02",
+            "open": 219000.0,
+            "high": 232000.0,
+            "low": 217000.0,
+            "close": 230000.0,
+            "volume": 14414473.0
+          }
+        ]
+      },
+      {
+        "instrument": "WTI 유가",
+        "source": "FRED",
+        "code": "DCOILWTICO",
+        "unit": "$",
+        "chart_type": "area",
+        "start_date": "2026-10-04",
+        "end_date": "2026-11-03",
+        "data": [
+          {
+            "date": "2026-10-05",
+            "open": 96.13,
+            "high": 96.13,
+            "low": 96.13,
+            "close": 96.13,
+            "volume": null
+          },
+          {
+            "date": "2026-10-06",
+            "open": 96.24,
+            "high": 96.24,
+            "low": 96.24,
+            "close": 96.24,
+            "volume": null
+          },
+          {
+            "date": "2026-10-07",
+            "open": 95.02,
+            "high": 95.02,
+            "low": 95.02,
+            "close": 95.02,
+            "volume": null
+          },
+          {
+            "date": "2026-10-08",
+            "open": 98.26,
+            "high": 98.26,
+            "low": 98.26,
+            "close": 98.26,
+            "volume": null
+          },
+          {
+            "date": "2026-10-09",
+            "open": 98.73,
+            "high": 98.73,
+            "low": 98.73,
+            "close": 98.73,
+            "volume": null
+          },
+          {
+            "date": "2026-10-12",
+            "open": 94.99,
+            "high": 94.99,
+            "low": 94.99,
+            "close": 94.99,
+            "volume": null
+          },
+          {
+            "date": "2026-10-13",
+            "open": 95.39,
+            "high": 95.39,
+            "low": 95.39,
+            "close": 95.39,
+            "volume": null
+          },
+          {
+            "date": "2026-10-14",
+            "open": 96.34,
+            "high": 96.34,
+            "low": 96.34,
+            "close": 96.34,
+            "volume": null
+          },
+          {
+            "date": "2026-10-15",
+            "open": 104.71,
+            "high": 104.71,
+            "low": 104.71,
+            "close": 104.71,
+            "volume": null
+          },
+          {
+            "date": "2026-10-16",
+            "open": 108.21,
+            "high": 108.21,
+            "low": 108.21,
+            "close": 108.21,
+            "volume": null
+          },
+          {
+            "date": "2026-10-19",
+            "open": 110.01,
+            "high": 110.01,
+            "low": 110.01,
+            "close": 110.01,
+            "volume": null
+          },
+          {
+            "date": "2026-10-20",
+            "open": 107.89,
+            "high": 107.89,
+            "low": 107.89,
+            "close": 107.89,
+            "volume": null
+          },
+          {
+            "date": "2026-10-21",
+            "open": 103.95,
+            "high": 103.95,
+            "low": 103.95,
+            "close": 103.95,
+            "volume": null
+          },
+          {
+            "date": "2026-10-22",
+            "open": 104.27,
+            "high": 104.27,
+            "low": 104.27,
+            "close": 104.27,
+            "volume": null
+          },
+          {
+            "date": "2026-10-23",
+            "open": 109.72,
+            "high": 109.72,
+            "low": 109.72,
+            "close": 109.72,
+            "volume": null
+          },
+          {
+            "date": "2026-10-26",
+            "open": 105.25,
+            "high": 105.25,
+            "low": 105.25,
+            "close": 105.25,
+            "volume": null
+          },
+          {
+            "date": "2026-10-27",
+            "open": 103.37,
+            "high": 103.37,
+            "low": 103.37,
+            "close": 103.37,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "미국채 10Y",
+        "source": "FRED",
+        "code": "DGS10",
+        "unit": "%",
+        "chart_type": "line",
+        "start_date": "2026-10-04",
+        "end_date": "2026-11-03",
+        "data": [
+          {
+            "date": "2026-10-05",
+            "open": 5.31,
+            "high": 5.31,
+            "low": 5.31,
+            "close": 5.31,
+            "volume": null
+          },
+          {
+            "date": "2026-10-06",
+            "open": 5.27,
+            "high": 5.27,
+            "low": 5.27,
+            "close": 5.27,
+            "volume": null
+          },
+          {
+            "date": "2026-10-07",
+            "open": 5.28,
+            "high": 5.28,
+            "low": 5.28,
+            "close": 5.28,
+            "volume": null
+          },
+          {
+            "date": "2026-10-08",
+            "open": 5.22,
+            "high": 5.22,
+            "low": 5.22,
+            "close": 5.22,
+            "volume": null
+          },
+          {
+            "date": "2026-10-09",
+            "open": 5.24,
+            "high": 5.24,
+            "low": 5.24,
+            "close": 5.24,
+            "volume": null
+          },
+          {
+            "date": "2026-10-13",
+            "open": 5.21,
+            "high": 5.21,
+            "low": 5.21,
+            "close": 5.21,
+            "volume": null
+          },
+          {
+            "date": "2026-10-14",
+            "open": 5.19,
+            "high": 5.19,
+            "low": 5.19,
+            "close": 5.19,
+            "volume": null
+          },
+          {
+            "date": "2026-10-15",
+            "open": 5.1,
+            "high": 5.1,
+            "low": 5.1,
+            "close": 5.1,
+            "volume": null
+          },
+          {
+            "date": "2026-10-16",
+            "open": 5.09,
+            "high": 5.09,
+            "low": 5.09,
+            "close": 5.09,
+            "volume": null
+          },
+          {
+            "date": "2026-10-19",
+            "open": 5.15,
+            "high": 5.15,
+            "low": 5.15,
+            "close": 5.15,
+            "volume": null
+          },
+          {
+            "date": "2026-10-20",
+            "open": 5.12,
+            "high": 5.12,
+            "low": 5.12,
+            "close": 5.12,
+            "volume": null
+          },
+          {
+            "date": "2026-10-21",
+            "open": 5.13,
+            "high": 5.13,
+            "low": 5.13,
+            "close": 5.13,
+            "volume": null
+          },
+          {
+            "date": "2026-10-22",
+            "open": 4.96,
+            "high": 4.96,
+            "low": 4.96,
+            "close": 4.96,
+            "volume": null
+          },
+          {
+            "date": "2026-10-23",
+            "open": 5.0,
+            "high": 5.0,
+            "low": 5.0,
+            "close": 5.0,
+            "volume": null
+          },
+          {
+            "date": "2026-10-26",
+            "open": 5.0,
+            "high": 5.0,
+            "low": 5.0,
+            "close": 5.0,
+            "volume": null
+          },
+          {
+            "date": "2026-10-27",
+            "open": 4.99,
+            "high": 4.99,
+            "low": 4.99,
+            "close": 4.99,
+            "volume": null
+          },
+          {
+            "date": "2026-10-28",
+            "open": 5.05,
+            "high": 5.05,
+            "low": 5.05,
+            "close": 5.05,
+            "volume": null
+          },
+          {
+            "date": "2026-10-29",
+            "open": 4.98,
+            "high": 4.98,
+            "low": 4.98,
+            "close": 4.98,
+            "volume": null
+          }
+        ]
+      },
+      {
+        "instrument": "나스닥",
+        "source": "YAHOO",
+        "code": "^IXIC",
+        "unit": "",
+        "chart_type": "line",
+        "start_date": "2026-10-04",
+        "end_date": "2026-11-03",
+        "data": [
+          {
+            "date": "2026-10-05",
+            "open": 27225.9296875,
+            "high": 27544.060546875,
+            "low": 27223.490234375,
+            "close": 27477.310546875,
+            "volume": 7828480000.0
+          },
+          {
+            "date": "2026-10-06",
+            "open": 27641.169921875,
+            "high": 27722.75,
+            "low": 27592.560546875,
+            "close": 27599.7890625,
+            "volume": 8451470000.0
+          },
+          {
+            "date": "2026-10-07",
+            "open": 27430.5390625,
+            "high": 27547.19921875,
+            "low": 27341.310546875,
+            "close": 27538.689453125,
+            "volume": 7315500000.0
+          },
+          {
+            "date": "2026-10-08",
+            "open": 27416.029296875,
+            "high": 27491.890625,
+            "low": 27066.759765625,
+            "close": 27193.33984375,
+            "volume": 8820120000.0
+          },
+          {
+            "date": "2026-10-09",
+            "open": 27342.26953125,
+            "high": 27395.41015625,
+            "low": 27254.029296875,
+            "close": 27366.169921875,
+            "volume": 6845310000.0
+          },
+          {
+            "date": "2026-10-12",
+            "open": 27352.509765625,
+            "high": 27376.66015625,
+            "low": 27219.419921875,
+            "close": 27245.900390625,
+            "volume": 6285170000.0
+          },
+          {
+            "date": "2026-10-13",
+            "open": 27138.73046875,
+            "high": 27277.880859375,
+            "low": 27116.080078125,
+            "close": 27204.380859375,
+            "volume": 6986280000.0
+          },
+          {
+            "date": "2026-10-14",
+            "open": 27031.640625,
+            "high": 27134.2890625,
+            "low": 26602.119140625,
+            "close": 26692.869140625,
+            "volume": 8568280000.0
+          },
+          {
+            "date": "2026-10-15",
+            "open": 26380.76953125,
+            "high": 26754.01953125,
+            "low": 26308.849609375,
+            "close": 26713.029296875,
+            "volume": 10869960000.0
+          },
+          {
+            "date": "2026-10-16",
+            "open": 26652.98046875,
+            "high": 26674.66015625,
+            "low": 26023.099609375,
+            "close": 26140.029296875,
+            "volume": 9505000000.0
+          },
+          {
+            "date": "2026-10-19",
+            "open": 26395.2890625,
+            "high": 26613.150390625,
+            "low": 26344.669921875,
+            "close": 26430.890625,
+            "volume": 7537660000.0
+          },
+          {
+            "date": "2026-10-20",
+            "open": 26332.919921875,
+            "high": 26601.7109375,
+            "low": 26179.73046875,
+            "close": 26424.8203125,
+            "volume": 7660360000.0
+          },
+          {
+            "date": "2026-10-21",
+            "open": 26601.73046875,
+            "high": 26778.900390625,
+            "low": 26507.0703125,
+            "close": 26702.859375,
+            "volume": 7818990000.0
+          },
+          {
+            "date": "2026-10-22",
+            "open": 26308.41015625,
+            "high": 26359.41015625,
+            "low": 25918.08984375,
+            "close": 26008.859375,
+            "volume": 9012120000.0
+          },
+          {
+            "date": "2026-10-23",
+            "open": 25893.94921875,
+            "high": 26111.619140625,
+            "low": 25866.150390625,
+            "close": 25955.33984375,
+            "volume": 6554790000.0
+          },
+          {
+            "date": "2026-10-26",
+            "open": 26026.869140625,
+            "high": 26306.8203125,
+            "low": 25986.560546875,
+            "close": 26169.380859375,
+            "volume": 7402660000.0
+          },
+          {
+            "date": "2026-10-27",
+            "open": 26286.310546875,
+            "high": 26540.810546875,
+            "low": 26219.310546875,
+            "close": 26477.810546875,
+            "volume": 7914230000.0
+          },
+          {
+            "date": "2026-10-28",
+            "open": 26541.609375,
+            "high": 26587.33984375,
+            "low": 26414.919921875,
+            "close": 26549.849609375,
+            "volume": 7985070000.0
+          },
+          {
+            "date": "2026-10-29",
+            "open": 26201.8203125,
+            "high": 26286.4609375,
+            "low": 26053.16015625,
+            "close": 26184.720703125,
+            "volume": 7405880000.0
+          },
+          {
+            "date": "2026-10-30",
+            "open": 25592.490234375,
+            "high": 25673.0,
+            "low": 25177.330078125,
+            "close": 25437.0,
+            "volume": 9068930000.0
+          },
+          {
+            "date": "2026-11-02",
+            "open": 25600.173828125,
+            "high": 25799.455078125,
+            "low": 25145.951171875,
+            "close": 25164.31640625,
+            "volume": 7007419000.0
+          }
+        ]
+      }
+    ],
+    "provenance": [
+      {
+        "fact": "코스피 11-02 종가 5,859.08, +128.34p, +2.24%",
+        "source_date": "2026-11-02",
+        "scope_note": "코스피 지수 포인트, 직전 거래일 대비",
+        "source_url": "https://en.sedaily.com/finance/2026/11/02/kospi-closes-up-224-percent-at-585908"
+      },
+      {
+        "fact": "기관 순매수 1.36조 원 (다른 출처는 1.2조 원)",
+        "source_date": "2026-11-02",
+        "scope_note": "코스피 시장 기관 순매수 합계. 출처마다 다르므로 KRX로 확인 필요",
+        "source_url": "https://invezz.com/uk/news/2026/11/02/kospi-reverses-early-decline-to-close-224percent-higher-as-korean-chip-exports-jump-259percent/"
+      },
+      {
+        "fact": "10월 수출 1,153억 달러(+93.7%), 반도체 564억 달러(+259%), 무역흑자 425억 달러",
+        "source_date": "2026-11-01",
+        "scope_note": "통관 기준 월간 수출, 미 달러. 반도체 증가율은 전년 동월 대비",
+        "source_url": "https://forbesmiddleeast.com/industry/economy/south-koreas-exports-surge-937-to-record-high-on-semiconductor-boom-1"
+      },
+      {
+        "fact": "이란 대표단 도하에서 귀국, 미국 합의 초안 회람(내용 비공개)",
+        "source_date": "2026-11-02",
+        "scope_note": "귀국은 11-01(일). 익명 관계자 발언(Reuters)",
+        "source_url": "https://cyprus-mail.com/2026/11/02/iranians-have-left-doha-talks-draft-proposal-for-us-deal-being-circulated-official-says"
+      },
+      {
+        "fact": "합의 시 호르무즈 해협 2일 안 재개방, 단 미 봉쇄 해제가 먼저",
+        "source_date": "2026-11-02",
+        "scope_note": "이란 측 주장. 미국은 확인하지 않음",
+        "source_url": "https://www.theglobeandmail.com/world/article-us-iran-doha-talks-strait-of-hormuz/"
+      },
+      {
+        "fact": "브렌트 -7.6% 104.82달러, WTI -7.1% 96.72달러, 10년물 4.89%",
+        "source_date": "2026-11-02",
+        "scope_note": "미국장 중 수치이며 공식 종가 아님. 브렌트는 출처별로 104~110달러",
+        "source_url": "https://www.benzinga.com/markets/equities/26/11/62788338/stock-market-today-dow-oil-iran-peace-hopes-amazon-idexx"
+      },
+      {
+        "fact": "다우 +538p(+1%) 52,308, S&P 500 +0.6% 7,626",
+        "source_date": "2026-11-02",
+        "scope_note": "장중 스냅샷이며 종가 아님",
+        "source_url": "https://www.benzinga.com/markets/equities/26/11/62788338/stock-market-today-dow-oil-iran-peace-hopes-amazon-idexx"
+      },
+      {
+        "fact": "나스닥 10-30 종가 25,437.00(-2.9%)",
+        "source_date": "2026-10-30",
+        "scope_note": "나스닥 종합지수 종가",
+        "source_url": "https://www.riotimesonline.com/global-economy-briefing-november-2-2026"
+      },
+      {
+        "fact": "예측시장의 민주당 상·하원 동시 장악 확률 약 70%",
+        "source_date": "2026-11-02",
+        "scope_note": "Polymarket·Kalshi 스냅샷이며 실시간으로 변동",
+        "source_url": "https://in.investing.com/news/stock-market-news/midterm-market-outlook-what-the-2026-elections-mean-for-stocks-93CH-5672648"
+      },
+      {
+        "fact": "12월 금리 인상 확률 약 72~85%",
+        "source_date": "2026-10-29~11-02",
+        "scope_note": "12-09 FOMC 25bp 인상 확률. 2차 출처 인용이며 CME 원자료 미확인",
+        "source_url": "https://hawksmoorcapital.substack.com/p/daily-standup-nov-02"
+      },
+      {
+        "fact": "북한 2형 표준 집속탄두 시험, 12~13ha 타격 주장",
+        "source_date": "2026-11-01",
+        "scope_note": "시험일은 10-31, 보도일은 11-01. 북한 주장이며 독립 검증 안 됨",
+        "source_url": "https://www.upi.com/Top_News/World-News/2026/11/01/tactical-ballistic-missile/6401793578077/"
+      },
+      {
+        "fact": "러시아 공습으로 자포리자주 코미슈바하에서 18명 사망, 5명 부상",
+        "source_date": "2026-11-02",
+        "scope_note": "우크라이나 국영 통신 보도",
+        "source_url": "https://www.ukrinform.net/rubric-ato"
+      },
+      {
+        "fact": "301조 제외 품목 178개와 선박 입항 수수료 유예 11-09 만료(USTR 새 공지 없으면). 휴전은 2027-01-10까지",
+        "source_date": "",
+        "scope_note": "2차 업계 자료. Federal Register 원문 미확인",
+        "source_url": "https://www.freightfigures.com/articles/us-china-truce-extended-january-10-2027-november-10-exclusions-port-fees-excess-capacity-importer-playbook"
+      },
+      {
+        "fact": "인텔 10월 주가 약 -45%, 실적 발표 후 하루 약 -29%",
+        "source_date": "2026-10-31",
+        "scope_note": "Barron's 인용 2차 출처. 하락일이 10-30인지 10-31인지 출처마다 다름",
+        "source_url": "https://pluang.com/en/news-feed/intel-terburuk-sp500-oktober-accenture-pemenang-terbesar"
+      }
+    ],
+    "available_images": []
+  },
+  "players": null,
+  "dynamics": null,
+  "chain_reaction": null,
+  "scenarios": null,
+  "visuals": null,
+  "composed_report": {
+    "headline": "유가 7% 급락, 코스피 반등, 미국 중간선거 3일 투표",
+    "deck": "미국과 이란이 도하에서 합의 초안을 돌린다는 소식에 기름값이 크게 내렸고, 반도체 수출 덕에 코스피는 2.24% 올랐다. 미국 시간 3일 치르는 중간선거 결과는 한국 시간 4일 오전부터 나온다.",
+    "sections": [
+      {
+        "heading": "도하 협상 소식에 유가가 크게 내렸다",
+        "kicker": "밤사이 시장",
+        "prose": "미국과 이란이 카타르 도하에서 사흘째 벌인 협상은 타결 없이 끝났다. 그런데 전쟁을 끝내는 합의 초안이 회람되고 있다는 관계자 발언이 전해졌다(출처: cyprus-mail.com, theglobeandmail.com). 북해산 브렌트유는 미국 장중 약 104.82달러로 7.6% 떨어졌고, 미국 서부텍사스산원유(WTI)는 장중 96.72달러로 7.1% 내려 100달러 아래로 들어왔다(출처: benzinga.com). 브렌트 기준으로 7월 27일 이후 하루 최대 낙폭이라는 집계도 있다. 하락폭이 이렇게 큰 이유는 그동안 유가를 밀어 올린 원인이 공급 차질이었기 때문이다. 미국과 이란의 전쟁, 미국의 해상 봉쇄로 호르무즈 해협 통행이 막히면서 유가는 100달러 위에서 내려오지 못했다. 그래서 시장은 협상이 진전된다는 신호 하나에도 봉쇄가 풀릴 가능성을 값에 먼저 반영했다. 직전 주간 브리핑에서 브렌트가 약 117달러로 집계됐던 것과 비교하면 차이가 크다(출처: mdbriefing.substack.com). 다만 합의가 이뤄진 것은 아니다. 이란 대표단은 결론 없이 도하를 떠나 귀국했고, 공개된 내용은 초안을 회람 중이라는 관계자 발언 정도다. 출처와 시점에 따라 브렌트 가격이 104~110달러로 다르게 잡히는 것도 장중 변동이 그만큼 컸다는 뜻이다. 협상이 다시 멈추면 이번 하락분은 빠르게 되돌려질 수 있다.",
+        "charts": [
+          {
+            "type": "line",
+            "title": "코스피",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · -15.59% (6,941 → 5,859)",
+            "data": [
+              {
+                "x": "2026-10-06",
+                "y": 6941.39
+              },
+              {
+                "x": "2026-10-07",
+                "y": 6803.9
+              },
+              {
+                "x": "2026-10-08",
+                "y": 6625.93
+              },
+              {
+                "x": "2026-10-12",
+                "y": 6384.24
+              },
+              {
+                "x": "2026-10-13",
+                "y": 6035.35
+              },
+              {
+                "x": "2026-10-14",
+                "y": 6008.81
+              },
+              {
+                "x": "2026-10-15",
+                "y": 5554.22
+              },
+              {
+                "x": "2026-10-16",
+                "y": 5668.05
+              },
+              {
+                "x": "2026-10-19",
+                "y": 5768.01
+              },
+              {
+                "x": "2026-10-20",
+                "y": 5552.74
+              },
+              {
+                "x": "2026-10-21",
+                "y": 5735.66
+              },
+              {
+                "x": "2026-10-22",
+                "y": 5533.77
+              },
+              {
+                "x": "2026-10-23",
+                "y": 5550.3
+              },
+              {
+                "x": "2026-10-26",
+                "y": 5469.47
+              },
+              {
+                "x": "2026-10-27",
+                "y": 5638.34
+              },
+              {
+                "x": "2026-10-28",
+                "y": 6012.44,
+                "event": "연준(Fed), 기준금리 3.75~4.00% 동결(2차 출처 보도)"
+              },
+              {
+                "x": "2026-10-29",
+                "y": 5937.66
+              },
+              {
+                "x": "2026-10-30",
+                "y": 5730.74,
+                "event": "우크라이나, 러시아 사마라 정유시설 공격(2주 유예 종료)"
+              },
+              {
+                "x": "2026-11-02",
+                "y": 5859.08,
+                "event": "다우 약 +1%(52,308, 장중), S&P 500 약 +0.6%(7,626, 장중). 브렌트 -7.6%("
+              }
+            ],
+            "source": "KRX / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": "코스피 기간 중 5,469~6,941 사이 하락, 마지막 5,859 (-15.59%), 변동폭 26.9%"
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "코스피",
+            "title": "코스피",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · -15.59% (6,941 → 5,859)",
+            "last_value_formatted": "5,859",
+            "change_day_pct": 2.24,
+            "change_day_pct_formatted": "+2.24%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-10-06",
+                "y": 6941.39
+              },
+              {
+                "x": "2026-10-07",
+                "y": 6803.9
+              },
+              {
+                "x": "2026-10-08",
+                "y": 6625.93
+              },
+              {
+                "x": "2026-10-12",
+                "y": 6384.24
+              },
+              {
+                "x": "2026-10-13",
+                "y": 6035.35
+              },
+              {
+                "x": "2026-10-14",
+                "y": 6008.81
+              },
+              {
+                "x": "2026-10-15",
+                "y": 5554.22
+              },
+              {
+                "x": "2026-10-16",
+                "y": 5668.05
+              },
+              {
+                "x": "2026-10-19",
+                "y": 5768.01
+              },
+              {
+                "x": "2026-10-20",
+                "y": 5552.74
+              },
+              {
+                "x": "2026-10-21",
+                "y": 5735.66
+              },
+              {
+                "x": "2026-10-22",
+                "y": 5533.77
+              },
+              {
+                "x": "2026-10-23",
+                "y": 5550.3
+              },
+              {
+                "x": "2026-10-26",
+                "y": 5469.47
+              },
+              {
+                "x": "2026-10-27",
+                "y": 5638.34
+              },
+              {
+                "x": "2026-10-28",
+                "y": 6012.44
+              },
+              {
+                "x": "2026-10-29",
+                "y": 5937.66
+              },
+              {
+                "x": "2026-10-30",
+                "y": 5730.74
+              },
+              {
+                "x": "2026-11-02",
+                "y": 5859.08
+              }
+            ],
+            "source": "KRX / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "SK하이닉스",
+            "title": "SK하이닉스",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · -17.04% (1,784,000 → 1,480,000)",
+            "last_value_formatted": "1,480,000",
+            "change_day_pct": 6.4,
+            "change_day_pct_formatted": "+6.40%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-10-06",
+                "y": 1784000.0
+              },
+              {
+                "x": "2026-10-07",
+                "y": 1715000.0
+              },
+              {
+                "x": "2026-10-08",
+                "y": 1686000.0
+              },
+              {
+                "x": "2026-10-12",
+                "y": 1605000.0
+              },
+              {
+                "x": "2026-10-13",
+                "y": 1456000.0
+              },
+              {
+                "x": "2026-10-14",
+                "y": 1425000.0
+              },
+              {
+                "x": "2026-10-15",
+                "y": 1238000.0
+              },
+              {
+                "x": "2026-10-16",
+                "y": 1265000.0
+              },
+              {
+                "x": "2026-10-19",
+                "y": 1304000.0
+              },
+              {
+                "x": "2026-10-20",
+                "y": 1190000.0
+              },
+              {
+                "x": "2026-10-21",
+                "y": 1288000.0
+              },
+              {
+                "x": "2026-10-22",
+                "y": 1234000.0
+              },
+              {
+                "x": "2026-10-23",
+                "y": 1263000.0
+              },
+              {
+                "x": "2026-10-26",
+                "y": 1290000.0
+              },
+              {
+                "x": "2026-10-27",
+                "y": 1374000.0
+              },
+              {
+                "x": "2026-10-28",
+                "y": 1508000.0
+              },
+              {
+                "x": "2026-10-29",
+                "y": 1516000.0
+              },
+              {
+                "x": "2026-10-30",
+                "y": 1391000.0
+              },
+              {
+                "x": "2026-11-02",
+                "y": 1480000.0
+              }
+            ],
+            "source": "KRX / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "삼성전자",
+            "title": "삼성전자",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · -15.75% (273,000 → 230,000)",
+            "last_value_formatted": "230,000",
+            "change_day_pct": 4.31,
+            "change_day_pct_formatted": "+4.31%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-10-06",
+                "y": 273000.0
+              },
+              {
+                "x": "2026-10-07",
+                "y": 269000.0
+              },
+              {
+                "x": "2026-10-08",
+                "y": 263000.0
+              },
+              {
+                "x": "2026-10-12",
+                "y": 251000.0
+              },
+              {
+                "x": "2026-10-13",
+                "y": 234000.0
+              },
+              {
+                "x": "2026-10-14",
+                "y": 234500.0
+              },
+              {
+                "x": "2026-10-15",
+                "y": 207500.0
+              },
+              {
+                "x": "2026-10-16",
+                "y": 217000.0
+              },
+              {
+                "x": "2026-10-19",
+                "y": 223500.0
+              },
+              {
+                "x": "2026-10-20",
+                "y": 209000.0
+              },
+              {
+                "x": "2026-10-21",
+                "y": 223500.0
+              },
+              {
+                "x": "2026-10-22",
+                "y": 214500.0
+              },
+              {
+                "x": "2026-10-23",
+                "y": 213500.0
+              },
+              {
+                "x": "2026-10-26",
+                "y": 213500.0
+              },
+              {
+                "x": "2026-10-27",
+                "y": 225000.0
+              },
+              {
+                "x": "2026-10-28",
+                "y": 245000.0
+              },
+              {
+                "x": "2026-10-29",
+                "y": 230500.0
+              },
+              {
+                "x": "2026-10-30",
+                "y": 220500.0
+              },
+              {
+                "x": "2026-11-02",
+                "y": 230000.0
+              }
+            ],
+            "source": "KRX / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "WTI 유가",
+            "title": "WTI 유가",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · +7.53% (96.13 → 103.37)",
+            "last_value_formatted": "103.37",
+            "change_day_pct": -1.79,
+            "change_day_pct_formatted": "-1.79%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-10-05",
+                "y": 96.13
+              },
+              {
+                "x": "2026-10-06",
+                "y": 96.24
+              },
+              {
+                "x": "2026-10-07",
+                "y": 95.02
+              },
+              {
+                "x": "2026-10-08",
+                "y": 98.26
+              },
+              {
+                "x": "2026-10-09",
+                "y": 98.73
+              },
+              {
+                "x": "2026-10-12",
+                "y": 94.99
+              },
+              {
+                "x": "2026-10-13",
+                "y": 95.39
+              },
+              {
+                "x": "2026-10-14",
+                "y": 96.34
+              },
+              {
+                "x": "2026-10-15",
+                "y": 104.71
+              },
+              {
+                "x": "2026-10-16",
+                "y": 108.21
+              },
+              {
+                "x": "2026-10-19",
+                "y": 110.01
+              },
+              {
+                "x": "2026-10-20",
+                "y": 107.89
+              },
+              {
+                "x": "2026-10-21",
+                "y": 103.95
+              },
+              {
+                "x": "2026-10-22",
+                "y": 104.27
+              },
+              {
+                "x": "2026-10-23",
+                "y": 109.72
+              },
+              {
+                "x": "2026-10-26",
+                "y": 105.25
+              },
+              {
+                "x": "2026-10-27",
+                "y": 103.37
+              }
+            ],
+            "source": "FRED / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "미국채 10Y",
+            "title": "미국채 10Y",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · -6.21% (5.31 → 4.98)",
+            "last_value_formatted": "4.98%",
+            "change_day_pct": -1.39,
+            "change_day_pct_formatted": "-1.39%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-10-05",
+                "y": 5.31
+              },
+              {
+                "x": "2026-10-06",
+                "y": 5.27
+              },
+              {
+                "x": "2026-10-07",
+                "y": 5.28
+              },
+              {
+                "x": "2026-10-08",
+                "y": 5.22
+              },
+              {
+                "x": "2026-10-09",
+                "y": 5.24
+              },
+              {
+                "x": "2026-10-13",
+                "y": 5.21
+              },
+              {
+                "x": "2026-10-14",
+                "y": 5.19
+              },
+              {
+                "x": "2026-10-15",
+                "y": 5.1
+              },
+              {
+                "x": "2026-10-16",
+                "y": 5.09
+              },
+              {
+                "x": "2026-10-19",
+                "y": 5.15
+              },
+              {
+                "x": "2026-10-20",
+                "y": 5.12
+              },
+              {
+                "x": "2026-10-21",
+                "y": 5.13
+              },
+              {
+                "x": "2026-10-22",
+                "y": 4.96
+              },
+              {
+                "x": "2026-10-23",
+                "y": 5.0
+              },
+              {
+                "x": "2026-10-26",
+                "y": 5.0
+              },
+              {
+                "x": "2026-10-27",
+                "y": 4.99
+              },
+              {
+                "x": "2026-10-28",
+                "y": 5.05
+              },
+              {
+                "x": "2026-10-29",
+                "y": 4.98
+              }
+            ],
+            "source": "FRED / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": ""
+          },
+          {
+            "type": "line",
+            "role": "compact",
+            "instrument": "나스닥",
+            "title": "나스닥",
+            "subtitle": "2026-10-04 ~ 2026-11-03 · -8.42% (27,477 → 25,164)",
+            "last_value_formatted": "25,164",
+            "change_day_pct": -1.07,
+            "change_day_pct_formatted": "-1.07%",
+            "period_label": "1M",
+            "data": [
+              {
+                "x": "2026-10-05",
+                "y": 27477.310546875
+              },
+              {
+                "x": "2026-10-06",
+                "y": 27599.7890625
+              },
+              {
+                "x": "2026-10-07",
+                "y": 27538.689453125
+              },
+              {
+                "x": "2026-10-08",
+                "y": 27193.33984375
+              },
+              {
+                "x": "2026-10-09",
+                "y": 27366.169921875
+              },
+              {
+                "x": "2026-10-12",
+                "y": 27245.900390625
+              },
+              {
+                "x": "2026-10-13",
+                "y": 27204.380859375
+              },
+              {
+                "x": "2026-10-14",
+                "y": 26692.869140625
+              },
+              {
+                "x": "2026-10-15",
+                "y": 26713.029296875
+              },
+              {
+                "x": "2026-10-16",
+                "y": 26140.029296875
+              },
+              {
+                "x": "2026-10-19",
+                "y": 26430.890625
+              },
+              {
+                "x": "2026-10-20",
+                "y": 26424.8203125
+              },
+              {
+                "x": "2026-10-21",
+                "y": 26702.859375
+              },
+              {
+                "x": "2026-10-22",
+                "y": 26008.859375
+              },
+              {
+                "x": "2026-10-23",
+                "y": 25955.33984375
+              },
+              {
+                "x": "2026-10-26",
+                "y": 26169.380859375
+              },
+              {
+                "x": "2026-10-27",
+                "y": 26477.810546875
+              },
+              {
+                "x": "2026-10-28",
+                "y": 26549.849609375
+              },
+              {
+                "x": "2026-10-29",
+                "y": 26184.720703125
+              },
+              {
+                "x": "2026-10-30",
+                "y": 25437.0
+              },
+              {
+                "x": "2026-11-02",
+                "y": 25164.31640625
+              }
+            ],
+            "source": "Yahoo Finance / 2026-10-04 ~ 2026-11-03 / 일간",
+            "takeaway": ""
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "어제(2일) 밤사이 국제 유가가 하루 만에 7% 넘게 떨어졌다. 미국과 이란이 전쟁을 끝내는 합의 초안을 돌리고 있다는 보도가 계기였다.",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": true,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "기",
+        "video": {
+          "narration": [
+            "미국과 이란의 도하 협상이 사흘째 타결 없이 끝났습니다.",
+            "그런데 합의 초안이 돌고 있다는 보도가 나오자 유가가 크게 내렸습니다.",
+            "WTI는 장중 96.72달러까지 내려가 100달러 아래로 들어왔습니다."
+          ],
+          "highlights": [
+            "브렌트 장중 7.6% 하락",
+            "WTI 장중 96.72달러"
+          ],
+          "emphasis": [
+            "96.72달러"
+          ],
+          "narration_tts": [
+            "미국과 이란의 도하 협상이 사흘째 타결 없이 끝났습니다.",
+            "그런데 합의 초안이 돌고 있다는 보도가 나오자 유가가 크게 내렸습니다.",
+            "더블유티아이는 장중 구십육 점 칠이 달러까지 내려가 백 달러 아래로 들어왔습니다."
+          ]
+        }
+      },
+      {
+        "heading": "반도체 수출이 코스피를 끌어올렸다",
+        "kicker": "국내 증시",
+        "prose": "국내 증시는 11월 2일 반등했다. 코스피는 전 거래일보다 2.24% 오른 5,859.08로 마감했고, 코스닥은 1.38% 오른 734.36으로 마쳤다(출처: en.sedaily.com, invezz.com). 장 초반에는 5,600선까지 밀렸다가 방향을 돌렸다. 한국거래소 시세 기록으로 인텔 실적 충격이 덮친 10월 30일(금) 코스피는 5,937.66에서 5,730.74로 내렸는데, 이날 낙폭 일부를 되찾았다. 반등의 직접 계기는 지난 1일 발표된 10월 수출 실적이다. 10월 수출은 1,153억 달러로 1년 전보다 93.7% 늘어 월간 사상 최대를 기록했고, 무역수지는 425억 달러 흑자였다(출처: forbesmiddleeast.com). 반도체 수출은 564억 달러로 259% 늘었다. 1~10월 누적 수출은 처음으로 9,000억 달러를 넘었다. 구성을 보면 반도체 비중이 약 49%다(아래 차트). 100달러어치를 수출하면 그중 49달러가 반도체라는 뜻이다. 반도체를 뺀 수출도 34% 늘었다는 점은 반가운 대목이지만, 증가 속도에서는 반도체가 다른 품목을 크게 앞선다(출처: techtimes.com). 이 쏠림은 호황일 때 지수를 끌어올리지만, 인텔 쇼크 같은 반도체 악재가 오면 지수 낙폭도 키운다. 대형 반도체주도 함께 올랐다. 한국거래소 시세 기록으로 SK하이닉스는 1,480,000원으로 6.4%, 삼성전자는 230,000원으로 4.31% 올라 마감했다. Invezz 는 각각 3.81%, 1.78% 상승으로 보도했는데, 이 차이의 원인은 밝혀지지 않았다. 기관 순매수 규모는 약 1.2조~1.36조 원으로 출처마다 다르며(BigGo, Invezz), 정확한 값은 한국거래소 원자료로 확인해야 한다.",
+        "charts": [
+          {
+            "type": "dot_matrix",
+            "title": "10월 수출 100달러 가운데 반도체 몫",
+            "subtitle": "반도체가 약 49%, 나머지 모든 품목을 합쳐 약 51%",
+            "data": [
+              {
+                "label": "반도체",
+                "value": 564,
+                "accent": true
+              },
+              {
+                "label": "반도체 외 전체",
+                "value": 589
+              }
+            ],
+            "unit_line": "단위: 억 달러 · 2026년 10월",
+            "source": "Forbes Middle East, Tech Times / 2026-11-01 발표 · 반도체 외 = 전체 1,153 - 반도체 564",
+            "takeaway": ""
+          },
+          {
+            "type": "slope",
+            "title": "1년 사이 수출 크기 변화",
+            "subtitle": "반도체는 세 배 넘게, 반도체 외는 약 34% 늘었다",
+            "data": {
+              "left_label": "2025년 10월 (역산)",
+              "right_label": "2026년 10월",
+              "items": [
+                {
+                  "label": "전체 수출",
+                  "a": 595,
+                  "b": 1153
+                },
+                {
+                  "label": "반도체 외",
+                  "a": 440,
+                  "b": 589
+                },
+                {
+                  "label": "반도체",
+                  "a": 157,
+                  "b": 564
+                }
+              ]
+            },
+            "unit_line": "단위: 억 달러",
+            "source": "Forbes Middle East, Tech Times / 2025년 값은 증가율(93.7%, 259%, 34%)로 역산한 추정치라 합계가 1억~2억 달러 어긋날 수 있음",
+            "takeaway": ""
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "100달러어치를 수출하면 그중 49달러가 반도체다.",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [
+          {
+            "label": "코스피 종가",
+            "value": "5,859.08",
+            "sublabel": "11월 2일 / +2.24%"
+          },
+          {
+            "label": "10월 수출",
+            "value": "1,153억 달러",
+            "sublabel": "전년 대비 +93.7% / 월간 최대"
+          },
+          {
+            "label": "10월 반도체 수출",
+            "value": "564억 달러",
+            "sublabel": "전년 대비 +259%"
+          },
+          {
+            "label": "10월 무역수지",
+            "value": "425억 달러 흑자",
+            "sublabel": "산업통상 발표 보도 기준"
+          }
+        ],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "어제 코스피는 2.24% 오른 5,859.08로 장을 마쳤습니다.",
+            "10월 반도체 수출이 1년 전보다 259% 늘어난 덕분입니다.",
+            "다만 수출 100달러 가운데 49달러가 반도체일 만큼 쏠림도 커졌습니다."
+          ],
+          "highlights": [
+            "10월 수출 1,153억 달러, 월간 최대",
+            "반도체 수출 259% 증가"
+          ],
+          "emphasis": [
+            "259%",
+            "49달러"
+          ],
+          "narration_tts": [
+            "어제 코스피는 이 점 이사 퍼센트 오른 오천팔백오십구 점 영팔로 장을 마쳤습니다.",
+            "시월 반도체 수출이 일 년 전보다 이백오십구 퍼센트 늘어난 덕분입니다.",
+            "다만 수출 백 달러 가운데 사십구 달러가 반도체일 만큼 쏠림도 커졌습니다."
+          ]
+        }
+      },
+      {
+        "heading": "미국 증시는 장중 엇갈림, 금리는 소폭 하락",
+        "kicker": "",
+        "prose": "미국 증시는 11월 2일(한국 시간 3일 새벽 마감) 지수별로 다르게 움직였다. 다우지수는 장중 약 1% 올라 52,308 부근, S&P 500 은 장중 약 0.6% 올라 7,626 부근에서 거래됐다(출처: benzinga.com). 두 지수의 종가 기준 등락은 아직 확인되지 않았다. 아마존은 4.7% 올랐다. 이 보고서가 받은 시세 기록으로 나스닥 종합지수는 1.07% 내린 25,164 로 마감했다. 하루 등락을 나란히 놓으면 에너지와 주식의 방향이 갈린다(아래 차트). 미국 장중 기준으로 원유 두 종류가 7% 넘게 빠지는 동안 다우는 올랐고 금도 약 2% 올랐다. 그보다 앞서 마감한 한국장에서는 코스피와 코스닥이 올랐다. 기술주 중심인 나스닥은 내려 마감했다. 유가 하락은 반가운 소식이었지만, 지난주 인텔 실적 이후 커진 AI 투자 지출 의구심은 아직 풀리지 않은 것으로 보인다(출처: qz.com). 채권 시장도 유가에 반응했다. 미국 국채 10년물 금리는 4.89%로 소폭 내렸다는 보도가 나왔다(출처: hawksmoorcapital.substack.com). 다만 30년물 금리는 10월 초 20여 년 만의 최고치를 찍은 뒤 여전히 5.30% 위에 있다. 미 재무부는 미국 시간 4일 분기 국채 발행 계획을 내놓는데, 장기채 발행을 줄이면 30년물 금리 부담이 덜해질 수 있고 그대로 두면 부담이 이어질 수 있다(출처: pro.thestreet.com). 금리 인상 우려도 그대로다. 연준은 10월 28일 기준금리를 3.75~4.00%로 묶었다고 보도됐지만, 시장은 12월 9일 회의에서 금리를 올릴 가능성을 보도 시점과 출처에 따라 약 72~85%로 보고 있다(CME FedWatch 를 인용한 2차 출처, 공식 페이지 미확인). 물가가 다시 오르는 국면에서 유가가 내리면 인상 압박은 줄어든다. 그래서 유가 하락이 며칠 이어지느냐가 금리 기대에도 영향을 준다.",
+        "charts": [
+          {
+            "type": "bar",
+            "title": "11월 2일 하루 등락률",
+            "subtitle": "원유가 7% 넘게 빠지는 동안 나스닥만 주식 중 하락",
+            "data": [
+              {
+                "label": "브렌트유",
+                "value": -7.6,
+                "note": "미국 장중"
+              },
+              {
+                "label": "WTI",
+                "value": -7.1,
+                "note": "미국 장중"
+              },
+              {
+                "label": "나스닥",
+                "value": -1.07,
+                "note": "종가"
+              },
+              {
+                "label": "S&P 500",
+                "value": 0.6,
+                "note": "장중 약"
+              },
+              {
+                "label": "다우",
+                "value": 1.0,
+                "note": "장중 약"
+              },
+              {
+                "label": "코스닥",
+                "value": 1.38,
+                "note": "종가"
+              },
+              {
+                "label": "금",
+                "value": 2.0,
+                "note": "약"
+              },
+              {
+                "label": "코스피",
+                "value": 2.24,
+                "note": "종가"
+              }
+            ],
+            "unit_label": "%",
+            "unit_line": "단위: % · 2026-11-02 (한국장 종가, 미국장은 장중과 종가 혼재)",
+            "source": "Benzinga, Seoul Economic Daily, Invezz, Eurasia Business News / 2026-11-02 · 시점이 서로 다른 값 포함 · N=8",
+            "takeaway": ""
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "분기 국채 발행 계획",
+            "explanation": "미 재무부가 석 달마다 앞으로 국채를 얼마나, 어떤 만기로 찍을지 밝히는 발표다. 장기채를 많이 찍으면 장기 금리가 오르기 쉽다."
+          }
+        ],
+        "narrative_phase": "승",
+        "video": {
+          "narration": [
+            "미국 증시에서는 다우가 오르고 나스닥은 1.07% 내렸습니다.",
+            "유가가 내려도 기술주에 대한 의구심은 풀리지 않은 것으로 보입니다.",
+            "시장은 12월 9일 금리 인상 가능성을 여전히 높게 보고 있습니다."
+          ],
+          "highlights": [
+            "나스닥 종가 1.07% 하락",
+            "미국채 30년물 5.30% 위"
+          ],
+          "emphasis": [
+            "1.07%"
+          ],
+          "narration_tts": [
+            "미국 증시에서는 다우가 오르고 나스닥은 일 점 영칠 퍼센트 내렸습니다.",
+            "유가가 내려도 기술주에 대한 의구심은 풀리지 않은 것으로 보입니다.",
+            "시장은 십이월 구일 금리 인상 가능성을 여전히 높게 보고 있습니다."
+          ]
+        }
+      },
+      {
+        "heading": "미국 중간선거 3일 투표, 결과는 한국 시간 4일 오전부터",
+        "kicker": "",
+        "prose": "미국 동부 시간 3일 미국 중간선거 투표가 진행된다. 하원 전체와 상원 일부를 새로 뽑는 선거다. 개표 결과는 한국 시간으로 4일 오전부터 나온다. 그 전까지 국내 증시는 방향을 잡기보다 지켜보는 흐름일 가능성이 크다. 예측시장인 Polymarket 과 Kalshi 에서는 2일 기준 민주당이 상원과 하원을 함께 가져갈 가능성이 약 70%로 거래됐다(출처: in.investing.com). 하원이 바뀌는 것은 기본 시나리오로 여겨지고, 상원은 결과를 장담하기 어렵다는 평가가 많다. 예측시장은 돈을 걸고 결과를 맞히는 시장이라 여론조사와 다르게 움직일 수 있다. 시장이 주목하는 것은 의회가 바뀐 뒤의 정책이다. 의회와 행정부를 서로 다른 당이 맡으면 관세, 재정 지출, 대외 정책을 둘러싼 입법이 느려질 수 있다(출처: bloomberg.com). 이런 교착이 재정 적자 확대를 늦춘다고 보는 쪽은 장기 금리에 긍정적이라고 보고, 정책 불확실성이 커진다고 보는 쪽은 부정적이라고 본다. 결과가 예측시장 예상과 크게 다르면 4일 오전 한국 증시가 먼저 반응할 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "예측시장",
+            "explanation": "선거 결과 같은 미래 사건에 돈을 걸고 사고파는 시장이다. 거래 가격이 곧 참가자들이 보는 확률로 해석된다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "오늘 미국에서는 중간선거 투표가 진행됩니다.",
+            "예측시장은 민주당이 상원과 하원을 함께 가져갈 가능성을 약 70%로 봅니다.",
+            "개표 결과는 한국 시간으로 내일 오전부터 나옵니다."
+          ],
+          "highlights": [
+            "민주당 상원과 하원 동시 장악 약 70%",
+            "개표는 한국 시간 4일 오전부터"
+          ],
+          "emphasis": [
+            "약 70%"
+          ],
+          "narration_tts": [
+            "오늘 미국에서는 중간선거 투표가 진행됩니다.",
+            "예측시장은 민주당이 상원과 하원을 함께 가져갈 가능성을 약 칠십 퍼센트로 봅니다.",
+            "개표 결과는 한국 시간으로 내일 오전부터 나옵니다."
+          ]
+        }
+      },
+      {
+        "heading": "북한 미사일, 우크라이나 전쟁, 다음 주 미중 일정",
+        "kicker": "",
+        "prose": "지난 토요일(10월 31일) 북한은 평안북도 정주에서 서해 쪽으로 미사일을 쐈다. 외신은 이를 집속탄두 시험으로 보도했고(출처: upi.com, stripes.com), 일부 전문가는 이런 탄두가 부산까지 닿는 표적을 위협할 수 있다고 분석했다(출처: nknews.org). 집속탄두는 탄두 하나에 작은 폭탄 여러 개를 넣어 넓은 지역에 흩뿌리는 무기다. 다만 시장 영향은 이번에도 크지 않았다. 11월 2일 이재명 대통령은 국회에서 내년 예산안 시정연설을 했다. 국민의힘은 연설이 북한 문제와 경제 우려를 외면했다고 비판했다(출처: koreatimes.co.kr). 북한 도발과 예산 공방이 겹치면서 국회 예산 심사가 순탄하지 않을 수 있다. 러시아와 우크라이나의 공방도 계속되고 있다. 우크라이나 국영 통신 우크르인폼은 우크라이나가 10월 30일 2주 유예가 끝나자 러시아 사마라의 정유시설을 공격했고, 2일에는 러시아 공습으로 자포리자에서 18명이 숨졌다고 보도했다(출처: ukrinform.net). 러시아 석유제품 공급 차질은 중동 협상과 별개로 유가를 다시 밀어 올릴 수 있는 요인이다. 교역 일정도 가깝다. 미국과 중국은 2025년 11월 부산 합의에 따른 관세 휴전을 2027년 1월 10일까지 연장했다(출처: supplychaindive.com). 그러나 무역법 301조에 따라 중국산 178개 품목을 관세에서 빼 준 조치와 중국 연계 선박에 매기는 입항 수수료의 유예는 다음 주 월요일과 화요일(9~10일) 만료를 앞두고 있다(출처: freightfigures.com). 미국 무역대표부가 새로 공지하지 않으면 조선과 해운, 대중국 공급망 기업이 영향을 받을 수 있다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [
+          {
+            "term": "무역법 301조",
+            "explanation": "상대국의 불공정 무역에 맞서 미국 대통령이 관세 같은 보복 조치를 할 수 있게 한 법 조항이다. 미국은 이 조항으로 중국산 제품에 관세를 매기면서 일부 품목은 예외로 빼 주고 있다."
+          }
+        ],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "지난 토요일 북한은 서해 쪽으로 미사일을 쐈습니다.",
+            "외신은 이를 집속탄두 시험으로 보도했습니다.",
+            "다음 주 월요일과 화요일에는 미국의 대중국 관세 예외 조치 유예가 끝납니다."
+          ],
+          "highlights": [
+            "북한, 정주에서 서해로 발사",
+            "301조 예외 178개 품목, 9~10일 만료"
+          ],
+          "emphasis": [
+            "집속탄두"
+          ],
+          "narration_tts": [
+            "지난 토요일 북한은 서해 쪽으로 미사일을 쐈습니다.",
+            "외신은 이를 집속탄두 시험으로 보도했습니다.",
+            "다음 주 월요일과 화요일에는 미국의 대중국 관세 예외 조치 유예가 끝납니다."
+          ]
+        }
+      },
+      {
+        "heading": "출처와 시점마다 다른 숫자",
+        "kicker": "",
+        "prose": "최근 보도된 숫자 가운데 출처마다 값이 다른 지표가 여럿이다(아래 차트). 12월 연준 금리 인상 가능성은 보도 시점과 출처에 따라 72%에서 85%까지 다르게 나온다. 11월 2일 SK하이닉스 상승률은 한국거래소 종가 기준 6.4%인데 Invezz 는 3.81%로, 삼성전자는 4.31%인데 1.78%로 보도했다. 브렌트유는 104~110달러, 기관 순매수는 1.2조~1.36조 원으로 잡힌다. 차이가 나는 이유는 두 가지로 나뉜다. 브렌트유처럼 장중 가격과 종가, 조사 시각이 다른 값이 섞인 경우는 시점 차이에서 나온 것으로 보인다. TradingKey 가 SK하이닉스를 4.5% 상승으로 보도한 것도 장중 수치였을 가능성이 있다. 반면 Invezz 의 반도체주 등락률이나 기관 순매수 규모처럼 차이의 원인이 밝혀지지 않은 값도 있다. 숫자 하나를 근거로 판단할 때는 그 값이 언제 기준인지부터 확인해야 한다. 이 보고서는 장중 값에는 장중이라고 적고, 종가를 확인하지 못한 수치는 범위로 적었다. 투자 판단에 쓰려면 한국거래소와 CME 공식 페이지 같은 1차 자료로 다시 확인하는 편이 안전하다. 특히 연준 금리 인상 확률은 하루에도 크게 바뀌는 값이라, 미국 중간선거 결과에 따라 다시 움직일 수 있다.",
+        "charts": [
+          {
+            "type": "range_bar",
+            "title": "같은 지표, 출처별 보도값의 폭",
+            "subtitle": "삼성전자 상승률은 출처에 따라 두 배 넘게 차이 난다",
+            "data": [
+              {
+                "label": "12월 연준 인상 확률",
+                "low": 72,
+                "high": 85
+              },
+              {
+                "label": "SK하이닉스 2일 상승률",
+                "low": 3.81,
+                "high": 6.4
+              },
+              {
+                "label": "삼성전자 2일 상승률",
+                "low": 1.78,
+                "high": 4.31
+              }
+            ],
+            "low_label": "가장 낮은 보도값",
+            "high_label": "가장 높은 보도값",
+            "unit_label": "%",
+            "unit_line": "단위: % · 2026-11-02 전후 보도",
+            "source": "Invezz, TradingKey, Norada(FedWatch 인용), 봇 수신 시세 기록 / 2026-11-02 · N=3",
+            "takeaway": ""
+          }
+        ],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "전",
+        "video": {
+          "narration": [
+            "어제 숫자 가운데는 출처마다 값이 다른 지표가 여럿입니다.",
+            "삼성전자 상승률은 1.78%에서 4.31%까지 벌어집니다.",
+            "그래서 그 값이 언제 기준인지부터 확인해야 합니다."
+          ],
+          "highlights": [
+            "연준 인상 확률 72~85%",
+            "브렌트 104~110달러"
+          ],
+          "emphasis": [
+            "1.78%에서 4.31%"
+          ],
+          "narration_tts": [
+            "어제 숫자 가운데는 출처마다 값이 다른 지표가 여럿입니다.",
+            "삼성전자 상승률은 일 점 칠팔 퍼센트에서 사 점 삼일 퍼센트까지 벌어집니다.",
+            "그래서 그 값이 언제 기준인지부터 확인해야 합니다."
+          ]
+        }
+      },
+      {
+        "heading": "앞으로 일주일, 네 가지 시나리오",
+        "kicker": "",
+        "prose": "가장 가능성이 높아 보이는 흐름은 관망 속 소폭 등락이다. 도하 협상이 초안 회람 단계에서 크게 진전도 후퇴도 없고, 중간선거가 예측시장 예상대로 나오면 시장은 큰 충격 없이 다음 일정으로 넘어간다. 이 경우 유가는 100달러 안팎에서 오르내리고, 코스피는 반도체 실적 기대와 금리 인상 우려 사이에서 등락할 것으로 보인다. 확인할 신호는 4일 오전 개표 결과와 이란 측 공식 발언이다. 두 번째는 합의 진전이다. 도하 초안이 실제 합의로 이어지고 호르무즈 해협 통행이 열리면, 유가가 추가로 내리고 물가와 금리 부담도 함께 줄 수 있다. 12월 금리 인상 가능성이 낮아지면 성장주와 반도체주가 더 크게 반등할 여지가 있다. 신호는 미국과 이란 양측의 공식 발표, 해협 통항 재개 보도다. 세 번째는 협상 결렬이다. 이란이 초안을 거부하거나 해상 충돌이 다시 일어나면 11월 2일의 유가 하락분은 빠르게 되돌려질 수 있다. 물가 우려가 다시 커지고 12월 인상 가능성이 높아지면, 반도체 쏠림이 큰 코스피는 낙폭이 커질 수 있다. 우크라이나의 러시아 정유시설 공격이 이어지면 유가 상승 압력은 더 세진다. 네 번째는 금리발 충격이다. 재무부 국채 발행 계획에서 장기채 발행이 줄지 않고 선거 결과가 재정 확대 쪽으로 해석되면, 30년물 금리가 5.30% 위에서 더 오를 수 있다. 이 경우 AI 투자 의구심을 안고 있는 기술주가 먼저 약세를 보일 가능성이 있다. 9~10일로 예정된 미국과 중국 사이 유예 만료는 날짜가 정해진 변수라 미리 대비할 수 있다. 북한의 추가 도발은 언제 일어날지 알 수 없는 위험이다.",
+        "charts": [],
+        "embedded_charts": [],
+        "embedded_blocks": [],
+        "pull_quote": "",
+        "cited_claim_ids": [],
+        "lede": "",
+        "analogy": null,
+        "fact_grid": [],
+        "dropcap": false,
+        "images": [],
+        "footnotes": [],
+        "narrative_phase": "결",
+        "video": {
+          "narration": [
+            "가장 가능성이 높아 보이는 흐름은 관망 속 소폭 등락입니다.",
+            "도하 초안이 실제 합의로 이어지면 유가는 더 내릴 수 있습니다.",
+            "반대로 협상이 결렬되면 어제의 하락분은 빠르게 되돌려질 수 있습니다."
+          ],
+          "highlights": [
+            "기본 흐름은 관망 속 소폭 등락",
+            "변수는 도하 합의와 장기 금리"
+          ],
+          "emphasis": [
+            "관망 속 소폭 등락"
+          ],
+          "narration_tts": [
+            "가장 가능성이 높아 보이는 흐름은 관망 속 소폭 등락입니다.",
+            "도하 초안이 실제 합의로 이어지면 유가는 더 내릴 수 있습니다.",
+            "반대로 협상이 결렬되면 어제의 하락분은 빠르게 되돌려질 수 있습니다."
+          ]
+        }
+      }
+    ],
+    "closing": "한국 시간 4일 오전부터 미국 선거 결과와 도하 후속 소식이 연달아 나온다. 11월 2일의 반등이 이어질지는 이 두 가지 확인에 달려 있다.",
+    "watch_signals": [
+      {
+        "signal": "미국 중간선거 개표",
+        "description": "민주당의 상원과 하원 동시 장악 여부",
+        "indicates": "기본 흐름 유지 vs 정책 불확실성 확대",
+        "deadline": "2026-11-04",
+        "icon": "🗳️"
+      },
+      {
+        "signal": "미 재무부 분기 국채 발행 계획",
+        "description": "장기채 발행을 줄이고 단기채를 늘리는지",
+        "indicates": "장기 금리 안정 vs 금리발 충격 시나리오",
+        "deadline": "2026-11-04",
+        "icon": "📄"
+      },
+      {
+        "signal": "도하 합의 초안 후속 발표",
+        "description": "미국과 이란 양측의 공식 확인, 호르무즈 통항 재개 여부",
+        "indicates": "합의 진전 vs 협상 결렬 시나리오",
+        "deadline": "",
+        "icon": "🛢️"
+      },
+      {
+        "signal": "301조 예외 품목과 입항 수수료 유예 만료",
+        "description": "미국 무역대표부의 연장 공지 여부",
+        "indicates": "조선과 해운, 대중국 공급망 불확실성",
+        "deadline": "2026-11-10",
+        "icon": "🚢"
+      },
+      {
+        "signal": "12월 FOMC 금리 결정",
+        "description": "금리 인상 여부와 유가 하락의 반영 정도",
+        "indicates": "성장주 반등 지속 vs 평가 부담 재확대",
+        "deadline": "2026-12-09",
+        "icon": "📊"
+      }
+    ],
+    "contradictions": [
+      {
+        "side_a": "유가가 하루 7% 넘게 떨어진 것은 시장이 전쟁 종결과 호르무즈 해협 재개를 상당 부분 예상하기 시작했다는 뜻이다.",
+        "side_b": "이란 대표단은 합의 없이 귀국했고 공개된 것은 초안 회람 소식뿐이어서, 이번 하락은 기대가 앞선 반응일 수 있다.",
+        "evidence": "도하 협상 사흘째 타결 없음, 합의 초안 회람 보도(Reuters 인용), 브렌트 장중 104~110달러로 출처별 차이",
+        "resolution": "현재로서는 후자에 무게를 둔다. 공식 합의 발표가 없는 상태에서 하루 낙폭은 기대의 크기를 보여줄 뿐 공급 회복을 확인해 주지 않는다. 양측이 합의 문안을 공식 확인하거나 해협 통항이 실제로 재개되면 전자가 맞게 된다.",
+        "video": {
+          "label_a": "평화 기대론",
+          "label_b": "신중론",
+          "line_a": "유가 급락은 전쟁 종결을 내다본 반응입니다.",
+          "line_b": "합의 없이 끝나 기대가 앞섰을 수 있습니다.",
+          "narration": [
+            "유가 급락을 두고는 해석이 갈립니다.",
+            "이란 대표단이 결론 없이 귀국한 만큼, 지금은 신중론에 무게가 실립니다.",
+            "해협 통항이 실제로 재개되면 평화 기대론이 맞게 됩니다."
+          ],
+          "narration_tts": [
+            "유가 급락을 두고는 해석이 갈립니다.",
+            "이란 대표단이 결론 없이 귀국한 만큼, 지금은 신중론에 무게가 실립니다.",
+            "해협 통항이 실제로 재개되면 평화 기대론이 맞게 됩니다."
+          ]
+        }
+      },
+      {
+        "side_a": "10월 수출 사상 최대와 반도체 외 수출 34% 증가는 한국 경제의 체력이 강하다는 증거다.",
+        "side_b": "수출의 약 49%가 반도체이고 증가분 대부분이 한 업종에서 나와, 반도체 경기가 꺾이면 수출과 지수가 함께 크게 떨어질 수 있다.",
+        "evidence": "10월 수출 1,153억 달러 중 반도체 564억 달러, 10월 15일 미국 물가 충격 때 코스피 -5.59%, 10월 30일 인텔 쇼크 때 5% 넘는 하락",
+        "resolution": "두 해석 모두 근거가 있지만 위험 관리 관점에서는 후자에 무게를 둔다. 10월에만 코스피가 하루 5% 넘게 빠진 날이 두 번 있었고, 두 번 모두 반도체와 금리 관련 충격이었다. 반도체 외 수출 증가가 몇 달 더 이어지면 전자의 설득력이 커진다.",
+        "video": {
+          "label_a": "체력론",
+          "label_b": "쏠림론",
+          "line_a": "사상 최대 수출은 경제 체력의 증거입니다.",
+          "line_b": "반도체에 너무 기대 충격에 약할 수 있습니다.",
+          "narration": [
+            "수출 호황을 보는 시각도 둘로 나뉩니다.",
+            "10월에만 코스피가 하루 5% 넘게 빠진 날이 두 번 있었습니다.",
+            "그래서 이 보고서는 반도체 쏠림의 위험에 더 무게를 둡니다."
+          ],
+          "narration_tts": [
+            "수출 호황을 보는 시각도 둘로 나뉩니다.",
+            "시월에만 코스피가 하루 오 퍼센트 넘게 빠진 날이 두 번 있었습니다.",
+            "그래서 이 보고서는 반도체 쏠림의 위험에 더 무게를 둡니다."
+          ]
+        }
+      }
+    ],
+    "contradictions_heading": "유가 하락과 수출 호황, 얼마나 믿을 수 있나",
+    "timeline_flow": {
+      "heading": "지난주부터 다음 달까지",
+      "past": [
+        {
+          "date": "2026-10-28",
+          "label": "연준 기준금리 동결 보도",
+          "note": "3.75~4.00%"
+        },
+        {
+          "date": "2026-10-30",
+          "label": "인텔 쇼크, 코스피 5% 넘게 하락",
+          "note": ""
+        },
+        {
+          "date": "2026-10-31",
+          "label": "북한 집속탄두 시험 보도",
+          "note": ""
+        },
+        {
+          "date": "2026-11-01",
+          "label": "10월 수출 사상 최대 발표",
+          "note": "1,153억 달러"
+        },
+        {
+          "date": "2026-11-02",
+          "label": "유가 급락, 코스피 2.24% 반등",
+          "note": ""
+        }
+      ],
+      "future": [
+        {
+          "date": "2026-11-03",
+          "label": "미국 중간선거 투표",
+          "branch": "기본 흐름 vs 정책 불확실성"
+        },
+        {
+          "date": "2026-11-04",
+          "label": "재무부 분기 국채 발행 계획",
+          "branch": "금리발 충격 여부"
+        },
+        {
+          "date": "2026-11-10",
+          "label": "301조 예외와 입항 수수료 유예 만료",
+          "branch": "교역 불확실성"
+        },
+        {
+          "date": "2026-12-09",
+          "label": "FOMC 금리 결정",
+          "branch": "합의 진전 vs 협상 결렬"
+        }
+      ],
+      "video": {
+        "narration": [
+          "지난 금요일 인텔 쇼크로 코스피는 하루 5% 넘게 빠졌습니다.",
+          "그 뒤 사상 최대 수출 소식과 유가 급락이 이어지며 어제 반등했습니다.",
+          "이제 시장의 눈은 오늘 미국 선거와 다음 달 연준 회의로 옮겨 갑니다."
+        ],
+        "narration_tts": [
+          "지난 금요일 인텔 쇼크로 코스피는 하루 오 퍼센트 넘게 빠졌습니다.",
+          "그 뒤 사상 최대 수출 소식과 유가 급락이 이어지며 어제 반등했습니다.",
+          "이제 시장의 눈은 오늘 미국 선거와 다음 달 연준 회의로 옮겨 갑니다."
+        ]
+      }
+    },
+    "confidence_summary": "주요 사실은 복수 외신과 국내 매체로 확인했으나, 개별 종목 등락률과 유가, 연준 인상 확률은 출처마다 달라 범위로 표기했다.",
+    "confidence_score": 0.3,
+    "degraded": false,
+    "degradation_reason": "",
+    "broadcast_summary": "미국과 이란이 도하에서 합의 초안을 돌리고 있다는 소식에 국제 유가가 하루 만에 7% 넘게 빠졌어요. WTI는 미국 장중 96.72달러로 100달러 아래까지 내려왔습니다.\n\n국내 증시도 11월 2일 반등했습니다. 10월 반도체 수출이 259% 늘면서 코스피는 2.24% 오른 5,859.08로 마감했어요.\n\n다만 합의가 된 건 아니에요. 이란 대표단은 결론 없이 귀국했고, 협상이 다시 멈추면 유가 하락분은 금방 되돌려질 수 있습니다.\n\n수출 호황도 반도체 한 업종에 크게 기대고 있어요. 10월 수출의 약 49%가 반도체라, 반도체 악재가 오면 지수 낙폭도 커집니다.\n\n미국 시간 3일은 중간선거 날입니다. 예측시장은 민주당이 상원과 하원을 함께 가져갈 가능성을 약 70%로 보고, 결과는 한국 시간 4일 오전부터 나와요.\n\n출처마다 엇갈리는 숫자와 시나리오별 신호는 보고서에 따로 정리해 뒀어요.",
+    "video": {
+      "intro_narration": [
+        "유가는 크게 내렸고 코스피는 반등했습니다.",
+        "오늘은 미국 중간선거 날입니다."
+      ],
+      "outro_narration": [
+        "내일 오전 미국 선거 결과와 도하 후속 소식이 연달아 나옵니다.",
+        "어제의 반등이 이어질지는 이 두 가지에 달려 있습니다."
+      ],
+      "intro_narration_tts": [
+        "유가는 크게 내렸고 코스피는 반등했습니다.",
+        "오늘은 미국 중간선거 날입니다."
+      ],
+      "outro_narration_tts": [
+        "내일 오전 미국 선거 결과와 도하 후속 소식이 연달아 나옵니다.",
+        "어제의 반등이 이어질지는 이 두 가지에 달려 있습니다."
+      ]
+    },
+    "embedded_map": {
+      "center": [
+        53.5,
+        26.5
+      ],
+      "zoom": 4.0,
+      "markers": [
+        {
+          "id": "doha",
+          "name": "도하",
+          "lng": 51.53,
+          "lat": 25.29,
+          "highlight": true,
+          "value": "미국과 이란 협상, 합의 초안 회람",
+          "label_side": "bottom"
+        },
+        {
+          "id": "hormuz",
+          "name": "호르무즈 해협",
+          "lng": 56.4,
+          "lat": 26.6,
+          "kind": "chokepoint",
+          "value": "봉쇄로 유가 100달러 위 고유가",
+          "label_side": "top"
+        }
+      ],
+      "arcs": [],
+      "regions": [
+        {
+          "name": "Iran",
+          "role": "subject",
+          "label": "이란"
+        }
+      ],
+      "sea_labels": [
+        {
+          "name": "페르시아만",
+          "lng": 50.8,
+          "lat": 27.6
+        }
+      ],
+      "legend": []
+    },
+    "hero_image": null,
+    "verification": {
+      "writer": "Claude Opus 5.5",
+      "critic": "OpenAI Codex (gpt-6-astra)",
+      "violations_fixed": 7,
+      "unresolved": 6,
+      "web_verified": true,
+      "text": "Claude Opus 5.5 작성 · OpenAI Codex (gpt-6-astra) 사실 검수 · 웹 대조 — 지적 7건 반영 · 6건 미해결(신뢰도 반영)"
+    }
+  },
+  "executive_summary": "미국과 이란이 도하에서 합의 초안을 돌린다는 소식에 기름값이 크게 내렸고, 반도체 수출 덕에 코스피는 2.24% 올랐다. 미국 시간 3일 치르는 중간선거 결과는 한국 시간 4일 오전부터 나온다.",
+  "report_url": "",
+  "report_path": "reports/analysis_20261103_061247_6d60ccfb79.html",
+  "mirror_url": "",
+  "osint_mirror_error": "",
+  "report_theme": "princess",
+  "parent_context": null,
+  "analysis_timestamp": "2026-11-03T06:00:02.116473+09:00",
+  "total_duration_seconds": 764.1110670566559,
+  "system_version": "v8.8.1",
+  "revision": 0,
+  "render_revision": 0,
+  "disable_scroll_arc": false
+}
